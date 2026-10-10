@@ -1,7 +1,7 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { Fragment, useEffect, useRef, useState } from "react";
+import { ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { OPTION_ICONS } from "@/lib/option-icons";
@@ -126,6 +126,23 @@ export function QuestionScreen({
     const t = setTimeout(() => setSlow(true), 12000);
     return () => clearTimeout(t);
   }, [sending]);
+  // After a pick, a slim bar keeps Continue in reach while the real button
+  // is scrolled out of view. The answer box itself stays in the page
+  // (51d5301b took it out of a sticky footer on purpose).
+  const actions = useRef<HTMLDivElement>(null);
+  const [offscreen, setOffscreen] = useState(false);
+  useEffect(() => {
+    const el = actions.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) =>
+      setOffscreen(!e.isIntersecting),
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const pickedLabel =
+    draft.card?.label ??
+    (ticked.length > 1 ? `${ticked.length} picked` : ticked[0]);
 
   const send = (req: TurnRequest) => {
     if (sending) return;
@@ -415,7 +432,10 @@ export function QuestionScreen({
                 />
               )}
 
-              <div className="mt-6 flex min-h-11 flex-wrap items-center gap-2">
+              <div
+                ref={actions}
+                className="mt-6 flex min-h-11 flex-wrap items-center gap-2"
+              >
                 {sending ? (
                   <p className="flex items-center gap-2 text-[15px] text-[var(--sf-graphite)]">
                     <Spinner size="sm" className="text-[var(--sf-brass)]" />
@@ -527,6 +547,26 @@ export function QuestionScreen({
           </div>
         </div>
       </div>
+      {offscreen &&
+        canContinue &&
+        changed &&
+        !sending &&
+        !review &&
+        pickedLabel && (
+          <div className="sticky bottom-4 z-20 mx-auto mb-4 flex w-fit max-w-[calc(100%-2rem)] items-center gap-3 rounded-full border border-[var(--sf-line)] bg-white/95 py-1.5 pl-5 pr-1.5 shadow-[0_10px_24px_-14px_rgb(34_33_31/0.6)] backdrop-blur motion-safe:animate-[sf-rise_.3s_ease-out_both]">
+            <span className="truncate text-[14px] font-medium">
+              {pickedLabel}
+            </span>
+            <Button
+              size="sm"
+              onClick={() => proceed()}
+              className="shrink-0 rounded-full px-4"
+            >
+              Continue
+              <ArrowRight className="size-4" aria-hidden />
+            </Button>
+          </div>
+        )}
     </div>
   );
 }
