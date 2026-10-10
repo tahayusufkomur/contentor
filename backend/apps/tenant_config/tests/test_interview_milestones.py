@@ -138,6 +138,28 @@ def test_choose_wordmark_and_delegate(tenant_ctx, config):
     assert "tone" in answers["delegated"]
 
 
+def test_choose_an_uploaded_logo(tenant_ctx, config):
+    """Audit G4: a coach with a logo of her own had no way to use it here."""
+    import uuid
+
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="uploads/logo.png", title="logo")
+    answers = {}
+    ms.choose(tenant_ctx, answers, "site_logo", f"upload:{photo.pk}")
+    assert answers["logo"] == {"mode": "upload", "photo_id": str(photo.pk)}
+    assert TenantConfig.objects.first().logo_id == photo.pk
+    for bad in (f"upload:{uuid.uuid4()}", "upload:nope"):
+        with pytest.raises(ms.ChoiceError):
+            ms.choose(tenant_ctx, answers, "site_logo", bad)
+
+
+def test_logo_cards_carry_the_brand_name_for_the_lockup(tenant_ctx, config):
+    tenant_ctx.name = "Mira Yoga House"
+    with mock.patch("apps.core.onboarding.ai_curate.shortlist", return_value=[]):
+        assert ms.logo_cards(tenant_ctx, {})["brand"] == "Mira Yoga House"
+
+
 def test_choose_text_field_goes_through_coercion(tenant_ctx, config):
     answers = {}
     ms.choose(tenant_ctx, answers, "payments", "One-time course purchases")

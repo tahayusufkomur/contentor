@@ -229,7 +229,9 @@ export interface LookCards {
   photos?: string[];
   /** The coach's pitch, the previews' headline. */
   headline?: string;
-  /** Logos: the look the coach picked, to preview marks in its colours. */
+  /** Logos: the look the coach picked, to preview marks in its colours
+   * beside ``brand``, her name, as they'll sit in her header. */
+  brand?: string;
   style?: string;
   palette?: string;
   /** Logos: the ones designed for this coach, above the curated grid. */

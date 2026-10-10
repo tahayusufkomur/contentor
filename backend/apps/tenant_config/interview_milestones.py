@@ -11,6 +11,7 @@ ponytail: a page fired while Home's plan call is still running plans again
 import json
 import logging
 import re
+import uuid
 
 from django.conf import settings
 from django.core.cache import cache
@@ -38,7 +39,7 @@ DRAFT_NEEDS = {
 DRAFT_OFFERS = {"course": ("course",), "event": ("live", "onsite"), "post": ("articles",)}
 # The review screen that shows each draft.
 REVIEW_FIELDS = {"course_review": "course", "event_review": "event"}
-LOGO_PAGE = 15  # + "just my name" = a full 4x4 grid
+LOGO_PAGE = 14  # + "just my name" + "upload my own" = a full 4x4 grid
 DEFAULT_TIER = "digital"
 
 
@@ -648,7 +649,8 @@ def logo_cards(tenant, answers: dict, page: int = 0) -> dict:
         "options": [
             {"value": str(r.pk), "label": r.title, "image_url": preview_url(r), "mark": mark_of(r)} for r in chunk
         ],
-        # Marks are previewed in the look the coach picked.
+        # Marks are previewed in the look the coach picked, beside her name.
+        "brand": tenant.name or "",
         "style": answers.get("style") or "",
         "palette": answers.get("palette") or "",
         "generated": generated_logos(tenant),
@@ -907,6 +909,16 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
     if field_id == "site_logo":
         if value == "wordmark":
             logo = {"mode": "wordmark", "curated_id": None}
+        elif str(value).startswith("upload:"):
+            from apps.media.models import Photo
+
+            try:
+                photo_id = str(uuid.UUID(str(value)[7:]))
+            except ValueError:
+                raise ChoiceError("unknown_logo") from None
+            if not Photo.objects.filter(pk=photo_id).exists():
+                raise ChoiceError("unknown_logo")
+            logo = {"mode": "upload", "photo_id": photo_id}
         elif str(value).startswith("gen:"):
             from .models import LogoCandidate
 

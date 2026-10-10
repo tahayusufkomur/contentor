@@ -21,6 +21,50 @@ interface CompleteResponse {
   signed_url: string;
 }
 
+/** One image into the media library (presign, PUT, complete), the
+ * percentage reported as it goes. */
+export async function uploadImage(
+  file: File,
+  onProgress?: (pct: number) => void,
+): Promise<CompleteResponse> {
+  const { upload_url, s3_key } = await clientFetch<PresignResponse>(
+    "/api/v1/upload/presign/",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        filename: file.name,
+        content_type: file.type,
+        category: "photo",
+      }),
+    },
+  );
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", upload_url);
+    xhr.setRequestHeader("Content-Type", file.type);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress)
+        onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () =>
+      xhr.status >= 200 && xhr.status < 300
+        ? resolve()
+        : reject(new Error(`Upload failed: ${xhr.status}`));
+    xhr.onerror = () => reject(new Error("Upload failed"));
+    xhr.send(file);
+  });
+  return clientFetch<CompleteResponse>("/api/v1/upload/complete/", {
+    method: "POST",
+    body: JSON.stringify({
+      s3_key,
+      category: "photo",
+      content_type: file.type,
+      file_size: file.size,
+      title: file.name.replace(/\.[^.]+$/, ""),
+    }),
+  });
+}
+
 /**
  * Logo upload — always a single file straight from the filesystem (no library
  * picker). On success it updates the config immediately (which autosaves) and
@@ -36,48 +80,7 @@ export function LogoUploader({ logoUrl, onChange }: LogoUploaderProps) {
       setProgress(0);
       setError(null);
       try {
-        const { upload_url, s3_key } = await clientFetch<PresignResponse>(
-          "/api/v1/upload/presign/",
-          {
-            method: "POST",
-            body: JSON.stringify({
-              filename: file.name,
-              content_type: file.type,
-              category: "photo",
-            }),
-          },
-        );
-
-        await new Promise<void>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open("PUT", upload_url);
-          xhr.setRequestHeader("Content-Type", file.type);
-          xhr.upload.onprogress = (e) => {
-            if (e.lengthComputable)
-              setProgress(Math.round((e.loaded / e.total) * 100));
-          };
-          xhr.onload = () =>
-            xhr.status >= 200 && xhr.status < 300
-              ? resolve()
-              : reject(new Error(`Upload failed: ${xhr.status}`));
-          xhr.onerror = () => reject(new Error("Upload failed"));
-          xhr.send(file);
-        });
-
-        const result = await clientFetch<CompleteResponse>(
-          "/api/v1/upload/complete/",
-          {
-            method: "POST",
-            body: JSON.stringify({
-              s3_key,
-              category: "photo",
-              content_type: file.type,
-              file_size: file.size,
-              title: file.name.replace(/\.[^.]+$/, ""),
-            }),
-          },
-        );
-
+        const result = await uploadImage(file, setProgress);
         onChange({ logo_url: result.signed_url, logo_id: result.photo_id });
       } finally {
         if (fileRef.current) fileRef.current.value = "";

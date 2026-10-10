@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Type } from "lucide-react";
+import { Check, Type, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ModalPortal } from "@/components/ui/modal-portal";
@@ -16,12 +16,15 @@ import {
   styleVars,
 } from "@/lib/site-styles";
 import { LogoMarkSvg } from "@/components/shared/logo-mark";
+import { uploadImage } from "@/components/owner/logo-uploader";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { BrowserFrame } from "./browser-frame";
 import { LookTile } from "./look-tile";
 import { SHELL_TOKENS } from "./tokens";
 
 const WORDMARK = "Just my name, as text";
+const UPLOADED = "My own logo";
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4";
 
 /** The look a style card stands for in a colourway: "journal:sage". */
@@ -452,7 +455,7 @@ export function LookCardsView({
           >
             {o.mark ? (
               <span
-                className="flex aspect-square w-full items-center justify-center p-[12%]"
+                className="flex aspect-square w-full items-center justify-center p-[16%]"
                 style={{ color: markColor }}
               >
                 <LogoMarkSvg
@@ -469,8 +472,13 @@ export function LookCardsView({
                 className="mx-auto aspect-square w-full rounded-lg object-contain"
               />
             )}
-            <span className="mt-2 block truncate text-center text-[13px]">
-              {o.label}
+            {/* Her name under the mark: the lockup her header will show. */}
+            <span
+              className="mt-2 block truncate text-center text-[13px] font-semibold"
+              style={{ color: shown.brand ? markColor : undefined }}
+              title={o.label}
+            >
+              {shown.brand || o.label}
             </span>
           </CardButton>
         ))}
@@ -488,6 +496,14 @@ export function LookCardsView({
             Just my name
           </span>
         </CardButton>
+        <UploadTile
+          picked={
+            chosen ? chosen.startsWith("upload:") : isPicked("", UPLOADED)
+          }
+          disabled={disabled}
+          onPick={onPick}
+          style={enter(shown.options.length + 1)}
+        />
       </div>
       {shown.more && (
         <Button
@@ -502,6 +518,76 @@ export function LookCardsView({
         </Button>
       )}
     </div>
+  );
+}
+
+/** "Upload my own": her file goes to the media library and becomes the
+ * pick, shown in the tile once it is up. */
+function UploadTile({
+  picked,
+  disabled,
+  onPick,
+  style,
+}: {
+  picked: boolean;
+  disabled?: boolean;
+  onPick: (value: string, label: string) => void;
+  style?: React.CSSProperties;
+}) {
+  const input = useRef<HTMLInputElement>(null);
+  const [src, setSrc] = useState<string | null>(null);
+  const { run: upload, loading } = useAsyncAction(
+    async (file: File) => {
+      try {
+        const { photo_id, signed_url } = await uploadImage(file);
+        setSrc(signed_url);
+        onPick(`upload:${photo_id}`, UPLOADED);
+      } finally {
+        if (input.current) input.current.value = "";
+      }
+    },
+    { errorToast: "Couldn’t upload your logo. Try again." },
+  );
+  return (
+    <>
+      <input
+        ref={input}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+        className="hidden"
+        aria-hidden
+        tabIndex={-1}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void upload(file);
+        }}
+      />
+      <CardButton
+        picked={picked}
+        disabled={disabled || loading}
+        onClick={() => input.current?.click()}
+        style={style}
+        className="p-3"
+      >
+        <span className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg bg-[var(--sf-tint)]">
+          {loading ? (
+            <Spinner className="text-[var(--sf-brass)]" />
+          ) : src ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={src}
+              alt={UPLOADED}
+              className="max-h-full w-full object-contain p-[12%]"
+            />
+          ) : (
+            <Upload className="size-8 text-[var(--sf-graphite)]" aria-hidden />
+          )}
+        </span>
+        <span className="mt-2 block text-center text-[13px]">
+          {loading ? "Uploading…" : "Upload my own"}
+        </span>
+      </CardButton>
+    </>
   );
 }
 

@@ -379,6 +379,12 @@ def apply_wizard_logo(config, answers, tenant) -> None:
         config.navbar_config = navbar
         return
 
+    if mode == "upload" and logo.get("photo_id"):
+        from apps.media.models import Photo
+
+        config.logo = Photo.objects.filter(pk=logo["photo_id"]).first()
+        return
+
     if mode != "curated" or not logo.get("curated_id"):
         return
 
