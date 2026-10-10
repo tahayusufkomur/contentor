@@ -204,6 +204,11 @@ export default function SignupVerifyPage() {
           <StateIcon variant="success">
             <CheckCircle2 className="h-6 w-6" />
           </StateIcon>
+          {resumeState === "closed" && (
+            <Button asChild size="lg" className="mt-7 w-full">
+              <a href="/login">{r("closedCta")}</a>
+            </Button>
+          )}
         </AuthShell>
       );
     }
