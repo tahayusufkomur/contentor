@@ -284,6 +284,7 @@ export function QuestionScreen({
                   disabled={sending}
                   delay={answersAt}
                   onMore={onMoreLogos}
+                  onKeep={() => proceed()}
                   onLogoMore={onLogoMore}
                   onPick={(value, label) =>
                     onDraft((d) => ({ ...d, card: { value, label } }))

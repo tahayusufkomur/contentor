@@ -111,6 +111,7 @@ export function LookCardsView({
   onPick,
   onMore,
   onLogoMore,
+  onKeep,
 }: {
   cards: LookCards;
   brandName: string;
@@ -123,6 +124,8 @@ export function LookCardsView({
   onMore: (page: number) => Promise<LookCards>;
   /** Starts three more generated logos (the parent refreshes the card). */
   onLogoMore?: () => Promise<LookCards>;
+  /** "Keep this look" in the preview: the picked look is the answer. */
+  onKeep: () => void;
 }) {
   const [shown, setShown] = useState<LookCards>(cards);
   // A look with a page behind it opens as that page on pick.
@@ -135,24 +138,16 @@ export function LookCardsView({
   const [tag, setTag] = useState("");
   const paletteFor = (o: LookOption) =>
     palettes[o.value] ?? pickedPalette(o, chosen, selected) ?? "";
-  // The guide's pick is selected and opened as a page the first time the
-  // coach lands on the question; "See other looks" returns to the grid.
+  // The guide's pick is selected the first time the coach lands on the
+  // question; tapping any look opens it as a page.
   const picked = useRef(false);
-  const [auto, setAuto] = useState<LookOption | null>(null);
   useEffect(() => {
     const pick = shown.options.find((o) => o.recommended);
     if (picked.current || shown.kind !== "style" || !pick) return;
     if (selected || chosen) return;
     picked.current = true;
     onPick(pick.value, lookLabel(pick, ""));
-    setAuto(pick);
   }, [shown, selected, chosen, onPick]);
-  const hasPreview = !!shown.preview;
-  useEffect(() => {
-    if (!auto || !hasPreview) return;
-    const t = setTimeout(() => setPreview(auto), delay + 500);
-    return () => clearTimeout(t);
-  }, [auto, hasPreview, delay]);
   const { run: more, loading } = useAsyncAction(
     async () => setShown(await onMore((shown.page ?? 0) + 1)),
     { errorToast: "Couldn’t load more logos. Try again." },
@@ -337,6 +332,7 @@ export function LookCardsView({
             host={host ?? ""}
             onPalette={(p) => pickLook(preview, p)}
             onClose={() => setPreview(null)}
+            onKeep={onKeep}
           />
         )}
       </div>
@@ -514,6 +510,7 @@ function LookPreview({
   host,
   onPalette,
   onClose,
+  onKeep,
 }: {
   look: LookOption;
   cards: LookCards;
@@ -521,30 +518,17 @@ function LookPreview({
   host: string;
   onPalette: (palette: string) => void;
   onClose: () => void;
+  onKeep: () => void;
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-  // The answers sit above Continue: once the page is back, bring it into view.
+  // Keeping the look is the answer: send it and move on.
   const keep = () => {
     onClose();
-    // Scroll the guide's own panel only: scrollIntoView would also move the
-    // overflow-hidden shell above it, hiding the header with no way back.
-    requestAnimationFrame(() => {
-      const target = document.getElementById("setup-continue");
-      const box = target?.closest<HTMLElement>(
-        '[aria-label="Your setup guide"]',
-      );
-      if (!target || !box) return;
-      const t = target.getBoundingClientRect();
-      const b = box.getBoundingClientRect();
-      box.scrollTo({
-        top: box.scrollTop + t.top - b.top - (b.height - t.height) / 2,
-        behavior: "smooth",
-      });
-    });
+    onKeep();
   };
   const subject = cards.preview?.subject;
   const words = {
