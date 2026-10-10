@@ -24,6 +24,7 @@ import {
   showBrandName,
   showSubscribeButton,
   visibleNavLinks,
+  type SiteMenu,
 } from "@/lib/navbar";
 import { usePublishTopnavClearance } from "@/lib/topnav-clearance";
 
@@ -217,6 +218,7 @@ export function PublicHeader({
   communityEnabled,
   communityUnread,
   blogEnabled,
+  menu,
 }: {
   user?: User | null;
   hasSubscription?: boolean;
@@ -225,6 +227,8 @@ export function PublicHeader({
   communityEnabled?: boolean;
   communityUnread?: boolean;
   blogEnabled?: boolean;
+  /** Which pages have something behind them (absent: show every link). */
+  menu?: SiteMenu;
 }) {
   const config = useTenant();
   const router = useRouter();
@@ -251,6 +255,7 @@ export function PublicHeader({
   const allNavLinks = visibleNavLinks(
     navbar?.links?.length ? navbar.links : FALLBACK_LINKS,
     plansEnabled,
+    menu,
   );
   const navLinks = user
     ? allNavLinks.filter((link) => !SIGNED_IN_HIDDEN.has(link.href))

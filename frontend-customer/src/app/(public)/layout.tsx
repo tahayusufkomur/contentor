@@ -11,6 +11,7 @@ import { EditSidebar } from "@/components/owner/edit-sidebar";
 import { SiteAssistantBubble } from "@/components/assistant/site-assistant-bubble";
 import { CopilotBubble } from "@/components/copilot/copilot-bubble";
 import type { SubscriptionPlan } from "@/types/billing";
+import type { SiteMenu } from "@/lib/navbar";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,11 @@ export default async function PublicLayout({
     hasSubscription = Boolean(user) && plans.some((p) => p.is_subscribed);
   } catch {}
 
+  // Courses and Events links hide when nothing is behind them; fail open.
+  const menu = await serverFetch<SiteMenu>("/api/v1/site/menu/").catch(
+    () => undefined,
+  );
+
   const posts = await fetchPublishedPosts();
   const blogEnabled = posts.length > 0;
 
@@ -53,6 +59,7 @@ export default async function PublicLayout({
         user={embed ? null : user}
         hasSubscription={hasSubscription}
         plansEnabled={plansEnabled}
+        menu={menu}
         blogEnabled={blogEnabled}
       />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 md:px-6">

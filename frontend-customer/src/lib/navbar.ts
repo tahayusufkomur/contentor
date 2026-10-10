@@ -33,13 +33,26 @@ export function showBrandName(
   return config.navbar_config?.show_brand_name === true;
 }
 
-/** The coach's own nav links, minus "/plans" when the tenant sells no
- * subscription plans (it would land on "No plans available"). */
+/** Which public pages have something behind them (GET /api/v1/site/menu/). */
+export interface SiteMenu {
+  courses: boolean;
+  events: boolean;
+}
+
+/** The coach's own nav links, minus any that would land on an empty page:
+ * "/plans" when the tenant sells no subscription plans, Courses with no
+ * published course, Events and Calendar with no upcoming class. Without
+ * ``menu`` (its fetch failed) those links stay. */
 export function visibleNavLinks<T extends { href: string }>(
   links: T[],
   plansEnabled: boolean,
+  menu?: SiteMenu,
 ): T[] {
-  return plansEnabled ? links : links.filter((l) => l.href !== "/plans");
+  const empty = new Set<string>(plansEnabled ? [] : ["/plans"]);
+  if (menu && !menu.courses) empty.add("/courses");
+  if (menu && !menu.events)
+    ["/events", "/calendar"].forEach((h) => empty.add(h));
+  return links.filter((l) => !empty.has(l.href));
 }
 
 /** The Subscribe/Plans button is for students of a tenant that has plans;

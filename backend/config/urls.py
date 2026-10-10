@@ -11,6 +11,7 @@ from apps.billing.views.webhooks import stripe_webhook
 from apps.core.views import health_check
 from apps.live import urls as live_urls
 from apps.live.webhooks import livecraft_webhook
+from apps.tenant_config.views import site_menu
 
 
 def admin_auto_login(request):
@@ -90,6 +91,8 @@ urlpatterns = [
     path("api/v1/zoom-classes/", include((live_urls.zoom_patterns, "zoom_classes"))),
     path("api/v1/onsite-events/", include((live_urls.onsite_patterns, "onsite_events"))),
     path("api/v1/calendar/", include((live_urls.calendar_patterns, "calendar"))),
+    # Which public pages have content, so the menu hides empty ones.
+    path("api/v1/site/menu/", site_menu, name="site-menu"),
     path("api/v1/photos/", include("apps.media.urls")),
     path("api/v1/billing/", include("apps.billing.urls")),
     path("api/v1/domains/", include("apps.domains.urls")),

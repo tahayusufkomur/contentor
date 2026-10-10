@@ -395,3 +395,22 @@ def help_bot_human_request(request):
         except Exception:
             logger.exception("help bot: human-request email failed")
     return Response({"ok": True})
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def site_menu(request):
+    """Which public pages have something behind them, so the menu never links
+    to an empty one (a Courses link with no courses, Events with no class)."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.courses.models import Course
+    from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
+
+    since = timezone.now() - timedelta(hours=12)  # a class earlier today still counts
+    events = any(
+        m.objects.filter(scheduled_at__gte=since).exists() for m in (LiveClass, ZoomClass, OnsiteEvent, LiveStream)
+    )
+    return Response({"courses": Course.objects.filter(is_published=True).exists(), "events": events})

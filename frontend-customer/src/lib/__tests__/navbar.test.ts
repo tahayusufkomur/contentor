@@ -51,6 +51,23 @@ describe("visibleNavLinks", () => {
     ]);
     expect(visibleNavLinks(links, true)).toHaveLength(2);
   });
+  it("hides Courses and the class pages with nothing behind them", () => {
+    const all = [
+      ...links,
+      { label: "Events", href: "/events" },
+      { label: "Calendar", href: "/calendar" },
+      { label: "About", href: "/about" },
+    ];
+    const hrefs = (menu: { courses: boolean; events: boolean }) =>
+      visibleNavLinks(all, true, menu).map((l) => l.href);
+    expect(hrefs({ courses: false, events: false })).toEqual([
+      "/plans",
+      "/about",
+    ]);
+    expect(hrefs({ courses: true, events: true })).toHaveLength(5);
+    // Unknown (the menu fetch failed): every link stays.
+    expect(visibleNavLinks(all, true)).toHaveLength(5);
+  });
 });
 
 describe("showSubscribeButton", () => {
