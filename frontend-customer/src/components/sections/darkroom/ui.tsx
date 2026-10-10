@@ -13,11 +13,11 @@ export const WRAP = "mx-auto w-full max-w-[96rem] px-4 md:px-8";
 /** Display sizes (Syne). Size before leading on purpose (tailwind-merge
  *  drops a leading-* that precedes a text-* size). */
 export const H1 =
-  "font-display font-bold text-balance break-words tracking-[-0.025em] text-[clamp(2.2rem,1.1rem+3.8vw,5rem)] leading-[1.0]";
+  "font-display font-bold text-balance break-words hyphens-auto tracking-[-0.025em] text-[clamp(2.2rem,1.1rem+3.8vw,5rem)] leading-[1.0]";
 export const H2 =
-  "font-display font-bold text-balance break-words tracking-[-0.02em] text-[clamp(1.7rem,1.25rem+1.9vw,3.1rem)] leading-[1.04]";
+  "font-display font-bold text-balance break-words hyphens-auto tracking-[-0.02em] text-[clamp(1.7rem,1.25rem+1.9vw,3.1rem)] leading-[1.04]";
 export const H3 =
-  "font-display font-bold text-balance break-words tracking-[-0.015em]";
+  "font-display font-bold text-balance break-words hyphens-auto tracking-[-0.015em]";
 
 /** Mono caps: plate numbers, dates, editions, column titles. */
 export const LABEL =

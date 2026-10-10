@@ -33,7 +33,7 @@ export function CtaPrivateView({ block, editable }: SectionProps) {
             editable={editable}
             as="h2"
             placeholder="Heading"
-            className="mt-5 block max-w-[18ch] text-balance break-words font-display text-[clamp(2rem,1.4rem+2.6vw,4rem)] font-bold leading-[1.02] tracking-[-0.02em]"
+            className="mt-5 block max-w-[18ch] text-balance break-words hyphens-auto font-display text-[clamp(2rem,1.4rem+2.6vw,4rem)] font-bold leading-[1.02] tracking-[-0.02em]"
           />
           <Txt
             block={block}

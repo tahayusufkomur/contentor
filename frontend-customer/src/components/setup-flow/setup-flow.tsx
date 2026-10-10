@@ -463,7 +463,7 @@ function Flow({
           </NavButton>
           <div className="min-w-0 flex-1 px-1">
             <div className="flex items-baseline justify-between gap-3 text-[12px] text-[var(--sf-faint)]">
-              <span className="truncate font-medium text-[var(--sf-graphite)]">
+              <span className="hidden truncate font-medium text-[var(--sf-graphite)] sm:inline">
                 {brandName}
               </span>
               <span className="shrink-0">

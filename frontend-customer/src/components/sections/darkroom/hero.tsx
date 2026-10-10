@@ -175,7 +175,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
             editable={editable}
             as="h1"
             placeholder="Page title"
-            className="mt-5 block max-w-[18ch] text-balance break-words font-display text-[clamp(2.2rem,1.3rem+3.2vw,4.6rem)] font-bold leading-[1.0] tracking-[-0.025em]"
+            className="mt-5 block max-w-[18ch] text-balance break-words hyphens-auto font-display text-[clamp(2.2rem,1.3rem+3.2vw,4.6rem)] font-bold leading-[1.0] tracking-[-0.025em]"
           />
           <Txt
             block={block}

@@ -228,13 +228,23 @@ export function LookCardsView({
               photos={shown.photos}
               copy={shown.preview?.copy}
             />
-            <span className="flex items-center justify-between gap-2 border-t border-[var(--sf-line)] px-3.5 py-2.5">
+            {/* On a phone the colour dots sit under the text, not beside it. */}
+            <span className="flex items-center justify-between gap-2 border-t border-[var(--sf-line)] px-3.5 pb-11 pt-2.5 sm:py-2.5">
               <span className="min-w-0">
-                <span className="block truncate text-[14px] font-semibold">
-                  {o.label}
+                {/* The badge sits by the name: on the picture it covered
+                    the coach's own brand name. */}
+                <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                  <span className="max-w-full shrink-0 truncate text-[14px] font-semibold">
+                    {o.label}
+                  </span>
+                  {o.recommended && (
+                    <span className="shrink-0 rounded-full bg-[var(--sf-brass-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--sf-brass)]">
+                      Suggested
+                    </span>
+                  )}
                 </span>
                 {o.detail && (
-                  <span className="block truncate text-[12px] text-[var(--sf-graphite)]">
+                  <span className="line-clamp-2 text-[12px] leading-snug text-[var(--sf-graphite)]">
                     {o.detail}
                   </span>
                 )}
@@ -243,17 +253,12 @@ export function LookCardsView({
               <span
                 aria-hidden
                 style={{
-                  width: `${(o.palettes?.length ?? 0) * 26}px`,
+                  width: `${(o.palettes?.length ?? 0) * 30}px`,
                 }}
-                className="shrink-0"
+                className="hidden shrink-0 sm:block"
               />
             </span>
           </CardButton>
-          {o.recommended && (
-            <span className="pointer-events-none absolute left-2.5 top-2.5 rounded-full bg-[var(--sf-brass-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--sf-brass)]">
-              Suggested
-            </span>
-          )}
           <Swatches
             option={o}
             value={palette}
