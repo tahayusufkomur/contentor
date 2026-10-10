@@ -10,7 +10,6 @@ import { ModalPortal } from "@/components/ui/modal-portal";
 import { PageState } from "@/components/ui/page-state";
 import { Spinner } from "@/components/ui/spinner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { useNavigate } from "@shared/navigation/navigation-provider";
 import { executeCopilotAction, undoCopilotAction } from "@/lib/copilot/api";
 import { isUndoableKind, runBundle } from "@/lib/copilot/state";
 import {
@@ -177,7 +176,6 @@ function Flow({
   email: string;
   host: string;
 }) {
-  const navigate = useNavigate();
   const narrow = useNarrow();
   const iv = flow.interview;
   // The live guide keeps what only a turn's reply carries (the status line).
@@ -644,7 +642,14 @@ function Flow({
       >
         <PreviewPane end={toggle}>{frame}</PreviewPane>
         {celebrate && (
-          <Celebration brandName={brandName} host={host} onGo={navigate} />
+          // A full load, never an in-app move: the site's colours, fonts and
+          // header are set when a page loads, and the look picked during
+          // setup is not the one this page loaded with.
+          <Celebration
+            brandName={brandName}
+            host={host}
+            onGo={(href) => window.location.assign(href)}
+          />
         )}
       </main>
       <GoLivePanel

@@ -117,28 +117,45 @@ export function finishedNotes(
 }
 
 // Mirrors interview_brief.SOCIALS / social_url (pinned by the same table in
-// test_interview_brief.py): a handle, or a link on that network.
-const SOCIAL_HOSTS: Record<string, string> = {
-  instagram: "instagram\\.com",
-  youtube: "youtube\\.com|youtu\\.be",
-  tiktok: "tiktok\\.com",
-  facebook: "facebook\\.com|fb\\.com",
-  x: "x\\.com|twitter\\.com",
-  linkedin: "linkedin\\.com",
+// test_interview_brief.py): a handle, or a link on that network's own site.
+// Per network: the hosts it answers to, and where a handle's profile lives.
+const SOCIALS: Record<string, [hosts: string, profile: string]> = {
+  instagram: ["instagram\\.com", "instagram.com/"],
+  youtube: ["youtube\\.com|youtu\\.be", "youtube.com/@"],
+  tiktok: ["tiktok\\.com", "tiktok.com/@"],
+  facebook: ["facebook\\.com|fb\\.com", "facebook.com/"],
+  x: ["x\\.com|twitter\\.com", "x.com/"],
+  linkedin: ["linkedin\\.com", "linkedin.com/in/"],
 };
+// A bare site ("facebook.com") is not a handle on any network.
+const SITE = /^(?:www\.)?[\w-]+\.(?:com|net|org|io|co|me|tv|be|app)$/i;
+
+/** Where a network's profiles live: "instagram.com/". */
+export const socialSite = (network: string): string =>
+  SOCIALS[network.toLowerCase()]?.[1] ?? "";
+
+/** The profile a handle or link means on a network ("instagram.com/mira"),
+ * or null when the server will not take it: a link to another site, a site
+ * with no profile after it, or words with spaces. */
+export function socialLink(network: string, raw: string): string | null {
+  const known = SOCIALS[network.toLowerCase()];
+  const text = raw.trim().replace(/[.,;]+$/, "");
+  if (!known || !text) return null;
+  const [hosts, profile] = known;
+  if (
+    new RegExp(
+      `^(?:https?://)?(?:[\\w-]+\\.)?(?:${hosts})/\\S{1,200}$`,
+      "i",
+    ).test(text)
+  )
+    return text.replace(/^https?:\/\//i, "");
+  if (SITE.test(text) || !/^@?[\p{L}\p{N}_.-]{1,60}$/u.test(text)) return null;
+  return profile + text.replace(/^@/, "");
+}
 
 /** Whether the server will take this handle or link for a network ("Instagram"). */
-export function socialOk(network: string, raw: string): boolean {
-  const host = SOCIAL_HOSTS[network.toLowerCase()];
-  const text = raw.trim().replace(/[.,;]+$/, "");
-  if (!host || !text) return false;
-  return (
-    new RegExp(
-      `^(?:https?://)?(?:[\\w-]+\\.)?(?:${host})/\\S{1,200}$`,
-      "i",
-    ).test(text) || /^@?[\p{L}\p{N}_.-]{1,60}$/u.test(text)
-  );
-}
+export const socialOk = (network: string, raw: string): boolean =>
+  socialLink(network, raw) !== null;
 
 /** Contact ways that need a detail, as interview_brief.CONTACT_DETAILS. */
 export const CONTACT_DETAILS: Record<string, "email" | "phone"> = {
@@ -216,6 +233,7 @@ export function questionSteps(
           plan,
           contact,
           prefill,
+          timezone,
         } = e;
         const answer = asked.get(e.field)?.answer;
         asked.set(e.field, {
@@ -238,6 +256,7 @@ export function questionSteps(
           plan,
           contact,
           prefill,
+          timezone,
           answer,
         });
         onScreen = e.field;
@@ -269,6 +288,8 @@ export const SECTIONS: { label: string; fields: string[] }[] = [
   {
     label: "Pricing & content",
     fields: [
+      "timezone",
+      "currency",
       "payments",
       "memberships",
       "course_topic",
@@ -383,9 +404,18 @@ export function scheduleValid(mode: ScheduleMode, s: Schedule): boolean {
     : !!s.start && !!s.slots?.length && s.slots.every(slotReady);
 }
 
-/** The timezone the browser is in: the default for a class schedule. */
+/** The timezone the browser is in: where the time-zone question opens. */
 export const browserTimeZone = () =>
   Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+/** Every timezone the browser knows, ``current`` first when it is not on the list. */
+export function timeZones(current: string): string[] {
+  const intl = Intl as unknown as {
+    supportedValuesOf?: (key: string) => string[];
+  };
+  const all = intl.supportedValuesOf?.("timeZone") ?? [];
+  return all.includes(current) ? all : [current, ...all];
+}
 
 /** The schedule as the coach would say it: "Tuesdays and Thursdays at
  * 6:30 PM, from 12 Oct to 7 Dec 2026", or "Tuesday 13 Oct 2026 at 6:30 PM".

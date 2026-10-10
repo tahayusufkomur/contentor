@@ -383,15 +383,51 @@ def test_choose_schedule_validates_and_sets_the_summary(tenant_ctx, config):
     assert "the first one on 2026-10-13T18:30" in prompt
 
 
-def test_a_schedule_timezone_becomes_the_site_timezone(tenant_ctx, config):
-    answers = {"delegated": ["live_when"]}
+def test_the_time_zone_answer_is_the_sites_and_a_schedule_never_carries_its_own(tenant_ctx, config):
+    answers = {"delegated": []}
+    ms.choose(tenant_ctx, answers, "timezone", "Europe/Istanbul")
     ms.choose(
         tenant_ctx,
         answers,
         "live_when",
-        '{"mode": "recurring", "start": "2026-10-12", "days": [2], "times": ["18:30"], "tz": "Europe/Istanbul"}',
+        '{"mode": "recurring", "start": "2026-10-12", "days": [2], "times": ["18:30"], "tz": "America/Lima"}',
     )
+    ms.sync_site(tenant_ctx, answers)
+    assert answers["timezone"] == "Europe/Istanbul"
+    assert "tz" not in answers["live_schedule"]
     assert TenantConfig.objects.first().timezone == "Europe/Istanbul"
+    assert ms.first_class_at(answers).isoformat() == "2026-10-13T18:30:00+03:00"
+    with pytest.raises(ms.ChoiceError):
+        ms.choose(tenant_ctx, answers, "timezone", "Mars/Olympus")
+
+
+def test_the_currency_answer_is_what_the_coach_charges_in_until_money_moves(tenant_ctx, config, owner):
+    from apps.billing.models import Payment, SubscriptionPlan
+    from apps.core.models import Tenant
+
+    was = tenant_ctx.billing_currency
+    plan = SubscriptionPlan.objects.create(name="Digital", price=Decimal("9.00"), stripe_price_id="price_usd")
+    try:
+        ms.sync_site(tenant_ctx, {"currency": "EUR"})
+        assert Tenant.objects.get(pk=tenant_ctx.pk).billing_currency == "EUR"
+        plan.refresh_from_db()
+        assert (plan.currency, plan.stripe_price_id) == ("EUR", "")
+        assert brief.money(9) == "€9"
+        # A student has paid in euros: the currency stays.
+        Payment.objects.create(
+            student=owner,
+            payment_type="one_time",
+            status="completed",
+            amount=Decimal("9.00"),
+            platform_fee=Decimal("0"),
+            submerchant_payout=Decimal("9.00"),
+            currency="EUR",
+            provider="bypass",
+        )
+        assert ms.apply_currency(tenant_ctx, "USD") is False
+        assert Tenant.objects.get(pk=tenant_ctx.pk).billing_currency == "EUR"
+    finally:
+        tenant_ctx.billing_currency = was  # the row rolls back; the shared object would not
 
 
 def test_a_weekly_schedule_dates_the_draft_and_expands_at_go_live(tenant_ctx, config, owner):

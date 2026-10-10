@@ -139,11 +139,11 @@ NAV = (
 
 
 def sync_site(tenant, answers: dict) -> None:
-    """Modules, header links and social accounts follow what the coach said:
-    classes turn on the live module and add an Events link (and a Calendar
-    link when they want it in the navbar, laid out the way they picked), a
-    membership a Pricing link, social accounts header icons. Additive only
-    for links, and written only when something changes."""
+    """Modules, header links, social accounts, the time zone and the currency
+    follow what the coach said: classes turn on the live module and add an
+    Events link (and a Calendar link when they want it in the navbar, laid out
+    the way they picked), a membership a Pricing link, social accounts header
+    icons. Additive only for links, and written only when something changes."""
     from apps.core.onboarding.compose import ALWAYS_MODULES, GOAL_MODULES
 
     modules = set(ALWAYS_MODULES).union(*(GOAL_MODULES.get(g, ()) for g in answers.get("goals") or []))
@@ -157,6 +157,8 @@ def sync_site(tenant, answers: dict) -> None:
     order = [href for href, _ in NAV]
     socials = brief.parse_socials(answers.get("socials"))
     view = answers.get("calendar_view") if answers.get("calendar_view") in CALENDAR_IDS else None
+    zone = answers.get("timezone")
+    apply_currency(tenant, answers.get("currency"))
     with transaction.atomic():
         cfg = TenantConfig.objects.select_for_update().first()
         if cfg is None:
@@ -177,8 +179,10 @@ def sync_site(tenant, answers: dict) -> None:
             **({"show_social": True} if socials else {}),
             **({"cta": {**cta, "href": "/events" if runs_classes else "/about"}} if retarget else {}),
         }
+        rezone = bool(zone) and cfg.timezone != zone
         if (
             not missing
+            and not rezone
             and enabled == sorted(cfg.enabled_modules or [])
             and social == (cfg.social_links or {})
             and all(nav.get(k) == v for k, v in extra.items())
@@ -191,8 +195,41 @@ def sync_site(tenant, answers: dict) -> None:
         cfg.navbar_config = {**nav, "links": links, **extra}
         cfg.enabled_modules = enabled
         cfg.social_links = social
-        cfg.save(update_fields=["navbar_config", "enabled_modules", "social_links"])
+        cfg.timezone = zone or cfg.timezone
+        cfg.save(update_fields=["navbar_config", "enabled_modules", "social_links", "timezone"])
     _bust(tenant)
+    if rezone:
+        apply_schedule(tenant)  # a class already drafted keeps its hour in the new zone
+
+
+def apply_currency(tenant, code) -> bool:
+    """The currency the coach picked becomes the one she charges in, and the
+    memberships already set up follow. Only while no money has moved in the
+    old one: once she has bought a plan or a student has paid, it stays. Every
+    other write of Tenant.billing_currency is refused by its pre_save guard;
+    this is the one door past it."""
+    from django.db import connection
+
+    from apps.billing.models import Bundle, Payment, Subscription, SubscriptionPlan
+    from apps.core.constants import CURRENCY_CHOICES
+    from apps.core.models import PlatformSubscription, Tenant
+
+    if code not in dict(CURRENCY_CHOICES) or code == tenant.billing_currency:
+        return False
+    bought = PlatformSubscription.objects.filter(tenant=tenant, provider=PlatformSubscription.PROVIDER_STRIPE)
+    if bought.exists() or Payment.objects.exists() or Subscription.objects.exists():
+        return False
+    Tenant.objects.filter(pk=tenant.pk).update(billing_currency=code)
+    for known in (tenant, getattr(connection, "tenant", None)):
+        if getattr(known, "pk", None) == tenant.pk:
+            known.billing_currency = code
+    # A Stripe price made in the old currency is never reused.
+    SubscriptionPlan.objects.update(
+        currency=code, stripe_price_id="", stripe_price_amount_cents=0, stripe_price_interval_months=0
+    )
+    Bundle.objects.update(currency=code)
+    _bust(tenant)
+    return True
 
 
 # ── drafts ───────────────────────────────────────────────────────────────────
@@ -815,13 +852,8 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         if picked is None:
             raise ChoiceError("invalid_schedule")
         brief.apply_fact(answers, field_id, schedule.summary(picked))
-        answers["live_schedule"] = picked
-        # The timezone the coach picked is the site's: class times and the calendar use it.
-        config = TenantConfig.objects.first()
-        if picked.get("tz") and config and config.timezone != picked["tz"]:
-            config.timezone = picked["tz"]
-            config.save(update_fields=["timezone"])
-            _bust(tenant)
+        # Class times are in the site's time zone, which has its own question.
+        answers["live_schedule"] = {k: v for k, v in picked.items() if k != "tz"}
         return
     if field is not None and field.kind == "contact" and isinstance(value, str) and value.lstrip().startswith("{"):
         # Picked ways with their details: {"Email": "...", "WhatsApp": "...", "Contact form": ""}.

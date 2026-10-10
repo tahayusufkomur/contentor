@@ -65,7 +65,9 @@ test("signup lands in /setup and the interview ends in a published site", async 
   const tile = guide.locator("h1 ~ div.grid > button").first();
   const cont = guide.getByRole("button", { name: /^Continue/ });
   // The social-accounts question wants a handle for each network ticked.
-  const handles = guide.getByPlaceholder("@yourname or a link");
+  const handles = guide.getByPlaceholder(/yourname or @yourname$/);
+  // The time-zone question opens on the browser's own zone: Continue takes it.
+  const zone = guide.getByLabel("Time zone");
   // A drafted course or class to approve.
   const looksGood = guide.getByRole("button", { name: "Looks good, continue" });
   const goLive = guide.getByRole("button", { name: "Go live", exact: true });
@@ -85,7 +87,7 @@ test("signup lands in /setup and the interview ends in a published site", async 
       return "I completed a 200-hour yoga teacher training in 2019.";
     return "Whatever you think fits best";
   };
-  const action = decide.or(looksGood).or(goLive).or(makeFree).or(tile);
+  const action = decide.or(looksGood).or(goLive).or(makeFree).or(tile).or(zone);
   for (let i = 0; i < 40; i++) {
     // Wait for the work in flight to finish, then for the next screen's controls.
     await busy.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
@@ -112,6 +114,10 @@ test("signup lands in /setup and the interview ends in a published site", async 
     }
     if (await decide.isVisible()) {
       await decide.click();
+      continue;
+    }
+    if (await zone.isVisible()) {
+      await cont.click();
       continue;
     }
     if (await tile.isVisible()) {

@@ -2,6 +2,7 @@
 
 import pytest
 
+from apps.core.constants import CURRENCY_CHOICES
 from apps.core.models import Tenant
 from apps.tenant_config import interview_brief as brief
 
@@ -396,8 +397,29 @@ def test_parse_price_takes_the_number_over_free(raw, price):
         ("x", "twitter.com/mira", True),
         ("tiktok", "", False),
         ("instagram", "mira.yoga.", True),
+        # A link has to be on the network's own site, with a profile after it.
+        ("instagram", "instagram.com/mira.yoga", True),
+        ("instagram", "facebook.com/mira", False),
+        ("instagram", "https://tiktok.com/@mira", False),
+        ("instagram", "instagram.com", False),
+        ("instagram", "www.facebook.com", False),
     ],
 )
 def test_social_url_table_the_browser_mirrors(network, raw, ok):
     """Review focus 5: lib/interview.ts socialOk runs the same table."""
     assert (brief.social_url(network, raw) is not None) is ok
+
+
+def test_time_zone_and_currency_are_read_from_a_pick_or_the_coachs_words():
+    assert brief.coerce("timezone", "Europe/Berlin") == "Europe/Berlin"
+    assert brief.coerce("timezone", "new york") == "America/New_York"
+    assert brief.coerce("timezone", "somewhere warm") is None
+    assert brief.coerce("currency", "Euro (€)") == "EUR"
+    assert brief.coerce("currency", "US Dollar ($)") == "USD"
+    assert brief.coerce("currency", "dollars please") == "USD"
+    assert brief.coerce("currency", "gold") is None
+    # Both are asked of every coach, right before how students pay.
+    ids = [f.id for f in brief.required({})]
+    assert ids[ids.index("payments") - 2 : ids.index("payments")] == ["timezone", "currency"]
+    assert {"timezone", "currency"} <= set(brief.FIXED_KINDS)
+    assert set(brief.CURRENCIES) == {code for code, _ in CURRENCY_CHOICES}

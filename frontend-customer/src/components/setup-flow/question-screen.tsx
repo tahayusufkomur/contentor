@@ -18,6 +18,7 @@ import {
   scheduleValid,
   socialOk,
   tileIcons,
+  timeZones,
   withNote,
   type QuestionStep,
 } from "@/lib/interview";
@@ -42,9 +43,6 @@ import { SchedulePicker } from "./schedule-picker";
 import { SocialsPicker } from "./socials-picker";
 
 export type { StepDraft };
-
-/** The questions where "All of them" makes sense. */
-const ALL_OK = ["offers", "payments"];
 
 /** One interview question on the whole screen: big answer tiles (any number
  * of them on a multi question), "Pick for me", or a typed or dictated answer.
@@ -96,10 +94,17 @@ export function QuestionScreen({
   const ticked = draft.ticked ?? picked;
   const review = isReview(cards) ? cards : null;
   const looks = cards && !isReview(cards) ? cards : null;
-  // A typed answer (not a tile, a card or "you decide") goes back in the
-  // box, and so does the note sent with picked tiles.
+  // A time-zone question: the browser's own zone, or the one picked before.
+  const said = step.answer?.split("\n")[0] ?? "";
+  const zoneWas =
+    step.timezone && !live && said.includes("/") ? said : undefined;
+  const zone = step.timezone
+    ? (draft.zone ?? zoneWas ?? browserTimeZone())
+    : null;
+  // A typed answer (not a tile, a card, a picked zone or "you decide") goes
+  // back in the box, and so does the note sent with picked tiles.
   const typed =
-    live || cards || !step.answer || step.answer === DELEGATE_TEXT
+    live || cards || zoneWas || !step.answer || step.answer === DELEGATE_TEXT
       ? ""
       : picked.length
         ? noteOf(step.answer)
@@ -109,7 +114,9 @@ export function QuestionScreen({
   const changed =
     (draft.card
       ? draft.card.label !== step.answer
-      : ticked.join("\n") !== picked.join("\n")) || note !== typed.trim();
+      : zone
+        ? zone !== zoneWas
+        : ticked.join("\n") !== picked.join("\n")) || note !== typed.trim();
   // A schedule question: the tile picks weekly or one-time, the picker the dates.
   const mode: ScheduleMode = ticked[0] === "One-time" ? "once" : "recurring";
   const sched = step.schedule
@@ -138,7 +145,7 @@ export function QuestionScreen({
           : details
             ? ticked.length > 0 &&
               ways.every((w) => contactOk(w, details[w] ?? ""))
-            : ticked.length > 0 || !!note;
+            : ticked.length > 0 || !!zone || !!note;
   // A turn can take a while when the model is busy; say so honestly.
   const [slow, setSlow] = useState(false);
   useEffect(() => {
@@ -200,11 +207,7 @@ export function QuestionScreen({
             message: scheduleSummary(mode, sched),
             choice: {
               field,
-              value: JSON.stringify({
-                mode,
-                ...sched,
-                tz: sched.tz || browserTimeZone(),
-              }),
+              value: JSON.stringify({ mode, ...sched }),
             },
           }
         : socials && field
@@ -236,7 +239,9 @@ export function QuestionScreen({
                   message: draft.card.label,
                   choice: { field, value: draft.card.value },
                 }
-              : { message: ticked.join(", ") };
+              : zone && field
+                ? { message: zone, choice: { field, value: zone } }
+                : { message: ticked.join(", ") };
     send({ ...pick, message: withNote(pick.message, words), spoken });
   };
   // Slide choreography: the words of the question land one by one, then
@@ -475,11 +480,31 @@ export function QuestionScreen({
                 </div>
               )}
 
+              {zone && (
+                <select
+                  aria-label="Time zone"
+                  value={zone}
+                  disabled={sending}
+                  onChange={(e) =>
+                    onDraft((d) => ({ ...d, zone: e.target.value }))
+                  }
+                  className="mt-8 h-12 w-full max-w-[420px] rounded-xl border border-[var(--sf-line-strong)] bg-white px-3 text-[15.5px] font-medium text-[var(--sf-ink)] outline-none transition-[border-color,box-shadow] focus:border-[var(--sf-ink)] focus:shadow-[0_0_0_3px_var(--sf-brass-soft)] disabled:opacity-50 motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both]"
+                  style={{ animationDelay: `${answersAt}ms` }}
+                >
+                  {timeZones(zone).map((z) => (
+                    <option key={z} value={z}>
+                      {z.replaceAll("_", " ")}
+                    </option>
+                  ))}
+                </select>
+              )}
+
               {sched && ticked.length > 0 && (
                 <SchedulePicker
                   key={mode}
                   mode={mode}
                   value={sched}
+                  zone={builder?.answers.timezone}
                   onChange={(s) => onDraft((d) => ({ ...d, schedule: s }))}
                   disabled={sending}
                   className="mt-4 motion-safe:animate-[sf-pop_.6s_var(--sf-spring)_both]"
@@ -503,6 +528,7 @@ export function QuestionScreen({
                       ? "That doesn’t look like an email address."
                       : "Add the number with its country code, like +49 170 1234567."
                   }
+                  reads={() => null}
                   className="mt-4 motion-safe:animate-[sf-pop_.6s_var(--sf-spring)_both]"
                 />
               )}
@@ -530,7 +556,7 @@ export function QuestionScreen({
                   </p>
                 ) : (
                   <>
-                    {(cards || step.options.length > 0) && (
+                    {(cards || step.options.length > 0 || zone) && (
                       <Button
                         id="setup-continue"
                         size="lg"
@@ -557,10 +583,10 @@ export function QuestionScreen({
                                   : "Continue"}
                       </Button>
                     )}
-                    {/* Only where every answer combines sensibly: a yoga
-                        coach's every style, or every tone at once, never does. */}
+                    {/* On every question that takes several answers (starter
+                        tiles fill the box; they are never ticked). */}
                     {multi &&
-                      ALL_OK.includes(step.field ?? "") &&
+                      !step.starter &&
                       every.some((o) => !ticked.includes(o)) && (
                         <Button
                           variant="ghost"
@@ -568,7 +594,7 @@ export function QuestionScreen({
                           onClick={() => setTicked(() => every)}
                           className="rounded-full"
                         >
-                          All of them
+                          Select all
                         </Button>
                       )}
                     {step.can_delegate && step.field && (

@@ -399,6 +399,8 @@ BEFORE_COURSE = {
     "credentials": "Coach level 2",
     "tone": "energetic",
     "site_logo": "wordmark",
+    "timezone": "Europe/Berlin",
+    "currency": "USD",
     "payments": ["course"],
 }
 

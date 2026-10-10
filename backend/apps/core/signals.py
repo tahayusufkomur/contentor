@@ -30,7 +30,9 @@ def tenant_pre_save(sender, instance, **kwargs):
             instance.billing_currency = CURRENCY_USD
         return
 
-    # Update: prevent region and billing_currency from being changed once set.
+    # Update: prevent region and billing_currency from being changed once set
+    # (the coach's pick in /setup goes around this with .update(), see
+    # tenant_config.interview_milestones.apply_currency).
     try:
         old = Tenant.objects.only("region", "billing_currency").get(pk=instance.pk)
     except Tenant.DoesNotExist:

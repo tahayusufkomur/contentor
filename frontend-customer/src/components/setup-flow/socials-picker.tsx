@@ -1,25 +1,27 @@
 "use client";
 
-import { socialOk } from "@/lib/interview";
+import { socialLink, socialOk, socialSite } from "@/lib/interview";
 import { cn } from "@/lib/utils";
 
 const INPUT =
   "h-10 w-full rounded-xl border border-[var(--sf-line-strong)] bg-white px-3 text-[14px] text-[var(--sf-ink)] outline-none transition-[border-color,box-shadow] focus:border-[var(--sf-ink)] focus:shadow-[0_0_0_3px_var(--sf-brass-soft)] disabled:opacity-50";
 
 /** A detail for each choice ticked: a handle or profile link per social
- * network by default, or what ``placeholder``/``ok``/``problem`` describe
- * (a contact way's email address or number). The caller owns the value,
- * keyed by choice. */
+ * network by default (a link has to be on that network's own site, and the
+ * profile it means reads back under the box), or what ``placeholder``/
+ * ``ok``/``problem``/``reads`` describe (a contact way's email address or
+ * number). The caller owns the value, keyed by choice. */
 export function SocialsPicker({
   networks,
   value,
   onChange,
   disabled,
   className,
-  placeholder = () => "@yourname or a link",
+  placeholder = (n) => `${socialSite(n)}yourname or @yourname`,
   ok = socialOk,
-  problem = () =>
-    "No spaces: use your handle, like @mira.yoga, or paste the link.",
+  problem = (n) =>
+    `Use your ${n} handle, like @mira.yoga, or a link that starts with ${socialSite(n)}`,
+  reads = socialLink,
 }: {
   networks: string[];
   value: Record<string, string>;
@@ -29,6 +31,8 @@ export function SocialsPicker({
   placeholder?: (choice: string) => string;
   ok?: (choice: string, raw: string) => boolean;
   problem?: (choice: string) => string;
+  /** What a valid entry means, read back under its box. */
+  reads?: (choice: string, raw: string) => string | null;
 }) {
   return (
     <div
@@ -40,6 +44,7 @@ export function SocialsPicker({
       {networks.map((n) => {
         // Checked as typed, the way the server will read it.
         const bad = !!value[n]?.trim() && !ok(n, value[n]);
+        const means = bad ? null : reads(n, value[n] ?? "");
         return (
           <label key={n} className="flex flex-col gap-1.5">
             <span className="text-[13px] font-medium text-[var(--sf-graphite)]">
@@ -62,6 +67,11 @@ export function SocialsPicker({
                 className="text-[12.5px] text-destructive"
               >
                 {problem(n)}
+              </span>
+            )}
+            {means && (
+              <span className="truncate text-[12.5px] text-[var(--sf-graphite)]">
+                {means}
               </span>
             )}
           </label>

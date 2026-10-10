@@ -20,6 +20,7 @@ import {
   questionSteps,
   SECTIONS,
   sectionOf,
+  socialLink,
   socialOk,
   stageIndex,
   tileIcons,
@@ -291,8 +292,25 @@ describe("socialOk mirrors the server", () => {
     ["X", "twitter.com/mira", true],
     ["TikTok", "", false],
     ["Instagram", "mira.yoga.", true],
+    // A link has to be on the network's own site, with a profile after it.
+    ["Instagram", "instagram.com/mira.yoga", true],
+    ["Instagram", "facebook.com/mira", false],
+    ["Instagram", "https://tiktok.com/@mira", false],
+    ["Instagram", "instagram.com", false],
+    ["Instagram", "www.facebook.com", false],
   ] as const)("%s %s", (network, raw, ok) => {
     expect(socialOk(network, raw)).toBe(ok);
+  });
+
+  it("reads a valid entry back as the profile it means", () => {
+    expect(socialLink("Instagram", "@mira.yoga")).toBe(
+      "instagram.com/mira.yoga",
+    );
+    expect(socialLink("YouTube", "mira")).toBe("youtube.com/@mira");
+    expect(socialLink("LinkedIn", "https://linkedin.com/in/mira")).toBe(
+      "linkedin.com/in/mira",
+    );
+    expect(socialLink("Instagram", "facebook.com/mira")).toBeNull();
   });
 });
 

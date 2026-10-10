@@ -82,6 +82,8 @@ export interface StepDraft {
   socials?: Record<string, string>;
   /** A contact question: the email address or number per way ticked. */
   details?: Record<string, string>;
+  /** A time-zone question: the zone picked. */
+  zone?: string;
 }
 
 /** The seam the UI talks to — the real API below, or the dev mock. */
@@ -335,6 +337,8 @@ export interface GuideTurn {
   contact?: boolean;
   /** Details the question starts with (the coach's signup email). */
   prefill?: Record<string, string>;
+  /** The answer is a time zone, picked from the browser's list. */
+  timezone?: boolean;
 }
 
 export interface CopilotCard {

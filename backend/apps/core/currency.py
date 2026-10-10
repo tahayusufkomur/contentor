@@ -2,8 +2,10 @@
 
 Content models (Course, DownloadFile, LiveClass, ...) carry no currency
 field: every price on a tenant is denominated in the currency the tenant
-charges in (`Tenant.billing_currency`, decided once at tenant creation from the
-coach's country and immutable afterwards). Display and Stripe charges must
+charges in (`Tenant.billing_currency`: set at tenant creation from the coach's
+country, changed by the coach's own pick in /setup until money has moved in it
+(`tenant_config.interview_milestones.apply_currency`), immutable from then on).
+Display and Stripe charges must
 agree, so anything that renders a content price uses this helper instead of a
 hardcoded fallback.
 """

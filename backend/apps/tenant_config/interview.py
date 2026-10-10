@@ -146,6 +146,7 @@ GUIDE_KEYS = (
     "plan",
     "contact",
     "prefill",
+    "timezone",
 )
 REVIEW_KINDS = ("course", "event")
 REDRAFT_ACK = "On it. I'm redrafting it with your changes; it takes about a minute."
@@ -176,6 +177,7 @@ def guide_for(
             "plan": None,
             "contact": False,
             "prefill": {},
+            "timezone": False,
         }
     # Fixed lists (offers, payments, memberships, the schedule) are what the answer is parsed
     # against; hinted fields keep their pre-written options so each hint matches its tile.
@@ -212,6 +214,8 @@ def guide_for(
         # The ways ticked take their details (an email address, a number).
         "contact": field.kind == "contact",
         "prefill": {},
+        # The answer is a time zone, picked from the browser's list.
+        "timezone": field.kind == "timezone",
     }
 
 
@@ -341,6 +345,8 @@ NOTED_NAMES = {
     "tone": "your tone",
     "story": "your story",
     "credentials": "your training",
+    "timezone": "your time zone",
+    "currency": "your currency",
     "payments": "how students pay",
     "course_topic": "your course topic",
     "course_price": "your course price",

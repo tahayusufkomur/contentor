@@ -2,7 +2,7 @@
 
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { browserTimeZone, scheduleSummary } from "@/lib/interview";
+import { scheduleSummary } from "@/lib/interview";
 import type { Schedule, ScheduleMode, ScheduleSlot } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
 
@@ -20,28 +20,22 @@ const INPUT =
   "h-10 rounded-xl border border-[var(--sf-line-strong)] bg-white px-3 text-[14px] text-[var(--sf-ink)] outline-none transition-[border-color,box-shadow] focus:border-[var(--sf-ink)] focus:shadow-[0_0_0_3px_var(--sf-brass-soft)] disabled:opacity-50";
 const NEW_SLOT: ScheduleSlot = { days: [], times: [""] };
 
-/** Every timezone the browser knows, the coach's own first when it is not on the list. */
-function timeZones(current: string): string[] {
-  const intl = Intl as unknown as {
-    supportedValuesOf?: (key: string) => string[];
-  };
-  const all = intl.supportedValuesOf?.("timeZone") ?? [];
-  return all.includes(current) ? all : [current, ...all];
-}
-
 /** When a class runs, with the browser's own pickers: a single date and time,
  * or a weekly timetable (start, optional end, then one or more slots of days
- * and times) in the coach's timezone. The caller owns the value; a summary
- * line reads it back. */
+ * and times). Times are in the site's time zone (``zone``), which has its own
+ * question. The caller owns the value; a summary line reads it back. */
 export function SchedulePicker({
   mode,
   value,
+  zone,
   onChange,
   disabled,
   className,
 }: {
   mode: ScheduleMode;
   value: Schedule;
+  /** The site's time zone, as the coach picked it. */
+  zone?: string;
   onChange: (s: Schedule) => void;
   disabled: boolean;
   className?: string;
@@ -50,7 +44,6 @@ export function SchedulePicker({
   const slots = value.slots?.length ? value.slots : [NEW_SLOT];
   const setSlot = (i: number, patch: Partial<ScheduleSlot>) =>
     set({ slots: slots.map((sl, j) => (j === i ? { ...sl, ...patch } : sl)) });
-  const zone = value.tz || browserTimeZone();
   const summary = scheduleSummary(mode, value);
   const ready = slots.every(
     (sl) => sl.days.length > 0 && sl.times.some(Boolean),
@@ -96,20 +89,6 @@ export function SchedulePicker({
             </Field>
           </>
         )}
-        <Field label="Time zone" className="sm:col-span-2">
-          <select
-            value={zone}
-            disabled={disabled}
-            onChange={(e) => set({ tz: e.target.value })}
-            className={INPUT}
-          >
-            {timeZones(zone).map((z) => (
-              <option key={z} value={z}>
-                {z.replaceAll("_", " ")}
-              </option>
-            ))}
-          </select>
-        </Field>
         {mode === "recurring" && (
           <>
             {slots.map((sl, i) => {
@@ -243,6 +222,11 @@ export function SchedulePicker({
           (mode === "once"
             ? "Pick the date and time."
             : "Pick a start date, the days and a time.")}
+        {zone && (
+          <span className="block text-[12.5px] text-[var(--sf-faint)]">
+            Times are in your time zone, {zone.replaceAll("_", " ")}.
+          </span>
+        )}
       </p>
     </div>
   );

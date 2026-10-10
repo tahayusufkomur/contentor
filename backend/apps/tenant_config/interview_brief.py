@@ -34,6 +34,8 @@ FIXED_KINDS = (
     "socials",
     "price",
     "contact",
+    "timezone",
+    "currency",
 )
 OFFERS = ("course", "live", "onsite", "articles", "community")
 OFFER_GOALS = {
@@ -59,6 +61,12 @@ _PAYMENT_WORDS = (
     ("event", r"\bclass|event|session|ticket|drop[- ]in"),
     ("free", r"free"),
 )
+# The currencies a coach can charge in (core.constants.CURRENCY_CHOICES): the
+# tile's label, the sign prices carry, and the words that name it.
+CURRENCIES = {
+    "USD": ("US Dollar ($)", "$", r"\busd\b|dollar|\$"),
+    "EUR": ("Euro (€)", "€", r"\beur\b|euro|€"),
+}
 # Sections a coach can skip, and what the skip button says.
 SKIP_LABELS = {"course": "No course for now", "event": "No class for now", "post": "No article for now"}
 TONES = ("warm", "energetic", "calm", "expert", "playful")
@@ -555,6 +563,23 @@ FIELDS: tuple[Field, ...] = (
     Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo", delegable=True),
     # The class calendar is not asked about (audit 2026-10-09: two turns for settings the
     # coach has no basis for yet): a month grid, linked in the navbar (sync_site).
+    # Asked once, here: no later question (class times, prices) asks again.
+    Field(
+        "timezone",
+        "Their time zone",
+        "Which time zone are you in?",
+        kind="timezone",  # the screen is a picker, opened on the browser's own zone
+        why="Class times and your calendar follow it.",
+    ),
+    Field(
+        "currency",
+        "The currency they charge in",
+        "Which currency do you charge in?",
+        tuple(label for label, _, _ in CURRENCIES.values()),
+        kind="currency",
+        why="Every price on your site is in it. It is fixed once you buy a plan or take a payment.",
+        icons=("badge-dollar-sign", "coins"),
+    ),
     Field(
         "payments",
         "How students pay",
@@ -684,7 +709,7 @@ FIELDS: tuple[Field, ...] = (
 )
 FIELD_BY_ID = {f.id: f for f in FIELDS}
 # Fields that ride in `description`, or are applied as config, not as copy facts.
-_NOT_FACTS = {"teaches", "pitch", "site_style", "site_logo", "course_review", "event_review"}
+_NOT_FACTS = {"teaches", "pitch", "site_style", "site_logo", "course_review", "event_review", "timezone", "currency"}
 
 
 def _text(raw) -> str | None:
@@ -731,6 +756,31 @@ def parse_memberships(raw) -> list[str]:
     return [t["id"] for t in MEMBERSHIP_TIERS if t["label"].lower() in text or re.search(rf"\b{t['id']}\b", text)]
 
 
+def parse_currency(raw) -> str | None:
+    text = str(raw or "").lower()
+    return next((code for code, (_, _, words) in CURRENCIES.items() if re.search(words, text)), None)
+
+
+def money(amount) -> str:
+    """An amount in the currency the coach charges in: "$9", "€9"."""
+    from apps.core.currency import tenant_charge_currency
+
+    return f"{CURRENCIES.get(tenant_charge_currency(), CURRENCIES['USD'])[1]}{amount}"
+
+
+def parse_timezone(raw) -> str | None:
+    """The zone as the server names it: "Europe/Berlin", or just "berlin"."""
+    from zoneinfo import available_timezones
+
+    want = re.sub(r"\s+", "_", str(raw or "").strip()).lower()
+    if not want:
+        return None
+    zones = sorted(available_timezones())
+    return next((z for z in zones if z.lower() == want), None) or next(
+        (z for z in zones if z.lower().endswith(f"/{want}")), None
+    )
+
+
 NO_SOCIALS = "No social accounts yet"
 # id: (name, profile URL for a bare handle, host pattern). The first match wins.
 SOCIALS = {
@@ -742,10 +792,14 @@ SOCIALS = {
     "linkedin": ("LinkedIn", "https://linkedin.com/in/{}", r"linkedin\.com"),
 }
 _HANDLE = re.compile(r"@?([\w.\-]{1,60})")
+# A bare site ("facebook.com", "instagram.com") is not a handle on any network.
+_SITE = re.compile(r"(?:www\.)?[\w-]+\.(?:com|net|org|io|co|me|tv|be|app)", re.I)
 
 
 def social_url(network: str, raw) -> str | None:
-    """A handle ("@maya") or a link as the profile URL on ``network``, or None."""
+    """A handle ("@maya") or a link on ``network``'s own site as the profile
+    URL, or None: a link to any other site, or a site with no profile after
+    it, is refused."""
     if network not in SOCIALS:
         return None
     text = str(raw or "").strip().rstrip(".,;")
@@ -755,7 +809,7 @@ def social_url(network: str, raw) -> str | None:
     link = re.fullmatch(rf"(?:https?://)?(?:[\w-]+\.)?(?:{host})/\S{{1,200}}", text, re.I)
     if link:
         return "https://" + re.sub(r"^https?://", "", text, flags=re.I)
-    handle = _HANDLE.fullmatch(text)
+    handle = None if _SITE.fullmatch(text) else _HANDLE.fullmatch(text)
     return template.format(handle[1]) if handle else None
 
 
@@ -804,6 +858,10 @@ def coerce(field_id: str, raw):
         return parse_memberships(raw) or None
     if field.kind == "price":
         return parse_price(raw)
+    if field.kind == "timezone":
+        return parse_timezone(raw)
+    if field.kind == "currency":
+        return parse_currency(raw)
     if field.kind == "socials":
         links = parse_socials(raw)
         if links:
@@ -983,7 +1041,7 @@ def options_for(
         return (
             tuple(t["label"] for t in tiers),
             tuple(t["icon"] for t in tiers),
-            tuple(f"${t['price']} a month" for t in tiers),
+            tuple(f"{money(t['price'])} a month" for t in tiers),
         )
     rows = list(
         zip(
@@ -1039,7 +1097,7 @@ def composer_facts(answers: dict) -> list[dict]:
             value = ", ".join(value)
         elif field.kind == "memberships":
             value = ", ".join(
-                f"{TIER_BY_ID[i]['label']} (${TIER_BY_ID[i]['price']} a month)" for i in value if i in TIER_BY_ID
+                f"{TIER_BY_ID[i]['label']} ({money(TIER_BY_ID[i]['price'])} a month)" for i in value if i in TIER_BY_ID
             )
         elif field.kind == "price":
             value = "free" if value == 0 else f"{value:g}"
