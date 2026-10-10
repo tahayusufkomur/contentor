@@ -149,7 +149,15 @@ def test_spoken_text_is_corrected_and_stored(client, tenant_ctx, quiet):
     assert body["coach_text"] == "I teach vinyasa yoga"
     turns = TenantConfig.objects.first().setup_flow["interview"]["turns"]
     assert turns[0]["role"] == "guide" and turns[0]["ack"] == interview.OPENING_ACK  # the opening question is kept
-    assert turns[1] == {"role": "coach", "text": "I teach vinyasa yoga", "field": "teaches"}
+    coach = turns[1]
+    assert {k: coach[k] for k in ("role", "text", "field")} == {
+        "role": "coach",
+        "text": "I teach vinyasa yoga",
+        "field": "teaches",
+    }
+    # Stamped for the funnel (manage.py setup_funnel).
+    assert coach["how"] == "spoken" and coach["at"] and turns[2]["at"] == coach["at"]
+    assert isinstance(turns[2]["ms"], int)
     assert '"spoken": true' in quiet.calls[0]["user"]
 
 
@@ -159,6 +167,7 @@ def test_delegate_choice(client, tenant_ctx, quiet):
         URL, {"message": "You decide for me.", "choice": {"field": "teaches", "value": "__delegate__"}}, format="json"
     )
     assert "teaches" in _answers(tenant_ctx)["delegated"]
+    assert TenantConfig.objects.first().setup_flow["interview"]["turns"][-2]["how"] == "delegate"
 
 
 def test_bad_choice_is_400(client, quiet):

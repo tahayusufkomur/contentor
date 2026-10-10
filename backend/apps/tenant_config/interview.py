@@ -5,6 +5,7 @@ question, so the conversation never stalls or errors."""
 
 import json
 import logging
+import time
 
 from django.conf import settings
 from django.utils import timezone
@@ -476,6 +477,7 @@ def run_turn(
     from . import interview_golive, setup_flow
     from . import interview_milestones as milestones
 
+    started = time.monotonic()
     flow = TenantConfig.objects.first().setup_flow or {}
     turns = list((flow.get("interview") or {}).get("turns") or [])
     answers = brief.answers_of(tenant)
@@ -555,14 +557,28 @@ def run_turn(
     if also:
         guide["noted"] = also
 
+    # Stamps for the funnel (manage.py setup_funnel): when, how she answered,
+    # and how long the reply took.
+    now = timezone.now().isoformat()
+    how = (
+        "delegate"
+        if (choice or {}).get("value") == brief.DELEGATE
+        else "spoken"
+        if spoken
+        else "tap"
+        if choice or (tapped and picks == text)
+        else "typed"
+    )
+    ms = round((time.monotonic() - started) * 1000)
+
     def mutate(_config, flow):
         iv = dict(flow.get("interview") or {})
         entries = list(iv.get("turns") or [])
         if opening and not any(t.get("role") == "guide" for t in entries):
-            entries.append({"role": "guide", **opening})
+            entries.append({"role": "guide", **opening, "at": flow.get("started_at")})
         if text:
-            entries.append({"role": "coach", "text": text, "field": answering})
-        entries.append({"role": "guide", **guide, **({"edit": edit} if edit else {})})
+            entries.append({"role": "coach", "text": text, "field": answering, "at": now, "how": how})
+        entries.append({"role": "guide", **guide, **({"edit": edit} if edit else {}), "at": now, "ms": ms})
         iv["turns"] = entries[-TRANSCRIPT_KEEP:]
         iv["asked"] = guide["field"]
         iv["last_at"] = timezone.now().isoformat()
