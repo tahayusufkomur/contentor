@@ -41,6 +41,7 @@ export const pageLabel = (key: string) => PAGE_LABELS[key] ?? `${key} page`;
 const DRAFT_LABELS: Record<string, string> = {
   course: "your first course",
   event: "your first class",
+  onsite: "your in-person class",
   post: "your first article",
 };
 
@@ -78,6 +79,7 @@ export function activityLine(builds: Builds, drafts: Drafts): string | null {
 const DRAFT_DONE: Record<string, string> = {
   course: "Your first course is drafted. I’m adding it to your Courses page.",
   event: "Your first class is on the calendar.",
+  onsite: "Your in-person class is on the calendar.",
   post: "Your first article is drafted.",
 };
 
@@ -227,6 +229,7 @@ export function questionSteps(
           field,
           can_delegate,
           multi,
+          custom,
           alone,
           icons,
           hints,
@@ -252,6 +255,7 @@ export function questionSteps(
           field,
           can_delegate,
           multi,
+          custom,
           alone,
           icons,
           hints,
@@ -331,10 +335,10 @@ export function tileIcons(step: GuideTurn): boolean {
   return icons.length > 1 && icons.every(Boolean) && new Set(icons).size > 1;
 }
 
-/** A starter tile put in the answer box: appended without its trailing
- * "…", with a space to keep typing after. */
-export const addStarter = (text: string, starter: string): string =>
-  `${[text.trimEnd(), starter.replace(/\s*(…|\.\.\.)$/, "")].filter(Boolean).join(" ")} `;
+/** A sentence starter as its card opens it: without the trailing "…", so
+ * the coach finishes the sentence in the card. */
+export const starterStart = (starter: string): string =>
+  starter.replace(/\s*(…|\.\.\.)$/, "").trim();
 
 /** A picked answer sent with the coach's own words: the picks, then the
  * note on the next line. The server reads both; going back splits them. */
@@ -355,6 +359,20 @@ export function pickedOptions(step: QuestionStep): string[] {
     const label = o.toLowerCase();
     return step.multi ? `, ${said}, `.includes(`, ${label}, `) : said === label;
   });
+}
+
+/** The options a past answer picked on a question with own options (see
+ * ``custom``) that are the coach's own: what is left once the options are
+ * taken out. Options match whole, so "Salsa" never cuts "Salsa shine". */
+export function ownPicked(step: QuestionStep): string[] {
+  // A starter's answer is a sentence, not a list: nothing to split out.
+  if (!step.custom || step.starter || !step.answer) return [];
+  let rest = `, ${step.answer.split("\n")[0].trim()}, `;
+  for (const o of step.options) rest = rest.replace(`, ${o}, `, ", ");
+  return rest
+    .split(", ")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 // ---- Class schedules -------------------------------------------------------

@@ -69,10 +69,10 @@ CURRENCIES = {
 }
 # Sections a coach can skip, and what the skip button says.
 SKIP_LABELS = {"course": "No course for now", "event": "No class for now", "post": "No article for now"}
-TONES = ("warm", "energetic", "calm", "expert", "playful")
-# One line under each tone answer (Warm, Energetic, Calm, Expert, Playful). The
-# model writes the coach's own (answers["tone_hints"]); these are the fallback,
-# per broad tile ("" = any other), so no niche gets another niche's words.
+TONES = ("warm", "energetic", "calm", "expert", "playful", "confident", "sensual", "sexy")
+# One line under each tone answer (the order of TONES). The model writes the
+# coach's own (answers["tone_hints"]); these are the fallback, per broad tile
+# ("" = any other), so no niche gets another niche's words.
 TONE_HINTS = {
     "": (
         "Come as you are. We'll take it slow.",
@@ -80,6 +80,9 @@ TONE_HINTS = {
         "Breathe in. There's no rush here.",
         "Years of experience, shared plainly.",
         "Let's have some fun with this.",
+        "Know your worth, and let it show.",
+        "Slow down. Savour every detail.",
+        "Bold, bright and hard to forget.",
     ),
     "Yoga": (
         "Come as you are. Your mat is a safe place.",
@@ -87,6 +90,9 @@ TONE_HINTS = {
         "Slow breath, steady body, quiet mind.",
         "Years of practice, taught with clear cues.",
         "Let's find your flow, one silly pose at a time.",
+        "Own your practice, one pose at a time.",
+        "Soft light, slow breath, body awake.",
+        "Strong, graceful and a little bit daring.",
     ),
     "Pilates": (
         "Strong core, kind pace, every body welcome.",
@@ -94,6 +100,9 @@ TONE_HINTS = {
         "Controlled movement, long lines, calm breath.",
         "Precise form, taught the way it's built.",
         "Tiny moves, big results. Let's have fun with it.",
+        "Strong core, sure posture, no apologies.",
+        "Long, fluid lines and mindful movement.",
+        "Sleek, strong and beautifully controlled.",
     ),
     "Fitness coaching": (
         "Strength for real life, at your own pace.",
@@ -101,6 +110,9 @@ TONE_HINTS = {
         "Steady progress, no crash, no burnout.",
         "Programmes built on what actually works.",
         "Sweat, laugh, repeat. Your new favourite hour.",
+        "Commit to yourself and watch it show.",
+        "Feel strong, move well, enjoy your body.",
+        "Bold, sculpted, and built to turn heads.",
     ),
     "Dance": (
         "Dance like nobody's judging. Nobody is.",
@@ -108,6 +120,9 @@ TONE_HINTS = {
         "Gentle rhythm, easy steps, no pressure.",
         "Years on the floor, taught step by step.",
         "Shake it out. Spins and smiles welcome.",
+        "Walk in, own the floor, own the moment.",
+        "Slow hips, close music, pure feeling.",
+        "Sizzling moves and plenty of attitude.",
     ),
     "Meditation": (
         "Rest here. There's nothing to fix.",
@@ -115,6 +130,9 @@ TONE_HINTS = {
         "Breathe in. The room goes quiet.",
         "Practices rooted in years of teaching.",
         "Your brain needs a nap. Let's give it one.",
+        "Trust the calm you already have.",
+        "Warm, slow and deeply comforting.",
+        "Quiet magnetism that stays with you.",
     ),
     "Nutrition": (
         "Good food, no guilt, no strict rules.",
@@ -122,6 +140,9 @@ TONE_HINTS = {
         "Eat well, sleep well, feel steady.",
         "Evidence-based plans, explained plainly.",
         "Real food that tastes like a treat.",
+        "Eat boldly, feel great, skip the diet talk.",
+        "Food as a pleasure, savoured slowly.",
+        "Glow from the inside, one good meal at a time.",
     ),
     "Life coaching": (
         "You've got this. Let's find the next step.",
@@ -129,6 +150,9 @@ TONE_HINTS = {
         "Clear thinking, one honest question at a time.",
         "Proven tools for the big decisions.",
         "Dream big, then let's make it happen.",
+        "Stand tall and make the call.",
+        "Honest, warm and a little bit intimate.",
+        "Bold, magnetic and unapologetically you.",
     ),
     "Business coaching": (
         "Your business, built with people you trust.",
@@ -136,6 +160,9 @@ TONE_HINTS = {
         "Clear plans, steady decisions, no panic.",
         "Strategy from years in the trenches.",
         "Serious results, and a bit of fun along the way.",
+        "Decisive advice, backed by real results.",
+        "Thoughtful, unhurried and quietly stylish.",
+        "Sharp, bold and impossible to forget.",
     ),
 }
 # The memberships a coach can offer, any number of them, each built on what
@@ -486,12 +513,13 @@ class Field:
     pays: tuple[str, ...] = ()  # ...and only when students pay in one of these ways
     group: str = ""  # the skippable section it belongs to (course | event | post)
     multi: bool = False  # several options can be ticked at once
+    custom: bool = False  # ...and the coach can add an option of her own (a blank tile at the end)
     alone: str = ""  # the option that can't be ticked with any other ("Free for now")
     icons: tuple[str, ...] = ()  # one lucide id per option (fixed-option fields)
     hints: tuple[str, ...] = ()  # one short line per option, shown under it
     details: tuple[str, ...] = ()  # one description per option, shown under it
     delegable: bool = False  # the guide may decide it for the coach ("You decide")
-    starter: bool = False  # options are sentence starters the coach finishes in the box, never answers
+    starter: bool = False  # options are sentence starters the coach finishes inline in their card, never answers as-is
     why: str = ""  # one line under the question: why it matters
 
 
@@ -519,6 +547,7 @@ FIELDS: tuple[Field, ...] = (
         "Which kinds do you teach?",  # asked only after a broad tile; options from specialties_for()
         kind="specialty",
         multi=True,
+        custom=True,
     ),
     Field(
         "audience",
@@ -526,9 +555,12 @@ FIELDS: tuple[Field, ...] = (
         "Who are the students you love teaching most?",
         ("Complete beginners", "Busy professionals", "People coming back after an injury", "Parents", "Older adults"),
         multi=True,
+        custom=True,
         icons=("sprout", "briefcase", "heart-pulse", "baby", "glasses"),
     ),
-    Field("outcome", "What students get", "What changes for a student after working with you?", multi=True),
+    Field(
+        "outcome", "What students get", "What changes for a student after working with you?", multi=True, custom=True
+    ),
     Field(
         "offers",
         "How they teach",
@@ -548,27 +580,40 @@ FIELDS: tuple[Field, ...] = (
     ),
     Field("pitch", "One-line pitch", "If someone asked what you do, what would you say in one sentence?"),
     Field(
-        "difference", "What makes their approach theirs", "What do you do differently from other teachers?", multi=True
+        "difference",
+        "What makes their approach theirs",
+        "What do you do differently from other teachers?",
+        multi=True,
+        custom=True,
     ),
     # Before the look: the tone asked for helps rank the looks.
     Field(
         "tone",
         "How the site should sound",
         "How should your site sound?",
-        ("Warm", "Energetic", "Calm", "Expert", "Playful"),
+        ("Warm", "Energetic", "Calm", "Expert", "Playful", "Confident", "Sensual", "Sexy"),
         kind="tone",
         multi=True,
         delegable=True,
-        icons=("heart", "zap", "leaf", "graduation-cap", "smile"),
+        icons=("heart", "zap", "leaf", "graduation-cap", "smile", "crown", "feather", "flame"),
         hints=TONE_HINTS[""],
     ),
     Field("site_style", "Site style", "Which look feels most like you?", kind="style", delegable=True),
-    Field("story", "Their story", "How did you come to teach this?", starter=True),
+    # Sentence starters: picked as cards, finished inline in the card, several may combine.
+    Field(
+        "story",
+        "Their story",
+        "How did you come to teach this?",
+        multi=True,
+        custom=True,
+        starter=True,
+    ),
     Field(
         "credentials",
         "Training and experience",
         "Any training, certifications or years of teaching you'd like visitors to know about?",
         multi=True,
+        custom=True,
         starter=True,
     ),
     Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo", delegable=True),

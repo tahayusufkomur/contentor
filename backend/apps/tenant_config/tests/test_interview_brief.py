@@ -327,6 +327,9 @@ def test_a_broad_niche_asks_its_kinds_and_the_studio_name_opens_on_them():
     # A name with no niche in it keeps the broad tiles.
     plain = guide_for(brief.FIELD_BY_ID["teaches"], answers={}, brand="Studio Nova")
     assert not plain["multi"] and "Dance" in plain["options"]
+    # Free-form several picks take the coach's own options; fixed lists never do.
+    assert guide_for(brief.FIELD_BY_ID["specialty"], answers={"teaches": "Dance"})["custom"]
+    assert not guide_for(brief.FIELD_BY_ID["offers"], answers={})["custom"]
 
 
 def test_a_studio_named_after_one_kind_asks_only_whether_there_is_more():
@@ -373,11 +376,20 @@ def test_tone_hints_follow_the_niche_and_the_model_when_it_wrote_them():
     assert brief.tone_hints_for({"teaches": "face yoga"})[0].startswith("Come as you are")
     assert "sock" not in " ".join(brief.tone_hints_for({"teaches": "face yoga"})).lower()
     assert brief.tone_hints_for({"teaches": "Dance"}) != brief.tone_hints_for({"teaches": "Yoga"})
-    written = ("a", "b", "c", "d", "e")
+    written = tuple("abcdefgh")
     assert brief.tone_hints_for({"teaches": "Dance", "tone_hints": list(written)}) == written
     assert brief.tone_hints_for({"teaches": "Dance", "tone_hints": ["only", "two"]}) == brief.tone_hints_for(
         {"teaches": "Dance"}
     )
+
+
+def test_every_tone_has_a_tile_an_icon_and_a_line_on_every_niche():
+    """The sexy, confident and sensual moods were missing from the tone question."""
+    tone = brief.FIELD_BY_ID["tone"]
+    assert brief.coerce("tone", "Confident, Sensual and Sexy") == "confident, sensual, sexy"
+    assert len(tone.options) == len(tone.icons) == len(brief.TONES) == 8
+    assert all(len(hints) == len(brief.TONES) for hints in brief.TONE_HINTS.values())
+    assert all(icon in brief.ICONS for icon in tone.icons)
 
 
 @pytest.mark.parametrize(

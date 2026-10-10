@@ -6,18 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { OPTION_ICONS } from "@/lib/option-icons";
 import {
-  addStarter,
   browserTimeZone,
   CONTACT_DETAILS,
   contactOk,
   priceOk,
   defaultSchedule,
   noteOf,
+  ownPicked,
   pickedOptions,
   planLabel,
   scheduleSummary,
   scheduleValid,
   socialOk,
+  starterStart,
   tileIcons,
   timeZones,
   withNote,
@@ -40,8 +41,10 @@ import { AnswerBox } from "./answer-box";
 import { BuilderPreview, type BuilderData } from "./builder-preview";
 import { DraftReview } from "./draft-review";
 import { LookCardsView } from "./look-cards";
+import { OwnOptionCard } from "./own-option-card";
 import { SchedulePicker } from "./schedule-picker";
 import { SocialsPicker } from "./socials-picker";
+import { StarterCard } from "./starter-card";
 
 export type { StepDraft };
 
@@ -91,8 +94,20 @@ export function QuestionScreen({
   onNext: () => void;
 }) {
   const multi = !!step.multi && step.options.length > 1;
-  const picked = pickedOptions(step);
+  // Own options: the ones sent with the answer, plus any added but not sent.
+  const own = step.custom && multi ? (draft.custom ?? ownPicked(step)) : [];
+  const shown = [...step.options, ...own];
+  const picked = [...pickedOptions(step), ...ownPicked(step)];
   const ticked = draft.ticked ?? picked;
+  // A starter card's sentence: the coach's own once typed, else the starter
+  // as it opens. A starter counts as finished only once the coach has
+  // changed it (own options are complete as typed).
+  const starts = draft.starts ?? {};
+  const textOf = (o: string) =>
+    starts[o] ?? (step.options.includes(o) ? starterStart(o) : o);
+  const finished = (o: string) =>
+    textOf(o).trim() !== "" &&
+    (!step.options.includes(o) || textOf(o).trim() !== starterStart(o));
   const review = isReview(cards) ? cards : null;
   const looks = cards && !isReview(cards) ? cards : null;
   // A time-zone question: the browser's own zone, or the one picked before.
@@ -161,7 +176,11 @@ export function QuestionScreen({
             : prices
               ? ticked.length > 0 &&
                 ticked.every((t) => priceOk(prices[t] ?? ""))
-              : ticked.length > 0 || !!zone || !!note;
+              : step.starter
+                ? ticked.length > 0
+                  ? ticked.every(finished)
+                  : !!note
+                : ticked.length > 0 || !!zone || !!note;
   // A turn can take a while when the model is busy; say so honestly.
   const [slow, setSlow] = useState(false);
   useEffect(() => {
@@ -186,7 +205,11 @@ export function QuestionScreen({
   }, []);
   const pickedLabel =
     draft.card?.label ??
-    (ticked.length > 1 ? `${ticked.length} picked` : ticked[0]);
+    (ticked.length > 1
+      ? `${ticked.length} picked`
+      : step.starter
+        ? textOf(ticked[0])
+        : ticked[0]);
 
   const send = (req: TurnRequest) => {
     if (sending) return;
@@ -204,7 +227,22 @@ export function QuestionScreen({
           ? [o]
           : [...t.filter((x) => x !== step.alone), o],
     );
-  const every = step.options.filter((o) => o !== step.alone);
+  // A typed option is picked at once, and joins the tiles after the others.
+  const addOwn = (labels: string[]) =>
+    onDraft((d) => {
+      const list = [...(d.custom ?? own)];
+      let t = [...(d.ticked ?? ticked)];
+      for (const label of labels) {
+        const known = [...step.options, ...list].find(
+          (o) => o.toLowerCase() === label.toLowerCase(),
+        );
+        if (!known) list.push(label);
+        const name = known ?? label;
+        if (!t.includes(name)) t = [...t.filter((x) => x !== step.alone), name];
+      }
+      return { ...d, custom: list, ticked: t };
+    });
+  const every = shown.filter((o) => o !== step.alone);
   const showIcons = tileIcons(step);
   // Continue (and Enter in the box) sends the picks together with the
   // coach's note. On a review screen the note is a change to the draft.
@@ -269,7 +307,11 @@ export function QuestionScreen({
                   }
                 : zone && field
                   ? { message: zone, choice: { field, value: zone } }
-                  : { message: ticked.join(", ") };
+                  : step.starter
+                    ? {
+                        message: ticked.map((o) => textOf(o).trim()).join(" "),
+                      }
+                    : { message: ticked.join(", ") };
     send({ ...pick, message: withNote(pick.message, words), spoken });
   };
   // Slide choreography: the words of the question land one by one, then
@@ -393,7 +435,7 @@ export function QuestionScreen({
                 />
               )}
 
-              {step.options.length > 0 && (
+              {shown.length > 0 && (
                 <div
                   className={cn(
                     "mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3",
@@ -402,25 +444,35 @@ export function QuestionScreen({
                       : "lg:grid-cols-4",
                   )}
                 >
-                  {step.options.map((o, i) => {
+                  {shown.map((o, i) => {
                     const on = ticked.includes(o);
+                    if (step.starter)
+                      return (
+                        <StarterCard
+                          key={o}
+                          starter={o}
+                          text={textOf(o)}
+                          selected={on}
+                          disabled={sending}
+                          delay={answersAt + Math.min(i, 15) * 32}
+                          onToggle={() => toggle(o)}
+                          onEdit={(text) =>
+                            onDraft((d) => ({
+                              ...d,
+                              starts: { ...(d.starts ?? {}), [o]: text },
+                            }))
+                          }
+                        />
+                      );
                     return (
                       <button
                         key={o}
                         type="button"
-                        aria-pressed={multi && !step.starter ? on : undefined}
+                        aria-pressed={multi ? on : undefined}
                         disabled={sending}
-                        onClick={() => {
-                          if (!step.starter)
-                            return multi ? toggle(o) : setTicked(() => [o]);
-                          onDraft((d) => ({
-                            ...d,
-                            text: addStarter(d.text ?? typed, o),
-                          }));
-                          requestAnimationFrame(() =>
-                            document.getElementById("setup-answer")?.focus(),
-                          );
-                        }}
+                        onClick={() =>
+                          multi ? toggle(o) : setTicked(() => [o])
+                        }
                         style={{
                           animationDelay: `${answersAt + Math.min(i, 15) * 32}ms`,
                         }}
@@ -489,7 +541,7 @@ export function QuestionScreen({
                             {planLabel(step.plan)}
                           </span>
                         )}
-                        {multi && !step.starter && (
+                        {multi && (
                           <span
                             aria-hidden
                             className={cn(
@@ -505,6 +557,15 @@ export function QuestionScreen({
                       </button>
                     );
                   })}
+                  {multi && step.custom && (
+                    <OwnOptionCard
+                      key={step.field}
+                      disabled={sending}
+                      delay={answersAt + Math.min(shown.length, 15) * 32}
+                      sentence={step.starter}
+                      onAdd={addOwn}
+                    />
+                  )}
                 </div>
               )}
 
@@ -617,9 +678,11 @@ export function QuestionScreen({
                               ? "Continue"
                               : "Looks good, continue"
                           : !canContinue
-                            ? multi
-                              ? "Pick as many as fit"
-                              : "Pick one to continue"
+                            ? step.starter && ticked.length > 0
+                              ? "Finish your sentence"
+                              : multi
+                                ? "Pick as many as fit"
+                                : "Pick one to continue"
                             : !live && !changed
                               ? "Keep this answer"
                               : note && (ticked.length > 0 || draft.card)
@@ -630,19 +693,23 @@ export function QuestionScreen({
                       </Button>
                     )}
                     {/* On every question that takes several answers (starter
-                        tiles fill the box; they are never ticked). */}
-                    {multi &&
-                      !step.starter &&
-                      every.some((o) => !ticked.includes(o)) && (
-                        <Button
-                          variant="ghost"
-                          size="lg"
-                          onClick={() => setTicked(() => every)}
-                          className="rounded-full"
-                        >
-                          Select all
-                        </Button>
-                      )}
+                        cards are picked one by one, not all at once). */}
+                    {multi && !step.starter && every.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        onClick={() =>
+                          setTicked((t) =>
+                            every.every((o) => t.includes(o)) ? [] : every,
+                          )
+                        }
+                        className="rounded-full"
+                      >
+                        {every.every((o) => ticked.includes(o))
+                          ? "Deselect all"
+                          : "Select all"}
+                      </Button>
+                    )}
                     {step.can_delegate && step.field && (
                       <Button
                         variant="ghost"

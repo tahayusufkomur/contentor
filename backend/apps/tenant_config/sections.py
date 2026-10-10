@@ -116,6 +116,12 @@ def tones_of(text) -> list[str]:
     return [t.strip().lower() for t in str(text or "").split(",") if t.strip()]
 
 
+def tones_of_style(style) -> set[str]:
+    """The tones a look suits: the ones it lists, and the moods its tags name
+    (sexy, confident and sensual are tags, not tones)."""
+    return {t.lower() for t in (style.get("tones") or []) + (style.get("tags") or [])}
+
+
 def rank_styles(niche, tones=()) -> list[dict]:
     """Enabled styles best first: niche fit, then tone match; ties keep the
     manifest order. A style with neither still ranks (the coach sees all)."""
@@ -125,7 +131,7 @@ def rank_styles(niche, tones=()) -> list[dict]:
         listed = s.get("niches") or []
         at = listed.index(niche) if niche in listed else None
         return (NICHE_WEIGHTS[min(at, len(NICHE_WEIGHTS) - 1)] if at is not None else 0) + TONE_WEIGHT * len(
-            tones & set(s.get("tones") or [])
+            tones & tones_of_style(s)
         )
 
     return sorted(enabled_styles().values(), key=lambda s: -score(s))  # sorted() is stable

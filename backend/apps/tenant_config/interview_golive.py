@@ -189,7 +189,7 @@ def _held_lines(held) -> list[str]:
         out.append(f"Your course \u201c{title}\u201d")
     if names := list(SubscriptionPlan.objects.filter(pk__in=held.get("plans") or []).values_list("name", flat=True)):
         out.append(f"Your {'membership' if len(names) == 1 else 'memberships'}: {', '.join(names)}")
-    if held.get("event"):
+    if held.get("event") or held.get("onsite"):
         out.append("Your classes")
     return out
 
@@ -217,11 +217,14 @@ def sell_later(tenant) -> None:
     if plan_ids := membership_plan_ids({"drafts": drafts}):
         SubscriptionPlan.objects.filter(pk__in=plan_ids).update(is_active=False)
         held["plans"] = plan_ids
-    event = drafts.get("event") or {}
-    row = _event_model(event).objects.filter(pk=event.get("id")).first() if event.get("id") else None
-    if row is not None and (not _live_entitled(tenant) or (row.pricing_type == "paid" and not can_monetize(tenant))):
-        type(row).objects.filter(pk=row.pk).update(status="draft")
-        held["event"] = {"id": row.pk, "kind": event.get("kind"), "status": row.status}
+    for key in ("event", "onsite"):  # the in-person class is held with the online one
+        event = drafts.get(key) or {}
+        row = _event_model(event).objects.filter(pk=event.get("id")).first() if event.get("id") else None
+        if row is not None and (
+            not _live_entitled(tenant) or (row.pricing_type == "paid" and not can_monetize(tenant))
+        ):
+            type(row).objects.filter(pk=row.pk).update(status="draft")
+            held[key] = {"id": row.pk, "kind": event.get("kind"), "status": row.status}
 
     def mutate(_config, flow):
         flow["held"] = held
@@ -248,14 +251,16 @@ def release_held(tenant) -> None:
             content.publish_course(held.pop("course"))
     if selling and held.get("plans"):
         SubscriptionPlan.objects.filter(pk__in=held.pop("plans")).update(is_active=True)
-    event = held.get("event")
-    if event and _live_entitled(tenant):
-        model = _event_model(event)
-        row = model.objects.filter(pk=event["id"]).first()
-        if row is None or row.pricing_type != "paid" or selling:
-            model.objects.filter(pk=event["id"], status="draft").update(status=event.get("status") or "scheduled")
-            held.pop("event")
-            expand_class_series(tenant)
+    for key in ("event", "onsite"):
+        event = held.get(key)
+        if event and _live_entitled(tenant):
+            model = _event_model(event)
+            row = model.objects.filter(pk=event["id"]).first()
+            if row is None or row.pricing_type != "paid" or selling:
+                model.objects.filter(pk=event["id"], status="draft").update(status=event.get("status") or "scheduled")
+                held.pop(key)
+                if key == "event":
+                    expand_class_series(tenant)  # a weekly schedule belongs to the online class
 
     def mutate(_config, flow):
         if held:
@@ -323,11 +328,13 @@ def make_free(tenant) -> None:
     drafts = flow.get("drafts") or {}
     if drafts.get("course"):
         Course.objects.filter(pk=drafts["course"], pricing_type="paid").update(pricing_type="free", price=0)
-    event = drafts.get("event") or {}
-    if live_dropped and event:
-        drop_draft(tenant, "event")  # the drafted class goes with the live offer
-    elif event.get("id"):
-        model = OnsiteEvent if event.get("kind") == "onsite" else LiveClass
-        model.objects.filter(pk=event["id"], pricing_type="paid").update(pricing_type="free", price=0)
+    if live_dropped and drafts.get("event"):
+        drop_draft(tenant, "event")  # the drafted classes go with the live offer, both of them
+    else:
+        for key in ("event", "onsite"):
+            event = drafts.get(key) or {}
+            if event.get("id"):
+                model = OnsiteEvent if event.get("kind") == "onsite" else LiveClass
+                model.objects.filter(pk=event["id"], pricing_type="paid").update(pricing_type="free", price=0)
     if plan_ids := membership_plan_ids(flow):
         SubscriptionPlan.objects.filter(pk__in=plan_ids).update(is_active=False)

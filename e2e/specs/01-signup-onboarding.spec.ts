@@ -76,8 +76,8 @@ test("signup lands in /setup and the interview ends in a published site", async 
   const makeFree = guide.getByRole("button", { name: "Make it free and go live now" });
   // A look tapped opens as a page; "Keep this look" answers the question.
   const keepLook = page.getByRole("button", { name: "Keep this look" });
-  // Story and training tiles are sentence starters: a tap fills the box and
-  // the coach finishes it. The guide never writes a coach's story for them,
+  // Story and training tiles are sentence starters: a tap opens the sentence
+  // in its card, and the coach finishes it there. The guide never writes a coach's story for them,
   // so those questions take a real answer, not "you decide" words.
   const ownWords = async () => {
     const q = await guide.getByRole("heading", { level: 1 }).innerText();
@@ -123,8 +123,9 @@ test("signup lands in /setup and the interview ends in a published site", async 
     if (await tile.isVisible()) {
       await tile.click();
       for (const handle of await handles.all()) await handle.fill("e2estudio");
-      // A starter tile filled the box: finish it in the coach's words.
-      if (await answer.inputValue()) await answer.fill(await ownWords());
+      // A starter tile opened as a card: finish its sentence there, in the coach's words.
+      const finish = guide.getByLabel(/^Finish the sentence/);
+      if (await finish.count()) await finish.first().fill(await ownWords());
       await cont.click();
       continue;
     }

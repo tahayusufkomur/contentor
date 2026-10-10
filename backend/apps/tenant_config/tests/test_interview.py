@@ -563,6 +563,10 @@ def test_story_and_credentials_offer_starters_not_claims():
     assert interview.guide_for(brief.FIELD_BY_ID["story"], options=["I found yoga when…"], icons=[])["starter"]
     assert interview.guide_for(brief.FIELD_BY_ID["credentials"], options=["I trained in…"], icons=[])["starter"]
     assert interview.guide_for(brief.FIELD_BY_ID["pitch"], options=["Yoga for desks"], icons=[])["starter"] is False
+    # Picked as cards, several at once, and she can add a sentence of her own.
+    for field_id in ("story", "credentials"):
+        guide = interview.guide_for(brief.FIELD_BY_ID[field_id], options=["I found yoga when…"], icons=[])
+        assert guide["multi"] and guide["custom"]
     assert "starter" in interview.GUIDE_KEYS
     assert "sentence starters" in interview.SYSTEM
 
@@ -726,3 +730,12 @@ def test_socials_and_contact_picks_skip_the_model(client, tenant_ctx, quiet):
     ).json()
     assert body["guide"]["field"] is None
     assert quiet.calls == []
+
+
+def test_a_question_stored_before_own_options_still_gets_its_blank_tile(tenant_ctx):
+    """A question on screen came from a transcript written before the "custom" key."""
+    flow = {
+        "interview": {"turns": [{"role": "guide", "field": "specialty", "question": "Which kinds?", "options": []}]}
+    }
+    guide = interview.interview_state(tenant_ctx, flow)["guide"]
+    assert guide["field"] == "specialty" and guide["custom"] is True

@@ -764,3 +764,63 @@ def test_the_header_button_follows_what_the_coach_offers(tenant_ctx, config):
     cfg.save()
     ms.sync_site(tenant_ctx, {"offers": ["live"]})
     assert TenantConfig.objects.first().navbar_config["cta"]["href"] == "/contact"
+
+
+CLASSES = {**HOME, "payments": ["free"], "live_topic": "Slow flow", "live_when": "Sunday 9am"}
+
+
+def test_an_in_person_class_is_drafted_beside_an_online_one(
+    tenant_ctx, config, side_effects, django_capture_on_commit_callbacks
+):
+    with django_capture_on_commit_callbacks(execute=True):
+        fired = ms.fire(tenant_ctx, {**CLASSES, "offers": ["course", "live", "onsite"]})
+    assert {"draft:event", "draft:onsite"} <= set(fired)
+    prompts = {call.args[1]: call.args[2] for call in side_effects["draft"].call_args_list}
+    assert "online class" in prompts["event"] and "in person class" in prompts["onsite"]
+
+
+def test_an_in_person_class_alone_is_the_first_class(
+    tenant_ctx, config, side_effects, django_capture_on_commit_callbacks
+):
+    with django_capture_on_commit_callbacks(execute=True):
+        fired = ms.fire(tenant_ctx, {**CLASSES, "offers": ["course", "onsite"]})
+    assert "draft:event" in fired and "draft:onsite" not in fired
+
+
+def test_skipping_classes_skips_the_in_person_one_too(
+    tenant_ctx, config, side_effects, django_capture_on_commit_callbacks
+):
+    answers = {**CLASSES, "offers": ["course", "live", "onsite"], "skipped": ["event"]}
+    with django_capture_on_commit_callbacks(execute=True):
+        fired = ms.fire(tenant_ctx, answers)
+    assert not {"draft:event", "draft:onsite"} & set(fired)
+
+
+def test_the_in_person_class_prompt_names_its_place(tenant_ctx, config):
+    answers = {**HOME, "offers": ["course", "live", "onsite"], "live_topic": "Pads", "location": "Studio 4"}
+    assert "online class" in ms.draft_prompt(answers, "event")
+    in_person = ms.draft_prompt(answers, "onsite")
+    assert "in person class" in in_person and "Where: Studio 4." in in_person
+
+
+def test_a_sexy_tone_ranks_the_looks_tagged_for_it():
+    from apps.tenant_config import sections
+
+    # No niche here, so the tone alone decides the order.
+    assert "sexy" in sections.tones_of_style(sections.rank_styles("no-such-niche", ["sexy"])[0])
+
+
+def test_the_in_person_draft_falls_back_to_an_in_person_class(tenant_ctx, config, owner):
+    from apps.live.models import OnsiteEvent
+
+    answers = {
+        "teaches": "Yoga",
+        "offers": ["course", "live", "onsite"],
+        "live_topic": "Slow flow",
+        "location": "Studio 4",
+    }
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "onsite", answers)
+    row = OnsiteEvent.objects.get()
+    assert (row.title, row.location) == ("Slow flow", "Studio 4")
+    assert TenantConfig.objects.first().setup_flow["drafts"]["onsite"] == {"kind": "onsite", "id": row.id}

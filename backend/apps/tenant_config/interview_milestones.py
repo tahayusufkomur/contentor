@@ -34,9 +34,11 @@ PAGE_NEEDS = {
 DRAFT_NEEDS = {
     "course": ("course_topic", "payments", "course_price"),
     "event": ("live_topic", "live_when", "payments", "event_price"),
+    # An in-person class, drafted beside an online one (see _due).
+    "onsite": ("live_topic", "live_when", "payments", "event_price"),
     "post": ("article_topic",),
 }
-DRAFT_OFFERS = {"course": ("course",), "event": ("live", "onsite"), "post": ("articles",)}
+DRAFT_OFFERS = {"course": ("course",), "event": ("live", "onsite"), "onsite": ("onsite",), "post": ("articles",)}
 # The review screen that shows each draft.
 REVIEW_FIELDS = {"course_review": "course", "event_review": "event"}
 LOGO_PAGE = 14  # + "just my name" + "upload my own" = a full 4x4 grid
@@ -66,8 +68,12 @@ def _due(tenant, answers) -> list[str]:
     if "membership" in (answers.get("payments") or []) and brief.settled(answers, ("memberships",)):
         due.append("plan:membership")
     for kind, needs in DRAFT_NEEDS.items():
+        # An in-person class comes on top of an online one; alone, the first class is in person.
+        if kind == "onsite" and "live" not in offers:
+            continue
         # A class is drafted on any plan; go-live offers the plan that runs it.
-        wanted = kind not in skipped and (kind not in DRAFT_OFFERS or offers.intersection(DRAFT_OFFERS[kind]))
+        section = "event" if kind == "onsite" else kind  # skipping classes skips both
+        wanted = section not in skipped and (kind not in DRAFT_OFFERS or offers.intersection(DRAFT_OFFERS[kind]))
         if wanted and brief.settled(answers, needs):
             due.append(f"draft:{kind}")
     return due
@@ -258,11 +264,12 @@ def draft_prompt(answers: dict, kind: str) -> str:
             f"My first course. Topic: {topic}. Format and length: you choose what suits it. "
             f"For: {_val(answers, 'audience', 'my students')}. Price: {price_text}."
         )
-    if kind == "event":
+    if kind in ("event", "onsite"):
         offers = answers.get("offers") or []
-        where = "in person" if "onsite" in offers and "live" not in offers else "online"
+        where = "in person" if kind == "onsite" or ("onsite" in offers and "live" not in offers) else "online"
         place = f" Where: {answers['location']}." if where == "in person" and answers.get("location") else ""
-        first = first_class_at(answers)
+        # The schedule's first date is the online class's; the in-person one picks its own.
+        first = first_class_at(answers) if kind == "event" else None
         when = f"{_val(answers, 'live_when', 'an evening that suits my students')}" + (
             f" (the first one on {first.strftime('%Y-%m-%dT%H:%M')})" if first else ""
         )
@@ -426,20 +433,24 @@ def _next_cover(tenant, kind: str) -> None:
 
 
 def drop_draft(tenant, kind: str) -> None:
-    """A skipped section: its draft goes, and its publish blocker with it."""
+    """A skipped section: its draft goes, and its publish blocker with it. The
+    classes section's drafts go together: the online class and the in-person one."""
     from .setup_flow import _delete_draft, _update_flow
 
-    ref = {}
+    kinds = ("event", "onsite") if kind == "event" else (kind,)
+    refs = {}
 
     def mutate(_config, flow):
         drafts = dict(flow.get("drafts") or {})
-        ref["old"] = drafts.pop(kind, None)
+        for key in kinds:
+            refs[key] = drafts.pop(key, None)
         flow["drafts"] = drafts
         flow["skipped"] = list(dict.fromkeys([*(flow.get("skipped") or []), kind]))
-        flow["draft_status"] = {k: v for k, v in (flow.get("draft_status") or {}).items() if k != kind}
+        flow["draft_status"] = {k: v for k, v in (flow.get("draft_status") or {}).items() if k not in kinds}
 
     _update_flow(tenant, mutate)
-    _delete_draft(kind, ref.get("old"))
+    for key in kinds:
+        _delete_draft(key, refs.get(key))
 
 
 # ── membership ───────────────────────────────────────────────────────────────
@@ -579,9 +590,11 @@ def style_cards(answers: dict, tenant=None) -> dict:
 def style_reason(style: dict | None, niche: str, tones: list[str], answers: dict) -> str:
     """Why this look is the pick, in the coach's own words ("Made for dance
     coaches, and it sounds playful")."""
+    from . import sections
+
     if not style:
         return ""
-    matched = [t for t in tones if t in (style.get("tones") or [])]
+    matched = [t for t in tones if t in sections.tones_of_style(style)]
     subject = brief.subject_of(answers)
     parts = []
     if niche in (style.get("niches") or []) and subject:

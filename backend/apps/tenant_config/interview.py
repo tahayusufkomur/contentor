@@ -42,6 +42,7 @@ STARTED = {
     "page:faq": "your FAQ page",
     "draft:course": "a first draft of your course",
     "draft:event": "your first class",
+    "draft:onsite": "your in-person class",
     "draft:post": "your first article",
 }
 
@@ -88,15 +89,16 @@ Do these things:
      like them might say, from the most common to the less obvious. Open questions
      (their pitch) get 8 too, written as the coach might say it. For "story" and "credentials"
      write sentence starters the coach finishes in their own words ("I found yoga when…", "I
-     trained in…"), never a finished claim: you do not know their story. When the field is
+     trained in…"), never a finished claim: you do not know their story. The coach picks any
+     number of them and finishes each in its card, so the picks are sentences, not labels. When the field is
      marked "several", the coach can tick any number of them, so every option is one distinct
      item that combines with the others: never "all of the above", "none" or "something else".
      When a field in "missing" lists "fixed_options", those are the answers the coach will see;
      write options anyway but phrase the question to fit them.
    - icons: one icon id per option, in the same order, chosen from "Icon ids" below: the
      best visual hint for that answer (repeat an id when nothing fits better).
-4. tone_hints: exactly 5 lines, one for each tone answer in this order: Warm, Energetic, Calm,
-   Expert, Playful. Each is under 10 words and says what that tone feels like on this coach's
+4. tone_hints: exactly 8 lines, one for each tone answer in this order: Warm, Energetic, Calm,
+   Expert, Playful, Confident, Sensual, Sexy. Each is under 10 words and says what that tone feels like on this coach's
    site, in the words of their niche and students (a face-yoga coach's Playful is never a sock
    joke). Write them once you know what they teach; until then, an empty list.
 If "spoken" is true the message came from speech recognition and may contain misheard words:
@@ -134,6 +136,7 @@ GUIDE_KEYS = (
     "field",
     "can_delegate",
     "multi",
+    "custom",
     "alone",
     "icons",
     "hints",
@@ -165,6 +168,7 @@ def guide_for(
             "field": None,
             "can_delegate": False,
             "multi": False,
+            "custom": False,
             "alone": None,
             "icons": {},
             "hints": {},
@@ -198,6 +202,8 @@ def guide_for(
         # A studio name that gives the niche away opens on its kinds: pick several.
         "multi": field.multi
         or (field.id == "teaches" and fixed and not brief.kind_of_brand(brand) and bool(brief.tile_of_brand(brand))),
+        # The coach can add options of her own: a blank tile at the end of the several picks.
+        "custom": field.custom,
         "alone": field.alone if field.alone in chosen else None,
         "icons": {o: i for o, i in zip(chosen, names, strict=False) if i in brief.ICONS},
         "hints": dict(zip(chosen, own_hints, strict=False)) if fixed else {},
@@ -208,7 +214,7 @@ def guide_for(
         "schedule": field.kind == "schedule",
         # The answer is a handle or link for each network ticked.
         "socials": field.kind == "socials",
-        # Tiles are sentence starters: a tap fills the box, never sends.
+        # Tiles are sentence starters: picked as cards and finished inline in them.
         "starter": field.starter,
         # One line under the question: why it matters.
         "why": field.why,
@@ -610,6 +616,8 @@ def interview_state(tenant, flow: dict) -> dict:
         # A transcript written before icons existed still renders.
         guide["icons"] = guide["icons"] or {}
         guide["hints"] = guide["hints"] or {}
+        # ...and one written before own options existed still gets its blank tile.
+        guide["custom"] = bool(getattr(brief.FIELD_BY_ID.get(guide["field"] or ""), "custom", False))
     guide["plan"] = interview_golive.plan_badge(tenant, guide["field"])  # live: a plan bought since hides it
     guide["prefill"] = contact_prefill(guide["field"])
     guide.update(membership_prices(guide["field"], answers))  # hers now, also on a question gone back to

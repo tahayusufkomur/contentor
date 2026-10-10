@@ -148,6 +148,11 @@ def content_snapshot(flow: dict) -> dict:
     event = _row(OnsiteEvent if event_kind == "onsite" else LiveClass, event_ref.get("id"))
     if event:
         out["event"] = {"id": event.id, "title": event.title, "kind": event_kind, "is_published": True}
+    # The in-person class drafted beside an online one: not a step of its own, so
+    # it shows here only as the draft it is.
+    onsite = _row(OnsiteEvent, (drafts.get("onsite") or {}).get("id"))
+    if onsite:
+        out["onsite"] = {"id": onsite.id, "title": onsite.title, "kind": "onsite", "is_published": True}
     post = _row(BlogPost, drafts.get("post"))
     if post:
         out["post"] = {
@@ -164,7 +169,7 @@ def content_preview_path(kind: str, item: dict | None) -> str | None:
         return None
     if kind == "course":
         return f"/courses/{item['slug']}"
-    if kind == "event":
+    if kind in ("event", "onsite"):
         return f"/calendar/{EVENT_CAL_TYPE[item['kind']]}/{item['id']}"
     return f"/blog/{item['slug']}"
 
@@ -364,6 +369,15 @@ DRAFT_SYSTEM = {
         "scheduled_at: a local date and time (YYYY-MM-DDTHH:MM, no offset) at least 2 days after "
         "'today', at an hour that suits their audience, respecting any day or time the coach named."
     ),
+    # The in-person class beside an online one: the same rules, always in person.
+    "onsite": _DRAFT_RULES
+    + (
+        "Draft ONE upcoming in-person session (event_kind 'onsite'): a concrete title (max 80 chars); "
+        "a 2-3 sentence description of what happens and who it is for; location: the place the coach "
+        "named, else empty. scheduled_at: a local date and time (YYYY-MM-DDTHH:MM, no offset) at least "
+        "2 days after 'today', at an hour that suits their audience, respecting any day or time the "
+        "coach named."
+    ),
     "post": _DRAFT_RULES
     + (
         "Draft ONE blog post: a specific title (max 90 chars); a one-sentence excerpt "
@@ -402,7 +416,7 @@ class PostDraft(BaseModel):
     body_html: str
 
 
-DRAFT_MODELS = {"course": CourseDraft, "event": EventDraft, "post": PostDraft}
+DRAFT_MODELS = {"course": CourseDraft, "event": EventDraft, "onsite": EventDraft, "post": PostDraft}
 PROMPT_MAX_LEN = 2000
 MAX_PRICE = 9999
 
@@ -492,7 +506,9 @@ def _create(tenant, user, config, kind: str, draft):
             ],
         }
         return content.create_course(user, params)["id"]
-    if kind == "event":
+    if kind in ("event", "onsite"):
+        # The in-person class beside an online one is in person, whatever the model said.
+        event_kind = "onsite" if kind == "onsite" else draft.event_kind
         price = (_brief_price(tenant, "event") or 0) if _may_price(tenant) else 0
         params = {
             "title": draft.title[:200],
@@ -501,9 +517,9 @@ def _create(tenant, user, config, kind: str, draft):
             "pricing_type": "paid" if price > 0 else "free",
             "scheduled_at": _event_time(draft, ZoneInfo(config.timezone or "UTC")).isoformat(),
         }
-        if draft.event_kind == "onsite":
+        if event_kind == "onsite":
             params["location"] = draft.location[:500]
-        return {"kind": draft.event_kind, "id": content.create_event(user, draft.event_kind, params)["id"]}
+        return {"kind": event_kind, "id": content.create_event(user, event_kind, params)["id"]}
     params = {"title": draft.title[:200], "excerpt": draft.excerpt[:300], "body_html": draft.body_html}
     return content.create_blog_post(user, params)["id"]
 
@@ -515,7 +531,7 @@ def _delete_draft(kind: str, ref) -> None:
 
     if not ref:
         return
-    if kind == "event":
+    if kind in ("event", "onsite"):
         model = OnsiteEvent if ref.get("kind") == "onsite" else LiveClass
         model.objects.filter(pk=ref.get("id")).delete()
     else:
@@ -589,11 +605,11 @@ def fallback_draft(kind: str, answers: dict):
             pricing_type="paid" if paid else "free",
             price=price if paid else 0,
         )
-    if kind == "event":
+    if kind in ("event", "onsite"):
         return EventDraft(
             title=str(answers.get("live_topic") or f"{teaches} live class")[:80],
             description="A live session to practise together.",
-            event_kind="onsite" if "onsite" in offers and "live" not in offers else "live",
+            event_kind="onsite" if kind == "onsite" or ("onsite" in offers and "live" not in offers) else "live",
             scheduled_at=timezone.now() + timedelta(days=3),
             location=str(answers.get("location") or ""),
         )

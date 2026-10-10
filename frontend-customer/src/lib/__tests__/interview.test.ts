@@ -7,7 +7,6 @@ import {
 import { ApiError } from "@/types/api";
 import {
   activityLine,
-  addStarter,
   contactOk,
   priceOk,
   defaultSchedule,
@@ -23,6 +22,7 @@ import {
   sectionOf,
   socialLink,
   socialOk,
+  starterStart,
   stageIndex,
   tileIcons,
   withNote,
@@ -264,12 +264,11 @@ describe("answers sent with a note", () => {
   });
 });
 
-describe("addStarter", () => {
-  it("puts a starter in the box to finish, without its ellipsis", () => {
-    expect(addStarter("", "I found yoga when…")).toBe("I found yoga when ");
-    expect(addStarter("I trained in Bali. ", "200-hour training...")).toBe(
-      "I trained in Bali. 200-hour training ",
-    );
+describe("starterStart", () => {
+  it("opens a starter in its card without its ellipsis", () => {
+    expect(starterStart("I found yoga when…")).toBe("I found yoga when");
+    expect(starterStart("200-hour training...")).toBe("200-hour training");
+    expect(starterStart("My own struggle with")).toBe("My own struggle with");
   });
 });
 

@@ -73,6 +73,10 @@ export interface ConnectStatus {
 /** What the coach has ticked or typed on a question but not sent yet. */
 export interface StepDraft {
   ticked?: string[];
+  /** Options the coach added herself on a multi question, as tiles. */
+  custom?: string[];
+  /** A starter card's sentence as the coach has finished it, by starter. */
+  starts?: Record<string, string>;
   text?: string;
   /** A look card picked but not sent yet. */
   card?: { value: string; label: string };
@@ -311,6 +315,8 @@ export interface GuideTurn {
   can_delegate: boolean;
   /** Several options can be ticked, then sent together. */
   multi?: boolean;
+  /** Several picks, and the coach can add options of her own (a blank tile). */
+  custom?: boolean;
   /** The option that can't be ticked with any other ("Free for now"). */
   alone?: string | null;
   /** Lucide icon id per option (only options that have one). */
@@ -327,8 +333,8 @@ export interface GuideTurn {
   schedule?: boolean;
   /** The answer is a handle or link for each network ticked. */
   socials?: boolean;
-  /** The options are sentence starters: a tap puts one in the box to
-   * finish, and it is never sent as-is. */
+  /** The options are sentence starters: picked as cards, each finished
+   * inline in its card, and never sent as-is. */
   starter?: boolean;
   /** One line under the question: why it matters. */
   why?: string;
