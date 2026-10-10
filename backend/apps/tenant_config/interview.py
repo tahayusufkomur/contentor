@@ -339,9 +339,8 @@ def picked_note(tenant, field_id) -> str:
     if field_id == "site_logo":
         return "I put your name in as the logo for now. You can pick a mark any time."
     if field_id == "memberships":
-        from .interview_milestones import DEFAULT_TIER
-
-        return f"I set up the {brief.TIER_BY_ID[DEFAULT_TIER]['label']} for you. You can change it any time."
+        tier = brief.TIER_BY_ID[brief.default_tier(brief.answers_of(tenant))]
+        return f"I set up the {tier['label']} for you. You can change it any time."
     if field_id == "tone":
         return "I'll match the tone to what you've told me. You can change it any time."
     if field_id in ("course_price", "event_price"):

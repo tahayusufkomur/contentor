@@ -193,3 +193,13 @@ def test_paid_choices_show_the_plan_before_go_live(tenant_ctx, config):
     # The badge labels are the tiles' own labels.
     for field_id, labels in interview_golive.PLAN_CHOICES.items():
         assert set(labels) <= set(brief.FIELD_BY_ID[field_id].options)
+
+
+def test_a_coach_who_offers_no_course_is_not_blocked_by_a_first_course(client, tenant_ctx):
+    """Audit R5: "Publish your first course" stood between a live-only coach and going live."""
+    state = tenant_ctx.wizard_state
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(
+        wizard_state={**state, "answers": {**state["answers"], "offers": ["live", "community"]}}
+    )
+    with mock.patch("apps.tenant_config.interview_golive.fire"):
+        assert "first_course" not in client.get(URL).json()["blockers"]

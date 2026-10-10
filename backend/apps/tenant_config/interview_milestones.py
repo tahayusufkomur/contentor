@@ -35,7 +35,7 @@ DRAFT_NEEDS = {
     "event": ("live_topic", "live_when", "payments", "event_price"),
     "post": ("article_topic",),
 }
-DRAFT_OFFERS = {"event": ("live", "onsite"), "post": ("articles",)}
+DRAFT_OFFERS = {"course": ("course",), "event": ("live", "onsite"), "post": ("articles",)}
 # The review screen that shows each draft.
 REVIEW_FIELDS = {"course_review": "course", "event_review": "event"}
 LOGO_PAGE = 15  # + "just my name" = a full 4x4 grid
@@ -403,8 +403,8 @@ def drop_draft(tenant, kind: str) -> None:
 
 def create_memberships(tenant, answers: dict) -> None:
     """The memberships a coach asked for: one plan per picked tier (a
-    delegated pick gets the digital one), the first course in every tier
-    that includes courses. Created once; the plan ids are kept in
+    delegated pick gets the first her offers allow), the first course in
+    every tier that includes courses; the perks promise only what she offers. Created once; the plan ids are kept in
     setup_flow["drafts"]["plans"] by tier."""
     from decimal import Decimal
 
@@ -412,11 +412,12 @@ def create_memberships(tenant, answers: dict) -> None:
 
     from .setup_flow import _update_flow, start_page_build
 
-    picked = [i for i in (answers.get("memberships") or []) if i in brief.TIER_BY_ID] or [DEFAULT_TIER]
+    picked = [i for i in (answers.get("memberships") or []) if i in brief.TIER_BY_ID] or [brief.default_tier(answers)]
+    allowed = {t["id"]: t for t in brief.tiers_for(answers)}
     teaches = str(answers.get("teaches") or "everything I teach").lower()
     plans = {}
     for tier_id in picked:
-        tier = brief.TIER_BY_ID[tier_id]
+        tier = allowed.get(tier_id) or brief.TIER_BY_ID[tier_id]
         perks = ", ".join(p.lower() for p in tier["perks"])
         plans[tier_id] = SubscriptionPlan.objects.create(
             name=tier["label"],

@@ -153,6 +153,7 @@ MEMBERSHIP_TIERS = (
         "icon": "video",
         "perks": ("All live online classes", "Class replays", "Every digital course"),
         "blurb": "Every live class from home, plus the courses.",
+        "blurb_alone": "Every live class from home.",  # for a coach who sells no courses
     },
     {
         "id": "studio",
@@ -181,7 +182,7 @@ MEMBERSHIP_TIERS = (
         "needs": (),
         "courses": True,
         "icon": "crown",
-        "perks": ("Everything, online and in person",),
+        "perks": ("Everything I offer",),
         "blurb": "One membership for all of it.",
     },
 )
@@ -190,9 +191,27 @@ TIER_BY_ID = {t["id"]: t for t in MEMBERSHIP_TIERS}
 
 def tiers_for(answers: dict) -> list[dict]:
     """The tiers this coach's offers allow; all-access only when there is
-    more than one thing to bundle."""
+    more than one thing to bundle. A coach who sells no courses gets tiers
+    that never promise one."""
     have = set(answers.get("offers") or ["course"])
-    return [t for t in MEMBERSHIP_TIERS if set(t["needs"]) <= have and (t["needs"] or len(have) > 1)]
+    tiers = [t for t in MEMBERSHIP_TIERS if set(t["needs"]) <= have and (t["needs"] or len(have) > 1)]
+    if "course" in have:
+        return tiers
+    return [
+        {
+            **t,
+            "courses": False,
+            "perks": tuple(p for p in t["perks"] if "course" not in p.lower()),
+            "blurb": t.get("blurb_alone", t["blurb"]),
+        }
+        for t in tiers
+    ]
+
+
+def default_tier(answers: dict) -> str:
+    """The membership a "pick for me" gets: the first this coach's offers allow."""
+    tiers = tiers_for(answers)
+    return tiers[0]["id"] if tiers else "digital"
 
 
 # Lucide icon ids a tile may show (frontend: src/lib/option-icons.ts mirrors
@@ -566,6 +585,7 @@ FIELDS: tuple[Field, ...] = (
         "course_topic",
         "First course topic",
         "Let's build your first course. What should it teach?",
+        needs=("course",),
         group="course",
         delegable=True,
     ),
@@ -576,10 +596,18 @@ FIELDS: tuple[Field, ...] = (
         ("19", "29", "39", "49", "79", "99", "149", "199"),
         kind="price",
         pays=("course",),
+        needs=("course",),
         group="course",
         delegable=True,
     ),
-    Field("course_review", "First course", "Here's your first course. Happy with it?", kind="course", group="course"),
+    Field(
+        "course_review",
+        "First course",
+        "Here's your first course. Happy with it?",
+        kind="course",
+        needs=("course",),
+        group="course",
+    ),
     Field(
         "live_topic",
         "Live class topic",
@@ -838,8 +866,7 @@ def _sync_legacy(answers: dict, field_id: str) -> None:
     if field_id in ("teaches", "pitch"):
         answers["description"] = str(answers.get("pitch") or answers.get("teaches") or "")[:TEXT_MAX]
     if field_id == "offers":
-        offers = ["course", *[o for o in answers["offers"] if o != "course"]]
-        answers["offers"] = [o for o in OFFERS if o in offers]
+        answers["offers"] = [o for o in OFFERS if o in answers["offers"]]
         answers["goals"] = sorted({OFFER_GOALS[o] for o in answers["offers"]})
     if field_id == "payments":
         answers["sells"] = "paid" if set(answers["payments"]) & set(PAID_WAYS) else "free"
@@ -953,6 +980,12 @@ def options_for(
     )
     if field.kind == "payments" and not {"live", "onsite"} & set(answers.get("offers") or []):
         rows = [r for r in rows if r[0] != "Pay per class or event"]
+    # Course purchases only for a coach who offers courses; a membership only
+    # when there is something to bundle into one.
+    if field.kind == "payments" and "course" not in (answers.get("offers") or ["course"]):
+        rows = [r for r in rows if r[0] != "One-time course purchases"]
+    if field.kind == "payments" and not tiers_for(answers):
+        rows = [r for r in rows if r[0] != "Monthly membership"]
     options, icons, hints = (tuple(col) for col in zip(*rows, strict=True)) if rows else ((), (), ())
     return options, icons if field.icons else (), hints if field.hints else ()
 

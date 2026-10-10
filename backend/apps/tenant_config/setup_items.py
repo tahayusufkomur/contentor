@@ -138,7 +138,10 @@ def publish_blockers(config, tenant) -> list[str]:
         Course, seeded.get("courses.course", []), queryset=Course.objects.filter(is_published=True)
     ) or _has_own(DownloadFile, seeded.get("downloads.downloadfile", []))
     skipped = (config.setup_flow or {}).get("skipped") or []
-    if not has_own_product and "course" not in skipped:
+    # A coach whose brief offers no courses is never asked for one (audit
+    # 2026-10-09); a brief without offers (older signups) still is.
+    offers = ((getattr(tenant, "wizard_state", None) or {}).get("answers") or {}).get("offers")
+    if not has_own_product and "course" not in skipped and (not offers or "course" in offers):
         blockers.append("first_course")
 
     goals = _wizard_goals(tenant)

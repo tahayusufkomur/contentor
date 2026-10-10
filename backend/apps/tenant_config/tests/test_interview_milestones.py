@@ -574,3 +574,20 @@ def test_a_crash_after_the_draft_exists_keeps_it_ready(tenant_ctx, config, owner
     ):
         ms.run_draft(tenant_ctx, "event", "prompt")
     assert TenantConfig.objects.first().setup_flow["draft_status"]["event"] == "ready"
+
+
+def test_a_coach_who_offers_no_course_gets_no_course_draft(tenant_ctx, config):
+    """Audit R5: removing the forced course must not draft one anyway."""
+    answers = {**HOME, "offers": ["live", "community"], "payments": ["membership"], "memberships": ["online"]}
+    assert "draft:course" not in ms._due(tenant_ctx, answers)
+    course = {**HOME, "payments": ["membership"], "memberships": ["digital"], "course_topic": "Desk mobility"}
+    assert "draft:course" in ms._due(tenant_ctx, course)
+
+
+def test_a_delegated_membership_pick_follows_the_offers(tenant_ctx, config, side_effects):
+    from apps.billing.models import SubscriptionPlan
+
+    answers = {**HOME, "offers": ["live"], "payments": ["membership"], "delegated": ["memberships"]}
+    assert "plan:membership" in ms.fire(tenant_ctx, answers)
+    plan = SubscriptionPlan.objects.get()
+    assert plan.name == "Online membership" and "course" not in plan.description.lower()

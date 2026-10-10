@@ -72,11 +72,33 @@ def test_skipping_a_section_drops_its_questions():
     assert not brief.skip(answers, "story")
 
 
-def test_offers_sync_goals_and_course_is_always_a_goal():
+def test_offers_are_what_the_coach_picked():
+    """Audit R5: courses were forced on a coach who teaches live only."""
     answers = {}
     brief.apply_fact(answers, "offers", "live classes and articles")
-    assert answers["offers"] == ["course", "live", "articles"]
-    assert answers["goals"] == ["run_live_classes", "sell_courses", "write_blog"]
+    assert answers["offers"] == ["live", "articles"]
+    assert answers["goals"] == ["run_live_classes", "write_blog"]
+
+
+def test_a_coach_who_teaches_live_only_is_never_asked_about_a_course():
+    answers = {"offers": ["live", "community"], "payments": ["membership", "event"]}
+    assert not {f.id for f in brief.required(answers)} & {"course_topic", "course_price", "course_review"}
+    payments = brief.FIELD_BY_ID["payments"]
+    assert "One-time course purchases" not in brief.options_for(payments, answers)[0]
+    assert "One-time course purchases" in brief.options_for(payments, {"offers": ["course"]})[0]
+
+
+def test_memberships_promise_only_what_the_coach_offers():
+    answers = {"offers": ["live", "community"]}
+    tiers = brief.tiers_for(answers)
+    assert [t["id"] for t in tiers] == ["online", "community", "all"]
+    assert not any("course" in " ".join([t["blurb"], *t["perks"]]).lower() for t in tiers)
+    assert "course" not in brief.details_for(brief.FIELD_BY_ID["memberships"], answers)["Online membership"].lower()
+    assert brief.default_tier(answers) == "online"
+    # Nothing to bundle into a membership: it isn't offered as a way to pay.
+    articles = {"offers": ["articles"]}
+    assert brief.tiers_for(articles) == []
+    assert "Monthly membership" not in brief.options_for(brief.FIELD_BY_ID["payments"], articles)[0]
 
 
 def test_unknown_field_and_blank_text_are_rejected():
@@ -90,11 +112,12 @@ def test_required_follows_offers_and_selling():
     ids = lambda a: [f.id for f in brief.required(a)]  # noqa: E731
     base = ids({})
     assert "live_topic" not in base and "article_topic" not in base and "location" not in base
-    assert "course_topic" in base  # a first course is always needed to publish
-    assert "course_price" not in base  # only when selling courses one by one
-    assert "course_price" not in ids({"payments": ["membership"]})
+    assert "course_topic" not in base  # only for a coach who offers courses
+    assert {"course_topic", "course_review"} <= set(ids({"offers": ["course"]}))
+    assert "course_price" not in ids({"offers": ["course"]})  # only when selling courses one by one
+    assert "course_price" not in ids({"offers": ["course"], "payments": ["membership"]})
     assert "memberships" in ids({"payments": ["membership"]})
-    assert "course_price" in ids({"payments": ["course"]})
+    assert "course_price" in ids({"offers": ["course"], "payments": ["course"]})
     assert {"live_topic", "live_when", "location"} <= set(ids({"offers": ["course", "onsite"]}))
 
 
