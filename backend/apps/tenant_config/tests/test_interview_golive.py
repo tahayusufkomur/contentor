@@ -330,3 +330,43 @@ def test_held_items_go_on_sale_once_she_can_take_payments(client, tenant_ctx, co
     course.refresh_from_db(), plan.refresh_from_db(), live.refresh_from_db()
     assert course.is_published is True and plan.is_active is True and live.status == "scheduled"
     assert "held" not in TenantConfig.objects.first().setup_flow
+
+
+def test_what_is_held_follows_the_drafts_as_they_are_when_she_goes_live(client, tenant_ctx, config):
+    """A redraft after "sell later" replaced the held course: the coach was stuck
+    at go-live (payouts blocked publish, and no way out was offered)."""
+    from apps.billing.models import SubscriptionPlan
+    from apps.live.models import LiveClass
+
+    _, course, plan, live = _sell_later(client, tenant_ctx, config)
+    # A second click (another tab) keeps the class's own status to go back to.
+    with mock.patch("apps.tenant_config.interview_golive.fire"):
+        client.post(URL, {"action": "sell_later"}, format="json")
+    # She went back and redrafted: a new paid course, a new scheduled class,
+    # and a membership added since.
+    new_course = _course(paid=True)
+    owner = User.objects.filter(role="owner").first()
+    new_live = LiveClass.objects.create(title="Desk Flow II", instructor=owner, status="scheduled")
+    extra = SubscriptionPlan.objects.create(name="Community membership", price=Decimal("5"), billing_interval_months=1)
+    course.delete(), live.delete()
+    config.refresh_from_db()
+    drafts = config.setup_flow["drafts"]
+    drafts.update(course=new_course.id, event={"id": new_live.id, "kind": "live"})
+    drafts["plans"] = {"online": plan.pk, "community": extra.pk}
+    config.save()
+    with mock.patch("apps.tenant_config.interview_golive.fire"):
+        body = client.get(URL).json()
+        assert "Desk Yoga" in " ".join(body["held"])
+        resp = client.post(URL, {"action": "publish"}, format="json")
+    assert resp.status_code == 200, resp.json()
+    new_course.refresh_from_db(), new_live.refresh_from_db(), extra.refresh_from_db()
+    assert new_course.is_published is False and new_live.status == "draft" and extra.is_active is False
+
+    with (
+        mock.patch("apps.tenant_config.interview_golive.can_monetize", return_value=True),
+        mock.patch("apps.tenant_config.interview_golive._live_entitled", return_value=True),
+    ):
+        client.get("/api/v1/admin/setup-status/")
+    new_course.refresh_from_db(), new_live.refresh_from_db(), extra.refresh_from_db()
+    assert new_course.is_published is True and extra.is_active is True
+    assert new_live.status == "scheduled"  # not "draft": the second click didn't overwrite it

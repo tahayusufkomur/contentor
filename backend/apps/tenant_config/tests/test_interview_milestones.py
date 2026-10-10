@@ -145,10 +145,18 @@ def test_choose_an_uploaded_logo(tenant_ctx, config):
     from apps.media.models import Photo
 
     photo = Photo.objects.create(s3_key="uploads/logo.png", title="logo")
+    # A generated logo picked before leaves its favicon, recipe and hidden name.
+    TenantConfig.objects.update(
+        icon=Photo.objects.create(s3_key="gen/icon.png"),
+        logo_recipe={"version": 3},
+        navbar_config={"show_brand_name": False, "logo_size": "lg"},
+    )
     answers = {}
     ms.choose(tenant_ctx, answers, "site_logo", f"upload:{photo.pk}")
     assert answers["logo"] == {"mode": "upload", "photo_id": str(photo.pk)}
-    assert TenantConfig.objects.first().logo_id == photo.pk
+    cfg = TenantConfig.objects.first()
+    assert cfg.logo_id == photo.pk and cfg.icon_id is None and cfg.logo_recipe == {}
+    assert cfg.navbar_config.get("show_brand_name") is True and "logo_size" not in cfg.navbar_config
     for bad in (f"upload:{uuid.uuid4()}", "upload:nope"):
         with pytest.raises(ms.ChoiceError):
             ms.choose(tenant_ctx, answers, "site_logo", bad)

@@ -840,8 +840,11 @@ def apply_logo(tenant, answers: dict) -> None:
 
     with transaction.atomic():
         cfg = TenantConfig.objects.select_for_update().first()
-        cfg.logo = None  # switching back to a text logo must clear a picked mark
-        cfg.logo_url = ""
+        # Switching logos clears the last one's parts: a picked mark, and a
+        # generated logo's favicon and recipe.
+        cfg.logo = cfg.icon = None
+        cfg.logo_url = cfg.icon_url = ""
+        cfg.logo_recipe = {}
         apply_wizard_logo(cfg, answers, tenant)
         cfg.save()
     _bust(tenant)

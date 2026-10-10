@@ -383,6 +383,10 @@ def apply_wizard_logo(config, answers, tenant) -> None:
         from apps.media.models import Photo
 
         config.logo = Photo.objects.filter(pk=logo["photo_id"]).first()
+        navbar = dict(config.navbar_config or {})
+        navbar["show_brand_name"] = True  # her name beside it, as in the lockup she picked it from
+        navbar.pop("logo_size", None)
+        config.navbar_config = navbar
         return
 
     if mode != "curated" or not logo.get("curated_id"):

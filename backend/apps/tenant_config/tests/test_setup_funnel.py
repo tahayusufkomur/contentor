@@ -36,12 +36,14 @@ def test_time_per_question_delegate_rate_typed_vs_tapped_latency_and_drop_off():
         asked="story",
         last_at=T.format(40),
     )
-    report = funnel([a, b], idle_before=datetime(2026, 10, 11, tzinfo=UTC))
+    # Never answered the first question: nothing stored, still a drop-off.
+    c = _iv([], asked="teaches", last_at=T.format(0))
+    report = funnel([a, b, c], idle_before=datetime(2026, 10, 11, tzinfo=UTC))
     teaches, tone = report["fields"]["teaches"], report["fields"]["tone"]
-    assert (teaches["reached"], teaches["answered"]) == (2, 2)
+    assert (teaches["reached"], teaches["answered"]) == (3, 2)
     assert teaches["median_secs"] == 20 and teaches["how"] == {"tap": 1, "typed": 1}
     assert teaches["median_reply_ms"] == 4000  # the turns that answered it
     assert tone["how"] == {"delegate": 1} and tone["answered"] == 2
     assert report["fields"]["story"] == {**report["fields"]["story"], "reached": 1, "answered": 0}
-    assert report["dropped"] == {"story": 1}
-    assert (report["tenants"], report["done"]) == (2, 1)
+    assert report["dropped"] == {"story": 1, "teaches": 1}
+    assert (report["tenants"], report["done"]) == (3, 1)

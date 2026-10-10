@@ -9,7 +9,7 @@ from contextlib import suppress
 from apps.core.monetization import can_monetize, is_paid_active
 
 from . import interview_brief as brief
-from .interview_milestones import drop_draft, expand_class_series, fire, membership_plan_ids
+from .interview_milestones import _draft_row, drop_draft, expand_class_series, fire, membership_plan_ids
 from .models import TenantConfig
 from .setup_items import _has_paid_content, _live_entitled, _seeded_by_label, publish_blockers
 
@@ -59,12 +59,13 @@ def golive_state(tenant) -> dict:
         (builds.get(k.removeprefix("page:")) or {}).get("status") == "building" for k in fired if k.startswith("page:")
     ) or any(s == "building" for s in (flow.get("draft_status") or {}).values())
     held = flow.get("held")
-    paid_content = _has_paid_content(_seeded_by_label(), held=held)
+    paid_content = _has_paid_content(_seeded_by_label(), held_course=_held_course(flow))
     wants_live = bool({"live", "onsite"} & set(answers.get("offers") or [])) and not _live_entitled(tenant)
     paid = is_paid_active(tenant)
     # Selling is known from the brief even before a paid course exists; a
-    # coach who chose to sell later goes live first.
-    sells = (paid_content or answers.get("sells") == "paid") and held is None
+    # coach who chose to sell later goes live first (paid content she did not
+    # hold still needs the plan and payouts).
+    sells = paid_content or (answers.get("sells") == "paid" and held is None)
     wants_live = wants_live and held is None
     needs_plan = (sells or wants_live) and not paid
     needs_payouts = paid_content and paid and not can_monetize(tenant)
@@ -101,7 +102,7 @@ def golive_state(tenant) -> dict:
         # What "make it free" would change, said before the coach agrees to it.
         "free_effects": _free_effects(tenant, answers, flow) if needs_plan or needs_payouts else [],
         # What waits, with its prices, until she can take payments.
-        "held": _held_lines(held or {}),
+        "held": _held_lines(held or {}, flow),
     }
 
 
@@ -180,24 +181,68 @@ def _free_effects(tenant, answers, flow) -> list[str]:
     return out
 
 
-def _held_lines(held) -> list[str]:
+# The in-person class is held with the online one.
+_CLASSES = ("event", "onsite")
+
+
+def _held_course(flow):
+    """The course draft "sell later" holds back, as it is now (a redraft
+    replaces the row)."""
+    return (flow.get("drafts") or {}).get("course") if (flow.get("held") or {}).get("course") else None
+
+
+def _held_lines(held, flow) -> list[str]:
     from apps.billing.models import SubscriptionPlan
     from apps.courses.models import Course
 
     out = []
-    if title := Course.objects.filter(pk=held.get("course")).values_list("title", flat=True).first():
+    if title := Course.objects.filter(pk=_held_course(flow)).values_list("title", flat=True).first():
         out.append(f"Your course \u201c{title}\u201d")
-    if names := list(SubscriptionPlan.objects.filter(pk__in=held.get("plans") or []).values_list("name", flat=True)):
+    plans = SubscriptionPlan.objects.filter(pk__in=membership_plan_ids(flow) if held.get("plans") else [])
+    if names := list(plans.values_list("name", flat=True)):
         out.append(f"Your {'membership' if len(names) == 1 else 'memberships'}: {', '.join(names)}")
-    if held.get("event") or held.get("onsite"):
+    if any(k in held for k in _CLASSES):
         out.append("Your classes")
     return out
 
 
-def _event_model(event):
-    from apps.live.models import LiveClass, OnsiteEvent
+def _hold(tenant) -> dict:
+    """Hold back what can't be sold yet, in the drafts as they are now: a
+    redraft or a membership added since "sell later" is held too. Returns
+    what is held: {course: True, plans: True, event/onsite: the status each
+    class goes back to}."""
+    from apps.billing.models import SubscriptionPlan
+    from apps.courses.models import Course
 
-    return OnsiteEvent if event.get("kind") == "onsite" else LiveClass
+    flow = TenantConfig.objects.first().setup_flow or {}
+    drafts, before = flow.get("drafts") or {}, flow.get("held") or {}
+    held = {}
+    if Course.objects.filter(pk=drafts.get("course"), pricing_type="paid", is_published=False).exists():
+        held["course"] = True
+    if plan_ids := membership_plan_ids(flow):
+        SubscriptionPlan.objects.filter(pk__in=plan_ids).update(is_active=False)
+        held["plans"] = True
+    for key in _CLASSES:
+        row = _draft_row(flow, key)
+        if row is not None and (
+            not _live_entitled(tenant) or (row.pricing_type == "paid" and not can_monetize(tenant))
+        ):
+            # Back to the status it had before the first hold, never to "draft".
+            held[key] = before.get(key) or (row.status if row.status != "draft" else "scheduled")
+            type(row).objects.filter(pk=row.pk).update(status="draft")
+    return held
+
+
+def _save_held(tenant, held) -> None:
+    from .setup_flow import _update_flow
+
+    def mutate(_config, flow):
+        if held is None:
+            flow.pop("held", None)
+        else:
+            flow["held"] = held
+
+    _update_flow(tenant, mutate)
 
 
 def sell_later(tenant) -> None:
@@ -205,31 +250,7 @@ def sell_later(tenant) -> None:
     memberships stay off and a class her plan can't run stays off the
     calendar, all with her prices kept (make_free throws them away).
     release_held() puts them on sale once she can take payments."""
-    from apps.billing.models import SubscriptionPlan
-    from apps.courses.models import Course
-
-    from .setup_flow import _update_flow
-
-    drafts = (TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}
-    held = {}
-    if Course.objects.filter(pk=drafts.get("course"), pricing_type="paid", is_published=False).exists():
-        held["course"] = drafts["course"]
-    if plan_ids := membership_plan_ids({"drafts": drafts}):
-        SubscriptionPlan.objects.filter(pk__in=plan_ids).update(is_active=False)
-        held["plans"] = plan_ids
-    for key in ("event", "onsite"):  # the in-person class is held with the online one
-        event = drafts.get(key) or {}
-        row = _event_model(event).objects.filter(pk=event.get("id")).first() if event.get("id") else None
-        if row is not None and (
-            not _live_entitled(tenant) or (row.pricing_type == "paid" and not can_monetize(tenant))
-        ):
-            type(row).objects.filter(pk=row.pk).update(status="draft")
-            held[key] = {"id": row.pk, "kind": event.get("kind"), "status": row.status}
-
-    def mutate(_config, flow):
-        flow["held"] = held
-
-    _update_flow(tenant, mutate)
+    _save_held(tenant, _hold(tenant))
 
 
 def release_held(tenant) -> None:
@@ -239,36 +260,30 @@ def release_held(tenant) -> None:
     from apps.billing.models import SubscriptionPlan
     from apps.core.copilot import content
 
-    from .setup_flow import _update_flow
-
     config = TenantConfig.objects.first()
-    held = dict((config.setup_flow or {}).get("held") or {}) if config else {}
+    flow = (config.setup_flow or {}) if config else {}
+    held = dict(flow.get("held") or {})
     if not held:
         return
     selling = can_monetize(tenant)
-    if selling and held.get("course"):
+    if selling and held.pop("course", None):
         with suppress(content.ContentOpError):  # published by hand meanwhile, or deleted
-            content.publish_course(held.pop("course"))
-    if selling and held.get("plans"):
-        SubscriptionPlan.objects.filter(pk__in=held.pop("plans")).update(is_active=True)
-    for key in ("event", "onsite"):
-        event = held.get(key)
-        if event and _live_entitled(tenant):
-            model = _event_model(event)
-            row = model.objects.filter(pk=event["id"]).first()
-            if row is None or row.pricing_type != "paid" or selling:
-                model.objects.filter(pk=event["id"], status="draft").update(status=event.get("status") or "scheduled")
-                held.pop(key)
-                if key == "event":
-                    expand_class_series(tenant)  # a weekly schedule belongs to the online class
-
-    def mutate(_config, flow):
-        if held:
-            flow["held"] = held
-        else:
-            flow.pop("held", None)
-
-    _update_flow(tenant, mutate)
+            content.publish_course((flow.get("drafts") or {}).get("course"))
+    if selling and held.pop("plans", None):
+        SubscriptionPlan.objects.filter(pk__in=membership_plan_ids(flow)).update(is_active=True)
+    for key in _CLASSES:
+        if key not in held or not _live_entitled(tenant):
+            continue
+        row = _draft_row(flow, key)
+        if row is not None and row.pricing_type == "paid" and not selling:
+            continue
+        status = held.pop(key)
+        # Only the request that flips it expands the series: two admin pages
+        # loading at once never copy the classes twice.
+        flipped = row is not None and type(row).objects.filter(pk=row.pk, status="draft").update(status=status)
+        if flipped and key == "event":
+            expand_class_series(tenant)  # a weekly schedule belongs to the online class
+    _save_held(tenant, held or None)
     if not held:
         logger.info("sell later: held items released for tenant %s", tenant.schema_name)
 
@@ -291,7 +306,11 @@ def publish(tenant) -> None:
     from . import setup_flow
 
     flow = TenantConfig.objects.first().setup_flow or {}
-    drafts, held = flow.get("drafts") or {}, flow.get("held") or {}
+    held = {}
+    if "held" in flow:  # "sell later": hold the drafts as they are now
+        held = _hold(tenant)
+        _save_held(tenant, held)
+    drafts = flow.get("drafts") or {}
     for kind, publisher in (("course", content.publish_course), ("post", content.publish_blog_post)):
         if drafts.get(kind) and not held.get(kind):
             with suppress(content.ContentOpError):  # already published, or the draft is gone

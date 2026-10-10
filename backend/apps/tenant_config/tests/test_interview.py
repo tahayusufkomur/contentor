@@ -156,7 +156,7 @@ def test_spoken_text_is_corrected_and_stored(client, tenant_ctx, quiet):
         "field": "teaches",
     }
     # Stamped for the funnel (manage.py setup_funnel).
-    assert coach["how"] == "spoken" and coach["at"] and turns[2]["at"] == coach["at"]
+    assert coach["how"] == "spoken" and coach["at"] and turns[2]["at"] >= coach["at"]  # answered, then replied
     assert isinstance(turns[2]["ms"], int)
     assert '"spoken": true' in quiet.calls[0]["user"]
 

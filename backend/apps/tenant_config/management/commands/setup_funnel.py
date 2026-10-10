@@ -33,7 +33,8 @@ def funnel(transcripts: list[dict], idle_before: datetime) -> dict:
     dropped = Counter()
     for iv in transcripts:
         turns = iv["turns"]
-        reached, answered = set(), set()
+        # The question on screen was reached, answered or not.
+        reached, answered = {iv["asked"]} if iv.get("asked") else set(), set()
         for i, turn in enumerate(turns):
             field = turn.get("field")
             if not field:
@@ -97,8 +98,14 @@ class Command(BaseCommand):
             with tenant_context(tenant):
                 config = TenantConfig.objects.first()
                 flow = (config.setup_flow or {}) if config else {}
-            iv = flow.get("interview") or {}
-            if iv.get("turns"):
+                iv = flow.get("interview") or {}
+                if not iv.get("turns") and (tenant.wizard_state or {}).get("flow") == "interview":
+                    # Never answered the first question: nothing stored yet, but
+                    # she reached it (the likeliest place to leave).
+                    first = brief.missing(brief.answers_of(tenant))
+                    started = flow.get("started_at") or tenant.created_at.isoformat()
+                    iv = {"turns": [], "asked": first[0].id if first else None, "last_at": started}
+            if iv.get("turns") or iv.get("asked"):
                 transcripts.append({**iv, "done": flow.get("status") == "done"})
         report = funnel(transcripts, idle_before=now - timedelta(hours=options["idle_hours"]))
         if options["as_json"]:

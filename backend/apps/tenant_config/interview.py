@@ -483,7 +483,7 @@ def run_turn(
     from . import interview_golive, setup_flow
     from . import interview_milestones as milestones
 
-    started = time.monotonic()
+    started, arrived = time.monotonic(), timezone.now().isoformat()
     flow = TenantConfig.objects.first().setup_flow or {}
     turns = list((flow.get("interview") or {}).get("turns") or [])
     answers = brief.answers_of(tenant)
@@ -563,8 +563,8 @@ def run_turn(
     if also:
         guide["noted"] = also
 
-    # Stamps for the funnel (manage.py setup_funnel): when, how she answered,
-    # and how long the reply took.
+    # Stamps for the funnel (manage.py setup_funnel): when she answered (the
+    # request's arrival), how, and when and how fast the reply came.
     now = timezone.now().isoformat()
     how = (
         "delegate"
@@ -581,9 +581,9 @@ def run_turn(
         iv = dict(flow.get("interview") or {})
         entries = list(iv.get("turns") or [])
         if opening and not any(t.get("role") == "guide" for t in entries):
-            entries.append({"role": "guide", **opening, "at": flow.get("started_at")})
+            entries.append({"role": "guide", **opening})  # served earlier by interview_state: untimed
         if text:
-            entries.append({"role": "coach", "text": text, "field": answering, "at": now, "how": how})
+            entries.append({"role": "coach", "text": text, "field": answering, "at": arrived, "how": how})
         entries.append({"role": "guide", **guide, **({"edit": edit} if edit else {}), "at": now, "ms": ms})
         iv["turns"] = entries[-TRANSCRIPT_KEEP:]
         iv["asked"] = guide["field"]
