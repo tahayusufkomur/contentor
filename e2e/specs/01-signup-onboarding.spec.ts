@@ -97,6 +97,11 @@ test("signup lands in /setup and the interview ends in a published site", async 
     if (await goLive.isVisible()) break;
     if (await makeFree.isVisible()) {
       await makeFree.click();
+      // Going free first says what it changes, then asks (nothing to change: no ask).
+      await guide
+        .getByRole("button", { name: "Yes, make it free" })
+        .click({ timeout: 10_000 })
+        .catch(() => {});
       await expect(goLive).toBeVisible({ timeout: 600_000 });
       break;
     }
