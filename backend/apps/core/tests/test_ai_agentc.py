@@ -165,6 +165,20 @@ def test_failed_state(hub):
         _call()
 
 
+def test_a_hub_hold_fails_fast_and_cancels(hub, monkeypatch):
+    real_get = hub.get
+
+    def get(url, params=None, timeout=None, stream=False):
+        if "/runs/run-" in url and not url.endswith("/events"):
+            return _Resp({"id": "run-1", "state": "queued", "waitReason": 'quota floor 10% for "contentor": no gemini studio account above it'})
+        return real_get(url, params=params, timeout=timeout, stream=stream)
+
+    monkeypatch.setattr(ai.requests, "get", get)
+    with pytest.raises(ai.AiError, match="held by the hub: quota floor 10%"):
+        _call()
+    assert hub.cancelled == ["run-1"]
+
+
 def test_deadline_cancels_run(hub, settings):
     settings.AGENTC_TIMEOUT_SECONDS = 0
     with pytest.raises(ai.AiError, match="exceeded"):

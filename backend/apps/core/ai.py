@@ -350,6 +350,9 @@ def _agentc_execute(prompt, label, deadline, model):
             resp = requests.get(_agentc_url(f"/runs/{run_id}"), timeout=_AGENTC_HTTP_TIMEOUT)
             resp.raise_for_status()
             run = resp.json()
+            # A hub rule (quota floor) is holding this type; a coach must not wait for a quota reset.
+            if run.get("state") == "queued" and run.get("waitReason"):
+                raise AiError(f"agentc run {run_id} held by the hub: {run['waitReason']}")
     except (AiError, requests.RequestException, ValueError) as exc:
         _agentc_cancel(run_id)
         if isinstance(exc, AiError):
