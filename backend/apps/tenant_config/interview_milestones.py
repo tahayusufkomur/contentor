@@ -536,13 +536,19 @@ def style_reason(style: dict | None, niche: str, tones: list[str], answers: dict
     return f"{text[:1].upper()}{text[1:]}." if text else ""
 
 
+def _lower_after_commas(text: str) -> str:
+    """Tiles joined mid-sentence read as one: "breaks, Anatomy-focused" becomes
+    "breaks, anatomy-focused" (an acronym like "AI" keeps its capitals)."""
+    return re.sub(r"(, )([A-Z])(?=[a-z])", lambda m: m[1] + m[2].lower(), text)
+
+
 def hero_line(answers: dict) -> str:
     """What makes them different, then what students get (the first four)."""
     gets = [g.strip() for g in str(answers.get("outcome") or "").split(",") if g.strip()][:4]
     gets = [g if i == 0 else g[:1].lower() + g[1:] for i, g in enumerate(gets)]
     parts = []
     if answers.get("difference"):
-        parts.append(f"{str(answers['difference']).rstrip('.')}.")
+        parts.append(f"{_lower_after_commas(str(answers['difference']).rstrip('.'))}.")
     if gets:
         parts.append(f"{', '.join(gets[:-1]) + ' and ' + gets[-1] if len(gets) > 1 else gets[0]}.")
     return " ".join(parts)[:300]

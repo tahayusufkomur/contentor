@@ -624,3 +624,15 @@ def test_contact_picks_carry_their_details(tenant_ctx, config):
         ms.choose(tenant_ctx, answers, "contact", '{"WhatsApp": "call me"}')
     with pytest.raises(ms.ChoiceError, match="invalid_email"):
         ms.choose(tenant_ctx, answers, "contact", '{"Email": "mira at example"}')
+
+
+def test_the_look_preview_line_reads_as_a_sentence():
+    """Audit V2: the body was raw tiles joined by commas ("…lunch breaks, Anatomy-focused…")."""
+    line = ms.hero_line(
+        {
+            "difference": "Stretches during lunch breaks, Anatomy-focused alignment cueing",
+            "outcome": "Less back pain, Better posture",
+        }
+    )
+    assert line == "Stretches during lunch breaks, anatomy-focused alignment cueing. Less back pain and better posture."
+    assert ms.hero_line({"difference": "Desk yoga, AI-free and simple"}) == "Desk yoga, AI-free and simple."
