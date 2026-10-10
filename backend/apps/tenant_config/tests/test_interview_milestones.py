@@ -663,3 +663,23 @@ def test_the_look_copy_is_written_once_not_on_every_later_answer(tenant_ctx, con
         assert len(calls) == 1  # later answers don't touch the sample copy
         look_copy.for_tenant(tenant_ctx, {**early, "audience": "Remote workers"})
         assert len(calls) == 2  # an answer the copy is written from does
+
+
+def test_the_header_button_follows_what_the_coach_offers(tenant_ctx, config):
+    """Phase 2 walk: a live-only coach's "Get Started" still led to /courses."""
+    cfg = TenantConfig.objects.first()
+    cfg.navbar_config = {"links": [], "cta": {"text": "Get Started", "href": "/courses"}}
+    cfg.save()
+    ms.sync_site(tenant_ctx, {"offers": ["live", "community"]})
+    assert TenantConfig.objects.first().navbar_config["cta"] == {"text": "Get Started", "href": "/events"}
+    ms.sync_site(tenant_ctx, {"offers": ["community"]})  # no classes either: her story
+    cfg = TenantConfig.objects.first()
+    cfg.navbar_config = {"links": [], "cta": {"text": "Get Started", "href": "/courses"}}
+    cfg.save()
+    ms.sync_site(tenant_ctx, {"offers": ["community"]})
+    assert TenantConfig.objects.first().navbar_config["cta"]["href"] == "/about"
+    # A coach who offers courses, or set her own button, keeps it.
+    cfg.navbar_config = {"links": [], "cta": {"text": "Book", "href": "/contact"}}
+    cfg.save()
+    ms.sync_site(tenant_ctx, {"offers": ["live"]})
+    assert TenantConfig.objects.first().navbar_config["cta"]["href"] == "/contact"

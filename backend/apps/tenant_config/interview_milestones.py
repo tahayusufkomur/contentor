@@ -167,9 +167,15 @@ def sync_site(tenant, answers: dict) -> None:
         missing = [href for href in order if href in want and href not in hrefs]
         enabled = sorted(set(cfg.enabled_modules or []) | modules)
         social = {**(cfg.social_links or {}), **socials}
+        # The header button provisioning pointed at /courses leads to what
+        # the coach offers when that is not courses (one she set stays).
+        cta = nav.get("cta") or {}
+        offers = set(answers.get("offers") or [])
+        retarget = cta.get("href") == "/courses" and offers and "course" not in offers
         extra = {
             **({"calendar_view": view} if view else {}),
             **({"show_social": True} if socials else {}),
+            **({"cta": {**cta, "href": "/events" if runs_classes else "/about"}} if retarget else {}),
         }
         if (
             not missing
