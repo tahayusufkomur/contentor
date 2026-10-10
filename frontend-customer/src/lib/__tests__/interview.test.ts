@@ -9,6 +9,7 @@ import {
   activityLine,
   addStarter,
   contactOk,
+  priceOk,
   defaultSchedule,
   finishedNotes,
   formatPrice,
@@ -401,6 +402,18 @@ describe("sectionOf", () => {
   it("puts go-live after every section", () => {
     expect(sectionOf(null)).toBe(SECTIONS.length);
   });
+});
+
+describe("priceOk mirrors parse_price", () => {
+  it.each([
+    ["19", true],
+    ["4,50", true],
+    ["$12 a month", true],
+    ["0", false],
+    ["", false],
+    ["lots", false],
+    ["10000", false],
+  ])("%s → %s", (raw, ok) => expect(priceOk(raw)).toBe(ok));
 });
 
 describe("contactOk mirrors the server", () => {

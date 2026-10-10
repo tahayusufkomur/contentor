@@ -216,6 +216,17 @@ def tiers_for(answers: dict) -> list[dict]:
     ]
 
 
+def tier_price(answers: dict, tier_id: str) -> float:
+    """Her monthly price for a tier, else the catalogue's."""
+    return (answers.get("membership_prices") or {}).get(tier_id, TIER_BY_ID[tier_id]["price"])
+
+
+def membership_prices(answers: dict) -> dict[str, float]:
+    """Every tier her offers allow, by label, at her price: the price fields
+    under the membership tiles."""
+    return {t["label"]: tier_price(answers, t["id"]) for t in tiers_for(answers)}
+
+
 def default_tier(answers: dict) -> str:
     """The membership a "pick for me" gets: the first this coach's offers allow."""
     tiers = tiers_for(answers)
@@ -761,11 +772,16 @@ def parse_currency(raw) -> str | None:
     return next((code for code, (_, _, words) in CURRENCIES.items() if re.search(words, text)), None)
 
 
-def money(amount) -> str:
-    """An amount in the currency the coach charges in: "$9", "€9"."""
+def currency_sign() -> str:
+    """The sign of the currency the coach charges in: "$", "€"."""
     from apps.core.currency import tenant_charge_currency
 
-    return f"{CURRENCIES.get(tenant_charge_currency(), CURRENCIES['USD'])[1]}{amount}"
+    return CURRENCIES.get(tenant_charge_currency(), CURRENCIES["USD"])[1]
+
+
+def money(amount) -> str:
+    """An amount in the currency the coach charges in: "$9", "€4.50"."""
+    return f"{currency_sign()}{float(amount):.2f}".removesuffix(".00")
 
 
 def parse_timezone(raw) -> str | None:
@@ -1041,7 +1057,7 @@ def options_for(
         return (
             tuple(t["label"] for t in tiers),
             tuple(t["icon"] for t in tiers),
-            tuple(f"{money(t['price'])} a month" for t in tiers),
+            tuple(f"{money(tier_price(answers, t['id']))} a month" for t in tiers),
         )
     rows = list(
         zip(
@@ -1097,7 +1113,7 @@ def composer_facts(answers: dict) -> list[dict]:
             value = ", ".join(value)
         elif field.kind == "memberships":
             value = ", ".join(
-                f"{TIER_BY_ID[i]['label']} ({money(TIER_BY_ID[i]['price'])} a month)" for i in value if i in TIER_BY_ID
+                f"{TIER_BY_ID[i]['label']} ({money(tier_price(answers, i))} a month)" for i in value if i in TIER_BY_ID
             )
         elif field.kind == "price":
             value = "free" if value == 0 else f"{value:g}"

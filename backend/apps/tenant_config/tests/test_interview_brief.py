@@ -251,6 +251,15 @@ def test_niche_for_maps_the_styled_niches(teaches, niche):
     assert brief.niche_for(teaches) == niche
 
 
+def test_her_membership_prices_show_on_the_tiles_and_in_the_facts():
+    answers = {"offers": ["course"], "memberships": ["digital"], "membership_prices": {"digital": 12.0}}
+    _, _, hints = brief.options_for(brief.FIELD_BY_ID["memberships"], answers)
+    assert hints == ("$12 a month",)
+    assert {"q": "Memberships offered", "a": "Digital membership ($12 a month)"} in brief.composer_facts(answers)
+    assert brief.membership_prices(answers) == {"Digital membership": 12.0}
+    assert brief.membership_prices({"offers": ["course"]}) == {"Digital membership": 9}
+
+
 def test_memberships_follow_the_offers_and_parse_from_labels():
     assert [t["id"] for t in brief.tiers_for({"offers": ["course"]})] == ["digital"]
     assert [t["id"] for t in brief.tiers_for({"offers": ["course", "live", "community"]})] == [

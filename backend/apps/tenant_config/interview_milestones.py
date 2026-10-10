@@ -466,7 +466,7 @@ def create_memberships(tenant, answers: dict) -> None:
         plans[tier_id] = SubscriptionPlan.objects.create(
             name=tier["label"],
             description=f"{tier['blurb']} {perks[:1].upper()}{perks[1:]}, for {teaches}. Cancel any time.",
-            price=Decimal(f"{tier['price']:.2f}"),
+            price=Decimal(f"{brief.tier_price(answers, tier_id):.2f}"),
             billing_interval_months=1,
         ).pk
 
@@ -476,6 +476,18 @@ def create_memberships(tenant, answers: dict) -> None:
     _update_flow(tenant, mutate)
     grant_membership(tenant)
     start_page_build(tenant, "pricing")
+
+
+def _reprice_memberships(prices: dict) -> None:
+    """A price changed after its plan was made (she went back): the plan follows."""
+    from decimal import Decimal
+
+    from apps.billing.models import SubscriptionPlan
+
+    made = ((TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}).get("plans") or {}
+    for tier_id, pk in made.items():
+        if tier_id in prices:
+            SubscriptionPlan.objects.filter(pk=pk).update(price=Decimal(f"{prices[tier_id]:.2f}"))
 
 
 def membership_plan_ids(flow: dict) -> list[int]:
@@ -890,6 +902,26 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         if len(links) < len(picked):  # a handle that doesn't parse is named, never dropped
             raise ChoiceError("invalid_handle")
         answers["socials"] = brief.socials_summary(links)
+        return
+    if field is not None and field.kind == "memberships" and isinstance(value, str) and value.lstrip().startswith("{"):
+        # Ticked tiers with her monthly price for each: {"Digital membership": 12}.
+        try:
+            picked = json.loads(value)
+        except ValueError:
+            raise ChoiceError("invalid_value") from None
+        allowed = {t["label"]: t["id"] for t in brief.tiers_for(answers)}
+        if not isinstance(picked, dict) or not picked or not set(picked) <= set(allowed):
+            raise ChoiceError("invalid_value")
+        prices = {}
+        for label, raw in picked.items():
+            price = brief.parse_price(str(raw))
+            if not price or price <= 0:
+                raise ChoiceError("invalid_price")
+            prices[allowed[label]] = round(price, 2)
+        answers["memberships"] = [t for t in allowed.values() if t in prices]
+        answers["membership_prices"] = {**(answers.get("membership_prices") or {}), **prices}
+        answers["delegated"] = [d for d in answers.get("delegated") or [] if d != "memberships"]
+        _reprice_memberships(prices)
         return
     if field_id == "calendar_view":
         if value not in CALENDAR_IDS:

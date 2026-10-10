@@ -382,6 +382,13 @@ def contact_prefill(field_id) -> dict:
     return {"Email": owner.email} if owner and owner.email else {}
 
 
+def membership_prices(field_id, answers) -> dict:
+    """The membership tiles take a monthly price each, starting at hers."""
+    if field_id != "memberships":
+        return {"prices": {}, "sign": ""}
+    return {"prices": brief.membership_prices(answers), "sign": brief.currency_sign()}
+
+
 def picked_note(tenant, field_id) -> str:
     """What code chose when the coach left a question to the guide ("Pick for
     me"): the reply says it, so nothing is decided out of sight."""
@@ -544,6 +551,7 @@ def run_turn(
     # The plan the paid tiles need, stored with the question for going back.
     guide["plan"] = interview_golive.plan_badge(tenant, guide["field"])
     guide["prefill"] = contact_prefill(guide["field"])
+    guide.update(membership_prices(guide["field"], answers))
     if also:
         guide["noted"] = also
 
@@ -588,6 +596,7 @@ def interview_state(tenant, flow: dict) -> dict:
         guide["hints"] = guide["hints"] or {}
     guide["plan"] = interview_golive.plan_badge(tenant, guide["field"])  # live: a plan bought since hides it
     guide["prefill"] = contact_prefill(guide["field"])
+    guide.update(membership_prices(guide["field"], answers))  # hers now, also on a question gone back to
     guide["cards"] = milestones.cards_for(tenant, answers, guide["field"])
     fired = list(iv.get("fired") or [])
     # Fresh cards for look questions already behind the coach, so going back
@@ -595,6 +604,9 @@ def interview_state(tenant, flow: dict) -> dict:
     asked = {t.get("field") for t in turns if t.get("role") == "guide"} - {guide["field"]}
     looks = ("site_style", "site_logo", "calendar_view", *milestones.REVIEW_FIELDS)
     cards = {f: milestones.cards_for(tenant, answers, f) for f in looks if f in asked}
+    # Membership prices as she set them last, also on the question gone back to.
+    priced = membership_prices("memberships", answers)
+    turns = [{**t, **priced} if t.get("role") == "guide" and t.get("field") == "memberships" else t for t in turns]
     return {
         "turns": turns,
         "guide": guide,

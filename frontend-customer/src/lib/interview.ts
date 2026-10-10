@@ -176,6 +176,13 @@ export function contactOk(way: string, raw: string): boolean {
   return /^\d{6,15}$/.test(digits);
 }
 
+/** Whether the server will take this as a monthly price: its first number
+ * (parse_price), above 0 and at most 9999. */
+export function priceOk(raw: string): boolean {
+  const n = Number(raw.match(/\d+(?:[.,]\d{1,2})?/)?.[0]?.replace(",", "."));
+  return n > 0 && n <= 9999;
+}
+
 export function formatPrice(cents: number | null, currency: string): string {
   if (cents == null) return "";
   return new Intl.NumberFormat("en-US", {
@@ -234,6 +241,8 @@ export function questionSteps(
           contact,
           prefill,
           timezone,
+          prices,
+          sign,
         } = e;
         const answer = asked.get(e.field)?.answer;
         asked.set(e.field, {
@@ -257,6 +266,8 @@ export function questionSteps(
           contact,
           prefill,
           timezone,
+          prices,
+          sign,
           answer,
         });
         onScreen = e.field;

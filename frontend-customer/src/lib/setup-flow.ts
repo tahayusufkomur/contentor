@@ -82,6 +82,8 @@ export interface StepDraft {
   socials?: Record<string, string>;
   /** A contact question: the email address or number per way ticked. */
   details?: Record<string, string>;
+  /** A membership question: the monthly price typed per tier ticked. */
+  prices?: Record<string, string>;
   /** A time-zone question: the zone picked. */
   zone?: string;
 }
@@ -343,6 +345,10 @@ export interface GuideTurn {
   prefill?: Record<string, string>;
   /** The answer is a time zone, picked from the browser's list. */
   timezone?: boolean;
+  /** Membership tiles: her monthly price for each, editable once ticked,
+   * in the currency whose ``sign`` is given. */
+  prices?: Record<string, number>;
+  sign?: string;
 }
 
 export interface CopilotCard {

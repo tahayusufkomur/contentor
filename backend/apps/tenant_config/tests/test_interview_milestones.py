@@ -338,6 +338,29 @@ def test_membership_plans_are_created_once_per_tier_with_the_course_in_them(tena
     side_effects["build"].assert_any_call(tenant_ctx, "pricing")
 
 
+def test_membership_prices_are_hers_to_set(tenant_ctx, config, side_effects):
+    """Audit G5: the tiers' prices were fixed; now each ticked tier takes hers."""
+    import json
+
+    from apps.billing.models import SubscriptionPlan
+
+    answers = {**HOME, "offers": ["course", "community"], "payments": ["membership"], "delegated": ["memberships"]}
+    ms.choose(tenant_ctx, answers, "memberships", json.dumps({"Digital membership": 12, "Community membership": "4.5"}))
+    assert answers["memberships"] == ["digital", "community"] and "memberships" not in answers["delegated"]
+    assert answers["membership_prices"] == {"digital": 12.0, "community": 4.5}
+    ms.fire(tenant_ctx, answers)
+    assert {p.name: p.price for p in SubscriptionPlan.objects.all()} == {
+        "Digital membership": Decimal("12.00"),
+        "Community membership": Decimal("4.50"),
+    }
+    # Going back to change a price changes the plan already made.
+    ms.choose(tenant_ctx, answers, "memberships", json.dumps({"Digital membership": 15, "Community membership": 4.5}))
+    assert SubscriptionPlan.objects.get(name="Digital membership").price == Decimal("15.00")
+    for bad in ({"Digital membership": 0}, {"Digital membership": "lots"}, {"Nope": 5}, {}):
+        with pytest.raises(ms.ChoiceError):
+            ms.choose(tenant_ctx, answers, "memberships", json.dumps(bad))
+
+
 def test_a_delegated_membership_pick_gets_the_digital_tier(tenant_ctx, config, side_effects):
     from apps.billing.models import SubscriptionPlan
 

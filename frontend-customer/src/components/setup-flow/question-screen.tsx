@@ -10,6 +10,7 @@ import {
   browserTimeZone,
   CONTACT_DETAILS,
   contactOk,
+  priceOk,
   defaultSchedule,
   noteOf,
   pickedOptions,
@@ -116,7 +117,9 @@ export function QuestionScreen({
       ? draft.card.label !== step.answer
       : zone
         ? zone !== zoneWas
-        : ticked.join("\n") !== picked.join("\n")) || note !== typed.trim();
+        : ticked.join("\n") !== picked.join("\n")) ||
+    note !== typed.trim() ||
+    !!draft.prices;
   // A schedule question: the tile picks weekly or one-time, the picker the dates.
   const mode: ScheduleMode = ticked[0] === "One-time" ? "once" : "recurring";
   const sched = step.schedule
@@ -131,6 +134,16 @@ export function QuestionScreen({
   const details = step.contact
     ? { ...(step.prefill ?? {}), ...(draft.details ?? {}) }
     : null;
+  // A membership question: a monthly price for each tier ticked, hers to change.
+  const prices =
+    step.prices && Object.keys(step.prices).length
+      ? {
+          ...Object.fromEntries(
+            Object.entries(step.prices).map(([t, p]) => [t, String(p)]),
+          ),
+          ...(draft.prices ?? {}),
+        }
+      : null;
   const canContinue = review
     ? !!note ||
       review.status === "waiting" ||
@@ -145,7 +158,10 @@ export function QuestionScreen({
           : details
             ? ticked.length > 0 &&
               ways.every((w) => contactOk(w, details[w] ?? ""))
-            : ticked.length > 0 || !!zone || !!note;
+            : prices
+              ? ticked.length > 0 &&
+                ticked.every((t) => priceOk(prices[t] ?? ""))
+              : ticked.length > 0 || !!zone || !!note;
   // A turn can take a while when the model is busy; say so honestly.
   const [slow, setSlow] = useState(false);
   useEffect(() => {
@@ -222,26 +238,38 @@ export function QuestionScreen({
                 ),
               },
             }
-          : details && field
+          : prices && field
             ? {
                 message: ticked.join(", "),
                 choice: {
                   field,
                   value: JSON.stringify(
                     Object.fromEntries(
-                      ticked.map((w) => [w, (details[w] ?? "").trim()]),
+                      ticked.map((t) => [t, (prices[t] ?? "").trim()]),
                     ),
                   ),
                 },
               }
-            : draft.card && field
+            : details && field
               ? {
-                  message: draft.card.label,
-                  choice: { field, value: draft.card.value },
+                  message: ticked.join(", "),
+                  choice: {
+                    field,
+                    value: JSON.stringify(
+                      Object.fromEntries(
+                        ticked.map((w) => [w, (details[w] ?? "").trim()]),
+                      ),
+                    ),
+                  },
                 }
-              : zone && field
-                ? { message: zone, choice: { field, value: zone } }
-                : { message: ticked.join(", ") };
+              : draft.card && field
+                ? {
+                    message: draft.card.label,
+                    choice: { field, value: draft.card.value },
+                  }
+                : zone && field
+                  ? { message: zone, choice: { field, value: zone } }
+                  : { message: ticked.join(", ") };
     send({ ...pick, message: withNote(pick.message, words), spoken });
   };
   // Slide choreography: the words of the question land one by one, then
@@ -529,6 +557,24 @@ export function QuestionScreen({
                       : "Add the number with its country code, like +49 170 1234567."
                   }
                   reads={() => null}
+                  className="mt-4 motion-safe:animate-[sf-pop_.6s_var(--sf-spring)_both]"
+                />
+              )}
+
+              {prices && ticked.length > 0 && (
+                <SocialsPicker
+                  networks={ticked}
+                  value={prices}
+                  onChange={(v) => onDraft((d) => ({ ...d, prices: v }))}
+                  disabled={sending}
+                  placeholder={() => `${step.sign ?? ""} a month`}
+                  ok={(_t, raw) => priceOk(raw)}
+                  problem={() => "Add a monthly price, like 19."}
+                  reads={(_t, raw) =>
+                    priceOk(raw)
+                      ? `${step.sign ?? ""}${raw.trim()} a month`
+                      : null
+                  }
                   className="mt-4 motion-safe:animate-[sf-pop_.6s_var(--sf-spring)_both]"
                 />
               )}
