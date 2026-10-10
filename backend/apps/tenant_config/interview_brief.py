@@ -21,8 +21,8 @@ DELEGATE = "__delegate__"
 SKIP = "__skip__"
 TEXT_MAX = 500
 # Answered by tapping a card (applied by code, asked in order): the look,
-# the logo, the calendar layout, and the review screens of the first course and class.
-CARD_KINDS = ("style", "logo", "calendar", "course", "event")
+# the logo, and the review screens of the first course and class.
+CARD_KINDS = ("style", "logo", "course", "event")
 # Fixed answer lists the coach's words are parsed against; the model phrases
 # the question to fit them and never rewrites them.
 FIXED_KINDS = (
@@ -31,7 +31,6 @@ FIXED_KINDS = (
     "memberships",
     "schedule",
     "specialty",
-    "calendar_nav",
     "socials",
     "price",
     "contact",
@@ -535,25 +534,8 @@ FIELDS: tuple[Field, ...] = (
         starter=True,
     ),
     Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo", delegable=True),
-    # Coaches who run classes: how the public calendar looks, and whether it is in the navbar.
-    Field(
-        "calendar_view",
-        "Calendar layout",
-        "How should your class calendar look?",
-        kind="calendar",
-        needs=("live", "onsite"),
-        delegable=True,
-    ),
-    Field(
-        "calendar_nav",
-        "Calendar in the navbar",
-        "Want your calendar in the navbar?",
-        ("Yes, add it", "No, keep it off"),
-        kind="calendar_nav",
-        needs=("live", "onsite"),
-        icons=("calendar-days", "lock-open"),
-        hints=("One click from every page", "Students find it from your classes"),
-    ),
+    # The class calendar is not asked about (audit 2026-10-09: two turns for settings the
+    # coach has no basis for yet): a month grid, linked in the navbar (sync_site).
     Field(
         "payments",
         "How students pay",
@@ -779,15 +761,6 @@ def coerce(field_id: str, raw):
         return parse_memberships(raw) or None
     if field.kind == "price":
         return parse_price(raw)
-    if field.kind == "calendar_nav":
-        text = str(raw or "").lower()
-        return (
-            "yes"
-            if re.search(r"\b(yes|add|show|sure|yeah|please)\b", text)
-            else "no"
-            if re.search(r"\b(no|off|don.?t)\b", text)
-            else None
-        )
     if field.kind == "socials":
         links = parse_socials(raw)
         if links:

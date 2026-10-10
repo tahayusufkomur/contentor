@@ -503,10 +503,22 @@ def test_classes_turn_on_live_add_events_and_pricing_links(tenant_ctx, config, s
     }
     assert "page:events" in ms.fire(tenant_ctx, answers)
     cfg = TenantConfig.objects.first()
-    assert [link["href"] for link in cfg.navbar_config["links"]] == ["/courses", "/events", "/plans", "/about"]
+    links = [link["href"] for link in cfg.navbar_config["links"]]
+    assert links == ["/courses", "/events", "/calendar", "/plans", "/about"]
     assert "live" in cfg.enabled_modules and "courses" in cfg.enabled_modules
     ms.sync_site(tenant_ctx, answers)  # idempotent
-    assert len(TenantConfig.objects.first().navbar_config["links"]) == 4
+    assert len(TenantConfig.objects.first().navbar_config["links"]) == 5
+
+
+def test_a_coach_who_runs_classes_gets_the_calendar_link_by_default(tenant_ctx, config):
+    """Audit F2: no calendar questions; the link is on unless an earlier interview said no."""
+    ms.sync_site(tenant_ctx, {"offers": ["live"]})
+    assert "/calendar" in [link["href"] for link in TenantConfig.objects.first().navbar_config["links"]]
+    cfg = TenantConfig.objects.first()
+    cfg.navbar_config = {"links": []}
+    cfg.save()
+    ms.sync_site(tenant_ctx, {"offers": ["live"], "calendar_nav": "no"})
+    assert "/calendar" not in [link["href"] for link in TenantConfig.objects.first().navbar_config["links"]]
 
 
 def test_calendar_and_social_answers_reach_the_navbar(tenant_ctx, config):

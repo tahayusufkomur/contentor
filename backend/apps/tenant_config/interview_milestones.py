@@ -149,7 +149,8 @@ def sync_site(tenant, answers: dict) -> None:
     modules = set(ALWAYS_MODULES).union(*(GOAL_MODULES.get(g, ()) for g in answers.get("goals") or []))
     runs_classes = bool({"live", "onsite"} & set(answers.get("offers") or []))
     want = {"/events"} if runs_classes else set()
-    if runs_classes and answers.get("calendar_nav") == "yes":
+    # Not asked any more: on by default; an earlier interview's "no" still stands.
+    if runs_classes and answers.get("calendar_nav") != "no":
         want.add("/calendar")
     if "membership" in (answers.get("payments") or []):
         want.add("/plans")

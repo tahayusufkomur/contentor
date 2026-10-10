@@ -250,7 +250,6 @@ def test_only_the_guides_own_calls_can_be_left_to_it():
     assert delegable == {
         "site_style",
         "site_logo",
-        "calendar_view",
         "tone",
         "memberships",
         "course_topic",
@@ -320,7 +319,7 @@ def test_a_studio_named_after_one_kind_asks_only_whether_there_is_more():
     assert more["specialty"] == "Face yoga, Yin yoga, Hatha yoga" and more["niche"] == "face_yoga"
 
 
-def test_socials_and_calendar_nav_are_read_from_the_coachs_words():
+def test_socials_are_read_from_the_coachs_words():
     assert brief.parse_socials("Instagram: @maya and https://www.youtube.com/@mayaflow") == {
         "instagram": "https://instagram.com/maya",
         "youtube": "https://www.youtube.com/@mayaflow",
@@ -328,11 +327,12 @@ def test_socials_and_calendar_nav_are_read_from_the_coachs_words():
     assert brief.parse_socials("javascript:alert(1)") == {}
     assert brief.coerce("socials", "none yet") == brief.NO_SOCIALS
     assert brief.coerce("socials", "just my cat") is None
-    assert brief.coerce("calendar_nav", "Yes, add it") == "yes"
-    assert brief.coerce("calendar_nav", "No, keep it off") == "no"
-    needing = {f.id for f in brief.required({"offers": ["course"]})}
-    assert not {"calendar_view", "calendar_nav"} & needing
-    assert {"calendar_view", "calendar_nav"} <= {f.id for f in brief.required({"offers": ["live"]})}
+
+
+def test_the_calendar_is_set_up_without_asking():
+    """Audit F2: two questions (about 30 s) for settings the coach has no basis for yet."""
+    for offers in (["course"], ["live"], ["onsite"]):
+        assert not {"calendar_view", "calendar_nav"} & {f.id for f in brief.required({"offers": offers})}
 
 
 def test_tone_hints_follow_the_niche_and_the_model_when_it_wrote_them():

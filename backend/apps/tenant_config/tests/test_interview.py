@@ -600,12 +600,12 @@ def test_a_tap_whose_next_question_is_code_owned_skips_the_model(client, tenant_
 
 
 def test_a_card_pick_whose_next_question_is_code_owned_skips_the_model(client, tenant_ctx, quiet):
-    _only_missing(tenant_ctx, ("calendar_view", "calendar_nav"), offers=["live"])
+    _only_missing(tenant_ctx, ("site_logo", "payments"))
     body = client.post(
-        URL, {"message": "Month grid", "choice": {"field": "calendar_view", "value": "month"}}, format="json"
+        URL, {"message": "Just my name", "choice": {"field": "site_logo", "value": "wordmark"}}, format="json"
     ).json()
     assert quiet.calls == []
-    assert body["guide"]["field"] == "calendar_nav"
+    assert body["guide"]["field"] == "payments"
 
 
 def test_a_tap_whose_next_question_needs_the_model_still_asks_it(client, tenant_ctx, quiet):
