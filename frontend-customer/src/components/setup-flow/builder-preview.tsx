@@ -111,7 +111,7 @@ function ItemCard({
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            key={cover}
+            key={covers.find((c) => c.current)?.value || cover}
             src={cover}
             alt=""
             className="size-full object-cover motion-safe:animate-fade-in"

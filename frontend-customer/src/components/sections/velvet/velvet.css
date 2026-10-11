@@ -1,0 +1,274 @@
+/* Velvet — style-scoped CSS. Every class/keyframe is velvet-prefixed. */
+
+.velvet {
+  font-feature-settings: "kern", "liga";
+}
+
+/* Playfair in italic: the voice. */
+.velvet-it {
+  font-style: italic;
+}
+.velvet-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The blush band (the room lit up): its own dim text and hairlines. */
+.velvet-cream {
+  color-scheme: light;
+}
+.velvet-cream .text-muted-foreground {
+  color: color-mix(in oklch, var(--inverse-foreground) 72%, var(--inverse));
+}
+.velvet-cream .border-border {
+  border-color: color-mix(in oklch, var(--inverse-foreground) 24%, transparent);
+}
+.velvet-cream .text-accent {
+  color: color-mix(in oklch, var(--inverse-foreground) 85%, var(--accent));
+}
+
+/* The satin button: a blush gradient whose highlight travels on hover. */
+.velvet-sheen {
+  background-color: var(--primary);
+  background-image: linear-gradient(
+    105deg,
+    var(--primary) 0%,
+    color-mix(in oklch, var(--primary) 68%, white) 42%,
+    var(--primary) 70%
+  );
+  background-size: 220% 100%;
+  background-position: 100% 0;
+  box-shadow: 0 10px 32px -12px
+    color-mix(in oklch, var(--primary) 60%, transparent);
+}
+.velvet-sheen:hover {
+  background-position: 0 0;
+}
+
+/* Candlelight: a warm rose glow behind the element. */
+.velvet-halo::before {
+  content: "";
+  position: absolute;
+  inset: -18% -26%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 46%,
+    color-mix(in oklch, var(--primary) 26%, transparent),
+    transparent 62%
+  );
+  opacity: var(--velvet-halo, 1);
+}
+.velvet-halo > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* A photograph: a fine champagne line set off from its edge, and the foot
+ * of the picture sinking into the room's colour. */
+.velvet-frame {
+  outline: 1px solid color-mix(in oklch, var(--accent) 55%, transparent);
+  outline-offset: 9px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.velvet-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    color-mix(in oklch, var(--background) 62%, transparent),
+    transparent 38%
+  );
+}
+/* A full-height photograph that melts into the page: at its foot always,
+ * and on its left edge where the words sit beside it. */
+.velvet-veil::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    var(--background) 0%,
+    color-mix(in oklch, var(--background) 0%, transparent) 42%
+  );
+}
+@media (min-width: 1024px) {
+  .velvet-veil {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      rgb(0 0 0 / 0.3) 14%,
+      #000 62%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      rgb(0 0 0 / 0.3) 14%,
+      #000 62%
+    );
+  }
+}
+
+/* A hairline rule with a small lozenge in the middle. */
+.velvet-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  color: var(--accent);
+}
+.velvet-rule::before,
+.velvet-rule::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: color-mix(in oklch, var(--accent) 50%, transparent);
+}
+
+/* One focus treatment for every control. */
+.velvet a:focus-visible,
+.velvet button:focus-visible,
+.velvet summary:focus-visible,
+.velvet [tabindex]:focus-visible,
+.velvet-focus:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.velvet-cream a:focus-visible,
+.velvet-cream button:focus-visible {
+  outline-color: var(--inverse-foreground);
+}
+
+/* Champagne link with a fine underline that brightens. */
+.velvet-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.35em;
+  text-decoration-color: color-mix(in oklch, var(--accent) 45%, transparent);
+}
+.velvet-link:hover {
+  text-decoration-color: var(--accent);
+}
+
+/* Course prices: the shared badge reads as plain type in this style. */
+.velvet-price.velvet-price > * {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* FAQ: hairline rows that open; the chevron turns. */
+.velvet-faq summary {
+  list-style: none;
+}
+.velvet-faq summary::-webkit-details-marker {
+  display: none;
+}
+.velvet-faq details[open] .velvet-chev {
+  transform: rotate(180deg);
+}
+.velvet-faq details[open] > summary {
+  color: var(--primary);
+}
+
+/* Contact form: hairline fields on the surface tone. */
+.velvet-form label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.velvet-form input,
+.velvet-form textarea {
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--foreground);
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 1rem;
+}
+.velvet-form input:focus-visible,
+.velvet-form textarea:focus-visible {
+  --tw-ring-shadow: 0 0 #0000;
+  border-color: var(--primary);
+  box-shadow: 0 1px 0 0 var(--primary);
+  outline: none;
+}
+
+/* Scroll strip without a visible scrollbar. */
+.velvet-strip {
+  scrollbar-width: none;
+}
+.velvet-strip::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .velvet-sheen {
+    transition:
+      background-position 0.9s cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 0.4s ease;
+  }
+  .velvet-link {
+    transition: text-decoration-color 0.3s ease;
+  }
+  .velvet-chev {
+    transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .velvet-arrow {
+    transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .velvet-arrow {
+    transform: translateX(5px);
+  }
+  .velvet-zoom img {
+    transition: transform 1.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .group:hover .velvet-zoom img {
+    transform: scale(1.035);
+  }
+
+  /* The one orchestrated moment: the candle is lit, then the words surface. */
+  .velvet-dawn::before {
+    animation: velvet-dawn 2.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .velvet-rise {
+    animation: velvet-rise 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--velvet-delay, 0ms);
+  }
+}
+
+@keyframes velvet-dawn {
+  from {
+    opacity: 0;
+    transform: scale(0.75);
+  }
+  to {
+    opacity: var(--velvet-halo, 1);
+    transform: none;
+  }
+}
+@keyframes velvet-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

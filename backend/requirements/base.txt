@@ -20,3 +20,4 @@ markdown>=3.6,<4
 vtracer>=0.6,<1.0
 Pillow>=10.4,<12
 drf-spectacular>=0.27.2,<0.29
+pypdf==6.20.0

@@ -20,9 +20,12 @@ export const configCache = new Map<
 // In dev the cache is disabled: e2e specs (and hot manual edits) PATCH config
 // through Django and immediately assert the public page reflects it — a warm
 // cache turns that into a 60s stale window whose outcome depends on leftover
-// tenant state. Prod keeps the TTL; a coach's edit taking up to a minute to
-// reach the public site is an accepted tradeoff there.
-const CACHE_TTL = process.env.NODE_ENV === "development" ? 0 : 60_000;
+// tenant state. Prod keeps a short TTL.
+// ponytail: 5s per Next process, so a look picked in /setup reaches the live
+// site within seconds (was 60s) at the cost of up to one config fetch per
+// tenant per 5s. Upgrade: Django pings a revalidate endpoint on config save and
+// the TTL goes back up.
+const CACHE_TTL = process.env.NODE_ENV === "development" ? 0 : 5_000;
 
 export async function fetchTenantConfig(
   slug: string,

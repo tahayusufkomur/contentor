@@ -294,6 +294,9 @@ export function GoLiveCard({
       >
         Go live
       </Button>
+      <p className="mt-3 text-[13px] leading-relaxed text-[var(--sf-faint)]">
+        You can keep editing your site after it goes live.
+      </p>
     </>,
   );
 }

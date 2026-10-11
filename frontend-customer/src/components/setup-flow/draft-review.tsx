@@ -18,10 +18,15 @@ import { formatPrice } from "@/lib/interview";
 import type { ReviewCard, ReviewItem, ReviewKind } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
 
-const NOUN: Record<ReviewKind, string> = { course: "course", event: "class" };
+const NOUN: Record<ReviewKind, string> = {
+  course: "course",
+  event: "class",
+  onsite: "in-person class",
+};
 const DRAFTING: Record<ReviewKind, string[]> = {
   course: ["Outlining the modules", "Writing the lessons", "Choosing a cover"],
   event: ["Planning the session", "Finding a good time", "Choosing a cover"],
+  onsite: ["Planning the session", "Finding a good time", "Choosing a cover"],
 };
 
 /** The interview's first course or class, shown as it was drafted: cover
@@ -187,6 +192,8 @@ function Drafted({
         item.currency,
       ).replace(/[.,]00$/, "")
     : "Free";
+  // The signed URL can change between polls; the cover's own id does not.
+  const coverKey = item.covers.find((c) => c.current)?.value || item.cover_url;
   return (
     <div
       aria-busy={redrafting}
@@ -196,7 +203,7 @@ function Drafted({
       )}
     >
       <div
-        key={item.cover_url}
+        key={coverKey}
         style={enter(0)}
         className="motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both]"
       >
@@ -204,7 +211,7 @@ function Drafted({
           {item.cover_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              key={item.cover_url}
+              key={coverKey}
               src={item.cover_url}
               alt=""
               className="size-full object-cover motion-safe:animate-fade-in"
@@ -282,9 +289,9 @@ function Drafted({
         >
           {item.title}
         </h2>
-        {kind === "event" && item.when && (
+        {kind !== "course" && item.when && (
           <div
-            key={`${item.when}|${item.location}|${item.event_kind}`}
+            key={`${item.when}|${item.location}|${item.address}|${item.event_kind}`}
             style={enter(3)}
             className="mt-3 flex flex-wrap gap-2 text-[13.5px] motion-safe:animate-[sf-rise_.5s_ease-out_both]"
           >
@@ -311,7 +318,8 @@ function Drafted({
                 <Video className="size-4" aria-hidden />
               )}
               {item.event_kind === "onsite"
-                ? item.location || "In person"
+                ? [item.location, item.address].filter(Boolean).join(" · ") ||
+                  "In person"
                 : "Online, live"}
             </Chip>
           </div>

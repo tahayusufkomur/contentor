@@ -68,6 +68,8 @@ test("signup lands in /setup and the interview ends in a published site", async 
   const handles = guide.getByPlaceholder(/yourname or @yourname$/);
   // The time-zone question opens on the browser's own zone: Continue takes it.
   const zone = guide.getByLabel("Time zone");
+  // The in-person class asks for its place and address: two boxes, no tiles.
+  const place = guide.getByPlaceholder("Studio Lumen, Kreuzberg");
   // A drafted course or class to approve.
   const looksGood = guide.getByRole("button", { name: "Looks good, continue" });
   const goLive = guide.getByRole("button", { name: "Go live", exact: true });
@@ -87,7 +89,7 @@ test("signup lands in /setup and the interview ends in a published site", async 
       return "I completed a 200-hour yoga teacher training in 2019.";
     return "Whatever you think fits best";
   };
-  const action = decide.or(looksGood).or(goLive).or(makeFree).or(tile).or(zone);
+  const action = decide.or(looksGood).or(goLive).or(makeFree).or(tile).or(zone).or(place);
   for (let i = 0; i < 40; i++) {
     // Wait for the work in flight to finish, then for the next screen's controls.
     await busy.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
@@ -117,6 +119,12 @@ test("signup lands in /setup and the interview ends in a published site", async 
       continue;
     }
     if (await zone.isVisible()) {
+      await cont.click();
+      continue;
+    }
+    if (await place.isVisible()) {
+      await place.fill("E2E Studio");
+      await guide.getByPlaceholder("Hauptstraße 12, 10827 Berlin").fill("Teststr. 1, 10115 Berlin");
       await cont.click();
       continue;
     }

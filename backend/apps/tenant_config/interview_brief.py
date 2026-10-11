@@ -21,8 +21,10 @@ DELEGATE = "__delegate__"
 SKIP = "__skip__"
 TEXT_MAX = 500
 # Answered by tapping a card (applied by code, asked in order): the look,
-# the logo, and the review screens of the first course and class.
-CARD_KINDS = ("style", "logo", "course", "event")
+# the logo, the calendar layout, and the review screens of the first course and class.
+# "address" is asked like a card: by code, in order, and never filled by the
+# model (a place she mentioned in passing is not the address of her class).
+CARD_KINDS = ("style", "logo", "calendar", "course", "event", "address")
 # Fixed answer lists the coach's words are parsed against; the model phrases
 # the question to fit them and never rewrites them.
 FIXED_KINDS = (
@@ -70,6 +72,15 @@ CURRENCIES = {
 # Sections a coach can skip, and what the skip button says.
 SKIP_LABELS = {"course": "No course for now", "event": "No class for now", "post": "No article for now"}
 TONES = ("warm", "energetic", "calm", "expert", "playful", "confident", "sensual", "sexy")
+# Words a coach uses for a tone instead of its name (regexes; each maps to one tone).
+TONE_SYNONYMS = {
+    r"seduc|sultry|allur|flirt": "sexy",
+    r"feminin|intimate|moody|\bsoft\b": "sensual",
+    r"glam|\bbold|fierce": "confident",
+    r"cheerful|\bfun\b": "playful",
+    r"gentle|friendly": "warm",
+    r"relax|peaceful": "calm",
+}
 # One line under each tone answer (the order of TONES). The model writes the
 # coach's own (answers["tone_hints"]); these are the fallback, per broad tile
 # ("" = any other), so no niche gets another niche's words.
@@ -617,8 +628,6 @@ FIELDS: tuple[Field, ...] = (
         starter=True,
     ),
     Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo", delegable=True),
-    # The class calendar is not asked about (audit 2026-10-09: two turns for settings the
-    # coach has no basis for yet): a month grid, linked in the navbar (sync_site).
     # Asked once, here: no later question (class times, prices) asks again.
     Field(
         "timezone",
@@ -692,7 +701,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "live_topic",
         "Live class topic",
-        "Let's set up your first live class. What should it focus on?",
+        "Let's set up your first class. What should it focus on?",
         needs=("live", "onsite"),
         group="event",
         delegable=True,
@@ -708,6 +717,15 @@ FIELDS: tuple[Field, ...] = (
         hints=("Set days and times, week after week", "A single session on one date"),
         group="event",
         delegable=True,
+    ),
+    Field(
+        "location",
+        "Where the in-person class happens",
+        "Where does your in-person class take place?",
+        kind="address",  # two boxes: the place, and its street address
+        needs=("onsite",),
+        group="event",
+        why="The place shows on your site. The street address goes only to students who can attend.",
     ),
     Field(
         "event_price",
@@ -727,6 +745,26 @@ FIELDS: tuple[Field, ...] = (
         kind="event",
         needs=("live", "onsite"),
         group="event",
+    ),
+    # Only beside an online class (see required()): alone, the first class is the in-person one.
+    Field(
+        "onsite_review",
+        "In-person class",
+        "And here's your in-person class. Happy with it?",
+        kind="event",
+        needs=("onsite",),
+        group="event",
+    ),
+    # One question for coaches who run classes (the Calendar link is on by default, not asked).
+    # Grouped with the class so "No class for now" skips it too.
+    Field(
+        "calendar_view",
+        "Calendar layout",
+        "How should your class calendar look?",
+        kind="calendar",
+        needs=("live", "onsite"),
+        group="event",
+        delegable=True,
     ),
     Field(
         "article_topic",
@@ -755,17 +793,20 @@ FIELDS: tuple[Field, ...] = (
         multi=True,
         icons=("mail", "instagram", "message-circle", "phone", "pen-line"),
     ),
-    Field(
-        "location",
-        "Where in-person sessions happen",
-        "Where do your in-person sessions take place?",
-        needs=("onsite",),
-        multi=True,
-    ),
 )
 FIELD_BY_ID = {f.id: f for f in FIELDS}
 # Fields that ride in `description`, or are applied as config, not as copy facts.
-_NOT_FACTS = {"teaches", "pitch", "site_style", "site_logo", "course_review", "event_review", "timezone", "currency"}
+_NOT_FACTS = {
+    "teaches",
+    "pitch",
+    "site_style",
+    "site_logo",
+    "course_review",
+    "event_review",
+    "onsite_review",
+    "timezone",
+    "currency",
+}
 
 
 def _text(raw) -> str | None:
@@ -930,7 +971,8 @@ def coerce(field_id: str, raw):
         return NO_SOCIALS if re.search(r"\bno\b|none|later|don.?t|nothing", str(raw or ""), re.I) else None
     if field.kind == "tone":
         text = str(raw or "").lower()
-        return ", ".join(t for t in TONES if t in text) or _text(raw)
+        found = {t for t in TONES if t in text} | {t for rx, t in TONE_SYNONYMS.items() if re.search(rx, text)}
+        return ", ".join(t for t in TONES if t in found) or _text(raw)
     return _text(raw)
 
 
@@ -1059,6 +1101,8 @@ def required(answers: dict) -> list[Field]:
         and (not f.pays or pays.intersection(f.pays))
         and f.group not in skipped
         and (f.kind != "specialty" or specialties_for(answers))
+        # The in-person class has its own review only beside an online one.
+        and (f.id != "onsite_review" or {"live", "onsite"} <= offers)
     ]
 
 

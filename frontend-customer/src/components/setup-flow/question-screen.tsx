@@ -4,8 +4,11 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { demoSeen, markDemoSeen } from "@/lib/demo-seen";
 import { OPTION_ICONS } from "@/lib/option-icons";
 import {
+  ADDRESS_BOXES,
+  addressOk,
   browserTimeZone,
   CONTACT_DETAILS,
   contactOk,
@@ -36,13 +39,16 @@ import {
   type StepDraft,
   type TurnRequest,
 } from "@/lib/setup-flow";
+import { SHARE_FIELDS, type ShareDoc } from "@/lib/share-doc";
 import { cn } from "@/lib/utils";
 import { AnswerBox } from "./answer-box";
 import { BuilderPreview, type BuilderData } from "./builder-preview";
+import { DemoHint, StarterDemo } from "./demo-hint";
 import { DraftReview } from "./draft-review";
 import { LookCardsView } from "./look-cards";
 import { OwnOptionCard } from "./own-option-card";
 import { SchedulePicker } from "./schedule-picker";
+import { SharePanel } from "./share-panel";
 import { SocialsPicker } from "./socials-picker";
 import { StarterCard } from "./starter-card";
 
@@ -65,6 +71,7 @@ export function QuestionScreen({
   builder,
   onDraft,
   onSend,
+  onShare,
   onMoreLogos,
   onLogoMore,
   onCover,
@@ -85,6 +92,8 @@ export function QuestionScreen({
   builder?: BuilderData;
   onDraft: (update: (d: StepDraft) => StepDraft) => void;
   onSend: (req: TurnRequest) => void;
+  /** Hand over a bio, CV or old About page; throws when it can't be read. */
+  onShare: (doc: ShareDoc) => Promise<void>;
   /** Which way the slide came from: forward, or back to an earlier question. */
   dir: "next" | "back";
   onMoreLogos: (page: number) => Promise<LookCards>;
@@ -120,7 +129,12 @@ export function QuestionScreen({
   // A typed answer (not a tile, a card, a picked zone or "you decide") goes
   // back in the box, and so does the note sent with picked tiles.
   const typed =
-    live || cards || zoneWas || !step.answer || step.answer === DELEGATE_TEXT
+    live ||
+    cards ||
+    zoneWas ||
+    step.address ||
+    !step.answer ||
+    step.answer === DELEGATE_TEXT
       ? ""
       : picked.length
         ? noteOf(step.answer)
@@ -134,7 +148,8 @@ export function QuestionScreen({
         ? zone !== zoneWas
         : ticked.join("\n") !== picked.join("\n")) ||
     note !== typed.trim() ||
-    !!draft.prices;
+    !!draft.prices ||
+    !!draft.details;
   // A schedule question: the tile picks weekly or one-time, the picker the dates.
   const mode: ScheduleMode = ticked[0] === "One-time" ? "once" : "recurring";
   const sched = step.schedule
@@ -144,11 +159,19 @@ export function QuestionScreen({
   const none = !!step.alone && ticked.includes(step.alone);
   const networks = step.socials && !none ? ticked : [];
   const socials = step.socials ? (draft.socials ?? {}) : null;
-  // A contact question: an email address or number for each way that needs one.
-  const ways = step.contact ? ticked.filter((k) => k in CONTACT_DETAILS) : [];
-  const details = step.contact
-    ? { ...(step.prefill ?? {}), ...(draft.details ?? {}) }
-    : null;
+  // A contact question: an email address or number for each way that needs
+  // one. An address question: the place and its street address, no tiles.
+  const ways = step.address
+    ? ADDRESS_BOXES
+    : step.contact
+      ? ticked.filter((k) => k in CONTACT_DETAILS)
+      : [];
+  const details =
+    step.contact || step.address
+      ? { ...(step.prefill ?? {}), ...(draft.details ?? {}) }
+      : null;
+  const detailOk = (w: string, raw: string) =>
+    step.address ? addressOk(raw) : contactOk(w, raw);
   // A membership question: a monthly price for each tier ticked, hers to change.
   const prices =
     step.prices && Object.keys(step.prices).length
@@ -171,8 +194,8 @@ export function QuestionScreen({
           ? ticked.length > 0 &&
             networks.every((n) => socialOk(n, socials[n] ?? ""))
           : details
-            ? ticked.length > 0 &&
-              ways.every((w) => contactOk(w, details[w] ?? ""))
+            ? (!!step.address || ticked.length > 0) &&
+              ways.every((w) => detailOk(w, details[w] ?? ""))
             : prices
               ? ticked.length > 0 &&
                 ticked.every((t) => priceOk(prices[t] ?? ""))
@@ -189,6 +212,16 @@ export function QuestionScreen({
     const t = setTimeout(() => setSlow(true), 12000);
     return () => clearTimeout(t);
   }, [sending]);
+  // The "tap a sentence, then finish it" demo: plays until the coach touches
+  // any card, and stays away on later starter questions once she has
+  // finished a sentence (remembered in this browser).
+  const [demoOk, setDemoOk] = useState(false);
+  const learned = ticked.some((o) => step.options.includes(o) && finished(o));
+  useEffect(() => {
+    if (learned) markDemoSeen("starter");
+    setDemoOk(!demoSeen("starter"));
+  }, [learned, step.field]);
+  const showDemo = !!step.starter && live && demoOk && ticked.length === 0;
   // After a pick, a slim bar keeps Continue in reach while the real button
   // is scrolled out of view. The answer box itself stays in the page
   // (51d5301b took it out of a sticky footer on purpose).
@@ -290,12 +323,17 @@ export function QuestionScreen({
               }
             : details && field
               ? {
-                  message: ticked.join(", "),
+                  message: step.address
+                    ? ways.map((w) => (details[w] ?? "").trim()).join(", ")
+                    : ticked.join(", "),
                   choice: {
                     field,
                     value: JSON.stringify(
                       Object.fromEntries(
-                        ticked.map((w) => [w, (details[w] ?? "").trim()]),
+                        (step.address ? ways : ticked).map((w) => [
+                          w,
+                          (details[w] ?? "").trim(),
+                        ]),
                       ),
                     ),
                   },
@@ -433,6 +471,15 @@ export function QuestionScreen({
                     onDraft((d) => ({ ...d, card: { value, label } }))
                   }
                 />
+              )}
+
+              {step.starter && demoOk && (
+                <DemoHint
+                  show={showDemo}
+                  caption="Tap a sentence, then finish it in your own words."
+                >
+                  <StarterDemo />
+                </DemoHint>
               )}
 
               {shown.length > 0 && (
@@ -607,15 +654,23 @@ export function QuestionScreen({
                   onChange={(v) => onDraft((d) => ({ ...d, details: v }))}
                   disabled={sending}
                   placeholder={(w) =>
-                    CONTACT_DETAILS[w] === "email"
-                      ? "you@example.com"
-                      : "+49 170 1234567"
+                    step.address
+                      ? w === "Place"
+                        ? "Studio Lumen, Kreuzberg"
+                        : "Hauptstraße 12, 10827 Berlin"
+                      : CONTACT_DETAILS[w] === "email"
+                        ? "you@example.com"
+                        : "+49 170 1234567"
                   }
-                  ok={contactOk}
+                  ok={detailOk}
                   problem={(w) =>
-                    CONTACT_DETAILS[w] === "email"
-                      ? "That doesn’t look like an email address."
-                      : "Add the number with its country code, like +49 170 1234567."
+                    step.address
+                      ? w === "Place"
+                        ? "Add the name of the place."
+                        : "Add the street address."
+                      : CONTACT_DETAILS[w] === "email"
+                        ? "That doesn’t look like an email address."
+                        : "Add the number with its country code, like +49 170 1234567."
                   }
                   reads={() => null}
                   className="mt-4 motion-safe:animate-[sf-pop_.6s_var(--sf-spring)_both]"
@@ -663,7 +718,10 @@ export function QuestionScreen({
                   </p>
                 ) : (
                   <>
-                    {(cards || step.options.length > 0 || zone) && (
+                    {(cards ||
+                      step.options.length > 0 ||
+                      zone ||
+                      step.address) && (
                       <Button
                         id="setup-continue"
                         size="lg"
@@ -755,8 +813,7 @@ export function QuestionScreen({
                   id="setup-pick-for-me"
                   className="mt-2 text-[13px] text-[var(--sf-faint)]"
                 >
-                  Not sure? I&rsquo;ll choose from your answers, and you can
-                  change it any time.
+                  Not sure? I&rsquo;ll choose from your answers.
                 </p>
               )}
               <div style={{ viewTransitionName: "sf-answer" }} className="mt-6">
@@ -785,6 +842,16 @@ export function QuestionScreen({
                   }
                 />
               </div>
+              {live &&
+                !review &&
+                step.field &&
+                SHARE_FIELDS.includes(step.field) && (
+                  <SharePanel onShare={onShare} disabled={sending} />
+                )}
+              <p className="mt-4 text-[13px] text-[var(--sf-faint)]">
+                Nothing here is final. You can change all of it later from your
+                dashboard.
+              </p>
             </div>
           </div>
         </div>

@@ -283,6 +283,7 @@ def test_only_the_guides_own_calls_can_be_left_to_it():
     assert delegable == {
         "site_style",
         "site_logo",
+        "calendar_view",
         "tone",
         "memberships",
         "course_topic",
@@ -293,7 +294,7 @@ def test_only_the_guides_own_calls_can_be_left_to_it():
         "article_topic",
     }
     assert len(brief.FIELD_BY_ID["teaches"].options) == 8
-    assert brief.FIELD_BY_ID["location"].multi and brief.FIELD_BY_ID["live_when"].kind == "schedule"
+    assert brief.FIELD_BY_ID["location"].kind == "address" and brief.FIELD_BY_ID["live_when"].kind == "schedule"
     assert brief.details_for(brief.FIELD_BY_ID["offers"], {})["Articles"].startswith("A blog")
     assert brief.parse_offers("Digital Courses, Community") == ["course", "community"]
 
@@ -365,10 +366,18 @@ def test_socials_are_read_from_the_coachs_words():
     assert brief.coerce("socials", "just my cat") is None
 
 
-def test_the_calendar_is_set_up_without_asking():
-    """Audit F2: two questions (about 30 s) for settings the coach has no basis for yet."""
-    for offers in (["course"], ["live"], ["onsite"]):
-        assert not {"calendar_view", "calendar_nav"} & {f.id for f in brief.required({"offers": offers})}
+def test_the_calendar_layout_is_asked_only_of_a_coach_who_runs_classes_after_the_first_class():
+    ids = lambda answers: [f.id for f in brief.required(answers)]  # noqa: E731
+    for offers in (["live"], ["onsite"]):
+        order = ids({"offers": offers})
+        assert order.index("calendar_view") == order.index("event_review") + 1
+    assert "calendar_view" not in ids({"offers": ["course"]})
+    # "No class for now" skips the calendar question with the rest of the class section.
+    answers = {"offers": ["live"]}
+    assert brief.skip(answers, "event")
+    assert "calendar_view" not in ids(answers)
+    # The Calendar link is on by default; that one is never asked.
+    assert "calendar_nav" not in brief.FIELD_BY_ID
 
 
 def test_tone_hints_follow_the_niche_and_the_model_when_it_wrote_them():
@@ -387,6 +396,8 @@ def test_every_tone_has_a_tile_an_icon_and_a_line_on_every_niche():
     """The sexy, confident and sensual moods were missing from the tone question."""
     tone = brief.FIELD_BY_ID["tone"]
     assert brief.coerce("tone", "Confident, Sensual and Sexy") == "confident, sensual, sexy"
+    assert brief.coerce("tone", "sultry, feminine") == "sensual, sexy"  # synonyms land on the eight tones
+    assert brief.coerce("tone", "glam and fun") == "playful, confident"
     assert len(tone.options) == len(tone.icons) == len(brief.TONES) == 8
     assert all(len(hints) == len(brief.TONES) for hints in brief.TONE_HINTS.values())
     assert all(icon in brief.ICONS for icon in tone.icons)
@@ -444,3 +455,26 @@ def test_time_zone_and_currency_are_read_from_a_pick_or_the_coachs_words():
     assert ids[ids.index("payments") - 2 : ids.index("payments")] == ["timezone", "currency"]
     assert {"timezone", "currency"} <= set(brief.FIXED_KINDS)
     assert set(brief.CURRENCIES) == {code for code, _ in CURRENCY_CHOICES}
+
+
+def test_the_address_is_asked_in_the_class_section_for_in_person_coaches():
+    answers = {"offers": ["onsite"], "payments": ["free"]}
+    ids = [f.id for f in brief.required(answers)]
+    assert ids.index("live_when") < ids.index("location") < ids.index("event_review")
+    assert "location" not in [f.id for f in brief.required({"offers": ["live"], "payments": ["free"]})]
+    # Skipping the class skips its address.
+    assert "location" not in [f.id for f in brief.required({**answers, "skipped": ["event"]})]
+
+
+def test_the_model_cannot_fill_the_address():
+    answers = {"offers": ["onsite"]}
+    assert brief.apply_fact(answers, "location", "My studio in Kreuzberg") is False
+    assert "location" not in answers
+
+
+def test_the_in_person_class_has_its_own_review_only_beside_an_online_one():
+    both = [f.id for f in brief.required({"offers": ["live", "onsite"], "payments": ["free"]})]
+    # After the online class's review, before the calendar question that closes the section.
+    assert both.index("event_review") + 1 == both.index("onsite_review") == both.index("calendar_view") - 1
+    for offers in (["onsite"], ["live"]):
+        assert "onsite_review" not in [f.id for f in brief.required({"offers": offers, "payments": ["free"]})]

@@ -7,6 +7,8 @@ import {
 import { ApiError } from "@/types/api";
 import {
   activityLine,
+  ADDRESS_BOXES,
+  addressOk,
   contactOk,
   priceOk,
   defaultSchedule,
@@ -386,12 +388,14 @@ describe("sectionOf", () => {
       "course_review",
       "live_topic",
       "live_when",
+      "location",
       "event_price",
       "event_review",
+      "onsite_review",
+      "calendar_view",
       "article_topic",
       "socials",
       "contact",
-      "location",
     ];
     const order = asked.map(sectionOf);
     expect(order.every((s, i) => i === 0 || s >= order[i - 1])).toBe(true);
@@ -400,6 +404,26 @@ describe("sectionOf", () => {
   });
   it("puts go-live after every section", () => {
     expect(sectionOf(null)).toBe(SECTIONS.length);
+  });
+});
+
+describe("the address question", () => {
+  it("sits in the class section, with the in-person review", () => {
+    const fields = SECTIONS[sectionOf("live_when")].fields;
+    expect(fields.indexOf("location")).toBeGreaterThan(
+      fields.indexOf("live_when"),
+    );
+    expect(fields.indexOf("onsite_review")).toBeGreaterThan(
+      fields.indexOf("event_review"),
+    );
+    expect(sectionOf("location")).toBe(sectionOf("live_when"));
+    expect(sectionOf("onsite_review")).toBe(sectionOf("live_when"));
+    expect(sectionOf("calendar_view")).toBe(sectionOf("live_when"));
+  });
+  it("takes a filled box and refuses an empty one", () => {
+    expect(ADDRESS_BOXES).toEqual(["Place", "Address"]);
+    expect(addressOk("Hauptstr. 12")).toBe(true);
+    expect(addressOk("  ")).toBe(false);
   });
 });
 

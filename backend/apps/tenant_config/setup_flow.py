@@ -518,7 +518,12 @@ def _create(tenant, user, config, kind: str, draft):
             "scheduled_at": _event_time(draft, ZoneInfo(config.timezone or "UTC")).isoformat(),
         }
         if event_kind == "onsite":
-            params["location"] = draft.location[:500]
+            from .interview_brief import answers_of
+
+            # Where she said it happens: the model never writes an address.
+            stated = answers_of(tenant)
+            params["location"] = str(stated.get("location") or draft.location)[:500]
+            params["address"] = str(stated.get("address") or "")
         return {"kind": event_kind, "id": content.create_event(user, event_kind, params)["id"]}
     params = {"title": draft.title[:200], "excerpt": draft.excerpt[:300], "body_html": draft.body_html}
     return content.create_blog_post(user, params)["id"]

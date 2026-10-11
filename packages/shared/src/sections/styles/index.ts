@@ -19,6 +19,7 @@ import terminal from "./terminal.json";
 import sprout from "./sprout.json";
 import manuscript from "./manuscript.json";
 import sanctum from "./sanctum.json";
+import velvet from "./velvet.json";
 
 /** Every site style, by id, in build/display order. */
 export const SITE_STYLES: Record<string, SiteStyle> = Object.fromEntries(
@@ -44,6 +45,7 @@ export const SITE_STYLES: Record<string, SiteStyle> = Object.fromEntries(
       sprout,
       manuscript,
       sanctum,
+      velvet,
     ] as unknown as SiteStyle[]
   )
     .sort((a, b) => a.order - b.order)
@@ -53,9 +55,12 @@ export const SITE_STYLES: Record<string, SiteStyle> = Object.fromEntries(
 export const ENABLED_STYLES = (): SiteStyle[] =>
   Object.values(SITE_STYLES).filter((s) => s.enabled);
 
-/** Ranking weights: mirrored by rank_styles in backend/apps/tenant_config/sections.py. */
+/** Ranking weights: mirrored by rank_styles in backend/apps/tenant_config/sections.py.
+ *  A tone the style's `tags` name (a mood it IS) outweighs one it merely
+ *  lists in `tones`; a word in both counts once, at the higher weight. */
 const NICHE_WEIGHTS = [12, 8, 5, 3];
 const TONE_WEIGHT = 3;
+const MOOD_WEIGHT = 5;
 
 /** Enabled styles best first for a niche and the tones the coach asked for
  *  ("Warm, Calm" or a list): niche fit (its position in `niches`), then tone
@@ -71,7 +76,16 @@ export function rankStylesForNiche(
     const at = niche ? s.niches.indexOf(niche) : -1;
     return (
       (at < 0 ? 0 : NICHE_WEIGHTS[Math.min(at, NICHE_WEIGHTS.length - 1)]) +
-      TONE_WEIGHT * tones.filter((t) => s.tones?.includes(t)).length
+      tones.reduce(
+        (sum, t) =>
+          sum +
+          (s.tags?.includes(t)
+            ? MOOD_WEIGHT
+            : s.tones?.includes(t)
+              ? TONE_WEIGHT
+              : 0),
+        0,
+      )
     );
   };
   return ENABLED_STYLES()

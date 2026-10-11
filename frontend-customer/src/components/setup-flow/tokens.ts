@@ -60,6 +60,9 @@ export const SHELL_CSS = `
 @keyframes sf-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes sf-word { from { opacity: 0; transform: translateY(0.45em) scale(0.96); filter: blur(10px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes sf-pop { from { opacity: 0; transform: translateY(18px) scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes sf-demo-card { 0% { opacity: 0; background-color: #fff; border-color: var(--sf-line); color: var(--sf-ink); } 5%, 22% { opacity: 1; background-color: #fff; border-color: var(--sf-line); color: var(--sf-ink); } 30%, 92% { opacity: 1; background-color: var(--sf-ink); border-color: var(--sf-ink); color: var(--sf-paper); } 97% { opacity: 0; background-color: var(--sf-ink); border-color: var(--sf-ink); color: var(--sf-paper); } 97.01%, 100% { opacity: 0; background-color: #fff; border-color: var(--sf-line); color: var(--sf-ink); } }
+@keyframes sf-demo-type { 0%, 34%, 97.01%, 100% { max-width: 0; } 70%, 97% { max-width: 26ch; } }
+@keyframes sf-demo-tap { 0% { opacity: 0; transform: translate(70px, 46px); } 8% { opacity: 1; transform: translate(70px, 46px); } 20% { opacity: 1; transform: none; } 24% { opacity: 1; transform: scale(.78); } 28% { opacity: 1; transform: none; } 36%, 100% { opacity: 0; transform: none; } }
 @keyframes sf-glow { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
 @keyframes sf-ring { 0% { opacity: .55; transform: scale(.55); } 100% { opacity: 0; transform: scale(2.6); } }
 @keyframes sf-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }

@@ -33,14 +33,14 @@ PAGE_NEEDS = {
 }
 DRAFT_NEEDS = {
     "course": ("course_topic", "payments", "course_price"),
-    "event": ("live_topic", "live_when", "payments", "event_price"),
+    "event": ("live_topic", "live_when", "location", "payments", "event_price"),
     # An in-person class, drafted beside an online one (see _due).
-    "onsite": ("live_topic", "live_when", "payments", "event_price"),
+    "onsite": ("live_topic", "live_when", "location", "payments", "event_price"),
     "post": ("article_topic",),
 }
 DRAFT_OFFERS = {"course": ("course",), "event": ("live", "onsite"), "onsite": ("onsite",), "post": ("articles",)}
 # The review screen that shows each draft.
-REVIEW_FIELDS = {"course_review": "course", "event_review": "event"}
+REVIEW_FIELDS = {"course_review": "course", "event_review": "event", "onsite_review": "onsite"}
 LOGO_PAGE = 14  # + "just my name" + "upload my own" = a full 4x4 grid
 DEFAULT_TIER = "digital"
 
@@ -351,6 +351,16 @@ def apply_schedule(tenant) -> None:
     if item is not None and item.scheduled_at != first:
         item.scheduled_at = first
         item.save(update_fields=["scheduled_at"])
+
+
+def apply_address(answers: dict) -> None:
+    """An in-person class already drafted moves with its address (she went back)."""
+    flow = TenantConfig.objects.first().setup_flow or {}
+    for key in ("event", "onsite"):
+        row = _draft_row(flow, key)
+        if row is not None and hasattr(row, "address"):
+            row.location, row.address = answers.get("location") or "", answers.get("address") or ""
+            row.save(update_fields=["location", "address"])
 
 
 def expand_class_series(tenant) -> int:
@@ -722,13 +732,26 @@ def _cover_images(tenant, kind: str, item) -> list:
     return images
 
 
+def _stable_cover_url(s3_key: str) -> str:
+    """The review screen polls every few seconds and a fresh signature changes
+    the src each time (the cover reloads and replays its animation), so one
+    signed URL is reused for half of its hour."""
+    from apps.core.storage import generate_presigned_download_url
+
+    key = f"review-cover:{s3_key}"
+    url = cache.get(key)
+    if url is None:
+        url = generate_presigned_download_url(s3_key)
+        cache.set(key, url, 1800)
+    return url
+
+
 def review_card(tenant, kind: str) -> dict:
     """The review screen of the interview's first course or class: the real
     draft (title, description, curriculum or date, price, cover) and a few
     covers to choose from. ``status`` is building | ready | failed."""
     from apps.core.curated_images.cache import asset_id_from_key
     from apps.core.currency import tenant_charge_currency
-    from apps.core.storage import generate_presigned_download_url
 
     flow = TenantConfig.objects.first().setup_flow or {}
     status = (flow.get("draft_status") or {}).get(kind) or "building"
@@ -744,19 +767,21 @@ def review_card(tenant, kind: str) -> dict:
         "description": item.description,
         "price": f"{item.price:.2f}" if item.pricing_type == "paid" else "",
         "currency": (getattr(item, "currency", "") or tenant_charge_currency()).upper(),
-        "cover_url": generate_presigned_download_url(photo.s3_key) if photo else item.thumbnail_url or "",
+        "cover_url": _stable_cover_url(photo.s3_key) if photo else item.thumbnail_url or "",
     }
     if kind == "course":
         detail["modules"] = [
             {"title": m.title, "lessons": [lesson.title for lesson in m.lessons.all()]} for m in item.modules.all()
         ]
     else:
-        ref = (flow.get("drafts") or {}).get("event") or {}
+        ref = (flow.get("drafts") or {}).get(kind) or {}
         detail.update(when=item.scheduled_at.isoformat(), event_kind=ref.get("kind", "live"))
         detail["location"] = getattr(item, "location", "") or ""
-        # A weekly class says so, not only its first date (audit G6).
+        detail["address"] = getattr(item, "address", "") or ""
+        # A weekly class says so, not only its first date (audit G6). The
+        # schedule is the first class's; the in-person one beside it has its own date.
         picked = brief.answers_of(tenant).get("live_schedule")
-        if isinstance(picked, dict) and picked.get("mode") == "recurring":
+        if kind == "event" and isinstance(picked, dict) and picked.get("mode") == "recurring":
             detail["repeats"] = schedule.summary(picked)
     others = [i for i in _cover_images(tenant, kind, item) if i.asset_id != current][: COVERS - 1]
     covers = [{"value": current, "url": detail["cover_url"], "current": True}] if detail["cover_url"] else []
@@ -876,6 +901,8 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         elif field_id == "site_logo":
             answers["logo"] = {"mode": "wordmark", "curated_id": None}
             apply_logo(tenant, answers)
+        elif field_id == "calendar_view":
+            answers["calendar_view"] = "month"
         return
     if field is not None and field.kind == "schedule":
         picked = schedule.parse(value)
@@ -884,6 +911,21 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         brief.apply_fact(answers, field_id, schedule.summary(picked))
         # Class times are in the site's time zone, which has its own question.
         answers["live_schedule"] = {k: v for k, v in picked.items() if k != "tz"}
+        return
+    if field is not None and field.kind == "address":
+        # The place and its street address: {"Place": "Studio 4", "Address": "Hauptstr. 12, Berlin"}.
+        try:
+            picked = json.loads(value) if isinstance(value, str) else value
+        except ValueError:
+            picked = None
+        picked = picked if isinstance(picked, dict) else {}
+        place = str(picked.get("Place") or "").strip()[: brief.TEXT_MAX]
+        street = str(picked.get("Address") or "").strip()[: brief.TEXT_MAX]
+        if not place or not street:
+            raise ChoiceError("invalid_address")
+        answers["location"], answers["address"] = place, street
+        answers["delegated"] = [d for d in answers.get("delegated") or [] if d != "location"]
+        apply_address(answers)
         return
     if field is not None and field.kind == "contact" and isinstance(value, str) and value.lstrip().startswith("{"):
         # Picked ways with their details: {"Email": "...", "WhatsApp": "...", "Contact form": ""}.

@@ -1,0 +1,101 @@
+{
+  "id": "velvet",
+  "label": "Velvet Room",
+  "mood": "After-hours and unhurried — oxblood and near-black, a blush light, champagne hairlines, slanted Playfair italics and one tall portrait sinking into shadow.",
+  "niches": ["belly_dance", "dance", "pole_dance", "makeup"],
+  "tones": ["confident"],
+  "tags": ["sexy", "sensual", "confident"],
+  "order": 12,
+  "enabled": true,
+  "heroLayout": "portrait",
+  "recipes": {
+    "home": [
+      "hero",
+      "moments",
+      "philosophy",
+      "story",
+      "courseShowcase",
+      "benefits",
+      "howItWorks",
+      "cta"
+    ]
+  },
+  "bodyLayouts": {
+    "story": "pull",
+    "benefits": "list",
+    "howItWorks": "timeline"
+  },
+  "fonts": {
+    "display": "Playfair Display",
+    "body": "Jost",
+    "googleQuery": "family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500"
+  },
+  "palette": {
+    "background": "oklch(0.17 0.04 18)",
+    "surface": "oklch(0.225 0.06 17)",
+    "foreground": "oklch(0.95 0.018 55)",
+    "mutedForeground": "oklch(0.77 0.04 28)",
+    "primary": "oklch(0.76 0.115 20)",
+    "primaryForeground": "oklch(0.2 0.06 17)",
+    "accent": "oklch(0.84 0.075 78)",
+    "accentForeground": "oklch(0.2 0.05 30)",
+    "border": "oklch(0.35 0.07 17)",
+    "inverse": "oklch(0.925 0.026 55)",
+    "inverseForeground": "oklch(0.24 0.08 16)"
+  },
+  "paletteLabel": "Oxblood",
+  "palettes": [
+    {
+      "id": "noir",
+      "label": "Noir",
+      "mood": "Black with crimson and champagne — after midnight.",
+      "palette": {
+        "background": "oklch(0.14 0.008 20)",
+        "surface": "oklch(0.19 0.014 20)",
+        "foreground": "oklch(0.95 0.01 80)",
+        "mutedForeground": "oklch(0.74 0.02 60)",
+        "primary": "oklch(0.6 0.2 24)",
+        "primaryForeground": "oklch(0.14 0.01 20)",
+        "accent": "oklch(0.83 0.08 85)",
+        "accentForeground": "oklch(0.16 0.01 20)",
+        "border": "oklch(0.31 0.025 20)",
+        "inverse": "oklch(0.93 0.02 80)",
+        "inverseForeground": "oklch(0.16 0.01 20)"
+      }
+    },
+    {
+      "id": "satin",
+      "label": "Satin",
+      "mood": "Blush paper and wine ink — the daylight edition.",
+      "palette": {
+        "background": "oklch(0.965 0.018 25)",
+        "surface": "oklch(0.93 0.03 22)",
+        "foreground": "oklch(0.25 0.07 15)",
+        "mutedForeground": "oklch(0.45 0.06 17)",
+        "primary": "oklch(0.38 0.12 16)",
+        "primaryForeground": "oklch(0.97 0.015 25)",
+        "accent": "oklch(0.5 0.11 20)",
+        "accentForeground": "oklch(0.97 0.015 25)",
+        "border": "oklch(0.86 0.03 22)",
+        "inverse": "oklch(0.25 0.08 15)",
+        "inverseForeground": "oklch(0.96 0.02 30)"
+      }
+    }
+  ],
+  "radius": "0.25rem",
+  "photoWords": "intimate portrait, soft candlelight, satin and silk, deep red shadows, low warm light, rose, velvet drapery, graceful, elegant",
+  "variants": {
+    "hero": ["portrait", "intro"],
+    "story": ["confession"],
+    "benefits": ["candlelight"],
+    "courseShowcase": ["private", "rows"],
+    "howItWorks": ["slowly"],
+    "philosophy": ["whisper"],
+    "moments": ["glimpses"],
+    "pricing": ["membership"],
+    "faq": ["soft"],
+    "cta": ["invitation"],
+    "contact": ["note"],
+    "events": ["evenings", "rows"]
+  }
+}

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+import { getSiteStyle, oklchToHex, paletteOf } from "@/lib/site-styles";
 import { getThemePalette } from "@/lib/themes";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 
@@ -8,7 +9,10 @@ export const dynamic = "force-dynamic";
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const slug = await getTenantSlug();
   const config = slug !== "__platform__" ? await fetchTenantConfig(slug) : null;
-  const theme = getThemePalette(config?.theme);
+  const style = getSiteStyle(config?.style);
+  const themeColor =
+    (style && oklchToHex(paletteOf(style, config?.palette).primary)) ||
+    getThemePalette(config?.theme).primaryHex;
   const name = config?.brand_name ?? "Contentor";
   const v = config?.icon_id ?? config?.logo_id ?? "default";
 
@@ -24,7 +28,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     lang: "en",
     categories: ["education"],
     background_color: "#ffffff",
-    theme_color: theme.primaryHex,
+    theme_color: themeColor,
     icons: [
       {
         src: `/pwa-icon?size=192&v=${v}`,

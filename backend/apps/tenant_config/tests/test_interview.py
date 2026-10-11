@@ -638,6 +638,36 @@ def test_a_card_pick_whose_next_question_is_code_owned_skips_the_model(client, t
     assert body["guide"]["field"] == "payments"
 
 
+def test_the_calendar_layout_is_asked_after_the_first_class_and_left_to_the_guide_it_is_month(
+    client, tenant_ctx, quiet
+):
+    _only_missing(tenant_ctx, ("event_review", "calendar_view"), offers=["live"])
+    body = client.post(
+        URL, {"message": "Looks good", "choice": {"field": "event_review", "value": "ok"}}, format="json"
+    ).json()
+    assert quiet.calls == []
+    assert body["guide"]["field"] == "calendar_view" and body["guide"]["skip"] is None
+    body = client.post(
+        URL, {"message": "Pick for me", "choice": {"field": "calendar_view", "value": "__delegate__"}}, format="json"
+    ).json()
+    assert quiet.calls == []  # code-owned: no AI turn
+    assert _answers(tenant_ctx)["calendar_view"] == "month"
+    assert "month grid" in body["guide"]["ack"]
+
+
+def test_a_coach_who_skipped_classes_or_has_none_is_never_asked_the_calendar_layout(client, tenant_ctx, quiet):
+    from apps.tenant_config import interview_brief as brief
+
+    for answers in ({"offers": ["course"]}, {"offers": ["live"], "skipped": ["event"]}):
+        assert "calendar_view" not in {f.id for f in brief.missing(answers)}
+
+
+def test_an_earlier_calendar_layout_answer_stands(tenant_ctx):
+    from apps.tenant_config import interview_brief as brief
+
+    assert "calendar_view" not in {f.id for f in brief.missing({"offers": ["live"], "calendar_view": "agenda"})}
+
+
 def test_a_tap_whose_next_question_needs_the_model_still_asks_it(client, tenant_ctx, quiet):
     """The next question's tiles are written for this coach, so the model runs; its
     reading of the tapped tiles never overrides code's."""
@@ -739,3 +769,137 @@ def test_a_question_stored_before_own_options_still_gets_its_blank_tile(tenant_c
     }
     guide = interview.interview_state(tenant_ctx, flow)["guide"]
     assert guide["field"] == "specialty" and guide["custom"] is True
+
+
+def test_the_address_question_is_two_boxes_and_opens_on_what_she_gave():
+    from apps.tenant_config import interview_brief as brief
+
+    guide = interview.guide_for(brief.FIELD_BY_ID["location"], answers={"offers": ["onsite"]})
+    assert guide["address"] is True and guide["options"] == [] and guide["can_delegate"] is False
+    assert interview.prefill_for("location", {"location": "Studio 4", "address": "Hauptstr. 12"}) == {
+        "Place": "Studio 4",
+        "Address": "Hauptstr. 12",
+    }
+    # Her address is never a thing the model is asked to fill, and "No class for now"
+    # is not offered on the in-person review (it would drop the online class too).
+    assert "location" not in interview.SYSTEM
+    review = interview.guide_for(brief.FIELD_BY_ID["onsite_review"], answers={"offers": ["live", "onsite"]})
+    assert review["skip"] is None and review["builder"] is None
+    assert interview.guide_for(brief.FIELD_BY_ID["event_review"])["skip"] == "No class for now"
+
+
+def test_an_address_pick_skips_the_model_and_asks_the_next_question(client, tenant_ctx, quiet):
+    _only_missing(tenant_ctx, ("location", "event_price"), offers=["onsite"], payments=["event"])
+    value = json.dumps({"Place": "Studio 4", "Address": "Hauptstr. 12"})
+    body = client.post(
+        URL, {"message": "Studio 4, Hauptstr. 12", "choice": {"field": "location", "value": value}}, format="json"
+    ).json()
+    answers = _answers(tenant_ctx)
+    assert quiet.calls == []
+    assert (answers["location"], answers["address"]) == ("Studio 4", "Hauptstr. 12")
+    # Back on that question, both boxes start with what she gave.
+    assert interview.prefill_for("location", answers) == {"Place": "Studio 4", "Address": "Hauptstr. 12"}
+    assert body["guide"]["field"] == "event_price"
+
+
+# ── a shared document (bio, CV, old About page) ──────────────────────────────
+
+IMPORT_URL = "/api/v1/admin/setup-flow/import/"
+BIO = "Mira Voss. I teach Pottery to desk workers. Trained with the Ceramics Guild, 500 hours, in 2016."
+
+
+def _import_reply(**kwargs):
+    return interview.InterviewTurn(
+        facts=[
+            {"field": "teaches", "value": "Pottery"},
+            {"field": "audience", "value": "Desk workers"},
+            {"field": "credentials", "value": "I trained with the Ceramics Guild, 500 hours, in 2016."},
+            {"field": "story", "value": "I found clay after years at a desk."},
+        ],
+        ack="Thanks for the document.",
+        next_field="outcome",
+        question="What do students walk away with?",
+        **kwargs,
+    )
+
+
+def _bio_file(text=BIO):
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    return SimpleUploadedFile("bio.txt", text.encode())
+
+
+def test_a_shared_file_fills_several_questions_and_says_so(client, tenant_ctx, quiet):
+    quiet.reply = _import_reply()
+    body = client.post(IMPORT_URL, {"file": _bio_file()}, format="multipart").json()
+    answers = _answers(tenant_ctx)
+    assert answers["teaches"] == "Pottery" and answers["audience"] == "Desk workers"
+    assert answers["credentials"].startswith("I trained") and answers["story"].startswith("I found")
+    assert body["guide"]["ack"] == (
+        "From your file I filled in: what you teach, who you teach, your story, your training."
+        " You can change any of them."
+    )
+    assert body["guide"]["noted"] == ["who you teach", "your story", "your training"]  # not the question on screen
+    assert body["guide"]["field"] == "outcome"
+    user = json.loads(quiet.calls[0]["user"])
+    assert user["document"] is True and user["message"] == BIO and user["answering"] is None
+    assert body["coach_text"] == interview.IMPORT_TURN_TEXT  # the transcript never holds the document
+    turns = TenantConfig.objects.first().setup_flow["interview"]["turns"]
+    assert [t for t in turns if t["role"] == "coach"][0]["how"] == "import"
+
+
+def test_pasted_text_works_and_may_be_longer_than_a_chat_message(client, quiet):
+    quiet.reply = _import_reply()
+    long = BIO + " " + "More about me. " * 300
+    assert len(long) > interview.MESSAGE_MAX
+    assert client.post(IMPORT_URL, {"text": long}, format="json").status_code == 200
+    assert len(json.loads(quiet.calls[0]["user"])["message"]) == len(long.strip())
+
+
+def test_a_shared_file_never_overwrites_what_she_already_answered(client, tenant_ctx, quiet):
+    _set_answers(tenant_ctx, {"teaches": "Pottery", "delegated": ["story"]})
+    quiet.reply = _import_reply()
+    client.post(IMPORT_URL, {"text": BIO}, format="json")
+    answers = _answers(tenant_ctx)
+    assert answers["teaches"] == "Pottery"
+    assert "story" not in answers  # left to the guide: settled
+    assert answers["audience"] == "Desk workers"
+
+
+def test_a_shared_file_is_never_a_site_edit_or_a_redraft(client, tenant_ctx, quiet):
+    _set_answers(tenant_ctx, {**BEFORE_COURSE, "course_topic": "Footwork", "course_price": 49.0})
+    quiet.reply = _import_reply(edit_request="Change my headline")
+    with (
+        mock.patch("apps.core.copilot.engine.run_turn") as run,
+        mock.patch("apps.tenant_config.interview_milestones.redraft") as redraft,
+    ):
+        body = client.post(IMPORT_URL, {"text": BIO, "field": "course_review"}, format="json").json()
+    run.assert_not_called()
+    redraft.assert_not_called()
+    assert body["edit"] is None
+
+
+def test_when_the_ai_fails_nothing_is_applied(client, tenant_ctx, quiet):
+    from apps.core import ai as core_ai
+
+    quiet.error = core_ai.AiError("down")
+    response = client.post(IMPORT_URL, {"text": BIO}, format="json")
+    assert response.status_code == 503 and response.json()["detail"] == "ai_unavailable"
+    assert _answers(tenant_ctx) == {}
+    assert TenantConfig.objects.first().setup_flow["interview"]["turns"] == []
+
+
+def test_a_file_that_cannot_be_read_is_a_plain_400(client, quiet):
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    response = client.post(IMPORT_URL, {"file": SimpleUploadedFile("cv.pdf", b"plain text")}, format="multipart")
+    assert response.status_code == 400 and "couldn't read that file" in response.json()["detail"]
+    assert client.post(IMPORT_URL, {"text": "  "}, format="json").status_code == 400
+    assert quiet.calls == []
+
+
+def test_a_shared_file_after_setup_finished_is_refused(client, config, quiet):
+    config.setup_flow = {**config.setup_flow, "status": "done"}
+    config.save()
+    assert client.post(IMPORT_URL, {"text": BIO}, format="json").status_code == 409
+    assert quiet.calls == []

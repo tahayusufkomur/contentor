@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import {
   checkBrandName,
   createPlatformAuthenticated,
+  getNameIdeas,
 } from "@/lib/api/onboarding";
 import { SignupFrame, SignupShell, SlideHeader } from "./signup-shell";
 import { ApiError } from "@/types/api";
@@ -108,6 +109,11 @@ type Step = "brand" | "contact" | "email-sent";
 
 const DRAFT_KEY = "contentor_signup_draft";
 const RESEND_COOLDOWN_SECONDS = 30; // the endpoint allows 5/min per IP
+// The name is reviewed in the background once typing pauses, so Continue
+// rarely waits. Capped per page: the check endpoint allows 30/min per IP.
+const REVIEW_DEBOUNCE_MS = 900;
+const REVIEW_MIN_CHARS = 3;
+const MAX_BACKGROUND_REVIEWS = 10;
 
 /** New coach: brand name -> name+email -> verification email sent. The rest
  * of onboarding happens in the coach's own /setup after the email link. */
@@ -127,6 +133,18 @@ function AnonymousSignupFlow() {
     typo: string;
     suggestions: string[];
   } | null>(null);
+  // The in-flight (or finished) background review, keyed by the name it was for.
+  const review = useRef<{
+    name: string;
+    promise: Promise<Awaited<ReturnType<typeof checkBrandName>> | null>;
+  } | null>(null);
+  const reviewCount = useRef(0);
+  // "Need a name?": ideas from what the coach teaches.
+  const [ideasOpen, setIdeasOpen] = useState(false);
+  const [topic, setTopic] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [generated, setGenerated] = useState<string[] | null>(null);
+  const [ideasFailed, setIdeasFailed] = useState(false);
 
   // A reload (or a password manager's autofill hiccup) must not wipe the form:
   // keep {brand, name, email, step} for this tab only.
@@ -163,9 +181,30 @@ function AnonymousSignupFlow() {
     return () => clearTimeout(id);
   }, [cooldown]);
 
+  useEffect(() => {
+    const trimmed = brandName.trim();
+    if (
+      step !== "brand" ||
+      trimmed.length < REVIEW_MIN_CHARS ||
+      reviewed.includes(trimmed) ||
+      review.current?.name === trimmed ||
+      reviewCount.current >= MAX_BACKGROUND_REVIEWS
+    )
+      return;
+    const id = setTimeout(() => {
+      reviewCount.current += 1;
+      review.current = {
+        name: trimmed,
+        promise: checkBrandName(trimmed, true).catch(() => null),
+      };
+    }, REVIEW_DEBOUNCE_MS);
+    return () => clearTimeout(id);
+  }, [brandName, step, reviewed]);
+
   // A picked name is already checked (free to take): fill it in, no second review.
   const pick = (next: string) => {
     setBrandName(next);
+    setGenerated(null);
     setReviewed((r) => [...r, next]);
     setIdeas(null);
   };
@@ -176,7 +215,12 @@ function AnonymousSignupFlow() {
       if (!trimmed) return;
       setError(null);
       const fresh = !reviewed.includes(trimmed);
-      const result = await checkBrandName(trimmed, fresh);
+      // Same name as the background review: wait for it instead of asking twice.
+      const early =
+        fresh && review.current?.name === trimmed
+          ? await review.current.promise
+          : null;
+      const result = early ?? (await checkBrandName(trimmed, fresh));
       if (!result.available) {
         setError(result.detail ?? t("errors.generic"));
         return;
@@ -192,6 +236,18 @@ function AnonymousSignupFlow() {
       setStep("contact");
     },
     { onError: () => setError(t("errors.generic")) },
+  );
+
+  const { run: handleGetIdeas, loading: ideasLoading } = useAsyncAction(
+    async () => {
+      const what = topic.trim();
+      if (!what) return;
+      setIdeasFailed(false);
+      const list = await getNameIdeas(what, firstName.trim());
+      setGenerated(list);
+      setIdeasFailed(list.length === 0);
+    },
+    { onError: () => setIdeasFailed(true) },
   );
 
   const { run: handleContactSubmit, loading: contactLoading } = useAsyncAction(
@@ -309,6 +365,7 @@ function AnonymousSignupFlow() {
               size="lg"
               className="w-full max-w-[340px]"
               loading={brandLoading}
+              loadingText={t("checking")}
               disabled={!brandName.trim()}
             >
               {t("submit")}
@@ -399,6 +456,91 @@ function AnonymousSignupFlow() {
               </div>
             )}
           </form>
+          <div className="mx-auto mt-4 max-w-[380px] text-sm">
+            {!ideasOpen ? (
+              <button
+                type="button"
+                className="text-[13px] text-foreground/60 underline-offset-4 hover:text-foreground hover:underline"
+                onClick={() => setIdeasOpen(true)}
+              >
+                {t("needName")}
+              </button>
+            ) : (
+              <div className="space-y-2 motion-safe:animate-fade-in">
+                <Label
+                  htmlFor="ideasTopic"
+                  className="text-[13px] font-medium text-foreground/80"
+                >
+                  {t("ideasTopicLabel")}
+                </Label>
+                <Input
+                  id="ideasTopic"
+                  placeholder={t("ideasTopicPlaceholder")}
+                  value={topic}
+                  maxLength={120}
+                  onChange={(e) => setTopic(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (topic.trim() && !ideasLoading) void handleGetIdeas();
+                    }
+                  }}
+                  autoComplete="off"
+                  data-1p-ignore
+                  data-lpignore="true"
+                />
+                <Label
+                  htmlFor="ideasFirstName"
+                  className="text-[13px] font-medium text-foreground/80"
+                >
+                  {t("ideasFirstNameLabel")}
+                </Label>
+                <Input
+                  id="ideasFirstName"
+                  value={firstName}
+                  maxLength={40}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  autoComplete="off"
+                  data-1p-ignore
+                  data-lpignore="true"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  loading={ideasLoading}
+                  loadingText={t("ideasGetting")}
+                  disabled={!topic.trim()}
+                  onClick={() => void handleGetIdeas()}
+                >
+                  {t("ideasGet")}
+                </Button>
+                {ideasFailed && (
+                  <p className="text-[13px] text-foreground/60">
+                    {t("ideasFailed")}
+                  </p>
+                )}
+                {generated && generated.length > 0 && (
+                  <div className="space-y-2 pt-1">
+                    <p className="text-[13px] text-foreground/60">
+                      {t("ideasPick")}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {generated.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => pick(s)}
+                          className="rounded-full border px-3 py-1.5 text-[13px] transition-colors hover:bg-muted"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </SignupShell>
     );

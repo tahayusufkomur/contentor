@@ -3,12 +3,15 @@ import {
   SITE_STYLES,
   isDarkPalette,
   modePalette,
+  oklchToHex,
   paletteOf,
   styleDefaultTheme,
   styleRootCss,
   styleVars,
   themeModes,
+  themeStorageKey,
 } from "@/lib/site-styles";
+import { rankStylesForNiche } from "@shared/sections/styles";
 
 describe("paletteOf", () => {
   const journal = SITE_STYLES.journal;
@@ -48,5 +51,47 @@ describe("modePalette", () => {
   it("styled sites toggle light and dark only", () => {
     expect(themeModes(true)).toEqual(["light", "dark"]);
     expect(themeModes(false)).toContain("dim");
+  });
+});
+
+describe("themeStorageKey", () => {
+  it("is per look and colourway on a styled site, plain otherwise", () => {
+    expect(themeStorageKey("journal", "sage")).toBe("theme:journal:sage");
+    expect(themeStorageKey("journal")).toBe("theme:journal:");
+    expect(themeStorageKey("journal", "sage")).not.toBe(
+      themeStorageKey("journal", ""),
+    );
+    expect(themeStorageKey("")).toBe("theme");
+    expect(themeStorageKey(undefined)).toBe("theme");
+    expect(themeStorageKey("no-such-style")).toBe("theme");
+  });
+});
+
+describe("oklchToHex", () => {
+  it("converts oklch to sRGB hex", () => {
+    expect(oklchToHex("oklch(1 0 0)")).toBe("#ffffff");
+    expect(oklchToHex("oklch(0 0 0)")).toBe("#000000");
+    expect(oklchToHex("oklch(0.628 0.2577 29.23)")).toBe("#ff0000");
+  });
+  it("is undefined for non-oklch strings", () => {
+    expect(oklchToHex("#ff0000")).toBeUndefined();
+  });
+  it("converts every shipped primary", () => {
+    for (const s of Object.values(SITE_STYLES))
+      expect(oklchToHex(s.palette.primary)).toMatch(/^#[0-9a-f]{6}$/);
+  });
+});
+
+describe("rankStylesForNiche", () => {
+  it("lets a mood tag outweigh a niche made for another tone (mirrors rank_styles)", () => {
+    expect(rankStylesForNiche("pole_dance", ["sexy", "sensual"])[0].id).toBe(
+      "velvet",
+    );
+    expect(rankStylesForNiche("dance", ["sexy", "sensual"])[0].id).toBe(
+      "studiofloor",
+    );
+    expect(rankStylesForNiche("pole_dance", [])[0].id).not.toBe("velvet");
+    expect(rankStylesForNiche("yoga", "Sensual")[0].id).toBe("nocturne");
+    expect(rankStylesForNiche("yoga", "Warm, Calm")[0].id).toBe("journal");
   });
 });

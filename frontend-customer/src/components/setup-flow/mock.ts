@@ -26,6 +26,7 @@ const REDRAFT = "Draft a different version, please.";
 const REVIEW_KIND: Record<string, ReviewKind> = {
   course_review: "course",
   event_review: "event",
+  onsite_review: "onsite",
 };
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -200,6 +201,17 @@ export const mockSetupFlowApi: SetupFlowApi = {
     }
     return {
       coach_text: req.message,
+      guide: liveGuide(),
+      edit: null,
+      fired: [],
+      state: snapshot(),
+    };
+  },
+  // The dev mock reads nothing: the live question stays as it is.
+  importDoc: async () => {
+    await wait(TURN_MS);
+    return {
+      coach_text: "",
       guide: liveGuide(),
       edit: null,
       fired: [],

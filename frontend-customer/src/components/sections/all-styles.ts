@@ -19,6 +19,7 @@ import * as studiofloor from "./studiofloor";
 import * as tavola from "./tavola";
 import * as terminal from "./terminal";
 import * as trail from "./trail";
+import * as velvet from "./velvet";
 import * as workshop from "./workshop";
 
 /** Every style module, in build order. */
@@ -43,6 +44,7 @@ const MODULES = {
   sprout,
   manuscript,
   sanctum,
+  velvet,
 };
 
 export const STYLE_SECTION_MODULES: Record<

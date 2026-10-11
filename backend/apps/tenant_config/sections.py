@@ -74,6 +74,7 @@ HERO_LAYOUTS = {
     "giant": "Giant headline, photos beneath",
     "cover": "A magazine cover",
     "centered": "Centred words, a band of photos",
+    "portrait": "A tall portrait fading into shadow",
 }
 
 # Photo slots (image, image2, image3, image4) a layout's first hero variant
@@ -106,9 +107,13 @@ def looks() -> list[dict]:
 
 # Ranking weights, mirrored by rankStylesForNiche in packages/shared: the
 # niche's position in a style's `niches` list (its first entry is the niche it
-# is made for), plus a little for each tone the coach asked the site to have.
+# is made for), plus a little for each tone the coach asked the site to have:
+# more when a style's `tags` name that mood (sexy, sensual... are what the
+# style IS), less when it merely lists the tone in `tones`. A word in both
+# counts once, at the higher weight.
 NICHE_WEIGHTS = (12, 8, 5, 3)
 TONE_WEIGHT = 3
+MOOD_WEIGHT = 5
 
 
 def tones_of(text) -> list[str]:
@@ -130,8 +135,12 @@ def rank_styles(niche, tones=()) -> list[dict]:
     def score(s):
         listed = s.get("niches") or []
         at = listed.index(niche) if niche in listed else None
-        return (NICHE_WEIGHTS[min(at, len(NICHE_WEIGHTS) - 1)] if at is not None else 0) + TONE_WEIGHT * len(
-            tones & tones_of_style(s)
+        moods = tones & {t.lower() for t in s.get("tags") or []}
+        plain = tones & tones_of_style(s) - moods
+        return (
+            (NICHE_WEIGHTS[min(at, len(NICHE_WEIGHTS) - 1)] if at is not None else 0)
+            + MOOD_WEIGHT * len(moods)
+            + TONE_WEIGHT * len(plain)
         )
 
     return sorted(enabled_styles().values(), key=lambda s: -score(s))  # sorted() is stable

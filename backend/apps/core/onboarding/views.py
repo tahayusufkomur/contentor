@@ -89,6 +89,22 @@ def check_brand_name(request):
     creator_signup's own slug check without minting a token or emailing."""
     from apps.core.i18n_helpers import msg
 
+    region = getattr(request, "region", "global")
+    if request.data.get("ideas") is not None:
+        # "Need a name?": brand-name ideas for what the coach teaches, only the free ones.
+        from .name_check import ideas
+
+        topic, first = request.data.get("ideas"), request.data.get("first_name") or ""
+        if not isinstance(topic, str) or not isinstance(first, str):
+            return Response({"detail": msg(request, "brand_required")}, status=400)
+        names = ideas(topic, first)
+        taken = set(
+            Tenant.objects.filter(slug__in=[slugify(n)[:63] for n in names if n], region=region).values_list(
+                "slug", flat=True
+            )
+        )
+        return Response({"ideas": [n for n in names if slugify(n)[:63] and slugify(n)[:63] not in taken]})
+
     brand_name = (request.data.get("brand_name") or "").strip()
     if not brand_name:
         return Response({"detail": msg(request, "brand_required")}, status=400)
@@ -96,7 +112,6 @@ def check_brand_name(request):
     slug = slugify(brand_name)[:63]
     if not slug:
         return Response({"available": False, "detail": msg(request, "brand_unusable")})
-    region = getattr(request, "region", "global")
     if Tenant.objects.filter(slug=slug, region=region).exists():
         return Response({"available": False, "detail": msg(request, "brand_taken")})
     if not request.data.get("review"):

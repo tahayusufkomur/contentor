@@ -15,8 +15,11 @@ import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
 import {
   getSiteStyle,
+  oklchToHex,
+  paletteOf,
   styleDefaultTheme,
   styleFontsHref,
+  themeStorageKey,
 } from "@/lib/site-styles";
 import { TenantProvider } from "@/components/shared/tenant-provider";
 import { ThemeProvider } from "@/components/shared/theme-provider";
@@ -79,10 +82,14 @@ export const dynamic = "force-dynamic";
 export async function generateViewport(): Promise<Viewport> {
   const slug = await getTenantSlug();
   const config = await fetchTenantConfig(slug);
-  const theme = getThemePalette(config?.theme);
+  const style = getSiteStyle(config?.style);
+  // A styled site wears its palette; the legacy `theme` field is never set by it.
+  const themeColor =
+    (style && oklchToHex(paletteOf(style, config?.palette).primary)) ||
+    getThemePalette(config?.theme).primaryHex;
 
   return {
-    themeColor: theme.primaryHex,
+    themeColor,
     viewportFit: "cover",
   };
 }
@@ -185,6 +192,7 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider
             attribute="class"
+            storageKey={themeStorageKey(config?.style, config?.palette)}
             defaultTheme={
               siteStyle
                 ? styleDefaultTheme(siteStyle, config?.palette)

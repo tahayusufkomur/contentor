@@ -178,6 +178,12 @@ export function contactOk(way: string, raw: string): boolean {
   return /^\d{6,15}$/.test(digits);
 }
 
+/** The boxes of the address question, as interview_milestones.choose reads them. */
+export const ADDRESS_BOXES = ["Place", "Address"];
+
+/** Whether an address box is filled in enough to send. */
+export const addressOk = (raw: string): boolean => raw.trim().length >= 3;
+
 /** Whether the server will take this as a monthly price: its first number
  * (parse_price), above 0 and at most 9999. */
 export function priceOk(raw: string): boolean {
@@ -238,6 +244,7 @@ export function questionSteps(
           builder,
           schedule,
           socials,
+          address,
           starter,
           why,
           plan,
@@ -264,6 +271,7 @@ export function questionSteps(
           builder,
           schedule,
           socials,
+          address,
           starter,
           why,
           plan,
@@ -312,12 +320,15 @@ export const SECTIONS: { label: string; fields: string[] }[] = [
       "course_review",
       "live_topic",
       "live_when",
+      "location",
       "event_price",
       "event_review",
+      "onsite_review",
+      "calendar_view",
       "article_topic",
     ],
   },
-  { label: "Contact", fields: ["socials", "contact", "location"] },
+  { label: "Contact", fields: ["socials", "contact"] },
 ];
 
 /** A question's section (SECTIONS.length once nothing is left to ask). */

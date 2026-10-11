@@ -35,6 +35,7 @@ import {
   type TurnRequest,
 } from "@/lib/setup-flow";
 import { announceSiteUpdated } from "@/lib/site-events";
+import type { ShareDoc } from "@/lib/share-doc";
 import { ApiError } from "@/types/api";
 import { cn } from "@/lib/utils";
 import { BrowserFrame, Composing, type Device } from "./browser-frame";
@@ -349,6 +350,18 @@ function Flow({
     { onError: (err) => toast.error(turnErrorText(err)) },
   );
 
+  // A shared bio or CV replaces the step like a turn does; the unsent answer
+  // in the box stays. Failures throw: the panel shows them in place.
+  const shareDoc = async (doc: ShareDoc) => {
+    const res = await api.importDoc(doc, guide.field ?? undefined);
+    await slide("next", () => {
+      setGuide(res.guide);
+      setFlow(res.state);
+      setDir("next");
+      setAt(null);
+    });
+  };
+
   // Slides: ← and → move between questions when nothing is being typed.
   useEffect(() => {
     if (golive) return;
@@ -604,6 +617,7 @@ function Flow({
               builder={builder}
               onDraft={editDraft(step.field ?? GOLIVE)}
               onSend={(req) => void send(req)}
+              onShare={shareDoc}
               onMoreLogos={api.logos}
               onLogoMore={async () => {
                 const cards = await api.logoMore();

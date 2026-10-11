@@ -415,6 +415,26 @@ def test_review_card_shows_the_real_draft(tenant_ctx, config, owner):
         ms.set_cover(tenant_ctx, "course", "not-offered")
 
 
+def test_review_card_cover_url_is_stable_between_polls(tenant_ctx, config, owner):
+    from apps.core.curated_images import client as curated_client
+    from apps.media.models import Photo
+
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "course", {"course_topic": "Morning mobility"})
+    ms._set_draft_status(tenant_ctx, "course", "ready")
+    course = Course.objects.get()
+    course.thumbnail = Photo.objects.create(s3_key="stable-cover-test/cover.jpg", title="c")
+    course.save()
+    signed = iter(f"https://s3/cover.jpg?sig={n}" for n in range(10))
+    with (
+        mock.patch("apps.core.storage.generate_presigned_download_url", side_effect=lambda key: next(signed)),
+        mock.patch("apps.core.curated_images.client.search", return_value=curated_client.SearchPage([], 1, False)),
+    ):
+        first = ms.review_card(tenant_ctx, "course")["item"]["cover_url"]
+        second = ms.review_card(tenant_ctx, "course")["item"]["cover_url"]
+    assert first and first == second
+
+
 def test_review_card_is_building_until_the_draft_lands(tenant_ctx, config):
     assert ms.review_card(tenant_ctx, "event")["status"] == "building"
 
@@ -626,6 +646,12 @@ def test_calendar_and_social_answers_reach_the_navbar(tenant_ctx, config):
     assert len(TenantConfig.objects.first().navbar_config["links"]) == 3
 
 
+def test_leaving_the_calendar_layout_to_the_guide_picks_the_month_grid(tenant_ctx):
+    answers = {"offers": ["live"]}
+    ms.choose(tenant_ctx, answers, "calendar_view", brief.DELEGATE)
+    assert answers["calendar_view"] == "month" and "calendar_view" in answers["delegated"]
+
+
 def test_calendar_and_social_choices_are_validated(tenant_ctx, config):
     answers = {}
     ms.choose(tenant_ctx, answers, "calendar_view", "month")
@@ -775,13 +801,15 @@ def test_the_header_button_follows_what_the_coach_offers(tenant_ctx, config):
 
 
 CLASSES = {**HOME, "payments": ["free"], "live_topic": "Slow flow", "live_when": "Sunday 9am"}
+IN_PERSON = {**CLASSES, "offers": ["course", "onsite"], "location": "Studio 4", "address": "Hauptstr. 12"}
+ADDRESS = '{"Place": "Studio 4", "Address": "Hauptstr. 12, 10827 Berlin"}'
 
 
 def test_an_in_person_class_is_drafted_beside_an_online_one(
     tenant_ctx, config, side_effects, django_capture_on_commit_callbacks
 ):
     with django_capture_on_commit_callbacks(execute=True):
-        fired = ms.fire(tenant_ctx, {**CLASSES, "offers": ["course", "live", "onsite"]})
+        fired = ms.fire(tenant_ctx, {**IN_PERSON, "offers": ["course", "live", "onsite"]})
     assert {"draft:event", "draft:onsite"} <= set(fired)
     prompts = {call.args[1]: call.args[2] for call in side_effects["draft"].call_args_list}
     assert "online class" in prompts["event"] and "in person class" in prompts["onsite"]
@@ -791,14 +819,14 @@ def test_an_in_person_class_alone_is_the_first_class(
     tenant_ctx, config, side_effects, django_capture_on_commit_callbacks
 ):
     with django_capture_on_commit_callbacks(execute=True):
-        fired = ms.fire(tenant_ctx, {**CLASSES, "offers": ["course", "onsite"]})
+        fired = ms.fire(tenant_ctx, dict(IN_PERSON))
     assert "draft:event" in fired and "draft:onsite" not in fired
 
 
 def test_skipping_classes_skips_the_in_person_one_too(
     tenant_ctx, config, side_effects, django_capture_on_commit_callbacks
 ):
-    answers = {**CLASSES, "offers": ["course", "live", "onsite"], "skipped": ["event"]}
+    answers = {**IN_PERSON, "offers": ["course", "live", "onsite"], "skipped": ["event"]}
     with django_capture_on_commit_callbacks(execute=True):
         fired = ms.fire(tenant_ctx, answers)
     assert not {"draft:event", "draft:onsite"} & set(fired)
@@ -818,6 +846,30 @@ def test_a_sexy_tone_ranks_the_looks_tagged_for_it():
     assert "sexy" in sections.tones_of_style(sections.rank_styles("no-such-niche", ["sexy"])[0])
 
 
+def test_a_mood_tag_outweighs_a_niche_made_for_another_tone():
+    """ "Sexy and sensual" once gave a pole coach the joyful zine, a sensual yoga coach the quiet journal."""
+    from apps.tenant_config import sections
+
+    def first(niche, tones):
+        return sections.rank_styles(niche, tones)[0]["id"]
+
+    assert first("pole_dance", ["sexy", "sensual"]) == "velvet"  # the boudoir look; studiofloor is the neon one
+    assert first("belly_dance", ["sexy", "sensual"]) == "velvet"
+    assert first("dance", ["sexy", "sensual"]) == "studiofloor"  # a plain dance coach: the dance look
+    # ...but it never leads for a coach who did not ask for it.
+    assert first("pole_dance", ["warm", "calm"]) != "velvet"
+    assert first("pole_dance", []) != "velvet"
+    assert first("belly_dance", []) != "velvet"
+    assert first("yoga", ["sensual"]) == "nocturne"
+    assert first("yoga", ["warm", "calm"]) in {"journal", "nocturne"}  # regression: still a yoga-made look
+    assert first("general", []) == "grid"  # no tone, no change
+    # The cards (and the default pick, which ranks the same way) follow.
+    cards = ms.style_cards({"niche": "dance", "teaches": "pole", "tone": "Sexy, Sensual"})
+    assert cards["options"][0]["style"] == "studiofloor"
+    cards = ms.style_cards({"niche": "belly_dance", "teaches": "belly dance", "tone": "Sexy, Sensual"})
+    assert cards["options"][0]["style"] == "velvet"
+
+
 def test_the_in_person_draft_falls_back_to_an_in_person_class(tenant_ctx, config, owner):
     from apps.live.models import OnsiteEvent
 
@@ -832,3 +884,52 @@ def test_the_in_person_draft_falls_back_to_an_in_person_class(tenant_ctx, config
     row = OnsiteEvent.objects.get()
     assert (row.title, row.location) == ("Slow flow", "Studio 4")
     assert TenantConfig.objects.first().setup_flow["drafts"]["onsite"] == {"kind": "onsite", "id": row.id}
+
+
+def test_the_class_draft_waits_for_the_address(tenant_ctx, config, side_effects, django_capture_on_commit_callbacks):
+    asked = {k: v for k, v in IN_PERSON.items() if k not in ("location", "address")}
+    with django_capture_on_commit_callbacks(execute=True):
+        assert "draft:event" not in ms.fire(tenant_ctx, asked)
+        fired = ms.fire(tenant_ctx, dict(IN_PERSON))
+    assert "draft:event" in fired
+
+
+def test_the_address_pick_needs_both_boxes(tenant_ctx, config):
+    answers = {"offers": ["onsite"]}
+    ms.choose(tenant_ctx, answers, "location", ADDRESS)
+    assert (answers["location"], answers["address"]) == ("Studio 4", "Hauptstr. 12, 10827 Berlin")
+    with pytest.raises(ms.ChoiceError, match="invalid_address"):
+        ms.choose(tenant_ctx, {"offers": ["onsite"]}, "location", '{"Place": "Studio 4", "Address": " "}')
+
+
+def test_the_in_person_class_carries_the_address_and_follows_a_change(tenant_ctx, config, owner):
+    from apps.live.models import OnsiteEvent
+
+    brief.save_answers(tenant_ctx, dict(IN_PERSON))
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "event", dict(IN_PERSON))
+    row = OnsiteEvent.objects.get()
+    assert (row.location, row.address) == ("Studio 4", "Hauptstr. 12")
+    # She goes back and moves it: the drafted class moves too.
+    ms.choose(tenant_ctx, dict(IN_PERSON), "location", '{"Place": "The Loft", "Address": "Kanalstr. 3"}')
+    row.refresh_from_db()
+    assert (row.location, row.address) == ("The Loft", "Kanalstr. 3")
+
+
+def test_each_class_is_reviewed_as_its_own_draft(tenant_ctx, config, owner):
+    answers = {**IN_PERSON, "offers": ["course", "live", "onsite"]}
+    brief.save_answers(tenant_ctx, answers)
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "event", answers)
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "onsite", answers)
+    for kind in ("event", "onsite"):
+        ms._set_draft_status(tenant_ctx, kind, "ready")
+    with mock.patch("apps.tenant_config.interview_milestones._cover_images", return_value=[]):
+        online = ms.cards_for(tenant_ctx, answers, "event_review")
+        in_person = ms.cards_for(tenant_ctx, answers, "onsite_review")
+    assert (online["kind"], online["item"]["event_kind"], online["item"]["address"]) == ("event", "live", "")
+    assert (in_person["kind"], in_person["status"]) == ("onsite", "ready")
+    assert (in_person["item"]["event_kind"], in_person["item"]["address"]) == ("onsite", "Hauptstr. 12")
+    # Approving it is its own answer, apart from the online class's.
+    ms.choose(tenant_ctx, answers, "onsite_review", "ok")
+    assert answers["onsite_review"] == "approved" and "event_review" not in answers

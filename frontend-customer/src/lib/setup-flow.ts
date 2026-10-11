@@ -2,6 +2,7 @@
 // GET/POST /api/v1/admin/setup-flow/ (+ build-page/, draft/).
 import type { FamilyId } from "@shared/sections/types";
 import { clientFetch } from "@/lib/api-client";
+import type { ShareDoc } from "@/lib/share-doc";
 import { ApiError } from "@/types/api";
 import type { LogoMark } from "@/types/tenant";
 
@@ -101,6 +102,8 @@ export interface SetupFlowApi {
   buildPage: (page: string, force?: boolean) => Promise<unknown>;
   draft: (kind: ContentKind, prompt: string) => Promise<DraftResult>;
   turn: (body: TurnRequest) => Promise<TurnResponse>;
+  /** A bio, CV or old About page: read as one turn that fills what it answers. */
+  importDoc: (doc: ShareDoc, field?: string) => Promise<TurnResponse>;
   logos: (page: number) => Promise<LookCards>;
   /** Start three more generated logos; the answer is the logo card. */
   logoMore: () => Promise<LookCards>;
@@ -125,6 +128,16 @@ export const setupFlowApi: SetupFlowApi = {
   draft: (kind, prompt) =>
     clientFetch<DraftResult>(`${BASE}/draft/`, post({ kind, prompt })),
   turn: (body) => clientFetch<TurnResponse>(`${BASE}/turn/`, post(body)),
+  importDoc: ({ file, text }, field) => {
+    const form = new FormData();
+    if (file) form.append("file", file);
+    else form.append("text", text ?? "");
+    if (field) form.append("field", field);
+    return clientFetch<TurnResponse>(`${BASE}/import/`, {
+      method: "POST",
+      body: form,
+    });
+  },
   logos: (page) => clientFetch<LookCards>(`${BASE}/logos/?page=${page}`),
   logoMore: () =>
     clientFetch<LookCards>(`${BASE}/logo-more/`, { method: "POST" }),
@@ -247,8 +260,8 @@ export interface LookCards {
   preview?: { subject?: string; body?: string; copy?: LookCopy | null };
 }
 
-export type ReviewKind = "course" | "event";
-export type BuilderKind = ReviewKind | "membership";
+export type ReviewKind = "course" | "event" | "onsite";
+export type BuilderKind = "course" | "event" | "membership";
 
 /** When a class runs: weekly on set days and times between two dates, or
  * once, on one date and time (`at`). Dates "YYYY-MM-DD", times "HH:MM",
@@ -284,6 +297,8 @@ export interface ReviewItem {
   repeats?: string;
   event_kind?: "live" | "onsite";
   location?: string;
+  /** The street address of an in-person class. */
+  address?: string;
 }
 
 /** The review screen of a draft: still drafting, drafted, or failed. */
@@ -297,7 +312,7 @@ export interface ReviewCard {
 export type GuideCards = LookCards | ReviewCard;
 
 export const isReview = (c: GuideCards | null | undefined): c is ReviewCard =>
-  c?.kind === "course" || c?.kind === "event";
+  c?.kind === "course" || c?.kind === "event" || c?.kind === "onsite";
 
 /** The paid plan some of a question's options need (backend interview_golive.plan_badge). */
 export interface PlanBadge {
@@ -333,6 +348,8 @@ export interface GuideTurn {
   schedule?: boolean;
   /** The answer is a handle or link for each network ticked. */
   socials?: boolean;
+  /** The answer is a place and its street address, each in its own box. */
+  address?: boolean;
   /** The options are sentence starters: picked as cards, each finished
    * inline in its card, and never sent as-is. */
   starter?: boolean;

@@ -87,6 +87,48 @@ export function styleDefaultTheme(
   return isDarkPalette(paletteOf(style, paletteId)) ? "dark" : "light";
 }
 
+/** Where next-themes keeps a visitor's light/dark choice. A styled site keys it
+ *  per look (and colourway): the choice made on one look must not repaint
+ *  another, or its derived opposite scheme shows instead of the look's own
+ *  colours. The default theme applies again whenever the look changes. */
+export function themeStorageKey(
+  styleId?: string | null,
+  paletteId?: string | null,
+): string {
+  return getSiteStyle(styleId)
+    ? `theme:${styleId}:${paletteId ?? ""}`
+    : "theme";
+}
+
+/** An oklch() colour as sRGB hex (for the browser bar / PWA manifest, which
+ *  take no oklch). Undefined when the string is not oklch(). */
+export function oklchToHex(color: string): string | undefined {
+  const o = parseOklch(color);
+  if (!o) return undefined;
+  const a = o.c * Math.cos((o.h * Math.PI) / 180);
+  const b = o.c * Math.sin((o.h * Math.PI) / 180);
+  const l_ = (o.l + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m_ = (o.l - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s_ = (o.l - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  const lin = [
+    4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_,
+    -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_,
+    -0.0041960863 * l_ - 0.7034186147 * m_ + 1.707614701 * s_,
+  ];
+  return (
+    "#" +
+    lin
+      .map((v) => {
+        const c = Math.min(1, Math.max(0, v));
+        const g = c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055;
+        return Math.round(g * 255)
+          .toString(16)
+          .padStart(2, "0");
+      })
+      .join("")
+  );
+}
+
 /** The modes the toggle steps through: styles are light or dark, no dim. */
 export const themeModes = (styled: boolean) =>
   styled ? ["light", "dark"] : ["light", "dim", "dark"];
@@ -114,6 +156,7 @@ const SITE_WRAP: Record<string, string> = {
   sprout: "80rem",
   manuscript: "72rem",
   sanctum: "80rem",
+  velvet: "78rem",
 };
 const DESTRUCTIVE_FG = "oklch(0.985 0 0)";
 

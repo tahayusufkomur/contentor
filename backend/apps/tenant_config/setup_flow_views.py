@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from apps.core.permissions import IsCoachOrOwner
 from apps.core.throttling import SetupInterviewThrottle
 
-from . import interview, interview_golive, interview_milestones, setup_flow
+from . import interview, interview_golive, interview_import, interview_milestones, setup_flow
 from .interview_brief import touch
 
 logger = logging.getLogger(__name__)
@@ -97,6 +97,27 @@ def setup_flow_turn(request):
         )
     except interview_milestones.ChoiceError as exc:
         return Response({"detail": str(exc)}, status=400)
+    return Response(body)
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+@throttle_classes([SetupInterviewThrottle])
+def setup_flow_import(request):
+    """A file (.pdf, .txt, .md) or pasted text the coach shares about herself:
+    read as one interview turn that fills the questions it answers."""
+    if (over := _setup_over()) is not None:
+        return over
+    data = _data(request)
+    upload = request.FILES.get("file")
+    try:
+        text = interview_import.extract_text(upload, str(data.get("text") or ""))
+    except interview_import.ImportRejectedError as exc:
+        return Response({"detail": str(exc)}, status=400)
+    try:
+        body = interview.run_turn(connection.tenant, text, imported=True, field=str(data.get("field") or "") or None)
+    except interview.ImportUnavailableError:
+        return Response({"detail": "ai_unavailable"}, status=503)
     return Response(body)
 
 

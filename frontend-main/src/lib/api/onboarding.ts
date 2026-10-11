@@ -72,6 +72,24 @@ export async function checkBrandName(
   return res.json();
 }
 
+/**
+ * "Need a name?": a few brand-name ideas for what the coach teaches (only
+ * names still free to take). Empty when the AI is unavailable.
+ */
+export async function getNameIdeas(
+  topic: string,
+  firstName = "",
+): Promise<string[]> {
+  const res = await fetch("/api/v1/onboarding/check-brand-name/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({ ideas: topic, first_name: firstName }),
+  });
+  if (!res.ok) throw new ApiError(res.status, { detail: "Request failed" });
+  return ((await res.json()).ideas as string[] | undefined) ?? [];
+}
+
 export async function seedFromTemplate(
   token: string,
   niche: string,
