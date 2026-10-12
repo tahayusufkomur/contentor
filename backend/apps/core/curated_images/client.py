@@ -48,6 +48,10 @@ _PLACEMENT_WRONG = {
 }
 
 MAX_PER_PAGE = 12  # the service's hard page size
+# What a search returns: photographs, or logo marks (symbols without text on a
+# transparent background). The service never mixes the two.
+PHOTO = "photo"
+LOGO = "logo"
 UNAVAILABLE = "the photo library is unavailable right now"
 OUT_OF_CREDITS = "image credits are used up for now"
 
@@ -82,6 +86,8 @@ class RemoteImage:
     web_url: str
     local_path: str = ""
     subject_placement: str | None = None
+    # Logo marks only (kind=logo): ink colours as hex, most used first.
+    colors: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -121,6 +127,12 @@ def available() -> bool:
     """Whether the catalog can be reached at all. Surfaces (the library dialog,
     the copilot) check this before offering curated photos."""
     return is_fake() or bool(settings.CURATED_IMAGE_API_URL and settings.CURATED_IMAGE_API_KEY)
+
+
+def logos_available() -> bool:
+    """Whether logo marks come from this catalog (LOGO_SOURCE=pix4less) rather
+    than the local CuratedLogo table."""
+    return settings.LOGO_SOURCE == "pix4less" and available()
 
 
 def _timeout() -> tuple[float, float]:
@@ -206,6 +218,7 @@ def _image_from_payload(payload: dict) -> RemoteImage:
         preview_url=_absolute(thumbnail.get("url") or "") or web_url,
         web_url=web_url,
         subject_placement=payload.get("subject_placement") if payload.get("subject_placement") in PLACEMENTS else None,
+        colors=tuple(str(c) for c in ((payload.get("logo") or {}).get("colors") or [])),
     )
 
 
@@ -242,11 +255,13 @@ def orientation_of(aspect) -> str:
     return "portrait" if w < h else "landscape" if w > h else "square"
 
 
-def _cache_key(query: str, shape: str | None, page: int, per_page: int, placement: str | None = None) -> str:
+def _cache_key(
+    query: str, shape: str | None, page: int, per_page: int, placement: str | None = None, kind: str = PHOTO
+) -> str:
     digest = hashlib.sha256(
-        json.dumps([query, shape or "", page, per_page, placement or ""], sort_keys=True).encode()
+        json.dumps([query, shape or "", page, per_page, placement or "", kind], sort_keys=True).encode()
     ).hexdigest()[:32]
-    return f"curated-images:v3:search:{digest}"
+    return f"curated-images:v4:search:{digest}"
 
 
 def search(
@@ -259,13 +274,15 @@ def search(
     per_page: int = MAX_PER_PAGE,
     session_id: str = "",
     shuffle: bool = False,
+    kind: str = PHOTO,
 ) -> SearchPage:
     """Ranked catalog page for a plain-language query, over the whole library.
     An empty query browses newest-first, which is what a picker opening for the
     first time wants. `orientation` narrows to landscape/portrait/square;
     `aspect_ratio` (one of SEARCH_ASPECT_RATIOS) to that exact shape instead;
     `subject_placement` (one of PLACEMENTS) to photos whose main subject sits
-    there, composing with either.
+    there, composing with either. `kind=LOGO` searches the logo marks instead
+    of the photographs.
 
     Cached in Redis so a coach typing does not fan out one upstream request per
     keystroke. The TTL must stay below the service's signed-URL lifetime (15
@@ -293,10 +310,11 @@ def search(
             per_page=per_page,
             session_id=session_id,
             shuffle=shuffle,
+            kind=kind,
         )
 
     sessioned = bool(session_id or shuffle)
-    key = _cache_key(query, aspect_ratio or orientation, page, per_page, subject_placement)
+    key = _cache_key(query, aspect_ratio or orientation, page, per_page, subject_placement, kind)
     filters = {
         **({"aspect_ratio": aspect_ratio} if aspect_ratio else {"orientation": orientation} if orientation else {}),
         **({"subject_placement": subject_placement} if subject_placement else {}),
@@ -307,6 +325,7 @@ def search(
             "POST",
             "/v1/images/search",
             json_body={
+                **({"kind": LOGO} if kind == LOGO else {}),
                 **({"query": query} if query else {}),
                 **({"filters": filters} if filters else {}),
                 **({"session_id": session_id} if session_id else {}),
@@ -342,6 +361,7 @@ def search_or_browse(
     per_page: int = MAX_PER_PAGE,
     session_id: str = "",
     shuffle: bool = False,
+    kind: str = PHOTO,
 ) -> SearchPage:
     """Ranked page for `query`, falling back to browsing (same orientation)
     when the query matches nothing.
@@ -371,6 +391,7 @@ def search_or_browse(
         per_page=per_page,
         session_id=session_id,
         shuffle=shuffle,
+        kind=kind,
     )
     if first.results or page != 1:
         return first
@@ -384,12 +405,32 @@ def search_or_browse(
             per_page=per_page,
             session_id=session_id or first.session_id,
             shuffle=shuffle,
+            kind=kind,
         )
     if not query:
         return first
     return search(
-        orientation=orientation, page=1, per_page=per_page, session_id=session_id or first.session_id, shuffle=shuffle
+        orientation=orientation,
+        page=1,
+        per_page=per_page,
+        session_id=session_id or first.session_id,
+        shuffle=shuffle,
+        kind=kind,
     )
+
+
+def logo_query(subject: str) -> str:
+    """The catalog query for logo marks about `subject` ("yoga", "yoga
+    elegant"), or "" (browse) when it has none: a subject nothing is drawn for
+    still gets marks to choose from. Search pages with what this returns so
+    every page of a walk agrees.
+
+    The service answers "yoga logo" far better than a bare "yoga" (measured
+    2026-10-12: twelve marks against none), so the word is added here.
+    """
+    subject = " ".join((subject or "").split())
+    query = f"{subject} logo" if subject else ""
+    return query if query and search(query, kind=LOGO).results else ""
 
 
 def search_shaped(query: str, aspect: str, *, per_page: int = MAX_PER_PAGE) -> SearchPage:

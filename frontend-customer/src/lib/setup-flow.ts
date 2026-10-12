@@ -224,6 +224,9 @@ export interface LookOption {
   reason?: string;
   /** Logos: the vector mark, previewed in the coach's look. */
   mark?: LogoMark | null;
+  /** Logos: a flat catalog mark shown from its image is redrawn in the
+   * look's colour; the number lifts its darkest ink to full strength. */
+  tint?: number | null;
   /** Generated logos: 1 = the one we would pick. */
   rank?: number;
 }

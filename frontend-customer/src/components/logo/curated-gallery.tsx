@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { Lock, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SkeletonCardGrid } from "@/components/ui/skeletons";
+import { StaleContainer } from "@/components/ui/stale-container";
 import { Spinner } from "@/components/ui/spinner";
 import { composeCuratedPreview } from "@/lib/logo/curated-preview";
 import type { CuratedLogo } from "@/lib/logo/library-catalog";
@@ -27,6 +28,8 @@ interface CuratedGalleryProps {
   onCreateSimilar: (logo: CuratedLogo) => void;
   onUpgrade: () => void;
   generatingFilename: string | null;
+  /** What the busy card says; "Designing your version…" when not given. */
+  generatingLabel?: string;
 }
 
 export function CuratedGallery({
@@ -41,6 +44,7 @@ export function CuratedGallery({
   onCreateSimilar,
   onUpgrade,
   generatingFilename,
+  generatingLabel,
 }: CuratedGalleryProps) {
   const shown = useMemo(() => logos.slice(0, IDEAS_COUNT), [logos]);
 
@@ -61,7 +65,8 @@ export function CuratedGallery({
     [shown, brandName, tagline, baseRecipe, primaryHex],
   );
 
-  if (loading) {
+  // First load shows the skeleton; a new search keeps the last wall, dimmed.
+  if (loading && !logos.length) {
     return (
       <div className="p-6">
         <SkeletonCardGrid count={6} />
@@ -77,7 +82,7 @@ export function CuratedGallery({
   }
 
   return (
-    <div className="p-6">
+    <StaleContainer pending={loading} className="p-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((logo, index) => {
           const generating = generatingFilename === logo.filename;
@@ -93,7 +98,7 @@ export function CuratedGallery({
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80">
                     <Spinner />
                     <p className="text-xs font-medium text-primary">
-                      Designing your version…
+                      {generatingLabel ?? "Designing your version…"}
                     </p>
                   </div>
                 )}
@@ -131,6 +136,6 @@ export function CuratedGallery({
           );
         })}
       </div>
-    </div>
+    </StaleContainer>
   );
 }

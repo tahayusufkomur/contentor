@@ -168,6 +168,115 @@ def test_logo_cards_carry_the_brand_name_for_the_lockup(tenant_ctx, config):
         assert ms.logo_cards(tenant_ctx, {})["brand"] == "Mira Yoga House"
 
 
+# ── logo marks from the remote catalog (LOGO_SOURCE=pix4less) ────────────────
+
+
+def test_logo_cards_come_from_the_catalog_when_it_is_the_logo_source(tenant_ctx, config, settings):
+    from apps.core.curated_images import fake
+
+    settings.LOGO_SOURCE = "pix4less"
+    yoga = next(e for e in fake.entries("logo") if "yoga" in e["tags"])
+    cards = ms.logo_cards(tenant_ctx, {"niche": "yoga", "teaches": "yoga"})
+    assert cards["kind"] == "logo" and cards["more"] is False
+    # The catalog ranks: the yoga mark comes first for a yoga coach.
+    first = cards["options"][0]
+    assert first["value"] == f"p4l:{yoga['asset_id']}"
+    assert first["label"] == yoga["title"] and first["image_url"] and first["mark"] is None
+    assert first["tint"] >= 1  # a flat mark of a few inks takes the look's colour
+    # A coach who has not said what she teaches still gets marks to choose from.
+    assert len(ms.logo_cards(tenant_ctx, {})["options"]) == len(fake.entries("logo"))
+
+
+def test_a_flat_mark_is_tinted_by_its_darkest_ink_and_a_painted_one_is_not():
+    assert ms._tint_gain(("#000000",)) == 1.0  # black ink is already full strength
+    assert ms._tint_gain(("#808080", "#ffffff")) == 2.01  # mid-grey ink is doubled
+    assert ms._tint_gain(("#111111", "#555555", "#999999", "#dddddd")) == 1.07  # four greys are one ink
+    assert ms._tint_gain(("#0a3d1c", "#1f7a3a", "#4caf6a", "#a5d6b0")) is not None  # shades of green
+    assert ms._tint_gain(("#c32f45", "#2a6ea0", "#face2c", "#99bf5e")) is None  # painted in many hues
+    assert ms._tint_gain(("#f01010", "#e8103a", "#f0102a", "#ff1040")) is not None  # reds across the wheel's seam
+    assert ms._tint_gain(("#fff8e0",)) is None  # too pale to carry a colour
+    assert ms._tint_gain(()) is None and ms._tint_gain(("nope",)) is None
+
+
+def test_catalog_logo_cards_page_in_fourteens_over_pages_of_twelve(tenant_ctx, config, settings, monkeypatch):
+    from apps.core.curated_images import client
+
+    settings.LOGO_SOURCE = "pix4less"
+    marks = [
+        client.RemoteImage(
+            asset_id=f"{n:08d}-0000-4000-8000-000000000000",
+            title=f"Mark {n}",
+            description="",
+            tags=[],
+            width=64,
+            height=64,
+            preview_url=f"/p/{n}",
+            web_url=f"/w/{n}",
+            colors=("#000000",),
+        )
+        for n in range(30)
+    ]
+
+    def search(query="", *, kind, page=1, **_):
+        assert kind == client.LOGO
+        chunk = marks[(page - 1) * 12 : page * 12]
+        return client.SearchPage(results=chunk, page=page, has_next=len(marks) > page * 12)
+
+    monkeypatch.setattr(client, "search", search)
+    pages = [ms.logo_cards(tenant_ctx, {}, page) for page in range(3)]
+    assert [[int(o["value"][4:12]) for o in p["options"]] for p in pages] == [
+        list(range(14)),
+        list(range(14, 28)),
+        [28, 29],
+    ]
+    assert [p["more"] for p in pages] == [True, True, False]
+
+
+def test_logo_cards_fall_back_to_the_local_library_when_the_catalog_is_down(tenant_ctx, config, settings, monkeypatch):
+    from apps.core.curated_images import client
+
+    settings.LOGO_SOURCE = "pix4less"
+
+    def down(*_args, **_kwargs):
+        raise client.CuratedImageError(client.UNAVAILABLE)
+
+    monkeypatch.setattr(client, "search", down)
+    cards = ms.logo_cards(tenant_ctx, {"teaches": "yoga"})
+    assert cards["kind"] == "logo"
+    assert not any(str(o["value"]).startswith("p4l:") for o in cards["options"])
+
+
+def test_choose_a_catalog_logo_copies_it_into_the_tenant(tenant_ctx, config, settings, curated_image_uploads):
+    import uuid
+
+    from apps.core.curated_images import fake
+
+    settings.LOGO_SOURCE = "pix4less"
+    asset_id = fake.entries("logo")[0]["asset_id"]
+    answers = {}
+    ms.choose(tenant_ctx, answers, "site_logo", f"p4l:{asset_id}")
+    assert answers["logo"] == {"mode": "curated", "asset_id": asset_id}
+    cfg = TenantConfig.objects.select_related("logo").first()
+    assert cfg.logo.s3_key.endswith(f"/curated/{asset_id}.webp")
+    assert cfg.logo.s3_key in curated_image_uploads  # her own copy, not a link to the catalog
+    assert cfg.navbar_config["show_brand_name"] is True and cfg.navbar_config["logo_size"] == "lg"
+    # Picking it again reuses the copy; a mark the catalog does not have is refused.
+    ms.choose(tenant_ctx, answers, "site_logo", f"p4l:{asset_id}")
+    assert len(curated_image_uploads) == 1
+    for bad in (f"p4l:{uuid.uuid4()}", "p4l:nope"):
+        with pytest.raises(ms.ChoiceError):
+            ms.choose(tenant_ctx, answers, "site_logo", bad)
+
+
+def test_the_catalog_ranks_so_the_local_rank_task_is_not_fired(
+    tenant_ctx, config, side_effects, settings, django_capture_on_commit_callbacks
+):
+    settings.LOGO_SOURCE = "pix4less"
+    with django_capture_on_commit_callbacks(execute=True):
+        assert "rank:logos" in ms.fire(tenant_ctx, dict(HOME))
+    side_effects["rank"].assert_not_called()
+
+
 def test_choose_text_field_goes_through_coercion(tenant_ctx, config):
     answers = {}
     ms.choose(tenant_ctx, answers, "payments", "One-time course purchases")

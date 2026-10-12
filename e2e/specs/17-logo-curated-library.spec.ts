@@ -2,8 +2,10 @@
 //
 // Coach reaches the Ideas step of the Logo Studio, picks a curated
 // ready-made logo (rendered as a complete logo preview), and saves it.
-// The catalog is served by /api/v1/logos/curated/; traced rows land as
-// vector (custom) marks, untraced ones as uploaded image marks. See
+// The catalog is served by /api/v1/logos/curated/, or with
+// LOGO_SOURCE=pix4less by /api/v1/logos/library/ (the remote catalog; a mark
+// is copied and traced when used). Traced marks land as vector (custom)
+// marks, untraced ones as image marks. See
 // 15-logo-studio.spec.ts for the full brief->ideas->editor walk.
 
 import { test, expect } from "@playwright/test";

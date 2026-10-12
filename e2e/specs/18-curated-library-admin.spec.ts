@@ -93,24 +93,31 @@ test("superadmin adds a curated logo via the gallery; coach sees it", async ({
   await expect(adminPage.getByText(TITLE)).toBeVisible({ timeout: 10_000 });
 
   // --- coach: the new logo appears in the Ideas gallery ------------------
+  // Only while the Studio reads this local catalog: with LOGO_SOURCE=pix4less
+  // its gallery searches the remote one, where a local row never appears.
   const coach = await coachContext(browser);
   const coachPage = await coach.newPage();
-  await coachPage.goto(`${TENANT}/?edit=1&studio=1`);
-  const dialog = coachPage.getByRole("dialog");
-  const briefHeading = dialog.getByText("Tell us about your brand");
-  if (!(await briefHeading.isVisible())) {
-    await dialog.getByRole("button", { name: "Get new ideas" }).click();
-  }
-  const nameInput = dialog.getByLabel("Brand name");
-  if (!(await nameInput.inputValue())) await nameInput.fill("Demo Yoga");
-  // No style chip: an "elegant"-tagged seeded mark could outscore ours.
-  await dialog.getByLabel("What do you teach?").fill(NICHE);
-  await dialog.getByRole("button", { name: "Show my logo ideas" }).click();
+  const library = await coachPage.request.get(
+    `${TENANT}/api/v1/logos/library/`,
+  );
+  if ((await library.json()).source === "local") {
+    await coachPage.goto(`${TENANT}/?edit=1&studio=1`);
+    const dialog = coachPage.getByRole("dialog");
+    const briefHeading = dialog.getByText("Tell us about your brand");
+    if (!(await briefHeading.isVisible())) {
+      await dialog.getByRole("button", { name: "Get new ideas" }).click();
+    }
+    const nameInput = dialog.getByLabel("Brand name");
+    if (!(await nameInput.inputValue())) await nameInput.fill("Demo Yoga");
+    // No style chip: an "elegant"-tagged seeded mark could outscore ours.
+    await dialog.getByLabel("What do you teach?").fill(NICHE);
+    await dialog.getByRole("button", { name: "Show my logo ideas" }).click();
 
-  // The wall renders only after GET /api/v1/logos/curated/ — the whole
-  // catalog with one presigned URL per row: 5-10s at ~800 rows, and dev
-  // StrictMode fetches it twice concurrently.
-  await expect(dialog.getByText(TITLE)).toBeVisible({ timeout: 45_000 });
+    // The wall renders only after GET /api/v1/logos/curated/ — the whole
+    // catalog with one presigned URL per row: 5-10s at ~800 rows, and dev
+    // StrictMode fetches it twice concurrently.
+    await expect(dialog.getByText(TITLE)).toBeVisible({ timeout: 45_000 });
+  }
   await coach.close();
 
   // --- superadmin: delete via the card's JSON modal -----------------------

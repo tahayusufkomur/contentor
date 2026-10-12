@@ -4,7 +4,8 @@ Eight images kept back from the catalog that moved into curated-image-api, so
 the picker, the wizard and the blog writer all have something real to choose
 without the stack reaching the network. Ranking is deliberately crude token
 overlap: enough that a query for "yoga" surfaces the yoga photo, not a pretense
-of the service's relevance model.
+of the service's relevance model. Four logo marks (`kind: "logo"`, transparent
+WebP) stand in for the service's logo catalog the same way.
 
 Fixture asset ids are UUID5-derived from their filenames, so a blog draft that
 stored "curated:<id>" between two Celery tasks still resolves after a restart.
@@ -40,6 +41,7 @@ def _to_image(entry: dict):
         preview_url=f"/api/v1/curated-images/{entry['asset_id']}/preview/",
         web_url=f"/api/v1/curated-images/{entry['asset_id']}/preview/",
         local_path=path,
+        colors=tuple(entry.get("colors") or ()),
     )
 
 
@@ -73,7 +75,14 @@ def _session_remember(session_id: str, asset_ids: list[str]) -> None:
 
 
 def search(
-    query: str, *, orientation: str | None, page: int, per_page: int, session_id: str = "", shuffle: bool = False
+    query: str,
+    *,
+    orientation: str | None,
+    page: int,
+    per_page: int,
+    session_id: str = "",
+    shuffle: bool = False,
+    kind: str = "photo",
 ):
     """Offline stand-in for the service's search, including its session
     semantics: with a session id the same image is never handed back twice, and
@@ -83,7 +92,11 @@ def search(
 
     from .client import SearchPage
 
-    rows = [entry for entry in _entries() if not orientation or _orientation(entry) == orientation]
+    rows = [
+        entry
+        for entry in _entries()
+        if entry.get("kind", "photo") == kind and (not orientation or _orientation(entry) == orientation)
+    ]
     if query:
         # A query FILTERS as well as ranks, mirroring the service's lexical
         # search: a topic the catalog has no words for comes back empty, so
@@ -127,10 +140,10 @@ def get(asset_id: str):
     return None
 
 
-def entries() -> list[dict]:
+def entries(kind: str = "photo") -> list[dict]:
     """The fixture catalog itself — tests assert against real entries rather
     than hard-coding asset ids."""
-    return list(_entries())
+    return [entry for entry in _entries() if entry.get("kind", "photo") == kind]
 
 
 def fixture_path(asset_id: str) -> str:
@@ -141,14 +154,14 @@ def fixture_path(asset_id: str) -> str:
 _JOB_PREFIX = "fake-job-"
 
 
-def generate(prompt: str):
+def generate(prompt: str, kind: str = "photo"):
     """Offline generation: "creates" whichever fixture best matches the prompt
     and finishes at once, so the picker's generate path runs end to end."""
     from .client import GenerationJob
 
     wanted = _tokens(prompt)
     entry = max(
-        _entries(),
+        entries(kind),
         key=lambda e: len(wanted & _tokens(f"{e['title']} {e['description']} {' '.join(e['tags'])}")),
     )
     return GenerationJob(job_id=f"{_JOB_PREFIX}{entry['asset_id']}", status="fulfilled", image=_to_image(entry))

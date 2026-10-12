@@ -463,6 +463,12 @@ CURATED_IMAGE_CONNECT_TIMEOUT = float(os.environ.get("CURATED_IMAGE_CONNECT_TIME
 # genuinely stuck service trips this; the Redis page cache absorbs repeats.
 CURATED_IMAGE_READ_TIMEOUT = float(os.environ.get("CURATED_IMAGE_READ_TIMEOUT", "15"))
 
+# Where the logo library comes from: "local" (the CuratedLogo table) or
+# "pix4less" (logo marks searched live in the catalog above, kind=logo). The
+# setup interview's logo cards and the Logo Studio gallery follow it; the local
+# table stays the fallback when the service cannot be reached.
+LOGO_SOURCE = os.environ.get("LOGO_SOURCE", "local")
+
 # Days a `past_due` PlatformSubscription stays before the dunning sweep downgrades.
 PAST_DUE_GRACE_DAYS = int(os.environ.get("PAST_DUE_GRACE_DAYS", "7"))
 

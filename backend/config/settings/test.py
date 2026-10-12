@@ -32,6 +32,8 @@ AI_PROVIDER = "anthropic"
 # Same reasoning: a dev .env pointing at a running LiveCraft must not make
 # tests create real rooms. Tests of the HTTP client turn the fake off themselves.
 LIVECRAFT_FAKE = True
+# The logo library is the local table unless a test picks the remote one.
+LOGO_SOURCE = "local"
 
 # Undo dev's raised e2e ceiling: the middleware tests assert the prod
 # thresholds (TenantRateLimitMiddleware.DEFAULT_RATE / UPLOAD_RATE).

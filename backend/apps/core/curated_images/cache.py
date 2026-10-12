@@ -128,6 +128,25 @@ def cache_remote_image(image: RemoteImage):
     )
 
 
+def cached_asset(asset_id: str):
+    """This tenant's copy of the catalog image with this id (a media.Photo),
+    downloaded on first use; None when the catalog no longer serves it or
+    cannot be reached. Must run inside the tenant context."""
+    from apps.media.models import Photo
+
+    from . import client
+
+    photo = Photo.objects.filter(s3_key=tenant_key_for(asset_id)).first()
+    if photo is not None:
+        return photo
+    try:
+        image = client.get(asset_id)
+        return cache_remote_image(image) if image else None
+    except CuratedImageError:
+        logger.warning("catalog image %s unavailable", asset_id)
+        return None
+
+
 def auto_cover(*queries: str, keep=None):
     """A wide catalog photo for something automation just created without one
     (a seeded draft course, a copilot-created course or event), as a tenant

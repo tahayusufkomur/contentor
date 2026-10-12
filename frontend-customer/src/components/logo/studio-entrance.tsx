@@ -19,6 +19,7 @@ interface StudioEntranceProps {
   onOpenChat: () => void;
   onUpgrade: () => void;
   generatingFilename: string | null;
+  generatingLabel?: string;
 }
 
 export function StudioEntrance({
@@ -34,6 +35,7 @@ export function StudioEntrance({
   onOpenChat,
   onUpgrade,
   generatingFilename,
+  generatingLabel,
 }: StudioEntranceProps) {
   const aiEligible = logoAiStatus?.eligible ?? false;
 
@@ -76,6 +78,7 @@ export function StudioEntrance({
         onCreateSimilar={onCreateFromCurated}
         onUpgrade={onUpgrade}
         generatingFilename={generatingFilename}
+        generatingLabel={generatingLabel}
       />
     </div>
   );

@@ -128,5 +128,83 @@
     "collection": "coach-stock",
     "width": 516,
     "height": 640
+  },
+  {
+    "asset_id": "a3a30a53-e26f-5232-8707-5e290c11628b",
+    "file": "logo_king_pigeon_pose_silhouette.webp",
+    "kind": "logo",
+    "title": "King Pigeon Pose Silhouette",
+    "description": "elegant logo of a yogi in a deep king pigeon backbend",
+    "tags": [
+      "yoga",
+      "king pigeon pose",
+      "elegant"
+    ],
+    "colors": [
+      "#7c0665",
+      "#c494ba"
+    ],
+    "width": 384,
+    "height": 317
+  },
+  {
+    "asset_id": "2ac03f9d-1aae-5d2a-852b-59c7a27e7d5e",
+    "file": "logo_pull_up_bar_rig.webp",
+    "kind": "logo",
+    "title": "Pull Up Bar Rig",
+    "description": "bold logo of an athlete doing a pull up on a bar",
+    "tags": [
+      "fitness",
+      "crossfit",
+      "strength",
+      "silhouette",
+      "bold"
+    ],
+    "colors": [
+      "#55626f",
+      "#687580"
+    ],
+    "width": 319,
+    "height": 384
+  },
+  {
+    "asset_id": "dda9e72c-c10d-5277-9603-b4586b505c94",
+    "file": "logo_hip_hop_dancer_freeze.webp",
+    "kind": "logo",
+    "title": "Hip Hop Dancer Freeze",
+    "description": "bold logo of a hip hop dancer in a freeze pose",
+    "tags": [
+      "dance",
+      "hip hop",
+      "urban",
+      "silhouette",
+      "bold"
+    ],
+    "colors": [
+      "#80047e",
+      "#90278f",
+      "#7a0078"
+    ],
+    "width": 256,
+    "height": 384
+  },
+  {
+    "asset_id": "fe05b0ac-e764-57db-98e1-1c0cc6a7ad01",
+    "file": "logo_growth_chart_arrow.webp",
+    "kind": "logo",
+    "title": "Growth Chart Arrow",
+    "description": "modern logo of a rising bar chart with an upward arrow",
+    "tags": [
+      "business",
+      "growth",
+      "modern",
+      "bold"
+    ],
+    "colors": [
+      "#037d82",
+      "#359a9e"
+    ],
+    "width": 378,
+    "height": 384
   }
 ]

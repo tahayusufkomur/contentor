@@ -3410,6 +3410,53 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/logos/library/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description The Logo Studio's ready-made marks for a query ("yoga elegant").
+     *
+     *     With LOGO_SOURCE=pix4less they come from the remote catalog. Otherwise, or
+     *     when it cannot be reached, ``source: "local"`` sends the Studio to the
+     *     local catalog above. Coach-only and cached per query (client.search), so
+     *     anonymous traffic cannot run catalog searches.
+     *
+     *     ponytail: one wall of 24, no "load more"; page it when coaches ask.
+     */
+    get: operations["v1_logos_library_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/logos/library/{asset_id}/use/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Take a catalog mark into this tenant: its image is copied into her
+     *     storage (a media.Photo) and traced, so the Studio can recolour it. A mark
+     *     that does not trace into a flat vector comes back as the image alone.
+     */
+    post: operations["v1_logos_library_use_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/mailbox/attachments/": {
     parameters: {
       query?: never;
@@ -15412,6 +15459,44 @@ export interface operations {
       query?: never;
       header?: never;
       path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_logos_library_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_logos_library_use_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        asset_id: string;
+      };
       cookie?: never;
     };
     requestBody?: never;

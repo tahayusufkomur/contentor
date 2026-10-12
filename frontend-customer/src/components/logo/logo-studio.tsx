@@ -40,7 +40,9 @@ import {
 import { getThemePalette } from "@/lib/themes";
 import {
   fetchCuratedCatalog,
+  fetchLibrary,
   rankForBrief,
+  takeLibraryLogo,
   type CuratedLogo,
 } from "@/lib/logo/library-catalog";
 import type { AnyLogoRecipe, LogoRecipe } from "@/types/logo";
@@ -103,8 +105,13 @@ export function LogoStudio({
   const [ideasReady, setIdeasReady] = useState(false);
   const [draftReady, setDraftReady] = useState(false);
   const [library, setLibrary] = useState<CuratedLogo[]>([]);
+  // Whether the marks come from the remote catalog, which is searched on the
+  // server for each query; the local catalog is fetched once and ranked here.
+  const [remoteLibrary, setRemoteLibrary] = useState(false);
+  const localLibraryLoaded = useRef(false);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
   const [similarBusy, setSimilarBusy] = useState<string | null>(null);
+  const [takingLogo, setTakingLogo] = useState<string | null>(null);
 
   // ── Design with AI (paid-tier feature) ─────────────────────────────────
   const [logoAiStatus, setLogoAiStatus] = useState<LogoAiStatus | null>(null);
@@ -126,34 +133,53 @@ export function LogoStudio({
       .catch(() => setLogoAiStatus(null));
   }, [open]);
 
+  // What the remote catalog is asked for: the brief once the coach has
+  // given one, her site's niche before that ("general" is no niche at all).
+  const libraryQuery = ideasReady
+    ? [brief.niche, ...brief.styleChips].join(" ").trim()
+    : (config.niche ?? "").replace(/^general$/, "").replace(/_/g, " ");
+
   useEffect(() => {
-    if (!open) return;
+    if (!open || localLibraryLoaded.current) return;
+    let stale = false;
     setLoadingLibrary(true);
-    fetchCuratedCatalog()
-      .then((all) =>
-        setLibrary(
-          rankForBrief(all, {
+    fetchLibrary(libraryQuery)
+      .then(async (remote) => {
+        const logos =
+          remote ??
+          rankForBrief(await fetchCuratedCatalog(), {
             niche: config.niche ?? "",
             description: config.meta_description ?? "",
-          }),
-        ),
-      )
-      .catch(() => setLibrary([]))
-      .finally(() => setLoadingLibrary(false));
-  }, [open, config.niche, config.meta_description]);
+          });
+        if (stale) return;
+        localLibraryLoaded.current = remote === null;
+        setRemoteLibrary(remote !== null);
+        setLibrary(logos);
+      })
+      .catch(() => {
+        if (!stale) setLibrary([]);
+      })
+      .finally(() => {
+        if (!stale) setLoadingLibrary(false);
+      });
+    return () => {
+      stale = true;
+    };
+  }, [open, libraryQuery, config.niche, config.meta_description]);
 
   // Derived, not applied once in startIdeas: the catalog fetch often lands
   // AFTER the coach submits the brief (or restores a session), and would
   // otherwise swap the brief-ranked wall for the config-only rank above.
+  // The remote catalog already answered in its own order for the query.
   const ideas = useMemo(
     () =>
-      ideasReady
+      ideasReady && !remoteLibrary
         ? rankForBrief(library, {
             niche: brief.niche,
             styleChips: brief.styleChips,
           })
         : library,
-    [library, ideasReady, brief.niche, brief.styleChips],
+    [library, remoteLibrary, ideasReady, brief.niche, brief.styleChips],
   );
 
   // Load all studio fonts once so previews render true (each family's real
@@ -444,6 +470,30 @@ export function LogoStudio({
   async function handleUseCurated(logo: CuratedLogo, preview: LogoRecipe) {
     if (!confirmReplaceDraft()) return;
     setError(null);
+    // A remote catalog mark: copied into her storage and traced there. A
+    // flat mark comes back as a vector she can recolour, the rest as the image.
+    if (logo.assetId) {
+      if (takingLogo) return;
+      setTakingLogo(logo.filename);
+      try {
+        const taken = await takeLibraryLogo(logo.assetId);
+        handleCustomize({
+          ...preview,
+          mark: taken.markPaths?.length
+            ? { type: "custom", rationale: logo.title, paths: taken.markPaths }
+            : {
+                type: "image",
+                photo_id: taken.photoId,
+                url: await imageToDataUrl(taken.imageUrl),
+              },
+        });
+      } catch {
+        setError("Couldn't use that logo — try again.");
+      } finally {
+        setTakingLogo(null);
+      }
+      return;
+    }
     // Traced vector mark: the previewed recipe is already complete.
     if (logo.markPaths?.length) {
       handleCustomize(preview);
@@ -688,7 +738,10 @@ export function LogoStudio({
                     onCreateFromCurated={handleCreateFromCurated}
                     onOpenChat={() => setChatOpen(true)}
                     onUpgrade={handleUpgrade}
-                    generatingFilename={similarBusy}
+                    generatingFilename={similarBusy ?? takingLogo}
+                    generatingLabel={
+                      takingLogo ? "Getting your logo ready…" : undefined
+                    }
                   />
                 ))}
 

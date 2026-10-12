@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchCuratedCatalog, rankForBrief } from "../library-catalog";
+import {
+  fetchCuratedCatalog,
+  fetchLibrary,
+  rankForBrief,
+  takeLibraryLogo,
+} from "../library-catalog";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -107,5 +112,80 @@ describe("library-catalog", () => {
     const logos = await fetchCuratedCatalog();
     expect(logos[0].markPaths).toEqual([{ d: "M0 0 Z", fill: "mark" }]);
     expect(logos[1].markPaths).toBeUndefined();
+  });
+});
+
+describe("remote logo library", () => {
+  const json = (body: unknown) =>
+    new Response(JSON.stringify(body), {
+      headers: { "content-type": "application/json" },
+    });
+
+  it("maps catalog marks, keyed by their asset id", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        json({
+          source: "pix4less",
+          results: [
+            {
+              id: "a1",
+              title: "Lotus",
+              description: "a lotus mark",
+              tags: ["Yoga", "calm"],
+              image_url:
+                "https://catalog.test/media/previews/a1/thumbnail.webp",
+            },
+          ],
+        }),
+      ),
+    );
+    const logos = await fetchLibrary("yoga elegant");
+    expect(vi.mocked(fetch).mock.calls[0][0]).toBe(
+      "/api/v1/logos/library/?q=yoga%20elegant",
+    );
+    expect(logos).toEqual([
+      {
+        title: "Lotus",
+        filename: "a1",
+        prompt: "a lotus mark",
+        tags: ["yoga", "calm"],
+        imageUrl: "https://catalog.test/media/previews/a1/thumbnail.webp",
+        assetId: "a1",
+      },
+    ]);
+  });
+
+  it("answers null for the local library and when the call fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(json({ source: "local" })),
+    );
+    expect(await fetchLibrary("yoga")).toBeNull();
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
+    expect(await fetchLibrary("yoga")).toBeNull();
+  });
+
+  it("takes a mark: the traced vector when there is one, else the image", async () => {
+    const photo = { id: "p1", signed_url: "https://storage.test/p1.webp" };
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          json({ photo, mark_paths: [{ d: "M 1 1 Z", fill: "mark" }] }),
+        )
+        .mockResolvedValueOnce(json({ photo, mark_paths: null })),
+    );
+    expect(await takeLibraryLogo("a1")).toEqual({
+      photoId: "p1",
+      imageUrl: photo.signed_url,
+      markPaths: [{ d: "M 1 1 Z", fill: "mark" }],
+    });
+    expect((await takeLibraryLogo("a1")).markPaths).toBeUndefined();
+    expect(vi.mocked(fetch).mock.calls[0]).toMatchObject([
+      "/api/v1/logos/library/a1/use/",
+      { method: "POST" },
+    ]);
   });
 });

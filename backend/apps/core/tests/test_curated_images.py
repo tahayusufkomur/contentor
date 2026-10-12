@@ -698,3 +698,88 @@ def test_auto_cover_prefers_photos_the_tenant_has_not_used(tenant_ctx, curated_i
     second = curated_cache.auto_cover("zzz unmatched subject two")
     assert first and second and first.pk != second.pk
     assert first.width > first.height  # covers are wide shots
+
+
+# ── logo marks (kind=logo) ───────────────────────────────────────────────────
+
+
+def test_logo_search_asks_for_the_logo_kind_and_reads_the_ink_colours(live_client, monkeypatch):
+    bodies = []
+
+    def _request(method, url, json=None, **kwargs):
+        bodies.append(json)
+        mark = _image_payload(logo={"colors": ["#101010", "#f0f0f0"], "background": "transparent", "formats": ["png"]})
+        return _Response(payload={"data": [mark], "pagination": {"has_next": False}})
+
+    monkeypatch.setattr(requests, "request", _request)
+    page = client.search("lotus", kind=client.LOGO)
+    assert bodies[0]["kind"] == "logo" and bodies[0]["query"] == "lotus"
+    assert page.results[0].colors == ("#101010", "#f0f0f0")
+    # Photos never say a kind, and a photo search is not served from the logo cache.
+    assert client.search("lotus").results[0].asset_id and "kind" not in bodies[1]
+
+
+def test_the_offline_catalog_keeps_logos_and_photos_apart(settings):
+    logos = client.search(kind=client.LOGO).results
+    assert {i.asset_id for i in logos} == {e["asset_id"] for e in fake.entries("logo")}
+    assert all(i.colors for i in logos)
+    assert not {i.asset_id for i in client.search().results} & {i.asset_id for i in logos}
+    # The query names the subject as a logo; with no subject it browses.
+    assert client.logo_query(" yoga ") == "yoga logo" and client.logo_query("") == ""
+    assert client.search(client.logo_query("yoga"), kind=client.LOGO).results[0].title == "King Pigeon Pose Silhouette"
+
+
+def test_logo_library_follows_the_logo_source(coach_client, settings):
+    assert coach_client.get("/api/v1/logos/library/?q=yoga").data == {"source": "local"}
+    settings.LOGO_SOURCE = "pix4less"
+    res = coach_client.get("/api/v1/logos/library/?q=yoga")
+    assert res.data["source"] == "pix4less"
+    assert all(set(r) == {"id", "title", "description", "tags", "image_url"} for r in res.data["results"])
+    assert "yoga" in res.data["results"][0]["tags"]  # best match first
+    # Coach-only: a visitor cannot run catalog searches through it.
+    assert APIClient(HTTP_HOST=HOST).get("/api/v1/logos/library/").status_code in (401, 403)
+
+
+def test_logo_library_sends_the_studio_to_the_local_catalog_when_the_service_is_down(
+    coach_client, settings, monkeypatch
+):
+    settings.LOGO_SOURCE = "pix4less"
+
+    def _down(*args, **kwargs):
+        raise client.CuratedImageError(client.UNAVAILABLE)
+
+    monkeypatch.setattr(client, "search", _down)
+    assert coach_client.get("/api/v1/logos/library/?q=yoga").data == {"source": "local"}
+
+
+def test_using_a_library_logo_copies_it_and_returns_its_trace(
+    coach_client, settings, curated_image_uploads, monkeypatch
+):
+    settings.LOGO_SOURCE = "pix4less"
+    asset_id = fake.entries("logo")[0]["asset_id"]
+    key = f"tenants/shared-test/curated/{asset_id}.webp"
+
+    from apps.core import storage
+
+    real = storage.get_s3_client()
+
+    class _S3:
+        """Reads come from what the test captured; signing stays the real client's."""
+
+        def get_object(self, Bucket, Key):  # noqa: N803 - boto3's own argument names
+            return {"Body": io.BytesIO(curated_image_uploads[Key])}
+
+        def __getattr__(self, name):
+            return getattr(real, name)
+
+    monkeypatch.setattr(storage, "get_s3_client", lambda *a, **k: _S3())
+    from django.core.cache import cache as django_cache
+
+    django_cache.delete(f"curated-trace:{key}")
+    res = coach_client.post(f"/api/v1/logos/library/{asset_id}/use/")
+    assert res.status_code == 200 and res.data["photo"]["s3_key"] == key
+    assert res.data["mark_paths"] and {p["fill"] for p in res.data["mark_paths"]} <= {"mark", "mark2", "accent"}
+    for missing in ("11111111-2222-3333-4444-555555555555", "nope"):
+        assert coach_client.post(f"/api/v1/logos/library/{missing}/use/").status_code == 404
+    settings.LOGO_SOURCE = "local"
+    assert coach_client.post(f"/api/v1/logos/library/{asset_id}/use/").status_code == 404

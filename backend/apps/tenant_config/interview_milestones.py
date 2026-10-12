@@ -8,6 +8,7 @@ ponytail: a page fired while Home's plan call is still running plans again
 (one extra AI call); serialize builds if that cost shows up.
 """
 
+import colorsys
 import json
 import logging
 import re
@@ -41,6 +42,7 @@ DRAFT_OFFERS = {"course": ("course",), "event": ("live", "onsite"), "onsite": ("
 # The review screen that shows each draft.
 REVIEW_FIELDS = {"course_review": "course", "event_review": "event", "onsite_review": "onsite"}
 LOGO_PAGE = 14  # + "just my name" + "upload my own" = a full 4x4 grid
+REMOTE_LOGO = "p4l:"  # a catalog logo mark's card value: p4l:<asset id>
 DEFAULT_TIER = "digital"
 
 
@@ -119,7 +121,10 @@ def _start(tenant, answers, key) -> None:
     elif action == "page":
         start_page_build(tenant, arg)
     elif action == "rank":
-        transaction.on_commit(lambda: tasks.rank_curated_logos.delay(tenant_id))
+        from apps.core.curated_images import client
+
+        if not client.logos_available():  # the remote catalog ranks its own results
+            transaction.on_commit(lambda: tasks.rank_curated_logos.delay(tenant_id))
     elif action == "plan":
         create_memberships(tenant, answers)
     elif action == "draft":
@@ -626,26 +631,94 @@ def hero_line(answers: dict) -> str:
     return " ".join(parts)[:300]
 
 
+def _tint_gain(colors) -> float | None:
+    """How far a flat mark's ink is amplified when its card redraws it in the
+    look's colour. The card's filter turns ink darkness into coverage, so the
+    darkest ink must reach full strength: 1 for black, more for a lighter ink.
+    None keeps the mark's own colours: a painted one (more than three inks
+    of different hues), or one too pale to carry a colour."""
+    try:
+        inks = [tuple(int(c[i : i + 2], 16) / 255 for i in (1, 3, 5)) for c in colors]
+    except ValueError:
+        return None
+    if not inks or (len(inks) > 3 and not _one_hue(inks)):
+        return None
+    darkest = min(0.2126 * r + 0.7152 * g + 0.0722 * b for r, g, b in inks)
+    return round(1 / (1 - darkest), 2) if darkest < 0.75 else None
+
+
+def _one_hue(inks) -> bool:
+    """Whether the inks are shades of one colour: every chromatic one sits
+    within a sixth of the colour wheel (greys and blacks go with anything)."""
+    hues = sorted(colorsys.rgb_to_hls(*ink)[0] for ink in inks if max(ink) - min(ink) > 0.12)
+    if len(hues) < 2:
+        return True
+    widest_gap = max((hues[(i + 1) % len(hues)] - hue) % 1 for i, hue in enumerate(hues))
+    return 1 - widest_gap <= 1 / 6
+
+
+def _remote_logo_options(answers: dict, page: int) -> tuple[list[dict], bool] | None:
+    """One card page of catalog logo marks for what this coach teaches, and
+    whether more follow; None when the catalog cannot be reached (the cards
+    fall back to the local library). The catalog ranks them, so nothing is
+    ranked here."""
+    from apps.core.curated_images import client
+
+    start, per = page * LOGO_PAGE, client.MAX_PER_PAGE
+    try:
+        query = client.logo_query(brief.subject_of(answers))
+        marks, more = [], True
+        # The catalog serves 12 a page; a card page is 14.
+        for upstream in range(start // per + 1, (start + LOGO_PAGE - 1) // per + 2):
+            found = client.search(query, kind=client.LOGO, page=upstream)
+            marks += found.results
+            more = found.has_next
+            if not more:
+                break
+    except client.CuratedImageError:
+        return None
+    offset = start % per
+    return [
+        {
+            "value": f"{REMOTE_LOGO}{m.asset_id}",
+            "label": m.title,
+            "image_url": m.preview_url,
+            "mark": None,
+            # A flat mark of a few inks is drawn in the look's colour, as a
+            # traced mark is; a painted one keeps its own colours.
+            "tint": _tint_gain(m.colors),
+        }
+        for m in marks[offset : offset + LOGO_PAGE]
+    ], more or len(marks) > offset + LOGO_PAGE
+
+
 def logo_cards(tenant, answers: dict, page: int = 0) -> dict:
     from apps.core.copilot.logos import mark_of, preview_url
+    from apps.core.curated_images import client
     from apps.core.models import CuratedLogo
     from apps.core.onboarding.ai_curate import CoachBrief, shortlist
 
-    with schema_context("public"):
-        rows = list(CuratedLogo.objects.filter(enabled=True).order_by("position", "id"))
-    by_id = {r.pk: r for r in rows}
-    ranked = [by_id[i] for i in (tenant.wizard_state or {}).get("curated_logo_rank") or [] if i in by_id]
-    ordered = ranked or shortlist(rows, CoachBrief.from_tenant(tenant), limit=24)
-    # Vector marks first: they take the site's colours and crop tight.
-    ordered = sorted(ordered, key=lambda r: not r.mark_paths)
-    chunk = ordered[page * LOGO_PAGE : (page + 1) * LOGO_PAGE]
+    remote = _remote_logo_options(answers, page) if client.logos_available() else None
+    if remote is not None:
+        options, more = remote
+    else:
+        with schema_context("public"):
+            rows = list(CuratedLogo.objects.filter(enabled=True).order_by("position", "id"))
+        by_id = {r.pk: r for r in rows}
+        ranked = [by_id[i] for i in (tenant.wizard_state or {}).get("curated_logo_rank") or [] if i in by_id]
+        ordered = ranked or shortlist(rows, CoachBrief.from_tenant(tenant), limit=24)
+        # Vector marks first: they take the site's colours and crop tight.
+        ordered = sorted(ordered, key=lambda r: not r.mark_paths)
+        more = len(ordered) > (page + 1) * LOGO_PAGE
+        options = [
+            {"value": str(r.pk), "label": r.title, "image_url": preview_url(r), "mark": mark_of(r)}
+            for r in ordered[page * LOGO_PAGE : (page + 1) * LOGO_PAGE]
+        ]
     return {
         "kind": "logo",
         "page": page,
-        "more": len(ordered) > (page + 1) * LOGO_PAGE,
-        "options": [
-            {"value": str(r.pk), "label": r.title, "image_url": preview_url(r), "mark": mark_of(r)} for r in chunk
-        ],
+        "more": more,
+        "options": options,
         # Marks are previewed in the look the coach picked, beside her name.
         "brand": tenant.name or "",
         "style": answers.get("style") or "",
@@ -965,6 +1038,18 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
             if not Photo.objects.filter(pk=photo_id).exists():
                 raise ChoiceError("unknown_logo")
             logo = {"mode": "upload", "photo_id": photo_id}
+        elif str(value).startswith(REMOTE_LOGO):
+            from apps.core.curated_images.cache import cached_asset
+
+            try:
+                asset_id = str(uuid.UUID(str(value)[len(REMOTE_LOGO) :]))
+            except ValueError:
+                raise ChoiceError("unknown_logo") from None
+            # Copied into her storage now: a mark the catalog cannot hand
+            # over is refused here, not silently swapped for her name.
+            if cached_asset(asset_id) is None:
+                raise ChoiceError("unknown_logo")
+            logo = {"mode": "curated", "asset_id": asset_id}
         else:
             try:
                 logo_id = int(value)

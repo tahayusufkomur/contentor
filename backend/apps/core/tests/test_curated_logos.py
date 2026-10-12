@@ -379,3 +379,32 @@ def test_mark_of_hugs_the_artwork_and_keeps_colour_roles():
     assert [p["role"] for p in mark["paths"]] == ["mark", "mark"]  # a raw colour never reaches the page
     assert mark["paths"][1]["fill_rule"] == "evenodd" and mark["paths"][1]["opacity"] == 0.5
     assert mark_of(SimpleNamespace(mark_paths=None)) is None
+
+
+def test_a_catalog_logo_copy_is_traced_into_the_header_mark_once(tenant_ctx, monkeypatch):
+    """A mark copied from the remote catalog has no CuratedLogo row: its
+    vector mark is traced from the tenant's own copy, and cached."""
+    from django.core.cache import cache
+
+    from apps.core.copilot import logos
+    from apps.core.curated_images import fake
+    from apps.core.curated_images.cache import tenant_key_for
+
+    entry = fake.entries("logo")[0]
+    reads = []
+
+    class _S3:
+        def get_object(self, Bucket, Key):  # noqa: N803 - boto3's own argument names
+            reads.append(Key)
+            return {"Body": open(fake.fixture_path(entry["asset_id"]), "rb")}  # noqa: SIM115
+
+    monkeypatch.setattr("apps.core.storage.get_s3_client", lambda *a, **k: _S3())
+    key = tenant_key_for(entry["asset_id"])
+    cache.delete(f"curated-trace:{key}")
+    mark = logos.mark_for_key(key)
+    assert mark["paths"] and all(p["role"] in logos.MARK_ROLES for p in mark["paths"])
+    assert logos.mark_for_key(key) == mark and reads == [key]  # the second ask is the cache
+    # Another tenant's key, or an upload, is never read from storage.
+    assert logos.mark_for_key(f"tenants/someone-else/curated/{entry['asset_id']}.webp") is None
+    assert logos.mark_for_key("tenants/x/uploads/logo.png") is None
+    assert reads == [key]

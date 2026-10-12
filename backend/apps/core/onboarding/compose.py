@@ -309,6 +309,8 @@ def apply_wizard_logo(config, answers, tenant) -> None:
     curated: tenant Photo row pointing at the shared platform/ key (demo-photo
     precedent; no S3 copy, DB-only erase can't orphan it) + show_brand_name
     so mark + brand text form a lockup. Idempotent via the s3_key lookup.
+    A mark picked from the remote catalog (``asset_id``) is this tenant's own
+    copy instead (``curated_images.cache.cached_asset``).
     """
     logo = answers.get("logo") or {}
     mode = logo.get("mode")
@@ -348,24 +350,32 @@ def apply_wizard_logo(config, answers, tenant) -> None:
         config.navbar_config = navbar
         return
 
-    if mode != "curated" or not logo.get("curated_id"):
+    if mode != "curated":
         return
+    if logo.get("asset_id"):
+        from apps.core.curated_images.cache import cached_asset
 
-    from django_tenants.utils import schema_context
+        photo = cached_asset(str(logo["asset_id"]))
+        if photo is None:
+            return
+    elif logo.get("curated_id"):
+        from django_tenants.utils import schema_context
 
-    from apps.core.models import CuratedLogo
+        from apps.core.models import CuratedLogo
 
-    with schema_context("public"):
-        row = CuratedLogo.objects.filter(id=logo["curated_id"], enabled=True).first()
-        image_key = row.image_key if row else ""
-    if not image_key.startswith("platform/"):
+        with schema_context("public"):
+            row = CuratedLogo.objects.filter(id=logo["curated_id"], enabled=True).first()
+            image_key = row.image_key if row else ""
+        if not image_key.startswith("platform/"):
+            return
+
+        from apps.media.models import Photo
+
+        photo = Photo.objects.filter(s3_key=image_key).first()
+        if photo is None:
+            photo = Photo.objects.create(s3_key=image_key, title="Logo")
+    else:
         return
-
-    from apps.media.models import Photo
-
-    photo = Photo.objects.filter(s3_key=image_key).first()
-    if photo is None:
-        photo = Photo.objects.create(s3_key=image_key, title="Logo")
     config.logo = photo
     config.logo_url = ""
     navbar = dict(config.navbar_config or {})

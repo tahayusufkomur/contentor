@@ -14,7 +14,7 @@ import {
   styleFontsHref,
   styleVars,
 } from "@/lib/site-styles";
-import { LogoMarkSvg } from "@/components/shared/logo-mark";
+import { LogoMarkSvg, TintedMark } from "@/components/shared/logo-mark";
 import { uploadImage } from "@/components/owner/logo-uploader";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
@@ -390,6 +390,18 @@ export function LookCardsView({
                   mark={o.mark}
                   label={o.label}
                   className="max-h-full w-full"
+                />
+              </span>
+            ) : o.tint && o.image_url && markColor ? (
+              <span
+                className="flex aspect-square w-full items-center justify-center p-[10%]"
+                style={{ color: markColor }}
+              >
+                <TintedMark
+                  src={o.image_url}
+                  gain={o.tint}
+                  label={o.label}
+                  className="h-full w-full"
                 />
               </span>
             ) : (
