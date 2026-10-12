@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Settings } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,18 +24,20 @@ import {
 } from "@/components/billing/content-picker";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
-interface PlanAccess {
-  items: Array<{
-    content_type: string;
-    object_id: number;
-    title?: string;
-    price?: string;
-  }>;
+/** One piece of content, as GET returns it and PUT takes it back. */
+interface PlanContent {
+  content_type: string;
+  object_id: number;
+  title: string;
+  price: string;
+  pricing_type: string;
 }
 
-interface Plan {
-  id: number;
-  name: string;
+/** GET and PUT /billing/plans/<id>/access/ both answer with this. */
+interface PlanAccess {
+  plan: { id: number; name: string; is_active: boolean };
+  items: PlanContent[];
+  available: PlanContent[];
 }
 
 function LoadingSkeleton() {
@@ -51,7 +54,7 @@ export default function PlanAccessPage() {
   const params = useParams();
   const id = params.id as string;
 
-  const [plan, setPlan] = useState<Plan | null>(null);
+  const [access, setAccess] = useState<PlanAccess | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -63,20 +66,12 @@ export default function PlanAccessPage() {
     setLoadError(null);
     async function load() {
       try {
-        const [planData, accessData] = await Promise.all([
-          clientFetch<Plan>(`/api/v1/billing/plans/${id}/`),
-          clientFetch<PlanAccess>(`/api/v1/billing/plans/${id}/access/`),
-        ]);
-        if (cancelled) return;
-        setPlan(planData);
-        setSelectedItems(
-          (accessData.items ?? []).map((item) => ({
-            content_type: item.content_type,
-            object_id: item.object_id,
-            title: item.title ?? `Item ${item.object_id}`,
-            price: item.price ?? "0",
-          })),
+        const data = await clientFetch<PlanAccess>(
+          `/api/v1/billing/plans/${id}/access/`,
         );
+        if (cancelled) return;
+        setAccess(data);
+        setSelectedItems(data.items);
       } catch (err) {
         if (cancelled) return;
         console.error(err);
@@ -92,17 +87,34 @@ export default function PlanAccessPage() {
     };
   }, [id, reloadKey]);
 
+  const products = useMemo(
+    () =>
+      (access?.available ?? []).map((item) => ({
+        id: item.object_id,
+        type: item.content_type,
+        title: item.title,
+        price: item.price,
+        pricing_type: item.pricing_type,
+      })),
+    [access],
+  );
+
   const { run: handleSave, loading: saving } = useAsyncAction(
     async () => {
-      await clientFetch(`/api/v1/billing/plans/${id}/access/`, {
-        method: "PUT",
-        body: JSON.stringify({
-          items: selectedItems.map((i) => ({
-            content_type: i.content_type,
-            object_id: i.object_id,
-          })),
-        }),
-      });
+      const saved = await clientFetch<PlanAccess>(
+        `/api/v1/billing/plans/${id}/access/`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            items: selectedItems.map((i) => ({
+              content_type: i.content_type,
+              object_id: i.object_id,
+            })),
+          }),
+        },
+      );
+      setAccess(saved);
+      setSelectedItems(saved.items);
       toast.success("Plan access updated successfully.");
     },
     { errorToast: "Failed to update plan access. Please try again." },
@@ -117,10 +129,13 @@ export default function PlanAccessPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {loading
-              ? "Manage Plan Access"
-              : `Manage Access: ${plan?.name ?? ""}`}
+          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+            {access
+              ? `Manage Access: ${access.plan.name}`
+              : "Manage Plan Access"}
+            {access && !access.plan.is_active && (
+              <Badge variant="secondary">Inactive</Badge>
+            )}
           </h1>
           <p className="text-sm text-muted-foreground">
             Choose which content subscribers of this plan can access.
@@ -140,8 +155,8 @@ export default function PlanAccessPage() {
                 Content Access
               </CardTitle>
               <CardDescription>
-                Select the courses, downloads, live classes, and live streams
-                included in this subscription plan.
+                Select the courses, downloads, live classes, live streams, and
+                on-site events included in this subscription plan.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -157,14 +172,15 @@ export default function PlanAccessPage() {
               Content Access
             </CardTitle>
             <CardDescription>
-              Select the courses, downloads, live classes, and live streams
-              included in this subscription plan.
+              Select the courses, downloads, live classes, live streams, and
+              on-site events included in this subscription plan.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <ContentPicker
               selected={selectedItems}
               onChange={setSelectedItems}
+              products={products}
             />
           </CardContent>
         </Card>

@@ -17,12 +17,13 @@ export interface SelectedItem {
   price: string;
 }
 
-interface Product {
+export interface Product {
   id: number;
   title: string;
   type: string;
   price: string;
   content_type?: string;
+  pricing_type?: string;
 }
 
 const TYPE_FILTERS = [
@@ -31,6 +32,7 @@ const TYPE_FILTERS = [
   { label: "Download", value: "download" },
   { label: "Live Class", value: "live_class" },
   { label: "Live Stream", value: "live_stream" },
+  { label: "On-site Event", value: "onsite_event" },
 ];
 
 const TYPE_LABEL_MAP: Record<string, string> = {
@@ -38,6 +40,7 @@ const TYPE_LABEL_MAP: Record<string, string> = {
   download: "Download",
   live_class: "Live Class",
   live_stream: "Live Stream",
+  onsite_event: "On-site Event",
 };
 
 const TYPE_BADGE_VARIANT: Record<
@@ -48,25 +51,36 @@ const TYPE_BADGE_VARIANT: Record<
   download: "secondary",
   live_class: "warning",
   live_stream: "success",
+  onsite_event: "outline",
 };
 
 interface ContentPickerProps {
   selected: SelectedItem[];
   onChange: (items: SelectedItem[]) => void;
+  /** What to pick from. Left out, the picker loads the store's products
+   *  (what a bundle can hold). */
+  products?: Product[];
 }
 
-export function ContentPicker({ selected, onChange }: ContentPickerProps) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+export function ContentPicker({
+  selected,
+  onChange,
+  products: given,
+}: ContentPickerProps) {
+  const [fetched, setFetched] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(!given);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const products = given ?? fetched;
+  const loadsOwn = !given;
 
   useEffect(() => {
+    if (!loadsOwn) return;
     let cancelled = false;
     clientFetch<Product[]>("/api/v1/billing/products/")
       .then((data) => {
         // Filter out bundles
-        if (!cancelled) setProducts(data.filter((p) => p.type !== "bundle"));
+        if (!cancelled) setFetched(data.filter((p) => p.type !== "bundle"));
       })
       .catch(() => {
         if (!cancelled) toast.error("Failed to load content.");
@@ -77,7 +91,7 @@ export function ContentPicker({ selected, onChange }: ContentPickerProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loadsOwn]);
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -163,7 +177,11 @@ export function ContentPicker({ selected, onChange }: ContentPickerProps) {
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {TYPE_FILTERS.map((f) => (
+          {TYPE_FILTERS.filter(
+            (f) =>
+              f.value !== "onsite_event" ||
+              products.some((p) => p.type === f.value),
+          ).map((f) => (
             <Button
               key={f.value}
               type="button"
@@ -212,7 +230,9 @@ export function ContentPicker({ selected, onChange }: ContentPickerProps) {
                   {TYPE_LABEL_MAP[product.type] ?? product.type}
                 </Badge>
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  ${product.price}
+                  {product.pricing_type === "subscription"
+                    ? "Members only"
+                    : `$${product.price}`}
                 </span>
               </label>
             );

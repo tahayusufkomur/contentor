@@ -309,7 +309,7 @@ function PlansTab() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    clientFetch<Plan[]>("/api/v1/billing/plans/")
+    clientFetch<Plan[]>("/api/v1/billing/plans/?include_inactive=1")
       .then((data) => {
         if (!cancelled) setPlans(data);
       })

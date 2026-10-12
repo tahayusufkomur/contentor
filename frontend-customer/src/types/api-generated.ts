@@ -1649,7 +1649,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** @description Public list of active subscription plans with item counts. */
+    /**
+     * @description Public list of active subscription plans with item counts. The owner's
+     *     billing page asks for the ones switched off too (?include_inactive=1).
+     */
     get: operations["v1_billing_plans_retrieve"];
     put?: never;
     post?: never;
@@ -1683,7 +1686,15 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /**
+     * @description The owner's access page for one plan, active or not. GET and PUT answer
+     *     with the same payload, and PUT takes GET's `items` back unchanged.
+     */
     get: operations["v1_billing_plans_access_retrieve"];
+    /**
+     * @description The owner's access page for one plan, active or not. GET and PUT answer
+     *     with the same payload, and PUT takes GET's `items` back unchanged.
+     */
     put: operations["v1_billing_plans_access_update"];
     post?: never;
     delete?: never;

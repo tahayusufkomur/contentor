@@ -1,16 +1,13 @@
+from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.billing.models import Subscription, SubscriptionPlan, SubscriptionPlanAccess
-from apps.billing.serializers.plans import (
-    PlanAccessItemSerializer,
-    PlanAccessWriteItemSerializer,
-    PlanAccessWriteSerializer,
-)
+from apps.billing.serializers.plans import PlanAccessWriteItemSerializer, PlanAccessWriteSerializer
 from apps.core.permissions import IsOwner
 from apps.core.storage import sign_if_s3_key
 
@@ -23,6 +20,7 @@ def _resolve_access_items(plan):
         "course": ("courses", "course", "title", "slug"),
         "liveclass": ("live", "liveclass", "title", None),
         "livestream": ("live", "livestream", "title", None),
+        "onsiteevent": ("live", "onsiteevent", "title", None),
         "downloadfile": ("downloads", "downloadfile", "title", None),
     }
 
@@ -54,11 +52,46 @@ def _resolve_access_items(plan):
     return items
 
 
+def _access_content_types():
+    """The kinds of content the owner's access page lists: API name -> ContentType."""
+    writer = PlanAccessWriteItemSerializer()
+    return {name: writer.resolve_content_type(name) for name in writer.CONTENT_TYPE_MAP}
+
+
+def _access_payload(plan):
+    """What the owner's access page loads, with items in the shape it PUTs
+    back: the plan, the content it includes, and all it could include
+    (everything that is not free, plus whatever it includes already)."""
+    linked = set(plan.access_items.values_list("content_type_id", "object_id"))
+    items, available = [], []
+    for name, ct in _access_content_types().items():
+        included = {object_id for ct_id, object_id in linked if ct_id == ct.pk}
+        for obj in ct.model_class().objects.filter(Q(pk__in=included) | ~Q(pricing_type="free")):
+            item = {
+                "content_type": name,
+                "object_id": obj.pk,
+                "title": obj.title,
+                "price": str(obj.price),
+                "pricing_type": obj.pricing_type,
+            }
+            available.append(item)
+            if obj.pk in included:
+                items.append(item)
+    return {
+        "plan": {"id": plan.pk, "name": plan.name, "is_active": plan.is_active},
+        "items": items,
+        "available": available,
+    }
+
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def plan_list(request):
-    """Public list of active subscription plans with item counts."""
-    plans = SubscriptionPlan.objects.filter(is_active=True)
+    """Public list of active subscription plans with item counts. The owner's
+    billing page asks for the ones switched off too (?include_inactive=1)."""
+    plans = SubscriptionPlan.objects.all()
+    if not (request.query_params.get("include_inactive") and IsOwner().has_permission(request, None)):
+        plans = plans.filter(is_active=True)
 
     # Build set of plan IDs the user is actively subscribed to
     subscribed_plan_ids = set()
@@ -125,33 +158,30 @@ def plan_detail(request, pk):
 @api_view(["GET", "PUT"])
 @permission_classes([IsOwner])
 def plan_access(request, pk):
+    """The owner's access page for one plan, active or not. GET and PUT answer
+    with the same payload, and PUT takes GET's `items` back unchanged."""
     plan = get_object_or_404(SubscriptionPlan, pk=pk)
 
     if request.method == "GET":
-        access_items = SubscriptionPlanAccess.objects.filter(plan=plan).select_related("content_type")
-        serializer = PlanAccessItemSerializer(access_items, many=True)
-        return Response(serializer.data)
+        return Response(_access_payload(plan))
 
-    # PUT: bulk replace
     serializer = PlanAccessWriteSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    items_data = serializer.validated_data["items"]
-    item_writer = PlanAccessWriteItemSerializer()
-
-    # Delete all existing access rows for this plan
-    SubscriptionPlanAccess.objects.filter(plan=plan).delete()
-
-    # Create new ones
-    created = []
-    for item_data in items_data:
-        ct = item_writer.resolve_content_type(item_data["content_type"])
-        access_item, _ = SubscriptionPlanAccess.objects.get_or_create(
-            plan=plan,
-            content_type=ct,
-            object_id=item_data["object_id"],
+    content_types = _access_content_types()
+    wanted = {(content_types[i["content_type"]].pk, i["object_id"]) for i in serializer.validated_data["items"]}
+    # Replace only the kinds the page lists, and only where the selection
+    # differs: a link it never showed is not its to drop.
+    rows = plan.access_items.filter(content_type__in=content_types.values())
+    have = {
+        (ct_id, object_id): row_pk
+        for row_pk, ct_id, object_id in rows.values_list("pk", "content_type_id", "object_id")
+    }
+    with transaction.atomic():
+        rows.filter(pk__in=[row_pk for key, row_pk in have.items() if key not in wanted]).delete()
+        SubscriptionPlanAccess.objects.bulk_create(
+            SubscriptionPlanAccess(plan=plan, content_type_id=ct_id, object_id=object_id)
+            for ct_id, object_id in wanted - have.keys()
         )
-        created.append(access_item)
 
-    result_serializer = PlanAccessItemSerializer(created, many=True)
-    return Response(result_serializer.data, status=status.HTTP_200_OK)
+    return Response(_access_payload(plan))
