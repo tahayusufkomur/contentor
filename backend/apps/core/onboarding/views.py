@@ -47,10 +47,20 @@ def creator_signup(request):
     email = serializer.validated_data["email"]
     name = serializer.validated_data["name"]
     brand_name = serializer.validated_data["brand_name"]
+    about_text = (serializer.validated_data.get("about_text") or "").strip()
+
+    about_id = ""
+    if about_text:
+        import uuid
+
+        from django.core.cache import cache
+
+        about_id = uuid.uuid4().hex
+        cache.set(f"signup:about:{about_id}", about_text, timeout=86400)
 
     from apps.accounts.tokens import create_signup_token
 
-    token = create_signup_token(email, name, brand_name, region=region)
+    token = create_signup_token(email, name, brand_name, region=region, about_id=about_id)
     logger.info("creator signup requested email=%s brand=%s region=%s", email, brand_name, region)
 
     scheme = "https" if request.is_secure() else "http"
@@ -156,9 +166,19 @@ def creator_signup_authenticated(request):
     if not slug or Tenant.objects.filter(slug=slug, region=region).exists():
         return Response({"detail": msg(request, "brand_taken")}, status=400)
 
+    about_text = (request.data.get("about_text") or "").strip()
+    about_id = ""
+    if about_text:
+        import uuid
+
+        from django.core.cache import cache
+
+        about_id = uuid.uuid4().hex
+        cache.set(f"signup:about:{about_id}", about_text, timeout=86400)
+
     from apps.accounts.tokens import create_signup_token
 
-    token = create_signup_token(user.email, user.name, brand_name, region=region)
+    token = create_signup_token(user.email, user.name, brand_name, region=region, about_id=about_id)
     logger.info(
         "authenticated creator new-platform email=%s brand=%s region=%s",
         user.email,
@@ -193,9 +213,18 @@ def creator_signup_verify(request):
     region = payload.get("region", "global")
     slug = slugify(brand_name)[:63]
 
+    about_id = payload.get("about_id")
+    initial_about = ""
+    if about_id:
+        from django.core.cache import cache
+
+        initial_about = cache.get(f"signup:about:{about_id}") or ""
+
     from apps.accounts.tokens import create_wizard_token
 
-    wizard_token = create_wizard_token(email, payload.get("name", ""), brand_name, region=region)
+    wizard_token = create_wizard_token(
+        email, payload.get("name", ""), brand_name, region=region, about_id=about_id or ""
+    )
 
     base_domain = settings.CONTENTOR_DOMAIN
     tenant_fqdn = f"{slug}.{base_domain}"
@@ -208,7 +237,9 @@ def creator_signup_verify(request):
         stale = timezone.now() - tenant.created_at > PROVISION_RETRY_AFTER
         if tenant.provisioning_status == "pending" and stale:
             old_answers = (tenant.wizard_state or {}).get("answers") or {}
-            _start_interview_provisioning(tenant, email, payload.get("name", ""), old_answers)
+            _start_interview_provisioning(
+                tenant, email, payload.get("name", ""), old_answers, initial_about=initial_about
+            )
         return Response(
             {
                 "slug": slug,
@@ -247,7 +278,7 @@ def creator_signup_verify(request):
         region,
         email,
     )
-    _start_interview_provisioning(tenant, email, payload.get("name", ""))
+    _start_interview_provisioning(tenant, email, payload.get("name", ""), initial_about=initial_about)
 
     return Response(
         {
@@ -444,7 +475,7 @@ def _resolve_tenant_from_wizard_token(request):
 PROVISION_RETRY_AFTER = timedelta(minutes=2)
 
 
-def _start_interview_provisioning(tenant, email, owner_name, answers=None) -> None:
+def _start_interview_provisioning(tenant, email, owner_name, answers=None, initial_about="") -> None:
     """One onboarding: create the site now; the coach continues in /setup on
     their own subdomain, where the interview fills the brief. ``answers``
     (an old-wizard tenant's) are kept on top of the defaults."""
@@ -454,10 +485,42 @@ def _start_interview_provisioning(tenant, email, owner_name, answers=None) -> No
     from apps.core.tasks import provision_tenant
 
     merged = {**recommended_answers("general"), "goals": [], **(answers or {})}
+    wizard_state = {"version": 2, "flow": "interview", "answers": merged}
+    if initial_about:
+        wizard_state["initial_about"] = initial_about
     Tenant.objects.filter(pk=tenant.pk).update(
-        wizard_state={"version": 2, "flow": "interview", "answers": merged},
+        wizard_state=wizard_state,
         template_niche="general",
         template_seed_status="seeding",
     )
     tenant_id = tenant.id
     transaction.on_commit(lambda: provision_tenant.delay(tenant_id, email, owner_name, "general"))
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@throttle_classes([BrandNameCheckThrottle])
+def extract_doc(request):
+    """Extract plain text from an uploaded bio/CV/document (.pdf, .txt, .md)
+    or normalize pasted text. Also performs real-time fact analysis to show
+    which questions will be answered before advancing."""
+    from apps.tenant_config import interview_import
+
+    upload = request.FILES.get("file")
+    text = str(request.data.get("text") or "")
+    try:
+        extracted = interview_import.extract_text(upload, text)
+    except interview_import.ImportRejectedError as exc:
+        return Response({"detail": str(exc)}, status=400)
+
+    from .about_check import analyze
+
+    analysis = analyze(extracted) if request.data.get("analyze", True) else {}
+    return Response(
+        {
+            "text": extracted,
+            "facts": analysis.get("facts") or [],
+            "summary": analysis.get("summary") or "",
+        }
+    )

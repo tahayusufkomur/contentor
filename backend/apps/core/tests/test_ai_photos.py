@@ -194,3 +194,26 @@ def test_pick_photos_provider_error_raises_curate_error(monkeypatch):
     monkeypatch.setattr(ai_photos.core_ai, "structured", fail)
     with pytest.raises(ai_photos.CurateError):
         ai_photos.pick_photos(CoachBrief(niche="yoga"), [ai_photos.Slot("hero", "x", "hero")], tenant_schema="glow")
+
+
+def test_pick_photos_offers_the_hero_no_photo_whose_subject_sits_under_the_text(monkeypatch):
+    from apps.core.curated_images import client as curated_client
+
+    def img(asset_id, placement):
+        return curated_client.RemoteImage(asset_id, asset_id, "", [], 1600, 900, "", "", subject_placement=placement)
+
+    def search(query="", **kwargs):
+        wanted = kwargs.get("subject_placement")
+        pool = [img("mid", "centered"), img("side", "left_third")]
+        return curated_client.SearchPage(
+            results=[i for i in pool if not wanted or i.subject_placement == wanted], page=1, has_next=False
+        )
+
+    monkeypatch.setattr(ai_photos.curated_client, "search", search)
+    monkeypatch.setattr(ai_photos.core_ai, "structured", _fake_structured([{"slot": "hero", "candidate": 1}]))
+    slots = [ai_photos.Slot("hero", "Homepage hero", "hero")]
+    for wanted in ("left_third", curated_client.NOT_CENTERED):
+        picks = ai_photos.pick_photos(CoachBrief(niche="yoga"), slots, tenant_schema="glow", hero_wanted=wanted)
+        assert picks["hero"].asset_id == "side"
+    assert ai_photos.hero_placement({"hero_style": "split"}) is None
+    assert ai_photos.hero_placement({}) == curated_client.NOT_CENTERED

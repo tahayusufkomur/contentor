@@ -362,3 +362,45 @@ def test_describe_tenant_photo_unreadable_bytes_is_best_effort(tenant_ctx, monke
     fake_client.get_object.side_effect = RuntimeError("no such key")
     monkeypatch.setattr("apps.core.storage.get_s3_client", lambda external=False: fake_client)
     assert photos.describe_tenant_photo(photo) == ("", Decimal("0"))
+
+
+def _placed(asset_id, placement):
+    return curated_client.RemoteImage(
+        asset_id=asset_id,
+        title="yoga",
+        description="yoga",
+        tags=[],
+        width=1600,
+        height=900,
+        preview_url="",
+        web_url="",
+        subject_placement=placement,
+    )
+
+
+def test_pick_photo_never_puts_a_centered_subject_under_the_hero_text(monkeypatch):
+    page = curated_client.SearchPage(
+        results=[_placed("mid", "centered"), _placed("side", "left_third")], page=1, has_next=False
+    )
+    monkeypatch.setattr(curated_client, "search", lambda *a, **k: page)
+    assert photos.pick_photo("yoga", _tenant(), field="bgImage").asset_id == "side"
+    # Only known-wrong shots exist: still a photo, never a refusal.
+    only_mid = curated_client.SearchPage(results=[_placed("mid", "centered")], page=1, has_next=False)
+    monkeypatch.setattr(curated_client, "search", lambda *a, **k: only_mid)
+    assert photos.pick_photo("yoga", _tenant(), field="bgImage").asset_id == "mid"
+
+
+def test_pick_photo_asks_for_the_placement_then_drops_it_on_the_last_rung(monkeypatch):
+    monkeypatch.setitem(photos.FIELD_PLACEMENTS, "bgImage", "left_third")
+    asked = []
+
+    def search(query="", **kwargs):
+        asked.append((query, kwargs.get("subject_placement")))
+        if kwargs.get("subject_placement") or query:
+            return curated_client.SearchPage(results=[], page=1, has_next=False)
+        return curated_client.SearchPage(results=[_placed("any", "centered")], page=1, has_next=False)
+
+    monkeypatch.setattr(curated_client, "search", search)
+    assert photos.pick_photo("yoga", _tenant(), field="bgImage").asset_id == "any"
+    assert asked[0][1] == "left_third"  # first rung is filtered
+    assert asked[-1] == ("", None)  # last rung: anything in the library

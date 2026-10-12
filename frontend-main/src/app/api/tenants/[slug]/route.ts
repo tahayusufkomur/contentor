@@ -29,3 +29,31 @@ export async function PATCH(
   const data = await res.json().catch(() => ({}));
   return NextResponse.json(data, { status: res.status });
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { slug: string } },
+) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_NAME)?.value;
+  if (!token)
+    return NextResponse.json({ detail: "unauthorized" }, { status: 401 });
+
+  const body = await req.json().catch(() => ({}));
+  const res = await fetch(
+    `${DJANGO_API_URL}/api/v1/me/tenants/${params.slug}/`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "X-Tenant-Domain": BASE_DOMAIN,
+      },
+      body: JSON.stringify(body),
+    },
+  );
+
+  if (res.status === 204) return new NextResponse(null, { status: 204 });
+  const data = await res.json().catch(() => ({}));
+  return NextResponse.json(data, { status: res.status });
+}

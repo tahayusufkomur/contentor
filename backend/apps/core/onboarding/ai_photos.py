@@ -98,7 +98,15 @@ def event_groups(events) -> list[tuple[str, str, list]]:
     return [(m, t, rows) for (m, t), rows in groups.items()]
 
 
-def pick_photos(brief: CoachBrief, slots: list[Slot], *, tenant_schema: str) -> dict[str, RemoteImage]:
+def hero_placement(answers: dict) -> str | None:
+    """Where the hero photo's subject must not sit: the centred hero lays its
+    text over the middle of a full-bleed photo; the split hero frames it."""
+    return curated_client.NOT_CENTERED if (answers.get("hero_style") or "centered") == "centered" else None
+
+
+def pick_photos(
+    brief: CoachBrief, slots: list[Slot], *, tenant_schema: str, hero_wanted: str | None = None
+) -> dict[str, RemoteImage]:
     """One structured call -> {slot_name: RemoteImage}. Candidates come from two
     catalog searches (wide hero shots, and anything for content slots) against
     the coach's own words. Model-returned candidate numbers are validated against
@@ -113,9 +121,17 @@ def pick_photos(brief: CoachBrief, slots: list[Slot], *, tenant_schema: str) -> 
         # search_or_browse, not search: the catalog's query filters, so a coach
         # whose niche it has no words for would otherwise finish the wizard with
         # a photo-less site rather than generic-but-real imagery.
-        hero_pool = curated_client.search_or_browse(
-            query, orientation=curated_client.WIDE, per_page=CANDIDATES_PER_GROUP
-        ).results
+        hero_pool = curated_client.by_placement(
+            curated_client.search_or_browse(
+                query,
+                orientation=curated_client.WIDE,
+                subject_placement=curated_client.placement_filter(hero_wanted),
+                per_page=CANDIDATES_PER_GROUP,
+            ).results,
+            hero_wanted,
+        )
+        # A subject under the headline is offered only when nothing else exists.
+        hero_pool = [i for i in hero_pool if curated_client.placement_rank(hero_wanted, i) < 2] or hero_pool
         content_pool = curated_client.search_or_browse(query, per_page=CANDIDATES_PER_GROUP).results
     except curated_client.CuratedImageError as exc:
         raise CurateError(str(exc)) from exc

@@ -12,8 +12,11 @@ async function signupThroughVerify(page: Page, brand: string, email: string) {
   // The AI may offer a typo fix or alternatives first; Continue keeps the name.
   const nameField = page.getByPlaceholder(en.signup.namePlaceholder);
   const keep = page.getByText(en.signup.nameKeep);
-  await expect(nameField.or(keep)).toBeVisible({ timeout: 20_000 });
+  const skipAbout = page.getByRole("button", { name: en.signup.aboutSkip });
+  await expect(skipAbout.or(keep)).toBeVisible({ timeout: 20_000 });
   if (await keep.isVisible()) await page.getByRole("button", { name: en.signup.submit }).click();
+  // The optional "about you" step: the spec signs up without a bio.
+  await skipAbout.click();
   await nameField.fill("E2E Coach");
   await page.getByPlaceholder(en.signup.emailPlaceholder).fill(email);
   await page.getByRole("button", { name: en.signup.submit }).click();

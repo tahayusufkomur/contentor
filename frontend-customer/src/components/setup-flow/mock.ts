@@ -235,7 +235,6 @@ export const mockSetupFlowApi: SetupFlowApi = {
     return ticked.length ? { ticked } : { text: said.text };
   },
   logos: (page) => setupFlowApi.logos(page),
-  logoMore: () => setupFlowApi.logoMore(),
   cover: async (kind, asset) => {
     s.coverPick[kind] = asset;
     const card = cardsFor(`${kind}_review`);

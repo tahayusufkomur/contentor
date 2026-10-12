@@ -28,6 +28,25 @@ ORIENTATIONS = frozenset({"landscape", "portrait", "square"})
 # The exact shapes the search can filter to (POST /v1/images/search filters.aspect_ratio).
 SEARCH_ASPECT_RATIOS = frozenset({"16:9", "1:1", "4:3", "3:2", "9:16", "4:5"})
 
+# Where the main subject sits in the frame, as the catalog observed it from the
+# pixels (`subject_placement`; None = not observed). `left_third` leaves the
+# right free for copy, `right_third` the mirror.
+PLACEMENTS = frozenset({"centered", "left_third", "right_third", "off_center"})
+# What a text-overlay slot wants. The first two are catalog values and can be
+# sent as a search filter; NOT_CENTERED ("the words run along the bottom") is
+# only a client-side rule, since the filter takes one value.
+NOT_CENTERED = "not_centered"
+_PLACEMENT_MATCH = {
+    "left_third": {"left_third"},
+    "right_third": {"right_third"},
+    NOT_CENTERED: {"left_third", "right_third", "off_center"},
+}
+_PLACEMENT_WRONG = {
+    "left_third": {"centered", "right_third"},
+    "right_third": {"centered", "left_third"},
+    NOT_CENTERED: {"centered"},
+}
+
 MAX_PER_PAGE = 12  # the service's hard page size
 UNAVAILABLE = "the photo library is unavailable right now"
 OUT_OF_CREDITS = "image credits are used up for now"
@@ -62,6 +81,7 @@ class RemoteImage:
     preview_url: str
     web_url: str
     local_path: str = ""
+    subject_placement: str | None = None
 
 
 @dataclass(frozen=True)
@@ -185,7 +205,32 @@ def _image_from_payload(payload: dict) -> RemoteImage:
         height=web.get("height") or payload.get("height"),
         preview_url=_absolute(thumbnail.get("url") or "") or web_url,
         web_url=web_url,
+        subject_placement=payload.get("subject_placement") if payload.get("subject_placement") in PLACEMENTS else None,
     )
+
+
+def placement_filter(wanted: str | None) -> str | None:
+    """The catalog filter value for a wanted placement, or None when it cannot
+    be asked of the server (NOT_CENTERED) or nothing is wanted."""
+    return wanted if wanted in PLACEMENTS else None
+
+
+def placement_rank(wanted: str | None, image: "RemoteImage") -> int:
+    """0 = fits the wanted placement, 1 = unknown (or no requirement), 2 =
+    known wrong: the subject would sit under the text. Sort by it ascending."""
+    seen = image.subject_placement
+    if not wanted or seen is None or seen not in PLACEMENTS:
+        return 1 if wanted else 0
+    if seen in _PLACEMENT_MATCH.get(wanted, ()):
+        return 0
+    return 2 if seen in _PLACEMENT_WRONG.get(wanted, ()) else 1
+
+
+def by_placement(images, wanted: str | None) -> list:
+    """`images` best placement first (stable: catalog/relevance order kept
+    within a rank). Known-wrong ones stay last rather than vanish, so a
+    caller that must show something still can."""
+    return sorted(images, key=lambda i: placement_rank(wanted, i)) if wanted else list(images)
 
 
 def orientation_of(aspect) -> str:
@@ -197,9 +242,11 @@ def orientation_of(aspect) -> str:
     return "portrait" if w < h else "landscape" if w > h else "square"
 
 
-def _cache_key(query: str, shape: str | None, page: int, per_page: int) -> str:
-    digest = hashlib.sha256(json.dumps([query, shape or "", page, per_page], sort_keys=True).encode()).hexdigest()[:32]
-    return f"curated-images:v2:search:{digest}"
+def _cache_key(query: str, shape: str | None, page: int, per_page: int, placement: str | None = None) -> str:
+    digest = hashlib.sha256(
+        json.dumps([query, shape or "", page, per_page, placement or ""], sort_keys=True).encode()
+    ).hexdigest()[:32]
+    return f"curated-images:v3:search:{digest}"
 
 
 def search(
@@ -207,6 +254,7 @@ def search(
     *,
     orientation: str | None = None,
     aspect_ratio: str | None = None,
+    subject_placement: str | None = None,
     page: int = 1,
     per_page: int = MAX_PER_PAGE,
     session_id: str = "",
@@ -215,7 +263,9 @@ def search(
     """Ranked catalog page for a plain-language query, over the whole library.
     An empty query browses newest-first, which is what a picker opening for the
     first time wants. `orientation` narrows to landscape/portrait/square;
-    `aspect_ratio` (one of SEARCH_ASPECT_RATIOS) to that exact shape instead.
+    `aspect_ratio` (one of SEARCH_ASPECT_RATIOS) to that exact shape instead;
+    `subject_placement` (one of PLACEMENTS) to photos whose main subject sits
+    there, composing with either.
 
     Cached in Redis so a coach typing does not fan out one upstream request per
     keystroke. The TTL must stay below the service's signed-URL lifetime (15
@@ -232,6 +282,7 @@ def search(
     page = max(1, page)
     if aspect_ratio not in SEARCH_ASPECT_RATIOS:
         aspect_ratio = None
+    subject_placement = placement_filter(subject_placement)  # the service 400s on anything else
     if is_fake():
         from . import fake
 
@@ -245,7 +296,11 @@ def search(
         )
 
     sessioned = bool(session_id or shuffle)
-    key = _cache_key(query, aspect_ratio or orientation, page, per_page)
+    key = _cache_key(query, aspect_ratio or orientation, page, per_page, subject_placement)
+    filters = {
+        **({"aspect_ratio": aspect_ratio} if aspect_ratio else {"orientation": orientation} if orientation else {}),
+        **({"subject_placement": subject_placement} if subject_placement else {}),
+    }
     cached = None if sessioned else cache.get(key)
     if cached is None:
         body = _request(
@@ -253,13 +308,7 @@ def search(
             "/v1/images/search",
             json_body={
                 **({"query": query} if query else {}),
-                **(
-                    {"filters": {"aspect_ratio": aspect_ratio}}
-                    if aspect_ratio
-                    else {"filters": {"orientation": orientation}}
-                    if orientation
-                    else {}
-                ),
+                **({"filters": filters} if filters else {}),
                 **({"session_id": session_id} if session_id else {}),
                 **({"shuffle": True} if shuffle else {}),
                 "page": page,
@@ -288,6 +337,7 @@ def search_or_browse(
     query: str = "",
     *,
     orientation: str | None = None,
+    subject_placement: str | None = None,
     page: int = 1,
     per_page: int = MAX_PER_PAGE,
     session_id: str = "",
@@ -308,9 +358,34 @@ def search_or_browse(
     Only page 1 falls back: a "load more" that runs off the end of a matched
     result set means the coach reached the end of their matches, not that they
     should suddenly be shown unrelated images.
+
+    `subject_placement` is asked for first; when it empties the page the call
+    repeats without it (then falls back to browsing as above).
     """
-    first = search(query, orientation=orientation, page=page, per_page=per_page, session_id=session_id, shuffle=shuffle)
-    if first.results or not query or page != 1:
+    subject_placement = placement_filter(subject_placement)
+    first = search(
+        query,
+        orientation=orientation,
+        subject_placement=subject_placement,
+        page=page,
+        per_page=per_page,
+        session_id=session_id,
+        shuffle=shuffle,
+    )
+    if first.results or page != 1:
+        return first
+    if subject_placement:
+        # Nothing on that query has the subject where the layout needs it: the
+        # same query without the filter (callers then rank unknown above wrong).
+        return search_or_browse(
+            query,
+            orientation=orientation,
+            page=1,
+            per_page=per_page,
+            session_id=session_id or first.session_id,
+            shuffle=shuffle,
+        )
+    if not query:
         return first
     return search(
         orientation=orientation, page=1, per_page=per_page, session_id=session_id or first.session_id, shuffle=shuffle

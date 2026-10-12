@@ -7,7 +7,7 @@ from django.db import connection
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
 
-from apps.core.permissions import IsCoachOrOwner
+from apps.core.permissions import IsCoachOrOwner, IsOwner
 from apps.core.throttling import SetupInterviewThrottle
 
 from . import interview, interview_golive, interview_import, interview_milestones, setup_flow
@@ -136,20 +136,6 @@ def setup_flow_logos(request):
 
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
-def setup_flow_logo_more(request):
-    """Three more generated logos for the interview's logo card."""
-    from .interview_brief import answers_of
-    from .logo_gen import pipeline
-
-    if (over := _setup_over()) is not None:
-        return over
-    tenant = connection.tenant
-    pipeline.start_batch(tenant, more=True)
-    return Response(interview_milestones.logo_cards(tenant, answers_of(tenant)))
-
-
-@api_view(["POST"])
-@permission_classes([IsCoachOrOwner])
 def setup_flow_cover(request):
     """Another cover for the interview's first course or class."""
     if (over := _setup_over()) is not None:
@@ -185,3 +171,28 @@ def setup_flow_golive(request):
         except setup_flow.PublishBlockedError as exc:
             return Response({"detail": "publish_requirements_unmet", "blockers": exc.blockers}, status=400)
     return Response(interview_golive.golive_state(tenant))
+
+
+@api_view(["POST"])
+@permission_classes([IsOwner])
+def setup_flow_cancel(request):
+    """Cancel onboarding: delete this never-finished platform (``{"confirm": "<slug>"}``).
+
+    Only the site's owner, and only while guided setup is still running — a
+    finished site is removed from the apex dashboard instead. Refused for
+    anything paid for (see ``onboarding.cancel``).
+    """
+    from apps.core.onboarding.cancel import CancelBlockedError, delete_platform
+
+    tenant = connection.tenant
+    if (request.user.email or "").lower() != (tenant.owner_email or "").lower():
+        return Response({"detail": "permission_denied"}, status=403)
+    if (over := _setup_over()) is not None:
+        return over
+    if _data(request).get("confirm") != tenant.slug:
+        return Response({"detail": "confirm_required"}, status=400)
+    try:
+        delete_platform(tenant)
+    except CancelBlockedError as exc:
+        return Response({"detail": exc.code}, status=409)
+    return Response(status=204)

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Check, MoreHorizontal, X } from "lucide-react";
+import { AlertTriangle, Check, MoreHorizontal, X } from "lucide-react";
+import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import {
@@ -13,16 +14,51 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { HelpChat } from "@/components/setup/help-chat";
+import { Button } from "@/components/ui/button";
 import { clientFetch } from "@/lib/api-client";
+import { BASE_DOMAIN } from "@/lib/constants";
+import { ApiError } from "@/types/api";
 
 const signOutUrl = (message: string) =>
   `/login?toast=${encodeURIComponent(message)}&toast_type=info`;
 
+const CANCEL_BLOCKED: Record<string, string> = {
+  paid_plan: "This site has a paid plan, so it can’t be deleted here.",
+  payments_connected:
+    "This site has a connected payments account. Contact support to remove it.",
+  custom_domain: "Remove the custom domain first.",
+  provisioning: "Your site is still being created. Try again in a few minutes.",
+  setup_finished:
+    "Setup is already finished. Delete the site from your dashboard.",
+};
+
 /** A way out of setup (there was none): progress is saved, "Finish later"
- * emails a sign-in link that leads straight back here, help, sign out. */
-export function SetupMenu({ email }: { email: string }) {
+ * emails a sign-in link that leads straight back here, help, sign out — or
+ * cancel setup, which deletes the unfinished site. */
+export function SetupMenu({ email, slug }: { email: string; slug: string }) {
   const navigate = useNavigate();
   const [help, setHelp] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const { run: cancelSetup, loading: cancelBusy } = useAsyncAction(
+    async () => {
+      await clientFetch("/api/v1/admin/setup-flow/cancel/", {
+        method: "POST",
+        body: JSON.stringify({ confirm: slug }),
+      });
+      await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+      // A full load on the main site: this subdomain no longer exists.
+      window.location.assign(
+        `${window.location.protocol}//${BASE_DOMAIN}/dashboard`,
+      );
+    },
+    {
+      onError: (err) =>
+        toast.error(
+          (err instanceof ApiError && CANCEL_BLOCKED[err.message]) ||
+            "Couldn’t cancel setup. Try again.",
+        ),
+    },
+  );
   const { run: finishLater } = useAsyncAction(
     async () => {
       if (email)
@@ -73,8 +109,66 @@ export function SetupMenu({ email }: { email: string }) {
           <DropdownMenuItem onSelect={() => void signOut()}>
             Sign out
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => setCancelling(true)}
+            className="text-destructive focus:text-destructive"
+          >
+            Cancel setup and delete this site
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      {cancelling && (
+        <ModalPortal>
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <button
+              type="button"
+              aria-label="Keep my site"
+              onClick={() => setCancelling(false)}
+              disabled={cancelBusy}
+              className="absolute inset-0 bg-black/50"
+            />
+            <div
+              role="alertdialog"
+              aria-modal="true"
+              aria-label="Cancel setup"
+              className="relative w-full max-w-md rounded-xl border bg-background p-5 shadow-xl"
+            >
+              <div className="mb-3 flex items-center gap-2">
+                <AlertTriangle
+                  className="h-5 w-5 text-destructive"
+                  aria-hidden
+                />
+                <h3 className="text-base font-semibold">Cancel setup?</h3>
+              </div>
+              <p className="mb-4 text-sm text-muted-foreground">
+                This deletes your unfinished site and everything you’ve answered
+                so far, and frees up{" "}
+                <strong className="text-foreground">{slug}</strong>. You can
+                start again any time, but this can’t be undone.
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCancelling(false)}
+                  disabled={cancelBusy}
+                >
+                  Keep my site
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => void cancelSetup()}
+                  loading={cancelBusy}
+                  loadingText="Deleting…"
+                >
+                  Delete site
+                </Button>
+              </div>
+            </div>
+          </div>
+        </ModalPortal>
+      )}
       {help && (
         <ModalPortal>
           <div

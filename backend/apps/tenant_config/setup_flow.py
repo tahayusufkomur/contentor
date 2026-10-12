@@ -8,6 +8,7 @@ and kicks builds off. Run inside the tenant's schema (request context).
 """
 
 import json
+import logging
 from contextlib import suppress
 from datetime import datetime, timedelta
 from typing import Literal
@@ -34,6 +35,8 @@ from .setup_items import (
     publish_blockers,
     tenant_publish_blockers,
 )
+
+logger = logging.getLogger(__name__)
 
 STEP_COPY = {
     "course": ("Your first course", "Tell us what you want to teach — we'll draft the outline, price and cover."),
@@ -221,6 +224,20 @@ def state_body(tenant) -> dict:
 
 def _interview_state(tenant, flow):
     from .interview import interview_state
+
+    initial_about = (tenant.wizard_state or {}).get("initial_about")
+    if initial_about and not (tenant.wizard_state or {}).get("initial_about_done"):
+        from . import interview
+
+        try:
+            interview.apply_initial_about(tenant, initial_about)
+        except Exception:
+            logger.exception("Initial about import failed on setup load for %s", tenant.slug)
+        finally:
+            tenant.wizard_state = {**(tenant.wizard_state or {}), "initial_about_done": True}
+            tenant.wizard_state.pop("initial_about", None)
+            tenant.save(update_fields=["wizard_state"])
+            flow = (TenantConfig.objects.first() or TenantConfig()).setup_flow or {}
 
     return interview_state(tenant, flow)
 

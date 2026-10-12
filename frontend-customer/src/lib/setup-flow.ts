@@ -105,8 +105,6 @@ export interface SetupFlowApi {
   /** A bio, CV or old About page: read as one turn that fills what it answers. */
   importDoc: (doc: ShareDoc, field?: string) => Promise<TurnResponse>;
   logos: (page: number) => Promise<LookCards>;
-  /** Start three more generated logos; the answer is the logo card. */
-  logoMore: () => Promise<LookCards>;
   cover: (kind: ReviewKind, asset: string) => Promise<ReviewCard>;
   golive: () => Promise<GoLiveState>;
   goliveAction: (
@@ -139,8 +137,6 @@ export const setupFlowApi: SetupFlowApi = {
     });
   },
   logos: (page) => clientFetch<LookCards>(`${BASE}/logos/?page=${page}`),
-  logoMore: () =>
-    clientFetch<LookCards>(`${BASE}/logo-more/`, { method: "POST" }),
   cover: (kind, asset) =>
     clientFetch<ReviewCard>(`${BASE}/cover/`, post({ kind, asset })),
   golive: () => clientFetch<GoLiveState>(`${BASE}/golive/`),
@@ -232,13 +228,6 @@ export interface LookOption {
   rank?: number;
 }
 
-/** The logos designed for this coach while they answered. */
-export interface GeneratedLogos {
-  /** building = a batch is running; ready = options are ranked best first. */
-  state: "building" | "ready" | "none";
-  options: LookOption[];
-}
-
 export interface LookCards {
   kind: "style" | "logo" | "calendar";
   options: LookOption[];
@@ -253,8 +242,6 @@ export interface LookCards {
   brand?: string;
   style?: string;
   palette?: string;
-  /** Logos: the ones designed for this coach, above the curated grid. */
-  generated?: GeneratedLogos;
   /** Looks: picking one opens it as a whole page, its sample copy about
    * ``subject`` ("boxing") and the hero's line in the coach's words. */
   preview?: { subject?: string; body?: string; copy?: LookCopy | null };
@@ -366,6 +353,10 @@ export interface GuideTurn {
   contact?: boolean;
   /** Details the question starts with (the coach's signup email). */
   prefill?: Record<string, string>;
+  /** Text to prefill in the answer box from coach's about text. */
+  prefill_text?: string | null;
+  /** Option labels to pre-select based on coach's about text. */
+  prefill_options?: string[];
   /** The answer is a time zone, picked from the browser's list. */
   timezone?: boolean;
   /** Membership tiles: her monthly price for each, editable once ticked,
@@ -402,8 +393,6 @@ export interface InterviewState {
   phase: "interview" | "building" | "golive";
   fired: string[];
   draft_status: Partial<Record<ContentKind, "building" | "ready" | "failed">>;
-  /** The generated-logo batch: polled while it is building. */
-  logo_batch?: { state: "building" | "ready" | "failed" | "none" };
   /** Fresh cards for look and review questions already behind the coach. */
   cards?: Partial<Record<string, GuideCards>>;
 }

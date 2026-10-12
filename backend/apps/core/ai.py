@@ -16,8 +16,7 @@ schema-validated generation), selected by settings.AI_PROVIDER:
   "cli". The hub's agent HAS tools and our prompts carry untrusted coach
   text, so runs go only to the studio lane (settings.AGENTC_LANE, whose
   accounts mount agent-studio-runs alone) and any run whose event log shows a
-  tool call is discarded (_agentc_run). Vision only through agentc_vision_run
-  (file viewer); images only through agentc_image_run. No token streaming.
+  tool call is discarded (_agentc_run). No token streaming.
 - "gemini": the Gemini API directly on settings.GEMINI_API_KEY — no queue,
   no CLI start-up, schema-constrained JSON. Billed per token, so its cost
   is real and accrues against the budget kill-switches. No vision, no token
@@ -38,7 +37,6 @@ import subprocess
 import tempfile
 import time
 from decimal import Decimal
-from pathlib import Path
 
 import requests
 from django.conf import settings
@@ -272,13 +270,8 @@ def _cli_structured(system, user, output_model, model, effort=None):
 
 # Completion is noticed one poll late on average half of this.
 AGENTC_POLL_SECONDS = 0.5
-# Dev mount only (AGENTC_RUNS_DIR): how often to look for the synced file.
-AGENTC_FILE_POLL_SECONDS = 2
-# Measured 2026-10-10: the sync lags the run by 30 s to over 2 min.
-_AGENTC_FILE_WAIT_SECONDS = 420
 # Per HTTP call; the run as a whole is bounded by AGENTC_TIMEOUT_SECONDS.
 _AGENTC_HTTP_TIMEOUT = 10
-_AGENTC_FILE_TIMEOUT = 60  # a logo PNG over the hub's file route
 _AGENTC_TERMINAL = frozenset({"succeeded", "failed", "timed_out", "cancelled", "rejected"})
 _AGENTC_RULES = (
     "\n\nHard rules: Do not use any tools. Do not read, write or list files. Do not run commands. "
@@ -290,19 +283,20 @@ def _agentc_url(path):
     return settings.AGENTC_HUB.rstrip("/") + path
 
 
-# Runs nobody is waiting on (whole-site composition) queue behind a coach's
-# interactive requests on the shared hub.
-# Page builds, drafts and logo renders yield to interactive runs (the coach's
-# interview turns): a batch of logo renders on the shared hub made her next
-# question wait out its whole budget (2026-10-10).
-_AGENTC_BACKGROUND_LABELS = ("contentor:compose", "contentor:logo")
+# Runs nobody is waiting on (whole-site composition, interview turns written
+# ahead of the coach). The hub gives each account one interactive run at a
+# time; a background run rides along on any account without holding it, so it
+# never makes a coach wait. The hub's own rule for a run type (GET /rules)
+# overrides what is asked here: on 2026-10-12 its rules ran every compose type
+# as interactive, two site plans held both usable accounts for over two
+# minutes, and every interview turn and look copy queued behind them was
+# cancelled at its deadline (_agentc_execute now warns about such a rule).
+_AGENTC_BACKGROUND_LABELS = ("contentor:compose", "contentor:interview-ahead")
 
 
 def _agentc_model(effort):
     """AGENTC_MODEL, AGENTC_MODEL_LOW for effort="low" (interview turns, edits,
-    picks), or AGENTC_PRO_MODEL for effort="max" (logo concepts, judge)."""
-    if effort == "max":
-        return settings.AGENTC_PRO_MODEL
+    picks)."""
     if effort == "low":
         return settings.AGENTC_MODEL_LOW
     return settings.AGENTC_MODEL
@@ -344,6 +338,15 @@ def _agentc_execute(prompt, label, deadline, model):
         "label": label,
     }
     run = _agentc_create(body)
+    if run.get("priority") not in (None, body["priority"]):
+        # The hub keeps its own rule per run type (GET /rules) and it wins.
+        logger.warning(
+            "agentc run %s (%s) was asked as %s and the hub runs it as %s: fix its rule on the hub",
+            run.get("id"),
+            label,
+            body["priority"],
+            run["priority"],
+        )
     run_id = run.get("id")
     try:
         while run.get("state") not in _AGENTC_TERMINAL:
@@ -379,54 +382,6 @@ def _agentc_run(prompt, label, deadline=None, model=None):
         logger.warning("agentc run %s (label=%s) used a tool; output discarded", run.get("id"), label)
         raise AiError("agent used a tool")
     return run.get("resultText") or ""
-
-
-_AGENTC_IMAGE_PROMPT = (
-    "Use your image generation tool with the highest-quality image model available to you. {brief}\n\n"
-    "Save the generated image as {out_path} relative to the current working directory. "
-    'Then reply with ONLY a JSON object: {{"file": "{out_path}", "image_model": "<the model your tool used>"}}'
-)
-
-
-def agentc_image_run(brief, out_path, *, label, timeout_seconds=None):
-    """One hub image run (the agent's image subagent draws and saves the
-    file) -> the run id. Tools are the point here, so the tool check is
-    skipped. The plain prompt shape is the one that succeeded 5/5 in the
-    2026-10-09 spike; wrapping the brief or forcing the subagent model hung."""
-    seconds = settings.AGENTC_IMAGE_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
-    prompt = _AGENTC_IMAGE_PROMPT.format(brief=brief, out_path=out_path)
-    run = _agentc_execute(prompt, label, time.monotonic() + seconds, None)
-    return str(run.get("id"))
-
-
-def agentc_vision_run(prompt, *, label, timeout_seconds=None):
-    """One hub text run on the Pro model that may open files with its viewer
-    (image read-back, the logo judge) -> resultText. Tools allowed."""
-    seconds = settings.AGENTC_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
-    run = _agentc_execute(prompt, label, time.monotonic() + seconds, settings.AGENTC_PRO_MODEL)
-    return run.get("resultText") or ""
-
-
-def agentc_run_file(run_id, path):
-    """Bytes of ``path`` (relative to the run cwd) through the hub's file
-    route; with AGENTC_RUNS_DIR set (dev), from the local mount instead,
-    waiting for the directory sync. Raises AiError when missing."""
-    if settings.AGENTC_RUNS_DIR:
-        target = Path(settings.AGENTC_RUNS_DIR) / path
-        waited = 0
-        while waited <= _AGENTC_FILE_WAIT_SECONDS:
-            if target.is_file() and target.stat().st_size > 0:
-                return target.read_bytes()
-            time.sleep(AGENTC_FILE_POLL_SECONDS)
-            waited += AGENTC_FILE_POLL_SECONDS or 1
-        raise AiError(f"agentc file {path} did not arrive in {settings.AGENTC_RUNS_DIR}")
-    try:
-        resp = requests.get(_agentc_url(f"/runs/{run_id}/file"), params={"path": path}, timeout=_AGENTC_FILE_TIMEOUT)
-    except requests.RequestException as exc:
-        raise AiError(f"agentc file fetch failed: {exc}") from exc
-    if resp.status_code != 200:
-        raise AiError(f"agentc file {path} for run {run_id}: {resp.status_code}")
-    return resp.content
 
 
 def _agentc_cancel(run_id):

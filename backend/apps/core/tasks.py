@@ -291,7 +291,9 @@ def _pick_photos_with_ai(tenant, answers, pages, preferred_locale):
     picks, status = _run_ai_step(
         "ai photo pick",
         tenant,
-        lambda: ai_photos.pick_photos(brief, slots, tenant_schema=tenant.schema_name),
+        lambda: ai_photos.pick_photos(
+            brief, slots, tenant_schema=tenant.schema_name, hero_wanted=ai_photos.hero_placement(answers)
+        ),
         AI_PHOTO_PICK_TIMEOUT_SECONDS,
     )
     if status != "ok":
@@ -420,6 +422,19 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
             _apply_wizard_answers(tenant, wizard_answers, preferred_locale)
             if not styled:
                 _seed_starter_post(tenant, preferred_locale)
+
+        initial_about = (tenant.wizard_state or {}).get("initial_about")
+        if initial_about:
+            with tenant_context(tenant):
+                from apps.tenant_config import interview
+
+                try:
+                    interview.apply_initial_about(tenant, initial_about)
+                except Exception:
+                    logger.exception("Initial about import failed during provisioning for %s", tenant.slug)
+            tenant.wizard_state = {**(tenant.wizard_state or {}), "initial_about_done": True}
+            tenant.wizard_state.pop("initial_about", None)
+            tenant.save(update_fields=["wizard_state"])
 
         _set_provisioning_stage(tenant, "finalizing")
         tenant.provisioning_status = "ready"
@@ -555,21 +570,6 @@ def rank_curated_logos(tenant_id):
     state["curated_logo_rank"] = ids
     tenant.wizard_state = state
     tenant.save(update_fields=["wizard_state"])
-
-
-@shared_task(soft_time_limit=900, time_limit=960)
-def generate_logo_candidates(tenant_id, batch_id):
-    """Generated logo candidates for the /setup interview's logo card
-    (apps.tenant_config.logo_gen.pipeline). Fail-silent: the batch state
-    in wizard_state is the only outcome."""
-    from apps.core.models import Tenant
-    from apps.tenant_config.logo_gen import pipeline
-
-    tenant = Tenant.objects.filter(id=tenant_id).first()
-    if tenant is None:
-        return
-    with tenant_context(tenant):
-        pipeline.run_batch(tenant, batch_id)
 
 
 @shared_task

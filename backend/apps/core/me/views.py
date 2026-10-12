@@ -32,9 +32,11 @@ def my_tenants(request):
     tenants = (
         Tenant.objects.exclude(schema_name="public")
         .filter(owner_email__iexact=email)
-        .select_related("plan")
+        .select_related("plan", "platform_subscription__plan")
         .order_by("-created_at")
     )
+
+    from apps.core.onboarding.cancel import deletion_blocker
 
     data = []
     for tenant in tenants:
@@ -54,25 +56,43 @@ def my_tenants(request):
                 "domain": domain_name,
                 "studio_url": _build_tenant_url(tenant),
                 "created_at": tenant.created_at.isoformat(),
+                # Why the coach can't delete this platform (None = they can).
+                "delete_blocker": deletion_blocker(tenant),
             }
         )
     return Response(data)
 
 
-@api_view(["PATCH"])
+@api_view(["PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def update_my_tenant(request, slug):
-    """Let a coach manage their own tenant's publish gate.
+    """Let a coach manage their own tenant.
 
-    Editable: ``is_published`` (go live / hide) and ``preview_password`` (the
-    password that unlocks the site while unpublished). Ownership is enforced by
-    matching the tenant's ``owner_email`` to the requester.
+    PATCH — the publish gate. Editable: ``is_published`` (go live / hide) and
+    ``preview_password`` (the password that unlocks the site while unpublished).
+
+    DELETE — remove a platform that was never paid for (``{"confirm": "<slug>"}``
+    required); see ``onboarding.cancel`` for what blocks it.
+
+    Ownership is enforced by matching the tenant's ``owner_email`` to the requester.
     """
     email = (request.user.email or "").lower()
     try:
         tenant = Tenant.objects.exclude(schema_name="public").get(slug=slug, owner_email__iexact=email)
     except Tenant.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "DELETE":
+        from apps.core.onboarding.cancel import CancelBlockedError, delete_platform
+
+        data = request.data if isinstance(request.data, dict) else {}
+        if data.get("confirm") != tenant.slug:
+            return Response({"detail": "confirm_required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            delete_platform(tenant)
+        except CancelBlockedError as exc:
+            return Response({"detail": exc.code}, status=status.HTTP_409_CONFLICT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     updated = []
     if "is_published" in request.data:

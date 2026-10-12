@@ -499,6 +499,15 @@ connected/submerchant account and the platform automatically takes `transaction_
    and the owner `User` + `TenantConfig` in the tenant schema (`role=owner`, `is_staff`),
    optionally seeds the niche template **as drafts**, then marks `ready`. Retries up to 3×.
 5. Frontend polls `GET /api/v1/onboarding/status/?slug=…` until `ready`.
+6. **Cancel / delete (coach-initiated).** Rules live in `apps/core/onboarding/cancel.py`
+   (`check_deletable` / `delete_platform`): refused (`409`, `detail` = code) for a live paid plan
+   (`paid_plan`), a connected Stripe account (`payments_connected`), a custom domain
+   (`custom_domain`) or an in-flight, non-stuck provisioning (`provisioning`). Otherwise the schema,
+   public rows and `tenants/<slug>/` media are removed. Two entry points, both needing
+   `{"confirm": "<slug>"}`: `DELETE /api/v1/me/tenants/<slug>/` (apex dashboard, owner by email;
+   `GET /me/tenants/` reports `delete_blocker`) and `POST /api/v1/admin/setup-flow/cancel/`
+   (tenant host, owner role only, only while `/setup` is active — "Cancel setup" in the setup menu).
+   The nightly abandoned-signup cleanup is separate.
 
 **Niche templates** live under `backend/apps/demo_seed/data/<niche>.json`
 (each carries `TENANT`, `CONFIG`, `COURSES`, `DOWNLOADS`, `SUBSCRIPTION_PLANS`, `BUNDLES`,

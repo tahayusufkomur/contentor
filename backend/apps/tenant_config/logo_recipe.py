@@ -34,7 +34,7 @@ MARK_FILL_ROLES = {"mark", "mark2", "accent"}
 MARK_CUSTOM_MAX_PATHS = 12
 MARK_CUSTOM_MAX_D_LEN = 12000
 # Generated (whole-logo) marks: a colour trace of an image-model logo, fills
-# as palette roles (apps.tenant_config.logo_vector). Sized for 30-170 paths.
+# as palette roles. No new ones are made; kept so stored logos still render.
 GENERATED_ROLES = {"background", "surface", "primary", "accent", "ink", "muted"}
 MARK_GENERATED_MAX_PATHS = 400
 MARK_GENERATED_MAX_TOTAL = 300_000

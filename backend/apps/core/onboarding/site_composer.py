@@ -32,6 +32,7 @@ import logging
 import re
 import secrets
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from uuid import uuid4
@@ -544,6 +545,52 @@ def _slot_specs(family) -> dict:
     return out
 
 
+# Where a photo's main subject must NOT be, per style, for the slots whose text
+# lies over the photo (read from <style>/hero.tsx etc.; values are
+# client.PLACEMENTS or client.NOT_CENTERED). None = the photo has its own
+# frame beside or below the text. The hero entry is the style's own first
+# hero layout; its compact "intro" variant frames the photo and simply gets a
+# stricter pick than it needs.
+_HERO_PLACEMENT = {
+    "atelier": None,  # photo in its own arch frame, right of the text
+    "darkroom": None,  # exhibition frame, label beside it
+    "dojo": None,  # photos in a grid under centred text
+    "encore": None,
+    "grid": None,
+    "journal": None,  # cover: photo column beside the text column
+    "kinetic": curated_client.NOT_CENTERED,  # full-bleed, headline bottom-left over a gradient
+    "ledger": None,
+    "maison": curated_client.NOT_CENTERED,  # headline centred along the bottom of the framed photo
+    "manuscript": None,
+    "nocturne": None,
+    "pop": curated_client.NOT_CENTERED,  # headline sticker over the middle of the collage
+    "primer": None,
+    "sanctum": None,
+    "sprout": None,
+    "studiofloor": "left_third",  # full-bleed, text card on the right
+    "tavola": None,
+    "terminal": None,
+    "trail": "right_third",  # full-bleed, text card bottom-left
+    "velvet": None,  # tall photo in its own column; only its faded left edge sits under the headline
+    "workshop": curated_client.NOT_CENTERED,  # headline card over the lower part of the polaroid
+}
+# Non-hero photos with text on them (every other style frames these).
+_OVERLAY_PLACEMENT = {
+    ("kinetic", "cta", "image"): "right_third",  # photo panel on the right, text on the left
+    ("kinetic", "philosophy", "image"): "right_third",  # full-bleed, left-aligned statement
+}
+
+
+def wanted_placement(style_id, family, slot) -> str | None:
+    """Where the photo for this slot must keep its subject so the text on the
+    layout never covers it: "left_third" (text lies over the right),
+    "right_third", or NOT_CENTERED (text along the bottom / over the middle).
+    None when the layout puts no text on the photo."""
+    if family == "hero":
+        return _HERO_PLACEMENT.get(style_id) if slot == "image" else None
+    return _OVERLAY_PLACEMENT.get((style_id, family, slot))
+
+
 # ── pass 1: site plan + guardrails ──────────────────────────────────────────
 
 
@@ -816,7 +863,31 @@ def _default_ideas(ctx) -> dict:
     }
 
 
+PLAN_LOCK_SECONDS = 360  # longer than a plan run with its wait for a free hub account (apps.core.ai)
+PLAN_WAIT_POLL_SECONDS = 2
+
+
 def plan_site(tenant, *, force=False) -> dict:
+    """The site plan (_plan_site), written once per coach at a time. Two page
+    builds that start together each ask for it; the second waits for the
+    first's instead of paying for the same two-minute run again (2026-10-12:
+    the pair held both hub accounts while the coach's own turns timed out)."""
+    lock = f"site-plan:writing:{tenant.schema_name}"
+    mine = cache.add(lock, 1, PLAN_LOCK_SECONDS)
+    if not mine:
+        give_up = time.monotonic() + PLAN_LOCK_SECONDS
+        while cache.get(lock) and time.monotonic() < give_up:
+            time.sleep(PLAN_WAIT_POLL_SECONDS)
+        tenant.refresh_from_db(fields=["wizard_state"])  # the plan the other run stored
+        mine = cache.add(lock, 1, PLAN_LOCK_SECONDS)
+    try:
+        return _plan_site(tenant, force=force)
+    finally:
+        if mine:
+            cache.delete(lock)
+
+
+def _plan_site(tenant, *, force=False) -> dict:
     """Pass 1 -> the site plan, cached in wizard_state["site_plan"]. A cached
     plan for another style is re-guarded onto the current one (briefs and voice
     kept). Never raises for AI trouble: failure falls back to the recipes with
@@ -1358,20 +1429,27 @@ def _queries(brief, ctx, photo_words) -> list[str]:
 POOL_PAGES = 3  # catalog pages per orientation per page build: up to 36 candidates for ~13 slots
 
 
-def _pool_candidates(pools: dict, topic: str, orientation: str, used: set) -> list:
-    """Unused candidates of ``orientation`` from the site's shared topic search,
-    one catalog page at a time, the next fetched only once every loaded image is
-    taken. Sibling pages building in parallel run the identical query, so the
-    client's Redis cache serves it to them: a whole site costs a handful of
-    searches instead of several per slot."""
-    state = pools.setdefault(orientation, {"images": [], "page": 0, "more": True})
+def _pool_candidates(pools: dict, topic: str, orientation: str, used: set, placement: str | None = None) -> list:
+    """Unused candidates of ``orientation`` (and, when given, a catalog
+    ``placement``) from the site's shared topic search, one catalog page at a
+    time, the next fetched only once every loaded image is taken. Sibling pages
+    building in parallel run the identical query, so the client's Redis cache
+    serves it to them: a whole site costs a handful of searches instead of
+    several per slot."""
+    state = pools.setdefault((orientation, placement), {"images": [], "page": 0, "more": True})
     while True:
         fresh = [i for i in state["images"] if i.asset_id not in used]
         if fresh or not state["more"] or state["page"] >= POOL_PAGES:
             return fresh
         state["page"] += 1
         try:
-            page = curated_client.search(topic, orientation=orientation, page=state["page"], per_page=SEARCH_PER_PAGE)
+            page = curated_client.search(
+                topic,
+                orientation=orientation,
+                subject_placement=placement,
+                page=state["page"],
+                per_page=SEARCH_PER_PAGE,
+            )
         except curated_client.CuratedImageError as exc:
             logger.warning("composer photo pool failed (%s): %s", topic[:60], exc)
             state["more"] = False
@@ -1381,38 +1459,62 @@ def _pool_candidates(pools: dict, topic: str, orientation: str, used: set) -> li
         state["more"] = page.has_next
 
 
-def _ranked(images, query: str, ctx) -> list:
-    """On-topic images, those sharing the most words with the slot's brief first
-    (local ranking: the catalog already filtered on the topic)."""
+def _ranked(images, query: str, ctx, wanted: str | None = None, allow_wrong: bool = False) -> list:
+    """On-topic images; a fitting subject placement first (a strong bonus), then
+    those sharing the most words with the slot's brief (local ranking: the
+    catalog already filtered on the topic). A photo whose subject would sit
+    under the slot's text is vetoed unless ``allow_wrong``, which only puts it
+    last."""
     want = ai_curate.tokens(query)
 
     def overlap(image) -> int:
         return len(want & ai_curate.tokens(f"{image.title} {image.description} {' '.join(image.tags or [])}"))
 
-    return sorted(ai_curate.on_topic_first(images, ctx["topic"], ctx["allowed"]), key=lambda i: -overlap(i))
+    rank = {i.asset_id: curated_client.placement_rank(wanted, i) for i in images}
+    kept = [
+        i for i in ai_curate.on_topic_first(images, ctx["topic"], ctx["allowed"]) if allow_wrong or rank[i.asset_id] < 2
+    ]
+    return sorted(kept, key=lambda i: (rank[i.asset_id], -overlap(i)))
 
 
-def _find_photo(queries, aspect, used, ctx, pools=None):
+def _find_photo(queries, aspect, used, ctx, pools=None, wanted=None):
     """(RemoteImage, tenant Photo) for a slot: the best unused image of the
     slot's orientation from the site's shared pool; the slot's own brief queries
     only when the pool has nothing left; a used image only when nothing else
     matches; (None, None) on failure. Never a photo of another discipline.
     Orientation, not exact aspect: the renderer cover-crops, and the exact-shape
-    page came back short so often that every query cost two searches."""
+    page came back short so often that every query cost two searches.
+
+    ``wanted`` is the placement the slot's text needs (see wanted_placement).
+    Each stage asks the catalog for it first, then without the filter, where
+    photos of unknown placement beat known-wrong ones; a known-wrong photo (the
+    subject under the text) is used only when nothing else exists at all."""
     pools = {} if pools is None else pools
     orientation = curated_client.orientation_of(aspect)
     taken = set(used)
-    candidates = _ranked(_pool_candidates(pools, ctx["topic"], orientation, taken), queries[0], ctx)
+    only = curated_client.placement_filter(wanted)
+    candidates = []
+    for placement in dict.fromkeys((only, None)):
+        candidates = _ranked(
+            _pool_candidates(pools, ctx["topic"], orientation, taken, placement), queries[0], ctx, wanted
+        )
+        if candidates:
+            break
     if not candidates:
         for query in queries:
             if query == ctx["topic"]:
                 continue  # that is the pool, already exhausted
-            try:
-                found = curated_client.search(query, orientation=orientation, per_page=SEARCH_PER_PAGE).results
-            except curated_client.CuratedImageError as exc:
-                logger.warning("composer photo search failed (%s): %s", query[:60], exc)
-                continue
-            candidates = [i for i in _ranked(found, query, ctx) if i.asset_id not in taken]
+            for placement in dict.fromkeys((only, None)):
+                try:
+                    found = curated_client.search(
+                        query, orientation=orientation, subject_placement=placement, per_page=SEARCH_PER_PAGE
+                    ).results
+                except curated_client.CuratedImageError as exc:
+                    logger.warning("composer photo search failed (%s): %s", query[:60], exc)
+                    continue
+                candidates = [i for i in _ranked(found, query, ctx, wanted) if i.asset_id not in taken]
+                if candidates:
+                    break
             if candidates:
                 break
     for image in candidates:
@@ -1420,8 +1522,13 @@ def _find_photo(queries, aspect, used, ctx, pools=None):
             return image, curated_cache.cache_remote_image(image)
         except curated_client.CuratedImageError:
             continue
-    # Everything on topic is already placed: repeat a pool photo rather than leave the slot empty.
-    for image in _ranked(pools.get(orientation, {}).get("images", []), queries[0], ctx):
+    # Everything on topic is already placed: repeat a pool photo rather than leave
+    # the slot empty — a fitting repeat before a fresh photo that would sit under the text.
+    seen = {}
+    for (pool_orientation, _placement), state in pools.items():
+        if pool_orientation == orientation:
+            seen.update({i.asset_id: i for i in state["images"]})
+    for image in _ranked(list(seen.values()), queries[0], ctx, wanted, allow_wrong=True):
         try:
             return image, curated_cache.cache_remote_image(image)
         except curated_client.CuratedImageError:
@@ -1435,7 +1542,7 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
     photo_words = (sections.style(style_id) or {}).get("photoWords", "")
     used = {a for key, ids in (plan.get("used_assets") or {}).items() if key != page_key for a in ids}
     placed = []
-    pools = {}  # orientation -> shared candidate pages for this page build
+    pools = {}  # (orientation, placement) -> shared candidate pages for this page build
     for block, entry in zip(blocks, entries, strict=True):
         family = entry["family"]
         specs = sections.families()[family]["fields"]
@@ -1454,7 +1561,14 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
                 continue
             brief = entry.get("images", {}).get(slot) or _generic_brief(family, slot, ctx)
             try:
-                image, photo = _find_photo(_queries(brief, ctx, photo_words), aspect, used | set(placed), ctx, pools)
+                image, photo = _find_photo(
+                    _queries(brief, ctx, photo_words),
+                    aspect,
+                    used | set(placed),
+                    ctx,
+                    pools,
+                    wanted_placement(style_id, family, slot),
+                )
             except Exception:  # an image must never take the page down
                 logger.exception("composer image failed for %s %s/%s", tenant.schema_name, page_key, slot)
                 image = photo = None

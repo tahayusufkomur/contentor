@@ -18,11 +18,11 @@ from .cx import views as cx_views
 from .demo_content import demo_content, erase_demo_content
 from .setup_flow_views import (
     setup_flow_build_page,
+    setup_flow_cancel,
     setup_flow_cover,
     setup_flow_draft,
     setup_flow_golive,
     setup_flow_import,
-    setup_flow_logo_more,
     setup_flow_logos,
     setup_flow_state,
     setup_flow_turn,
@@ -52,9 +52,9 @@ urlpatterns = [
     path("setup-flow/turn/", setup_flow_turn, name="setup-flow-turn"),
     path("setup-flow/import/", setup_flow_import, name="setup-flow-import"),
     path("setup-flow/logos/", setup_flow_logos, name="setup-flow-logos"),
-    path("setup-flow/logo-more/", setup_flow_logo_more, name="setup-flow-logo-more"),
     path("setup-flow/golive/", setup_flow_golive, name="setup-flow-golive"),
     path("setup-flow/cover/", setup_flow_cover, name="setup-flow-cover"),
+    path("setup-flow/cancel/", setup_flow_cancel, name="setup-flow-cancel"),
     path("demo-content/", demo_content, name="demo-content"),
     path("demo-content/erase/", erase_demo_content, name="demo-content-erase"),
     path("help-bot/chat/", help_bot_chat, name="help-bot-chat"),

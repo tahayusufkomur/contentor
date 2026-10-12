@@ -21,12 +21,13 @@ export interface SeedFromTemplateResponse {
  */
 export async function createPlatformAuthenticated(
   brandName: string,
+  aboutText = "",
 ): Promise<{ token: string }> {
   const res = await fetch("/api/v1/onboarding/signup/authenticated/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
-    body: JSON.stringify({ brand_name: brandName }),
+    body: JSON.stringify({ brand_name: brandName, about_text: aboutText }),
   });
   if (!res.ok) {
     let body: unknown = { detail: "Request failed" };
@@ -36,6 +37,56 @@ export async function createPlatformAuthenticated(
       // swallow parse failure
     }
     throw new ApiError(res.status, body as Record<string, unknown>);
+  }
+  return res.json();
+}
+
+export interface ExtractedFact {
+  field: string;
+  label: string;
+  value: string;
+  answers: string;
+}
+
+export interface ExtractDocResponse {
+  text: string;
+  facts: ExtractedFact[];
+  summary: string;
+}
+
+/**
+ * Extract plain text from an uploaded bio/CV/document (.pdf, .txt, .md)
+ * or normalize pasted text, and return real-time extracted facts.
+ */
+export async function extractDoc(
+  file?: File,
+  text?: string,
+): Promise<ExtractDocResponse> {
+  let body: FormData | string;
+  const headers: Record<string, string> = {};
+  if (file) {
+    const fd = new FormData();
+    fd.append("file", file);
+    if (text) fd.append("text", text);
+    body = fd;
+  } else {
+    headers["Content-Type"] = "application/json";
+    body = JSON.stringify({ text: text || "" });
+  }
+  const res = await fetch("/api/v1/onboarding/extract-doc/", {
+    method: "POST",
+    headers,
+    credentials: "same-origin",
+    body,
+  });
+  if (!res.ok) {
+    let errBody: unknown = { detail: "Request failed" };
+    try {
+      errBody = await res.json();
+    } catch {
+      // swallow parse failure
+    }
+    throw new ApiError(res.status, errBody as Record<string, unknown>);
   }
   return res.json();
 }

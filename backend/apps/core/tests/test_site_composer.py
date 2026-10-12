@@ -304,6 +304,30 @@ def test_plan_asks_only_for_photos_the_default_layouts_show():
 
 
 @pytest.mark.django_db
+def test_a_second_plan_request_waits_for_the_first_instead_of_paying_again(styled, monkeypatch):
+    """2026-10-12: two page builds started together and each ran the two-minute plan."""
+    from django.core.cache import cache
+
+    fake = FakeAI(plan={"pages": []})
+    monkeypatch.setattr(sc.core_ai, "structured", fake)
+    lock = f"site-plan:writing:{styled.schema_name}"
+    cache.set(lock, 1, 60)  # another worker is writing it
+
+    def other_run_lands(_seconds):
+        sc._store_plan(styled, {**sc.apply_guardrails({}, "journal"), "style": "journal", "voice": "theirs"})
+        cache.delete(lock)
+
+    monkeypatch.setattr(sc.time, "sleep", other_run_lands)
+    plan = sc.plan_site(styled)
+    assert plan["voice"] == "theirs" and fake.calls == [] and cache.get(lock) is None
+    cache.set(lock, 1, 60)  # a writer that never stored one (it failed): this request writes it
+    styled.wizard_state = {**styled.wizard_state, "site_plan": {}}
+    type(styled).objects.filter(pk=styled.pk).update(wizard_state=styled.wizard_state)
+    monkeypatch.setattr(sc.time, "sleep", lambda _s: cache.delete(lock))
+    assert sc.plan_site(styled)["source"] == "ai" and len(fake.calls) == 1
+
+
+@pytest.mark.django_db
 def test_plan_uses_ai_then_caches(styled, monkeypatch):
     brief = {"slot": "image", "subject": "woman in a low lunge", "action": "", "setting": "", "person": "woman, 40s"}
     fake = FakeAI(
@@ -624,3 +648,79 @@ def test_fallback_buttons_lead_to_the_coachs_main_offer():
     assert cta["ctaHref"] == "/events" and "course" not in (cta["text"] + cta["ctaLabel"]).lower()
     courses = sc._ctx("yoga", "Maya Laurent", "Slow vinyasa.")
     assert sc.fallback_fields("hero", "home", "journal.editorial", courses)["ctaHref"] == "/courses"
+
+
+def _placed(asset_id, placement, text="boxing gym"):
+    return curated_client.RemoteImage(
+        asset_id=asset_id,
+        title=text,
+        description=text,
+        tags=[],
+        width=800,
+        height=450,
+        preview_url="",
+        web_url="",
+        subject_placement=placement,
+    )
+
+
+def test_wanted_placement_covers_every_style_and_names_each_overlay_hero():
+    assert set(sc._HERO_PLACEMENT) == set(sections.styles())
+    assert sc.wanted_placement("studiofloor", "hero", "image") == "left_third"  # text card on the right
+    assert sc.wanted_placement("trail", "hero", "image") == "right_third"  # text card bottom-left
+    for style in ("kinetic", "maison", "pop", "workshop"):  # text along the bottom / over the middle
+        assert sc.wanted_placement(style, "hero", "image") == curated_client.NOT_CENTERED
+    assert sc.wanted_placement("kinetic", "cta", "image") == "right_third"
+    assert sc.wanted_placement("journal", "hero", "image") is None  # framed beside the text
+    assert sc.wanted_placement("studiofloor", "hero", "image2") is None
+    assert sc.wanted_placement("nope", "hero", "image") is None
+
+
+def test_an_overlay_slot_never_gets_a_centered_photo_when_a_fitting_one_exists(monkeypatch):
+    calls = []
+
+    def search(query, **kwargs):
+        calls.append(kwargs.get("subject_placement"))
+        pool = [_placed("mid", "centered"), _placed("left", "left_third"), _placed("right", "right_third")]
+        want = kwargs.get("subject_placement")
+        return curated_client.SearchPage(
+            results=[i for i in pool if not want or i.subject_placement == want], page=1, has_next=False
+        )
+
+    monkeypatch.setattr(sc.curated_client, "search", search)
+    monkeypatch.setattr(sc.curated_cache, "cache_remote_image", lambda image: SimpleNamespace(pk=image.asset_id))
+    ctx = sc._ctx("general", "Iron Fist", "Boxing for beginners", "boxing")
+    image, _ = sc._find_photo(["boxing"], "16:9", set(), ctx, wanted="left_third")
+    assert image.asset_id == "left" and calls == ["left_third"]  # filtered server-side, pool never unfiltered
+    # Bottom text: no filter to send, so the veto does the work.
+    image, _ = sc._find_photo(["boxing"], "16:9", set(), ctx, wanted=curated_client.NOT_CENTERED)
+    assert image.asset_id in {"left", "right"}
+
+
+def test_an_overlay_slot_falls_back_to_the_unfiltered_search_and_prefers_unknown_over_wrong(monkeypatch):
+    calls = []
+
+    def search(query, **kwargs):
+        calls.append(kwargs.get("subject_placement"))
+        if kwargs.get("subject_placement"):
+            return curated_client.SearchPage(results=[], page=1, has_next=False)
+        results = [_placed("mid", "centered"), _placed("wrong", "right_third"), _placed("unknown", None)]
+        return curated_client.SearchPage(results=results, page=1, has_next=False)
+
+    monkeypatch.setattr(sc.curated_client, "search", search)
+    monkeypatch.setattr(sc.curated_cache, "cache_remote_image", lambda image: SimpleNamespace(pk=image.asset_id))
+    ctx = sc._ctx("general", "Iron Fist", "Boxing for beginners", "boxing")
+    image, _ = sc._find_photo(["boxing"], "16:9", set(), ctx, wanted="left_third")
+    assert image.asset_id == "unknown"
+    assert calls[0] == "left_third" and None in calls  # the filtered rung ran, then the unfiltered one
+    # The only fitting photo is already placed: repeating it beats a fresh one under the text.
+    image, _ = sc._find_photo(["boxing"], "16:9", {"unknown"}, ctx, wanted="left_third")
+    assert image.asset_id == "unknown"
+    # Nothing but known-wrong photos exists: still a photo, never a refusal.
+    monkeypatch.setattr(
+        sc.curated_client,
+        "search",
+        lambda query, **k: curated_client.SearchPage(results=[_placed("mid", "centered")], page=1, has_next=False),
+    )
+    image, _ = sc._find_photo(["boxing"], "16:9", set(), ctx, wanted="left_third", pools={})
+    assert image.asset_id == "mid"

@@ -158,6 +158,8 @@ GUIDE_KEYS = (
     "contact",
     "address",
     "prefill",
+    "prefill_text",
+    "prefill_options",
     "timezone",
 )
 REVIEW_KINDS = ("course", "event")
@@ -191,6 +193,8 @@ def guide_for(
             "contact": False,
             "address": False,
             "prefill": {},
+            "prefill_text": None,
+            "prefill_options": [],
             "timezone": False,
         }
     # Fixed lists (offers, payments, memberships, the schedule) are what the answer is parsed
@@ -234,6 +238,8 @@ def guide_for(
         # The answer is a place and its street address, each in its own box.
         "address": field.kind == "address",
         "prefill": {},
+        "prefill_text": None,
+        "prefill_options": [],
         # The answer is a time zone, picked from the browser's list.
         "timezone": field.kind == "timezone",
     }
@@ -615,6 +621,7 @@ def run_turn(
     guide.update(membership_prices(guide["field"], answers))
     if also:
         guide["noted"] = also
+    _apply_prefills_to_guide(guide, nxt, tenant, answers)
 
     # Stamps for the funnel (manage.py setup_funnel): when she answered (the
     # request's arrival), how, and when and how fast the reply came.
@@ -650,10 +657,105 @@ def run_turn(
     return {"coach_text": text, "guide": guide, "edit": edit, "fired": fired, "state": setup_flow.state_body(tenant)}
 
 
+def _apply_prefills_to_guide(guide: dict, field: brief.Field | None, tenant, answers: dict) -> None:
+    """Pre-fills option checkmarks, text inputs, and details based on extracted bio facts.
+    Ensures questions are NOT skipped, but are pre-filled so the coach can review and confirm."""
+    if field is None or not isinstance(guide, dict):
+        return
+    state = tenant.wizard_state or {}
+    prefills = state.get("about_prefills") or {}
+    if not prefills:
+        return
+
+    val = prefills.get(field.id)
+    if not val or brief.is_settled(answers, field.id):
+        return
+
+    if picks := _prefill_picks(field, guide, (state.get("about_items") or {}).get(field.id)):
+        guide["prefill_options"] = picks
+        return
+
+    # Check for option matches
+    options = guide.get("options") or []
+    val_lower = str(val).lower()
+    matched = []
+    for opt in options:
+        opt_lower = opt.lower()
+        if opt_lower == val_lower or opt_lower in val_lower or (len(val_lower) > 3 and val_lower in opt_lower):
+            matched.append(opt)
+
+    if matched:
+        guide["prefill_options"] = matched
+    elif not getattr(field, "options", None) or getattr(field, "starter", False):
+        guide["prefill_text"] = str(val).strip()
+    else:
+        # Fixed list or multi where custom text wasn't in options (e.g. audience)
+        guide["prefill_text"] = str(val).strip()
+
+    if field.id == "location" or getattr(field, "kind", "") == "address":
+        prefill_dict = dict(guide.get("prefill") or {})
+        if "Place" not in prefill_dict:
+            prefill_dict["Place"] = str(val).strip()
+        guide["prefill"] = prefill_dict
+
+
+def _prefill_picks(field: brief.Field, guide: dict, items) -> list[str]:
+    """The About text's separate points as ticked tiles: the tile she is shown
+    when one says the same, else her own tile (a finished sentence on a
+    starter question) where she can add her own. Else nothing."""
+    tiles = {str(o).lower(): o for o in guide.get("options") or []}
+    picks: list[str] = []
+    for item in items or []:
+        pick = tiles.get(str(item).lower()) or (str(item) if field.custom else None)
+        if pick and pick not in picks:
+            picks.append(pick)
+    return picks
+
+
+def apply_initial_about(tenant, text: str) -> bool:
+    """Extract facts from coach's bio/CV and save them as PREFILLS for the interview.
+    Does NOT settle the brief answers directly, ensuring all steps are visited in order
+    with their answers intelligently prefilled for the coach to review and confirm."""
+    clean = (text or "").strip()
+    if not clean:
+        return False
+
+    from apps.core.onboarding import about_check
+
+    try:
+        analysis = about_check.analyze(clean)
+        facts = analysis.get("facts") or []
+        if not facts:
+            return False
+
+        prefills, items = {}, {}
+        for item in facts:
+            f = item.get("field")
+            v = item.get("value")
+            if f and v:
+                prefills[f] = v
+                if item.get("items"):
+                    items[f] = item["items"]
+
+        if not prefills:
+            return False
+
+        state = dict(tenant.wizard_state or {})
+        state["about_prefills"] = prefills
+        state["about_items"] = items
+        state["initial_about_done"] = True
+        state.pop("initial_about", None)
+        tenant.wizard_state = state
+        tenant.save(update_fields=["wizard_state"])
+        return True
+    except Exception:
+        logger.exception("apply_initial_about failed for %s", tenant.slug)
+        return False
+
+
 def interview_state(tenant, flow: dict) -> dict:
     from . import interview_golive
     from . import interview_milestones as milestones
-    from .logo_gen import pipeline
 
     answers = brief.answers_of(tenant)
     iv = flow.get("interview") or {}
@@ -676,6 +778,7 @@ def interview_state(tenant, flow: dict) -> dict:
     guide["plan"] = interview_golive.plan_badge(tenant, guide["field"])  # live: a plan bought since hides it
     guide["prefill"] = prefill_for(guide["field"], answers)
     guide.update(membership_prices(guide["field"], answers))  # hers now, also on a question gone back to
+    _apply_prefills_to_guide(guide, brief.FIELD_BY_ID.get(guide["field"] or ""), tenant, answers)
     guide["cards"] = milestones.cards_for(tenant, answers, guide["field"])
     fired = list(iv.get("fired") or [])
     # Fresh cards for look questions already behind the coach, so going back
@@ -699,7 +802,6 @@ def interview_state(tenant, flow: dict) -> dict:
         "guide": guide,
         "cards": cards,
         "remaining": len(missing),
-        "logo_batch": {"state": pipeline.batch_state(tenant).get("state") or "none"},
         "phase": "golive" if not missing else "building" if "page:home" in fired else "interview",
         "fired": fired,
         "draft_status": flow.get("draft_status") or {},

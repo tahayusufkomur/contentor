@@ -113,6 +113,70 @@ def test_search_shaped_asks_for_the_exact_ratio_then_the_orientation(live_client
     assert filters == [{"orientation": "portrait"}]
 
 
+def test_search_sends_the_subject_placement_next_to_the_orientation(live_client, monkeypatch):
+    bodies = []
+
+    def _request(method, url, json=None, headers=None, timeout=None):
+        bodies.append(json)
+        return _Response(payload={"data": [], "pagination": {}})
+
+    monkeypatch.setattr(requests, "request", _request)
+    client.search("yoga", orientation="landscape", subject_placement="left_third")
+    client.search("yoga", aspect_ratio="16:9", subject_placement="right_third")
+    client.search("yoga", subject_placement="not_centered")  # client-side rule: never sent (the service 400s)
+    client.search("yoga", subject_placement="bogus")
+    assert [b.get("filters") for b in bodies] == [
+        {"orientation": "landscape", "subject_placement": "left_third"},
+        {"aspect_ratio": "16:9", "subject_placement": "right_third"},
+        None,
+    ]
+    assert len(bodies) == 3  # the bogus value hit the cache the unfiltered call filled
+
+
+def test_the_cache_key_changes_with_the_subject_placement():
+    keys = {client._cache_key("yoga", "landscape", 1, 12, p) for p in (None, "left_third", "right_third")}
+    assert len(keys) == 3
+
+
+def test_remote_image_parses_the_subject_placement_or_none(live_client, monkeypatch):
+    payloads = [
+        _image_payload("a", subject_placement="left_third"),
+        _image_payload("b", subject_placement=None),
+        _image_payload("c"),
+        _image_payload("d", subject_placement="somewhere"),
+    ]
+    monkeypatch.setattr(requests, "request", lambda *a, **k: _Response(payload={"data": payloads, "pagination": {}}))
+    assert [i.subject_placement for i in client.search("yoga").results] == ["left_third", None, None, None]
+
+
+def test_search_or_browse_retries_without_the_placement_when_nothing_matches(monkeypatch):
+    seen = []
+
+    def fake_search(query="", **kwargs):
+        seen.append((query, kwargs.get("subject_placement")))
+        results = [] if kwargs.get("subject_placement") else [client.RemoteImage("a", "", "", [], 1, 1, "", "")]
+        return client.SearchPage(results=results, page=1, has_next=False)
+
+    monkeypatch.setattr(client, "search", fake_search)
+    page = client.search_or_browse("yoga", subject_placement="left_third")
+    assert [i.asset_id for i in page.results] == ["a"]
+    assert seen == [("yoga", "left_third"), ("yoga", None)]
+
+
+def test_placement_rank_orders_fitting_then_unknown_then_wrong():
+    def img(placement):
+        return client.RemoteImage("x", "", "", [], 1, 1, "", "", subject_placement=placement)
+
+    ranks = lambda wanted, *placements: [client.placement_rank(wanted, img(p)) for p in placements]  # noqa: E731
+    assert ranks("left_third", "left_third", None, "off_center", "centered", "right_third") == [0, 1, 1, 2, 2]
+    assert ranks(client.NOT_CENTERED, "off_center", "right_third", None, "centered") == [0, 0, 1, 2]
+    assert ranks(None, "centered", None) == [0, 0]
+
+
+def test_the_fixture_catalog_reports_no_placement():
+    assert all(i.subject_placement is None for i in fake.search("", orientation=None, page=1, per_page=50).results)
+
+
 def test_search_omits_an_empty_query_so_the_catalog_browses(live_client, monkeypatch):
     bodies = []
 

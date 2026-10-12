@@ -227,8 +227,7 @@ function Flow({
   const started = iv.phase !== "interview";
   const working =
     Object.values(flow.page_builds).some((b) => b.status === "building") ||
-    Object.values(iv.draft_status).some((s) => s === "building") ||
-    iv.logo_batch?.state === "building";
+    Object.values(iv.draft_status).some((s) => s === "building");
   const activity = activityLine(flow.page_builds, iv.draft_status);
 
   const refresh = useCallback(async () => {
@@ -543,7 +542,7 @@ function Flow({
               <span className="sr-only md:hidden">{activity}</span>
             </p>
           )}
-          <SetupMenu email={email} />
+          <SetupMenu email={email} slug={flow.slug} />
         </header>
         {peek && (
           <ModalPortal>
@@ -619,11 +618,6 @@ function Flow({
               onSend={(req) => void send(req)}
               onShare={shareDoc}
               onMoreLogos={api.logos}
-              onLogoMore={async () => {
-                const cards = await api.logoMore();
-                await refresh(); // the poll starts once the batch shows as building
-                return cards;
-              }}
               onCover={async (kind, asset) => {
                 await api.cover(kind, asset);
                 await refresh();
@@ -672,7 +666,7 @@ function Flow({
         )}
       </main>
       <GoLivePanel
-        menu={<SetupMenu email={email} />}
+        menu={<SetupMenu email={email} slug={flow.slug} />}
         onSeeSite={narrow ? () => setTab("preview") : undefined}
         host={host}
         guide={guide}

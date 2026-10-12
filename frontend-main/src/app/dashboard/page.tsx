@@ -9,6 +9,7 @@ import { getAuthUser } from "@/lib/auth";
 import { getMyTenants, type MyTenant } from "@/lib/tenants";
 import { PublishControls } from "@/components/dashboard/publish-controls";
 import { PlatformCardDomainCta } from "@/components/dashboard/platform-card-domain-cta";
+import { DeletePlatform } from "@/components/dashboard/delete-platform";
 
 const STATUS_COPY: Record<
   MyTenant["provisioning_status"],
@@ -69,7 +70,7 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
         </span>
       </div>
 
-      <div className="mt-7 flex items-center gap-2">
+      <div className="mt-7 flex flex-wrap items-center gap-2">
         {isReady ? (
           <Button asChild variant="brand" size="sm" className="gap-1.5">
             <a href={tenant.studio_url}>
@@ -86,6 +87,11 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
           <a href={tenant.studio_url}>Preview</a>
         </Button>
         <PlatformCardDomainCta slug={tenant.slug} />
+        <DeletePlatform
+          slug={tenant.slug}
+          name={tenant.name}
+          blocker={tenant.delete_blocker}
+        />
       </div>
 
       {isReady && (

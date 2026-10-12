@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Type, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import type { SiteStyle } from "@shared/sections/types";
@@ -113,7 +112,6 @@ export function LookCardsView({
   delay = 0,
   onPick,
   onMore,
-  onLogoMore,
   onKeep,
 }: {
   cards: LookCards;
@@ -125,8 +123,6 @@ export function LookCardsView({
   delay?: number;
   onPick: (value: string, label: string) => void;
   onMore: (page: number) => Promise<LookCards>;
-  /** Starts three more generated logos (the parent refreshes the card). */
-  onLogoMore?: () => Promise<LookCards>;
   /** "Keep this look" in the preview: the picked look is the answer. */
   onKeep: () => void;
 }) {
@@ -154,12 +150,6 @@ export function LookCardsView({
   const { run: more, loading } = useAsyncAction(
     async () => setShown(await onMore((shown.page ?? 0) + 1)),
     { errorToast: "Couldn’t load more logos. Try again." },
-  );
-  const { run: logoMore, loading: moreLoading } = useAsyncAction(
-    async () => {
-      await onLogoMore?.();
-    },
-    { errorToast: "Couldn’t start more logos. Try again." },
   );
   const isPicked = (value: string, label: string) =>
     chosen
@@ -379,70 +369,8 @@ export function LookCardsView({
   // picked: the logo as it will sit in their header.
   const look = getSiteStyle(shown.style ?? "");
   const markColor = look ? styleVars(look, shown.palette).primary : undefined;
-  // Read from ``cards``, not ``shown``: the batch lands while the card is open.
-  const generated = cards.generated;
   return (
     <div className="mt-8">
-      {generated && generated.state !== "none" && (
-        <section className="mb-8" aria-label="Designed for you">
-          <p className="mb-3 text-[13px] font-medium text-[var(--sf-graphite)]">
-            {generated.state === "ready"
-              ? "Designed for you"
-              : "Designing your logo"}
-          </p>
-          {generated.state === "building" ? (
-            <>
-              <div className="grid grid-cols-3 gap-3 sm:gap-4">
-                {[0, 1, 2].map((i) => (
-                  <Skeleton key={i} className="aspect-[4/3] rounded-lg" />
-                ))}
-              </div>
-              <p className="mt-3 text-xs text-[var(--sf-graphite)]">
-                Designing your logo, about two minutes. Pick a ready-made mark
-                below meanwhile, or wait.
-              </p>
-            </>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-                {generated.options.map((o, i) => (
-                  <CardButton
-                    key={o.value}
-                    picked={isPicked(o.value, o.label)}
-                    disabled={disabled}
-                    onClick={() => onPick(o.value, o.label)}
-                    style={enter(i)}
-                    className="p-2"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={o.image_url}
-                      alt={o.label}
-                      className="aspect-[4/3] w-full rounded-lg object-contain"
-                    />
-                    <span className="mt-2 block truncate text-center text-[13px]">
-                      {o.label}
-                    </span>
-                  </CardButton>
-                ))}
-              </div>
-              {onLogoMore && (
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  loading={moreLoading}
-                  loadingText="Starting…"
-                  disabled={disabled}
-                  onClick={() => logoMore()}
-                  className="mt-3 rounded-full"
-                >
-                  Three more
-                </Button>
-              )}
-            </>
-          )}
-        </section>
-      )}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {shown.options.map((o: LookOption, i) => (
           <CardButton

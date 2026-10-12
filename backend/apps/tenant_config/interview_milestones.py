@@ -13,7 +13,6 @@ import logging
 import re
 import uuid
 
-from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
 from django_tenants.utils import schema_context
@@ -57,8 +56,6 @@ def _due(tenant, answers) -> list[str]:
     if not brief.settled(answers, PAGE_NEEDS["home"]):
         return []
     due = ["style:auto", "page:home", "rank:logos"]
-    if settings.LOGO_GEN_ENABLED:
-        due.append("logo:generate")
     due += [f"page:{p}" for p in ("about", "contact", "faq") if brief.settled(answers, PAGE_NEEDS[p])]
     # A coach who runs classes gets an Events page once the class section
     # is answered or skipped.
@@ -123,10 +120,6 @@ def _start(tenant, answers, key) -> None:
         start_page_build(tenant, arg)
     elif action == "rank":
         transaction.on_commit(lambda: tasks.rank_curated_logos.delay(tenant_id))
-    elif action == "logo":
-        from .logo_gen import pipeline
-
-        pipeline.start_batch(tenant)
     elif action == "plan":
         create_memberships(tenant, answers)
     elif action == "draft":
@@ -633,37 +626,6 @@ def hero_line(answers: dict) -> str:
     return " ".join(parts)[:300]
 
 
-def generated_logos(tenant) -> dict:
-    """The current generated batch for the logo card: ready candidates in
-    rank order, a building marker, or nothing."""
-    from apps.core.storage import generate_presigned_download_url
-
-    from .logo_gen import pipeline
-    from .models import LogoCandidate
-
-    batch = pipeline.batch_state(tenant)
-    state = batch.get("state")
-    if state == "building":
-        return {"state": "building", "options": []}
-    if state != "ready":
-        return {"state": "none", "options": []}
-    rows = (
-        LogoCandidate.objects.filter(batch=batch.get("id"), state="ready", png__isnull=False)
-        .select_related("png")
-        .order_by("rank", "position")
-    )
-    options = [
-        {
-            "value": f"gen:{r.pk}",
-            "label": r.concept[:60],
-            "image_url": generate_presigned_download_url(r.png.s3_key),
-            "rank": r.rank,
-        }
-        for r in rows
-    ]
-    return {"state": "ready" if options else "none", "options": options}
-
-
 def logo_cards(tenant, answers: dict, page: int = 0) -> dict:
     from apps.core.copilot.logos import mark_of, preview_url
     from apps.core.models import CuratedLogo
@@ -688,7 +650,6 @@ def logo_cards(tenant, answers: dict, page: int = 0) -> dict:
         "brand": tenant.name or "",
         "style": answers.get("style") or "",
         "palette": answers.get("palette") or "",
-        "generated": generated_logos(tenant),
     }
 
 
@@ -844,20 +805,15 @@ def apply_style(tenant, style_id: str, palette: str = "") -> None:
     """Same effect as the copilot's edit_style: every block takes the style's
     layout (no AI), the colourway is set, and the `look` publish blocker clears."""
     from . import sections
-    from .logo_gen import pipeline
 
     with transaction.atomic():
         cfg = TenantConfig.objects.select_for_update().first()
-        changed = (cfg.style, cfg.palette) != (style_id, palette)
         cfg.style = style_id
         cfg.palette = palette
         cfg.pages = sections.restyle_pages(cfg.pages or {}, style_id)
         cfg.setup_progress = {**(cfg.setup_progress or {}), "look_edited": True}
         cfg.save(update_fields=["style", "palette", "pages", "setup_progress"])
     _bust(tenant)
-    # The palette is inside a generated logo: a new look needs a new batch.
-    if changed and (tenant.wizard_state or {}).get("logo_batch"):
-        pipeline.start_batch(tenant)
 
 
 def apply_logo(tenant, answers: dict) -> None:
@@ -865,8 +821,8 @@ def apply_logo(tenant, answers: dict) -> None:
 
     with transaction.atomic():
         cfg = TenantConfig.objects.select_for_update().first()
-        # Switching logos clears the last one's parts: a picked mark, and a
-        # generated logo's favicon and recipe.
+        # Switching logos clears the last one's parts: a picked mark's
+        # favicon and recipe.
         cfg.logo = cfg.icon = None
         cfg.logo_url = cfg.icon_url = ""
         cfg.logo_recipe = {}
@@ -1009,16 +965,6 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
             if not Photo.objects.filter(pk=photo_id).exists():
                 raise ChoiceError("unknown_logo")
             logo = {"mode": "upload", "photo_id": photo_id}
-        elif str(value).startswith("gen:"):
-            from .models import LogoCandidate
-
-            try:
-                candidate_id = int(str(value)[4:])
-            except ValueError:
-                raise ChoiceError("unknown_logo") from None
-            if not LogoCandidate.objects.filter(pk=candidate_id, state="ready", png__isnull=False).exists():
-                raise ChoiceError("unknown_logo")
-            logo = {"mode": "generated", "candidate_id": candidate_id}
         else:
             try:
                 logo_id = int(value)

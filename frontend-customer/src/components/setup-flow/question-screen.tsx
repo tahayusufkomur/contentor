@@ -17,6 +17,7 @@ import {
   noteOf,
   ownPicked,
   pickedOptions,
+  prefilledPicks,
   planLabel,
   scheduleSummary,
   scheduleValid,
@@ -73,7 +74,6 @@ export function QuestionScreen({
   onSend,
   onShare,
   onMoreLogos,
-  onLogoMore,
   onCover,
   onNext,
   dir,
@@ -97,16 +97,22 @@ export function QuestionScreen({
   /** Which way the slide came from: forward, or back to an earlier question. */
   dir: "next" | "back";
   onMoreLogos: (page: number) => Promise<LookCards>;
-  onLogoMore: () => Promise<LookCards>;
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
   /** Move on to the next question without answering this one again. */
   onNext: () => void;
 }) {
   const multi = !!step.multi && step.options.length > 1;
+  const prefill = live ? prefilledPicks(step) : { tiles: [], own: [] };
   // Own options: the ones sent with the answer, plus any added but not sent.
-  const own = step.custom && multi ? (draft.custom ?? ownPicked(step)) : [];
+  const own =
+    step.custom && multi
+      ? (draft.custom ?? [...ownPicked(step), ...prefill.own])
+      : [];
   const shown = [...step.options, ...own];
-  const picked = [...pickedOptions(step), ...ownPicked(step)];
+  const pastPicked = [...pickedOptions(step), ...ownPicked(step)];
+  const picked = pastPicked.length
+    ? pastPicked
+    : [...prefill.tiles, ...prefill.own].filter((o) => shown.includes(o));
   const ticked = draft.ticked ?? picked;
   // A starter card's sentence: the coach's own once typed, else the starter
   // as it opens. A starter counts as finished only once the coach has
@@ -128,6 +134,10 @@ export function QuestionScreen({
     : null;
   // A typed answer (not a tile, a card, a picked zone or "you decide") goes
   // back in the box, and so does the note sent with picked tiles.
+  const defaultTyped =
+    live && !step.answer && !cards && !step.address
+      ? (step.prefill_text ?? "")
+      : "";
   const typed =
     live ||
     cards ||
@@ -135,7 +145,7 @@ export function QuestionScreen({
     step.address ||
     !step.answer ||
     step.answer === DELEGATE_TEXT
-      ? ""
+      ? defaultTyped
       : picked.length
         ? noteOf(step.answer)
         : step.answer;
@@ -466,7 +476,6 @@ export function QuestionScreen({
                   delay={answersAt}
                   onMore={onMoreLogos}
                   onKeep={() => proceed()}
-                  onLogoMore={onLogoMore}
                   onPick={(value, label) =>
                     onDraft((d) => ({ ...d, card: { value, label } }))
                   }
@@ -500,6 +509,7 @@ export function QuestionScreen({
                           starter={o}
                           text={textOf(o)}
                           selected={on}
+                          finished={finished(o)}
                           disabled={sending}
                           delay={answersAt + Math.min(i, 15) * 32}
                           onToggle={() => toggle(o)}

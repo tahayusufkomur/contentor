@@ -59,6 +59,7 @@ class _Hub:
         self.events_error = None
         self.polls = 0
         self.active = []  # what GET /runs lists
+        self.effective_priority = None  # set: the hub's own rule for the run type, as its reply carries it
 
     def post(self, url, json=None, timeout=None):
         assert timeout is not None
@@ -68,7 +69,8 @@ class _Hub:
         run_id = f"run-{len(self.created) + 1}"
         self.created.append(json)
         self.create_urls.append(url)
-        return _Resp({"id": run_id, "state": self.create_state})
+        rule = {"priority": self.effective_priority} if self.effective_priority else {}
+        return _Resp({"id": run_id, "state": self.create_state, **rule})
 
     def get(self, url, params=None, timeout=None, stream=False):
         assert timeout is not None
@@ -272,59 +274,25 @@ def test_per_call_timeout_beats_the_global_one(hub, settings):
     assert hub.cancelled == ["run-1"]
 
 
-def test_max_effort_runs_the_pro_model(hub, settings):
-    settings.AGENTC_PRO_MODEL = "gemini-3.1-pro-high"
-    _call(effort="max")
-    assert hub.created[0]["model"] == "gemini-3.1-pro-high"
+# ---- what the coach does not wait for runs as background ------------------------
 
 
-def test_image_run_allows_tools_and_returns_the_run_id(hub, settings):
-    settings.AGENTC_IMAGE_TIMEOUT_SECONDS = 420
-    hub.results = ['{"file": "logo-candidates/t/b/cand_1.png", "image_model": "imagen-3"}']
-    hub.events = ("tool", "text")  # the image subagent is a tool call
-    run_id = ai.agentc_image_run("Design a logo.", "logo-candidates/t/b/cand_1.png", label="contentor:logo-gen")
-    assert run_id == "run-1"
-    body = hub.created[0]
-    # Logo renders yield to the coach's interview turns on the shared hub: a
-    # batch of them made her next question time out (2026-10-10 walk).
-    assert body["timeoutSec"] in (419, 420) and body["priority"] == "background"
-    assert "Save the generated image as logo-candidates/t/b/cand_1.png" in body["prompt"]
-    assert body["prompt"].startswith("Use your image generation tool")
+def test_site_composition_and_turns_written_ahead_are_asked_as_background(hub):
+    hub.results *= 4
+    for label in ("contentor:compose-plan", "contentor:compose-page", "contentor:interview-ahead"):
+        _call(label=label)
+    _call(label="contentor:interview")
+    assert [body["priority"] for body in hub.created] == ["background"] * 3 + ["interactive"]
 
 
-def test_vision_run_uses_the_pro_model_and_tolerates_tools(hub, settings):
-    settings.AGENTC_PRO_MODEL = "gemini-3.1-pro-high"
-    hub.results = ['{"ranking": [1]}']
-    hub.events = ("tool", "text")
-    assert ai.agentc_vision_run("Open a.png and rank.", label="contentor:logo-judge") == '{"ranking": [1]}'
-    assert hub.created[0]["model"] == "gemini-3.1-pro-high"
-
-
-def test_run_file_fetches_through_the_hub(hub, monkeypatch, settings):
-    settings.AGENTC_RUNS_DIR = ""
-    seen = {}
-
-    def get(url, params=None, timeout=None, stream=False):
-        seen["url"], seen["params"] = url, params
-        resp = _Resp({}, status=200)
-        resp.content = b"\x89PNG"
-        return resp
-
-    monkeypatch.setattr(ai.requests, "get", get)
-    assert ai.agentc_run_file("run-1", "logo-candidates/t/b/cand_1.png") == b"\x89PNG"
-    assert seen["url"].endswith("/runs/run-1/file") and seen["params"] == {"path": "logo-candidates/t/b/cand_1.png"}
-
-
-def test_run_file_missing_raises(hub, monkeypatch, settings):
-    settings.AGENTC_RUNS_DIR = ""
-    monkeypatch.setattr(ai.requests, "get", lambda *a, **k: _Resp({"error": "no such file"}, status=404))
-    with pytest.raises(ai.AiError):
-        ai.agentc_run_file("run-1", "nope.png")
-
-
-def test_run_file_reads_the_local_mount_when_configured(hub, settings, tmp_path, monkeypatch):
-    settings.AGENTC_RUNS_DIR = str(tmp_path)
-    monkeypatch.setattr(ai, "AGENTC_FILE_POLL_SECONDS", 0)
-    (tmp_path / "x").mkdir()
-    (tmp_path / "x" / "cand_1.png").write_bytes(b"\x89PNGlocal")
-    assert ai.agentc_run_file("run-1", "x/cand_1.png") == b"\x89PNGlocal"
+def test_a_hub_rule_that_overrides_the_priority_is_logged(hub, monkeypatch):
+    """2026-10-12: the hub's rules ran every compose type as interactive, so two
+    site plans held both accounts and the coach's own turns were cancelled."""
+    said = []
+    monkeypatch.setattr(ai.logger, "warning", lambda message, *args: said.append(message % args))
+    hub.results *= 2
+    hub.effective_priority = "interactive"
+    _call(label="contentor:interview")  # asked and run as interactive: nothing to say
+    assert said == []
+    _call(label="contentor:compose-plan")
+    assert "was asked as background and the hub runs it as interactive" in said[0]

@@ -250,6 +250,8 @@ export function questionSteps(
           plan,
           contact,
           prefill,
+          prefill_text,
+          prefill_options,
           timezone,
           prices,
           sign,
@@ -277,6 +279,8 @@ export function questionSteps(
           plan,
           contact,
           prefill,
+          prefill_text,
+          prefill_options,
           timezone,
           prices,
           sign,
@@ -384,6 +388,27 @@ export function ownPicked(step: QuestionStep): string[] {
     .split(", ")
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+/** What the About text she shared at signup pre-ticks on a question she has
+ * not answered: the tiles that match one it names (as shown), and her own
+ * tiles for the points no tile says, where she can add her own (a finished
+ * sentence on a starter question). Else nothing. */
+export function prefilledPicks(step: QuestionStep): {
+  tiles: string[];
+  own: string[];
+} {
+  const tiles: string[] = [];
+  const own: string[] = [];
+  if (step.answer) return { tiles, own };
+  for (const pick of step.prefill_options ?? []) {
+    const tile = step.options.find(
+      (o) => o.toLowerCase() === pick.toLowerCase(),
+    );
+    if (tile) tiles.push(tile);
+    else if (step.custom) own.push(pick);
+  }
+  return { tiles, own };
 }
 
 // ---- Class schedules -------------------------------------------------------

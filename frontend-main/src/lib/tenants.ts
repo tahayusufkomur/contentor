@@ -14,6 +14,14 @@ export interface MyTenant {
   domain: string;
   studio_url: string;
   created_at: string;
+  /** Why the coach can't delete this platform (null = they can). */
+  delete_blocker:
+    | "paid_plan"
+    | "payments_connected"
+    | "custom_domain"
+    | "provisioning"
+    | "not_deletable"
+    | null;
 }
 
 export async function getMyTenants(): Promise<MyTenant[]> {

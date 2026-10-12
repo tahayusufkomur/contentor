@@ -369,6 +369,16 @@ def test_offers_guide_is_multi_with_the_full_offer_list():
     assert len(many) == interview.MAX_OPTIONS
 
 
+def test_model_written_questions_still_show_tiles_when_the_ai_is_down():
+    from apps.tenant_config import interview_brief as brief
+
+    for field_id in ("outcome", "difference", "story", "credentials"):
+        guide = interview.guide_for(brief.FIELD_BY_ID[field_id])  # no turn: the pre-written question
+        assert 4 <= len(guide["options"]) <= interview.MAX_OPTIONS and guide["icons"], field_id
+    # ...and a turn that did come back still wins.
+    assert interview.guide_for(brief.FIELD_BY_ID["outcome"], options=["Sleep better"])["options"] == ["Sleep better"]
+
+
 def test_fixed_options_carry_icons_and_hints(client, tenant_ctx):
     from apps.tenant_config import interview_brief as brief
 
@@ -903,3 +913,51 @@ def test_a_shared_file_after_setup_finished_is_refused(client, config, quiet):
     config.save()
     assert client.post(IMPORT_URL, {"text": BIO}, format="json").status_code == 409
     assert quiet.calls == []
+
+
+def test_about_prefills_populate_guide_without_skipping_steps(tenant_ctx, config):
+    tenant_ctx.wizard_state = {
+        "flow": "interview",
+        "answers": {},
+        "about_prefills": {
+            "teaches": "Face yoga and yoga",
+            "audience": "A community of women",
+            "story": "I found face yoga after my PhD.",
+            "location": "Studio 4",
+        },
+    }
+    tenant_ctx.save(update_fields=["wizard_state"])
+
+    state = interview.interview_state(tenant_ctx, config.setup_flow)
+    assert state["guide"]["field"] == "teaches"
+    assert any("yoga" in opt.lower() for opt in state["guide"]["prefill_options"])
+    assert state["remaining"] > 0
+    assert tenant_ctx.wizard_state["answers"] == {}
+
+
+def test_about_items_become_ticked_tiles(tenant_ctx):
+    from apps.tenant_config import interview_brief as brief
+
+    tenant_ctx.wizard_state = {
+        "about_prefills": {"audience": "Beginners and women over 50", "credentials": "Certified", "tone": "Warm"},
+        "about_items": {
+            "audience": ["complete beginners", "Women over 50"],
+            "credentials": ["Certified face yoga method instructor since 2021.", "BBM Level 1."],
+            "tone": ["Warm", "Elegant"],
+        },
+    }
+
+    def guide_for(field_id, options):
+        guide = {"options": options}
+        interview._apply_prefills_to_guide(guide, brief.FIELD_BY_ID[field_id], tenant_ctx, {})
+        return guide
+
+    # A tile she is shown is ticked as shown; what no tile says becomes her own tile.
+    audience = guide_for("audience", ["Complete beginners", "Parents"])
+    assert audience["prefill_options"] == ["Complete beginners", "Women over 50"]
+    # A starter question: each point is a finished sentence, never the whole text in the box.
+    credentials = guide_for("credentials", ["I trained in…"])
+    assert credentials["prefill_options"] == ["Certified face yoga method instructor since 2021.", "BBM Level 1."]
+    assert credentials.get("prefill_text") is None
+    # A fixed list takes only its own tiles.
+    assert guide_for("tone", list(brief.FIELD_BY_ID["tone"].options))["prefill_options"] == ["Warm"]

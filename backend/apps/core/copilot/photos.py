@@ -64,6 +64,12 @@ FIELD_ORIENTATIONS = {
     "eventCover": None,
 }
 
+# Where the subject must not sit, per field: a hero background carries centred
+# text on a scrim, so a subject in the middle of the frame is hidden behind it.
+FIELD_PLACEMENTS = {
+    "bgImage": "not_centered",  # curated_images.client.NOT_CENTERED
+}
+
 CANDIDATE_LIMIT = 24
 
 # One catalog search session per subject (a block, course or event), so
@@ -159,6 +165,7 @@ def pick_photo(description, tenant, *, field, exclude_s3_key=None, subject=""):
 
     brief = CoachBrief.from_tenant(tenant)
     orientation = FIELD_ORIENTATIONS.get(field)
+    wanted = FIELD_PLACEMENTS.get(field)
     # "Try another" excludes whatever is on the block now. The cached tenant key
     # still carries the catalog asset id, so no extra bookkeeping is needed.
     excluded = asset_id_from_key(exclude_s3_key or "")
@@ -179,15 +186,23 @@ def pick_photo(description, tenant, *, field, exclude_s3_key=None, subject=""):
     # session to spend and takes the whole ranked page.
     per_page = 1 if subject else CANDIDATE_LIMIT
     best = None  # rank one of the first query tried, for the fully-exhausted case
-    for index in range(min(level, len(queries) - 1), len(queries)):
+    wrong = None  # the first known-wrong shot (subject under the text), used only if nothing else exists
+    last = len(queries) - 1
+    for index in range(min(level, last), len(queries)):
         query = queries[index]
+        # The catalog is asked for the placement on every rung but the last, so
+        # an empty niche still gets a photo.
+        placement = curated_client.placement_filter(wanted) if index < last else None
         # Twice at most: a second look only if the one image offered is the very
-        # photo already on the block, which the session now excludes anyway.
-        for _attempt in (1, 2):
+        # photo already on the block, which the session now excludes anyway — or,
+        # for a rotation that cannot ask for the placement, one that hides the
+        # subject (a third look).
+        for _attempt in range(3 if wanted else 2):
             try:
                 page = curated_client.search_or_browse(
                     query,
                     orientation=orientation,
+                    subject_placement=placement,
                     page=1,
                     per_page=per_page,
                     session_id=session_id,
@@ -196,20 +211,24 @@ def pick_photo(description, tenant, *, field, exclude_s3_key=None, subject=""):
             except curated_client.CuratedImageError as exc:
                 raise PhotoOpError(str(exc)) from exc
             session_id = page.session_id or session_id
-            candidates = [image for image in page.results if image.asset_id != excluded]
-            if best is None and candidates:
-                best = candidates[0]
-            if candidates and not page.shuffle_cycle_restarted:
+            candidates = curated_client.by_placement([i for i in page.results if i.asset_id != excluded], wanted)
+            usable = [i for i in candidates if curated_client.placement_rank(wanted, i) < 2]
+            if best is None and usable:
+                best = usable[0]
+            if wrong is None and candidates:
+                wrong = candidates[0]
+            if usable and not page.shuffle_cycle_restarted:
                 remember_session(subject, session_id, index)
-                return candidates[0]
+                return usable[0]
             if page.shuffle_cycle_restarted:
                 # This query has nothing left to show; never come back to it.
                 level = min(index + 1, len(queries) - 1)
             # Only worth a second look while this query still has unseen images
             # and the sole one it offered was the block's current photo.
-            if not (subject and page.results and not candidates and not page.shuffle_cycle_restarted):
+            if not (subject and page.results and not usable and not page.shuffle_cycle_restarted):
                 break
     remember_session(subject, session_id, level)
+    best = best or wrong
     if best is None:
         raise PhotoOpError("no photos are available in the library yet")
     # Every photo the catalog can offer this subject has been shown. Starting

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ownPicked, type QuestionStep } from "@/lib/interview";
+import { ownPicked, prefilledPicks, type QuestionStep } from "@/lib/interview";
 
 const step = (over: Partial<QuestionStep>): QuestionStep =>
   ({
@@ -46,5 +46,27 @@ describe("ownPicked", () => {
     expect(ownPicked(step({ answer: "Dancehall\nI love it" }))).toEqual([
       "Dancehall",
     ]);
+  });
+});
+
+describe("prefilledPicks", () => {
+  it("ticks the tiles it names and adds the rest as her own", () => {
+    expect(
+      prefilledPicks(step({ prefill_options: ["bachata", "Kizomba"] })),
+    ).toEqual({ tiles: ["Bachata"], own: ["Kizomba"] });
+  });
+
+  it("keeps only the tiles where she cannot add her own", () => {
+    expect(
+      prefilledPicks(
+        step({ custom: false, prefill_options: ["Salsa", "Kizomba"] }),
+      ),
+    ).toEqual({ tiles: ["Salsa"], own: [] });
+  });
+
+  it("does nothing once the question is answered", () => {
+    expect(
+      prefilledPicks(step({ answer: "Salsa", prefill_options: ["Bachata"] })),
+    ).toEqual({ tiles: [], own: [] });
   });
 });

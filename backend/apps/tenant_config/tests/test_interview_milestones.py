@@ -780,6 +780,32 @@ def test_the_look_copy_is_written_once_not_on_every_later_answer(tenant_ctx, con
         assert len(calls) == 2  # an answer the copy is written from does
 
 
+def test_the_look_copy_has_one_writer_at_a_time(tenant_ctx, config):
+    """2026-10-12: the card was served again while the first call was still out,
+    and each time started a run of its own (five stacked on the hub)."""
+    from django.core.cache import cache
+
+    from apps.tenant_config import look_copy
+
+    cache.clear()
+    early = {"teaches": "Yoga", "audience": "Desk workers"}
+    calls = []
+
+    def slow(**kwargs):
+        calls.append(kwargs)
+        assert look_copy.for_tenant(tenant_ctx, early) is None  # served again meanwhile: no second run
+        return look_copy.LookCopy(), Decimal("0"), "m"
+
+    with (
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.onboarding.ai_compose.record_spend"),
+        mock.patch("apps.core.ai.structured", side_effect=slow),
+    ):
+        assert look_copy.for_tenant(tenant_ctx, early) is not None
+        assert look_copy.for_tenant(tenant_ctx, early) is not None  # written: served from the cache
+    assert len(calls) == 1
+
+
 def test_the_header_button_follows_what_the_coach_offers(tenant_ctx, config):
     """Phase 2 walk: a live-only coach's "Get Started" still led to /courses."""
     cfg = TenantConfig.objects.first()

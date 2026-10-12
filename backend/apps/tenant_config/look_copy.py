@@ -145,6 +145,12 @@ def for_tenant(tenant, answers: dict) -> dict | None:
     key = f"setup:look-copy:v1:{tenant.schema_name}:{digest}"
     copy = cache.get(key)
     if copy is None and ai_compose.compose_available():
+        # One writer at a time: the card is served again every few seconds
+        # while the first call is still out, and every miss started a run of
+        # its own (five stacked on the hub, 2026-10-12). The others keep the
+        # look's own sample words until it lands.
+        if not cache.add(f"{key}:writing", 1, TIMEOUT_SECONDS + 5):
+            return None
         try:
             parsed, cost, _model = core_ai.structured(
                 system=SYSTEM,
