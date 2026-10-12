@@ -91,7 +91,8 @@ export function Section({
   );
 }
 
-/** The kicker as a friendly rounded pill tag. */
+/** The kicker as a friendly rounded pill tag. Its ink is the band's own
+ *  (inherited), so it reads on the inverse band as well as on paper. */
 export function Kicker({
   block,
   editable,
@@ -107,7 +108,7 @@ export function Kicker({
       <span
         className={cn(
           PILL,
-          "bg-[color-mix(in_oklch,var(--accent)_30%,transparent)] text-foreground",
+          "bg-[color-mix(in_oklch,var(--accent)_30%,transparent)]",
         )}
       >
         <SproutDoodle className="size-3.5 text-primary" />

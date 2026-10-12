@@ -46,8 +46,9 @@ export const isDarkPalette = (p: SiteStylePalette) =>
 
 /** The palette in the requested scheme. Its own scheme is returned as is; the
  *  other is derived — ground and ink swapped for tints of the palette's own
- *  hue, brand colours lifted or deepened to stay readable on them — so any
- *  style can honour the light/dark toggle. */
+ *  hue, brand colours lifted or deepened to stay readable on them (an ink
+ *  primary swapped with the ink) — so any style can honour the light/dark
+ *  toggle. */
 export function modePalette(
   p: SiteStylePalette,
   mode: "light" | "dark",
@@ -62,8 +63,15 @@ export function modePalette(
   const ink = dark ? `oklch(0.95 0.01 ${h})` : `oklch(0.22 0.02 ${h})`;
   const mix = (a: string, pct: number, b: string, space = "oklab") =>
     `color-mix(in ${space}, ${a} ${pct}%, ${b})`;
+  // A brand colour with no hue of its own is the palette's ink (journal's
+  // black button): it swaps with the paper like the ink does. Lifted like a
+  // colour it lands on a flat mid-grey that reads as a disabled button.
   const brand = (color: string) =>
-    dark ? mix(color, 55, "white", "oklch") : mix(color, 70, "black", "oklch");
+    (parseOklch(color)?.c ?? 1) < 0.04
+      ? ink
+      : dark
+        ? mix(color, 55, "white", "oklch")
+        : mix(color, 70, "black", "oklch");
   return {
     background: ground,
     foreground: ink,

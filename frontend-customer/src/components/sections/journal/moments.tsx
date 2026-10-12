@@ -15,6 +15,14 @@ const SPREAD: [place: string, aspect: string][] = [
   ["md:col-span-4 md:mt-20", "md:aspect-[4/5]"],
   ["md:col-span-4 md:-mt-10", "md:aspect-square"],
 ];
+/** A first row of four, for a count that rows of three would end on one
+ *  print alone (4, 7, 10). */
+const FOUR: typeof SPREAD = [
+  ["md:col-span-3", "md:aspect-[4/5]"],
+  ["md:col-span-3 md:mt-24", "md:aspect-square"],
+  ["md:col-span-3 md:mt-8", "md:aspect-[3/4]"],
+  ["md:col-span-3 md:mt-16", "md:aspect-[4/5]"],
+];
 
 export function MomentsSpread({ block, editable }: SectionProps) {
   const photos = itemsOf<Photo>(block, "photos");
@@ -22,6 +30,9 @@ export function MomentsSpread({ block, editable }: SectionProps) {
   const showHead =
     has(block, "heading", editable) || has(block, "kicker", editable);
   const showCaption = has(block, "caption", editable);
+  const four = photos.length > 3 && photos.length % 3 === 1;
+  const cell = (i: number) =>
+    four && i < 4 ? FOUR[i] : SPREAD[(four ? i - 4 : i) % SPREAD.length];
 
   return (
     <Section label={alt || "Moments"}>
@@ -60,17 +71,14 @@ export function MomentsSpread({ block, editable }: SectionProps) {
               key={i}
               className={cn(
                 "w-[74%] shrink-0 snap-start sm:w-[46%] md:w-auto",
-                SPREAD[i % SPREAD.length][0],
+                cell(i)[0],
               )}
             >
               <figure>
                 <Img
                   value={p.image}
                   alt={p.caption || alt}
-                  className={cn(
-                    "aspect-[4/5] w-full",
-                    SPREAD[i % SPREAD.length][1],
-                  )}
+                  className={cn("aspect-[4/5] w-full", cell(i)[1])}
                 />
                 {p.caption && (
                   <figcaption className="mt-3 font-display text-[0.98rem] italic leading-snug text-muted-foreground">
