@@ -1,8 +1,20 @@
 import { generateThemeCSS } from "@/lib/themes";
-import { getSiteStyle, styleRootCss } from "@/lib/site-styles";
+import {
+  getSiteStyle,
+  styleRootCss,
+  TENANT_THEME_SHEET_ID,
+} from "@/lib/site-styles";
 import type { TenantConfig } from "@/types/tenant";
 
-export function TenantThemeStyle({ config }: { config: TenantConfig }) {
+/** The tenant's look, as one sheet. `off` (the coach admin) renders it
+ *  disabled; ThemeProvider flips it on in-app navigation by its id. */
+export function TenantThemeStyle({
+  config,
+  off,
+}: {
+  config: TenantConfig;
+  off?: boolean;
+}) {
   const siteStyle = getSiteStyle(config.style);
   const css = siteStyle
     ? styleRootCss(siteStyle, config.custom_css || "", config.palette)
@@ -13,6 +25,11 @@ export function TenantThemeStyle({ config }: { config: TenantConfig }) {
       );
 
   return (
-    <style dangerouslySetInnerHTML={{ __html: css }} suppressHydrationWarning />
+    <style
+      id={TENANT_THEME_SHEET_ID}
+      media={off ? "not all" : undefined}
+      dangerouslySetInnerHTML={{ __html: css }}
+      suppressHydrationWarning
+    />
   );
 }

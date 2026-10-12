@@ -4,8 +4,6 @@ import { cookies, headers } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 
-import { Toaster } from "sonner";
-
 import { InstallPrompt } from "@/components/shared/install-prompt";
 import { PreviewGate } from "@/components/shared/preview-gate";
 import { RedirectToast } from "@/components/shared/redirect-toast";
@@ -14,7 +12,9 @@ import { SwUpdateToast } from "@/components/shared/sw-update-toast";
 import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
 import {
+  ADMIN_THEME_COOKIE,
   getSiteStyle,
+  isAdminPath,
   oklchToHex,
   paletteOf,
   styleDefaultTheme,
@@ -22,7 +22,7 @@ import {
   themeStorageKey,
 } from "@/lib/site-styles";
 import { TenantProvider } from "@/components/shared/tenant-provider";
-import { ThemeProvider } from "@/components/shared/theme-provider";
+import { AppToaster, ThemeProvider } from "@/components/shared/theme-provider";
 import { UsageReporter } from "@/components/shared/usage-reporter";
 import { NavigationProvider } from "@shared/navigation/navigation-provider";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
@@ -80,6 +80,11 @@ const instrumentSans = Instrument_Sans({
 export const dynamic = "force-dynamic";
 
 export async function generateViewport(): Promise<Viewport> {
+  // The coach admin wears the app's own look, so the browser bar does too.
+  if (isAdminPath((await headers()).get("x-pathname") || "")) {
+    const dark = (await cookies()).get(ADMIN_THEME_COOKIE)?.value === "dark";
+    return { themeColor: dark ? "#0a0a0a" : "#ffffff", viewportFit: "cover" };
+  }
   const slug = await getTenantSlug();
   const config = await fetchTenantConfig(slug);
   const style = getSiteStyle(config?.style);
@@ -160,7 +165,12 @@ export default async function RootLayout({
   }
   const gated = await isSiteGated(config, slug);
   const siteStyle = getSiteStyle(config?.style);
-  const hasSession = Boolean((await cookies()).get(COOKIE_NAME)?.value);
+  const cookieStore = await cookies();
+  const hasSession = Boolean(cookieStore.get(COOKIE_NAME)?.value);
+  // The coach admin wears the app's own look, in her own light/dark.
+  const inAdmin = isAdminPath((await headers()).get("x-pathname") || "");
+  const adminTheme =
+    cookieStore.get(ADMIN_THEME_COOKIE)?.value === "dark" ? "dark" : "light";
   const authUser = hasSession ? await getAuthUser() : null;
   const isStaff = authUser?.role === "owner" || authUser?.role === "coach";
   const locale = await getLocale();
@@ -173,7 +183,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {config && <TenantThemeStyle config={config} />}
+        {config && <TenantThemeStyle config={config} off={inAdmin} />}
         {siteStyle ? (
           <link href={styleFontsHref(siteStyle)} rel="stylesheet" />
         ) : (
@@ -191,6 +201,7 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider
+            adminTheme={adminTheme}
             attribute="class"
             storageKey={themeStorageKey(config?.style, config?.palette)}
             defaultTheme={
@@ -214,7 +225,7 @@ export default async function RootLayout({
                 <NavigationProgress />
                 <TenantThemeEnforcer />
                 <TrackPageView />
-                <Toaster position="top-center" richColors />
+                <AppToaster />
                 {gated ? (
                   <PreviewGate
                     brandName={config?.brand_name}

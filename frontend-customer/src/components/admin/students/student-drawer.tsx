@@ -289,7 +289,7 @@ export function StudentDrawer({
                           lessons completed
                         </span>
                         {course.progress_percent === 100 && (
-                          <span className="flex items-center gap-1 text-emerald-600 font-medium">
+                          <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-medium">
                             <CheckCircle2 className="h-3 w-3" /> Done
                           </span>
                         )}

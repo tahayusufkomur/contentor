@@ -21,6 +21,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AiBadge, PaidFeatureBadge } from "@/components/admin/feature-badges";
 import type { NavSection } from "@/components/shared/app-sidebar";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
+import {
+  useAdminTheme,
+  type AdminTheme,
+} from "@/components/shared/theme-provider";
 import type { User } from "@/types/auth";
 
 interface MobileHeaderProps {
@@ -40,6 +45,7 @@ export function MobileHeader({
   const t = useTranslations("admin");
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const adminTheme = useAdminTheme();
   const { pathname, pendingHref, navigate } = useNavigation();
   const router = useRouter();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
@@ -245,6 +251,11 @@ export function MobileHeader({
                   </p>
                 </div>
               </div>
+              <ThemeToggle
+                className="px-3 text-muted-foreground"
+                value={adminTheme.theme}
+                onChange={(theme) => adminTheme.setTheme(theme as AdminTheme)}
+              />
               <button
                 onClick={async () => {
                   setSigningOut(true);

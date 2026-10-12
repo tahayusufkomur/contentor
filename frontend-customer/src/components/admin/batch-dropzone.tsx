@@ -304,7 +304,7 @@ export function BatchDropzone({
                       </span>
                     )}
                     {item.status === "completed" && (
-                      <span className="flex items-center gap-1 text-emerald-600 text-[10px] font-semibold">
+                      <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 text-[10px] font-semibold">
                         <CheckCircle2 className="h-3.5 w-3.5" /> Done
                       </span>
                     )}

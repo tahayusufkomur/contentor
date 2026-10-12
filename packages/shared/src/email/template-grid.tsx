@@ -189,7 +189,7 @@ export function TemplateGrid({
           value={search}
           onChange={(e) => updateSearch(e.target.value)}
           placeholder="Search templates..."
-          className="w-64 rounded-md border px-3 py-1.5 text-sm"
+          className="w-64 rounded-md border bg-background px-3 py-1.5 text-sm"
         />
         <div className="flex gap-1">
           {CATEGORIES.map((cat) => (

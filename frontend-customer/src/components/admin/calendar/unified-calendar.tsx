@@ -81,7 +81,7 @@ const CATEGORY_STYLES = {
     bg: "bg-emerald-100 dark:bg-emerald-950/60",
     text: "text-emerald-700 dark:text-emerald-300",
     border: "border-emerald-300 dark:border-emerald-800",
-    badge: "bg-emerald-600 text-white",
+    badge: "bg-emerald-700 text-white",
     dot: "bg-emerald-500",
     icon: Newspaper,
   },
@@ -250,7 +250,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
           <Button
             asChild
             size="sm"
-            className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+            className="gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm"
           >
             <Link href="/admin/blog">
               <Plus className="h-4 w-4" />
@@ -304,7 +304,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
             onClick={() => setSelectedCategory("blog")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               selectedCategory === "blog"
-                ? "bg-emerald-600 text-white shadow-sm"
+                ? "bg-emerald-700 text-white shadow-sm"
                 : "bg-background text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
             }`}
           >
@@ -421,7 +421,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                   <div
                     key={key}
                     className={`p-1.5 flex flex-col transition-colors ${
-                      !isCurrentMonth ? "bg-muted/20 opacity-50" : "bg-card"
+                      !isCurrentMonth ? "bg-muted" : "bg-card"
                     } ${today ? "bg-primary/5 font-semibold" : ""}`}
                   >
                     {/* Date header inside cell */}
@@ -466,7 +466,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                               <Icon className="h-3 w-3 shrink-0" />
                               <span className="truncate">{item.title}</span>
                             </div>
-                            <div className="flex items-center justify-between text-[10px] opacity-80 mt-0.5">
+                            <div className="flex items-center justify-between text-[10px] mt-0.5">
                               <span>{eventTime}</span>
                               <span className="uppercase font-mono text-[9px]">
                                 {item.status}

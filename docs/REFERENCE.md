@@ -567,6 +567,11 @@ Tailwind, Radix, `sonner` toasts, JWT in the `contentor_access_token` cookie, an
   same-origin cookies and special-cases demo read-only `403`s into a sign-up toast.
 - **Theming is per-tenant:** `TenantConfig` (theme/font/custom_css) → `src/lib/themes.ts`
   `generateThemeCSS()` → injected via `TenantThemeStyle`; config cached ~60s by domain.
+- **The coach admin (`/admin`) wears one look for every tenant:** under `/admin` that
+  injected sheet is switched off (`ThemeProvider`, plus the root layout on a full load), so
+  the admin shows the app's own house light/dark tokens (`styles/globals.css`). Its
+  light/dark is the coach's own, kept in the `contentor_admin_theme` cookie, and ignores
+  the site's `dark_mode_enabled`.
 - Embeds LiveCraft rooms in an iframe (`components/live/live-frame.tsx`); no video SDKs of its own.
 
 ---

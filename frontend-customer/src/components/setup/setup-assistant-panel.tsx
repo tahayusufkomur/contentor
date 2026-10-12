@@ -127,9 +127,10 @@ export function SetupAssistantPanel({
         )}
       </>
     );
-    const rowClass = `flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-accent/50 ${
-      item.done ? "opacity-70" : ""
-    }`;
+    // A done row is already muted and struck through; dimming it on top took
+    // it below readable.
+    const rowClass =
+      "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-accent/50";
     if (entry.action === "erase") {
       return (
         <button

@@ -21,3 +21,24 @@ test("student jwt reaches student dashboard", async ({ browser }) => {
   await expect(page).not.toHaveURL(/login/);
   await ctx.close();
 });
+
+test("the coach admin wears the app's own look, not the site's", async ({
+  browser,
+}) => {
+  const ctx = await coachContext(browser);
+  const page = await ctx.newPage();
+  // The tenant's look is one sheet; under /admin it is switched off.
+  const sheet = () =>
+    page.evaluate(
+      () => (document.getElementById("tenant-theme") as HTMLStyleElement).media,
+    );
+  await page.goto(`${TENANT}/`);
+  expect(await sheet()).toBe("");
+  // An in-app move does not re-render the root layout: the provider flips it.
+  await page.getByRole("link", { name: "Admin", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/admin$/);
+  await expect.poll(sheet).toBe("not all");
+  await page.reload();
+  expect(await sheet()).toBe("not all");
+  await ctx.close();
+});

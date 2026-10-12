@@ -25,7 +25,7 @@ export const dynamic = "force-dynamic";
 const STATUS_COLORS: Record<string, string> = {
   sending: "bg-blue-500/15 text-blue-700 dark:text-blue-300",
   sent: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
-  partial: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  partial: "bg-amber-500/15 text-amber-800 dark:text-amber-300",
   failed: "bg-red-500/15 text-red-700 dark:text-red-300",
 };
 
@@ -131,14 +131,14 @@ export default function CampaignDetailPage() {
                   </div>
                   <div className="flex justify-between border-b py-2">
                     <span className="text-muted-foreground">Delivered</span>
-                    <span className="text-green-700">
+                    <span className="text-emerald-700 dark:text-emerald-400">
                       {campaign.success_count} sent
                     </span>
                   </div>
                   {campaign.failure_count > 0 && (
                     <div className="flex justify-between border-b py-2">
                       <span className="text-muted-foreground">Failed</span>
-                      <span className="text-red-700">
+                      <span className="text-destructive">
                         {campaign.failure_count} failed
                       </span>
                     </div>
@@ -216,7 +216,7 @@ export default function CampaignDetailPage() {
                             ? new Date(r.sent_at).toLocaleString()
                             : "—"}
                         </td>
-                        <td className="py-2 text-red-600">
+                        <td className="py-2 text-destructive">
                           {r.error_message || ""}
                         </td>
                       </tr>

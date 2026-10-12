@@ -70,7 +70,7 @@ export default function ReceiptPage() {
         <>
           <h1 className="text-lg font-semibold">{data.title}</h1>
           <div
-            className="prose prose-sm max-w-none"
+            className="prose prose-sm max-w-none dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: data.body }}
           />
 

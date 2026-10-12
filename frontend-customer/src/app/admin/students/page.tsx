@@ -137,7 +137,7 @@ export default function StudentsPage() {
           onClick={() => setActiveFilterTab("active")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
             activeFilterTab === "active"
-              ? "bg-emerald-600 text-white shadow-sm"
+              ? "bg-emerald-700 text-white shadow-sm"
               : "bg-muted/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
           }`}
         >
@@ -150,7 +150,7 @@ export default function StudentsPage() {
           onClick={() => setActiveFilterTab("at_risk")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
             activeFilterTab === "at_risk"
-              ? "bg-amber-600 text-white shadow-sm"
+              ? "bg-amber-700 text-white shadow-sm"
               : "bg-muted/50 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40"
           }`}
         >

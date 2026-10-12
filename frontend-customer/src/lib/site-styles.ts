@@ -100,6 +100,14 @@ export function themeStorageKey(
     : "theme";
 }
 
+/** The coach admin wears the app's own look, never the site's: under /admin
+ *  the tenant sheet (this id) is switched off and light/dark is the coach's
+ *  own choice, kept in this cookie so the server paints it on first load. */
+export const TENANT_THEME_SHEET_ID = "tenant-theme";
+export const ADMIN_THEME_COOKIE = "contentor_admin_theme";
+export const isAdminPath = (pathname: string) =>
+  pathname === "/admin" || pathname.startsWith("/admin/");
+
 /** An oklch() colour as sRGB hex (for the browser bar / PWA manifest, which
  *  take no oklch). Undefined when the string is not oklch(). */
 export function oklchToHex(color: string): string | undefined {

@@ -17,6 +17,10 @@ interface ThemeToggleProps {
    * two-mode toggle so existing callers are unaffected.
    */
   modes?: string[];
+  /** Controlled: show this theme and report clicks, instead of driving
+   *  next-themes (the coach admin keeps its own light/dark). */
+  value?: string;
+  onChange?: (theme: string) => void;
 }
 
 const MODE_META: Record<string, { icon: LucideIcon; label: string }> = {
@@ -30,8 +34,12 @@ export function ThemeToggle({
   compact = false,
   className,
   modes = ["light", "dark"],
+  value,
+  onChange,
 }: ThemeToggleProps) {
-  const { resolvedTheme, setTheme } = useTheme();
+  const site = useTheme();
+  const resolvedTheme = value ?? site.resolvedTheme;
+  const setTheme = onChange ?? site.setTheme;
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

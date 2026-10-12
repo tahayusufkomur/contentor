@@ -107,7 +107,7 @@ export function MicButton({
       className={cn(
         "rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50",
         listening &&
-          "bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 ring-2 ring-red-200",
+          "bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-700 ring-2 ring-red-200",
         className,
       )}
     >

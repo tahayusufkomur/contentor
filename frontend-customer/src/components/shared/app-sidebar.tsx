@@ -10,11 +10,13 @@ import {
   Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTenant } from "@/hooks/use-tenant";
-import { themeModes } from "@/lib/site-styles";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import {
+  useAdminTheme,
+  type AdminTheme,
+} from "@/components/shared/theme-provider";
 import { AiBadge, PaidFeatureBadge } from "@/components/admin/feature-badges";
 import { useNavigation } from "@shared/navigation/navigation-provider";
 import { isNavItemActive } from "@shared/navigation/navigation-state";
@@ -73,8 +75,7 @@ export function AppSidebar({
   const t = useTranslations("admin");
   const [collapsed, setCollapsed] = useState(false);
   const { pathname, pendingHref } = useNavigation();
-  const config = useTenant();
-  const allowDarkMode = config?.dark_mode_enabled !== false;
+  const adminTheme = useAdminTheme();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(
     () => Object.fromEntries(sections.map((section) => [section.id, true])),
   );
@@ -289,12 +290,11 @@ export function AppSidebar({
       {/* Footer */}
       <div className="border-t p-2 space-y-2">
         <Separator className="mb-2" />
-        {allowDarkMode && (
-          <ThemeToggle
-            collapsed={collapsed}
-            modes={themeModes(Boolean(config?.style))}
-          />
-        )}
+        <ThemeToggle
+          collapsed={collapsed}
+          value={adminTheme.theme}
+          onChange={(theme) => adminTheme.setTheme(theme as AdminTheme)}
+        />
         {React.Children.map(children, (child) =>
           React.isValidElement(child)
             ? React.cloneElement(child as React.ReactElement<any>, {

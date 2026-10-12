@@ -260,8 +260,10 @@ export function PublishCard() {
             {tenant.is_published ? (
               <>
                 <p className="text-sm text-muted-foreground">
-                  <span className="font-medium text-emerald-600">● Live</span> —
-                  students can find and install your site.
+                  <span className="font-medium text-emerald-700 dark:text-emerald-400">
+                    ● Live
+                  </span>{" "}
+                  — students can find and install your site.
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                   <Button asChild variant="outline" size="sm" className="gap-1">
