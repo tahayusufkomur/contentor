@@ -48,6 +48,7 @@ const liveClassFields: FieldConfig<LiveClass>[] = [
     options: [
       { label: "Free", value: "free" },
       { label: "Paid", value: "paid" },
+      { label: "Members only", value: "subscription" },
     ],
   },
   {
@@ -153,7 +154,7 @@ export function LiveClassesTab() {
         ...(scheduledAt
           ? { scheduled_at: new Date(scheduledAt).toISOString() }
           : {}),
-        ...(pricingType !== "free" && price
+        ...(pricingType === "paid" && price
           ? { price: parseFloat(price) }
           : {}),
       });
@@ -232,9 +233,10 @@ export function LiveClassesTab() {
               >
                 <option value="free">Free</option>
                 <option value="paid">Paid</option>
+                <option value="subscription">Members only</option>
               </select>
             </div>
-            {pricingType !== "free" && (
+            {pricingType === "paid" && (
               <div className="space-y-2">
                 <Label>Price</Label>
                 <Input

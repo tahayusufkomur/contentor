@@ -38,6 +38,9 @@ PAGE_NEEDS = {
         "event_price",
         "onsite_when",
         "onsite_price",
+        "course_access",
+        "event_access",
+        "onsite_access",
     ),
 }
 DRAFT_NEEDS = {
@@ -328,10 +331,10 @@ def run_draft(tenant, kind: str, prompt: str, keep_cover: bool = False) -> None:
                 item.save(update_fields=["thumbnail", "thumbnail_url"])
         if kind in EVENT_KEYS:
             apply_schedule(tenant)
+        apply_access(tenant)
     finally:
         _set_draft_status(tenant, kind, status)
     if kind == "course":
-        grant_membership(tenant)
         setup_flow.start_page_build(tenant, "courses")
 
 
@@ -389,9 +392,21 @@ def expand_class_series(tenant, kind: str = "event") -> int:
     copy_fields = ("title", "description", "instructor", "status", "pricing_type", "price", "duration_minutes")
     copy_fields += ("thumbnail", "thumbnail_url") + (("location", "address") if hasattr(first, "address") else ())
     model = type(first)
+    from django.contrib.contenttypes.models import ContentType
+
+    from apps.billing.models import SubscriptionPlanAccess
+
+    # Every later class is in the memberships the first one is in.
+    ct = ContentType.objects.get_for_model(model)
+    plan_ids = list(
+        SubscriptionPlanAccess.objects.filter(content_type=ct, object_id=first.pk).values_list("plan_id", flat=True)
+    )
     for when in later:
         row = model(**{f: getattr(first, f) for f in copy_fields}, scheduled_at=when)
         row.save()
+        SubscriptionPlanAccess.objects.bulk_create(
+            SubscriptionPlanAccess(plan_id=pk, content_type=ct, object_id=row.pk) for pk in plan_ids
+        )
 
     def mutate(_config, flow):
         flow["interview"] = {**(flow.get("interview") or {}), flag: True}
@@ -472,49 +487,49 @@ def drop_draft(tenant, kind: str) -> None:
 # ── membership ───────────────────────────────────────────────────────────────
 
 
-def create_memberships(tenant, answers: dict) -> None:
-    """The memberships a coach asked for: one plan per picked tier (a
-    delegated pick gets the first her offers allow), the first course in
-    every tier that includes courses; the perks promise only what she offers. Created once; the plan ids are kept in
-    setup_flow["drafts"]["plans"] by tier."""
+def sync_memberships(tenant, answers: dict) -> None:
+    """One plan per membership the coach offers (a delegated pick gets the
+    first her offers allow); a tier's perks promise only what she offers, and
+    one of her own is its name. Safe to run again when she goes back: a
+    membership added since gets its plan, a price changed is followed, and one
+    she dropped loses its plan unless a student already subscribed to it. The
+    plan ids are kept in setup_flow["drafts"]["plans"] by membership."""
     from decimal import Decimal
 
     from apps.billing.models import SubscriptionPlan
 
-    from .setup_flow import _update_flow, start_page_build
+    from .setup_flow import _update_flow
 
-    picked = [i for i in (answers.get("memberships") or []) if i in brief.TIER_BY_ID] or [brief.default_tier(answers)]
-    allowed = {t["id"]: t for t in brief.tiers_for(answers)}
+    picked = brief.memberships_of(answers)
+    made = dict(((TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}).get("plans") or {})
     teaches = str(answers.get("teaches") or "everything I teach").lower()
     plans = {}
-    for tier_id in picked:
-        tier = allowed.get(tier_id) or brief.TIER_BY_ID[tier_id]
-        perks = ", ".join(p.lower() for p in tier["perks"])
-        plans[tier_id] = SubscriptionPlan.objects.create(
-            name=tier["label"],
-            description=f"{tier['blurb']} {perks[:1].upper()}{perks[1:]}, for {teaches}. Cancel any time.",
-            price=Decimal(f"{brief.tier_price(answers, tier_id):.2f}"),
-            billing_interval_months=1,
+    for m in picked:
+        price = Decimal(f"{brief.tier_price(answers, m['id']):.2f}")
+        pk = made.pop(m["id"], None)
+        if pk and SubscriptionPlan.objects.filter(pk=pk).update(price=price):
+            plans[m["id"]] = pk
+            continue
+        perks = ", ".join(p.lower() for p in m["perks"])
+        about = f"{m['blurb']} {perks[:1].upper()}{perks[1:]}, for {teaches}." if perks else m["blurb"]
+        plans[m["id"]] = SubscriptionPlan.objects.create(
+            name=m["label"][:100], description=f"{about} Cancel any time.", price=price, billing_interval_months=1
         ).pk
+    SubscriptionPlan.objects.filter(pk__in=made.values(), subscriptions__isnull=True).delete()
 
     def mutate(_config, flow):
-        flow["drafts"] = {**(flow.get("drafts") or {}), "plans": plans, "plan": next(iter(plans.values()))}
+        flow["drafts"] = {**(flow.get("drafts") or {}), "plans": plans, "plan": next(iter(plans.values()), None)}
 
     _update_flow(tenant, mutate)
-    grant_membership(tenant)
+    apply_access(tenant, answers)
+
+
+def create_memberships(tenant, answers: dict) -> None:
+    """The memberships a coach asked for, and the Pricing page that sells them."""
+    from .setup_flow import start_page_build
+
+    sync_memberships(tenant, answers)
     start_page_build(tenant, "pricing")
-
-
-def _reprice_memberships(prices: dict) -> None:
-    """A price changed after its plan was made (she went back): the plan follows."""
-    from decimal import Decimal
-
-    from apps.billing.models import SubscriptionPlan
-
-    made = ((TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}).get("plans") or {}
-    for tier_id, pk in made.items():
-        if tier_id in prices:
-            SubscriptionPlan.objects.filter(pk=pk).update(price=Decimal(f"{prices[tier_id]:.2f}"))
 
 
 def membership_plan_ids(flow: dict) -> list[int]:
@@ -522,25 +537,44 @@ def membership_plan_ids(flow: dict) -> list[int]:
     return list((drafts.get("plans") or {}).values()) or ([drafts["plan"]] if drafts.get("plan") else [])
 
 
-def grant_membership(tenant) -> None:
-    """Members get the interview's course: every tier that includes courses
-    points its course access at the current course draft."""
+def apply_access(tenant, answers: dict | None = None) -> None:
+    """Each drafted course or class takes the ways in the coach chose for it
+    (brief.access_of: her answer, else what a "pick for me" gets): a place in
+    every membership that includes it, and its price. Sold on its own it is
+    paid; open to members only it is "subscription"; else it is free. Only for
+    a coach with memberships: without them a draft's price is all there is."""
+    from decimal import Decimal
+
     from django.contrib.contenttypes.models import ContentType
 
     from apps.billing.models import SubscriptionPlanAccess
-    from apps.courses.models import Course
 
-    drafts = (TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}
+    from .setup_flow import brief_price
+
+    answers = brief.answers_of(tenant) if answers is None else answers
+    flow = TenantConfig.objects.first().setup_flow or {}
+    drafts = flow.get("drafts") or {}
     plans = drafts.get("plans") or ({DEFAULT_TIER: drafts["plan"]} if drafts.get("plan") else {})
-    if not plans:
+    if not plans or not brief.memberships_of(answers):
         return
-    course_ct = ContentType.objects.get_for_model(Course)
-    SubscriptionPlanAccess.objects.filter(plan_id__in=plans.values(), content_type=course_ct).delete()
-    if not (drafts.get("course") and Course.objects.filter(pk=drafts["course"]).exists()):
-        return
-    for tier_id, plan_id in plans.items():
-        if brief.TIER_BY_ID.get(tier_id, brief.TIER_BY_ID[DEFAULT_TIER])["courses"]:
-            SubscriptionPlanAccess.objects.create(plan_id=plan_id, content_type=course_ct, object_id=drafts["course"])
+    for kind, (_, _, way, price_key, _) in brief.ACCESS.items():
+        row = _draft_row(flow, kind)
+        if row is None:
+            continue
+        ways = brief.access_of(answers, kind)
+        want = {plans[w] for w in ways if w in plans}
+        links = SubscriptionPlanAccess.objects.filter(
+            plan_id__in=plans.values(), content_type=ContentType.objects.get_for_model(type(row)), object_id=row.pk
+        )
+        links.exclude(plan_id__in=want).delete()
+        for plan_id in want - set(links.values_list("plan_id", flat=True)):
+            SubscriptionPlanAccess.objects.get_or_create(
+                plan_id=plan_id, content_type=ContentType.objects.get_for_model(type(row)), object_id=row.pk
+            )
+        price = Decimal(f"{brief_price(answers, way, price_key) or 0:.2f}") if brief.BUY in ways else Decimal("0")
+        pricing = "paid" if price else "subscription" if want else "free"
+        if (row.pricing_type, row.price) != (pricing, price):
+            type(row).objects.filter(pk=row.pk).update(pricing_type=pricing, price=price)
 
 
 # ── look: cards and picks ────────────────────────────────────────────────────
@@ -750,6 +784,15 @@ def _draft_row(flow: dict, kind: str):
     return model.objects.filter(pk=ref.get("id")).first()
 
 
+def _plans_including(item) -> list:
+    from django.contrib.contenttypes.models import ContentType
+
+    from apps.billing.models import SubscriptionPlan
+
+    ct = ContentType.objects.get_for_model(type(item))
+    return list(SubscriptionPlan.objects.filter(access_items__content_type=ct, access_items__object_id=item.pk))
+
+
 def _cover_images(tenant, kind: str, item) -> list:
     """Catalog photos that could be this draft's cover, cached for an hour
     (the review screen is polled while drafts build)."""
@@ -808,6 +851,8 @@ def review_card(tenant, kind: str) -> dict:
         "title": item.title,
         "description": item.description,
         "price": f"{item.price:.2f}" if item.pricing_type == "paid" else "",
+        # Who can open it besides a buyer: the memberships that include it.
+        "members": [p.name for p in _plans_including(item)],
         "currency": (getattr(item, "currency", "") or tenant_charge_currency()).upper(),
         "cover_url": _stable_cover_url(photo.s3_key) if photo else item.thumbnail_url or "",
     }
@@ -1003,19 +1048,25 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
             picked = json.loads(value)
         except ValueError:
             raise ChoiceError("invalid_value") from None
-        allowed = {t["label"]: t["id"] for t in brief.tiers_for(answers)}
-        if not isinstance(picked, dict) or not picked or not set(picked) <= set(allowed):
+        if not isinstance(picked, dict) or not picked or len(picked) > brief.MAX_MEMBERSHIPS:
             raise ChoiceError("invalid_value")
+        # A label that is no tile is a membership of her own: its name is its key.
+        known = {t["label"]: t["id"] for t in brief.membership_tiles(answers)}
         prices = {}
         for label, raw in picked.items():
+            name = re.sub(r"\s+", " ", str(label)).strip()
+            if not 2 <= len(name) <= brief.MEMBERSHIP_NAME_MAX or name.lower() in ("buy", "free"):
+                raise ChoiceError("invalid_value")
             price = brief.parse_price(str(raw))
             if not price or price <= 0:
                 raise ChoiceError("invalid_price")
-            prices[allowed[label]] = round(price, 2)
-        answers["memberships"] = [t for t in allowed.values() if t in prices]
+            prices[known.get(name, name)] = round(price, 2)
+        order = list(known.values())
+        answers["memberships"] = sorted(prices, key=lambda k: order.index(k) if k in order else len(order))
         answers["membership_prices"] = {**(answers.get("membership_prices") or {}), **prices}
         answers["delegated"] = [d for d in answers.get("delegated") or [] if d != "memberships"]
-        _reprice_memberships(prices)
+        if ((TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}).get("plans"):
+            sync_memberships(tenant, answers)  # she went back: the plans follow
         return
     if field_id == "calendar_view":
         if value not in CALENDAR_IDS:

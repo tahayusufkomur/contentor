@@ -12,7 +12,11 @@ const part = (iso: string, opts: Intl.DateTimeFormatOptions) => {
   return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, opts);
 };
 const priceOf = (e: CalendarEvent) =>
-  e.pricing_type === "free" || !Number(e.price) ? "Free" : e.price;
+  e.pricing_type === "subscription"
+    ? "Members only"
+    : e.pricing_type === "free" || !Number(e.price)
+      ? "Free"
+      : e.price;
 
 /** Upcoming sessions as a timetable; each row inverts to cobalt on hover. */
 export function EventsTable({ block, data, editable }: SectionProps) {

@@ -186,6 +186,18 @@ export const addressOk = (raw: string): boolean => raw.trim().length >= 3;
 
 /** Whether the server will take this as a monthly price: its first number
  * (parse_price), above 0 and at most 9999. */
+/** The ways into a course or class ticked on its "who can open it" question
+ * (the tiles of interview_brief.access_options), and what its price badge
+ * says for them: null when it is sold on its own, at its price. */
+export function waysIn(answer: string | undefined): string[] {
+  return (answer ?? "").split("\n")[0].split(", ").filter(Boolean);
+}
+export function accessBadge(ways: string[]): string | null {
+  if (!ways.length || ways.some((w) => w.startsWith("Anyone who ")))
+    return null;
+  return ways.includes("Free for everyone") ? "Free" : "Members only";
+}
+
 export function priceOk(raw: string): boolean {
   const n = Number(raw.match(/\d+(?:[.,]\d{1,2})?/)?.[0]?.replace(",", "."));
   return n > 0 && n <= 9999;
@@ -321,15 +333,18 @@ export const SECTIONS: { label: string; fields: string[] }[] = [
       "memberships",
       "course_topic",
       "course_price",
+      "course_access",
       "course_review",
       "live_topic",
       "live_when",
       "event_price",
+      "event_access",
       "event_review",
       "onsite_topic",
       "onsite_when",
       "location",
       "onsite_price",
+      "onsite_access",
       "onsite_review",
       "calendar_view",
       "article_topic",

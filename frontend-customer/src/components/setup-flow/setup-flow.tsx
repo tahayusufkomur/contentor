@@ -434,7 +434,10 @@ function Flow({
           : undefined
         : draft.ticked?.length
           ? draft.ticked.join(", ")
-          : draft.text;
+          : !draft.ticked && !step.answer && step.field?.endsWith("_access")
+            ? // The ways in ticked to start with show before she touches them.
+              step.prefill_options?.join(", ")
+            : draft.text;
       if (step.field && now) answers[step.field] = now;
       const reviewField = `${step.builder}_review`;
       const card = iv.cards?.[reviewField];
@@ -451,7 +454,8 @@ function Flow({
         covers: review?.item?.covers ?? [],
         photo: looks && !isReview(looks) ? looks.photos?.[0] : undefined,
         tiers: picked
-          .filter((l) => step.options.includes(l))
+          // The tiles, and any membership of her own she just named.
+          .filter((l) => step.options.includes(l) || draft.custom?.includes(l))
           .map((label) => ({
             label,
             // The price she is typing, once it reads as one.

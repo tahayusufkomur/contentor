@@ -135,7 +135,7 @@ def _summary(tenant, answers, flow) -> list[dict]:
     drafts = flow.get("drafts") or {}
     course = Course.objects.filter(pk=drafts["course"]).first() if drafts.get("course") else None
     if course:
-        price = _money(course.price, tenant) if course.pricing_type == "paid" else "free"
+        price = {"paid": _money(course.price, tenant), "subscription": "members only"}.get(course.pricing_type, "free")
         lines.append({"label": "First course", "value": f"{course.title} ({price})"})
     plans = SubscriptionPlan.objects.filter(pk__in=membership_plan_ids(flow), is_active=True)
     if plans:
@@ -143,14 +143,19 @@ def _summary(tenant, answers, flow) -> list[dict]:
         lines.append({"label": "Memberships", "value": value})
     offers = set(answers.get("offers") or [])
     runs = False
-    for offer, label, when_id, price_id in (
-        ("live", "Online classes", "live_when", "event_price"),
-        ("onsite", "In-person events", "onsite_when", "onsite_price"),
+    for offer, label, when_id, price_id, key in (
+        ("live", "Online classes", "live_when", "event_price", "event"),
+        ("onsite", "In-person events", "onsite_when", "onsite_price", "onsite"),
     ):
         if offer in offers and brief.is_settled(answers, when_id):
             when = str(answers.get(when_id) or "times to suit your students")
-            price = answers.get(price_id)
-            lines.append({"label": label, "value": f"{when}" + (f", {_money(price, tenant)} each" if price else "")})
+            # The drafted class says how it is opened: sold per class, to members only, or free.
+            row = _draft_row(flow, key)
+            price = answers.get(price_id) if row is None or row.pricing_type == "paid" else None
+            how = ", members only" if row is not None and row.pricing_type == "subscription" else ""
+            lines.append(
+                {"label": label, "value": f"{when}{how}" + (f", {_money(price, tenant)} each" if price else "")}
+            )
             runs = True
     if runs and answers.get("calendar_nav") != "no":
         lines.append({"label": "Class calendar", "value": "A month grid, linked in your menu"})
@@ -165,7 +170,7 @@ def _free_effects(tenant, answers, flow) -> list[str]:
 
     out = []
     drafts = flow.get("drafts") or {}
-    course = Course.objects.filter(pk=drafts["course"], pricing_type="paid").first() if drafts.get("course") else None
+    course = Course.objects.filter(pk=drafts.get("course")).exclude(pricing_type="free").first()
     if course:
         out.append(f"Your course \u201c{course.title}\u201d becomes free.")
     names = list(
@@ -182,11 +187,9 @@ def _free_effects(tenant, answers, flow) -> list[str]:
             + ("" if rest else " Your site goes live with its pages.")
         )
     else:
-        for key, price_id, what in (
-            ("event", "event_price", "online class"),
-            ("onsite", "onsite_price", "in-person event"),
-        ):
-            if (drafts.get(key) or {}).get("id") and answers.get(price_id):
+        for key, what in (("event", "online class"), ("onsite", "in-person event")):
+            row = _draft_row(flow, key)
+            if row is not None and row.pricing_type != "free":
                 out.append(f"Your first {what} becomes free.")
     if out:
         out.append("You can choose a plan and add prices back any time.")
@@ -229,7 +232,7 @@ def _hold(tenant) -> dict:
     flow = TenantConfig.objects.first().setup_flow or {}
     drafts, before = flow.get("drafts") or {}, flow.get("held") or {}
     held = {}
-    if Course.objects.filter(pk=drafts.get("course"), pricing_type="paid", is_published=False).exists():
+    if Course.objects.filter(pk=drafts.get("course"), is_published=False).exclude(pricing_type="free").exists():
         held["course"] = True
     if plan_ids := membership_plan_ids(flow):
         SubscriptionPlan.objects.filter(pk__in=plan_ids).update(is_active=False)
@@ -237,7 +240,7 @@ def _hold(tenant) -> dict:
     for key in _CLASSES:
         row = _draft_row(flow, key)
         if row is not None and (
-            not _live_entitled(tenant) or (row.pricing_type == "paid" and not can_monetize(tenant))
+            not _live_entitled(tenant) or (row.pricing_type != "free" and not can_monetize(tenant))
         ):
             # Back to the status it had before the first hold, never to "draft".
             held[key] = before.get(key) or (row.status if row.status != "draft" else "scheduled")
@@ -287,7 +290,7 @@ def release_held(tenant) -> None:
         if key not in held or not _live_entitled(tenant):
             continue
         row = _draft_row(flow, key)
-        if row is not None and row.pricing_type == "paid" and not selling:
+        if row is not None and row.pricing_type != "free" and not selling:
             continue
         status = held.pop(key)
         # Only the request that flips it expands the series: two admin pages
@@ -345,7 +348,7 @@ def make_free(tenant) -> None:
     base = dict(answers)
     answers["sells"] = "free"
     answers["payments"] = ["free"]
-    for key in ("course_price", "memberships", "event_price", "onsite_price"):
+    for key in ("course_price", "memberships", "event_price", "onsite_price", *(f"{k}_access" for k in brief.ACCESS)):
         answers.pop(key, None)
     live_dropped = not _live_entitled(tenant) and bool({"live", "onsite"} & set(answers.get("offers") or []))
     if live_dropped:
@@ -360,7 +363,7 @@ def make_free(tenant) -> None:
     flow = TenantConfig.objects.first().setup_flow or {}
     drafts = flow.get("drafts") or {}
     if drafts.get("course"):
-        Course.objects.filter(pk=drafts["course"], pricing_type="paid").update(pricing_type="free", price=0)
+        Course.objects.filter(pk=drafts["course"]).exclude(pricing_type="free").update(pricing_type="free", price=0)
     if live_dropped:
         for key in _CLASSES:  # the drafted classes go with the live offer
             if drafts.get(key):
@@ -370,6 +373,6 @@ def make_free(tenant) -> None:
             event = drafts.get(key) or {}
             if event.get("id"):
                 model = OnsiteEvent if event.get("kind") == "onsite" else LiveClass
-                model.objects.filter(pk=event["id"], pricing_type="paid").update(pricing_type="free", price=0)
+                model.objects.filter(pk=event["id"]).exclude(pricing_type="free").update(pricing_type="free", price=0)
     if plan_ids := membership_plan_ids(flow):
         SubscriptionPlan.objects.filter(pk__in=plan_ids).update(is_active=False)

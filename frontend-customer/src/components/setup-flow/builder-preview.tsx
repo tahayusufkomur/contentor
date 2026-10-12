@@ -1,11 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Check, ImageOff, MapPin, Video } from "lucide-react";
+import {
+  CalendarDays,
+  Check,
+  ImageOff,
+  MapPin,
+  Users,
+  Video,
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { formatPrice } from "@/lib/interview";
+import { accessBadge, formatPrice, waysIn } from "@/lib/interview";
 import type {
   BuilderKind,
   ReviewCard,
@@ -96,13 +103,17 @@ function ItemCard({
   const covers = item?.covers ?? data.covers;
   const cover =
     item?.cover_url || covers.find((c) => c.current)?.url || data.photo;
-  const price = priceText
-    ? /free/i.test(priceText)
-      ? "Free"
-      : priceText
-    : item?.price
-      ? formatPrice(Math.round(parseFloat(item.price) * 100), item.currency)
-      : null;
+  // Who can open it, as ticked so far: the badge and the chips follow.
+  const ways = waysIn(a[`${kind}_access`]);
+  const price =
+    accessBadge(ways) ??
+    (priceText
+      ? /free/i.test(priceText)
+        ? "Free"
+        : priceText
+      : item?.price
+        ? formatPrice(Math.round(parseFloat(item.price) * 100), item.currency)
+        : null);
   const [picking, setPicking] = useState<string | null>(null);
   const { run: pick } = useAsyncAction(
     async (asset: string) => {
@@ -215,6 +226,16 @@ function ItemCard({
                 "In person"
               : "Online, live"}
           </Chip>
+        </div>
+      )}
+      {ways.length > 0 && (
+        <div className="mt-2.5 flex flex-wrap gap-1.5 text-[12.5px]">
+          {ways.map((w) => (
+            <Chip key={w}>
+              <Users className="size-3.5" aria-hidden />
+              {w}
+            </Chip>
+          ))}
         </div>
       )}
       {item?.description ? (

@@ -449,7 +449,7 @@ def test_membership_plans_are_created_once_per_tier_with_the_course_in_them(tena
     assert digital.price == Decimal("9.00") and digital.billing_interval_months == 1
     assert plans["Community membership"].price == Decimal("5.00")
     course = Course.objects.get()
-    assert course.pricing_type == "free"  # members get it; not sold on its own
+    assert course.pricing_type == "subscription"  # members get it; not sold on its own, and never free to all
     # Only the tiers that include courses point at it.
     assert [(a.plan_id, a.object_id) for a in SubscriptionPlanAccess.objects.all()] == [(digital.pk, course.pk)]
     side_effects["build"].assert_any_call(tenant_ctx, "pricing")
@@ -473,7 +473,7 @@ def test_membership_prices_are_hers_to_set(tenant_ctx, config, side_effects):
     # Going back to change a price changes the plan already made.
     ms.choose(tenant_ctx, answers, "memberships", json.dumps({"Digital membership": 15, "Community membership": 4.5}))
     assert SubscriptionPlan.objects.get(name="Digital membership").price == Decimal("15.00")
-    for bad in ({"Digital membership": 0}, {"Digital membership": "lots"}, {"Nope": 5}, {}):
+    for bad in ({"Digital membership": 0}, {"Digital membership": "lots"}, {"x": 5}, {"buy": 5}, {}):
         with pytest.raises(ms.ChoiceError):
             ms.choose(tenant_ctx, answers, "memberships", json.dumps(bad))
 
@@ -1100,3 +1100,113 @@ def test_each_class_is_reviewed_as_its_own_draft(tenant_ctx, config, owner):
     # Approving it is its own answer, apart from the online class's.
     ms.choose(tenant_ctx, answers, "onsite_review", "ok")
     assert answers["onsite_review"] == "approved" and "event_review" not in answers
+
+
+# ── who can open it ─────────────────────────────────────────────────────────
+
+SELLS_BOTH = {**HOME, "offers": ["course", "live"], "payments": ["course", "membership"], "course_price": 49.0}
+
+
+def _links():
+    from apps.billing.models import SubscriptionPlanAccess
+
+    return sorted(SubscriptionPlanAccess.objects.values_list("plan__name", "object_id"))
+
+
+def test_a_draft_takes_the_ways_in_she_chose(tenant_ctx, config, owner, side_effects):
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "course", SELLS_BOTH)
+    answers = {**SELLS_BOTH, "memberships": ["digital", "online"]}
+    ms.fire(tenant_ctx, answers)
+    course = Course.objects.get()
+    # Left alone, it is open the way a "pick for me" sets it: sold, and in both tiers.
+    assert (course.pricing_type, course.price) == ("paid", Decimal("49.00"))
+    assert _links() == [("Digital membership", course.pk), ("Online membership", course.pk)]
+
+    # Members of one tier only, and not sold on its own.
+    ms.apply_access(tenant_ctx, {**answers, "course_access": ["online"]})
+    course.refresh_from_db()
+    assert (course.pricing_type, course.price) == ("subscription", Decimal("0"))
+    assert _links() == [("Online membership", course.pk)]
+
+    # Sold on its own, in no membership.
+    ms.apply_access(tenant_ctx, {**answers, "course_access": ["buy"]})
+    course.refresh_from_db()
+    assert course.pricing_type == "paid" and _links() == []
+
+    ms.apply_access(tenant_ctx, {**answers, "course_access": ["free"]})
+    course.refresh_from_db()
+    assert (course.pricing_type, course.price) == ("free", Decimal("0")) and _links() == []
+
+
+def test_a_class_can_be_for_members_only_and_its_whole_series_follows(tenant_ctx, config, owner, side_effects):
+    from apps.billing.models import SubscriptionPlan
+    from apps.core.models import Tenant
+    from apps.live.models import LiveClass
+
+    answers = {
+        **HOME,
+        "specialty": "Face yoga, Vinyasa yoga",
+        "offers": ["live"],
+        "payments": ["membership"],
+        "memberships": ["Weekly face yoga classes", "Weekly vinyasa yoga classes"],
+        "membership_prices": {"Weekly face yoga classes": 25.0},
+        "live_topic": "Face yoga for a lifted jawline",
+        # 7 Jan 2030 is a Monday: Tue 8, Tue 15 (the 21st ends it).
+        "live_schedule": {
+            "mode": "recurring",
+            "start": "2030-01-07",
+            "end": "2030-01-21",
+            "days": [2],
+            "times": ["19:00"],
+        },
+    }
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    tenant_ctx.refresh_from_db()
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "event", answers)
+    ms.apply_schedule(tenant_ctx)
+    ms.fire(tenant_ctx, answers)
+    first = LiveClass.objects.get()
+    assert first.pricing_type == "subscription"  # no single-class price: members only
+    # Named after its subject, the class is in that membership and not the other.
+    assert _links() == [("Weekly face yoga classes", first.pk)]
+    plan = SubscriptionPlan.objects.get(name="Weekly face yoga classes")
+    assert plan.price == Decimal("25.00") and "weekly face yoga classes" in plan.description
+
+    assert ms.expand_class_series(tenant_ctx, "event") == 1
+    assert set(LiveClass.objects.values_list("pricing_type", flat=True)) == {"subscription"}
+    assert len(_links()) == 2  # the later class is in the membership too
+
+
+def test_going_back_to_the_memberships_adds_and_drops_their_plans(tenant_ctx, config, owner, side_effects):
+    import json
+
+    from apps.billing.models import SubscriptionPlan
+
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "course", SELLS_BOTH)
+    answers = {**SELLS_BOTH, "memberships": ["digital", "online"], "course_access": ["buy", "online"]}
+    ms.fire(tenant_ctx, answers)
+    digital = SubscriptionPlan.objects.get(name="Digital membership").pk
+    # She drops Online, keeps Digital at a new price, and adds one of her own.
+    ms.choose(tenant_ctx, answers, "memberships", json.dumps({"Digital membership": 11, "Mentoring circle": 80}))
+    assert answers["memberships"] == ["digital", "Mentoring circle"]
+    plans = {p.name: p for p in SubscriptionPlan.objects.all()}
+    assert set(plans) == {"Digital membership", "Mentoring circle"}
+    assert plans["Digital membership"].pk == digital and plans["Digital membership"].price == Decimal("11.00")
+    assert plans["Mentoring circle"].price == Decimal("80.00")
+    # The membership she dropped falls out of the course's ways in; the rest of her pick stands.
+    assert _links() == [] and Course.objects.get().pricing_type == "paid"
+
+
+def test_the_review_shows_the_memberships_that_include_it(tenant_ctx, config, owner, side_effects):
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "course", SELLS_BOTH)
+    ms.fire(tenant_ctx, {**SELLS_BOTH, "memberships": ["digital"]})
+    cfg = TenantConfig.objects.first()
+    cfg.setup_flow = {**cfg.setup_flow, "draft_status": {"course": "ready"}}
+    cfg.save()
+    with mock.patch.object(ms, "_cover_images", return_value=[]):
+        item = ms.review_card(tenant_ctx, "course")["item"]
+    assert item["members"] == ["Digital membership"] and item["price"] == "49.00"

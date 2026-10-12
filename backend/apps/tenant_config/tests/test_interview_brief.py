@@ -292,12 +292,15 @@ def test_only_the_guides_own_calls_can_be_left_to_it():
         "memberships",
         "course_topic",
         "course_price",
+        "course_access",
         "live_topic",
         "live_when",
         "event_price",
+        "event_access",
         "onsite_topic",
         "onsite_when",
         "onsite_price",
+        "onsite_access",
         "article_topic",
     }
     assert len(brief.FIELD_BY_ID["teaches"].options) == 8
@@ -490,3 +493,112 @@ def test_online_and_in_person_sessions_are_separate_sections_each_with_a_review(
     # Each is skipped on its own.
     assert {brief.FIELD_BY_ID[i].group for i in ("live_topic", "onsite_topic")} == {"event", "onsite"}
     assert set(brief.SKIP_LABELS) >= {"event", "onsite"}
+
+
+# ── who can open it: the ways into what a coach makes ───────────────────────
+
+FACE_AND_VINYASA = {
+    "teaches": "Yoga",
+    "specialty": "Face yoga, Vinyasa yoga",
+    "offers": ["course", "live"],
+    "payments": ["course", "membership"],
+}
+
+
+def test_a_coach_who_teaches_several_things_is_offered_a_membership_for_each():
+    tiles = brief.options_for(brief.FIELD_BY_ID["memberships"], FACE_AND_VINYASA)
+    assert tiles[0][:2] == ("Weekly face yoga classes", "Weekly vinyasa yoga classes")
+    assert tiles[0][2:] == ("Digital membership", "Online membership", "All-access")
+    assert tiles[2][0] == "$19 a month"
+    assert brief.membership_prices(FACE_AND_VINYASA)["Weekly face yoga classes"] == 19
+    # One subject, or no classes to hold weekly: only the tiers.
+    assert brief.suggested_memberships({**FACE_AND_VINYASA, "specialty": "Face yoga"}) == []
+    assert brief.suggested_memberships({**FACE_AND_VINYASA, "offers": ["course"]}) == []
+    assert brief.suggested_memberships({"teaches": "HIIT, Boxing", "offers": ["onsite"]}) == [
+        "Weekly HIIT classes",
+        "Weekly boxing classes",
+    ]
+
+
+def test_a_membership_of_her_own_is_its_name():
+    answers = {**FACE_AND_VINYASA, "memberships": ["Weekly face yoga classes", "digital", "VIP circle"]}
+    assert [m["label"] for m in brief.memberships_of(answers)] == [
+        "Weekly face yoga classes",
+        "Digital membership",
+        "VIP circle",
+    ]
+    # Hers stays on the tiles when she goes back, after the ones offered.
+    assert brief.options_for(brief.FIELD_BY_ID["memberships"], answers)[0][-1] == "VIP circle"
+    assert brief.membership_of(answers, "VIP circle")["blurb"] == "One monthly price for VIP circle."
+    assert brief.membership_of(answers, "Weekly face yoga classes")["blurb"] == (
+        "One monthly price for weekly face yoga classes."
+    )
+    assert brief.tier_price({**answers, "membership_prices": {"VIP circle": 40}}, "VIP circle") == 40
+    assert brief.memberships_of({**answers, "payments": ["course"]}) == []
+    tapped = dict(FACE_AND_VINYASA)
+    assert brief.apply_fact(tapped, "memberships", "Weekly face yoga classes, Online membership")
+    assert tapped["memberships"] == ["Weekly face yoga classes", "online"]
+    assert brief.composer_facts({**FACE_AND_VINYASA, "memberships": ["Weekly face yoga classes"]})[-1] == {
+        "q": "Memberships offered",
+        "a": "Weekly face yoga classes ($19 a month)",
+    }
+
+
+def test_the_ways_in_are_asked_only_of_a_coach_with_memberships():
+    asked = {"course_access", "event_access"}
+    assert asked <= {f.id for f in brief.required(FACE_AND_VINYASA)}
+    assert not asked & {f.id for f in brief.required({**FACE_AND_VINYASA, "payments": ["course"]})}
+    assert "onsite_access" not in {f.id for f in brief.required(FACE_AND_VINYASA)}  # no in-person events
+    order = [f.id for f in brief.FIELDS]
+    assert order.index("course_price") < order.index("course_access") < order.index("course_review")
+    assert order.index("event_price") < order.index("event_access") < order.index("event_review")
+
+
+def test_the_ways_in_are_buying_it_each_membership_or_free():
+    answers = {**FACE_AND_VINYASA, "memberships": ["Weekly face yoga classes", "digital", "online"], "course_price": 49}
+    course = brief.options_for(brief.FIELD_BY_ID["course_access"], answers)
+    assert course[0] == (
+        "Anyone who buys the course",
+        "Weekly face yoga classes",
+        "Digital membership",
+        "Online membership",
+        "Free for everyone",
+    )
+    assert course[2][0] == "$49 paid once" and course[2][1] == "Included for members, $19 a month"
+    # She does not sell single classes: no way to buy one.
+    assert brief.options_for(brief.FIELD_BY_ID["event_access"], answers)[0][0] == "Weekly face yoga classes"
+
+
+def test_a_pick_for_me_opens_it_the_way_each_membership_promises():
+    answers = {
+        **FACE_AND_VINYASA,
+        "memberships": ["Weekly face yoga classes", "Weekly vinyasa yoga classes", "digital", "online"],
+        "live_topic": "Morning face yoga for a lifted jawline",
+    }
+    assert brief.default_access(answers, "course") == ["buy", "digital", "online"]
+    # The class goes to the tier that promises classes, and to the one of hers named after its subject.
+    assert brief.default_access(answers, "event") == ["online", "Weekly face yoga classes"]
+    # A topic that names none of them: every one of her own takes it.
+    assert brief.default_access({**answers, "live_topic": "Breath"}, "event")[1:] == answers["memberships"][:2]
+    assert brief.default_access({"payments": ["free"]}, "course") == ["free"]
+
+
+def test_the_ways_in_are_read_from_tiles_and_from_her_own_words():
+    answers = {**FACE_AND_VINYASA, "memberships": ["digital", "online"]}
+    assert brief.apply_fact(answers, "course_access", "Anyone who buys the course, Online membership")
+    assert answers["course_access"] == ["buy", "online"]
+    assert brief.parse_access("only my members", answers, "course") == ["digital", "online"]
+    assert brief.parse_access("free for everyone", answers, "course") == ["free"]
+    assert brief.parse_access("Free for everyone, Digital membership", answers, "course") == ["digital"]
+    assert brief.parse_access("people pay for it", answers, "course") == ["buy"]
+    assert not brief.apply_fact(answers, "course_access", "hmm")
+    # A membership she dropped since falls out of the answer; with none left, the default stands.
+    assert brief.access_of({**answers, "memberships": ["digital"]}, "course") == ["buy"]
+    assert brief.access_of({**answers, "memberships": ["digital"], "course_access": ["online"]}, "course") == [
+        "buy",
+        "digital",
+    ]
+    assert brief.composer_facts(answers)[-1] == {
+        "q": "Who can take the first course",
+        "a": "Anyone who buys the course, Online membership",
+    }

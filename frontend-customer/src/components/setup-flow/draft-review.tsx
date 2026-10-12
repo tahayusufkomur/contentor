@@ -8,6 +8,7 @@ import {
   ImageOff,
   MapPin,
   Repeat,
+  Users,
   Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -191,7 +192,9 @@ function Drafted({
         Math.round(parseFloat(item.price) * 100),
         item.currency,
       ).replace(/[.,]00$/, "")
-    : "Free";
+    : item.members?.length
+      ? "Members only"
+      : "Free";
   // The signed URL can change between polls; the cover's own id does not.
   const coverKey = item.covers.find((c) => c.current)?.value || item.cover_url;
   return (
@@ -322,6 +325,20 @@ function Drafted({
                   "In person"
                 : "Online, live"}
             </Chip>
+          </div>
+        )}
+        {!!item.members?.length && (
+          <div
+            key={item.members.join("|")}
+            style={enter(3)}
+            className="mt-3 flex flex-wrap gap-2 text-[13.5px] motion-safe:animate-[sf-rise_.5s_ease-out_both]"
+          >
+            {item.members.map((m) => (
+              <Chip key={m}>
+                <Users className="size-4" aria-hidden />
+                Included in {m}
+              </Chip>
+            ))}
           </div>
         )}
         <p

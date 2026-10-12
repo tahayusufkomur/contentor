@@ -12,11 +12,13 @@ export function OwnOptionCard({
   disabled,
   delay,
   sentence = false,
+  placeholder = "Add your own…",
   onAdd,
 }: {
   disabled: boolean;
   delay: number;
   sentence?: boolean;
+  placeholder?: string;
   onAdd: (labels: string[]) => void;
 }) {
   const [text, setText] = useState("");
@@ -41,7 +43,7 @@ export function OwnOptionCard({
         maxLength={sentence ? 200 : 60}
         disabled={disabled}
         aria-label="Add your own option"
-        placeholder="Add your own…"
+        placeholder={placeholder}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => {
           if (e.key !== "Enter") return;

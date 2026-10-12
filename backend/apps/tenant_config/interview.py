@@ -74,6 +74,8 @@ Do these things:
    For "offers" give the matching ids from: course, live, onsite, articles, community.
    For "payments" give the matching ids from: course (one-time course purchases), membership
    (a monthly subscription), event (paying per class or event), free.
+   For "course_access", "event_access" and "onsite_access" (who can open that course or class)
+   give the matching answers from that field's "fixed_options", word for word.
 2. edit_request: if the message asks you to change or create something on their site (a
    headline, a photo, colours, wording, a page section, a course, an event, a post, the logo,
    the style), restate that request in one clear sentence. Otherwise null. A message that
@@ -238,7 +240,8 @@ def guide_for(
         "address": field.kind == "address",
         "prefill": {},
         "prefill_text": None,
-        "prefill_options": [],
+        # The ways in start ticked the way a "pick for me" would set them: one tap to agree.
+        "prefill_options": brief.access_labels(answers or {}, field.group) if field.kind == "access" else [],
         # The answer is a time zone, picked from the browser's list.
         "timezone": field.kind == "timezone",
     }
@@ -380,10 +383,13 @@ NOTED_NAMES = {
     "payments": "how students pay",
     "course_topic": "your course topic",
     "course_price": "your course price",
+    "course_access": "who can take your course",
     "live_topic": "your online class topic",
     "event_price": "your online class price",
+    "event_access": "who can join your online class",
     "onsite_topic": "your in-person event topic",
     "onsite_price": "your in-person event price",
+    "onsite_access": "who can come to your in-person event",
     "article_topic": "your article topic",
     "socials": "your social accounts",
     "contact": "how students reach you",
@@ -454,6 +460,9 @@ def picked_note(tenant, field_id) -> str:
     if field_id == "memberships":
         tier = brief.TIER_BY_ID[brief.default_tier(brief.answers_of(tenant))]
         return f"I set up the {tier['label']} for you. You can change it any time."
+    if (field := brief.FIELD_BY_ID.get(field_id or "")) and field.kind == "access":
+        ways = brief.access_labels(brief.answers_of(tenant), field.group)
+        return f"I opened it to: {', '.join(ways)}. You can change it any time."
     if field_id == "tone":
         return "I'll match the tone to what you've told me. You can change it any time."
     if field_id in ("course_price", "event_price", "onsite_price"):
@@ -612,6 +621,7 @@ def run_turn(
     # A tapped chip/card is applied by code; it is never also a site edit.
     edit = _run_edit(tenant, turn.edit_request) if turn and turn.edit_request and not choice and not imported else None
     fired = milestones.fire(tenant, answers)
+    milestones.apply_access(tenant, answers)  # a draft already made follows who she opened it to
     # Kept in the transcript; interview_state never re-serves it as the live
     # guide, so a reload doesn't announce finished work as starting.
     if note := started_note(fired):

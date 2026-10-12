@@ -620,6 +620,7 @@ export function QuestionScreen({
                       disabled={sending}
                       delay={answersAt + Math.min(shown.length, 15) * 32}
                       sentence={step.starter}
+                      placeholder={prices ? "Name your own…" : undefined}
                       onAdd={addOwn}
                     />
                   )}

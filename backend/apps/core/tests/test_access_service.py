@@ -273,6 +273,36 @@ class TestCheckAccessSubscription:
         info = service.get_access_info(student, subscription_course)
         assert info.has_access is False
 
+    def test_members_only_content_opens_for_the_memberships_that_include_it(self, service, student, coach):
+        """A members-only course that names a membership is that membership's:
+        another one's subscriber stays out. One no membership names is open
+        to any subscriber (the rule the paywall already offers plans by)."""
+        ct = ContentType.objects.get_for_model(Course)
+        named = Course.objects.create(title="Named", slug="named", instructor=coach, pricing_type="subscription")
+        loose = Course.objects.create(title="Loose", slug="loose", instructor=coach, pricing_type="subscription")
+        inside = SubscriptionPlan.objects.create(name="Digital", price=Decimal("9"), currency="USD")
+        other = SubscriptionPlan.objects.create(name="Community", price=Decimal("5"), currency="USD")
+        SubscriptionPlanAccess.objects.create(plan=inside, content_type=ct, object_id=named.pk)
+        now = timezone.now()
+        sub = Subscription.objects.create(
+            student=student,
+            plan=other,
+            billing_amount=Decimal("5"),
+            billing_currency="USD",
+            status="active",
+            current_period_start=now - timedelta(days=1),
+            current_period_end=now + timedelta(days=29),
+        )
+        assert service.check_access(student, named) is False
+        assert service.check_access(student, loose) is True
+        bulk = service.bulk_check_access(student, [named, loose])
+        assert (bulk[named.pk].has_access, bulk[loose.pk].has_access) == (False, True)
+        assert bulk[named.pk].unlock_methods == ["subscribe"]
+
+        Subscription.objects.filter(pk=sub.pk).update(plan=inside)
+        assert service.get_access_info(student, named).access_reason == "subscription"
+        assert service.bulk_check_access(student, [named])[named.pk].has_access is True
+
 
 # ---------------------------------------------------------------------------
 # Dual access: paid + subscription unlock_methods

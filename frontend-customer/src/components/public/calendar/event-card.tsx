@@ -101,7 +101,11 @@ export function EventCard({
             )}
           </div>
           <span className="text-xs font-semibold text-muted-foreground">
-            {event.pricing_type === "free" ? "Free" : `${event.price}`}
+            {event.pricing_type === "free"
+              ? "Free"
+              : event.pricing_type === "subscription"
+                ? "Members only"
+                : `${event.price}`}
           </span>
         </div>
       </div>

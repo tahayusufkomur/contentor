@@ -6,6 +6,8 @@ import {
 } from "@/lib/setup-flow";
 import { ApiError } from "@/types/api";
 import {
+  accessBadge,
+  waysIn,
   activityLine,
   ADDRESS_BOXES,
   addressOk,
@@ -457,4 +459,22 @@ describe("contactOk mirrors the server", () => {
   ] as const)("%s %s", (way, raw, ok) => {
     expect(contactOk(way, raw)).toBe(ok);
   });
+});
+
+describe("who can open it: the badge follows the ways in ticked", () => {
+  // interview_brief.access_options: buying it, each membership, or free.
+  it.each([
+    ["Anyone who buys the course, Digital membership", null],
+    ["Digital membership, All-access", "Members only"],
+    ["Free for everyone", "Free"],
+    ["Weekly face yoga classes\nonly my regulars", "Members only"],
+    [undefined, null],
+  ] as const)("%s → %s", (answer, badge) =>
+    expect(accessBadge(waysIn(answer))).toBe(badge),
+  );
+  it("drops the note typed with the picks", () =>
+    expect(waysIn("Digital membership, All-access\nfor now")).toEqual([
+      "Digital membership",
+      "All-access",
+    ]));
 });

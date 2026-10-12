@@ -50,6 +50,7 @@ const onsiteEventFields: FieldConfig<OnsiteEvent>[] = [
     options: [
       { label: "Free", value: "free" },
       { label: "Paid", value: "paid" },
+      { label: "Members only", value: "subscription" },
     ],
   },
   {
@@ -166,7 +167,7 @@ export function OnsiteEventsTab() {
           ? { scheduled_at: new Date(scheduledAt).toISOString() }
           : {}),
         ...(maxCapacity ? { max_capacity: parseInt(maxCapacity) } : {}),
-        ...(pricingType !== "free" && price
+        ...(pricingType === "paid" && price
           ? { price: parseFloat(price) }
           : {}),
       });
@@ -286,9 +287,10 @@ export function OnsiteEventsTab() {
               >
                 <option value="free">Free</option>
                 <option value="paid">Paid</option>
+                <option value="subscription">Members only</option>
               </select>
             </div>
-            {pricingType !== "free" && (
+            {pricingType === "paid" && (
               <div className="space-y-2">
                 <Label>Price</Label>
                 <Input

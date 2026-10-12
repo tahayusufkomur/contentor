@@ -90,7 +90,9 @@ export function EventsList({
                       <span className="ml-auto font-medium text-foreground">
                         {event.pricing_type === "paid"
                           ? `$${event.price}`
-                          : "Free"}
+                          : event.pricing_type === "subscription"
+                            ? "Members only"
+                            : "Free"}
                       </span>
                     </div>
                     <h3 className="font-medium leading-snug group-hover:text-primary">

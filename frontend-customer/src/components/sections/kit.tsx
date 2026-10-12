@@ -232,8 +232,9 @@ export function EmptyHint({
   );
 }
 
-/** "Free" or the event price in the tenant currency ("€25"). */
+/** "Free", "Members only" or the event price in the tenant currency ("€25"). */
 export function eventPriceLabel(e: CalendarEvent): string {
+  if (e.pricing_type === "subscription") return "Members only";
   if (e.pricing_type !== "paid" || !Number(e.price)) return "Free";
   return formatMoney(e.price, e.currency || "USD");
 }

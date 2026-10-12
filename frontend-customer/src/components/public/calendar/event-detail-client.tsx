@@ -147,7 +147,9 @@ export function EventDetailClient({
                 <p className="font-display text-3xl font-bold">
                   {event.pricing_type === "free"
                     ? "Free"
-                    : `${access.price || event.price} ${access.currency || ""}`}
+                    : event.pricing_type === "subscription"
+                      ? "Members only"
+                      : `${access.price || event.price} ${access.currency || ""}`}
                 </p>
               </div>
 
@@ -207,7 +209,9 @@ function EventAction({
         <p className="text-center text-xs text-muted-foreground">
           {event.pricing_type === "free"
             ? "This event is free. Sign in to participate."
-            : "Sign in to purchase or subscribe for access."}
+            : event.pricing_type === "subscription"
+              ? "This event is for members. Sign in to join."
+              : "Sign in to purchase or subscribe for access."}
         </p>
       </div>
     );
@@ -278,7 +282,9 @@ function EventAction({
       )}
       <p className="text-center text-xs text-muted-foreground">
         {isLive
-          ? "Purchase or subscribe to join this live event."
+          ? unlockMethods.includes("purchase")
+            ? "Purchase or subscribe to join this live event."
+            : "Subscribe to join this live event."
           : "Get access now so you're ready when it starts."}
       </p>
     </div>

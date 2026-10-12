@@ -276,8 +276,10 @@ export type ScheduleMode = "recurring" | "once";
 export interface ReviewItem {
   title: string;
   description: string;
-  /** "49.00" when sold on its own, "" when free. */
+  /** "49.00" when sold on its own, "" when free or for members only. */
   price: string;
+  /** The memberships that include it, by name. */
+  members?: string[];
   currency: string;
   cover_url: string;
   covers: { value: string; url: string; current: boolean }[];

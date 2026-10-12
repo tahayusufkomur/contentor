@@ -473,7 +473,36 @@ def test_a_started_section_finishes_before_other_questions(client, tenant_ctx, q
         question="Which memberships?",
     )
     guide = client.post(URL, {"message": "49", "field": "course_price"}, format="json").json()["guide"]
+    # A coach with memberships is asked who can open it before she reviews it.
+    assert guide["field"] == "course_access"
+    assert guide["options"] == ["Anyone who buys the course", "Digital membership", "Free for everyone"]
+    assert guide["hints"]["Anyone who buys the course"] == "$49 paid once"
+    assert guide["hints"]["Digital membership"] == "Included for members, $9 a month"
+    assert guide["multi"] is True and guide["alone"] == "Free for everyone" and guide["can_delegate"] is True
+    # What a "pick for me" would set starts ticked: one tap to agree.
+    assert guide["prefill_options"] == ["Anyone who buys the course", "Digital membership"]
+    guide = client.post(URL, {"message": "Digital membership", "field": "course_access"}, format="json").json()["guide"]
+    assert quiet.calls[1:] == []  # tiles of code's own: no model turn
+    assert _answers(tenant_ctx)["course_access"] == ["digital"]
     assert guide["field"] == "course_review"
+
+
+def test_a_coach_without_memberships_is_never_asked_who_can_open_it(client, tenant_ctx, quiet):
+    """One way in is no choice: the price already says it."""
+    _set_answers(tenant_ctx, {**BEFORE_COURSE, "payments": ["course"], "course_topic": "Footwork"})
+    quiet.reply = interview.InterviewTurn(facts=[{"field": "course_price", "value": "49"}], ack="Ok.")
+    guide = client.post(URL, {"message": "49", "field": "course_price"}, format="json").json()["guide"]
+    assert guide["field"] == "course_review"
+
+
+def test_leaving_the_ways_in_to_the_guide_says_what_it_opened(client, tenant_ctx, quiet):
+    _only_missing(tenant_ctx, ("course_access", "socials"), offers=["course"], payments=["course", "membership"])
+    body = client.post(
+        URL,
+        {"message": "You decide for me.", "choice": {"field": "course_access", "value": "__delegate__"}},
+        format="json",
+    ).json()
+    assert "Anyone who buys the course, Digital membership" in body["guide"]["ack"]
 
 
 def test_guide_carries_details_builder_and_schedule():

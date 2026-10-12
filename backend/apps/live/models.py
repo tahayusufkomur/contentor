@@ -51,7 +51,7 @@ class LiveClass(_EventStatusMixin, models.Model):
     # Pricing
     pricing_type = models.CharField(
         max_length=20,
-        choices=[("free", "Free"), ("paid", "Paid")],
+        choices=[("free", "Free"), ("paid", "Paid"), ("subscription", "Included in subscription")],
         default="free",
     )
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -248,7 +248,7 @@ class OnsiteEvent(_EventStatusMixin, models.Model):
     max_capacity = models.PositiveIntegerField(null=True, blank=True)
     pricing_type = models.CharField(
         max_length=20,
-        choices=[("free", "Free"), ("paid", "Paid")],
+        choices=[("free", "Free"), ("paid", "Paid"), ("subscription", "Included in subscription")],
         default="free",
     )
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)

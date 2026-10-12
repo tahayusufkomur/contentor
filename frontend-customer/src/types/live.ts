@@ -6,7 +6,7 @@ export interface LiveClass {
   description: string;
   instructor: number;
   status: string;
-  pricing_type: "free" | "paid";
+  pricing_type: "free" | "paid" | "subscription";
   price: string;
   thumbnail_url: string;
   thumbnail_signed_url: string | null;
@@ -79,7 +79,7 @@ export interface OnsiteEvent {
   location: string;
   address: string;
   max_capacity: number | null;
-  pricing_type: "free" | "paid";
+  pricing_type: "free" | "paid" | "subscription";
   price: string;
   scheduled_at: string | null;
   started_at: string | null;
@@ -103,7 +103,7 @@ export interface CalendarEvent {
   title: string;
   description: string;
   status: string;
-  pricing_type: "free" | "paid";
+  pricing_type: "free" | "paid" | "subscription";
   price: string;
   scheduled_at: string;
   started_at: string | null;

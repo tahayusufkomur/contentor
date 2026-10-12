@@ -38,6 +38,7 @@ FIXED_KINDS = (
     "contact",
     "timezone",
     "currency",
+    "access",
 )
 OFFERS = ("course", "live", "onsite", "articles", "community")
 OFFER_GOALS = {
@@ -238,6 +239,13 @@ MEMBERSHIP_TIERS = (
     },
 )
 TIER_BY_ID = {t["id"]: t for t in MEMBERSHIP_TIERS}
+# The classes each tier promises its members (its "courses" flag covers the course).
+_TIER_CLASSES = {"online": ("event",), "studio": ("onsite",), "all": ("event", "onsite")}
+# A membership can also be the coach's own: just a name ("Weekly face yoga
+# classes") and a monthly price. It is stored by that name beside the tier ids.
+OWN_MEMBERSHIP_PRICE = 19
+MAX_MEMBERSHIPS = 6
+MEMBERSHIP_NAME_MAX = 60
 
 
 def tiers_for(answers: dict) -> list[dict]:
@@ -259,21 +267,158 @@ def tiers_for(answers: dict) -> list[dict]:
     ]
 
 
+def _lower_first(text: str) -> str:
+    """Mid-sentence casing: "Face yoga" → "face yoga"; "HIIT" and "VIP circle" stay."""
+    first = text.split(" ")[0]
+    return text if len(first) > 1 and first.isupper() else text[:1].lower() + text[1:]
+
+
+def subjects_of(answers: dict) -> list[str]:
+    """The separate things a coach teaches ("Face yoga", "Vinyasa yoga") when
+    she gave them as a short list, else []."""
+    parts = [p.strip() for p in str(answers.get("specialty") or answers.get("teaches") or "").split(",")]
+    return [p for p in parts if p and len(p.split()) <= 4]
+
+
+def suggested_memberships(answers: dict) -> list[str]:
+    """Memberships of her own offered by name: one for each thing she teaches
+    in classes, when she teaches several ("Weekly face yoga classes")."""
+    subjects = subjects_of(answers)[:3]
+    if len(subjects) < 2 or not {"live", "onsite"} & set(answers.get("offers") or []):
+        return []
+    return [f"Weekly {_lower_first(s)} classes" for s in subjects]
+
+
+def membership_of(answers: dict, key: str) -> dict:
+    """A membership by its key: a catalogue tier as this coach's offers shape
+    it, or one of her own, which is only its name."""
+    tier = next((t for t in tiers_for(answers) if t["id"] == key), None) or TIER_BY_ID.get(key)
+    return tier or {
+        "id": key,
+        "label": key,
+        "price": OWN_MEMBERSHIP_PRICE,
+        "needs": (),
+        "courses": False,
+        "icon": "sparkles",
+        "perks": (),
+        "blurb": f"One monthly price for {_lower_first(key)}.",
+    }
+
+
+def membership_tiles(answers: dict) -> list[dict]:
+    """The memberships on the question's tiles: the ones named after what she
+    teaches, the tiers her offers allow, then any other of her own she added."""
+    keys = [*suggested_memberships(answers), *(t["id"] for t in tiers_for(answers))]
+    keys += [k for k in answers.get("memberships") or [] if k not in keys and k not in TIER_BY_ID]
+    return [membership_of(answers, k) for k in keys]
+
+
+def memberships_of(answers: dict) -> list[dict]:
+    """The memberships this coach offers: her picks (a "pick for me" gets the
+    first her offers allow), none when students don't pay by membership."""
+    if "membership" not in (answers.get("payments") or []):
+        return []
+    return [membership_of(answers, k) for k in answers.get("memberships") or [default_tier(answers)]]
+
+
 def tier_price(answers: dict, tier_id: str) -> float:
-    """Her monthly price for a tier, else the catalogue's."""
-    return (answers.get("membership_prices") or {}).get(tier_id, TIER_BY_ID[tier_id]["price"])
+    """Her monthly price for a membership, else the catalogue's."""
+    default = TIER_BY_ID.get(tier_id, {}).get("price", OWN_MEMBERSHIP_PRICE)
+    return (answers.get("membership_prices") or {}).get(tier_id, default)
 
 
 def membership_prices(answers: dict) -> dict[str, float]:
-    """Every tier her offers allow, by label, at her price: the price fields
-    under the membership tiles."""
-    return {t["label"]: tier_price(answers, t["id"]) for t in tiers_for(answers)}
+    """Every membership on the tiles, by label, at her price: the price fields
+    under them."""
+    return {m["label"]: tier_price(answers, m["id"]) for m in membership_tiles(answers)}
 
 
 def default_tier(answers: dict) -> str:
     """The membership a "pick for me" gets: the first this coach's offers allow."""
     tiers = tiers_for(answers)
     return tiers[0]["id"] if tiers else "digital"
+
+
+# Who can open what a coach makes: anyone who buys it on its own, the members
+# of each membership that includes it, or everyone. A coach with memberships is
+# asked once per thing she makes (the "<section>_access" fields); the answer is
+# a list of BUY, membership keys and FREE.
+BUY, FREE = "buy", "free"
+FREE_ACCESS = "Free for everyone"
+ACCESS_WHY = "Tick every way in. Everything you add later gets this same choice."
+# section: (the answer that sells it on its own, how its price reads, the
+# payment way that sells it, the answer holding its price, the topic answer)
+ACCESS = {
+    "course": ("Anyone who buys the course", "paid once", "course", "course_price", "course_topic"),
+    "event": ("Anyone who pays per class", "a class", "event", "event_price", "live_topic"),
+    "onsite": ("Anyone who pays per event", "an event", "event", "onsite_price", "onsite_topic"),
+}
+
+
+def access_options(answers: dict, kind: str) -> list[tuple[str, str, str, str]]:
+    """(id, label, icon, hint) for every way into this coach's first course or
+    class: buying it when she sells that way, each of her memberships, free."""
+    from .setup_flow import brief_price
+
+    label, per, way, price_key, _ = ACCESS[kind]
+    rows = []
+    if way in (answers.get("payments") or []):
+        rows.append((BUY, label, "ticket", f"{money(brief_price(answers, way, price_key))} {per}"))
+    rows += [
+        (m["id"], m["label"], m["icon"], f"Included for members, {money(tier_price(answers, m['id']))} a month")
+        for m in memberships_of(answers)
+    ]
+    return [*rows, (FREE, FREE_ACCESS, "gift", "No payment, open to all")]
+
+
+def default_access(answers: dict, kind: str) -> list[str]:
+    """The ways in a coach gets when she leaves it to us: buying it when she
+    sells that way, and every membership that promises it. A membership of
+    her own takes the classes on what it is named after.
+    ponytail: the topic is matched by her subjects' words; a class on none of
+    them goes into all of her own memberships."""
+    ways = [BUY] if ACCESS[kind][2] in (answers.get("payments") or []) else []
+    picked = memberships_of(answers)
+    for m in picked:
+        if m["id"] in TIER_BY_ID and (m["courses"] if kind == "course" else kind in _TIER_CLASSES.get(m["id"], ())):
+            ways.append(m["id"])
+    own = [m["id"] for m in picked if m["id"] not in TIER_BY_ID]
+    if kind != "course" and own:
+        topic = str(answers.get(ACCESS[kind][4]) or "").lower()
+        subjects = [s.lower() for s in subjects_of(answers)]
+        named = [k for k in own if any(s in k.lower() and s in topic for s in subjects)]
+        ways += named or own
+    return ways or [FREE]
+
+
+def access_of(answers: dict, kind: str) -> list[str]:
+    """The ways into the coach's first course or class: her answer, without a
+    membership she has since dropped, else default_access()."""
+    known = {i for i, *_ in access_options(answers, kind)}
+    return [w for w in answers.get(f"{kind}_access") or [] if w in known] or default_access(answers, kind)
+
+
+def access_labels(answers: dict, kind: str, ways=None) -> list[str]:
+    """The ways in as the coach reads them, in the order of the tiles."""
+    ways = access_of(answers, kind) if ways is None else ways
+    return [label for i, label, *_ in access_options(answers, kind) if i in ways]
+
+
+def parse_access(raw, answers: dict, kind: str) -> list[str]:
+    """The ways in named in the coach's words: the tiles' own labels, else
+    "members", "free" or "buy". A paid way wins over free, like payments."""
+    if isinstance(raw, list | tuple):
+        raw = ", ".join(map(str, raw))
+    text = str(raw or "").lower()
+    rows = access_options(answers, kind)
+    found = [i for i, label, *_ in rows if label.lower() in text]
+    if not found and re.search(r"\bmember|subscri", text):
+        found = [i for i, *_ in rows if i not in (BUY, FREE)]
+    if not found and re.search(r"\bfree\b|everyone|everybody", text):
+        found = [FREE]
+    if not found and re.search(r"\bbuy|purchas|\bpa(y|id)", text):
+        found = [i for i, *_ in rows if i == BUY]
+    return [w for w in found if w != FREE] or found
 
 
 # Lucide icon ids a tile may show (frontend: src/lib/option-icons.ts mirrors
@@ -715,9 +860,11 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "memberships",
         "Memberships offered",
-        "You can offer more than one membership. Which ones fit your students?",
-        kind="memberships",  # options come from tiers_for()
+        "A membership can cover everything, or one thing you teach. Which ones fit your students?",
+        kind="memberships",  # options come from membership_tiles()
+        why="Each one is its own monthly subscription. You choose what each one unlocks as we build.",
         multi=True,
+        custom=True,  # a membership of her own: she names it and prices it
         pays=("membership",),
         delegable=True,
     ),
@@ -739,6 +886,19 @@ FIELDS: tuple[Field, ...] = (
         needs=("course",),
         group="course",
         delegable=True,
+    ),
+    Field(
+        "course_access",
+        "Who can take the first course",
+        "Who can take this course?",
+        kind="access",  # options come from access_options(): buying it, each membership, or free
+        needs=("course",),
+        pays=("membership",),
+        group="course",
+        multi=True,
+        alone=FREE_ACCESS,
+        delegable=True,
+        why=ACCESS_WHY,
     ),
     Field(
         "course_review",
@@ -778,6 +938,19 @@ FIELDS: tuple[Field, ...] = (
         pays=("event",),
         group="event",
         delegable=True,
+    ),
+    Field(
+        "event_access",
+        "Who can join the online class",
+        "Who can join this online class?",
+        kind="access",  # options come from access_options(): buying it, each membership, or free
+        needs=("live",),
+        pays=("membership",),
+        group="event",
+        multi=True,
+        alone=FREE_ACCESS,
+        delegable=True,
+        why=ACCESS_WHY,
     ),
     Field(
         "event_review",
@@ -827,6 +1000,19 @@ FIELDS: tuple[Field, ...] = (
         pays=("event",),
         group="onsite",
         delegable=True,
+    ),
+    Field(
+        "onsite_access",
+        "Who can come to the in-person event",
+        "Who can come to this in-person event?",
+        kind="access",  # options come from access_options(): buying it, each membership, or free
+        needs=("onsite",),
+        pays=("membership",),
+        group="onsite",
+        multi=True,
+        alone=FREE_ACCESS,
+        delegable=True,
+        why=ACCESS_WHY,
     ),
     Field(
         "onsite_review",
@@ -926,12 +1112,14 @@ def parse_price(raw) -> float | None:
     return 0.0 if "free" in text else None
 
 
-def parse_memberships(raw) -> list[str]:
-    """Tier ids named in the coach's words (labels or ids), in catalogue order."""
+def parse_memberships(raw, answers: dict | None = None) -> list[str]:
+    """Memberships named in the coach's words: tiers by label or id, and (with
+    ``answers``) the ones named after what she teaches, in the order of the tiles."""
     if isinstance(raw, list | tuple):
         raw = " ".join(map(str, raw))
     text = str(raw or "").lower()
-    return [t["id"] for t in MEMBERSHIP_TIERS if t["label"].lower() in text or re.search(rf"\b{t['id']}\b", text)]
+    own = [name for name in suggested_memberships(answers or {}) if name.lower() in text]
+    return own + [t["id"] for t in MEMBERSHIP_TIERS if t["label"].lower() in text or re.search(rf"\b{t['id']}\b", text)]
 
 
 def parse_currency(raw) -> str | None:
@@ -1031,8 +1219,8 @@ def socials_summary(links: dict[str, str]) -> str:
 def coerce(field_id: str, raw):
     """What the coach said → the stored value, or None when it doesn't fit."""
     field = FIELD_BY_ID.get(field_id)
-    if field is None or field.kind in CARD_KINDS:  # cards go through choose()
-        return None
+    if field is None or field.kind in CARD_KINDS or field.kind == "access":
+        return None  # cards go through choose(); the ways in are read in apply_fact()
     if field.kind == "offers":
         return parse_offers(raw) or None
     if field.kind == "payments":
@@ -1130,7 +1318,15 @@ def _sync_legacy(answers: dict, field_id: str) -> None:
 
 
 def apply_fact(answers: dict, field_id: str, raw) -> bool:
-    value = coerce(field_id, raw)
+    field = FIELD_BY_ID.get(field_id)
+    # Read against her own answers: the memberships named after what she
+    # teaches, and the ways into what she makes.
+    if field is not None and field.kind == "memberships":
+        value = parse_memberships(raw, answers) or None
+    elif field is not None and field.kind == "access":
+        value = parse_access(raw, answers, field.group) or None
+    else:
+        value = coerce(field_id, raw)
     if value is None:
         return False
     if field_id == "teaches":
@@ -1227,12 +1423,15 @@ def options_for(
         kinds = tuple(k for k in SPECIALTIES[tile][1] if k.lower() != base)
         return kinds, (icon,) * len(kinds), ()
     if field.kind == "memberships":
-        tiers = tiers_for(answers)
+        tiers = membership_tiles(answers)
         return (
             tuple(t["label"] for t in tiers),
             tuple(t["icon"] for t in tiers),
             tuple(f"{money(tier_price(answers, t['id']))} a month" for t in tiers),
         )
+    if field.kind == "access":
+        rows = access_options(answers, field.group)
+        return tuple(r[1] for r in rows), tuple(r[2] for r in rows), tuple(r[3] for r in rows)
     rows = list(
         zip(
             field.options,
@@ -1256,7 +1455,7 @@ def options_for(
 def details_for(field: Field, answers: dict) -> dict[str, str]:
     """One description per option, shown once it is picked."""
     if field.kind == "memberships":
-        return {t["label"]: t["blurb"] for t in tiers_for(answers)}
+        return {t["label"]: t["blurb"] for t in membership_tiles(answers)}
     return dict(zip(field.options, field.details, strict=False)) if field.details else {}
 
 
@@ -1287,8 +1486,10 @@ def composer_facts(answers: dict) -> list[dict]:
             value = ", ".join(value)
         elif field.kind == "memberships":
             value = ", ".join(
-                f"{TIER_BY_ID[i]['label']} ({money(tier_price(answers, i))} a month)" for i in value if i in TIER_BY_ID
+                f"{membership_of(answers, i)['label']} ({money(tier_price(answers, i))} a month)" for i in value
             )
+        elif field.kind == "access":
+            value = ", ".join(access_labels(answers, field.group, value))
         elif field.kind == "price":
             value = "free" if value == 0 else f"{value:g}"
         out.append({"q": field.label, "a": str(value)[:TEXT_MAX]})

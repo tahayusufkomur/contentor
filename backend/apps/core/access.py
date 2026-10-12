@@ -70,10 +70,13 @@ class ContentAccessService:
                 access_reason="bundle",
             )
 
-        # 5. Active subscription (plan-linked content, or subscription-priced
-        # content which any active subscription unlocks)
+        # 5. Active subscription: a plan that includes this content, or, for
+        # subscription-priced content no plan names, any active subscription
+        # (the same rule get_unlock_options offers plans by).
         if self._has_subscription_access(user, content) or (
-            pricing_type == "subscription" and self._has_any_active_subscription(user)
+            pricing_type == "subscription"
+            and not self._is_in_any_plan(content)
+            and self._has_any_active_subscription(user)
         ):
             return AccessInfo(
                 has_access=True,
@@ -185,7 +188,9 @@ class ContentAccessService:
                     currency=currency,
                     access_reason="bundle",
                 )
-            elif item.pk in subscription_ids or (pricing_type == "subscription" and has_any_subscription):
+            elif item.pk in subscription_ids or (
+                pricing_type == "subscription" and item.pk not in plan_linked_ids and has_any_subscription
+            ):
                 result[item.pk] = AccessInfo(
                     has_access=True,
                     pricing_type=pricing_type,
