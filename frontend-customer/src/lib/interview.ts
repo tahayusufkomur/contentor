@@ -40,8 +40,8 @@ export const pageLabel = (key: string) => PAGE_LABELS[key] ?? `${key} page`;
 
 const DRAFT_LABELS: Record<string, string> = {
   course: "your first course",
-  event: "your first class",
-  onsite: "your in-person class",
+  event: "your first online class",
+  onsite: "your first in-person event",
   post: "your first article",
 };
 
@@ -78,8 +78,8 @@ export function activityLine(builds: Builds, drafts: Drafts): string | null {
 
 const DRAFT_DONE: Record<string, string> = {
   course: "Your first course is drafted. I’m adding it to your Courses page.",
-  event: "Your first class is on the calendar.",
-  onsite: "Your in-person class is on the calendar.",
+  event: "Your first online class is on the calendar.",
+  onsite: "Your first in-person event is on the calendar.",
   post: "Your first article is drafted.",
 };
 
@@ -324,9 +324,12 @@ export const SECTIONS: { label: string; fields: string[] }[] = [
       "course_review",
       "live_topic",
       "live_when",
-      "location",
       "event_price",
       "event_review",
+      "onsite_topic",
+      "onsite_when",
+      "location",
+      "onsite_price",
       "onsite_review",
       "calendar_view",
       "article_topic",

@@ -20,8 +20,8 @@ import { cn } from "@/lib/utils";
 
 const NOUN: Record<ReviewKind, string> = {
   course: "course",
-  event: "class",
-  onsite: "in-person class",
+  event: "online class",
+  onsite: "in-person event",
 };
 const DRAFTING: Record<ReviewKind, string[]> = {
   course: ["Outlining the modules", "Writing the lessons", "Choosing a cover"],

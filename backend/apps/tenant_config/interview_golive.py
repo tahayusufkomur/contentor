@@ -141,12 +141,19 @@ def _summary(tenant, answers, flow) -> list[dict]:
     if plans:
         value = ", ".join(f"{p.name} ({_money(p.price, tenant)} a month)" for p in plans)
         lines.append({"label": "Memberships", "value": value})
-    if {"live", "onsite"} & set(answers.get("offers") or []) and brief.is_settled(answers, "live_when"):
-        when = str(answers.get("live_when") or "times to suit your students")
-        price = answers.get("event_price")
-        lines.append({"label": "Classes", "value": f"{when}" + (f", {_money(price, tenant)} each" if price else "")})
-        if answers.get("calendar_nav") != "no":
-            lines.append({"label": "Class calendar", "value": "A month grid, linked in your menu"})
+    offers = set(answers.get("offers") or [])
+    runs = False
+    for offer, label, when_id, price_id in (
+        ("live", "Online classes", "live_when", "event_price"),
+        ("onsite", "In-person events", "onsite_when", "onsite_price"),
+    ):
+        if offer in offers and brief.is_settled(answers, when_id):
+            when = str(answers.get(when_id) or "times to suit your students")
+            price = answers.get(price_id)
+            lines.append({"label": label, "value": f"{when}" + (f", {_money(price, tenant)} each" if price else "")})
+            runs = True
+    if runs and answers.get("calendar_nav") != "no":
+        lines.append({"label": "Class calendar", "value": "A month grid, linked in your menu"})
     return lines
 
 
@@ -174,14 +181,19 @@ def _free_effects(tenant, answers, flow) -> list[str]:
             "Live classes need a paid plan, so they come off your site for now, with your first class."
             + ("" if rest else " Your site goes live with its pages.")
         )
-    elif (drafts.get("event") or {}).get("id") and answers.get("event_price"):
-        out.append("Your first class becomes free.")
+    else:
+        for key, price_id, what in (
+            ("event", "event_price", "online class"),
+            ("onsite", "onsite_price", "in-person event"),
+        ):
+            if (drafts.get(key) or {}).get("id") and answers.get(price_id):
+                out.append(f"Your first {what} becomes free.")
     if out:
         out.append("You can choose a plan and add prices back any time.")
     return out
 
 
-# The in-person class is held with the online one.
+# Held, released and made free together; each keeps its own draft.
 _CLASSES = ("event", "onsite")
 
 
@@ -281,8 +293,8 @@ def release_held(tenant) -> None:
         # Only the request that flips it expands the series: two admin pages
         # loading at once never copy the classes twice.
         flipped = row is not None and type(row).objects.filter(pk=row.pk, status="draft").update(status=status)
-        if flipped and key == "event":
-            expand_class_series(tenant)  # a weekly schedule belongs to the online class
+        if flipped:
+            expand_class_series(tenant, key)
     _save_held(tenant, held or None)
     if not held:
         logger.info("sell later: held items released for tenant %s", tenant.schema_name)
@@ -315,8 +327,10 @@ def publish(tenant) -> None:
         if drafts.get(kind) and not held.get(kind):
             with suppress(content.ContentOpError):  # already published, or the draft is gone
                 publisher(drafts[kind])
-    if _live_entitled(tenant) and not held.get("event"):
-        expand_class_series(tenant)  # a weekly schedule becomes its classes
+    if _live_entitled(tenant):
+        for key in _CLASSES:
+            if not held.get(key):
+                expand_class_series(tenant, key)  # a weekly schedule becomes its classes
     setup_flow.act(tenant, "finish", publish=True)
 
 
@@ -331,7 +345,7 @@ def make_free(tenant) -> None:
     base = dict(answers)
     answers["sells"] = "free"
     answers["payments"] = ["free"]
-    for key in ("course_price", "memberships", "event_price"):
+    for key in ("course_price", "memberships", "event_price", "onsite_price"):
         answers.pop(key, None)
     live_dropped = not _live_entitled(tenant) and bool({"live", "onsite"} & set(answers.get("offers") or []))
     if live_dropped:
@@ -347,10 +361,12 @@ def make_free(tenant) -> None:
     drafts = flow.get("drafts") or {}
     if drafts.get("course"):
         Course.objects.filter(pk=drafts["course"], pricing_type="paid").update(pricing_type="free", price=0)
-    if live_dropped and drafts.get("event"):
-        drop_draft(tenant, "event")  # the drafted classes go with the live offer, both of them
+    if live_dropped:
+        for key in _CLASSES:  # the drafted classes go with the live offer
+            if drafts.get(key):
+                drop_draft(tenant, key)
     else:
-        for key in ("event", "onsite"):
+        for key in _CLASSES:
             event = drafts.get(key) or {}
             if event.get("id"):
                 model = OnsiteEvent if event.get("kind") == "onsite" else LiveClass

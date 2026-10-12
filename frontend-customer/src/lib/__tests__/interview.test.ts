@@ -388,9 +388,12 @@ describe("sectionOf", () => {
       "course_review",
       "live_topic",
       "live_when",
-      "location",
       "event_price",
       "event_review",
+      "onsite_topic",
+      "onsite_when",
+      "location",
+      "onsite_price",
       "onsite_review",
       "calendar_view",
       "article_topic",
@@ -408,16 +411,18 @@ describe("sectionOf", () => {
 });
 
 describe("the address question", () => {
-  it("sits in the class section, with the in-person review", () => {
-    const fields = SECTIONS[sectionOf("live_when")].fields;
+  it("sits in the in-person event's own questions, before its review", () => {
+    const fields = SECTIONS[sectionOf("onsite_when")].fields;
     expect(fields.indexOf("location")).toBeGreaterThan(
-      fields.indexOf("live_when"),
+      fields.indexOf("onsite_when"),
     );
     expect(fields.indexOf("onsite_review")).toBeGreaterThan(
+      fields.indexOf("location"),
+    );
+    expect(fields.indexOf("onsite_topic")).toBeGreaterThan(
       fields.indexOf("event_review"),
     );
-    expect(sectionOf("location")).toBe(sectionOf("live_when"));
-    expect(sectionOf("onsite_review")).toBe(sectionOf("live_when"));
+    expect(sectionOf("location")).toBe(sectionOf("onsite_when"));
     expect(sectionOf("calendar_view")).toBe(sectionOf("live_when"));
   });
   it("takes a filled box and refuses an empty one", () => {

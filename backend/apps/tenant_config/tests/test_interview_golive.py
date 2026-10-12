@@ -155,7 +155,13 @@ def test_go_live_lists_the_steps_left_and_what_was_built(client, tenant_ctx, con
     plan = SubscriptionPlan.objects.create(name="Online membership", price=Decimal("19"), billing_interval_months=1)
     config.setup_flow = {**config.setup_flow, "drafts": {"plans": {"online": plan.pk}}}
     config.save()
-    answers = {**DONE, "sells": "paid", "offers": ["live"], "live_when": "Tuesdays at 7:00 PM"}
+    answers = {
+        **DONE,
+        "sells": "paid",
+        "offers": ["live", "onsite"],
+        "live_when": "Tuesdays at 7:00 PM",
+        "onsite_when": "Saturdays at 10:00 AM",
+    }
     Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
     with (
         mock.patch("apps.tenant_config.interview_golive.is_paid_active", return_value=False),
@@ -165,7 +171,8 @@ def test_go_live_lists_the_steps_left_and_what_was_built(client, tenant_ctx, con
     assert [s["id"] for s in body["steps"]] == ["plan", "payouts", "publish"]
     assert all(s["minutes"] for s in body["steps"])
     summary = {line["label"]: line["value"] for line in body["summary"]}
-    assert "Online membership" in summary["Memberships"] and "Tuesdays at 7:00 PM" in summary["Classes"]
+    assert "Online membership" in summary["Memberships"] and "Tuesdays at 7:00 PM" in summary["Online classes"]
+    assert "Saturdays at 10:00 AM" in summary["In-person events"]
     assert summary["Pages"].startswith("Home")
 
 

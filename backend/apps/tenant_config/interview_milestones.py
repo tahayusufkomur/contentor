@@ -29,18 +29,28 @@ PAGE_NEEDS = {
     "home": ("teaches", "audience", "outcome", "offers", "pitch"),
     "about": ("teaches", "story", "credentials", "tone"),
     "contact": ("contact", "location"),
-    "faq": ("offers", "payments", "course_price", "memberships", "live_when", "event_price"),
+    "faq": (
+        "offers",
+        "payments",
+        "course_price",
+        "memberships",
+        "live_when",
+        "event_price",
+        "onsite_when",
+        "onsite_price",
+    ),
 }
 DRAFT_NEEDS = {
     "course": ("course_topic", "payments", "course_price"),
-    "event": ("live_topic", "live_when", "location", "payments", "event_price"),
-    # An in-person class, drafted beside an online one (see _due).
-    "onsite": ("live_topic", "live_when", "location", "payments", "event_price"),
+    "event": ("live_topic", "live_when", "payments", "event_price"),
+    "onsite": ("onsite_topic", "onsite_when", "location", "payments", "onsite_price"),
     "post": ("article_topic",),
 }
-DRAFT_OFFERS = {"course": ("course",), "event": ("live", "onsite"), "onsite": ("onsite",), "post": ("articles",)}
+DRAFT_OFFERS = {"course": ("course",), "event": ("live",), "onsite": ("onsite",), "post": ("articles",)}
 # The review screen that shows each draft.
 REVIEW_FIELDS = {"course_review": "course", "event_review": "event", "onsite_review": "onsite"}
+# Each kind of session keeps its own topic / time / price answers: live_topic, onsite_when, ...
+EVENT_KEYS = {"event": "live", "onsite": "onsite"}
 LOGO_PAGE = 14  # + "just my name" + "upload my own" = a full 4x4 grid
 REMOTE_LOGO = "p4l:"  # a catalog logo mark's card value: p4l:<asset id>
 DEFAULT_TIER = "digital"
@@ -59,20 +69,18 @@ def _due(tenant, answers) -> list[str]:
         return []
     due = ["style:auto", "page:home", "rank:logos"]
     due += [f"page:{p}" for p in ("about", "contact", "faq") if brief.settled(answers, PAGE_NEEDS[p])]
-    # A coach who runs classes gets an Events page once the class section
-    # is answered or skipped.
-    if offers & {"live", "onsite"} and brief.settled(answers, ("live_topic", "live_when")):
+    # A coach who runs classes gets an Events page once the class sections
+    # are answered or skipped.
+    if offers & {"live", "onsite"} and brief.settled(
+        answers, ("live_topic", "live_when", "onsite_topic", "onsite_when")
+    ):
         due.append("page:events")
     skipped = set(answers.get("skipped") or [])
     if "membership" in (answers.get("payments") or []) and brief.settled(answers, ("memberships",)):
         due.append("plan:membership")
     for kind, needs in DRAFT_NEEDS.items():
-        # An in-person class comes on top of an online one; alone, the first class is in person.
-        if kind == "onsite" and "live" not in offers:
-            continue
         # A class is drafted on any plan; go-live offers the plan that runs it.
-        section = "event" if kind == "onsite" else kind  # skipping classes skips both
-        wanted = section not in skipped and (kind not in DRAFT_OFFERS or offers.intersection(DRAFT_OFFERS[kind]))
+        wanted = kind not in skipped and (kind not in DRAFT_OFFERS or offers.intersection(DRAFT_OFFERS[kind]))
         if wanted and brief.settled(answers, needs):
             due.append(f"draft:{kind}")
     return due
@@ -263,15 +271,14 @@ def draft_prompt(answers: dict, kind: str) -> str:
             f"For: {_val(answers, 'audience', 'my students')}. Price: {price_text}."
         )
     if kind in ("event", "onsite"):
-        offers = answers.get("offers") or []
-        where = "in person" if kind == "onsite" or ("onsite" in offers and "live" not in offers) else "online"
-        place = f" Where: {answers['location']}." if where == "in person" and answers.get("location") else ""
-        # The schedule's first date is the online class's; the in-person one picks its own.
-        first = first_class_at(answers) if kind == "event" else None
-        when = f"{_val(answers, 'live_when', 'an evening that suits my students')}" + (
+        key = EVENT_KEYS[kind]
+        place = f" Where: {answers['location']}." if kind == "onsite" and answers.get("location") else ""
+        first = first_class_at(answers, kind)
+        when = f"{_val(answers, f'{key}_when', 'an evening that suits my students')}" + (
             f" (the first one on {first.strftime('%Y-%m-%dT%H:%M')})" if first else ""
         )
-        return f"My first {where} class. Topic: {_val(answers, 'live_topic', 'you choose')}. When: {when}.{place}"
+        what = "in person event" if kind == "onsite" else "online class"
+        return f"My first {what}. Topic: {_val(answers, f'{key}_topic', 'you choose')}. When: {when}.{place}"
     return f"My first article. Topic: {_val(answers, 'article_topic', 'you choose something useful for my students')}."
 
 
@@ -319,7 +326,7 @@ def run_draft(tenant, kind: str, prompt: str, keep_cover: bool = False) -> None:
             if item is not None:
                 item.thumbnail, item.thumbnail_url = cover
                 item.save(update_fields=["thumbnail", "thumbnail_url"])
-        if kind == "event":
+        if kind in EVENT_KEYS:
             apply_schedule(tenant)
     finally:
         _set_draft_status(tenant, kind, status)
@@ -331,9 +338,10 @@ def run_draft(tenant, kind: str, prompt: str, keep_cover: bool = False) -> None:
 # ── class schedule ───────────────────────────────────────────────────────────
 
 
-def first_class_at(answers: dict):
-    """When the coach's schedule puts the first class, or None without one."""
-    picked = answers.get("live_schedule")
+def first_class_at(answers: dict, kind: str = "event"):
+    """When the coach's schedule puts the first class of this kind (the online
+    class "event" or the in-person "onsite"), or None without one."""
+    picked = answers.get(f"{EVENT_KEYS[kind]}_schedule")
     if not picked:
         return None
     tz = (TenantConfig.objects.first() or TenantConfig()).timezone
@@ -342,36 +350,39 @@ def first_class_at(answers: dict):
 
 
 def apply_schedule(tenant) -> None:
-    """The drafted class takes the schedule's first date (the model's own
+    """Each drafted class takes its schedule's first date (the model's own
     guess stands when the coach typed a time instead of picking one)."""
-    first = first_class_at(brief.answers_of(tenant))
-    item = _draft_row(TenantConfig.objects.first().setup_flow or {}, "event") if first else None
-    if item is not None and item.scheduled_at != first:
-        item.scheduled_at = first
-        item.save(update_fields=["scheduled_at"])
+    answers = brief.answers_of(tenant)
+    flow = TenantConfig.objects.first().setup_flow or {}
+    for kind in EVENT_KEYS:
+        first = first_class_at(answers, kind)
+        item = _draft_row(flow, kind) if first else None
+        if item is not None and item.scheduled_at != first:
+            item.scheduled_at = first
+            item.save(update_fields=["scheduled_at"])
 
 
 def apply_address(answers: dict) -> None:
-    """An in-person class already drafted moves with its address (she went back)."""
-    flow = TenantConfig.objects.first().setup_flow or {}
-    for key in ("event", "onsite"):
-        row = _draft_row(flow, key)
-        if row is not None and hasattr(row, "address"):
-            row.location, row.address = answers.get("location") or "", answers.get("address") or ""
-            row.save(update_fields=["location", "address"])
+    """An in-person event already drafted moves with its address (she went back)."""
+    row = _draft_row(TenantConfig.objects.first().setup_flow or {}, "onsite")
+    if row is not None:
+        row.location, row.address = answers.get("location") or "", answers.get("address") or ""
+        row.save(update_fields=["location", "address"])
 
 
-def expand_class_series(tenant) -> int:
-    """At go-live, a weekly schedule becomes the classes it means: the
-    approved first class, copied to every later date (capped by
-    interview_schedule.MAX_CLASSES). Returns how many were added."""
+def expand_class_series(tenant, kind: str = "event") -> int:
+    """At go-live, a weekly schedule becomes the sessions it means: the
+    approved first one, copied to every later date (capped by
+    interview_schedule.MAX_CLASSES). ``kind`` is the online class "event" or the
+    in-person "onsite". Returns how many were added."""
     answers = brief.answers_of(tenant)
-    picked = answers.get("live_schedule")
+    picked = answers.get(f"{EVENT_KEYS[kind]}_schedule")
     if not picked or picked.get("mode") != "recurring":
         return 0
     flow = TenantConfig.objects.first().setup_flow or {}
-    first = _draft_row(flow, "event")
-    if first is None or (flow.get("interview") or {}).get("series_expanded"):
+    first = _draft_row(flow, kind)
+    flag = "series_expanded" if kind == "event" else f"series_expanded_{kind}"  # "event" keeps its first name
+    if first is None or (flow.get("interview") or {}).get(flag):
         return 0
     tz = TenantConfig.objects.first().timezone
     later = [d for d in schedule.occurrences(picked, tz) if d > first.scheduled_at]
@@ -383,7 +394,7 @@ def expand_class_series(tenant) -> int:
         row.save()
 
     def mutate(_config, flow):
-        flow["interview"] = {**(flow.get("interview") or {}), "series_expanded": True}
+        flow["interview"] = {**(flow.get("interview") or {}), flag: True}
 
     from .setup_flow import _update_flow
 
@@ -441,24 +452,21 @@ def _next_cover(tenant, kind: str) -> None:
 
 
 def drop_draft(tenant, kind: str) -> None:
-    """A skipped section: its draft goes, and its publish blocker with it. The
-    classes section's drafts go together: the online class and the in-person one."""
+    """A skipped section: its draft goes, and its publish blocker with it."""
     from .setup_flow import _delete_draft, _update_flow
 
-    kinds = ("event", "onsite") if kind == "event" else (kind,)
-    refs = {}
+    ref = None
 
     def mutate(_config, flow):
+        nonlocal ref
         drafts = dict(flow.get("drafts") or {})
-        for key in kinds:
-            refs[key] = drafts.pop(key, None)
+        ref = drafts.pop(kind, None)
         flow["drafts"] = drafts
         flow["skipped"] = list(dict.fromkeys([*(flow.get("skipped") or []), kind]))
-        flow["draft_status"] = {k: v for k, v in (flow.get("draft_status") or {}).items() if k not in kinds}
+        flow["draft_status"] = {k: v for k, v in (flow.get("draft_status") or {}).items() if k != kind}
 
     _update_flow(tenant, mutate)
-    for key in kinds:
-        _delete_draft(key, refs.get(key))
+    _delete_draft(kind, ref)
 
 
 # ── membership ───────────────────────────────────────────────────────────────
@@ -812,10 +820,9 @@ def review_card(tenant, kind: str) -> dict:
         detail.update(when=item.scheduled_at.isoformat(), event_kind=ref.get("kind", "live"))
         detail["location"] = getattr(item, "location", "") or ""
         detail["address"] = getattr(item, "address", "") or ""
-        # A weekly class says so, not only its first date (audit G6). The
-        # schedule is the first class's; the in-person one beside it has its own date.
-        picked = brief.answers_of(tenant).get("live_schedule")
-        if kind == "event" and isinstance(picked, dict) and picked.get("mode") == "recurring":
+        # A weekly class says so, not only its first date (audit G6).
+        picked = brief.answers_of(tenant).get(f"{EVENT_KEYS[kind]}_schedule")
+        if isinstance(picked, dict) and picked.get("mode") == "recurring":
             detail["repeats"] = schedule.summary(picked)
     others = [i for i in _cover_images(tenant, kind, item) if i.asset_id != current][: COVERS - 1]
     covers = [{"value": current, "url": detail["cover_url"], "current": True}] if detail["cover_url"] else []
@@ -939,7 +946,7 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
             raise ChoiceError("invalid_schedule")
         brief.apply_fact(answers, field_id, schedule.summary(picked))
         # Class times are in the site's time zone, which has its own question.
-        answers["live_schedule"] = {k: v for k, v in picked.items() if k != "tz"}
+        answers[f"{field_id.removesuffix('_when')}_schedule"] = {k: v for k, v in picked.items() if k != "tz"}
         return
     if field is not None and field.kind == "address":
         # The place and its street address: {"Place": "Studio 4", "Address": "Hauptstr. 12, Berlin"}.

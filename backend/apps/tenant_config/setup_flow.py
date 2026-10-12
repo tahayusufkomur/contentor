@@ -151,7 +151,7 @@ def content_snapshot(flow: dict) -> dict:
     event = _row(OnsiteEvent if event_kind == "onsite" else LiveClass, event_ref.get("id"))
     if event:
         out["event"] = {"id": event.id, "title": event.title, "kind": event_kind, "is_published": True}
-    # The in-person class drafted beside an online one: not a step of its own, so
+    # The in-person event is its own interview section, not a step of its own, so
     # it shows here only as the draft it is.
     onsite = _row(OnsiteEvent, (drafts.get("onsite") or {}).get("id"))
     if onsite:
@@ -386,7 +386,7 @@ DRAFT_SYSTEM = {
         "scheduled_at: a local date and time (YYYY-MM-DDTHH:MM, no offset) at least 2 days after "
         "'today', at an hour that suits their audience, respecting any day or time the coach named."
     ),
-    # The in-person class beside an online one: the same rules, always in person.
+    # The in-person event: the same rules, always in person.
     "onsite": _DRAFT_RULES
     + (
         "Draft ONE upcoming in-person session (event_kind 'onsite'): a concrete title (max 80 chars); "
@@ -443,10 +443,12 @@ DEFAULT_COURSE_PRICE = 49.0
 DEFAULT_EVENT_PRICE = 15.0
 
 
-def brief_price(answers: dict, kind: str) -> float | None:
+def brief_price(answers: dict, kind: str, price_key: str | None = None) -> float | None:
     """What the brief commits a course or class to cost: a price, 0.0 when
     it is not sold on its own (free, or covered by the membership), or None
-    when the brief says nothing about selling (the model's draft stands)."""
+    when the brief says nothing about selling (the model's draft stands).
+    ``kind`` is the way it is paid for; ``price_key`` the answer holding the
+    price when that is not ``<kind>_price`` (the in-person event's)."""
     ways = answers.get("payments")
     if ways is None:  # an interview from before the payments question
         if kind != "course" or answers.get("sells") != "paid":
@@ -454,14 +456,14 @@ def brief_price(answers: dict, kind: str) -> float | None:
         ways = ["course"]
     if kind not in ways:
         return 0.0
-    price = answers.get(f"{kind}_price")
+    price = answers.get(price_key or f"{kind}_price")
     return float(price) if price else DEFAULT_COURSE_PRICE if kind == "course" else DEFAULT_EVENT_PRICE
 
 
-def _brief_price(tenant, kind: str = "course") -> float | None:
+def _brief_price(tenant, kind: str = "course", price_key: str | None = None) -> float | None:
     from .interview_brief import answers_of
 
-    return brief_price(answers_of(tenant), kind)
+    return brief_price(answers_of(tenant), kind, price_key)
 
 
 def _may_price(tenant) -> bool:
@@ -524,9 +526,10 @@ def _create(tenant, user, config, kind: str, draft):
         }
         return content.create_course(user, params)["id"]
     if kind in ("event", "onsite"):
-        # The in-person class beside an online one is in person, whatever the model said.
+        # The in-person event is in person, whatever the model said.
         event_kind = "onsite" if kind == "onsite" else draft.event_kind
-        price = (_brief_price(tenant, "event") or 0) if _may_price(tenant) else 0
+        price_key = "onsite_price" if kind == "onsite" else None
+        price = (_brief_price(tenant, "event", price_key) or 0) if _may_price(tenant) else 0
         params = {
             "title": draft.title[:200],
             "description": draft.description,
@@ -629,7 +632,10 @@ def fallback_draft(kind: str, answers: dict):
         )
     if kind in ("event", "onsite"):
         return EventDraft(
-            title=str(answers.get("live_topic") or f"{teaches} live class")[:80],
+            title=str(
+                answers.get("onsite_topic" if kind == "onsite" else "live_topic")
+                or f"{teaches} {'event' if kind == 'onsite' else 'live class'}"
+            )[:80],
             description="A live session to practise together.",
             event_kind="onsite" if kind == "onsite" or ("onsite" in offers and "live" not in offers) else "live",
             scheduled_at=timezone.now() + timedelta(days=3),

@@ -119,7 +119,11 @@ def test_required_follows_offers_and_selling():
     assert "course_price" not in ids({"offers": ["course"], "payments": ["membership"]})
     assert "memberships" in ids({"payments": ["membership"]})
     assert "course_price" in ids({"offers": ["course"], "payments": ["course"]})
-    assert {"live_topic", "live_when", "location"} <= set(ids({"offers": ["course", "onsite"]}))
+    # Each kind of session asks its own questions.
+    assert {"onsite_topic", "onsite_when", "location", "onsite_review"} <= set(ids({"offers": ["course", "onsite"]}))
+    assert not {"live_topic", "live_when", "event_review"} & set(ids({"offers": ["course", "onsite"]}))
+    assert {"live_topic", "live_when", "event_review"} <= set(ids({"offers": ["course", "live"]}))
+    assert not {"onsite_topic", "onsite_when", "onsite_review"} & set(ids({"offers": ["course", "live"]}))
 
 
 def test_missing_skips_answered_and_delegated_in_priority_order():
@@ -291,6 +295,9 @@ def test_only_the_guides_own_calls_can_be_left_to_it():
         "live_topic",
         "live_when",
         "event_price",
+        "onsite_topic",
+        "onsite_when",
+        "onsite_price",
         "article_topic",
     }
     assert len(brief.FIELD_BY_ID["teaches"].options) == 8
@@ -368,13 +375,15 @@ def test_socials_are_read_from_the_coachs_words():
 
 def test_the_calendar_layout_is_asked_only_of_a_coach_who_runs_classes_after_the_first_class():
     ids = lambda answers: [f.id for f in brief.required(answers)]  # noqa: E731
-    for offers in (["live"], ["onsite"]):
+    for offers, review in ((["live"], "event_review"), (["onsite"], "onsite_review")):
         order = ids({"offers": offers})
-        assert order.index("calendar_view") == order.index("event_review") + 1
+        assert order.index("calendar_view") == order.index(review) + 1
     assert "calendar_view" not in ids({"offers": ["course"]})
-    # "No class for now" skips the calendar question with the rest of the class section.
-    answers = {"offers": ["live"]}
+    # The calendar goes only when every kind of session she runs is skipped.
+    answers = {"offers": ["live", "onsite"]}
     assert brief.skip(answers, "event")
+    assert "calendar_view" in ids(answers)
+    assert brief.skip(answers, "onsite")
     assert "calendar_view" not in ids(answers)
     # The Calendar link is on by default; that one is never asked.
     assert "calendar_nav" not in brief.FIELD_BY_ID
@@ -460,10 +469,11 @@ def test_time_zone_and_currency_are_read_from_a_pick_or_the_coachs_words():
 def test_the_address_is_asked_in_the_class_section_for_in_person_coaches():
     answers = {"offers": ["onsite"], "payments": ["free"]}
     ids = [f.id for f in brief.required(answers)]
-    assert ids.index("live_when") < ids.index("location") < ids.index("event_review")
+    assert ids.index("onsite_when") < ids.index("location") < ids.index("onsite_review")
     assert "location" not in [f.id for f in brief.required({"offers": ["live"], "payments": ["free"]})]
-    # Skipping the class skips its address.
-    assert "location" not in [f.id for f in brief.required({**answers, "skipped": ["event"]})]
+    # Skipping the in-person event skips its address; skipping the online class does not.
+    assert "location" not in [f.id for f in brief.required({**answers, "skipped": ["onsite"]})]
+    assert "location" in [f.id for f in brief.required({**answers, "skipped": ["event"]})]
 
 
 def test_the_model_cannot_fill_the_address():
@@ -472,9 +482,11 @@ def test_the_model_cannot_fill_the_address():
     assert "location" not in answers
 
 
-def test_the_in_person_class_has_its_own_review_only_beside_an_online_one():
+def test_online_and_in_person_sessions_are_separate_sections_each_with_a_review():
     both = [f.id for f in brief.required({"offers": ["live", "onsite"], "payments": ["free"]})]
-    # After the online class's review, before the calendar question that closes the section.
-    assert both.index("event_review") + 1 == both.index("onsite_review") == both.index("calendar_view") - 1
-    for offers in (["onsite"], ["live"]):
-        assert "onsite_review" not in [f.id for f in brief.required({"offers": offers, "payments": ["free"]})]
+    # The online section, then the in-person one, then the calendar question that closes them.
+    assert both.index("event_review") < both.index("onsite_topic")
+    assert both.index("onsite_review") == both.index("calendar_view") - 1
+    # Each is skipped on its own.
+    assert {brief.FIELD_BY_ID[i].group for i in ("live_topic", "onsite_topic")} == {"event", "onsite"}
+    assert set(brief.SKIP_LABELS) >= {"event", "onsite"}

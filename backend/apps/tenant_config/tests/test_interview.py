@@ -790,16 +790,17 @@ def test_the_address_question_is_two_boxes_and_opens_on_what_she_gave():
         "Place": "Studio 4",
         "Address": "Hauptstr. 12",
     }
-    # Her address is never a thing the model is asked to fill, and "No class for now"
-    # is not offered on the in-person review (it would drop the online class too).
+    # Her address is never a thing the model is asked to fill. Each kind of session can be
+    # skipped on its own, on its review screen too.
     assert "location" not in interview.SYSTEM
+    assert guide["builder"] == "onsite"
     review = interview.guide_for(brief.FIELD_BY_ID["onsite_review"], answers={"offers": ["live", "onsite"]})
-    assert review["skip"] is None and review["builder"] is None
-    assert interview.guide_for(brief.FIELD_BY_ID["event_review"])["skip"] == "No class for now"
+    assert review["skip"] == "No in-person event for now" and review["builder"] is None
+    assert interview.guide_for(brief.FIELD_BY_ID["event_review"])["skip"] == "No online class for now"
 
 
 def test_an_address_pick_skips_the_model_and_asks_the_next_question(client, tenant_ctx, quiet):
-    _only_missing(tenant_ctx, ("location", "event_price"), offers=["onsite"], payments=["event"])
+    _only_missing(tenant_ctx, ("location", "onsite_price"), offers=["onsite"], payments=["event"])
     value = json.dumps({"Place": "Studio 4", "Address": "Hauptstr. 12"})
     body = client.post(
         URL, {"message": "Studio 4, Hauptstr. 12", "choice": {"field": "location", "value": value}}, format="json"
@@ -809,7 +810,7 @@ def test_an_address_pick_skips_the_model_and_asks_the_next_question(client, tena
     assert (answers["location"], answers["address"]) == ("Studio 4", "Hauptstr. 12")
     # Back on that question, both boxes start with what she gave.
     assert interview.prefill_for("location", answers) == {"Place": "Studio 4", "Address": "Hauptstr. 12"}
-    assert body["guide"]["field"] == "event_price"
+    assert body["guide"]["field"] == "onsite_price"
 
 
 # ── a shared document (bio, CV, old About page) ──────────────────────────────

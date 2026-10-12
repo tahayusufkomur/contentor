@@ -251,7 +251,7 @@ export interface LookCards {
 }
 
 export type ReviewKind = "course" | "event" | "onsite";
-export type BuilderKind = "course" | "event" | "membership";
+export type BuilderKind = "course" | "event" | "onsite" | "membership";
 
 /** When a class runs: weekly on set days and times between two dates, or
  * once, on one date and time (`at`). Dates "YYYY-MM-DD", times "HH:MM",

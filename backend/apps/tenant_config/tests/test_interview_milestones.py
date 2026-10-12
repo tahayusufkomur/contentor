@@ -936,42 +936,71 @@ def test_the_header_button_follows_what_the_coach_offers(tenant_ctx, config):
 
 
 CLASSES = {**HOME, "payments": ["free"], "live_topic": "Slow flow", "live_when": "Sunday 9am"}
-IN_PERSON = {**CLASSES, "offers": ["course", "onsite"], "location": "Studio 4", "address": "Hauptstr. 12"}
+IN_PERSON = {
+    **HOME,
+    "payments": ["free"],
+    "offers": ["course", "onsite"],
+    "onsite_topic": "Pole basics",
+    "onsite_when": "Saturday 6pm",
+    "location": "Studio 4",
+    "address": "Hauptstr. 12",
+}
+BOTH = {**CLASSES, **IN_PERSON, "offers": ["course", "live", "onsite"]}
 ADDRESS = '{"Place": "Studio 4", "Address": "Hauptstr. 12, 10827 Berlin"}'
 
 
-def test_an_in_person_class_is_drafted_beside_an_online_one(
+def test_online_and_in_person_events_are_drafted_separately(
     tenant_ctx, config, side_effects, django_capture_on_commit_callbacks
 ):
     with django_capture_on_commit_callbacks(execute=True):
-        fired = ms.fire(tenant_ctx, {**IN_PERSON, "offers": ["course", "live", "onsite"]})
+        fired = ms.fire(tenant_ctx, dict(BOTH))
     assert {"draft:event", "draft:onsite"} <= set(fired)
     prompts = {call.args[1]: call.args[2] for call in side_effects["draft"].call_args_list}
-    assert "online class" in prompts["event"] and "in person class" in prompts["onsite"]
+    assert "online class. Topic: Slow flow" in prompts["event"]
+    assert "in person event. Topic: Pole basics" in prompts["onsite"]
 
 
-def test_an_in_person_class_alone_is_the_first_class(
+def test_each_kind_of_event_waits_for_its_own_answers(
+    tenant_ctx, config, side_effects, django_capture_on_commit_callbacks
+):
+    only_online = {k: v for k, v in BOTH.items() if k not in ("onsite_topic", "onsite_when", "location", "address")}
+    with django_capture_on_commit_callbacks(execute=True):
+        fired = ms.fire(tenant_ctx, only_online)
+    assert "draft:event" in fired and "draft:onsite" not in fired
+
+
+def test_an_in_person_event_alone_is_drafted_without_an_online_class(
     tenant_ctx, config, side_effects, django_capture_on_commit_callbacks
 ):
     with django_capture_on_commit_callbacks(execute=True):
         fired = ms.fire(tenant_ctx, dict(IN_PERSON))
-    assert "draft:event" in fired and "draft:onsite" not in fired
+    assert "draft:onsite" in fired and "draft:event" not in fired
 
 
-def test_skipping_classes_skips_the_in_person_one_too(
+def test_skipping_one_kind_of_event_keeps_the_other(
     tenant_ctx, config, side_effects, django_capture_on_commit_callbacks
 ):
-    answers = {**IN_PERSON, "offers": ["course", "live", "onsite"], "skipped": ["event"]}
     with django_capture_on_commit_callbacks(execute=True):
-        fired = ms.fire(tenant_ctx, answers)
-    assert not {"draft:event", "draft:onsite"} & set(fired)
+        fired = ms.fire(tenant_ctx, {**BOTH, "skipped": ["event"]})
+    assert "draft:onsite" in fired and "draft:event" not in fired
+    with django_capture_on_commit_callbacks(execute=True):
+        fired = ms.fire(tenant_ctx, {**BOTH, "skipped": ["onsite"]})
+    assert "draft:event" in fired
 
 
-def test_the_in_person_class_prompt_names_its_place(tenant_ctx, config):
-    answers = {**HOME, "offers": ["course", "live", "onsite"], "live_topic": "Pads", "location": "Studio 4"}
-    assert "online class" in ms.draft_prompt(answers, "event")
+def test_each_kind_of_event_keeps_its_own_schedule(tenant_ctx, config):
+    answers = {}
+    ms.choose(tenant_ctx, answers, "onsite_when", '{"mode": "once", "at": "2030-01-08T18:30"}')
+    assert "onsite_schedule" in answers and "live_schedule" not in answers
+    assert ms.first_class_at(answers, "onsite") is not None and ms.first_class_at(answers, "event") is None
+
+
+def test_the_in_person_event_prompt_names_its_place(tenant_ctx, config):
+    answers = {**BOTH, "live_topic": "Pads", "location": "Studio 4"}
+    online = ms.draft_prompt(answers, "event")
+    assert "online class" in online and "Where:" not in online
     in_person = ms.draft_prompt(answers, "onsite")
-    assert "in person class" in in_person and "Where: Studio 4." in in_person
+    assert "in person event" in in_person and "Where: Studio 4." in in_person
 
 
 def test_a_sexy_tone_ranks_the_looks_tagged_for_it():
@@ -1005,28 +1034,31 @@ def test_a_mood_tag_outweighs_a_niche_made_for_another_tone():
     assert cards["options"][0]["style"] == "velvet"
 
 
-def test_the_in_person_draft_falls_back_to_an_in_person_class(tenant_ctx, config, owner):
+def test_the_in_person_draft_falls_back_to_an_in_person_event(tenant_ctx, config, owner):
     from apps.live.models import OnsiteEvent
 
     answers = {
         "teaches": "Yoga",
         "offers": ["course", "live", "onsite"],
         "live_topic": "Slow flow",
+        "onsite_topic": "Retreat day",
         "location": "Studio 4",
     }
     with mock.patch("apps.core.copilot.content._give_cover"):
         setup_flow.create_fallback_draft(tenant_ctx, owner, "onsite", answers)
     row = OnsiteEvent.objects.get()
-    assert (row.title, row.location) == ("Slow flow", "Studio 4")
+    assert (row.title, row.location) == ("Retreat day", "Studio 4")
     assert TenantConfig.objects.first().setup_flow["drafts"]["onsite"] == {"kind": "onsite", "id": row.id}
 
 
-def test_the_class_draft_waits_for_the_address(tenant_ctx, config, side_effects, django_capture_on_commit_callbacks):
+def test_the_in_person_draft_waits_for_the_address(
+    tenant_ctx, config, side_effects, django_capture_on_commit_callbacks
+):
     asked = {k: v for k, v in IN_PERSON.items() if k not in ("location", "address")}
     with django_capture_on_commit_callbacks(execute=True):
-        assert "draft:event" not in ms.fire(tenant_ctx, asked)
+        assert "draft:onsite" not in ms.fire(tenant_ctx, asked)
         fired = ms.fire(tenant_ctx, dict(IN_PERSON))
-    assert "draft:event" in fired
+    assert "draft:onsite" in fired
 
 
 def test_the_address_pick_needs_both_boxes(tenant_ctx, config):
@@ -1042,7 +1074,7 @@ def test_the_in_person_class_carries_the_address_and_follows_a_change(tenant_ctx
 
     brief.save_answers(tenant_ctx, dict(IN_PERSON))
     with mock.patch("apps.core.copilot.content._give_cover"):
-        setup_flow.create_fallback_draft(tenant_ctx, owner, "event", dict(IN_PERSON))
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "onsite", dict(IN_PERSON))
     row = OnsiteEvent.objects.get()
     assert (row.location, row.address) == ("Studio 4", "Hauptstr. 12")
     # She goes back and moves it: the drafted class moves too.
@@ -1052,7 +1084,7 @@ def test_the_in_person_class_carries_the_address_and_follows_a_change(tenant_ctx
 
 
 def test_each_class_is_reviewed_as_its_own_draft(tenant_ctx, config, owner):
-    answers = {**IN_PERSON, "offers": ["course", "live", "onsite"]}
+    answers = dict(BOTH)
     brief.save_answers(tenant_ctx, answers)
     with mock.patch("apps.core.copilot.content._give_cover"):
         setup_flow.create_fallback_draft(tenant_ctx, owner, "event", answers)

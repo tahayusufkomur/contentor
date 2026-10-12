@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Check, ImageOff, Video } from "lucide-react";
+import { CalendarDays, Check, ImageOff, MapPin, Video } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -80,8 +80,18 @@ function ItemCard({
 }) {
   const item = data.review?.status === "ready" ? data.review.item : null;
   const a = data.answers;
-  const topic = a[kind === "course" ? "course_topic" : "live_topic"];
-  const priceText = a[kind === "course" ? "course_price" : "event_price"];
+  const topic =
+    a[
+      { course: "course_topic", event: "live_topic", onsite: "onsite_topic" }[
+        kind
+      ]
+    ];
+  const priceText =
+    a[
+      { course: "course_price", event: "event_price", onsite: "onsite_price" }[
+        kind
+      ]
+    ];
   const title = item?.title ?? topic;
   const covers = item?.covers ?? data.covers;
   const cover =
@@ -106,7 +116,15 @@ function ItemCard({
     { errorToast: "Couldn’t use that cover. Try another." },
   );
   return (
-    <Card kicker={kind === "course" ? "Your first course" : "Your first class"}>
+    <Card
+      kicker={
+        {
+          course: "Your first course",
+          event: "Your first online class",
+          onsite: "Your first in-person event",
+        }[kind]
+      }
+    >
       <div className="relative mt-3 aspect-video overflow-hidden rounded-2xl bg-[var(--sf-tint)]">
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -172,7 +190,7 @@ function ItemCard({
       ) : (
         <Skeleton className="mt-4 h-6 w-4/5" />
       )}
-      {kind === "event" && (
+      {kind !== "course" && (
         <div className="mt-2.5 flex flex-wrap gap-1.5 text-[12.5px]">
           <Chip>
             <CalendarDays className="size-3.5" aria-hidden />
@@ -182,13 +200,20 @@ function ItemCard({
                   hour: "numeric",
                   minute: "2-digit",
                 }).format(new Date(item.when))
-              : (a.live_when ?? (
+              : (a[kind === "onsite" ? "onsite_when" : "live_when"] ?? (
                   <span className="text-[var(--sf-faint)]">Pick a time</span>
                 ))}
           </Chip>
           <Chip>
-            <Video className="size-3.5" aria-hidden />
-            Online, live
+            {kind === "onsite" ? (
+              <MapPin className="size-3.5" aria-hidden />
+            ) : (
+              <Video className="size-3.5" aria-hidden />
+            )}
+            {kind === "onsite"
+              ? [item?.location, item?.address].filter(Boolean).join(" · ") ||
+                "In person"
+              : "Online, live"}
           </Chip>
         </div>
       )}

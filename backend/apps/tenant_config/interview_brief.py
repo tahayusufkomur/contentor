@@ -70,7 +70,12 @@ CURRENCIES = {
     "EUR": ("Euro (€)", "€", r"\beur\b|euro|€"),
 }
 # Sections a coach can skip, and what the skip button says.
-SKIP_LABELS = {"course": "No course for now", "event": "No class for now", "post": "No article for now"}
+SKIP_LABELS = {
+    "course": "No course for now",
+    "event": "No online class for now",
+    "onsite": "No in-person event for now",
+    "post": "No article for now",
+}
 TONES = ("warm", "energetic", "calm", "expert", "playful", "confident", "sensual", "sexy")
 # Words a coach uses for a tone instead of its name (regexes; each maps to one tone).
 TONE_SYNONYMS = {
@@ -745,70 +750,101 @@ FIELDS: tuple[Field, ...] = (
     ),
     Field(
         "live_topic",
-        "Live class topic",
-        "Let's set up your first class. What should it focus on?",
-        needs=("live", "onsite"),
+        "Online class topic",
+        "Let's set up your first online class. What should it focus on?",
+        needs=("live",),
         group="event",
         delegable=True,
     ),
     Field(
         "live_when",
-        "Live class schedule",
-        "When does your first live class run?",
+        "Online class schedule",
+        "When does your first online class run?",
         ("Recurring", "One-time"),
         kind="schedule",  # the tile picks weekly or one-time; the picker sends the dates
-        needs=("live", "onsite"),
+        needs=("live",),
         icons=("repeat", "calendar"),
         hints=("Set days and times, week after week", "A single session on one date"),
         group="event",
         delegable=True,
     ),
     Field(
-        "location",
-        "Where the in-person class happens",
-        "Where does your in-person class take place?",
-        kind="address",  # two boxes: the place, and its street address
-        needs=("onsite",),
-        group="event",
-        why="The place shows on your site. The street address goes only to students who can attend.",
-    ),
-    Field(
         "event_price",
-        "Price per class",
-        "What should one class cost?",
+        "Price per online class",
+        "What should one online class cost?",
         ("5", "10", "15", "20", "25", "35", "50", "75"),
         kind="price",
-        needs=("live", "onsite"),
+        needs=("live",),
         pays=("event",),
         group="event",
         delegable=True,
     ),
     Field(
         "event_review",
-        "First class",
-        "Here's your first class. Happy with it?",
+        "First online class",
+        "Here's your first online class. Happy with it?",
         kind="event",
-        needs=("live", "onsite"),
+        needs=("live",),
         group="event",
     ),
-    # Only beside an online class (see required()): alone, the first class is the in-person one.
+    # In-person events are their own section: topic, time, place, price and review.
+    Field(
+        "onsite_topic",
+        "In-person event topic",
+        "Let's set up your first in-person event. What should it focus on?",
+        needs=("onsite",),
+        group="onsite",
+        delegable=True,
+    ),
+    Field(
+        "onsite_when",
+        "In-person event schedule",
+        "When does your first in-person event take place?",
+        ("Recurring", "One-time"),
+        kind="schedule",
+        needs=("onsite",),
+        icons=("repeat", "calendar"),
+        hints=("Set days and times, week after week", "A single session on one date"),
+        group="onsite",
+        delegable=True,
+    ),
+    Field(
+        "location",
+        "Where the in-person event happens",
+        "Where does your in-person event take place?",
+        kind="address",  # two boxes: the place, and its street address
+        needs=("onsite",),
+        group="onsite",
+        why="The place shows on your site. The street address goes only to students who can attend.",
+    ),
+    Field(
+        "onsite_price",
+        "Price per in-person event",
+        "What should one in-person event cost?",
+        ("5", "10", "15", "20", "25", "35", "50", "75"),
+        kind="price",
+        needs=("onsite",),
+        pays=("event",),
+        group="onsite",
+        delegable=True,
+    ),
     Field(
         "onsite_review",
-        "In-person class",
-        "And here's your in-person class. Happy with it?",
+        "First in-person event",
+        "Here's your first in-person event. Happy with it?",
         kind="event",
         needs=("onsite",),
-        group="event",
+        group="onsite",
     ),
     # One question for coaches who run classes (the Calendar link is on by default, not asked).
-    # Grouped with the class so "No class for now" skips it too.
+    # Not skippable itself: see required() for when it is asked.
     Field(
         "calendar_view",
         "Calendar layout",
         "How should your class calendar look?",
         kind="calendar",
         needs=("live", "onsite"),
-        group="event",
+        group="calendar",
         delegable=True,
     ),
     Field(
@@ -1146,8 +1182,12 @@ def required(answers: dict) -> list[Field]:
         and (not f.pays or pays.intersection(f.pays))
         and f.group not in skipped
         and (f.kind != "specialty" or specialties_for(answers))
-        # The in-person class has its own review only beside an online one.
-        and (f.id != "onsite_review" or {"live", "onsite"} <= offers)
+        # The calendar shows whichever kind she did not skip.
+        and (
+            f.kind != "calendar"
+            or ("live" in offers and "event" not in skipped)
+            or ("onsite" in offers and "onsite" not in skipped)
+        )
     ]
 
 

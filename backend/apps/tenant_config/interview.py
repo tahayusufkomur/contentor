@@ -44,8 +44,8 @@ STARTED = {
     "page:contact": "your Contact page",
     "page:faq": "your FAQ page",
     "draft:course": "a first draft of your course",
-    "draft:event": "your first class",
-    "draft:onsite": "your in-person class",
+    "draft:event": "your first online class",
+    "draft:onsite": "your first in-person event",
     "draft:post": "your first article",
 }
 
@@ -220,9 +220,8 @@ def guide_for(
         "alone": field.alone if field.alone in chosen else None,
         "icons": {o: i for o, i in zip(chosen, names, strict=False) if i in brief.ICONS},
         "hints": dict(zip(chosen, own_hints, strict=False)) if fixed else {},
-        # "No class for now" drops every class: not on the calendar screen, nor on the
-        # in-person review (it would also drop the online class she just approved).
-        "skip": None if field.kind == "calendar" or field.id == "onsite_review" else brief.SKIP_LABELS.get(field.group),
+        # Each section (course, online class, in-person event, article) can be skipped on its own.
+        "skip": brief.SKIP_LABELS.get(field.group),
         "details": brief.details_for(field, answers or {}) if fixed else {},
         # What the question builds, previewed beside its answers.
         "builder": builder_of(field),
@@ -266,7 +265,7 @@ def brand_of(tenant) -> str:
 def builder_of(field: brief.Field) -> str | None:
     if field.kind == "memberships":
         return "membership"
-    if field.group in ("course", "event") and field.kind not in (*REVIEW_KINDS, "calendar"):
+    if field.group in ("course", "event", "onsite") and field.kind not in (*REVIEW_KINDS, "calendar"):
         return field.group
     return None
 
@@ -381,8 +380,10 @@ NOTED_NAMES = {
     "payments": "how students pay",
     "course_topic": "your course topic",
     "course_price": "your course price",
-    "live_topic": "your class topic",
-    "event_price": "your class price",
+    "live_topic": "your online class topic",
+    "event_price": "your online class price",
+    "onsite_topic": "your in-person event topic",
+    "onsite_price": "your in-person event price",
     "article_topic": "your article topic",
     "socials": "your social accounts",
     "contact": "how students reach you",
@@ -455,7 +456,7 @@ def picked_note(tenant, field_id) -> str:
         return f"I set up the {tier['label']} for you. You can change it any time."
     if field_id == "tone":
         return "I'll match the tone to what you've told me. You can change it any time."
-    if field_id in ("course_price", "event_price"):
+    if field_id in ("course_price", "event_price", "onsite_price"):
         price = flow.DEFAULT_COURSE_PRICE if field_id == "course_price" else flow.DEFAULT_EVENT_PRICE
         return f"I'll start it at {price:g} {tenant_charge_currency(tenant).upper()}. You can change it any time."
     return ""
