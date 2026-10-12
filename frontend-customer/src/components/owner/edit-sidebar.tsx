@@ -30,7 +30,7 @@ import { SITE_UPDATED_EVENT } from "@/lib/site-events";
 import { Spinner } from "@/components/ui/spinner";
 import { EntitlementsProvider } from "@/components/admin/entitlements-provider";
 import { TenantContext } from "@/hooks/use-tenant";
-import { generateThemeCSS } from "@/lib/themes";
+import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
 import { SetupAssistantBubble } from "@/components/setup/setup-assistant-bubble";
 import {
   PAGE_KEYS,
@@ -514,16 +514,10 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                 className="min-w-0 flex-1 transition-all duration-300 ease-in-out"
                 style={{ marginLeft: editMode && open ? SIDEBAR_WIDTH : 0 }}
               >
-                {/* Live theme override — applies color/font changes instantly */}
-                <style
-                  dangerouslySetInnerHTML={{
-                    __html: generateThemeCSS(
-                      config.theme,
-                      config.font_family,
-                      config.custom_css || "",
-                    ),
-                  }}
-                />
+                {/* Live theme override — applies color/font changes instantly.
+                    Same component as the page head, so a styled site keeps its
+                    look's palette instead of the legacy `theme` (ocean). */}
+                <TenantThemeStyle config={config} />
                 <TenantContext.Provider value={config}>
                   {children}
                 </TenantContext.Provider>
