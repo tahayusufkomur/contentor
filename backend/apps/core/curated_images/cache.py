@@ -103,9 +103,26 @@ def _download(image: RemoteImage) -> bytes:
     return bytes(body)
 
 
-def cache_remote_image(image: RemoteImage):
+def _clean_mark(body: bytes, image: RemoteImage):
+    """A logo mark as a tight, clean cutout -> (bytes, width, height). The
+    catalog sometimes hands over a mark whose background is only half cut
+    away, which sits in a white box on a dark navbar."""
+    from PIL import Image
+
+    from apps.core.curated_logos.clean import clean_curated_png
+
+    cleaned = clean_curated_png(body, "WEBP")
+    try:
+        with Image.open(io.BytesIO(cleaned)) as im:
+            return cleaned, im.width, im.height
+    except Exception:  # unparseable: the cleaner already kept the original
+        return body, image.width, image.height
+
+
+def cache_remote_image(image: RemoteImage, *, logo: bool = False):
     """The tenant media.Photo for this catalog image, downloading it into tenant
-    storage on first use. Callers must already be inside the tenant context.
+    storage on first use (`logo`: a mark, cleaned to a cutout on the way in).
+    Callers must already be inside the tenant context.
     Function-local model import: core is SHARED_APPS, media is TENANT_APPS."""
     from apps.core.platform.uploads import _store_object
     from apps.media.models import Photo
@@ -115,7 +132,9 @@ def cache_remote_image(image: RemoteImage):
     if existing is not None:
         return existing
 
-    body = _download(image)
+    body, width, height = _download(image), image.width, image.height
+    if logo:
+        body, width, height = _clean_mark(body, image)
     _store_object(key, io.BytesIO(body), CONTENT_TYPE)
     return Photo.objects.create(
         s3_key=key,
@@ -123,15 +142,15 @@ def cache_remote_image(image: RemoteImage):
         alt_text=image.description,
         content_type=CONTENT_TYPE,
         file_size=len(body),
-        width=image.width,
-        height=image.height,
+        width=width,
+        height=height,
     )
 
 
 def cached_asset(asset_id: str):
-    """This tenant's copy of the catalog image with this id (a media.Photo),
-    downloaded on first use; None when the catalog no longer serves it or
-    cannot be reached. Must run inside the tenant context."""
+    """This tenant's copy of the catalog logo mark with this id (a
+    media.Photo), downloaded on first use; None when the catalog no longer
+    serves it or cannot be reached. Must run inside the tenant context."""
     from apps.media.models import Photo
 
     from . import client
@@ -141,7 +160,7 @@ def cached_asset(asset_id: str):
         return photo
     try:
         image = client.get(asset_id)
-        return cache_remote_image(image) if image else None
+        return cache_remote_image(image, logo=True) if image else None
     except CuratedImageError:
         logger.warning("catalog image %s unavailable", asset_id)
         return None

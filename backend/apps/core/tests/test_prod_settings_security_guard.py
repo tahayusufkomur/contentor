@@ -18,6 +18,7 @@ def _import_prod(monkeypatch, *, secret_key, allowed_hosts):
     monkeypatch.setenv("EMAIL_SINK_ENABLED", "false")
     monkeypatch.setenv("CURATED_IMAGE_API_FAKE", "false")
     monkeypatch.setenv("AI_PROVIDER", "anthropic")
+    monkeypatch.setenv("AI_VISION_PROVIDER", "")
     return importlib.import_module("config.settings.prod")
 
 

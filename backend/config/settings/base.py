@@ -304,6 +304,15 @@ AI_CLI_MODEL = os.environ.get("AI_CLI_MODEL", "haiku")
 
 # --- Logo Studio AI Brand Pack (paid-tier feature; unset key = fully off) ---
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+# Image calls (apps.core.ai.structured_messages) go to the Anthropic API when
+# it has a key, whatever AI_PROVIDER serves text. "cli" (LOCAL DEV ONLY, prod
+# refuses it) sends them through `claude -p` on the developer's subscription.
+AI_VISION_PROVIDER = os.environ.get("AI_VISION_PROVIDER", "")
+# --- Final visual check of a new site (apps.tenant_config.site_qa) ---
+# Screenshots every built page (infra/browser) and has SITE_QA_MODEL review
+# them before go-live. Off without the browser URL or an image provider.
+SITE_QA_BROWSER_URL = os.environ.get("SITE_QA_BROWSER_URL", "")
+SITE_QA_MODEL = os.environ.get("SITE_QA_MODEL", "claude-opus-5-5")
 LOGO_AI_MODEL = os.environ.get("LOGO_AI_MODEL", "claude-sonnet-5")
 # Global monthly USD kill-switch, summed across all tenants (LogoAiUsage).
 LOGO_AI_MONTHLY_BUDGET_USD = float(os.environ.get("LOGO_AI_MONTHLY_BUDGET_USD", "15"))

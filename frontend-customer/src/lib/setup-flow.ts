@@ -421,6 +421,14 @@ export interface TurnResponse {
 export interface GoLiveState {
   ready: boolean;
   building: boolean;
+  /** The finished site's last visual check (every page, desktop and phone,
+   *  light and dark); null where the check is off or the site still builds. */
+  qa: {
+    status: "checking" | "done" | "failed";
+    pages: number;
+    /** What it fixed, in the coach's words. */
+    fixed: string[];
+  } | null;
   needs_plan: boolean;
   needs_payouts: boolean;
   plan: {

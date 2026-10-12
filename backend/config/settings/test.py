@@ -29,6 +29,10 @@ DEBUG = False
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 AI_PROVIDER = "anthropic"
+# The site's visual check (a browser service and image calls) is off unless a
+# test turns it on: a dev .env commonly runs it on the claude CLI.
+SITE_QA_BROWSER_URL = ""
+AI_VISION_PROVIDER = ""
 # Same reasoning: a dev .env pointing at a running LiveCraft must not make
 # tests create real rooms. Tests of the HTTP client turn the fake off themselves.
 LIVECRAFT_FAKE = True

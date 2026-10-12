@@ -96,6 +96,8 @@ if CURATED_IMAGE_API_FAKE:
 AI_PROVIDER = os.environ.get("AI_PROVIDER", "anthropic")
 if AI_PROVIDER == "cli":
     raise ImproperlyConfigured("AI_PROVIDER=cli must never run in production; use 'anthropic'.")
+if os.environ.get("AI_VISION_PROVIDER") == "cli":
+    raise ImproperlyConfigured("AI_VISION_PROVIDER=cli must never run in production; set ANTHROPIC_API_KEY.")
 
 # --- Error monitoring (Sentry) ------------------------------------------------
 # The SDK ships in prod.txt; it stays a no-op until SENTRY_DSN is set in

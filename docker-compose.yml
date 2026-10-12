@@ -178,6 +178,21 @@ services:
     depends_on:
       - django
 
+  # Headless Chromium for the site's final visual check
+  # (apps.tenant_config.site_qa); reached only from inside the network.
+  browser:
+    build:
+      context: ./infra/browser
+    init: true
+    environment:
+      # From inside the network a tenant host is Caddy, and a presigned
+      # storage URL (AWS_ENDPOINT_EXTERNAL, localhost:9000) is MinIO.
+      - HOST_RULES=MAP *.localhost caddy, MAP localhost minio
+      - ALLOW_HOSTS=localhost
+    mem_limit: 1g
+    depends_on:
+      - caddy
+
   celery-worker:
     build:
       context: ./backend

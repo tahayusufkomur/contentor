@@ -52,6 +52,7 @@ CLI_TIMEOUT_SECONDS = 240
 # $ per 1M tokens: (input, output, cache_read, cache_write). Cache-write here
 # assumes the 5-minute TTL (1.25x input), not the 1-hour tier.
 _MODEL_PRICES = {
+    "claude-opus-5-5": {"input": 4.00, "output": 20.00, "cache_read": 0.20, "cache_write": 5.00},
     "claude-sonnet-5-5": {"input": 2.00, "output": 10.00, "cache_read": 0.20, "cache_write": 2.50},
     "claude-sonnet-5": {"input": 2.00, "output": 10.00, "cache_read": 0.20, "cache_write": 2.50},
     "claude-haiku-4-5": {"input": 1.00, "output": 5.00, "cache_read": 0.10, "cache_write": 1.25},
@@ -210,13 +211,15 @@ def _anthropic_structured(system, user, output_model, model, max_tokens, timeout
     return response.parsed_output, cost, model
 
 
-def _cli_structured(system, user, output_model, model, effort=None):
+def _cli_structured(system, user, output_model, model, effort=None, *, read_dir=None):
     """Local-dev provider: blocking `claude -p` on the developer's
     subscription. The CLI has no parse-forced structured output, so the
     schema contract is appended to the system prompt and the result is
     validated with the SAME pydantic model as the anthropic path. Because
     nothing forces valid JSON, occasional invalid output is expected — one
-    retry absorbs it (observed in the field 2026-07-09)."""
+    retry absorbs it (observed in the field 2026-07-09). ``read_dir``: a
+    directory of images the prompt names; the CLI then gets its Read tool
+    (and nothing else) and runs there."""
     from pydantic import ValidationError
 
     cmd = [
@@ -227,10 +230,7 @@ def _cli_structured(system, user, output_model, model, effort=None):
         _cli_model_alias(model),
         "--system-prompt",
         system + _schema_note(output_model),
-        "--disallowedTools",
-        "*",
-        "--max-turns",
-        "1",
+        *(["--tools", "Read", "--max-turns", "12"] if read_dir else ["--disallowedTools", "*", "--max-turns", "1"]),
         "--output-format",
         "json",
         *(["--effort", effort] if effort else []),
@@ -244,7 +244,7 @@ def _cli_structured(system, user, output_model, model, effort=None):
                 text=True,
                 timeout=CLI_TIMEOUT_SECONDS,
                 env=_cli_env(),
-                cwd=tempfile.gettempdir(),
+                cwd=read_dir or tempfile.gettempdir(),
                 check=False,
             )
         except (OSError, subprocess.TimeoutExpired) as exc:
@@ -631,13 +631,47 @@ def supports_vision():
     return settings.AI_PROVIDER == "anthropic"
 
 
-def structured_messages(*, system, messages, output_model, model, max_tokens):
+def vision_provider():
+    """What can serve an image call whatever AI_PROVIDER serves text (the
+    site's visual check runs where text is on agentc): the Anthropic API when
+    it has a key, AI_VISION_PROVIDER=cli in local dev, else None."""
+    if settings.AI_PROVIDER == "anthropic" or (settings.AI_VISION_PROVIDER != "cli" and settings.ANTHROPIC_API_KEY):
+        return "anthropic"
+    return "cli" if settings.AI_VISION_PROVIDER == "cli" else None
+
+
+def _cli_vision(system, messages, output_model, model, effort):
+    """`claude -p` has no image input: the images go to a scratch directory
+    and the prompt names each file where its block stood."""
+    import base64
+
+    with tempfile.TemporaryDirectory(prefix="vision-") as folder:
+        parts = []
+        for message in messages:
+            for block in message["content"] if isinstance(message["content"], list) else [message["content"]]:
+                if isinstance(block, str) or block.get("type") == "text":
+                    parts.append(block if isinstance(block, str) else block["text"])
+                    continue
+                path = os.path.join(folder, f"image-{len(os.listdir(folder)) + 1}.jpg")
+                with open(path, "wb") as fh:
+                    fh.write(base64.b64decode(block["source"]["data"]))
+                parts.append(f"[image file: {path}]")
+        user = "\n".join(parts) + "\n\nRead every image file named above before you answer."
+        return _cli_structured(system, user, output_model, model, effort, read_dir=folder)
+
+
+def structured_messages(*, system, messages, output_model, model, max_tokens, effort=None, timeout_seconds=None):
     """Structured output over a full messages array (content blocks may
     include base64 images) -> (validated instance, cost_usd, model).
-    Anthropic provider only; raises AiError on the others."""
-    if settings.AI_PROVIDER != "anthropic":
+    Served by vision_provider(); raises AiError when there is none."""
+    provider = vision_provider()
+    if provider == "cli":
+        return _cli_vision(system, messages, output_model, model, effort)
+    if provider is None:
         raise AiError(f"{settings.AI_PROVIDER} provider does not support vision calls")
     client = _anthropic_client()
+    if timeout_seconds is not None:
+        client = client.with_options(timeout=float(timeout_seconds), max_retries=0)
     try:
         response = client.messages.parse(
             model=model,
@@ -645,10 +679,15 @@ def structured_messages(*, system, messages, output_model, model, max_tokens):
             system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
             messages=messages,
             output_format=output_model,
+            **({"output_config": {"effort": effort}} if effort else {}),
         )
     except Exception as exc:
         raise AiError(f"anthropic call failed: {exc}") from exc
-    return response.parsed_output, estimate_cost(response.usage, model), model
+    cost = estimate_cost(response.usage, model)
+    if response.parsed_output is None:
+        # A refusal or a reply cut off at max_tokens: billed, but no object.
+        raise AiError(f"anthropic returned no parsed output (stop_reason={response.stop_reason})", cost_usd=cost)
+    return response.parsed_output, cost, model
 
 
 # ── streaming chat (help bot) ────────────────────────────────────────────────

@@ -9,6 +9,7 @@ from contextlib import suppress
 from apps.core.monetization import can_monetize, is_paid_active
 
 from . import interview_brief as brief
+from . import site_qa
 from .interview_milestones import _draft_row, drop_draft, expand_class_series, fire, membership_plan_ids
 from .models import TenantConfig
 from .setup_items import _has_paid_content, _live_entitled, _seeded_by_label, publish_blockers
@@ -90,9 +91,12 @@ def golive_state(tenant) -> dict:
         ),
         {"id": "publish", "label": "Go live", "minutes": 1, "done": False},
     ]
+    ready = not brief.missing(answers) and not building
     return {
-        "ready": not brief.missing(answers) and not building,
+        "ready": ready,
         "building": building,
+        # The finished site's last visual check, started here once it is built.
+        "qa": site_qa.ensure(tenant, config) if ready else None,
         "needs_plan": needs_plan,
         "needs_payouts": needs_payouts,
         "plan": _starter_plan(tenant) if needs_plan else None,

@@ -67,9 +67,13 @@ export function GoLiveCard({
   useEffect(() => {
     void load();
   }, [load]);
-  // Pages still composing, or a just-paid plan waiting on Stripe's webhook.
+  // Pages still composing, the last visual check still looking, or a
+  // just-paid plan waiting on Stripe's webhook.
   const waiting =
-    !!state && (state.building || (returning && state.needs_plan));
+    !!state &&
+    (state.building ||
+      state.qa?.status === "checking" ||
+      (returning && state.needs_plan));
   useEffect(() => {
     if (!waiting) return;
     const t = setInterval(() => void load(), 3000);
@@ -120,6 +124,7 @@ export function GoLiveCard({
     <div className="rounded-2xl border border-[var(--sf-line)] bg-white p-4 motion-safe:animate-fade-in-up">
       {state && state.steps?.length > 1 && <Steps steps={state.steps} />}
       {children}
+      {state?.qa && <VisualCheck qa={state.qa} />}
       {state && state.summary?.length > 0 && (
         <dl className="mt-5 space-y-1.5 border-t border-[var(--sf-line)] pt-4 text-[13.5px] leading-snug">
           <p className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-[var(--sf-faint)]">
@@ -302,6 +307,49 @@ export function GoLiveCard({
 }
 
 /** Every step left before going live, the current one first in weight. */
+/** The last look over the finished site: said while it runs (going live
+ * never waits on it), then what it covered and what it tidied. */
+function VisualCheck({ qa }: { qa: NonNullable<GoLiveState["qa"]> }) {
+  if (qa.status === "failed") return null;
+  const checking = qa.status === "checking";
+  return (
+    <div
+      role="status"
+      className="mt-4 flex gap-2.5 rounded-xl bg-[var(--sf-tint)] p-3 text-[13.5px] leading-relaxed"
+    >
+      {checking ? (
+        <Spinner size="sm" className="mt-0.5 shrink-0 text-[var(--sf-brass)]" />
+      ) : (
+        <Check
+          className="mt-0.5 size-4 shrink-0 text-[var(--sf-brass)]"
+          aria-hidden
+        />
+      )}
+      <div className="min-w-0">
+        <p className="font-medium">
+          {checking
+            ? "Giving every page a last look"
+            : `I looked over ${qa.pages === 1 ? "your page" : `all ${qa.pages} pages`}`}
+        </p>
+        <p className="text-[var(--sf-graphite)]">
+          {checking
+            ? "On desktop and phone, in light and dark, so nothing looks off when you go live. You don’t have to wait for me."
+            : qa.fixed.length
+              ? "On desktop and phone, in light and dark. I tidied up along the way:"
+              : "On desktop and phone, in light and dark."}
+        </p>
+        {!checking && qa.fixed.length > 0 && (
+          <ul className="mt-1 list-disc space-y-0.5 pl-5 text-[var(--sf-graphite)]">
+            {qa.fixed.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Steps({ steps }: { steps: GoLiveStep[] }) {
   const current = steps.find((s) => !s.done)?.id;
   return (

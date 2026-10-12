@@ -493,6 +493,18 @@ def compose_page_task(tenant_id, page_key, instruction=None):
 
 
 @shared_task
+def site_qa_task(tenant_id):
+    """The final visual check of a finished site (apps.tenant_config.site_qa).
+    Status lands in TenantConfig.setup_flow["qa"]."""
+    from apps.core.models import Tenant
+    from apps.tenant_config import site_qa
+
+    tenant = Tenant.objects.filter(id=tenant_id).first()
+    if tenant is not None:
+        site_qa.run(tenant)
+
+
+@shared_task
 def interview_draft_task(tenant_id, kind, prompt, keep_cover=False):
     """First-content draft for the /setup interview, with a deterministic
     fallback (interview_milestones.run_draft). Status lands in

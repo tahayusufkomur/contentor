@@ -116,6 +116,7 @@ services:
     env_file: .env.prod
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.prod
+      - SITE_QA_BROWSER_URL=http://browser:3000
     networks:
       - internal
       - agentc
@@ -148,12 +149,32 @@ services:
     env_file: .env.prod
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.prod
+      - SITE_QA_BROWSER_URL=http://browser:3000
     networks:
       - internal
       - agentc
     depends_on:
       django:
         condition: service_healthy
+
+  # Headless Chromium for the site's final visual check
+  # (apps.tenant_config.site_qa, off without ANTHROPIC_API_KEY); reached only
+  # from inside the network.
+  browser:
+    build:
+      context: ./infra/browser
+    container_name: contentor-browser
+    restart: unless-stopped
+    init: true
+    mem_limit: 1g
+    logging: *logging
+    environment:
+      # From inside the network a tenant host is Caddy (TLS ends at Cloudflare).
+      - HOST_RULES=MAP *.${CONTENTOR_DOMAIN:-contentor.app} caddy
+    networks:
+      - internal
+    depends_on:
+      - caddy
 
   celery-beat:
     build:

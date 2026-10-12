@@ -60,6 +60,50 @@ class TestBackgroundRemoval:
         assert out.width < 150 and out.height < 130
 
 
+def _mark_on_clear(size=(400, 300)):
+    """A red blob on a clear canvas, 20px in from every edge."""
+    im = Image.new("RGBA", size, (0, 0, 0, 0))
+    for x in range(160, 240):
+        for y in range(60, 140):
+            im.putpixel((x, y), (200, 30, 30, 255))
+    return im
+
+
+class TestHalfCutBackground:
+    """A catalog mark whose background was only partly removed: clear in the
+    top half, its cream paper still opaque below (it sat in a white box on a
+    dark navbar)."""
+
+    def _half_cut(self):
+        im = _mark_on_clear()
+        for x in range(20, 380):
+            for y in range(150, 280):
+                im.putpixel((x, y), (251, 248, 240, 255))
+        for x, y in ((40, 40), (300, 30), (350, 100)):  # stray dots of paper
+            im.putpixel((x, y), (250, 247, 238, 255))
+        return im
+
+    def test_leftover_paper_and_its_stray_dots_are_removed(self):
+        out = _open(clean_curated_png(_png(self._half_cut())))
+        # Only the blob is left, so the crop closes in on it.
+        assert out.width < 130 and out.height < 130
+        assert not any(p[3] > 0 and min(p[:3]) > 200 for p in out.getdata())
+        assert any(p[3] == 255 and p[0] > 150 for p in out.getdata())
+
+    def test_a_light_mark_on_a_clear_background_is_kept(self):
+        im = Image.new("RGBA", (400, 400), (0, 0, 0, 0))
+        for x in range(400):
+            for y in range(400):
+                if (x - 200) ** 2 + (y - 200) ** 2 <= 180**2:
+                    im.putpixel((x, y), (255, 255, 255, 255))
+        out = _open(clean_curated_png(_png(im)))
+        assert sum(1 for p in out.getdata() if p[3] == 255) == sum(1 for p in im.getdata() if p[3] == 255)
+
+    def test_webp_output(self):
+        out = Image.open(io.BytesIO(clean_curated_png(_png(self._half_cut()), "WEBP")))
+        assert out.format == "WEBP" and out.convert("RGBA").getpixel((0, 0))[3] == 0
+
+
 class TestSafety:
     def test_unparseable_bytes_returned_unchanged(self):
         data = b"\x89PNG\r\n\x1a\n" + b"0" * 64
