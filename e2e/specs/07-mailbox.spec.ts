@@ -60,17 +60,12 @@ test("coach settings page shows mailbox section", async ({ browser }) => {
 
   await page.goto(`${TENANT}/admin/settings`);
 
-  // MailboxSettingsSection renders a Card with title "Mailbox"
+  // MailboxSettingsSection's card is titled "Mailbox", or "Your email
+  // address" while a paid coach has not picked a platform address yet.
   await expect(
-    page.getByText("Mailbox", { exact: false }),
+    page.getByRole("heading", { name: /Mailbox|Your email address/ }).first(),
     "Mailbox settings section heading must appear on settings page",
   ).toBeVisible({ timeout: 10_000 });
-
-  // demo-yoga has no custom domain → upsell path renders the from_email in a
-  // <p class="font-mono text-muted-foreground"> — just verify the section is
-  // there and stable (no JS error).
-  const mailboxCard = page.locator("text=Mailbox").first();
-  await expect(mailboxCard).toBeVisible();
 
   await coach.close();
 });

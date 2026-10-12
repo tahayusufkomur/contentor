@@ -581,6 +581,54 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/cx/components/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_admin_cx_components_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/cx/compose/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_admin_cx_compose_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/cx/refine/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_admin_cx_refine_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/demo-content/": {
     parameters: {
       query?: never;
@@ -858,6 +906,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/setup-flow/cancel/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Cancel onboarding: delete this never-finished platform (``{"confirm": "<slug>"}``).
+     *
+     *     Only the site's owner, and only while guided setup is still running — a
+     *     finished site is removed from the apex dashboard instead. Refused for
+     *     anything paid for (see ``onboarding.cancel``).
+     */
+    post: operations["v1_admin_setup_flow_cancel_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/setup-flow/cover/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description Another cover for the interview's first course or class. */
+    post: operations["v1_admin_setup_flow_cover_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/setup-flow/draft/": {
     parameters: {
       query?: never;
@@ -874,6 +962,74 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/setup-flow/golive/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_admin_setup_flow_golive_retrieve"];
+    put?: never;
+    post: operations["v1_admin_setup_flow_golive_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/setup-flow/import/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description A file (.pdf, .txt, .md) or pasted text the coach shares about herself:
+     *     read as one interview turn that fills the questions it answers.
+     */
+    post: operations["v1_admin_setup_flow_import_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/setup-flow/logos/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_admin_setup_flow_logos_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/setup-flow/turn/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_admin_setup_flow_turn_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/setup-status/": {
     parameters: {
       query?: never;
@@ -881,14 +1037,22 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** @description Setup Assistant state: per-item checklist + dismiss + manual overrides. */
+    /**
+     * @description Setup Assistant state: per-item checklist + dismiss + manual overrides.
+     *     Every admin page reads it, so it is also where items held by "go live now,
+     *     sell later" go on sale once the coach can take payments.
+     */
     get: operations["v1_admin_setup_status_retrieve"];
     put?: never;
     post?: never;
     delete?: never;
     options?: never;
     head?: never;
-    /** @description Setup Assistant state: per-item checklist + dismiss + manual overrides. */
+    /**
+     * @description Setup Assistant state: per-item checklist + dismiss + manual overrides.
+     *     Every admin page reads it, so it is also where items held by "go live now,
+     *     sell later" go on sale once the coach can take payments.
+     */
     patch: operations["v1_admin_setup_status_partial_update"];
     trace?: never;
   };
@@ -3385,15 +3549,30 @@ export interface paths {
     get?: never;
     put?: never;
     post?: never;
-    delete?: never;
+    /**
+     * @description Let a coach manage their own tenant.
+     *
+     *     PATCH — the publish gate. Editable: ``is_published`` (go live / hide) and
+     *     ``preview_password`` (the password that unlocks the site while unpublished).
+     *
+     *     DELETE — remove a platform that was never paid for (``{"confirm": "<slug>"}``
+     *     required); see ``onboarding.cancel`` for what blocks it.
+     *
+     *     Ownership is enforced by matching the tenant's ``owner_email`` to the requester.
+     */
+    delete: operations["v1_me_tenants_destroy"];
     options?: never;
     head?: never;
     /**
-     * @description Let a coach manage their own tenant's publish gate.
+     * @description Let a coach manage their own tenant.
      *
-     *     Editable: ``is_published`` (go live / hide) and ``preview_password`` (the
-     *     password that unlocks the site while unpublished). Ownership is enforced by
-     *     matching the tenant's ``owner_email`` to the requester.
+     *     PATCH — the publish gate. Editable: ``is_published`` (go live / hide) and
+     *     ``preview_password`` (the password that unlocks the site while unpublished).
+     *
+     *     DELETE — remove a platform that was never paid for (``{"confirm": "<slug>"}``
+     *     required); see ``onboarding.cancel`` for what blocks it.
+     *
+     *     Ownership is enforced by matching the tenant's ``owner_email`` to the requester.
      */
     patch: operations["v1_me_tenants_partial_update"];
     trace?: never;
@@ -3610,6 +3789,27 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/onboarding/extract-doc/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Extract plain text from an uploaded bio/CV/document (.pdf, .txt, .md)
+     *     or normalize pasted text. Also performs real-time fact analysis to show
+     *     which questions will be answered before advancing.
+     */
+    post: operations["v1_onboarding_extract_doc_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/onboarding/handoff/": {
     parameters: {
       query?: never;
@@ -3746,253 +3946,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/onboarding/wizard/catalog/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** @description Option sets for the wizard UI. Public + cacheable: ids only, no PII. */
-    get: operations["v1_onboarding_wizard_catalog_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/checkout/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Contextual upgrade inside the wizard: Stripe Checkout for a platform
-     *     plan BEFORE provisioning. The tenant row already exists, so the standard
-     *     webhook attaches the PlatformSubscription; no wizard-specific completion
-     *     handling is needed.
-     */
-    post: operations["v1_onboarding_wizard_checkout_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/checkout/sync/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Return-from-checkout probe: `?upgraded=1&session_id=…` posts the
-     *     session id here and we activate the subscription server-side instead of
-     *     waiting for the `checkout.session.completed` webhook — which local dev
-     *     never receives (no `stripe listen`) and which prod can deliver after the
-     *     redirect. Idempotent with the webhook; always answers the wizard state
-     *     body so the client reads one shape from state/ and here.
-     */
-    post: operations["v1_onboarding_wizard_checkout_sync_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/describe-followups/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations["v1_onboarding_wizard_describe_followups_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/domain/checkout/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Start the domain purchase from inside the wizard. Success/cancel land
-     *     back on /signup/verify on the SAME host the wizard runs on — the stashed
-     *     localStorage token is per-origin, so returning to a different origin would
-     *     strand the coach.
-     */
-    post: operations["v1_onboarding_wizard_domain_checkout_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/domain/search/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** @description Availability search. POST (not GET) so the token stays out of logs. */
-    post: operations["v1_onboarding_wizard_domain_search_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/domain/sync/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Return-from-checkout probe + status read, one shape for both. With a
-     *     `session_id` we activate the purchase server-side instead of waiting for
-     *     the webhook (local dev receives none; prod's can trail the redirect).
-     *     With a `custom_domain_id` under DOMAINS_BYPASS_ENABLED we activate the
-     *     bypass "purchase" directly — there is no Stripe session to retrieve.
-     *     With neither, this is a plain read of the current domain.
-     */
-    post: operations["v1_onboarding_wizard_domain_sync_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/finalize/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description "Create my platform": fill unanswered steps with recommended defaults,
-     *     sync the legacy template fields, and enqueue provisioning. Idempotent —
-     *     a second call is a cheap status echo, never a second enqueue.
-     */
-    post: operations["v1_onboarding_wizard_finalize_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/logo-converse/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations["v1_onboarding_wizard_logo_converse_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/logo-converse/finish/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations["v1_onboarding_wizard_logo_converse_finish_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/logo-refine/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations["v1_onboarding_wizard_logo_refine_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/logo-status/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations["v1_onboarding_wizard_logo_status_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/logo-upload/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Stage the client-rendered logo/icon PNG for provisioning. Deterministic
-     *     key per tenant+kind so re-picks overwrite instead of accumulating.
-     */
-    post: operations["v1_onboarding_wizard_logo_upload_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/v1/onboarding/wizard/recover/": {
     parameters: {
       query?: never;
@@ -4014,83 +3967,6 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/site-edit/apply/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Persist the last-previewed pages, decrementing the reveal's single free
-     *     apply. 402 (not a hard block — Publish stays available) once spent; the
-     *     admin Site AI panel enforces the monthly plan quota separately.
-     *
-     *     Deliberately does NOT call site_ai.record_update(): that increments
-     *     updates_used, the SAME counter site_ai.availability() reads for the paid
-     *     admin panel's monthly quota. The reveal's one free apply is tracked
-     *     entirely by wizard_state["reveal_applies_used"] below and must stay
-     *     outside that meter — otherwise using the reveal's free apply would show
-     *     up as spent allowance in the coach's own /admin/site-ai panel.
-     */
-    post: operations["v1_onboarding_wizard_site_edit_apply_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/site-edit/preview/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Stream a proposed site edit for the coach's natural-language
-     *     instruction. Free — only Apply consumes a reveal allowance. USD is
-     *     charged on every attempt (kill-switch integrity) regardless of outcome.
-     */
-    post: operations["v1_onboarding_wizard_site_edit_preview_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/wizard/state/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description POST = read current wizard state (resume); PATCH = merge-save answers.
-     *
-     *     The token rides in the body for both verbs so it never lands in access
-     *     logs. PATCH is last-write-wins per answer key — fine for a single coach.
-     */
-    post: operations["v1_onboarding_wizard_state_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    /**
-     * @description POST = read current wizard state (resume); PATCH = merge-save answers.
-     *
-     *     The token rides in the body for both verbs so it never lands in access
-     *     logs. PATCH is last-write-wins per answer key — fine for a single coach.
-     */
-    patch: operations["v1_onboarding_wizard_state_partial_update"];
     trace?: never;
   };
   "/api/v1/onsite-events/": {
@@ -7616,6 +7492,26 @@ export interface paths {
      *     view only confirms the password. Published tenants always succeed.
      */
     post: operations["v1_preview_unlock_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/site/menu/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description Which public pages have something behind them, so the menu never links
+     *     to an empty one (a Courses link with no courses, Events with no class).
+     */
+    get: operations["v1_site_menu_retrieve"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -11569,6 +11465,60 @@ export interface operations {
       };
     };
   };
+  v1_admin_cx_components_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_cx_compose_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_cx_refine_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_admin_demo_content_retrieve: {
     parameters: {
       query?: never;
@@ -12015,7 +11965,133 @@ export interface operations {
       };
     };
   };
+  v1_admin_setup_flow_cancel_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_setup_flow_cover_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_admin_setup_flow_draft_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_setup_flow_golive_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_setup_flow_golive_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_setup_flow_import_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_setup_flow_logos_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_setup_flow_turn_create: {
     parameters: {
       query?: never;
       header?: never;
@@ -15555,6 +15631,26 @@ export interface operations {
       };
     };
   };
+  v1_me_tenants_destroy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        slug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_me_tenants_partial_update: {
     parameters: {
       query?: never;
@@ -15823,6 +15919,24 @@ export interface operations {
       };
     };
   };
+  v1_onboarding_extract_doc_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_onboarding_handoff_create: {
     parameters: {
       query?: never;
@@ -15949,315 +16063,7 @@ export interface operations {
       };
     };
   };
-  v1_onboarding_wizard_catalog_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_checkout_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_checkout_sync_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_describe_followups_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_domain_checkout_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_domain_search_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_domain_sync_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_finalize_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_logo_converse_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_logo_converse_finish_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_logo_refine_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_logo_status_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_logo_upload_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
   v1_onboarding_wizard_recover_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_site_edit_apply_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_site_edit_preview_create: {
-    parameters: {
-      query?: {
-        format?: "json" | "txt";
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_state_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_onboarding_wizard_state_partial_update: {
     parameters: {
       query?: never;
       header?: never;
@@ -21631,6 +21437,24 @@ export interface operations {
     };
   };
   v1_preview_unlock_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_site_menu_retrieve: {
     parameters: {
       query?: never;
       header?: never;

@@ -83,7 +83,7 @@ test("coach creates a logo through brief, curated ideas, and editor", async ({
     // also substring-matches "Ideas" but only changes the outer `step` state
     // — it never touches `chatOpen`, so clicking it would leave the chat
     // mounted and make the toBeHidden() assertion below a false pass.
-    await chat.getByRole("button", { name: "Ideas" }).click();
+    await chat.getByRole("button", { name: "Ideas", exact: true }).click();
     await expect(chat).toBeHidden();
   }
 
