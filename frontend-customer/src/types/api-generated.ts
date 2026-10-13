@@ -459,7 +459,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** @description Newest-first feed of executed copilot actions for /admin/site-ai. */
+    /**
+     * @description Newest-first feed of executed copilot actions for the assistant's
+     *     History tab; ``undoable`` says which rows Undo can still act on.
+     */
     get: operations["v1_admin_copilot_audit_retrieve"];
     put?: never;
     post?: never;
@@ -655,6 +658,23 @@ export interface paths {
     get?: never;
     put?: never;
     post: operations["v1_admin_demo_content_erase_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/events/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description GET /api/v1/admin/events/?search=&tags=&ordering=&when=upcoming|past&limit=&offset= */
+    get: operations["v1_admin_events_retrieve"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -1649,10 +1669,23 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** @description Public list of active subscription plans with item counts. */
+    /**
+     * @description Public list of active subscription plans with item counts.
+     *
+     *     The owner creates a plan here (POST), and `?all=1` shows her the plans she
+     *     switched off too. Without it she gets the public list like anyone else, so
+     *     the pricing page looks the same when she browses her own site.
+     */
     get: operations["v1_billing_plans_retrieve"];
     put?: never;
-    post?: never;
+    /**
+     * @description Public list of active subscription plans with item counts.
+     *
+     *     The owner creates a plan here (POST), and `?all=1` shows her the plans she
+     *     switched off too. Without it she gets the public list like anyone else, so
+     *     the pricing page looks the same when she browses her own site.
+     */
+    post: operations["v1_billing_plans_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -1666,14 +1699,27 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** @description Public plan detail with all accessible content resolved. */
+    /**
+     * @description Public plan detail with all accessible content resolved.
+     *
+     *     The owner also reaches a plan she switched off, and edits it (PATCH). A new
+     *     price or cycle mints a new Stripe price at the next checkout; subscribers
+     *     keep the terms they signed up on (`_ensure_subscription_price`).
+     */
     get: operations["v1_billing_plans_retrieve_2"];
     put?: never;
     post?: never;
     delete?: never;
     options?: never;
     head?: never;
-    patch?: never;
+    /**
+     * @description Public plan detail with all accessible content resolved.
+     *
+     *     The owner also reaches a plan she switched off, and edits it (PATCH). A new
+     *     price or cycle mints a new Stripe price at the next checkout; subscribers
+     *     keep the terms they signed up on (`_ensure_subscription_price`).
+     */
+    patch: operations["v1_billing_plans_partial_update"];
     trace?: never;
   };
   "/api/v1/billing/plans/{id}/access/": {
@@ -1800,6 +1846,28 @@ export interface paths {
       cookie?: never;
     };
     get: operations["v1_billing_products_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/billing/sales/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description Coach view: everything students paid her, newest first.
+     *
+     *     A refund is not a row of its own: its sale carries the refunded status.
+     *     Platform-subscription payments (the coach paying Contentor) are excluded.
+     */
+    get: operations["v1_billing_sales_retrieve"];
     put?: never;
     post?: never;
     delete?: never;
@@ -10221,11 +10289,7 @@ export interface components {
      * @enum {string}
      */
     PaymentAdminStatusEnum:
-      | "pending"
-      | "completed"
-      | "failed"
-      | "refunded"
-      | "partially_refunded";
+      "pending" | "completed" | "failed" | "refunded" | "partially_refunded";
     /**
      * @description * `one_time` - One Time
      *     * `subscription` - Subscription
@@ -10315,10 +10379,7 @@ export interface components {
      * @enum {string}
      */
     PlatformSubscriptionAdminStatusEnum:
-      | "incomplete"
-      | "active"
-      | "past_due"
-      | "canceled";
+      "incomplete" | "active" | "past_due" | "canceled";
     PostAdmin: {
       readonly id: number;
       body: string;
@@ -10462,11 +10523,7 @@ export interface components {
      * @enum {string}
      */
     TenantAdminProvisioningStatusEnum:
-      | "pending"
-      | "provisioning"
-      | "provisioned"
-      | "ready"
-      | "failed";
+      "pending" | "provisioning" | "provisioned" | "ready" | "failed";
     TenantConfig: {
       readonly id: number;
       brand_name: string;
@@ -11585,6 +11642,24 @@ export interface operations {
     };
   };
   v1_admin_demo_content_erase_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_events_retrieve: {
     parameters: {
       query?: never;
       header?: never;
@@ -12855,7 +12930,45 @@ export interface operations {
       };
     };
   };
+  v1_billing_plans_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_billing_plans_retrieve_2: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_billing_plans_partial_update: {
     parameters: {
       query?: never;
       header?: never;
@@ -12988,6 +13101,24 @@ export interface operations {
     };
   };
   v1_billing_products_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_billing_sales_retrieve: {
     parameters: {
       query?: never;
       header?: never;
