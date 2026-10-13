@@ -91,9 +91,10 @@ export function AssistantDock() {
   // at another tab.
   const [chatSeen, setChatSeen] = useState(false);
 
+  const setupLive = !!setup && !setup.dismissed;
   const tabs = dockTabs({
-    setupOpen:
-      !!setup && !setup.dismissed && setup.progress.done < setup.progress.total,
+    setupOpen: setupLive && setup.progress.done < setup.progress.total,
+    setupShowing: setupLive && dock.tab === "setup",
     helpOn: !help || help.enabled || help.reason !== "disabled",
   });
   const tab = tabs.includes(dock.tab) ? dock.tab : "assistant";

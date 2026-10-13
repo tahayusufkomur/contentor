@@ -5,12 +5,20 @@ export type DockTab = (typeof DOCK_TABS)[number];
 export function dockTabs({
   setupOpen,
   helpOn,
+  setupShowing = false,
 }: {
   setupOpen: boolean;
   helpOn: boolean;
+  /** She is on the Setup tab: it stays, so finishing the last item shows the
+   *  celebration instead of jumping her to the chat. */
+  setupShowing?: boolean;
 }): DockTab[] {
   return DOCK_TABS.filter((tab) =>
-    tab === "setup" ? setupOpen : tab === "help" ? helpOn : true,
+    tab === "setup"
+      ? setupOpen || setupShowing
+      : tab === "help"
+        ? helpOn
+        : true,
   );
 }
 

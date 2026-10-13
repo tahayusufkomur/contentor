@@ -14,6 +14,12 @@ describe("dockTabs", () => {
       "history",
     ]);
   });
+
+  it("keeps Setup while she is on it, so finishing the last item shows the celebration", () => {
+    expect(
+      dockTabs({ setupOpen: false, helpOn: true, setupShowing: true }),
+    ).toEqual(["assistant", "setup", "help", "history"]);
+  });
 });
 
 describe("dockFromUrl", () => {

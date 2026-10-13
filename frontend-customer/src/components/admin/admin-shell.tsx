@@ -74,8 +74,9 @@ function AdminShellContent({ children, user }: AdminShellProps) {
     return gateAdminNav(sections, {
       enabledModules: config.enabled_modules ?? [],
       expandedSections,
+      path: { pathname, pendingHref },
     });
-  }, [t, config, expandedSections]);
+  }, [t, config, expandedSections, pathname, pendingHref]);
 
   // From the UNGATED nav on purpose: search still finds the pages of a module
   // the coach has not turned on.

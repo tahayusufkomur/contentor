@@ -44,4 +44,33 @@ describe("gateAdminNav", () => {
       expect(gated.find((s) => s.id === original.id)).toBe(original);
     }
   });
+
+  it("keeps the page she is on, even with its module off", () => {
+    const on = (pathname: string, pendingHref: string | null = null) =>
+      teach(
+        gateAdminNav(nav, {
+          enabledModules: [],
+          expandedSections: [],
+          path: { pathname, pendingHref },
+        }),
+      );
+    // Search and Help link to pages of modules she has not turned on.
+    expect(on("/admin/live").items.map((i) => i.href)).toEqual([
+      "/admin/courses",
+      "/admin/live",
+    ]);
+    expect(on("/admin/live").hiddenCount).toBe(2);
+    expect(on("/admin/calendar").items.map((i) => i.href)).toContain(
+      "/admin/calendar",
+    );
+    // A detail page counts, and so does a navigation still pending.
+    expect(on("/admin/live/7").items.map((i) => i.href)).toContain(
+      "/admin/live",
+    );
+    expect(on("/admin", "/admin/downloads").items.map((i) => i.href)).toContain(
+      "/admin/downloads",
+    );
+    // Off those pages nothing changes.
+    expect(on("/admin/courses").items).toHaveLength(1);
+  });
 });

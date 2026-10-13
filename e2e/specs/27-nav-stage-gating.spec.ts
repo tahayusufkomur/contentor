@@ -11,8 +11,8 @@
 //
 // All tests drive `demo-yoga` (published, every module on). The module-off
 // test narrows demo-yoga's enabled_modules for its own duration and restores
-// them in `finally` — specs run serially (workers: 1), and the dev stack
-// serves tenant config uncached, so the change is visible on the next load.
+// them in `finally` — specs run serially (workers: 1). The config endpoint
+// caches per tenant for 5 minutes, so the helper clears that key too.
 //
 // Selector note: the sidebar is the only <aside> without an aria-label (the
 // assistant panel is an <aside aria-label="Assistant">), and a section's tab
@@ -100,6 +100,17 @@ test("a coach with no optional modules sees Courses and + more under Teach", asy
     await expect(
       teach.getByRole("link", { name: /classes & events/i }),
     ).toBeVisible();
+
+    // Search and Help can still send her to a page of a module that is off:
+    // that page keeps its row and its tab lit rather than vanishing.
+    await page.goto(`${TENANT}/admin/live`);
+    const there = page.getByRole("navigation", { name: "Teach" });
+    await expect(
+      there.getByRole("link", { name: /classes & events/i }),
+    ).toHaveAttribute("aria-current", "page");
+    await expect(
+      sidebar(page).getByRole("link", { name: "Teach" }),
+    ).toHaveAttribute("aria-current", "page");
 
     await page.close();
   } finally {

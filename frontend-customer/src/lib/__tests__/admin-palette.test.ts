@@ -47,3 +47,24 @@ describe("filterPalette", () => {
     expect(filterPalette(labelled, "zzz")).toEqual([]);
   });
 });
+
+describe("old names", () => {
+  const found = (query: string) =>
+    filterPalette(entries, query).map((e) => e.id);
+
+  it("finds a page by the name it had before the refactor", () => {
+    expect(found("billing")).toContain("plan");
+    expect(found("subscription")).toContain("plan");
+    expect(found("dashboard")).toContain("home");
+    expect(found("live events")).toContain("liveEvents");
+    expect(found("library")).toEqual(
+      expect.arrayContaining(["photos", "videos"]),
+    );
+    expect(found("send announcement")).toContain("notifications");
+    expect(found("bundles")).toContain("store");
+  });
+
+  it("still returns nothing for a name no page ever had", () => {
+    expect(found("zzz")).toEqual([]);
+  });
+});
