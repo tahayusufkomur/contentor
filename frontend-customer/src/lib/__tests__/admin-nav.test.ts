@@ -105,7 +105,9 @@ describe("buildAdminNav — information architecture", () => {
     expect(badgeFor("/admin/inbox")?.requiresEntitlement).toBe(
       "platform_mailbox",
     );
-    expect(badgeFor("/admin/site-ai")?.requiresEntitlement).toBe("site_ai");
+    // The assistant is open to every plan: an AI badge, never a Paid one.
+    expect(badgeFor("/admin/site-ai")?.ai).toBe(true);
+    expect(badgeFor("/admin/site-ai")?.requiresEntitlement).toBeUndefined();
   });
 
   it("puts Site AI first in My Site — it's the primary way to change the site", () => {

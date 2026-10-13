@@ -75,12 +75,11 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
       label: t("nav.sections.mySite"),
       items: [
         {
+          // The assistant is every coach's, whatever her plan — no Paid badge.
           label: t("nav.items.siteAi"),
           href: "/admin/site-ai",
           icon: Sparkles,
           ai: true,
-          requiresEntitlement: "site_ai",
-          partialPaid: true,
         },
         {
           label: t("nav.items.editSite"),
