@@ -264,9 +264,15 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
     return () => window.removeEventListener("pagehide", flush);
   }, []);
 
+  // Bumped whenever the thread on screen is replaced (new chat, another
+  // chat opened). A first save still in flight then belongs to the thread
+  // she left: adopting its id would make the next save overwrite it.
+  const threadRef = useRef(0);
+
   /** Best-effort server save; a failed save never breaks the live chat. */
   const persist = useCallback((next: ChatEntry[]) => {
     dirtyRef.current = true;
+    const thread = threadRef.current;
     void (async () => {
       try {
         const persistable = persistableEntries(next);
@@ -278,8 +284,9 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
           setChats((prev) => [row, ...prev.filter((c) => c.id !== row.id)]);
         } else if (persistable.length > 0) {
           const row = await createCopilotChat(persistable);
-          setChatId(row.id);
           setChats((prev) => [row, ...prev]);
+          if (threadRef.current !== thread) return;
+          setChatId(row.id);
         }
         dirtyRef.current = false;
       } catch {
@@ -290,6 +297,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
   }, []);
 
   const newChat = useCallback(() => {
+    threadRef.current += 1;
     bootStaleRef.current = true;
     abortRef.current?.abort();
     setChatId(null);
@@ -301,6 +309,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
 
   const openChat = useCallback(
     async (id: number) => {
+      threadRef.current += 1;
       bootStaleRef.current = true;
       abortRef.current?.abort();
       const detail = await fetchCopilotChat(id);
@@ -412,8 +421,16 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
   // so a thread still loading (or an older one on screen) is left alone.
   const pendingAsk = docked ? dock.pendingAsk : null;
   const clearAsk = dock.clearAsk;
+  // Once per question: React's dev double-run of a mount effect would
+  // otherwise start a second new chat and abort the request just sent.
+  const askedRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!pendingAsk || sending) return;
+    if (!pendingAsk) {
+      askedRef.current = null;
+      return;
+    }
+    if (sending || askedRef.current === pendingAsk) return;
+    askedRef.current = pendingAsk;
     clearAsk();
     newChat();
     void send(pendingAsk, true);

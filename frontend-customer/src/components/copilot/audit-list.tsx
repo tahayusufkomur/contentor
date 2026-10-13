@@ -28,9 +28,12 @@ function AuditRow({
   const router = useRouter();
   const { run: undo, loading } = useAsyncAction(
     async () => {
-      await undoCopilotAction(entry.id);
+      const res = await undoCopilotAction(entry.id);
       announceSiteUpdated();
-      announceAssistantApplied({ kind: "undo" });
+      announceAssistantApplied({
+        kind: `undo:${res.undone}`,
+        id: res.id ?? undefined,
+      });
       router.refresh();
       toast.success(t("dock.undoneToast"));
       onUndone();

@@ -386,6 +386,28 @@ test("in the admin the assistant knows the page, offers its starters, and takes 
   await page.close();
 });
 
+test("a question from search opens the panel when it was closed, and is sent once", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+  const sent: Record<string, any>[] = [];
+  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
+    sent.push(route.request().postDataJSON());
+    await route.fulfill(sse({ kind: "answer", text: "From a closed panel." }));
+  });
+  await mockEmptyChats(page);
+  await page.goto(`${TENANT}/admin/courses`);
+  await expect(page.getByRole("complementary", { name: "Assistant" })).toHaveCount(0);
+
+  await page.getByRole("button", { name: /Search pages/ }).click();
+  await page.getByPlaceholder("Search pages…").fill("what should I do next");
+  await page.keyboard.press("Enter");
+  // The chat mounts with the question already waiting (the dev server
+  // double-runs mount effects: it must neither drop nor repeat it).
+  await expect(page.getByText("From a closed panel.")).toBeVisible();
+  expect(sent.map((body) => body.message)).toEqual(["what should I do next"]);
+  await page.close();
+});
+
 test("Describe it drafts a class series beside the manual tabs: cards, Apply all", async ({ browser }) => {
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
@@ -444,7 +466,7 @@ test("History offers Undo only where the server says it still works", async ({ b
   await page.route("**/api/v1/admin/copilot/undo/", async (route) => {
     undone.push(route.request().postDataJSON().audit_id);
     entries = [row(2, "Created draft course 'Flow'", false, true), entries[1]];
-    await route.fulfill({ json: { undone: "create_course" } });
+    await route.fulfill({ json: { undone: "create_course", id: 2 } });
   });
   await page.goto(`${TENANT}/admin/courses?assistant=history`);
 

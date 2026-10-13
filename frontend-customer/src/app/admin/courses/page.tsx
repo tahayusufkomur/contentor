@@ -75,7 +75,7 @@ export default function AdminCoursesPage() {
   const [tagFilter, setTagFilter] = useState<number[]>([]);
   // The assistant's panel created, changed or took back a course.
   useAssistantApplied(({ kind }) => {
-    if (kind === "undo" || kind.includes("course")) {
+    if (kind.includes("course") || kind.includes("curriculum")) {
       browserRef.current?.refresh();
     }
   });

@@ -13,8 +13,8 @@ export function announceSiteUpdated(): void {
 }
 
 /** Window event carrying what the assistant just applied ({kind, id}), or
- * {kind: "undo"} when one of its changes was taken back, so the admin page
- * showing that record or list can reload it. */
+ * {kind: "undo:<kind>", id} when one of its changes was taken back, so the
+ * admin page showing that record or list can reload it. */
 const ASSISTANT_APPLIED_EVENT = "contentor:assistant-applied";
 
 export interface AssistantApplied {

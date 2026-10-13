@@ -31,10 +31,11 @@ export default function LiveEventsPage() {
   // dodge the copilot drawer uses.
   const [tab, setTab] = useState<LiveEventKind>("classes");
   // Bumped when the assistant schedules, changes or takes back a class
-  // (from the line below or from its panel): the lists reload.
+  // (from the line below or from its panel): the lists reload. Only for
+  // events: a remount closes an open edit panel.
   const [listKey, setListKey] = useState(0);
   useAssistantApplied(({ kind }) => {
-    if (kind === "undo" || kind.includes("event")) setListKey((k) => k + 1);
+    if (kind.includes("event")) setListKey((k) => k + 1);
   });
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("tab");

@@ -55,7 +55,7 @@ export const executeCopilotAction = (token: string) =>
   });
 
 export const undoCopilotAction = (auditId: number) =>
-  clientFetch<{ undone: string }>(`${BASE}/undo/`, {
+  clientFetch<{ undone: string; id: number | null }>(`${BASE}/undo/`, {
     method: "POST",
     body: JSON.stringify({ audit_id: auditId }),
   });

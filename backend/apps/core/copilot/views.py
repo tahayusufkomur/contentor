@@ -706,7 +706,8 @@ def copilot_undo(request):
         entry.undone_at = timezone.now()
         entry.save(update_fields=["undone_at"])
     logger.info("copilot undid %s schema=%s", entry.kind, tenant.schema_name)
-    return Response({"undone": entry.kind})
+    # The record it touched (a course, a class), so the page showing it reloads.
+    return Response({"undone": entry.kind, "id": (entry.result or {}).get("id")})
 
 
 # ── chats: server-side conversation threads for the drawer UI ────────────────

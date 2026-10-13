@@ -919,7 +919,7 @@ def test_undo_restores_pages_snapshot(client, coach):
     assert res.status_code == 200, res.content
     undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
     assert undo.status_code == 200, undo.content
-    assert undo.json() == {"undone": "toggle_block"}
+    assert undo.json() == {"undone": "toggle_block", "id": None}
     assert _current_pages() == before
     assert _latest_audit().undone_at is not None
 
@@ -983,7 +983,7 @@ def test_undo_deletes_an_untouched_draft_course(client, coach):
     res = _create_course(client)
     undo = _undo(client, res)
     assert undo.status_code == 200, undo.content
-    assert undo.json() == {"undone": "create_course"}
+    assert undo.json() == {"undone": "create_course", "id": res.json()["result"]["id"]}
     assert not Course.objects.filter(pk=res.json()["result"]["id"]).exists()
     assert _undo(client, res).status_code == 400  # already undone
 

@@ -13,10 +13,12 @@ import { clientFetch } from "@/lib/api-client";
 import { ArrowLeft } from "lucide-react";
 import { CourseForm } from "@/components/admin/course-form";
 import { useAssistantApplied } from "@/lib/site-events";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import type { CourseDetail } from "@/types/course";
 
 /** What the assistant can do to a course that the open form would not know. */
 const COURSE_CHANGES = new Set([
+  "create_course",
   "edit_course",
   "edit_curriculum",
   "set_course_cover",
@@ -30,6 +32,7 @@ export default function AdminCourseDetailPage() {
   const [error, setError] = useState<unknown>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [formKey, setFormKey] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -66,13 +69,16 @@ export default function AdminCourseDetailPage() {
   // load it again and hand the form the new copy. The form keeps its own
   // state, so it is remounted — only for a change to the course on screen.
   useAssistantApplied((applied) => {
-    if (applied.id !== course?.id || !COURSE_CHANGES.has(applied.kind)) return;
+    // An undo counts like the change it takes back; undoing the course's own
+    // creation deletes it, so the reload fails and she goes back to the list.
+    const kind = applied.kind.replace(/^undo:/, "");
+    if (applied.id !== course?.id || !COURSE_CHANGES.has(kind)) return;
     clientFetch<CourseDetail>(`/api/v1/courses/${params.slug}/`)
       .then((data) => {
         setCourse(data);
         setFormKey((k) => k + 1);
       })
-      .catch(console.error);
+      .catch(() => navigate("/admin/courses"));
   });
 
   return (

@@ -194,9 +194,12 @@ export function ActionCard({
   const { run: undo, loading: undoing } = useAsyncAction(
     async () => {
       if (auditId == null) return;
-      await undoCopilotAction(auditId);
+      const res = await undoCopilotAction(auditId);
       announceSiteUpdated();
-      announceAssistantApplied({ kind: "undo" });
+      announceAssistantApplied({
+        kind: `undo:${res.undone}`,
+        id: res.id ?? undefined,
+      });
       router.refresh();
       toast.success(t("undone"));
       setState("dismissed");
