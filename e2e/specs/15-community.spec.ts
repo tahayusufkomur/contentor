@@ -156,7 +156,17 @@ test("community: enable → post → pin → report → remove → ban", async (
   // ── 4. Coach resolves the report with Remove ─────────────────────────────
   await coachPage.getByRole("button", { name: /reports/i }).click();
   await expect(coachPage.getByText(COACH_POST)).toBeVisible({ timeout: 10_000 });
-  await coachPage.getByRole("button", { name: /^remove$/i }).first().click();
+  // This report's own Remove, not the first on the page: the queue is oldest
+  // first, so a report left open by an earlier failed run would take the
+  // click and this run's post would stay up (and so on, run after run).
+  const removeButton = coachPage.getByRole("button", { name: /^remove$/i });
+  await coachPage
+    .locator("div")
+    .filter({ hasText: COACH_POST })
+    .filter({ has: removeButton })
+    .last()
+    .getByRole("button", { name: /^remove$/i })
+    .click();
   await expect(coachPage.getByText(/content removed/i)).toBeVisible();
 
   await studentPage.reload();

@@ -67,9 +67,10 @@ test("seven sidebar rows; Teach is lit on a course page and its pages are tabs",
     sidebar(page).getByRole("link", { name: "Teach" }),
   ).toHaveAttribute("aria-current", "page");
 
-  // demo-yoga has every module on: all four Teach pages, nothing hidden.
+  // demo-yoga has every module on: all three Teach pages, nothing hidden
+  // (the calendar is a view of Classes & events, not a page of its own).
   const teach = page.getByRole("navigation", { name: "Teach" });
-  await expect(teach.getByRole("link")).toHaveCount(4);
+  await expect(teach.getByRole("link")).toHaveCount(3);
   await expect(teach.getByRole("button", { name: /\+ \d+ more/i })).toHaveCount(
     0,
   );

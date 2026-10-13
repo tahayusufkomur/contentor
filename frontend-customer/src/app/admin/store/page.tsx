@@ -603,7 +603,8 @@ export default function StorePage() {
       </div>
       {/* key remounts the tabs when ?tab= changes under the same page. */}
       <Tabs defaultValue={tab} key={tab}>
-        <TabsList>
+        {/* Four tabs are wider than a phone: let them wrap. */}
+        <TabsList className="h-auto max-w-full flex-wrap justify-start">
           <TabsTrigger value="products">{t("store.tabs.products")}</TabsTrigger>
           <TabsTrigger value="bundles">{t("store.tabs.bundles")}</TabsTrigger>
           <TabsTrigger value="plans">{t("store.tabs.plans")}</TabsTrigger>
