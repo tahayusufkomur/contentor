@@ -1802,3 +1802,60 @@ def test_pages_digest_shows_section_variant_and_both_photo_slots(tenant_with_pag
     digest = engine._pages_digest(tenant_with_pages)
     assert 'blk_s section.hero variant=calm.split headline="Breathe"' in digest
     assert "image=(none set) image2=(none set)" in digest
+
+
+def test_edit_curriculum_card_lists_the_changes_and_stashes_cleaned_ops(tenant_ctx):
+    from apps.accounts.models import User
+    from apps.core.copilot import tokens
+    from apps.courses.models import Course, Module
+
+    owner = User.objects.create_user(email="curr@x.com", name="C", password="x", role="owner")  # noqa: S106
+    course = Course.objects.create(title="Morning Flow", instructor=owner)
+    basics = Module.objects.create(course=course, title="Basics", order=1)
+    card = engine._card(
+        tenant_ctx,
+        engine.EditCurriculumAction(
+            kind="edit_curriculum",
+            course_id=course.id,
+            ops=[
+                {"op": "add_lesson", "module_id": basics.id, "title": "Breath", "lessons": ["ignored"]},
+                {"op": "add_module", "title": "Flow", "lessons": ["Sun salutation"]},
+            ],
+        ),
+    )
+    assert card["kind"] == "edit_curriculum"
+    assert card["title"] == "Update the curriculum: Morning Flow"
+    assert card["detail"] == "Add lesson 'Breath' to 'Basics'; Add module 'Flow' with 1 lesson(s)"
+    assert tokens.take_action(card["token"], tenant_ctx.schema_name) == {
+        "kind": "edit_curriculum",
+        "course_id": course.id,
+        "ops": [
+            {"op": "add_lesson", "module_id": basics.id, "title": "Breath"},
+            {"op": "add_module", "title": "Flow", "lessons": ["Sun salutation"]},
+        ],
+    }
+
+
+def test_edit_curriculum_with_a_foreign_id_drops_the_card_with_its_reason(tenant_ctx):
+    from apps.accounts.models import User
+    from apps.courses.models import Course
+
+    owner = User.objects.create_user(email="curr2@x.com", name="C", password="x", role="owner")  # noqa: S106
+    course = Course.objects.create(title="Morning Flow", instructor=owner)
+    parsed = _turn(
+        kind="actions",
+        text="Renamed it",
+        actions=[
+            {
+                "kind": "edit_curriculum",
+                "course_id": course.id,
+                "ops": [{"op": "rename_module", "module_id": 424242, "title": "X"}],
+            }
+        ],
+    )
+    with mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0"), "m")):
+        payload, _ = engine.run_turn(tenant_ctx, [], [], "rename it")
+    assert payload == {
+        "kind": "answer",
+        "text": "I couldn't make that change: that module is not in this course. Nothing on your site was changed.",
+    }

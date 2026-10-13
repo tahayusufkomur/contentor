@@ -419,3 +419,103 @@ def test_edit_blog_post_sets_cover_photo(tenant_ctx, coach):
     post.refresh_from_db()
     assert post.cover_photo_id == photo.pk
     assert any(c["field"] == "cover_photo" for c in result["changes"])
+
+
+# ── edit_curriculum: modules and lessons of an existing course ───────────────
+
+
+@pytest.fixture()
+def course(coach):
+    from apps.courses.models import Course, Lesson, Module
+
+    course = Course.objects.create(title="Morning Flow", instructor=coach)
+    basics = Module.objects.create(course=course, title="Basics", order=1)
+    Lesson.objects.create(module=basics, title="Breath", order=1)
+    Lesson.objects.create(module=basics, title="Posture", order=2)
+    return course
+
+
+def test_edit_curriculum_adds_renames_and_removes(course):
+    basics = course.modules.get()
+    breath, posture = basics.lessons.order_by("order")
+    result = content.edit_curriculum(
+        course.id,
+        [
+            {"op": "add_module", "title": "  Flow  ", "lessons": ["Sun salutation", "", "Warrior"]},
+            {"op": "add_lesson", "module_id": basics.id, "title": "Balance"},
+            {"op": "rename_module", "module_id": basics.id, "title": "Foundations"},
+            {"op": "rename_lesson", "lesson_id": breath.id, "title": "Breathing"},
+            {"op": "remove_lesson", "lesson_id": posture.id},
+        ],
+    )
+    modules = list(course.modules.order_by("order"))
+    assert [m.title for m in modules] == ["Foundations", "Flow"]
+    assert [lesson.title for lesson in modules[0].lessons.order_by("order")] == ["Breathing", "Balance"]
+    assert [lesson.title for lesson in modules[1].lessons.order_by("order")] == ["Sun salutation", "Warrior"]
+    assert result == {
+        "kind": "edit_curriculum",
+        "id": course.id,
+        "title": "Morning Flow",
+        "url": f"/admin/courses/{course.slug}",
+        "changes_count": 5,
+    }
+
+
+def test_curriculum_steps_say_each_change_in_plain_words(course):
+    basics = course.modules.get()
+    _course, steps = content.curriculum_steps(
+        course.id,
+        [
+            {"op": "add_module", "title": "Flow", "lessons": ["Sun salutation"]},
+            {"op": "remove_module", "module_id": basics.id},
+        ],
+    )
+    assert [label for _op, label in steps] == [
+        "Add module 'Flow' with 1 lesson(s)",
+        "Remove module 'Basics' and its 2 lesson(s)",
+    ]
+
+
+def test_edit_curriculum_refuses_another_courses_module(course, coach):
+    from apps.courses.models import Course, Module
+
+    other = Module.objects.create(course=Course.objects.create(title="Other", instructor=coach), title="Theirs")
+    with pytest.raises(content.ContentOpError, match="not in this course"):
+        content.edit_curriculum(course.id, [{"op": "rename_module", "module_id": other.id, "title": "Mine"}])
+    other.refresh_from_db()
+    assert other.title == "Theirs"
+
+
+def test_edit_curriculum_keeps_a_lesson_with_a_video_or_progress(course, coach):
+    from apps.courses.models import Lesson, Progress
+
+    basics = course.modules.get()
+    breath, posture = basics.lessons.order_by("order")
+    Lesson.objects.filter(pk=breath.pk).update(video_url="https://example.com/v.mp4")
+    Progress.objects.create(user=coach, lesson=posture, completed=True)
+    for op in (
+        {"op": "remove_lesson", "lesson_id": breath.id},
+        {"op": "remove_lesson", "lesson_id": posture.id},
+        {"op": "remove_module", "module_id": basics.id},
+    ):
+        with pytest.raises(content.ContentOpError, match="video or student progress"):
+            content.edit_curriculum(course.id, [op])
+    assert basics.lessons.count() == 2
+
+
+def test_edit_curriculum_is_all_or_nothing(course):
+    with pytest.raises(content.ContentOpError):
+        content.edit_curriculum(
+            course.id,
+            [{"op": "add_module", "title": "Flow"}, {"op": "rename_lesson", "lesson_id": 999999, "title": "x"}],
+        )
+    assert course.modules.count() == 1
+
+
+@pytest.mark.parametrize(
+    "ops",
+    [[], [{"op": "add_module", "title": "   "}], [{"op": "explode"}], [{"op": "add_lesson", "title": "No module"}]],
+)
+def test_edit_curriculum_refuses_empty_or_unknown_ops(course, ops):
+    with pytest.raises(content.ContentOpError):
+        content.edit_curriculum(course.id, ops)

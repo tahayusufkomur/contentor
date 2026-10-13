@@ -126,6 +126,7 @@ _CREATORS = {
     "create_blog_post": lambda user, action: content.create_blog_post(user, action["params"]),
     "draft_announcement": lambda user, action: content.create_announcement_draft(user, action["params"]),
     "edit_course": lambda user, action: content.edit_course(action["course_id"], action["params"]),
+    "edit_curriculum": lambda user, action: content.edit_curriculum(action["course_id"], action["ops"]),
     "edit_event": lambda user, action: content.edit_event(action["event_id"], action["event_kind"], action["params"]),
     "edit_blog_post": lambda user, action: content.edit_blog_post(action["post_id"], action["params"]),
     "publish_course": lambda user, action: content.publish_course(action["course_id"]),
@@ -404,6 +405,8 @@ def _audit_summary(action, result):
         return "Set a new logo"
     if kind == "edit_course":
         return f"Updated course '{title}'" if title else "Updated a course"
+    if kind == "edit_curriculum":
+        return f"Changed the curriculum of '{title}'" if title else "Changed a course's curriculum"
     if kind == "edit_event":
         return f"Updated event '{title}'" if title else "Updated an event"
     if kind == "edit_blog_post":

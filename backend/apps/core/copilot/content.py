@@ -182,6 +182,154 @@ def edit_event(event_id, event_kind, params):
     }
 
 
+MAX_CURRICULUM_OPS = 20
+MAX_NEW_LESSONS = 20
+
+
+def _title(op):
+    title = " ".join(str(op.get("title") or "").split())[:200]
+    if not title:
+        raise ContentOpError("a module or lesson needs a title")
+    return title
+
+
+def _kept_work(lesson):
+    """A lesson the assistant must not delete: it holds a video or a student
+    has progress on it."""
+    return bool(lesson.video_id or lesson.video_url or lesson.progress_records.exists())
+
+
+def curriculum_steps(course_id, ops):
+    """Check the ops against the course as it is now -> (course, [(op, label)]).
+    ``op`` is the cleaned dict edit_curriculum applies; ``label`` says it in
+    plain words for the card. Raises ContentOpError on anything it will not do."""
+    from apps.courses.models import Course
+
+    course = Course.objects.filter(pk=course_id).prefetch_related("modules__lessons").first()
+    if course is None:
+        raise ContentOpError(f"no course with id {course_id}")
+    modules = {m.id: m for m in course.modules.all()}
+    lessons = {lesson.id: lesson for m in modules.values() for lesson in m.lessons.all()}
+
+    def module_of(op):
+        module = modules.get(op.get("module_id"))
+        if module is None:
+            raise ContentOpError("that module is not in this course")
+        return module
+
+    def lesson_of(op):
+        lesson = lessons.get(op.get("lesson_id"))
+        if lesson is None:
+            raise ContentOpError("that lesson is not in this course")
+        return lesson
+
+    steps = []
+    for op in list(ops)[:MAX_CURRICULUM_OPS]:
+        kind = op.get("op")
+        if kind == "add_module":
+            title = _title(op)
+            new = [" ".join(str(t).split())[:200] for t in (op.get("lessons") or [])[:MAX_NEW_LESSONS]]
+            new = [t for t in new if t]
+            steps.append(
+                ({"op": kind, "title": title, "lessons": new}, f"Add module '{title}' with {len(new)} lesson(s)")
+            )
+        elif kind == "add_lesson":
+            module, title = module_of(op), _title(op)
+            steps.append(
+                ({"op": kind, "module_id": module.id, "title": title}, f"Add lesson '{title}' to '{module.title}'")
+            )
+        elif kind == "rename_module":
+            module, title = module_of(op), _title(op)
+            steps.append(
+                ({"op": kind, "module_id": module.id, "title": title}, f"Rename module '{module.title}' to '{title}'")
+            )
+        elif kind == "rename_lesson":
+            lesson, title = lesson_of(op), _title(op)
+            steps.append(
+                ({"op": kind, "lesson_id": lesson.id, "title": title}, f"Rename lesson '{lesson.title}' to '{title}'")
+            )
+        elif kind == "remove_lesson":
+            lesson = lesson_of(op)
+            if _kept_work(lesson):
+                raise ContentOpError(
+                    f"lesson '{lesson.title}' has a video or student progress — remove it from the course page"
+                )
+            steps.append(({"op": kind, "lesson_id": lesson.id}, f"Remove lesson '{lesson.title}'"))
+        elif kind == "remove_module":
+            module = module_of(op)
+            inside = list(module.lessons.all())
+            if any(_kept_work(lesson) for lesson in inside):
+                raise ContentOpError(
+                    f"module '{module.title}' has lessons with a video or student progress — "
+                    "remove it from the course page"
+                )
+            steps.append(
+                (
+                    {"op": kind, "module_id": module.id},
+                    f"Remove module '{module.title}' and its {len(inside)} lesson(s)",
+                )
+            )
+        else:
+            raise ContentOpError("unknown curriculum change")
+    if not steps:
+        raise ContentOpError("nothing to change in the curriculum")
+    return course, steps
+
+
+def edit_curriculum(course_id, ops):
+    """Apply the card's ops, re-checked against the course as it is now (she
+    may have edited it since the card was drawn). All or nothing."""
+    from django.db import transaction
+    from django.db.models import Max
+
+    from apps.courses.models import Lesson, Module
+    from apps.courses.serializers import LessonCreateSerializer, ModuleCreateSerializer
+
+    course, steps = curriculum_steps(course_id, ops)
+
+    def save(serializer, **extra):
+        if not serializer.is_valid():
+            _fail(serializer.errors)
+        return serializer.save(**extra)
+
+    def next_order(queryset):
+        return (queryset.aggregate(top=Max("order"))["top"] or 0) + 1
+
+    with transaction.atomic():
+        for op, _label in steps:
+            kind = op["op"]
+            if kind == "add_module":
+                module = save(
+                    ModuleCreateSerializer(data={"title": op["title"], "order": next_order(course.modules)}),
+                    course=course,
+                )
+                for index, title in enumerate(op["lessons"], start=1):
+                    save(LessonCreateSerializer(data={"title": title, "order": index}), module=module)
+            elif kind == "add_lesson":
+                module = Module.objects.get(pk=op["module_id"])
+                save(
+                    LessonCreateSerializer(data={"title": op["title"], "order": next_order(module.lessons)}),
+                    module=module,
+                )
+            elif kind == "rename_module":
+                module = Module.objects.get(pk=op["module_id"])
+                save(ModuleCreateSerializer(instance=module, data={"title": op["title"]}, partial=True))
+            elif kind == "rename_lesson":
+                lesson = Lesson.objects.get(pk=op["lesson_id"])
+                save(LessonCreateSerializer(instance=lesson, data={"title": op["title"]}, partial=True))
+            elif kind == "remove_lesson":
+                Lesson.objects.filter(pk=op["lesson_id"]).delete()
+            else:
+                Module.objects.filter(pk=op["module_id"]).delete()
+    return {
+        "kind": "edit_curriculum",
+        "id": course.id,
+        "title": course.title,
+        "url": f"/admin/courses/{course.slug}",
+        "changes_count": len(steps),
+    }
+
+
 _POST_EDIT_MAP = {"title": "title", "summary": "excerpt", "body_html": "body_html"}
 
 

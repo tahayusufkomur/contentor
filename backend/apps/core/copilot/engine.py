@@ -46,8 +46,16 @@ SYSTEM_PROMPT = (
     "modules each with lesson titles); the coach reviews and publishes it "
     "from their admin\n"
     "- edit_course: update an existing course's title, description, or "
-    "price (course_id from the course list); modules cannot be changed "
-    "here\n"
+    "price (course_id from the course list); modules and lessons change "
+    "through edit_curriculum\n"
+    "- edit_curriculum: change an existing course's modules and lessons "
+    "with a list of ops — add_module (title + lessons: its lesson titles), "
+    "add_lesson (module_id + title), rename_module (module_id + title), "
+    "rename_lesson (lesson_id + title), remove_module (module_id), "
+    "remove_lesson (lesson_id). module_id and lesson_id come from the "
+    "curriculum shown when the coach has that course open; without it you "
+    "can still add_module, and for anything that needs an id ask her to "
+    "open the course first\n"
     "- edit_event: reschedule or update an upcoming event (event_id + kind "
     "from the events list); date must be in the future\n"
     "- edit_blog_post: update an existing post's title, summary, or body "
@@ -358,6 +366,20 @@ class EditCourseAction(BaseModel):
     price: float | None = None
 
 
+class CurriculumOp(BaseModel):
+    op: Literal["add_module", "add_lesson", "rename_module", "rename_lesson", "remove_module", "remove_lesson"]
+    module_id: int | None = None
+    lesson_id: int | None = None
+    title: str = ""
+    lessons: list[str] = Field(default_factory=list)  # add_module: its lesson titles
+
+
+class EditCurriculumAction(BaseModel):
+    kind: Literal["edit_curriculum"]
+    course_id: int
+    ops: list[CurriculumOp] = Field(default_factory=list)
+
+
 class EditEventAction(BaseModel):
     kind: Literal["edit_event"]
     event_id: int
@@ -407,6 +429,7 @@ CopilotAction = Annotated[
     | SetLogoAction
     | NotePhotoAction
     | EditCourseAction
+    | EditCurriculumAction
     | EditEventAction
     | EditBlogPostAction
     | PublishCourseAction
@@ -1065,6 +1088,18 @@ def _card(tenant, action):
                         if v is not None
                     },
                 },
+            ),
+        }
+    if isinstance(action, EditCurriculumAction):
+        with tenant_context(tenant):
+            course, steps = content.curriculum_steps(action.course_id, [op.model_dump() for op in action.ops])
+        return {
+            "kind": "edit_curriculum",
+            "title": f"Update the curriculum: {course.title[:100]}",
+            "detail": "; ".join(label for _op, label in steps)[:500],
+            "token": tokens.stash_action(
+                schema,
+                {"kind": "edit_curriculum", "course_id": course.id, "ops": [op for op, _label in steps]},
             ),
         }
     if isinstance(action, EditEventAction):
