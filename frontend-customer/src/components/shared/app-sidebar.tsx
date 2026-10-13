@@ -25,37 +25,26 @@ import { Spinner } from "@/components/ui/spinner";
 import type { EntitlementKey } from "@/lib/entitlements";
 
 export interface NavItem {
+  /** Message key under `nav.items` — the page's one name. Its <h1> reads the
+   *  same key, so the sidebar, the tab and the page cannot drift apart. */
+  key: string;
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  /** Render an "AI" badge on this item (the feature is AI-powered). */
-  ai?: boolean;
-  /** Render a "Paid" badge while the coach's plan lacks this entitlement. */
+  /** A quiet lock shows while the coach's plan lacks this entitlement. */
   requiresEntitlement?: EntitlementKey;
-  /** The section is only PARTLY paid (some sub-features are free) — softens the
-   *  Paid badge tooltip to "Contains paid features". */
-  partialPaid?: boolean;
-  /** Open in a new tab with an external-link indicator (e.g. "Edit site"). */
+  /** Opens the site editor in a new tab. */
   external?: boolean;
 }
 
 export interface NavSection {
   id: string;
   label: string;
+  icon: React.ComponentType<{ className?: string }>;
   items: NavItem[];
-  /** Render as a single bare top-level link (no collapsible group header).
-   *  Used for single-page destinations like Home and Settings. A flat section
-   *  must contain exactly one item; that item is rendered directly. */
-  flat?: boolean;
-  /** Stage-gated: greyed but still clickable. `reasonKey` is an i18n key
-   *  explaining what unlocks it; `href` points at the milestone that does. */
-  locked?: { reasonKey: string; href: string };
-  /** Progressive disclosure: this many items are hidden behind a "+ More"
-   *  row. Zero/undefined means everything is shown. */
+  /** Pages hidden because the coach did not choose their module; the tab
+   *  strip offers them behind "+ N more". */
   hiddenCount?: number;
-  /** i18n key for the disclosure row's label. Defaults to "nav.more"
-   *  ("+ N more"); My Site uses "nav.advancedEditing" instead. */
-  moreLabelKey?: string;
 }
 
 interface AppSidebarProps {

@@ -1,123 +1,125 @@
 import { describe, expect, it } from "vitest";
+import { activeSection, buildAdminNav, sectionHref } from "@/lib/admin-nav";
+import messages from "../../../messages/en/admin.json";
 
-import { buildAdminNav } from "@/lib/admin-nav";
-
-const t = (key: string) => key; // identity translator: assert structure, not copy
+const t = (key: string) => key;
 const nav = buildAdminNav(t);
+/** The real English, for checks that are about what the coach reads. */
+const english = (key: string) =>
+  key
+    .split(".")
+    .reduce<unknown>(
+      (node, part) => (node as Record<string, unknown>)?.[part],
+      messages,
+    ) as string;
+const section = (id: string) => nav.find((s) => s.id === id)!;
+const hrefs = (id: string) => section(id).items.map((i) => i.href);
+const at = (pathname: string) =>
+  activeSection(nav, { pathname, pendingHref: null })?.id;
 
-const sectionById = (id: string) => nav.find((s) => s.id === id);
-const allItems = nav.flatMap((s) => s.items);
-const hrefs = allItems.map((i) => i.href);
-
-describe("buildAdminNav — information architecture", () => {
-  it("exposes exactly seven destinations", () => {
-    expect(nav).toHaveLength(7);
+describe("buildAdminNav", () => {
+  it("has exactly seven sections, in the coach's order", () => {
     expect(nav.map((s) => s.id)).toEqual([
       "home",
-      "content",
-      "mySite",
-      "audience",
-      "marketing",
+      "teach",
+      "students",
+      "reachOut",
       "money",
+      "site",
       "settings",
     ]);
   });
 
-  it("renders Home and Settings as flat single-item links", () => {
-    for (const id of ["home", "settings"]) {
-      const section = sectionById(id);
-      expect(section?.flat).toBe(true);
-      expect(section?.items).toHaveLength(1);
-    }
-  });
-
-  it("renders the five job-stage groups as normal collapsible sections", () => {
-    for (const id of ["content", "mySite", "audience", "marketing", "money"]) {
-      expect(sectionById(id)?.flat).toBeFalsy();
-      expect(sectionById(id)?.items.length).toBeGreaterThan(1);
-    }
-  });
-
-  it("demotes media: no top-level Photos/Videos, Library lives under Content", () => {
-    // Neither photos nor videos is a top-level destination any more.
-    expect(nav.map((s) => s.id)).not.toContain("media");
-    // The photo library is reachable as a Content sub-item.
-    const content = sectionById("content");
-    expect(content?.items.some((i) => i.href === "/admin/photos")).toBe(true);
-    // /admin/videos intentionally leaves the sidebar (⌘K + pickers only).
-    expect(hrefs).not.toContain("/admin/videos");
-  });
-
-  it("groups all three money surfaces under Money", () => {
-    const money = sectionById("money");
-    const moneyHrefs = money?.items.map((i) => i.href) ?? [];
-    expect(moneyHrefs).toEqual([
-      "/admin/payouts",
-      "/admin/billing",
-      "/admin/billing?tab=products",
-    ]);
-  });
-
-  it("keeps every existing route reachable from the sidebar", () => {
-    for (const href of [
-      "/admin",
+  it("puts each page under the job it serves", () => {
+    expect(hrefs("home")).toEqual(["/admin"]);
+    expect(hrefs("teach")).toEqual([
       "/admin/courses",
       "/admin/live",
       "/admin/calendar",
       "/admin/downloads",
-      "/admin/photos",
-      "/admin/site-ai",
-      "/admin/assistant",
+    ]);
+    expect(hrefs("students")).toEqual([
       "/admin/students",
       "/admin/community",
       "/admin/inbox",
-      "/admin/blog",
-      "/admin/email",
+    ]);
+    expect(hrefs("reachOut")).toEqual([
       "/admin/notifications",
-      "/admin/payouts",
-      "/admin/billing",
-      "/admin/settings",
-    ]) {
-      expect(hrefs).toContain(href);
+      "/admin/email",
+      "/admin/blog",
+    ]);
+    expect(hrefs("money")).toEqual(["/admin/payouts", "/admin/store"]);
+    expect(hrefs("site")).toEqual([
+      "/?edit=1",
+      "/?edit=1&section=brand",
+      "/admin/photos",
+      "/admin/videos",
+      "/admin/assistant",
+    ]);
+    expect(hrefs("settings")).toEqual(["/admin/settings", "/admin/billing"]);
+  });
+
+  it("no section and page share a visible name, so links stay unambiguous", () => {
+    for (const s of buildAdminNav(english)) {
+      expect(s.label, `${s.id} has an English name`).toBeTruthy();
+      if (s.items.length === 1) continue; // single-page sections show no tabs
+      expect(s.items.map((i) => i.label)).not.toContain(s.label);
     }
   });
 
-  it("preserves the exact label keys e2e depends on", () => {
-    const content = sectionById("content");
-    const audience = sectionById("audience");
-    const calendar = content?.items.find((i) => i.href === "/admin/calendar");
-    const students = audience?.items.find((i) => i.href === "/admin/students");
-    // With the identity translator, the rendered label IS the i18n key; the
-    // real English/Turkish values ("Calendar"/"Students") are asserted by the
-    // label-preservation constraint and the e2e specs.
-    expect(calendar?.label).toBe("nav.items.calendar");
-    expect(students?.label).toBe("nav.items.students");
+  it("gives every item a distinct message key", () => {
+    const keys = nav.flatMap((s) => s.items.map((i) => i.key));
+    expect(new Set(keys).size).toBe(keys.length);
+    for (const s of nav)
+      for (const i of s.items) expect(i.label).toBe(`nav.items.${i.key}`);
   });
 
-  it("carries the paid/AI badges onto the right items", () => {
-    const badgeFor = (href: string) => allItems.find((i) => i.href === href);
-    expect(badgeFor("/admin/live")?.requiresEntitlement).toBe("live");
-    expect(badgeFor("/admin/payouts")?.requiresEntitlement).toBe("payouts");
-    expect(badgeFor("/admin/billing?tab=products")?.requiresEntitlement).toBe(
-      "selling",
+  it("locks only by entitlement, on the item", () => {
+    const locked = Object.fromEntries(
+      nav.flatMap((s) =>
+        s.items
+          .filter((i) => i.requiresEntitlement)
+          .map((i) => [i.href, i.requiresEntitlement]),
+      ),
     );
-    expect(badgeFor("/admin/blog")?.requiresEntitlement).toBe("ai_blog");
-    expect(badgeFor("/admin/inbox")?.requiresEntitlement).toBe(
-      "platform_mailbox",
-    );
-    // The assistant is open to every plan: an AI badge, never a Paid one.
-    expect(badgeFor("/admin/site-ai")?.ai).toBe(true);
-    expect(badgeFor("/admin/site-ai")?.requiresEntitlement).toBeUndefined();
+    expect(locked).toEqual({
+      "/admin/live": "live",
+      "/admin/inbox": "platform_mailbox",
+      "/admin/blog": "ai_blog",
+      "/admin/payouts": "payouts",
+      "/admin/store": "selling",
+      "/?edit=1&section=brand": "logo_studio",
+      "/admin/assistant": "student_bot",
+    });
+  });
+});
+
+describe("sectionHref", () => {
+  it("leads to the section's first page inside the admin", () => {
+    expect(sectionHref(section("teach"))).toBe("/admin/courses");
+    // Site starts with two links that open the editor in a new tab.
+    expect(sectionHref(section("site"))).toBe("/admin/photos");
+  });
+});
+
+describe("activeSection", () => {
+  it("finds the section from a page under no nav item", () => {
+    expect(at("/admin")).toBe("home");
+    expect(at("/admin/courses/new")).toBe("teach");
+    expect(at("/admin/students/3")).toBe("students");
+    expect(at("/admin/email/compose")).toBe("reachOut");
+    expect(at("/admin/store/bundles/new")).toBe("money");
+    expect(at("/admin/billing")).toBe("settings");
   });
 
-  it("puts Site AI first in My Site — it's the primary way to change the site", () => {
-    const mySite = sectionById("mySite");
-    expect(mySite?.items[0]?.href).toBe("/admin/site-ai");
+  it("follows a pending navigation before the route commits", () => {
+    expect(
+      activeSection(nav, { pathname: "/admin", pendingHref: "/admin/blog" })
+        ?.id,
+    ).toBe("reachOut");
   });
 
-  it("marks the external site-editor links", () => {
-    const mySite = sectionById("mySite");
-    const editSite = mySite?.items.find((i) => i.href === "/?edit=1");
-    expect(editSite?.external).toBe(true);
+  it("is undefined off the map (raw data)", () => {
+    expect(at("/admin/m/users")).toBeUndefined();
   });
 });

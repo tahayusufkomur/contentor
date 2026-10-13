@@ -4,6 +4,8 @@ import {
   Calendar,
   CreditCard,
   Download,
+  Film,
+  Globe,
   Image as ImageIcon,
   Inbox,
   LayoutDashboard,
@@ -14,7 +16,7 @@ import {
   Palette,
   Pencil,
   Settings,
-  Sparkles,
+  SlidersHorizontal,
   Store,
   Users,
   Video,
@@ -22,171 +24,120 @@ import {
 } from "lucide-react";
 
 import type { NavSection } from "@/components/shared/app-sidebar";
+import {
+  isNavItemActive,
+  type NavPathState,
+} from "@shared/navigation/navigation-state";
 
-/** The coach admin's information architecture: seven job-stage destinations.
- *  Single source of truth for both the desktop sidebar and the mobile drawer.
- *  Pure — takes a next-intl translator and returns data, so it is unit-tested
- *  without React. See lib/__tests__/admin-nav.test.ts. */
+/** The coach admin's information architecture: seven places, each holding the
+ *  pages of one job. Single source for the sidebar, the section tabs, the
+ *  phone drawer and the search. Pure — see lib/__tests__/admin-nav.test.ts. */
 export function buildAdminNav(t: (key: string) => string): NavSection[] {
+  const item = (
+    key: string,
+    href: string,
+    icon: NavSection["icon"],
+    extra: Partial<NavSection["items"][number]> = {},
+  ) => ({ key, label: t(`nav.items.${key}`), href, icon, ...extra });
+
   return [
     {
       id: "home",
       label: t("nav.items.home"),
-      flat: true,
-      items: [
-        { label: t("nav.items.home"), href: "/admin", icon: LayoutDashboard },
-      ],
+      icon: LayoutDashboard,
+      items: [item("home", "/admin", LayoutDashboard)],
     },
     {
-      id: "content",
-      label: t("nav.sections.content"),
+      id: "teach",
+      label: t("nav.sections.teach"),
+      icon: BookOpen,
       items: [
-        {
-          label: t("nav.items.courses"),
-          href: "/admin/courses",
-          icon: BookOpen,
-        },
-        {
-          label: t("nav.items.liveEvents"),
-          href: "/admin/live",
-          icon: Video,
+        item("courses", "/admin/courses", BookOpen),
+        item("liveEvents", "/admin/live", Video, {
           requiresEntitlement: "live",
-          partialPaid: true,
-        },
-        {
-          label: t("nav.items.calendar"),
-          href: "/admin/calendar",
-          icon: Calendar,
-        },
-        {
-          label: t("nav.items.downloads"),
-          href: "/admin/downloads",
-          icon: Download,
-        },
-        {
-          label: t("nav.items.library"),
-          href: "/admin/photos",
-          icon: ImageIcon,
-        },
+        }),
+        item("calendar", "/admin/calendar", Calendar),
+        item("downloads", "/admin/downloads", Download),
       ],
     },
     {
-      id: "mySite",
-      label: t("nav.sections.mySite"),
+      id: "students",
+      label: t("nav.sections.students"),
+      icon: Users,
       items: [
-        {
-          // The assistant is every coach's, whatever her plan — no Paid badge.
-          label: t("nav.items.siteAi"),
-          href: "/admin/site-ai",
-          icon: Sparkles,
-          ai: true,
-        },
-        {
-          label: t("nav.items.editSite"),
-          href: "/?edit=1",
-          icon: Pencil,
-          external: true,
-        },
-        {
-          // Design settings live in the site editor's Site → Brand section —
-          // there is no standalone /admin/design page any more.
-          label: t("nav.items.design"),
-          href: "/?edit=1&section=brand",
-          icon: Palette,
-          external: true,
-          ai: true,
-          requiresEntitlement: "logo_studio",
-          partialPaid: true,
-        },
-        {
-          label: t("nav.items.assistant"),
-          href: "/admin/assistant",
-          icon: MessageCircleQuestion,
-          ai: true,
-          requiresEntitlement: "student_bot",
-        },
-      ],
-    },
-    {
-      id: "audience",
-      label: t("nav.sections.audience"),
-      items: [
-        {
-          label: t("nav.items.students"),
-          href: "/admin/students",
-          icon: Users,
-        },
-        {
-          label: t("nav.items.communityFeed"),
-          href: "/admin/community",
-          icon: MessagesSquare,
-        },
-        {
-          label: t("nav.items.inbox"),
-          href: "/admin/inbox",
-          icon: Inbox,
+        item("students", "/admin/students", Users),
+        item("communityFeed", "/admin/community", MessagesSquare),
+        item("inbox", "/admin/inbox", Inbox, {
           requiresEntitlement: "platform_mailbox",
-          partialPaid: true,
-        },
+        }),
       ],
     },
     {
-      id: "marketing",
-      label: t("nav.sections.marketing"),
+      id: "reachOut",
+      label: t("nav.sections.reachOut"),
+      icon: Bell,
       items: [
-        {
-          label: t("nav.items.blog"),
-          href: "/admin/blog",
-          icon: Newspaper,
-          ai: true,
+        item("notifications", "/admin/notifications", Bell),
+        item("email", "/admin/email", Mail),
+        item("blog", "/admin/blog", Newspaper, {
           requiresEntitlement: "ai_blog",
-          partialPaid: true,
-        },
-        { label: t("nav.items.email"), href: "/admin/email", icon: Mail },
-        {
-          label: t("nav.items.notifications"),
-          href: "/admin/notifications",
-          icon: Bell,
-        },
+        }),
       ],
     },
     {
       id: "money",
       label: t("nav.sections.money"),
+      icon: Wallet,
       items: [
-        {
-          label: t("nav.items.payouts"),
-          href: "/admin/payouts",
-          icon: Wallet,
+        item("payouts", "/admin/payouts", Wallet, {
           requiresEntitlement: "payouts",
-        },
-        {
-          // Coach's own subscription to Contentor (payment to us).
-          label: t("nav.items.billing"),
-          href: "/admin/billing",
-          icon: CreditCard,
-        },
-        {
-          // Selling to students — products, bundles, subscription plans.
-          // Deep-links into the billing page's product tabs; paid-plan gated.
-          label: t("nav.items.store"),
-          href: "/admin/billing?tab=products",
-          icon: Store,
+        }),
+        item("store", "/admin/store", Store, {
           requiresEntitlement: "selling",
-        },
+        }),
+      ],
+    },
+    {
+      id: "site",
+      label: t("nav.sections.site"),
+      icon: Globe,
+      items: [
+        item("editSite", "/?edit=1", Pencil, { external: true }),
+        item("design", "/?edit=1&section=brand", Palette, {
+          external: true,
+          requiresEntitlement: "logo_studio",
+        }),
+        item("photos", "/admin/photos", ImageIcon),
+        item("videos", "/admin/videos", Film),
+        item("assistant", "/admin/assistant", MessageCircleQuestion, {
+          requiresEntitlement: "student_bot",
+        }),
       ],
     },
     {
       id: "settings",
-      label: t("nav.items.settings"),
-      flat: true,
+      label: t("nav.sections.settings"),
+      icon: Settings,
       items: [
-        {
-          label: t("nav.items.settings"),
-          href: "/admin/settings",
-          icon: Settings,
-        },
+        item("settings", "/admin/settings", SlidersHorizontal),
+        item("plan", "/admin/billing", CreditCard),
       ],
     },
   ];
+}
+
+/** Where a section's sidebar row leads: its first page inside the admin. */
+export function sectionHref(section: NavSection): string {
+  return (section.items.find((i) => !i.external) ?? section.items[0]).href;
+}
+
+/** The section the coach is in, from her current (or pending) path. Detail
+ *  pages count through the prefix match: /admin/courses/new is Teach. */
+export function activeSection(
+  sections: NavSection[],
+  state: NavPathState,
+): NavSection | undefined {
+  return sections.find((section) =>
+    section.items.some((i) => !i.external && isNavItemActive(state, i.href)),
+  );
 }

@@ -10,43 +10,37 @@
   },
   "nav": {
     "sections": {
-      "content": "Content",
-      "mySite": "My Site",
-      "audience": "Audience",
-      "marketing": "Marketing",
-      "money": "Money"
+      "teach": "Teach",
+      "students": "Students",
+      "reachOut": "Reach out",
+      "money": "Money",
+      "site": "Site",
+      "settings": "Settings"
     },
     "items": {
       "home": "Home",
-      "communityFeed": "Community",
       "courses": "Courses",
+      "liveEvents": "Classes & events",
       "calendar": "Calendar",
-      "library": "Library",
-      "videos": "Videos",
       "downloads": "Downloads",
-      "liveEvents": "Live Events",
+      "students": "People",
+      "communityFeed": "Community",
+      "inbox": "Inbox",
+      "notifications": "Announcements",
       "email": "Email",
       "blog": "Blog",
-      "students": "Students",
-      "notifications": "Send announcement",
-      "inbox": "Inbox",
-      "siteAi": "Site AI",
+      "payouts": "Payouts",
+      "store": "Store",
       "editSite": "Edit site",
       "design": "Design",
-      "assistant": "Site assistant",
-      "settings": "Settings",
-      "billing": "Billing",
-      "store": "Store",
-      "payouts": "Payouts"
-    },
-    "locked": {
-      "marketing": "Publish your site to open Marketing"
+      "photos": "Photos",
+      "videos": "Videos",
+      "assistant": "Student assistant",
+      "settings": "General",
+      "plan": "Your plan"
     },
     "more": "+ {count} more",
-    "advancedEditing": "Advanced editing",
-    "unlocked": {
-      "marketing": "🎉 Your site is live — Marketing is now open"
-    }
+    "locked": "Not in your plan yet"
   },
   "siteAi": {
     "title": "Site AI",
