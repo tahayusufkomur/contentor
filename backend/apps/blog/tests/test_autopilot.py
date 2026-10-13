@@ -130,7 +130,7 @@ def test_empty_queue_triggers_refill(paid_tenant, settings):
     settings.ANTHROPIC_API_KEY = "test-key"
     _due_rule()
     with (
-        mock.patch.object(ai, "generate_post", return_value=_draft_result()),
+        mock.patch.object(ai, "generate_post", return_value=_draft_result()) as write,
         mock.patch.object(
             ai, "generate_topics", return_value=([{"title": "fresh", "angle": ""}], Decimal("0.004"))
         ) as refill,
@@ -139,6 +139,8 @@ def test_empty_queue_triggers_refill(paid_tenant, settings):
         tasks._generate_for_current_tenant(paid_tenant)
     refill.assert_called_once()
     assert BlogPost.objects.get().title == "T"
+    # Nobody waits on autopilot: both calls ask the hub for a background slot.
+    assert refill.call_args.kwargs["label"] == write.call_args.kwargs["label"] == "contentor:compose-blog"
 
 
 def test_autopilot_offers_and_caches_curated_photos(paid_tenant, settings):

@@ -1532,3 +1532,53 @@ def test_execute_edit_pages_busts_cache(client, coach):
     assert res.status_code == 200, res.content
     assert cache.get("tenant:shared_test:config") is None
     assert TenantConfig.objects.first().pages == pages
+
+
+# --- limits: a hub label, a per-coach throttle, one availability seam -----
+
+
+def _converse(client, **extra):
+    return client.post(
+        "/api/v1/admin/copilot/converse/",
+        {"message": "hello", "transcript": [], "selections": []},
+        format="json",
+        HTTP_ACCEPT="text/event-stream",
+        **extra,
+    )
+
+
+def test_converse_is_throttled_per_coach(client, tenant_ctx):
+    other_coach = User.objects.create_user(email="second@x.com", name="B", password="x", role="owner")  # noqa: S106
+    other = APIClient(HTTP_HOST=HOST)
+    other.force_authenticate(user=other_coach)
+    with (
+        mock.patch("apps.core.copilot.views.ai_compose.compose_available", return_value=True),
+        mock.patch(
+            "apps.core.copilot.views.engine.run_turn", return_value=({"kind": "answer", "text": "hi"}, Decimal("0"))
+        ),
+        mock.patch("apps.core.copilot.views.ai_compose.record_spend"),
+    ):
+        codes = [_converse(client).status_code for _ in range(16)]
+        assert codes == [200] * 15 + [429]
+        assert _converse(other).status_code == 200  # her ceiling is hers alone
+
+
+def test_converse_asks_availability_before_anything_else(client):
+    """The one seam a plan check or paywall would use."""
+    with (
+        mock.patch("apps.core.copilot.views.availability", return_value="unavailable") as seam,
+        mock.patch("apps.core.copilot.views.engine.run_turn") as run,
+    ):
+        resp = _converse(client)
+    assert resp.json() == {"kind": "unavailable"}
+    seam.assert_called_once()
+    run.assert_not_called()
+
+
+def test_a_turn_is_labelled_for_the_hub(tenant_ctx):
+    from apps.core.copilot import engine
+
+    answer = engine.CopilotTurn.model_validate({"kind": "answer", "text": "ok"})
+    with mock.patch.object(engine.core_ai, "structured", return_value=(answer, Decimal("0"), "m")) as structured:
+        engine.run_turn(tenant_ctx, [], [], "hi")
+    assert structured.call_args.kwargs["label"] == "contentor:copilot"

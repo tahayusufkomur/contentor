@@ -60,3 +60,10 @@ class SetupInterviewThrottle(UserRateThrottle):
     def get_cache_key(self, request, view):
         key = super().get_cache_key(request, view)
         return f"{key}:{connection.schema_name}" if key else key
+
+
+class CopilotThrottle(SetupInterviewThrottle):
+    """Admin assistant turns (one AI call each). An abuse ceiling a coach at
+    the keyboard cannot reach, not a plan limit. Per coach and tenant."""
+
+    scope = "copilot"

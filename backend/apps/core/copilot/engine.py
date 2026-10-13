@@ -1398,6 +1398,8 @@ def run_turn(tenant, transcript, selections, message, attachments=None, context=
         output_model=CopilotTurn,
         model=settings.COPILOT_MODEL,
         max_tokens=6000,
+        # Its own run type on the hub: a coach is waiting, so interactive.
+        label="contentor:copilot",
         timeout_seconds=timeout_seconds,
         # Interactive, under a 35 s wizard timeout.
         effort="low",

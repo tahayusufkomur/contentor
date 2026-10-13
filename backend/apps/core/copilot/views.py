@@ -10,7 +10,7 @@ from django.core.cache import cache
 from django.db import connection
 from django.http import JsonResponse
 from django_tenants.utils import tenant_context
-from rest_framework.decorators import api_view, permission_classes, renderer_classes
+from rest_framework.decorators import api_view, permission_classes, renderer_classes, throttle_classes
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
@@ -21,6 +21,7 @@ from apps.core.copilot import context as page_context
 from apps.core.copilot.tokens import ActionTokenError
 from apps.core.onboarding import ai_compose, site_ai
 from apps.core.permissions import IsCoachOrOwner
+from apps.core.throttling import CopilotThrottle
 
 logger = logging.getLogger(__name__)
 
@@ -56,16 +57,24 @@ def _clean_attachments(tenant, raw):
     return [{"id": str(r["id"]), "title": r["title"], "desc": r["alt_text"]} for r in rows]
 
 
+def availability(tenant):
+    """Why the assistant cannot answer this coach right now, or None. It is
+    open to every coach whatever her plan; a plan check or a paywall would
+    go here and nowhere else."""
+    return None if ai_compose.compose_available() else "unavailable"
+
+
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
+@throttle_classes([CopilotThrottle])
 @renderer_classes([JSONRenderer, EventStreamRenderer])
 def copilot_converse(request):
-    if not ai_compose.compose_available():
+    tenant = connection.tenant
+    if reason := availability(tenant):
         # Pre-stream guard answered as plain JSON (streamAi content-sniffs
         # and returns a JSON body as-is) — same convention as blog/site-ai.
-        return JsonResponse({"kind": "unavailable"})
+        return JsonResponse({"kind": reason})
 
-    tenant = connection.tenant
     data = request.data if isinstance(request.data, dict) else {}
     message = str(data.get("message") or "").strip()[:MESSAGE_MAX_LEN]
     transcript = data.get("transcript") if isinstance(data.get("transcript"), list) else []

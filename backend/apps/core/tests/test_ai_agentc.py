@@ -285,6 +285,15 @@ def test_site_composition_and_turns_written_ahead_are_asked_as_background(hub):
     assert [body["priority"] for body in hub.created] == ["background"] * 3 + ["interactive"]
 
 
+def test_blog_autopilot_rides_as_background_and_the_admin_assistant_as_interactive(hub):
+    from apps.blog import ai as blog_ai
+
+    hub.results *= 2
+    _call(label=blog_ai.AUTOPILOT_LABEL)
+    _call(label="contentor:copilot")
+    assert [body["priority"] for body in hub.created] == ["background", "interactive"]
+
+
 def test_a_hub_rule_that_overrides_the_priority_is_logged(hub, monkeypatch):
     """2026-10-12: the hub's rules ran every compose type as interactive, so two
     site plans held both accounts and the coach's own turns were cancelled."""

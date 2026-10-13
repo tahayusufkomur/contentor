@@ -170,6 +170,8 @@ REST_FRAMEWORK = {
         "wizard_recover": "5/hour",
         # Coach /setup interview turns — one AI call each.
         "setup_interview": "30/min",
+        # Admin assistant turns — one AI call each; a turn takes 5-15 s.
+        "copilot": "15/min",
     },
 }
 
