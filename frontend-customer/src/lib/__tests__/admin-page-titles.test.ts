@@ -6,9 +6,7 @@ import { buildAdminNav } from "@/lib/admin-nav";
 const SRC = path.resolve(__dirname, "../..");
 
 /** Pages whose <h1> lives in a component rather than in page.tsx. */
-const TITLE_FILE: Record<string, string> = {
-  "/admin/calendar": "components/admin/calendar/unified-calendar.tsx",
-};
+const TITLE_FILE: Record<string, string> = {};
 /** The inbox is a mail client: its folder rail is its heading. */
 const NO_TITLE = new Set(["/admin/inbox"]);
 

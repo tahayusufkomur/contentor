@@ -1,114 +1,155 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
-import { Lock } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { LiveClassesTab } from "@/components/admin/live/classes-tab";
-import { LiveStreamsTab } from "@/components/admin/live/streams-tab";
-import { ZoomClassesTab } from "@/components/admin/live/zoom-tab";
-import { OnsiteEventsTab } from "@/components/admin/live/onsite-tab";
-import { useIsLocked } from "@/components/admin/entitlements-provider";
-import { PaidFeatureBadge } from "@/components/admin/feature-badges";
+import { Lock, Plus } from "lucide-react";
+
+import { UnifiedCalendar } from "@/components/admin/calendar/unified-calendar";
 import { DescribeIt } from "@/components/admin/describe-it";
+import { useIsLocked } from "@/components/admin/entitlements-provider";
+import { EventForm } from "@/components/admin/live/event-form";
+import { EventsList } from "@/components/admin/live/events-list";
+import {
+  EVENT_KINDS,
+  kindFromParams,
+  type EventRow,
+} from "@/components/admin/live/kinds";
+import type { MediaBrowserHandle } from "@/components/admin/media-browser";
+import { Button } from "@/components/ui/button";
+import { NavLink } from "@/components/ui/nav-link";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { clientFetch } from "@/lib/api-client";
 import { useAssistantApplied } from "@/lib/site-events";
-import type { LiveEventKind } from "@/components/admin/live/shared";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
-const VALID_TABS = new Set<LiveEventKind>([
-  "classes",
-  "streams",
-  "zoom",
-  "onsite",
-]);
+export const dynamic = "force-dynamic";
 
-export default function LiveEventsPage() {
+/** Every class and event the coach runs, whatever it runs on: one list, one
+ *  form, and the calendar as another view of the same things. */
+export default function EventsPage() {
   const t = useTranslations("admin");
+  const navigate = useNavigate();
+  const params = useSearchParams();
   const liveLocked = useIsLocked("live");
-  // A copilot deep link (or a shared URL) can open a specific tab via
-  // ?tab=; each tab component separately reads ?event= to open one item.
-  // window.location.search, not useSearchParams — same Suspense-bailout
-  // dodge the copilot drawer uses.
-  const [tab, setTab] = useState<LiveEventKind>("classes");
-  // Bumped when the assistant schedules, changes or takes back a class
-  // (from the line below or from its panel): the lists reload. Only for
-  // events: a remount closes an open edit panel.
-  const [listKey, setListKey] = useState(0);
-  useAssistantApplied(({ kind }) => {
-    if (kind.includes("event")) setListKey((k) => k + 1);
-  });
+  const listRef = useRef<MediaBrowserHandle>(null);
+
+  const view = params.get("view") === "calendar" ? "calendar" : "list";
+  const [creating, setCreating] = useState(params.get("new") === "1");
   useEffect(() => {
-    const requested = new URLSearchParams(window.location.search).get("tab");
-    if (requested && VALID_TABS.has(requested as LiveEventKind)) {
-      setTab(requested as LiveEventKind);
-    }
-  }, []);
+    if (params.get("new") === "1") setCreating(true);
+  }, [params]);
+
+  // A link from the assistant or the calendar names one event: open its form
+  // above the list, which may have it on a later page or filtered away.
+  const linkedId = params.get("event");
+  const linkedKind = kindFromParams(params);
+  const [linked, setLinked] = useState<EventRow | null>(null);
+  const [linkMissing, setLinkMissing] = useState(false);
+  useEffect(() => {
+    setLinked(null);
+    setLinkMissing(false);
+    if (!linkedId || !linkedKind) return;
+    let cancelled = false;
+    clientFetch<Omit<EventRow, "kind">>(
+      `${EVENT_KINDS[linkedKind].api}${linkedId}/`,
+    )
+      .then((found) => {
+        if (!cancelled) setLinked({ ...found, kind: linkedKind });
+      })
+      .catch(() => {
+        if (!cancelled) setLinkMissing(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [linkedId, linkedKind]);
+  const closeLinked = () => {
+    setLinked(null);
+    setLinkMissing(false);
+    navigate("/admin/live");
+  };
+
+  // The assistant scheduled, changed or took back a class (from the line
+  // below or from its panel): reload the list. A refresh, not a remount, so
+  // a form she has open stays open.
+  useAssistantApplied(({ kind }) => {
+    if (kind.includes("event")) listRef.current?.refresh();
+  });
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {t("nav.items.liveEvents")}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Manage live classes, streams, Zoom sessions, and on-site events.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {t("nav.items.liveEvents")}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {t("events.subtitle")}
+          </p>
+        </div>
+        {!creating && (
+          <Button onClick={() => setCreating(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            {t("events.new")}
+          </Button>
+        )}
       </div>
 
       {liveLocked && (
         <div className="flex items-center justify-between gap-3 rounded-lg border border-dashed p-4">
           <p className="flex items-center gap-2 text-sm">
-            <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            Live classes and live streams need a paid plan. Zoom classes and
-            on-site events are always free.
+            <Lock className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            {t("events.locked")}
           </p>
           <Button asChild size="sm" variant="outline">
-            <a href="/admin/billing/subscription">Upgrade</a>
+            <NavLink href="/admin/billing">{t("events.upgrade")}</NavLink>
           </Button>
         </div>
       )}
 
       <DescribeIt kind="event" />
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as LiveEventKind)}>
-        <TabsList>
-          <TabsTrigger value="classes">
-            Live Classes
-            <PaidFeatureBadge feature="live" className="ml-1.5" />
-          </TabsTrigger>
-          <TabsTrigger value="streams">
-            Live Streams
-            <PaidFeatureBadge feature="live" className="ml-1.5" />
-          </TabsTrigger>
-          <TabsTrigger value="zoom">Zoom Classes</TabsTrigger>
-          <TabsTrigger value="onsite">On-site Events</TabsTrigger>
-        </TabsList>
+      {creating && (
+        <EventForm
+          onCancel={() => setCreating(false)}
+          onSaved={() => {
+            setCreating(false);
+            listRef.current?.refresh();
+          }}
+        />
+      )}
 
-        <TabsContent value="classes">
-          <p className="mb-4 text-sm text-muted-foreground">
-            Host interactive live sessions on the platform with video, audio,
-            and screen sharing.
-          </p>
-          <LiveClassesTab key={listKey} />
+      {linked && (
+        <EventForm
+          key={`${linked.kind}-${linked.id}`}
+          event={linked}
+          onCancel={closeLinked}
+          onSaved={() => {
+            closeLinked();
+            listRef.current?.refresh();
+          }}
+        />
+      )}
+      {linkMissing && (
+        <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+          {t("events.linkMissing")}
+        </p>
+      )}
+
+      {/* key remounts the tabs when ?view= changes under the same page. */}
+      <Tabs defaultValue={view} key={view}>
+        <TabsList>
+          <TabsTrigger value="list">{t("events.views.list")}</TabsTrigger>
+          <TabsTrigger value="calendar">
+            {t("events.views.calendar")}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="list">
+          <EventsList ref={listRef} />
         </TabsContent>
-        <TabsContent value="streams">
-          <p className="mb-4 text-sm text-muted-foreground">
-            Broadcast one-to-many streams to your audience with live chat.
-          </p>
-          <LiveStreamsTab key={listKey} />
-        </TabsContent>
-        <TabsContent value="zoom">
-          <p className="mb-4 text-sm text-muted-foreground">
-            Schedule and share Zoom meeting links with your students.
-          </p>
-          <ZoomClassesTab key={listKey} />
-        </TabsContent>
-        <TabsContent value="onsite">
-          <p className="mb-4 text-sm text-muted-foreground">
-            Organize in-person events, workshops, and meetups at a physical
-            location.
-          </p>
-          <OnsiteEventsTab key={listKey} />
+        <TabsContent value="calendar">
+          <UnifiedCalendar />
         </TabsContent>
       </Tabs>
     </div>

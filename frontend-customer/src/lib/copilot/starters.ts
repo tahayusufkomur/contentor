@@ -6,7 +6,6 @@ const PAGES: [prefix: string, key: string][] = [
   ["/admin/courses/", "course"],
   ["/admin/courses", "courses"],
   ["/admin/live", "events"],
-  ["/admin/calendar", "events"],
   ["/admin/blog", "blog"],
   ["/admin/messages", "announcements"],
   ["/admin/students", "students"],

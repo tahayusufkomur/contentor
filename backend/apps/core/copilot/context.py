@@ -15,7 +15,6 @@ ADMIN_PAGES = {
     "/admin": "Home",
     "/admin/courses": "Courses",
     "/admin/live": "Classes & events",
-    "/admin/calendar": "Calendar",
     "/admin/downloads": "Downloads",
     "/admin/students": "People",
     "/admin/community": "Community",

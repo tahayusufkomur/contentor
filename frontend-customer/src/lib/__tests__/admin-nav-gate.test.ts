@@ -12,28 +12,27 @@ describe("gateAdminNav", () => {
   it("shows only Courses under Teach for a coach with no optional modules", () => {
     const section = teach(gate([]));
     expect(section.items.map((i) => i.href)).toEqual(["/admin/courses"]);
-    expect(section.hiddenCount).toBe(3);
+    expect(section.hiddenCount).toBe(2);
   });
 
-  it("shows classes and the calendar with the live module", () => {
+  it("shows classes and events with the live module", () => {
     const section = teach(gate(["live"]));
     expect(section.items.map((i) => i.href)).toEqual([
       "/admin/courses",
       "/admin/live",
-      "/admin/calendar",
     ]);
     expect(section.hiddenCount).toBe(1);
   });
 
   it("hides nothing once every module is on", () => {
     const section = teach(gate(["live", "downloads"]));
-    expect(section.items).toHaveLength(4);
+    expect(section.items).toHaveLength(3);
     expect(section.hiddenCount).toBeUndefined();
   });
 
   it("reveals everything when the coach opens + more", () => {
     const section = teach(gate([], ["teach"]));
-    expect(section.items).toHaveLength(4);
+    expect(section.items).toHaveLength(3);
     expect(section.hiddenCount).toBeUndefined();
   });
 
@@ -59,10 +58,7 @@ describe("gateAdminNav", () => {
       "/admin/courses",
       "/admin/live",
     ]);
-    expect(on("/admin/live").hiddenCount).toBe(2);
-    expect(on("/admin/calendar").items.map((i) => i.href)).toContain(
-      "/admin/calendar",
-    );
+    expect(on("/admin/live").hiddenCount).toBe(1);
     // A detail page counts, and so does a navigation still pending.
     expect(on("/admin/live/7").items.map((i) => i.href)).toContain(
       "/admin/live",

@@ -18,7 +18,6 @@ export interface NavGateState {
 /** Pages that only appear once their module is on. */
 const MODULE_FOR_HREF: Record<string, string> = {
   "/admin/live": "live",
-  "/admin/calendar": "live",
   "/admin/downloads": "downloads",
 };
 

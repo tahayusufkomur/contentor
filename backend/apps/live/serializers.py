@@ -42,7 +42,7 @@ def _tag_ids_field():
 
 
 class _ScheduledOnCreateMixin:
-    """Mark an event as 'scheduled' on creation when it has a scheduled time.
+    """Mark an event as 'scheduled' when it has a scheduled time, on creation and on edit.
 
     Events default to 'draft' and the student-facing lists hide drafts
     (status__in=["scheduled","live","ended"]). Nothing else in the lifecycle
@@ -55,6 +55,18 @@ class _ScheduledOnCreateMixin:
         if validated_data.get("scheduled_at"):
             validated_data["status"] = "scheduled"
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        # The same transition on edit: a draft that gets a date goes on the
+        # schedule, and a scheduled event whose date is taken away is a draft
+        # again. A class that is live or has ended keeps its status.
+        if "scheduled_at" in validated_data:
+            dated = bool(validated_data["scheduled_at"])
+            if instance.status == "draft" and dated:
+                validated_data["status"] = "scheduled"
+            elif instance.status == "scheduled" and not dated:
+                validated_data["status"] = "draft"
+        return super().update(instance, validated_data)
 
 
 def get_thumbnail_signed_url(obj):

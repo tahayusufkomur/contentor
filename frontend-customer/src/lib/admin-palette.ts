@@ -18,8 +18,15 @@ export interface PaletteEntry {
  *  synonyms. Search matches them; the visible name stays the one name. */
 const OLD_NAMES: Record<string, string[]> = {
   home: ["dashboard", "overview"],
-  liveEvents: ["live events", "live", "streams", "zoom"],
-  calendar: ["unified content calendar", "schedule"],
+  liveEvents: [
+    "live events",
+    "live",
+    "streams",
+    "zoom",
+    "calendar",
+    "unified content calendar",
+    "schedule",
+  ],
   downloads: ["downloads & files", "files"],
   students: ["student crm", "enrollees", "crm"],
   messages: [

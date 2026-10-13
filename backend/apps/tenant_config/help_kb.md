@@ -46,16 +46,20 @@ What: sellable or free downloadable files (PDFs, worksheets, plans, guides).
 
 ## Live sessions
 
-What: four kinds of live events, all managed from Classes & events:
+What: every class and event is on one page, Classes & events (under Teach), in one list. "Where it happens" is a field of the event, with four choices:
 
-1. **Live Class** — interactive video call with chat, runs right in the browser (no extra software). Can auto-record; the recording lands in Media (under Site).
-2. **Live Stream** — one-way broadcast to your students (you present, they watch). Start/stop it from Classes & events, on the Live Streams tab.
-3. **Zoom Class** — an event that links out to an external Zoom meeting you host on Zoom.
-4. **On-site Event** — an in-person event with a location, address, and capacity.
+1. **Live class** — interactive video call with chat, runs right in the browser (no extra software). Can record automatically.
+2. **Live stream** — one-way broadcast to your students (you present, they watch).
+3. **Zoom** — an event that links out to a Zoom meeting you host on Zoom.
+4. **In person** — an event at a place, with an address and a number of places.
 
-- **Schedule a session**: open Classes & events, pick the tab for the type, create it with a title, date/time, and duration. Sessions can be free or paid.
-- **Run a live stream**: open Classes & events → Live Streams tab, start the broadcast when ready, stop it when done.
-- **Recordings**: live class recordings appear as videos you can reuse in lessons.
+- **Schedule one**: open Classes & events and click "New class or event". Choose where it happens, give it a title and a date and time; it can be free, paid, or (live classes and in-person events) members only. Leave the date empty to keep it as a draft students do not see. Where it happens cannot be changed after it is created.
+- **Or describe it**: the line above the list ("Describe a class or a series…") lets the assistant draft one class or a whole weekly series for you to confirm.
+- **The list**: Upcoming and Past, nearest first, with search, tags and sorting. Each row shows when, where and the price.
+- **Edit**: click Edit on its row. A date, a price or the number of places can be cleared as well as changed.
+- **Run a live class or stream**: click "Go live" on its row when you are ready; "End" stops it. A Zoom event has "Open Zoom" instead.
+- **Calendar**: switch from List to Calendar on the same page to see classes, emails and blog posts by date; click an item and "Manage" to open it.
+- **Delete**: tick the events and choose Actions → Delete. Only the site owner can delete a class or event.
 - Gotchas: live video (Live Class / Live Stream) is **not available on the Free plan** — it needs Starter or Pro. Streaming time counts against your plan's monthly hours (100h Starter / 500h Pro).
 
 ## Community
@@ -243,7 +247,8 @@ The ONLY links you may include in answers. Always link relative paths exactly as
 | /admin/courses | Courses | Managing or editing courses |
 | /admin/courses/new | New course | Creating the first/next course |
 | /admin/live | Classes & events | Scheduling live classes, streams, Zoom, in-person events; starting/stopping a broadcast |
-| /admin/calendar | Calendar | Seeing classes, emails and blog posts by date |
+| /admin/live?view=calendar | Calendar | Classes, emails and blog posts by date (a view of Classes & events) |
+| /admin/live?new=1 | New class or event | Opens the form for a new class or event |
 | /admin/downloads | Downloads | Adding or selling downloadable files |
 | /admin/students | People | Student list, finding a student, refunds (via student detail) |
 | /admin/community | Community | Enabling community, moderation, members |

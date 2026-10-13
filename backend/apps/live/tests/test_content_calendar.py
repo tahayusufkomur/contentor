@@ -107,7 +107,8 @@ class TestContentCalendarFeed:
         by_cat = {i["category"]: i for i in resp.json()}
         assert by_cat["email"]["status"] == "completed"  # SENT → completed
         assert by_cat["email"]["href"] == f"/admin/messages/email/{content['email'].id}"
-        assert by_cat["live"]["href"] == "/admin/live"
+        # A calendar item opens its own event's form on Classes & events.
+        assert by_cat["live"]["href"] == f"/admin/live?event={content['live'].id}&kind=live"
         assert by_cat["blog"]["status"] == "published"
         for item in by_cat.values():
             assert item["scheduled_at"]  # every item is placed on a date

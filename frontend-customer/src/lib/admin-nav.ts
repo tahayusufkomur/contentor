@@ -1,7 +1,6 @@
 import {
   Bell,
   BookOpen,
-  Calendar,
   CreditCard,
   Download,
   Globe,
@@ -54,7 +53,6 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
         item("liveEvents", "/admin/live", Video, {
           requiresEntitlement: "live",
         }),
-        item("calendar", "/admin/calendar", Calendar),
         item("downloads", "/admin/downloads", Download),
       ],
     },

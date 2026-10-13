@@ -408,7 +408,7 @@ test("a question from search opens the panel when it was closed, and is sent onc
   await page.close();
 });
 
-test("Describe it drafts a class series beside the manual tabs: cards, Apply all", async ({ browser }) => {
+test("Describe it drafts a class series beside the manual form: cards, Apply all", async ({ browser }) => {
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
   const sent: Record<string, any>[] = [];
@@ -441,7 +441,7 @@ test("Describe it drafts a class series beside the manual tabs: cards, Apply all
   await expect(page.getByText("Schedule Zoom class: Office hour 2")).toBeVisible();
   expect(sent[0].context).toEqual({ path: "/admin/live", intent: "draft_event" });
   // The manual way is still on the page.
-  await expect(page.getByRole("button", { name: "Zoom Classes" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "New class or event" })).toBeVisible();
 
   await page.getByRole("button", { name: "Apply all" }).click();
   await expect(page.getByText("Created", { exact: true })).toHaveCount(2);

@@ -24,9 +24,9 @@ test("sidebar navigation highlights the target and shows a loading state before 
   const coach = await coachContext(browser);
   const page = await coach.newPage();
 
-  await page.goto(`${TENANT}/admin/calendar`);
+  await page.goto(`${TENANT}/admin/downloads`);
   await expect(
-    page.getByRole("link", { name: /^calendar$/i }),
+    page.getByRole("link", { name: /^downloads$/i }),
   ).toHaveAttribute("aria-current", "page");
 
   // Stall the RSC payload request for the destination route — this widens the
@@ -39,7 +39,7 @@ test("sidebar navigation highlights the target and shows a loading state before 
     },
   );
 
-  // Calendar is a tab under Teach; Students is a sidebar row (the assistant
+  // Downloads is a tab under Teach; Students is a sidebar row (the assistant
   // panel is the only other <aside>, and it has an aria-label).
   const students = page
     .locator("aside:not([aria-label]) nav")

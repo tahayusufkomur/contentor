@@ -18,12 +18,12 @@ from apps.core.permissions import IsCoachOrOwner
 
 from .models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
-# (model, source key, human label) for the four live event types.
+# (model, source key, human label, kind on /admin/live) for the four live event types.
 LIVE_SOURCES = [
-    (LiveClass, "live_class", "Live class"),
-    (LiveStream, "live_stream", "Live stream"),
-    (ZoomClass, "zoom_class", "Zoom class"),
-    (OnsiteEvent, "onsite_event", "On-site event"),
+    (LiveClass, "live_class", "Live class", "live"),
+    (LiveStream, "live_stream", "Live stream", "stream"),
+    (ZoomClass, "zoom_class", "Zoom class", "zoom"),
+    (OnsiteEvent, "onsite_event", "On-site event", "onsite"),
 ]
 
 # EmailCampaign statuses → the calendar's display vocabulary.
@@ -78,7 +78,7 @@ def coach_content_calendar(request):
     items = []
 
     if want("live"):
-        for model, source, label in LIVE_SOURCES:
+        for model, source, label, kind in LIVE_SOURCES:
             qs = model.objects.filter(scheduled_at__isnull=False)
             if frm:
                 qs = qs.filter(scheduled_at__gte=frm)
@@ -94,7 +94,8 @@ def coach_content_calendar(request):
                         "scheduled_at": obj.scheduled_at,
                         "status": obj.computed_status,
                         "subtitle": f"{obj.duration_minutes} min • {label}",
-                        "href": "/admin/live",
+                        # Opens this event's own form.
+                        "href": f"/admin/live?event={obj.id}&kind={kind}",
                     }
                 )
 

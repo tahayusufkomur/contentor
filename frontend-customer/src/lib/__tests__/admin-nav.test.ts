@@ -35,7 +35,6 @@ describe("buildAdminNav", () => {
     expect(hrefs("teach")).toEqual([
       "/admin/courses",
       "/admin/live",
-      "/admin/calendar",
       "/admin/downloads",
     ]);
     expect(hrefs("students")).toEqual([

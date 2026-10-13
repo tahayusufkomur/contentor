@@ -21,7 +21,6 @@
       "home": "Home",
       "courses": "Courses",
       "liveEvents": "Classes & events",
-      "calendar": "Calendar",
       "downloads": "Downloads",
       "students": "People",
       "communityFeed": "Community",
@@ -661,5 +660,102 @@
         "push": "Phone notifications on"
       }
     }
+  },
+  "events": {
+    "subtitle": "Live classes, streams, Zoom sessions and in-person events, in one place.",
+    "new": "New class or event",
+    "editing": "Editing: {title}",
+    "locked": "Live classes and live streams need a paid plan. Zoom classes and in-person events are always free.",
+    "upgrade": "See plans",
+    "linkMissing": "That class or event could not be found. It may have been deleted.",
+    "views": {
+      "list": "List",
+      "calendar": "Calendar"
+    },
+    "whenFilter": "Show",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "empty": "Nothing coming up. Create a class or event, or describe one above.",
+    "emptyPast": "Nothing in the past yet.",
+    "sort": {
+      "date": "By date",
+      "newest": "Newest added",
+      "nameAZ": "Name A-Z",
+      "nameZA": "Name Z-A"
+    },
+    "col": {
+      "status": "Status",
+      "title": "Title",
+      "when": "When",
+      "where": "Where",
+      "price": "Price",
+      "actions": "Actions"
+    },
+    "status": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "live": "Live",
+      "ended": "Ended"
+    },
+    "kinds": {
+      "live": {
+        "label": "Live class",
+        "hint": "An interactive video room, right in the browser. No extra software.",
+        "titlePlaceholder": "e.g. Friday flow session"
+      },
+      "stream": {
+        "label": "Live stream",
+        "hint": "You broadcast; students watch and chat.",
+        "titlePlaceholder": "e.g. Weekly Q&A"
+      },
+      "zoom": {
+        "label": "Zoom",
+        "hint": "Students join with your Zoom link.",
+        "titlePlaceholder": "e.g. Group coaching session"
+      },
+      "onsite": {
+        "label": "In person",
+        "hint": "At a place students come to.",
+        "titlePlaceholder": "e.g. Weekend workshop"
+      }
+    },
+    "where": "Where it happens",
+    "title": "Title",
+    "description": "Description",
+    "when": "When",
+    "whenHint": "Leave empty to keep it as a draft your students do not see.",
+    "zoomLink": "Zoom link",
+    "location": "Place",
+    "locationPlaceholder": "e.g. Studio A, Downtown",
+    "address": "Address",
+    "capacity": "Places",
+    "capacityPlaceholder": "Unlimited",
+    "access": "Access",
+    "free": "Free",
+    "paid": "Paid",
+    "membersOnly": "Members only",
+    "price": "Price ({currency})",
+    "record": "Record it automatically",
+    "filters": "Filters",
+    "tags": "Tags",
+    "create": "Create",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "created": "Created.",
+    "saved": "Saved.",
+    "saveError": "Could not save it. Check the fields and try again.",
+    "edit": "Edit",
+    "goLive": "Go live",
+    "starting": "Starting…",
+    "join": "Join",
+    "end": "End",
+    "ending": "Ending…",
+    "stopped": "Ended.",
+    "startError": "Could not start it. Please try again.",
+    "stopError": "Could not end it. Please try again.",
+    "openZoom": "Open Zoom",
+    "deleted": "{count, plural, one {# deleted} other {# deleted}}.",
+    "deleteRefused": "{count, plural, one {# could not be deleted} other {# could not be deleted}}. Only the site owner can delete a class or event."
   }
 }

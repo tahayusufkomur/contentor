@@ -1,6 +1,5 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -94,7 +93,6 @@ interface UnifiedCalendarProps {
 }
 
 export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
-  const t = useTranslations("admin");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
   const [selectedCategory, setSelectedCategory] =
@@ -213,15 +211,11 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
   return (
     <div className="space-y-6">
       {/* Header Toolbar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {t("nav.items.calendar")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Your classes, emails and blog posts, by date.
-          </p>
-        </div>
+      {/* The calendar is a view of Classes & events, which titles the page. */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <p className="text-sm text-muted-foreground">
+          Your classes, emails and blog posts, by date.
+        </p>
 
         {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
@@ -231,9 +225,9 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
             size="sm"
             className="gap-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
           >
-            <Link href="/admin/live">
+            <Link href="/admin/live?new=1">
               <Plus className="h-4 w-4" />
-              Live Event
+              Class or event
             </Link>
           </Button>
           <Button
@@ -243,7 +237,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
           >
             <Link href="/admin/messages/email/new">
               <Plus className="h-4 w-4" />
-              Broadcast Email
+              Designed email
             </Link>
           </Button>
           <Button

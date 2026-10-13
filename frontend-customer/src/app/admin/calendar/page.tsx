@@ -1,7 +1,6 @@
-import { UnifiedCalendar } from "@/components/admin/calendar/unified-calendar";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default function AdminCalendarPage() {
-  return <UnifiedCalendar />;
+/** The calendar is a view of Classes & events; kept for old links. */
+export default function CalendarRedirect() {
+  redirect("/admin/live?view=calendar");
 }
