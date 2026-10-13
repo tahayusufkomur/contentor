@@ -15,6 +15,8 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
   ({ className, checked = false, onCheckedChange, ...props }, ref) => (
     <button
       ref={ref}
+      // Not a submit button: inside a <form> a bare <button> would submit it.
+      type="button"
       role="switch"
       aria-checked={checked}
       onClick={() => onCheckedChange?.(!checked)}

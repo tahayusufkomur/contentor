@@ -20,6 +20,7 @@ urlpatterns = [
     # Order history / earnings (Phase E)
     path("orders/", payments.my_orders, name="my-orders"),
     path("earnings/", payments.earnings, name="earnings"),
+    path("sales/", payments.sales_list, name="sales-list"),
     path("students/<int:student_id>/payments/", payments.student_payments, name="student-payments"),
     path(
         "payments/<int:payment_id>/items/<int:item_id>/refund/",

@@ -2,99 +2,132 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NavLink } from "@/components/ui/nav-link";
 import { PageState } from "@/components/ui/page-state";
-import { clientFetch } from "@/lib/api-client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   ContentPicker,
   type SelectedItem,
 } from "@/components/billing/content-picker";
+import { clientFetch } from "@/lib/api-client";
+import { useTenantCurrency } from "@/lib/setup-assistant";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
-interface PlanAccess {
-  items: Array<{
-    content_type: string;
-    object_id: number;
-    title?: string;
-    price?: string;
-  }>;
-}
+const BACK = "/admin/store?tab=plans";
 
-interface Plan {
+interface PlanDetail {
   id: number;
   name: string;
+  description: string;
+  price: string;
+  currency: string;
+  billing_interval_months: number;
+  is_active: boolean;
+  items: Array<{ type: string; id: number; title: string }>;
 }
 
-function LoadingSkeleton() {
-  return (
-    <div className="space-y-3">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Skeleton key={i} className="h-10 w-full" />
-      ))}
-    </div>
-  );
-}
+/** The plan detail names a content type by its model; the picker and the
+ *  access endpoint use the store's own keys. */
+const PICKER_TYPE: Record<string, string> = {
+  course: "course",
+  download: "download",
+  liveclass: "live_class",
+  livestream: "live_stream",
+};
 
-export default function PlanAccessPage() {
-  const params = useParams();
-  const id = params.id as string;
+type Cycle = "1" | "12" | "custom";
 
-  const [plan, setPlan] = useState<Plan | null>(null);
-  const [loading, setLoading] = useState(true);
+/** One form for a membership: `/admin/store/plans/new` creates it, a plan's
+ *  id edits it. */
+export default function PlanPage() {
+  const t = useTranslations("admin.store.plans");
+  const navigate = useNavigate();
+  const id = useParams().id as string;
+  const isNew = id === "new";
+  const tenantCurrency = useTenantCurrency();
+
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    is_active: true,
+  });
+  const [cycle, setCycle] = useState<Cycle>("1");
+  const [months, setMonths] = useState("3");
+  const [currency, setCurrency] = useState("");
+  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+  const [loading, setLoading] = useState(!isNew);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [reloadKey, setReloadKey] = useState(0);
-  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
 
   useEffect(() => {
+    if (isNew) return;
     let cancelled = false;
     setLoading(true);
     setLoadError(null);
-    async function load() {
-      try {
-        const [planData, accessData] = await Promise.all([
-          clientFetch<Plan>(`/api/v1/billing/plans/${id}/`),
-          clientFetch<PlanAccess>(`/api/v1/billing/plans/${id}/access/`),
-        ]);
+    clientFetch<PlanDetail>(`/api/v1/billing/plans/${id}/`)
+      .then((plan) => {
         if (cancelled) return;
-        setPlan(planData);
+        setForm({
+          name: plan.name,
+          description: plan.description,
+          price: plan.price,
+          is_active: plan.is_active,
+        });
+        const every = plan.billing_interval_months;
+        setCycle(every === 1 ? "1" : every === 12 ? "12" : "custom");
+        setMonths(String(every));
+        setCurrency(plan.currency);
         setSelectedItems(
-          (accessData.items ?? []).map((item) => ({
-            content_type: item.content_type,
-            object_id: item.object_id,
-            title: item.title ?? `Item ${item.object_id}`,
-            price: item.price ?? "0",
-          })),
+          plan.items
+            .filter((item) => PICKER_TYPE[item.type])
+            .map((item) => ({
+              content_type: PICKER_TYPE[item.type],
+              object_id: item.id,
+              title: item.title,
+              price: "0",
+            })),
         );
-      } catch (err) {
-        if (cancelled) return;
-        console.error(err);
-        toast.error("Failed to load plan access data.");
-        setLoadError(err);
-      } finally {
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err);
+      })
+      .finally(() => {
         if (!cancelled) setLoading(false);
-      }
-    }
-    load();
+      });
     return () => {
       cancelled = true;
     };
-  }, [id, reloadKey]);
+  }, [id, isNew, reloadKey]);
 
-  const { run: handleSave, loading: saving } = useAsyncAction(
+  const { run: save, loading: saving } = useAsyncAction(
     async () => {
-      await clientFetch(`/api/v1/billing/plans/${id}/access/`, {
+      const body = JSON.stringify({
+        ...form,
+        billing_interval_months:
+          cycle === "custom" ? Number(months) : Number(cycle),
+      });
+      const plan = await clientFetch<{ id: number }>(
+        isNew ? "/api/v1/billing/plans/" : `/api/v1/billing/plans/${id}/`,
+        { method: isNew ? "POST" : "PATCH", body },
+      );
+      await clientFetch(`/api/v1/billing/plans/${plan.id}/access/`, {
         method: "PUT",
         body: JSON.stringify({
           items: selectedItems.map((i) => ({
@@ -103,28 +136,25 @@ export default function PlanAccessPage() {
           })),
         }),
       });
-      toast.success("Plan access updated successfully.");
+      toast.success(t(isNew ? "created" : "saved"));
+      navigate(BACK);
     },
-    { errorToast: "Failed to update plan access. Please try again." },
+    { errorToast: t("saveError") },
   );
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button asChild variant="ghost" size="icon">
-          <Link href="/admin/store?tab=plans">
+          <NavLink href={BACK} aria-label={t("back")}>
             <ArrowLeft className="h-4 w-4" />
-          </Link>
+          </NavLink>
         </Button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {loading
-              ? "Manage Plan Access"
-              : `Manage Access: ${plan?.name ?? ""}`}
+            {isNew ? t("new") : form.name || t("edit")}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Choose which content subscribers of this plan can access.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("formSubtitle")}</p>
         </div>
       </div>
 
@@ -133,58 +163,140 @@ export default function PlanAccessPage() {
         error={loadError}
         onRetry={() => setReloadKey((k) => k + 1)}
         skeleton={
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Content Access
-              </CardTitle>
-              <CardDescription>
-                Select the courses, downloads, live classes, and live streams
-                included in this subscription plan.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <LoadingSkeleton />
-            </CardContent>
-          </Card>
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
         }
       >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Content Access
-            </CardTitle>
-            <CardDescription>
-              Select the courses, downloads, live classes, and live streams
-              included in this subscription plan.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ContentPicker
-              selected={selectedItems}
-              onChange={setSelectedItems}
-            />
-          </CardContent>
-        </Card>
-      </PageState>
-
-      <Separator />
-
-      <div className="flex gap-3">
-        <Button
-          onClick={handleSave}
-          loading={saving}
-          loadingText="Saving…"
-          disabled={loading}
+        <form
+          className="space-y-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            save();
+          }}
         >
-          Save Access
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/admin/store?tab=plans">Cancel</Link>
-        </Button>
-      </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("details")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="plan-name">{t("name")}</Label>
+                <Input
+                  id="plan-name"
+                  placeholder={t("namePlaceholder")}
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  maxLength={100}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="plan-description">{t("description")}</Label>
+                <Textarea
+                  id="plan-description"
+                  placeholder={t("descriptionPlaceholder")}
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="plan-price">
+                    {t("price", { currency: currency || tenantCurrency })}
+                  </Label>
+                  <Input
+                    id="plan-price"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="0.00"
+                    value={form.price}
+                    onChange={(e) =>
+                      setForm({ ...form, price: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="plan-cycle">{t("cycle")}</Label>
+                  <select
+                    id="plan-cycle"
+                    value={cycle}
+                    onChange={(e) => setCycle(e.target.value as Cycle)}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="1">{t("monthly")}</option>
+                    <option value="12">{t("yearly")}</option>
+                    <option value="custom">{t("custom")}</option>
+                  </select>
+                </div>
+              </div>
+              {cycle === "custom" && (
+                <div className="space-y-2 sm:max-w-[50%]">
+                  <Label htmlFor="plan-months">{t("months")}</Label>
+                  <Input
+                    id="plan-months"
+                    type="number"
+                    min="1"
+                    max="36"
+                    step="1"
+                    value={months}
+                    onChange={(e) => setMonths(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+              {!isNew && (
+                <p className="text-xs text-muted-foreground">
+                  {t("priceChangeHint")}
+                </p>
+              )}
+              <div className="flex items-start justify-between gap-4 rounded-md border p-3">
+                <div>
+                  <Label htmlFor="plan-active">{t("onSale")}</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t("onSaleHint")}
+                  </p>
+                </div>
+                <Switch
+                  id="plan-active"
+                  checked={form.is_active}
+                  onCheckedChange={(is_active) =>
+                    setForm({ ...form, is_active })
+                  }
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("access")}</CardTitle>
+              <CardDescription>{t("accessHint")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ContentPicker
+                selected={selectedItems}
+                onChange={setSelectedItems}
+              />
+            </CardContent>
+          </Card>
+
+          <div className="flex gap-3">
+            <Button type="submit" loading={saving} loadingText={t("saving")}>
+              {t(isNew ? "create" : "save")}
+            </Button>
+            <Button type="button" variant="outline" asChild>
+              <NavLink href={BACK}>{t("cancel")}</NavLink>
+            </Button>
+          </div>
+        </form>
+      </PageState>
     </div>
   );
 }

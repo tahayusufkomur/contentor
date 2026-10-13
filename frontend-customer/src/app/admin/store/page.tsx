@@ -4,17 +4,20 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Package, Plus, Settings } from "lucide-react";
+import { Package, Plus, Receipt, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageState } from "@/components/ui/page-state";
+import { NavLink } from "@/components/ui/nav-link";
 import { clientFetch } from "@/lib/api-client";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
+import { formatDate, formatMoney } from "@/lib/format";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 
-const STORE_TABS = ["products", "bundles", "plans"];
+const STORE_TABS = ["products", "bundles", "plans", "payments"];
 
 interface Product {
   id: number;
@@ -29,6 +32,7 @@ interface BundleListItem {
   id: number;
   name: string;
   price: string;
+  currency: string;
   item_count: number;
   is_active: boolean;
 }
@@ -264,7 +268,9 @@ function BundlesTab() {
                 bundles.map((b) => (
                   <tr key={b.id} className="border-b last:border-0">
                     <td className="px-4 py-3 font-medium">{b.name}</td>
-                    <td className="px-4 py-3">${b.price}</td>
+                    <td className="px-4 py-3">
+                      {formatMoney(b.price, b.currency)}
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {b.item_count}
                     </td>
@@ -290,6 +296,7 @@ function BundlesTab() {
 }
 
 function PlansTab() {
+  const t = useTranslations("admin.store.plans");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -299,7 +306,8 @@ function PlansTab() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    clientFetch<Plan[]>("/api/v1/billing/plans/")
+    // ?all=1: the ones she switched off too, so she can switch them back on.
+    clientFetch<Plan[]>("/api/v1/billing/plans/?all=1")
       .then((data) => {
         if (!cancelled) setPlans(data);
       })
@@ -326,6 +334,168 @@ function PlansTab() {
   );
 
   return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button asChild className="gap-2">
+          <NavLink href="/admin/store/plans/new">
+            <Plus className="h-4 w-4" />
+            {t("new")}
+          </NavLink>
+        </Button>
+      </div>
+      <PageState
+        loading={loading}
+        error={error}
+        onRetry={() => setReloadKey((k) => k + 1)}
+        skeleton={
+          <div className="rounded-md border">
+            <table className="w-full text-sm">
+              {tableHead}
+              <tbody>
+                <TableSkeletonRows cols={4} />
+              </tbody>
+            </table>
+          </div>
+        }
+      >
+        <div className="rounded-md border">
+          <table className="w-full text-sm">
+            {tableHead}
+            <tbody>
+              {plans.length === 0 ? (
+                <tr>
+                  <td colSpan={4}>
+                    <EmptyState
+                      icon={Settings}
+                      title={t("empty")}
+                      description={t("emptyHint")}
+                      action={{
+                        label: t("new"),
+                        href: "/admin/store/plans/new",
+                      }}
+                    />
+                  </td>
+                </tr>
+              ) : (
+                plans.map((p) => (
+                  <tr key={p.id} className="border-b last:border-0">
+                    <td className="px-4 py-3 font-medium">{p.name}</td>
+                    <td className="px-4 py-3">
+                      {formatMoney(p.price, p.currency)}
+                      {billingIntervalSuffix(p.billing_interval_months)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant={p.is_active ? "success" : "secondary"}>
+                        {t(p.is_active ? "on" : "off")}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Button asChild variant="ghost" size="sm">
+                        <NavLink href={`/admin/store/plans/${p.id}`}>
+                          {t("editRow")}
+                        </NavLink>
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </PageState>
+    </div>
+  );
+}
+
+interface Sale {
+  id: number;
+  payment_type: string;
+  status: string;
+  amount: string;
+  currency: string;
+  created_at: string;
+  receipt_url: string;
+  items: Array<{ id: number; title: string }>;
+  student: { id: number; name: string; email: string };
+}
+
+interface SalesPage {
+  count: number;
+  next: string | null;
+  results: Sale[];
+}
+
+const SALE_STATUS_VARIANT: Record<
+  string,
+  "success" | "secondary" | "warning" | "outline"
+> = {
+  completed: "success",
+  pending: "outline",
+  failed: "secondary",
+  refunded: "secondary",
+  partially_refunded: "warning",
+};
+
+const SALES_PAGE = 20;
+
+/** Everything students paid her, newest first. Refunds are made from the
+ *  student's own page, which each row links to. */
+function SalesTab() {
+  const t = useTranslations("admin.store.payments");
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const fetchSales = (offset: number) =>
+    clientFetch<SalesPage>(
+      `/api/v1/billing/sales/?limit=${SALES_PAGE}&offset=${offset}`,
+    );
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetchSales(0)
+      .then((page) => {
+        if (cancelled) return;
+        setSales(page.results);
+        setTotal(page.count);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
+
+  const { run: loadMore, loading: loadingMore } = useAsyncAction(async () => {
+    const page = await fetchSales(sales.length);
+    setSales((current) => [...current, ...page.results]);
+    setTotal(page.count);
+  });
+
+  const tableHead = (
+    <thead>
+      <tr className="border-b bg-muted/50">
+        <th className="px-4 py-3 text-left font-medium">{t("date")}</th>
+        <th className="px-4 py-3 text-left font-medium">{t("student")}</th>
+        <th className="px-4 py-3 text-left font-medium">{t("what")}</th>
+        <th className="px-4 py-3 text-left font-medium">{t("amount")}</th>
+        <th className="px-4 py-3 text-left font-medium">{t("status")}</th>
+        <th className="px-4 py-3 text-left font-medium">
+          <span className="sr-only">{t("receipt")}</span>
+        </th>
+      </tr>
+    </thead>
+  );
+
+  return (
     <PageState
       loading={loading}
       error={error}
@@ -335,52 +505,85 @@ function PlansTab() {
           <table className="w-full text-sm">
             {tableHead}
             <tbody>
-              <TableSkeletonRows cols={4} />
+              <TableSkeletonRows cols={6} />
             </tbody>
           </table>
         </div>
       }
     >
-      <div className="rounded-md border">
-        <table className="w-full text-sm">
-          {tableHead}
-          <tbody>
-            {plans.length === 0 ? (
-              <tr>
-                <td colSpan={4}>
-                  <EmptyState
-                    icon={Settings}
-                    title="No subscription plans"
-                    description="Subscription plans will appear here once created."
-                  />
-                </td>
-              </tr>
-            ) : (
-              plans.map((p) => (
-                <tr key={p.id} className="border-b last:border-0">
-                  <td className="px-4 py-3 font-medium">{p.name}</td>
-                  <td className="px-4 py-3">
-                    {p.price} {p.currency}
-                    {billingIntervalSuffix(p.billing_interval_months)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge variant={p.is_active ? "success" : "secondary"}>
-                      {p.is_active ? "Active" : "Inactive"}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Button asChild variant="ghost" size="sm">
-                      <Link href={`/admin/store/plans/${p.id}`}>
-                        Manage Access
-                      </Link>
-                    </Button>
-                  </td>
-                </tr>
-              ))
+      {sales.length === 0 ? (
+        <EmptyState
+          icon={Receipt}
+          title={t("empty")}
+          description={t("emptyHint")}
+        />
+      ) : (
+        <div className="space-y-3">
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-sm">
+              {tableHead}
+              <tbody>
+                {sales.map((sale) => (
+                  <tr key={sale.id} className="border-b last:border-0">
+                    <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                      {formatDate(sale.created_at)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <NavLink
+                        href={`/admin/students/${sale.student.id}`}
+                        className="font-medium underline-offset-4 hover:underline"
+                      >
+                        {sale.student.name || sale.student.email}
+                      </NavLink>
+                    </td>
+                    <td className="px-4 py-3">
+                      {sale.items.length
+                        ? sale.items.map((item) => item.title).join(", ")
+                        : t("membershipCharge")}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 tabular-nums">
+                      {formatMoney(sale.amount, sale.currency)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge
+                        variant={SALE_STATUS_VARIANT[sale.status] ?? "outline"}
+                      >
+                        {t(`statuses.${sale.status}`)}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {sale.receipt_url && (
+                        <a
+                          href={sale.receipt_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                        >
+                          {t("receipt")}
+                        </a>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">{t("refundHint")}</p>
+            {sales.length < total && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadMore}
+                loading={loadingMore}
+                loadingText={t("loading")}
+              >
+                {t("more")}
+              </Button>
             )}
-          </tbody>
-        </table>
-      </div>
+          </div>
+        </div>
+      )}
     </PageState>
   );
 }
@@ -404,6 +607,7 @@ export default function StorePage() {
           <TabsTrigger value="products">{t("store.tabs.products")}</TabsTrigger>
           <TabsTrigger value="bundles">{t("store.tabs.bundles")}</TabsTrigger>
           <TabsTrigger value="plans">{t("store.tabs.plans")}</TabsTrigger>
+          <TabsTrigger value="payments">{t("store.tabs.payments")}</TabsTrigger>
         </TabsList>
         <TabsContent value="products">
           <ProductsTab />
@@ -413,6 +617,9 @@ export default function StorePage() {
         </TabsContent>
         <TabsContent value="plans">
           <PlansTab />
+        </TabsContent>
+        <TabsContent value="payments">
+          <SalesTab />
         </TabsContent>
       </Tabs>
     </div>

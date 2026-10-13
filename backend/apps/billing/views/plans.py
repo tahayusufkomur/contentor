@@ -10,7 +10,9 @@ from apps.billing.serializers.plans import (
     PlanAccessItemSerializer,
     PlanAccessWriteItemSerializer,
     PlanAccessWriteSerializer,
+    PlanWriteSerializer,
 )
+from apps.core.currency import tenant_charge_currency
 from apps.core.permissions import IsOwner
 from apps.core.storage import sign_if_s3_key
 
@@ -54,11 +56,49 @@ def _resolve_access_items(plan):
     return items
 
 
-@api_view(["GET"])
+def _is_owner(request):
+    return IsOwner().has_permission(request, None)
+
+
+def _forbidden():
+    return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+
+
+def _plan_row(plan, *, is_subscribed=False):
+    return {
+        "id": plan.id,
+        "name": plan.name,
+        "description": plan.description,
+        "price": str(plan.price),
+        "currency": plan.currency,
+        "billing_interval_months": plan.billing_interval_months,
+        "is_active": plan.is_active,
+        "item_count": SubscriptionPlanAccess.objects.filter(plan=plan).count(),
+        "is_subscribed": is_subscribed,
+    }
+
+
+@api_view(["GET", "POST"])
 @permission_classes([AllowAny])
 def plan_list(request):
-    """Public list of active subscription plans with item counts."""
-    plans = SubscriptionPlan.objects.filter(is_active=True)
+    """Public list of active subscription plans with item counts.
+
+    The owner creates a plan here (POST), and `?all=1` shows her the plans she
+    switched off too. Without it she gets the public list like anyone else, so
+    the pricing page looks the same when she browses her own site.
+    """
+    if request.method == "POST":
+        if not _is_owner(request):
+            return _forbidden()
+        serializer = PlanWriteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # Charge currency is a tenant-level invariant, never user input.
+        plan = serializer.save(currency=tenant_charge_currency())
+        return Response(_plan_row(plan), status=status.HTTP_201_CREATED)
+
+    plans = SubscriptionPlan.objects.all()
+    if not (request.query_params.get("all") and _is_owner(request)):
+        plans = plans.filter(is_active=True)
 
     # Build set of plan IDs the user is actively subscribed to
     subscribed_plan_ids = set()
@@ -72,30 +112,28 @@ def plan_list(request):
             ).values_list("plan_id", flat=True)
         )
 
-    data = []
-    for p in plans:
-        item_count = SubscriptionPlanAccess.objects.filter(plan=p).count()
-        data.append(
-            {
-                "id": p.id,
-                "name": p.name,
-                "description": p.description,
-                "price": str(p.price),
-                "currency": p.currency,
-                "billing_interval_months": p.billing_interval_months,
-                "is_active": p.is_active,
-                "item_count": item_count,
-                "is_subscribed": p.id in subscribed_plan_ids,
-            }
-        )
-    return Response(data)
+    return Response([_plan_row(p, is_subscribed=p.id in subscribed_plan_ids) for p in plans])
 
 
-@api_view(["GET"])
+@api_view(["GET", "PATCH"])
 @permission_classes([AllowAny])
 def plan_detail(request, pk):
-    """Public plan detail with all accessible content resolved."""
-    plan = get_object_or_404(SubscriptionPlan, pk=pk, is_active=True)
+    """Public plan detail with all accessible content resolved.
+
+    The owner also reaches a plan she switched off, and edits it (PATCH). A new
+    price or cycle mints a new Stripe price at the next checkout; subscribers
+    keep the terms they signed up on (`_ensure_subscription_price`).
+    """
+    if request.method == "PATCH":
+        if not _is_owner(request):
+            return _forbidden()
+        plan = get_object_or_404(SubscriptionPlan, pk=pk)
+        serializer = PlanWriteSerializer(plan, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        return Response(_plan_row(serializer.save()))
+
+    visible = SubscriptionPlan.objects.all() if _is_owner(request) else SubscriptionPlan.objects.filter(is_active=True)
+    plan = get_object_or_404(visible, pk=pk)
     items = _resolve_access_items(plan)
 
     is_subscribed = False
@@ -116,6 +154,7 @@ def plan_detail(request, pk):
             "price": str(plan.price),
             "currency": plan.currency,
             "billing_interval_months": plan.billing_interval_months,
+            "is_active": plan.is_active,
             "items": items,
             "is_subscribed": is_subscribed,
         }

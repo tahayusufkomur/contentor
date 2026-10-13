@@ -16,6 +16,7 @@ from apps.billing.providers.types import ProviderError
 from apps.core.access import ContentAccessService
 from apps.core.currency import tenant_charge_currency
 from apps.core.monetization import can_monetize
+from apps.core.pagination import StandardPagination
 from apps.core.permissions import IsOwner
 from apps.courses.models import Course, Enrollment
 
@@ -429,6 +430,34 @@ def student_payments(request, student_id):
         .order_by("-created_at")
     )
     return Response([_serialize_payment(p) for p in payments])
+
+
+@api_view(["GET"])
+@permission_classes([IsOwner])
+def sales_list(request):
+    """Coach view: everything students paid her, newest first.
+
+    A refund is not a row of its own: its sale carries the refunded status.
+    Platform-subscription payments (the coach paying Contentor) are excluded.
+    """
+    payments = (
+        Payment.objects.filter(payment_type__in=("one_time", "subscription"), platform_subscription__isnull=True)
+        .select_related("student")
+        .prefetch_related("items")
+        .order_by("-created_at", "-id")
+    )
+    paginator = StandardPagination()
+    page = paginator.paginate_queryset(payments, request)
+    rows = []
+    for payment in page:
+        student = payment.student
+        rows.append(
+            {
+                **_serialize_payment(payment),
+                "student": {"id": student.pk, "name": student.name, "email": student.email},
+            }
+        )
+    return paginator.get_paginated_response(rows)
 
 
 @api_view(["GET"])

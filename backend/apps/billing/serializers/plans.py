@@ -1,7 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
-from apps.billing.models import SubscriptionPlanAccess
+from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
 
 
 class PlanAccessItemSerializer(serializers.ModelSerializer):
@@ -35,3 +35,16 @@ class PlanAccessWriteItemSerializer(serializers.Serializer):
 
 class PlanAccessWriteSerializer(serializers.Serializer):
     items = PlanAccessWriteItemSerializer(many=True)
+
+
+class PlanWriteSerializer(serializers.ModelSerializer):
+    """What the coach sets on a membership. The currency is the tenant's."""
+
+    class Meta:
+        model = SubscriptionPlan
+        fields = ["name", "description", "price", "billing_interval_months", "is_active"]
+
+    def validate_price(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("A membership needs a price above zero.")
+        return value
