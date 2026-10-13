@@ -61,6 +61,16 @@
     "empty": "No page by that name.",
     "askAssistant": "Open the assistant"
   },
+  "settingsHub": {
+    "title": "More settings",
+    "brand": "Site name, logo, colours and fonts",
+    "menu": "Site menu and header button",
+    "community": "Community on or off, and its welcome message",
+    "assistant": "The assistant your students see",
+    "autopilot": "Blog autopilot",
+    "payouts": "How you get paid",
+    "plan": "Your Contentor plan"
+  },
   "dock": {
     "title": "Assistant",
     "close": "Close the assistant",

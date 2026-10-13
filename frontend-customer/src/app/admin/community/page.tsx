@@ -14,6 +14,15 @@ export default function AdminCommunityPage() {
   const t = useTranslations("admin");
   const [queueCount, setQueueCount] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [tab, setTab] = useState("feed");
+
+  // A link can open a tab (?tab=settings), read once on mount like /admin/live.
+  useEffect(() => {
+    const asked = new URLSearchParams(window.location.search).get("tab");
+    if (asked && ["feed", "reports", "members", "settings"].includes(asked)) {
+      setTab(asked);
+    }
+  }, []);
 
   useEffect(() => {
     getModerationQueue()
@@ -24,7 +33,7 @@ export default function AdminCommunityPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4">
       <h1 className="text-lg font-semibold">{t("nav.items.communityFeed")}</h1>
-      <Tabs defaultValue="feed">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="feed">Feed</TabsTrigger>
           <TabsTrigger value="reports">

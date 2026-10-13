@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Clock, Globe, Save, Sparkles, Trash2 } from "lucide-react";
+import {
+  ChevronRight,
+  Clock,
+  Globe,
+  Save,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
@@ -21,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { NavLink } from "@/components/ui/nav-link";
 import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
@@ -214,6 +222,39 @@ export default function SettingsPage() {
       <DemoContentCard />
 
       <MailboxSettingsSection />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("settingsHub.title")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="divide-y text-sm">
+            {(
+              [
+                ["brand", "/?edit=1&section=brand", true],
+                ["menu", "/?edit=1&section=navbar", true],
+                ["community", "/admin/community?tab=settings", false],
+                ["assistant", "/admin/assistant", false],
+                ["autopilot", "/admin/blog", false],
+                ["payouts", "/admin/payouts", false],
+                ["plan", "/admin/billing", false],
+              ] as const
+            ).map(([key, href, newTab]) => (
+              <li key={key}>
+                <NavLink
+                  href={href}
+                  target={newTab ? "_blank" : undefined}
+                  rel={newTab ? "noopener noreferrer" : undefined}
+                  className="flex items-center justify-between gap-3 py-2.5 hover:text-primary"
+                >
+                  <span>{t(`settingsHub.${key}`)}</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
     </PageState>
   );
 }
