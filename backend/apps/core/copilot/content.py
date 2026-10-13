@@ -75,21 +75,48 @@ def create_course(user, params):
     }
 
 
-def create_event(user, event_kind, params):
-    from apps.live.serializers import LiveClassCreateSerializer, OnsiteEventCreateSerializer
+# The four kinds of class or event: the copilot's event_kind -> (model name,
+# create serializer name, admin tab, public calendar type, plain name).
+EVENT_KINDS = {
+    "live": ("LiveClass", "LiveClassCreateSerializer", "classes", "live_class", "live class"),
+    "stream": ("LiveStream", "LiveStreamCreateSerializer", "streams", "live_stream", "live stream"),
+    "zoom": ("ZoomClass", "ZoomClassCreateSerializer", "zoom", "zoom_class", "Zoom class"),
+    "onsite": ("OnsiteEvent", "OnsiteEventCreateSerializer", "onsite", "onsite_event", "onsite event"),
+}
 
-    serializer_class = OnsiteEventCreateSerializer if event_kind == "onsite" else LiveClassCreateSerializer
-    serializer = serializer_class(data=params)
+
+def event_kind(value):
+    """A stashed or model-proposed kind -> one of EVENT_KINDS ("live" otherwise)."""
+    return value if value in EVENT_KINDS else "live"
+
+
+def event_model(kind):
+    from apps.live import models
+
+    return getattr(models, EVENT_KINDS[event_kind(kind)][0])
+
+
+def event_admin_url(kind, event_id):
+    """Deep link into Classes & events: opens the kind's tab and that event's
+    edit panel (see useDeepLinkedItem on the frontend)."""
+    kind = event_kind(kind)
+    return f"/admin/live?tab={EVENT_KINDS[kind][2]}&event={event_id}&kind={kind}"
+
+
+def create_event(user, kind, params):
+    from apps.live import serializers
+
+    kind = event_kind(kind)
+    serializer = getattr(serializers, EVENT_KINDS[kind][1])(data=params)
     if not serializer.is_valid():
         _fail(serializer.errors)
     event = serializer.save(instructor=user)
     _give_cover(event)
-    tab = "onsite" if event_kind == "onsite" else "classes"
     return {
         "kind": "create_event",
         "id": event.id,
         "title": event.title,
-        "url": f"/admin/live?tab={tab}&event={event.id}&kind={event_kind}",
+        "url": event_admin_url(kind, event.id),
     }
 
 
@@ -131,16 +158,14 @@ def edit_course(course_id, params):
     }
 
 
-def edit_event(event_id, event_kind, params):
+def edit_event(event_id, kind, params):
     from django.utils import timezone
     from django.utils.dateparse import parse_datetime
 
-    from apps.live.models import LiveClass, OnsiteEvent
-
-    model = OnsiteEvent if event_kind == "onsite" else LiveClass
-    event = model.objects.filter(pk=event_id).first()
+    kind = event_kind(kind)
+    event = event_model(kind).objects.filter(pk=event_id).first()
     if event is None:
-        raise ContentOpError(f"no {event_kind} event with id {event_id}")
+        raise ContentOpError(f"no {kind} event with id {event_id}")
     changes = []
 
     def _set(field, new):
@@ -167,17 +192,18 @@ def edit_event(event_id, event_kind, params):
         price = max(float(params["price"]), 0)
         _set("price", f"{price:.2f}")
         _set("pricing_type", "paid" if price > 0 else "free")
-    if event_kind == "onsite" and params.get("location"):
+    if kind == "onsite" and params.get("location"):
         _set("location", str(params["location"])[:500])
+    if kind == "zoom" and params.get("zoom_link"):
+        _set("zoom_link", str(params["zoom_link"])[:500])
     if not changes:
         raise ContentOpError("nothing to change on the event")
     event.save(update_fields=[c["field"] for c in changes])
-    tab = "onsite" if event_kind == "onsite" else "classes"
     return {
         "kind": "edit_event",
         "id": event.id,
         "title": event.title,
-        "url": f"/admin/live?tab={tab}&event={event.id}&kind={event_kind}",
+        "url": event_admin_url(kind, event.id),
         "changes": changes,
     }
 

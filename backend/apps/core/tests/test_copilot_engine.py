@@ -1001,13 +1001,58 @@ def test_events_digest_lists_upcoming_live_and_onsite(tenant_with_pages):
 
 
 def test_event_admin_link_maps_kind_to_tab():
-    assert engine._event_admin_link("live", 7) == "/admin/live?tab=classes&event=7&kind=live"
-    assert engine._event_admin_link("onsite", 9) == "/admin/live?tab=onsite&event=9&kind=onsite"
+    from apps.core.copilot import content
+
+    assert content.event_admin_url("live", 7) == "/admin/live?tab=classes&event=7&kind=live"
+    assert content.event_admin_url("onsite", 9) == "/admin/live?tab=onsite&event=9&kind=onsite"
+    assert content.event_admin_url("stream", 3) == "/admin/live?tab=streams&event=3&kind=stream"
+    assert content.event_admin_url("zoom", 4) == "/admin/live?tab=zoom&event=4&kind=zoom"
+    # A kind we do not know never builds a link to a tab that does not exist.
+    assert content.event_admin_url("webinar", 5) == "/admin/live?tab=classes&event=5&kind=live"
 
 
 def test_event_site_link_maps_kind_to_calendar_type():
     assert engine._event_site_link("live", 7) == "/calendar/live_class/7"
     assert engine._event_site_link("onsite", 9) == "/calendar/onsite_event/9"
+    assert engine._event_site_link("stream", 3) == "/calendar/live_stream/3"
+    assert engine._event_site_link("zoom", 4) == "/calendar/zoom_class/4"
+
+
+def test_events_digest_lists_streams_and_zoom_classes_too(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.live.models import LiveStream, ZoomClass
+
+    instructor = User.objects.create_user(email="four-kinds@x.com", name="C", password="x", role="owner")  # noqa: S106
+    soon = timezone.now() + timedelta(days=2)
+    stream = LiveStream.objects.create(title="Town hall", instructor=instructor, scheduled_at=soon)
+    zoom = ZoomClass.objects.create(title="Office hours", instructor=instructor, scheduled_at=soon)
+    digest = engine._events_digest(tenant_with_pages)
+    assert f"{stream.id} | stream | Town hall" in digest
+    assert f"{zoom.id} | zoom | Office hours" in digest
+    assert f"/admin/live?tab=zoom&event={zoom.id}&kind=zoom" in digest
+    assert "upcoming events: 2" in engine._stats_digest(tenant_with_pages)
+
+
+def test_create_event_card_for_a_zoom_class_carries_its_link():
+    from apps.core.copilot import tokens
+
+    when = timezone.now() + timedelta(days=5)
+    card = engine._card(
+        TENANT,
+        engine.CreateEventAction(
+            kind="create_event",
+            event_kind="zoom",
+            title="Office hours",
+            scheduled_at=when,
+            zoom_link="https://zoom.us/j/123",
+            location="ignored for zoom",
+        ),
+    )
+    assert card["title"] == "Schedule Zoom class: Office hours"
+    stashed = tokens.take_action(card["token"], TENANT.schema_name)
+    assert stashed["event_kind"] == "zoom"
+    assert stashed["params"]["zoom_link"] == "https://zoom.us/j/123"
+    assert "location" not in stashed["params"]
 
 
 def test_events_digest_empty(tenant_with_pages):

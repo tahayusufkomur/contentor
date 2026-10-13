@@ -98,6 +98,32 @@ def test_create_event_live_lands_scheduled(coach):
     assert result["url"] == f"/admin/live?tab=classes&event={event.id}&kind=live"
 
 
+def test_create_event_stream_and_zoom_use_their_own_serializers(coach):
+    from apps.live.models import LiveStream, ZoomClass
+
+    when = (timezone.now() + timedelta(days=7)).isoformat()
+    stream = content.create_event(coach, "stream", {"title": "Town hall", "scheduled_at": when})
+    zoom = content.create_event(
+        coach, "zoom", {"title": "Office hours", "scheduled_at": when, "zoom_link": "https://zoom.us/j/123"}
+    )
+    assert LiveStream.objects.get(id=stream["id"]).status == "scheduled"
+    assert stream["url"] == f"/admin/live?tab=streams&event={stream['id']}&kind=stream"
+    assert ZoomClass.objects.get(id=zoom["id"]).zoom_link == "https://zoom.us/j/123"
+    assert zoom["url"] == f"/admin/live?tab=zoom&event={zoom['id']}&kind=zoom"
+
+
+def test_edit_event_reaches_a_zoom_class_and_its_link(coach):
+    from apps.live.models import ZoomClass
+
+    event = ZoomClass.objects.create(
+        title="Office hours", instructor=coach, scheduled_at=timezone.now() + timedelta(days=3)
+    )
+    result = content.edit_event(event.id, "zoom", {"zoom_link": "https://zoom.us/j/999", "title": "Open hours"})
+    event.refresh_from_db()
+    assert (event.title, event.zoom_link) == ("Open hours", "https://zoom.us/j/999")
+    assert result["url"] == f"/admin/live?tab=zoom&event={event.id}&kind=zoom"
+
+
 def test_create_event_onsite_carries_location(coach):
     from apps.live.models import OnsiteEvent
 

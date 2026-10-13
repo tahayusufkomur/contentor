@@ -240,12 +240,9 @@ def _execute(tenant, user, action):
         }
         return result, inverse
     if kind == "set_event_cover":
-        event_kind = "onsite" if action.get("event_kind") == "onsite" else "live"
+        event_kind = content.event_kind(action.get("event_kind"))
         with tenant_context(tenant):
-            from apps.live.models import LiveClass, OnsiteEvent
-
-            model = OnsiteEvent if event_kind == "onsite" else LiveClass
-            event = model.objects.filter(pk=action.get("event_id")).first()
+            event = content.event_model(event_kind).objects.filter(pk=action.get("event_id")).first()
             if event is None:
                 raise photos.PhotoOpError("that event no longer exists")
             old_thumbnail_id = event.thumbnail_id
@@ -253,12 +250,11 @@ def _execute(tenant, user, action):
             event.save(update_fields=["thumbnail"])
         # Event cards read from the live API, not the cached config —
         # no cache-bust needed here.
-        tab = "onsite" if event_kind == "onsite" else "classes"
         result = {
             "kind": kind,
             "id": event.id,
             "title": event.title,
-            "url": f"/admin/live?tab={tab}&event={event.id}&kind={event_kind}",
+            "url": content.event_admin_url(event_kind, event.id),
         }
         # Same UUID-into-JSONField hazard as restore_course_cover above —
         # stringify the Photo pk so the audit row actually gets written.
@@ -522,10 +518,7 @@ def _apply_inverse(tenant, inverse):
             course.save(update_fields=["thumbnail"])
             return
         if kind == "restore_event_cover":
-            from apps.live.models import LiveClass, OnsiteEvent
-
-            model = OnsiteEvent if inverse.get("event_kind") == "onsite" else LiveClass
-            event = model.objects.filter(pk=inverse.get("event_id")).first()
+            event = content.event_model(inverse.get("event_kind")).objects.filter(pk=inverse.get("event_id")).first()
             if event is None:
                 raise blocks.BlockOpError("that event no longer exists")
             thumbnail_id = inverse.get("thumbnail_id")

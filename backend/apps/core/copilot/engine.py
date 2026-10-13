@@ -63,8 +63,10 @@ SYSTEM_PROMPT = (
     "- publish_course / publish_blog_post: make a draft live (id from the "
     "lists); ONLY propose this when the coach asks to publish or confirms "
     "the draft is ready\n"
-    "- create_event: schedule a live class (event_kind=live) or an "
-    "in-person event (event_kind=onsite, include location), with a future "
+    "- create_event: schedule a live class (event_kind=live), a one-way "
+    "live stream (event_kind=stream), a Zoom class (event_kind=zoom, with "
+    "zoom_link when the coach gave one) or an in-person event "
+    "(event_kind=onsite, include location), with a future "
     "ISO 8601 scheduled_at — it becomes visible to students once the coach "
     "confirms the card\n"
     "- create_blog_post: create a DRAFT blog post (title, one-sentence "
@@ -274,11 +276,12 @@ class CreateCourseAction(BaseModel):
 
 class CreateEventAction(BaseModel):
     kind: Literal["create_event"]
-    event_kind: Literal["live", "onsite"] = "live"
+    event_kind: Literal["live", "stream", "zoom", "onsite"] = "live"
     title: str
     description: str = ""
     scheduled_at: datetime
     location: str = ""
+    zoom_link: str = ""
     price: float = 0
 
 
@@ -341,7 +344,7 @@ class SetCourseCoverAction(BaseModel):
 class SetEventCoverAction(BaseModel):
     kind: Literal["set_event_cover"]
     event_id: int
-    event_kind: Literal["live", "onsite"] = "live"
+    event_kind: Literal["live", "stream", "zoom", "onsite"] = "live"
     description: str = ""
     photo_id: str | None = None  # a photo the coach attached to their message
 
@@ -383,11 +386,12 @@ class EditCurriculumAction(BaseModel):
 class EditEventAction(BaseModel):
     kind: Literal["edit_event"]
     event_id: int
-    event_kind: Literal["live", "onsite"] = "live"
+    event_kind: Literal["live", "stream", "zoom", "onsite"] = "live"
     title: str | None = None
     description: str | None = None
     scheduled_at: datetime | None = None
     location: str | None = None
+    zoom_link: str | None = None
     price: float | None = None
 
 
@@ -569,11 +573,8 @@ def _event_for_cover(tenant, event_kind, event_id):
     """Resolve an event's title and the s3_key of its current cover photo
     (so the pick can exclude it — "try another" must not return the same
     shot). Raises photos.PhotoOpError for an unknown event."""
-    from apps.live.models import LiveClass, OnsiteEvent
-
-    model = OnsiteEvent if event_kind == "onsite" else LiveClass
     with tenant_context(tenant):
-        event = model.objects.filter(pk=event_id).select_related("thumbnail").first()
+        event = content.event_model(event_kind).objects.filter(pk=event_id).select_related("thumbnail").first()
         if event is None:
             raise photos.PhotoOpError(f"no {event_kind} event with id {event_id}")
         exclude_key = event.thumbnail.s3_key if event.thumbnail_id and event.thumbnail else None
@@ -584,11 +585,8 @@ def _event_title(tenant, event_kind, event_id):
     """Resolve an event's title for the card — coaches only see ids in the
     events digest, and `f"Update event {id}"` isn't a usable card title.
     Raises content.ContentOpError for an unknown id."""
-    from apps.live.models import LiveClass, OnsiteEvent
-
-    model = OnsiteEvent if event_kind == "onsite" else LiveClass
     with tenant_context(tenant):
-        title = model.objects.filter(pk=event_id).values_list("title", flat=True).first()
+        title = content.event_model(event_kind).objects.filter(pk=event_id).values_list("title", flat=True).first()
     if title is None:
         raise content.ContentOpError(f"no event with id {event_id}")
     return title
@@ -641,48 +639,33 @@ MAX_DIGEST_EVENTS = 20
 MAX_DIGEST_POSTS = 20
 
 
-def _event_admin_link(kind, event_id):
-    """Deep link into the Live Events admin: opens the right tab and that
-    event's edit panel directly (see useDeepLinkedItem on the frontend) —
-    what the model quotes back verbatim when asked for a direct link."""
-    tab = "onsite" if kind == "onsite" else "classes"
-    return f"/admin/live?tab={tab}&event={event_id}&kind={kind}"
-
-
-# The public calendar route (`apps.live.views.MODEL_MAP`) uses a different
-# vocabulary than the copilot's own event_kind — translate here so the two
-# link builders both key off the one event_kind the digest already carries.
-_EVENT_SITE_TYPE = {"live": "live_class", "onsite": "onsite_event"}
-
-
 def _event_site_link(kind, event_id):
     """Public calendar detail page for the event — unlike courses/posts this
     has no publish gate (calendar_event_detail has no status filter), so it
-    always resolves once the event exists."""
-    return f"/calendar/{_EVENT_SITE_TYPE.get(kind, 'live_class')}/{event_id}"
+    always resolves once the event exists. The calendar route
+    (`apps.live.views.MODEL_MAP`) has its own names for the four kinds."""
+    return f"/calendar/{content.EVENT_KINDS[content.event_kind(kind)][3]}/{event_id}"
 
 
 def _events_digest(tenant):
     """Upcoming events for the user turn: what edit_event and set_event_cover
     proposals key off, and what the model quotes back verbatim when asked
     for a direct link."""
-    from apps.live.models import LiveClass, OnsiteEvent
-
     with tenant_context(tenant):
         now = timezone.now()
         rows = [
-            ("live", e)
-            for e in LiveClass.objects.filter(scheduled_at__gte=now).order_by("scheduled_at")[:MAX_DIGEST_EVENTS]
-        ] + [
-            ("onsite", e)
-            for e in OnsiteEvent.objects.filter(scheduled_at__gte=now).order_by("scheduled_at")[:MAX_DIGEST_EVENTS]
+            (kind, e)
+            for kind in content.EVENT_KINDS
+            for e in content.event_model(kind)
+            .objects.filter(scheduled_at__gte=now)
+            .order_by("scheduled_at")[:MAX_DIGEST_EVENTS]
         ]
     if not rows:
         return "Upcoming events: (none scheduled)"
     rows.sort(key=lambda r: r[1].scheduled_at)
     lines = ["Upcoming events (id | kind | title | when | price | cover | admin link | site link):"]
     for kind, e in rows[:MAX_DIGEST_EVENTS]:
-        admin_link = _event_admin_link(kind, e.id)
+        admin_link = content.event_admin_url(kind, e.id)
         site_link = _event_site_link(kind, e.id)
         cover = "has cover" if (e.thumbnail_id or e.thumbnail_url) else "NO COVER"
         lines.append(
@@ -718,7 +701,6 @@ def _stats_digest(tenant):
 
     from apps.blog.models import BlogPost
     from apps.courses.models import Course
-    from apps.live.models import LiveClass, OnsiteEvent
 
     with tenant_context(tenant):
         user_model = get_user_model()
@@ -728,9 +710,9 @@ def _stats_digest(tenant):
         ).count()
         published = Course.objects.filter(is_published=True).count()
         drafts = Course.objects.filter(is_published=False).count()
-        upcoming = (
-            LiveClass.objects.filter(scheduled_at__gte=timezone.now()).count()
-            + OnsiteEvent.objects.filter(scheduled_at__gte=timezone.now()).count()
+        upcoming = sum(
+            content.event_model(kind).objects.filter(scheduled_at__gte=timezone.now()).count()
+            for kind in content.EVENT_KINDS
         )
         posts_live = BlogPost.objects.filter(status="published").count()
     return (
@@ -1116,6 +1098,7 @@ def _card(tenant, action):
                 "new description" if action.description else None,
                 f"when → {when:%b %d, %Y %H:%M}" if when is not None else None,
                 f"location → '{action.location[:80]}'" if action.location else None,
+                "new Zoom link" if action.zoom_link else None,
                 f"price → {max(action.price, 0):.2f}" if action.price is not None else None,
             )
             if p
@@ -1129,6 +1112,7 @@ def _card(tenant, action):
                 ("description", action.description),
                 ("scheduled_at", when.isoformat() if when is not None else None),
                 ("location", action.location),
+                ("zoom_link", action.zoom_link),
                 ("price", action.price),
             )
             if v is not None
@@ -1314,7 +1298,9 @@ def _card(tenant, action):
         }
         if action.event_kind == "onsite":
             params["location"] = action.location[:500]
-        label = "onsite event" if action.event_kind == "onsite" else "live class"
+        if action.event_kind == "zoom" and action.zoom_link:
+            params["zoom_link"] = action.zoom_link[:500]
+        label = content.EVENT_KINDS[action.event_kind][4]
         return {
             "kind": "create_event",
             "title": f"Schedule {label}: {action.title[:120]}",
