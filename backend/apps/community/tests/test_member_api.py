@@ -38,11 +38,45 @@ def test_me_patch_updates_profile(enabled):
     client, _ = make_client()
     resp = client.patch(
         "/api/v1/community/me/",
-        {"display_name": "Ayşe", "avatar_key": "shared-test/community/abc.jpg"},
+        {"display_name": "Ayşe", "avatar_key": "tenants/shared-test/community/abc.jpg"},
         format="json",
     )
     assert resp.status_code == 200
     assert resp.json()["display_name"] == "Ayşe"
+    assert "X-Amz-Signature" in resp.json()["avatar"]
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        "tenants/other-studio/community/abc.jpg",  # another tenant's file
+        "tenants/shared-test/video/paid-lesson.mp4",  # this tenant's, but not a community upload
+        "tenants/shared-test/community/../video/paid-lesson.mp4",
+        "logs/archive/2026/10/12.ndjson.gz",
+    ],
+)
+def test_me_patch_rejects_an_avatar_key_outside_the_community_folder(enabled, key):
+    """The avatar is signed for every member, so any other key would turn the
+    profile into a download link for that file."""
+    client, user = make_client()
+    resp = client.patch("/api/v1/community/me/", {"avatar_key": key}, format="json")
+    assert resp.status_code == 400
+    assert CommunityMember.objects.get(user=user).avatar_key == ""
+
+
+def test_an_avatar_key_stored_before_the_check_is_not_signed(enabled):
+    client, user = make_client()
+    CommunityMember.objects.create(user=user, display_name="X", avatar_key="tenants/other-studio/video/secret.mp4")
+    body = client.get("/api/v1/community/me/").json()
+    assert body["avatar"] == ""
+    # ...and the form can still save her name with that stale key sent back.
+    resp = client.patch(
+        "/api/v1/community/me/",
+        {"display_name": "Y", "avatar_key": "tenants/other-studio/video/secret.mp4"},
+        format="json",
+    )
+    assert resp.status_code == 200
+    assert resp.json()["avatar"] == ""
 
 
 def test_me_404_when_disabled(tenant_ctx):

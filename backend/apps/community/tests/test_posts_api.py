@@ -45,19 +45,35 @@ def test_create_post(enabled):
 
 def test_create_post_rejects_five_images(enabled):
     client, _ = make_client()
-    keys = [f"shared-test/community/{i}.jpg" for i in range(5)]
+    keys = [f"tenants/shared-test/community/{i}.jpg" for i in range(5)]
     resp = client.post("/api/v1/community/posts/", {"body": "x", "image_keys": keys}, format="json")
     assert resp.status_code == 400
 
 
-def test_create_post_rejects_foreign_keys(enabled):
+@pytest.mark.parametrize(
+    "key",
+    [
+        "shared-test/videos/secret.mp4",
+        "tenants/other-studio/community/abc.jpg",  # another tenant's file
+        "tenants/shared-test/video/paid-lesson.mp4",  # this tenant's, but not a community upload
+        "tenants/shared-test/video/community/paid-lesson.mp4",  # "/community/" somewhere in it is not enough
+    ],
+)
+def test_create_post_rejects_foreign_keys(enabled, key):
+    client, _ = make_client()
+    resp = client.post("/api/v1/community/posts/", {"body": "x", "image_keys": [key]}, format="json")
+    assert resp.status_code == 400
+
+
+def test_create_post_signs_its_own_community_images(enabled):
     client, _ = make_client()
     resp = client.post(
         "/api/v1/community/posts/",
-        {"body": "x", "image_keys": ["shared-test/videos/secret.mp4"]},
+        {"body": "x", "image_keys": ["tenants/shared-test/community/a.jpg"]},
         format="json",
     )
-    assert resp.status_code == 400
+    assert resp.status_code == 201
+    assert "X-Amz-Signature" in resp.json()["images"][0]
 
 
 def test_feed_first_page_has_pinned_and_excludes_hidden(enabled):

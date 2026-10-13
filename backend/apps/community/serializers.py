@@ -1,8 +1,20 @@
 from rest_framework import serializers
 
+from apps.core.storage import build_s3_path
+
 from .models import MAX_POST_IMAGES, Comment, CommunitySettings, Post, Report
 
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+
+
+def _check_community_key(key):
+    """Members write these keys and every member is handed a signed link to
+    them, so they must come from the community's own upload folder (the
+    presign endpoint's). Any other key of this tenant, a paid lesson's video
+    for one, would otherwise be a free download for a student."""
+    if ".." in key.split("/") or not key.startswith(build_s3_path("community", "")):
+        raise serializers.ValidationError("Invalid image key.")
+    return key
 
 
 class CommunitySettingsSerializer(serializers.ModelSerializer):
@@ -34,6 +46,12 @@ class MemberSerializer(serializers.Serializer):
         from .permissions import is_moderator
 
         return is_moderator(member.user)
+
+    def validate_avatar_key(self, value):
+        # Empty clears the avatar; the form sends the current key back unchanged.
+        if not value or value == getattr(self.instance, "avatar_key", None):
+            return value
+        return _check_community_key(value)
 
     def update(self, member, validated_data):
         for field in ("display_name", "avatar_key"):
@@ -91,10 +109,7 @@ class PostSerializer(serializers.ModelSerializer):
         read_only_fields = ["status", "is_pinned", "comment_count", "reaction_count"]
 
     def validate_image_keys(self, keys):
-        for key in keys:
-            if "/community/" not in key:
-                raise serializers.ValidationError("Invalid image key.")
-        return keys
+        return [_check_community_key(key) for key in keys]
 
     def get_images(self, post):
         from apps.core.storage import sign_if_s3_key

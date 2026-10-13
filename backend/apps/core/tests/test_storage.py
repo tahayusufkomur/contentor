@@ -15,7 +15,7 @@ from apps.core import storage
 )
 class PresignExternalEndpointTests(SimpleTestCase):
     def test_download_url_uses_external_endpoint(self):
-        url = storage.generate_presigned_download_url("tenants/demo/x.png")
+        url = storage.generate_presigned_download_url("demo/photos/x.png")
         assert url.startswith("http://localhost:9000/"), url
 
     def test_upload_url_uses_external_endpoint(self):
@@ -24,7 +24,7 @@ class PresignExternalEndpointTests(SimpleTestCase):
 
     @override_settings(AWS_ENDPOINT_EXTERNAL="")
     def test_falls_back_to_internal_endpoint(self):
-        url = storage.generate_presigned_download_url("tenants/demo/x.png")
+        url = storage.generate_presigned_download_url("demo/photos/x.png")
         assert url.startswith("http://minio:9000/"), url
 
 
