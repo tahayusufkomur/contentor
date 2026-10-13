@@ -49,6 +49,19 @@ describe("isNavItemActive", () => {
     expect(isNavItemActive(state, "/admin/calendar")).toBe(false);
   });
 
+  it("keeps a page active while a link to it with a query is pending", () => {
+    const state = {
+      pathname: "/admin/courses",
+      pendingHref: "/admin/store?tab=bundles",
+    };
+    expect(isNavItemActive(state, "/admin/store")).toBe(true);
+    expect(isNavItemActive(state, "/admin/courses")).toBe(false);
+    // An item whose own href carries the query still matches exactly.
+    expect(
+      isNavItemActive({ pathname: "/", pendingHref: "/?edit=1" }, "/?edit=1"),
+    ).toBe(true);
+  });
+
   it("honours a custom matcher", () => {
     const state = { pathname: "/x", pendingHref: null };
     expect(isNavItemActive(state, "/y", () => true)).toBe(true);

@@ -24,6 +24,8 @@ import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { clientFetch } from "@/lib/api-client";
+import { billingIntervalSuffix } from "@/lib/billing-interval";
+import { formatMoney } from "@/lib/format";
 import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
@@ -48,6 +50,8 @@ export interface StudentDetail {
     plan_name: string;
     status: string;
     amount: string;
+    currency: string;
+    interval_months: number;
   } | null;
 }
 
@@ -215,7 +219,15 @@ export function StudentDrawer({
                       {student.subscription.plan_name}
                     </span>
                     <span className="text-sm font-semibold text-primary">
-                      {student.subscription.amount}
+                      {Number(student.subscription.amount) > 0
+                        ? formatMoney(
+                            student.subscription.amount,
+                            student.subscription.currency,
+                          ) +
+                          billingIntervalSuffix(
+                            student.subscription.interval_months,
+                          )
+                        : "Free"}
                     </span>
                   </div>
                 ) : (

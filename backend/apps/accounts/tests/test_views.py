@@ -384,6 +384,32 @@ class TestStudentList:
         response = client.get("/api/v1/auth/students/")
         assert response.status_code == 403, response.content
 
+    def test_membership_is_raw_amount_currency_and_cycle(self, owner, student):
+        """A yearly plan in euros is not reported as "$…/mo"."""
+        from django.utils import timezone
+
+        from apps.billing.models import Subscription, SubscriptionPlan
+
+        plan = SubscriptionPlan.objects.create(name="Year", price="190.00", currency="EUR", billing_interval_months=12)
+        now = timezone.now()
+        Subscription.objects.create(
+            student=student,
+            plan=plan,
+            billing_amount="190.00",
+            billing_currency="EUR",
+            current_period_start=now,
+            current_period_end=now,
+        )
+        data = make_client(owner).get("/api/v1/auth/students/").json()
+        row = next(s for s in data if s["email"] == student.email)
+        assert row["subscription"] == {
+            "plan_name": "Year",
+            "status": "active",
+            "amount": "190.00",
+            "currency": "EUR",
+            "interval_months": 12,
+        }
+
     def test_search_filter_works(self, owner, student):
         """Search by name filters results."""
         client = make_client(owner)

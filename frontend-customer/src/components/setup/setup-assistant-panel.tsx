@@ -23,11 +23,15 @@ export type AssistantTab = "checklist" | "help";
 export function SetupAssistantPanel({
   open,
   onClose,
+  onNavigate = onClose,
   initialTab = "checklist",
   variant = "sheet",
 }: {
   open: boolean;
   onClose: () => void;
+  /** A link inside the panel was followed. The sheet closes; the admin's dock
+   *  stays beside the page it opened. */
+  onNavigate?: () => void;
   initialTab?: AssistantTab;
   /** "sheet" floats over the page; "inline" fills the admin's assistant dock,
    *  which brings its own close button and tabs. */
@@ -48,16 +52,18 @@ export function SetupAssistantPanel({
     if (open) setTab(initialTab);
   }, [open, initialTab]);
 
-  if (!open || !status) return null;
-
   // Feature off (no provider configured) → no Help tab at all; caps show a
   // friendly message inside the tab instead.
   const helpAvailable =
     !helpStatus || helpStatus.enabled || helpStatus.reason !== "disabled";
   const showHelp = helpAvailable && tab === "help";
 
-  const { items, progress } = status;
-  const allDone = progress.done === progress.total;
+  // Help needs nothing from the setup status, so it never waits for it.
+  if (!open || (!status && !showHelp)) return null;
+
+  const items = status?.items ?? [];
+  const progress = status?.progress ?? { done: 0, total: 0 };
+  const allDone = !!status && progress.done === progress.total;
   const groups = SETUP_GROUP_ORDER.map((group) => ({
     group,
     rows: items.filter((item) => item.group === group),
@@ -158,7 +164,11 @@ export function SetupAssistantPanel({
       // params on mount, and this panel also renders inside the site editor —
       // where a same-path query change would never remount it.
       return (
-        <a href={entry.href ?? "/admin"} onClick={onClose} className={rowClass}>
+        <a
+          href={entry.href ?? "/admin"}
+          onClick={onNavigate}
+          className={rowClass}
+        >
           {body}
         </a>
       );
@@ -166,7 +176,7 @@ export function SetupAssistantPanel({
     return (
       <Link
         href={entry.href ?? "/admin"}
-        onClick={onClose}
+        onClick={onNavigate}
         className={rowClass}
       >
         {body}
@@ -254,7 +264,7 @@ export function SetupAssistantPanel({
       </div>
 
       {showHelp ? (
-        <HelpChat onNavigate={onClose} />
+        <HelpChat onNavigate={onNavigate} />
       ) : (
         <>
           <div className="flex-1 overflow-y-auto p-3">

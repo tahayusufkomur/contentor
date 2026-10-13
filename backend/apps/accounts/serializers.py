@@ -71,10 +71,13 @@ class StudentListSerializer(serializers.ModelSerializer):
         sub = Subscription.objects.filter(student=obj, status="active").select_related("plan").first()
         if not sub:
             return None
+        # Raw numbers: the admin formats them, in her currency and her cycle.
         return {
             "plan_name": sub.plan.name,
             "status": sub.status,
-            "amount": f"${sub.billing_amount}/mo" if sub.billing_amount else "Free",
+            "amount": str(sub.billing_amount),
+            "currency": sub.billing_currency,
+            "interval_months": sub.plan.billing_interval_months,
         }
 
 

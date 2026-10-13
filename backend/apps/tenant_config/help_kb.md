@@ -49,12 +49,12 @@ What: sellable or free downloadable files (PDFs, worksheets, plans, guides).
 What: four kinds of live events, all managed from Classes & events:
 
 1. **Live Class** — interactive video call with chat, runs right in the browser (no extra software). Can auto-record; the recording lands in your Videos (under Site).
-2. **Live Stream** — one-way broadcast to your students (you present, they watch). Start/stop from the Live streams page.
+2. **Live Stream** — one-way broadcast to your students (you present, they watch). Start/stop it from Classes & events, on the Live Streams tab.
 3. **Zoom Class** — an event that links out to an external Zoom meeting you host on Zoom.
 4. **On-site Event** — an in-person event with a location, address, and capacity.
 
 - **Schedule a session**: open Classes & events, pick the tab for the type, create it with a title, date/time, and duration. Sessions can be free or paid.
-- **Run a live stream**: open Live streams, start the broadcast when ready, stop it when done.
+- **Run a live stream**: open Classes & events → Live Streams tab, start the broadcast when ready, stop it when done.
 - **Recordings**: live class recordings appear as videos you can reuse in lessons.
 - Gotchas: live video (Live Class / Live Stream) is **not available on the Free plan** — it needs Starter or Pro. Streaming time counts against your plan's monthly hours (100h Starter / 500h Pro).
 

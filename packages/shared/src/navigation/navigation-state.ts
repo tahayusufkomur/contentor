@@ -21,13 +21,15 @@ export interface NavPathState {
 }
 
 /** A pending navigation wins over the committed pathname — this is what makes
- *  the clicked item highlight before the route commits. */
+ *  the clicked item highlight before the route commits. A pending href may
+ *  carry a query (`/admin/store?tab=bundles`); it still belongs to its page. */
 export function isNavItemActive(
   { pathname, pendingHref }: NavPathState,
   href: string,
   match: ActiveMatch = defaultActiveMatch,
 ): boolean {
-  return match(pendingHref ?? pathname, href);
+  const current = pendingHref ?? pathname;
+  return match(current, href) || match(current.split(/[?#]/)[0], href);
 }
 
 export interface ProgressController {
