@@ -155,13 +155,13 @@ function relativeTime(iso: string): string {
  * the backend re-verifies on every call. `?copilot=1` opens it. Chats live
  * server-side (CopilotChat); the old localStorage transcript is imported as
  * the first chat on first open. */
-export function CopilotBubble() {
+export function CopilotBubble({ docked = false }: { docked?: boolean }) {
   const t = useTranslations("student.copilot");
   const pathname = usePathname();
   // Element-picking only makes sense on the live site the coach can see —
   // in /admin the drawer still works, minus the Select affordance.
   const onSite = !pathname?.startsWith("/admin");
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(docked);
   const [view, setView] = useState<"chat" | "list">("chat");
   const [booted, setBooted] = useState(false);
   const [chats, setChats] = useState<CopilotChatRow[]>([]);
@@ -395,7 +395,7 @@ export function CopilotBubble() {
     { errorToast: t("error") },
   );
 
-  if (!open) {
+  if (!open && !docked) {
     return (
       <Button
         data-copilot-ui
@@ -410,6 +410,7 @@ export function CopilotBubble() {
       </Button>
     );
   }
+  if (!open) return null;
 
   return (
     <>
@@ -421,14 +422,21 @@ export function CopilotBubble() {
       )}
       <div
         data-copilot-ui
-        className="fixed right-0 z-[60] flex w-[min(26rem,100vw)] flex-col border-l bg-background shadow-xl motion-safe:animate-in motion-safe:slide-in-from-right motion-safe:duration-200"
-        // The drawer fits between the site/admin chrome: navbar publishes
-        // --topnav-clearance, the PWA install banner publishes
-        // --install-banner-clearance. Page content is untouched.
-        style={{
-          top: "var(--topnav-clearance, 0px)",
-          bottom: "var(--install-banner-clearance, 0px)",
-        }}
+        className={
+          docked
+            ? "flex min-h-0 flex-1 flex-col"
+            : "fixed right-0 z-[60] flex w-[min(26rem,100vw)] flex-col border-l bg-background shadow-xl motion-safe:animate-in motion-safe:slide-in-from-right motion-safe:duration-200"
+        }
+        // Floating: the drawer fits between the site chrome (navbar and PWA
+        // install banner publish their heights). Docked: the panel sizes it.
+        style={
+          docked
+            ? undefined
+            : {
+                top: "var(--topnav-clearance, 0px)",
+                bottom: "var(--install-banner-clearance, 0px)",
+              }
+        }
       >
         <div className="flex items-center justify-between border-b p-3">
           <span className="flex min-w-0 items-center gap-1">
@@ -462,14 +470,16 @@ export function CopilotBubble() {
             >
               <SquarePen className="size-4" aria-hidden />
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setOpen(false)}
-              aria-label={t("close")}
-            >
-              <X className="size-4" aria-hidden />
-            </Button>
+            {!docked && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setOpen(false)}
+                aria-label={t("close")}
+              >
+                <X className="size-4" aria-hidden />
+              </Button>
+            )}
           </span>
         </div>
 

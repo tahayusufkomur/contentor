@@ -24,10 +24,14 @@ export function SetupAssistantPanel({
   open,
   onClose,
   initialTab = "checklist",
+  variant = "sheet",
 }: {
   open: boolean;
   onClose: () => void;
   initialTab?: AssistantTab;
+  /** "sheet" floats over the page; "inline" fills the admin's assistant dock,
+   *  which brings its own close button and tabs. */
+  variant?: "sheet" | "inline";
 }) {
   const t = useTranslations("admin");
   const status = useSetupStatus();
@@ -170,6 +174,144 @@ export function SetupAssistantPanel({
     );
   };
 
+  const content = (
+    <>
+      <div className={showHelp ? "border-b p-4 pb-0" : "border-b p-4"}>
+        <div className="mb-2 flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">
+              {showHelp
+                ? t("setup.help.title")
+                : allDone
+                  ? t("setup.celebrateTitle")
+                  : t("setup.title")}
+            </h2>
+            {showHelp && <AiBadge />}
+          </div>
+          {variant === "sheet" && (
+            <button
+              type="button"
+              aria-label={t("setup.dismiss")}
+              onClick={onClose}
+              className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        {variant === "sheet" && helpAvailable && (
+          <div className="mb-2 flex gap-1" role="tablist">
+            {(["checklist", "help"] as const).map((key) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={tab === key}
+                onClick={() => setTab(key)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  tab === key
+                    ? "bg-accent text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t(`setup.tabs.${key}`)}
+              </button>
+            ))}
+          </div>
+        )}
+        {showHelp ? null : allDone ? (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              {t("setup.celebrateBody")}
+            </p>
+            <button
+              type="button"
+              onClick={copySiteLink}
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              {copied ? t("setup.copied") : t("setup.copyLink")}
+            </button>
+          </div>
+        ) : (
+          <>
+            <p className="mb-2 text-sm text-muted-foreground">
+              {t("setup.progressLabel", {
+                done: progress.done,
+                total: progress.total,
+              })}
+            </p>
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{
+                  width: `${(progress.done / Math.max(progress.total, 1)) * 100}%`,
+                }}
+              />
+            </div>
+          </>
+        )}
+      </div>
+
+      {showHelp ? (
+        <HelpChat onNavigate={onClose} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto p-3">
+            {groups.map(({ group, rows }) => (
+              <div key={group} className="mb-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCollapsed((c) => ({ ...c, [group]: !c[group] }))
+                  }
+                  className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                >
+                  {t(`setup.groups.${group}`)}
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition-transform ${collapsed[group] ? "-rotate-90" : ""}`}
+                  />
+                </button>
+                {!collapsed[group] && (
+                  <ul className="space-y-0.5">
+                    {rows.map((item) => (
+                      <li key={item.key}>{renderRow(item)}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div
+            className={
+              variant === "inline"
+                ? "border-t p-3 text-center"
+                : "border-t p-3 pb-16 text-center"
+            }
+          >
+            <button
+              type="button"
+              onClick={() => {
+                void patchSetup({ dismissed: true });
+                onClose();
+              }}
+              className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+            >
+              {t("setup.dismiss")}
+            </button>
+          </div>
+        </>
+      )}
+
+      <EraseDemoDialog open={eraseOpen} onClose={() => setEraseOpen(false)} />
+    </>
+  );
+
+  if (variant === "inline") {
+    return <div className="flex min-h-0 flex-1 flex-col">{content}</div>;
+  }
+
   return (
     <ModalPortal>
       <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
@@ -180,130 +322,7 @@ export function SetupAssistantPanel({
           className="absolute inset-0 bg-black/40"
         />
         <aside className="absolute right-0 top-0 flex h-full w-full max-w-sm flex-col bg-background shadow-xl">
-          <div className={showHelp ? "border-b p-4 pb-0" : "border-b p-4"}>
-            <div className="mb-2 flex items-start justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">
-                  {showHelp
-                    ? t("setup.help.title")
-                    : allDone
-                      ? t("setup.celebrateTitle")
-                      : t("setup.title")}
-                </h2>
-                {showHelp && <AiBadge />}
-              </div>
-              <button
-                type="button"
-                aria-label={t("setup.dismiss")}
-                onClick={onClose}
-                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            {helpAvailable && (
-              <div className="mb-2 flex gap-1" role="tablist">
-                {(["checklist", "help"] as const).map((key) => (
-                  <button
-                    key={key}
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === key}
-                    onClick={() => setTab(key)}
-                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                      tab === key
-                        ? "bg-accent text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {t(`setup.tabs.${key}`)}
-                  </button>
-                ))}
-              </div>
-            )}
-            {showHelp ? null : allDone ? (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  {t("setup.celebrateBody")}
-                </p>
-                <button
-                  type="button"
-                  onClick={copySiteLink}
-                  className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                  {copied ? t("setup.copied") : t("setup.copyLink")}
-                </button>
-              </div>
-            ) : (
-              <>
-                <p className="mb-2 text-sm text-muted-foreground">
-                  {t("setup.progressLabel", {
-                    done: progress.done,
-                    total: progress.total,
-                  })}
-                </p>
-                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all"
-                    style={{
-                      width: `${(progress.done / Math.max(progress.total, 1)) * 100}%`,
-                    }}
-                  />
-                </div>
-              </>
-            )}
-          </div>
-
-          {showHelp ? (
-            <HelpChat onNavigate={onClose} />
-          ) : (
-            <>
-              <div className="flex-1 overflow-y-auto p-3">
-                {groups.map(({ group, rows }) => (
-                  <div key={group} className="mb-2">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCollapsed((c) => ({ ...c, [group]: !c[group] }))
-                      }
-                      className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                    >
-                      {t(`setup.groups.${group}`)}
-                      <ChevronDown
-                        className={`h-3.5 w-3.5 transition-transform ${collapsed[group] ? "-rotate-90" : ""}`}
-                      />
-                    </button>
-                    {!collapsed[group] && (
-                      <ul className="space-y-0.5">
-                        {rows.map((item) => (
-                          <li key={item.key}>{renderRow(item)}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t p-3 pb-16 text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    void patchSetup({ dismissed: true });
-                    onClose();
-                  }}
-                  className="text-xs text-muted-foreground underline-offset-4 hover:underline"
-                >
-                  {t("setup.dismiss")}
-                </button>
-              </div>
-            </>
-          )}
-
-          <EraseDemoDialog
-            open={eraseOpen}
-            onClose={() => setEraseOpen(false)}
-          />
+          {content}
         </aside>
       </div>
     </ModalPortal>

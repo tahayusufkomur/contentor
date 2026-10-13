@@ -3,22 +3,27 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ExternalLink, Globe, Search } from "lucide-react";
+import { ExternalLink, Globe, Search, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { AppSidebar } from "@/components/shared/app-sidebar";
 import { ImpersonationBanner } from "@/components/shared/impersonation-banner";
 import { MobileHeader } from "@/components/shared/mobile-header";
 import { UserMenu } from "@/components/shared/user-menu";
-import { SetupAssistantBubble } from "@/components/setup/setup-assistant-bubble";
 import { CommandPalette } from "@/components/admin/command-palette";
 import { EntitlementsProvider } from "@/components/admin/entitlements-provider";
+import {
+  AssistantDock,
+  AssistantDockProvider,
+  useAssistantDock,
+} from "@/components/admin/assistant-dock";
 import { SectionTabs } from "@/components/admin/section-tabs";
 import { useNavigation } from "@shared/navigation/navigation-provider";
 import { useTenant } from "@/hooks/use-tenant";
 import { usePublishTopnavClearance } from "@/lib/topnav-clearance";
 import { activeSection, buildAdminNav } from "@/lib/admin-nav";
 import { gateAdminNav } from "@/lib/admin-nav-gate";
+import { useSetupStatus } from "@/lib/setup-assistant";
 import type { User } from "@/types/auth";
 
 interface AdminShellProps {
@@ -29,7 +34,9 @@ interface AdminShellProps {
 export function AdminShell({ children, user }: AdminShellProps) {
   return (
     <EntitlementsProvider>
-      <AdminShellContent user={user}>{children}</AdminShellContent>
+      <AssistantDockProvider>
+        <AdminShellContent user={user}>{children}</AdminShellContent>
+      </AssistantDockProvider>
     </EntitlementsProvider>
   );
 }
@@ -37,6 +44,8 @@ export function AdminShell({ children, user }: AdminShellProps) {
 function AdminShellContent({ children, user }: AdminShellProps) {
   const t = useTranslations("admin");
   const [cmdOpen, setCmdOpen] = useState(false);
+  const dock = useAssistantDock();
+  const setup = useSetupStatus();
   // Floating UI (copilot drawer) starts below the header bars via this.
   const topbarRef = useRef<HTMLDivElement | null>(null);
   usePublishTopnavClearance(topbarRef);
@@ -91,7 +100,7 @@ function AdminShellContent({ children, user }: AdminShellProps) {
           <button
             type="button"
             onClick={() => setCmdOpen(true)}
-            className="flex items-center gap-2.5 px-3 py-1.5 text-xs text-muted-foreground bg-muted/50 hover:bg-muted/80 rounded-lg border transition-colors w-full max-w-sm"
+            className="flex items-center gap-2.5 px-3 py-1.5 text-xs text-muted-foreground bg-muted/50 hover:bg-muted/80 rounded-lg border transition-colors w-full min-w-0 max-w-sm"
           >
             <Search className="h-3.5 w-3.5" />
             <span className="truncate">Search commands or pages...</span>
@@ -99,6 +108,24 @@ function AdminShellContent({ children, user }: AdminShellProps) {
               ⌘K
             </kbd>
           </button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-auto h-8 shrink-0 gap-1.5 text-xs font-medium shadow-sm"
+            onClick={dock.toggle}
+            aria-pressed={dock.isOpen}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>{t("dock.title")}</span>
+            {setup &&
+              !setup.dismissed &&
+              setup.progress.done < setup.progress.total && (
+                <span className="rounded-full bg-muted px-1.5 text-[10px] tabular-nums">
+                  {setup.progress.done}/{setup.progress.total}
+                </span>
+              )}
+          </Button>
 
           <Button
             asChild
@@ -118,8 +145,8 @@ function AdminShellContent({ children, user }: AdminShellProps) {
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
+      <AssistantDock />
       <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
-      <SetupAssistantBubble />
       <ImpersonationBanner />
     </div>
   );
