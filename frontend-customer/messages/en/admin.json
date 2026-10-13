@@ -42,6 +42,17 @@
     "more": "+ {count} more",
     "locked": "Not in your plan yet"
   },
+  "store": {
+    "subtitle": "What your students can buy from you.",
+    "tabs": {
+      "products": "Products",
+      "bundles": "Bundles",
+      "plans": "Memberships"
+    }
+  },
+  "plan": {
+    "subtitle": "What you pay Contentor, and what it includes."
+  },
   "siteAi": {
     "title": "Site AI",
     "subtitle": "Your AI assistant now lives on your site — open any page and tell it what to change, or click an element to hand it over.",

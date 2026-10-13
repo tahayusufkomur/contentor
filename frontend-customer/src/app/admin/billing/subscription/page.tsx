@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
-/** The coach's plan is a tab of Billing. Upgrade links across the admin point
- *  here, so this address must keep resolving. */
+/** Upgrade links across the admin point here, so this address must keep
+ *  resolving. The coach's plan is /admin/billing. */
 export default function SubscriptionRedirect() {
-  redirect("/admin/billing?tab=subscription");
+  redirect("/admin/billing");
 }
