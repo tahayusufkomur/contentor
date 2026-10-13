@@ -150,7 +150,8 @@ def _execute(tenant, user, action):
     creator = _CREATORS.get(kind)
     if creator is not None:
         with tenant_context(tenant):
-            return creator(user, action), {}
+            result = creator(user, action)
+            return result, content.created_inverse(action, result)
     if kind in ("edit_theme", "edit_style", "edit_navbar"):
         with tenant_context(tenant):
             cfg = TenantConfig.objects.first()
@@ -469,15 +470,51 @@ def copilot_execute(request):
 AUDIT_FEED_LIMIT = 50
 
 
+def _order_free(inverse):
+    """Deleting a draft the copilot created does not depend on what came
+    after it. Every other inverse restores a snapshot, so only the newest
+    one may run."""
+    return inverse.get("kind") == "delete_created"
+
+
+def _latest_snapshot_id():
+    """The one snapshot-restoring change that can still be undone."""
+    from apps.tenant_config.models import CopilotAudit
+
+    return (
+        CopilotAudit.objects.filter(undone_at__isnull=True)
+        .exclude(inverse={})
+        .exclude(inverse__kind="delete_created")
+        .order_by("-created_at", "-id")
+        .values_list("id", flat=True)
+        .first()
+    )
+
+
 @api_view(["GET"])
 @permission_classes([IsCoachOrOwner])
 def copilot_audit(request):
-    """Newest-first feed of executed copilot actions for /admin/site-ai."""
+    """Newest-first feed of executed copilot actions for the assistant's
+    History tab; ``undoable`` says which rows Undo can still act on."""
     from apps.tenant_config.models import CopilotAudit
 
     tenant = connection.tenant
     with tenant_context(tenant):
-        entries = list(CopilotAudit.objects.values("id", "kind", "summary", "created_at")[:AUDIT_FEED_LIMIT])
+        latest_id = _latest_snapshot_id()
+        rows = list(CopilotAudit.objects.all()[:AUDIT_FEED_LIMIT])
+    entries = [
+        {
+            "id": row.id,
+            "kind": row.kind,
+            "summary": row.summary,
+            "created_at": row.created_at,
+            "undone": row.undone_at is not None,
+            "undoable": row.undone_at is None
+            and bool(row.inverse)
+            and (_order_free(row.inverse) or row.id == latest_id),
+        }
+        for row in rows
+    ]
     return Response({"entries": entries})
 
 
@@ -496,6 +533,9 @@ def _apply_inverse(tenant, inverse):
 
     kind = inverse.get("kind")
     with tenant_context(tenant):
+        if kind == "delete_created":
+            content.delete_created(inverse)
+            return
         if kind == "restore_photo_note":
             from apps.media.models import Photo
 
@@ -571,22 +611,17 @@ def copilot_undo(request):
     except (TypeError, ValueError):
         return Response({"detail": "not_found"}, status=404)
     with tenant_context(tenant):
-        latest = (
-            CopilotAudit.objects.filter(undone_at__isnull=True)
-            .exclude(inverse={})
-            .order_by("-created_at", "-id")
-            .first()
-        )
+        latest_id = _latest_snapshot_id()
         entry = CopilotAudit.objects.filter(pk=audit_id).first()
     if entry is None:
         return Response({"detail": "not_found"}, status=404)
     if entry.undone_at is not None or not entry.inverse:
         return Response({"detail": "not_undoable"}, status=400)
-    if latest is None or latest.pk != entry.pk:
+    if not _order_free(entry.inverse) and latest_id != entry.pk:
         return Response({"detail": "only the latest change can be undone"}, status=400)
     try:
         _apply_inverse(tenant, entry.inverse)
-    except (blocks.BlockOpError, chrome.ChromeOpError) as exc:
+    except (blocks.BlockOpError, chrome.ChromeOpError, content.ContentOpError) as exc:
         return Response({"detail": str(exc)}, status=400)
     with tenant_context(tenant):
         entry.undone_at = timezone.now()

@@ -453,6 +453,94 @@ def create_announcement_draft(user, params):
     }
 
 
+# ── undo of a draft the copilot created ─────────────────────────────────────
+
+# The create kinds -> what they made. An event's model follows its event_kind.
+_CREATED = {
+    "create_course": "course",
+    "create_event": "event",
+    "create_blog_post": "post",
+    "draft_announcement": "announcement",
+}
+UNDO_REFUSED = "it was changed, published or removed since, so nothing was deleted"
+
+
+def _draft(what, pk, kind=None):
+    """The row the copilot created, while it is still a draft nobody depends
+    on -> (row, the fields that say whether she touched it), else None."""
+    from django.contrib.contenttypes.models import ContentType
+
+    from apps.billing.models import PaymentItem
+
+    def sold(row):
+        return PaymentItem.objects.filter(
+            content_type=ContentType.objects.get_for_model(row), object_id=row.pk
+        ).exists()
+
+    if what == "course":
+        from apps.courses.models import Course, Lesson
+
+        row = Course.objects.filter(pk=pk, is_published=False).first()
+        if row is None or row.enrollments.exists() or sold(row):
+            return None
+        lessons = Lesson.objects.filter(module__course=row).order_by("id")
+        return row, (
+            row.updated_at.isoformat(),
+            list(row.modules.order_by("id").values_list("id", "title", "order")),
+            list(lessons.values_list("id", "module_id", "title", "order", "video_id", "video_url", "content_html")),
+        )
+    if what == "event":
+        row = event_model(kind).objects.filter(pk=pk, status__in=("draft", "scheduled")).first()
+        if row is None or sold(row):
+            return None
+        return row, (
+            row.title,
+            row.description,
+            str(row.scheduled_at),
+            str(row.price),
+            str(row.thumbnail_id),
+            getattr(row, "location", ""),
+            getattr(row, "zoom_link", ""),
+        )
+    if what == "post":
+        from apps.blog.models import BlogPost
+
+        row = BlogPost.objects.filter(pk=pk, status="draft").first()
+        return (row, (row.updated_at.isoformat(),)) if row else None
+    if what == "announcement":
+        from apps.notifications.models import Announcement
+
+        row = Announcement.objects.filter(pk=pk, status="draft").first()
+        return (row, (row.title, row.body, row.link, str(row.scheduled_at), row.filters_json)) if row else None
+    return None
+
+
+def _stamp(found):
+    import hashlib
+
+    return hashlib.sha256(repr(found[1]).encode()).hexdigest()[:16] if found else None
+
+
+def created_inverse(action, result):
+    """What undoing a create means: delete that draft, as long as it still
+    looks exactly as the copilot left it. {} for anything that is not a create."""
+    what = _CREATED.get(action.get("kind"))
+    if what is None:
+        return {}
+    kind = event_kind(action.get("event_kind")) if what == "event" else None
+    stamp = _stamp(_draft(what, result["id"], kind))
+    if stamp is None:
+        return {}
+    return {"kind": "delete_created", "what": what, "event_kind": kind, "id": result["id"], "stamp": stamp}
+
+
+def delete_created(inverse):
+    found = _draft(inverse.get("what"), inverse.get("id"), inverse.get("event_kind"))
+    if found is None or _stamp(found) != inverse.get("stamp"):
+        raise ContentOpError(UNDO_REFUSED)
+    found[0].delete()
+
+
 def create_blog_post(user, params):
     from apps.blog.models import unique_slug
     from apps.blog.serializers import BlogPostAdminSerializer

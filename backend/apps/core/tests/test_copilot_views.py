@@ -795,7 +795,7 @@ def test_execute_theme_action_records_old_theme(client, coach):
     assert row.inverse == {"kind": "edit_theme", "theme": "ocean"}
 
 
-def test_create_course_has_empty_inverse(client, coach):
+def test_create_course_records_how_to_take_the_draft_back(client, coach):
     from apps.tenant_config.models import CopilotAudit
 
     token = copilot_tokens.stash_action(
@@ -804,8 +804,10 @@ def test_create_course_has_empty_inverse(client, coach):
     )
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 200, resp.content
-    row = CopilotAudit.objects.latest("created_at")
-    assert row.inverse == {}
+    inverse = CopilotAudit.objects.latest("created_at").inverse
+    assert inverse["kind"] == "delete_created"
+    assert (inverse["what"], inverse["id"]) == ("course", resp.json()["result"]["id"])
+    assert len(inverse["stamp"]) == 16
 
 
 def test_execute_response_carries_audit_id(client, coach):
@@ -930,14 +932,181 @@ def test_undo_unknown_id_returns_404(client, coach):
 
 
 def test_undo_not_undoable_kind_returns_400(client, coach):
-    token = copilot_tokens.stash_action(
-        "shared_test",
-        {"kind": "create_course", "params": {"title": "Yoga 101", "price": "0.00", "pricing_type": "free"}},
+    from apps.courses.models import Course
+
+    course = Course.objects.create(title="Yoga 101", instructor=coach)
+    res = _execute_token(
+        client, copilot_tokens.stash_action("shared_test", {"kind": "publish_course", "course_id": course.id})
     )
-    res = _execute_token(client, token)
     assert res.status_code == 200, res.content
     undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
     assert undo.status_code == 400
+    assert undo.json() == {"detail": "not_undoable"}
+
+
+# --- undo of a draft the assistant created ------------------------------
+
+
+def _undo(client, res):
+    return client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
+
+
+def _create_course(client):
+    params = {
+        "title": "Yoga 101",
+        "price": "0.00",
+        "pricing_type": "free",
+        "modules": [{"title": "Basics", "lessons": [{"title": "Breath"}]}],
+    }
+    res = _execute_token(
+        client, copilot_tokens.stash_action("shared_test", {"kind": "create_course", "params": params})
+    )
+    assert res.status_code == 200, res.content
+    return res
+
+
+def test_undo_deletes_an_untouched_draft_course(client, coach):
+    from apps.courses.models import Course
+
+    res = _create_course(client)
+    undo = _undo(client, res)
+    assert undo.status_code == 200, undo.content
+    assert undo.json() == {"undone": "create_course"}
+    assert not Course.objects.filter(pk=res.json()["result"]["id"]).exists()
+    assert _undo(client, res).status_code == 400  # already undone
+
+
+@pytest.mark.parametrize("touch", ["edit", "publish", "add_lesson", "rename_lesson"])
+def test_undo_leaves_a_course_she_has_touched(client, coach, touch):
+    from apps.courses.models import Course, Lesson
+
+    res = _create_course(client)
+    course = Course.objects.get(pk=res.json()["result"]["id"])
+    if touch == "edit":
+        course.description = "Mine now."
+        course.save()
+    elif touch == "publish":
+        Course.objects.filter(pk=course.pk).update(is_published=True)
+    elif touch == "add_lesson":
+        Lesson.objects.create(module=course.modules.get(), title="Posture", order=2)
+    else:
+        Lesson.objects.filter(module__course=course).update(title="Breathing")
+    undo = _undo(client, res)
+    assert undo.status_code == 400
+    assert "changed, published or removed" in undo.json()["detail"]
+    assert Course.objects.filter(pk=course.pk).exists()
+
+
+def test_undo_leaves_a_course_somebody_enrolled_in(client, coach):
+    from apps.courses.models import Course, Enrollment
+
+    res = _create_course(client)
+    course = Course.objects.get(pk=res.json()["result"]["id"])
+    Enrollment.objects.create(user=coach, course=course)
+    assert _undo(client, res).status_code == 400
+    assert Course.objects.filter(pk=course.pk).exists()
+
+
+def test_undo_deletes_each_class_of_a_series_in_any_order(client, coach):
+    """A weekly series is several cards; she must not have to undo them
+    newest-first, and a page edit in between must not block them."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.live.models import LiveClass, ZoomClass
+
+    def create(kind, days):
+        when = (timezone.now() + timedelta(days=days)).isoformat()
+        action = {"kind": "create_event", "event_kind": kind, "params": {"title": "Flow", "scheduled_at": when}}
+        return _execute_token(client, copilot_tokens.stash_action("shared_test", action))
+
+    first, second = create("live", 7), create("zoom", 14)
+    page_edit = _execute_token(client, _toggle_token(enabled=False))
+    assert _undo(client, first).status_code == 200
+    assert _undo(client, second).status_code == 200
+    assert not LiveClass.objects.filter(pk=first.json()["result"]["id"]).exists()
+    assert not ZoomClass.objects.filter(pk=second.json()["result"]["id"]).exists()
+    # ...and creating drafts never took "latest change" away from the page edit.
+    assert _undo(client, page_edit).status_code == 200
+
+
+def test_undo_leaves_an_event_that_was_rescheduled_or_started(client, coach):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.live.models import LiveClass
+
+    def create():
+        when = (timezone.now() + timedelta(days=7)).isoformat()
+        action = {"kind": "create_event", "event_kind": "live", "params": {"title": "Flow", "scheduled_at": when}}
+        return _execute_token(client, copilot_tokens.stash_action("shared_test", action))
+
+    moved, started = create(), create()
+    LiveClass.objects.filter(pk=moved.json()["result"]["id"]).update(scheduled_at=timezone.now() + timedelta(days=9))
+    LiveClass.objects.filter(pk=started.json()["result"]["id"]).update(status="live")
+    assert _undo(client, moved).status_code == 400
+    assert _undo(client, started).status_code == 400
+    assert LiveClass.objects.count() == 2
+
+
+def test_undo_deletes_a_draft_post_and_a_draft_announcement_but_not_sent_ones(client, coach):
+    from apps.blog.models import BlogPost
+    from apps.notifications.models import Announcement
+
+    def create(action):
+        res = _execute_token(client, copilot_tokens.stash_action("shared_test", action))
+        assert res.status_code == 200, res.content
+        return res
+
+    post = create({"kind": "create_blog_post", "params": {"title": "Why breathe", "body_html": "<p>Hi</p>"}})
+    note = create({"kind": "draft_announcement", "params": {"title": "New class", "body_html": "<p>Hi</p>"}})
+    sent = create({"kind": "draft_announcement", "params": {"title": "Sent one", "body_html": "<p>Hi</p>"}})
+    Announcement.objects.filter(pk=sent.json()["result"]["id"]).update(status="sent")
+    assert _undo(client, post).status_code == 200
+    assert _undo(client, note).status_code == 200
+    assert _undo(client, sent).status_code == 400
+    assert not BlogPost.objects.filter(pk=post.json()["result"]["id"]).exists()
+    assert list(Announcement.objects.values_list("title", flat=True)) == ["Sent one"]
+
+
+def test_audit_feed_says_what_can_still_be_undone(client, coach):
+    course = _create_course(client)
+    older_edit = _execute_token(client, _toggle_token(enabled=False))
+    newer_edit = _execute_token(client, _theme_token("ember"))
+    undone = _create_course(client)
+    _undo(client, undone)
+    entries = {e["id"]: e for e in client.get("/api/v1/admin/copilot/audit/").json()["entries"]}
+    assert entries[course.json()["audit_id"]]["undoable"] is True  # a draft, in any order
+    assert entries[older_edit.json()["audit_id"]]["undoable"] is False  # a newer snapshot exists
+    assert entries[newer_edit.json()["audit_id"]]["undoable"] is True
+    assert entries[undone.json()["audit_id"]] | {"created_at": None} == {
+        "id": undone.json()["audit_id"],
+        "kind": "create_course",
+        "summary": "Created draft course 'Yoga 101'",
+        "created_at": None,
+        "undone": True,
+        "undoable": False,
+    }
+
+
+def test_execute_edit_curriculum_changes_the_course_and_is_logged(client, coach):
+    from apps.courses.models import Course
+    from apps.tenant_config.models import CopilotAudit
+
+    course = Course.objects.create(title="Yoga 101", instructor=coach)
+    action = {
+        "kind": "edit_curriculum",
+        "course_id": course.id,
+        "ops": [{"op": "add_module", "title": "Flow", "lessons": ["Sun salutation"]}],
+    }
+    res = _execute_token(client, copilot_tokens.stash_action("shared_test", action))
+    assert res.status_code == 200, res.content
+    assert res.json()["result"]["url"] == f"/admin/courses/{course.slug}"
+    assert course.modules.get().lessons.get().title == "Sun salutation"
+    row = CopilotAudit.objects.latest("created_at")
+    assert (row.summary, row.inverse) == ("Changed the curriculum of 'Yoga 101'", {})
 
 
 def test_undo_busts_cache(client, coach):
