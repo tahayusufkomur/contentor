@@ -16,7 +16,7 @@ from apps.tenant_config.models import TenantConfig
 from . import emailcraft_client
 from .models import CampaignStatus, EmailCampaign
 from .recipients import get_recipient_count
-from .serializers import EmailCampaignSerializer, SendEmailSerializer
+from .serializers import EmailCampaignListSerializer, EmailCampaignSerializer, SendEmailSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -231,7 +231,7 @@ def send_campaign(request):
 @api_view(["GET"])
 @permission_classes([IsCoachOrOwner])
 def campaign_list(request):
-    campaigns = EmailCampaign.objects.select_related("sender").all()
+    campaigns = EmailCampaign.objects.select_related("sender").defer("rendered_html")
 
     try:
         limit = max(1, min(int(request.query_params.get("limit", 20)), 100))
@@ -245,7 +245,7 @@ def campaign_list(request):
     total = campaigns.count()
     page = campaigns[offset : offset + limit]
 
-    return Response({"count": total, "results": EmailCampaignSerializer(page, many=True).data})
+    return Response({"count": total, "results": EmailCampaignListSerializer(page, many=True).data})
 
 
 @api_view(["POST"])

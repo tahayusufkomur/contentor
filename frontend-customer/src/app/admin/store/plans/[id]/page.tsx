@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
@@ -116,6 +116,12 @@ export default function PlanPage() {
     };
   }, [id, isNew, reloadKey]);
 
+  // Once created, a second save edits that plan: a plan cannot be deleted,
+  // so a retry (the access step failed) must never make another one.
+  const savedId = useRef<number | null>(isNew ? null : Number(id));
+  // Stays true through the redirect, so the button cannot be pressed twice.
+  const [leaving, setLeaving] = useState(false);
+
   const { run: save, loading: saving } = useAsyncAction(
     async () => {
       const body = JSON.stringify({
@@ -124,9 +130,12 @@ export default function PlanPage() {
           cycle === "custom" ? Number(months) : Number(cycle),
       });
       const plan = await clientFetch<{ id: number }>(
-        isNew ? "/api/v1/billing/plans/" : `/api/v1/billing/plans/${id}/`,
-        { method: isNew ? "POST" : "PATCH", body },
+        savedId.current === null
+          ? "/api/v1/billing/plans/"
+          : `/api/v1/billing/plans/${savedId.current}/`,
+        { method: savedId.current === null ? "POST" : "PATCH", body },
       );
+      savedId.current = plan.id;
       await clientFetch(`/api/v1/billing/plans/${plan.id}/access/`, {
         method: "PUT",
         body: JSON.stringify({
@@ -137,6 +146,7 @@ export default function PlanPage() {
         }),
       });
       toast.success(t(isNew ? "created" : "saved"));
+      setLeaving(true);
       navigate(BACK);
     },
     { errorToast: t("saveError") },
@@ -170,13 +180,10 @@ export default function PlanPage() {
           </div>
         }
       >
-        <form
-          className="space-y-6"
-          onSubmit={(e) => {
-            e.preventDefault();
-            save();
-          }}
-        >
+        {/* Not a <form>: Enter in the content search below would submit it,
+            and a plan made by accident is public at once and cannot be
+            deleted. */}
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>{t("details")}</CardTitle>
@@ -190,7 +197,6 @@ export default function PlanPage() {
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   maxLength={100}
-                  required
                 />
               </div>
               <div className="space-y-2">
@@ -219,7 +225,6 @@ export default function PlanPage() {
                     onChange={(e) =>
                       setForm({ ...form, price: e.target.value })
                     }
-                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -247,7 +252,6 @@ export default function PlanPage() {
                     step="1"
                     value={months}
                     onChange={(e) => setMonths(e.target.value)}
-                    required
                   />
                 </div>
               )}
@@ -288,14 +292,24 @@ export default function PlanPage() {
           </Card>
 
           <div className="flex gap-3">
-            <Button type="submit" loading={saving} loadingText={t("saving")}>
+            <Button
+              onClick={save}
+              loading={saving || leaving}
+              loadingText={t("saving")}
+              disabled={
+                !form.name.trim() ||
+                !(Number(form.price) > 0) ||
+                (cycle === "custom" &&
+                  !(Number(months) >= 1 && Number(months) <= 36))
+              }
+            >
               {t(isNew ? "create" : "save")}
             </Button>
-            <Button type="button" variant="outline" asChild>
+            <Button variant="outline" asChild>
               <NavLink href={BACK}>{t("cancel")}</NavLink>
             </Button>
           </div>
-        </form>
+        </div>
       </PageState>
     </div>
   );

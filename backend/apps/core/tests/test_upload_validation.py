@@ -112,3 +112,22 @@ def test_an_edit_that_sends_the_stored_key_back_still_saves(tenant_ctx, owner):
         f"/api/v1/photos/{photo.pk}/", {"s3_key": "tenants/some-other-tenant/photo/x.jpg"}, format="json"
     )
     assert moved.status_code == 400
+
+
+@pytest.mark.django_db(transaction=True)
+def test_multipart_part_urls_outlive_a_long_upload(tenant_ctx, owner):
+    # Every part URL is signed up front; the last is used hours later.
+    from unittest.mock import patch
+
+    with patch("apps.core.uploads.multipart.get_s3_client") as get_client:
+        s3 = get_client.return_value
+        s3.create_multipart_upload.return_value = {"UploadId": "u1"}
+        s3.generate_presigned_url.return_value = "https://storage.test/part"
+        resp = _client(owner).post(
+            "/api/v1/upload/multipart/initiate/",
+            {"filename": "long.mp4", "content_type": "video/mp4", "category": "library", "total_parts": 3},
+            format="json",
+        )
+    assert resp.status_code == 200, resp.content
+    assert len(resp.json()["part_urls"]) == 3
+    assert {call.kwargs["ExpiresIn"] for call in s3.generate_presigned_url.call_args_list} == {12 * 60 * 60}

@@ -2,11 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { AlertCircle, CheckCircle2, File, UploadCloud } from "lucide-react";
+import { AlertCircle, CheckCircle2, File, UploadCloud, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { formatFileSize } from "@/lib/format";
-import { mediaKind, uploadMedia, type MediaKind } from "@/lib/upload";
+import {
+  UploadCancelled,
+  mediaKind,
+  uploadMedia,
+  type MediaKind,
+} from "@/lib/upload";
 
 interface QueuedFile {
   id: string;
@@ -14,6 +19,8 @@ interface QueuedFile {
   progress: number;
   status: "queued" | "uploading" | "completed" | "error";
   error?: string;
+  /** Aborting it cancels this file's upload. */
+  controller: AbortController;
 }
 
 /** How many files travel at once; the rest wait their turn. */
@@ -48,12 +55,20 @@ export function BatchDropzone({
       const item = waiting.current.shift()!;
       running.current++;
       patch(item.id, { status: "uploading", progress: 1 });
-      uploadMedia(item.file, (progress) => patch(item.id, { progress }))
+      uploadMedia(item.file, {
+        onProgress: (progress) => patch(item.id, { progress }),
+        signal: item.controller.signal,
+      })
         .then(() => {
           patch(item.id, { status: "completed", progress: 100 });
           onUploadedRef.current?.(mediaKind(item.file)!);
         })
         .catch((err: unknown) => {
+          // She cancelled it: it simply leaves the list.
+          if (err instanceof UploadCancelled) {
+            setFiles((prev) => prev.filter((f) => f.id !== item.id));
+            return;
+          }
           const error = err instanceof Error ? err.message : String(err);
           patch(item.id, { status: "error", error });
           toast.error(t("failed", { name: item.file.name }));
@@ -81,6 +96,7 @@ export function BatchDropzone({
           file,
           progress: 0,
           status: "queued",
+          controller: new AbortController(),
         }));
       if (!added.length) return;
       setFiles((prev) => [...prev, ...added]);
@@ -129,6 +145,15 @@ export function BatchDropzone({
     };
   }, [addFiles]);
 
+  const cancel = (item: QueuedFile) => {
+    if (item.status === "queued") {
+      waiting.current = waiting.current.filter((f) => f.id !== item.id);
+      setFiles((prev) => prev.filter((f) => f.id !== item.id));
+    } else {
+      item.controller.abort();
+    }
+  };
+
   const finished = files.some(
     (f) => f.status === "completed" || f.status === "error",
   );
@@ -170,7 +195,7 @@ export function BatchDropzone({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,video/*"
+          accept="image/*,video/*,.heic,.mov,.mkv,.avi"
           multiple
           className="hidden"
           aria-label={t("pick")}
@@ -245,6 +270,17 @@ export function BatchDropzone({
                       <span className="font-mono text-[10px] text-primary">
                         {item.progress}%
                       </span>
+                    )}
+                    {(item.status === "queued" ||
+                      item.status === "uploading") && (
+                      <button
+                        type="button"
+                        onClick={() => cancel(item)}
+                        aria-label={t("cancel", { name: item.file.name })}
+                        className="rounded p-0.5 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
                     )}
                     {item.status === "completed" && (
                       <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">

@@ -191,3 +191,20 @@ class TestCancelScheduledCampaign:
         resp = make_client(student).delete(f"/api/v1/email/campaigns/{campaign.pk}/")
         assert resp.status_code == 403, resp.content
         assert EmailCampaign.objects.filter(pk=campaign.pk).exists()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_the_list_leaves_out_the_rendered_email_and_needs_no_email_account(owner):
+    # The Messages page lists campaigns on every visit: a row must be light,
+    # and reading the list must not set up an email account as a side effect
+    # (no TenantConfig key here, and no call out to provision one).
+    campaign = _make_campaign(owner, rendered_html="<html>" + "x" * 5000 + "</html>", status=CampaignStatus.SENT)
+    with mock.patch("apps.email_campaigns.views.emailcraft_client.provision_organization") as provision:
+        listing = make_client(owner).get("/api/v1/email/campaigns/")
+        detail = make_client(owner).get(f"/api/v1/email/campaigns/{campaign.pk}/")
+    assert listing.status_code == 200, listing.content
+    row = listing.json()["results"][0]
+    assert row["subject"] == "Scheduled Blast"
+    assert "rendered_html" not in row
+    assert detail.json()["rendered_html"].startswith("<html>")
+    provision.assert_not_called()

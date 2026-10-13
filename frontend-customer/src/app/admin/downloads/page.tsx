@@ -479,10 +479,23 @@ function DownloadRowActions({
   // `file_url` is the storage key, not an address: ask for a signed link.
   const { run: openFile, loading: opening } = useAsyncAction(
     async () => {
-      const { url } = await clientFetch<{ url: string }>(
-        `/api/v1/downloads/${download.id}/url/`,
-      );
-      window.open(url, "_blank", "noopener");
+      // Opened inside the click: a tab opened after the request is a popup
+      // to Safari, which blocks it.
+      const tab = window.open("", "_blank");
+      try {
+        const { url } = await clientFetch<{ url: string }>(
+          `/api/v1/downloads/${download.id}/url/`,
+        );
+        if (tab) {
+          tab.opener = null;
+          tab.location.href = url;
+        } else {
+          window.location.href = url;
+        }
+      } catch (err) {
+        tab?.close();
+        throw err;
+      }
     },
     { errorToast: "Could not open the file" },
   );

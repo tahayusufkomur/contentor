@@ -5,10 +5,38 @@ import { clientFetch } from "@/lib/api-client";
 
 export type MediaKind = "photo" | "video";
 
+/** For a file the browser gives no type for (some .mov and .mkv files). */
+const BY_EXTENSION: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  gif: "image/gif",
+  webp: "image/webp",
+  avif: "image/avif",
+  heic: "image/heic",
+  mp4: "video/mp4",
+  m4v: "video/mp4",
+  mov: "video/quicktime",
+  webm: "video/webm",
+  mkv: "video/x-matroska",
+  avi: "video/x-msvideo",
+};
+
+/** The file's type: what the browser says, else what its name says. */
+export function contentType(file: { name: string; type: string }): string {
+  if (file.type) return file.type;
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+  return BY_EXTENSION[extension] ?? "";
+}
+
 /** What a dropped file becomes, or null when the library does not take it. */
-export function mediaKind(file: { type: string }): MediaKind | null {
-  if (file.type.startsWith("image/")) return "photo";
-  if (file.type.startsWith("video/")) return "video";
+export function mediaKind(file: {
+  name: string;
+  type: string;
+}): MediaKind | null {
+  const type = contentType(file);
+  if (type.startsWith("image/")) return "photo";
+  if (type.startsWith("video/")) return "video";
   return null;
 }
 
@@ -38,33 +66,65 @@ export function extractDuration(file: File): Promise<number> {
   });
 }
 
+/** Thrown when she cancels an upload; not a failure to report. */
+export class UploadCancelled extends Error {
+  constructor() {
+    super("Cancelled");
+  }
+}
+
+interface Transfer {
+  onProgress: (percent: number) => void;
+  /** Aborting it stops the upload and cleans up what was sent. */
+  signal: AbortSignal;
+}
+
 /** PUT a body to a presigned URL, reporting bytes sent. Resolves with the
- *  response's ETag (storage returns one per part). */
+ *  response's ETag when storage lets the page read it ("" otherwise). */
 function put(
   url: string,
   body: Blob,
+  signal: AbortSignal,
   onSent: (bytes: number) => void,
-  contentType?: string,
+  type?: string,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
+    if (signal.aborted) return reject(new UploadCancelled());
     const xhr = new XMLHttpRequest();
+    const cancel = () => xhr.abort();
+    signal.addEventListener("abort", cancel, { once: true });
+    const settle = (finish: () => void) => {
+      signal.removeEventListener("abort", cancel);
+      finish();
+    };
     xhr.open("PUT", url);
-    if (contentType) xhr.setRequestHeader("Content-Type", contentType);
+    if (type) xhr.setRequestHeader("Content-Type", type);
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onSent(e.loaded);
     };
     xhr.onload = () =>
-      xhr.status >= 200 && xhr.status < 300
-        ? resolve(xhr.getResponseHeader("ETag") ?? "")
-        : reject(new Error(`Storage refused the upload (${xhr.status})`));
-    xhr.onerror = () => reject(new Error("The connection dropped"));
+      settle(() =>
+        xhr.status >= 200 && xhr.status < 300
+          ? resolve(xhr.getResponseHeader("ETag") ?? "")
+          : reject(new Error(`Storage refused the upload (${xhr.status})`)),
+      );
+    xhr.onerror = () =>
+      settle(() => reject(new Error("The connection dropped")));
+    xhr.onabort = () => settle(() => reject(new UploadCancelled()));
     xhr.send(body);
   });
 }
 
-type Progress = (percent: number) => void;
+const percentOf = (sent: number, total: number) =>
+  Math.min(99, Math.round((sent / Math.max(total, 1)) * 100));
 
-async function uploadPhoto(file: File, onProgress: Progress): Promise<void> {
+/** One request for the whole file: presign, then PUT. Returns its key. */
+async function putWhole(
+  file: File,
+  category: "photo" | "library",
+  { onProgress, signal }: Transfer,
+): Promise<string> {
+  const type = contentType(file);
   const { upload_url, s3_key } = await clientFetch<{
     upload_url: string;
     s3_key: string;
@@ -72,22 +132,28 @@ async function uploadPhoto(file: File, onProgress: Progress): Promise<void> {
     method: "POST",
     body: JSON.stringify({
       filename: file.name,
-      content_type: file.type,
-      category: "photo",
+      content_type: type,
+      category,
     }),
   });
   await put(
     upload_url,
     file,
-    (sent) => onProgress(Math.min(99, Math.round((sent / file.size) * 100))),
-    file.type,
+    signal,
+    (sent) => onProgress(percentOf(sent, file.size)),
+    type,
   );
+  return s3_key;
+}
+
+async function uploadPhoto(file: File, transfer: Transfer): Promise<void> {
+  const s3_key = await putWhole(file, "photo", transfer);
   await clientFetch("/api/v1/photos/", {
     method: "POST",
     body: JSON.stringify({
       s3_key,
       title: titleFromFilename(file.name),
-      content_type: file.type,
+      content_type: contentType(file),
       file_size: file.size,
     }),
   });
@@ -96,54 +162,95 @@ async function uploadPhoto(file: File, onProgress: Progress): Promise<void> {
 const PART_SIZE = 10 * 1024 * 1024;
 const PART_ATTEMPTS = 3;
 
+/** Storage answered a part without an ETag the page can read (its CORS rules
+ *  do not expose the header), so the parts cannot be assembled. */
+class NoPartReceipt extends Error {}
+
 /** A video goes up in 10 MB parts, each retried, so a long upload survives a
- *  dropped connection. If it still fails, the half-made video is removed. */
-async function uploadVideo(file: File, onProgress: Progress): Promise<void> {
+ *  dropped connection. The video only joins her list once its file is whole:
+ *  a failed or cancelled upload leaves nothing behind. */
+async function uploadVideo(file: File, transfer: Transfer): Promise<void> {
+  const { onProgress, signal } = transfer;
   const duration_seconds = await extractDuration(file);
-  const video = await clientFetch<{ id: number }>("/api/v1/courses/videos/", {
+  const title = titleFromFilename(file.name);
+  const totalParts = Math.max(1, Math.ceil(file.size / PART_SIZE));
+
+  const started = await clientFetch<{
+    upload_id: string;
+    s3_key: string;
+    part_urls: string[];
+  }>("/api/v1/upload/multipart/initiate/", {
     method: "POST",
-    body: JSON.stringify({ title: titleFromFilename(file.name) }),
+    body: JSON.stringify({
+      filename: file.name,
+      content_type: contentType(file),
+      category: "library",
+      total_parts: totalParts,
+    }),
   });
-  let multipart: { s3_key: string; upload_id: string } | null = null;
-  try {
-    const totalParts = Math.max(1, Math.ceil(file.size / PART_SIZE));
-    const started = await clientFetch<{
-      upload_id: string;
-      s3_key: string;
-      part_urls: string[];
-    }>("/api/v1/upload/multipart/initiate/", {
+  const abandon = () =>
+    clientFetch("/api/v1/upload/multipart/abort/", {
       method: "POST",
       body: JSON.stringify({
-        filename: file.name,
-        content_type: file.type,
-        category: "library",
-        video_id: video.id,
-        total_parts: totalParts,
+        s3_key: started.s3_key,
+        upload_id: started.upload_id,
       }),
-    });
-    multipart = started;
+    }).catch(() => {});
 
-    const parts: { ETag: string; PartNumber: number }[] = [];
+  const parts: { ETag: string; PartNumber: number }[] = [];
+  try {
     for (let n = 1; n <= totalParts; n++) {
       const from = (n - 1) * PART_SIZE;
       const chunk = file.slice(from, Math.min(n * PART_SIZE, file.size));
       for (let attempt = 1; ; attempt++) {
         try {
-          const etag = await put(started.part_urls[n - 1], chunk, (sent) =>
-            onProgress(
-              Math.min(99, Math.round(((from + sent) / file.size) * 100)),
-            ),
+          const etag = await put(
+            started.part_urls[n - 1],
+            chunk,
+            signal,
+            (sent) => onProgress(percentOf(from + sent, file.size)),
           );
-          if (!etag) throw new Error("Storage did not confirm a part");
+          if (!etag) throw new NoPartReceipt();
           parts.push({ ETag: etag, PartNumber: n });
           break;
         } catch (err) {
-          if (attempt >= PART_ATTEMPTS) throw err;
+          if (
+            err instanceof UploadCancelled ||
+            err instanceof NoPartReceipt ||
+            attempt >= PART_ATTEMPTS
+          )
+            throw err;
           await new Promise((r) => setTimeout(r, 1000 * attempt));
         }
       }
     }
+  } catch (err) {
+    abandon();
+    if (!(err instanceof NoPartReceipt)) throw err;
+    // This storage cannot do parts from a browser: send the file in one
+    // request instead, the way a photo goes.
+    const s3_key = await putWhole(file, "library", transfer);
+    await clientFetch("/api/v1/courses/videos/", {
+      method: "POST",
+      body: JSON.stringify({
+        title,
+        s3_key,
+        duration_seconds,
+        file_size: file.size,
+      }),
+    });
+    return;
+  }
 
+  // Every part is in storage: now the video gets its row, and the row its file.
+  const video = await clientFetch<{ id: number }>("/api/v1/courses/videos/", {
+    method: "POST",
+    body: JSON.stringify({ title }),
+  }).catch((err) => {
+    abandon();
+    throw err;
+  });
+  try {
     await clientFetch("/api/v1/upload/multipart/complete/", {
       method: "POST",
       body: JSON.stringify({
@@ -157,16 +264,7 @@ async function uploadVideo(file: File, onProgress: Progress): Promise<void> {
       }),
     });
   } catch (err) {
-    // Leave nothing behind: no parts in storage, no empty video in her list.
-    if (multipart) {
-      clientFetch("/api/v1/upload/multipart/abort/", {
-        method: "POST",
-        body: JSON.stringify({
-          s3_key: multipart.s3_key,
-          upload_id: multipart.upload_id,
-        }),
-      }).catch(() => {});
-    }
+    abandon();
     clientFetch(`/api/v1/courses/videos/${video.id}/`, {
       method: "DELETE",
     }).catch(() => {});
@@ -175,10 +273,10 @@ async function uploadVideo(file: File, onProgress: Progress): Promise<void> {
 }
 
 /** Upload one file into the library. Rejects when the file is neither an
- *  image nor a video. */
-export function uploadMedia(file: File, onProgress: Progress): Promise<void> {
+ *  image nor a video, and with UploadCancelled when `signal` aborts. */
+export function uploadMedia(file: File, transfer: Transfer): Promise<void> {
   const kind = mediaKind(file);
-  if (kind === "photo") return uploadPhoto(file, onProgress);
-  if (kind === "video") return uploadVideo(file, onProgress);
+  if (kind === "photo") return uploadPhoto(file, transfer);
+  if (kind === "video") return uploadVideo(file, transfer);
   return Promise.reject(new Error("Only photos and videos go here"));
 }

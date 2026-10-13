@@ -593,7 +593,8 @@
       "done": "Done",
       "error": "Failed",
       "failed": "{name} did not upload.",
-      "refused": "Only photos and videos go here. Skipped: {names}"
+      "refused": "Only photos and videos go here. Skipped: {names}",
+      "cancel": "Cancel the upload of {name}"
     }
   },
   "messages": {

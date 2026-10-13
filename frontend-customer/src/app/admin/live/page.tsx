@@ -33,6 +33,12 @@ export default function EventsPage() {
   const params = useSearchParams();
   const liveLocked = useIsLocked("live");
   const listRef = useRef<MediaBrowserHandle>(null);
+  // The calendar has no refresh of its own: a new key remounts it.
+  const [calendarKey, setCalendarKey] = useState(0);
+  const reload = () => {
+    listRef.current?.refresh();
+    setCalendarKey((k) => k + 1);
+  };
 
   const view = params.get("view") === "calendar" ? "calendar" : "list";
   const [creating, setCreating] = useState(params.get("new") === "1");
@@ -74,7 +80,7 @@ export default function EventsPage() {
   // below or from its panel): reload the list. A refresh, not a remount, so
   // a form she has open stays open.
   useAssistantApplied(({ kind }) => {
-    if (kind.includes("event")) listRef.current?.refresh();
+    if (kind.includes("event")) reload();
   });
 
   return (
@@ -115,7 +121,7 @@ export default function EventsPage() {
           onCancel={() => setCreating(false)}
           onSaved={() => {
             setCreating(false);
-            listRef.current?.refresh();
+            reload();
           }}
         />
       )}
@@ -127,7 +133,7 @@ export default function EventsPage() {
           onCancel={closeLinked}
           onSaved={() => {
             closeLinked();
-            listRef.current?.refresh();
+            reload();
           }}
         />
       )}
@@ -149,7 +155,7 @@ export default function EventsPage() {
           <EventsList ref={listRef} />
         </TabsContent>
         <TabsContent value="calendar">
-          <UnifiedCalendar />
+          <UnifiedCalendar key={calendarKey} />
         </TabsContent>
       </Tabs>
     </div>

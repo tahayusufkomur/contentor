@@ -87,8 +87,8 @@ function fromCampaign(c: Campaign): MessageRow {
   };
 }
 
-/** Announcements and designed emails as one list: what goes out next on top,
- *  then the most recent. */
+/** Announcements and designed emails as one list: what is scheduled first,
+ *  soonest on top, then everything else with the most recent first. */
 export function mergeMessages(
   announcements: Announcement[],
   campaigns: Campaign[],
@@ -97,5 +97,10 @@ export function mergeMessages(
   return [
     ...announcements.map((a) => fromAnnouncement(a, now)),
     ...campaigns.map(fromCampaign),
-  ].sort((x, y) => Date.parse(y.at) - Date.parse(x.at));
+  ].sort((x, y) => {
+    const ahead = (row: MessageRow) => row.status === "scheduled";
+    if (ahead(x) !== ahead(y)) return ahead(x) ? -1 : 1;
+    const order = Date.parse(x.at) - Date.parse(y.at);
+    return ahead(x) ? order : -order;
+  });
 }

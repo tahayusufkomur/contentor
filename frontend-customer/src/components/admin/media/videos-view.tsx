@@ -57,8 +57,12 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [previewItem, setPreviewItem] = useState<MediaItemPayload | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const seenSignal = useRef(refreshSignal);
   useEffect(() => {
-    if (refreshSignal) browserRef.current?.refresh();
+    // Not on mount: the list is loading anyway, and a second load would race it.
+    if (refreshSignal === seenSignal.current) return;
+    seenSignal.current = refreshSignal;
+    browserRef.current?.refresh();
   }, [refreshSignal]);
 
   const [tagFilter, setTagFilter] = useState<number[]>([]);

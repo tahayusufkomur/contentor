@@ -123,6 +123,10 @@ export default function StudentsPage() {
         emptyIcon={Users}
         emptyMessage="No students found."
         getItemId={(s) => s.id}
+        selectAcrossPages={false}
+        deleteConfirm={(count) =>
+          `Delete ${count} ${count === 1 ? "student" : "students"}? Their accounts, enrolments and payment history are removed for good. Cancel any membership they are paying for first: deleting does not stop the charges.`
+        }
         onDelete={async (selection) => {
           await batchedAsync(
             selection.ids.map(

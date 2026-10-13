@@ -47,8 +47,12 @@ const SORT_OPTIONS = [
  *  page's uploader lands a photo. */
 export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
   const browserRef = useRef<MediaBrowserHandle>(null);
+  const seenSignal = useRef(refreshSignal);
   useEffect(() => {
-    if (refreshSignal) browserRef.current?.refresh();
+    // Not on mount: the list is loading anyway, and a second load would race it.
+    if (refreshSignal === seenSignal.current) return;
+    seenSignal.current = refreshSignal;
+    browserRef.current?.refresh();
   }, [refreshSignal]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<MediaItemPayload | null>(null);

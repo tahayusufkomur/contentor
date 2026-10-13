@@ -76,6 +76,15 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class EmailCampaignListSerializer(EmailCampaignSerializer):
+    """A row of the campaign list: everything but the rendered email, which is
+    tens of kilobytes per campaign and only the detail page shows."""
+
+    class Meta(EmailCampaignSerializer.Meta):
+        fields = [name for name in EmailCampaignSerializer.Meta.fields if name != "rendered_html"]
+        read_only_fields = fields
+
+
 class CampaignRecipientSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampaignRecipient

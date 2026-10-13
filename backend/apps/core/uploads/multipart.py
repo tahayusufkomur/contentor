@@ -13,6 +13,12 @@ from apps.core.storage import build_s3_path, get_s3_client, is_blocked_content_t
 # ---------------------------------------------------------------------------
 
 
+# Every part URL is signed up front and the parts go up one after another, so
+# the last one is used long after the first: a big video on a slow line takes
+# hours, not the minutes a single-request URL (AWS_PRESIGNED_EXPIRY) allows.
+PART_URL_EXPIRY = 12 * 60 * 60
+
+
 def _validate_tenant_s3_key(value):
     if not is_tenant_scoped_key(value):
         raise serializers.ValidationError("s3_key must be within this tenant's storage.")
@@ -98,7 +104,7 @@ def initiate(request):
                 "UploadId": upload_id,
                 "PartNumber": part_number,
             },
-            ExpiresIn=settings.AWS_PRESIGNED_EXPIRY,
+            ExpiresIn=PART_URL_EXPIRY,
         )
         part_urls.append(url)
 

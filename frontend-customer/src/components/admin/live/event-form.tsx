@@ -126,12 +126,7 @@ export function EventForm({
       <CardContent>
         {/* Not a <form>: the tag and filter pickers inside take Enter for
             themselves, and a form would submit on it. */}
-        <div
-          className="space-y-4"
-          onKeyDown={(e) => {
-            if (e.key === "Escape") onCancel();
-          }}
-        >
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="event-kind">{t("where")}</Label>
             <select

@@ -38,7 +38,7 @@ describe("mergeMessages", () => {
     ]);
   });
 
-  it("puts what goes out next on top, then the most recent", () => {
+  it("puts what is scheduled on top, soonest first, then the most recent", () => {
     const rows = mergeMessages(
       [
         announcement({ id: 1, sent_at: "2026-10-12T08:00:00Z" }),
@@ -59,7 +59,7 @@ describe("mergeMessages", () => {
       ],
       NOW,
     );
-    expect(rows.map((r) => r.key)).toEqual(["a-2", "e-4", "a-1", "e-3"]);
+    expect(rows.map((r) => r.key)).toEqual(["e-4", "a-2", "a-1", "e-3"]);
   });
 
   it("reads a send-now still in flight as sending, not as scheduled", () => {

@@ -105,6 +105,12 @@ export interface MediaBrowserProps<T> {
   actions?: BulkAction[];
   /** Shorthand: provide a delete handler and a "Delete" action is added automatically. */
   onDelete?: (selection: BulkSelection) => Promise<void> | void;
+  /** What the delete confirmation asks, when "N items" does not say enough
+   *  about what goes with them. */
+  deleteConfirm?: (count: number) => string;
+  /** false: selecting never reaches past the loaded rows. For lists where
+   *  deleting everything at once is never what she means. Default true. */
+  selectAcrossPages?: boolean;
   /** When provided, persists sort, view, cell size, and search to localStorage under this key. */
   persistKey?: string;
   /** Render an expanded row (e.g. inline edit panel) below a list item. Return null to hide. */
@@ -151,6 +157,8 @@ function MediaBrowserInner<T>(
     getItemId,
     actions: externalActions,
     onDelete,
+    deleteConfirm,
+    selectAcrossPages = true,
     persistKey,
     renderExpandedRow,
     filterSlot,
@@ -181,6 +189,7 @@ function MediaBrowserInner<T>(
   const containerRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const hasLoadedOnce = useRef(false);
+  const requestRef = useRef(0);
   const isFirstRender = useRef(true);
 
   const selectable = !!getItemId;
@@ -259,6 +268,9 @@ function MediaBrowserInner<T>(
 
   const load = useCallback(
     async (reset: boolean) => {
+      // Two loads can overlap (three uploads land together, each asking for a
+      // refresh): only the latest one's answer is used.
+      const request = ++requestRef.current;
       if (reset) {
         offsetRef.current = 0;
         // First load blanks to a skeleton; every later refinement (search,
@@ -280,6 +292,7 @@ function MediaBrowserInner<T>(
           ordering,
           search,
         });
+        if (request !== requestRef.current) return;
 
         if (reset) {
           setItems(res.results);
@@ -292,14 +305,18 @@ function MediaBrowserInner<T>(
           }
         }
         setHasMore(res.next !== null);
-        offsetRef.current += res.results.length;
+        offsetRef.current =
+          (reset ? 0 : offsetRef.current) + res.results.length;
         hasLoadedOnce.current = true;
       } catch {
-        toast.error("Could not load items. Please try again.");
+        if (request === requestRef.current)
+          toast.error("Could not load items. Please try again.");
       } finally {
-        setLoading(false);
-        setRefreshing(false);
-        setLoadingMore(false);
+        if (request === requestRef.current) {
+          setLoading(false);
+          setRefreshing(false);
+          setLoadingMore(false);
+        }
       }
     },
     [fetchPage, ordering, search, clearSelection],
@@ -385,7 +402,7 @@ function MediaBrowserInner<T>(
   const effectiveTotalCount = totalCount ?? items.length;
   const hasMoreInDb = effectiveTotalCount > items.length;
   const showSelectAllFromDb =
-    allVisibleSelected && hasMoreInDb && !selectAllMode;
+    selectAcrossPages && allVisibleSelected && hasMoreInDb && !selectAllMode;
 
   const displayCount = selectAllMode ? effectiveTotalCount : selectedIds.size;
 
@@ -397,7 +414,8 @@ function MediaBrowserInner<T>(
       if (
         action.variant === "destructive" &&
         !window.confirm(
-          `${action.label} ${count} ${count === 1 ? "item" : "items"}? This cannot be undone.`,
+          (action.onAction === onDelete && deleteConfirm?.(count)) ||
+            `${action.label} ${count} ${count === 1 ? "item" : "items"}? This cannot be undone.`,
         )
       ) {
         return;
@@ -417,6 +435,8 @@ function MediaBrowserInner<T>(
           ids.push(...page.results.map(getItemId));
           if (!page.next) break;
         }
+        // Paging over rows that tie on the sort key can repeat one.
+        ids = [...new Set(ids)];
       }
       // Fade out selected items
       setFadingIds(new Set(ids));
@@ -430,9 +450,13 @@ function MediaBrowserInner<T>(
       };
       // Small delay so fade animation is visible
       await new Promise((r) => setTimeout(r, 300));
-      await action.onAction(selection);
-      clearSelection();
-      setFadingIds(new Set());
+      try {
+        await action.onAction(selection);
+        clearSelection();
+      } finally {
+        // If the action failed, the rows it did not touch must come back.
+        setFadingIds(new Set());
+      }
     },
   );
 
