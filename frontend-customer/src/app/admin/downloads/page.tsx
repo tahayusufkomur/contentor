@@ -154,6 +154,7 @@ export default function AdminDownloadsPage() {
           s3_key,
           category: "download",
           download_id: created.id,
+          file_size: file.size,
         }),
       });
 
@@ -267,9 +268,7 @@ export default function AdminDownloadsPage() {
                     setForm({
                       ...form,
                       pricing_type: e.target.value as
-                        | "free"
-                        | "paid"
-                        | "subscription",
+                        "free" | "paid" | "subscription",
                     })
                   }
                 >
@@ -352,27 +351,8 @@ export default function AdminDownloadsPage() {
         emptyMessage="No files uploaded. Upload your first file to get started."
         getItemId={(dl) => dl.id}
         onDelete={async (selection) => {
-          let ids = selection.ids;
-          if (selection.mode === "all") {
-            ids = [];
-            let offset = 0;
-            while (true) {
-              const sp = new URLSearchParams();
-              sp.set("limit", "100");
-              sp.set("offset", String(offset));
-              sp.set("ordering", selection.ordering);
-              if (selection.search) sp.set("search", selection.search);
-              const data = await clientFetch<{
-                results: { id: number }[];
-                next: string | null;
-              }>(`/api/v1/downloads/?${sp}`);
-              ids.push(...data.results.map((d) => d.id));
-              if (!data.next) break;
-              offset += 100;
-            }
-          }
           await batchedAsync(
-            ids.map(
+            selection.ids.map(
               (id) => () =>
                 clientFetch(`/api/v1/downloads/${id}/`, { method: "DELETE" }),
             ),
@@ -486,6 +466,8 @@ function DownloadRowActions({
 }) {
   const { run: handleDelete, loading: deleting } = useAsyncAction(
     async () => {
+      if (!window.confirm(`Delete "${download.title}"? This cannot be undone.`))
+        return;
       await clientFetch(`/api/v1/downloads/${download.id}/`, {
         method: "DELETE",
       });
@@ -494,14 +476,28 @@ function DownloadRowActions({
     },
     { errorToast: "Failed to delete file" },
   );
+  // `file_url` is the storage key, not an address: ask for a signed link.
+  const { run: openFile, loading: opening } = useAsyncAction(
+    async () => {
+      const { url } = await clientFetch<{ url: string }>(
+        `/api/v1/downloads/${download.id}/url/`,
+      );
+      window.open(url, "_blank", "noopener");
+    },
+    { errorToast: "Could not open the file" },
+  );
 
   return (
     <div className="flex items-center gap-1">
       {download.file_url && (
-        <Button asChild size="sm" variant="ghost">
-          <a href={download.file_url} target="_blank" rel="noopener noreferrer">
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+        <Button
+          size="sm"
+          variant="ghost"
+          loading={opening}
+          onClick={openFile}
+          aria-label="Open file"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
         </Button>
       )}
       <Button size="sm" variant="ghost" onClick={onEdit}>

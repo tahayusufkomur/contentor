@@ -16,6 +16,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.core.storage import build_s3_path
 from apps.courses.models import Course, Enrollment, Lesson, Module, Video
 
 SHARED_DOMAIN = "shared-test.localhost"
@@ -469,7 +470,7 @@ class TestVideoListCreate:
         client = make_client(owner)
         resp = client.post(
             "/api/v1/courses/videos/",
-            {"title": "New Video", "s3_key": "videos/new.mp4"},
+            {"title": "New Video", "s3_key": build_s3_path("video", "new.mp4"), "file_size": 1234},
             format="json",
         )
         assert resp.status_code == 201, resp.content

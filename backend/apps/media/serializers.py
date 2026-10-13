@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from apps.core.storage import generate_presigned_download_url
+from apps.core.uploads.serializers import check_tenant_key
 from apps.tags.serializers import TagSerializer, tag_ids_field
 
 from .models import Photo
@@ -48,3 +49,6 @@ class PhotoCreateSerializer(serializers.ModelSerializer):
             "height",
             "tag_ids",
         ]
+
+    def validate_s3_key(self, value):
+        return check_tenant_key(value, getattr(self.instance, "s3_key", None))

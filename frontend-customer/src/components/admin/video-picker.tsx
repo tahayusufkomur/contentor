@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { clientFetch } from "@/lib/api-client";
 import { Video, X } from "lucide-react";
 import { formatDuration } from "@/lib/format";
+import { extractDuration } from "@/lib/upload";
 import {
   MediaPickerBase,
   uploadToPresignedUrl,
@@ -24,22 +25,6 @@ interface VideoPickerProps {
   previewUrl: string | null;
   onChange: (videoId: number | null, signedUrl: string | null) => void;
   allowUrl?: boolean;
-}
-
-function extractDuration(file: File): Promise<number> {
-  return new Promise((resolve) => {
-    const video = document.createElement("video");
-    video.preload = "metadata";
-    video.onloadedmetadata = () => {
-      URL.revokeObjectURL(video.src);
-      resolve(Math.round(video.duration));
-    };
-    video.onerror = () => {
-      URL.revokeObjectURL(video.src);
-      resolve(0);
-    };
-    video.src = URL.createObjectURL(file);
-  });
 }
 
 export function VideoPicker({

@@ -33,11 +33,10 @@
       "store": "Store",
       "editSite": "Edit site",
       "design": "Design",
-      "photos": "Photos",
-      "videos": "Videos",
       "assistant": "Student assistant",
       "settings": "General",
-      "plan": "Your plan"
+      "plan": "Your plan",
+      "media": "Media"
     },
     "more": "+ {count} more",
     "locked": "Not in your plan yet"
@@ -578,5 +577,25 @@
     "wait": "The assistant is drafting it. This takes a few seconds.",
     "resting": "The assistant is resting right now. You can still create it by hand.",
     "failed": "That did not work. Try again, or create it by hand."
+  },
+  "media": {
+    "subtitle": "The photos and videos you use on your site, in courses and in posts.",
+    "photos": "Photos",
+    "videos": "Videos",
+    "delete": "Delete",
+    "confirmDelete": "Delete “{title}”? This cannot be undone.",
+    "upload": {
+      "prompt": "Drop photos and videos here, or <browse>choose files</browse>",
+      "hint": "Several at once is fine. A video keeps uploading in parts, so a long one survives a dropped connection.",
+      "pick": "Choose photos and videos to upload",
+      "dropAnywhere": "Drop to upload",
+      "queue": "Uploads ({count})",
+      "clear": "Clear finished",
+      "waiting": "Waiting",
+      "done": "Done",
+      "error": "Failed",
+      "failed": "{name} did not upload.",
+      "refused": "Only photos and videos go here. Skipped: {names}"
+    }
   }
 }

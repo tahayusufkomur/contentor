@@ -15,8 +15,7 @@ const PAGES: [prefix: string, key: string][] = [
   ["/admin/payouts", "money"],
   ["/admin/store", "money"],
   ["/admin/billing", "money"],
-  ["/admin/photos", "media"],
-  ["/admin/videos", "media"],
+  ["/admin/media", "media"],
 ];
 
 export function starterKey(pathname: string): string {

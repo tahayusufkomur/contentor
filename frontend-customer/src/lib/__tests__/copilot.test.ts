@@ -231,7 +231,7 @@ describe("starterKey", () => {
       "/admin/notifications",
       "/admin/students",
       "/admin/payouts",
-      "/admin/photos",
+      "/admin/media",
     ]) {
       const prompts = starters[starterKey(pathname)];
       expect(prompts.length).toBeGreaterThanOrEqual(3);

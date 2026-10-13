@@ -4,7 +4,6 @@ import {
   Calendar,
   CreditCard,
   Download,
-  Film,
   Globe,
   Image as ImageIcon,
   Inbox,
@@ -107,8 +106,7 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
           external: true,
           requiresEntitlement: "logo_studio",
         }),
-        item("photos", "/admin/photos", ImageIcon),
-        item("videos", "/admin/videos", Film),
+        item("media", "/admin/media", ImageIcon),
         item("assistant", "/admin/assistant", MessageCircleQuestion, {
           requiresEntitlement: "student_bot",
         }),

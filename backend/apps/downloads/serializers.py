@@ -3,6 +3,7 @@ from dataclasses import asdict
 from rest_framework import serializers
 
 from apps.core.access import AccessInfo, ContentAccessService, content_currency
+from apps.core.uploads.serializers import check_tenant_key
 from apps.tags.serializers import TagSerializer, tag_ids_field
 
 from .models import DownloadFile
@@ -56,6 +57,10 @@ class DownloadFileCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = DownloadFile
         fields = ["title", "file_url", "file_size", "pricing_type", "price", "tag_ids"]
+
+    def validate_file_url(self, value):
+        # `file_url` holds the storage key, not a web address.
+        return check_tenant_key(value, getattr(self.instance, "file_url", None))
 
     def validate(self, attrs):
         # Free content never keeps a price: the publish gate and the storefront

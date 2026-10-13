@@ -70,7 +70,8 @@ export interface FetchPageResult<T> {
 export interface BulkSelection {
   /** "ids" = specific items selected; "all" = every item matching current filters */
   mode: "ids" | "all";
-  /** Selected IDs (all loaded IDs when mode is "all"). */
+  /** Selected IDs. In "all" mode: every item matching the page's current
+   *  search and filters, loaded or not. */
   ids: (string | number)[];
   /** Total count of items matching current query. */
   totalCount: number;
@@ -392,7 +393,31 @@ function MediaBrowserInner<T>(
 
   const { run: handleAction, loading: actionLoading } = useAsyncAction(
     async (action: BulkAction) => {
-      const ids = Array.from(selectedIds);
+      const count = selectAllMode ? effectiveTotalCount : selectedIds.size;
+      if (
+        action.variant === "destructive" &&
+        !window.confirm(
+          `${action.label} ${count} ${count === 1 ? "item" : "items"}? This cannot be undone.`,
+        )
+      ) {
+        return;
+      }
+      let ids = Array.from(selectedIds);
+      // "Select all" covers rows not loaded yet: fetch their ids through the
+      // page's own fetchPage, which carries its filters (a tag filter too).
+      if (selectAllMode && getItemId) {
+        ids = [];
+        for (let offset = 0; ; offset += 100) {
+          const page = await fetchPage({
+            offset,
+            limit: 100,
+            ordering,
+            search,
+          });
+          ids.push(...page.results.map(getItemId));
+          if (!page.next) break;
+        }
+      }
       // Fade out selected items
       setFadingIds(new Set(ids));
 
@@ -621,33 +646,43 @@ function MediaBrowserInner<T>(
               const isSelected =
                 selectAllMode || (id !== undefined && selectedIds.has(id));
               const isFading = id !== undefined && fadingIds.has(id);
+              // The inline edit panel, on its own row under the card.
+              const expanded = renderExpandedRow?.(item);
               return (
-                <div
-                  key={id ?? i}
-                  className={cn(
-                    "relative transition-all duration-300",
-                    isFading && "scale-95 opacity-0",
-                  )}
-                >
-                  {selectable && id !== undefined && (
-                    <div className="absolute left-2 top-2 z-10">
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={() => toggleSelect(id)}
-                        className="h-5 w-5 border-2 bg-background/80 backdrop-blur-sm"
-                      />
-                    </div>
-                  )}
+                <Fragment key={id ?? i}>
                   <div
                     className={cn(
-                      isSelected && "ring-2 ring-primary rounded-lg",
+                      "relative transition-all duration-300",
+                      isFading && "scale-95 opacity-0",
                     )}
                   >
-                    {renderGalleryItem
-                      ? renderGalleryItem(item, isSelected)
-                      : null}
+                    {selectable && id !== undefined && (
+                      <div className="absolute left-2 top-2 z-10">
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => toggleSelect(id)}
+                          className="h-5 w-5 border-2 bg-background/80 backdrop-blur-sm"
+                        />
+                      </div>
+                    )}
+                    <div
+                      className={cn(
+                        isSelected && "ring-2 ring-primary rounded-lg",
+                      )}
+                    >
+                      {renderGalleryItem
+                        ? renderGalleryItem(item, isSelected)
+                        : null}
+                    </div>
                   </div>
-                </div>
+                  {expanded && (
+                    <div className="col-span-full rounded-lg border">
+                      <Table>
+                        <TableBody>{expanded}</TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </Fragment>
               );
             })}
           </div>

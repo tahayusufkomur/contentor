@@ -14,6 +14,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.core.storage import build_s3_path
 from apps.media.models import Photo
 
 SHARED_DOMAIN = "shared-test.localhost"
@@ -98,7 +99,7 @@ class TestPhotoListCreate:
         """POST by owner creates a photo and returns 201."""
         client = make_client(owner)
         payload = {
-            "s3_key": "photos/new-photo.png",
+            "s3_key": build_s3_path("photo", "new-photo.png"),
             "alt_text": "A new photo",
             "title": "New Photo",
             "content_type": "image/png",
@@ -110,7 +111,7 @@ class TestPhotoListCreate:
         assert response.status_code == 201, response.content
         data = response.json()
         assert data["title"] == "New Photo"
-        assert data["s3_key"] == "photos/new-photo.png"
+        assert data["s3_key"] == build_s3_path("photo", "new-photo.png")
 
     def test_student_list_forbidden(self, photo, student):
         """GET by student returns 403 (IsCoachOrOwner)."""

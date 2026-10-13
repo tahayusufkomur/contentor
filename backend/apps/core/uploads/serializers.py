@@ -15,6 +15,16 @@ def _validate_tenant_s3_key(value):
     return value
 
 
+def check_tenant_key(value, current=None):
+    """For a model serializer that takes a storage key from the client: the key
+    must sit under this tenant's prefix, or she could register another tenant's
+    file and be handed a signed link to it. Empty (the upload comes later) and
+    unchanged values pass."""
+    if value and value != current and not is_tenant_scoped_key(value):
+        raise serializers.ValidationError("s3_key must be within this tenant's storage.")
+    return value
+
+
 class PresignRequestSerializer(serializers.Serializer):
     filename = serializers.CharField(max_length=255)
     content_type = serializers.CharField(max_length=100)

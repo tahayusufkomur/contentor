@@ -29,7 +29,7 @@ The coach runs everything from the admin area on their own site.
 
 What: video courses built as Course → Modules → Lessons. Each lesson plays a video and/or shows text content. Courses can be free or paid (one-time price), and can additionally be included in membership subscription plans or bundles.
 
-- **Create a course**: open Courses, click to create a new course. Add a title, description, thumbnail, and price (free or paid). Then add modules and lessons; attach videos from Videos (under Site), or upload new ones.
+- **Create a course**: open Courses, click to create a new course. Add a title, description, thumbnail, and price (free or paid). Then add modules and lessons; attach videos from Media (under Site), or upload new ones.
 - **Publish a course**: a course stays a draft until you mark it published; only published courses appear on your site.
 - **Sell it two ways at once**: set a one-time price on the course AND include it in a subscription plan (Money → Store → Memberships). Students can then either buy it once or subscribe.
 - **Track student progress**: students' lesson completion is tracked automatically; see who is enrolled per student in Students.
@@ -48,7 +48,7 @@ What: sellable or free downloadable files (PDFs, worksheets, plans, guides).
 
 What: four kinds of live events, all managed from Classes & events:
 
-1. **Live Class** — interactive video call with chat, runs right in the browser (no extra software). Can auto-record; the recording lands in your Videos (under Site).
+1. **Live Class** — interactive video call with chat, runs right in the browser (no extra software). Can auto-record; the recording lands in Media (under Site).
 2. **Live Stream** — one-way broadcast to your students (you present, they watch). Start/stop it from Classes & events, on the Live Streams tab.
 3. **Zoom Class** — an event that links out to an external Zoom meeting you host on Zoom.
 4. **On-site Event** — an in-person event with a location, address, and capacity.
@@ -137,10 +137,12 @@ One place: Edit site. It opens your real site with an editor panel on the left, 
 - **AI Brand Pack**: inside the Logo Studio, paid plans can generate an AI-assisted brand pack (logo directions/branding). Free plans see an upgrade prompt; generation has a usage allowance.
 - Your choices apply to your whole site and to branded emails.
 
-## Photos / Videos / media
+## Media (photos and videos)
 
-- **Videos**: open Videos to upload and manage your video library (large files are fine). Videos are reusable — attach one to any lesson; live-class recordings appear here too.
-- **Photos**: open Photos to upload images used for course thumbnails, event covers, and branding.
+- **One page**: open Media (under Site). It has a Photos tab and a Videos tab and one upload area for both: drop files anywhere on the page, or click the upload area to choose them. A picture becomes a photo, a video becomes a video; several files at once is fine.
+- **Videos**: large files are fine — a video uploads in parts and retries by itself if the connection drops. Videos are reusable: attach one to any lesson.
+- **Photos**: used for course thumbnails, event covers, and branding.
+- **Editing and deleting**: the pencil on a photo or video edits its title and tags. To delete, tick it and choose Actions → Delete (it asks first).
 - **Storage**: media counts against your plan storage (1 GB Free / 100 GB Starter / 500 GB Pro).
 
 ## Notifications & announcements
@@ -250,8 +252,7 @@ The ONLY links you may include in answers. Always link relative paths exactly as
 | /admin/payouts | Payouts | Connecting Stripe, payout status, earnings |
 | /admin/store | Store | Products, bundles, memberships students can buy |
 | /admin/store/bundles/new | New bundle | Creating a bundle |
-| /admin/photos | Photos | Uploading images/thumbnails |
-| /admin/videos | Videos | Uploading/managing the video library, recordings |
+| /admin/media | Media | Uploading and managing photos and videos (`/admin/media?type=videos` opens the Videos tab) |
 | /admin/assistant | Student assistant | The chat helper students see on the site |
 | /?edit=1 | Edit site | Editing the six site pages in the builder |
 | /?edit=1&section=brand | Design | Theme, font, dark mode, logo, Logo Studio, AI Brand Pack |

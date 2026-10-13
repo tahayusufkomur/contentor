@@ -57,9 +57,9 @@ describe("old names", () => {
     expect(found("subscription")).toContain("plan");
     expect(found("dashboard")).toContain("home");
     expect(found("live events")).toContain("liveEvents");
-    expect(found("library")).toEqual(
-      expect.arrayContaining(["photos", "videos"]),
-    );
+    expect(found("library")).toContain("media");
+    expect(found("photos")).toContain("media");
+    expect(found("videos")).toContain("media");
     expect(found("send announcement")).toContain("notifications");
     expect(found("bundles")).toContain("store");
   });

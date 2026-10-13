@@ -84,8 +84,10 @@ def download_url(request, pk):
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    # Increment download count atomically
-    DownloadFile.objects.filter(pk=pk).update(download_count=F("download_count") + 1)
+    # Increment download count atomically. The coach opening her own file to
+    # check it is not a download.
+    if not is_coach_or_owner(request.user):
+        DownloadFile.objects.filter(pk=pk).update(download_count=F("download_count") + 1)
 
     signed_url = generate_presigned_download_url(download_file.file_url)
     return Response({"url": signed_url})

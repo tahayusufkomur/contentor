@@ -16,6 +16,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.core.storage import build_s3_path
 from apps.downloads.models import DownloadFile
 from apps.tags.models import Tag
 
@@ -112,7 +113,7 @@ class TestDownloadListCreate:
         client = make_client(owner)
         payload = {
             "title": "New Download",
-            "file_url": "downloads/new-file.pdf",
+            "file_url": build_s3_path("download", "new-file.pdf"),
             "file_size": 512,
             "pricing_type": "free",
             "price": "0.00",
@@ -231,14 +232,17 @@ class TestDownloadUrl:
 
     @patch("apps.downloads.views.generate_presigned_download_url", return_value="https://fake-s3.example.com/signed")
     @patch("apps.downloads.views.ContentAccessService")
-    def test_free_file_increments_download_count(self, mock_access_cls, mock_presign, free_download, owner):
-        """Download count is incremented after a successful download URL request."""
+    def test_free_file_increments_download_count(self, mock_access_cls, mock_presign, free_download, owner, student):
+        """A student's download is counted; the coach opening her own file is not."""
         mock_service = mock_access_cls.return_value
         mock_service.check_access.return_value = True
 
         assert free_download.download_count == 0
-        client = make_client(owner)
-        client.get(f"/api/v1/downloads/{free_download.pk}/url/")
+        make_client(student).get(f"/api/v1/downloads/{free_download.pk}/url/")
+        free_download.refresh_from_db()
+        assert free_download.download_count == 1
+
+        assert make_client(owner).get(f"/api/v1/downloads/{free_download.pk}/url/").status_code == 200
         free_download.refresh_from_db()
         assert free_download.download_count == 1
 

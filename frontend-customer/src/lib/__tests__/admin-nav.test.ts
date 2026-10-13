@@ -52,8 +52,7 @@ describe("buildAdminNav", () => {
     expect(hrefs("site")).toEqual([
       "/?edit=1",
       "/?edit=1&section=brand",
-      "/admin/photos",
-      "/admin/videos",
+      "/admin/media",
       "/admin/assistant",
     ]);
     expect(hrefs("settings")).toEqual(["/admin/settings", "/admin/billing"]);
@@ -98,7 +97,7 @@ describe("sectionHref", () => {
   it("leads to the section's first page inside the admin", () => {
     expect(sectionHref(section("teach"))).toBe("/admin/courses");
     // Site starts with two links that open the editor in a new tab.
-    expect(sectionHref(section("site"))).toBe("/admin/photos");
+    expect(sectionHref(section("site"))).toBe("/admin/media");
   });
 });
 

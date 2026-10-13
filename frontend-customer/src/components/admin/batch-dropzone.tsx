@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
-import { UploadCloud, File, CheckCircle2, AlertCircle, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+import { AlertCircle, CheckCircle2, File, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
-import { clientFetch } from "@/lib/api-client";
+import { Button } from "@/components/ui/button";
+import { formatFileSize } from "@/lib/format";
+import { mediaKind, uploadMedia, type MediaKind } from "@/lib/upload";
 
-export interface UploadingFile {
+interface QueuedFile {
   id: string;
   file: File;
   progress: number;
@@ -14,338 +16,262 @@ export interface UploadingFile {
   error?: string;
 }
 
-interface PresignResponse {
-  upload_url: string;
-  s3_key: string;
-}
+/** How many files travel at once; the rest wait their turn. */
+const AT_ONCE = 3;
 
-/** A video file's length in whole seconds, read from its metadata in the
- * browser; 0 when the browser cannot read it. */
-export function extractDuration(file: File): Promise<number> {
-  return new Promise((resolve) => {
-    const video = document.createElement("video");
-    video.preload = "metadata";
-    video.onloadedmetadata = () => {
-      URL.revokeObjectURL(video.src);
-      resolve(Math.round(video.duration));
-    };
-    video.onerror = () => {
-      URL.revokeObjectURL(video.src);
-      resolve(0);
-    };
-    video.src = URL.createObjectURL(file);
-  });
-}
-
-interface BatchDropzoneProps {
-  category: "photo" | "video";
-  accept?: string;
-  onUploadComplete?: () => void;
-}
-
+/** The media library's one way in: drop photos and videos anywhere on the
+ *  page, or pick them. Each file becomes a photo or a video by its type. */
 export function BatchDropzone({
-  category,
-  accept = category === "photo" ? "image/*" : "video/*",
-  onUploadComplete,
-}: BatchDropzoneProps) {
+  onUploaded,
+}: {
+  /** Called after each file lands, with what it became. */
+  onUploaded?: (kind: MediaKind) => void;
+}) {
+  const t = useTranslations("admin.media.upload");
   const [isDragging, setIsDragging] = useState(false);
   const [windowDragging, setWindowDragging] = useState(false);
-  const [files, setFiles] = useState<UploadingFile[]>([]);
+  const [files, setFiles] = useState<QueuedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const waiting = useRef<QueuedFile[]>([]);
+  const running = useRef(0);
+  const onUploadedRef = useRef(onUploaded);
+  onUploadedRef.current = onUploaded;
 
-  const uploadSingleFile = useCallback(
-    async (uploadingFile: UploadingFile) => {
-      const file = uploadingFile.file;
+  const patch = useCallback((id: string, change: Partial<QueuedFile>) => {
+    setFiles((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, ...change } : f)),
+    );
+  }, []);
 
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === uploadingFile.id
-            ? { ...f, status: "uploading", progress: 5 }
-            : f,
-        ),
-      );
-
-      try {
-        const { upload_url, s3_key } = await clientFetch<PresignResponse>(
-          "/api/v1/upload/presign/",
-          {
-            method: "POST",
-            body: JSON.stringify({
-              filename: file.name,
-              content_type: file.type,
-              category,
-            }),
-          },
-        );
-
-        await new Promise<void>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open("PUT", upload_url);
-          xhr.setRequestHeader("Content-Type", file.type);
-
-          xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-              const pct = Math.round((event.loaded / event.total) * 100);
-              setFiles((prev) =>
-                prev.map((f) =>
-                  f.id === uploadingFile.id ? { ...f, progress: pct } : f,
-                ),
-              );
-            }
-          };
-
-          xhr.onload = () =>
-            xhr.status >= 200 && xhr.status < 300
-              ? resolve()
-              : reject(new Error(`HTTP ${xhr.status}`));
-          xhr.onerror = () => reject(new Error("Network upload error"));
-          xhr.send(file);
+  const pump = useCallback(() => {
+    while (running.current < AT_ONCE && waiting.current.length) {
+      const item = waiting.current.shift()!;
+      running.current++;
+      patch(item.id, { status: "uploading", progress: 1 });
+      uploadMedia(item.file, (progress) => patch(item.id, { progress }))
+        .then(() => {
+          patch(item.id, { status: "completed", progress: 100 });
+          onUploadedRef.current?.(mediaKind(item.file)!);
+        })
+        .catch((err: unknown) => {
+          const error = err instanceof Error ? err.message : String(err);
+          patch(item.id, { status: "error", error });
+          toast.error(t("failed", { name: item.file.name }));
+        })
+        .finally(() => {
+          running.current--;
+          pump();
         });
-
-        // Complete upload registration in Django DB
-        const endpoint =
-          category === "photo" ? "/api/v1/photos/" : "/api/v1/courses/videos/";
-        const bodyData =
-          category === "photo"
-            ? { s3_key, title: file.name.replace(/\.[^.]+$/, "") }
-            : {
-                s3_key,
-                title: file.name.replace(/\.[^.]+$/, ""),
-                duration_seconds: await extractDuration(file),
-              };
-
-        await clientFetch(endpoint, {
-          method: "POST",
-          body: JSON.stringify(bodyData),
-        });
-
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === uploadingFile.id
-              ? { ...f, status: "completed", progress: 100 }
-              : f,
-          ),
-        );
-
-        toast.success(`Uploaded ${file.name}`);
-        if (onUploadComplete) onUploadComplete();
-      } catch (err: any) {
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === uploadingFile.id
-              ? { ...f, status: "error", error: err?.message || "Failed" }
-              : f,
-          ),
-        );
-        toast.error(`Failed to upload ${file.name}`);
-      }
-    },
-    [category, onUploadComplete],
-  );
-
-  const handleFilesAdded = useCallback(
-    (newFiles: FileList | File[]) => {
-      const addedList: UploadingFile[] = Array.from(newFiles).map((file) => ({
-        id: Math.random().toString(36).substring(2, 9),
-        file,
-        progress: 0,
-        status: "queued",
-      }));
-
-      setFiles((prev) => [...prev, ...addedList]);
-      addedList.forEach((item) => uploadSingleFile(item));
-    },
-    [uploadSingleFile],
-  );
-
-  useEffect(() => {
-    let dragCounter = 0;
-
-    const handleWindowDragEnter = (e: DragEvent) => {
-      e.preventDefault();
-      dragCounter++;
-      if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
-        setWindowDragging(true);
-      }
-    };
-
-    const handleWindowDragLeave = (e: DragEvent) => {
-      e.preventDefault();
-      dragCounter--;
-      if (dragCounter <= 0) {
-        dragCounter = 0;
-        setWindowDragging(false);
-      }
-    };
-
-    const handleWindowDragOver = (e: DragEvent) => {
-      e.preventDefault();
-    };
-
-    const handleWindowDrop = (e: DragEvent) => {
-      e.preventDefault();
-      dragCounter = 0;
-      setWindowDragging(false);
-      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-        handleFilesAdded(e.dataTransfer.files);
-      }
-    };
-
-    window.addEventListener("dragenter", handleWindowDragEnter);
-    window.addEventListener("dragleave", handleWindowDragLeave);
-    window.addEventListener("dragover", handleWindowDragOver);
-    window.addEventListener("drop", handleWindowDrop);
-
-    return () => {
-      window.removeEventListener("dragenter", handleWindowDragEnter);
-      window.removeEventListener("dragleave", handleWindowDragLeave);
-      window.removeEventListener("dragover", handleWindowDragOver);
-      window.removeEventListener("drop", handleWindowDrop);
-    };
-  }, [handleFilesAdded]);
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFilesAdded(e.dataTransfer.files);
     }
-  };
+  }, [patch, t]);
+
+  const addFiles = useCallback(
+    (picked: FileList | File[]) => {
+      const list = Array.from(picked);
+      const refused = list.filter((file) => !mediaKind(file));
+      if (refused.length) {
+        toast.error(
+          t("refused", { names: refused.map((f) => f.name).join(", ") }),
+        );
+      }
+      const added: QueuedFile[] = list
+        .filter((file) => mediaKind(file))
+        .map((file) => ({
+          id: crypto.randomUUID(),
+          file,
+          progress: 0,
+          status: "queued",
+        }));
+      if (!added.length) return;
+      setFiles((prev) => [...prev, ...added]);
+      waiting.current.push(...added);
+      pump();
+    },
+    [pump, t],
+  );
+
+  // Dropping anywhere on the page uploads.
+  useEffect(() => {
+    let depth = 0;
+    const hasFiles = (e: DragEvent) =>
+      !!e.dataTransfer?.types?.includes("Files");
+    const onEnter = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      depth++;
+      setWindowDragging(true);
+    };
+    const onLeave = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      depth = Math.max(0, depth - 1);
+      if (depth === 0) setWindowDragging(false);
+    };
+    const onOver = (e: DragEvent) => {
+      if (hasFiles(e)) e.preventDefault();
+    };
+    const onDrop = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      depth = 0;
+      setWindowDragging(false);
+      if (e.dataTransfer?.files.length) addFiles(e.dataTransfer.files);
+    };
+    window.addEventListener("dragenter", onEnter);
+    window.addEventListener("dragleave", onLeave);
+    window.addEventListener("dragover", onOver);
+    window.addEventListener("drop", onDrop);
+    return () => {
+      window.removeEventListener("dragenter", onEnter);
+      window.removeEventListener("dragleave", onLeave);
+      window.removeEventListener("dragover", onOver);
+      window.removeEventListener("drop", onDrop);
+    };
+  }, [addFiles]);
+
+  const finished = files.some(
+    (f) => f.status === "completed" || f.status === "error",
+  );
 
   return (
     <div className="space-y-4">
-      {/* Full Window Drop Overlay */}
       {windowDragging && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/20 backdrop-blur-md border-4 border-dashed border-primary animate-in fade-in duration-200 pointer-events-none">
-          <div className="bg-card p-8 rounded-2xl shadow-2xl text-center flex flex-col items-center gap-3 border border-primary/30">
-            <UploadCloud className="h-16 w-16 text-primary animate-bounce" />
-            <h2 className="text-xl font-bold">
-              Drop your {category === "photo" ? "photos" : "videos"} anywhere to
-              upload!
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Release files to start batch upload automatically
-            </p>
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center border-4 border-dashed border-primary bg-primary/20 backdrop-blur-md">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-primary/30 bg-card p-8 text-center shadow-2xl">
+            <UploadCloud className="h-16 w-16 text-primary motion-safe:animate-bounce" />
+            <h2 className="text-xl font-bold">{t("dropAnywhere")}</h2>
           </div>
         </div>
       )}
-      {/* Dropzone Container */}
+
       <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        role="button"
+        tabIndex={0}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        // The window listener above takes the drop itself.
+        onDrop={() => setIsDragging(false)}
         onClick={() => fileInputRef.current?.click()}
-        className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
+        className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
           isDragging
-            ? "border-primary bg-primary/10 scale-[1.01]"
-            : "border-border hover:border-primary/50 bg-card hover:bg-muted/40"
+            ? "border-primary bg-primary/10"
+            : "border-border bg-card hover:border-primary/50 hover:bg-muted/40"
         }`}
       >
         <input
           ref={fileInputRef}
           type="file"
-          accept={accept}
+          accept="image/*,video/*"
           multiple
           className="hidden"
-          onChange={(e) => e.target.files && handleFilesAdded(e.target.files)}
+          aria-label={t("pick")}
+          onChange={(e) => {
+            if (e.target.files) addFiles(e.target.files);
+            // So picking the same file again fires a change.
+            e.target.value = "";
+          }}
         />
-
         <div className="flex flex-col items-center justify-center gap-3">
-          <div className="p-3 rounded-full bg-primary/10 text-primary">
+          <div className="rounded-full bg-primary/10 p-3 text-primary">
             <UploadCloud className="h-8 w-8" />
           </div>
           <div>
             <p className="text-sm font-semibold">
-              Drag & Drop multi-file{" "}
-              {category === "photo" ? "photos" : "videos"} here, or{" "}
-              <span className="text-primary underline">browse</span>
+              {t.rich("prompt", {
+                browse: (chunks) => (
+                  <span className="text-primary underline">{chunks}</span>
+                ),
+              })}
             </p>
-
-            <p className="text-xs text-muted-foreground mt-1">
-              Supports batch uploading •{" "}
-              {category === "photo" ? "PNG, JPG, WebP, GIF" : "MP4, MOV, WebM"}
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("hint")}</p>
           </div>
         </div>
       </div>
 
-      {/* Upload Queue Progress List */}
       {files.length > 0 && (
-        <div className="rounded-xl border bg-card p-4 space-y-3">
-          <div className="flex items-center justify-between text-xs font-semibold border-b pb-2">
-            <span>Upload Queue ({files.length})</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 text-[10px]"
-              onClick={() => setFiles([])}
-            >
-              Clear Finished
-            </Button>
+        <div className="space-y-3 rounded-xl border bg-card p-4">
+          <div className="flex items-center justify-between border-b pb-2 text-xs font-semibold">
+            <span>{t("queue", { count: files.length })}</span>
+            {finished && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-[10px]"
+                onClick={() =>
+                  setFiles((prev) =>
+                    prev.filter(
+                      (f) => f.status === "queued" || f.status === "uploading",
+                    ),
+                  )
+                }
+              >
+                {t("clear")}
+              </Button>
+            )}
           </div>
 
-          <div className="space-y-2.5 max-h-48 overflow-y-auto">
+          <ul className="max-h-48 space-y-2.5 overflow-y-auto">
             {files.map((item) => (
-              <div
+              <li
                 key={item.id}
-                className="text-xs space-y-1.5 p-2 rounded-lg border bg-muted/30"
+                className="space-y-1.5 rounded-lg border bg-muted/30 p-2 text-xs"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 truncate">
-                    <File className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                    <span className="font-medium truncate">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <File className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <span className="truncate font-medium">
                       {item.file.name}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      ({(item.file.size / (1024 * 1024)).toFixed(1)} MB)
+                    <span className="shrink-0 text-[10px] text-muted-foreground">
+                      {formatFileSize(item.file.size)}
                     </span>
                   </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex shrink-0 items-center gap-2">
+                    {item.status === "queued" && (
+                      <span className="text-[10px] text-muted-foreground">
+                        {t("waiting")}
+                      </span>
+                    )}
                     {item.status === "uploading" && (
                       <span className="font-mono text-[10px] text-primary">
                         {item.progress}%
                       </span>
                     )}
                     {item.status === "completed" && (
-                      <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 text-[10px] font-semibold">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Done
+                      <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> {t("done")}
                       </span>
                     )}
                     {item.status === "error" && (
-                      <span className="flex items-center gap-1 text-destructive text-[10px]">
-                        <AlertCircle className="h-3.5 w-3.5" /> Error
+                      <span className="flex items-center gap-1 text-[10px] text-destructive">
+                        <AlertCircle className="h-3.5 w-3.5" /> {t("error")}
                       </span>
                     )}
                   </div>
                 </div>
-
-                {/* Progress bar */}
                 {item.status === "uploading" && (
-                  <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                     <div
                       className="h-full bg-primary transition-all duration-200"
                       style={{ width: `${item.progress}%` }}
                     />
                   </div>
                 )}
-              </div>
+                {item.status === "error" && item.error && (
+                  <p className="text-[11px] text-destructive">{item.error}</p>
+                )}
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       )}
     </div>

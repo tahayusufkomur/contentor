@@ -7,6 +7,7 @@ from rest_framework import serializers
 from apps.core.access import AccessInfo, ContentAccessService, content_currency
 from apps.core.sanitize import clean_rich_html
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
+from apps.core.uploads.serializers import check_tenant_key
 from apps.filters.models import FilterOption
 from apps.filters.serializers import FilterOptionSerializer
 from apps.tags.serializers import TagSerializer, tag_ids_field
@@ -394,7 +395,10 @@ class VideoCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Video
-        fields = ["title", "description", "s3_key", "duration_seconds", "thumbnail_url", "tag_ids"]
+        fields = ["title", "description", "s3_key", "duration_seconds", "file_size", "thumbnail_url", "tag_ids"]
+
+    def validate_s3_key(self, value):
+        return check_tenant_key(value, getattr(self.instance, "s3_key", None))
 
 
 class ProgressSerializer(serializers.ModelSerializer):
