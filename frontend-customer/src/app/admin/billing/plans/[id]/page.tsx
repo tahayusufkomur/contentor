@@ -112,7 +112,7 @@ export default function PlanAccessPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button asChild variant="ghost" size="icon">
-          <Link href="/admin/billing">
+          <Link href="/admin/billing?tab=plans">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -182,7 +182,7 @@ export default function PlanAccessPage() {
           Save Access
         </Button>
         <Button variant="outline" asChild>
-          <Link href="/admin/billing">Cancel</Link>
+          <Link href="/admin/billing?tab=plans">Cancel</Link>
         </Button>
       </div>
     </div>

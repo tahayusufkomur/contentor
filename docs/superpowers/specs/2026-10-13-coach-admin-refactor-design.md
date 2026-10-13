@@ -1,6 +1,6 @@
 # Coach admin refactor — design
 
-Date: 2026-10-13 · Status: direction agreed in chat, spec awaiting owner review
+Date: 2026-10-13 · Status: approved by the owner 2026-10-13 · Phase 0 done 2026-10-13
 
 ## 1. Goal
 

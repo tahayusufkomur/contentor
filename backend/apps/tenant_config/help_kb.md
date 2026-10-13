@@ -238,7 +238,7 @@ The ONLY links you may include in answers. Always link relative paths exactly as
 | /admin/inbox | Inbox | Reading/answering student email, new message |
 | /admin/notifications | Announcements | Sending announcements, templates, recurring |
 | /admin/students | Students | Student list, finding a student, refunds (via student detail) |
-| /admin/billing | Billing | Coach's own plan/upgrade, payments list, subscription plans, bundles |
+| /admin/billing | Billing | Coach's own plan/upgrade, products, bundles, subscription plans |
 | /admin/billing/bundles/new | New bundle | Creating a bundle |
 | /admin/payouts | Payouts | Connecting Stripe, payout status, earnings |
 | /?edit=1 | Edit site | Editing the six site pages in the builder |

@@ -46,6 +46,7 @@ export default function ComposePage() {
     (initialTemplateId ? "design" : "choose");
   const initialSubject = searchParams.get("subject") || "";
   const initialTemplateName = searchParams.get("templateName") || "";
+  const initialRecipientId = Number(searchParams.get("recipient")) || 0;
 
   // Step 1 state
   const [step, setStepRaw] = useState<Step>(initialStep);
@@ -69,9 +70,11 @@ export default function ComposePage() {
 
   // Step 3 state
   const [subject, setSubjectRaw] = useState(initialSubject);
-  const [recipientFilter, setRecipientFilter] = useState<RecipientFilter>({
-    type: "all",
-  });
+  const [recipientFilter, setRecipientFilter] = useState<RecipientFilter>(
+    initialRecipientId
+      ? { type: "individual", user_ids: [initialRecipientId] }
+      : { type: "all" },
+  );
   const [recipientCount, setRecipientCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scheduleMode, setScheduleMode] = useState<"now" | "later">("now");

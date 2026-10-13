@@ -38,7 +38,10 @@ import {
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
 import { DemoBadge } from "@/components/setup/demo-badge";
 import { useChunkedUpload } from "@/hooks/use-chunked-upload";
-import { BatchDropzone } from "@/components/admin/batch-dropzone";
+import {
+  BatchDropzone,
+  extractDuration,
+} from "@/components/admin/batch-dropzone";
 import {
   LightboxModal,
   type MediaItemPayload,
@@ -75,22 +78,6 @@ const ACCEPT = "video/mp4,video/quicktime,video/webm";
 
 function stripExtension(name: string) {
   return name.replace(/\.[^.]+$/, "").replace(/[_-]/g, " ");
-}
-
-function extractDuration(file: File): Promise<number> {
-  return new Promise((resolve) => {
-    const video = document.createElement("video");
-    video.preload = "metadata";
-    video.onloadedmetadata = () => {
-      URL.revokeObjectURL(video.src);
-      resolve(Math.round(video.duration));
-    };
-    video.onerror = () => {
-      URL.revokeObjectURL(video.src);
-      resolve(0);
-    };
-    video.src = URL.createObjectURL(file);
-  });
 }
 
 export default function VideosPage() {
@@ -250,7 +237,7 @@ export default function VideosPage() {
           className="gap-2 shadow-sm"
         >
           <Plus className="h-4 w-4" />{" "}
-          {showUpload ? "Hide Uploader" : "Batch Upload"}
+          {showUpload ? "Hide Uploader" : "Upload One Video"}
         </Button>
       </div>
 

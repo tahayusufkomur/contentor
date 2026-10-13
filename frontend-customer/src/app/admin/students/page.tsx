@@ -8,9 +8,6 @@ import {
   Receipt,
   Smartphone,
   Globe,
-  UserCheck,
-  ShieldAlert,
-  Sparkles,
   ChevronRight,
 } from "lucide-react";
 import { TableCell } from "@/components/ui/table";
@@ -73,9 +70,6 @@ export default function StudentsPage() {
   const [selectedStudent, setSelectedStudent] = useState<StudentDetail | null>(
     null,
   );
-  const [activeFilterTab, setActiveFilterTab] = useState<
-    "all" | "active" | "at_risk" | "new"
-  >("all");
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<Student>> => {
@@ -115,61 +109,6 @@ export default function StudentsPage() {
             retention.
           </p>
         </div>
-      </div>
-
-      {/* CRM Quick Filter Tabs */}
-      <div className="flex items-center gap-2 border-b pb-3 overflow-x-auto">
-        <button
-          type="button"
-          onClick={() => setActiveFilterTab("all")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
-            activeFilterTab === "all"
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "bg-muted/50 text-muted-foreground hover:bg-muted"
-          }`}
-        >
-          <Users className="h-3.5 w-3.5" />
-          All Students
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveFilterTab("active")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
-            activeFilterTab === "active"
-              ? "bg-emerald-700 text-white shadow-sm"
-              : "bg-muted/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
-          }`}
-        >
-          <UserCheck className="h-3.5 w-3.5" />
-          Active Subscribers
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveFilterTab("at_risk")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
-            activeFilterTab === "at_risk"
-              ? "bg-amber-700 text-white shadow-sm"
-              : "bg-muted/50 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40"
-          }`}
-        >
-          <ShieldAlert className="h-3.5 w-3.5" />
-          At-Risk / Inactive
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveFilterTab("new")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shrink-0 ${
-            activeFilterTab === "new"
-              ? "bg-purple-600 text-white shadow-sm"
-              : "bg-muted/50 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40"
-          }`}
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          New This Week
-        </button>
       </div>
 
       <MediaBrowser<Student>

@@ -154,7 +154,11 @@ export function CourseForm({
             })),
           }),
         });
-        toast.success("Course saved as a draft — add lessons, then publish");
+        toast.success(
+          createForm.is_published
+            ? "Course published"
+            : "Course saved as a draft — add lessons, then publish",
+        );
         void refreshSetupStatus();
         navigate(`/admin/courses/${created.slug}`);
         return;

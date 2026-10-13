@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CreditCard, Package, Plus, Settings } from "lucide-react";
+import { Package, Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,13 +16,7 @@ import { ChangePlanCard } from "./subscription/ChangePlanCard";
 import { SubscriptionTile } from "./subscription/SubscriptionTile";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 
-const BILLING_TABS = [
-  "subscription",
-  "products",
-  "bundles",
-  "plans",
-  "payments",
-];
+const BILLING_TABS = ["subscription", "products", "bundles", "plans"];
 
 interface Product {
   id: number;
@@ -414,7 +408,7 @@ export default function BillingPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Billing</h1>
         <p className="text-sm text-muted-foreground">
-          Manage products, bundles, subscription plans, and payments.
+          Manage your plan, products, bundles and subscription plans.
         </p>
       </div>
 
@@ -436,7 +430,6 @@ export default function BillingPage() {
             Subscription Plans
             <PaidFeatureBadge feature="selling" className="ml-1.5" />
           </TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
         </TabsList>
 
         <TabsContent value="subscription">
@@ -459,14 +452,6 @@ export default function BillingPage() {
 
         <TabsContent value="plans">
           <PlansTab />
-        </TabsContent>
-
-        <TabsContent value="payments">
-          <EmptyState
-            icon={CreditCard}
-            title="No payments yet"
-            description="Transaction history will appear here once payments are processed."
-          />
         </TabsContent>
       </Tabs>
     </div>

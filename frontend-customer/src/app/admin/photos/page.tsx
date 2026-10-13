@@ -4,7 +4,6 @@ import { useCallback, useRef, useState } from "react";
 import {
   Image as ImageIcon,
   Pencil,
-  Plus,
   Trash2,
   Copy,
   Code,
@@ -50,7 +49,6 @@ export default function PhotosPage() {
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<MediaItemPayload | null>(null);
-  const [showDropzone, setShowDropzone] = useState(false);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
 
   const fetchPage = useCallback(
@@ -117,13 +115,6 @@ export default function PhotosPage() {
             platform.
           </p>
         </div>
-        <Button
-          onClick={() => setShowDropzone((prev) => !prev)}
-          className="gap-2 shadow-sm"
-        >
-          <Plus className="h-4 w-4" />{" "}
-          {showDropzone ? "Hide Uploader" : "Batch Upload"}
-        </Button>
       </div>
 
       <BatchDropzone

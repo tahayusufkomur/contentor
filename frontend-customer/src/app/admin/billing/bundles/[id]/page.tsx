@@ -176,7 +176,7 @@ export default function EditBundlePage() {
         }),
       });
       toast.success("Bundle updated successfully.");
-      navigate("/admin/billing");
+      navigate("/admin/billing?tab=bundles");
     },
     { errorToast: "Failed to update bundle. Please try again." },
   );
@@ -194,7 +194,7 @@ export default function EditBundlePage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button asChild variant="ghost" size="icon">
-          <Link href="/admin/billing">
+          <Link href="/admin/billing?tab=bundles">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -329,7 +329,7 @@ export default function EditBundlePage() {
             Save Changes
           </Button>
           <Button type="button" variant="outline" asChild>
-            <Link href="/admin/billing">Cancel</Link>
+            <Link href="/admin/billing?tab=bundles">Cancel</Link>
           </Button>
         </div>
       </form>

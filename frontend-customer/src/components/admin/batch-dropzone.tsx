@@ -19,6 +19,24 @@ interface PresignResponse {
   s3_key: string;
 }
 
+/** A video file's length in whole seconds, read from its metadata in the
+ * browser; 0 when the browser cannot read it. */
+export function extractDuration(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(video.src);
+      resolve(Math.round(video.duration));
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(video.src);
+      resolve(0);
+    };
+    video.src = URL.createObjectURL(file);
+  });
+}
+
 interface BatchDropzoneProps {
   category: "photo" | "video";
   accept?: string;
@@ -86,14 +104,14 @@ export function BatchDropzone({
 
         // Complete upload registration in Django DB
         const endpoint =
-          category === "photo" ? "/api/v1/photos/" : "/api/v1/videos/";
+          category === "photo" ? "/api/v1/photos/" : "/api/v1/courses/videos/";
         const bodyData =
           category === "photo"
             ? { s3_key, title: file.name.replace(/\.[^.]+$/, "") }
             : {
                 s3_key,
                 title: file.name.replace(/\.[^.]+$/, ""),
-                duration_seconds: 60,
+                duration_seconds: await extractDuration(file),
               };
 
         await clientFetch(endpoint, {

@@ -7,7 +7,6 @@ import {
   Mail,
   BookOpen,
   CheckCircle2,
-  Clock,
   CreditCard,
   Key,
   ShieldCheck,
@@ -82,9 +81,9 @@ export function StudentDrawer({
   onClose,
   onRefresh,
 }: StudentDrawerProps) {
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "actions" | "activity"
-  >("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "actions">(
+    "overview",
+  );
   const [grantingAccess, setGrantingAccess] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [availableCourses, setAvailableCourses] = useState<
@@ -136,29 +135,7 @@ export function StudentDrawer({
 
   if (!student) return null;
 
-  // Mock enrollment progress data if backend returns minimal fields
-  const coursesProgress = student.courses || [
-    {
-      id: 101,
-      title: "Pilates Fundamentals & Core Strength",
-      progress_percent: 75,
-      completed_lessons: 6,
-      total_lessons: 8,
-    },
-    {
-      id: 102,
-      title: "Breathwork 101: Morning Routine",
-      progress_percent: 100,
-      completed_lessons: 5,
-      total_lessons: 5,
-    },
-  ];
-
-  const subscriptionInfo = student.subscription || {
-    plan_name: "Pro Coach Pass",
-    status: "active",
-    amount: "$49/mo",
-  };
+  const coursesProgress = student.courses ?? [];
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -176,17 +153,9 @@ export function StudentDrawer({
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold truncate leading-tight">
-                  {student.name || "Unnamed Student"}
-                </h2>
-                <Badge
-                  variant="success"
-                  className="text-[10px] uppercase font-mono shrink-0"
-                >
-                  Active
-                </Badge>
-              </div>
+              <h2 className="text-lg font-bold truncate leading-tight">
+                {student.name || "Unnamed Student"}
+              </h2>
               <p className="text-xs text-muted-foreground truncate flex items-center gap-1 mt-0.5">
                 <Mail className="h-3 w-3" />
                 {student.email}
@@ -214,15 +183,12 @@ export function StudentDrawer({
             onValueChange={(v) => setActiveTab(v as any)}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="overview" className="text-xs">
                 Overview
               </TabsTrigger>
               <TabsTrigger value="actions" className="text-xs">
                 Quick Actions
-              </TabsTrigger>
-              <TabsTrigger value="activity" className="text-xs">
-                Activity
               </TabsTrigger>
             </TabsList>
 
@@ -232,23 +198,31 @@ export function StudentDrawer({
               <div className="rounded-xl border bg-card p-4 space-y-2">
                 <div className="flex items-center justify-between text-xs font-semibold">
                   <span className="text-muted-foreground uppercase tracking-wider text-[10px]">
-                    Subscription Tier
+                    Membership
                   </span>
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] uppercase font-mono"
-                  >
-                    {subscriptionInfo.status}
-                  </Badge>
+                  {student.subscription && (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] uppercase font-mono"
+                    >
+                      {student.subscription.status}
+                    </Badge>
+                  )}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-base">
-                    {subscriptionInfo.plan_name}
-                  </span>
-                  <span className="text-sm font-semibold text-primary">
-                    {subscriptionInfo.amount}
-                  </span>
-                </div>
+                {student.subscription ? (
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-base">
+                      {student.subscription.plan_name}
+                    </span>
+                    <span className="text-sm font-semibold text-primary">
+                      {student.subscription.amount}
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No active membership.
+                  </p>
+                )}
               </div>
 
               {/* Course Progress Section */}
@@ -261,6 +235,11 @@ export function StudentDrawer({
                 </div>
 
                 <div className="space-y-3">
+                  {coursesProgress.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      Not enrolled in any course yet.
+                    </p>
+                  )}
                   {coursesProgress.map((course) => (
                     <div
                       key={course.id}
@@ -350,9 +329,7 @@ export function StudentDrawer({
                     variant="outline"
                     className="w-full gap-2"
                   >
-                    <Link
-                      href={`/admin/email/compose?recipient=${encodeURIComponent(student.email)}`}
-                    >
+                    <Link href={`/admin/email/compose?recipient=${student.id}`}>
                       <Mail className="h-3.5 w-3.5" />
                       Compose Email Message
                     </Link>
@@ -385,58 +362,6 @@ export function StudentDrawer({
                       View Transactions
                     </Link>
                   </Button>
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* TAB 3: ACTIVITY TIMELINE */}
-            <TabsContent value="activity" className="space-y-4 pt-4">
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 text-xs">
-                  <div className="p-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 shrink-0 mt-0.5">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                  </div>
-                  <div>
-                    <p className="font-medium">
-                      Completed Lesson “Core Stability 2”
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      2 hours ago
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 text-xs">
-                  <div className="p-1.5 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-600 shrink-0 mt-0.5">
-                    <Clock className="h-3.5 w-3.5" />
-                  </div>
-                  <div>
-                    <p className="font-medium">
-                      Logged in via{" "}
-                      {student.last_display_mode === "pwa"
-                        ? "PWA App"
-                        : "Web Browser"}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {student.last_login
-                        ? formatDate(student.last_login)
-                        : "Recently"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 text-xs">
-                  <div className="p-1.5 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-600 shrink-0 mt-0.5">
-                    <CreditCard className="h-3.5 w-3.5" />
-                  </div>
-                  <div>
-                    <p className="font-medium">
-                      Enrolled in “Pilates Fundamentals”
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {formatDate(student.date_joined)}
-                    </p>
-                  </div>
                 </div>
               </div>
             </TabsContent>
