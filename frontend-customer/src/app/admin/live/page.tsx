@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -20,6 +21,7 @@ const VALID_TABS = new Set<LiveEventKind>([
 ]);
 
 export default function LiveEventsPage() {
+  const t = useTranslations("admin");
   const liveLocked = useIsLocked("live");
   // A copilot deep link (or a shared URL) can open a specific tab via
   // ?tab=; each tab component separately reads ?event= to open one item.
@@ -36,7 +38,9 @@ export default function LiveEventsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Live Events</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {t("nav.items.liveEvents")}
+        </h1>
         <p className="text-sm text-muted-foreground">
           Manage live classes, streams, Zoom sessions, and on-site events.
         </p>

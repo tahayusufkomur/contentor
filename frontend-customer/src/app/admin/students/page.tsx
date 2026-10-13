@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -66,6 +67,7 @@ const SORT_OPTIONS = [
 ];
 
 export default function StudentsPage() {
+  const t = useTranslations("admin");
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [selectedStudent, setSelectedStudent] = useState<StudentDetail | null>(
     null,
@@ -102,11 +104,11 @@ export default function StudentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Student CRM & Engagement
+            {t("nav.items.students")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Manage student enrollments, course progress, direct actions, and
-            retention.
+            Everyone who has joined, what they are enrolled in and how far they
+            are.
           </p>
         </div>
       </div>

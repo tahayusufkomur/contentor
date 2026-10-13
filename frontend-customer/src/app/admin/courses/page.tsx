@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { BookOpen, ExternalLink, Pencil, Plus } from "lucide-react";
@@ -63,6 +64,7 @@ const courseFields: FieldConfig<Course>[] = [
 ];
 
 export default function AdminCoursesPage() {
+  const t = useTranslations("admin");
   const currency = useTenantCurrency();
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
@@ -126,7 +128,9 @@ export default function AdminCoursesPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Courses</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {t("nav.items.courses")}
+          </h1>
           <p className="text-sm text-muted-foreground">
             Manage your course catalog.
           </p>

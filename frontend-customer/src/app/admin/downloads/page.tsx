@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState } from "react";
 import {
   Download,
@@ -67,6 +68,7 @@ const ACCESS_BADGE_VARIANT: Record<string, "success" | "default" | "warning"> =
   };
 
 export default function AdminDownloadsPage() {
+  const t = useTranslations("admin");
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [showForm, setShowForm] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -210,7 +212,9 @@ export default function AdminDownloadsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Downloads</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {t("nav.items.downloads")}
+          </h1>
           <p className="text-sm text-muted-foreground">
             Manage downloadable files for your students.
           </p>

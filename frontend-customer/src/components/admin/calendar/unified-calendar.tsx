@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -9,7 +10,6 @@ import {
   Video,
   Mail,
   Newspaper,
-  Calendar as CalendarIcon,
   Clock,
   ExternalLink,
   Filter,
@@ -94,6 +94,7 @@ interface UnifiedCalendarProps {
 }
 
 export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
+  const t = useTranslations("admin");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
   const [selectedCategory, setSelectedCategory] =
@@ -214,13 +215,11 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
       {/* Header Toolbar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <CalendarIcon className="h-6 w-6 text-primary" />
-            Unified Content Calendar
+          <h1 className="text-2xl font-bold tracking-tight">
+            {t("nav.items.calendar")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Schedule and manage Live Events, Email Broadcasts, and Blog Posts in
-            one place.
+            Your classes, emails and blog posts, by date.
           </p>
         </div>
 

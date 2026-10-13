@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState } from "react";
 import {
   AlertCircle,
@@ -81,6 +82,7 @@ function stripExtension(name: string) {
 }
 
 export default function VideosPage() {
+  const t = useTranslations("admin");
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [showUpload, setShowUpload] = useState(false);
   const [previewItem, setPreviewItem] = useState<MediaItemPayload | null>(null);
@@ -225,11 +227,10 @@ export default function VideosPage() {
       <div className="flex items-center justify-between border-b pb-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Video Asset Library
+            {t("nav.items.videos")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Upload, manage, copy CDN links, and embed videos across your
-            platform.
+            Videos you can use in your lessons.
           </p>
         </div>
         <Button

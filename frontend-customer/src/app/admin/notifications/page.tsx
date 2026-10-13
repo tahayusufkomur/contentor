@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import AnnouncementCompose from "@/components/admin/announcement-compose";
@@ -18,6 +19,7 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 export default function NotificationsPage() {
+  const t = useTranslations("admin");
   const [refreshKey, setRefreshKey] = useState(0);
   const [tab, setTab] = useState<Tab>("history");
   const [reviewDraft, setReviewDraft] = useState<{
@@ -29,7 +31,9 @@ export default function NotificationsPage() {
   return (
     <RichEditorProvider>
       <div className="mx-auto max-w-2xl space-y-6 p-4">
-        <h1 className="text-lg font-semibold">Announcements</h1>
+        <h1 className="text-lg font-semibold">
+          {t("nav.items.notifications")}
+        </h1>
         <AnnouncementCompose
           onSent={bump}
           reviewDraft={reviewDraft}

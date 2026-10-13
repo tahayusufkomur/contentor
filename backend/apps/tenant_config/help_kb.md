@@ -21,17 +21,17 @@ The coach runs everything from the admin area on their own site.
 - Billing is monthly, via Stripe. Currency (USD or EUR) is set from the coach's country at signup and cannot be changed later.
 - **Free plan cannot make money**: no paid content, no student payments, no payouts, no live sessions. Selling requires an active Starter or Pro subscription plus completed payout setup (see Payouts & billing).
 - Commission is Contentor's cut of each student payment (8% Starter, 6% Pro). The rest goes to the coach.
-- Upgrade: open **Billing → Subscription** tab, choose the plan, complete checkout. Downgrading requires contacting support.
-- Cancel: from the same Billing → Subscription area. If payment fails, the subscription becomes "Past due"; after a grace period the site drops to Free.
+- Upgrade: open **Settings → Your plan**, choose the plan, complete checkout. Downgrading requires contacting support.
+- Cancel: from the same Settings → Your plan page. If payment fails, the subscription becomes "Past due"; after a grace period the site drops to Free.
 - Do not quote any other price, limit, or percentage than the table above.
 
 ## Courses
 
 What: video courses built as Course → Modules → Lessons. Each lesson plays a video and/or shows text content. Courses can be free or paid (one-time price), and can additionally be included in membership subscription plans or bundles.
 
-- **Create a course**: open Courses, click to create a new course. Add a title, description, thumbnail, and price (free or paid). Then add modules and lessons; attach videos from the Videos library (or upload new ones).
+- **Create a course**: open Courses, click to create a new course. Add a title, description, thumbnail, and price (free or paid). Then add modules and lessons; attach videos from Videos (under Site), or upload new ones.
 - **Publish a course**: a course stays a draft until you mark it published; only published courses appear on your site.
-- **Sell it two ways at once**: set a one-time price on the course AND include it in a subscription plan (Billing → Subscription Plans). Students can then either buy it once or subscribe.
+- **Sell it two ways at once**: set a one-time price on the course AND include it in a subscription plan (Money → Store → Memberships). Students can then either buy it once or subscribe.
 - **Track student progress**: students' lesson completion is tracked automatically; see who is enrolled per student in Students.
 - Gotchas: paid courses require a paid Contentor plan + payout setup before students can actually buy. Demo/example courses seeded at signup should be removed before launch (see Setup checklist).
 
@@ -46,14 +46,14 @@ What: sellable or free downloadable files (PDFs, worksheets, plans, guides).
 
 ## Live sessions
 
-What: four kinds of live events, all managed from Live Events:
+What: four kinds of live events, all managed from Classes & events:
 
-1. **Live Class** — interactive video call with chat, runs right in the browser (no extra software). Can auto-record; the recording lands in your Videos library.
+1. **Live Class** — interactive video call with chat, runs right in the browser (no extra software). Can auto-record; the recording lands in your Videos (under Site).
 2. **Live Stream** — one-way broadcast to your students (you present, they watch). Start/stop from the Live streams page.
 3. **Zoom Class** — an event that links out to an external Zoom meeting you host on Zoom.
 4. **On-site Event** — an in-person event with a location, address, and capacity.
 
-- **Schedule a session**: open Live Events, pick the tab for the type, create it with a title, date/time, and duration. Sessions can be free or paid.
+- **Schedule a session**: open Classes & events, pick the tab for the type, create it with a title, date/time, and duration. Sessions can be free or paid.
 - **Run a live stream**: open Live streams, start the broadcast when ready, stop it when done.
 - **Recordings**: live class recordings appear as videos you can reuse in lessons.
 - Gotchas: live video (Live Class / Live Stream) is **not available on the Free plan** — it needs Starter or Pro. Streaming time counts against your plan's monthly hours (100h Starter / 500h Pro).
@@ -109,13 +109,13 @@ What: student payments go through **your own Stripe account**, connected via "St
 - **Check payout status**: the Payouts page shows whether you're connected, whether charges and payouts are enabled, and your earnings figures (including refunded totals).
 - **Requirements to sell**: (1) active Starter or Pro subscription, and (2) completed Stripe payout setup. Without both, paid content can't be sold and the publish step will ask for payouts if you have paid items.
 - **Refunds**: you issue refunds per purchased item from the student's payment page (see Students). Note: the platform commission is not returned on refunds.
-- **Your own bill to Contentor**: managed separately in Billing → Subscription (see Plans & pricing). Don't confuse the two: Billing/Subscription = what you pay Contentor; Payouts = how student money reaches you.
-- The Billing page also has: **Payments** tab (all student payments), **Bundles** tab, and **Subscription Plans** tab (see below).
+- **Your own bill to Contentor**: managed separately in Settings → Your plan (see Plans & pricing). Don't confuse the two: Your plan = what you pay Contentor; Payouts = how student money reaches you.
+- The Store page (Money → Store) has three tabs: **Products**, **Bundles** and **Memberships** (see below).
 
 ### Memberships (subscription plans) and bundles
 
-- **Subscription plan** = a membership tier you define (name + recurring price) that grants access to a set of your content. Manage in Billing → Subscription Plans; attach courses, downloads, or sessions to the plan.
-- **Bundle** = a one-time-purchase discounted group of content items. Create in Billing → Bundles.
+- **Subscription plan** = a membership tier you define (name + recurring price) that grants access to a set of your content. Manage in Store → Memberships; attach courses, downloads, or sessions to the plan.
+- **Bundle** = a one-time-purchase discounted group of content items. Create in Store → Bundles.
 - Any paid item can be sold both individually and inside a plan/bundle at the same time.
 
 ## Custom domains
@@ -176,7 +176,7 @@ A checklist ("Get your studio live") shown in the admin until your site is fully
 - *Set up how you get paid*: open Payouts and complete Stripe payout setup (needs a paid plan). Completes when you can take payments.
 
 **Go live**
-- *Publish your site*: from the Dashboard's publish card. **Hard requirements before publishing**: a logo/look is set, demo content is removed, at least one course or download of your own exists, and — if you have paid content — payouts are connected. The publish card lists exactly what's missing. You can unpublish later (site hidden from students until republished).
+- *Publish your site*: from Home's publish card. **Hard requirements before publishing**: a logo/look is set, demo content is removed, at least one course or download of your own exists, and — if you have paid content — payouts are connected. The publish card lists exactly what's missing. You can unpublish later (site hidden from students until republished).
 
 **Nice to have (optional)**
 - *Add a download*, *Schedule a live session*, *Send an announcement* — one of each, via the matching admin pages.
@@ -199,7 +199,7 @@ Your site works as an installable app on students' phones — it opens full-scre
 
 - **How do I get paid?** → Connect Stripe on the Payouts page; student payments settle to your Stripe account, minus Contentor's commission (8% Starter / 6% Pro).
 - **Why can't I sell anything?** → Selling needs an active Starter or Pro plan AND completed payout setup on the Payouts page. Free plan can't sell paid content.
-- **How much does Contentor cost?** → Free $0; Starter $19.90/mo (€19.90); Pro $49.90/mo (€49.90). Monthly, via Billing → Subscription.
+- **How much does Contentor cost?** → Free $0; Starter $19.90/mo (€19.90); Pro $49.90/mo (€49.90). Monthly, via Settings → Your plan.
 - **What's my commission/fee per sale?** → 8% on Starter, 6% on Pro. Nothing else per sale.
 - **How do students find my page?** → Share your link: `yourname.contentor.app`. The setup guide's "Share your site" row copies it.
 - **My student can't log in.** → They must sign in on YOUR site (not contentor.app) using the email link (check spam; link expires ~15 min — request a new one) or Google.
@@ -210,7 +210,7 @@ Your site works as an installable app on students' phones — it opens full-scre
 - **Can students email me?** → On a paid plan, yes: claim your address in Settings (e.g. `you@contentor.app`, or `info@yourdomain.com` with a custom domain). Mail lands in your Inbox. Free plan is send-only.
 - **Do live classes need Zoom?** → No — Live Classes and Live Streams run in the browser. Zoom Classes are a separate option that links to your own Zoom meeting.
 - **Why is live video greyed out?** → Live sessions need Starter or Pro; the Free plan has no live streaming.
-- **How do I raise my student limit / storage?** → Upgrade the plan in Billing → Subscription (Starter: 100 students/100 GB; Pro: 500 students/500 GB).
+- **How do I raise my student limit / storage?** → Upgrade the plan in Settings → Your plan (Starter: 100 students/100 GB; Pro: 500 students/500 GB).
 - **Is there a student mobile app?** → Students install your site itself as an app (Add to Home Screen on iPhone Safari / Install app on Android) with push notifications.
 
 ## When you don't know
@@ -223,24 +223,26 @@ The ONLY links you may include in answers. Always link relative paths exactly as
 
 | route | label | when to link |
 |---|---|---|
-| /admin | Dashboard | Overview stats; the publish card lives here |
+| /admin | Home | Overview stats; the publish card lives here |
 | /admin/courses | Courses | Managing or editing courses |
 | /admin/courses/new | New course | Creating the first/next course |
+| /admin/live | Classes & events | Scheduling live classes, streams, Zoom, in-person events; starting/stopping a broadcast |
+| /admin/calendar | Calendar | Seeing classes, emails and blog posts by date |
 | /admin/downloads | Downloads | Adding or selling downloadable files |
-| /admin/videos | Videos | Uploading/managing the video library, recordings |
-| /admin/photos | Photos | Uploading images/thumbnails |
-| /admin/live | Live Events | Scheduling live classes, streams, Zoom, on-site events |
-| /admin/live-streams | Live Streams | Starting/stopping a broadcast |
+| /admin/students | People | Student list, finding a student, refunds (via student detail) |
 | /admin/community | Community | Enabling community, moderation, members |
-| /admin/email | Email Campaigns | Campaign list and delivery results |
-| /admin/email/templates | Email Templates | Designing email templates |
-| /admin/email/compose | Compose Campaign | Sending a campaign |
 | /admin/inbox | Inbox | Reading/answering student email, new message |
 | /admin/notifications | Announcements | Sending announcements, templates, recurring |
-| /admin/students | Students | Student list, finding a student, refunds (via student detail) |
-| /admin/billing | Billing | Coach's own plan/upgrade, products, bundles, subscription plans |
-| /admin/billing/bundles/new | New bundle | Creating a bundle |
+| /admin/email | Email | Campaign list and delivery results |
+| /admin/email/templates | Email templates | Designing email templates |
+| /admin/email/compose | New email | Sending a campaign |
 | /admin/payouts | Payouts | Connecting Stripe, payout status, earnings |
+| /admin/store | Store | Products, bundles, memberships students can buy |
+| /admin/store/bundles/new | New bundle | Creating a bundle |
+| /admin/photos | Photos | Uploading images/thumbnails |
+| /admin/videos | Videos | Uploading/managing the video library, recordings |
+| /admin/assistant | Student assistant | The chat helper students see on the site |
 | /?edit=1 | Edit site | Editing the six site pages in the builder |
 | /?edit=1&section=brand | Design | Theme, font, dark mode, logo, Logo Studio, AI Brand Pack |
-| /admin/settings | Settings | Language/timezone, mailbox address, remove demo content |
+| /admin/settings | General | Timezone, mailbox address, remove demo content |
+| /admin/billing | Your plan | The coach's own Contentor plan and upgrade |

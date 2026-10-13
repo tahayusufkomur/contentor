@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState } from "react";
 import {
   Image as ImageIcon,
@@ -46,6 +47,7 @@ const SORT_OPTIONS = [
 ];
 
 export default function PhotosPage() {
+  const t = useTranslations("admin");
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<MediaItemPayload | null>(null);
@@ -108,11 +110,10 @@ export default function PhotosPage() {
       <div className="flex items-center justify-between border-b pb-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Photo Asset Library
+            {t("nav.items.photos")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Upload, manage, copy CDN links, and embed photos across your
-            platform.
+            Images you can use on your site, courses and posts.
           </p>
         </div>
       </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
@@ -33,6 +34,7 @@ function isWithinRange(dateStr: string, range: DateRange): boolean {
 }
 
 export default function EmailDashboardPage() {
+  const t = useTranslations("admin");
   const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +84,7 @@ export default function EmailDashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Email Campaigns</h1>
+          <h1 className="text-2xl font-bold">{t("nav.items.email")}</h1>
           <p className="text-sm text-muted-foreground">
             Send beautiful emails to your students.
           </p>

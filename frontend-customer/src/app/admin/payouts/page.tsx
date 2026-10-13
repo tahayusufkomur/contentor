@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -31,6 +32,7 @@ interface ConnectStatus {
 }
 
 export default function PayoutsPage() {
+  const t = useTranslations("admin");
   const searchParams = useSearchParams();
   // Stripe redirects back with ?connect=return after onboarding; refresh live
   // so the UI reflects readiness before the account.updated webhook lands.
@@ -94,7 +96,9 @@ export default function PayoutsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Payouts</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {t("nav.items.payouts")}
+        </h1>
         <p className="text-sm text-muted-foreground">
           Connect a Stripe account to get paid by your students. Stripe handles
           bank details and payouts; you remain the merchant of record.

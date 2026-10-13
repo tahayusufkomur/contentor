@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +11,7 @@ import { ModFeed } from "@/components/admin/community/mod-feed";
 import { ReportsQueue } from "@/components/admin/community/reports-queue";
 
 export default function AdminCommunityPage() {
+  const t = useTranslations("admin");
   const [queueCount, setQueueCount] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -21,7 +23,7 @@ export default function AdminCommunityPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4">
-      <h1 className="text-lg font-semibold">Community</h1>
+      <h1 className="text-lg font-semibold">{t("nav.items.communityFeed")}</h1>
       <Tabs defaultValue="feed">
         <TabsList>
           <TabsTrigger value="feed">Feed</TabsTrigger>
