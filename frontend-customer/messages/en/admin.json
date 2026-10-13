@@ -53,6 +53,14 @@
   "plan": {
     "subtitle": "What you pay Contentor, and what it includes."
   },
+  "palette": {
+    "placeholder": "Search pages…",
+    "create": "Create",
+    "newCourse": "New course",
+    "newEmail": "New email",
+    "empty": "No page by that name.",
+    "askAssistant": "Open the assistant"
+  },
   "dock": {
     "title": "Assistant",
     "close": "Close the assistant",

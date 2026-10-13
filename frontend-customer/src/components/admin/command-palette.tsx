@@ -1,308 +1,33 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { useNavigate } from "@shared/navigation/navigation-provider";
-import {
-  Search,
-  BookOpen,
-  CalendarDays,
-  Video,
-  Download,
-  Users,
-  MessagesSquare,
-  Inbox,
-  Bell,
-  Mail,
-  Newspaper,
-  Palette,
-  Pencil,
-  ImageIcon,
-  Film,
-  MessageCircleQuestion,
-  Wallet,
-  CreditCard,
-  Settings,
-  Database,
-  PlusCircle,
-  LayoutDashboard,
-  ArrowRight,
-} from "lucide-react";
+import { Search, ArrowRight } from "lucide-react";
 
-interface CommandItem {
-  id: string;
-  label: string;
-  // These categories predate the sidebar's seven-destination IA (see
-  // lib/admin-nav.ts) — the palette is a flat searchable list of every route,
-  // so its buckets are cosmetic and deliberately left unaligned for now.
-  category:
-    | "Quick Create"
-    | "Products"
-    | "Audience"
-    | "Website & Media"
-    | "Settings";
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  description?: string;
-  keywords?: string[];
-  /** Open in a new tab instead of router navigation (e.g. "Edit site"). */
-  newTab?: boolean;
-}
+import { filterPalette, type PaletteEntry } from "@/lib/admin-palette";
 
 export function CommandPalette({
   open,
   onOpenChange,
+  entries,
+  onAskAssistant,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  entries: PaletteEntry[];
+  onAskAssistant: () => void;
 }) {
+  const t = useTranslations("admin");
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const items: CommandItem[] = useMemo(
-    () => [
-      // Quick Create Actions
-      {
-        id: "create-course",
-        label: "Create New Course",
-        category: "Quick Create",
-        href: "/admin/courses/new",
-        icon: PlusCircle,
-        description: "Build a new structured course or curriculum",
-        keywords: ["new", "course", "add", "lesson"],
-      },
-      {
-        id: "schedule-live",
-        label: "Schedule Live Event",
-        category: "Quick Create",
-        href: "/admin/live",
-        icon: Video,
-        description: "Set up a live stream, workshop, or webinar",
-        keywords: ["live", "event", "webinar", "class", "zoom"],
-      },
-      {
-        id: "upload-download",
-        label: "Upload File / Downloadable",
-        category: "Quick Create",
-        href: "/admin/downloads",
-        icon: Download,
-        description: "Add PDFs, templates, or digital assets",
-        keywords: ["file", "pdf", "resource", "asset"],
-      },
-      {
-        id: "compose-email",
-        label: "Compose Email Broadcast",
-        category: "Quick Create",
-        href: "/admin/email/compose",
-        icon: Mail,
-        description: "Send a newsletter or announcement to students",
-        keywords: ["email", "send", "newsletter", "broadcast"],
-      },
-      {
-        id: "new-blog",
-        label: "New Blog Article",
-        category: "Quick Create",
-        href: "/admin/blog",
-        icon: Newspaper,
-        description: "Write and publish a new blog post",
-        keywords: ["blog", "article", "post", "write"],
-      },
-
-      // Navigation Items
-      {
-        id: "nav-dashboard",
-        label: "Dashboard",
-        category: "Products",
-        href: "/admin",
-        icon: LayoutDashboard,
-        keywords: ["home", "overview", "stats"],
-      },
-      {
-        id: "nav-courses",
-        label: "Courses",
-        category: "Products",
-        href: "/admin/courses",
-        icon: BookOpen,
-        keywords: ["curriculum", "lessons", "classes"],
-      },
-      {
-        id: "nav-live",
-        label: "Live Events",
-        category: "Products",
-        href: "/admin/live",
-        icon: Video,
-        keywords: ["streaming", "webinars", "zoom"],
-      },
-      {
-        id: "nav-calendar",
-        label: "Unified Content Calendar",
-        category: "Products",
-        href: "/admin/calendar",
-        icon: CalendarDays,
-        keywords: [
-          "schedule",
-          "events",
-          "blog",
-          "email",
-          "publishing",
-          "calendar",
-        ],
-      },
-      {
-        id: "nav-downloads",
-        label: "Downloads & Files",
-        category: "Products",
-        href: "/admin/downloads",
-        icon: Download,
-        keywords: ["resources", "pdfs", "documents"],
-      },
-
-      // Audience & Marketing
-      {
-        id: "nav-students",
-        label: "Students & Enrollees",
-        category: "Audience",
-        href: "/admin/students",
-        icon: Users,
-        keywords: ["users", "members", "crm", "customers"],
-      },
-      {
-        id: "nav-community",
-        label: "Community Feed",
-        category: "Audience",
-        href: "/admin/community",
-        icon: MessagesSquare,
-        keywords: ["forum", "posts", "discussion"],
-      },
-      {
-        id: "nav-inbox",
-        label: "Inbox & Messages",
-        category: "Audience",
-        href: "/admin/inbox",
-        icon: Inbox,
-        keywords: ["chat", "dms", "direct messages"],
-      },
-      {
-        id: "nav-notifications",
-        label: "Announcements & Alerts",
-        category: "Audience",
-        href: "/admin/notifications",
-        icon: Bell,
-        keywords: ["push", "notify", "broadcast"],
-      },
-      {
-        id: "nav-email",
-        label: "Email Broadcasts",
-        category: "Audience",
-        href: "/admin/email",
-        icon: Mail,
-        keywords: ["newsletters", "campaigns"],
-      },
-      {
-        id: "nav-blog",
-        label: "Blog Posts",
-        category: "Audience",
-        href: "/admin/blog",
-        icon: Newspaper,
-        keywords: ["articles", "seo"],
-      },
-
-      // Website & Media
-      {
-        id: "nav-edit-site",
-        label: "Edit site",
-        category: "Website & Media",
-        href: "/?edit=1",
-        icon: Pencil,
-        description: "Open the live editor to edit your pages",
-        keywords: ["pages", "site", "landing", "home", "editor", "builder"],
-        newTab: true,
-      },
-      {
-        id: "nav-design",
-        label: "Theme & Design",
-        category: "Website & Media",
-        href: "/?edit=1&section=brand",
-        icon: Palette,
-        description: "Brand, theme, fonts and logo — in the live editor",
-        keywords: ["branding", "colors", "logo", "theme", "font"],
-        newTab: true,
-      },
-      {
-        id: "nav-photos",
-        label: "Photo Library",
-        category: "Website & Media",
-        href: "/admin/photos",
-        icon: ImageIcon,
-        keywords: ["images", "pictures", "curated"],
-      },
-      {
-        id: "nav-videos",
-        label: "Video Library",
-        category: "Website & Media",
-        href: "/admin/videos",
-        icon: Film,
-        keywords: ["recordings", "media"],
-      },
-      {
-        id: "nav-assistant",
-        label: "AI Site Assistant",
-        category: "Website & Media",
-        href: "/admin/assistant",
-        icon: MessageCircleQuestion,
-        keywords: ["bot", "ai", "chat"],
-      },
-
-      // Settings & Finance
-      {
-        id: "nav-payouts",
-        label: "Payouts & Earnings",
-        category: "Settings",
-        href: "/admin/payouts",
-        icon: Wallet,
-        keywords: ["stripe", "money", "revenue", "connect"],
-      },
-      {
-        id: "nav-billing",
-        label: "Platform Billing & Plans",
-        category: "Settings",
-        href: "/admin/billing",
-        icon: CreditCard,
-        keywords: ["subscription", "tier", "upgrade"],
-      },
-      {
-        id: "nav-settings",
-        label: "General Settings",
-        category: "Settings",
-        href: "/admin/settings",
-        icon: Settings,
-        keywords: ["domain", "auth", "profile", "business"],
-      },
-      {
-        id: "nav-data",
-        label: "Raw Data Models",
-        category: "Settings",
-        href: "/admin/m",
-        icon: Database,
-        keywords: ["database", "schema", "admin kit"],
-      },
-    ],
-    [],
+  const filteredItems = useMemo(
+    () => filterPalette(entries, query),
+    [entries, query],
   );
-
-  const filteredItems = useMemo(() => {
-    if (!query.trim()) return items;
-    const q = query.toLowerCase().trim();
-    return items.filter(
-      (item) =>
-        item.label.toLowerCase().includes(q) ||
-        item.category.toLowerCase().includes(q) ||
-        (item.description && item.description.toLowerCase().includes(q)) ||
-        (item.keywords &&
-          item.keywords.some((k) => k.toLowerCase().includes(q))),
-    );
-  }, [items, query]);
 
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -377,7 +102,7 @@ export function CommandPalette({
           <input
             ref={inputRef}
             type="text"
-            placeholder="Type a command or search (e.g. course, email, payouts)..."
+            placeholder={t("palette.placeholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full bg-transparent text-sm font-medium focus:outline-none placeholder:text-muted-foreground"
@@ -390,9 +115,16 @@ export function CommandPalette({
         {/* Command Items List */}
         <div className="overflow-y-auto p-2 divide-y divide-border/40">
           {filteredItems.length === 0 ? (
-            <div className="p-8 text-center text-sm text-muted-foreground">
-              No matching commands or pages found.
-            </div>
+            <button
+              type="button"
+              onClick={() => {
+                onOpenChange(false);
+                onAskAssistant();
+              }}
+              className="w-full px-4 py-6 text-center text-sm text-muted-foreground hover:text-foreground"
+            >
+              {t("palette.empty")} {t("palette.askAssistant")}
+            </button>
           ) : (
             filteredItems.map((item, idx) => {
               const Icon = item.icon;
@@ -433,17 +165,6 @@ export function CommandPalette({
                       <div className="font-medium leading-tight truncate">
                         {item.label}
                       </div>
-                      {item.description && (
-                        <div
-                          className={`text-xs truncate mt-0.5 ${
-                            isSelected
-                              ? "text-primary-foreground/80"
-                              : "text-muted-foreground"
-                          }`}
-                        >
-                          {item.description}
-                        </div>
-                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-2">
@@ -454,7 +175,7 @@ export function CommandPalette({
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {item.category}
+                      {item.group}
                     </span>
                     <ArrowRight
                       className={`h-4 w-4 transition-transform ${
@@ -481,7 +202,6 @@ export function CommandPalette({
               select
             </span>
           </div>
-          <span>Coach Admin Command Palette</span>
         </div>
       </div>
     </div>

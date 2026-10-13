@@ -22,6 +22,7 @@ import { useNavigation } from "@shared/navigation/navigation-provider";
 import { useTenant } from "@/hooks/use-tenant";
 import { usePublishTopnavClearance } from "@/lib/topnav-clearance";
 import { activeSection, buildAdminNav } from "@/lib/admin-nav";
+import { paletteEntries } from "@/lib/admin-palette";
 import { gateAdminNav } from "@/lib/admin-nav-gate";
 import { useSetupStatus } from "@/lib/setup-assistant";
 import type { User } from "@/types/auth";
@@ -76,6 +77,10 @@ function AdminShellContent({ children, user }: AdminShellProps) {
     });
   }, [t, config, expandedSections]);
 
+  // From the UNGATED nav on purpose: search still finds the pages of a module
+  // the coach has not turned on.
+  const paletteItems = useMemo(() => paletteEntries(buildAdminNav(t), t), [t]);
+
   const section = activeSection(navSections, { pathname, pendingHref });
   const expandSection = (sectionId: string) =>
     setExpandedSections((prev) =>
@@ -103,7 +108,7 @@ function AdminShellContent({ children, user }: AdminShellProps) {
             className="flex items-center gap-2.5 px-3 py-1.5 text-xs text-muted-foreground bg-muted/50 hover:bg-muted/80 rounded-lg border transition-colors w-full min-w-0 max-w-sm"
           >
             <Search className="h-3.5 w-3.5" />
-            <span className="truncate">Search commands or pages...</span>
+            <span className="truncate">{t("palette.placeholder")}</span>
             <kbd className="ml-auto hidden sm:inline-flex items-center gap-0.5 font-mono text-[10px] bg-background border px-1.5 py-0.5 rounded shadow-sm text-foreground/80">
               ⌘K
             </kbd>
@@ -146,7 +151,12 @@ function AdminShellContent({ children, user }: AdminShellProps) {
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
       <AssistantDock />
-      <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
+      <CommandPalette
+        open={cmdOpen}
+        onOpenChange={setCmdOpen}
+        entries={paletteItems}
+        onAskAssistant={() => dock.open("assistant")}
+      />
       <ImpersonationBanner />
     </div>
   );
