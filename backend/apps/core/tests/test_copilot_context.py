@@ -1,10 +1,13 @@
 """Page context for the admin assistant: what the client sends is matched
 against our own tables, never copied into the model's turn."""
 
+from datetime import timedelta
 from decimal import Decimal
 from unittest import mock
+from zoneinfo import ZoneInfo
 
 import pytest
+from django.utils import timezone
 
 from apps.core.copilot import context as page_context
 from apps.core.copilot import engine
@@ -135,3 +138,37 @@ def test_converse_hands_the_cleaned_context_to_the_engine(tenant_ctx):
         )
         b"".join(resp.streaming_content)
     assert run.call_args.args[5] == {"page": "Blog", "path": "/admin/blog", "record": None, "intent": None}
+
+
+def test_a_time_she_names_is_her_wall_clock_not_utc(tenant_ctx):
+    """'Tuesday at 18:00' from a coach in Istanbul is 18:00 there (15:00 UTC):
+    the turn says her zone and today's date, and a bare time is read in it."""
+    from datetime import datetime
+
+    from apps.core.copilot import tokens
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.timezone = "Europe/Istanbul"
+    cfg.save(update_fields=["timezone"])
+
+    digest = engine._clock_digest(tenant_ctx)
+    assert "Europe/Istanbul (UTC+0300)" in digest
+    assert f"{timezone.now().astimezone(ZoneInfo('Europe/Istanbul')):%Y-%m-%d}" in digest
+
+    bare = (timezone.now() + timedelta(days=7)).replace(hour=18, minute=0, second=0, microsecond=0, tzinfo=None)
+    card = engine._card(
+        tenant_ctx, engine.CreateEventAction(kind="create_event", event_kind="zoom", title="Flow", scheduled_at=bare)
+    )
+    stashed = datetime.fromisoformat(
+        tokens.take_action(card["token"], tenant_ctx.schema_name)["params"]["scheduled_at"]
+    )
+    assert stashed.utcoffset() == timedelta(hours=3)
+    assert stashed.hour == 18
+    assert "18:00 +03" in card["detail"]
+    # A time the model wrote in UTC is shown to her in her own zone.
+    utc = bare.replace(tzinfo=ZoneInfo("UTC"))
+    shown = engine._card(
+        tenant_ctx, engine.CreateEventAction(kind="create_event", event_kind="zoom", title="Flow", scheduled_at=utc)
+    )
+    assert "21:00 +03" in shown["detail"]

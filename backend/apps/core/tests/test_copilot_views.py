@@ -995,6 +995,9 @@ def test_undo_leaves_a_course_she_has_touched(client, coach, touch):
     assert undo.status_code == 400
     assert "changed, published or removed" in undo.json()["detail"]
     assert Course.objects.filter(pk=course.pk).exists()
+    # History stops offering an undo that can never apply.
+    feed = client.get("/api/v1/admin/copilot/audit/").json()["entries"]
+    assert [e["undoable"] for e in feed if e["id"] == res.json()["audit_id"]] == [False]
 
 
 def test_undo_leaves_a_course_somebody_enrolled_in(client, coach):

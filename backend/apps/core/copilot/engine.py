@@ -9,8 +9,9 @@ superadmin edits KB addenda. Everything tenant-specific rides in the user turn."
 
 import json
 import logging
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Annotated, Literal
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.utils import timezone
@@ -513,6 +514,36 @@ def _chrome_digest(tenant):
     return f"Theme: {cfg.theme}; Style: {style_part}; Navbar: layout={nav.get('layout') or 'classic'}, cta={cta_part}"
 
 
+def _tenant_zone(tenant):
+    """The coach's own time zone (Settings): 'Tuesday at 18:00' is her wall
+    clock, never UTC."""
+    from apps.tenant_config.models import TenantConfig
+
+    with tenant_context(tenant):
+        name = TenantConfig.objects.values_list("timezone", flat=True).first()
+    try:
+        return ZoneInfo(name or "UTC")
+    except (ValueError, OSError):  # an unknown zone name
+        return ZoneInfo("UTC")
+
+
+def _clock_digest(tenant):
+    """Today's date and her time zone for the user turn, so 'next Tuesday at
+    18:00' becomes the right instant."""
+    zone = _tenant_zone(tenant)
+    now = timezone.now().astimezone(zone)
+    return (
+        f"Now: {now:%A %Y-%m-%d %H:%M} in the coach's time zone, {zone.key} (UTC{now:%z}). "
+        "Days and times she names are in this zone: write every scheduled_at with this offset."
+    )
+
+
+def _in_zone(tenant, when):
+    """A proposed time as an aware datetime in her zone (a bare time is hers)."""
+    zone = _tenant_zone(tenant)
+    return when.astimezone(zone) if when.tzinfo else when.replace(tzinfo=zone)
+
+
 def _tenant_style(tenant):
     """The tenant's site style id ("" = classic blocks)."""
     from apps.tenant_config.models import TenantConfig
@@ -744,6 +775,7 @@ def _user_turn(tenant, transcript, selections, message, attachments=None, contex
         f"Niche: {answers.get('niche') or 'general'}",
         "Current pages:\n" + _pages_digest(tenant),
         _chrome_digest(tenant),
+        _clock_digest(tenant),
         _courses_digest(tenant),
         _events_digest(tenant),
         _posts_digest(tenant),
@@ -1088,7 +1120,7 @@ def _card(tenant, action):
         event_title = _event_title(tenant, action.event_kind, action.event_id)  # raises ContentOpError on unknown id
         when = None
         if action.scheduled_at is not None:
-            when = action.scheduled_at if action.scheduled_at.tzinfo else action.scheduled_at.replace(tzinfo=UTC)
+            when = _in_zone(tenant, action.scheduled_at)
             if when <= timezone.now():
                 raise content.ContentOpError("event date must be in the future")
         parts = [
@@ -1096,7 +1128,7 @@ def _card(tenant, action):
             for p in (
                 f"title → '{action.title[:60]}'" if action.title else None,
                 "new description" if action.description else None,
-                f"when → {when:%b %d, %Y %H:%M}" if when is not None else None,
+                f"when → {when:%b %d, %Y %H:%M %Z}" if when is not None else None,
                 f"location → '{action.location[:80]}'" if action.location else None,
                 "new Zoom link" if action.zoom_link else None,
                 f"price → {max(action.price, 0):.2f}" if action.price is not None else None,
@@ -1285,7 +1317,7 @@ def _card(tenant, action):
             "token": tokens.stash_action(schema, {"kind": "create_course", "params": params}),
         }
     if isinstance(action, CreateEventAction):
-        when = action.scheduled_at if action.scheduled_at.tzinfo else action.scheduled_at.replace(tzinfo=UTC)
+        when = _in_zone(tenant, action.scheduled_at)
         if when <= timezone.now():
             raise content.ContentOpError("event date must be in the future")
         price = max(action.price, 0)
@@ -1304,7 +1336,7 @@ def _card(tenant, action):
         return {
             "kind": "create_event",
             "title": f"Schedule {label}: {action.title[:120]}",
-            "detail": f"{when:%b %d, %Y %H:%M} — visible to students once confirmed",
+            "detail": f"{when:%a %b %d, %Y %H:%M %Z} — visible to students once confirmed",
             "token": tokens.stash_action(
                 schema, {"kind": "create_event", "event_kind": action.event_kind, "params": params}
             ),

@@ -421,8 +421,11 @@ def _audit_summary(action, result):
         return f"Published course '{title}'" if title else "Published a course"
     if kind == "publish_blog_post":
         return f"Published blog post '{title}'" if title else "Published a blog post"
-    if kind in ("create_course", "create_event", "create_blog_post"):
-        noun = {"create_course": "course", "create_event": "event", "create_blog_post": "blog post"}[kind]
+    if kind == "create_event":
+        # Not a draft: students see it from the moment she confirms.
+        return f"Scheduled '{title}'" if title else "Scheduled an event"
+    if kind in ("create_course", "create_blog_post"):
+        noun = {"create_course": "course", "create_blog_post": "blog post"}[kind]
         return f"Created draft {noun} '{title}'" if title else f"Created a draft {noun}"
     if kind == "draft_announcement":
         return f"Drafted announcement '{title}'" if title else "Drafted an announcement"
@@ -631,6 +634,12 @@ def copilot_undo(request):
     try:
         _apply_inverse(tenant, entry.inverse)
     except (blocks.BlockOpError, chrome.ChromeOpError, content.ContentOpError) as exc:
+        if _order_free(entry.inverse):
+            # A draft she has touched is hers now: this undo will never apply,
+            # so History stops offering it.
+            with tenant_context(tenant):
+                entry.inverse = {}
+                entry.save(update_fields=["inverse"])
         return Response({"detail": str(exc)}, status=400)
     with tenant_context(tenant):
         entry.undone_at = timezone.now()

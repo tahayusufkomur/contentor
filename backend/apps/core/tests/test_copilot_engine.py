@@ -5,6 +5,7 @@ from datetime import timedelta
 from decimal import Decimal
 from types import SimpleNamespace
 from unittest import mock
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.utils import timezone
@@ -14,6 +15,13 @@ from apps.core.copilot import blocks, engine
 pytestmark = pytest.mark.django_db
 
 TENANT = SimpleNamespace(schema_name="demo_yoga", name="Demo Yoga", wizard_state={"answers": {"niche": "yoga"}})
+
+
+@pytest.fixture(autouse=True)
+def _coach_in_utc(monkeypatch):
+    """Most tests here run on a stand-in tenant with no schema; the coach's
+    time zone (a TenantConfig read) is pinned in test_copilot_context.py."""
+    monkeypatch.setattr(engine, "_tenant_zone", lambda tenant: ZoneInfo("UTC"))
 
 
 @pytest.fixture()
@@ -1033,12 +1041,12 @@ def test_events_digest_lists_streams_and_zoom_classes_too(tenant_with_pages):
     assert "upcoming events: 2" in engine._stats_digest(tenant_with_pages)
 
 
-def test_create_event_card_for_a_zoom_class_carries_its_link():
+def test_create_event_card_for_a_zoom_class_carries_its_link(tenant_ctx):
     from apps.core.copilot import tokens
 
     when = timezone.now() + timedelta(days=5)
     card = engine._card(
-        TENANT,
+        tenant_ctx,
         engine.CreateEventAction(
             kind="create_event",
             event_kind="zoom",
@@ -1049,7 +1057,7 @@ def test_create_event_card_for_a_zoom_class_carries_its_link():
         ),
     )
     assert card["title"] == "Schedule Zoom class: Office hours"
-    stashed = tokens.take_action(card["token"], TENANT.schema_name)
+    stashed = tokens.take_action(card["token"], tenant_ctx.schema_name)
     assert stashed["event_kind"] == "zoom"
     assert stashed["params"]["zoom_link"] == "https://zoom.us/j/123"
     assert "location" not in stashed["params"]
