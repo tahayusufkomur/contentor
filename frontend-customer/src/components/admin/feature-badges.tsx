@@ -70,3 +70,17 @@ export function PaidFeatureBadge({
   if (!locked) return null;
   return <PaidBadge className={className} partial={partial} />;
 }
+
+/** A small lock beside a page the coach's plan does not include. Renders
+ *  nothing while entitlements load, so it never flashes for a paying coach. */
+export function LockedMark({ feature }: { feature: EntitlementKey }) {
+  const t = useTranslations("admin");
+  const locked = useIsLocked(feature);
+  if (!locked) return null;
+  return (
+    <span title={t("nav.locked")} className="inline-flex">
+      <Lock className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+      <span className="sr-only">{t("nav.locked")}</span>
+    </span>
+  );
+}

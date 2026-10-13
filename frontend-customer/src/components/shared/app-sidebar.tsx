@@ -1,14 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
-import {
-  ChevronDown,
-  ChevronLeft,
-  ExternalLink,
-  Globe,
-  Lock,
-} from "lucide-react";
+import React, { useState } from "react";
+import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -17,11 +10,10 @@ import {
   useAdminTheme,
   type AdminTheme,
 } from "@/components/shared/theme-provider";
-import { AiBadge, PaidFeatureBadge } from "@/components/admin/feature-badges";
-import { useNavigation } from "@shared/navigation/navigation-provider";
-import { isNavItemActive } from "@shared/navigation/navigation-state";
+import { defaultActiveMatch } from "@shared/navigation/navigation-state";
 import { NavLink } from "@/components/ui/nav-link";
 import { Spinner } from "@/components/ui/spinner";
+import { sectionHref } from "@/lib/admin-nav";
 import type { EntitlementKey } from "@/lib/entitlements";
 
 export interface NavItem {
@@ -51,45 +43,11 @@ interface AppSidebarProps {
   title: string;
   sections: NavSection[];
   children?: React.ReactNode;
-  /** Called when the coach opens a section's "+ More" disclosure. */
-  onExpandSection?: (sectionId: string) => void;
 }
 
-export function AppSidebar({
-  title,
-  sections,
-  children,
-  onExpandSection,
-}: AppSidebarProps) {
-  const t = useTranslations("admin");
+export function AppSidebar({ title, sections, children }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const { pathname, pendingHref } = useNavigation();
   const adminTheme = useAdminTheme();
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(sections.map((section) => [section.id, true])),
-  );
-
-  const activeSectionId = useMemo(
-    () =>
-      sections.find((section) =>
-        section.items.some((item) =>
-          isNavItemActive({ pathname, pendingHref }, item.href),
-        ),
-      )?.id,
-    [pathname, pendingHref, sections],
-  );
-
-  useEffect(() => {
-    if (!activeSectionId) return;
-    setOpenSections((prev) =>
-      prev[activeSectionId] ? prev : { ...prev, [activeSectionId]: true },
-    );
-  }, [activeSectionId]);
-
-  const toggleSection = (sectionId: string) => {
-    setOpenSections((prev) => ({ ...prev, [sectionId]: !prev[sectionId] }));
-  };
-
   return (
     <aside
       className={cn(
@@ -125,155 +83,39 @@ export function AppSidebar({
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-2 space-y-1">
-        {sections.map((section, index) => {
-          if (section.flat) {
-            const item = section.items[0];
-            return (
-              <NavLink
-                key={section.id}
-                href={item.href}
-                target={item.external ? "_blank" : undefined}
-                rel={item.external ? "noopener noreferrer" : undefined}
-                title={collapsed ? item.label : undefined}
-                className={({ active }) =>
-                  cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                    collapsed && "justify-center px-2",
-                    active
-                      ? "bg-accent text-accent-foreground font-medium"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                  )
-                }
-              >
-                {({ pending }) => (
-                  <>
-                    {pending ? (
-                      <Spinner size="sm" className="shrink-0" />
-                    ) : (
-                      <item.icon className="h-4 w-4 shrink-0" />
-                    )}
-                    {!collapsed && <span>{item.label}</span>}
-                  </>
+        {sections.map((section) => (
+          <NavLink
+            key={section.id}
+            href={sectionHref(section)}
+            title={collapsed ? section.label : undefined}
+            // Lit anywhere inside the section, not only on its first page.
+            activeMatch={(current) =>
+              section.items.some(
+                (i) => !i.external && defaultActiveMatch(current, i.href),
+              )
+            }
+            className={({ active }) =>
+              cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                collapsed && "justify-center px-2",
+                active
+                  ? "bg-accent text-accent-foreground font-medium"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+              )
+            }
+          >
+            {({ pending }) => (
+              <>
+                {pending ? (
+                  <Spinner size="sm" className="shrink-0" />
+                ) : (
+                  <section.icon className="h-4 w-4 shrink-0" />
                 )}
-              </NavLink>
-            );
-          }
-
-          if (section.locked) {
-            return (
-              <div key={section.id} className="space-y-1">
-                {!collapsed && (
-                  <div className="flex w-full items-center justify-between rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/60">
-                    <span>{section.label}</span>
-                    <Lock className="h-3 w-3" />
-                  </div>
-                )}
-                <NavLink
-                  href={section.locked.href}
-                  title={t(section.locked.reasonKey)}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground/60 transition-colors hover:bg-accent/40 hover:text-muted-foreground"
-                >
-                  {collapsed ? (
-                    <Lock className="h-4 w-4 shrink-0" />
-                  ) : (
-                    <span className="text-xs">
-                      {t(section.locked.reasonKey)}
-                    </span>
-                  )}
-                </NavLink>
-              </div>
-            );
-          }
-
-          const sectionOpen = openSections[section.id] ?? true;
-
-          return (
-            <div key={section.id} className="space-y-1">
-              {!collapsed && (
-                <button
-                  type="button"
-                  onClick={() => toggleSection(section.id)}
-                  className="flex w-full items-center justify-between rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
-                >
-                  <span>{section.label}</span>
-                  <ChevronDown
-                    className={cn(
-                      "h-3.5 w-3.5 transition-transform",
-                      sectionOpen && "rotate-180",
-                    )}
-                  />
-                </button>
-              )}
-
-              {(collapsed || sectionOpen) && (
-                <div className="space-y-1">
-                  {section.items.map((item) => (
-                    <NavLink
-                      key={item.href}
-                      href={item.href}
-                      target={item.external ? "_blank" : undefined}
-                      rel={item.external ? "noopener noreferrer" : undefined}
-                      title={collapsed ? item.label : undefined}
-                      className={({ active }) =>
-                        cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                          collapsed && "justify-center px-2",
-                          active
-                            ? "bg-accent text-accent-foreground font-medium"
-                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                        )
-                      }
-                    >
-                      {({ pending }) => (
-                        <>
-                          {pending ? (
-                            <Spinner size="sm" className="shrink-0" />
-                          ) : (
-                            <item.icon className="h-4 w-4 shrink-0" />
-                          )}
-                          {!collapsed && (
-                            <>
-                              <span>{item.label}</span>
-                              {item.external && (
-                                <ExternalLink className="text-muted-foreground/60 ml-auto h-3 w-3" />
-                              )}
-                              {(item.ai || item.requiresEntitlement) && (
-                                <span className="ml-auto flex items-center gap-1">
-                                  {item.ai && <AiBadge />}
-                                  {item.requiresEntitlement && (
-                                    <PaidFeatureBadge
-                                      feature={item.requiresEntitlement}
-                                      partial={item.partialPaid}
-                                    />
-                                  )}
-                                </span>
-                              )}
-                            </>
-                          )}
-                        </>
-                      )}
-                    </NavLink>
-                  ))}
-                  {!collapsed && (section.hiddenCount ?? 0) > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => onExpandSection?.(section.id)}
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                    >
-                      {t(section.moreLabelKey ?? "nav.more", {
-                        count: section.hiddenCount ?? 0,
-                      })}
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {collapsed && index < sections.length - 1 && (
-                <Separator className="my-2" />
-              )}
-            </div>
-          );
-        })}
+                {!collapsed && <span>{section.label}</span>}
+              </>
+            )}
+          </NavLink>
+        ))}
       </nav>
 
       {/* Footer */}
