@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
 from apps.core.copilot import blocks, chrome, content, logos, photos, tokens
+from apps.core.copilot import context as page_context
 from apps.core.onboarding import site_ai
 from apps.tenant_config import sections
 
@@ -186,6 +187,16 @@ STATS_SETUP_STEER = (
 )
 
 SYSTEM_PROMPT = SYSTEM_PROMPT + "\n" + STATS_SETUP_STEER
+
+PAGE_STEER = (
+    "The user turn may name the admin page the coach is on and show the "
+    "record open on it. Read 'this', 'it' and 'here' as that page or record, "
+    "and prefer actions that belong to it (on Courses: courses and their "
+    "curriculum; on Classes & events: events; on Blog: posts). The page is "
+    "context, not a limit: do what she asks even when it lives elsewhere."
+)
+
+SYSTEM_PROMPT = SYSTEM_PROMPT + "\n" + PAGE_STEER
 
 
 class EditPagesAction(BaseModel):
@@ -721,7 +732,7 @@ def _setup_digest(tenant):
     return ("Setup still open: " + ", ".join(open_items)) if open_items else "Setup: all done"
 
 
-def _user_turn(tenant, transcript, selections, message, attachments=None):
+def _user_turn(tenant, transcript, selections, message, attachments=None, context=None):
     answers = (tenant.wizard_state or {}).get("answers") or {}
     parts = [
         f"Brand: {tenant.name}",
@@ -751,6 +762,7 @@ def _user_turn(tenant, transcript, selections, message, attachments=None):
             "their media library). To place one, pass its photo_id to "
             "set_block_image, set_course_cover or set_logo:\n" + "\n".join(lines)
         )
+    parts.extend(page_context.lines(context))
     for entry in list(transcript)[-MAX_TRANSCRIPT:]:
         role = "Coach" if entry.get("role") == "coach" else "Assistant"
         parts.append(f"{role}: {str(entry.get('text', ''))[:1000]}")
@@ -1348,7 +1360,7 @@ def _asks_so_far(transcript):
     )
 
 
-def run_turn(tenant, transcript, selections, message, attachments=None, *, timeout_seconds=None):
+def run_turn(tenant, transcript, selections, message, attachments=None, context=None, *, timeout_seconds=None):
     # Bound the transcript once, up front, to the same trailing window
     # _user_turn applies — the ask-cap count and the model's actual visible
     # context must agree on the same bounded view, or a stale "ask" outside
@@ -1356,7 +1368,7 @@ def run_turn(tenant, transcript, selections, message, attachments=None, *, timeo
     windowed_transcript = [e for e in list(transcript) if isinstance(e, dict)][-MAX_TRANSCRIPT:]
     cap = _ask_cap()
     capped = cap > 0 and _asks_so_far(windowed_transcript) >= cap
-    user = _user_turn(tenant, windowed_transcript, selections, message, attachments)
+    user = _user_turn(tenant, windowed_transcript, selections, message, attachments, context)
     if capped:
         user += CAP_STEER
     parsed, cost, _model = core_ai.structured(

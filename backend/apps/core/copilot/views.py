@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from apps.core import ai as core_ai
 from apps.core.ai_sse import EventStreamRenderer, sse_frame, stream_response
 from apps.core.copilot import blocks, chrome, content, engine, logos, photos, tokens
+from apps.core.copilot import context as page_context
 from apps.core.copilot.tokens import ActionTokenError
 from apps.core.onboarding import ai_compose, site_ai
 from apps.core.permissions import IsCoachOrOwner
@@ -70,12 +71,13 @@ def copilot_converse(request):
     transcript = data.get("transcript") if isinstance(data.get("transcript"), list) else []
     selections = _clean_selections(data.get("selections") if isinstance(data.get("selections"), list) else [])
     attachments = _clean_attachments(tenant, data.get("attached_photos"))
+    context = page_context.clean(tenant, data.get("context"))
 
     def frames():
         yield sse_frame({"type": "phase", "phase": "thinking"})
         cost = Decimal("0")
         try:
-            payload, cost = engine.run_turn(tenant, transcript, selections, message, attachments)
+            payload, cost = engine.run_turn(tenant, transcript, selections, message, attachments, context)
             yield sse_frame({"type": "done", **payload})
         except core_ai.AiError as exc:
             cost = getattr(exc, "cost_usd", None) or Decimal("0")
