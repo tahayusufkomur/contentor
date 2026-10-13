@@ -200,7 +200,7 @@ def test_create_announcement_draft_lands_as_draft_and_sanitized(coach):
     row = Announcement.objects.get(pk=result["id"])
     assert row.status == "draft"
     assert "<script>" not in row.body
-    assert result["url"] == "/admin/announcements"
+    assert result["url"] == "/admin/notifications"  # the page Announcements lives on
     assert result["kind"] == "draft_announcement"
 
 
@@ -545,3 +545,39 @@ def test_edit_curriculum_is_all_or_nothing(course):
 def test_edit_curriculum_refuses_empty_or_unknown_ops(course, ops):
     with pytest.raises(content.ContentOpError):
         content.edit_curriculum(course.id, ops)
+
+
+def test_edit_curriculum_refuses_more_than_it_would_show(course):
+    """Never a silent subset: 21 changes are refused, not cut to 20."""
+    ops = [{"op": "add_module", "title": f"Module {n}"} for n in range(21)]
+    with pytest.raises(content.ContentOpError, match="more than 20 changes"):
+        content.edit_curriculum(course.id, ops)
+    assert course.modules.count() == 1
+
+
+def test_curriculum_ops_on_something_removed_earlier_are_refused_on_the_card(course):
+    basics = course.modules.get()
+    breath = basics.lessons.order_by("order").first()
+    for ops in (
+        [{"op": "remove_module", "module_id": basics.id}, {"op": "add_lesson", "module_id": basics.id, "title": "x"}],
+        [
+            {"op": "remove_lesson", "lesson_id": breath.id},
+            {"op": "rename_lesson", "lesson_id": breath.id, "title": "x"},
+        ],
+        [{"op": "remove_module", "module_id": basics.id}, {"op": "remove_lesson", "lesson_id": breath.id}],
+    ):
+        with pytest.raises(content.ContentOpError, match="not in this course"):
+            content.curriculum_steps(course.id, ops)
+    assert basics.lessons.count() == 2
+
+
+def test_edit_event_refuses_a_zoom_link_that_is_not_a_web_address(coach):
+    from apps.live.models import ZoomClass
+
+    event = ZoomClass.objects.create(
+        title="Office hours", instructor=coach, scheduled_at=timezone.now() + timedelta(days=3)
+    )
+    with pytest.raises(content.ContentOpError, match="not a full web address"):
+        content.edit_event(event.id, "zoom", {"zoom_link": "zoom.us/j/555"})
+    event.refresh_from_db()
+    assert event.zoom_link == ""

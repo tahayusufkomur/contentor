@@ -523,7 +523,7 @@ def _tenant_zone(tenant):
         name = TenantConfig.objects.values_list("timezone", flat=True).first()
     try:
         return ZoneInfo(name or "UTC")
-    except (ValueError, OSError):  # an unknown zone name
+    except (KeyError, ValueError, OSError):  # an unknown zone name (ZoneInfoNotFoundError is a KeyError)
         return ZoneInfo("UTC")
 
 
@@ -533,15 +533,17 @@ def _clock_digest(tenant):
     zone = _tenant_zone(tenant)
     now = timezone.now().astimezone(zone)
     return (
-        f"Now: {now:%A %Y-%m-%d %H:%M} in the coach's time zone, {zone.key} (UTC{now:%z}). "
-        "Days and times she names are in this zone: write every scheduled_at with this offset."
+        f"Now: {now:%A %Y-%m-%d %H:%M} in the coach's time zone, {zone.key}. Days and times she "
+        "names, and the times in the events list, are her local clock: write every scheduled_at "
+        "as that local date and time with NO offset and no Z (e.g. 2026-11-03T18:00:00)."
     )
 
 
 def _in_zone(tenant, when):
-    """A proposed time as an aware datetime in her zone (a bare time is hers)."""
-    zone = _tenant_zone(tenant)
-    return when.astimezone(zone) if when.tzinfo else when.replace(tzinfo=zone)
+    """A proposed time as an aware datetime in her zone. The digits are her
+    wall clock whatever offset came with them: an offset copied from today
+    would be an hour wrong on the far side of a clock change."""
+    return when.replace(tzinfo=_tenant_zone(tenant))
 
 
 def _tenant_style(tenant):
@@ -694,14 +696,15 @@ def _events_digest(tenant):
     if not rows:
         return "Upcoming events: (none scheduled)"
     rows.sort(key=lambda r: r[1].scheduled_at)
-    lines = ["Upcoming events (id | kind | title | when | price | cover | admin link | site link):"]
+    zone = _tenant_zone(tenant)
+    lines = ["Upcoming events (id | kind | title | when, her local time | price | cover | admin link | site link):"]
     for kind, e in rows[:MAX_DIGEST_EVENTS]:
         admin_link = content.event_admin_url(kind, e.id)
         site_link = _event_site_link(kind, e.id)
         cover = "has cover" if (e.thumbnail_id or e.thumbnail_url) else "NO COVER"
+        when = f"{e.scheduled_at.astimezone(zone):%a %Y-%m-%dT%H:%M}"
         lines.append(
-            f"  {e.id} | {kind} | {str(e.title)[:60]} | {e.scheduled_at.isoformat()} | {e.price} "
-            f"| {cover} | {admin_link} | {site_link}"
+            f"  {e.id} | {kind} | {str(e.title)[:60]} | {when} | {e.price} " f"| {cover} | {admin_link} | {site_link}"
         )
     return "\n".join(lines)
 
@@ -1110,7 +1113,8 @@ def _card(tenant, action):
         return {
             "kind": "edit_curriculum",
             "title": f"Update the curriculum: {course.title[:100]}",
-            "detail": "; ".join(label for _op, label in steps)[:500],
+            # Never cut short: the card is what she agrees to, removals included.
+            "detail": "; ".join(label for _op, label in steps),
             "token": tokens.stash_action(
                 schema,
                 {"kind": "edit_curriculum", "course_id": course.id, "ops": [op for op, _label in steps]},

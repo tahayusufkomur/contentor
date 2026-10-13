@@ -195,7 +195,15 @@ def edit_event(event_id, kind, params):
     if kind == "onsite" and params.get("location"):
         _set("location", str(params["location"])[:500])
     if kind == "zoom" and params.get("zoom_link"):
-        _set("zoom_link", str(params["zoom_link"])[:500])
+        from django.core.exceptions import ValidationError
+        from django.core.validators import URLValidator
+
+        link = str(params["zoom_link"]).strip()[:500]
+        try:
+            URLValidator(schemes=["http", "https"])(link)
+        except ValidationError as exc:
+            raise ContentOpError("that Zoom link is not a full web address (https://…)") from exc
+        _set("zoom_link", link)
     if not changes:
         raise ContentOpError("nothing to change on the event")
     event.save(update_fields=[c["field"] for c in changes])
@@ -249,8 +257,12 @@ def curriculum_steps(course_id, ops):
             raise ContentOpError("that lesson is not in this course")
         return lesson
 
+    ops = list(ops)
+    if len(ops) > MAX_CURRICULUM_OPS:
+        # Never apply a silent subset of what was asked.
+        raise ContentOpError(f"that is more than {MAX_CURRICULUM_OPS} changes at once — split it into two requests")
     steps = []
-    for op in list(ops)[:MAX_CURRICULUM_OPS]:
+    for op in ops:
         kind = op.get("op")
         if kind == "add_module":
             title = _title(op)
@@ -280,15 +292,21 @@ def curriculum_steps(course_id, ops):
                 raise ContentOpError(
                     f"lesson '{lesson.title}' has a video or student progress — remove it from the course page"
                 )
+            # Gone for the ops after it: a later rename of it is refused here,
+            # on the card, not halfway through applying.
+            del lessons[lesson.id]
             steps.append(({"op": kind, "lesson_id": lesson.id}, f"Remove lesson '{lesson.title}'"))
         elif kind == "remove_module":
             module = module_of(op)
-            inside = list(module.lessons.all())
+            inside = [lesson for lesson in module.lessons.all() if lesson.id in lessons]
             if any(_kept_work(lesson) for lesson in inside):
                 raise ContentOpError(
                     f"module '{module.title}' has lessons with a video or student progress — "
                     "remove it from the course page"
                 )
+            del modules[module.id]
+            for lesson in inside:
+                del lessons[lesson.id]
             steps.append(
                 (
                     {"op": kind, "module_id": module.id},
@@ -431,7 +449,7 @@ def create_announcement_draft(user, params):
     """Always lands as status='draft' — the send tasks in
     apps.notifications.tasks select on status='scheduled' only, so a draft
     can never be picked up and sent. The coach reviews and sends it
-    themselves from /admin/announcements; the copilot never sends."""
+    themselves from /admin/notifications; the copilot never sends."""
     from apps.notifications.models import Announcement
     from apps.tenant_config.defaults import sanitize_rich_text
 
@@ -449,7 +467,7 @@ def create_announcement_draft(user, params):
         "kind": "draft_announcement",
         "id": row.id,
         "title": row.title,
-        "url": "/admin/announcements",
+        "url": "/admin/notifications",
     }
 
 
@@ -465,53 +483,56 @@ _CREATED = {
 UNDO_REFUSED = "it was changed, published or removed since, so nothing was deleted"
 
 
-def _draft(what, pk, kind=None):
-    """The row the copilot created, while it is still a draft nobody depends
-    on -> (row, the fields that say whether she touched it), else None."""
+def _row_state(row):
+    """Every stored field of the row and its tags/filters: any edit shows."""
+    fields = {f.attname: str(getattr(row, f.attname)) for f in row._meta.concrete_fields}
+    links = {f.name: sorted(getattr(row, f.name).values_list("pk", flat=True)) for f in row._meta.many_to_many}
+    return fields, links
+
+
+def _depended_on(row):
+    """Somebody paid for it, or it sits in a bundle or a membership."""
     from django.contrib.contenttypes.models import ContentType
 
-    from apps.billing.models import PaymentItem
+    from apps.billing.models import BundleItem, PaymentItem, SubscriptionPlanAccess
 
-    def sold(row):
-        return PaymentItem.objects.filter(
-            content_type=ContentType.objects.get_for_model(row), object_id=row.pk
-        ).exists()
+    target = {"content_type": ContentType.objects.get_for_model(row), "object_id": row.pk}
+    return any(model.objects.filter(**target).exists() for model in (PaymentItem, BundleItem, SubscriptionPlanAccess))
 
+
+def _draft(what, pk, kind=None):
+    """The row the copilot created, while it is still a draft nobody depends
+    on -> (row, everything that says whether she touched it), else None."""
     if what == "course":
-        from apps.courses.models import Course, Lesson
+        from apps.courses.models import Course, Lesson, Module
 
         row = Course.objects.filter(pk=pk, is_published=False).first()
-        if row is None or row.enrollments.exists() or sold(row):
+        if row is None or row.enrollments.exists() or _depended_on(row):
             return None
+        modules = Module.objects.filter(course=row).order_by("id")
         lessons = Lesson.objects.filter(module__course=row).order_by("id")
-        return row, (
-            row.updated_at.isoformat(),
-            list(row.modules.order_by("id").values_list("id", "title", "order")),
-            list(lessons.values_list("id", "module_id", "title", "order", "video_id", "video_url", "content_html")),
-        )
+        return row, (_row_state(row), [_row_state(m) for m in modules], [_row_state(lesson) for lesson in lessons])
     if what == "event":
-        row = event_model(kind).objects.filter(pk=pk, status__in=("draft", "scheduled")).first()
-        if row is None or sold(row):
-            return None
-        return row, (
-            row.title,
-            row.description,
-            str(row.scheduled_at),
-            str(row.price),
-            str(row.thumbnail_id),
-            getattr(row, "location", ""),
-            getattr(row, "zoom_link", ""),
+        from django.utils import timezone
+
+        # Its stored status only moves when she presses Start (and never for
+        # a Zoom class or an in-person event): the clock says "not started".
+        row = (
+            event_model(kind)
+            .objects.filter(pk=pk, status__in=("draft", "scheduled"), scheduled_at__gt=timezone.now())
+            .first()
         )
+        return (row, _row_state(row)) if row and not _depended_on(row) else None
     if what == "post":
         from apps.blog.models import BlogPost
 
         row = BlogPost.objects.filter(pk=pk, status="draft").first()
-        return (row, (row.updated_at.isoformat(),)) if row else None
+        return (row, _row_state(row)) if row else None
     if what == "announcement":
         from apps.notifications.models import Announcement
 
         row = Announcement.objects.filter(pk=pk, status="draft").first()
-        return (row, (row.title, row.body, row.link, str(row.scheduled_at), row.filters_json)) if row else None
+        return (row, _row_state(row)) if row else None
     return None
 
 

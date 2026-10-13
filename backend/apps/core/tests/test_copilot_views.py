@@ -792,7 +792,9 @@ def test_execute_theme_action_records_old_theme(client, coach):
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 200, resp.content
     row = CopilotAudit.objects.latest("created_at")
-    assert row.inverse == {"kind": "edit_theme", "theme": "ocean"}
+    # ...plus a stamp of what the change left, checked before any undo.
+    assert row.inverse == {"kind": "edit_theme", "theme": "ocean", "after": row.inverse["after"]}
+    assert len(row.inverse["after"]) == 16
 
 
 def test_create_course_records_how_to_take_the_draft_back(client, coach):
@@ -898,6 +900,16 @@ def _latest_audit():
     from apps.tenant_config.models import CopilotAudit
 
     return CopilotAudit.objects.latest("created_at")
+
+
+def _stamped(inverse):
+    """A hand-built snapshot inverse as execute would have recorded it: with
+    the stamp of the state it may be restored over (the current one)."""
+    from django.db import connection
+
+    from apps.core.copilot import views
+
+    return {**inverse, "after": views._state_stamp(connection.tenant, inverse)}
 
 
 def test_undo_restores_pages_snapshot(client, coach):
@@ -1156,7 +1168,7 @@ def test_undo_restore_logo_gone_photo_returns_400_and_stays_undone(client, coach
         summary="Set a new logo",
         payload={"kind": "set_logo", "curated_logo_id": row.pk},
         result={"kind": "set_logo"},
-        inverse={"kind": "restore_logo", "logo_id": str(photo.pk), "logo_url": ""},
+        inverse=_stamped({"kind": "restore_logo", "logo_id": str(photo.pk), "logo_url": ""}),
     )
     photo.delete()
     undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": audit.pk}, format="json")
@@ -1181,13 +1193,15 @@ def test_undo_restore_course_cover_gone_photo_returns_400_and_stays_undone(clien
         title="Golden-hour mat flow", tags="yoga, flow", kind="hero", image_key="platform/curated-photos/mat-undo.jpg"
     )
     photo = materialize_curated_photo(row)
-    course = Course.objects.create(title="Yoga Basics", instructor=coach, thumbnail=photo)
+    # `photo` is the cover the undo would bring back; the course's present
+    # cover is something else (here: none), as after a real cover change.
+    course = Course.objects.create(title="Yoga Basics", instructor=coach)
     audit = CopilotAudit.objects.create(
         kind="set_course_cover",
         summary="Set the cover photo for 'Yoga Basics'",
         payload={"kind": "set_course_cover", "course_id": course.pk, "curated_photo_id": row.pk},
         result={"kind": "set_course_cover", "id": course.pk, "title": "Yoga Basics", "url": "/admin/courses/x"},
-        inverse={"kind": "restore_course_cover", "course_id": course.pk, "thumbnail_id": str(photo.pk)},
+        inverse=_stamped({"kind": "restore_course_cover", "course_id": course.pk, "thumbnail_id": str(photo.pk)}),
     )
     photo.delete()
     undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": audit.pk}, format="json")
@@ -1345,6 +1359,7 @@ def test_execute_note_photo_saves_alt_text_and_undo_restores(client, coach):
         "kind": "restore_photo_note",
         "tenant_photo_id": str(photo.pk),
         "alt_text": "old note",
+        "after": row.inverse["after"],
     }
     undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": audit_id}, format="json")
     assert undo.status_code == 200, undo.content
@@ -1585,3 +1600,119 @@ def test_a_turn_is_labelled_for_the_hub(tenant_ctx):
     with mock.patch.object(engine.core_ai, "structured", return_value=(answer, Decimal("0"), "m")) as structured:
         engine.run_turn(tenant_ctx, [], [], "hi")
     assert structured.call_args.kwargs["label"] == "contentor:copilot"
+
+
+# --- a snapshot is restored only over what its change left ----------------
+
+
+def _feed(client):
+    return {e["id"]: e for e in client.get("/api/v1/admin/copilot/audit/").json()["entries"]}
+
+
+def test_undo_never_restores_a_page_snapshot_over_her_later_edits(client, coach):
+    """History keeps rows for weeks and the site editor writes none: an old
+    snapshot must not wipe what she has done by hand since."""
+    from apps.tenant_config.models import TenantConfig
+
+    res = _execute_token(client, _toggle_token(enabled=False))
+    audit_id = res.json()["audit_id"]
+    assert _feed(client)[audit_id]["undoable"] is True
+    cfg = TenantConfig.objects.first()
+    cfg.pages = {"home": {"blocks": [{"id": "blk_hero", "type": "hero", "enabled": False, "heading": "Her words"}]}}
+    cfg.save(update_fields=["pages"])
+    assert _feed(client)[audit_id]["undoable"] is False
+    undo = _undo(client, res)
+    assert undo.status_code == 400
+    assert "overwrite newer work" in undo.json()["detail"]
+    assert _current_pages()["home"]["blocks"][0]["heading"] == "Her words"
+
+
+def test_a_snapshot_recorded_before_the_stamp_existed_is_never_restored(client, coach):
+    from apps.tenant_config.models import CopilotAudit
+
+    before = _current_pages()
+    old = CopilotAudit.objects.create(
+        kind="toggle_block", summary="Hid blk_hero on home", inverse={"kind": "restore_pages", "pages": {"home": {}}}
+    )
+    assert _feed(client)[old.pk]["undoable"] is False
+    assert client.post("/api/v1/admin/copilot/undo/", {"audit_id": old.pk}, format="json").status_code == 400
+    assert _current_pages() == before
+
+
+def test_an_undo_that_can_never_apply_steps_out_of_the_way(client, coach):
+    """A cover change on a course that is deleted afterwards used to stay
+    'latest' forever, blocking the page edit before it."""
+    from apps.courses.models import Course
+
+    page_edit = _execute_token(client, _toggle_token(enabled=False))
+    course = Course.objects.create(title="Gone soon", instructor=coach)
+    from apps.media.models import Photo
+
+    photo = Photo.objects.create(s3_key="uploads/c.png", title="Cover")
+    cover = _execute_token(
+        client,
+        copilot_tokens.stash_action(
+            "shared_test", {"kind": "set_course_cover", "course_id": course.id, "tenant_photo_id": str(photo.pk)}
+        ),
+    )
+    assert cover.status_code == 200, cover.content
+    course.delete()
+    assert _feed(client)[page_edit.json()["audit_id"]]["undoable"] is False  # the cover row is in front
+    assert _undo(client, cover).status_code == 400
+    assert _feed(client)[cover.json()["audit_id"]]["undoable"] is False
+    assert _feed(client)[page_edit.json()["audit_id"]]["undoable"] is True
+    assert _undo(client, page_edit).status_code == 200
+
+
+def _create_zoom(client, days=7):
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    when = (timezone.now() + timedelta(days=days)).isoformat()
+    action = {"kind": "create_event", "event_kind": "zoom", "params": {"title": "Office hour", "scheduled_at": when}}
+    res = _execute_token(client, copilot_tokens.stash_action("shared_test", action))
+    assert res.status_code == 200, res.content
+    return res
+
+
+def test_undo_leaves_a_class_whose_time_has_come(client, coach):
+    """A Zoom class never leaves 'scheduled' by itself: the clock decides."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from apps.live.models import ZoomClass
+
+    res = _create_zoom(client)
+    later = timezone.now() + timedelta(days=8)
+    with mock.patch("django.utils.timezone.now", return_value=later):
+        assert _undo(client, res).status_code == 400
+    assert ZoomClass.objects.filter(pk=res.json()["result"]["id"]).exists()
+
+
+def test_undo_leaves_a_class_that_sits_in_a_bundle_or_a_membership(client, coach):
+    from django.contrib.contenttypes.models import ContentType
+
+    from apps.billing.models import Bundle, BundleItem, SubscriptionPlan, SubscriptionPlanAccess
+    from apps.live.models import ZoomClass
+
+    in_bundle, in_plan = _create_zoom(client), _create_zoom(client, days=9)
+    zoom_type = ContentType.objects.get_for_model(ZoomClass)
+    bundle = Bundle.objects.create(name="Pack", price="10.00")
+    BundleItem.objects.create(bundle=bundle, content_type=zoom_type, object_id=in_bundle.json()["result"]["id"])
+    plan = SubscriptionPlan.objects.create(name="Members", price="9.00")
+    SubscriptionPlanAccess.objects.create(plan=plan, content_type=zoom_type, object_id=in_plan.json()["result"]["id"])
+    assert _undo(client, in_bundle).status_code == 400
+    assert _undo(client, in_plan).status_code == 400
+    assert ZoomClass.objects.count() == 2
+
+
+@pytest.mark.parametrize("field,value", [("duration_minutes", 90), ("pricing_type", "paid"), ("zoom_meeting_id", "9")])
+def test_undo_leaves_a_class_with_any_field_she_changed(client, coach, field, value):
+    from apps.live.models import ZoomClass
+
+    res = _create_zoom(client)
+    ZoomClass.objects.filter(pk=res.json()["result"]["id"]).update(**{field: value})
+    assert _undo(client, res).status_code == 400
+    assert ZoomClass.objects.count() == 1

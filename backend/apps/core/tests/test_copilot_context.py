@@ -78,6 +78,8 @@ def test_only_known_intents_survive(tenant_ctx):
         "draft_course"
     )
     assert page_context.clean(tenant_ctx, {"path": "/admin/courses", "intent": "delete everything"})["intent"] is None
+    for junk in (["draft_course"], {"a": 1}, 7):
+        assert page_context.clean(tenant_ctx, {"path": "/admin/courses", "intent": junk})["intent"] is None
 
 
 def _user_turn_for(tenant, context):
@@ -153,7 +155,7 @@ def test_a_time_she_names_is_her_wall_clock_not_utc(tenant_ctx):
     cfg.save(update_fields=["timezone"])
 
     digest = engine._clock_digest(tenant_ctx)
-    assert "Europe/Istanbul (UTC+0300)" in digest
+    assert "Europe/Istanbul" in digest
     assert f"{timezone.now().astimezone(ZoneInfo('Europe/Istanbul')):%Y-%m-%d}" in digest
 
     bare = (timezone.now() + timedelta(days=7)).replace(hour=18, minute=0, second=0, microsecond=0, tzinfo=None)
@@ -166,9 +168,60 @@ def test_a_time_she_names_is_her_wall_clock_not_utc(tenant_ctx):
     assert stashed.utcoffset() == timedelta(hours=3)
     assert stashed.hour == 18
     assert "18:00 +03" in card["detail"]
-    # A time the model wrote in UTC is shown to her in her own zone.
-    utc = bare.replace(tzinfo=ZoneInfo("UTC"))
+    # Whatever offset comes with the digits, the digits are her clock.
+    with_offset = bare.replace(tzinfo=ZoneInfo("UTC"))
     shown = engine._card(
-        tenant_ctx, engine.CreateEventAction(kind="create_event", event_kind="zoom", title="Flow", scheduled_at=utc)
+        tenant_ctx,
+        engine.CreateEventAction(kind="create_event", event_kind="zoom", title="Flow", scheduled_at=with_offset),
     )
-    assert "21:00 +03" in shown["detail"]
+    assert "18:00 +03" in shown["detail"]
+
+
+def test_a_class_after_the_clocks_change_keeps_its_hour(tenant_ctx):
+    """Asked in summer time for a date in winter time: an offset copied from
+    today would land it an hour early."""
+    from datetime import datetime
+
+    from apps.core.copilot import tokens
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.timezone = "Europe/Berlin"
+    cfg.save(update_fields=["timezone"])
+    summer = datetime(2030, 10, 14, 9, 0, tzinfo=ZoneInfo("Europe/Berlin"))  # CEST, +02:00
+    asked = datetime.fromisoformat("2030-11-05T18:00:00+02:00")  # the model copied today's offset
+    with mock.patch("django.utils.timezone.now", return_value=summer):
+        assert "NO offset" in engine._clock_digest(tenant_ctx)
+        card = engine._card(
+            tenant_ctx,
+            engine.CreateEventAction(kind="create_event", event_kind="zoom", title="Flow", scheduled_at=asked),
+        )
+    stashed = datetime.fromisoformat(
+        tokens.take_action(card["token"], tenant_ctx.schema_name)["params"]["scheduled_at"]
+    )
+    assert (stashed.hour, stashed.utcoffset()) == (18, timedelta(hours=1))
+    assert "Tue Nov 05, 2030 18:00 CET" in card["detail"]
+
+
+def test_the_events_list_is_in_her_local_time(tenant_ctx):
+    from apps.accounts.models import User
+    from apps.live.models import ZoomClass
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.timezone = "Europe/Istanbul"
+    cfg.save(update_fields=["timezone"])
+    owner = User.objects.create_user(email="tz-owner@x.com", name="O", password="x", role="owner")  # noqa: S106
+    when = (timezone.now() + timedelta(days=3)).replace(hour=15, minute=0, second=0, microsecond=0)
+    ZoomClass.objects.create(title="Office hour", instructor=owner, scheduled_at=when.astimezone(ZoneInfo("UTC")))
+    assert f"{when.astimezone(ZoneInfo('Europe/Istanbul')):%Y-%m-%dT%H:%M}" in engine._events_digest(tenant_ctx)
+
+
+def test_an_unknown_time_zone_name_falls_back_to_utc(tenant_ctx):
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
+    cfg.timezone = "Mars/Olympus"
+    cfg.save(update_fields=["timezone"])
+    assert engine._tenant_zone(tenant_ctx).key == "UTC"
+    assert "UTC" in engine._clock_digest(tenant_ctx)

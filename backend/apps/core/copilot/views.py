@@ -3,6 +3,8 @@ NOT clear authentication_classes; that is only for pre-provision wizard
 endpoints). No metering: no availability checks, no credits. Every model
 call's USD still lands in the onboarding meter (kill-switch integrity)."""
 
+import hashlib
+import json
 import logging
 from decimal import Decimal
 
@@ -440,13 +442,17 @@ def _record_audit(tenant, user, action, result, inverse):
     from apps.tenant_config.models import CopilotAudit
 
     try:
+        inverse = inverse if isinstance(inverse, dict) else {}
+        if inverse and not _order_free(inverse):
+            # What the change left behind: undo later only if it still stands.
+            inverse = {**inverse, "after": _state_stamp(tenant, inverse)}
         with tenant_context(tenant):
             row = CopilotAudit.objects.create(
                 kind=str(action.get("kind") or "")[:40],
                 summary=_audit_summary(action, result)[:300],
                 payload=action,
                 result=result if isinstance(result, dict) else {},
-                inverse=inverse if isinstance(inverse, dict) else {},
+                inverse=inverse,
                 actor=user if getattr(user, "pk", None) else None,
             )
             return row.id
@@ -489,8 +495,8 @@ def _order_free(inverse):
     return inverse.get("kind") == "delete_created"
 
 
-def _latest_snapshot_id():
-    """The one snapshot-restoring change that can still be undone."""
+def _latest_snapshot():
+    """The one snapshot-restoring change that could still be undone."""
     from apps.tenant_config.models import CopilotAudit
 
     return (
@@ -498,9 +504,55 @@ def _latest_snapshot_id():
         .exclude(inverse={})
         .exclude(inverse__kind="delete_created")
         .order_by("-created_at", "-id")
-        .values_list("id", flat=True)
         .first()
     )
+
+
+def _restored_state(inverse):
+    """What applying this snapshot inverse would overwrite, as it is right
+    now (None or [] when its target is gone). Caller holds tenant_context."""
+    from apps.tenant_config.models import TenantConfig
+
+    kind = inverse.get("kind")
+    if kind == "restore_photo_note":
+        from apps.media.models import Photo
+
+        return list(Photo.objects.filter(pk=inverse.get("tenant_photo_id")).values_list("alt_text", flat=True))
+    if kind == "restore_course_cover":
+        from apps.courses.models import Course
+
+        return list(Course.objects.filter(pk=inverse.get("course_id")).values_list("thumbnail_id", flat=True))
+    if kind == "restore_event_cover":
+        model = content.event_model(inverse.get("event_kind"))
+        return list(model.objects.filter(pk=inverse.get("event_id")).values_list("thumbnail_id", flat=True))
+    cfg = TenantConfig.objects.first()
+    if cfg is None:
+        return None
+    return {
+        "restore_pages": lambda: cfg.pages,
+        "restore_style": lambda: [cfg.style, cfg.pages],
+        "edit_theme": lambda: cfg.theme,
+        "restore_navbar": lambda: cfg.navbar_config,
+        "restore_logo": lambda: [cfg.logo_id, cfg.logo_url],
+        "edit_seo": lambda: cfg.meta_description,
+    }.get(kind, lambda: None)()
+
+
+def _state_stamp(tenant, inverse):
+    with tenant_context(tenant):
+        state = _restored_state(inverse)
+    return hashlib.sha256(json.dumps(state, sort_keys=True, default=str).encode()).hexdigest()[:16]
+
+
+SNAPSHOT_STALE = "it was changed since, so undoing it would overwrite newer work"
+
+
+def _still_stands(tenant, inverse):
+    """A snapshot may be restored only over exactly what its change left: a
+    restore over later edits (the site editor writes no audit rows) would
+    silently wipe them. Rows from before this check carry no stamp and are
+    never restored."""
+    return _order_free(inverse) or inverse.get("after") == _state_stamp(tenant, inverse)
 
 
 @api_view(["GET"])
@@ -508,22 +560,29 @@ def _latest_snapshot_id():
 def copilot_audit(request):
     """Newest-first feed of executed copilot actions for the assistant's
     History tab; ``undoable`` says which rows Undo can still act on."""
+    from django.db.models.fields.json import KT
+
     from apps.tenant_config.models import CopilotAudit
 
     tenant = connection.tenant
     with tenant_context(tenant):
-        latest_id = _latest_snapshot_id()
-        rows = list(CopilotAudit.objects.all()[:AUDIT_FEED_LIMIT])
+        latest = _latest_snapshot()
+        # Only the inverse's kind: an inverse can hold a whole pages tree.
+        rows = list(
+            CopilotAudit.objects.annotate(inverse_kind=KT("inverse__kind")).values(
+                "id", "kind", "summary", "created_at", "undone_at", "inverse_kind"
+            )[:AUDIT_FEED_LIMIT]
+        )
+    restorable_id = latest.id if latest is not None and _still_stands(tenant, latest.inverse) else None
     entries = [
         {
-            "id": row.id,
-            "kind": row.kind,
-            "summary": row.summary,
-            "created_at": row.created_at,
-            "undone": row.undone_at is not None,
-            "undoable": row.undone_at is None
-            and bool(row.inverse)
-            and (_order_free(row.inverse) or row.id == latest_id),
+            "id": row["id"],
+            "kind": row["kind"],
+            "summary": row["summary"],
+            "created_at": row["created_at"],
+            "undone": row["undone_at"] is not None,
+            "undoable": row["undone_at"] is None
+            and (row["inverse_kind"] == "delete_created" or row["id"] == restorable_id),
         }
         for row in rows
     ]
@@ -623,23 +682,25 @@ def copilot_undo(request):
     except (TypeError, ValueError):
         return Response({"detail": "not_found"}, status=404)
     with tenant_context(tenant):
-        latest_id = _latest_snapshot_id()
+        latest = _latest_snapshot()
         entry = CopilotAudit.objects.filter(pk=audit_id).first()
     if entry is None:
         return Response({"detail": "not_found"}, status=404)
     if entry.undone_at is not None or not entry.inverse:
         return Response({"detail": "not_undoable"}, status=400)
-    if not _order_free(entry.inverse) and latest_id != entry.pk:
+    if not _order_free(entry.inverse) and (latest is None or latest.pk != entry.pk):
         return Response({"detail": "only the latest change can be undone"}, status=400)
     try:
+        if not _still_stands(tenant, entry.inverse):
+            raise content.ContentOpError(SNAPSHOT_STALE)
         _apply_inverse(tenant, entry.inverse)
     except (blocks.BlockOpError, chrome.ChromeOpError, content.ContentOpError) as exc:
-        if _order_free(entry.inverse):
-            # A draft she has touched is hers now: this undo will never apply,
-            # so History stops offering it.
-            with tenant_context(tenant):
-                entry.inverse = {}
-                entry.save(update_fields=["inverse"])
+        # Every refusal here is for good (she changed it, or its target is
+        # gone): History stops offering it, and it no longer stands in front
+        # of the change before it.
+        with tenant_context(tenant):
+            entry.inverse = {}
+            entry.save(update_fields=["inverse"])
         return Response({"detail": str(exc)}, status=400)
     with tenant_context(tenant):
         entry.undone_at = timezone.now()

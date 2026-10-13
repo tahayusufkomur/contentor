@@ -125,7 +125,7 @@ def clean(tenant, raw):
         "page": ADMIN_PAGES[page],
         "path": page,
         "record": record,
-        "intent": intent if intent in INTENTS else None,
+        "intent": intent if isinstance(intent, str) and intent in INTENTS else None,
     }
 
 
