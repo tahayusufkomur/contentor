@@ -39,17 +39,23 @@ test("sidebar navigation highlights the target and shows a loading state before 
     },
   );
 
-  const students = page.getByRole("link", { name: /^students$/i });
+  // Calendar is a tab under Teach; Students is a sidebar row (the assistant
+  // panel is the only other <aside>, and it has an aria-label).
+  const students = page
+    .locator("aside:not([aria-label]) nav")
+    .getByRole("link", { name: "Students" });
   await students.click();
 
-  // 1. Optimistic highlight: the clicked item owns the active state
-  // immediately, well before the stalled RSC request resolves.
+  // 1. Optimistic highlight: the clicked row owns the active state
+  // immediately, well before the stalled RSC request resolves, and the tab
+  // strip already belongs to Students rather than Teach.
   await expect(students).toHaveAttribute("aria-current", "page", {
     timeout: 1000,
   });
-  await expect(
-    page.getByRole("link", { name: /^calendar$/i }),
-  ).not.toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("navigation", { name: "Students" })).toBeVisible({
+    timeout: 1000,
+  });
+  await expect(page.getByRole("navigation", { name: "Teach" })).toHaveCount(0);
 
   // 2. The top progress bar appears while the navigation is in flight. This
   // is the regression net for a real Task 8 bug: `isPending` ended the

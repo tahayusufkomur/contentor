@@ -1,119 +1,141 @@
 // e2e/specs/27-nav-stage-gating.spec.ts
 //
-// Proves the admin nav's stage-gating end to end (see admin-nav-gate.ts):
-//   - Marketing renders locked (greyed, but reachable — never a dead end)
-//     until the tenant is published.
-//   - Content hides module-gated/disclosure-only items behind a "+ N more"
-//     row, which reveals them on click.
-//   - Once published, Marketing's items render as normal nav links.
+// Proves the admin shell's seven places end to end (see admin-nav.ts and
+// admin-nav-gate.ts):
+//   - The sidebar has seven rows; a section's pages are tabs under the top
+//     bar, and the section stays lit on pages that sit under no nav item.
+//   - Pages of modules the coach did not choose hide behind "+ N more" in the
+//     tab strip, which reveals them on click.
+//   - Nothing in Reach out is locked behind publishing (the old Marketing
+//     lock is gone).
 //
-// Both tests drive the same tenant, `demo-yoga` (published, canonical seed —
-// the one tenant every e2e spec can already assume exists and is reachable).
-// There is no reproducible *unpublished* seeded tenant — seed_dev_tenants.py
-// creates every dev tenant with is_published=True — so the locked case is
-// produced by intercepting demo-yoga's own /api/v1/admin/setup-status/
-// response rather than depending on a tenant's real DB state:
+// All tests drive `demo-yoga` (published, every module on). The module-off
+// test narrows demo-yoga's enabled_modules for its own duration and restores
+// them in `finally` — specs run serially (workers: 1), and the dev stack
+// serves tenant config uncached, so the change is visible on the next load.
 //
-//   - It's seed-independent: a fresh `make dev-reset && make seed` can never
-//     break this test the way pinning it to an ad hoc, non-seeded tenant
-//     would (that was this spec's first draft — see git history — and it
-//     depended on a hand-created tenant that isn't part of the reproducible
-//     fixture set).
-//   - It's a more precise regression guard. admin-shell.tsx derives
-//     `published` from the `publish` item's `source === "auto"`, NOT its
-//     `done` flag — specifically so a coach manually ticking `publish` in the
-//     Setup Assistant (source: "manual") can never fake their way past the
-//     gate (compute_setup_state in setup_items.py: `source = "auto" if auto
-//     else ("manual" if manual.get(key) is True else None)`). The stub below
-//     forges exactly that forgeable signal (done: true, source: "manual")
-//     and asserts Marketing stays locked anyway — a real unpublished tenant
-//     (done: false) can't exercise this distinction at all, since both
-//     `done` and `source` would be falsy/auto together.
-//
-// The real, non-stubbed `source: "auto"` unlock path still gets a genuine
-// end-to-end check in the second test below, against demo-yoga's real,
-// seeded is_published=True state — nothing here is stubbed for that one.
-//
-// Selector note: the admin dashboard (app/admin/page.tsx) has its own
-// unrelated "Blog" quick-action link in <main>, always present regardless of
-// publish state, and the sidebar's own Blog item appends AI/Paid badge text
-// to its accessible name (e.g. "BlogAIPaid" once Marketing unlocks — the
-// item is `ai: true, requiresEntitlement: "ai_blog"`). Both were confirmed
-// against the live DOM. So every assertion here is scoped to the sidebar's
-// <nav> landmark (there is exactly one on /admin at desktop viewport — the
-// mobile drawer's duplicate nav isn't mounted until its hamburger is
-// opened), and the "Blog" match is prefix-anchored rather than exact.
+// Selector note: the sidebar is the only <aside> without an aria-label (the
+// assistant panel is an <aside aria-label="Assistant">), and a section's tab
+// strip is the <nav> named after the section.
 
 import { test, expect } from "@playwright/test";
 import { coachContext, TENANT } from "../helpers/auth";
+import { manage } from "../helpers/compose";
 
-test("a manually-ticked (non-auto) publish signal still leaves Marketing locked and Content collapsed behind + N more", async ({
+const sidebar = (page: import("@playwright/test").Page) =>
+  page.locator("aside:not([aria-label]) nav");
+
+const MODULES = (): string =>
+  manage([
+    "shell",
+    "-c",
+    "from django_tenants.utils import schema_context\n" +
+      "from apps.tenant_config.models import TenantConfig\n" +
+      "with schema_context('demo_yoga'):\n" +
+      "    print(','.join(TenantConfig.objects.first().enabled_modules))",
+  ])
+    .split("\n")
+    .pop()!;
+
+function setModules(modules: string[]) {
+  manage([
+    "shell",
+    "-c",
+    "from django_tenants.utils import schema_context\n" +
+      "from apps.tenant_config.models import TenantConfig\n" +
+      "from django.core.cache import cache\n" +
+      "with schema_context('demo_yoga'):\n" +
+      `    TenantConfig.objects.update(enabled_modules=${JSON.stringify(modules)})\n` +
+      // The config endpoint caches per tenant for 5 minutes; .update() skips
+      // the save signal that would clear it.
+      "cache.delete('tenant:demo_yoga:config')",
+  ]);
+}
+
+test("seven sidebar rows; Teach is lit on a course page and its pages are tabs", async ({
   browser,
 }) => {
-  const coach = await coachContext(browser); // demo-yoga
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  await page.goto(`${TENANT}/admin/courses/new`);
+
+  await expect(sidebar(page).getByRole("link")).toHaveCount(7);
+  await expect(
+    sidebar(page).getByRole("link", { name: "Reach out" }),
+  ).toBeVisible();
+  await expect(
+    sidebar(page).getByRole("link", { name: "Teach" }),
+  ).toHaveAttribute("aria-current", "page");
+
+  // demo-yoga has every module on: all four Teach pages, nothing hidden.
+  const teach = page.getByRole("navigation", { name: "Teach" });
+  await expect(teach.getByRole("link")).toHaveCount(4);
+  await expect(teach.getByRole("button", { name: /\+ \d+ more/i })).toHaveCount(
+    0,
+  );
+
+  await page.close();
+});
+
+test("a coach with no optional modules sees Courses and + more under Teach", async ({
+  browser,
+}) => {
+  const original = MODULES().split(",").filter(Boolean);
+  setModules(["courses"]);
+  try {
+    const coach = await coachContext(browser);
+    const page = await coach.newPage();
+    await page.goto(`${TENANT}/admin/courses`);
+
+    const teach = page.getByRole("navigation", { name: "Teach" });
+    await expect(teach.getByRole("link", { name: "Courses" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(
+      teach.getByRole("link", { name: /classes & events/i }),
+    ).toHaveCount(0);
+
+    await teach.getByRole("button", { name: /\+ \d+ more/i }).click();
+    await expect(
+      teach.getByRole("link", { name: /classes & events/i }),
+    ).toBeVisible();
+
+    await page.close();
+  } finally {
+    setModules(original);
+  }
+});
+
+test("Reach out is open before the site is published", async ({ browser }) => {
+  const coach = await coachContext(browser);
   const page = await coach.newPage();
 
-  // Forge a MANUAL tick on the `publish` item: done stays true, but source
-  // becomes "manual" instead of the real "auto". Fetch the real response
-  // first so the rest of the payload shape (progress, blockers, every other
-  // item) stays honest — only `publish` is touched.
+  // Present demo-yoga as unpublished: the publish item is neither done nor ticked.
   await page.route("**/api/v1/admin/setup-status/", async (route) => {
     const res = await route.fetch();
     const body = await res.json();
     for (const item of body.items ?? []) {
       if (item.key === "publish") {
-        item.done = true;
-        item.source = "manual";
+        item.done = false;
+        item.source = null;
       }
     }
     await route.fulfill({ response: res, json: body });
   });
 
-  await page.goto(`${TENANT}/admin`);
+  await page.goto(`${TENANT}/admin/blog`);
 
-  const nav = page.getByRole("navigation");
-
-  // Marketing is greyed but still a real, reachable link to the milestone
-  // that unlocks it — never disabled, never removed.
-  const explainer = nav.getByRole("link", {
-    name: /publish your site to open marketing/i,
-  });
-  await expect(explainer).toBeVisible();
-  await expect(explainer).toHaveAttribute("href", "/admin#publish-card");
-
-  // Content hides at least one item behind "+ N more" (demo-yoga has the
-  // `live` and `downloads` modules enabled, so only the always-disclosure-only
-  // Library item is hidden — hence "+ 1 more").
-  const moreButton = nav.getByRole("button", { name: /\+ \d+ more/i });
-  await expect(moreButton).toBeVisible();
-
-  const libraryLink = nav.getByRole("link", { name: /^library$/i });
-  await expect(libraryLink).toHaveCount(0);
-
-  await moreButton.click();
-  await expect(libraryLink).toBeVisible();
-
-  await page.close();
-});
-
-test("a published tenant sees Marketing unlocked with its items as normal nav links", async ({
-  browser,
-}) => {
-  const coach = await coachContext(browser); // demo-yoga — seeded is_published=True
-  const page = await coach.newPage();
-  await page.goto(`${TENANT}/admin`);
-
-  const nav = page.getByRole("navigation");
-
-  // The lock explainer is gone entirely, not just hidden.
+  const reach = page.getByRole("navigation", { name: "Reach out" });
+  await expect(reach.getByRole("link", { name: /^blog/i })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
   await expect(
-    nav.getByRole("link", { name: /publish your site to open marketing/i }),
+    page.getByText(/publish your site to open marketing/i),
   ).toHaveCount(0);
 
-  // Blog renders as a normal nav link (icon + label, not the locked-section
-  // explainer). Prefix-matched — see the file header re: the AI/Paid badge
-  // suffix on this item's accessible name.
-  await expect(nav.getByRole("link", { name: /^blog/i })).toBeVisible();
-
+  // A setup-status fetch still in flight must not outlive the page.
+  await page.unrouteAll({ behavior: "ignoreErrors" });
   await page.close();
 });
