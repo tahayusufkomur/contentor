@@ -11,6 +11,8 @@ import { ZoomClassesTab } from "@/components/admin/live/zoom-tab";
 import { OnsiteEventsTab } from "@/components/admin/live/onsite-tab";
 import { useIsLocked } from "@/components/admin/entitlements-provider";
 import { PaidFeatureBadge } from "@/components/admin/feature-badges";
+import { DescribeIt } from "@/components/admin/describe-it";
+import { useAssistantApplied } from "@/lib/site-events";
 import type { LiveEventKind } from "@/components/admin/live/shared";
 
 const VALID_TABS = new Set<LiveEventKind>([
@@ -28,6 +30,12 @@ export default function LiveEventsPage() {
   // window.location.search, not useSearchParams — same Suspense-bailout
   // dodge the copilot drawer uses.
   const [tab, setTab] = useState<LiveEventKind>("classes");
+  // Bumped when the assistant schedules, changes or takes back a class
+  // (from the line below or from its panel): the lists reload.
+  const [listKey, setListKey] = useState(0);
+  useAssistantApplied(({ kind }) => {
+    if (kind === "undo" || kind.includes("event")) setListKey((k) => k + 1);
+  });
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("tab");
     if (requested && VALID_TABS.has(requested as LiveEventKind)) {
@@ -59,6 +67,8 @@ export default function LiveEventsPage() {
         </div>
       )}
 
+      <DescribeIt kind="event" />
+
       <Tabs value={tab} onValueChange={(v) => setTab(v as LiveEventKind)}>
         <TabsList>
           <TabsTrigger value="classes">
@@ -78,26 +88,26 @@ export default function LiveEventsPage() {
             Host interactive live sessions on the platform with video, audio,
             and screen sharing.
           </p>
-          <LiveClassesTab />
+          <LiveClassesTab key={listKey} />
         </TabsContent>
         <TabsContent value="streams">
           <p className="mb-4 text-sm text-muted-foreground">
             Broadcast one-to-many streams to your audience with live chat.
           </p>
-          <LiveStreamsTab />
+          <LiveStreamsTab key={listKey} />
         </TabsContent>
         <TabsContent value="zoom">
           <p className="mb-4 text-sm text-muted-foreground">
             Schedule and share Zoom meeting links with your students.
           </p>
-          <ZoomClassesTab />
+          <ZoomClassesTab key={listKey} />
         </TabsContent>
         <TabsContent value="onsite">
           <p className="mb-4 text-sm text-muted-foreground">
             Organize in-person events, workshops, and meetups at a physical
             location.
           </p>
-          <OnsiteEventsTab />
+          <OnsiteEventsTab key={listKey} />
         </TabsContent>
       </Tabs>
     </div>

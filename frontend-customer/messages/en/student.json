@@ -82,6 +82,7 @@
     "undoing": "Undoing…",
     "undone": "Change undone",
     "undoStale": "A newer change exists — undo it from Recent changes.",
+    "undoChanged": "It was changed or published since, so it was left as it is.",
     "removeSelection": "Remove selection",
     "resting": "The assistant is resting right now — please try again a bit later.",
     "error": "Something went wrong. Please try again.",

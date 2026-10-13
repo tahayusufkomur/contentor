@@ -19,7 +19,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { executeCopilotAction, undoCopilotAction } from "@/lib/copilot/api";
 import { isCreateKind, isUndoableKind, runBundle } from "@/lib/copilot/state";
-import { announceSiteUpdated } from "@/lib/site-events";
+import {
+  announceAssistantApplied,
+  announceSiteUpdated,
+} from "@/lib/site-events";
 import { ApiError } from "@/types/api";
 import type {
   ActionCard as ActionCardData,
@@ -38,17 +41,24 @@ interface BundleRegistry {
   notify: () => void;
 }
 const CardBundleContext = createContext<BundleRegistry | null>(null);
+/** Bumped on every register/unregister. Its own context because the registry
+ * above must stay one stable object (the cards' effects depend on it), and a
+ * consumer only re-renders when a context VALUE changes: reading the registry
+ * alone left `ApplyAllBar` showing whatever count it first saw. */
+const CardBundleVersionContext = createContext(0);
 
 export function CardBundleProvider({ children }: { children: ReactNode }) {
   const cards = useRef<Map<string, () => Promise<void>>>(new Map());
-  const [, setVersion] = useState(0);
+  const [version, setVersion] = useState(0);
   const registry = useRef<BundleRegistry>({
     cards: cards.current,
     notify: () => setVersion((v) => v + 1),
   });
   return (
     <CardBundleContext.Provider value={registry.current}>
-      {children}
+      <CardBundleVersionContext.Provider value={version}>
+        {children}
+      </CardBundleVersionContext.Provider>
     </CardBundleContext.Provider>
   );
 }
@@ -135,7 +145,14 @@ const FIELD_NAME_KEYS = new Set([
   "successMessage",
 ]);
 
-export function ActionCard({ card }: { card: ActionCardData }) {
+export function ActionCard({
+  card,
+  onApplied,
+}: {
+  card: ActionCardData;
+  /** Called once the action is applied, with what the server returned. */
+  onApplied?: (result: ExecuteResult) => void;
+}) {
   const t = useTranslations("student.copilot");
   const router = useRouter();
   const bundle = useContext(CardBundleContext);
@@ -160,8 +177,10 @@ export function ActionCard({ card }: { card: ActionCardData }) {
     // Coaches see the live editor canvas, which renders from the editor
     // store, not server props — announce so it re-syncs in place.
     announceSiteUpdated();
+    announceAssistantApplied(res.result);
     router.refresh();
     toast.success(t(isCreateKind(card.kind) ? "created" : "applied"));
+    onApplied?.(res.result);
   };
 
   // Solo button path keeps the useAsyncAction wrapper for its own loading
@@ -177,6 +196,7 @@ export function ActionCard({ card }: { card: ActionCardData }) {
       if (auditId == null) return;
       await undoCopilotAction(auditId);
       announceSiteUpdated();
+      announceAssistantApplied({ kind: "undo" });
       router.refresh();
       toast.success(t("undone"));
       setState("dismissed");
@@ -189,7 +209,7 @@ export function ActionCard({ card }: { card: ActionCardData }) {
       onError: (err) => {
         toast.error(
           err instanceof ApiError && err.status === 400
-            ? t("undoStale")
+            ? t(isCreateKind(card.kind) ? "undoChanged" : "undoStale")
             : t("error"),
         );
       },
@@ -305,6 +325,7 @@ export function ApplyAllBar() {
   // Re-render whenever a card (un)registers, so the bar unmounts as soon as
   // fewer than 2 proposed cards remain instead of staying clickable after
   // the bundle it once represented has resolved down to 0-1 cards.
+  useContext(CardBundleVersionContext);
   const proposedCount = bundle?.cards.size ?? 0;
   const { run, loading } = useAsyncAction(async () => {
     const confirms = bundle ? [...bundle.cards.values()] : [];

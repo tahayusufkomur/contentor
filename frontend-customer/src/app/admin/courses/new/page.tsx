@@ -4,8 +4,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { CourseForm } from "@/components/admin/course-form";
+import { DescribeIt } from "@/components/admin/describe-it";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
 export default function NewCoursePage() {
+  const navigate = useNavigate();
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -16,6 +19,11 @@ export default function NewCoursePage() {
         </Button>
         <h1 className="text-2xl font-bold tracking-tight">New Course</h1>
       </div>
+
+      <DescribeIt
+        kind="course"
+        onApplied={(result) => result.url && navigate(result.url)}
+      />
 
       <CourseForm />
     </div>

@@ -22,6 +22,9 @@ import {
   type FieldConfig,
 } from "@/components/admin/inline-edit-panel";
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
+import { DescribeIt } from "@/components/admin/describe-it";
+import { useAssistantApplied } from "@/lib/site-events";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { DemoBadge } from "@/components/setup/demo-badge";
 import { formatMoney } from "@/lib/format";
 import { useTenantCurrency } from "@/lib/setup-assistant";
@@ -65,10 +68,17 @@ const courseFields: FieldConfig<Course>[] = [
 
 export default function AdminCoursesPage() {
   const t = useTranslations("admin");
+  const navigate = useNavigate();
   const currency = useTenantCurrency();
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
+  // The assistant's panel created, changed or took back a course.
+  useAssistantApplied(({ kind }) => {
+    if (kind === "undo" || kind.includes("course")) {
+      browserRef.current?.refresh();
+    }
+  });
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<Course>> => {
@@ -142,6 +152,12 @@ export default function AdminCoursesPage() {
           </Link>
         </Button>
       </div>
+
+      {/* The drafted course opens in its editor, where she reviews it. */}
+      <DescribeIt
+        kind="course"
+        onApplied={(result) => result.url && navigate(result.url)}
+      />
 
       <MediaBrowser<Course>
         ref={browserRef}

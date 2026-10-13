@@ -12,7 +12,16 @@ import { PageState } from "@/components/ui/page-state";
 import { clientFetch } from "@/lib/api-client";
 import { ArrowLeft } from "lucide-react";
 import { CourseForm } from "@/components/admin/course-form";
+import { useAssistantApplied } from "@/lib/site-events";
 import type { CourseDetail } from "@/types/course";
+
+/** What the assistant can do to a course that the open form would not know. */
+const COURSE_CHANGES = new Set([
+  "edit_course",
+  "edit_curriculum",
+  "set_course_cover",
+  "publish_course",
+]);
 
 export default function AdminCourseDetailPage() {
   const params = useParams<{ slug: string }>();
@@ -20,6 +29,7 @@ export default function AdminCourseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [formKey, setFormKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,6 +61,19 @@ export default function AdminCourseDetailPage() {
       .then(setCourse)
       .catch(console.error);
   }, [params.slug]);
+
+  // The assistant changed this course (its curriculum, text, price or cover):
+  // load it again and hand the form the new copy. The form keeps its own
+  // state, so it is remounted — only for a change to the course on screen.
+  useAssistantApplied((applied) => {
+    if (applied.id !== course?.id || !COURSE_CHANGES.has(applied.kind)) return;
+    clientFetch<CourseDetail>(`/api/v1/courses/${params.slug}/`)
+      .then((data) => {
+        setCourse(data);
+        setFormKey((k) => k + 1);
+      })
+      .catch(console.error);
+  });
 
   return (
     <PageState
@@ -88,7 +111,11 @@ export default function AdminCourseDetailPage() {
             </Badge>
           </div>
 
-          <CourseForm course={course} onCourseLoaded={refreshCourse} />
+          <CourseForm
+            key={formKey}
+            course={course}
+            onCourseLoaded={refreshCourse}
+          />
         </>
       )}
     </PageState>

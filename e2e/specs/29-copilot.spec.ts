@@ -338,3 +338,122 @@ test("the copilot rides along into /admin: stays open, keeps the chat, hides Sel
   await expect(page.getByRole("button", { name: "Select" })).toHaveCount(0);
   await page.close();
 });
+
+// ── The admin's assistant panel (phase 2 of the admin refactor) ─────────────
+// Converse and execute stay stubbed; what is under test is what the admin
+// sends (the page she is on, the intent of a "Describe it" line) and shows.
+
+function sse(done: Record<string, unknown>) {
+  return {
+    status: 200,
+    contentType: "text/event-stream",
+    body: 'data: {"type":"phase","phase":"thinking"}\n\n' + `data: ${JSON.stringify({ type: "done", ...done })}\n\n`,
+  };
+}
+
+test("in the admin the assistant knows the page, offers its starters, and takes a question from search", async ({
+  browser,
+}) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+  const sent: Record<string, any>[] = [];
+  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
+    sent.push(route.request().postDataJSON());
+    await route.fulfill(sse({ kind: "answer", text: `Answer ${sent.length}.` }));
+  });
+  await mockEmptyChats(page);
+  await page.goto(`${TENANT}/admin/courses?assistant=assistant`);
+
+  // The page's own starters, no model call to show them.
+  const starters = page.getByTestId("copilot-starters");
+  await expect(starters.getByRole("button")).toHaveCount(3);
+  expect(sent).toHaveLength(0);
+  await starters.getByRole("button", { name: "Which courses are still drafts?" }).click();
+  await expect(page.getByText("Answer 1.")).toBeVisible();
+  expect(sent[0].message).toBe("Which courses are still drafts?");
+  expect(sent[0].context).toEqual({ path: "/admin/courses" });
+  // Asked from this page: its starters step aside until she moves on.
+  await expect(starters).toHaveCount(0);
+
+  // Search: a page name still jumps there; anything else can be asked.
+  await page.getByRole("button", { name: /Search pages/ }).click();
+  await page.getByPlaceholder("Search pages…").fill("how do I get paid");
+  await expect(page.getByRole("button", { name: "Ask the assistant: “how do I get paid”" })).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("Answer 2.")).toBeVisible();
+  expect(sent[1].message).toBe("how do I get paid");
+  expect(sent[1].transcript).toEqual([]); // its own conversation
+  await page.close();
+});
+
+test("Describe it drafts a class series beside the manual tabs: cards, Apply all", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+  const sent: Record<string, any>[] = [];
+  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
+    sent.push(route.request().postDataJSON());
+    await route.fulfill(
+      sse({
+        kind: "actions",
+        text: "Two Tuesdays.",
+        actions: [1, 2].map((n) => ({
+          kind: "create_event",
+          title: `Schedule Zoom class: Office hour ${n}`,
+          detail: "Tue — visible to students once confirmed",
+          token: `e2e-series-${n}`,
+        })),
+      }),
+    );
+  });
+  const executed: string[] = [];
+  await page.route("**/api/v1/admin/copilot/execute/", async (route) => {
+    executed.push(route.request().postDataJSON().token);
+    await route.fulfill({
+      json: { result: { kind: "create_event", id: executed.length, title: "Office hour" }, audit_id: null },
+    });
+  });
+  await page.goto(`${TENANT}/admin/live`);
+
+  await page.getByTestId("describe-event").fill("a Zoom office hour on the next two Tuesdays at 18:00");
+  await page.getByRole("button", { name: "Draft it" }).click();
+  await expect(page.getByText("Schedule Zoom class: Office hour 2")).toBeVisible();
+  expect(sent[0].context).toEqual({ path: "/admin/live", intent: "draft_event" });
+  // The manual way is still on the page.
+  await expect(page.getByRole("button", { name: "Zoom Classes" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Apply all" }).click();
+  await expect(page.getByText("Created", { exact: true })).toHaveCount(2);
+  expect(executed).toEqual(["e2e-series-1", "e2e-series-2"]);
+  await page.close();
+});
+
+test("History offers Undo only where the server says it still works", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+  const row = (id: number, summary: string, undoable: boolean, undone = false) => ({
+    id,
+    kind: "create_course",
+    summary,
+    created_at: new Date().toISOString(),
+    undoable,
+    undone,
+  });
+  let entries = [row(2, "Created draft course 'Flow'", true), row(1, "Published course 'Basics'", false)];
+  await page.route("**/api/v1/admin/copilot/audit/", (route) => route.fulfill({ json: { entries } }));
+  const undone: number[] = [];
+  await page.route("**/api/v1/admin/copilot/undo/", async (route) => {
+    undone.push(route.request().postDataJSON().audit_id);
+    entries = [row(2, "Created draft course 'Flow'", false, true), entries[1]];
+    await route.fulfill({ json: { undone: "create_course" } });
+  });
+  await page.goto(`${TENANT}/admin/courses?assistant=history`);
+
+  const panel = page.getByRole("complementary", { name: "Assistant" });
+  await expect(panel.getByText("Published course 'Basics'")).toBeVisible();
+  await expect(panel.getByRole("button", { name: "Undo" })).toHaveCount(1);
+  await panel.getByRole("button", { name: "Undo" }).click();
+  await expect(panel.getByText(/Undone/)).toBeVisible();
+  await expect(panel.getByRole("button", { name: "Undo" })).toHaveCount(0);
+  expect(undone).toEqual([2]);
+  await page.close();
+});

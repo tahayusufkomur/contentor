@@ -148,6 +148,21 @@
     "src/lib/copilot": [
       "29-copilot"
     ],
+    "src/components/admin/describe-it.tsx": [
+      "29-copilot"
+    ],
+    "src/components/admin/assistant-dock.tsx": [
+      "27-nav-stage-gating",
+      "29-copilot"
+    ],
+    "src/components/admin/command-palette.tsx": [
+      "27-nav-stage-gating",
+      "29-copilot"
+    ],
+    "src/lib/assistant-dock.ts": [
+      "27-nav-stage-gating",
+      "29-copilot"
+    ],
     "src/app/admin/site-ai": [
       "29-copilot"
     ],
