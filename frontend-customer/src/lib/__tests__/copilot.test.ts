@@ -228,7 +228,7 @@ describe("starterKey", () => {
       "/admin/courses/x",
       "/admin/live",
       "/admin/blog",
-      "/admin/notifications",
+      "/admin/messages",
       "/admin/students",
       "/admin/payouts",
       "/admin/media",

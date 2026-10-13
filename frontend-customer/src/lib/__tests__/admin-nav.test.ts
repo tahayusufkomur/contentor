@@ -43,11 +43,7 @@ describe("buildAdminNav", () => {
       "/admin/community",
       "/admin/inbox",
     ]);
-    expect(hrefs("reachOut")).toEqual([
-      "/admin/notifications",
-      "/admin/email",
-      "/admin/blog",
-    ]);
+    expect(hrefs("reachOut")).toEqual(["/admin/messages", "/admin/blog"]);
     expect(hrefs("money")).toEqual(["/admin/payouts", "/admin/store"]);
     expect(hrefs("site")).toEqual([
       "/?edit=1",
@@ -106,7 +102,7 @@ describe("activeSection", () => {
     expect(at("/admin")).toBe("home");
     expect(at("/admin/courses/new")).toBe("teach");
     expect(at("/admin/students/3")).toBe("students");
-    expect(at("/admin/email/compose")).toBe("reachOut");
+    expect(at("/admin/messages/email/new")).toBe("reachOut");
     expect(at("/admin/store/bundles/new")).toBe("money");
     expect(at("/admin/billing")).toBe("settings");
   });

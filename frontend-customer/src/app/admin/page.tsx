@@ -122,9 +122,9 @@ export default function AdminDashboard() {
             variant="outline"
             className="gap-1.5 shadow-sm"
           >
-            <Link href="/admin/email/compose">
+            <Link href="/admin/messages/new">
               <Mail className="h-4 w-4" />
-              Email
+              Message
             </Link>
           </Button>
           <Button

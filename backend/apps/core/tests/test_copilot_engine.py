@@ -319,7 +319,7 @@ def test_draft_announcement_card_maps_params_and_states_inert_detail():
         payload, _ = engine.run_turn(TENANT, [], [], "tell students about the new timetable")
     (card,) = payload["actions"]
     assert card["kind"] == "draft_announcement"
-    assert card["detail"] == "Saved as a draft — review and send it from Announcements. Nothing is sent now."
+    assert card["detail"] == "Saved as a draft — review and send it from Messages. Nothing is sent now."
     stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
     assert stashed["params"]["title"] == "New timetable"
     assert stashed["params"]["link"] == "/courses"

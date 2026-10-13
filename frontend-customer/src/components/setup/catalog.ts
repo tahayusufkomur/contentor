@@ -55,7 +55,7 @@ export const SETUP_CATALOG: Record<string, CatalogEntry> = {
   publish: { icon: Rocket, href: "/admin#publish-card" },
   first_download: { icon: Download, href: "/admin/downloads" },
   first_live: { icon: Video, href: "/admin/live" },
-  first_announcement: { icon: Megaphone, href: "/admin/notifications" },
+  first_announcement: { icon: Megaphone, href: "/admin/messages/new" },
   first_blog_post: { icon: Newspaper, href: "/admin/blog" },
   first_community_post: { icon: MessagesSquare, href: "/admin/community" },
   share_site: { icon: Share2, href: null, action: "copy-link" },

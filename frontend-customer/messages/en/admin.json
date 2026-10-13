@@ -26,8 +26,6 @@
       "students": "People",
       "communityFeed": "Community",
       "inbox": "Inbox",
-      "notifications": "Announcements",
-      "email": "Email",
       "blog": "Blog",
       "payouts": "Payouts",
       "store": "Store",
@@ -36,7 +34,8 @@
       "assistant": "Student assistant",
       "settings": "General",
       "plan": "Your plan",
-      "media": "Media"
+      "media": "Media",
+      "messages": "Messages"
     },
     "more": "+ {count} more",
     "locked": "Not in your plan yet"
@@ -112,9 +111,9 @@
     "placeholder": "Search pages…",
     "create": "Create",
     "newCourse": "New course",
-    "newEmail": "New email",
     "empty": "No page by that name.",
-    "askAssistant": "Ask the assistant: “{query}”"
+    "askAssistant": "Ask the assistant: “{query}”",
+    "newMessage": "New message"
   },
   "settingsHub": {
     "title": "More settings",
@@ -596,6 +595,71 @@
       "error": "Failed",
       "failed": "{name} did not upload.",
       "refused": "Only photos and videos go here. Skipped: {names}"
+    }
+  },
+  "messages": {
+    "subtitle": "What you tell your students, in the app and by email.",
+    "new": "New message",
+    "design": "Design an email",
+    "newSubtitle": "It shows in your students' app, and can go out by email too. For a designed layout, <design>design an email</design> instead.",
+    "back": "Back to messages",
+    "draftGone": "That draft is no longer there.",
+    "designedTemplates": "Templates for designed emails",
+    "tabs": {
+      "sent": "Sent & scheduled",
+      "repeating": "Repeating",
+      "templates": "Templates"
+    },
+    "empty": "Nothing sent yet",
+    "emptyHint": "A message reaches your students in the app, and by email if you tick the box.",
+    "emailDown": "Designed emails could not be loaded just now. The messages below are complete; emails will show again on the next visit.",
+    "untitled": "Untitled",
+    "review": "Review & send",
+    "removeError": "That did not work. Please try again.",
+    "channel": {
+      "app": "In the app",
+      "appEmail": "In the app and by email",
+      "email": "Designed email"
+    },
+    "status": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "sending": "Sending",
+      "sent": "Sent",
+      "partial": "Partly sent",
+      "failed": "Failed"
+    },
+    "detail": {
+      "draft": "not sent yet",
+      "scheduled": "goes out {when}",
+      "sending": "on its way",
+      "announcement": "{recipients, plural, one {# student} other {# students}} · {reached} read",
+      "email": "{reached} of {recipients} delivered{failed, plural, =0 {} other { · # failed}}"
+    },
+    "action": {
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "confirm": {
+      "cancel": "Cancel “{title}”? It will not be sent.",
+      "delete": "Delete “{title}”? It also disappears from your students' app."
+    },
+    "done": {
+      "cancel": "Cancelled.",
+      "delete": "Deleted."
+    },
+    "compose": {
+      "alsoEmail": "Also send it as an email, in your brand",
+      "audience": {
+        "title": "Who gets it",
+        "narrow": "Only some students",
+        "app": "Installed your app",
+        "browser": "Use the website",
+        "ios": "iPhone or iPad",
+        "android": "Android",
+        "desktop": "Computer",
+        "push": "Phone notifications on"
+      }
     }
   }
 }

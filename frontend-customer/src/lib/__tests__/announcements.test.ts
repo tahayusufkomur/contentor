@@ -2,7 +2,7 @@
 // to the minimal shape AnnouncementCompose needs to seed its form when a
 // coach clicks "Review & send" on a copilot-created draft. Pure mapper only —
 // the "draft as template" flow it feeds never edits or status-transitions
-// the source draft row (see announcement-history.tsx / notifications page.tsx).
+// the source draft row (see app/admin/messages/new/page.tsx).
 
 import { describe, expect, it } from "vitest";
 

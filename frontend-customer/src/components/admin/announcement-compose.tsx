@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import {
@@ -54,6 +55,7 @@ export default function AnnouncementCompose({
   reviewDraft?: { id: number; prefill: ComposePrefill } | null;
   onDraftReviewed?: () => void;
 }) {
+  const tr = useTranslations("admin.messages.compose");
   const editor = useRichEditor();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -175,7 +177,7 @@ export default function AnnouncementCompose({
           start_date: startDate,
           end_date: endsOnDate && endDate ? endDate : null,
         });
-        toast.success("Recurring announcement created");
+        toast.success("Repeating message created");
       } else {
         await createAnnouncement({
           title: title.trim(),
@@ -187,9 +189,7 @@ export default function AnnouncementCompose({
             ? new Date(scheduledAt).toISOString()
             : null,
         });
-        toast.success(
-          scheduledAt ? "Announcement scheduled" : "Announcement sent",
-        );
+        toast.success(scheduledAt ? "Message scheduled" : "Message sent");
       }
       if (reviewDraft) {
         // The draft was only ever a template for the announcement just
@@ -327,51 +327,7 @@ export default function AnnouncementCompose({
       )}
 
       <div className="space-y-2 rounded-lg border border-border p-3 text-sm">
-        <div className="font-medium">Audience filters</div>
-        <div className="flex flex-wrap gap-2">
-          {(["pwa", "browser"] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() =>
-                setFilters((f) => ({
-                  ...f,
-                  app_type: f.app_type === t ? undefined : t,
-                }))
-              }
-              className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 ${filters.app_type === t ? "bg-primary text-primary-foreground" : "border-border"}`}
-            >
-              {t === "pwa" ? (
-                <Smartphone className="h-3.5 w-3.5" />
-              ) : (
-                <Globe className="h-3.5 w-3.5" />
-              )}
-              {t === "pwa" ? "PWA" : "Browser"}
-            </button>
-          ))}
-          {PLATFORMS.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => togglePlatform(p)}
-              className={`rounded-full border px-3 py-1 ${filters.platform?.includes(p) ? "bg-primary text-primary-foreground" : "border-border"}`}
-            >
-              {p}
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() =>
-              setFilters((f) => ({
-                ...f,
-                push_enabled: f.push_enabled ? undefined : true,
-              }))
-            }
-            className={`rounded-full border px-3 py-1 ${filters.push_enabled ? "bg-primary text-primary-foreground" : "border-border"}`}
-          >
-            Push-enabled only
-          </button>
-        </div>
+        <div className="font-medium">{tr("audience.title")}</div>
         {reach === null ? (
           <div className="text-muted-foreground">
             Calculating who will receive this…
@@ -381,7 +337,7 @@ export default function AnnouncementCompose({
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
             <span>
               No students match these filters — nobody will receive this
-              announcement.
+              message.
             </span>
           </div>
         ) : (
@@ -405,6 +361,56 @@ export default function AnnouncementCompose({
             )}
           </div>
         )}
+        {/* Narrowing by device is the rare case: one line until she opens it. */}
+        <details>
+          <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+            {tr("audience.narrow")}
+          </summary>
+          <div className="flex flex-wrap gap-2">
+            {(["pwa", "browser"] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() =>
+                  setFilters((f) => ({
+                    ...f,
+                    app_type: f.app_type === t ? undefined : t,
+                  }))
+                }
+                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 ${filters.app_type === t ? "bg-primary text-primary-foreground" : "border-border"}`}
+              >
+                {t === "pwa" ? (
+                  <Smartphone className="h-3.5 w-3.5" />
+                ) : (
+                  <Globe className="h-3.5 w-3.5" />
+                )}
+                {t === "pwa" ? tr("audience.app") : tr("audience.browser")}
+              </button>
+            ))}
+            {PLATFORMS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => togglePlatform(p)}
+                className={`rounded-full border px-3 py-1 ${filters.platform?.includes(p) ? "bg-primary text-primary-foreground" : "border-border"}`}
+              >
+                {tr(`audience.${p}`)}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() =>
+                setFilters((f) => ({
+                  ...f,
+                  push_enabled: f.push_enabled ? undefined : true,
+                }))
+              }
+              className={`rounded-full border px-3 py-1 ${filters.push_enabled ? "bg-primary text-primary-foreground" : "border-border"}`}
+            >
+              {tr("audience.push")}
+            </button>
+          </div>
+        </details>
       </div>
 
       <label className="flex items-center gap-2 text-sm">
@@ -414,7 +420,7 @@ export default function AnnouncementCompose({
           onChange={(e) => setAlsoEmail(e.target.checked)}
         />
         <Mail className="h-4 w-4 text-muted-foreground" />
-        Also send as an email (uses your brand)
+        {tr("alsoEmail")}
       </label>
 
       {/* Once / Repeating */}

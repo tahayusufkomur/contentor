@@ -1354,7 +1354,7 @@ def _card(tenant, action):
         return {
             "kind": "draft_announcement",
             "title": f"Draft announcement: {action.title[:120]}",
-            "detail": "Saved as a draft — review and send it from Announcements. Nothing is sent now.",
+            "detail": "Saved as a draft — review and send it from Messages. Nothing is sent now.",
             "token": tokens.stash_action(schema, {"kind": "draft_announcement", "params": params}),
         }
     params = {

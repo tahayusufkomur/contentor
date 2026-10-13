@@ -1,7 +1,7 @@
 // e2e/specs/06-announcements.spec.ts
 //
-// Coach creates an announcement via the /admin/notifications compose box (no
-// scheduled_at → sends immediately). Celery fan-out runs in the background;
+// Coach writes a message from Messages → "New message" (no scheduled_at →
+// sends immediately). Celery fan-out runs in the background;
 // the student's announcement feed is polled via the REST API
 // (GET /api/v1/notifications/feed/) until the title appears (up to 20 s).
 // The bell in the student header is then clicked to confirm the UI renders it.
@@ -17,7 +17,11 @@ test("coach sends announcement; student sees it in feed and bell UI", async ({
   // ── 1. Coach composes and sends the announcement ───────────────────────────
   const coach = await coachContext(browser);
   const coachPage = await coach.newPage();
+  // The old address still lands on Messages; the one entry is "New message".
   await coachPage.goto(`${TENANT}/admin/notifications`);
+  await expect(coachPage).toHaveURL(/\/admin\/messages$/);
+  await coachPage.getByRole("link", { name: "New message" }).click();
+  await expect(coachPage).toHaveURL(/\/admin\/messages\/new$/);
 
   // The compose card renders a plain <input placeholder="Title"> — fill it.
   await coachPage
@@ -29,11 +33,11 @@ test("coach sends announcement; student sees it in feed and bell UI", async ({
   await expect(sendBtn).toBeEnabled();
   await sendBtn.click();
 
-  // After send the button text reverts (state resets) and the history entry
-  // should eventually appear in the History tab list.
+  // Sending returns to Messages, where the one list shows it.
+  await expect(coachPage).toHaveURL(/\/admin\/messages$/, { timeout: 10_000 });
   await expect(
-    coachPage.getByText(TITLE),
-    "announcement title must appear in history list after send",
+    coachPage.getByRole("link", { name: TITLE }),
+    "the message must appear in the Messages list after send",
   ).toBeVisible({ timeout: 10_000 });
 
   await coach.close();

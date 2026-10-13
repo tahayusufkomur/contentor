@@ -89,3 +89,16 @@ def test_non_coach_forbidden(tenant_ctx):
     stu = User.objects.create_user(email="s@m.com", name="S", password="x", role="student")  # noqa: S106
     res = client(stu).get("/api/v1/admin/notifications/announcements/")
     assert res.status_code == 403
+
+
+def test_list_says_whether_it_also_went_by_email_and_when(coach):
+    # The Messages page shows one row per message: where it went and when.
+    sent_at = timezone.now() - timedelta(hours=1)
+    Announcement.objects.create(
+        title="Both", body="x", created_by=coach, status="sent", also_email=True, sent_at=sent_at
+    )
+    res = client(coach).get("/api/v1/admin/notifications/announcements/")
+    assert res.status_code == 200
+    row = res.data[0]
+    assert row["also_email"] is True
+    assert row["sent_at"] is not None

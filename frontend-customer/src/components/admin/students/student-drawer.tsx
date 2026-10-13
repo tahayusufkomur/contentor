@@ -341,7 +341,9 @@ export function StudentDrawer({
                     variant="outline"
                     className="w-full gap-2"
                   >
-                    <Link href={`/admin/email/compose?recipient=${student.id}`}>
+                    <Link
+                      href={`/admin/messages/email/new?recipient=${student.id}`}
+                    >
                       <Mail className="h-3.5 w-3.5" />
                       Compose Email Message
                     </Link>

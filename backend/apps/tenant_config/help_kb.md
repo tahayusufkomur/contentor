@@ -67,12 +67,13 @@ What: an optional community feed on your site where you and your students post a
 - **Post as the coach**: post from the feed; optionally students are notified of your posts.
 - Gotchas: keep an eye on the Reports tab — items there wait for your decision.
 
-## Email campaigns
+## Designed emails (campaigns)
 
-What: designed marketing/newsletter emails sent to your students, with delivery tracking.
+What: designed marketing/newsletter emails sent to your students, with delivery tracking. They live under Messages (Reach out), beside ordinary messages.
 
-- **Design a template**: open Email → Templates and design your email in the built-in visual editor.
-- **Send a campaign**: open Email → Compose, pick a template and the recipients, and send. Each campaign shows how many recipients it reached and how many sends succeeded.
+- **Send one**: open Messages and click "Design an email". Pick a template (or start from scratch), design it in the built-in visual editor, then choose the recipients and send or schedule it.
+- **Templates**: Messages → Templates tab → "Templates for designed emails".
+- **Results**: every designed email is in the Messages list with how many were delivered; click it for the recipient-by-recipient result. A scheduled one can be cancelled from the list.
 - **Quota**: campaign emails are limited per month by plan — 100 (Free), 1,000 (Starter), 5,000 (Pro).
 - Gotchas: campaigns go to your students' email addresses; recipients come from your student list. For a single personal message to one student, use the Inbox instead.
 
@@ -145,15 +146,17 @@ One place: Edit site. It opens your real site with an editor panel on the left, 
 - **Editing and deleting**: the pencil on a photo or video edits its title and tags. To delete, tick it and choose Actions → Delete (it asks first).
 - **Storage**: media counts against your plan storage (1 GB Free / 100 GB Starter / 500 GB Pro).
 
-## Notifications & announcements
+## Messages (announcements)
 
-What: messages you push to your students in-app, optionally by email.
+What: what you tell your students — in their app, and by email if you want. Everything is on one page: Messages (under Reach out).
 
-- **Send an announcement**: open Send announcement (Announcements), write your message (rich text), pick the audience with the filters, and send. It lands in students' in-app feed; students who enabled push notifications also get a push on their device — the composer shows how many people you'll reach.
-- **Also send as an email**: tick "Also send as an email (uses your brand)" in the composer.
-- **Templates**: save and reuse announcement templates (Templates tab).
-- **Recurring**: schedule announcements that repeat automatically (Recurring tab).
-- **History**: past announcements with details (History tab).
+- **Send a message**: open Messages and click "New message". Write it (rich text), check "Who gets it", and send now, schedule it, or make it repeat. It lands in students' in-app feed; students who enabled push notifications also get a push on their device — the composer shows how many people you'll reach.
+- **Also by email**: tick "Also send it as an email, in your brand" in the composer.
+- **Only some students**: open "Only some students" under "Who gets it" to narrow by device or by who has phone notifications on.
+- **One list**: Messages lists everything sent or scheduled, ordinary messages and designed emails together, newest first, with how many students it reached. Cancel a scheduled one, or delete a sent message (it also disappears from students' app).
+- **Drafts from the assistant**: a message the assistant drafted shows in the list as a Draft with "Review & send". Nothing is sent until you send it.
+- **Templates**: save and reuse message templates (Templates tab).
+- **Repeating**: messages that repeat automatically (Repeating tab), with pause and delete.
 
 ## Settings
 
@@ -245,10 +248,10 @@ The ONLY links you may include in answers. Always link relative paths exactly as
 | /admin/students | People | Student list, finding a student, refunds (via student detail) |
 | /admin/community | Community | Enabling community, moderation, members |
 | /admin/inbox | Inbox | Reading/answering student email, new message |
-| /admin/notifications | Announcements | Sending announcements, templates, recurring |
-| /admin/email | Email | Campaign list and delivery results |
-| /admin/email/templates | Email templates | Designing email templates |
-| /admin/email/compose | New email | Sending a campaign |
+| /admin/messages | Messages | Everything sent or scheduled (announcements and designed emails), repeating messages, templates |
+| /admin/messages/new | New message | Writing a message for the app, optionally also by email |
+| /admin/messages/email/new | Design an email | Designing and sending a designed email (campaign) |
+| /admin/messages/email/templates | Email templates | Templates for designed emails |
 | /admin/payouts | Payouts | Connecting Stripe, payout status, earnings |
 | /admin/store | Store | Products, bundles, memberships students can buy |
 | /admin/store/bundles/new | New bundle | Creating a bundle |

@@ -241,7 +241,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
             size="sm"
             className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
           >
-            <Link href="/admin/email/compose">
+            <Link href="/admin/messages/email/new">
               <Plus className="h-4 w-4" />
               Broadcast Email
             </Link>

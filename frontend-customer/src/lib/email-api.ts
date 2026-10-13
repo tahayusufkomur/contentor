@@ -130,6 +130,11 @@ export async function listCampaigns(
   );
 }
 
+/** Cancel a campaign that has not gone out yet (the API refuses any other). */
+export async function cancelCampaign(id: number): Promise<void> {
+  await clientFetch(`/api/v1/email/campaigns/${id}/`, { method: "DELETE" });
+}
+
 export async function getCampaign(id: number): Promise<EmailCampaign> {
   return clientFetch<EmailCampaign>(`/api/v1/email/campaigns/${id}/`);
 }

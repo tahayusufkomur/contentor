@@ -449,7 +449,7 @@ def create_announcement_draft(user, params):
     """Always lands as status='draft' — the send tasks in
     apps.notifications.tasks select on status='scheduled' only, so a draft
     can never be picked up and sent. The coach reviews and sends it
-    themselves from /admin/notifications; the copilot never sends."""
+    themselves from Messages; the copilot never sends."""
     from apps.notifications.models import Announcement
     from apps.tenant_config.defaults import sanitize_rich_text
 
@@ -467,7 +467,8 @@ def create_announcement_draft(user, params):
         "kind": "draft_announcement",
         "id": row.id,
         "title": row.title,
-        "url": "/admin/notifications",
+        # Opens the draft in the composer, ready to review and send.
+        "url": f"/admin/messages/new?draft={row.id}",
     }
 
 

@@ -24,7 +24,7 @@ describe("paletteEntries", () => {
   it("offers only creates that open a create form", () => {
     expect(
       entries.filter((e) => e.group === "palette.create").map((e) => e.href),
-    ).toEqual(["/admin/courses/new", "/admin/email/compose"]);
+    ).toEqual(["/admin/courses/new", "/admin/messages/new"]);
   });
 });
 
@@ -60,7 +60,8 @@ describe("old names", () => {
     expect(found("library")).toContain("media");
     expect(found("photos")).toContain("media");
     expect(found("videos")).toContain("media");
-    expect(found("send announcement")).toContain("notifications");
+    expect(found("send announcement")).toContain("messages");
+    expect(found("email")).toContain("messages");
     expect(found("bundles")).toContain("store");
   });
 

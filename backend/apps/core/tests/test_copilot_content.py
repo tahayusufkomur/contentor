@@ -200,7 +200,8 @@ def test_create_announcement_draft_lands_as_draft_and_sanitized(coach):
     row = Announcement.objects.get(pk=result["id"])
     assert row.status == "draft"
     assert "<script>" not in row.body
-    assert result["url"] == "/admin/notifications"  # the page Announcements lives on
+    # Straight into the composer, with this draft loaded for review.
+    assert result["url"] == f"/admin/messages/new?draft={row.id}"
     assert result["kind"] == "draft_announcement"
 
 

@@ -8,7 +8,6 @@ import {
   Image as ImageIcon,
   Inbox,
   LayoutDashboard,
-  Mail,
   MessageCircleQuestion,
   MessagesSquare,
   Newspaper,
@@ -76,8 +75,7 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
       label: t("nav.sections.reachOut"),
       icon: Bell,
       items: [
-        item("notifications", "/admin/notifications", Bell),
-        item("email", "/admin/email", Mail),
+        item("messages", "/admin/messages", Bell),
         item("blog", "/admin/blog", Newspaper, {
           requiresEntitlement: "ai_blog",
         }),

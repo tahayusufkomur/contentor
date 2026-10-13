@@ -84,8 +84,7 @@ Frontend: `app/admin/media/page.tsx` (new), `components/admin/media/{photos-view
 ### 3. Messages: one "New message", one list
 
 Backend: `apps/notifications/serializers.py` (list rows gain `also_email`, `sent_at`),
-`apps/email_campaigns/views.py` (reading the campaign list must not provision a MailCraft account),
-`apps/core/copilot/{content,context}.py`, `apps/live/content_calendar.py`, `tenant_config/help_kb.md`,
+`apps/core/copilot/{content,context,engine}.py`, `apps/live/content_calendar.py`, `tenant_config/help_kb.md`,
 their tests.
 
 Frontend: `app/admin/messages/` (new: `page.tsx`, `new/page.tsx`, `[id]/page.tsx`, `email/new`,

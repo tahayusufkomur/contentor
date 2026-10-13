@@ -106,7 +106,7 @@ class TestContentCalendarFeed:
         resp = make_client(owner).get("/api/v1/admin/content-calendar/", _window(content["now"]))
         by_cat = {i["category"]: i for i in resp.json()}
         assert by_cat["email"]["status"] == "completed"  # SENT → completed
-        assert by_cat["email"]["href"] == f"/admin/email/campaigns/{content['email'].id}"
+        assert by_cat["email"]["href"] == f"/admin/messages/email/{content['email'].id}"
         assert by_cat["live"]["href"] == "/admin/live"
         assert by_cat["blog"]["status"] == "published"
         for item in by_cat.values():

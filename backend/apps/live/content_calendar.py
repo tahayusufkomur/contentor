@@ -135,7 +135,7 @@ def coach_content_calendar(request):
                     "scheduled_at": when,
                     "status": EMAIL_STATUS_MAP.get(campaign.status, campaign.status),
                     "subtitle": campaign.recipient_summary or f"{campaign.recipient_count} recipients",
-                    "href": f"/admin/email/campaigns/{campaign.id}",
+                    "href": f"/admin/messages/email/{campaign.id}",
                 }
             )
 

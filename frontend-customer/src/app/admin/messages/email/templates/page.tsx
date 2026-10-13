@@ -1,0 +1,258 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+
+import { toast } from "sonner";
+
+import { TemplateGrid } from "@shared/email/template-grid";
+import {
+  deleteTemplate,
+  getTemplate,
+  listGallery,
+  listTemplates,
+  previewTemplates,
+  type EmailTemplate,
+  type GalleryTemplate,
+} from "@/lib/email-api";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonCardGrid } from "@/components/ui/skeletons";
+import { Spinner } from "@/components/ui/spinner";
+
+export const dynamic = "force-dynamic";
+
+type Tab = "mine" | "gallery";
+
+function asArray<T>(data: T[] | { results: T[] } | { data: T[] }): T[] {
+  if (Array.isArray(data)) return data;
+  if ("results" in data && Array.isArray(data.results)) return data.results;
+  if ("data" in data && Array.isArray((data as { data: T[] }).data))
+    return (data as { data: T[] }).data;
+  return [];
+}
+
+export default function TemplatesPage() {
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<Tab>("mine");
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [gallery, setGallery] = useState<EmailTemplate[]>([]);
+  const [previewHtmlMap, setPreviewHtmlMap] = useState<Record<string, string>>(
+    {},
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [galleryLoaded, setGalleryLoaded] = useState(false);
+  const [loadingGallery, setLoadingGallery] = useState(false);
+  const [galleryError, setGalleryError] = useState<unknown>(null);
+
+  // Preview modal state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewTitle, setPreviewTitle] = useState("");
+  const [previewHtml, setPreviewHtml] = useState("");
+
+  const fetchPreviews = useCallback(async (tmpls: EmailTemplate[]) => {
+    const ids = tmpls.map((t) => t.id).filter(Boolean);
+    if (ids.length === 0) return;
+
+    // Batch in groups of 20
+    for (let i = 0; i < ids.length; i += 20) {
+      const batch = ids.slice(i, i + 20);
+      try {
+        const result = await previewTemplates(batch);
+        setPreviewHtmlMap((prev) => ({ ...prev, ...result.previews }));
+      } catch {
+        // partial failure is fine
+      }
+    }
+  }, []);
+
+  const fetchMine = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await listTemplates();
+      const tmpls = asArray(data);
+      setTemplates(tmpls);
+      fetchPreviews(tmpls);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchPreviews]);
+
+  useEffect(() => {
+    fetchMine();
+  }, [fetchMine]);
+
+  const fetchGallery = useCallback(async () => {
+    setLoadingGallery(true);
+    setGalleryError(null);
+    try {
+      const data = await listGallery();
+      // Gallery items are GalleryTemplate (no created_at/updated_at); the grid
+      // + preview path only read id/name, so treat them as EmailTemplate.
+      const g = asArray(data) as unknown as EmailTemplate[];
+      setGallery(g);
+      setGalleryLoaded(true);
+      fetchPreviews(g);
+    } catch (err) {
+      setGalleryError(err);
+    } finally {
+      setLoadingGallery(false);
+    }
+  }, [fetchPreviews]);
+
+  useEffect(() => {
+    if (tab !== "gallery" || galleryLoaded) return;
+    fetchGallery();
+  }, [tab, galleryLoaded, fetchGallery]);
+
+  const { run: handlePreview, loading: previewLoading } = useAsyncAction(
+    async (template: EmailTemplate) => {
+      setPreviewOpen(true);
+      setPreviewTitle(template.name);
+      setPreviewHtml("");
+
+      // Try cached preview first
+      if (previewHtmlMap[template.id]) {
+        setPreviewHtml(previewHtmlMap[template.id]);
+        return;
+      }
+
+      const detail = await getTemplate(template.id);
+      const html =
+        ((detail as Record<string, unknown>).html as string) ||
+        ((detail as Record<string, unknown>).rendered_html as string) ||
+        "";
+      if (html) {
+        setPreviewHtml(html);
+      } else {
+        // Try batch preview for this one
+        const result = await previewTemplates([template.id]);
+        setPreviewHtml(result.previews[template.id] || "");
+      }
+    },
+  );
+
+  // Not a useAsyncAction: TemplateCard (packages/shared, out of scope here)
+  // has no per-row busy prop, and this callback fires once per card in a
+  // .map() — a single shared hook instance would silently drop a delete
+  // click on card B while card A's delete is still in flight (the
+  // documented per-row single-flight gotcha). Deletes stay independent;
+  // only the previously-swallowed error is now surfaced.
+  const handleDelete = useCallback(async (template: EmailTemplate) => {
+    if (!window.confirm(`Delete "${template.name}"?`)) return;
+    try {
+      await deleteTemplate(template.id);
+      setTemplates((prev) => prev.filter((t) => t.id !== template.id));
+    } catch {
+      toast.error("Could not delete template. Please try again.");
+    }
+  }, []);
+
+  const handleEdit = useCallback(
+    (template: EmailTemplate) => {
+      navigate(`/admin/messages/email/new?template=${template.id}`);
+    },
+    [navigate],
+  );
+
+  const currentTemplates = tab === "mine" ? templates : gallery;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Email Templates</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your email templates.
+          </p>
+        </div>
+        <Link
+          href="/admin/messages/email/new"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+        >
+          New Email
+        </Link>
+      </div>
+
+      {/* Tab toggle */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setTab("mine")}
+          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+            tab === "mine"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground"
+          }`}
+        >
+          My Templates
+        </button>
+        <button
+          onClick={() => setTab("gallery")}
+          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+            tab === "gallery"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground"
+          }`}
+        >
+          Gallery
+        </button>
+      </div>
+
+      <PageState
+        loading={tab === "mine" ? loading : loadingGallery}
+        error={tab === "mine" ? error : galleryError}
+        onRetry={tab === "mine" ? fetchMine : fetchGallery}
+        skeleton={<SkeletonCardGrid count={6} />}
+      >
+        <TemplateGrid
+          templates={currentTemplates}
+          previewHtmlMap={previewHtmlMap}
+          mode="library"
+          onEdit={handleEdit}
+          onDelete={tab === "mine" ? handleDelete : undefined}
+          onPreview={handlePreview}
+        />
+      </PageState>
+
+      {/* Preview modal */}
+      {previewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="relative mx-4 w-full max-w-3xl rounded-lg bg-background p-4 shadow-xl">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">{previewTitle}</h3>
+              <button
+                onClick={() => setPreviewOpen(false)}
+                className="rounded-md px-2 py-1 text-sm hover:bg-muted"
+              >
+                Close
+              </button>
+            </div>
+            {previewLoading ? (
+              <div className="flex h-[60vh] items-center justify-center">
+                <Spinner size="lg" label="Loading preview" />
+              </div>
+            ) : previewHtml ? (
+              <iframe
+                srcDoc={previewHtml}
+                sandbox=""
+                className="h-[75vh] w-full rounded border"
+                title="Template preview"
+              />
+            ) : (
+              <div className="flex h-[60vh] items-center justify-center">
+                <p className="text-sm text-muted-foreground">
+                  Preview not available.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
