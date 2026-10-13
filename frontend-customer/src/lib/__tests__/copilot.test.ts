@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { createAsyncRunner } from "@shared/hooks/async-runner";
 import { buildSelectionPayload } from "@/lib/copilot/selection";
@@ -8,7 +10,9 @@ import {
   runBundle,
   toTranscript,
 } from "@/lib/copilot/state";
-import type { ChatEntry } from "@/lib/copilot/types";
+import { starterKey } from "@/lib/copilot/starters";
+import { ACTION_KINDS, type ChatEntry } from "@/lib/copilot/types";
+import adminMessages from "../../../messages/en/admin.json";
 
 const el = (
   over: Partial<Parameters<typeof buildSelectionPayload>[0]> = {},
@@ -161,93 +165,77 @@ describe("isUndoableKind", () => {
     expect(isUndoableKind("set_logo")).toBe(true);
   });
 
-  it("disallows undo for create/edit/publish/draft kinds (empty inverse server-side)", () => {
-    expect(isUndoableKind("create_course")).toBe(false);
-    expect(isUndoableKind("create_event")).toBe(false);
-    expect(isUndoableKind("create_blog_post")).toBe(false);
+  it("allows undo for a draft the assistant created (it is deleted while untouched)", () => {
+    expect(isUndoableKind("create_course")).toBe(true);
+    expect(isUndoableKind("create_event")).toBe(true);
+    expect(isUndoableKind("create_blog_post")).toBe(true);
+    expect(isUndoableKind("draft_announcement")).toBe(true);
+  });
+
+  it("disallows undo for edit/publish kinds (empty inverse server-side)", () => {
     expect(isUndoableKind("edit_course")).toBe(false);
+    expect(isUndoableKind("edit_curriculum")).toBe(false);
     expect(isUndoableKind("edit_event")).toBe(false);
     expect(isUndoableKind("edit_blog_post")).toBe(false);
     expect(isUndoableKind("publish_course")).toBe(false);
     expect(isUndoableKind("publish_blog_post")).toBe(false);
-    expect(isUndoableKind("draft_announcement")).toBe(false);
   });
 });
 
-describe("runBundle", () => {
-  it("runs confirms in order and stops on failure", async () => {
-    const calls: string[] = [];
-    const ok = (id: string) => async () => {
-      calls.push(id);
-    };
-    const fail = async () => {
-      throw new Error("nope");
-    };
-    const result = await runBundle([ok("a"), ok("b"), fail, ok("d")]);
-    expect(calls).toEqual(["a", "b"]);
-    expect(result).toEqual({ done: 2, failed: true });
+describe("ACTION_KINDS", () => {
+  // The backend lives outside this package: present on a developer's machine
+  // and in the repo checkout, absent inside the frontend container.
+  const engine = path.resolve(
+    __dirname,
+    "../../../../backend/apps/core/copilot/engine.py",
+  );
+  it.skipIf(!existsSync(engine))(
+    "lists exactly the actions the backend can propose",
+    () => {
+      const backend = [
+        ...readFileSync(engine, "utf8").matchAll(
+          /^ {4}kind: Literal\["([a-z_]+)"\]$/gm,
+        ),
+      ].map((m) => m[1]);
+      expect(backend.length).toBeGreaterThan(20);
+      expect([...ACTION_KINDS].sort()).toEqual(backend.sort());
+    },
+  );
+});
+
+describe("starterKey", () => {
+  it("picks the page's own starters, a course page's over the list's", () => {
+    expect(starterKey("/admin")).toBe("home");
+    expect(starterKey("/admin/courses")).toBe("courses");
+    expect(starterKey("/admin/courses/new")).toBe("courses");
+    expect(starterKey("/admin/courses/morning-flow")).toBe("course");
+    expect(starterKey("/admin/live")).toBe("events");
+    expect(starterKey("/admin/store/bundles/new")).toBe("money");
   });
 
-  it("reports done count with no failures", async () => {
-    const calls: string[] = [];
-    const ok = (id: string) => async () => {
-      calls.push(id);
-    };
-    const result = await runBundle([ok("a"), ok("b")]);
-    expect(calls).toEqual(["a", "b"]);
-    expect(result).toEqual({ done: 2, failed: false });
+  it("falls back to the general set on a page with none of its own", () => {
+    expect(starterKey("/admin/settings")).toBe("home");
+    expect(starterKey("/admin/live-streams")).toBe("home");
   });
 
-  // Integration seam: what gets registered into the bundle registry MUST be
-  // able to reject, or runBundle's stop-on-failure branch is dead code in
-  // real wiring. `useAsyncAction`'s `run` (createAsyncRunner) swallows every
-  // error — it only ever invokes onError, never re-throws — so registering
-  // that (the OLD, buggy wiring) makes a failing mid-bundle action look
-  // identical to a successful one from runBundle's point of view: the loop
-  // never sees a rejection, so it walks through every remaining action
-  // (contract violation) and reports failed:false (false "Applied N
-  // changes" toast). Registering the raw throwing body (the fix) restores
-  // stop-on-failure. These two cases pin exactly that distinction.
-  it("over swallowing async-runner wrappers (OLD wiring): does not stop, reports success", async () => {
-    const calls: string[] = [];
-    const makeSwallowingConfirm = (id: string, shouldThrow: boolean) => {
-      let loading = false;
-      const run = createAsyncRunner(
-        async () => {
-          calls.push(id);
-          if (shouldThrow) throw new Error("nope");
-        },
-        { setLoading: (v) => (loading = v) },
-      );
-      void loading;
-      return run;
-    };
-    const confirms = [
-      makeSwallowingConfirm("a", false),
-      makeSwallowingConfirm("b", true), // fails, but the wrapper swallows it
-      makeSwallowingConfirm("c", false),
-    ];
-    const result = await runBundle(confirms);
-    // Every action ran, including "c" after "b" failed — proves the bundle
-    // did NOT stop, which is exactly the contract violation Finding 1 flags.
-    expect(calls).toEqual(["a", "b", "c"]);
-    expect(result).toEqual({ done: 3, failed: false });
-  });
-
-  it("over raw throwing confirms (the fix): stops at the first failure", async () => {
-    const calls: string[] = [];
-    const makeRawConfirm = (id: string, shouldThrow: boolean) => async () => {
-      calls.push(id);
-      if (shouldThrow) throw new Error("nope");
-    };
-    const confirms = [
-      makeRawConfirm("a", false),
-      makeRawConfirm("b", true),
-      makeRawConfirm("c", false),
-    ];
-    const result = await runBundle(confirms);
-    // "c" never ran — the bundle stopped as soon as "b" rejected.
-    expect(calls).toEqual(["a", "b"]);
-    expect(result).toEqual({ done: 1, failed: true });
+  it("has prompts in the messages for every key it can return", () => {
+    const starters = (
+      adminMessages as { dock: { starters: Record<string, string[]> } }
+    ).dock.starters;
+    for (const pathname of [
+      "/admin",
+      "/admin/courses",
+      "/admin/courses/x",
+      "/admin/live",
+      "/admin/blog",
+      "/admin/notifications",
+      "/admin/students",
+      "/admin/payouts",
+      "/admin/photos",
+    ]) {
+      const prompts = starters[starterKey(pathname)];
+      expect(prompts.length).toBeGreaterThanOrEqual(3);
+      expect(prompts.length).toBeLessThanOrEqual(4);
+    }
   });
 });

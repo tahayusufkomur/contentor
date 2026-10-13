@@ -61,8 +61,8 @@ const CREATE_KINDS = new Set([
 export const isCreateKind = (kind: string) => CREATE_KINDS.has(kind);
 
 const NOT_UNDOABLE_KINDS = new Set([
-  ...CREATE_KINDS,
   "edit_course",
+  "edit_curriculum",
   "edit_event",
   "edit_blog_post",
   "publish_course",
@@ -71,7 +71,8 @@ const NOT_UNDOABLE_KINDS = new Set([
 
 /** Server-side, these kinds record an empty inverse ({}) — undo would always
  * 400. Gate the Undo affordance on this client-side so we never show a
- * button that's guaranteed to fail. */
+ * button that's guaranteed to fail. A created draft can be undone: that
+ * deletes it while she has not touched it. */
 export const isUndoableKind = (kind: string) => !NOT_UNDOABLE_KINDS.has(kind);
 
 /** Sequentially run card confirms; stop at the first failure so a broken

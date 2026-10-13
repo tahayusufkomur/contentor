@@ -1,11 +1,87 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchCopilotAudit } from "@/lib/copilot/api";
+import { fetchCopilotAudit, undoCopilotAction } from "@/lib/copilot/api";
+import {
+  announceAssistantApplied,
+  announceSiteUpdated,
+} from "@/lib/site-events";
 import type { CopilotAuditEntry } from "@/lib/copilot/types";
+import { ApiError } from "@/types/api";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
+
+/** One change, with Undo while the server says it can still be taken back. */
+function AuditRow({
+  entry,
+  onUndone,
+}: {
+  entry: CopilotAuditEntry;
+  onUndone: () => void;
+}) {
+  const t = useTranslations("admin");
+  const router = useRouter();
+  const { run: undo, loading } = useAsyncAction(
+    async () => {
+      await undoCopilotAction(entry.id);
+      announceSiteUpdated();
+      announceAssistantApplied({ kind: "undo" });
+      router.refresh();
+      toast.success(t("dock.undoneToast"));
+      onUndone();
+    },
+    {
+      // A 400 is the server declining on purpose (she changed it since, or a
+      // newer change sits on top); anything else is a plain failure.
+      onError: (err) => {
+        toast.error(
+          err instanceof ApiError && err.status === 400
+            ? t("dock.undoRefused")
+            : t("dock.undoFailed"),
+        );
+        onUndone();
+      },
+    },
+  );
+  return (
+    <li className="flex items-center gap-3 p-3">
+      <span className="min-w-0 flex-1">
+        <span
+          className={
+            entry.undone
+              ? "block text-sm text-muted-foreground line-through"
+              : "block text-sm"
+          }
+        >
+          {entry.summary || entry.kind}
+        </span>
+        <time
+          dateTime={entry.created_at}
+          className="text-xs text-muted-foreground"
+        >
+          {new Date(entry.created_at).toLocaleString()}
+          {entry.undone ? ` · ${t("dock.undone")}` : ""}
+        </time>
+      </span>
+      {entry.undoable && (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={undo}
+          loading={loading}
+          loadingText={t("dock.undoing")}
+        >
+          {t("dock.undo")}
+        </Button>
+      )}
+    </li>
+  );
+}
 
 /** Everything the assistant has applied, newest first. */
 export function CopilotAuditList() {
@@ -15,13 +91,18 @@ export function CopilotAuditList() {
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
+  // After an undo the list reloads under her eyes: rows stay, no skeleton.
+  const loaded = useRef(false);
+
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    if (!loaded.current) setLoading(true);
     setError(false);
     fetchCopilotAudit()
       .then((res) => {
-        if (!cancelled) setEntries(res.entries);
+        if (cancelled) return;
+        loaded.current = true;
+        setEntries(res.entries);
       })
       .catch(() => {
         if (!cancelled) setError(true);
@@ -55,15 +136,11 @@ export function CopilotAuditList() {
         ) : (
           <ul className="divide-y rounded-lg border">
             {entries.map((e) => (
-              <li key={e.id} className="flex items-baseline gap-3 p-3">
-                <span className="flex-1 text-sm">{e.summary || e.kind}</span>
-                <time
-                  dateTime={e.created_at}
-                  className="shrink-0 text-xs text-muted-foreground"
-                >
-                  {new Date(e.created_at).toLocaleString()}
-                </time>
-              </li>
+              <AuditRow
+                key={e.id}
+                entry={e}
+                onUndone={() => setReloadKey((k) => k + 1)}
+              />
             ))}
           </ul>
         )}

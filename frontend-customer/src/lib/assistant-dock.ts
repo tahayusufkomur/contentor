@@ -1,3 +1,5 @@
+import { createContext, useContext } from "react";
+
 export const DOCK_TABS = ["assistant", "setup", "help", "history"] as const;
 export type DockTab = (typeof DOCK_TABS)[number];
 
@@ -38,3 +40,32 @@ export function dockFromUrl(
     tab: "assistant",
   };
 }
+
+export interface DockApi {
+  isOpen: boolean;
+  tab: DockTab;
+  open: (tab?: DockTab) => void;
+  close: () => void;
+  toggle: () => void;
+  /** Words waiting to be sent to the assistant (from the search box). */
+  pendingAsk: string | null;
+  /** Open the chat and send these words as a new conversation. */
+  ask: (text: string) => void;
+  clearAsk: () => void;
+}
+
+/** Outside the admin (the public site, the site editor) there is no dock:
+ *  the default is closed and does nothing. */
+export const DockContext = createContext<DockApi>({
+  isOpen: false,
+  tab: "assistant",
+  open() {},
+  close() {},
+  toggle() {},
+  pendingAsk: null,
+  ask() {},
+  clearAsk() {},
+});
+
+/** Open, close or switch the admin's assistant panel from any admin page. */
+export const useAssistantDock = () => useContext(DockContext);

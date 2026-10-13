@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useNavigate } from "@shared/navigation/navigation-provider";
-import { Search, ArrowRight } from "lucide-react";
+import { Search, ArrowRight, Sparkles } from "lucide-react";
 
 import { filterPalette, type PaletteEntry } from "@/lib/admin-palette";
 
@@ -16,7 +16,9 @@ export function CommandPalette({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   entries: PaletteEntry[];
-  onAskAssistant: () => void;
+  /** Her words go to the assistant when they name no page (or she picks
+   *  the ask row). */
+  onAskAssistant: (text: string) => void;
 }) {
   const t = useTranslations("admin");
   const navigate = useNavigate();
@@ -28,6 +30,10 @@ export function CommandPalette({
     () => filterPalette(entries, query),
     [entries, query],
   );
+
+  // Whatever she typed can also be asked: one more row under the pages.
+  const question = query.trim();
+  const rowCount = filteredItems.length + (question ? 1 : 0);
 
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -61,14 +67,17 @@ export function CommandPalette({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedIndex(
-          (prev) => (prev + 1) % Math.max(1, filteredItems.length),
-        );
+        setSelectedIndex((prev) => (prev + 1) % Math.max(1, rowCount));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setSelectedIndex((prev) =>
-          prev === 0 ? Math.max(0, filteredItems.length - 1) : prev - 1,
+          prev === 0 ? Math.max(0, rowCount - 1) : prev - 1,
         );
+      } else if (e.key === "Enter" && !filteredItems[selectedIndex]) {
+        e.preventDefault();
+        if (!question) return;
+        onOpenChange(false);
+        onAskAssistant(question);
       } else if (e.key === "Enter" && filteredItems[selectedIndex]) {
         e.preventDefault();
         const selected = filteredItems[selectedIndex];
@@ -86,7 +95,16 @@ export function CommandPalette({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, filteredItems, selectedIndex, navigate, onOpenChange]);
+  }, [
+    open,
+    filteredItems,
+    selectedIndex,
+    navigate,
+    onOpenChange,
+    onAskAssistant,
+    question,
+    rowCount,
+  ]);
 
   if (!open) return null;
 
@@ -114,78 +132,93 @@ export function CommandPalette({
 
         {/* Command Items List */}
         <div className="overflow-y-auto p-2 divide-y divide-border/40">
-          {filteredItems.length === 0 ? (
+          {filteredItems.length === 0 && (
+            <p className="px-4 pb-2 pt-4 text-center text-sm text-muted-foreground">
+              {t("palette.empty")}
+            </p>
+          )}
+          {filteredItems.map((item, idx) => {
+            const Icon = item.icon;
+            const isSelected = idx === selectedIndex;
+            return (
+              <button
+                key={item.id}
+                ref={(el) => {
+                  itemRefs.current[idx] = el;
+                }}
+                type="button"
+                onClick={() => {
+                  onOpenChange(false);
+                  if (item.newTab) {
+                    window.open(item.href, "_blank", "noopener,noreferrer");
+                  } else {
+                    navigate(item.href);
+                  }
+                }}
+                onMouseEnter={() => setSelectedIndex(idx)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-sm transition-colors ${
+                  isSelected
+                    ? "bg-primary text-primary-foreground font-medium"
+                    : "hover:bg-muted text-foreground"
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className={`p-1.5 rounded-md ${
+                      isSelected
+                        ? "bg-primary-foreground/10 text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                  </div>
+                  <div className="truncate">
+                    <div className="font-medium leading-tight truncate">
+                      {item.label}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 ml-2">
+                  <span
+                    className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full ${
+                      isSelected
+                        ? "bg-primary-foreground/20 text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {item.group}
+                  </span>
+                  <ArrowRight
+                    className={`h-4 w-4 transition-transform ${
+                      isSelected ? "translate-x-0.5" : "opacity-0"
+                    }`}
+                  />
+                </div>
+              </button>
+            );
+          })}
+          {question && (
             <button
+              ref={(el) => {
+                itemRefs.current[filteredItems.length] = el;
+              }}
               type="button"
               onClick={() => {
                 onOpenChange(false);
-                onAskAssistant();
+                onAskAssistant(question);
               }}
-              className="w-full px-4 py-6 text-center text-sm text-muted-foreground hover:text-foreground"
+              onMouseEnter={() => setSelectedIndex(filteredItems.length)}
+              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
+                selectedIndex === filteredItems.length
+                  ? "bg-primary font-medium text-primary-foreground"
+                  : "text-foreground hover:bg-muted"
+              }`}
             >
-              {t("palette.empty")} {t("palette.askAssistant")}
+              <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
+              <span className="truncate">
+                {t("palette.askAssistant", { query: question })}
+              </span>
             </button>
-          ) : (
-            filteredItems.map((item, idx) => {
-              const Icon = item.icon;
-              const isSelected = idx === selectedIndex;
-              return (
-                <button
-                  key={item.id}
-                  ref={(el) => {
-                    itemRefs.current[idx] = el;
-                  }}
-                  type="button"
-                  onClick={() => {
-                    onOpenChange(false);
-                    if (item.newTab) {
-                      window.open(item.href, "_blank", "noopener,noreferrer");
-                    } else {
-                      navigate(item.href);
-                    }
-                  }}
-                  onMouseEnter={() => setSelectedIndex(idx)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-sm transition-colors ${
-                    isSelected
-                      ? "bg-primary text-primary-foreground font-medium"
-                      : "hover:bg-muted text-foreground"
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className={`p-1.5 rounded-md ${
-                        isSelected
-                          ? "bg-primary-foreground/10 text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      <Icon className="h-4 w-4 shrink-0" />
-                    </div>
-                    <div className="truncate">
-                      <div className="font-medium leading-tight truncate">
-                        {item.label}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <span
-                      className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full ${
-                        isSelected
-                          ? "bg-primary-foreground/20 text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {item.group}
-                    </span>
-                    <ArrowRight
-                      className={`h-4 w-4 transition-transform ${
-                        isSelected ? "translate-x-0.5" : "opacity-0"
-                      }`}
-                    />
-                  </div>
-                </button>
-              );
-            })
           )}
         </div>
 

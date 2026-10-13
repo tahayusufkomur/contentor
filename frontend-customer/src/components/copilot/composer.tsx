@@ -29,7 +29,10 @@ export function CopilotComposer({
   attached,
   onAttach,
   onRemoveAttachment,
+  placeholder,
 }: {
+  /** Defaults to the site copilot's own ("make this section warmer"). */
+  placeholder?: string;
   onSend: (message: string) => void;
   sending: boolean;
   attached: AttachedPhoto[];
@@ -52,7 +55,7 @@ export function CopilotComposer({
         orderedList: false,
         strike: false,
       }),
-      Placeholder.configure({ placeholder: t("placeholder") }),
+      Placeholder.configure({ placeholder: placeholder ?? t("placeholder") }),
     ],
     editorProps: {
       attributes: {

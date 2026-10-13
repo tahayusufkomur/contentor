@@ -7,6 +7,7 @@ import type {
   CopilotAuditEntry,
   CopilotChatDetail,
   CopilotChatRow,
+  CopilotContext,
   CopilotDone,
   ExecuteResponse,
   SelectionPayload,
@@ -20,6 +21,7 @@ export const converseCopilot = (
     transcript: { role: string; text: string; kind?: string }[];
     selections: SelectionPayload[];
     attached_photos?: string[];
+    context?: CopilotContext;
   },
   handlers: AiStreamHandlers<never>,
   signal?: AbortSignal,

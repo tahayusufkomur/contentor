@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/ui/nav-link";
 import { parseAnswer } from "@/components/admin/assistant/format-answer";
 import { isAbortError } from "@/lib/ai-stream";
+import { useAssistantDock } from "@/lib/assistant-dock";
 import {
   converseCopilot,
   createCopilotChat,
@@ -24,6 +25,7 @@ import {
   patchCopilotChatEntries,
 } from "@/lib/copilot/api";
 import { usePathname } from "next/navigation";
+import { starterKey } from "@/lib/copilot/starters";
 import { reduceChat, toTranscript } from "@/lib/copilot/state";
 import {
   loadUiState,
@@ -157,6 +159,8 @@ function relativeTime(iso: string): string {
  * the first chat on first open. */
 export function CopilotBubble({ docked = false }: { docked?: boolean }) {
   const t = useTranslations("student.copilot");
+  const tAdmin = useTranslations("admin");
+  const dock = useAssistantDock();
   const pathname = usePathname();
   // Element-picking only makes sense on the live site the coach can see —
   // in /admin the drawer still works, minus the Select affordance.
@@ -345,12 +349,20 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
     setView("chat");
   }, []);
 
+  // The page she last spoke from: on arriving at another one the panel offers
+  // that page's starters again.
+  const [askedOn, setAskedOn] = useState<string | null>(null);
+
   const { run: send, loading: sending } = useAsyncAction(
-    async (message: string) => {
+    // fresh: the words open a new conversation (the search box's ask row),
+    // whatever thread is on screen.
+    async (message: string, fresh = false) => {
       const attachedNow = attachedRef.current;
       if (!message && attachedNow.length === 0) return;
+      const before = fresh ? [] : entries;
+      setAskedOn(pathname);
       const withCoach: ChatEntry[] = [
-        ...entries,
+        ...before,
         {
           role: "coach",
           text: message || t("attachedOnly"),
@@ -373,9 +385,10 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
         const done = await converseCopilot(
           {
             message: message || t("attachedOnly"),
-            transcript: toTranscript(entries),
+            transcript: toTranscript(before),
             selections,
             attached_photos: attachedNow.map((p) => p.id),
+            ...(pathname ? { context: { path: pathname } } : {}),
           },
           { onPhase: () => {} },
           controller.signal,
@@ -394,6 +407,22 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
     },
     { errorToast: t("error") },
   );
+
+  // Words handed over by the admin's search box: asked as a new conversation,
+  // so a thread still loading (or an older one on screen) is left alone.
+  const pendingAsk = docked ? dock.pendingAsk : null;
+  const clearAsk = dock.clearAsk;
+  useEffect(() => {
+    if (!pendingAsk || sending) return;
+    clearAsk();
+    newChat();
+    void send(pendingAsk, true);
+  }, [pendingAsk, sending, clearAsk, newChat, send]);
+
+  const starters =
+    docked && pathname && !sending && askedOn !== pathname
+      ? (tAdmin.raw(`dock.starters.${starterKey(pathname)}`) as string[])
+      : [];
 
   if (!open && !docked) {
     return (
@@ -527,7 +556,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
               ref={scrollRef}
               className="flex-1 space-y-3 overflow-y-auto p-3 text-sm"
             >
-              {entries.length === 0 && (
+              {entries.length === 0 && !docked && (
                 <p className="text-muted-foreground">{t("empty")}</p>
               )}
               {entries.map((e, i) => (
@@ -575,6 +604,25 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
               {sending && (
                 <p className="text-muted-foreground">{t("thinking")}</p>
               )}
+              {starters.length > 0 && (
+                <div data-testid="copilot-starters">
+                  <p className="mb-1.5 text-xs text-muted-foreground">
+                    {tAdmin("dock.startersTitle")}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {starters.map((prompt) => (
+                      <button
+                        key={prompt}
+                        type="button"
+                        onClick={() => void send(prompt)}
+                        className="rounded-full border bg-background px-2.5 py-1 text-left text-xs transition-colors hover:bg-accent"
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             {selections.length > 0 && (
               <div className="flex flex-wrap gap-1 border-t p-2">
@@ -605,6 +653,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
               </div>
             )}
             <CopilotComposer
+              placeholder={docked ? tAdmin("dock.placeholder") : undefined}
               onSend={send}
               sending={sending}
               attached={attached}

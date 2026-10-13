@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -16,30 +8,17 @@ import { CopilotAuditList } from "@/components/copilot/audit-list";
 import { CopilotBubble } from "@/components/copilot/copilot-bubble";
 import { SetupAssistantPanel } from "@/components/setup/setup-assistant-panel";
 import { Button } from "@/components/ui/button";
-import { dockFromUrl, dockTabs, type DockTab } from "@/lib/assistant-dock";
+import {
+  DockContext,
+  dockFromUrl,
+  dockTabs,
+  useAssistantDock,
+  type DockTab,
+} from "@/lib/assistant-dock";
 import { loadUiState, saveUiState } from "@/lib/copilot/storage";
 import { useHelpBotStatus } from "@/lib/help-bot";
 import { useSetupStatus } from "@/lib/setup-assistant";
 import { cn } from "@/lib/utils";
-
-interface DockApi {
-  isOpen: boolean;
-  tab: DockTab;
-  open: (tab?: DockTab) => void;
-  close: () => void;
-  toggle: () => void;
-}
-
-const DockContext = createContext<DockApi>({
-  isOpen: false,
-  tab: "assistant",
-  open() {},
-  close() {},
-  toggle() {},
-});
-
-/** Open, close or switch the admin's assistant panel from any admin page. */
-export const useAssistantDock = () => useContext(DockContext);
 
 export function AssistantDockProvider({
   children,
@@ -48,6 +27,7 @@ export function AssistantDockProvider({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [tab, setTab] = useState<DockTab>("assistant");
+  const [pendingAsk, setPendingAsk] = useState<string | null>(null);
 
   useEffect(() => {
     // window.location, not useSearchParams: avoids the Next 14 client-side
@@ -67,6 +47,14 @@ export function AssistantDockProvider({
     // so the panel stays shut on the next page and on the public site.
     saveUiState({ open: false, chatId: loadUiState().chatId });
   }, []);
+  const ask = useCallback(
+    (text: string) => {
+      setPendingAsk(text);
+      open("assistant");
+    },
+    [open],
+  );
+  const clearAsk = useCallback(() => setPendingAsk(null), []);
   const api = useMemo(
     () => ({
       isOpen,
@@ -74,8 +62,11 @@ export function AssistantDockProvider({
       open,
       close,
       toggle: () => (isOpen ? close() : open()),
+      pendingAsk,
+      ask,
+      clearAsk,
     }),
-    [isOpen, tab, open, close],
+    [isOpen, tab, open, close, pendingAsk, ask, clearAsk],
   );
 
   return <DockContext.Provider value={api}>{children}</DockContext.Provider>;

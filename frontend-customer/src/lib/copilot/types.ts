@@ -14,22 +14,45 @@ export interface DiffRow {
   new: string | null;
 }
 
-export type ActionKind =
-  | "edit_pages"
-  | "add_block"
-  | "remove_block"
-  | "move_block"
-  | "edit_block_fields"
-  | "toggle_block"
-  | "duplicate_block"
-  | "create_course"
-  | "create_event"
-  | "create_blog_post"
-  | "edit_theme"
-  | "edit_style"
-  | "edit_navbar"
-  | "set_block_image"
-  | "set_course_cover";
+/** Every action the backend can propose (apps/core/copilot/engine.py); a unit
+ * test fails when the two lists drift. */
+export const ACTION_KINDS = [
+  "edit_pages",
+  "add_block",
+  "remove_block",
+  "move_block",
+  "edit_block_fields",
+  "toggle_block",
+  "duplicate_block",
+  "create_course",
+  "create_event",
+  "create_blog_post",
+  "draft_announcement",
+  "edit_theme",
+  "edit_style",
+  "edit_navbar",
+  "edit_seo",
+  "set_block_image",
+  "set_course_cover",
+  "set_event_cover",
+  "set_logo",
+  "note_photo",
+  "edit_course",
+  "edit_curriculum",
+  "edit_event",
+  "edit_blog_post",
+  "publish_course",
+  "publish_blog_post",
+] as const;
+export type ActionKind = (typeof ACTION_KINDS)[number];
+
+/** Where she is when she talks to the assistant. The server matches the path
+ * against its own table of admin pages and looks the record up itself. */
+export interface CopilotContext {
+  path: string;
+  /** Set by "Describe it" beside a create button. */
+  intent?: "draft_course" | "draft_event";
+}
 
 export interface ActionCard {
   kind: ActionKind;
@@ -86,6 +109,9 @@ export interface CopilotAuditEntry {
   kind: string;
   summary: string;
   created_at: string;
+  undone: boolean;
+  /** Undo would still work on this row right now. */
+  undoable: boolean;
 }
 
 export interface CopilotChatRow {

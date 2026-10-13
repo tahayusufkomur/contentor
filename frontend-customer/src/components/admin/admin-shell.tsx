@@ -15,8 +15,8 @@ import { EntitlementsProvider } from "@/components/admin/entitlements-provider";
 import {
   AssistantDock,
   AssistantDockProvider,
-  useAssistantDock,
 } from "@/components/admin/assistant-dock";
+import { useAssistantDock } from "@/lib/assistant-dock";
 import { SectionTabs } from "@/components/admin/section-tabs";
 import { useNavigation } from "@shared/navigation/navigation-provider";
 import { useTenant } from "@/hooks/use-tenant";
@@ -156,7 +156,7 @@ function AdminShellContent({ children, user }: AdminShellProps) {
         open={cmdOpen}
         onOpenChange={setCmdOpen}
         entries={paletteItems}
-        onAskAssistant={() => dock.open("assistant")}
+        onAskAssistant={dock.ask}
       />
       <ImpersonationBanner />
     </div>

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { SETUP_CATALOG } from "@/components/setup/catalog";
-import { useAssistantDock } from "@/components/admin/assistant-dock";
+import { useAssistantDock } from "@/lib/assistant-dock";
 import { patchSetup, useSetupStatus } from "@/lib/setup-assistant";
 
 export function SetupGuideCard() {

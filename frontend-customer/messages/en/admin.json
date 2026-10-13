@@ -59,7 +59,7 @@
     "newCourse": "New course",
     "newEmail": "New email",
     "empty": "No page by that name.",
-    "askAssistant": "Open the assistant"
+    "askAssistant": "Ask the assistant: “{query}”"
   },
   "settingsHub": {
     "title": "More settings",
@@ -80,7 +80,63 @@
       "help": "Help",
       "history": "History"
     },
-    "noChangesYet": "No changes yet — everything your assistant applies will show up here."
+    "noChangesYet": "No changes yet — everything your assistant applies will show up here.",
+    "placeholder": "Ask for a course, a class, a change to your site…",
+    "startersTitle": "Try on this page",
+    "undo": "Undo",
+    "undoing": "Undoing…",
+    "undone": "Undone",
+    "undoneToast": "Taken back",
+    "undoRefused": "It was changed, published or removed since, so it was left as it is.",
+    "starters": {
+      "home": [
+        "What should I do next?",
+        "How did this week go?",
+        "Draft an announcement about what's new"
+      ],
+      "courses": [
+        "Suggest a course I could add next",
+        "Add covers to the courses that have none",
+        "Which courses are still drafts?"
+      ],
+      "course": [
+        "Add a module to this course",
+        "Rewrite this course's description",
+        "Give this course a new cover",
+        "Is this course ready to publish?"
+      ],
+      "events": [
+        "Schedule a weekly class for the next 4 weeks",
+        "Add covers to my upcoming events",
+        "What is on my calendar next?"
+      ],
+      "blog": [
+        "Suggest three post ideas for my students",
+        "Draft a post about my newest course",
+        "Which posts are still drafts?"
+      ],
+      "announcements": [
+        "Draft an announcement about my next class",
+        "Draft a welcome for new students",
+        "Draft a reminder about my newest course"
+      ],
+      "students": [
+        "How many students joined this week?",
+        "Draft a welcome for new students",
+        "What would bring me more students?"
+      ],
+      "money": [
+        "How do I get paid?",
+        "What does my plan include?",
+        "What should I charge for a course?"
+      ],
+      "media": [
+        "Add covers to the courses that have none",
+        "Add covers to my upcoming events",
+        "Put a new photo on my home page"
+      ]
+    },
+    "undoFailed": "That did not work. Please try again."
   },
   "assistant": {
     "title": "Site assistant",
@@ -451,5 +507,20 @@
         "aiBlog": "{n} AI blog posts/mo"
       }
     }
+  },
+  "describe": {
+    "course": {
+      "label": "Describe a course and the assistant drafts it",
+      "placeholder": "e.g. a 4-week beginner course on breathing for runners"
+    },
+    "event": {
+      "label": "Describe a class or a series and the assistant schedules it",
+      "placeholder": "e.g. a live flow class every Tuesday at 18:00 for 6 weeks"
+    },
+    "submit": "Draft it",
+    "working": "Drafting…",
+    "wait": "The assistant is drafting it. This takes a few seconds.",
+    "resting": "The assistant is resting right now. You can still create it by hand.",
+    "failed": "That did not work. Try again, or create it by hand."
   }
 }
