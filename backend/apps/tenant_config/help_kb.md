@@ -160,6 +160,17 @@ Open Settings for:
 - **Mailbox / email address**: claim or change your studio email address (see Inbox / Mailbox).
 - **Remove demo content**: if your site was seeded with example content, remove it all from here (or from the setup guide). The dialog lists exactly what will be removed (example courses, downloads, live sessions, plans, bundles, videos, photos); anything you've edited is kept.
 
+## Your assistant (in the admin)
+
+What: one assistant panel in the admin, opened with the **Assistant** button in the top bar. Tabs: Assistant (chat), Setup (the checklist), Help (questions about Contentor), History (what it changed).
+
+- **It knows the page you are on**: on a course's page "add a module to this course" changes that course; each page suggests a few things to ask.
+- **Describe it**: on Courses, New course and Classes & events there is a one-line field. Describe a course ("a 4-week beginner course on breathing for runners") or a class or series ("a live flow class every Tuesday at 18:00 for 6 weeks") and it drafts it. You review a card and press Apply; nothing is created before that. The normal form stays available.
+- **What it can do**: draft a course with modules and lessons; add, rename or remove modules and lessons of an existing course; schedule live classes, live streams, Zoom classes and in-person events; draft blog posts and announcements (it never sends anything); set covers, logo and page content. Class times are read in your time zone (Settings → General).
+- **Search**: type a question in the admin's search box and choose "Ask the assistant".
+- **Undo**: a draft it created can be taken back from its card or from History while you have not changed or published it. Changes to your site's pages can be undone from History, newest first.
+- Gotchas: a turn takes a few seconds. It will not delete a lesson that has a video or student progress; remove those from the course page.
+
 ## Setup checklist (the setup guide)
 
 A checklist ("Get your studio live") shown in the admin until your site is fully set up. Groups and items:

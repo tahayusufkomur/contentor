@@ -1,6 +1,6 @@
 # Coach admin refactor — design
 
-Date: 2026-10-13 · Status: approved by the owner 2026-10-13 · Phase 0 done 2026-10-13 · Phase 1 done 2026-10-13
+Date: 2026-10-13 · Status: approved by the owner 2026-10-13 · Phases 0, 1 and 2 done 2026-10-13
 
 ## 1. Goal
 
@@ -197,7 +197,7 @@ Each phase is shippable on its own and gets its own implementation plan. Sizes a
 |---|---|---|
 | 0. Repairs | Everything in §3.3 that needs no design: remove invented student data; remove the dead filter tabs and the static Payments tab until they are real; redirect `/admin/billing/subscription` to `/admin/billing?tab=subscription`; point batch video upload at the mounted endpoint; fix the two upload buttons, the bundle return tab and the course toast; make `?recipient=` preselect that student in compose's send step; redirect the orphan `/admin/live-streams`. (Done 2026-10-13: the Paid badge on "Site AI" is gone, per D1.) | 1–2 days |
 | 1. Shell | New nav (§5.1) with redirects; one name per page; palette derived from nav; the docked assistant panel (§5.2) holding the existing chat, setup, help and history; delete the `/admin/site-ai` page; remove the Marketing lock; a Settings page that links to every setting. Frontend only. | 3–4 days |
-| 2. Assistant in the page | `context` on converse and starter suggestions; "Describe it" on course and class/event; curriculum door; undo for created drafts; label, throttle, `ActionKind` (§5.5). | ~1 week |
+| 2. Assistant in the page | `context` on converse and starter suggestions; "Describe it" on course and class/event; curriculum door; undo for created drafts; label, throttle, `ActionKind` (§5.5). (Done 2026-10-13. As built: the record is derived from the path server-side, so the body carries `{path, intent}` and no `record` field; streams and Zoom are reachable too; class times are read in the coach's time zone.) | ~1 week |
 | 3. Merge duplicates | One Classes & events list and form (the four backend models stay); one message composer entry and one sent/scheduled list across announcements and campaigns, with the designed-email builder as the advanced path; Money (including a real payments list and a page to create student plans) split from "Your plan"; one Media page with one upload mechanic. | 1–2 weeks |
 | 4. Today | The deterministic feed, then the background brief (own spec). | ~1 week |
 | 5. Remaining doors | Inbox reply drafts, student-assistant knowledge, captions on upload, download descriptions, real student segments. | ~1 week |
