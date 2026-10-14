@@ -11,6 +11,15 @@
       "phoneSrc": "/media/clips/clip-student-phone-phone.mp4",
       "durationS": 4.8
     },
+    "scrub-assistant": {
+      "kind": "scrub",
+      "src": "/media/clips/scrub-assistant.mp4",
+      "width": 1280,
+      "height": 800,
+      "bytes": 1268240,
+      "poster": "/media/posters/scrub-assistant.avif",
+      "durationS": 3.2
+    },
     "loop-courses": {
       "kind": "loop",
       "src": "/media/clips/loop-courses.mp4",

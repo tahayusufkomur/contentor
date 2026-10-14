@@ -20,7 +20,7 @@ OUT=frontend-main/public/media
 # Scrubs are all-keyframe, so every frame costs a whole picture. Over 1.5 MB:
 # raise SCRUB_SPEED (fewer frames, same story) before SCRUB_CRF (28 at most).
 SCRUB_FPS=${SCRUB_FPS:-10}
-SCRUB_SPEED=${SCRUB_SPEED:-2.5}
+SCRUB_SPEED=${SCRUB_SPEED:-3.5}
 SCRUB_CRF=${SCRUB_CRF:-26}
 HERO_LOOKS="journal tavola encore kinetic"
 LOOKS="journal kinetic encore studiofloor tavola primer dojo workshop atelier sprout trail nocturne"

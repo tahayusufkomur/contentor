@@ -283,3 +283,40 @@ test("studio-live", async ({ browser }) => {
   await s.save("studio-live");
 });
 
+// ── "Describe it" (Phase 2 chapter 5): the line, the card, Apply, Undo ─────
+
+test("assistant", async ({ browser }) => {
+  test.setTimeout(6 * 60_000);
+  await hubFree();
+  const s = await open(browser, "desktop", { slug: "demo-yoga", role: "coach" });
+  const { page } = s;
+  await page.goto(url("demo-yoga", "/admin/courses"));
+  const line = page.getByTestId("describe-course");
+  await expect(line).toBeVisible({ timeout: 30_000 });
+  await settle(page);
+  s.mark("start");
+  await line.click();
+  await line.pressSequentially(
+    "A four-week beginner course for desk workers: hips, spine and shoulders, twenty minutes a day",
+    { delay: 28 },
+  );
+  await page.getByRole("button", { name: "Draft it" }).click();
+  s.mark("drafting");
+  const apply = page.getByRole("button", { name: "Apply", exact: true });
+  await expect(apply, "no draft card: the assistant asked a question or the hub run failed. Re-run -g assistant").toBeVisible({
+    timeout: 180_000,
+  });
+  s.mark("card");
+  await page.waitForTimeout(2_500);
+  await apply.click();
+  const undo = page.getByRole("button", { name: "Undo" });
+  await expect(undo).toBeVisible({ timeout: 60_000 });
+  s.mark("applied");
+  await page.waitForTimeout(1_500);
+  await undo.click();
+  await expect(undo).toHaveCount(0, { timeout: 30_000 });
+  s.mark("undone");
+  await page.waitForTimeout(1_500);
+  s.mark("end");
+  await s.save("assistant");
+});
