@@ -7,6 +7,7 @@ import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { serverFetch } from "@/lib/api-server";
 import { fetchPublishedPosts } from "@/lib/blog-public";
 import { PublicHeader } from "@/components/shared/public-header";
+import { SiteMotion } from "@/components/shared/site-motion";
 import { EditSidebar } from "@/components/owner/edit-sidebar";
 import { SiteAssistantBubble } from "@/components/assistant/site-assistant-bubble";
 import { CopilotBubble } from "@/components/copilot/copilot-bubble";
@@ -54,6 +55,7 @@ export default async function PublicLayout({
   // A flex column at least a screen tall: a short page keeps its footer at the bottom.
   const content = (
     <div className="flex min-h-screen flex-col">
+      <SiteMotion />
       <PublicHeader
         // The /setup preview shows the site as a visitor sees it.
         user={embed ? null : user}
@@ -65,7 +67,7 @@ export default async function PublicLayout({
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 md:px-6">
         {children}
       </main>
-      <PublicFooter />
+      <PublicFooter plansEnabled={plansEnabled} menu={menu} />
       {!isAdmin && !embed && <SiteAssistantBubble />}
       {isAdmin && !embed && <CopilotBubble />}
     </div>

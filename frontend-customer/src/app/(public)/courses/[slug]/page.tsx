@@ -61,7 +61,7 @@ export default async function CourseDetailPage({
         <div className="lg:col-span-2 space-y-6">
           {/* Thumbnail */}
           {course.thumbnail_signed_url || course.thumbnail_url ? (
-            <div className="overflow-hidden rounded-xl">
+            <div className="overflow-hidden rounded-[var(--radius)]">
               <img
                 src={course.thumbnail_signed_url || course.thumbnail_url}
                 alt={course.title}
@@ -69,7 +69,7 @@ export default async function CourseDetailPage({
               />
             </div>
           ) : (
-            <div className="relative flex h-64 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 md:h-80">
+            <div className="relative flex h-64 items-center justify-center overflow-hidden rounded-[var(--radius)] bg-gradient-to-br from-primary/20 to-accent/10 md:h-80">
               <span className="text-7xl font-bold text-primary/30">
                 {course.title.charAt(0)}
               </span>
@@ -97,7 +97,7 @@ export default async function CourseDetailPage({
 
         {/* Sticky sidebar - price & enroll */}
         <div>
-          <Card className="sticky top-24 ring-1 ring-primary/10">
+          <Card className="sticky top-24 rounded-[var(--radius)] ring-1 ring-primary/10">
             <CardContent className="p-6 space-y-4">
               <div className="text-center">
                 <p className="font-display text-3xl font-bold">
@@ -117,10 +117,12 @@ export default async function CourseDetailPage({
                     {totalLessons} lesson{totalLessons !== 1 ? "s" : ""}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <span>{formatTotalDuration(totalDuration)} total</span>
-                </div>
+                {totalDuration > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span>{formatTotalDuration(totalDuration)} total</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
                   <Play className="h-4 w-4" />
                   <span>
@@ -141,9 +143,12 @@ export default async function CourseDetailPage({
         </h2>
         <div className="space-y-3">
           {course.modules.map((mod: Module) => (
-            <Card key={mod.id} className="overflow-hidden">
+            <Card
+              key={mod.id}
+              className="overflow-hidden rounded-[var(--radius)]"
+            >
               <div className="bg-primary/5 px-4 py-3">
-                <h3 className="font-semibold">
+                <h3 className="font-display font-semibold">
                   Module {mod.order}: {mod.title}
                 </h3>
                 <p className="mt-0.5 text-xs text-muted-foreground">
@@ -170,9 +175,11 @@ export default async function CourseDetailPage({
                         </Badge>
                       )}
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {formatDuration(lesson.duration_seconds)}
-                    </span>
+                    {lesson.duration_seconds > 0 && (
+                      <span className="text-sm text-muted-foreground">
+                        {formatDuration(lesson.duration_seconds)}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>

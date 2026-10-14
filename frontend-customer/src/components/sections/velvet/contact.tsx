@@ -46,7 +46,7 @@ export function ContactNote({ block, editable }: SectionProps) {
             <Img
               value={block.image}
               alt={alt}
-              className={cn(FRAME, "mt-10 aspect-[4/5] w-40")}
+              className={cn(FRAME, "mt-10 ml-[10px] aspect-[4/5] w-40")}
             />
           )}
           {rows.length > 0 && (

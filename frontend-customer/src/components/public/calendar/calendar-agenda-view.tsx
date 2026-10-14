@@ -42,7 +42,9 @@ export function CalendarAgendaView({
         return (
           <section key={dateKey}>
             <div className="flex justify-between items-baseline mb-4">
-              <h2 className="text-2xl font-bold tracking-tight">{header}</h2>
+              <h2 className="font-display text-2xl font-bold tracking-tight">
+                {header}
+              </h2>
               {header !== weekday && (
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {weekday}

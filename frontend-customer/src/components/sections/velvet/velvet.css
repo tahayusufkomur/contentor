@@ -71,6 +71,10 @@
   overflow: hidden;
   isolation: isolate;
 }
+.velvet:not(.velvet-cream) .velvet-frame img,
+.velvet:not(.velvet-cream) .velvet-veil img {
+  filter: brightness(0.94) contrast(1.03) sepia(0.06);
+}
 .velvet-frame::after {
   content: "";
   position: absolute;

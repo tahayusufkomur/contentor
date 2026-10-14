@@ -112,7 +112,12 @@ def _signature(config) -> str:
 
 def _built_pages(flow: dict) -> list[str]:
     builds = flow.get("page_builds") or {}
-    return [key for key, build in builds.items() if (build or {}).get("status") == "ready"]
+    held_plans = bool((flow.get("held") or {}).get("plans"))
+    return [
+        key
+        for key, build in builds.items()
+        if (build or {}).get("status") == "ready" and not (key == "pricing" and held_plans)
+    ]
 
 
 def ensure(tenant, config) -> dict | None:

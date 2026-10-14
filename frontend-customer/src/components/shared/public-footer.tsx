@@ -3,13 +3,24 @@
 import Link from "next/link";
 
 import { useTenant } from "@/hooks/use-tenant";
+import { visibleNavLinks, type SiteMenu } from "@/lib/navbar";
 
 /** Brand, © year, the site's own nav links and any social links the coach set.
  * A public site that ends at the last block reads as unfinished. */
-export function PublicFooter() {
+export function PublicFooter({
+  plansEnabled = true,
+  menu,
+}: {
+  plansEnabled?: boolean;
+  menu?: SiteMenu;
+} = {}) {
   const config = useTenant();
   if (!config) return null;
-  const links = config.navbar_config?.links ?? [];
+  const links = visibleNavLinks(
+    config.navbar_config?.links ?? [],
+    plansEnabled,
+    menu,
+  );
   const social = Object.entries(config.social_links ?? {}).filter(
     ([, url]) => url,
   );

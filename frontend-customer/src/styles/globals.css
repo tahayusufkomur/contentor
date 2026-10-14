@@ -127,3 +127,112 @@ main:has(> .page-fullbleed) {
   max-width: none;
   padding: 0;
 }
+
+/* ── Fluid template motion (compositor-only, motion-safe gated) ────────── */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Page-to-page & initial route settle */
+  main > [data-public-page],
+  main > div {
+    transition:
+      opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+      translate 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+    @starting-style {
+      opacity: 0;
+      translate: 0 8px;
+    }
+  }
+
+  /* Soft image unveil + hover breath across all 21 templates */
+  [data-site-img],
+  main img {
+    opacity: 1;
+    scale: 1;
+    transition:
+      opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+      scale 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  img[data-img-loading] {
+    opacity: 0;
+    scale: 1.035;
+  }
+
+  [data-site-img]:not([data-site-img="priority"]) {
+    @starting-style {
+      opacity: 0;
+      scale: 1.025;
+    }
+  }
+
+  [data-site-img-frame]:hover > [data-site-img]:not([data-img-loading]),
+  a:hover [data-site-img]:not([data-img-loading]),
+  article:hover [data-site-img]:not([data-img-loading]) {
+    scale: 1.028;
+  }
+
+  /* Scroll-driven section & staggered card reveal (one-way via SiteMotion) */
+  [data-public-page] > [data-block-id],
+  main > div > section {
+    transition:
+      opacity 0.72s cubic-bezier(0.22, 1, 0.36, 1),
+      translate 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  [data-reveal="pending"] {
+    opacity: 0;
+    translate: 0 22px;
+  }
+
+  [data-reveal="visible"] {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  [data-reveal] :is(ul, ol, .grid) > [style*="--stagger-idx"] {
+    transition:
+      opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+      translate 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: calc(var(--stagger-idx, 0) * 55ms);
+  }
+
+  [data-reveal="pending"] :is(ul, ol, .grid) > [style*="--stagger-idx"] {
+    opacity: 0;
+    translate: 0 16px;
+  }
+
+  [data-reveal="visible"] :is(ul, ol, .grid) > [style*="--stagger-idx"] {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* Tactile hover & interactive lift on template buttons, pills, and cards */
+  [data-public-page] a,
+  [data-public-page] button:not([disabled]),
+  main a[class*="rounded"],
+  main button:not([disabled]) {
+    transition:
+      translate 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease,
+      box-shadow 0.35s ease,
+      opacity 0.25s ease;
+  }
+
+  [data-public-page] a[class*="bg-"]:hover,
+  [data-public-page] a[class*="border"]:hover,
+  main a[class*="bg-primary"]:hover {
+    translate: 0 -1.5px;
+  }
+
+  [data-public-page] a[class*="bg-"]:active,
+  [data-public-page] a[class*="border"]:active,
+  main a[class*="bg-primary"]:active {
+    translate: 0 0;
+  }
+}

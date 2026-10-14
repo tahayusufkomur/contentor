@@ -113,7 +113,10 @@ export function Img({
   const url = imageUrl(value);
   const label = (value as ImageValue | undefined)?.alt || alt;
   return (
-    <div className={cn("relative overflow-hidden bg-muted", className)}>
+    <div
+      data-site-img-frame=""
+      className={cn("relative overflow-hidden bg-muted", className)}
+    >
       {url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -121,6 +124,7 @@ export function Img({
           alt={label}
           loading={priority ? "eager" : "lazy"}
           decoding="async"
+          data-site-img={priority ? "priority" : ""}
           className={cn(
             "absolute inset-0 h-full w-full object-cover",
             imgClassName,

@@ -20,6 +20,7 @@ import type {
 import AnnouncementBell from "@/components/shared/announcement-bell";
 import { LogoMarkSvg } from "@/components/shared/logo-mark";
 import {
+  headerNavLinks,
   logoSizeClass,
   showBrandName,
   showSubscribeButton,
@@ -41,8 +42,6 @@ const FALLBACK_LINKS: NavLinkType[] = [
   { label: "Events", href: "/events" },
   { label: "About", href: "/about" },
 ];
-
-const SIGNED_IN_HIDDEN = new Set(["/about", "/faq"]);
 
 function Brand({ config }: { config: TenantConfig | null }) {
   const layout = config?.navbar_config?.layout ?? "classic";
@@ -85,11 +84,9 @@ function Brand({ config }: { config: TenantConfig | null }) {
 
 function DesktopLinks({
   links,
-  showInstall,
   className = "",
 }: {
   links: (NavLinkType & { dot?: boolean })[];
-  showInstall: boolean;
   className?: string;
 }) {
   return (
@@ -106,14 +103,6 @@ function DesktopLinks({
           )}
         </NavLink>
       ))}
-      {showInstall && (
-        <NavLink
-          href="/install"
-          className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Install app
-        </NavLink>
-      )}
     </div>
   );
 }
@@ -144,7 +133,6 @@ function AuthCluster({
   const styled = Boolean(useTenant()?.style);
   return (
     <div className="flex items-center gap-3">
-      <SocialLinks />
       {allowDarkMode && (
         <ThemeToggle compact className="shrink-0" modes={themeModes(styled)} />
       )}
@@ -252,14 +240,12 @@ export function PublicHeader({
     layout !== "pill" &&
     pathname === "/";
 
-  const allNavLinks = visibleNavLinks(
+  const navLinks = headerNavLinks(
     navbar?.links?.length ? navbar.links : FALLBACK_LINKS,
     plansEnabled,
     menu,
+    Boolean(user),
   );
-  const navLinks = user
-    ? allNavLinks.filter((link) => !SIGNED_IN_HIDDEN.has(link.href))
-    : allNavLinks;
   // Signed-in members of a community-enabled tenant get a Community nav entry.
   const withCommunity: (NavLinkType & { dot?: boolean })[] =
     user && communityEnabled
@@ -273,7 +259,11 @@ export function PublicHeader({
     ? [...withCommunity, { label: "Blog", href: "/blog" }]
     : withCommunity;
   const showLogin = navbar?.show_login !== false;
-  const cta = navbar?.cta ?? null;
+  const rawCta = navbar?.cta ?? null;
+  const cta =
+    rawCta && visibleNavLinks([rawCta], plansEnabled, menu).length > 0
+      ? rawCta
+      : null;
   const allowDarkMode = config?.dark_mode_enabled !== false;
 
   useEffect(() => {
@@ -431,11 +421,7 @@ export function PublicHeader({
           <div className="pointer-events-auto mx-auto flex h-14 max-w-4xl items-center justify-between gap-4 rounded-full border border-primary/10 bg-background/75 px-5 shadow-lg backdrop-blur-md">
             <Brand config={config} />
             <nav className="hidden items-center gap-5 md:flex">
-              <DesktopLinks
-                links={fullNavLinks}
-                showInstall={showInstall}
-                className="gap-5"
-              />
+              <DesktopLinks links={fullNavLinks} className="gap-5" />
               <AuthCluster {...authProps} compact />
             </nav>
             {burger}
@@ -475,7 +461,7 @@ export function PublicHeader({
             </div>
           </div>
           <nav className="hidden h-10 items-center justify-center md:flex">
-            <DesktopLinks links={fullNavLinks} showInstall={showInstall} />
+            <DesktopLinks links={fullNavLinks} />
           </nav>
         </div>
       ) : layout === "split" ? (
@@ -483,7 +469,6 @@ export function PublicHeader({
           <nav className="hidden md:block">
             <DesktopLinks
               links={fullNavLinks.slice(0, Math.ceil(fullNavLinks.length / 2))}
-              showInstall={false}
             />
           </nav>
           <div className="md:justify-self-center">
@@ -492,7 +477,6 @@ export function PublicHeader({
           <nav className="hidden items-center justify-end gap-6 md:flex">
             <DesktopLinks
               links={fullNavLinks.slice(Math.ceil(fullNavLinks.length / 2))}
-              showInstall={showInstall}
             />
             <AuthCluster {...authProps} compact />
           </nav>
@@ -511,14 +495,18 @@ export function PublicHeader({
           </div>
         </div>
       ) : (
-        /* classic — today's layout */
-        <div className="mx-auto flex h-16 max-w-[var(--site-wrap,80rem)] items-center justify-between px-[var(--site-gutter,1rem)] md:px-[var(--site-gutter-md,1rem)]">
-          <Brand config={config} />
-          <nav className="hidden items-center gap-6 md:flex">
-            <DesktopLinks links={fullNavLinks} showInstall={showInstall} />
-            <AuthCluster {...authProps} />
+        /* classic — balanced 3-zone bar: brand left, links center, auth right */
+        <div className="mx-auto grid h-16 max-w-[var(--site-wrap,80rem)] grid-cols-[1fr_auto] items-center gap-6 px-[var(--site-gutter,1rem)] md:grid-cols-[1fr_auto_1fr] md:px-[var(--site-gutter-md,1rem)]">
+          <div className="justify-self-start">
+            <Brand config={config} />
+          </div>
+          <nav className="hidden items-center justify-center md:flex">
+            <DesktopLinks links={fullNavLinks} />
           </nav>
-          {burger}
+          <div className="hidden items-center justify-end md:flex">
+            <AuthCluster {...authProps} compact />
+          </div>
+          <div className="justify-self-end md:hidden">{burger}</div>
         </div>
       )}
       {menuPanel}

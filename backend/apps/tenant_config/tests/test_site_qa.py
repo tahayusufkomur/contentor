@@ -109,6 +109,17 @@ def test_a_check_that_died_reads_failed(tenant_ctx, config, on):
     assert site_qa.ensure(tenant_ctx, config)["status"] == "failed"
 
 
+def test_held_pricing_page_is_skipped():
+    flow = {
+        "page_builds": {
+            "home": {"status": "ready"},
+            "pricing": {"status": "ready"},
+        },
+        "held": {"plans": True},
+    }
+    assert site_qa._built_pages(flow) == ["home"]
+
+
 # ── what it does ─────────────────────────────────────────────────────────────
 
 

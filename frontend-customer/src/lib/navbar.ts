@@ -55,6 +55,27 @@ export function visibleNavLinks<T extends { href: string }>(
   return links.filter((l) => !empty.has(l.href));
 }
 
+const HEADER_HIDDEN = new Set(["/faq"]);
+const SIGNED_IN_HEADER_HIDDEN = new Set(["/about", "/faq"]);
+
+/** Top-bar links: drops empty pages via visibleNavLinks, drops /faq
+ * (already on Home/Pricing and in the footer; /about too once signed in),
+ * and collapses /calendar when /events is already present (both pages
+ * cross-link and the footer keeps both). */
+export function headerNavLinks<T extends { href: string }>(
+  links: T[],
+  plansEnabled: boolean,
+  menu?: SiteMenu,
+  signedIn = false,
+): T[] {
+  const visible = visibleNavLinks(links, plansEnabled, menu);
+  const hasEvents = visible.some((l) => l.href === "/events");
+  const hidden = signedIn ? SIGNED_IN_HEADER_HIDDEN : HEADER_HIDDEN;
+  return visible.filter(
+    (l) => !hidden.has(l.href) && !(hasEvents && l.href === "/calendar"),
+  );
+}
+
 /** The Subscribe/Plans button is for students of a tenant that has plans;
  * staff are not buying their own subscriptions. */
 export function showSubscribeButton(

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  headerNavLinks,
   logoSizeClass,
   showBrandName,
   showSubscribeButton,
@@ -67,6 +68,37 @@ describe("visibleNavLinks", () => {
     expect(hrefs({ courses: true, events: true })).toHaveLength(5);
     // Unknown (the menu fetch failed): every link stays.
     expect(visibleNavLinks(all, true)).toHaveLength(5);
+  });
+});
+
+describe("headerNavLinks", () => {
+  const all = [
+    { label: "Courses", href: "/courses" },
+    { label: "Events", href: "/events" },
+    { label: "Calendar", href: "/calendar" },
+    { label: "Pricing", href: "/plans" },
+    { label: "About", href: "/about" },
+    { label: "FAQ", href: "/faq" },
+  ];
+  it("collapses /calendar when /events is present and hides /faq in the top bar", () => {
+    expect(
+      headerNavLinks(all, true, { courses: true, events: true }).map(
+        (l) => l.href,
+      ),
+    ).toEqual(["/courses", "/events", "/plans", "/about"]);
+    expect(
+      headerNavLinks(all, true, { courses: true, events: true }, true).map(
+        (l) => l.href,
+      ),
+    ).toEqual(["/courses", "/events", "/plans"]);
+  });
+  it("keeps /calendar when /events was removed by the coach", () => {
+    const withoutEvents = all.filter((l) => l.href !== "/events");
+    expect(
+      headerNavLinks(withoutEvents, false, { courses: true, events: true }).map(
+        (l) => l.href,
+      ),
+    ).toEqual(["/courses", "/calendar", "/about"]);
   });
 });
 

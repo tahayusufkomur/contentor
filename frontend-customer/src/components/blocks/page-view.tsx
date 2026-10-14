@@ -40,9 +40,14 @@ export async function PageView({
       />
     );
   }
+  const noPlans =
+    pageKey === "pricing" &&
+    Array.isArray(dynamicData?.plans) &&
+    dynamicData.plans.length === 0;
+
   return (
     <PageRenderer
-      blocks={blocks}
+      blocks={noPlans ? [] : blocks}
       dynamicData={dynamicData}
       pageTitle={pageTitle}
       styleId={styleId}

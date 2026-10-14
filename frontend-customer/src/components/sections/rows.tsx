@@ -57,11 +57,11 @@ function Billboard({
       />
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(to_top,var(--inverse)_4%,color-mix(in_oklch,var(--inverse)_70%,transparent)_38%,transparent_72%),linear-gradient(to_right,color-mix(in_oklch,var(--inverse)_85%,transparent),transparent_60%)]"
+        className="absolute inset-0 bg-[linear-gradient(to_top,var(--inverse)_6%,color-mix(in_oklch,var(--inverse)_76%,transparent)_42%,transparent_76%),linear-gradient(to_right,color-mix(in_oklch,var(--inverse)_88%,transparent),transparent_62%)]"
       />
       <div className="absolute inset-x-0 bottom-0 max-w-2xl p-6 md:p-10">
         <div className="flex flex-wrap gap-2">{meta}</div>
-        <h3 className="mt-4 font-display text-[clamp(2rem,1.3rem+2.6vw,3.75rem)] font-bold leading-[1.02] tracking-[-0.02em]">
+        <h3 className="mt-4 font-display text-[clamp(2rem,1.3rem+2.6vw,3.75rem)] font-bold leading-[1.06] tracking-[-0.02em]">
           {title}
         </h3>
         {description && (
@@ -109,11 +109,13 @@ function Tile({
           />
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-[linear-gradient(to_top,color-mix(in_oklch,var(--inverse)_92%,transparent),transparent_58%)]"
+            className="absolute inset-0 bg-[linear-gradient(to_top,color-mix(in_oklch,var(--inverse)_94%,transparent)_8%,transparent_64%)]"
           />
-          <p className="absolute inset-x-0 bottom-0 line-clamp-2 p-3 font-display text-[1.05rem] font-semibold leading-tight">
-            {title}
-          </p>
+          <div className="absolute inset-x-0 bottom-0 p-3.5">
+            <p className="line-clamp-2 font-display text-[1.05rem] font-semibold leading-snug">
+              {title}
+            </p>
+          </div>
         </div>
         <p className="mt-2 text-[0.85rem] text-[color:var(--rows-dim)]">
           {meta}

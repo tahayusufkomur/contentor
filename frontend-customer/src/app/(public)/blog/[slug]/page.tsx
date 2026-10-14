@@ -15,7 +15,7 @@ const MORE_POSTS = 4;
 const WORDS_PER_MINUTE = 225;
 
 const PROSE =
-  "prose prose-neutral dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24 prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4 prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3 prose-p:leading-8 prose-p:mb-6 prose-strong:font-bold prose-strong:text-foreground prose-li:mb-2 prose-li:leading-7 prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-2 prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground prose-img:rounded-xl [&_figure.blog-inline-image]:my-10 [&_figure.blog-inline-image]:overflow-hidden [&_figure.blog-inline-image]:rounded-xl [&_figure.blog-inline-image]:border [&_figure.blog-inline-image_img]:my-0 [&_figure.blog-inline-image_img]:w-full [&_figure.blog-inline-image_img]:rounded-none [&_table]:w-full [&_th]:border-b [&_th]:bg-muted [&_th]:px-3 [&_th]:py-3 [&_th]:text-left [&_th]:text-sm [&_td]:border-b [&_td]:px-3 [&_td]:py-3 [&_td]:text-sm [&_a[href^='http']]:after:content-['_↗'] [&_a[href^='http']]:after:text-xs [&_a[href^='http']]:after:opacity-60";
+  "prose prose-neutral dark:prose-invert max-w-none prose-headings:font-display prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24 prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4 prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3 prose-p:leading-8 prose-p:mb-6 prose-strong:font-bold prose-strong:text-foreground prose-li:mb-2 prose-li:leading-7 prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-2 prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground prose-img:rounded-[var(--radius)] [&_figure.blog-inline-image]:my-10 [&_figure.blog-inline-image]:overflow-hidden [&_figure.blog-inline-image]:rounded-[var(--radius)] [&_figure.blog-inline-image]:border [&_figure.blog-inline-image_img]:my-0 [&_figure.blog-inline-image_img]:w-full [&_figure.blog-inline-image_img]:rounded-none [&_table]:w-full [&_th]:border-b [&_th]:bg-muted [&_th]:px-3 [&_th]:py-3 [&_th]:text-left [&_th]:text-sm [&_td]:border-b [&_td]:px-3 [&_td]:py-3 [&_td]:text-sm [&_a[href^='http']]:after:content-['_↗'] [&_a[href^='http']]:after:text-xs [&_a[href^='http']]:after:opacity-60";
 
 const CHIP =
   "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium text-muted-foreground";
@@ -86,7 +86,7 @@ function TitleCard({ title }: { title: string }) {
   return (
     <div
       aria-hidden
-      className="relative mt-6 flex aspect-[1200/627] w-full items-center justify-center overflow-hidden rounded-xl border bg-[color-mix(in_oklch,var(--primary)_12%,transparent)] px-[8%] shadow-sm"
+      className="relative mt-6 flex aspect-[1200/627] w-full items-center justify-center overflow-hidden rounded-[var(--radius)] border bg-[color-mix(in_oklch,var(--primary)_12%,transparent)] px-[8%] shadow-sm"
     >
       <div className="absolute -left-4 -top-4 grid grid-cols-3 gap-2 opacity-60">
         {Array.from({ length: 9 }, (_, i) => (
@@ -97,11 +97,11 @@ function TitleCard({ title }: { title: string }) {
         ))}
       </div>
       <span className="absolute -bottom-10 left-[6%] size-24 rounded-full border-[10px] border-[color-mix(in_oklch,var(--primary)_30%,transparent)] sm:size-32" />
-      <span className="absolute -right-6 bottom-[12%] h-16 w-28 rotate-[-12deg] rounded-xl bg-[color-mix(in_oklch,var(--primary)_25%,transparent)] sm:h-24 sm:w-40" />
+      <span className="absolute -right-6 bottom-[12%] h-16 w-28 rotate-[-12deg] rounded-[var(--radius)] bg-[color-mix(in_oklch,var(--primary)_25%,transparent)] sm:h-24 sm:w-40" />
       <span className="absolute right-[5%] top-[8%] text-3xl font-bold tracking-[-0.2em] text-[color-mix(in_oklch,var(--primary)_45%,transparent)] sm:text-5xl">
         ⌃⌃⌃
       </span>
-      <p className="relative text-balance text-center font-serif text-2xl font-bold leading-[1.1] text-foreground sm:text-5xl">
+      <p className="relative text-balance text-center font-display text-2xl font-bold leading-[1.1] text-foreground sm:text-5xl">
         {title}
       </p>
     </div>
@@ -134,7 +134,7 @@ function Contents({ headings }: { headings: Heading[] }) {
   return (
     <nav
       aria-label="Table of contents"
-      className="mb-8 rounded-lg border bg-muted/20 lg:sticky lg:top-24 lg:order-1 lg:mb-0 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:p-5"
+      className="mb-8 rounded-[var(--radius)] border bg-muted/20 lg:sticky lg:top-24 lg:order-1 lg:mb-0 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:p-5"
     >
       <details className="lg:hidden">
         <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3.5">
@@ -226,7 +226,7 @@ export default async function BlogPostPage({
           <img
             src={post.cover_photo_url}
             alt=""
-            className="mt-6 aspect-[1200/627] w-full rounded-xl border object-cover shadow-sm"
+            className="mt-6 aspect-[1200/627] w-full rounded-[var(--radius)] border object-cover shadow-sm"
           />
         ) : (
           <TitleCard title={post.title} />
@@ -237,7 +237,7 @@ export default async function BlogPostPage({
               <span className={CHIP}>🏷️ {tag}</span>
             </div>
           )}
-          <h1 className="mb-6 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
+          <h1 className="mb-6 font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
             {post.title}
           </h1>
           {post.excerpt && (
@@ -277,7 +277,7 @@ export default async function BlogPostPage({
             dangerouslySetInnerHTML={{ __html: html }}
           />
 
-          <div className="mt-16 rounded-xl border bg-gradient-to-br from-muted/40 to-muted/10 p-6">
+          <div className="mt-16 rounded-[var(--radius)] border bg-gradient-to-br from-muted/40 to-muted/10 p-6">
             <div className="flex items-start gap-4">
               <span className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-semibold text-muted-foreground ring-2 ring-[color-mix(in_oklch,var(--primary)_20%,transparent)]">
                 {config?.logo_url ? (

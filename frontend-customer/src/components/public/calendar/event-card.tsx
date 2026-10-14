@@ -59,7 +59,7 @@ export function EventCard({
     <Link
       href={href}
       className={cn(
-        "flex items-stretch rounded-2xl bg-card overflow-hidden transition-all hover:shadow-md group",
+        "flex items-stretch rounded-[var(--radius)] bg-card overflow-hidden transition-all hover:shadow-md group",
         isPast && "opacity-50",
       )}
     >
@@ -84,7 +84,7 @@ export function EventCard({
             </div>
           )}
         </div>
-        <h3 className="font-semibold text-foreground leading-tight mb-1">
+        <h3 className="font-display font-semibold text-foreground leading-tight mb-1">
           {event.title}
         </h3>
         <div className="flex justify-between items-end">

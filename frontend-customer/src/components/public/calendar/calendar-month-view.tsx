@@ -65,7 +65,7 @@ export function CalendarMonthView({
   });
 
   return (
-    <div className="flex flex-col md:flex-row rounded-xl border border-border overflow-hidden bg-card/50 md:min-h-[calc(100vh-240px)]">
+    <div className="flex flex-col md:flex-row rounded-[var(--radius)] border border-border overflow-hidden bg-card/50 md:min-h-[calc(100vh-240px)]">
       {/* LEFT: Calendar Grid */}
       <div className="md:w-[72%] md:border-r border-border flex flex-col">
         {/* Day headers */}
@@ -190,7 +190,7 @@ export function CalendarMonthView({
             <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">
               {isToday(selectedDate) ? "Today" : "Selected Day"}
             </p>
-            <h3 className="text-xl font-bold tracking-tight text-foreground">
+            <h3 className="font-display text-xl font-bold tracking-tight text-foreground">
               {selectedDateLabel}
             </h3>
           </div>
@@ -208,7 +208,7 @@ export function CalendarMonthView({
           ) : (
             <>
               {/* Empty state */}
-              <div className="rounded-xl border border-dashed border-border bg-card/60 p-6 text-center mb-6">
+              <div className="rounded-[var(--radius)] border border-dashed border-border bg-card/60 p-6 text-center mb-6">
                 <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-muted flex items-center justify-center">
                   <CalendarDays className="w-5 h-5 text-muted-foreground" />
                 </div>
@@ -272,7 +272,7 @@ function DetailEventCard({ event, timezone, showDate }: DetailEventCardProps) {
   return (
     <Link
       href={href}
-      className="block rounded-xl border border-border bg-card overflow-hidden shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
+      className="block rounded-[var(--radius)] border border-border bg-card overflow-hidden shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
     >
       <div className="flex items-stretch">
         <div className={cn("w-1 shrink-0", config.dotClass)} />
@@ -305,7 +305,7 @@ function DetailEventCard({ event, timezone, showDate }: DetailEventCardProps) {
           </div>
 
           {/* Title */}
-          <h4 className="font-bold text-sm text-foreground leading-snug mb-1.5">
+          <h4 className="font-display font-bold text-sm text-foreground leading-snug mb-1.5">
             {event.title}
           </h4>
 

@@ -24,7 +24,7 @@ export function PageRenderer({
 
   // Break out of the layout's px-4/py-8 container so sections are full-bleed.
   return (
-    <div className={pageWrapperClass(visible)}>
+    <div data-public-page="" className={pageWrapperClass(visible)}>
       {pageTitle && !firstIsHero && <h1 className="sr-only">{pageTitle}</h1>}
       {visible.length === 0 ? (
         <div className="px-4 py-24 text-center text-sm text-muted-foreground">

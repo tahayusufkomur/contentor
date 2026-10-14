@@ -20,7 +20,9 @@ export default async function BlogIndexPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-3xl font-bold mb-8">Blog</h1>
+      <h1 className="mb-8 font-display text-3xl font-bold tracking-tight">
+        Blog
+      </h1>
       {posts.length === 0 && (
         <p className="text-muted-foreground">No posts yet.</p>
       )}
@@ -33,10 +35,10 @@ export default async function BlogIndexPage() {
                 <img
                   src={post.cover_photo_url}
                   alt=""
-                  className="mb-3 aspect-[2/1] w-full rounded-lg object-cover"
+                  className="mb-3 aspect-[2/1] w-full rounded-[var(--radius)] object-cover"
                 />
               )}
-              <h2 className="text-xl font-semibold group-hover:underline">
+              <h2 className="font-display text-xl font-semibold group-hover:underline">
                 {post.title}
               </h2>
               <p className="mt-1 text-muted-foreground">{post.excerpt}</p>

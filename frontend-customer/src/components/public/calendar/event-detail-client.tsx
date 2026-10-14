@@ -74,7 +74,7 @@ export function EventDetailClient({
         <div className="lg:col-span-2 space-y-6">
           {/* Thumbnail or gradient hero */}
           {event.thumbnail_signed_url ? (
-            <div className="overflow-hidden rounded-xl">
+            <div className="overflow-hidden rounded-[var(--radius)]">
               <img
                 src={event.thumbnail_signed_url}
                 alt={event.title}
@@ -84,7 +84,7 @@ export function EventDetailClient({
           ) : (
             <div
               className={cn(
-                "relative flex h-64 items-center justify-center overflow-hidden rounded-xl md:h-80",
+                "relative flex h-64 items-center justify-center overflow-hidden rounded-[var(--radius)] md:h-80",
                 "bg-gradient-to-br from-primary/20 to-accent/10",
               )}
             >
@@ -140,7 +140,7 @@ export function EventDetailClient({
 
         {/* Sticky sidebar - action card */}
         <div>
-          <Card className="sticky top-24 ring-1 ring-primary/10">
+          <Card className="sticky top-24 rounded-[var(--radius)] ring-1 ring-primary/10">
             <CardContent className="p-6 space-y-4">
               {/* Price */}
               <div className="text-center">
