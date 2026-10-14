@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Sans } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import { cookies, headers } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -68,16 +68,6 @@ async function isSiteGated(
 
 import "@/styles/globals.css";
 
-const instrumentSans = Instrument_Sans({
-  subsets: ["latin"],
-  // Expose the default font under its own variable so it never shadows the
-  // tenant's `--font-sans` override (which is injected at :root by
-  // TenantThemeStyle / the builder live preview). globals.css points
-  // `--font-sans` at this as the fallback default.
-  variable: "--font-instrument",
-  display: "swap",
-});
-
 export const dynamic = "force-dynamic";
 
 export async function generateViewport(): Promise<Viewport> {
@@ -144,7 +134,7 @@ export default async function RootLayout({
   if (!config && slug !== "unknown") {
     const locale = await getLocale();
     return (
-      <html lang={locale} className={instrumentSans.variable}>
+      <html lang={locale} className={GeistSans.variable}>
         <body className="bg-cinematic min-h-screen font-sans antialiased">
           <main className="flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center">
             <h1 className="text-2xl font-semibold">Site not found</h1>
@@ -171,7 +161,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={instrumentSans.variable}
+      className={GeistSans.variable}
       suppressHydrationWarning
     >
       <head>
