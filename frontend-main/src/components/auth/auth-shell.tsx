@@ -41,9 +41,7 @@ export function AuthShell({
               aria-hidden
               className="absolute -inset-x-16 -top-24 -z-10 h-72 rounded-full bg-gradient-to-r from-[oklch(0.62_0.24_232)] via-[oklch(0.55_0.24_270)] to-[oklch(0.7_0.2_210)] opacity-30 blur-3xl"
             />
-            <p className="text-eyebrow text-muted-foreground/80">
-              For creators
-            </p>
+            <p className="text-eyebrow text-muted-foreground">For creators</p>
             <h2 className="text-display mt-4 text-5xl leading-[1.05]">
               <span className="text-foreground/95">Your studio.</span>
               <br />
@@ -55,7 +53,7 @@ export function AuthShell({
             </p>
           </div>
 
-          <p className="text-[12.5px] text-muted-foreground/70">
+          <p className="text-[12.5px] text-muted-foreground">
             © {new Date().getFullYear()} Contentor — All rights reserved.
           </p>
         </aside>
@@ -71,7 +69,7 @@ export function AuthShell({
             <div className="glass-pane p-8 md:p-9">
               <div className="text-center">
                 {eyebrow && (
-                  <p className="text-eyebrow text-muted-foreground/80">
+                  <p className="text-eyebrow text-muted-foreground">
                     {eyebrow}
                   </p>
                 )}

@@ -105,7 +105,7 @@ export function StudioBrief({
                 type="button"
                 aria-pressed={active}
                 onClick={() => toggleChip(chip)}
-                className={`rounded-full border px-3 py-1.5 text-sm ${active ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
+                className={`rounded-full border px-3 py-1.5 text-sm ${active ? "border-primary bg-primary/10 text-foreground" : "text-muted-foreground hover:border-foreground"}`}
               >
                 {chip}
               </button>

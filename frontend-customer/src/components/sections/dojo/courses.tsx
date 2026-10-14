@@ -44,7 +44,7 @@ export function CoursesBelts({ block, data, editable }: SectionProps) {
                   className="group flex h-full flex-col border border-border bg-background transition-all hover:border-foreground/40 hover:shadow-md"
                 >
                   <BeltStripe index={i} className="h-1.5" />
-                  <div className="flex items-center justify-between border-b border-border/60 px-5 py-3 bg-muted/20">
+                  <div className="flex items-center justify-between border-b border-border/60 px-5 py-3">
                     <span className={cn(LABEL, "text-accent")}>
                       {beltRank(i)}
                     </span>

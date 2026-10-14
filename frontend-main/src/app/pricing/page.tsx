@@ -173,7 +173,7 @@ export default async function PricingPage() {
         <div className="grid-fade pointer-events-none absolute inset-0 -z-10 opacity-60" />
 
         <div className="mx-auto max-w-3xl text-center">
-          <p className="reveal-fade-up text-eyebrow text-muted-foreground/80">
+          <p className="reveal-fade-up text-eyebrow text-muted-foreground">
             Pricing
           </p>
           <h1
@@ -237,7 +237,7 @@ export default async function PricingPage() {
                   )}
 
                   <div className="flex items-baseline justify-between">
-                    <p className="text-eyebrow text-muted-foreground/80">
+                    <p className="text-eyebrow text-muted-foreground">
                       {t(`plans.${key}.name`)}
                     </p>
                     {highlighted && (
@@ -288,7 +288,7 @@ export default async function PricingPage() {
                             className={`text-[13.5px] leading-relaxed ${
                               included
                                 ? "text-foreground/90"
-                                : "text-muted-foreground/60"
+                                : "text-muted-foreground"
                             }`}
                           >
                             {(plan && dynamicFeatureLabel(featureKey, plan)) ??
@@ -319,7 +319,7 @@ export default async function PricingPage() {
         <div className="mx-auto max-w-3xl">
           <ScrollReveal variant="blur" duration={1}>
             <div className="text-center">
-              <p className="text-eyebrow text-muted-foreground/80">Questions</p>
+              <p className="text-eyebrow text-muted-foreground">Questions</p>
               <h2 className="text-display mt-4 text-4xl md:text-5xl">
                 {t("faq.title")}
               </h2>
@@ -366,7 +366,7 @@ export default async function PricingPage() {
               <Button asChild variant="brand" size="xl" className="mt-8">
                 <Link href="/signup">{t("cta2.button")}</Link>
               </Button>
-              <p className="mt-4 text-[13px] text-muted-foreground/80">
+              <p className="mt-4 text-[13px] text-muted-foreground">
                 {t("cta2.trustNote")}
               </p>
             </div>

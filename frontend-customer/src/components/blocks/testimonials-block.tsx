@@ -28,7 +28,7 @@ function Avatar({
     />
   ) : (
     <div
-      className={`${size} flex items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary`}
+      className={`${size} flex items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-foreground`}
     >
       {(item.name || "?").charAt(0)}
     </div>

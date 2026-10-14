@@ -345,7 +345,7 @@ export function HelpChat({ onNavigate }: { onNavigate: () => void }) {
                                 ),
                               );
                             }}
-                            className={`rounded p-1 transition-colors hover:bg-accent ${message.rated === r ? "text-primary" : "text-muted-foreground/60"} disabled:hover:bg-transparent`}
+                            className={`rounded p-1 transition-colors hover:bg-accent ${message.rated === r ? "text-primary" : "text-muted-foreground"} disabled:hover:bg-transparent`}
                           >
                             {r === "up" ? (
                               <ThumbsUp className="h-3.5 w-3.5" />

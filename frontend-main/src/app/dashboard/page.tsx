@@ -22,7 +22,7 @@ const STATUS_COPY: Record<
   provisioning: { label: "Setting up", tone: "bg-primary/12 text-primary" },
   pending: {
     label: "Pending",
-    tone: "bg-foreground/[0.06] text-muted-foreground",
+    tone: "bg-foreground/[0.06] text-foreground",
   },
   failed: { label: "Setup failed", tone: "bg-destructive/12 text-destructive" },
 };
@@ -53,7 +53,7 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
         {tenant.domain || `${tenant.slug}.contentor.app`}
       </p>
 
-      <div className="mt-5 flex items-center gap-4 text-[12.5px] text-muted-foreground/90">
+      <div className="mt-5 flex items-center gap-4 text-[12.5px] text-muted-foreground">
         <span>
           Plan{" "}
           <span className="font-medium text-foreground/85">
@@ -149,7 +149,7 @@ export default async function DashboardPage() {
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
             <div>
-              <p className="text-eyebrow text-muted-foreground/80">
+              <p className="text-eyebrow text-muted-foreground">
                 {user.name ? `Hi, ${user.name.split(" ")[0]}` : "Your studio"}
               </p>
               <h1 className="text-display mt-3 text-5xl leading-[1.05] md:text-6xl">

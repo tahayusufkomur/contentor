@@ -26,7 +26,9 @@
     --accent-foreground: oklch(0.205 0 0);
     --marketing-accent: oklch(0.47 0.11 195);
     --marketing-accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
+    /* a step darker than the house value: as text it holds 4.5:1 on its own
+       /5 and /10 tint (the danger box), and white holds it on the /90 hover */
+    --destructive: oklch(0.53 0.215 27.325);
     --destructive-foreground: oklch(0.985 0 0);
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);

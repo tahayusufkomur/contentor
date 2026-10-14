@@ -379,7 +379,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                         className={cn(
                           "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                           mode === "site"
-                            ? "bg-primary/10 text-primary"
+                            ? "bg-primary/10 text-foreground"
                             : "text-muted-foreground hover:bg-accent",
                         )}
                       >
@@ -390,7 +390,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                         className={cn(
                           "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                           mode === "pages"
-                            ? "bg-primary/10 text-primary"
+                            ? "bg-primary/10 text-foreground"
                             : "text-muted-foreground hover:bg-accent",
                         )}
                       >
@@ -417,7 +417,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                             >
                               <button
                                 onClick={() => toggleSection(section.id)}
-                                className="flex w-full items-center gap-3 px-5 py-3.5 text-sm font-medium transition-colors hover:bg-accent/50"
+                                className="flex w-full items-center gap-3 px-5 py-3.5 text-sm font-medium transition-colors hover:bg-muted/50"
                               >
                                 <span className="text-muted-foreground">
                                   {section.icon}
@@ -476,7 +476,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                                 className={cn(
                                   "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
                                   activePageKey === key
-                                    ? "border-primary bg-primary/10 text-primary"
+                                    ? "border-primary bg-primary/10 text-foreground"
                                     : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
                                 )}
                               >
@@ -581,7 +581,7 @@ function SetupSidebarRow({ minWidth }: { minWidth: number }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-between border-b bg-primary/5 px-5 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
+        className="flex w-full items-center justify-between border-b bg-primary/5 px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-primary/10"
         style={{ minWidth }}
       >
         <span>{t("setup.progressLabel", { done, total })}</span>

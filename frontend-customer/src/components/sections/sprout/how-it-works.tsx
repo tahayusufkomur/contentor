@@ -65,7 +65,7 @@ export function HowItWorksSteps({ block, editable }: SectionProps) {
                     >
                       {i + 1}
                     </span>
-                    <span className="text-[0.8rem] font-bold uppercase tracking-wider text-muted-foreground/80">
+                    <span className="text-[0.8rem] font-bold uppercase tracking-wider text-muted-foreground">
                       Step {i + 1}
                     </span>
                   </div>

@@ -49,7 +49,7 @@ export function EditableBody({
       {value ? (
         <RichHtml html={value} />
       ) : (
-        <span className="text-muted-foreground/60">
+        <span className="text-muted-foreground">
           {placeholder || "Click to add text"}
         </span>
       )}

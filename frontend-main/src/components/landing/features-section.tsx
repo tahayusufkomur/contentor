@@ -62,7 +62,7 @@ function LiveClassIllustration({
           <div key={i} className="aspect-video rounded-md bg-background/10" />
         ))}
       </div>
-      <div className="mt-3 text-center text-xs text-background/60">
+      <div className="mt-3 text-center text-xs text-background/70">
         {watching(847)}
       </div>
     </div>

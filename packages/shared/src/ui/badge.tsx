@@ -14,10 +14,9 @@ const badgeVariants = cva(
         outline: "border-border text-foreground",
         // No semantic success/warning tokens in the house system — express
         // positive state with the marketing accent, neutral with muted.
-        success:
-          "border-transparent bg-marketing-accent/15 text-marketing-accent",
+        success: "border-transparent bg-marketing-accent/15 text-foreground",
         warning: "border-transparent bg-muted text-muted-foreground",
-        brand: "border-transparent bg-primary/10 text-primary",
+        brand: "border-transparent bg-primary/10 text-foreground",
         // Amber "premium / paid feature" treatment — matches the app's
         // monetize-nudge + live upsell color, with explicit light/dark variants
         // so it reads as premium (not alarm) in both themes.

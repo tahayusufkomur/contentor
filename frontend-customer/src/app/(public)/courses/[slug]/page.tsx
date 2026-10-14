@@ -151,7 +151,7 @@ export default async function CourseDetailPage({
                 <h3 className="font-display font-semibold">
                   Module {mod.order}: {mod.title}
                 </h3>
-                <p className="mt-0.5 text-xs text-muted-foreground">
+                <p className="mt-0.5 text-xs text-foreground">
                   {mod.lessons.length} lesson
                   {mod.lessons.length !== 1 ? "s" : ""}
                 </p>

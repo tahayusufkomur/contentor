@@ -1,7 +1,7 @@
 import typography from "@tailwindcss/typography";
 import type { Config } from "tailwindcss";
 
-import sharedPreset from "../packages/shared/tailwind-preset";
+import sharedPreset, { alphaTokens } from "../packages/shared/tailwind-preset";
 
 const config: Config = {
   presets: [sharedPreset],
@@ -30,7 +30,7 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      colors: {
+      colors: alphaTokens({
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
@@ -94,7 +94,7 @@ const config: Config = {
           surface: "var(--card)",
           deep: "var(--foreground)",
         },
-      },
+      }),
       borderRadius: {
         sm: "calc(var(--radius) - 4px)",
         md: "calc(var(--radius) - 2px)",

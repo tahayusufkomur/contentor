@@ -38,7 +38,7 @@ export function LessonSidebar({
               className={cn(
                 "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
                 autoPlay
-                  ? "bg-primary/10 text-primary"
+                  ? "bg-primary/10 text-foreground"
                   : "bg-muted text-muted-foreground hover:text-foreground",
               )}
               title={autoPlay ? "Auto-play is on" : "Auto-play is off"}
@@ -80,7 +80,12 @@ export function LessonSidebar({
                       )}
                     </span>
                     <span className="flex-1 truncate">{lesson.title}</span>
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <span
+                      className={cn(
+                        "flex items-center gap-1 text-xs",
+                        isActive ? "text-foreground" : "text-muted-foreground",
+                      )}
+                    >
                       <Clock className="h-3 w-3" />
                       {formatDuration(lesson.duration_seconds)}
                     </span>

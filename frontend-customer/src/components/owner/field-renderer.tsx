@@ -173,7 +173,7 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
                 className={cn(
                   "rounded-md border px-2 py-1 text-xs transition-colors",
                   (value ?? "") === opt.value
-                    ? "border-primary bg-primary/10 text-primary"
+                    ? "border-primary bg-primary/10 text-foreground"
                     : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
                 )}
               >
@@ -262,7 +262,7 @@ function IconSelectField({ field, value, onChange }: FieldRendererProps) {
               className={cn(
                 "flex flex-col items-center gap-1 rounded-md border px-1.5 py-2 text-center text-[11px] leading-tight transition-colors",
                 active
-                  ? "border-primary bg-primary/10 text-primary"
+                  ? "border-primary bg-primary/10 text-foreground"
                   : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
               )}
             >
@@ -308,7 +308,7 @@ function RichTextField({ field, value, onChange }: FieldRendererProps) {
             className="max-h-24 overflow-hidden text-sm text-muted-foreground"
           />
         ) : (
-          <p className="text-sm text-muted-foreground/60">No text yet.</p>
+          <p className="text-sm text-muted-foreground">No text yet.</p>
         )}
         <button
           type="button"

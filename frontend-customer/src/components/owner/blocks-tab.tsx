@@ -206,7 +206,7 @@ export function BlocksTab({
             )}
 
             {open && (
-              <div className="border-t bg-accent/20 px-3 py-3">
+              <div className="border-t bg-muted/20 px-3 py-3">
                 <BlockForm
                   block={block}
                   onChange={(patch) =>

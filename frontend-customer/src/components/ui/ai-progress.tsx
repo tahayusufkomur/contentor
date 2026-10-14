@@ -75,11 +75,7 @@ export function AiProgress({
               key={phase.key}
               className={cn(
                 "flex items-center gap-2 text-sm",
-                active
-                  ? "text-foreground"
-                  : done
-                    ? "text-muted-foreground"
-                    : "text-muted-foreground/60",
+                active ? "text-foreground" : "text-muted-foreground",
               )}
             >
               <span className="flex h-4 w-4 shrink-0 items-center justify-center">
