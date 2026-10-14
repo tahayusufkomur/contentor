@@ -57,7 +57,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
 
         <nav className="hidden items-center gap-7 md:flex">
           <NavLink
-            href="/#features"
+            href="/#studio"
             className="nav-link text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {t("features")}
@@ -135,7 +135,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
         <div className="mx-auto mt-2 max-w-6xl rounded-xl border bg-popover px-6 py-5 shadow-sm md:hidden">
           <nav className="flex flex-col gap-4">
             <NavLink
-              href="/#features"
+              href="/#studio"
               className="text-base font-medium text-foreground hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >

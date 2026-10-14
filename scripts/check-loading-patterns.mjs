@@ -46,16 +46,9 @@ const ALLOW = new Set([
   // <Spinner/> on the magic-link "verifying" state — not itself a spinner or
   // skeleton, just an ambient gradient animation alongside the real one.
   "frontend-main/src/app/signup/verify/page.tsx",
-
-  // Decorative "LIVE" dot inside a static marketing-page illustration
-  // mockup (not a real loading state) — same category as the live-class
-  // Radio-icon badges above.
-  "frontend-main/src/components/landing/features-section.tsx",
 ]);
-// Excludes the `-soft` suffix so the custom `animate-pulse-soft` utility
-// (frontend-main/src/styles/globals.css, its own @keyframes, a purely
-// decorative marketing-hero flourish unrelated to loading state) isn't
-// flagged as a false positive of Tailwind's built-in `animate-pulse`.
+// The `(?!-)` guard keeps suffixed custom utilities (e.g. a hypothetical
+// `animate-pulse-soft`) from matching Tailwind's built-in `animate-pulse`.
 const PATTERN = /animate-(?:spin|pulse)(?!-)/;
 
 // Navigation must go through useNavigate() (packages/shared/src/navigation)

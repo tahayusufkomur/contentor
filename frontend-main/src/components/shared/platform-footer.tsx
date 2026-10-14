@@ -12,7 +12,7 @@ export function PlatformFooter() {
     {
       heading: t("product"),
       links: [
-        { label: tNav("features"), href: "/#features" },
+        { label: tNav("features"), href: "/#studio" },
         { label: tNav("pricing"), href: "/pricing" },
         { label: tNav("getStarted"), href: "/signup" },
       ],
