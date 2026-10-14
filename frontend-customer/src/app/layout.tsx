@@ -32,6 +32,7 @@ import { getAuthUser } from "@/lib/auth";
 import { COOKIE_NAME } from "@/lib/constants";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { TrackPageView } from "@shared/tracking/track-page-view";
+import { ADMIN_THEME_COLOR } from "@/lib/admin-theme-color";
 
 // Routes that must stay reachable even when the site is unpublished, so the
 // owner can log in to preview.
@@ -73,7 +74,10 @@ export const dynamic = "force-dynamic";
 export async function generateViewport(): Promise<Viewport> {
   // The coach admin wears the app's own look, so the browser bar does too.
   if (isAdminPath((await headers()).get("x-pathname") || "")) {
-    return { themeColor: "#ffffff", viewportFit: "cover" };
+    // Light at render time: the coach's light/dark choice lives in
+    // localStorage, so the server cannot know it; AdminBrowserBar patches the
+    // meta after hydration.
+    return { themeColor: ADMIN_THEME_COLOR.light, viewportFit: "cover" };
   }
   const slug = await getTenantSlug();
   const config = await fetchTenantConfig(slug);

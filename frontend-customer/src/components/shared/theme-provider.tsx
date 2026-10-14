@@ -6,6 +6,7 @@ import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
 import { Toaster } from "sonner";
 
 import { isAdminPath, TENANT_THEME_SHEET_ID } from "@/lib/site-styles";
+import { ADMIN_THEME_COLOR } from "@/lib/admin-theme-color";
 
 /** The app's toasts: in the admin they follow its light/dark (on the site
  *  they are light, as they always were). */
@@ -29,7 +30,7 @@ export function AdminBrowserBar() {
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute(
         "content",
-        resolvedTheme === "dark" ? "#0a0a0a" : "#ffffff",
+        resolvedTheme === "dark" ? ADMIN_THEME_COLOR.dark : ADMIN_THEME_COLOR.light,
       );
   }, [admin, resolvedTheme]);
   return null;
