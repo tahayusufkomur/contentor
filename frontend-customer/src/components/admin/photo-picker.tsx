@@ -2,16 +2,10 @@
 
 import { useState } from "react";
 import { Image as ImageIcon, X } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { ImageLibraryDialog } from "@/components/admin/blog/image-library-dialog";
 import { Button } from "@/components/ui/button";
 import { clientFetch } from "@/lib/api-client";
 import type { Photo } from "@/types/photo";
-import {
-  MediaPickerBase,
-  uploadToPresignedUrl,
-  type PresignResponse,
-} from "./media-picker-base";
 
 interface PhotoPickerProps {
   value?: string | null;
@@ -28,61 +22,7 @@ export function PhotoPicker({
   onClear,
   label = "Choose photo",
 }: PhotoPickerProps) {
-  const t = useTranslations("admin");
   const [open, setOpen] = useState(false);
-  const [libraryOpen, setLibraryOpen] = useState(false);
-  // Her own uploads apart from the ones Contentor placed (library copies,
-  // logo marks, demo content), as on the Media page.
-  const [source, setSource] = useState<"mine" | "contentor">("mine");
-
-  async function fetchPhotos(search: string): Promise<Photo[]> {
-    const own = source === "mine" ? "1" : "0";
-    const data = await clientFetch<{ results: Photo[] }>(
-      `/api/v1/photos/?own=${own}&search=${encodeURIComponent(search)}`,
-    );
-    return data.results;
-  }
-
-  async function uploadPhoto(
-    file: File,
-    onProgress: (percent: number) => void,
-  ) {
-    const { upload_url, s3_key } = await clientFetch<PresignResponse>(
-      "/api/v1/upload/presign/",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          filename: file.name,
-          content_type: file.type,
-          category: "photo",
-        }),
-      },
-    );
-
-    await uploadToPresignedUrl(upload_url, file, onProgress);
-
-    const result = await clientFetch<{
-      photo_id: string;
-      s3_key: string;
-      signed_url: string;
-    }>("/api/v1/upload/complete/", {
-      method: "POST",
-      body: JSON.stringify({
-        s3_key,
-        category: "photo",
-        content_type: file.type,
-        file_size: file.size,
-        title: file.name.replace(/\.[^.]+$/, ""),
-      }),
-    });
-
-    // Fetch the full photo object and auto-select it
-    const photo = await clientFetch<Photo>(
-      `/api/v1/photos/${result.photo_id}/`,
-    );
-    onSelect(photo);
-    setOpen(false);
-  }
 
   // A raw s3 key (e.g. "demo/photos/x.jpg") must never become an <img src> —
   // the browser resolves it relative to the page and 404s. Only render values
@@ -119,14 +59,6 @@ export function PhotoPicker({
           >
             {label}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setLibraryOpen(true)}
-          >
-            {t("blog.libraryTab")}
-          </Button>
           {displayUrl && onClear && (
             <Button type="button" variant="ghost" size="sm" onClick={onClear}>
               <X className="h-3.5 w-3.5" />
@@ -135,67 +67,15 @@ export function PhotoPicker({
         </div>
       </div>
 
-      {/* Stock photos: the pick is copied into this tenant's media first, so
-          the caller gets an ordinary tenant Photo either way. */}
+      {/* Her photos, Contentor's, or the whole library: every pick arrives as
+          an ordinary tenant Photo, fetched in full for the caller. */}
       <ImageLibraryDialog
-        open={libraryOpen}
-        onOpenChange={setLibraryOpen}
-        title={t("blog.libraryTitle")}
+        open={open}
+        onOpenChange={setOpen}
+        title={label}
         onSelect={async (picked) =>
           onSelect(await clientFetch<Photo>(`/api/v1/photos/${picked.id}/`))
         }
-      />
-
-      <MediaPickerBase<Photo>
-        open={open}
-        onClose={() => setOpen(false)}
-        title="Choose a photo"
-        searchPlaceholder="Search photos..."
-        itemLabelPlural="photos"
-        accept="image/*"
-        contentClassName="p-4"
-        itemsContainerClassName="grid grid-cols-3 gap-3 sm:grid-cols-4"
-        fetchItems={fetchPhotos}
-        uploadFile={uploadPhoto}
-        filterSlot={
-          <div className="flex gap-2 border-b px-3 py-2">
-            {(["mine", "contentor"] as const).map((key) => (
-              <Button
-                key={key}
-                type="button"
-                variant={source === key ? "default" : "outline"}
-                size="sm"
-                aria-pressed={source === key}
-                onClick={() => setSource(key)}
-              >
-                {t(`media.${key}`)}
-              </Button>
-            ))}
-          </div>
-        }
-        renderItem={(photo) => (
-          <button
-            key={photo.id}
-            type="button"
-            onClick={() => {
-              onSelect(photo);
-              setOpen(false);
-            }}
-            className="group relative aspect-square overflow-hidden rounded-md border bg-muted transition-all hover:ring-2 hover:ring-primary"
-          >
-            {photo.signed_url ? (
-              <img
-                src={photo.signed_url}
-                alt={photo.alt_text || photo.title}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <ImageIcon className="h-5 w-5 text-muted-foreground/30" />
-              </div>
-            )}
-          </button>
-        )}
       />
     </div>
   );

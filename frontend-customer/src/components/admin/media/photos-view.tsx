@@ -27,6 +27,7 @@ import {
   type FieldConfig,
 } from "@/components/admin/inline-edit-panel";
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
+import { ShapeFilter, type Shape } from "@/components/admin/shape-filter";
 import { DemoBadge } from "@/components/setup/demo-badge";
 import {
   LightboxModal,
@@ -60,6 +61,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
   // Her own uploads apart from the ones Contentor placed (library copies,
   // logo marks, demo content).
   const [source, setSource] = useState<"mine" | "contentor">("mine");
+  const [shape, setShape] = useState<Shape>("");
   const t = useTranslations("admin.media");
 
   const fetchPage = useCallback(
@@ -71,6 +73,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
       if (params.search) sp.set("search", params.search);
       if (tagFilter.length) sp.set("tags", tagFilter.join(","));
       sp.set("own", source === "mine" ? "1" : "0");
+      if (shape) sp.set("shape", shape);
       const data = await clientFetch<{
         results: Photo[];
         next: string | null;
@@ -78,7 +81,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
       }>(`/api/v1/photos/?${sp.toString()}`);
       return { results: data.results, next: data.next, count: data.count };
     },
-    [tagFilter, source],
+    [tagFilter, source, shape],
   );
 
   const photoFields: FieldConfig<Photo>[] = [
@@ -117,7 +120,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
 
   return (
     <>
-      <div className="mb-4 flex gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         {(["mine", "contentor"] as const).map((key) => (
           <Button
             key={key}
@@ -129,12 +132,15 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
             {t(key)}
           </Button>
         ))}
+        <div className="ml-auto">
+          <ShapeFilter value={shape} onChange={setShape} />
+        </div>
       </div>
       <MediaBrowser<Photo>
         ref={browserRef}
         persistKey="photos"
         fetchPage={fetchPage}
-        filterKey={`${source}:${tagFilter.join(",")}`}
+        filterKey={`${source}:${shape}:${tagFilter.join(",")}`}
         filterSlot={
           <TagFilterBar
             scope="photo"
@@ -184,7 +190,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
                 <img
                   src={photo.signed_url}
                   alt={photo.alt_text || photo.title}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                   <Button

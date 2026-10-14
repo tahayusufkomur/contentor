@@ -25,9 +25,11 @@ export interface CuratedImagePage {
 export function searchCuratedImages(params: {
   q?: string;
   page?: number;
+  orientation?: string;
 }): Promise<CuratedImagePage> {
   const search = new URLSearchParams();
   if (params.q) search.set("q", params.q);
+  if (params.orientation) search.set("orientation", params.orientation);
   if (params.page && params.page > 1) search.set("page", String(params.page));
   const qs = search.toString();
   return clientFetch<CuratedImagePage>(

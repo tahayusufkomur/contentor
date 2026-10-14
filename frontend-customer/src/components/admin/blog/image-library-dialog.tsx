@@ -1,19 +1,20 @@
 "use client";
 
-// Shared picker: the curated library ("Library") or the tenant's own media ("My
-// photos"). The library spans two catalogs — photography from the whole remote
-// Pix4Less library (searchable, paged) and the local decorative elements
-// (spot/texture/divider/icon). Either way the pick is materialized into
-// a tenant Photo before onSelect fires, so callers only ever see tenant photo
-// ids; for remote photos that materialize step also copies the image into this
+// The one photo picker: the coach's own uploads ("My photos"), the copies
+// Contentor placed on her site ("Contentor photos"), or the whole photo library
+// (Pix4Less photography, searchable and paged, plus the local decorative
+// elements: spot/texture/divider/icon). Either way the pick is materialized
+// into a tenant Photo before onSelect fires, so callers only ever see tenant
+// photo ids; for library photos that step also copies the image into this
 // tenant's own storage.
 
 import { useTenant } from "@/hooks/use-tenant";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { ShapeFilter, type Shape } from "@/components/admin/shape-filter";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { PageState } from "@/components/ui/page-state";
@@ -25,7 +26,9 @@ import {
   materializeCuratedImage,
   searchCuratedImages,
 } from "@/lib/curated-images-api";
+import { uploadPhoto } from "@/lib/upload";
 import { ApiError } from "@/types/api";
+import type { Photo } from "@/types/photo";
 import {
   type CuratedKind,
   materializeCuratedPhoto,
@@ -41,22 +44,20 @@ export interface PickedPhoto {
   title: string;
 }
 
-interface TenantPhoto {
-  id: string;
-  signed_url: string | null;
-  title: string;
-}
+type Tab = "mine" | "contentor" | "library";
 
-/** One grid cell, whichever catalog it came from. */
+/** One grid cell, whichever catalog it came from. `source` says how a pick
+ *  becomes a tenant photo: already one, copied from the library, or from the
+ *  local decorative catalog. */
 interface LibraryItem {
   key: string;
   id: string;
   title: string;
   imageUrl: string;
-  remote: boolean;
+  source: "tenant" | "remote" | "local";
 }
 
-export type LibraryCategory = "photos" | CuratedKind;
+type LibraryCategory = "photos" | CuratedKind;
 
 /** Photography (the remote library) first, then the local design elements. */
 const CATEGORIES: {
@@ -79,83 +80,113 @@ const CATEGORIES: {
   { key: "icon", labelKey: "blog.kindIcon", kind: "icon" as CuratedKind },
 ];
 
+const TABS: { key: Tab; labelKey: string }[] = [
+  { key: "mine", labelKey: "media.mine" },
+  { key: "contentor", labelKey: "media.contentor" },
+  { key: "library", labelKey: "blog.libraryTab" },
+];
+
+const PAGE_SIZE = 24;
+
 export function ImageLibraryDialog({
   open,
   onOpenChange,
-  defaultKind = "photos",
   title,
   onSelect,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultKind?: LibraryCategory;
   title?: string;
   onSelect: (photo: PickedPhoto) => void | Promise<void>;
 }) {
   const t = useTranslations("admin");
-  const [tab, setTab] = useState<"library" | "mine">("library");
-  const [category, setCategory] = useState<LibraryCategory>(defaultKind);
-  // Open on the coach's own niche ("yoga") instead of a blank search that shows
-  // the library's random first page.
+  const [tab, setTab] = useState<Tab>("mine");
+  const [category, setCategory] = useState<LibraryCategory>("photos");
+  // Each section keeps its own search. The library opens on the coach's own
+  // niche ("yoga") instead of its random first page; her own photos open
+  // unfiltered, since their names rarely say the niche.
   const niche = useTenant()?.niche;
-  const [query, setQuery] = useState(
-    niche && niche !== "general" ? niche.replace(/_/g, " ") : "",
-  );
+  const [queries, setQueries] = useState<Record<Tab, string>>({
+    mine: "",
+    contentor: "",
+    library: niche && niche !== "general" ? niche.replace(/_/g, " ") : "",
+  });
+  const query = queries[tab];
+  const [shape, setShape] = useState<Shape>("");
   const [items, setItems] = useState<LibraryItem[]>([]);
-  const [myPhotos, setMyPhotos] = useState<TenantPhoto[]>([]);
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [progress, setProgress] = useState(0);
+  const fileInput = useRef<HTMLInputElement>(null);
 
-  // A new tab, category or query starts a fresh result set; only "load more"
-  // advances the page, so resetting here keeps the two apart.
+  const decorative =
+    tab === "library" &&
+    Boolean(CATEGORIES.find((entry) => entry.key === category)?.kind);
+
+  // A new section, category, query or shape starts a fresh result set; only
+  // "load more" advances the page, so resetting here keeps the two apart.
   useEffect(() => {
     setPage(1);
-  }, [tab, category, query]);
+  }, [tab, category, query, shape]);
 
   const load = useCallback(
     async (signal: { cancelled: boolean }) => {
+      let batch: LibraryItem[];
+      let more = false;
       const active =
         CATEGORIES.find((entry) => entry.key === category) ?? CATEGORIES[0];
-      if (tab === "mine") {
-        const data = await clientFetch<{ results: TenantPhoto[] }>(
-          `/api/v1/photos/?own=1&search=${encodeURIComponent(query)}`,
-        );
-        if (signal.cancelled) return;
-        setMyPhotos(data.results ?? []);
-        setHasNext(false);
-        return;
-      }
-      if (!active.kind) {
-        const data = await searchCuratedImages({ q: query, page });
-        if (signal.cancelled) return;
-        const batch = data.results.map((image) => ({
+      if (tab !== "library") {
+        const params = new URLSearchParams({
+          own: tab === "mine" ? "1" : "0",
+          limit: String(PAGE_SIZE),
+          offset: String((page - 1) * PAGE_SIZE),
+        });
+        if (query) params.set("search", query);
+        if (shape) params.set("shape", shape);
+        const data = await clientFetch<{
+          results: Photo[];
+          next: string | null;
+        }>(`/api/v1/photos/?${params}`);
+        batch = data.results.map((photo) => ({
+          key: photo.id,
+          id: photo.id,
+          title: photo.title,
+          imageUrl: photo.signed_url ?? "",
+          source: "tenant",
+        }));
+        more = Boolean(data.next);
+      } else if (!active.kind) {
+        const data = await searchCuratedImages({
+          q: query,
+          page,
+          orientation: shape || undefined,
+        });
+        batch = data.results.map((image) => ({
           key: image.id,
           id: image.id,
           title: image.title,
           imageUrl: image.image_url,
-          remote: true,
+          source: "remote",
         }));
-        // Page 1 replaces; later pages append to the grid already on screen.
-        setItems((current) => (page === 1 ? batch : [...current, ...batch]));
-        setHasNext(data.has_next);
-        return;
-      }
-      const rows = await searchCuratedPhotos({ kind: active.kind, q: query });
-      if (signal.cancelled) return;
-      setItems(
-        rows.map((row) => ({
+        more = data.has_next;
+      } else {
+        const rows = await searchCuratedPhotos({ kind: active.kind, q: query });
+        batch = rows.map((row) => ({
           key: String(row.id),
           id: String(row.id),
           title: row.title,
           imageUrl: row.image_url,
-          remote: false,
-        })),
-      );
-      setHasNext(false);
+          source: "local",
+        }));
+      }
+      if (signal.cancelled) return;
+      // Page 1 replaces; later pages append to the grid already on screen.
+      setItems((current) => (page === 1 ? batch : [...current, ...batch]));
+      setHasNext(more);
     },
-    [tab, category, query, page],
+    [tab, category, query, shape, page],
   );
 
   useEffect(() => {
@@ -178,19 +209,40 @@ export function ImageLibraryDialog({
     };
   }, [open, load, page, t]);
 
+  const finish = async (photo: {
+    id: string;
+    signed_url: string | null;
+    title: string;
+  }) => {
+    await onSelect({ id: photo.id, url: photo.signed_url, title: photo.title });
+    onOpenChange(false);
+  };
+
   const { run: pick, loading: busy } = useAsyncAction(
-    async (item: LibraryItem) => {
-      const photo = item.remote
-        ? await materializeCuratedImage(item.id)
-        : await materializeCuratedPhoto(Number(item.id));
-      await onSelect({
-        id: photo.id,
-        url: photo.signed_url,
-        title: photo.title,
-      });
-      onOpenChange(false);
-    },
+    async (item: LibraryItem) =>
+      finish(
+        item.source === "remote"
+          ? await materializeCuratedImage(item.id)
+          : item.source === "local"
+            ? await materializeCuratedPhoto(Number(item.id))
+            : { id: item.id, signed_url: item.imageUrl, title: item.title },
+      ),
     { errorToast: t("blog.errGeneric") },
+  );
+
+  // A photo of her own, straight from her device: it lands in My photos and
+  // is picked right away.
+  const { run: upload, loading: uploading } = useAsyncAction(
+    async (file: File) => {
+      setProgress(0);
+      await finish(
+        await uploadPhoto(file, {
+          onProgress: setProgress,
+          signal: new AbortController().signal,
+        }),
+      );
+    },
+    { errorToast: t("blog.libraryUploadFailed") },
   );
 
   // "Nothing fits" escape hatch: create the image the coach just described.
@@ -201,12 +253,7 @@ export function ImageLibraryDialog({
         toast.error(t("blog.libraryGenerateFailed"));
         return;
       }
-      await onSelect({
-        id: photo.id,
-        url: photo.signed_url,
-        title: photo.title,
-      });
-      onOpenChange(false);
+      await finish(photo);
     },
     {
       onError: (err) =>
@@ -222,17 +269,13 @@ export function ImageLibraryDialog({
 
   // Only the very first load blanks the grid; refining a search dims what is
   // already there instead.
-  const firstLoad = loading && items.length === 0 && myPhotos.length === 0;
-  const rows: LibraryItem[] =
-    tab === "mine"
-      ? myPhotos.map((photo) => ({
-          key: photo.id,
-          id: photo.id,
-          title: photo.title,
-          imageUrl: photo.signed_url ?? "",
-          remote: false,
-        }))
-      : items;
+  const firstLoad = loading && items.length === 0;
+  const empty =
+    tab === "mine" && !query && !shape
+      ? t("media.emptyMine")
+      : tab === "contentor" && !query && !shape
+        ? t("media.emptyContentor")
+        : t("blog.libraryEmpty");
 
   return (
     <ModalPortal>
@@ -241,7 +284,7 @@ export function ImageLibraryDialog({
         onClick={() => onOpenChange(false)}
       >
         <div
-          className="flex w-full max-w-2xl flex-col gap-4 rounded-xl border bg-background p-6 shadow-2xl"
+          className="flex max-h-[90vh] w-full max-w-2xl flex-col gap-3 rounded-xl border bg-background p-6 shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between">
@@ -256,27 +299,49 @@ export function ImageLibraryDialog({
               <X className="h-4 w-4" />
             </button>
           </div>
+          <div className="flex flex-wrap gap-2">
+            {TABS.map(({ key, labelKey }) => (
+              <Button
+                key={key}
+                variant={tab === key ? "default" : "outline"}
+                size="sm"
+                aria-pressed={tab === key}
+                onClick={() => setTab(key)}
+              >
+                {t(labelKey)}
+              </Button>
+            ))}
+          </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant={tab === "library" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTab("library")}
-            >
-              {t("blog.libraryTab")}
-            </Button>
-            <Button
-              variant={tab === "mine" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTab("mine")}
-            >
-              {t("blog.myPhotosTab")}
-            </Button>
             <input
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) =>
+                setQueries((current) => ({ ...current, [tab]: e.target.value }))
+              }
               placeholder={t("blog.librarySearch")}
-              className="ml-auto w-56 rounded-md border bg-background px-3 py-1.5 text-sm"
+              className="min-w-0 flex-1 rounded-md border bg-background px-3 py-1.5 text-sm"
             />
+            <input
+              ref={fileInput}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (file) upload(file);
+              }}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              loading={uploading}
+              loadingText={`${progress}%`}
+              disabled={busy || generating}
+              onClick={() => fileInput.current?.click()}
+            >
+              {t("blog.libraryUpload")}
+            </Button>
           </div>
           {tab === "library" && (
             <div className="flex flex-wrap gap-1.5">
@@ -296,26 +361,30 @@ export function ImageLibraryDialog({
               ))}
             </div>
           )}
-          <div className="max-h-96 overflow-y-auto">
+          {/* Design elements have no shape worth filtering on. */}
+          {!decorative && <ShapeFilter value={shape} onChange={setShape} />}
+          <div className="min-h-0 flex-1 overflow-y-auto">
             <PageState
               loading={firstLoad}
               skeleton={
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                   {Array.from({ length: 8 }).map((_, i) => (
-                    <Skeleton key={i} className="aspect-video w-full" />
+                    <Skeleton key={i} className="aspect-square w-full" />
                   ))}
                 </div>
               }
             >
               <StaleContainer pending={loading}>
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-                  {rows.map((item) => (
+                  {items.map((item) => (
+                    // Uncropped on a neutral square, so each photo shows its
+                    // real shape before she picks it.
                     <button
                       key={item.key}
                       type="button"
-                      disabled={busy || generating}
+                      disabled={busy || generating || uploading}
                       onClick={() => pick(item)}
-                      className="group overflow-hidden rounded-md border bg-muted/30 hover:ring-2 hover:ring-ring"
+                      className="flex aspect-square items-center justify-center overflow-hidden rounded-md border bg-muted/50 p-1 hover:ring-2 hover:ring-ring"
                       title={item.title}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -323,13 +392,13 @@ export function ImageLibraryDialog({
                         src={item.imageUrl}
                         alt={item.title}
                         loading="lazy"
-                        className="aspect-video w-full object-cover"
+                        className="h-full w-full object-contain"
                       />
                     </button>
                   ))}
-                  {rows.length === 0 && (
+                  {items.length === 0 && !loading && (
                     <p className="col-span-full py-8 text-center text-sm text-muted-foreground">
-                      {error || t("blog.libraryEmpty")}
+                      {error || empty}
                     </p>
                   )}
                 </div>
@@ -341,7 +410,7 @@ export function ImageLibraryDialog({
                     size="sm"
                     loading={generating}
                     loadingText={t("blog.libraryGenerating")}
-                    disabled={busy}
+                    disabled={busy || uploading}
                     onClick={() => generate(query.trim())}
                   >
                     {t("blog.libraryGenerate", { query: query.trim() })}

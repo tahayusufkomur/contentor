@@ -388,6 +388,26 @@ def test_the_library_finds_a_photo_by_what_it_shows_and_lists_her_own(owner, upl
 
 
 @pytest.mark.django_db(transaction=True)
+def test_the_library_filters_by_shape_and_leaves_out_unknown_sizes(owner):
+    for title, width, height in [
+        ("wide", 1600, 900),
+        ("tall", 800, 1000),
+        ("square", 1000, 990),
+        ("unknown", None, None),
+    ]:
+        Photo.objects.create(s3_key=f"tenants/x/curated/{title}.webp", title=title, width=width, height=height)
+    client = client_for(owner)
+
+    def titles(shape):
+        return sorted(p["title"] for p in client.get(f"/api/v1/photos/?shape={shape}").json()["results"])
+
+    assert titles("landscape") == ["wide"]
+    assert titles("portrait") == ["tall"]
+    assert titles("square") == ["square"]
+    assert titles("") == ["square", "tall", "unknown", "wide"]
+
+
+@pytest.mark.django_db(transaction=True)
 def test_deleting_a_photo_takes_it_out_of_the_index(owner, upload, s3):
     photo = upload("warrior.jpg")
     own_photos.process(photo)

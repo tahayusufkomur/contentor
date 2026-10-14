@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import F, Q
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -9,6 +9,10 @@ from apps.core.permissions import IsCoachOrOwner
 from . import own_photos
 from .models import Photo
 from .serializers import PhotoCreateSerializer, PhotoSerializer
+
+SHAPES = frozenset({"landscape", "portrait", "square"})
+# Within 5% of square counts as square, so a 1000×990 crop is not "landscape".
+SQUARE_SLACK = 1.05
 
 
 @api_view(["GET", "POST"])
@@ -26,6 +30,17 @@ def photo_list_create(request):
             qs = qs.exclude(index_status="")
         elif own == "0":
             qs = qs.filter(index_status="")
+        # shape: the slot she is filling wants a wide, tall or square photo. One of
+        # unknown size (old uploads, demo content) cannot be placed, so it is left out.
+        shape = request.query_params.get("shape")
+        if shape in SHAPES:
+            qs = qs.filter(width__gt=0, height__gt=0)
+            if shape == "landscape":
+                qs = qs.filter(width__gt=F("height") * SQUARE_SLACK)
+            elif shape == "portrait":
+                qs = qs.filter(height__gt=F("width") * SQUARE_SLACK)
+            else:
+                qs = qs.filter(width__lte=F("height") * SQUARE_SLACK, height__lte=F("width") * SQUARE_SLACK)
         qs = apply_tag_filter(qs, request)
         qs = apply_ordering(qs, request, ["title", "created_at", "file_size"])
         paginator = StandardPagination()
