@@ -335,9 +335,9 @@ def test_a_broad_niche_asks_its_kinds_and_the_studio_name_opens_on_them():
     brief.apply_fact(picked, "teaches", "Belly dance, Ballet")
     assert picked["teaches"] == "Dance" and picked["specialty"] == "Belly dance, Ballet"
     assert brief.missing(picked)[0].id != "specialty"
-    # A name with no niche in it keeps the broad tiles.
+    # A name with no niche in it keeps the broad tiles: several, and her own beside them.
     plain = guide_for(brief.FIELD_BY_ID["teaches"], answers={}, brand="Studio Nova")
-    assert not plain["multi"] and "Dance" in plain["options"]
+    assert plain["multi"] and plain["custom"] and "Dance" in plain["options"]
     # Free-form several picks take the coach's own options; fixed lists never do.
     assert guide_for(brief.FIELD_BY_ID["specialty"], answers={"teaches": "Dance"})["custom"]
     assert not guide_for(brief.FIELD_BY_ID["offers"], answers={})["custom"]
@@ -493,6 +493,57 @@ def test_online_and_in_person_sessions_are_separate_sections_each_with_a_review(
     # Each is skipped on its own.
     assert {brief.FIELD_BY_ID[i].group for i in ("live_topic", "onsite_topic")} == {"event", "onsite"}
     assert set(brief.SKIP_LABELS) >= {"event", "onsite"}
+
+
+def test_a_bio_opens_on_what_it_says_and_asks_about_a_studio_name_that_disagrees():
+    from apps.tenant_config.interview import guide_for
+
+    bio = {"bio_teaches": ["Face yoga", "Yoga"]}
+    # A bio on face yoga under "Polly Dance Studio": the bio's subjects first, the name's beside them.
+    opening = guide_for(brief.FIELD_BY_ID["teaches"], answers=bio, brand="GS Polly Dance Studio")
+    assert opening["options"][:3] == ["Face yoga", "Yoga", "Dance"] and len(opening["options"]) == 8
+    assert opening["multi"] and opening["custom"] and opening["icons"]["Face yoga"] == "flower-2"
+    assert opening["question"] == (
+        "Your bio is about face yoga and yoga, but your studio name says dance. What do you teach?"
+    )
+    # A name that agrees with the bio, or says nothing, is no conflict (a one-kind name included).
+    for brand in ("Zen Yoga Studio", "Görkem's Face Yoga Studio", "Studio Nova"):
+        same = guide_for(brief.FIELD_BY_ID["teaches"], answers=bio, brand=brand)
+        assert same["question"].endswith("I ticked what your bio says.") and same["multi"]
+    # Her picks stand as she said them: no follow-up on kinds.
+    picked = {}
+    brief.apply_fact(picked, "teaches", "Face yoga, Yoga")
+    assert picked["niche"] == "face_yoga" and "specialty" not in [f.id for f in brief.required(picked)]
+
+
+def test_several_broad_tiles_ask_the_kinds_of_each():
+    from apps.tenant_config.interview import default_question
+
+    answers = {}
+    brief.apply_fact(answers, "teaches", "Yoga, Dance")
+    assert brief.missing(answers)[0].id == "specialty"
+    field = brief.FIELD_BY_ID["specialty"]
+    kinds, icons, _ = brief.options_for(field, answers)
+    assert kinds[:4] == ("Vinyasa yoga", "Belly dance", "Hatha yoga", "Hip hop")
+    assert icons[:2] == ("flower-2", "music")
+    assert default_question(field, answers) == "Which kinds of yoga and dance do you teach?"
+
+
+@pytest.mark.django_db
+def test_price_tiles_and_their_note_are_in_the_currency_she_picked(tenant_ctx):
+    from apps.tenant_config.interview import guide_for
+
+    was = tenant_ctx.billing_currency
+    tenant_ctx.billing_currency = "EUR"  # only the in-memory tenant: nothing is saved
+    try:
+        step = guide_for(brief.FIELD_BY_ID["course_price"], answers={})
+        assert step["options"][:2] == ["€19", "€29"]
+        assert step["why"] == "Prices are in EUR (€), the currency you picked."
+        answers = {}
+        brief.apply_fact(answers, "course_price", "€29")
+        assert answers["course_price"] == 29
+    finally:
+        tenant_ctx.billing_currency = was
 
 
 # ── who can open it: the ways into what a coach makes ───────────────────────

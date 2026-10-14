@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from itertools import zip_longest
 
 from django.db import transaction
 from django.utils import timezone
@@ -612,10 +613,50 @@ def _tile_named(text) -> str | None:
     return next((tile for tile in SPECIALTIES if tile.lower() == lowered), None)
 
 
+def _tiles_named(text) -> tuple[str, ...]:
+    """The broad tiles picked ("Yoga, Dance"), when every part is one; else ()."""
+    tiles = tuple(_tile_named(p) for p in str(text or "").split(","))
+    return tiles if tiles and all(tiles) else ()
+
+
+def _tile_of(text) -> str | None:
+    """The broad tile a subject belongs to ("Face yoga" → "Yoga"), or None."""
+    lowered = str(text or "").lower()
+    return next((tile for tile, (pattern, _) in SPECIALTIES.items() if re.search(pattern, lowered)), None)
+
+
+def _kinds_of(tiles) -> list[tuple[str, str]]:
+    """(kind, tile) for each tile's kinds, taken in turn so every tile shows on one screen."""
+    rows = zip_longest(*([(k, t) for k in SPECIALTIES[t][1]] for t in tiles))
+    return [r for row in rows for r in row if r]
+
+
 def specialties_for(answers: dict) -> tuple[str, ...]:
-    """The kinds to ask about when the coach picked a broad tile ("Dance"), else ()."""
-    tile = _tile_named(answers.get("teaches"))
-    return SPECIALTIES[tile][1] if tile else ()
+    """The kinds to ask about when the coach picked broad tiles ("Dance"), else ()."""
+    return tuple(k for k, _ in _kinds_of(_tiles_named(answers.get("teaches"))))
+
+
+def say_list(items) -> str:
+    """ "a", "a and b", "a, b and c"."""
+    items = [str(i) for i in items if str(i).strip()]
+    return " and ".join(items) if len(items) < 3 else f"{', '.join(items[:-1])} and {items[-1]}"
+
+
+def brand_subject(brand) -> str | None:
+    """What a studio name says is taught: a kind ("Face yoga") or a tile ("Dance")."""
+    named = kind_of_brand(brand)
+    return named[1] if named else tile_of_brand(brand)
+
+
+def teaching_conflict(brand, bio) -> str | None:
+    """The subject a studio name says when what her bio says she teaches has
+    none of it ("Polly Dance Studio" with a bio on face yoga → "Dance").
+    ponytail: compares broad tiles only, so a subject outside SPECIALTIES
+    ("Pottery") never matches a name; Jev could judge it if that misfires."""
+    subject = brand_subject(brand) if bio else None
+    if not subject:
+        return None
+    return None if _tile_of(subject) in {_tile_of(b) for b in bio} else subject
 
 
 def tile_of_brand(brand) -> str | None:
@@ -701,6 +742,8 @@ FIELDS: tuple[Field, ...] = (
             "Business coaching",
         ),
         icons=("flower-2", "person-standing", "dumbbell", "music", "brain", "salad", "compass", "briefcase"),
+        multi=True,
+        custom=True,
     ),
     Field(
         "specialty",
@@ -1145,6 +1188,13 @@ def currency_sign() -> str:
     return CURRENCIES.get(tenant_charge_currency(), CURRENCIES["USD"])[1]
 
 
+def currency_note() -> str:
+    """The line under a price question: which currency its prices are in."""
+    from apps.core.currency import tenant_charge_currency
+
+    return f"Prices are in {tenant_charge_currency().upper()} ({currency_sign()}), the currency you picked."
+
+
 def money(amount) -> str:
     """An amount in the currency the coach charges in: "$9", "€4.50"."""
     return f"{currency_sign()}{float(amount):.2f}".removesuffix(".00")
@@ -1403,11 +1453,7 @@ def tone_hints_for(answers: dict) -> tuple[str, ...]:
     fallback of the broad tile they teach (see TONE_HINTS)."""
     if len(written := answers.get("tone_hints") or ()) == len(FIELD_BY_ID["tone"].options):
         return tuple(written)
-    teaches = str(answers.get("teaches") or "")
-    tile = _tile_named(teaches) or next(
-        (t for t, (pattern, _) in SPECIALTIES.items() if re.search(pattern, teaches.lower())), ""
-    )
-    return TONE_HINTS.get(tile, TONE_HINTS[""])
+    return TONE_HINTS.get(_tile_of(answers.get("teaches")) or "", TONE_HINTS[""])
 
 
 def options_for(
@@ -1416,23 +1462,28 @@ def options_for(
     """A fixed field's answers, icons and hints as this coach should see them:
     paying per class only for coaches who run classes, the memberships their
     offers allow; the kinds of a broad tile, opened straight away when the
-    studio name gives the tile away."""
-    tile = (
-        _tile_named(answers.get("teaches"))
-        if field.kind == "specialty"
-        else tile_of_brand(brand)
-        if field.id == "teaches"
-        else None
-    )
+    studio name gives the tile away. What her bio says she teaches comes
+    before what the name says, which stays beside it when they disagree."""
     first = FIELD_BY_ID["teaches"]
+    icon_of = dict(zip(first.options, first.icons, strict=True))
+    if field.id == "teaches" and (bio := answers.get("bio_teaches")):
+        said = {b.lower() for b in bio}
+        rest = [t for t in (brand_subject(brand), *first.options) if t and t.lower() not in said]
+        options = tuple(dict.fromkeys([*bio, *rest]))
+        return options, tuple(icon_of.get(_tile_of(o) or "", "sparkles") for o in options), ()
     if field.id == "teaches" and (named := kind_of_brand(brand)):
-        icon = dict(zip(first.options, first.icons, strict=True)).get(named[0], "sparkles")
-        return brand_kind_options(named[1]), (icon, "layers"), ()
-    if tile:
-        icon = dict(zip(first.options, first.icons, strict=True)).get(tile, "sparkles")
+        return brand_kind_options(named[1]), (icon_of.get(named[0], "sparkles"), "layers"), ()
+    tiles = (
+        _tiles_named(answers.get("teaches"))
+        if field.kind == "specialty"
+        else (tile_of_brand(brand),)
+        if field.id == "teaches"
+        else ()
+    )
+    if tiles and all(tiles):
         base = str(answers.get("specialty_base") or "").lower() if field.kind == "specialty" else ""
-        kinds = tuple(k for k in SPECIALTIES[tile][1] if k.lower() != base)
-        return kinds, (icon,) * len(kinds), ()
+        rows = [(k, icon_of.get(t, "sparkles")) for k, t in _kinds_of(tiles) if k.lower() != base]
+        return tuple(k for k, _ in rows), tuple(i for _, i in rows), ()
     if field.kind == "memberships":
         tiers = membership_tiles(answers)
         return (
@@ -1459,6 +1510,9 @@ def options_for(
         rows = [r for r in rows if r[0] != "One-time course purchases"]
     if field.kind == "payments" and not tiers_for(answers):
         rows = [r for r in rows if r[0] != "Monthly membership"]
+    # Prices in the currency she picked: "€19", never a bare "19".
+    if field.kind == "price":
+        rows = [(money(o), i, h) for o, i, h in rows]
     options, icons, hints = (tuple(col) for col in zip(*rows, strict=True)) if rows else ((), (), ())
     return options, icons if field.icons else (), hints if field.hints else ()
 

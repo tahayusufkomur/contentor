@@ -34,6 +34,10 @@ FIELD_METADATA = {
         "label": "Training & certifications",
         "answers": "Instructor bio & trust credentials",
     },
+    "offers": {
+        "label": "How you teach",
+        "answers": "Which pages I build and what I ask next",
+    },
     "location": {
         "label": "Location & format",
         "answers": "Events & Contact page details",
@@ -61,10 +65,23 @@ FIELD_METADATA = {
 }
 # Questions answered by ticking tiles: the text's separate points become tiles
 # (the longest each may be: a label, or a finished sentence on story/credentials).
-ITEM_FIELDS = {"audience": 60, "outcome": 60, "difference": 60, "story": 200, "credentials": 200}
+ITEM_FIELDS = {
+    "teaches": 40,
+    "offers": 40,
+    "audience": 60,
+    "outcome": 60,
+    "difference": 60,
+    "story": 200,
+    "credentials": 200,
+}
 MAX_ITEMS = 6
 
-_TILES = {f: brief.FIELD_BY_ID[f].options for f in ("audience", "outcome", "difference")}
+_TILES = {
+    # What she teaches: the broad tiles and every kind of them ("Face yoga").
+    "teaches": brief.FIELD_BY_ID["teaches"].options
+    + tuple(k for _, kinds in brief.SPECIALTIES.values() for k in kinds),
+    **{f: brief.FIELD_BY_ID[f].options for f in ("offers", "audience", "outcome", "difference")},
+}
 
 SYSTEM = (
     """You analyze background information (a bio, CV, past site content, or notes) \
@@ -78,6 +95,8 @@ Recognized fields:
 - "audience": Who they teach or their target student (e.g. "Beginners and desk workers", "Busy moms").
 - "story": 1-2 concise sentences about their personal journey or why they practice/teach.
 - "credentials": Their certifications, training, degrees, or years of experience.
+- "offers": How they teach: pre-recorded courses, live online classes, in-person sessions, articles or a \
+blog, a community.
 - "location": Where they teach or whether online/in-person (e.g. "Online & in-person in Brooklyn, NY").
 - "course_topic": Any specific course topic they mention wanting to offer.
 - "live_topic": Any live class, retreat, or event topic mentioned.
@@ -85,9 +104,12 @@ Recognized fields:
 - "difference": What they do differently from other teachers (e.g. "Small groups, my own method").
 - "tone": What tone fits their voice: Warm, Energetic, Calm, Expert, Playful, Confident, or Sensual.
 
-For "audience", "outcome", "difference", "story" and "credentials" also give items: the separate \
-points the text makes, one per entry, at most 6, each of which the coach can tick on its own.
-- audience, outcome, difference: 1 to 6 words each. When one of these tiles fits, copy its label exactly: \
+For "teaches", "offers", "audience", "outcome", "difference", "story" and "credentials" also give items: \
+the separate points the text makes, one per entry, at most 6, each of which the coach can tick on its own.
+- teaches: one subject per item, 1 to 4 words ("face yoga and yoga" is two items: "Face yoga", "Yoga").
+- offers: only the ways the text says they teach.
+- audience, outcome, difference: 1 to 6 words each.
+- teaches, offers, audience, outcome, difference: when one of these tiles fits, copy its label exactly: \
 """
     + json.dumps(_TILES, ensure_ascii=False)
     + """
@@ -140,7 +162,7 @@ def analyze(text: str) -> dict:
 
     # The cache first: provisioning re-reads the About step's analysis, and a
     # hub health probe that blips in between must not throw it away.
-    key = "about-analyze:2:" + hashlib.sha256(clean.encode()).hexdigest()
+    key = "about-analyze:3:" + hashlib.sha256(clean.encode()).hexdigest()
     if (hit := cache.get(key)) is not None:
         return hit
     if not ai_compose.compose_available():

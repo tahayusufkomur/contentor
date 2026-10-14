@@ -517,10 +517,19 @@ def extract_doc(request):
     from .about_check import analyze
 
     analysis = analyze(extracted) if request.data.get("analyze", True) else {}
+    # A studio name that says something her bio doesn't ("Polly Dance Studio",
+    # a bio on face yoga): asked while the name, and so the site address, can still change.
+    from apps.tenant_config import interview_brief as brief
+
+    bio = next((f.get("items") or [] for f in analysis.get("facts") or [] if f.get("field") == "teaches"), [])
+    named = brief.teaching_conflict(str(request.data.get("brand") or "")[:100], bio)
     return Response(
         {
             "text": extracted,
             "facts": analysis.get("facts") or [],
             "summary": analysis.get("summary") or "",
+            "conflict": {"name_says": named.lower(), "bio_says": brief.say_list(b.lower() for b in bio)}
+            if named
+            else None,
         }
     )

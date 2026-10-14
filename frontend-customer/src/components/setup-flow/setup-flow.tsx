@@ -232,9 +232,28 @@ function Flow({
     Object.values(iv.draft_status).some((s) => s === "building");
   const activity = activityLine(flow.page_builds, iv.draft_status);
 
-  const refresh = useCallback(async () => {
+  // A turn on its way owns the transcript until its reply has landed. The
+  // server saves the answer before it finishes the reply (the look cards
+  // alone take seconds), so a poll in between would bring back the question
+  // just answered, as if it were asked again. Polls that overlap a turn are
+  // dropped; the reply carries the same state.
+  const turnBusy = useRef(false);
+  const turnEpoch = useRef(0);
+  const holdPolls = useCallback(async <T,>(work: () => Promise<T>) => {
+    turnBusy.current = true;
+    turnEpoch.current += 1;
     try {
-      setFlow(await api.get());
+      return await work();
+    } finally {
+      turnBusy.current = false;
+      turnEpoch.current += 1;
+    }
+  }, []);
+  const refresh = useCallback(async () => {
+    const epoch = turnEpoch.current;
+    try {
+      const fresh = await api.get();
+      if (!turnBusy.current && turnEpoch.current === epoch) setFlow(fresh);
     } catch {
       // A missed poll is harmless; the next one catches up.
     }
@@ -321,47 +340,51 @@ function Flow({
     async (req: TurnRequest) => {
       const serverTurns = flow.interview.turns.length;
       const key = req.choice?.field ?? req.field ?? guide.field ?? GOLIVE;
-      try {
-        const res = await api.turn(req);
-        await slide("next", () => {
-          setGuide(res.guide);
-          setFlow(res.state);
-          setDir("next");
-          setAt(null);
-          dropDraft(key);
-        });
-        if (res.edit) await applyEdit(res.edit);
-      } catch (err) {
-        // A slow turn can be cut off by the proxy after the server finished
-        // it: adopt the server's transcript instead of losing the answer.
-        const fresh = await api.get().catch(() => null);
-        if (fresh && fresh.interview.turns.length > serverTurns) {
+      const edit = await holdPolls(async () => {
+        try {
+          const res = await api.turn(req);
           await slide("next", () => {
-            setFlow(fresh);
-            setGuide(fresh.interview.guide);
+            setGuide(res.guide);
+            setFlow(res.state);
             setDir("next");
             setAt(null);
             dropDraft(key);
           });
-          return;
+          return res.edit;
+        } catch (err) {
+          // A slow turn can be cut off by the proxy after the server finished
+          // it: adopt the server's transcript instead of losing the answer.
+          const fresh = await api.get().catch(() => null);
+          if (fresh && fresh.interview.turns.length > serverTurns) {
+            await slide("next", () => {
+              setFlow(fresh);
+              setGuide(fresh.interview.guide);
+              setDir("next");
+              setAt(null);
+              dropDraft(key);
+            });
+            return null;
+          }
+          throw err; // the answer is still in its box
         }
-        throw err; // the answer is still in its box
-      }
+      });
+      if (edit) await applyEdit(edit);
     },
     { onError: (err) => toast.error(turnErrorText(err)) },
   );
 
   // A shared bio or CV replaces the step like a turn does; the unsent answer
   // in the box stays. Failures throw: the panel shows them in place.
-  const shareDoc = async (doc: ShareDoc) => {
-    const res = await api.importDoc(doc, guide.field ?? undefined);
-    await slide("next", () => {
-      setGuide(res.guide);
-      setFlow(res.state);
-      setDir("next");
-      setAt(null);
+  const shareDoc = (doc: ShareDoc) =>
+    holdPolls(async () => {
+      const res = await api.importDoc(doc, guide.field ?? undefined);
+      await slide("next", () => {
+        setGuide(res.guide);
+        setFlow(res.state);
+        setDir("next");
+        setAt(null);
+      });
     });
-  };
 
   // Slides: ← and → move between questions when nothing is being typed.
   useEffect(() => {

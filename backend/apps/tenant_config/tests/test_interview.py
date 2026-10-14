@@ -600,7 +600,7 @@ def test_prices_and_contact_keep_their_own_options_over_ai_ones():
         ("event_price", ["Free first class, then $15", "Pay what you can"]),
     ):
         guide = interview.guide_for(brief.FIELD_BY_ID[field_id], "", "Q?", junk, ["mail", "coins"], answers)
-        assert guide["options"] == list(brief.FIELD_BY_ID[field_id].options)
+        assert guide["options"] == list(brief.options_for(brief.FIELD_BY_ID[field_id], answers)[0])
 
 
 def test_story_and_credentials_offer_starters_not_claims():
@@ -971,6 +971,32 @@ def test_about_prefills_populate_guide_without_skipping_steps(tenant_ctx, config
     assert any("yoga" in opt.lower() for opt in state["guide"]["prefill_options"])
     assert state["remaining"] > 0
     assert tenant_ctx.wizard_state["answers"] == {}
+
+
+def test_the_bio_opens_the_first_question_and_rides_every_ai_turn(tenant_ctx, config):
+    from apps.tenant_config import interview_brief as brief
+
+    tenant_ctx.wizard_state = {"flow": "interview", "answers": {}}
+    tenant_ctx.save(update_fields=["wizard_state"])
+    facts = [
+        {"field": "teaches", "value": "Face yoga and yoga", "items": ["Face yoga", "Yoga"]},
+        {"field": "offers", "value": "Online classes", "items": ["Live online classes"]},
+    ]
+    with mock.patch("apps.core.onboarding.about_check.analyze", return_value={"facts": facts}):
+        assert interview.apply_initial_about(tenant_ctx, "I teach face yoga and yoga online.")
+
+    guide = interview.interview_state(tenant_ctx, config.setup_flow)["guide"]
+    assert guide["field"] == "teaches" and guide["options"][:2] == ["Face yoga", "Yoga"]
+    assert guide["prefill_options"] == ["Face yoga", "Yoga"]
+    # Nothing is settled by the bio: she confirms each answer.
+    answers = brief.answers_of(tenant_ctx)
+    assert not brief.is_settled(answers, "teaches")
+    turn = json.loads(interview._user_turn(tenant_ctx, answers, [], "hi", False))
+    assert turn["from_bio"] == {"teaches": "Face yoga and yoga", "offers": "Online classes"}
+    # How she teaches, as her bio says it, is ticked on its question.
+    offers = {"options": list(brief.FIELD_BY_ID["offers"].options)}
+    interview._apply_prefills_to_guide(offers, brief.FIELD_BY_ID["offers"], tenant_ctx, answers)
+    assert offers["prefill_options"] == ["Live online classes"]
 
 
 def test_about_items_become_ticked_tiles(tenant_ctx):

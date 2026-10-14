@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ModalPortal } from "@/components/ui/modal-portal";
 import { Spinner } from "@/components/ui/spinner";
 import { demoSeen, markDemoSeen } from "@/lib/demo-seen";
 import { OPTION_ICONS } from "@/lib/option-icons";
@@ -52,6 +53,7 @@ import { SchedulePicker } from "./schedule-picker";
 import { SharePanel } from "./share-panel";
 import { SocialsPicker } from "./socials-picker";
 import { StarterCard } from "./starter-card";
+import { SHELL_TOKENS } from "./tokens";
 
 export type { StepDraft };
 
@@ -480,6 +482,36 @@ export function QuestionScreen({
                     onDraft((d) => ({ ...d, card: { value, label } }))
                   }
                 />
+              )}
+              {/* A look, logo or calendar picked: the grid is too tall for
+                  the "Thinking…" line under it to be seen, so the wait
+                  covers the screen. */}
+              {looks && sending && (
+                <ModalPortal>
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    style={{
+                      ...SHELL_TOKENS,
+                      backgroundColor: "rgb(251 250 247 / 0.85)", // --sf-paper
+                    }}
+                    className="sf-shell fixed inset-0 z-40 flex items-center justify-center px-6 backdrop-blur-sm motion-safe:animate-fade-in"
+                  >
+                    <div className="flex max-w-md flex-col items-center gap-4 text-center">
+                      <Spinner size="lg" className="text-[var(--sf-brass)]" />
+                      <p className="text-[24px] font-semibold leading-tight tracking-[-0.02em] text-[var(--sf-ink)]">
+                        {draft.card?.label
+                          ? `Applying ${draft.card.label}…`
+                          : "Applying your pick…"}
+                      </p>
+                      <p className="text-[15px] leading-relaxed text-[var(--sf-graphite)]">
+                        {slow
+                          ? "Still working. Your site is being built at the same time, so this can take a little longer."
+                          : "Your site updates while I get the next question ready."}
+                      </p>
+                    </div>
+                  </div>
+                </ModalPortal>
               )}
 
               {step.starter && demoOk && (

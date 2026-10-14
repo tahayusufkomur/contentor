@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  AlertTriangle,
   CheckCircle2,
   FileText,
   Mail,
@@ -24,6 +25,7 @@ import {
   checkBrandName,
   createPlatformAuthenticated,
   extractDoc,
+  type ExtractDocResponse,
   type ExtractedFact,
   getNameIdeas,
 } from "@/lib/api/onboarding";
@@ -439,6 +441,8 @@ function BrandStep({
  * or paste background notes about the coach, used downstream in /setup to prefill questions. */
 interface AboutStepProps {
   heading: string;
+  /** The studio name picked on the step before, checked against the bio. */
+  brandName: string;
   subhead: string;
   submitLabel?: string;
   submittingLabel?: string;
@@ -453,6 +457,7 @@ interface AboutStepProps {
 
 function AboutStep({
   heading,
+  brandName,
   subhead,
   submitLabel,
   submittingLabel,
@@ -472,6 +477,8 @@ function AboutStep({
     null,
   );
   const [extractedSummary, setExtractedSummary] = useState<string | null>(null);
+  const [conflict, setConflict] =
+    useState<ExtractDocResponse["conflict"]>(null);
   const [hasAdded, setHasAdded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -485,10 +492,15 @@ function AboutStep({
         return;
       }
       setError(null);
-      const result = await extractDoc(selectedFile || undefined, trimmed);
+      const result = await extractDoc(
+        selectedFile || undefined,
+        trimmed,
+        brandName,
+      );
       setText(result.text);
       setExtractedFacts(result.facts);
       setExtractedSummary(result.summary);
+      setConflict(result.conflict ?? null);
       setHasAdded(true);
       setIsEditing(false);
     },
@@ -616,6 +628,35 @@ function AboutStep({
               subhead={t("aboutExtractedSub")}
             />
             <div className="mx-auto mt-5 max-w-[420px] space-y-3.5">
+              {conflict && (
+                <div
+                  role="status"
+                  className="space-y-2 rounded-xl border border-primary/30 bg-primary/5 p-3.5 text-[13px] text-foreground motion-safe:animate-fade-in"
+                >
+                  <div className="flex items-start gap-2.5">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <span>
+                      {t("aboutConflict", {
+                        brand: brandName,
+                        nameSays: conflict.name_says,
+                        bioSays: conflict.bio_says,
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-[26px]">
+                    <button
+                      type="button"
+                      onClick={onBack}
+                      className="font-medium text-foreground underline underline-offset-4"
+                    >
+                      {t("aboutConflictChange")}
+                    </button>
+                    <span className="text-muted-foreground">
+                      {t("aboutConflictKeep")}
+                    </span>
+                  </div>
+                </div>
+              )}
               {extractedSummary && (
                 <div className="flex items-start gap-2.5 rounded-xl border border-primary/20 bg-primary/5 p-3.5 text-[13px] text-foreground motion-safe:animate-fade-in">
                   <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
@@ -749,9 +790,9 @@ function AboutStep({
                     setError(null);
                   }}
                   maxLength={8000}
-                  rows={4}
+                  rows={10}
                   placeholder={t("aboutTextPlaceholder")}
-                  className="flex min-h-[110px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex min-h-[240px] w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <div className="flex justify-end text-[11px] text-muted-foreground">
                   <span>{text.length} / 8000</span>
@@ -803,6 +844,7 @@ function AuthenticatedSignupForm({
   return (
     <AboutStep
       heading={t("aboutStepHeading")}
+      brandName={brandName}
       subhead={t("aboutStepSubhead")}
       submitLabel={t("authSubmit")}
       submittingLabel={t("authSubmitting")}
@@ -1018,6 +1060,7 @@ function AnonymousSignupFlow() {
     return (
       <AboutStep
         heading={t("aboutStepHeading")}
+        brandName={brandName}
         subhead={t("aboutStepSubhead")}
         submitLabel={t("submit")}
         skipLabel={t("aboutSkip")}

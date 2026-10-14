@@ -140,6 +140,19 @@ def test_extract_doc_returns_analyzed_facts_in_real_time():
     assert data["summary"] == "Found yoga."
 
 
+def test_extract_doc_flags_a_studio_name_its_bio_disagrees_with():
+    client = APIClient(HTTP_HOST="localhost")
+    facts = [
+        {"field": "teaches", "label": "What you teach", "value": "Face yoga and yoga", "items": ["Face yoga", "Yoga"]}
+    ]
+    with mock.patch("apps.core.onboarding.about_check.analyze", return_value={"facts": facts, "summary": ""}):
+        post = lambda brand: client.post(  # noqa: E731
+            "/api/v1/onboarding/extract-doc/", {"text": "I teach face yoga.", "brand": brand}, format="json"
+        ).json()
+        assert post("GS Polly Dance Studio")["conflict"] == {"name_says": "dance", "bio_says": "face yoga and yoga"}
+        assert post("Zen Yoga Studio")["conflict"] is None
+
+
 def test_extract_doc_rejects_empty():
     client = APIClient(HTTP_HOST="localhost")
     resp = client.post("/api/v1/onboarding/extract-doc/", {"text": "   "}, format="json")
@@ -216,7 +229,7 @@ def test_analyze_gives_trimmed_items_for_tile_questions():
                 value="Face yoga teacher",
                 items=[" BBM Level 1. ", "bbm level 1.", "Yin Yoga & Anatomy training."],
             ),
-            about_check.FactItem(field="teaches", value="Face yoga", items=["not a tile question"]),
+            about_check.FactItem(field="location", value="Brooklyn", items=["not a tile question"]),
         ]
     )
     with (
@@ -227,7 +240,7 @@ def test_analyze_gives_trimmed_items_for_tile_questions():
         facts = about_check.analyze(f"bio {uuid.uuid4()}")["facts"]
     by_field = {f["field"]: f for f in facts}
     assert by_field["credentials"]["items"] == ["BBM Level 1.", "Yin Yoga & Anatomy training."]
-    assert by_field["teaches"]["items"] == []
+    assert by_field["location"]["items"] == []
 
 
 def test_analyze_keeps_its_result_when_the_ai_probe_blips():

@@ -8,8 +8,8 @@ export interface ShareDoc {
 
 export const SHARE_ACCEPT = ".pdf,.txt,.md";
 export const SHARE_MAX_BYTES = 5 * 1024 * 1024;
-/** The questions that offer it: the opening one, the story and the training. */
-export const SHARE_FIELDS = ["teaches", "story", "credentials"];
+/** The questions that offer it: the story and the training (signup already asks for a bio up front). */
+export const SHARE_FIELDS = ["story", "credentials"];
 
 /** Why a picked file can't be sent, in the coach's words (null: fine). The
  * server checks again; this only saves a round trip. */

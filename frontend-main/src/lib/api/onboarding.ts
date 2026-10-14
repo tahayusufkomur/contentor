@@ -52,6 +52,8 @@ export interface ExtractDocResponse {
   text: string;
   facts: ExtractedFact[];
   summary: string;
+  /** The studio name says one thing, the bio another ("dance" vs "face yoga and yoga"). */
+  conflict: { name_says: string; bio_says: string } | null;
 }
 
 /**
@@ -61,6 +63,7 @@ export interface ExtractDocResponse {
 export async function extractDoc(
   file?: File,
   text?: string,
+  brand?: string,
 ): Promise<ExtractDocResponse> {
   let body: FormData | string;
   const headers: Record<string, string> = {};
@@ -68,10 +71,11 @@ export async function extractDoc(
     const fd = new FormData();
     fd.append("file", file);
     if (text) fd.append("text", text);
+    if (brand) fd.append("brand", brand);
     body = fd;
   } else {
     headers["Content-Type"] = "application/json";
-    body = JSON.stringify({ text: text || "" });
+    body = JSON.stringify({ text: text || "", brand: brand || "" });
   }
   const res = await fetch("/api/v1/onboarding/extract-doc/", {
     method: "POST",
