@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { defaultActiveMatch } from "@shared/navigation/navigation-state";
 import { NavLink } from "@/components/ui/nav-link";
@@ -44,18 +43,20 @@ interface AppSidebarProps {
 export function AppSidebar({ title, sections, children }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   return (
+    // No aria-label on purpose: e2e selects the sidebar as the one <aside>
+    // without a label (the assistant panel is <aside aria-label="Assistant">).
     <aside
       className={cn(
-        "hidden md:flex flex-col border-r bg-card transition-[width] duration-200",
-        collapsed ? "w-16" : "w-64",
+        "hidden flex-col border-r bg-muted transition-[width] duration-200 ease-expo md:flex",
+        collapsed ? "w-16" : "w-60",
       )}
     >
-      {/* Header */}
-      <div className="flex h-14 items-center justify-between border-b px-3 gap-2">
+      {/* Header: 52 px, so its hairline meets the top bar's */}
+      <div className="flex h-[52px] items-center justify-between gap-2 border-b px-3">
         {!collapsed && (
           <NavLink
             href="/admin"
-            className="text-sm font-bold tracking-tight truncate hover:text-primary transition-colors"
+            className="truncate text-caption font-semibold tracking-tight text-foreground transition-colors hover:text-muted-foreground"
             title="Back to Admin Overview"
           >
             {title}
@@ -64,8 +65,9 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 shrink-0 ml-auto"
+          className="ml-auto h-8 w-8 shrink-0 rounded-full"
           onClick={() => setCollapsed(!collapsed)}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <ChevronLeft
             className={cn(
@@ -76,8 +78,10 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
         </Button>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+      {/* Navigation: the seven places, caption weight 500, 16 px icons; the
+          active one is a paper pill on the second paper (spec 5.6). This <nav>
+          holds exactly the section links — e2e counts them. */}
+      <nav className="flex-1 space-y-1 overflow-y-auto p-2">
         {sections.map((section) => (
           <NavLink
             key={section.id}
@@ -91,11 +95,11 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
             }
             className={({ active }) =>
               cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                collapsed && "justify-center px-2",
+                "flex h-9 items-center gap-3 rounded-full px-3 text-caption font-medium transition-colors",
+                collapsed && "mx-auto w-9 justify-center px-0",
                 active
-                  ? "bg-accent text-accent-foreground font-medium"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  ? "bg-background text-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground",
               )
             }
           >
@@ -106,16 +110,15 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
                 ) : (
                   <section.icon className="h-4 w-4 shrink-0" />
                 )}
-                {!collapsed && <span>{section.label}</span>}
+                {!collapsed && <span className="truncate">{section.label}</span>}
               </>
             )}
           </NavLink>
         ))}
       </nav>
 
-      {/* Footer */}
-      <div className="border-t p-2 space-y-2">
-        <Separator className="mb-2" />
+      {/* Footer: theme toggle and the user menu, outside the <nav> */}
+      <div className="space-y-1 border-t p-2">
         <ThemeToggle collapsed={collapsed} />
         {React.Children.map(children, (child) =>
           React.isValidElement(child)

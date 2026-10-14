@@ -1,5 +1,6 @@
 {
   "title": "Admin",
+  "viewSite": "View site",
   "welcome": "Welcome, {name}",
   "badges": {
     "ai": "AI",
