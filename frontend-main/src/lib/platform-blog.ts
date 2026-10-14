@@ -10,6 +10,9 @@ export interface PlatformBlogPost {
   meta_description?: string;
   body_html?: string;
   published_at: string;
+  /** Not sent by the platform blog API today (PlatformBlogPost has no cover
+   * field); read when it appears so covers light up without a frontend change. */
+  cover_photo_url?: string | null;
 }
 
 export async function fetchPlatformPosts(): Promise<PlatformBlogPost[]> {
