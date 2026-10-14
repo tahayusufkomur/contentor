@@ -52,7 +52,7 @@ def space_of(tenant) -> str:
     per installation, so dev and prod (one service account) never share."""
     name = re.sub(r"[^A-Za-z0-9._-]", "-", f"{settings.CONTENTOR_DOMAIN}.{tenant.schema_name}")
     if len(name) > 64:
-        name = f"{name[:43]}.{hashlib.sha1(name.encode()).hexdigest()[:20]}"  # noqa: S324 - a name, not a secret
+        name = f"{name[:43]}.{hashlib.sha1(name.encode(), usedforsecurity=False).hexdigest()[:20]}"
     return name
 
 

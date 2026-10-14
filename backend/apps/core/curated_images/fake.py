@@ -180,7 +180,7 @@ def generation(job_id: str):
 # at once and is described by its file name, which is all the offline search
 # has to rank on. Kept in the cache so the web and Celery processes agree.
 
-_PRIVATE_KEY = "curated-images:fake-private:{space}"
+_PRIVATE_ROWS = "curated-images:fake-private:{space}"
 _PRIVATE_SPACE_OF = "curated-images:fake-private-upload:{upload_id}"
 _PRIVATE_TTL = 30 * 86400
 
@@ -188,13 +188,13 @@ _PRIVATE_TTL = 30 * 86400
 def _private_rows(space: str) -> list[dict]:
     from django.core.cache import cache
 
-    return list(cache.get(_PRIVATE_KEY.format(space=space)) or [])
+    return list(cache.get(_PRIVATE_ROWS.format(space=space)) or [])
 
 
 def _private_save(space: str, rows: list[dict]) -> None:
     from django.core.cache import cache
 
-    cache.set(_PRIVATE_KEY.format(space=space), rows, _PRIVATE_TTL)
+    cache.set(_PRIVATE_ROWS.format(space=space), rows, _PRIVATE_TTL)
 
 
 def _private_view(row: dict):
