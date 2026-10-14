@@ -1,58 +1,26 @@
-import { HeroSection } from "@/components/landing/hero-section";
-import { ProductMockup } from "@/components/landing/product-mockup";
-import { SocialProofBar } from "@/components/landing/social-proof-bar";
-import { FeaturesSection } from "@/components/landing/features-section";
-import { FoundingCreatorsSection } from "@/components/landing/founding-creators-section";
-import { StatsSection } from "@/components/landing/stats-section";
-import { HowItWorksSection } from "@/components/landing/how-it-works-section";
-import { FaqSection } from "@/components/landing/faq-section";
-import { FinalCtaSection } from "@/components/landing/final-cta-section";
-import { ScrollReveal } from "@/components/landing/scroll-reveal";
-import { PlatformHeader } from "@/components/shared/platform-header";
+import { getTranslations } from "next-intl/server";
+import { Hero } from "@/components/landing/hero";
+import { LocalNav } from "@/components/shared/local-nav";
 import { PlatformFooter } from "@/components/shared/platform-footer";
+import { PlatformHeader } from "@/components/shared/platform-header";
 import { getAuthUser } from "@/lib/auth";
+import { CHAPTER_IDS } from "@/lib/landing";
 
+/** The landing: eight chapters on real footage (spec 5.4). Chapters are
+ * server components; the motion kit beneath them is the client. */
 export default async function HomePage() {
-  const user = await getAuthUser();
+  const [user, t] = await Promise.all([getAuthUser(), getTranslations("marketing.landingNav")]);
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <PlatformHeader user={user} />
-
-      <HeroSection />
-
-      {/* Clean house style: a single, restrained reveal motion throughout */}
-      <ScrollReveal direction="up" duration={0.7}>
-        <ProductMockup />
-      </ScrollReveal>
-
-      <ScrollReveal direction="up" duration={0.7}>
-        <SocialProofBar />
-      </ScrollReveal>
-
-      <ScrollReveal direction="up" duration={0.7}>
-        <FeaturesSection />
-      </ScrollReveal>
-
-      <ScrollReveal direction="up" duration={0.7}>
-        <StatsSection />
-      </ScrollReveal>
-
-      <ScrollReveal direction="up" duration={0.7}>
-        <HowItWorksSection />
-      </ScrollReveal>
-
-      <ScrollReveal direction="up" duration={0.7}>
-        <FoundingCreatorsSection />
-      </ScrollReveal>
-
-      <ScrollReveal direction="up" duration={0.7}>
-        <FaqSection />
-      </ScrollReveal>
-
-      <ScrollReveal direction="up" duration={0.7}>
-        <FinalCtaSection />
-      </ScrollReveal>
-
+      <LocalNav
+        title="Contentor"
+        items={CHAPTER_IDS.map((id) => ({ id, label: t(id) }))}
+        cta={{ href: "/signup", label: t("cta") }}
+      />
+      <main>
+        <Hero />
+      </main>
       <PlatformFooter />
     </div>
   );
