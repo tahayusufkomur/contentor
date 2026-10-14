@@ -16,7 +16,10 @@ import { CHAPTER_IDS } from "@/lib/landing";
 /** The landing: eight chapters on real footage (spec 5.4). Chapters are
  * server components; the motion kit beneath them is the client. */
 export default async function HomePage() {
-  const [user, t] = await Promise.all([getAuthUser(), getTranslations("marketing.landingNav")]);
+  const [user, t] = await Promise.all([
+    getAuthUser(),
+    getTranslations("marketing.landingNav"),
+  ]);
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <PlatformHeader user={user} />

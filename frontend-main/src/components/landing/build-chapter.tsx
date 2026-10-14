@@ -1,7 +1,11 @@
 import { getTranslations } from "next-intl/server";
 import { Chapter } from "@/components/motion/chapter";
 import { ScrollScrub } from "@/components/motion/scroll-scrub";
-import { ScrubCaption, StaticScrub, scrubBands } from "@/components/landing/static-scrub";
+import {
+  ScrubCaption,
+  StaticScrub,
+  scrubBands,
+} from "@/components/landing/static-scrub";
 import { BUILD_SCRUB } from "@/lib/landing";
 import { media } from "@/lib/media";
 
@@ -17,7 +21,12 @@ export async function BuildChapter() {
     <ScrubCaption key="three">{t("bands.three")}</ScrubCaption>,
   ] as const;
   return (
-    <Chapter id="build" eyebrow={t("eyebrow")} title={t("title")} lead={t("lead")}>
+    <Chapter
+      id="build"
+      eyebrow={t("eyebrow")}
+      title={t("title")}
+      lead={t("lead")}
+    >
       <ScrollScrub
         src={clip.src}
         poster={clip.poster!}

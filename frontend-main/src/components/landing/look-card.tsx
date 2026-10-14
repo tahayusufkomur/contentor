@@ -14,7 +14,10 @@ export interface LookCardProps {
  * both cropped to one row height, the look's name as the caption. Images are
  * lazy with an 800 px source for phones; the gallery is well below the fold. */
 export function LookCard({ name, still, render, renderAlt }: LookCardProps) {
-  const srcSet = (m: MediaItem) => (m.srcSmall ? `${m.srcSmall} ${m.width / 2}w, ${m.src} ${m.width}w` : undefined);
+  const srcSet = (m: MediaItem) =>
+    m.srcSmall
+      ? `${m.srcSmall} ${m.width / 2}w, ${m.src} ${m.width}w`
+      : undefined;
   return (
     <figure className="flex flex-col">
       <div className="flex h-[260px] gap-3 md:h-[440px]">
@@ -41,7 +44,9 @@ export function LookCard({ name, still, render, renderAlt }: LookCardProps) {
           className="h-full w-auto aspect-[375/812] rounded-[22px] bg-muted object-cover"
         />
       </div>
-      <figcaption className="mt-3 text-caption text-muted-foreground">{name}</figcaption>
+      <figcaption className="mt-3 text-caption text-muted-foreground">
+        {name}
+      </figcaption>
     </figure>
   );
 }

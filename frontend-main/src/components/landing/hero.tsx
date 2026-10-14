@@ -17,13 +17,18 @@ export async function Hero() {
   return (
     <section id="hero" className="scroll-mt-24 pt-16 md:pt-24">
       <div className="hero-scroll-out mx-auto max-w-text px-6 text-center">
-        <h1 className="text-display text-foreground text-balance">{t("title")}</h1>
+        <h1 className="text-display text-foreground text-balance">
+          {t("title")}
+        </h1>
         <p className="mx-auto mt-5 max-w-[680px] text-body-lg text-muted-foreground text-balance">
           {t("lead")}
         </p>
         <NavLink
           href="/signup"
-          className={cn(buttonVariants({ size: "lg" }), "mt-8 rounded-full px-7")}
+          className={cn(
+            buttonVariants({ size: "lg" }),
+            "mt-8 rounded-full px-7",
+          )}
         >
           {t("cta")}
         </NavLink>

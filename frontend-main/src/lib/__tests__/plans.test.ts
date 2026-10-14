@@ -36,7 +36,11 @@ describe("teaserRows", () => {
     ]);
   });
   it("leaves a plan the API renamed without a price instead of throwing", () => {
-    const data: PlansResponse = { region: "eu", currency: "EUR", plans: [plan("starter", 1990, "EUR"), plan("business", 9900, "EUR")] };
+    const data: PlansResponse = {
+      region: "eu",
+      currency: "EUR",
+      plans: [plan("starter", 1990, "EUR"), plan("business", 9900, "EUR")],
+    };
     expect(teaserRows(data)).toEqual([
       { key: "free", price: null },
       { key: "starter", price: "€19.90" },

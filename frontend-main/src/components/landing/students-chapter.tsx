@@ -12,7 +12,12 @@ export async function StudentsChapter() {
   const t = await getTranslations("marketing.students");
   const clip = media(STUDENT_CLIP);
   return (
-    <Chapter id="students" eyebrow={t("eyebrow")} title={t("title")} lead={t("lead")}>
+    <Chapter
+      id="students"
+      eyebrow={t("eyebrow")}
+      title={t("title")}
+      lead={t("lead")}
+    >
       <div className="mx-auto grid max-w-media items-center gap-10 px-6 md:grid-cols-[320px_1fr] md:gap-16">
         <Reveal direction="up" duration={0.7}>
           <div className="mx-auto w-[270px] rounded-[44px] bg-foreground p-[10px]">
@@ -32,7 +37,10 @@ export async function StudentsChapter() {
           {STUDENT_TILES.map((tile) => {
             const still = media(tile.still);
             return (
-              <figure key={tile.key} className="rounded-tile bg-muted p-5 md:p-6">
+              <figure
+                key={tile.key}
+                className="rounded-tile bg-muted p-5 md:p-6"
+              >
                 <img
                   src={still.src}
                   alt={still.alt ?? ""}
@@ -43,8 +51,12 @@ export async function StudentsChapter() {
                   className="w-full rounded-[12px] bg-background"
                 />
                 <figcaption className="mt-5">
-                  <h3 className="text-title-2 text-foreground">{t(`tiles.${tile.key}.title`)}</h3>
-                  <p className="mt-1.5 text-body text-muted-foreground">{t(`tiles.${tile.key}.text`)}</p>
+                  <h3 className="text-title-2 text-foreground">
+                    {t(`tiles.${tile.key}.title`)}
+                  </h3>
+                  <p className="mt-1.5 text-body text-muted-foreground">
+                    {t(`tiles.${tile.key}.text`)}
+                  </p>
                 </figcaption>
               </figure>
             );

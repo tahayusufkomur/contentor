@@ -4,7 +4,9 @@ import { cn } from "@/lib/utils";
 
 /** Three caption windows across a scrub: the first is visible at rest, the
  * last stays to the end (Phase 0's bandOpacity treats from=0 / to=1 so). */
-export function scrubBands(nodes: [ReactNode, ReactNode, ReactNode]): ScrubBand[] {
+export function scrubBands(
+  nodes: [ReactNode, ReactNode, ReactNode],
+): ScrubBand[] {
   return [
     { from: 0, to: 0.36, node: nodes[0] },
     { from: 0.3, to: 0.7, node: nodes[1] },

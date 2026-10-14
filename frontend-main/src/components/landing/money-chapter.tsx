@@ -10,12 +10,25 @@ import { MONEY_TILES } from "@/lib/landing";
 export async function MoneyChapter() {
   const t = await getTranslations("marketing.money");
   return (
-    <Chapter id="money" dark eyebrow={t("eyebrow")} title={t("title")} lead={t("lead")}>
-      <Reveal stagger className="mx-auto grid max-w-media gap-5 px-6 md:grid-cols-3">
+    <Chapter
+      id="money"
+      dark
+      eyebrow={t("eyebrow")}
+      title={t("title")}
+      lead={t("lead")}
+    >
+      <Reveal
+        stagger
+        className="mx-auto grid max-w-media gap-5 px-6 md:grid-cols-3"
+      >
         {MONEY_TILES.map((key) => (
           <div key={key} className="rounded-tile bg-muted p-8">
-            <h3 className="text-title-2 text-foreground">{t(`tiles.${key}.title`)}</h3>
-            <p className="mt-3 text-body text-muted-foreground">{t(`tiles.${key}.text`)}</p>
+            <h3 className="text-title-2 text-foreground">
+              {t(`tiles.${key}.title`)}
+            </h3>
+            <p className="mt-3 text-body text-muted-foreground">
+              {t(`tiles.${key}.text`)}
+            </p>
           </div>
         ))}
       </Reveal>

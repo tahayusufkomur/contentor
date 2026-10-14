@@ -12,7 +12,12 @@ import { ScrollReveal } from "@/components/landing/scroll-reveal";
 import { Parallax } from "@/components/landing/parallax";
 import { formatPlanPrice } from "@shared/lib/format-plan-price";
 import { getAuthUser } from "@/lib/auth";
-import { PLAN_KEYS, planKeyFromName, type PlanKey, type PlanSummary } from "@/lib/plans";
+import {
+  PLAN_KEYS,
+  planKeyFromName,
+  type PlanKey,
+  type PlanSummary,
+} from "@/lib/plans";
 import { fetchPlans } from "@/lib/plans-server";
 
 import { PricingCta } from "./PricingCta";

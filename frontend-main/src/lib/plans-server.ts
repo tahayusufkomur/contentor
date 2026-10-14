@@ -7,15 +7,18 @@ import type { PlansResponse } from "@/lib/plans";
 export async function fetchPlans(): Promise<PlansResponse | null> {
   const country = headers().get("cf-ipcountry");
   try {
-    const res = await fetch(`${DJANGO_API_URL}/api/v1/billing/platform/plans/`, {
-      headers: {
-        "X-Tenant-Domain": BASE_DOMAIN,
-        // Server-side fetch loses the visitor: forward Cloudflare's country
-        // so the API picks EUR vs USD for them.
-        ...(country ? { "CF-IPCountry": country } : {}),
+    const res = await fetch(
+      `${DJANGO_API_URL}/api/v1/billing/platform/plans/`,
+      {
+        headers: {
+          "X-Tenant-Domain": BASE_DOMAIN,
+          // Server-side fetch loses the visitor: forward Cloudflare's country
+          // so the API picks EUR vs USD for them.
+          ...(country ? { "CF-IPCountry": country } : {}),
+        },
+        cache: "no-store",
       },
-      cache: "no-store",
-    });
+    );
     if (!res.ok) return null;
     return res.json();
   } catch {

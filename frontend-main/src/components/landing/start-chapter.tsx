@@ -17,24 +17,40 @@ async function PricingTeaser() {
   ]);
   const rows = teaserRows(plans);
   return (
-    <section aria-labelledby="teaser-title" className="mx-auto mt-24 max-w-media px-6">
-      <h3 id="teaser-title" className="text-title text-foreground">{t("title")}</h3>
-      <p className="mt-3 max-w-[640px] text-body-lg text-muted-foreground">{t("text")}</p>
+    <section
+      aria-labelledby="teaser-title"
+      className="mx-auto mt-24 max-w-media px-6"
+    >
+      <h3 id="teaser-title" className="text-title text-foreground">
+        {t("title")}
+      </h3>
+      <p className="mt-3 max-w-[640px] text-body-lg text-muted-foreground">
+        {t("text")}
+      </p>
       <div className="mt-8 grid gap-5 md:grid-cols-3">
         {rows.map(({ key, price }) => (
           <div key={key} className="rounded-tile bg-muted p-7">
-            <p className="text-caption font-semibold text-foreground">{tp(`${key}.name`)}</p>
+            <p className="text-caption font-semibold text-foreground">
+              {tp(`${key}.name`)}
+            </p>
             {price && (
               <p className="mt-3 text-title text-foreground">
                 {price}
-                <span className="ml-1.5 text-caption font-normal text-muted-foreground">{tp(`${key}.period`)}</span>
+                <span className="ml-1.5 text-caption font-normal text-muted-foreground">
+                  {tp(`${key}.period`)}
+                </span>
               </p>
             )}
-            <p className="mt-3 text-body text-muted-foreground">{tp(`${key}.description`)}</p>
+            <p className="mt-3 text-body text-muted-foreground">
+              {tp(`${key}.description`)}
+            </p>
           </div>
         ))}
       </div>
-      <NavLink href="/pricing" className="mt-6 inline-block text-body text-marketing-accent hover:underline">
+      <NavLink
+        href="/pricing"
+        className="mt-6 inline-block text-body text-marketing-accent hover:underline"
+      >
         {t("cta")}
       </NavLink>
     </section>
@@ -46,7 +62,12 @@ async function PricingTeaser() {
 export async function StartChapter() {
   const t = await getTranslations("marketing.start");
   return (
-    <Chapter id="start" eyebrow={t("eyebrow")} title={t("title")} lead={t("lead")}>
+    <Chapter
+      id="start"
+      eyebrow={t("eyebrow")}
+      title={t("title")}
+      lead={t("lead")}
+    >
       <FoundingCreatorsSection />
       <PricingTeaser />
       <FaqSection />

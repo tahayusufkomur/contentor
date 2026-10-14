@@ -43,7 +43,12 @@ export const STUDIO_TILES = [
   { key: "courses", still: "tile-courses", loop: "loop-courses", span: 4 },
   { key: "live", still: "tile-live", loop: "loop-live", span: 2 },
   { key: "messages", still: "tile-messages", loop: "loop-messages", span: 2 },
-  { key: "community", still: "tile-community", loop: "loop-community", span: 2 },
+  {
+    key: "community",
+    still: "tile-community",
+    loop: "loop-community",
+    span: 2,
+  },
   { key: "media", still: "tile-media", loop: "loop-media", span: 2 },
   { key: "blog", still: "tile-blog", loop: "loop-blog", span: 3 },
   { key: "logo", still: "tile-logo", loop: "loop-logo", span: 3 },
@@ -76,7 +81,17 @@ export const LANDING_MEDIA: Record<string, LandingMediaKind> = {
   [STUDENT_CLIP]: "clip",
   [BUILD_SCRUB]: "scrub",
   [ASSISTANT_SCRUB]: "scrub",
-  ...Object.fromEntries(STUDIO_TILES.flatMap((t) => [[t.still, "still"], [t.loop, "loop"]])),
+  ...Object.fromEntries(
+    STUDIO_TILES.flatMap((t) => [
+      [t.still, "still"],
+      [t.loop, "loop"],
+    ]),
+  ),
   ...Object.fromEntries(STUDENT_TILES.map((t) => [t.still, "still"])),
-  ...Object.fromEntries(LOOK_CARDS.flatMap((c) => [[c.still, "still"], [c.render, "still"]])),
+  ...Object.fromEntries(
+    LOOK_CARDS.flatMap((c) => [
+      [c.still, "still"],
+      [c.render, "still"],
+    ]),
+  ),
 };

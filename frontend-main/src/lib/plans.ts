@@ -48,6 +48,9 @@ export function teaserRows(
   }
   return PLAN_KEYS.map((key) => {
     const p = byKey.get(key);
-    return { key, price: p ? formatPlanPrice(p.currency, p.amount_cents) : null };
+    return {
+      key,
+      price: p ? formatPlanPrice(p.currency, p.amount_cents) : null,
+    };
   });
 }

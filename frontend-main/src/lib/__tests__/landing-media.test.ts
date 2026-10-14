@@ -29,7 +29,8 @@ const manifest = JSON.parse(
   readFileSync(path.join(PUBLIC, "media/media.json"), "utf8"),
 ) as { items: Record<string, Item> };
 const item = (key: string): Item => manifest.items[key];
-const size = (p: string) => statSync(path.join(PUBLIC, p.replace(/^\//, ""))).size;
+const size = (p: string) =>
+  statSync(path.join(PUBLIC, p.replace(/^\//, ""))).size;
 const MB = 1024 * 1024;
 const CLIPS = [HERO_CLIP, STUDENT_CLIP, BUILD_SCRUB, ASSISTANT_SCRUB];
 const STILLS = Object.entries(LANDING_MEDIA)
@@ -37,14 +38,21 @@ const STILLS = Object.entries(LANDING_MEDIA)
   .map(([key]) => key);
 
 describe("landing media keys", () => {
-  it.each(Object.entries(LANDING_MEDIA))("%s is a %s with a file", (key, kind) => {
-    expect(item(key), `${key} is missing from public/media/media.json — Phase 1's recording list`).toBeDefined();
-    expect(item(key).kind).toBe(kind);
-    expect(() => size(item(key).src), item(key).src).not.toThrow();
-  });
+  it.each(Object.entries(LANDING_MEDIA))(
+    "%s is a %s with a file",
+    (key, kind) => {
+      expect(
+        item(key),
+        `${key} is missing from public/media/media.json — Phase 1's recording list`,
+      ).toBeDefined();
+      expect(item(key).kind).toBe(kind);
+      expect(() => size(item(key).src), item(key).src).not.toThrow();
+    },
+  );
   it("clips and scrubs carry a poster; the hero and the student clip a phone encode", () => {
     for (const key of CLIPS) expect(item(key).poster, key).toBeTruthy();
-    for (const key of [HERO_CLIP, STUDENT_CLIP]) expect(item(key).phoneSrc, key).toBeTruthy();
+    for (const key of [HERO_CLIP, STUDENT_CLIP])
+      expect(item(key).phoneSrc, key).toBeTruthy();
   });
   it("every still has alt text and an 800 px twin", () => {
     for (const key of STILLS) {
@@ -55,7 +63,8 @@ describe("landing media keys", () => {
   it("the twelve look cards name enabled looks, once each", () => {
     expect(LOOK_CARDS).toHaveLength(12);
     expect(new Set(LOOK_CARDS.map((c) => c.look)).size).toBe(12);
-    for (const c of LOOK_CARDS) expect(SITE_STYLES[c.look]?.enabled, c.look).toBe(true);
+    for (const c of LOOK_CARDS)
+      expect(SITE_STYLES[c.look]?.enabled, c.look).toBe(true);
   });
   it("studio tiles fill three rows of six columns", () => {
     expect(STUDIO_TILES.reduce((a, t) => a + t.span, 0)).toBe(18);
@@ -67,9 +76,15 @@ describe("landing media budget (spec 5.7)", () => {
   // cards are lazy, so count the cards a viewport shows plus one.
   const sum = (paths: string[]) => paths.reduce((a, p) => a + size(p), 0);
   const posters = CLIPS.map((k) => item(k).poster as string);
-  const tileStills = [...STUDIO_TILES.map((t) => t.still), ...STUDENT_TILES.map((t) => t.still)].map((k) => item(k).src);
+  const tileStills = [
+    ...STUDIO_TILES.map((t) => t.still),
+    ...STUDENT_TILES.map((t) => t.still),
+  ].map((k) => item(k).src);
   it("desktop: hero + two scrubs + student clip + stills ≤ 8 MB", () => {
-    const looks = LOOK_CARDS.slice(0, 4).flatMap((c) => [item(c.still).src, item(c.render).src]);
+    const looks = LOOK_CARDS.slice(0, 4).flatMap((c) => [
+      item(c.still).src,
+      item(c.render).src,
+    ]);
     const total = sum([
       item(HERO_CLIP).src,
       item(BUILD_SCRUB).src,
@@ -83,7 +98,10 @@ describe("landing media budget (spec 5.7)", () => {
   });
   it("phone: phone encodes, static scrubs, two look cards ≤ 4 MB", () => {
     const small = (k: string) => item(k).srcSmall ?? item(k).src;
-    const looks = LOOK_CARDS.slice(0, 2).flatMap((c) => [small(c.still), small(c.render)]);
+    const looks = LOOK_CARDS.slice(0, 2).flatMap((c) => [
+      small(c.still),
+      small(c.render),
+    ]);
     const total = sum([
       item(HERO_CLIP).phoneSrc as string,
       item(STUDENT_CLIP).phoneSrc as string,

@@ -10,9 +10,19 @@ export async function FinalCtaSection() {
   return (
     <section className="mx-auto mt-24 max-w-media px-6">
       <div className="rounded-tile bg-muted px-8 py-16 text-center md:py-24">
-        <h3 className="text-display-2 text-foreground text-balance">{t("title")}</h3>
-        <p className="mx-auto mt-4 max-w-[560px] text-body-lg text-muted-foreground">{t("text")}</p>
-        <NavLink href="/signup" className={cn(buttonVariants({ size: "lg" }), "mt-8 rounded-full px-7")}>
+        <h3 className="text-display-2 text-foreground text-balance">
+          {t("title")}
+        </h3>
+        <p className="mx-auto mt-4 max-w-[560px] text-body-lg text-muted-foreground">
+          {t("text")}
+        </p>
+        <NavLink
+          href="/signup"
+          className={cn(
+            buttonVariants({ size: "lg" }),
+            "mt-8 rounded-full px-7",
+          )}
+        >
           {t("button")}
         </NavLink>
         <p className="mt-4 text-caption text-muted-foreground">{t("note")}</p>

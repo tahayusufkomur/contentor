@@ -11,7 +11,12 @@ import { media } from "@/lib/media";
 export async function LooksChapter() {
   const t = await getTranslations("marketing.looks");
   return (
-    <Chapter id="looks" eyebrow={t("eyebrow")} title={t("title")} lead={t("lead")}>
+    <Chapter
+      id="looks"
+      eyebrow={t("eyebrow")}
+      title={t("title")}
+      lead={t("lead")}
+    >
       <SnapGallery
         label={t("galleryLabel")}
         items={LOOK_CARDS.map((card) => {

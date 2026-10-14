@@ -9,8 +9,13 @@ import { FAQ_KEYS } from "@/lib/landing";
 export async function FaqSection() {
   const t = await getTranslations("marketing.start.faq");
   return (
-    <section aria-labelledby="faq-title" className="mx-auto mt-24 max-w-text px-6">
-      <h3 id="faq-title" className="text-title text-foreground">{t("title")}</h3>
+    <section
+      aria-labelledby="faq-title"
+      className="mx-auto mt-24 max-w-text px-6"
+    >
+      <h3 id="faq-title" className="text-title text-foreground">
+        {t("title")}
+      </h3>
       <div className="mt-8 border-t">
         {FAQ_KEYS.map((key) => (
           <details key={key} name="landing-faq" className="group border-b">
@@ -22,7 +27,9 @@ export async function FaqSection() {
               />
             </summary>
             <div className="faq-content">
-              <div className="pb-6 text-body text-muted-foreground">{t(`items.${key}.a`)}</div>
+              <div className="pb-6 text-body text-muted-foreground">
+                {t(`items.${key}.a`)}
+              </div>
             </div>
           </details>
         ))}

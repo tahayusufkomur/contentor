@@ -20,13 +20,24 @@ const SPAN: Record<2 | 3 | 4, string> = {
 export async function StudioChapter() {
   const t = await getTranslations("marketing.studio");
   return (
-    <Chapter id="studio" eyebrow={t("eyebrow")} title={t("title")} lead={t("lead")}>
-      <Reveal stagger className="mx-auto grid max-w-media gap-5 px-6 md:grid-cols-6">
+    <Chapter
+      id="studio"
+      eyebrow={t("eyebrow")}
+      title={t("title")}
+      lead={t("lead")}
+    >
+      <Reveal
+        stagger
+        className="mx-auto grid max-w-media gap-5 px-6 md:grid-cols-6"
+      >
         {STUDIO_TILES.map((tile) => {
           const still = media(tile.still);
           const loop = media(tile.loop);
           return (
-            <div key={tile.key} className={cn("flex flex-col gap-4", SPAN[tile.span])}>
+            <div
+              key={tile.key}
+              className={cn("flex flex-col gap-4", SPAN[tile.span])}
+            >
               <MediaVideo
                 src={loop.src}
                 webm={loop.webm}
@@ -39,8 +50,12 @@ export async function StudioChapter() {
                 className="rounded-tile"
               />
               <div>
-                <h3 className="text-title-2 text-foreground">{t(`tiles.${tile.key}.title`)}</h3>
-                <p className="mt-1.5 text-body text-muted-foreground">{t(`tiles.${tile.key}.text`)}</p>
+                <h3 className="text-title-2 text-foreground">
+                  {t(`tiles.${tile.key}.title`)}
+                </h3>
+                <p className="mt-1.5 text-body text-muted-foreground">
+                  {t(`tiles.${tile.key}.text`)}
+                </p>
               </div>
             </div>
           );
