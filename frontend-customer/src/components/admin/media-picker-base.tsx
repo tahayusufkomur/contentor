@@ -54,6 +54,7 @@ export interface MediaPickerBaseProps<T> {
     onProgress: (percent: number) => void,
   ) => Promise<void>; // wrapper owns the full upload flow (incl. selection callback + close)
   renderItem: (item: T) => ReactNode; // wrapper owns card markup + its onClick select (must set its own `key`)
+  filterSlot?: ReactNode; // optional row under the search bar (e.g. the photo picker's My photos / Contentor photos)
 }
 
 export function MediaPickerBase<T>({
@@ -68,6 +69,7 @@ export function MediaPickerBase<T>({
   fetchItems,
   uploadFile,
   renderItem,
+  filterSlot,
 }: MediaPickerBaseProps<T>) {
   const [items, setItems] = useState<T[]>([]);
   const [search, setSearch] = useState("");
@@ -163,6 +165,8 @@ export function MediaPickerBase<T>({
               Upload
             </Button>
           </div>
+
+          {filterSlot}
 
           {uploading && (
             <div className="space-y-1 border-b px-4 py-3">

@@ -31,11 +31,14 @@ export function PhotoPicker({
   const t = useTranslations("admin");
   const [open, setOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
+  // Her own uploads apart from the ones Contentor placed (library copies,
+  // logo marks, demo content), as on the Media page.
+  const [source, setSource] = useState<"mine" | "contentor">("mine");
 
   async function fetchPhotos(search: string): Promise<Photo[]> {
-    const params = search ? `?search=${encodeURIComponent(search)}` : "";
+    const own = source === "mine" ? "1" : "0";
     const data = await clientFetch<{ results: Photo[] }>(
-      `/api/v1/photos/${params}`,
+      `/api/v1/photos/?own=${own}&search=${encodeURIComponent(search)}`,
     );
     return data.results;
   }
@@ -154,6 +157,22 @@ export function PhotoPicker({
         itemsContainerClassName="grid grid-cols-3 gap-3 sm:grid-cols-4"
         fetchItems={fetchPhotos}
         uploadFile={uploadPhoto}
+        filterSlot={
+          <div className="flex gap-2 border-b px-3 py-2">
+            {(["mine", "contentor"] as const).map((key) => (
+              <Button
+                key={key}
+                type="button"
+                variant={source === key ? "default" : "outline"}
+                size="sm"
+                aria-pressed={source === key}
+                onClick={() => setSource(key)}
+              >
+                {t(`media.${key}`)}
+              </Button>
+            ))}
+          </div>
+        }
         renderItem={(photo) => (
           <button
             key={photo.id}
