@@ -301,10 +301,45 @@ export interface ReviewCard {
   item: ReviewItem | null;
 }
 
-export type GuideCards = LookCards | ReviewCard;
+/** One shape of photo the site uses: how many a home page shows, what for,
+ * and what to shoot (backend interview_milestones.photo_guide). */
+export interface PhotoShot {
+  shape: "portrait" | "landscape" | "square";
+  label: string;
+  aspect: string;
+  count: number;
+  use: string;
+  shoot: string;
+}
+
+/** One of the coach's own photos, as the photos question lists it. */
+export interface OwnPhoto {
+  id: string;
+  url: string;
+  title: string;
+  width: number | null;
+  height: number | null;
+  /** "pending" (being made web-ready), "indexing", "ready" or "failed". */
+  status: string;
+}
+
+/** The photos question: what to bring, and what she has added so far. */
+export interface PhotoCards {
+  kind: "photos";
+  guide: PhotoShot[];
+  photos: OwnPhoto[];
+  max: number;
+}
+
+/** What a question screen shows beside its words: looks, or a draft. */
+export type QuestionCards = LookCards | ReviewCard;
+export type GuideCards = QuestionCards | PhotoCards;
 
 export const isReview = (c: GuideCards | null | undefined): c is ReviewCard =>
   c?.kind === "course" || c?.kind === "event" || c?.kind === "onsite";
+
+export const isPhotos = (c: GuideCards | null | undefined): c is PhotoCards =>
+  c?.kind === "photos";
 
 /** The paid plan some of a question's options need (backend interview_golive.plan_badge). */
 export interface PlanBadge {
@@ -364,6 +399,8 @@ export interface GuideTurn {
   prefill_options?: string[];
   /** The answer is a time zone, picked from the browser's list. */
   timezone?: boolean;
+  /** The screen takes the coach's own photos, or leaves them to the guide. */
+  photos?: boolean;
   /** Membership tiles: her monthly price for each, editable once ticked,
    * in the currency whose ``sign`` is given. */
   prices?: Record<string, number>;

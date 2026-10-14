@@ -172,3 +172,111 @@ def generation(job_id: str):
 
     image = get(job_id.removeprefix(_JOB_PREFIX)) if job_id.startswith(_JOB_PREFIX) else None
     return GenerationJob(job_id=job_id, status="fulfilled", image=image) if image else None
+
+
+# ── the coach's own photos (client.private_*) ────────────────────────────────
+#
+# Offline stand-in for the service's private collection: an upload is "ready"
+# at once and is described by its file name, which is all the offline search
+# has to rank on. Kept in the cache so the web and Celery processes agree.
+
+_PRIVATE_KEY = "curated-images:fake-private:{space}"
+_PRIVATE_SPACE_OF = "curated-images:fake-private-upload:{upload_id}"
+_PRIVATE_TTL = 30 * 86400
+
+
+def _private_rows(space: str) -> list[dict]:
+    from django.core.cache import cache
+
+    return list(cache.get(_PRIVATE_KEY.format(space=space)) or [])
+
+
+def _private_save(space: str, rows: list[dict]) -> None:
+    from django.core.cache import cache
+
+    cache.set(_PRIVATE_KEY.format(space=space), rows, _PRIVATE_TTL)
+
+
+def _private_view(row: dict):
+    from .client import OwnUpload
+
+    return OwnUpload(upload_id=row["id"], status="ready", title=row["title"], description=row["description"])
+
+
+def private_upload(body: bytes, filename: str, *, space: str, tags=()):
+    import hashlib
+    import io
+    import uuid
+
+    from django.core.cache import cache
+    from PIL import Image
+
+    digest = hashlib.sha256(body).hexdigest()
+    rows = _private_rows(space)
+    existing = next((r for r in rows if r["sha"] == digest), None)
+    if existing:
+        return _private_view(existing)
+    try:
+        with Image.open(io.BytesIO(body)) as im:
+            width, height = im.size
+    except Exception:
+        width = height = 0
+    title = " ".join(filename.rsplit(".", 1)[0].replace("-", " ").replace("_", " ").split()) or "Uploaded image"
+    row = {
+        "id": str(uuid.uuid5(uuid.NAMESPACE_URL, f"fake-private:{space}:{digest}")),
+        "sha": digest,
+        "title": title,
+        "description": f"A photo: {title}.",
+        "tags": [str(t) for t in tags],
+        "width": width,
+        "height": height,
+    }
+    _private_save(space, [*rows, row])
+    cache.set(_PRIVATE_SPACE_OF.format(upload_id=row["id"]), space, _PRIVATE_TTL)
+    return _private_view(row)
+
+
+def _private_find(upload_id: str) -> tuple[str, dict] | None:
+    from django.core.cache import cache
+
+    space = cache.get(_PRIVATE_SPACE_OF.format(upload_id=upload_id))
+    row = next((r for r in _private_rows(space) if r["id"] == upload_id), None) if space else None
+    return (space, row) if row else None
+
+
+def private_status(upload_id: str):
+    found = _private_find(upload_id)
+    return _private_view(found[1]) if found else None
+
+
+def private_search(query: str, *, space: str, orientation=None, per_page: int = 12):
+    from .client import RemoteImage
+
+    want = _tokens(query)
+    rows = [r for r in _private_rows(space) if not orientation or _orientation(r) == orientation]
+    scored = [(len(want & _tokens(f"{r['title']} {' '.join(r['tags'])}")), n, r) for n, r in enumerate(rows)]
+    # A query keeps only what shares a word with it; no query lists the newest first.
+    kept = [x for x in scored if x[0]] if want else scored
+    kept.sort(key=lambda x: (-x[0], -x[1]))
+    return [
+        (
+            r["id"],
+            RemoteImage(
+                asset_id=r["id"],
+                title=r["title"],
+                description=r["description"],
+                tags=list(r["tags"]),
+                width=r["width"] or None,
+                height=r["height"] or None,
+                preview_url="",
+                web_url="",
+            ),
+        )
+        for _, _, r in kept[:per_page]
+    ]
+
+
+def private_delete(upload_id: str) -> None:
+    found = _private_find(upload_id)
+    if found:
+        _private_save(found[0], [r for r in _private_rows(found[0]) if r["id"] != upload_id])

@@ -18,9 +18,14 @@ pytestmark = pytest.mark.django_db
 URL = "/api/v1/admin/setup-flow/turn/"
 
 
+# The photos question, asked right after what she teaches, is answered before
+# these tests start: its own tests are in test_interview_photos.py.
+PHOTOS = {"photos": "stock"}
+
+
 @pytest.fixture()
 def config(tenant_ctx):
-    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": {}})
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": dict(PHOTOS)})
     tenant_ctx.refresh_from_db()
     cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Glow")
     cfg.setup_flow = {
@@ -209,6 +214,7 @@ def test_a_turn_that_starts_work_says_so(client, tenant_ctx, quiet):
 
 def test_card_fields_are_asked_by_code_not_ai(client, tenant_ctx, quiet):
     answers = {
+        **PHOTOS,
         "teaches": "Pottery",
         "audience": "a",
         "outcome": "o",
@@ -225,6 +231,7 @@ def test_card_fields_are_asked_by_code_not_ai(client, tenant_ctx, quiet):
 
 def test_the_tone_is_asked_before_the_look_so_it_can_rank_the_looks(client, tenant_ctx, quiet):
     answers = {
+        **PHOTOS,
         "teaches": "Pottery",
         "audience": "a",
         "outcome": "o",
@@ -422,6 +429,7 @@ def test_ai_icons_are_matched_to_options_and_filtered(client, tenant_ctx, quiet)
 
 
 BEFORE_COURSE = {
+    **PHOTOS,
     "teaches": "Boxing",
     "audience": "Beginners",
     "outcome": "Fitter",
@@ -556,7 +564,7 @@ def test_the_model_cannot_start_a_section_before_its_turn(client, tenant_ctx, qu
     """The course draft needs the home facts and the payments answer; a
     review screen reached before them would wait for a draft that never
     fires (seen in e2e: teaches → outcome → offers → course_topic)."""
-    _set_answers(tenant_ctx, {"teaches": "Pottery", "outcome": "Less back pain"})
+    _set_answers(tenant_ctx, {**PHOTOS, "teaches": "Pottery", "outcome": "Less back pain"})
     quiet.reply = interview.InterviewTurn(
         facts=[{"field": "offers", "value": "Digital Courses"}],
         ack="Ok.",
@@ -925,7 +933,7 @@ def test_when_the_ai_fails_nothing_is_applied(client, tenant_ctx, quiet):
     quiet.error = core_ai.AiError("down")
     response = client.post(IMPORT_URL, {"text": BIO}, format="json")
     assert response.status_code == 503 and response.json()["detail"] == "ai_unavailable"
-    assert _answers(tenant_ctx) == {}
+    assert _answers(tenant_ctx) == PHOTOS
     assert TenantConfig.objects.first().setup_flow["interview"]["turns"] == []
 
 

@@ -155,6 +155,7 @@ def complete(request):
 
     elif category == "photo":
         from apps.core.storage import generate_presigned_download_url
+        from apps.media import own_photos
         from apps.media.models import Photo
 
         photo = Photo.objects.create(
@@ -163,6 +164,7 @@ def complete(request):
             content_type=data.get("content_type", ""),
             file_size=data.get("file_size", 0),
         )
+        own_photos.enqueue_upload(photo)
         signed_url = generate_presigned_download_url(s3_key, expiry=86400 * 7)
         return Response(
             {

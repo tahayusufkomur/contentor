@@ -155,17 +155,26 @@ def _request(
     allow_404: bool = False,
     headers: dict | None = None,
     read_timeout: float | None = None,
+    files: dict | None = None,
+    data: dict | None = None,
 ):
     """One upstream call with a single retry. Returns the parsed body, or None
-    for an allowed 404. Raises CuratedImageError for everything else."""
+    for an allowed 404. Raises CuratedImageError for everything else. With
+    ``files`` the body is multipart (``data`` its plain fields), not JSON."""
     if not available():
         raise CuratedImageError("the photo library is not configured")
     timeout = (_timeout()[0], read_timeout) if read_timeout else _timeout()
+    base = {"X-API-Key": settings.CURATED_IMAGE_API_KEY} if files else _headers()  # requests sets the multipart type
     last_error: Exception | None = None
     for _attempt in (1, 2):
         try:
             response = requests.request(
-                method, _url(path), json=json_body, headers={**_headers(), **(headers or {})}, timeout=timeout
+                method,
+                _url(path),
+                json=json_body,
+                headers={**base, **(headers or {})},
+                timeout=timeout,
+                **({"files": files, "data": data or {}} if files else {}),
             )
         except requests.ReadTimeout as exc:
             # The service took the request and is being slow. A second attempt
@@ -509,3 +518,108 @@ def generation(job_id: str, *, wait: int = 0) -> GenerationJob | None:
     path = f"/v1/generation-requests/{job_id}" + (f"?wait={wait}" if wait else "")
     body = _request("GET", path, allow_404=True, read_timeout=wait + 10 if wait else None)
     return None if body is None else _job_from_payload(body)
+
+
+# ── the coach's own photos: one private space per tenant ─────────────────────
+#
+# The service describes and indexes an uploaded image the way it does its own
+# catalog (minutes to hours), and only a search that names the tenant's space
+# finds it. Contentor keeps the bytes it renders in the tenant's own storage
+# (apps.media.own_photos); the service holds a copy to search.
+
+OWN_IN_FLIGHT = frozenset({"uploading", "indexing"})
+OWN_UPLOAD_TIMEOUT = 60  # the service stores three renditions before it answers
+
+
+@dataclass(frozen=True)
+class OwnUpload:
+    """One of the coach's photos in the service's private collection.
+    ``status``: uploading | indexing (being described) | ready | failed."""
+
+    upload_id: str
+    status: str
+    title: str = ""
+    description: str = ""
+    failure: str = ""
+
+
+def _own_upload(data: dict) -> OwnUpload:
+    if not data.get("id") or not data.get("status"):
+        raise CuratedImageError(UNAVAILABLE)
+    image = data.get("image") or {}
+    return OwnUpload(
+        upload_id=str(data["id"]),
+        status=str(data["status"]),
+        title=str(image.get("title") or "")[:200],
+        description=str(image.get("description") or "")[:300],
+        failure=str(data.get("failure") or "")[:300],
+    )
+
+
+def private_upload(body: bytes, filename: str, content_type: str, *, space: str, tags=()) -> OwnUpload:
+    """Hand one of the coach's photos to the service to describe and index in
+    ``space``. The same bytes again answer the upload already there."""
+    if is_fake():
+        from . import fake
+
+        return fake.private_upload(body, filename, space=space, tags=tags)
+    labels = ",".join(t.replace(",", " ").strip()[:80] for t in tags if t and len(t.strip()) >= 2)
+    answer = _request(
+        "POST",
+        "/v1/private/images",
+        files={"file": (filename, body, content_type)},
+        data={"space": space, **({"tags": labels} if labels else {})},
+        read_timeout=OWN_UPLOAD_TIMEOUT,
+    )
+    return _own_upload((answer or {}).get("data") or {})
+
+
+def private_status(upload_id: str) -> OwnUpload | None:
+    """Where an upload stands (with what the service wrote about it once it is
+    ready), or None when the service no longer has it."""
+    if is_fake():
+        from . import fake
+
+        return fake.private_status(upload_id)
+    answer = _request("GET", f"/v1/private/images/{upload_id}", allow_404=True)
+    return None if answer is None else _own_upload(answer.get("data") or {})
+
+
+def private_search(
+    query: str = "", *, space: str, orientation: str | None = None, per_page: int = MAX_PER_PAGE
+) -> list[tuple[str, RemoteImage]]:
+    """The coach's own ready photos that match ``query``, best first, as
+    (upload id, image). An empty query lists the newest. Never cached: a photo
+    that just became ready should be found on the next search."""
+    query = " ".join((query or "").split())[:2000]
+    per_page = max(1, min(per_page, MAX_PER_PAGE))
+    if is_fake():
+        from . import fake
+
+        return fake.private_search(query, space=space, orientation=orientation, per_page=per_page)
+    body = _request(
+        "POST",
+        "/v1/images/search",
+        json_body={
+            "scope": "private",
+            "space": space,
+            **({"query": query} if query else {}),
+            **({"filters": {"orientation": orientation}} if orientation in ORIENTATIONS else {}),
+            "per_page": per_page,
+        },
+    )
+    found = []
+    for item in (body or {}).get("data") or []:
+        if item.get("upload_id"):
+            found.append((str(item["upload_id"]), _image_from_payload(item)))
+    return found
+
+
+def private_delete(upload_id: str) -> None:
+    """Remove a photo and its description from the service for good. An upload
+    it no longer has counts as removed."""
+    if is_fake():
+        from . import fake
+
+        return fake.private_delete(upload_id)
+    _request("DELETE", f"/v1/private/images/{upload_id}", allow_404=True)

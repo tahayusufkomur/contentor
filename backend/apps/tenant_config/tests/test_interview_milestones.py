@@ -17,6 +17,7 @@ pytestmark = pytest.mark.django_db
 
 HOME = {
     "teaches": "Yoga",
+    "photos": "stock",  # the home page waits for the photos question
     "audience": "Desk workers",
     "outcome": "No back pain",
     "offers": ["course"],

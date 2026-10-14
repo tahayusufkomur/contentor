@@ -13,6 +13,15 @@ class Photo(models.Model):
     width = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
     tags = models.ManyToManyField("tags.Tag", blank=True, related_name="photos")
+    # A photo the coach uploaded herself (apps.media.own_photos): where it stands
+    # on its way into her private search index. "" = not one of hers (a catalog
+    # copy, a logo), "pending" = uploaded, not yet optimized, "queued" =
+    # optimized, waiting to be sent, "indexing" = sent and being described,
+    # "ready" = findable by what it shows, "failed" = left out of the index
+    # (on her site all the same, found by its name).
+    index_status = models.CharField(max_length=12, blank=True, default="", db_index=True)
+    # Its upload id in the image service's private collection.
+    catalog_id = models.CharField(max_length=64, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

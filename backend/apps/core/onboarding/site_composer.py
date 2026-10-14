@@ -1477,8 +1477,23 @@ def _ranked(images, query: str, ctx, wanted: str | None = None, allow_wrong: boo
     return sorted(kept, key=lambda i: (rank[i.asset_id], -overlap(i)))
 
 
-def _find_photo(queries, aspect, used, ctx, pools=None, wanted=None):
-    """(RemoteImage, tenant Photo) for a slot: the best unused image of the
+def _own_photo(queries, aspect, taken, wanted):
+    """(RemoteImage, tenant Photo) from the coach's own photos for a slot, or
+    None when none that suits its shape is left. Hers are never dropped as off
+    topic, and one whose subject would sit under the slot's text only goes last."""
+    from apps.media import own_photos
+
+    mine = own_photos.search(queries[0], aspect=aspect, exclude=taken)
+    for image in curated_client.by_placement(mine, wanted):
+        photo = own_photos.photo_of(image.asset_id)
+        if photo is not None:
+            return image, photo
+    return None
+
+
+def _find_photo(queries, aspect, used, ctx, pools=None, wanted=None, own=False):
+    """(RemoteImage, tenant Photo) for a slot: with ``own``, one of the coach's
+    own photos that no slot shows yet; else the best unused image of the
     slot's orientation from the site's shared pool; the slot's own brief queries
     only when the pool has nothing left; a used image only when nothing else
     matches; (None, None) on failure. Never a photo of another discipline.
@@ -1492,6 +1507,8 @@ def _find_photo(queries, aspect, used, ctx, pools=None, wanted=None):
     pools = {} if pools is None else pools
     orientation = curated_client.orientation_of(aspect)
     taken = set(used)
+    if own and (mine := _own_photo(queries, aspect, taken, wanted)):
+        return mine
     only = curated_client.placement_filter(wanted)
     candidates = []
     for placement in dict.fromkeys((only, None)):
@@ -1543,6 +1560,13 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
     used = {a for key, ids in (plan.get("used_assets") or {}).items() if key != page_key for a in ids}
     placed = []
     pools = {}  # (orientation, placement) -> shared candidate pages for this page build
+    try:
+        from apps.media import own_photos
+
+        own = own_photos.preferred()  # her own photos first, the catalog for the slots they do not fill
+    except Exception:
+        logger.exception("own photos unavailable for %s", tenant.schema_name)
+        own = False
     for block, entry in zip(blocks, entries, strict=True):
         family = entry["family"]
         specs = sections.families()[family]["fields"]
@@ -1568,6 +1592,7 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
                     ctx,
                     pools,
                     wanted_placement(style_id, family, slot),
+                    own=own,
                 )
             except Exception:  # an image must never take the page down
                 logger.exception("composer image failed for %s %s/%s", tenant.schema_name, page_key, slot)
@@ -1576,7 +1601,11 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
                 target[field] = _empty_image()
                 continue
             placed.append(image.asset_id)
-            alt = (image.description or brief.get("subject") or "")[:200]
+            # A photo of hers that is not described yet gets no alt text here (the
+            # slot's brief describes a photo we imagined, not hers): the page
+            # reads its description once it has one (TenantConfigSerializer).
+            hers = image.asset_id.startswith("own:")
+            alt = (image.description or ("" if hers else brief.get("subject")) or "")[:200]
             target[field] = {"url": None, "photo_id": str(photo.pk), "alt": alt}
     return placed
 

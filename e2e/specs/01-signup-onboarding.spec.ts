@@ -79,6 +79,8 @@ test("signup lands in /setup and the interview ends in a published site", async 
   // The first payments tile is a paid one, so go-live offers the plan; the
   // spec takes the free way out instead of Stripe.
   const makeFree = guide.getByRole("button", { name: "Make it free and go live now" });
+  // The photos question: a screen of its own, with an upload and a way past it.
+  const stockPhotos = guide.getByRole("button", { name: "Choose photos for me", exact: true });
   // A look tapped opens as a page; "Keep this look" answers the question.
   const keepLook = page.getByRole("button", { name: "Keep this look" });
   // Story and training tiles are sentence starters: a tap opens the sentence
@@ -92,7 +94,7 @@ test("signup lands in /setup and the interview ends in a published site", async 
       return "I completed a 200-hour yoga teacher training in 2019.";
     return "Whatever you think fits best";
   };
-  const action = decide.or(looksGood).or(goLive).or(makeFree).or(tile).or(zone).or(place);
+  const action = decide.or(looksGood).or(goLive).or(makeFree).or(tile).or(zone).or(place).or(stockPhotos);
   for (let i = 0; i < 40; i++) {
     // Wait for the work in flight to finish, then for the next screen's controls.
     await busy.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
@@ -115,6 +117,21 @@ test("signup lands in /setup and the interview ends in a published site", async 
     if (await looksGood.isVisible()) {
       // Enabled once the draft is ready (it drafts in the background).
       await looksGood.click({ timeout: 300_000 });
+      continue;
+    }
+    if (await stockPhotos.isVisible()) {
+      // A photo of her own goes up, is made web-ready and counts for the shape
+      // it has; removed again, the photos are left to the guide, so the rest
+      // of the run builds the site it always has.
+      await guide.getByLabel("Add photos").setInputFiles("fixtures/own-photo.jpg");
+      const mine = guide.getByRole("list", { name: "Your photos" }).getByRole("listitem");
+      await expect(mine).toHaveCount(1);
+      await expect(mine.getByText("Added")).toBeVisible({ timeout: 60_000 });
+      await expect(guide.getByRole("button", { name: "Continue with my photo" })).toBeEnabled();
+      await expect(guide.getByLabel("What to bring").getByText("1 of 3 added")).toBeVisible();
+      await mine.getByRole("button", { name: /^Remove/ }).click();
+      await expect(mine).toHaveCount(0);
+      await stockPhotos.click();
       continue;
     }
     if (await decide.isVisible()) {

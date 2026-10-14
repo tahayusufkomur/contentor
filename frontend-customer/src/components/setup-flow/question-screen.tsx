@@ -33,7 +33,7 @@ import {
   DELEGATE_TEXT,
   SKIP,
   isReview,
-  type GuideCards,
+  type QuestionCards,
   type LookCards,
   type ReviewKind,
   type ScheduleMode,
@@ -80,7 +80,7 @@ export function QuestionScreen({
 }: {
   step: QuestionStep;
   /** Look cards (style, logo) or the draft to review, if it is one. */
-  cards?: GuideCards | null;
+  cards?: QuestionCards | null;
   brandName: string;
   /** The site's host, shown on the look preview's address bar. */
   host: string;

@@ -104,15 +104,29 @@ test("photo upload round-trips through MinIO and presigned GET serves it", async
     `signed_url missing from photo detail: ${JSON.stringify(detail)}`
   ).toBeTruthy();
 
-  // ── Step 5: Download via presigned GET and verify byte length ────────────────
-  const dlRes = await fetch(detail.signed_url);
+  // ── Step 5: The photo is made web-ready in the background ────────────────────
+  // An uploaded photo is re-encoded as AVIF in place (apps.media.own_photos):
+  // the same key and the same signed URL then serve the lighter file.
+  await expect
+    .poll(async () => (await (await api.get(`${TENANT}/api/v1/photos/${photoId}/`)).json()).index_status, {
+      message: "the photo never left 'pending': is the Celery worker running?",
+      timeout: 60_000,
+    })
+    .not.toBe("pending");
+  const ready = await (await api.get(`${TENANT}/api/v1/photos/${photoId}/`)).json();
+  expect(ready.content_type).toBe("image/avif");
+  expect(ready.width).toBe(1);
+  expect(ready.height).toBe(1);
+
+  // ── Step 6: Download via presigned GET: the stored file is the AVIF ──────────
+  const dlRes = await fetch(ready.signed_url);
   expect(
     dlRes.ok,
-    `presigned download GET failed: ${dlRes.status} ${dlRes.statusText} url=${detail.signed_url}`
+    `presigned download GET failed: ${dlRes.status} ${dlRes.statusText} url=${ready.signed_url}`
   ).toBeTruthy();
-
+  expect(dlRes.headers.get("content-type")).toBe("image/avif");
   const downloaded = await dlRes.arrayBuffer();
-  expect(downloaded.byteLength).toBe(png.byteLength);
+  expect(downloaded.byteLength).toBe(ready.file_size);
 
   await coach.close();
 });

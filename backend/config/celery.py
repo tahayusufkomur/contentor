@@ -30,6 +30,10 @@ app.conf.beat_schedule = {
         "task": "apps.email_campaigns.tasks.dispatch_due_email_campaigns",
         "schedule": crontab(minute="*"),
     },
+    "sweep-own-photos": {
+        "task": "apps.core.tasks.sweep_own_photos",
+        "schedule": crontab(minute="*/15"),
+    },
     "purge-ai-transcripts": {
         "task": "apps.core.tasks.purge_ai_transcripts",
         "schedule": crontab(hour="4", minute="20"),

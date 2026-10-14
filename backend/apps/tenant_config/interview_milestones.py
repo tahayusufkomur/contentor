@@ -26,7 +26,8 @@ from .models import TenantConfig
 logger = logging.getLogger(__name__)
 
 PAGE_NEEDS = {
-    "home": ("teaches", "audience", "outcome", "offers", "pitch"),
+    # "photos": the page is built with her own photos, so it waits for them.
+    "home": ("teaches", "photos", "audience", "outcome", "offers", "pitch"),
     "about": ("teaches", "story", "credentials", "tone"),
     "contact": ("contact", "location"),
     "faq": (
@@ -587,13 +588,32 @@ def _look_photos(tenant, answers: dict) -> list[str]:
     """Photos of what the coach teaches for the look previews (a boxing
     coach sees boxing, not the yoga sample photos). The web rendition, the
     one the real site renders: the previews show a full-width hero, where the
-    640 px thumbnail looked soft. Cached for an hour."""
+    640 px thumbnail looked soft. The catalog's are cached for an hour."""
+    subject = brief.subject_of(answers)
+    if tenant is None:
+        return []
+    # Her own wide photos first: the looks are previewed with the site's real pictures.
+    own = _own_look_photos(answers, subject)
+    if len(own) >= LOOK_PHOTOS or not subject:
+        return own[:LOOK_PHOTOS]
+    return [*own, *_catalog_look_photos(tenant, answers, subject)][:LOOK_PHOTOS]
+
+
+def _own_look_photos(answers: dict, subject: str) -> list[str]:
+    from apps.media import own_photos
+
+    if answers.get("photos") != brief.OWN_PHOTOS:
+        return []
+    wide = [
+        i for i in own_photos.search(subject, aspect="16:9", limit=LOOK_PHOTOS * 2) if (i.width or 0) > (i.height or 0)
+    ]
+    return [i.web_url for i in wide][:LOOK_PHOTOS]
+
+
+def _catalog_look_photos(tenant, answers: dict, subject: str) -> list[str]:
     from apps.core.curated_images import client as curated_client
     from apps.core.onboarding.ai_curate import allowed_disciplines, on_topic_first
 
-    subject = brief.subject_of(answers)
-    if tenant is None or not subject:
-        return []
     key = f"setup:look-photos:v2:{tenant.schema_name}:{subject}"
     photos = cache.get(key)
     if photos is None:
@@ -910,7 +930,81 @@ def calendar_cards() -> dict:
     }
 
 
+# What the photos question asks for, in the shapes the site's sections crop to.
+PHOTO_SHOTS = {
+    "portrait": (
+        "Upright",
+        "4:5",
+        "Most of your site: the opening photo, your story, the photo wall.",
+        "You teaching or practising, a portrait where we see your face, your students, your space.",
+    ),
+    "landscape": (
+        "Wide",
+        "16:9",
+        "Banners between sections, and the covers of your courses and classes.",
+        "A wide view of a class or your space, with room around the subject.",
+    ),
+    "square": ("Square", "1:1", "Small accents beside the opening photo.", "A detail: hands, tools, a close-up."),
+}
+MAX_OWN_PHOTOS = 40
+
+
+def photo_guide() -> list[dict]:
+    """How many photos of each shape a home page shows, counted from the
+    section recipes (so it stays true when they change), with what each shape
+    is used for. The most used shape first."""
+    from apps.core.curated_images.client import orientation_of
+
+    from . import sections
+
+    counts = dict.fromkeys(PHOTO_SHOTS, 0)
+    for entry in sections.manifest().get("recipes", {}).get("home", ()):
+        family = entry.split(":")[0]
+        fields = (sections.families().get(family) or {}).get("fields") or {}
+        slots = [(n, s.get("aspect", "1:1"), 1) for n, s in fields.items() if s.get("type") == "image"]
+        slots += [
+            (n, sub.get("aspect", "1:1"), int(s.get("max") or 1))
+            for n, s in fields.items()
+            if s.get("type") == "items"
+            for sub in s["fields"].values()
+            if sub.get("type") == "image"
+        ]
+        if family == "hero":
+            slots = slots[:2]  # most looks open with one or two photos
+        for _name, aspect, many in slots:
+            counts[orientation_of(aspect)] += many
+    return [
+        {"shape": shape, "label": label, "aspect": aspect, "count": counts[shape], "use": use, "shoot": shoot}
+        for shape, (label, aspect, use, shoot) in sorted(PHOTO_SHOTS.items(), key=lambda kv: -counts[kv[0]])
+    ]
+
+
+def photo_cards() -> dict:
+    """The photos question: what to bring, and what she has uploaded so far."""
+    from apps.core.storage import generate_presigned_download_url
+    from apps.media import own_photos
+
+    return {
+        "kind": "photos",
+        "guide": photo_guide(),
+        "max": MAX_OWN_PHOTOS,
+        "photos": [
+            {
+                "id": str(p.pk),
+                "url": generate_presigned_download_url(p.s3_key),
+                "title": p.title,
+                "width": p.width,
+                "height": p.height,
+                "status": p.index_status,
+            }
+            for p in own_photos.own_photos().order_by("created_at")[:MAX_OWN_PHOTOS]
+        ],
+    }
+
+
 def cards_for(tenant, answers: dict, field_id: str | None) -> dict | None:
+    if field_id == "photos":
+        return photo_cards()
     if field_id == "site_style":
         return style_cards(answers, tenant)
     if field_id == "calendar_view":
@@ -973,6 +1067,14 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         if value not in ("ok", brief.DELEGATE):
             raise ChoiceError("invalid_value")
         answers[field_id] = "approved"
+        return
+    if field_id == "photos":
+        from apps.media import own_photos
+
+        # "own" only once a photo of hers is there; anything else leaves the photos to the guide.
+        if value == brief.OWN_PHOTOS and not own_photos.has_any():
+            raise ChoiceError("no_photos")
+        answers["photos"] = brief.OWN_PHOTOS if value == brief.OWN_PHOTOS else brief.STOCK_PHOTOS
         return
     if value == brief.DELEGATE:
         if not brief.delegate(answers, field_id):

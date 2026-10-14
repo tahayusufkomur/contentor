@@ -163,6 +163,7 @@ GUIDE_KEYS = (
     "prefill_text",
     "prefill_options",
     "timezone",
+    "photos",
 )
 REVIEW_KINDS = ("course", "event")
 REDRAFT_ACK = "On it. I'm redrafting it with your changes; it takes about a minute."
@@ -198,6 +199,7 @@ def guide_for(
             "prefill_text": None,
             "prefill_options": [],
             "timezone": False,
+            "photos": False,
         }
     # Fixed lists (offers, payments, memberships, the schedule) are what the answer is parsed
     # against; hinted fields keep their pre-written options so each hint matches its tile.
@@ -244,6 +246,8 @@ def guide_for(
         "prefill_options": brief.access_labels(answers or {}, field.group) if field.kind == "access" else [],
         # The answer is a time zone, picked from the browser's list.
         "timezone": field.kind == "timezone",
+        # The screen takes her own photos (uploaded there) or leaves them to the guide.
+        "photos": field.kind == "photos",
     }
 
 
@@ -795,7 +799,7 @@ def interview_state(tenant, flow: dict) -> dict:
     # Fresh cards for look questions already behind the coach, so going back
     # shows them again (logo previews are presigned: never stored).
     asked = {t.get("field") for t in turns if t.get("role") == "guide"} - {guide["field"]}
-    looks = ("site_style", "site_logo", "calendar_view", *milestones.REVIEW_FIELDS)
+    looks = ("site_style", "site_logo", "calendar_view", "photos", *milestones.REVIEW_FIELDS)
     cards = {f: milestones.cards_for(tenant, answers, f) for f in looks if f in asked}
     # Membership prices and the address as she set them last, also on a question gone back to.
     priced = membership_prices("memberships", answers)

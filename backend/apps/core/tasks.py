@@ -519,6 +519,77 @@ def interview_draft_task(tenant_id, kind, prompt, keep_cover=False):
         interview_milestones.run_draft(tenant, kind, prompt, keep_cover=keep_cover)
 
 
+# How long after a pass the next one looks, while a coach's photos are still
+# being described: quick at first (she may be watching), then every ten minutes.
+OWN_PHOTO_SYNC_DELAYS = (20, 40, 60, 120, 300, 600)
+
+
+def _own_photo_sync_later(tenant, attempt=0):
+    """Queue the tenant's next sync pass, unless one is already on its way."""
+    from django.core.cache import cache
+
+    delay = OWN_PHOTO_SYNC_DELAYS[min(attempt, len(OWN_PHOTO_SYNC_DELAYS) - 1)]
+    if cache.add(f"own-photos:sync:{tenant.schema_name}", 1, delay + 30):
+        sync_own_photos.apply_async((tenant.id, attempt), countdown=delay)
+
+
+@shared_task
+def process_own_photo(tenant_id, photo_id):
+    """A photo the coach just uploaded: optimized for the web in place, then
+    handed to the image service to describe and index (apps.media.own_photos)."""
+    from apps.core.models import Tenant
+    from apps.media import own_photos
+    from apps.media.models import Photo
+
+    tenant = Tenant.objects.filter(id=tenant_id).first()
+    if tenant is None:
+        return
+    with tenant_context(tenant):
+        photo = Photo.objects.filter(pk=photo_id).first()
+        if photo is None:
+            return
+        own_photos.process(photo)
+    _own_photo_sync_later(tenant)
+
+
+@shared_task
+def sync_own_photos(tenant_id, attempt=0):
+    """Ask the image service how the tenant's photos are doing, and again
+    later while any is still on its way."""
+    from django.core.cache import cache
+
+    from apps.core.models import Tenant
+    from apps.media import own_photos
+
+    tenant = Tenant.objects.filter(id=tenant_id).first()
+    if tenant is None:
+        return
+    cache.delete(f"own-photos:sync:{tenant.schema_name}")
+    with tenant_context(tenant):
+        waiting = own_photos.sync()
+    if waiting:
+        _own_photo_sync_later(tenant, attempt + 1)
+
+
+@shared_task
+def sweep_own_photos():
+    """Every tenant with photos still on their way gets a sync pass: what
+    restarts the chain after a worker restart or a long outage of the service."""
+    from apps.core.models import Tenant
+    from apps.media import own_photos
+    from apps.media.models import Photo
+
+    for tenant in Tenant.objects.exclude(schema_name="public"):
+        try:
+            with tenant_context(tenant):
+                waiting = Photo.objects.filter(index_status__in=own_photos.IN_FLIGHT).exists()
+        except Exception:
+            logger.exception("own photo sweep skipped %s", tenant.schema_name)
+            continue
+        if waiting:
+            _own_photo_sync_later(tenant, len(OWN_PHOTO_SYNC_DELAYS))
+
+
 AI_STARTER_POST_TIMEOUT_SECONDS = 90
 
 

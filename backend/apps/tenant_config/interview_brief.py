@@ -24,7 +24,7 @@ TEXT_MAX = 500
 # the logo, the calendar layout, and the review screens of the first course and class.
 # "address" is asked like a card: by code, in order, and never filled by the
 # model (a place she mentioned in passing is not the address of her class).
-CARD_KINDS = ("style", "logo", "calendar", "course", "event", "address")
+CARD_KINDS = ("style", "logo", "calendar", "course", "event", "address", "photos")
 # Fixed answer lists the coach's words are parsed against; the model phrases
 # the question to fit them and never rewrites them.
 FIXED_KINDS = (
@@ -710,6 +710,16 @@ FIELDS: tuple[Field, ...] = (
         multi=True,
         custom=True,
     ),
+    # Asked early: her photos are described in the background while she answers
+    # the rest, and the home page is not built until she has said yes or no.
+    Field(
+        "photos",
+        "Their own photos",
+        "Do you have photos of your own for your site?",
+        kind="photos",  # the screen takes the uploads; the answer is "own" or "stock"
+        why="Your own photos make the site yours. Without them I pick photos that fit what you teach."
+        " Either way you can swap any photo later.",
+    ),
     Field(
         "audience",
         "Who they teach",
@@ -1068,6 +1078,7 @@ _NOT_FACTS = {
     "pitch",
     "site_style",
     "site_logo",
+    "photos",
     "course_review",
     "event_review",
     "onsite_review",
@@ -1516,9 +1527,16 @@ def migrate_legacy(answers: dict) -> dict:
     return out
 
 
+OWN_PHOTOS, STOCK_PHOTOS = "own", "stock"
+
+
 def answers_of(tenant) -> dict:
     state = tenant.wizard_state or {}
     answers = dict(state.get("answers") or {})
+    # A site planned before the photos question existed keeps the photos it has:
+    # the question is never put to a coach whose pages are already built.
+    if "photos" not in answers and state.get("site_plan"):
+        answers["photos"] = STOCK_PHOTOS
     return answers if state.get("flow") == "interview" else migrate_legacy(answers)
 
 

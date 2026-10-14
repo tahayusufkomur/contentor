@@ -247,6 +247,22 @@ def _no_real_provisioning(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def photo_jobs(monkeypatch):
+    """A photo upload enqueues its optimize-and-index run on commit
+    (apps.media.own_photos). Same reasoning as _no_real_provisioning: a real
+    .delay() would hand the dev Celery worker a photo id from the test
+    database. Yields the two mocks so a test can assert what was queued."""
+    from unittest import mock
+
+    from apps.core import tasks
+
+    process, later = mock.Mock(name="process_own_photo.delay"), mock.Mock(name="sync_own_photos.apply_async")
+    monkeypatch.setattr(tasks.process_own_photo, "delay", process)
+    monkeypatch.setattr(tasks.sync_own_photos, "apply_async", later)
+    return process, later
+
+
+@pytest.fixture(autouse=True)
 def _curated_mirror_off(settings):
     """The dev container exports CURATED_LOGO_SYNC_DIR (repo bind mount) — force
     the CuratedLogo mirror OFF for every test so suites never write into the

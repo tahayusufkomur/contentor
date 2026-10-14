@@ -25,6 +25,7 @@ import {
   stageIndex,
 } from "@/lib/interview";
 import {
+  isPhotos,
   isReview,
   setupFlowApi,
   turnErrorText,
@@ -43,6 +44,7 @@ import { GoLivePanel } from "./golive-panel";
 import { Celebration } from "./launch";
 import { mockSetupFlowApi } from "./mock";
 import type { BuilderData } from "./builder-preview";
+import { PhotosScreen } from "./photos-screen";
 import { QuestionScreen, type StepDraft } from "./question-screen";
 import { SetupMenu } from "./setup-menu";
 import { SetupSkeleton } from "./skeleton";
@@ -452,7 +454,10 @@ function Flow({
         // then the preview is built from the answers (covers offered early).
         review: steps.some((q) => q.field === reviewField) ? review : null,
         covers: review?.item?.covers ?? [],
-        photo: looks && !isReview(looks) ? looks.photos?.[0] : undefined,
+        photo:
+          looks && !isReview(looks) && !isPhotos(looks)
+            ? looks.photos?.[0]
+            : undefined,
         tiers: picked
           // The tiles, and any membership of her own she just named.
           .filter((l) => step.options.includes(l) || draft.custom?.includes(l))
@@ -466,6 +471,17 @@ function Flow({
           })),
       };
     }
+    // What the question shows beside its words: fresh from the last reply
+    // while it is the one being asked, else what the state keeps for it.
+    const stepCards = !step
+      ? null
+      : live
+        ? iv.guide.field === step.field
+          ? iv.guide.cards
+          : step.cards
+        : step.field
+          ? iv.cards?.[step.field]
+          : null;
     return (
       <div className="flex h-full flex-col">
         <header
@@ -599,19 +615,23 @@ function Flow({
           style={{ viewTransitionName: "sf-slide" }}
           className="min-h-0 flex-1 overflow-y-auto"
         >
-          {step && (
+          {step && isPhotos(stepCards) && (
+            <PhotosScreen
+              key={`${index}:${step.field}:${iv.turns.length}`}
+              step={step}
+              cards={stepCards}
+              live={live}
+              sending={sending}
+              onSend={(req) => void send(req)}
+              onNext={goNext}
+              dir={dir}
+            />
+          )}
+          {step && !isPhotos(stepCards) && (
             <QuestionScreen
               key={`${index}:${step.field}:${iv.turns.length}`}
               step={step}
-              cards={
-                live
-                  ? iv.guide.field === step.field
-                    ? iv.guide.cards
-                    : step.cards
-                  : step.field
-                    ? iv.cards?.[step.field]
-                    : null
-              }
+              cards={stepCards}
               brandName={brandName}
               host={host}
               live={live}

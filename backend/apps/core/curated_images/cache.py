@@ -127,6 +127,14 @@ def cache_remote_image(image: RemoteImage, *, logo: bool = False):
     from apps.core.platform.uploads import _store_object
     from apps.media.models import Photo
 
+    # One of the coach's own photos is already in her storage.
+    if image.asset_id.startswith("own:"):
+        from apps.media import own_photos
+
+        mine = own_photos.photo_of(image.asset_id)
+        if mine is None:
+            raise CuratedImageError(FAILED)
+        return mine
     key = tenant_key_for(image.asset_id)
     existing = Photo.objects.filter(s3_key=key).first()
     if existing is not None:
@@ -181,10 +189,19 @@ def auto_cover(*queries: str, keep=None):
     titles the catalog has no words for don't all get the same fallback photo.
     ``keep`` filters results (e.g. no photo of another discipline).
     """
+    from apps.media import own_photos
     from apps.media.models import Photo
 
     from . import client
 
+    # A coach who brought her own photos gets one of those first.
+    try:
+        mine = own_photos.cover(*queries)
+    except Exception:  # never the reason content has no cover
+        logger.exception("own cover lookup failed")
+        mine = None
+    if mine is not None:
+        return mine
     try:
         results = []
         for query in dict.fromkeys((*queries, "")):  # de-duplicated, in order

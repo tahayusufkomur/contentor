@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -5,6 +6,7 @@ from rest_framework.response import Response
 from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
 from apps.core.permissions import IsCoachOrOwner
 
+from . import own_photos
 from .models import Photo
 from .serializers import PhotoCreateSerializer, PhotoSerializer
 
@@ -16,7 +18,10 @@ def photo_list_create(request):
         qs = Photo.objects.all()
         search = request.query_params.get("search", "").strip()
         if search:
-            qs = qs.filter(title__icontains=search)
+            # The description too: an indexed photo is found by what it shows.
+            qs = qs.filter(Q(title__icontains=search) | Q(alt_text__icontains=search))
+        if request.query_params.get("own") == "1":
+            qs = qs.exclude(index_status="")
         qs = apply_tag_filter(qs, request)
         qs = apply_ordering(qs, request, ["title", "created_at", "file_size"])
         paginator = StandardPagination()
@@ -27,6 +32,7 @@ def photo_list_create(request):
     serializer = PhotoCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     photo = serializer.save()
+    own_photos.enqueue_upload(photo)
     return Response(PhotoSerializer(photo).data, status=status.HTTP_201_CREATED)
 
 
@@ -47,5 +53,6 @@ def photo_detail(request, pk):
         serializer.save()
         return Response(PhotoSerializer(photo).data)
 
+    own_photos.forget(photo)
     photo.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)

@@ -128,7 +128,7 @@ def test_required_follows_offers_and_selling():
 
 def test_missing_skips_answered_and_delegated_in_priority_order():
     answers = {"teaches": "Pottery", "delegated": ["audience"]}
-    assert [f.id for f in brief.missing(answers)][:2] == ["outcome", "offers"]
+    assert [f.id for f in brief.missing(answers)][:3] == ["photos", "outcome", "offers"]
 
 
 def test_delegate_then_answer_clears_delegation():

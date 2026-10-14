@@ -24,9 +24,10 @@ class PhotoSerializer(serializers.ModelSerializer):
             "height",
             "signed_url",
             "tags",
+            "index_status",
             "created_at",
         ]
-        read_only_fields = ["id", "signed_url", "created_at"]
+        read_only_fields = ["id", "signed_url", "index_status", "created_at"]
 
     def get_signed_url(self, obj):
         if not obj.s3_key:

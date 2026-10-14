@@ -1,4 +1,5 @@
 import { clientFetch } from "@/lib/api-client";
+import type { Photo } from "@/types/photo";
 
 /** The one way a photo or a video gets into the coach's media library:
  *  straight from the browser to storage, then registered with the API. */
@@ -146,15 +147,39 @@ async function putWhole(
   return s3_key;
 }
 
-async function uploadPhoto(file: File, transfer: Transfer): Promise<void> {
-  const s3_key = await putWhole(file, "photo", transfer);
-  await clientFetch("/api/v1/photos/", {
+/** A photo file's size in pixels, upright (the browser applies the camera's
+ *  rotation); null when it cannot be read. */
+export async function imageSize(
+  file: Blob,
+): Promise<{ width: number; height: number } | null> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const size = { width: bitmap.width, height: bitmap.height };
+    bitmap.close();
+    return size;
+  } catch {
+    return null;
+  }
+}
+
+/** Upload one photo and register it; resolves with its library row. The
+ *  server then makes it web-ready (AVIF) and has it described, on its own. */
+export async function uploadPhoto(
+  file: File,
+  transfer: Transfer,
+): Promise<Photo> {
+  const [s3_key, size] = await Promise.all([
+    putWhole(file, "photo", transfer),
+    imageSize(file),
+  ]);
+  return clientFetch<Photo>("/api/v1/photos/", {
     method: "POST",
     body: JSON.stringify({
       s3_key,
       title: titleFromFilename(file.name),
       content_type: contentType(file),
       file_size: file.size,
+      ...(size ?? {}),
     }),
   });
 }
@@ -276,7 +301,7 @@ async function uploadVideo(file: File, transfer: Transfer): Promise<void> {
  *  image nor a video, and with UploadCancelled when `signal` aborts. */
 export function uploadMedia(file: File, transfer: Transfer): Promise<void> {
   const kind = mediaKind(file);
-  if (kind === "photo") return uploadPhoto(file, transfer);
+  if (kind === "photo") return uploadPhoto(file, transfer).then(() => {});
   if (kind === "video") return uploadVideo(file, transfer);
   return Promise.reject(new Error("Only photos and videos go here"));
 }

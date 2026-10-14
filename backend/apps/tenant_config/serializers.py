@@ -339,12 +339,14 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         video_ids: set[str] = set()
         _collect_asset_ids(node, photo_ids, video_ids)
 
-        photo_map = {}
+        photo_map, alts = {}, {}
         if photo_ids:
             from apps.media.models import Photo
 
             for photo in Photo.objects.filter(pk__in=photo_ids):
                 photo_map[str(photo.pk)] = photo.s3_key
+                if photo.alt_text:
+                    alts[str(photo.pk)] = photo.alt_text
 
         video_map = {}
         if video_ids:
@@ -353,7 +355,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             for video in Video.objects.filter(pk__in=video_ids):
                 video_map[str(video.pk)] = video.s3_key
 
-        _sign_assets(node, photo_map, video_map)
+        _sign_assets(node, photo_map, video_map, alts)
 
 
 def _clean_block(raw):
@@ -400,12 +402,17 @@ def _collect_asset_ids(node, photo_ids, video_ids):
             _collect_asset_ids(item, photo_ids, video_ids)
 
 
-def _sign_assets(node, photo_map, video_map):
+def _sign_assets(node, photo_map, video_map, alts=None):
+    """``alts`` (photo id -> its description): an image placed without alt text
+    reads the photo's own, so a coach's photo that was described after it went
+    on a page is described there too."""
     if isinstance(node, dict):
         if "photo_id" in node:
             pid = node.get("photo_id")
             if pid and str(pid) in photo_map:
                 node["url"] = generate_presigned_download_url(photo_map[str(pid)])
+                if alts and "alt" in node and not node["alt"] and str(pid) in alts:
+                    node["alt"] = alts[str(pid)][:200]
             elif node.get("url"):
                 node["url"] = sign_if_s3_key(node["url"])
         if "video_id" in node:
@@ -415,10 +422,10 @@ def _sign_assets(node, photo_map, video_map):
             elif node.get("url"):
                 node["url"] = sign_if_s3_key(node["url"])
         for value in node.values():
-            _sign_assets(value, photo_map, video_map)
+            _sign_assets(value, photo_map, video_map, alts)
     elif isinstance(node, list):
         for item in node:
-            _sign_assets(item, photo_map, video_map)
+            _sign_assets(item, photo_map, video_map, alts)
 
 
 def _scrub_unsafe_urls(node):
