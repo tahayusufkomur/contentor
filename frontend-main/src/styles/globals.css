@@ -28,10 +28,6 @@
 /* ─────────────────────────────────────────────────────────
    Typography helpers — Geist, tight tracking (no serif)
    ───────────────────────────────────────────────────────── */
-.text-headline {
-  letter-spacing: -0.022em;
-  font-weight: 600;
-}
 .text-eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.16em;
@@ -58,95 +54,6 @@
   --tw-prose-th-borders: var(--border);
   --tw-prose-td-borders: var(--border);
 }
-.brand-gradient,
-.text-luminous {
-  background: linear-gradient(
-    135deg,
-    var(--marketing-accent) 0%,
-    var(--primary) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* ─────────────────────────────────────────────────────────
-   Surfaces — legacy "glass" names rebuilt as clean token cards
-   (kept so non-landing pages render in the house style)
-   ───────────────────────────────────────────────────────── */
-.glass,
-.glass-card {
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  box-shadow: 0 1px 2px 0 oklch(0 0 0 / 0.05);
-}
-.glass-strong {
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  box-shadow: 0 1px 3px 0 oklch(0 0 0 / 0.08);
-}
-.glass-pane {
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) + 4px);
-  box-shadow: 0 1px 2px 0 oklch(0 0 0 / 0.05);
-}
-
-/* ─────────────────────────────────────────────────────────
-   Ambient flourish — very subtle, marketing-accent only
-   ───────────────────────────────────────────────────────── */
-.aurora {
-  position: absolute;
-  inset: -10%;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse 60% 45% at 50% 0%,
-    var(--marketing-accent) 0%,
-    transparent 70%
-  );
-  filter: blur(90px);
-  opacity: 0.08;
-}
-.aurora-soft {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse 60% 50% at 50% 0%,
-    var(--marketing-accent) 0%,
-    transparent 65%
-  );
-  filter: blur(110px);
-  opacity: 0.05;
-}
-
-/* Grid + dot backdrops — token-driven, faint */
-.grid-fade {
-  background-image:
-    linear-gradient(
-      to right,
-      oklch(from var(--foreground) l c h / 0.04) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      oklch(from var(--foreground) l c h / 0.04) 1px,
-      transparent 1px
-    );
-  background-size: 56px 56px;
-  mask-image: radial-gradient(
-    ellipse 80% 60% at 50% 40%,
-    black 30%,
-    transparent 80%
-  );
-  -webkit-mask-image: radial-gradient(
-    ellipse 80% 60% at 50% 40%,
-    black 30%,
-    transparent 80%
-  );
-}
 
 /* ─────────────────────────────────────────────────────────
    Animations
@@ -164,10 +71,6 @@
 
 .reveal-fade-up {
   animation: reveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-/* Legacy alias — aurora no longer moves in the clean style */
-.animate-aurora {
-  animation: none;
 }
 
 /* Scroll reveal */
