@@ -3,6 +3,7 @@ import { AssistantChapter } from "@/components/landing/assistant-chapter";
 import { BuildChapter } from "@/components/landing/build-chapter";
 import { Hero } from "@/components/landing/hero";
 import { LooksChapter } from "@/components/landing/looks-chapter";
+import { StudentsChapter } from "@/components/landing/students-chapter";
 import { StudioChapter } from "@/components/landing/studio-chapter";
 import { LocalNav } from "@/components/shared/local-nav";
 import { PlatformFooter } from "@/components/shared/platform-footer";
@@ -28,6 +29,7 @@ export default async function HomePage() {
         <LooksChapter />
         <StudioChapter />
         <AssistantChapter />
+        <StudentsChapter />
       </main>
       <PlatformFooter />
     </div>
