@@ -1,0 +1,125 @@
+{
+  "tile-courses": {
+    "alt": "The Courses page of a coach's studio, listing her yoga courses"
+  },
+  "tile-live": {
+    "alt": "The Live page of the studio, with upcoming classes and a line to describe a new one"
+  },
+  "tile-messages": {
+    "alt": "The studio inbox, with the coach's mail folders and conversations"
+  },
+  "tile-community": {
+    "alt": "The community page of the studio, with students' posts and replies"
+  },
+  "tile-media": {
+    "alt": "The studio's media library: the coach's photos and videos in a grid"
+  },
+  "tile-blog": {
+    "alt": "The studio's blog page, with drafted and published posts"
+  },
+  "tile-logo": {
+    "alt": "Logo Studio over the coach's site, with logo ideas for her brand"
+  },
+  "tile-student-dashboard": {
+    "alt": "A student's dashboard on the coach's site, with her courses and progress"
+  },
+  "tile-live-class": {
+    "alt": "The student's live classes page, with a class live now and a Join button"
+  },
+  "look-journal": {
+    "alt": "The Quiet Journal look on a phone: the home page of Mara Lindqvist, a yoga teacher"
+  },
+  "look-kinetic": {
+    "alt": "The Kinetic Club look on a phone: the home page of Iron & Oak Strength"
+  },
+  "look-encore": {
+    "alt": "The Encore look on a phone: the home page of Theo Okafor, a music teacher"
+  },
+  "look-studiofloor": {
+    "alt": "The Studio Floor look on a phone: the home page of Saffron Belly Dance"
+  },
+  "look-tavola": {
+    "alt": "The Tavola look on a phone: the home page of The Weeknight Kitchen"
+  },
+  "look-primer": {
+    "alt": "The Primer look on a phone: the home page of Lucía Ferrer, a language tutor"
+  },
+  "look-dojo": {
+    "alt": "The Dojo look on a phone: the home page of Kenji Mori Karate"
+  },
+  "look-workshop": {
+    "alt": "The Workshop look on a phone: the home page of Studio Ochre, a painting teacher"
+  },
+  "look-atelier": {
+    "alt": "The Atelier look on a phone: the home page of Elif Aydın Makeup"
+  },
+  "look-sprout": {
+    "alt": "The Sprout look on a phone: the home page of Kind Mornings, a family coach"
+  },
+  "look-trail": {
+    "alt": "The Trail look on a phone: the home page of Ridge & Pine Guiding"
+  },
+  "look-nocturne": {
+    "alt": "The Nocturne look on a phone: the home page of Quiet Hours, a wellness coach"
+  },
+  "still-yoga": {
+    "pix4lessId": "ed7b587e-18e9-4fa7-9a7e-568835d2076c",
+    "alt": "In a bright, tranquil studio with rustic wooden floors and soft window light, a female yoga instructor kneels behind a seated female student, gently placing her hands on the student's shoulders to provide tactile posture adjustment. Two other female students sit in meditation poses on mats in the background, all wearing neutral athletic wear with hair tied in high buns.",
+    "license": "curated-api-standard"
+  },
+  "still-fitness": {
+    "pix4lessId": "38422158-8a08-4dd8-a10c-6563bc2ed58a",
+    "alt": "In a garage gym with an open bay door, a mature male coach guides a woman holding a barbell across her shoulders for squats. The woman wears a grey tank top and black leggings, listening intently as the coach points toward the bar. In the background outside the open garage door, another man runs along a forest trail in natural daylight.",
+    "license": "curated-api-standard"
+  },
+  "still-music": {
+    "pix4lessId": "b0dc9010-c20c-4bb5-82e8-9820aa698ef2",
+    "alt": "A smiling female music instructor in a blue denim shirt stands and leans forward to guide a young female student holding an electric bass guitar. The student, seated in a grey t-shirt, looks intently at the instrument while her teacher gestures toward the strings. In the background of the garage studio, an amplifier, music stand with sheet music, and guitar case are visible under soft natural daylight.",
+    "license": "curated-api-standard"
+  },
+  "still-dance": {
+    "pix4lessId": "89ce3d1e-e081-47e5-9624-4266f8534f57",
+    "alt": "A smiling dance teacher with curly brown hair wearing a mauve wrap top, matching hip scarf, and black leggings demonstrates an expressive hand gesture while speaking with a student in a sunlit dance studio with mirrors and a ballet barre.",
+    "license": "curated-api-standard"
+  },
+  "still-cooking": {
+    "pix4lessId": "29e6eeae-3265-44d8-a57a-91456080a1e8",
+    "alt": "An adult male chef wearing a black short-sleeved shirt and an olive green apron shaves fresh black truffle over a plated swirl of yellow pasta in a ceramic bowl using a wooden truffle slicer. Slices of truffle fall onto the pasta dish within a warm restaurant interior.",
+    "license": "curated-api-standard"
+  },
+  "still-language": {
+    "pix4lessId": "9bd1362a-78d7-4969-81cb-d7c7e46bde1a",
+    "alt": "A smiling female tutor in a blue sweater points to a passage in an open textbook while guiding an adult female student in a green cardigan who takes notes with a pen in a spiral notebook at a sunlit wooden table.",
+    "license": "curated-api-standard"
+  },
+  "still-martial-arts": {
+    "pix4lessId": "1a83568e-98b0-4a74-9a09-6f4392a20107",
+    "alt": "In a spacious, sunlit wooden training studio, a mature male instructor in a dark navy martial arts uniform stands holding a notebook and pen as he coaches an adult man and woman practicing footwork stepping drills in cream-white gi uniforms over circular floor markers, while other students sit watching in the background.",
+    "license": "curated-api-standard"
+  },
+  "still-crafts": {
+    "pix4lessId": "f63573df-a3c1-4c66-a8f2-f7cef7f10b4f",
+    "alt": "A woman wearing an olive green apron and an assistive orthotic brace on her right forearm sits at a wooden workbench in a pottery workshop, delicately carving botanical leaf textures into a damp clay vessel resting on a banding wheel turntable. Natural light streams from a multi-pane window illuminating the scene, with shelves of finished ceramics and pottery supplies visible in the background.",
+    "license": "curated-api-standard"
+  },
+  "still-beauty": {
+    "pix4lessId": "2ef8a13e-36b3-4fd8-ba54-3cbd90dea2ac",
+    "alt": "A female makeup artist wearing a navy blue shirt grooms a young woman's eyebrows using an eyebrow spoolie brush in a photo studio. The model sits facing forward in a grey crewneck top against a neutral background beside a large softbox light.",
+    "license": "curated-api-standard"
+  },
+  "still-family": {
+    "pix4lessId": "1ed2554c-44e8-450f-b180-2d2a65b1dd38",
+    "alt": "A smiling mother and her young daughter sit together in a cozy beige armchair, reading a tactile sensory picture book. The toddler, who wears a beige hearing aid or cochlear implant sound processor on her left ear and striped blue pajamas, gleefully touches a textured patch on the open page while seated in her mother's lap. The mother, wearing a cream cable-knit sweater, holds the book and smiles down warmly at her child in a softly lit bedroom setting.",
+    "license": "curated-api-standard"
+  },
+  "still-outdoors": {
+    "pix4lessId": "42b483c9-efac-49a2-a657-7f5911184f1f",
+    "alt": "A female hiker and a male hiker trek along a rocky mountain ridge path with towering alpine peaks in the background under clear skies.",
+    "license": "curated-api-standard"
+  },
+  "still-wellness": {
+    "pix4lessId": "44b228ba-d236-4f72-abfb-a84c3f0d2028",
+    "alt": "A woman sits cross-legged in a lotus meditation pose atop a round cushion on a woven rug over wooden flooring. Her eyes are closed in peaceful contemplation with hands rested in her lap, wearing a beige crewneck sweater and dark gray trousers in a serene room near a sunlit window.",
+    "license": "curated-api-standard"
+  }
+}
