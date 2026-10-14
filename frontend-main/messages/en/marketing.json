@@ -1,168 +1,187 @@
 {
+  "landingNav": {
+    "hero": "Overview",
+    "build": "Build",
+    "looks": "Looks",
+    "studio": "Studio",
+    "assistant": "Assistant",
+    "students": "Students",
+    "money": "Money",
+    "start": "Start",
+    "cta": "Start free"
+  },
   "hero": {
-    "badge": "Free to build — no credit card required",
-    "title1": "Your own course platform.",
-    "title2": "Your brand. Your money.",
-    "subtitle": "Courses, live classes, and payments under your own name — your students never see ours. Build your site free in minutes; selling starts on Starter, with payments straight to your Stripe account.",
-    "ctaPrimary": "Create your site free",
-    "ctaSecondary": "Explore live demos",
-    "trustNote": "Build your site and teach free classes on the free plan — no credit card. Selling and live classes start at $19.90/mo. You own your students, your content, and your revenue."
+    "title": "Teach under your own name.",
+    "lead": "Classes, live sessions, and a calm studio for your students—built around your craft, with your name on every screen.",
+    "cta": "Create your space",
+    "videoLabel": "A finished coach site in four looks across desktop and phone screens"
   },
-  "socialProof": {
-    "tagline": "Built for yoga instructors, fitness coaches, music teachers, dance academies, and every coach who teaches online",
-    "categories": {
-      "fitness": "Fitness",
-      "music": "Music",
-      "dance": "Dance",
-      "education": "Education",
-      "wellness": "Wellness"
+  "build": {
+    "eyebrow": "Getting started",
+    "title": "Say what you teach. We build the rest.",
+    "lead": "Answer a few plain questions about your work, choose a look that fits your voice, and watch your pages come together.",
+    "bands": {
+      "one": "Tell us what you teach and who comes to your classes.",
+      "two": "Pick a look from the gallery and preview it with your own words.",
+      "three": "Your home page, courses, and schedule compose in moments."
     }
   },
-  "stats": {
-    "earned": {
-      "value": "$19.90",
-      "label": "Per month for what costs $149+ on legacy platforms"
-    },
-    "students": {
-      "value": "100%",
-      "label": "Your brand — students never see Contentor"
-    },
-    "launch": {
-      "value": "5 min",
-      "label": "From signup to a live platform"
-    }
+  "looks": {
+    "eyebrow": "Editorial looks",
+    "title": "A site that looks like you.",
+    "lead": "Each look has its own typography, palette, and rhythm—from quiet yoga journals to bold strength clubs and warm kitchens.",
+    "galleryLabel": "Twelve looks across coaching niches",
+    "renderAlt": "Phone preview of a coach site in the {look} look"
   },
-  "features": {
-    "title": "Built for creators who mean business",
-    "subtitle": "From course creation to payments, live teaching to automation — everything under your brand.",
-    "illustrations": {
-      "progress": "Progress",
-      "lessonsCount": "{count} lessons",
-      "live": "LIVE",
-      "watchingCount": "{count} watching",
-      "automationStep3": "Send welcome offer"
-    },
-    "items": {
+  "studio": {
+    "eyebrow": "Coach studio",
+    "title": "Every tool, one calm place.",
+    "lead": "Run your courses, live sessions, inbox, community, media, blog, and brand from one quiet workspace.",
+    "tiles": {
       "courses": {
-        "title": "Courses that sell themselves",
-        "description": "Build rich, structured courses with modules, lessons, and video content that keep students engaged from start to finish.",
-        "points": {
-          "video": "Video lessons with progress tracking",
-          "modular": "Modular course structure",
-          "enrollment": "Student enrollment management",
-          "drip": "One-time prices or subscriptions"
-        }
+        "title": "Courses",
+        "text": "Organize modules, video lessons, and reading notes in a clear outline your students can follow at their pace."
       },
       "live": {
-        "title": "Live classes, chat, and recordings",
-        "description": "Run real-time sessions with your students. Teach, interact, and record — all from one place.",
-        "points": {
-          "webrtc": "WebRTC video conferencing",
-          "chat": "Live chat during sessions",
-          "recording": "Session recordings",
-          "scheduling": "Scheduling and reminders"
-        }
+        "title": "Live classes",
+        "text": "Schedule group sessions with built-in video, chat, and automatic reminders for everyone enrolled."
       },
-      "branding": {
-        "title": "100% your brand, zero Contentor branding",
-        "description": "Your platform, your identity. Fully white-label with your own domain, colors, and typography — students never see us.",
-        "points": {
-          "domain": "Custom domain support",
-          "colors": "Brand colors and typography",
-          "whitelabel": "White-label experience",
-          "mobile": "Mobile-ready PWA"
-        }
+      "messages": {
+        "title": "Messages",
+        "text": "Answer student questions and send announcements from a focused inbox without leaving your studio."
       },
-      "autopilot": {
-        "title": "Autopilot revenue",
-        "description": "Automate the repetitive tasks and earn steadily. From email campaigns to subscription billing, let the system work for you.",
-        "points": {
-          "email": "Email campaigns to your students",
-          "subscriptions": "Recurring subscription billing",
-          "stripe": "Payments straight to your Stripe",
-          "automation": "Student progress tracking"
-        }
+      "community": {
+        "title": "Community",
+        "text": "Host discussions, practice check-ins, and shared wins in a space that belongs to your students."
+      },
+      "media": {
+        "title": "Media library",
+        "text": "Upload videos, audio, and photographs once and reuse them across every lesson, page, and article."
+      },
+      "blog": {
+        "title": "Articles",
+        "text": "Draft and publish essays, practice notes, and recipes that bring new readers to your teaching."
+      },
+      "logo": {
+        "title": "Logo studio",
+        "text": "Shape a wordmark and icon that match your site's typography and palette in a few quiet steps."
       }
     }
   },
-  "foundingCreators": {
-    "eyebrow": "Founding creators",
-    "title": "Be one of our first 20 coaches",
-    "subtitle": "We're launching Contentor with a small group of founding creators — set up personally, one on one, by the founder.",
-    "perks": {
-      "concierge": {
-        "title": "We build your platform with you",
-        "description": "A 1-on-1 onboarding call where we set up your site, courses, and payments together — you bring the content, we do the rest."
+  "assistant": {
+    "eyebrow": "Studio assistant",
+    "title": "An assistant that drafts. You approve.",
+    "lead": "Describe a course, a class, or a page change in plain words. Review the draft card before anything touches your site.",
+    "bands": {
+      "one": "Describe the course you want to teach in a single sentence.",
+      "two": "A structured outline of modules and lessons appears for your review.",
+      "three": "Apply what fits, edit any line, or undo with one click."
+    }
+  },
+  "students": {
+    "eyebrow": "Student experience",
+    "title": "Your students, on every screen.",
+    "lead": "From a phone on the train to a laptop at home, your students step straight into their lessons and live rooms.",
+    "phoneLabel": "A student opening her course lesson and joining a live class on a phone",
+    "tiles": {
+      "dashboard": {
+        "title": "Personal dashboard",
+        "text": "Students pick up right where they left off, with their enrolled courses, progress, and upcoming sessions."
       },
-      "discount": {
-        "title": "50% off for 12 months",
-        "description": "Lock in founding pricing on Starter or Pro for your entire first year."
+      "live": {
+        "title": "Live class room",
+        "text": "One tap joins the video room with live chat and replays ready when the session wraps."
+      }
+    }
+  },
+  "money": {
+    "eyebrow": "Your business",
+    "title": "Then the money follows.",
+    "lead": "When your teaching has a home your students trust, selling courses and memberships feels natural.",
+    "tiles": {
+      "stripe": {
+        "title": "Stripe & memberships",
+        "text": "Sell individual courses or recurring memberships with checkout built right into your pages."
       },
-      "featured": {
-        "title": "Featured on this page",
-        "description": "Your school showcased here as a founding creator — free exposure to every visitor."
+      "payouts": {
+        "title": "Direct payouts",
+        "text": "Student payments go straight to your own Stripe account—we never hold your earnings."
+      },
+      "brand": {
+        "title": "Your name on the receipt",
+        "text": "Every checkout, email, and receipt carries your school's name and identity, never ours."
+      }
+    }
+  },
+  "start": {
+    "eyebrow": "Begin",
+    "title": "Open your studio when you are ready.",
+    "lead": "Start on the free plan with no time limit, or join our first group of founding coaches for hands-on setup.",
+    "founding": {
+      "eyebrow": "Founding creators",
+      "title": "Be one of our first 20 coaches",
+      "text": "We're launching Contentor with a small group of founding creators — set up personally, one on one, by the founder.",
+      "perks": {
+        "concierge": {
+          "title": "We build your platform with you",
+          "text": "A 1-on-1 onboarding call where we set up your site, courses, and payments together — you bring the content, we do the rest."
+        },
+        "discount": {
+          "title": "50% off for 12 months",
+          "text": "Lock in founding pricing on Starter or Pro for your entire first year."
+        },
+        "featured": {
+          "title": "Featured on this page",
+          "text": "Your school showcased here as a founding creator — free exposure to every visitor."
+        }
+      },
+      "cta": "Claim a founding spot",
+      "note": "Limited to 20 coaches. When they're gone, they're gone."
+    },
+    "pricing": {
+      "title": "Three plans, from first draft to full school",
+      "text": "Build your site and teach a small group free forever. Upgrade when you are ready to sell courses, host live classes, or connect a domain.",
+      "cta": "Compare all plans"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": {
+        "freePlan": {
+          "q": "Is there really a free plan?",
+          "a": "Yes! Our free plan is free forever — no credit card required. You get up to 10 students and 1 GB of storage: enough to build your site and teach free classes to a small group. Selling courses, live classes and payouts to your Stripe account need the Starter plan ($19.90/mo) — upgrade anytime as you grow."
+        },
+        "technical": {
+          "q": "Do I need technical skills?",
+          "a": "Not at all. If you can use social media, you can use Contentor. Everything is drag-and-drop with no coding required."
+        },
+        "customDomain": {
+          "q": "Can I use my own domain?",
+          "a": "Yes — on the Pro plan you can connect your own custom domain. And on every paid plan your platform runs fully under your brand: your students never see Contentor."
+        },
+        "payments": {
+          "q": "How do payments work?",
+          "a": "Selling starts on the Starter plan. We integrate directly with Stripe: payments go straight to your own Stripe account — we never hold your money — minus a small transaction fee (8% on Starter, 6% on Pro). You can sell one-time courses or recurring subscriptions."
+        },
+        "liveClasses": {
+          "q": "How do live classes work?",
+          "a": "Live classes are included on every paid plan — WebRTC video with built-in chat, scheduling, and reminders. Starter includes 100 streaming hours per month, Pro includes 500."
+        },
+        "migration": {
+          "q": "Can I migrate from another platform?",
+          "a": "Yes. Most coaches rebuild their courses with our builder and invite their students by email within a day. As a founding creator, we'll help you migrate personally — hands-on and free."
+        },
+        "contract": {
+          "q": "Is there a long-term contract?",
+          "a": "No contracts, no commitments. All plans are month-to-month. You can cancel or change plans anytime."
+        }
       }
     },
-    "cta": "Claim a founding spot",
-    "note": "Limited to 20 coaches. When they're gone, they're gone."
-  },
-  "howItWorks": {
-    "title": "Up and running in minutes",
-    "steps": {
-      "one": {
-        "title": "Create your free account",
-        "description": "Sign up in under 2 minutes. No credit card required."
-      },
-      "two": {
-        "title": "Upload your content",
-        "description": "Add courses, set your prices, and customize your brand."
-      },
-      "three": {
-        "title": "Start earning",
-        "description": "Share your link and watch the revenue come in."
-      }
+    "cta": {
+      "title": "Start building your school today.",
+      "text": "Shape your site, draft your first course, and see how your work looks in minutes.",
+      "button": "Start free",
+      "note": "Free forever plan. No credit card required."
     }
-  },
-  "faq": {
-    "title": "Frequently asked questions",
-    "subtitle": "Everything you need to know to get started.",
-    "items": {
-      "freePlan": {
-        "q": "Is there really a free plan?",
-        "a": "Yes! Our free plan is free forever — no credit card required. You get up to 10 students and 1 GB of storage: enough to build your site and teach free classes to a small group. Selling courses, live classes and payouts to your Stripe account need the Starter plan ($19.90/mo) — upgrade anytime as you grow."
-      },
-      "technical": {
-        "q": "Do I need technical skills?",
-        "a": "Not at all. If you can use social media, you can use Contentor. Everything is drag-and-drop with no coding required."
-      },
-      "customDomain": {
-        "q": "Can I use my own domain?",
-        "a": "Yes — on the Pro plan you can connect your own custom domain. And on every paid plan your platform runs fully under your brand: your students never see Contentor."
-      },
-      "payments": {
-        "q": "How do payments work?",
-        "a": "Selling starts on the Starter plan. We integrate directly with Stripe: payments go straight to your own Stripe account — we never hold your money — minus a small transaction fee (8% on Starter, 6% on Pro). You can sell one-time courses or recurring subscriptions."
-      },
-      "liveClasses": {
-        "q": "How do live classes work?",
-        "a": "Live classes are included on every paid plan — WebRTC video with built-in chat, scheduling, and reminders. Starter includes 100 streaming hours per month, Pro includes 500."
-      },
-      "migration": {
-        "q": "Can I migrate from another platform?",
-        "a": "Yes. Most coaches rebuild their courses with our builder and invite their students by email within a day. As a founding creator, we'll help you migrate personally — hands-on and free."
-      },
-      "contract": {
-        "q": "Is there a long-term contract?",
-        "a": "No contracts, no commitments. All plans are month-to-month. You can cancel or change plans anytime."
-      }
-    }
-  },
-  "finalCta": {
-    "title": "Your audience is waiting",
-    "subtitle": "Launch your platform free today — and claim one of the 20 founding-creator spots while they last.",
-    "ctaPrimary": "Start Free Today",
-    "ctaSecondary": "See pricing",
-    "trustNote": "Free forever plan. No credit card required."
   },
   "helpBot": {
     "title": "Ask Contentor",
