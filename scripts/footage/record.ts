@@ -320,3 +320,205 @@ test("assistant", async ({ browser }) => {
   s.mark("end");
   await s.save("assistant");
 });
+
+// ── The setup interview (Phase 2 chapter 2): answering, the looks, the build ─
+
+/** Every milestone the interview can fire: listed as fired, none starts. */
+const FIRED_ALL = [
+  "style:auto",
+  "page:home",
+  "rank:logos",
+  "page:about",
+  "page:contact",
+  "page:faq",
+  "page:events",
+  "plan:membership",
+  "draft:course",
+  "draft:event",
+  "draft:onsite",
+  "draft:post",
+];
+
+/** The coach the setup takes film (the site-eval yoga brief, in interview answers). */
+const COACH = {
+  niche: "yoga",
+  teaches: "Yoga for people who sit at a desk all day",
+  photos: "stock",
+  audience: "Office workers in their 30s to 50s who feel stiff and out of place in gym classes",
+  outcome: "A looser back and hips in twenty minutes a day, without a studio",
+  offers: ["course", "live", "community"],
+  pitch: "Slow, kind yoga that undoes a day at the desk",
+  difference: "Every class is built around the hips, spine and shoulders, with options for tight bodies",
+};
+
+const PARK_PY = `
+import json
+from django.conf import settings
+from django.core.cache import cache
+from django_tenants.utils import tenant_context
+from apps.accounts.models import User
+from apps.core.models import Domain, Tenant
+from apps.core.tasks import _create_default_config
+from apps.tenant_config import interview_brief as brief
+from apps.tenant_config.models import TenantConfig
+
+A = json.loads(ARGS)
+slug, schema = A["slug"], A["slug"].replace("-", "_")
+for old in Tenant.objects.filter(slug=slug):
+    old.delete(force_drop=True)
+t = Tenant.objects.create(
+    name="Mara Lindqvist", slug=slug, subdomain=slug, schema_name=schema,
+    owner_email=f"{slug}@example.com", provisioning_status="ready", is_published=False,
+)
+Domain.objects.create(domain=f"{slug}.{settings.CONTENTOR_DOMAIN}", tenant=t, is_primary=True)
+t.create_schema(check_if_exists=True, verbosity=0)
+ids = [f.id for f in brief.FIELDS]
+stop = ids.index(A["upto"]) if A["upto"] else len(ids)
+answers = dict(A["answers"])
+answers["delegated"] = [i for i in ids[:stop] if i not in answers]
+t.wizard_state = {"flow": "interview", "answers": answers}
+t.template_niche = "yoga"
+t.save(update_fields=["wizard_state", "template_niche"])
+with tenant_context(t):
+    _create_default_config(t, "en")
+    User.objects.create_user(email=t.owner_email, name="Mara Lindqvist", role="owner", is_staff=True)
+    c = TenantConfig.objects.first()
+    c.brand_name = "Mara Lindqvist Yoga"
+    if A.get("style"):
+        c.style = A["style"]
+    c.setup_flow = {"status": "active", "interview": {"turns": [], "fired": A["fired"]}, "draft_status": {}, "page_builds": {}}
+    c.save()
+cache.delete(f"tenant:{schema}:config")
+print("parked", slug, "at", A["upto"] or "go-live")
+`;
+
+/** A scratch tenant parked at question \`upto\` (null: every question answered
+ * or delegated, so /setup opens on go-live). */
+function park(slug: string, o: { upto: string | null; answers: Record<string, unknown>; fired: string[]; style?: string }) {
+  const args = JSON.stringify({ slug, ...o });
+  manage(["shell", "-c", `ARGS = ${JSON.stringify(args)}\n${PARK_PY}`]);
+}
+
+test.afterAll(() => {
+  manage([
+    "shell",
+    "-c",
+    "from apps.core.models import Tenant\nfor t in Tenant.objects.filter(slug__startswith='footage-'):\n    t.delete(force_drop=True)",
+  ]);
+});
+
+const BUSY = /Thinking…|Still thinking|Making that change|Finishing your pages|Confirming your plan/;
+/** Wait out the guide's turn (a turn past 12 s reads "Still thinking…"). */
+async function settleGuide(guide: Locator) {
+  const busy = guide.getByText(BUSY);
+  await busy.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
+  await expect(busy, "the guide's turn never finished: a hub run queued or cancelled?").toHaveCount(0, { timeout: 120_000 });
+}
+
+test("setup-answer", async ({ browser }) => {
+  test.setTimeout(6 * 60_000);
+  await hubFree();
+  park("footage-answer", { upto: "teaches", answers: {}, fired: [] });
+  const s = await open(browser, "desktop", { slug: "footage-answer", role: "coach" });
+  const { page } = s;
+  await page.goto(url("footage-answer", "/setup"));
+  await expect(page.getByText(/do you teach\?/)).toBeVisible({ timeout: 60_000 });
+  await settle(page);
+  s.mark("ask-1");
+  const answer = page.getByLabel("Your answer");
+  await answer.click();
+  await answer.pressSequentially(COACH.teaches, { delay: 35 });
+  await page.getByRole("button", { name: "Send", exact: true }).click();
+  s.mark("sent");
+  const guide = page.getByRole("region", { name: "Your setup guide" });
+  await settleGuide(guide);
+  const tiles = guide.locator("h1 ~ div.grid > button");
+  const stock = guide.getByRole("button", { name: "Choose photos for me", exact: true });
+  await expect(tiles.first().or(stock)).toBeVisible({ timeout: 30_000 });
+  await settle(page);
+  s.mark("ask-2");
+  if (await stock.isVisible()) {
+    await page.waitForTimeout(1_200);
+    await stock.click();
+  } else {
+    for (let i = 0; i < Math.min(3, await tiles.count()); i++) {
+      await tiles.nth(i).hover();
+      await page.waitForTimeout(350);
+    }
+    await tiles.first().click();
+    const cont = guide.getByRole("button", { name: /^Continue/ });
+    if (await cont.isVisible()) await cont.click();
+  }
+  s.mark("picked");
+  await settleGuide(guide);
+  await page.waitForTimeout(1_000);
+  s.mark("ask-3");
+  await s.save("setup-answer");
+});
+
+test("setup-looks", async ({ browser }) => {
+  test.setTimeout(6 * 60_000);
+  await hubFree();
+  park("footage-looks", { upto: "site_style", answers: COACH, fired: FIRED_ALL });
+  const s = await open(browser, "desktop", { slug: "footage-looks", role: "coach" });
+  const { page } = s;
+  await page.goto(url("footage-looks", "/setup"));
+  const guide = page.getByRole("region", { name: "Your setup guide" });
+  const looks = guide.locator("div.grid > div > button");
+  await expect(looks.first(), "the look cards never came").toBeVisible({ timeout: 90_000 });
+  await settle(page);
+  s.mark("gallery");
+  for (let i = 0; i < Math.min(4, await looks.count()); i++) {
+    await looks.nth(i).hover();
+    await page.waitForTimeout(350);
+  }
+  await looks.nth(1).click();
+  await expect(page.getByRole("dialog", { name: /, as a page$/ })).toBeVisible({ timeout: 30_000 });
+  s.mark("gallery-picked");
+  await settle(page);
+  s.mark("opened");
+  await glide(page, 600, 2_000);
+  await page.getByRole("button", { name: "Keep this look" }).click();
+  s.mark("kept");
+  await page.waitForTimeout(800);
+  await s.save("setup-looks");
+});
+
+test("setup-compose", async ({ browser }) => {
+  test.setTimeout(12 * 60_000);
+  await hubFree();
+  park("footage-compose", { upto: null, answers: COACH, fired: FIRED_ALL, style: "journal" });
+  const s = await open(browser, "desktop", { slug: "footage-compose", role: "coach" });
+  const { page, ctx } = s;
+  // Start the home build first: /setup polls only while something builds.
+  const build = await ctx.request.post(url("footage-compose", "/api/v1/admin/setup-flow/build-page/"), {
+    data: { page: "home", force: true },
+  });
+  expect(build.status(), await build.text()).toBe(202);
+  await page.goto(url("footage-compose", "/setup"));
+  await expect(page.getByText(/^Building your/).first()).toBeVisible({ timeout: 60_000 });
+  await settle(page);
+  s.mark("composing");
+  await page.waitForTimeout(3_000);
+  s.mark("composing-held");
+  // Review Focus 2: a cancelled or failed hub run stops the take; it is never
+  // filmed as a finished site.
+  let status = "";
+  await expect
+    .poll(
+      async () => {
+        const r = await ctx.request.get(url("footage-compose", "/api/v1/admin/setup-flow/"));
+        status = (await r.json()).page_builds?.home?.status ?? "";
+        return status;
+      },
+      { timeout: 8 * 60_000, intervals: [5_000] },
+    )
+    .not.toMatch(/^(building|idle|)$/);
+  expect(status, "the home build failed: a hub run cancelled? Check GET :39300/runs, then re-run -g setup-compose").toBe("ready");
+  await expect(page.getByText(/^Building your/)).toHaveCount(0, { timeout: 30_000 });
+  await settle(page);
+  s.mark("built");
+  await glide(page, 700, 2_500);
+  s.mark("scrolled");
+  await s.save("setup-compose");
+});

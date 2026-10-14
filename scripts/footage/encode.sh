@@ -20,8 +20,8 @@ OUT=frontend-main/public/media
 # Scrubs are all-keyframe, so every frame costs a whole picture. Over 1.5 MB:
 # raise SCRUB_SPEED (fewer frames, same story) before SCRUB_CRF (28 at most).
 SCRUB_FPS=${SCRUB_FPS:-10}
-SCRUB_SPEED=${SCRUB_SPEED:-3.5}
-SCRUB_CRF=${SCRUB_CRF:-26}
+SCRUB_SPEED=${SCRUB_SPEED:-4.2}
+SCRUB_CRF=${SCRUB_CRF:-28}
 HERO_LOOKS="journal tavola encore kinetic"
 LOOKS="journal kinetic encore studiofloor tavola primer dojo workshop atelier sprout trail nocturne"
 NICHES="yoga fitness music dance cooking language martial-arts crafts beauty family outdoors wellness"
@@ -130,7 +130,7 @@ assistant() {
   if [ -f "$OUT/clips/scrub-assistant.mp4" ]; then poster scrub-assistant; fi
 }
 setup() {
-  segments scrub-setup scrub setup-answer:ask-1:sent setup-answer:ask-2:picked setup-looks:gallery:kept \
+  segments scrub-setup scrub setup-answer:ask-1:sent setup-answer:ask-2:picked setup-looks:gallery:gallery-picked setup-looks:opened:kept \
     setup-compose:composing:composing-held setup-compose:built:scrolled
   if [ -f "$OUT/clips/scrub-setup.mp4" ]; then poster scrub-setup; fi
 }

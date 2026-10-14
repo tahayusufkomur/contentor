@@ -11,14 +11,23 @@
       "phoneSrc": "/media/clips/clip-student-phone-phone.mp4",
       "durationS": 4.8
     },
+    "scrub-setup": {
+      "kind": "scrub",
+      "src": "/media/clips/scrub-setup.mp4",
+      "width": 1280,
+      "height": 800,
+      "bytes": 1343108,
+      "poster": "/media/posters/scrub-setup.avif",
+      "durationS": 5.3
+    },
     "scrub-assistant": {
       "kind": "scrub",
       "src": "/media/clips/scrub-assistant.mp4",
       "width": 1280,
       "height": 800,
-      "bytes": 1268240,
+      "bytes": 883379,
       "poster": "/media/posters/scrub-assistant.avif",
-      "durationS": 3.2
+      "durationS": 2.6
     },
     "loop-courses": {
       "kind": "loop",
