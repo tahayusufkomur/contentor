@@ -572,9 +572,10 @@ Tailwind, Radix, `sonner` toasts, JWT in the `contentor_access_token` cookie, an
   domain. A site with no style yet wears the default look (`siteLook` / `sections.default_style`).
 - **The coach admin (`/admin`) wears one look for every tenant:** under `/admin` that
   injected sheet is switched off (`ThemeProvider`, plus the root layout on a full load), so
-  the admin shows the app's own house light/dark tokens (`styles/globals.css`). Its
-  light/dark is the coach's own, kept in the `contentor_admin_theme` cookie, and ignores
-  the site's `dark_mode_enabled`.
+  the admin shows the app's own house light/dark tokens (`styles/globals.css`).
+- **One light/dark for site and admin:** the site's toggle and the admin's are the same
+  next-themes value (`THEME_STORAGE_KEY`, localStorage). A site with `dark_mode_enabled`
+  off is forced light for visitors (`ThemeProvider`), but the coach's admin is never forced.
 - Embeds LiveCraft rooms in an iframe (`components/live/live-frame.tsx`); no video SDKs of its own.
 
 ---

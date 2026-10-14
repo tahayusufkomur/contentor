@@ -1,85 +1,68 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
 import { Toaster } from "sonner";
 
-import {
-  ADMIN_THEME_COOKIE,
-  isAdminPath,
-  TENANT_THEME_SHEET_ID,
-} from "@/lib/site-styles";
-
-export type AdminTheme = "light" | "dark";
-
-const AdminThemeContext = createContext<{
-  theme: AdminTheme;
-  setTheme: (theme: AdminTheme) => void;
-}>({ theme: "light", setTheme: () => {} });
-
-/** The coach admin's own light/dark choice (the site's is `useTheme`). */
-export const useAdminTheme = () => useContext(AdminThemeContext);
+import { isAdminPath, TENANT_THEME_SHEET_ID } from "@/lib/site-styles";
 
 /** The app's toasts: in the admin they follow its light/dark (on the site
  *  they are light, as they always were). */
 export function AppToaster() {
-  const { theme } = useAdminTheme();
+  const { resolvedTheme } = useTheme();
   const admin = isAdminPath(usePathname());
+  const dark = admin && resolvedTheme === "dark";
   return (
-    <Toaster position="top-center" richColors theme={admin ? theme : "light"} />
+    <Toaster position="top-center" richColors theme={dark ? "dark" : "light"} />
   );
+}
+
+/** The admin's browser bar follows the same light/dark (the layout paints the
+ *  site's colour on a full load). */
+export function AdminBrowserBar() {
+  const { resolvedTheme } = useTheme();
+  const admin = isAdminPath(usePathname());
+  useEffect(() => {
+    if (!admin) return;
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute(
+        "content",
+        resolvedTheme === "dark" ? "#0a0a0a" : "#ffffff",
+      );
+  }, [admin, resolvedTheme]);
+  return null;
 }
 
 const useBeforePaint =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-/** next-themes for the tenant's site, and one look for the coach admin: under
- *  /admin the tenant's sheet is off (globals.css tokens show instead) and the
- *  site's light/dark (stored or forced) gives way to the coach's own. The root
- *  layout renders both for a full load; this keeps them right when the coach
- *  moves between her site and the admin in-app, where it does not re-render. */
+/** next-themes for the whole app: the site's toggle and the coach admin's are
+ *  one light/dark choice. Under /admin the tenant's sheet is off (globals.css
+ *  tokens show instead). The root layout does that on a full load; this keeps
+ *  it right on in-app moves between the site and the admin, where it does not
+ *  re-render. */
 export function ThemeProvider({
   children,
   forcedTheme,
-  adminTheme: initialAdminTheme,
   ...props
-}: React.ComponentProps<typeof NextThemesProvider> & {
-  adminTheme: AdminTheme;
-}) {
+}: React.ComponentProps<typeof NextThemesProvider>) {
   const admin = isAdminPath(usePathname());
-  const [adminTheme, setAdminTheme] = useState(initialAdminTheme);
 
   useBeforePaint(() => {
     const sheet = document.getElementById(TENANT_THEME_SHEET_ID);
     if (sheet) (sheet as HTMLStyleElement).media = admin ? "not all" : "";
-    if (!admin) return;
-    // next-themes applies the class after paint; without this the admin
-    // shows one frame in the site's scheme.
-    const root = document.documentElement.classList;
-    root.remove("light", "dim", "dark");
-    root.add(adminTheme);
-  }, [admin, adminTheme]);
+  }, [admin]);
 
-  const setTheme = (theme: AdminTheme) => {
-    setAdminTheme(theme);
-    document.cookie = `${ADMIN_THEME_COOKIE}=${theme}; path=/; max-age=31536000; samesite=lax`;
-  };
-
+  // A site that disables dark mode for visitors is held light; the coach's
+  // admin is never forced, so she can always choose.
   return (
-    <AdminThemeContext.Provider value={{ theme: adminTheme, setTheme }}>
-      <NextThemesProvider
-        {...props}
-        forcedTheme={admin ? adminTheme : forcedTheme}
-      >
-        {children}
-      </NextThemesProvider>
-    </AdminThemeContext.Provider>
+    <NextThemesProvider
+      {...props}
+      forcedTheme={admin ? undefined : forcedTheme}
+    >
+      {children}
+    </NextThemesProvider>
   );
 }

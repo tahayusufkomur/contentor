@@ -6,10 +6,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import {
-  useAdminTheme,
-  type AdminTheme,
-} from "@/components/shared/theme-provider";
 import { defaultActiveMatch } from "@shared/navigation/navigation-state";
 import { NavLink } from "@/components/ui/nav-link";
 import { Spinner } from "@/components/ui/spinner";
@@ -47,7 +43,6 @@ interface AppSidebarProps {
 
 export function AppSidebar({ title, sections, children }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const adminTheme = useAdminTheme();
   return (
     <aside
       className={cn(
@@ -121,11 +116,7 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
       {/* Footer */}
       <div className="border-t p-2 space-y-2">
         <Separator className="mb-2" />
-        <ThemeToggle
-          collapsed={collapsed}
-          value={adminTheme.theme}
-          onChange={(theme) => adminTheme.setTheme(theme as AdminTheme)}
-        />
+        <ThemeToggle collapsed={collapsed} />
         {React.Children.map(children, (child) =>
           React.isValidElement(child)
             ? React.cloneElement(child as React.ReactElement<any>, {

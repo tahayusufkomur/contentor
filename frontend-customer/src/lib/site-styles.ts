@@ -93,24 +93,15 @@ export function styleDefaultTheme(
   return isDarkPalette(paletteOf(style, paletteId)) ? "dark" : "light";
 }
 
-/** Where next-themes keeps a visitor's light/dark choice. A styled site keys it
- *  per look (and colourway): the choice made on one look must not repaint
- *  another, or its derived opposite scheme shows instead of the look's own
- *  colours. The default theme applies again whenever the look changes. */
-export function themeStorageKey(
-  styleId?: string | null,
-  paletteId?: string | null,
-): string {
-  return getSiteStyle(styleId)
-    ? `theme:${styleId}:${paletteId ?? ""}`
-    : "theme";
-}
+/** Where next-themes keeps the light/dark choice: one for the whole app, the
+ *  site's toggle and the coach admin's alike. Every look can show either scheme
+ *  (modePalette derives the other), so the choice does not depend on the look. */
+export const THEME_STORAGE_KEY = "theme";
 
 /** The coach admin wears the app's own look, never the site's: under /admin
- *  the tenant sheet (this id) is switched off and light/dark is the coach's
- *  own choice, kept in this cookie so the server paints it on first load. */
+ *  the tenant sheet (this id) is switched off and the app's own light/dark
+ *  tokens show instead. */
 export const TENANT_THEME_SHEET_ID = "tenant-theme";
-export const ADMIN_THEME_COOKIE = "contentor_admin_theme";
 export const isAdminPath = (pathname: string) =>
   pathname === "/admin" || pathname.startsWith("/admin/");
 

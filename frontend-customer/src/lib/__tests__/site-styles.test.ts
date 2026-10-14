@@ -9,7 +9,6 @@ import {
   styleRootCss,
   styleVars,
   themeModes,
-  themeStorageKey,
 } from "@/lib/site-styles";
 import { rankStylesForNiche } from "@shared/sections/styles";
 
@@ -51,19 +50,6 @@ describe("modePalette", () => {
   it("styled sites toggle light and dark only", () => {
     expect(themeModes(true)).toEqual(["light", "dark"]);
     expect(themeModes(false)).toContain("dim");
-  });
-});
-
-describe("themeStorageKey", () => {
-  it("is per look and colourway on a styled site, plain otherwise", () => {
-    expect(themeStorageKey("journal", "sage")).toBe("theme:journal:sage");
-    expect(themeStorageKey("journal")).toBe("theme:journal:");
-    expect(themeStorageKey("journal", "sage")).not.toBe(
-      themeStorageKey("journal", ""),
-    );
-    expect(themeStorageKey("")).toBe("theme");
-    expect(themeStorageKey(undefined)).toBe("theme");
-    expect(themeStorageKey("no-such-style")).toBe("theme");
   });
 });
 

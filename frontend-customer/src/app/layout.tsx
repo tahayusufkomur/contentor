@@ -12,16 +12,19 @@ import { SwUpdateToast } from "@/components/shared/sw-update-toast";
 import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
 import {
-  ADMIN_THEME_COOKIE,
   isAdminPath,
   lookPrimaryHex,
   siteLook,
   styleDefaultTheme,
   styleFontsHref,
-  themeStorageKey,
+  THEME_STORAGE_KEY,
 } from "@/lib/site-styles";
 import { TenantProvider } from "@/components/shared/tenant-provider";
-import { AppToaster, ThemeProvider } from "@/components/shared/theme-provider";
+import {
+  AdminBrowserBar,
+  AppToaster,
+  ThemeProvider,
+} from "@/components/shared/theme-provider";
 import { UsageReporter } from "@/components/shared/usage-reporter";
 import { NavigationProvider } from "@shared/navigation/navigation-provider";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
@@ -80,8 +83,7 @@ export const dynamic = "force-dynamic";
 export async function generateViewport(): Promise<Viewport> {
   // The coach admin wears the app's own look, so the browser bar does too.
   if (isAdminPath((await headers()).get("x-pathname") || "")) {
-    const dark = (await cookies()).get(ADMIN_THEME_COOKIE)?.value === "dark";
-    return { themeColor: dark ? "#0a0a0a" : "#ffffff", viewportFit: "cover" };
+    return { themeColor: "#ffffff", viewportFit: "cover" };
   }
   const slug = await getTenantSlug();
   const config = await fetchTenantConfig(slug);
@@ -159,10 +161,8 @@ export default async function RootLayout({
   const siteStyle = config ? siteLook(config.style) : undefined;
   const cookieStore = await cookies();
   const hasSession = Boolean(cookieStore.get(COOKIE_NAME)?.value);
-  // The coach admin wears the app's own look, in her own light/dark.
+  // The coach admin wears the app's own look (the site's light/dark is shared).
   const inAdmin = isAdminPath((await headers()).get("x-pathname") || "");
-  const adminTheme =
-    cookieStore.get(ADMIN_THEME_COOKIE)?.value === "dark" ? "dark" : "light";
   const authUser = hasSession ? await getAuthUser() : null;
   const isStaff = authUser?.role === "owner" || authUser?.role === "coach";
   const locale = await getLocale();
@@ -186,9 +186,8 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider
-            adminTheme={adminTheme}
             attribute="class"
-            storageKey={themeStorageKey(config?.style, config?.palette)}
+            storageKey={THEME_STORAGE_KEY}
             defaultTheme={
               siteStyle
                 ? styleDefaultTheme(siteStyle, config?.palette)
@@ -211,6 +210,7 @@ export default async function RootLayout({
                 <TenantThemeEnforcer />
                 <TrackPageView />
                 <AppToaster />
+                <AdminBrowserBar />
                 {gated ? (
                   <PreviewGate
                     brandName={config?.brand_name}

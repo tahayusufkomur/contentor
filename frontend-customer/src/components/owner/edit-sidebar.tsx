@@ -13,11 +13,11 @@ import { UndoRedoControls } from "./canvas/editor-controls";
 import { RichEditorProvider } from "./rich-editor";
 import { EditModeProvider } from "./edit-mode";
 import {
-  PanelLeftOpen,
   PanelLeftClose,
   Palette,
   Navigation,
   ChevronDown,
+  ChevronRight,
   Settings,
   LayoutList,
   Pencil,
@@ -506,25 +506,20 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                 </EntitlementsProvider>
               )}
 
-              {/* Sticky toggle tab — visible while editing with the panel closed */}
-              {editMode && !open && (
+              {/* The entry to the edit menu, on the left edge: it enters edit
+                  mode if the site is not being edited, then opens the panel.
+                  Hidden while the panel is open. */}
+              {!(editMode && open) && (
                 <button
-                  onClick={() => setOpen(true)}
-                  className="fixed left-0 top-1/2 z-50 flex -translate-y-1/2 items-center gap-1.5 rounded-r-lg border border-l-0 bg-background px-2 py-3 text-muted-foreground shadow-md transition-colors hover:bg-accent hover:text-foreground"
-                  title="Open editor"
-                >
-                  <PanelLeftOpen className="h-4 w-4" />
-                </button>
-              )}
-
-              {/* Floating affordance to enter edit mode (shown when not editing) */}
-              {!editMode && (
-                <button
-                  onClick={() => toggleEditMode(true)}
-                  className="fixed right-5 top-20 z-50 flex items-center gap-1.5 rounded-full border bg-background px-4 py-2.5 text-sm font-medium shadow-lg transition-colors hover:bg-accent"
+                  onClick={() =>
+                    editMode ? setOpen(true) : toggleEditMode(true)
+                  }
+                  className="fixed left-0 top-1/2 z-50 flex -translate-y-1/2 items-center gap-1.5 rounded-r-lg border border-l-0 bg-background py-2 pl-2 pr-1.5 text-xs font-medium text-muted-foreground shadow-md transition-colors hover:bg-accent hover:text-foreground"
                   title="Edit your site"
                 >
-                  <Pencil className="h-4 w-4" /> Edit site
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit site
+                  <ChevronRight className="h-3.5 w-3.5" />
                 </button>
               )}
 
