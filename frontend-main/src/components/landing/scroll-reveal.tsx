@@ -13,7 +13,7 @@ const directionMap: Record<Direction, { x: string; y: string }> = {
   fade: { x: "0", y: "0" },
 };
 
-interface ScrollRevealProps {
+export interface ScrollRevealProps {
   children: ReactNode;
   className?: string;
   direction?: Direction;
@@ -31,6 +31,8 @@ interface ScrollRevealProps {
   rootMargin?: string;
   /** Once means it doesn't replay on re-enter. */
   once?: boolean;
+  /** Children fade up one after another (80 ms apart) once the wrapper is in view. */
+  stagger?: boolean;
 }
 
 export function ScrollReveal({
@@ -44,6 +46,7 @@ export function ScrollReveal({
   threshold = 0.12,
   rootMargin = "0px 0px -8% 0px",
   once = true,
+  stagger = false,
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -78,7 +81,7 @@ export function ScrollReveal({
     <div
       ref={ref}
       data-variant={variant === "translate" ? undefined : variant}
-      className={`animate-on-scroll ${className ?? ""}`}
+      className={`animate-on-scroll ${stagger ? "stagger-children" : ""} ${className ?? ""}`}
       style={style}
     >
       {children}
