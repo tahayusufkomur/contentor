@@ -12,13 +12,13 @@
     "alt": "The community page of the studio, with students' posts and replies"
   },
   "tile-media": {
-    "alt": "The studio's media library: the coach's photos and videos in a grid"
+    "alt": "The studio's media library, with the upload dropzone, photo and video tabs, and shape filters"
   },
   "tile-blog": {
     "alt": "The studio's blog page, with drafted and published posts"
   },
   "tile-logo": {
-    "alt": "Logo Studio over the coach's site, with logo ideas for her brand"
+    "alt": "Logo Studio over the coach's site, with the brand brief and style options"
   },
   "tile-student-dashboard": {
     "alt": "A student's dashboard on the coach's site, with her courses and progress"

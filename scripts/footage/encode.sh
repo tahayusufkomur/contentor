@@ -79,7 +79,7 @@ segments() {
 }
 
 # webm <key> <crf> <cap>: the VP9 twin; manifest.mjs fails it if it is bigger than the mp4.
-webm() { q -i "$OUT/clips/$1.mp4" -an -c:v libvpx-vp9 -crf "$2" -b:v "$3" -row-mt 1 -deadline good -cpu-used 2 "$OUT/clips/$1.webm"; }
+webm() { q -i "$OUT/clips/$1.mp4" -an -c:v libvpx-vp9 -crf "$2" -b:v 0 -row-mt 1 -deadline good -cpu-used 2 "$OUT/clips/$1.webm"; }
 # phone <key> <maxrate>: the 720 px wide encode MediaVideo serves below 768 px.
 phone() {
   q -i "$OUT/clips/$1.mp4" -an -vf "scale=720:-2:flags=lanczos" -c:v libx264 -preset slow -crf 23 \
@@ -102,7 +102,7 @@ still() {
 # loop <key> <flow:from:to>: a studio tile's hover loop with its twin and poster.
 loop() {
   segments "$1" loop "$2"
-  if [ -f "$OUT/clips/$1.mp4" ]; then webm "$1" 36 1.2M; poster "$1"; fi
+  if [ -f "$OUT/clips/$1.mp4" ]; then webm "$1" 40 1.2M; poster "$1"; fi
 }
 
 photos() {

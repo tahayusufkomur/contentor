@@ -11,6 +11,139 @@
       "phoneSrc": "/media/clips/clip-student-phone-phone.mp4",
       "durationS": 4.8
     },
+    "loop-courses": {
+      "kind": "loop",
+      "src": "/media/clips/loop-courses.mp4",
+      "width": 1280,
+      "height": 800,
+      "bytes": 343237,
+      "poster": "/media/posters/loop-courses.avif",
+      "webm": "/media/clips/loop-courses.webm",
+      "durationS": 3.8
+    },
+    "loop-live": {
+      "kind": "loop",
+      "src": "/media/clips/loop-live.mp4",
+      "width": 1280,
+      "height": 800,
+      "bytes": 134421,
+      "poster": "/media/posters/loop-live.avif",
+      "webm": "/media/clips/loop-live.webm",
+      "durationS": 2.4
+    },
+    "loop-messages": {
+      "kind": "loop",
+      "src": "/media/clips/loop-messages.mp4",
+      "width": 1280,
+      "height": 800,
+      "bytes": 42355,
+      "poster": "/media/posters/loop-messages.avif",
+      "webm": "/media/clips/loop-messages.webm",
+      "durationS": 3.8
+    },
+    "loop-community": {
+      "kind": "loop",
+      "src": "/media/clips/loop-community.mp4",
+      "width": 1280,
+      "height": 800,
+      "bytes": 93312,
+      "poster": "/media/posters/loop-community.avif",
+      "webm": "/media/clips/loop-community.webm",
+      "durationS": 3.8
+    },
+    "loop-media": {
+      "kind": "loop",
+      "src": "/media/clips/loop-media.mp4",
+      "width": 1280,
+      "height": 800,
+      "bytes": 67501,
+      "poster": "/media/posters/loop-media.avif",
+      "webm": "/media/clips/loop-media.webm",
+      "durationS": 3.8
+    },
+    "loop-blog": {
+      "kind": "loop",
+      "src": "/media/clips/loop-blog.mp4",
+      "width": 1280,
+      "height": 800,
+      "bytes": 110856,
+      "poster": "/media/posters/loop-blog.avif",
+      "webm": "/media/clips/loop-blog.webm",
+      "durationS": 3.8
+    },
+    "loop-logo": {
+      "kind": "loop",
+      "src": "/media/clips/loop-logo.mp4",
+      "width": 1280,
+      "height": 800,
+      "bytes": 44235,
+      "poster": "/media/posters/loop-logo.avif",
+      "webm": "/media/clips/loop-logo.webm",
+      "durationS": 3.8
+    },
+    "tile-courses": {
+      "kind": "still",
+      "src": "/media/stills/tile-courses.avif",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 55189,
+      "alt": "The Courses page of a coach's studio, listing her yoga courses",
+      "srcSmall": "/media/stills/tile-courses-small.avif"
+    },
+    "tile-live": {
+      "kind": "still",
+      "src": "/media/stills/tile-live.avif",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 49947,
+      "alt": "The Live page of the studio, with upcoming classes and a line to describe a new one",
+      "srcSmall": "/media/stills/tile-live-small.avif"
+    },
+    "tile-messages": {
+      "kind": "still",
+      "src": "/media/stills/tile-messages.avif",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 19803,
+      "alt": "The studio inbox, with the coach's mail folders and conversations",
+      "srcSmall": "/media/stills/tile-messages-small.avif"
+    },
+    "tile-community": {
+      "kind": "still",
+      "src": "/media/stills/tile-community.avif",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 24288,
+      "alt": "The community page of the studio, with students' posts and replies",
+      "srcSmall": "/media/stills/tile-community-small.avif"
+    },
+    "tile-media": {
+      "kind": "still",
+      "src": "/media/stills/tile-media.avif",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 31321,
+      "alt": "The studio's media library, with the upload dropzone, photo and video tabs, and shape filters",
+      "srcSmall": "/media/stills/tile-media-small.avif"
+    },
+    "tile-blog": {
+      "kind": "still",
+      "src": "/media/stills/tile-blog.avif",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 32126,
+      "alt": "The studio's blog page, with drafted and published posts",
+      "srcSmall": "/media/stills/tile-blog-small.avif"
+    },
+    "tile-logo": {
+      "kind": "still",
+      "src": "/media/stills/tile-logo.avif",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 17645,
+      "alt": "Logo Studio over the coach's site, with the brand brief and style options",
+      "srcSmall": "/media/stills/tile-logo-small.avif"
+    },
     "tile-student-dashboard": {
       "kind": "still",
       "src": "/media/stills/tile-student-dashboard.avif",

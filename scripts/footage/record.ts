@@ -218,3 +218,68 @@ test("student-phone", async ({ browser }) => {
     await coach.ctx.close();
   }
 });
+
+// ── Studio tiles (Phase 2 chapter 4): a still and a ≤ 4 s loop each ────────
+
+const TILE_ROUTES = [
+  ["courses", "/admin/courses"],
+  ["messages", "/admin/inbox"],
+  ["community", "/admin/community"],
+  ["media", "/admin/media"],
+  ["blog", "/admin/blog"],
+  ["logo", "/?edit=1&studio=1"],
+] as const;
+
+test("studio-tiles", async ({ browser }) => {
+  test.setTimeout(10 * 60_000);
+  const s = await open(browser, "tile", { slug: "demo-yoga", role: "coach" });
+  const { page } = s;
+  for (const [key, route] of TILE_ROUTES) {
+    await page.goto(url("demo-yoga", route));
+    if (key === "logo") await expect(page.getByRole("heading", { name: "Logo Studio" })).toBeVisible({ timeout: 30_000 });
+    await settle(page);
+    await page.screenshot({ path: path.join(RAW, `tile-${key}.png`) });
+    s.mark(`${key}-start`);
+    await sweep(page, 1_500);
+    await glide(page, 320, 2_000);
+    s.mark(`${key}-end`);
+  }
+  await s.save("studio-tiles");
+});
+
+const nextFriday = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + ((5 - d.getDay() + 7) % 7 || 7));
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T18:00`;
+};
+
+test("studio-live", async ({ browser }) => {
+  test.setTimeout(5 * 60_000);
+  const s = await open(browser, "tile", { slug: "demo-yoga", role: "coach" });
+  const { page, ctx } = s;
+  await page.goto(url("demo-yoga", "/admin/live"));
+  const add = page.getByRole("button", { name: "New class or event" });
+  await expect(add).toBeVisible({ timeout: 30_000 });
+  await settle(page);
+  await page.screenshot({ path: path.join(RAW, "tile-live.png") });
+  s.mark("form");
+  await add.click();
+  await page.locator("#event-kind").selectOption("live");
+  await page.locator("#event-title").pressSequentially("Friday flow, live", { delay: 30 });
+  await page.locator("#event-description").pressSequentially("Forty-five minutes for tight hips.", { delay: 20 });
+  await page.locator("#event-when").fill(nextFriday());
+  const saved = page.waitForResponse(
+    (r) => r.request().method() === "POST" && /\/api\/v1\/(live|live-streams|zoom|onsite)\/$/.test(new URL(r.url()).pathname),
+  );
+  await page.getByRole("button", { name: "Create", exact: true }).click();
+  const res = await saved;
+  expect(res.status(), await res.text()).toBe(201);
+  await expect(page.getByText("Friday flow, live").first()).toBeVisible({ timeout: 15_000 });
+  await page.waitForTimeout(800);
+  s.mark("created");
+  // Leave demo-yoga as it was (off camera: after the last mark).
+  await ctx.request.delete(`${new URL(res.url()).origin}${new URL(res.url()).pathname}${(await res.json()).id}/`);
+  await s.save("studio-live");
+});
+
