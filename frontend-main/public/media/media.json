@@ -1,3 +1,124 @@
 {
-  "items": {}
+  "items": {
+    "still-yoga": {
+      "kind": "still",
+      "src": "/media/stills/still-yoga.avif",
+      "width": 1280,
+      "height": 1600,
+      "bytes": 22965,
+      "alt": "In a bright, tranquil studio with rustic wooden floors and soft window light, a female yoga instructor kneels behind a seated female student, gently placing her hands on the student's shoulders to provide tactile posture adjustment. Two other female students sit in meditation poses on mats in the background, all wearing neutral athletic wear with hair tied in high buns.",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/still-yoga-small.avif"
+    },
+    "still-fitness": {
+      "kind": "still",
+      "src": "/media/stills/still-fitness.avif",
+      "width": 1280,
+      "height": 1600,
+      "bytes": 43298,
+      "alt": "In a garage gym with an open bay door, a mature male coach guides a woman holding a barbell across her shoulders for squats. The woman wears a grey tank top and black leggings, listening intently as the coach points toward the bar. In the background outside the open garage door, another man runs along a forest trail in natural daylight.",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/still-fitness-small.avif"
+    },
+    "still-music": {
+      "kind": "still",
+      "src": "/media/stills/still-music.avif",
+      "width": 1280,
+      "height": 1600,
+      "bytes": 38261,
+      "alt": "A smiling female music instructor in a blue denim shirt stands and leans forward to guide a young female student holding an electric bass guitar. The student, seated in a grey t-shirt, looks intently at the instrument while her teacher gestures toward the strings. In the background of the garage studio, an amplifier, music stand with sheet music, and guitar case are visible under soft natural daylight.",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/still-music-small.avif"
+    },
+    "still-dance": {
+      "kind": "still",
+      "src": "/media/stills/still-dance.avif",
+      "width": 1280,
+      "height": 1600,
+      "bytes": 22211,
+      "alt": "A smiling dance teacher with curly brown hair wearing a mauve wrap top, matching hip scarf, and black leggings demonstrates an expressive hand gesture while speaking with a student in a sunlit dance studio with mirrors and a ballet barre.",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/still-dance-small.avif"
+    },
+    "still-cooking": {
+      "kind": "still",
+      "src": "/media/stills/still-cooking.avif",
+      "width": 1280,
+      "height": 1600,
+      "bytes": 25832,
+      "alt": "An adult male chef wearing a black short-sleeved shirt and an olive green apron shaves fresh black truffle over a plated swirl of yellow pasta in a ceramic bowl using a wooden truffle slicer. Slices of truffle fall onto the pasta dish within a warm restaurant interior.",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/still-cooking-small.avif"
+    },
+    "still-language": {
+      "kind": "still",
+      "src": "/media/stills/still-language.avif",
+      "width": 1280,
+      "height": 1600,
+      "bytes": 27205,
+      "alt": "A smiling female tutor in a blue sweater points to a passage in an open textbook while guiding an adult female student in a green cardigan who takes notes with a pen in a spiral notebook at a sunlit wooden table.",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/still-language-small.avif"
+    },
+    "still-martial-arts": {
+      "kind": "still",
+      "src": "/media/stills/still-martial-arts.avif",
+      "width": 1280,
+      "height": 1600,
+      "bytes": 26353,
+      "alt": "In a spacious, sunlit wooden training studio, a mature male instructor in a dark navy martial arts uniform stands holding a notebook and pen as he coaches an adult man and woman practicing footwork stepping drills in cream-white gi uniforms over circular floor markers, while other students sit watching in the background.",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/still-martial-arts-small.avif"
+    },
+    "still-crafts": {
+      "kind": "still",
+      "src": "/media/stills/still-crafts.avif",
+      "width": 1280,
+      "height": 1600,
+      "bytes": 42279,
+      "alt": "A woman wearing an olive green apron and an assistive orthotic brace on her right forearm sits at a wooden workbench in a pottery workshop, delicately carving botanical leaf textures into a damp clay vessel resting on a banding wheel turntable. Natural light streams from a multi-pane window illuminating the scene, with shelves of finished ceramics and pottery supplies visible in the background.",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/still-crafts-small.avif"
+    },
+    "still-beauty": {
+      "kind": "still",
+      "src": "/media/stills/still-beauty.avif",
+      "width": 1280,
+      "height": 1600,
+      "bytes": 24361,
+      "alt": "A female makeup artist wearing a navy blue shirt grooms a young woman's eyebrows using an eyebrow spoolie brush in a photo studio. The model sits facing forward in a grey crewneck top against a neutral background beside a large softbox light.",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/still-beauty-small.avif"
+    },
+    "still-family": {
+      "kind": "still",
+      "src": "/media/stills/still-family.avif",
+      "width": 1280,
+      "height": 1600,
+      "bytes": 32968,
+      "alt": "A smiling mother and her young daughter sit together in a cozy beige armchair, reading a tactile sensory picture book. The toddler, who wears a beige hearing aid or cochlear implant sound processor on her left ear and striped blue pajamas, gleefully touches a textured patch on the open page while seated in her mother's lap. The mother, wearing a cream cable-knit sweater, holds the book and smiles down warmly at her child in a softly lit bedroom setting.",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/still-family-small.avif"
+    },
+    "still-outdoors": {
+      "kind": "still",
+      "src": "/media/stills/still-outdoors.avif",
+      "width": 1280,
+      "height": 1600,
+      "bytes": 124369,
+      "alt": "A female hiker and a male hiker trek along a rocky mountain ridge path with towering alpine peaks in the background under clear skies.",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/still-outdoors-small.avif"
+    },
+    "still-wellness": {
+      "kind": "still",
+      "src": "/media/stills/still-wellness.avif",
+      "width": 1280,
+      "height": 1600,
+      "bytes": 36590,
+      "alt": "A woman sits cross-legged in a lotus meditation pose atop a round cushion on a woven rug over wooden flooring. Her eyes are closed in peaceful contemplation with hands rested in her lap, wearing a beige crewneck sweater and dark gray trousers in a serene room near a sunlit window.",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/still-wellness-small.avif"
+    }
+  }
 }
