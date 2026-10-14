@@ -7,6 +7,7 @@
 // Never reachable in production (the page gates `mock` on NODE_ENV).
 import { pickedOptions } from "@/lib/interview";
 import {
+  isPhotos,
   isReview,
   setupFlowApi,
   type GuideCards,
@@ -222,7 +223,7 @@ export const mockSetupFlowApi: SetupFlowApi = {
     const said = recordedAnswer();
     if (!said || said.field !== field) return undefined;
     const guide = liveGuide();
-    if (isReview(guide.cards)) return undefined;
+    if (isReview(guide.cards) || isPhotos(guide.cards)) return undefined;
     if (guide.schedule)
       return { ticked: ["Recurring"], schedule: defaultSchedule() };
     if (guide.cards) {
