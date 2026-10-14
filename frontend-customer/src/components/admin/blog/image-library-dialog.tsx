@@ -22,19 +22,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StaleContainer } from "@/components/ui/stale-container";
 import { clientFetch } from "@/lib/api-client";
 import {
-  generateCuratedImage,
   materializeCuratedImage,
   searchCuratedImages,
 } from "@/lib/curated-images-api";
 import { uploadPhoto } from "@/lib/upload";
-import { ApiError } from "@/types/api";
 import type { Photo } from "@/types/photo";
 import {
   type CuratedKind,
   materializeCuratedPhoto,
   searchCuratedPhotos,
 } from "@/lib/curated-photos-api";
-import { toast } from "sonner";
 
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
@@ -245,26 +242,6 @@ export function ImageLibraryDialog({
     { errorToast: t("blog.libraryUploadFailed") },
   );
 
-  // "Nothing fits" escape hatch: create the image the coach just described.
-  const { run: generate, loading: generating } = useAsyncAction(
-    async (prompt: string) => {
-      const photo = await generateCuratedImage(prompt);
-      if (!photo) {
-        toast.error(t("blog.libraryGenerateFailed"));
-        return;
-      }
-      await finish(photo);
-    },
-    {
-      onError: (err) =>
-        toast.error(
-          err instanceof ApiError && err.status === 429
-            ? t("blog.libraryGenerateLimit")
-            : t("blog.libraryGenerateFailed"),
-        ),
-    },
-  );
-
   if (!open) return null;
 
   // Only the very first load blanks the grid; refining a search dims what is
@@ -284,7 +261,7 @@ export function ImageLibraryDialog({
         onClick={() => onOpenChange(false)}
       >
         <div
-          className="flex max-h-[90vh] w-full max-w-2xl flex-col gap-3 rounded-xl border bg-background p-6 shadow-2xl"
+          className="flex h-[90vh] w-full max-w-6xl flex-col gap-3 rounded-xl border bg-background p-6 shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between">
@@ -337,7 +314,7 @@ export function ImageLibraryDialog({
               size="sm"
               loading={uploading}
               loadingText={`${progress}%`}
-              disabled={busy || generating}
+              disabled={busy}
               onClick={() => fileInput.current?.click()}
             >
               {t("blog.libraryUpload")}
@@ -367,7 +344,7 @@ export function ImageLibraryDialog({
             <PageState
               loading={firstLoad}
               skeleton={
-                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                   {Array.from({ length: 8 }).map((_, i) => (
                     <Skeleton key={i} className="aspect-square w-full" />
                   ))}
@@ -375,14 +352,14 @@ export function ImageLibraryDialog({
               }
             >
               <StaleContainer pending={loading}>
-                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                   {items.map((item) => (
                     // Uncropped on a neutral square, so each photo shows its
                     // real shape before she picks it.
                     <button
                       key={item.key}
                       type="button"
-                      disabled={busy || generating || uploading}
+                      disabled={busy || uploading}
                       onClick={() => pick(item)}
                       className="flex aspect-square items-center justify-center overflow-hidden rounded-md border bg-muted/50 p-1 hover:ring-2 hover:ring-ring"
                       title={item.title}
@@ -403,20 +380,6 @@ export function ImageLibraryDialog({
                   )}
                 </div>
               </StaleContainer>
-              {tab === "library" && category === "photos" && query.trim() && (
-                <div className="pt-3 text-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    loading={generating}
-                    loadingText={t("blog.libraryGenerating")}
-                    disabled={busy || uploading}
-                    onClick={() => generate(query.trim())}
-                  >
-                    {t("blog.libraryGenerate", { query: query.trim() })}
-                  </Button>
-                </div>
-              )}
               {hasNext && (
                 <div className="pt-3 text-center">
                   <Button

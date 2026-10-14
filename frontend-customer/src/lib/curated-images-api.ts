@@ -37,34 +37,6 @@ export function searchCuratedImages(params: {
   );
 }
 
-export interface CuratedImageJob {
-  job_id: string;
-  status: string;
-  done: boolean;
-  photo: MaterializedPhoto | null;
-}
-
-/** Create a brand-new image from a description when the library has nothing
- * that fits. Counts against the tenant's monthly cap (429 once it is used up).
- * Most jobs take about a minute; this resolves with the tenant photo, or null
- * when the service could not produce one. */
-export async function generateCuratedImage(
-  prompt: string,
-): Promise<MaterializedPhoto | null> {
-  let job = await clientFetch<CuratedImageJob>(
-    "/api/v1/curated-images/generate/",
-    { method: "POST", body: JSON.stringify({ prompt }) },
-  );
-  // Each status call long-polls a few seconds server-side, so this loop is
-  // not a busy wait. 40 rounds comfortably outlasts a slow job.
-  for (let round = 0; !job.done && round < 40; round += 1) {
-    job = await clientFetch<CuratedImageJob>(
-      `/api/v1/curated-images/generate/${job.job_id}/`,
-    );
-  }
-  return job.photo;
-}
-
 // Named materialize*, not use* — ESLint treats use-prefixed functions as React
 // hooks and would reject calls from event handlers. This copies the image into
 // the tenant's own storage and returns the resulting tenant photo.
