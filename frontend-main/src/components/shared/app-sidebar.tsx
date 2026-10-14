@@ -5,7 +5,7 @@ import { ChevronDown, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { ThemeToggle } from "@shared/ui/theme-toggle";
 import { useNavigation } from "@shared/navigation/navigation-provider";
 import { isNavItemActive } from "@shared/navigation/navigation-state";
 import { NavLink } from "@/components/ui/nav-link";

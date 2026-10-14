@@ -5,19 +5,7 @@ import sharedPreset from "../packages/shared/tailwind-preset";
 
 const config: Config = {
   presets: [sharedPreset],
-  // The `dark:` variant must fire under EVERY dark-family theme — not just `.dark`.
-  // `matte` is intentionally excluded (it is a light theme).
-  darkMode: [
-    "variant",
-    [
-      "&:is(.dark, .dark *)",
-      "&:is(.dim, .dim *)",
-      "&:is(.midnight, .midnight *)",
-      "&:is(.graphite, .graphite *)",
-      "&:is(.graphite-plus, .graphite-plus *)",
-      "&:is(.graphite-bright, .graphite-bright *)",
-    ],
-  ],
+  darkMode: "class",
   // Include the shared admin-kit package (imported via the `@shared/*` path
   // alias) so its Tailwind classes actually get generated — classes used
   // ONLY there (never coincidentally reused in this app's own src/) were

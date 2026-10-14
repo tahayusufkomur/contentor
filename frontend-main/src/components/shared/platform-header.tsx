@@ -7,7 +7,6 @@ import { NavLink } from "@/components/ui/nav-link";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { LogOut, Menu, User as UserIcon, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Wordmark } from "@/components/shared/logo-mark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -88,7 +87,6 @@ export function PlatformHeader({ user }: { user?: User | null }) {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <ThemeToggle compact />
           {user ? (
             <>
               <span className="ml-1 max-w-[140px] truncate text-[13px] text-muted-foreground">
@@ -155,7 +153,6 @@ export function PlatformHeader({ user }: { user?: User | null }) {
               {t("blog")}
             </NavLink>
             <div className="h-px bg-border" />
-            <ThemeToggle className="justify-start" />
             {user ? (
               <>
                 <NavLink

@@ -49,10 +49,10 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
+            defaultTheme="light"
+            enableSystem={false}
             disableTransitionOnChange
-            themes={["light", "dim", "dark"]}
+            themes={["light", "dark"]}
           >
             <NavigationProvider>
               <NavigationProgress />
