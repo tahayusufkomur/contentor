@@ -38,7 +38,7 @@ export function MagicLinkForm() {
   if (sent) {
     return (
       <div className="text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl glass-strong">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
           <Mail className="h-5 w-5 text-primary" />
         </div>
         <h2 className="mt-5 text-[17px] font-semibold tracking-[-0.015em]">
@@ -57,7 +57,7 @@ export function MagicLinkForm() {
       <div className="space-y-2">
         <Label
           htmlFor="magic-email"
-          className="text-[13px] font-medium text-foreground/80"
+          className="text-caption font-medium text-foreground"
         >
           Email
         </Label>
@@ -75,7 +75,7 @@ export function MagicLinkForm() {
         type="submit"
         variant="brand"
         size="lg"
-        className="w-full"
+        className="w-full rounded-full"
         loading={loading}
         loadingText="Sending…"
       >

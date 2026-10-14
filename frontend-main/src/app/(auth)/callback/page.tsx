@@ -58,7 +58,7 @@ export default function CallbackPage() {
   if (error) {
     return (
       <AuthShell eyebrow="Error" title="Something went wrong" subtitle={error}>
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl glass-strong text-destructive">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-destructive">
           <AlertCircle className="h-6 w-6" />
         </div>
       </AuthShell>
@@ -71,7 +71,7 @@ export default function CallbackPage() {
       title="Verifying"
       subtitle="Signing you in securely…"
     >
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl glass-strong text-primary">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-primary">
         <Spinner />
       </div>
     </AuthShell>

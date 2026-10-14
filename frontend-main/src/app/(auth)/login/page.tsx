@@ -39,7 +39,7 @@ export default function LoginPage() {
         <Button
           variant="outline"
           size="lg"
-          className="w-full"
+          className="w-full rounded-full"
           loading={googleLoading}
           onClick={async () => {
             setGoogleLoading(true);
@@ -84,10 +84,10 @@ export default function LoginPage() {
 
         <div className="relative py-1">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border/60" />
+            <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center">
-            <span className="bg-card px-3 text-[10.5px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="bg-background px-3 text-eyebrow text-muted-foreground">
               {t("or")}
             </span>
           </div>

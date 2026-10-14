@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import { Wordmark } from "@/components/shared/logo-mark";
+import { media } from "@/lib/media";
 
 interface AuthShellProps {
   eyebrow?: string;
@@ -9,89 +10,82 @@ interface AuthShellProps {
   footer?: React.ReactNode;
 }
 
-/**
- * Apple Vision-Pro style auth shell:
- * left → brand panel with aurora & quote; right → floating glass form.
- * On mobile, collapses to a single centered glass panel over aurora.
- */
-export function AuthShell({
-  eyebrow,
-  title,
-  subtitle,
-  children,
-  footer,
-}: AuthShellProps) {
+interface Still {
+  src: string;
+  srcSmall: string;
+  width: number;
+  height: number;
+}
+
+/** The 4:5 coach photograph beside the form (spec 5.5; Phase 1 manifest). */
+const PHOTO_KEY = "still-yoga";
+
+/** Null when the manifest lacks the key or the accessor throws: the photo
+ * half then stays second paper with the wordmark and the form does not move. */
+function authPhoto(): Still | null {
+  try {
+    const item = media(PHOTO_KEY);
+    if (!item || item.kind !== "still" || !item.src || !item.width || !item.height) return null;
+    return {
+      src: item.src,
+      srcSmall: item.srcSmall ?? item.src,
+      width: item.width,
+      height: item.height,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** White auth page (spec 5.5): a 420 px centred form; on desktop one 4:5
+ * coach photograph fills the other half with the wordmark over it. The
+ * photograph is decoration (alt=""), so a failed load paints nothing over
+ * the second paper beneath it. No aurora, no grid, no gradient text. */
+export function AuthShell({ eyebrow, title, subtitle, children, footer }: AuthShellProps) {
+  const photo = authPhoto();
+
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-background">
-      {/* Aurora backdrop */}
-      <div aria-hidden className="absolute inset-0 -z-10">
-        <div className="aurora animate-aurora" />
-        <div className="grid-fade absolute inset-0 opacity-50" />
-      </div>
+    <div className="grid min-h-screen bg-background lg:grid-cols-2">
+      <aside className="relative hidden overflow-hidden bg-muted lg:block">
+        {photo && (
+          <img
+            src={photo.src}
+            srcSet={`${photo.srcSmall} ${photo.width / 2}w, ${photo.src} ${photo.width}w`}
+            sizes="50vw"
+            width={photo.width}
+            height={photo.height}
+            alt=""
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
+        <NavLink
+          href="/"
+          className="absolute left-8 top-8 inline-flex rounded-full bg-background px-3.5 py-1.5"
+        >
+          <Wordmark className="text-base" />
+        </NavLink>
+      </aside>
 
-      <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 lg:grid-cols-[1.1fr_1fr]">
-        {/* Brand panel */}
-        <aside className="relative hidden flex-col justify-between p-12 lg:flex">
-          <Link href="/" className="inline-flex items-center">
-            <Wordmark className="text-lg" />
-          </Link>
-
-          <div className="relative max-w-md">
-            <div
-              aria-hidden
-              className="absolute -inset-x-16 -top-24 -z-10 h-72 rounded-full bg-gradient-to-r from-[oklch(0.62_0.24_232)] via-[oklch(0.55_0.24_270)] to-[oklch(0.7_0.2_210)] opacity-30 blur-3xl"
-            />
-            <p className="text-eyebrow text-muted-foreground/80">
-              For creators
-            </p>
-            <h2 className="text-display mt-4 text-5xl leading-[1.05]">
-              <span className="text-foreground/95">Your studio.</span>
-              <br />
-              <span className="brand-gradient">Your brand.</span>
-            </h2>
-            <p className="mt-5 text-[15.5px] leading-relaxed text-muted-foreground">
-              Launch a beautifully designed platform for courses, live classes,
-              and email — all under your name. No code. No clutter.
-            </p>
-          </div>
-
-          <p className="text-[12.5px] text-muted-foreground/70">
-            © {new Date().getFullYear()} Contentor — All rights reserved.
-          </p>
-        </aside>
-
-        {/* Form panel */}
-        <main className="flex items-center justify-center px-5 py-12 sm:px-8 lg:p-12">
-          <div className="w-full max-w-md">
-            {/* mobile brand row */}
-            <div className="mb-8 flex items-center justify-center lg:hidden">
+      <main className="flex items-center justify-center px-6 py-12 lg:px-12">
+        <div className="w-full max-w-[420px]">
+          <div className="mb-10 flex justify-center lg:hidden">
+            <NavLink href="/">
               <Wordmark className="text-base" />
-            </div>
-
-            <div className="glass-pane p-8 md:p-9">
-              <div className="text-center">
-                {eyebrow && (
-                  <p className="text-eyebrow text-muted-foreground/80">
-                    {eyebrow}
-                  </p>
-                )}
-                <h1 className="text-display mt-2 text-[28px] leading-[1.1] md:text-[32px]">
-                  {title}
-                </h1>
-                {subtitle && (
-                  <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
-                    {subtitle}
-                  </p>
-                )}
-              </div>
-
-              <div className="mt-7">{children}</div>
-            </div>
-
-            {footer && <div className="mt-6 text-center">{footer}</div>}
+            </NavLink>
           </div>
-        </main>
-      </div>
+
+          <div className="text-center">
+            {eyebrow && <p className="text-eyebrow text-muted-foreground">{eyebrow}</p>}
+            <h1 className="mt-2 text-title-2 text-balance text-foreground">{title}</h1>
+            {subtitle && <p className="mt-3 text-body text-muted-foreground">{subtitle}</p>}
+          </div>
+
+          <div className="mt-8">{children}</div>
+
+          {footer && <div className="mt-6 text-center">{footer}</div>}
+        </div>
+      </main>
     </div>
   );
 }
