@@ -1,58 +1,31 @@
-"use client";
+import { ChevronDown } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import { FAQ_KEYS } from "@/lib/landing";
 
-import { Plus } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { ScrollReveal } from "@/components/landing/scroll-reveal";
-
-const FAQ_KEYS = [
-  "freePlan",
-  "technical",
-  "customDomain",
-  "payments",
-  "liveClasses",
-  "migration",
-  "contract",
-] as const;
-
-export function FaqSection() {
-  const t = useTranslations("marketing.faq");
+/** FAQ (spec 5.4 ch. 8): <details> with a shared `name`, so the browser keeps
+ * one open at a time and all start closed (Review Focus 4); the chevron turns
+ * with `group-open:`; the `.faq-content` grid-rows transition in globals.css
+ * stays. */
+export async function FaqSection() {
+  const t = await getTranslations("marketing.start.faq");
   return (
-    <section className="px-6 py-32">
-      <div className="mx-auto max-w-3xl">
-        <ScrollReveal direction="up" duration={0.7}>
-          <div className="text-center">
-            <p className="text-eyebrow text-muted-foreground">FAQ</p>
-            <h2 className="text-display mt-4 text-4xl text-foreground md:text-5xl">
-              {t("title")}
-            </h2>
-            <p className="mt-4 text-sm text-muted-foreground">
-              {t("subtitle")}
-            </p>
-          </div>
-        </ScrollReveal>
-
-        <ScrollReveal direction="up" duration={0.7}>
-          <div className="mt-16 overflow-hidden rounded-xl border bg-card shadow-sm">
-            {FAQ_KEYS.map((key, i) => (
-              <details
-                key={key}
-                className={`group ${i !== FAQ_KEYS.length - 1 ? "border-b" : ""}`}
-              >
-                <summary className="flex cursor-pointer items-center justify-between gap-6 px-7 py-5 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
-                  <span>{t(`items.${key}.q`)}</span>
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-transform duration-300 group-open:rotate-45">
-                    <Plus className="size-3.5" strokeWidth={2.5} />
-                  </span>
-                </summary>
-                <div className="faq-content">
-                  <div className="px-7 pb-6 text-sm leading-relaxed text-muted-foreground">
-                    {t(`items.${key}.a`)}
-                  </div>
-                </div>
-              </details>
-            ))}
-          </div>
-        </ScrollReveal>
+    <section aria-labelledby="faq-title" className="mx-auto mt-24 max-w-text px-6">
+      <h3 id="faq-title" className="text-title text-foreground">{t("title")}</h3>
+      <div className="mt-8 border-t">
+        {FAQ_KEYS.map((key) => (
+          <details key={key} name="landing-faq" className="group border-b">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-left text-body font-medium text-foreground [&::-webkit-details-marker]:hidden">
+              <span>{t(`items.${key}.q`)}</span>
+              <ChevronDown
+                aria-hidden
+                className="size-4 shrink-0 text-muted-foreground motion-safe:transition-transform motion-safe:duration-300 group-open:rotate-180"
+              />
+            </summary>
+            <div className="faq-content">
+              <div className="pb-6 text-body text-muted-foreground">{t(`items.${key}.a`)}</div>
+            </div>
+          </details>
+        ))}
       </div>
     </section>
   );

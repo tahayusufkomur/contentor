@@ -1,44 +1,21 @@
-"use client";
+import { getTranslations } from "next-intl/server";
+import { NavLink } from "@/components/ui/nav-link";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { useTranslations } from "next-intl";
-
-import { Button } from "@/components/ui/button";
-import { Monogram } from "@/components/shared/logo-mark";
-
-export function FinalCtaSection() {
-  const t = useTranslations("marketing.finalCta");
+/** The close (spec 5.4 ch. 8): one tile of second paper, display-2 line, the
+ * pill, the no-card note. */
+export async function FinalCtaSection() {
+  const t = await getTranslations("marketing.start.cta");
   return (
-    <section className="relative isolate overflow-hidden px-6 py-32 md:py-40">
-      <div className="relative mx-auto max-w-4xl">
-        <div className="relative overflow-hidden rounded-2xl border bg-card p-12 text-center shadow-sm md:p-16">
-          {/* Single soft accent glow */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 -top-24 -z-10 mx-auto h-48 w-2/3 rounded-full bg-marketing-accent opacity-10 blur-3xl"
-          />
-
-          <Monogram size={64} className="mx-auto" />
-
-          <h2 className="text-display mt-7 text-4xl text-foreground md:text-5xl">
-            {t("title")}
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-muted-foreground">
-            {t("subtitle")}
-          </p>
-
-          <div className="mt-8 flex justify-center">
-            <Button asChild size="xl">
-              <Link href="/signup">
-                {t("ctaPrimary")}
-                <ArrowRight />
-              </Link>
-            </Button>
-          </div>
-
-          <p className="mt-5 text-xs text-muted-foreground">{t("trustNote")}</p>
-        </div>
+    <section className="mx-auto mt-24 max-w-media px-6">
+      <div className="rounded-tile bg-muted px-8 py-16 text-center md:py-24">
+        <h3 className="text-display-2 text-foreground text-balance">{t("title")}</h3>
+        <p className="mx-auto mt-4 max-w-[560px] text-body-lg text-muted-foreground">{t("text")}</p>
+        <NavLink href="/signup" className={cn(buttonVariants({ size: "lg" }), "mt-8 rounded-full px-7")}>
+          {t("button")}
+        </NavLink>
+        <p className="mt-4 text-caption text-muted-foreground">{t("note")}</p>
       </div>
     </section>
   );

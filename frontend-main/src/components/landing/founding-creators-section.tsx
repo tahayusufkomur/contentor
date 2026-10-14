@@ -1,68 +1,37 @@
-"use client";
+import { getTranslations } from "next-intl/server";
+import { NavLink } from "@/components/ui/nav-link";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-import Link from "next/link";
-import { ArrowRight, Handshake, Percent, Star } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { ScrollReveal } from "@/components/landing/scroll-reveal";
+const PERKS = ["concierge", "discount", "featured"] as const;
 
-const PERKS = [
-  { key: "concierge", Icon: Handshake },
-  { key: "discount", Icon: Percent },
-  { key: "featured", Icon: Star },
-] as const;
-
-export function FoundingCreatorsSection() {
-  const t = useTranslations("marketing.foundingCreators");
+/** The founding-creators offer as one tile on second paper (spec 5.4 ch. 8):
+ * the three perks as text, no icons; the facts (first 20 coaches, 50% off for
+ * 12 months) are today's and live in marketing.json. */
+export async function FoundingCreatorsSection() {
+  const t = await getTranslations("marketing.start.founding");
   return (
-    <section className="px-6 py-32 md:py-40">
-      <div className="mx-auto max-w-6xl">
-        <ScrollReveal direction="up" duration={0.7}>
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-eyebrow text-muted-foreground">{t("eyebrow")}</p>
-            <h2 className="text-display mt-4 text-4xl text-foreground md:text-5xl">
-              {t("title")}
-            </h2>
-            <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-              {t("subtitle")}
-            </p>
-          </div>
-        </ScrollReveal>
-
-        <div className="mt-16 grid gap-6 md:grid-cols-3">
-          {PERKS.map(({ key, Icon }, i) => (
-            <ScrollReveal
-              key={key}
-              direction="up"
-              duration={0.7}
-              delay={i * 0.1}
-            >
-              <div className="flex h-full flex-col rounded-xl border bg-card p-7 shadow-sm">
-                <div className="flex size-10 items-center justify-center rounded-lg bg-marketing-accent/15">
-                  <Icon className="size-5 text-marketing-accent" />
-                </div>
-                <h3 className="mt-5 text-base font-semibold text-foreground">
-                  {t(`perks.${key}.title`)}
-                </h3>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
-                  {t(`perks.${key}.description`)}
-                </p>
-              </div>
-            </ScrollReveal>
+    <section aria-labelledby="founding-title" className="mx-auto max-w-media px-6">
+      <div className="rounded-tile bg-muted p-8 md:p-14">
+        <p className="text-eyebrow text-muted-foreground">{t("eyebrow")}</p>
+        <h3 id="founding-title" className="mt-3 text-title text-foreground text-balance">
+          {t("title")}
+        </h3>
+        <p className="mt-4 max-w-[640px] text-body-lg text-muted-foreground">{t("text")}</p>
+        <div className="mt-10 grid gap-8 md:grid-cols-3">
+          {PERKS.map((key) => (
+            <div key={key}>
+              <h4 className="text-body font-semibold text-foreground">{t(`perks.${key}.title`)}</h4>
+              <p className="mt-1.5 text-body text-muted-foreground">{t(`perks.${key}.text`)}</p>
+            </div>
           ))}
         </div>
-
-        <ScrollReveal direction="up" duration={0.7} delay={0.2}>
-          <div className="mt-12 flex flex-col items-center gap-3">
-            <Button asChild size="xl">
-              <Link href="/signup">
-                {t("cta")}
-                <ArrowRight />
-              </Link>
-            </Button>
-            <p className="text-xs text-muted-foreground">{t("note")}</p>
-          </div>
-        </ScrollReveal>
+        <div className="mt-10 flex flex-wrap items-center gap-4">
+          <NavLink href="/signup" className={cn(buttonVariants({ size: "lg" }), "rounded-full px-6")}>
+            {t("cta")}
+          </NavLink>
+          <p className="text-caption text-muted-foreground">{t("note")}</p>
+        </div>
       </div>
     </section>
   );
