@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { BuildChapter } from "@/components/landing/build-chapter";
 import { Hero } from "@/components/landing/hero";
 import { LooksChapter } from "@/components/landing/looks-chapter";
+import { StudioChapter } from "@/components/landing/studio-chapter";
 import { LocalNav } from "@/components/shared/local-nav";
 import { PlatformFooter } from "@/components/shared/platform-footer";
 import { PlatformHeader } from "@/components/shared/platform-header";
@@ -24,6 +25,7 @@ export default async function HomePage() {
         <Hero />
         <BuildChapter />
         <LooksChapter />
+        <StudioChapter />
       </main>
       <PlatformFooter />
     </div>

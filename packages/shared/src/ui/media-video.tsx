@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { Pause, Play } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -16,8 +16,14 @@ export interface MediaVideoProps {
   loop?: boolean;
   /** Pause/play control for content that moves longer than 5 s (WCAG 2.2.2). */
   showToggle?: boolean;
-  /** Set when the clip carries meaning; omit for decoration. */
+  /** Set when the clip carries meaning; omit for decoration. In "hover" mode it
+   * names the focusable tile, so set it. */
   label?: string;
+  /** "view" (default): the file loads after idle and plays while in view.
+   * "hover": nothing loads until the pointer enters or the tile is focused; a
+   * tap or Enter/Space toggles. A reader without a pointer pays for the poster
+   * only (landing bento tiles, spec 5.4 ch. 4). */
+  playOn?: "view" | "hover";
   className?: string;
 }
 
@@ -36,12 +42,15 @@ export function MediaVideo({
   loop = true,
   showToggle = true,
   label,
+  playOn = "view",
   className,
 }: MediaVideoProps) {
   const video = useRef<HTMLVideoElement>(null);
-  const [wanted, setWanted] = useState(false); // user or idle asked for the file
+  const [wanted, setWanted] = useState(false); // user, idle or hover asked for the file
   const [playing, setPlaying] = useState(false);
   const [blocked, setBlocked] = useState(false); // reduced motion / save-data
+  const [hovering, setHovering] = useState(false);
+  const hover = playOn === "hover";
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -50,6 +59,7 @@ export function MediaVideo({
       setBlocked(true);
       return;
     }
+    if (hover) return; // loads on the first hover instead of after idle
     const start = () => setWanted(true);
     if (document.readyState === "complete") {
       if ("requestIdleCallback" in window) {
@@ -61,11 +71,11 @@ export function MediaVideo({
     }
     window.addEventListener("load", start, { once: true });
     return () => window.removeEventListener("load", start);
-  }, []);
+  }, [hover]);
 
   useEffect(() => {
     const v = video.current;
-    if (!v || !wanted) return;
+    if (!v || !wanted || hover) return;
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) v.play().catch(() => {});
@@ -75,9 +85,23 @@ export function MediaVideo({
     );
     io.observe(v);
     return () => io.disconnect();
-  }, [wanted]);
+  }, [wanted, hover]);
+
+  // Hover mode: the <source> elements appear once `wanted` flips, so play from
+  // an effect (after that commit) rather than from the pointer handler.
+  useEffect(() => {
+    const v = video.current;
+    if (!v || !hover || !wanted) return;
+    if (hovering) v.play().catch(() => {});
+    else v.pause();
+  }, [hover, hovering, wanted]);
 
   const toggle = () => {
+    if (hover) {
+      setWanted(true);
+      setHovering((h) => !h);
+      return;
+    }
     const v = video.current;
     if (!v) return;
     if (!wanted) setWanted(true);
@@ -85,9 +109,52 @@ export function MediaVideo({
     else v.pause();
   };
 
+  const enter = (e: PointerEvent<HTMLElement>) => {
+    if (e.pointerType === "touch") return; // touch toggles on pointerup
+    setWanted(true);
+    setHovering(true);
+  };
+  const leave = (e: PointerEvent<HTMLElement>) => {
+    if (e.pointerType === "touch") return;
+    setHovering(false);
+  };
+  const tap = (e: PointerEvent<HTMLElement>) => {
+    if (e.pointerType === "touch") toggle();
+  };
+  const key = (e: KeyboardEvent<HTMLElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggle();
+    }
+  };
+  const interactive = hover && !blocked;
+
   return (
-    <figure className={cn("relative overflow-hidden bg-muted", className)} style={{ aspectRatio: `${width} / ${height}` }}>
-      {/* eslint-disable-next-line @next/next/no-img-element -- sized AVIF poster, no optimisation wanted */}
+    <figure
+      className={cn(
+        "relative overflow-hidden bg-muted",
+        interactive && "cursor-pointer outline-none focus-visible:ring-[3px] focus-visible:ring-ring",
+        className,
+      )}
+      style={{ aspectRatio: `${width} / ${height}` }}
+      {...(interactive
+        ? {
+            tabIndex: 0,
+            role: "button",
+            "aria-label": label,
+            "aria-pressed": playing,
+            onPointerEnter: enter,
+            onPointerLeave: leave,
+            onPointerUp: tap,
+            onFocus: () => {
+              setWanted(true);
+              setHovering(true);
+            },
+            onBlur: () => setHovering(false),
+            onKeyDown: key,
+          }
+        : {})}
+    >
       <img
         src={poster}
         alt=""
@@ -108,8 +175,8 @@ export function MediaVideo({
           preload="none"
           width={width}
           height={height}
-          aria-label={label}
-          aria-hidden={label ? undefined : true}
+          aria-label={hover ? undefined : label}
+          aria-hidden={hover || !label ? true : undefined}
           onPlaying={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
           className="absolute inset-0 h-full w-full object-cover"
@@ -124,7 +191,7 @@ export function MediaVideo({
           type="button"
           onClick={toggle}
           aria-label={playing ? "Pause video" : "Play video"}
-          className="absolute bottom-3 right-3 inline-flex size-8 items-center justify-center rounded-full bg-background text-foreground backdrop-blur-sm transition-colors hover:bg-accent"
+          className="absolute bottom-3 right-3 inline-flex size-8 items-center justify-center rounded-full bg-background/80 text-foreground backdrop-blur-sm transition-colors hover:bg-background"
         >
           {playing ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
         </button>
