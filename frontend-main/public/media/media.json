@@ -1,5 +1,34 @@
 {
   "items": {
+    "clip-student-phone": {
+      "kind": "clip",
+      "src": "/media/clips/clip-student-phone.mp4",
+      "width": 750,
+      "height": 1624,
+      "bytes": 314723,
+      "poster": "/media/posters/clip-student-phone.avif",
+      "webm": "/media/clips/clip-student-phone.webm",
+      "phoneSrc": "/media/clips/clip-student-phone-phone.mp4",
+      "durationS": 4.8
+    },
+    "tile-student-dashboard": {
+      "kind": "still",
+      "src": "/media/stills/tile-student-dashboard.avif",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 28294,
+      "alt": "A student's dashboard on the coach's site, with her courses and progress",
+      "srcSmall": "/media/stills/tile-student-dashboard-small.avif"
+    },
+    "tile-live-class": {
+      "kind": "still",
+      "src": "/media/stills/tile-live-class.avif",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 34647,
+      "alt": "The student's live classes page, with a class live now and a Join button",
+      "srcSmall": "/media/stills/tile-live-class-small.avif"
+    },
     "still-yoga": {
       "kind": "still",
       "src": "/media/stills/still-yoga.avif",

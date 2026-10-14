@@ -112,7 +112,7 @@ photos() {
 student() {
   segments clip-student-phone phone student-phone:dash:dash-tap student-phone:lesson:lesson-end student-phone:live:live-tap
   if [ -f "$OUT/clips/clip-student-phone.mp4" ]; then
-    webm clip-student-phone 34 0.6M
+    webm clip-student-phone 40 0.6M
     phone clip-student-phone 0.4M
     poster clip-student-phone
   fi
