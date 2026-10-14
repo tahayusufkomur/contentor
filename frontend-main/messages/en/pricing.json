@@ -82,6 +82,21 @@
       ]
     }
   },
+  "features": {
+    "students": "Students",
+    "storage": "Storage",
+    "courseBuilder": "Course builder",
+    "live": "Live classes",
+    "campaigns": "Email campaigns",
+    "branding": "Custom branding",
+    "domain": "Custom domain",
+    "fee": "Transaction fee",
+    "support": "Support"
+  },
+  "compare": {
+    "included": "Included",
+    "notIncluded": "Not included"
+  },
   "faq": {
     "title": "Frequently asked questions",
     "items": {

@@ -1,98 +1,58 @@
 import Link from "next/link";
-import { Check, X } from "lucide-react";
+import { Check, ChevronDown, Minus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { PlatformHeader } from "@/components/shared/platform-header";
 import { PlatformFooter } from "@/components/shared/platform-footer";
-import { ScrollReveal } from "@/components/landing/scroll-reveal";
-import { Parallax } from "@/components/landing/parallax";
 import { formatPlanPrice } from "@shared/lib/format-plan-price";
 import { getAuthUser } from "@/lib/auth";
+import { fetchPlans } from "@/lib/plans-server";
 import {
+  FEATURE_KEYS,
   PLAN_KEYS,
+  featureCell,
+  includedFeatures,
   planKeyFromName,
+  type Cell,
   type PlanKey,
   type PlanSummary,
-} from "@/lib/plans";
-import { fetchPlans } from "@/lib/plans-server";
+} from "@/lib/pricing-matrix";
 
 import { PricingCta } from "./PricingCta";
 
 const FAQ_KEYS = ["switch", "trial", "payments", "limits"] as const;
+const HIGHLIGHTED: PlanKey = "starter";
+/** The compare grid: a label column on md+, then one column per plan. On a
+ * phone the label spans the row above the three cells. */
+const COLUMNS = "grid grid-cols-3 gap-3 md:grid-cols-[1.4fr_repeat(3,1fr)] md:gap-6";
 
-const PLAN_FEATURE_KEYS: Record<PlanKey, readonly string[]> = {
-  free: [
-    "students",
-    "storage",
-    "courseBuilder",
-    "support",
-    "fee",
-    "live",
-    "branding",
-    "domain",
-  ],
-  starter: [
-    "students",
-    "storage",
-    "courseBuilder",
-    "live",
-    "branding",
-    "campaigns",
-    "fee",
-    "domain",
-  ],
-  pro: [
-    "students",
-    "storage",
-    "courseBuilder",
-    "live",
-    "domain",
-    "campaigns",
-    "fee",
-    "support",
-  ],
-};
-
-const PLAN_HIGHLIGHT: Record<PlanKey, boolean> = {
-  free: false,
-  starter: true,
-  pro: false,
-};
-
-/** A limit of 0 means "unlimited" across the platform plan model. */
-function limitText(value: number, unit: string, plural: string): string {
-  if (value <= 0) return `Unlimited ${plural}`;
-  return `${value.toLocaleString()} ${unit}`;
-}
-
-/**
- * Quantitative feature bullets are derived from the live plan record; purely
- * descriptive ones (course builder, branding, domain, support) stay in i18n.
- */
-function dynamicFeatureLabel(
-  featureKey: string,
-  plan: PlanSummary,
-): string | null {
-  switch (featureKey) {
-    case "students":
-      return plan.max_students <= 0
-        ? "Unlimited students"
-        : `Up to ${plan.max_students.toLocaleString()} students`;
-    case "storage":
-      return limitText(plan.max_storage_gb, "GB storage", "storage");
-    case "fee":
-      return `${Number(plan.transaction_fee_pct)}% transaction fee`;
-    case "campaigns":
-      return plan.max_campaign_emails <= 0
-        ? "Email campaigns"
-        : `Email campaigns (${plan.max_campaign_emails.toLocaleString()}/mo)`;
-    default:
-      return null; // descriptive — fall back to i18n
+function CellView({
+  cell,
+  included,
+  notIncluded,
+}: {
+  cell: Cell;
+  included: string;
+  notIncluded: string;
+}) {
+  if (cell.kind === "text") {
+    return <span className="text-caption text-foreground">{cell.label}</span>;
   }
+  if (cell.kind === "yes") {
+    return (
+      <>
+        <Check aria-hidden className="size-4 text-foreground" strokeWidth={2.5} />
+        <span className="sr-only">{included}</span>
+      </>
+    );
+  }
+  return (
+    <>
+      <Minus aria-hidden className="size-4 text-muted-foreground" />
+      <span className="sr-only">{notIncluded}</span>
+    </>
+  );
 }
 
 // TODO(phase-2): under each pricing CTA, surface a "Already have an account?
@@ -111,217 +71,144 @@ export default async function PricingPage() {
     const key = planKeyFromName(p.name);
     if (key != null) planByKey[key] = p;
   }
+  const included = Object.fromEntries(
+    PLAN_KEYS.map((key) => [
+      key,
+      includedFeatures(
+        (t.raw(`plans.${key}.included`) as string[]) ?? [],
+        planByKey[key] ?? null,
+      ),
+    ]),
+  ) as Record<PlanKey, Set<string>>;
+  // Price from the backend when the plan resolved; the locale fallback keeps
+  // the page rendering if the API is unavailable.
+  const price = (key: PlanKey) => {
+    const plan = planByKey[key];
+    return plan && !plan.is_free
+      ? formatPlanPrice(plan.currency, plan.amount_cents)
+      : t(`plans.${key}.price`);
+  };
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <PlatformHeader user={user} />
 
       {/* Hero */}
-      <section className="hero-scroll-out relative isolate overflow-hidden px-6 pb-20 pt-28 md:pt-36">
-        <Parallax speed={-0.18} className="absolute inset-0 -z-10">
-          <div className="aurora animate-aurora" />
-        </Parallax>
-        <div className="grid-fade pointer-events-none absolute inset-0 -z-10 opacity-60" />
-
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="reveal-fade-up text-eyebrow text-muted-foreground/80">
-            Pricing
-          </p>
-          <h1
-            className="text-display mt-4 reveal-fade-up text-5xl leading-[1.05] md:text-6xl lg:text-7xl"
-            style={{ animationDelay: "0.1s" }}
-          >
-            <span className="text-foreground/95">{t("title")}</span>
-          </h1>
-          <p
-            className="mx-auto mt-5 max-w-xl reveal-fade-up text-[17px] leading-relaxed text-muted-foreground md:text-lg"
-            style={{ animationDelay: "0.22s" }}
-          >
+      <section className="px-6 pb-16 pt-24 md:pb-24 md:pt-32">
+        <div className="mx-auto max-w-text text-center">
+          <p className="text-eyebrow text-muted-foreground">Pricing</p>
+          <h1 className="mt-4 text-display text-balance text-foreground">{t("title")}</h1>
+          <p className="mx-auto mt-5 max-w-[640px] text-body-lg text-balance text-muted-foreground">
             {t("subtitle")}
           </p>
         </div>
       </section>
 
-      {/* Plans */}
-      <section className="px-6 pb-32">
-        <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
-          {PLAN_KEYS.map((key, idx) => {
-            const highlighted = PLAN_HIGHLIGHT[key];
-            const plan = planByKey[key] ?? null;
-            const includedSet = new Set(
-              (t.raw(`plans.${key}.included`) as string[]) ?? [],
-            );
-            // Reflect live capabilities the backend actually grants.
-            if (plan) {
-              if (plan.is_live_enabled) includedSet.add("live");
-              else includedSet.delete("live");
-              if (plan.max_campaign_emails > 0) includedSet.add("campaigns");
-              else includedSet.delete("campaigns");
-            }
-            const planId = plan?.id ?? null;
-            // Price comes from the backend when the plan resolved; otherwise the
-            // i18n fallback keeps the page rendering if the API is unavailable.
-            const priceDisplay = plan
-              ? plan.is_free
-                ? t(`plans.${key}.price`)
-                : formatPlanPrice(plan.currency, plan.amount_cents)
-              : t(`plans.${key}.price`);
-            return (
-              <ScrollReveal
-                key={key}
-                variant="scale"
-                fromScale={0.94}
-                duration={1}
-                delay={idx * 0.1}
-              >
-                <div
-                  className={`relative flex flex-col rounded-3xl p-8 transition-transform duration-300 hover:-translate-y-1 md:p-9 ${
-                    highlighted ? "glass-strong shadow-glow-blue" : "glass-pane"
-                  }`}
-                >
-                  {/* Aurora glow under highlighted plan */}
-                  {highlighted && (
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute inset-x-8 -top-10 -z-10 h-40 rounded-full bg-gradient-to-r from-[oklch(0.62_0.24_232)] via-[oklch(0.55_0.24_270)] to-[oklch(0.7_0.2_210)] opacity-50 blur-3xl"
-                    />
+      {/* Compare */}
+      <section className="bg-muted">
+        <div className="mx-auto max-w-text px-6 pb-20 pt-6 md:pb-28">
+          {/* Plan header: the one sticky element on this page, so it sits
+              directly under the 48 px header. Opaque second paper hides the
+              rows scrolling beneath it. */}
+          <div className={`sticky top-12 z-30 -mx-6 border-b bg-muted px-6 py-4 ${COLUMNS}`}>
+            <div className="hidden md:block" aria-hidden />
+            {PLAN_KEYS.map((key) => (
+              <div key={key} className="min-w-0">
+                <p className="truncate text-eyebrow text-muted-foreground">
+                  {t(`plans.${key}.name`)}
+                  {key === HIGHLIGHTED && (
+                    <span className="ml-2 text-marketing-accent">{t("popular")}</span>
                   )}
+                </p>
+                <p className="mt-1 truncate text-title-2 text-foreground md:text-title">
+                  {price(key)}
+                </p>
+                <p className="text-caption text-muted-foreground">{t(`plans.${key}.period`)}</p>
+              </div>
+            ))}
+          </div>
 
-                  <div className="flex items-baseline justify-between">
-                    <p className="text-eyebrow text-muted-foreground/80">
-                      {t(`plans.${key}.name`)}
-                    </p>
-                    {highlighted && (
-                      <span className="rounded-full border border-primary/20 bg-primary/[0.08] px-2.5 py-0.5 text-[10.5px] font-semibold tracking-[0.04em] text-primary">
-                        {t("popular")}
-                      </span>
-                    )}
+          {/* Description and CTA: scroll away with the page */}
+          <div className={`${COLUMNS} mt-6`}>
+            <div className="hidden md:block" aria-hidden />
+            {PLAN_KEYS.map((key) => (
+              <div key={key} className="flex min-w-0 flex-col">
+                <p className="hidden flex-1 text-caption text-muted-foreground md:block">
+                  {t(`plans.${key}.description`)}
+                </p>
+                <PricingCta
+                  planId={planByKey[key]?.id ?? null}
+                  isFreePlan={key === "free"}
+                  isAuthenticated={user != null}
+                  variant={key === HIGHLIGHTED ? "brand" : "outline"}
+                  size="lg"
+                  className="w-full rounded-full md:mt-5"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Feature table */}
+          <div className="mt-10 border-t">
+            {FEATURE_KEYS.map((feature) => (
+              <div key={feature} className={`${COLUMNS} items-center border-b py-4`}>
+                <p className="col-span-3 text-caption font-medium text-foreground md:col-span-1">
+                  {t(`features.${feature}`)}
+                </p>
+                {PLAN_KEYS.map((key) => (
+                  <div key={key} className="flex min-w-0 items-center">
+                    <CellView
+                      cell={featureCell(feature, included[key], planByKey[key] ?? null, () =>
+                        t(`plans.${key}.features.${feature}`),
+                      )}
+                      included={t("compare.included")}
+                      notIncluded={t("compare.notIncluded")}
+                    />
                   </div>
-
-                  <div className="mt-6 flex items-baseline gap-1.5">
-                    <span className="text-display text-5xl md:text-6xl">
-                      {priceDisplay}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {t(`plans.${key}.period`)}
-                    </span>
-                  </div>
-
-                  <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
-                    {t(`plans.${key}.description`)}
-                  </p>
-
-                  <div className="my-7 h-px bg-foreground/[0.08]" />
-
-                  <ul className="flex-1 space-y-3">
-                    {PLAN_FEATURE_KEYS[key].map((featureKey) => {
-                      const included = includedSet.has(featureKey);
-                      return (
-                        <li key={featureKey} className="flex items-start gap-3">
-                          <span
-                            className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full ${
-                              included
-                                ? "bg-primary/15 text-primary"
-                                : "bg-foreground/[0.06] text-muted-foreground/40"
-                            }`}
-                            style={{ height: "1.125rem", width: "1.125rem" }}
-                          >
-                            {included ? (
-                              <Check
-                                className="h-2.5 w-2.5"
-                                strokeWidth={3.5}
-                              />
-                            ) : (
-                              <X className="h-2.5 w-2.5" strokeWidth={3.5} />
-                            )}
-                          </span>
-                          <span
-                            className={`text-[13.5px] leading-relaxed ${
-                              included
-                                ? "text-foreground/90"
-                                : "text-muted-foreground/60"
-                            }`}
-                          >
-                            {(plan && dynamicFeatureLabel(featureKey, plan)) ??
-                              t(`plans.${key}.features.${featureKey}`)}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-
-                  <PricingCta
-                    planId={planId}
-                    isFreePlan={key === "free"}
-                    isAuthenticated={user != null}
-                    variant={highlighted ? "brand" : "outline"}
-                    size="lg"
-                    className="mt-8 w-full"
-                  />
-                </div>
-              </ScrollReveal>
-            );
-          })}
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="px-6 py-28">
-        <div className="mx-auto max-w-3xl">
-          <ScrollReveal variant="blur" duration={1}>
-            <div className="text-center">
-              <p className="text-eyebrow text-muted-foreground/80">Questions</p>
-              <h2 className="text-display mt-4 text-4xl md:text-5xl">
-                {t("faq.title")}
-              </h2>
-            </div>
-          </ScrollReveal>
-
-          <div className="mt-16 space-y-12">
-            {FAQ_KEYS.map((key, i) => (
-              <ScrollReveal
-                key={key}
-                direction="up"
-                duration={0.9}
-                delay={i * 0.08}
-              >
-                <div>
-                  <h3 className="text-[16px] font-semibold tracking-[-0.015em] text-foreground">
-                    {t(`faq.items.${key}.q`)}
-                  </h3>
-                  <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-                    {t(`faq.items.${key}.a`)}
-                  </p>
-                </div>
-              </ScrollReveal>
+      <section className="px-6 py-20 md:py-28">
+        <div className="mx-auto max-w-[760px]">
+          <div className="text-center">
+            <p className="text-eyebrow text-muted-foreground">Questions</p>
+            <h2 className="mt-4 text-title text-foreground">{t("faq.title")}</h2>
+          </div>
+          <div className="mt-12 border-t">
+            {FAQ_KEYS.map((key) => (
+              <details key={key} className="group border-b py-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-body font-medium text-foreground [&::-webkit-details-marker]:hidden">
+                  {t(`faq.items.${key}.q`)}
+                  <ChevronDown
+                    aria-hidden
+                    className="size-4 shrink-0 text-muted-foreground group-open:rotate-180 motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-expo"
+                  />
+                </summary>
+                <p className="mt-3 max-w-[640px] text-body text-muted-foreground">
+                  {t(`faq.items.${key}.a`)}
+                </p>
+              </details>
             ))}
           </div>
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="relative isolate overflow-hidden px-6 py-32 md:py-40">
-        <Parallax speed={-0.15} className="absolute inset-0 -z-10">
-          <div className="aurora-soft" />
-        </Parallax>
-
-        <div className="mx-auto max-w-3xl">
-          <ScrollReveal variant="zoom" duration={1.2}>
-            <div className="glass-pane p-12 text-center md:p-16">
-              <h2 className="text-display text-4xl md:text-5xl">
-                {t("cta2.title")}
-              </h2>
-              <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-muted-foreground">
-                {t("cta2.subtitle")}
-              </p>
-              <Button asChild variant="brand" size="xl" className="mt-8">
-                <Link href="/signup">{t("cta2.button")}</Link>
-              </Button>
-              <p className="mt-4 text-[13px] text-muted-foreground/80">
-                {t("cta2.trustNote")}
-              </p>
-            </div>
-          </ScrollReveal>
+      <section className="bg-muted px-6 py-20 md:py-28">
+        <div className="mx-auto max-w-text text-center">
+          <h2 className="text-title text-foreground">{t("cta2.title")}</h2>
+          <p className="mx-auto mt-4 max-w-[560px] text-body text-muted-foreground">
+            {t("cta2.subtitle")}
+          </p>
+          <Button asChild variant="brand" size="xl" className="mt-8 rounded-full">
+            <Link href="/signup">{t("cta2.button")}</Link>
+          </Button>
+          <p className="mt-4 text-caption text-muted-foreground">{t("cta2.trustNote")}</p>
         </div>
       </section>
 
