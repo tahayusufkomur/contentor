@@ -27,8 +27,7 @@ class CoachBrief:
     description: str = ""
     followups: tuple[tuple[str, str], ...] = ()
     goals: tuple[str, ...] = ()
-    theme: str = "ocean"
-    font_family: str = "Inter"
+    style: str = ""  # the look's style id
     brand_name: str = ""
     locale: str = "en"
 
@@ -48,8 +47,7 @@ class CoachBrief:
             description=str(answers.get("description") or ""),
             followups=followups,
             goals=tuple(answers.get("goals") or ()),
-            theme=answers.get("theme") or "ocean",
-            font_family=answers.get("font_family") or "Inter",
+            style=str(answers.get("style") or ""),
             brand_name=tenant.name or "",
             locale=locale,
         )
@@ -71,7 +69,7 @@ def brief_block(brief: CoachBrief) -> str:
         lines.append(f'Asked: "{q}" — coach answered: "{a}"')
     lines += [
         f"They plan to offer: {', '.join(brief.goals) or '-'}",
-        f"Site theme: {brief.theme}; font: {brief.font_family}",
+        f"Site look: {brief.style or '-'}",
         f"The coach writes in: {language}",
         "</coach_brief>",
     ]

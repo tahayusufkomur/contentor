@@ -163,29 +163,28 @@ def _execute(tenant, user, action):
         with tenant_context(tenant):
             result = creator(user, action)
             return result, content.created_inverse(action, result)
-    if kind in ("edit_theme", "edit_style", "edit_navbar"):
+    if kind in ("edit_style", "edit_navbar"):
         with tenant_context(tenant):
             cfg = TenantConfig.objects.first()
             if cfg is None:
                 raise chrome.ChromeOpError("site is not set up yet")
-            if kind in ("edit_theme", "edit_style"):
-                if kind == "edit_theme":
-                    old_theme = cfg.theme
-                    theme = chrome.clean_theme(action.get("theme"))
-                    cfg.theme = theme
-                    fields = ["theme"]
-                    result = {"kind": kind, "theme": theme}
-                    inverse = {"kind": "edit_theme", "theme": old_theme}
-                else:
-                    from apps.tenant_config import sections
+            if kind == "edit_style":
+                from apps.tenant_config import sections
 
-                    style_id = chrome.clean_style(action.get("style"))
-                    inverse = {"kind": "restore_style", "style": cfg.style, "pages": deepcopy(cfg.pages or {})}
-                    cfg.style = style_id
-                    # Every section block takes the new style's matching layout.
-                    cfg.pages = sections.restyle_pages(cfg.pages or {}, style_id)
-                    fields = ["style", "pages"]
-                    result = {"kind": kind, "style": style_id}
+                style_id = chrome.clean_style(action.get("style"))
+                inverse = {
+                    "kind": "restore_style",
+                    "style": cfg.style,
+                    "palette": cfg.palette,
+                    "pages": deepcopy(cfg.pages or {}),
+                }
+                cfg.style = style_id
+                # A colourway belongs to its style: the new one wears its own.
+                cfg.palette = ""
+                # Every section block takes the new style's matching layout.
+                cfg.pages = sections.restyle_pages(cfg.pages or {}, style_id)
+                fields = ["style", "palette", "pages"]
+                result = {"kind": kind, "style": style_id}
                 # Setup Assistant parity with TenantConfigView.perform_update.
                 progress = dict(cfg.setup_progress or {})
                 if not progress.get("look_edited"):
@@ -199,7 +198,7 @@ def _execute(tenant, user, action):
                 cfg.save(update_fields=["navbar_config"])
                 result = {"kind": kind}
                 inverse = {"kind": "restore_navbar", "navbar_config": navbar_before}
-        # Public pages read theme/navbar through the cached config object.
+        # Public pages read style/navbar through the cached config object.
         cache.delete(f"tenant:{tenant.schema_name}:config")
         return result, inverse
     if kind == "edit_seo":
@@ -395,8 +394,6 @@ def _audit_summary(action, result):
         return f"{'Showed' if action.get('enabled') else 'Hid'} {block} on {page}"
     if kind == "duplicate_block":
         return f"Duplicated {block} on {page}"
-    if kind == "edit_theme":
-        return f"Switched theme to {action.get('theme')}"
     if kind == "edit_style":
         return f"Switched site style to {action.get('style')}"
     if kind == "edit_navbar":
@@ -531,7 +528,6 @@ def _restored_state(inverse):
     return {
         "restore_pages": lambda: cfg.pages,
         "restore_style": lambda: [cfg.style, cfg.pages],
-        "edit_theme": lambda: cfg.theme,
         "restore_navbar": lambda: cfg.navbar_config,
         "restore_logo": lambda: [cfg.logo_id, cfg.logo_url],
         "edit_seo": lambda: cfg.meta_description,
@@ -646,11 +642,9 @@ def _apply_inverse(tenant, inverse):
             cfg.save(update_fields=["pages"])
         elif kind == "restore_style":
             cfg.style = str(inverse.get("style") or "")[:40]
+            cfg.palette = str(inverse.get("palette") or "")[:40]
             cfg.pages = inverse.get("pages") or {}
-            cfg.save(update_fields=["style", "pages"])
-        elif kind == "edit_theme":
-            cfg.theme = chrome.clean_theme(inverse.get("theme"))
-            cfg.save(update_fields=["theme"])
+            cfg.save(update_fields=["style", "palette", "pages"])
         elif kind == "restore_navbar":
             cfg.navbar_config = inverse.get("navbar_config") or {}
             cfg.save(update_fields=["navbar_config"])

@@ -29,7 +29,7 @@ def _build(answers=None, locale="en"):
 
 
 def test_returns_exactly_the_override_keys():
-    assert set(_build()) == {"theme", "font_family", "navbar_config", "enabled_modules", "pages"}
+    assert set(_build()) == {"navbar_config", "enabled_modules", "pages"}
 
 
 def test_all_pages_present_with_known_types_and_unique_ids():
@@ -51,9 +51,7 @@ def test_pages_pass_server_validation():
 
 
 def test_design_answers_applied():
-    over = _build({"theme": "forest", "font_family": "Nunito", "navbar_layout": "minimal"})
-    assert over["theme"] == "forest"
-    assert over["font_family"] == "Nunito"
+    over = _build({"navbar_layout": "minimal"})
     assert over["navbar_config"]["layout"] == "minimal"
 
 
@@ -110,7 +108,6 @@ def test_home_story_layout_sequence():
 
 def test_empty_answers_still_valid():
     over = _build({})
-    assert over["theme"] == "ocean"
     assert over["navbar_config"]["layout"] == "classic"
     assert len(over["pages"]["home"]["blocks"]) >= 3
 

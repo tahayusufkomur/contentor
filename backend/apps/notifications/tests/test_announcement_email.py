@@ -25,7 +25,7 @@ def _cfg():
     # test_config_save_tracks_page_and_look_edits.
     cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Z")
     cfg.brand_name = "Z"
-    cfg.theme = "ocean"
+    cfg.style = ""
     cfg.save()
     return cfg
 

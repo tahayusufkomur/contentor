@@ -18,7 +18,7 @@ def _cfg():
     # test_setup_status.py) is mid-request on, raising DoesNotExist there.
     cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Z")
     cfg.brand_name = "Z"
-    cfg.theme = "ocean"
+    cfg.style = ""
     cfg.timezone = "UTC"
     cfg.save()
 

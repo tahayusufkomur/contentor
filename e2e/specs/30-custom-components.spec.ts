@@ -3,8 +3,8 @@
 // A coach describes a section; the (stubbed) AI returns a cx block; it lands
 // on the canvas, survives the real autosave validation, and a visitor sees it
 // on the public page. The compose call is intercepted in the browser so the
-// run never calls a model. demo-yoga is unstyled, so the spec sets a style
-// first (config PATCH only — pages are not restyled) and restores it.
+// run never calls a model. Every site wears a look, so the editor offers
+// the AI section builder on demo-yoga as it is; the spec restores its pages.
 
 import { test, expect } from "@playwright/test";
 import { coachContext, TENANT } from "../helpers/auth";
@@ -69,7 +69,6 @@ test("coach creates a custom section with AI; the public page renders it", async
   const edit = await coach.newPage();
   const api = edit.request;
   const before = await (await api.get(`${TENANT}/api/admin/config`)).json();
-  expect((await api.patch(`${TENANT}/api/admin/config`, { data: { style: "maison" } })).ok()).toBeTruthy();
 
   try {
     await edit.route("**/api/v1/admin/cx/components/", (route) => route.fulfill({ json: { components: [] } }));
@@ -102,7 +101,7 @@ test("coach creates a custom section with AI; the public page renders it", async
     await expect(visitor.getByText("Second point")).toBeVisible();
     await visitor.close();
   } finally {
-    await api.patch(`${TENANT}/api/admin/config`, { data: { style: before.style ?? "", pages: before.pages } });
+    await api.patch(`${TENANT}/api/admin/config`, { data: { pages: before.pages } });
     await coach.close();
   }
 });

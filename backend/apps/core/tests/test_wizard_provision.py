@@ -17,8 +17,6 @@ WIZARD_ANSWERS = {
     "niche": "yoga",
     "description": "Vinyasa for busy professionals.",
     "goals": ["sell_courses", "build_community"],
-    "theme": "slate",  # deliberately NOT yoga's default (forest) — proves override
-    "font_family": "Inter",
     "navbar_layout": "minimal",
     "hero_style": "split",
     "page_layouts": {
@@ -107,8 +105,6 @@ def test_wizard_answers_override_niche_defaults(cleanup):
         from apps.tenant_config.models import TenantConfig
 
         config = TenantConfig.objects.first()
-        assert config.theme == "slate"
-        assert config.font_family == "Inter"
         assert config.navbar_config["layout"] == "minimal"
         hrefs = [link["href"] for link in config.navbar_config["links"]]
         assert "/plans" in hrefs and "/events" not in hrefs and "/store" not in hrefs
@@ -135,7 +131,6 @@ def test_legacy_tenant_without_wizard_state_unchanged(cleanup):
         from apps.tenant_config.models import TenantConfig
 
         config = TenantConfig.objects.first()
-        assert config.theme == "forest"  # yoga niche default untouched
         assert config.onboarding_completed is False
         assert CommunitySettings.load().is_enabled is False
 

@@ -102,9 +102,7 @@
         "heading": "Ready to Start Training?"
       }
     },
-    "brand_name": "Fitness Academy",
-    "theme": "ember",
-    "font_family": "Inter"
+    "brand_name": "Fitness Academy"
   },
   "COURSES": [
     {

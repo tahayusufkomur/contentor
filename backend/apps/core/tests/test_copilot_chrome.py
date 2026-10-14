@@ -1,6 +1,5 @@
 """Copilot chrome executors: pure validation/merge helpers behind
-edit_theme / edit_navbar. Theme ids come from the TenantTheme catalog;
-navbar updates are overlaid on the current config and cleaned by the same
+edit_style / edit_navbar. Navbar updates are overlaid on the current config and cleaned by the same
 serializer allowlist the admin config PATCH uses (links etc. preserved).
 DB writes happen in the execute view, not here."""
 
@@ -9,20 +8,6 @@ import pytest
 from apps.core.copilot import chrome
 
 pytestmark = pytest.mark.django_db
-
-
-def test_clean_theme_normalizes_and_accepts_catalog_ids():
-    assert chrome.clean_theme(" Forest ") == "forest"
-    assert chrome.clean_theme("ocean") == "ocean"
-
-
-def test_clean_theme_rejects_unknown_id():
-    with pytest.raises(chrome.ChromeOpError, match="ocean"):
-        chrome.clean_theme("midnight")  # the spec's example theme does not exist
-
-
-def test_theme_label():
-    assert chrome.theme_label("forest") == "Forest"
 
 
 def test_clean_layout_normalizes_and_rejects_unknown():

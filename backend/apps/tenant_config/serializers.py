@@ -19,7 +19,7 @@ from .defaults import (
     sanitize_block_style,
     sanitize_rich_text,
 )
-from .models import TenantConfig, TenantTheme
+from .models import TenantConfig
 
 # href/url string values starting with these schemes are stripped on write —
 # defence-in-depth against javascript: navigation injected via the builder.
@@ -71,9 +71,11 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         source="icon", queryset=Photo.objects.all(), allow_null=True, required=False
     )
 
-    def validate_theme(self, value):
-        if value not in TenantTheme.values:
-            raise serializers.ValidationError("Theme must be one of the curated theme IDs.")
+    def validate_timezone(self, value):
+        from zoneinfo import available_timezones
+
+        if value not in available_timezones():
+            raise serializers.ValidationError("Unknown time zone.")
         return value
 
     def validate_navbar_config(self, value):
@@ -157,24 +159,6 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             )
         return cleaned
 
-    def validate_style(self, value):
-        # "" = legacy (unstyled) rendering. Any shipped style id is accepted —
-        # "enabled" gates what new coaches are offered, not what may be saved.
-        if value and sections.style(value) is None:
-            raise serializers.ValidationError("Style must be one of the site style IDs.")
-        return value
-
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-        current = self.instance
-        style = attrs.get("style", getattr(current, "style", ""))
-        if "palette" in attrs:
-            if attrs["palette"] and attrs["palette"] not in sections.palettes(style):
-                raise serializers.ValidationError({"palette": "Palette must be one of the style's palettes."})
-        elif "style" in attrs and getattr(current, "palette", "") not in sections.palettes(style):
-            attrs["palette"] = ""  # a style switch drops a colourway the new style does not have
-        return attrs
-
     def validate_custom_css(self, value):
         # Trust boundary: this CSS is injected into a <style> tag on every
         # tenant page. Strip the </style> breakout vector and active-content
@@ -201,11 +185,9 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             "icon_url",
             "icon_id",
             "logo_recipe",
-            "theme",
             "style",
             "palette",
             "dark_mode_enabled",
-            "font_family",
             "custom_css",
             "enabled_modules",
             "social_links",
@@ -217,6 +199,9 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             "timezone",
             "onboarding_completed",
         ]
+        # The look changes through config/look/ (apply_style), which restyles
+        # the pages with it; the editor's autosave sends the whole config.
+        read_only_fields = ["style", "palette"]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

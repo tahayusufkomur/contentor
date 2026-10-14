@@ -22,8 +22,7 @@ def test_brief_from_tenant_reads_wizard_answers():
             "description": "Vinyasa for busy professionals",
             "description_followups": {"items": [{"q": "Who?", "a": "Office workers"}, {"q": "", "a": "dropped"}]},
             "goals": ["sell_courses"],
-            "theme": "forest",
-            "font_family": "Lora",
+            "style": "journal",
         }
     )
     brief = ai_curate.CoachBrief.from_tenant(tenant, locale="en")
@@ -32,7 +31,7 @@ def test_brief_from_tenant_reads_wizard_answers():
     # Legacy wizard answers migrate into the interview brief: goals → offers.
     assert brief.followups == (("Who?", "Office workers"), ("How they teach", "course"))
     assert brief.goals == ("sell_courses",)
-    assert brief.theme == "forest"
+    assert brief.style == "journal"
     assert brief.brand_name == "Glow Studio"
     assert brief.locale == "en"
 

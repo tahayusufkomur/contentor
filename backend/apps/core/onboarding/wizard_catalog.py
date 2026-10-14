@@ -1,7 +1,7 @@
 """Option catalog for the pre-provision onboarding wizard.
 
 Single source of truth for every answer the wizard may store: option ids,
-per-niche theme ranking, page-layout block sequences, and the recommended
+page-layout block sequences, and the recommended
 default per step. Pure data + helpers (no model access) so it's importable
 from views, Celery tasks, and tests alike.
 
@@ -30,47 +30,6 @@ GOALS = (
 # Goals the free plan cannot do (selling and live need Starter). Still selectable;
 # the wizard just tags them so the coach isn't surprised later.
 PAID_GOALS = ("sell_courses", "sell_downloads", "run_live_classes")
-
-THEMES = ("ocean", "ember", "forest", "sunset", "violet", "slate")
-
-# First entry = the niche module's own theme (demo_data/<niche>.py CONFIG),
-# then two curated complements. The wizard shows these three first.
-THEME_RANKING = {
-    "yoga": ("forest", "slate", "violet"),
-    "pilates": ("slate", "ocean", "forest"),
-    "fitness": ("ember", "ocean", "slate"),
-    "pole_dance": ("violet", "sunset", "slate"),
-    "belly_dance": ("sunset", "violet", "ember"),
-    "face_yoga": ("sunset", "forest", "violet"),
-    "makeup": ("violet", "sunset", "slate"),
-    "general": ("ocean", "forest", "slate"),
-}
-
-# Wizard font ids -> the TenantConfig.font_family value stored. Mirrors the
-# post-launch coach admin's font picker (frontend-customer brand-tab.tsx
-# FONTS) — same 8 families, so what a coach can pick in the wizard is a
-# subset-turned-superset match of what they can switch to later. The
-# customer frontend loads font_family dynamically via Google Fonts (see
-# frontend-customer/src/app/layout.tsx), so any of these renders correctly
-# on the live site without further plumbing.
-FONTS = {
-    "inter": "Inter",
-    "geist": "Geist",
-    "poppins": "Poppins",
-    "nunito": "Nunito",
-    "dm_sans": "DM Sans",
-    "playfair": "Playfair Display",
-    "merriweather": "Merriweather",
-    "lora": "Lora",
-}
-
-_RECOMMENDED_FONT = {
-    "yoga": "Nunito",
-    "face_yoga": "Nunito",
-    "belly_dance": "Playfair Display",
-    "pole_dance": "Playfair Display",
-    "makeup": "Playfair Display",
-}
 
 NAVBAR_LAYOUTS = ("classic", "centered", "split", "minimal", "pill")  # all 5 public-header presets
 
@@ -158,15 +117,15 @@ def recommended_style(niche: str, tone: str = "") -> str:
 def recommended_answers(niche: str) -> dict:
     """Complete default answer set for a niche — what "finish the rest for
     me" and finalize-with-gaps apply. Unknown niches fall back to general."""
-    niche = niche if niche in THEME_RANKING else "general"
+    from apps.core.demo.seed_template import available_niches
+
+    niche = niche if niche in available_niches() else "general"
     style = recommended_style(niche)
     return {
         **({"style": style} if style else {}),
         "niche": niche,
         "description": "",
         "goals": ["sell_courses"],
-        "theme": THEME_RANKING[niche][0],
-        "font_family": _RECOMMENDED_FONT.get(niche, "Inter"),
         "navbar_layout": "classic",
         "hero_style": "centered",
         "page_layouts": {page: options[0]["id"] for page, options in PAGE_LAYOUTS.items()},
@@ -214,12 +173,6 @@ def validate_answers(partial: dict) -> list[str]:
         elif key == "goals":
             if not isinstance(value, list) or not all(isinstance(g, str) and g in GOALS for g in value):
                 errors.append("goals must be a list of known goal keys")
-        elif key == "theme":
-            if value not in THEMES:
-                errors.append(f"unknown theme '{value}'")
-        elif key == "font_family":
-            if value not in FONTS.values():
-                errors.append(f"unknown font '{value}'")
         elif key == "style":
             from apps.tenant_config import sections
 
@@ -296,9 +249,6 @@ def catalog_payload() -> dict:
         "niches": sorted(available_niches(), key=lambda n: n == "general"),
         "goals": list(GOALS),
         "paid_goals": list(PAID_GOALS),
-        "themes": list(THEMES),
-        "theme_ranking": {niche: list(ranked) for niche, ranked in THEME_RANKING.items()},
-        "fonts": dict(FONTS),
         "navbar_layouts": list(NAVBAR_LAYOUTS),
         "hero_styles": list(HERO_STYLES),
         "logo_modes": list(LOGO_MODES),

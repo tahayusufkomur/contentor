@@ -26,7 +26,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { SITE_UPDATED_EVENT } from "@/lib/site-events";
+import { announceSiteUpdated, SITE_UPDATED_EVENT } from "@/lib/site-events";
+import { clientFetch } from "@/lib/api-client";
+import { siteLook, styleFontsHref } from "@/lib/site-styles";
 import { Spinner } from "@/components/ui/spinner";
 import { EntitlementsProvider } from "@/components/admin/entitlements-provider";
 import { TenantContext } from "@/hooks/use-tenant";
@@ -181,6 +183,23 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
     [config, persistConfig],
   );
 
+  // Another look restyles every page on the server (config/look/): pending
+  // edits save first, then the editor re-pulls config and pages.
+  const applyLook = async (look: string) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
+    if (pendingConfigRef.current) await persistConfig(pendingConfigRef.current);
+    await clientFetch("/api/v1/admin/config/look/", {
+      method: "POST",
+      body: JSON.stringify({ look }),
+    });
+    announceSiteUpdated();
+    router.refresh();
+    void refreshSetupStatus();
+  };
+
   // Flush pending autosave before navigating between pages.
   const flushPending = useCallback(() => {
     if (debounceRef.current) {
@@ -265,10 +284,10 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
     });
   };
 
-  // Load the selected Google Font client-side so font changes reflect live
-  // (the root layout only adds the <link> on a full server render).
+  // Load the look's fonts client-side so a look change reflects live (the
+  // root layout only adds the <link> on a full server render).
+  const fontsHref = styleFontsHref(siteLook(config.style));
   useEffect(() => {
-    if (!config.font_family) return;
     const id = "tenant-editor-font";
     let link = document.getElementById(id) as HTMLLinkElement | null;
     if (!link) {
@@ -277,8 +296,8 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
       link.rel = "stylesheet";
       document.head.appendChild(link);
     }
-    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(config.font_family)}&display=swap`;
-  }, [config.font_family]);
+    link.href = fontsHref;
+  }, [fontsHref]);
 
   useEffect(
     () => () => {
@@ -429,6 +448,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                                         onChange={handleChange}
                                         studioOpen={studioOpen}
                                         onStudioOpenChange={setStudioOpen}
+                                        onApplyLook={applyLook}
                                       />
                                     ) : (
                                       <NavbarTab

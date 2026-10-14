@@ -3,8 +3,6 @@ and the TenantConfig.style field. Styles are fixtures (the real ones ship
 disabled and may not exist yet)."""
 
 import pytest
-from django.core.cache import cache
-from rest_framework import serializers
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
@@ -240,30 +238,25 @@ def test_validate_pages_keeps_section_blocks_and_drops_style_override():
 # --- TenantConfig.style -----------------------------------------------------------
 
 
-def test_validate_style_accepts_blank_or_known_ids():
-    validate = TenantConfigSerializer().validate_style
-    assert validate("") == ""
-    assert validate("calm") == "calm"
-    assert validate("draft") == "draft"  # shipped but not offered yet — still storable
-    with pytest.raises(serializers.ValidationError):
-        validate("nope")
-
-
 @pytest.mark.django_db(transaction=True)
-def test_style_round_trips_through_config_api(tenant_ctx):
+def test_style_round_trips_through_the_look_api(tenant_ctx):
+    from unittest import mock
+
     from apps.tenant_config.models import TenantConfig
 
     TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
     owner = User.objects.create_user(email="style@x.com", name="O", password="x", role="owner", is_staff=True)  # noqa: S106
     client = APIClient(HTTP_HOST="shared-test.localhost")
     client.force_authenticate(user=owner)
-    assert client.patch("/api/v1/admin/config/", {"style": "nope"}, format="json").status_code == 400
-    resp = client.patch("/api/v1/admin/config/", {"style": "calm"}, format="json")
+    with mock.patch("apps.tenant_config.interview_milestones.style_cards", return_value={"kind": "style"}):
+        assert client.post("/api/v1/admin/config/look/", {"look": "nope"}, format="json").status_code == 400
+        # Shipped but not offered yet: the editor never wears it.
+        assert client.post("/api/v1/admin/config/look/", {"look": "draft"}, format="json").status_code == 400
+        resp = client.post("/api/v1/admin/config/look/", {"look": "calm"}, format="json")
     assert resp.status_code == 200, resp.content
     cfg = TenantConfig.objects.first()
     assert cfg.style == "calm"
     assert cfg.setup_progress.get("look_edited") is True
-    cache.delete("tenant:shared_test:config")
     public = APIClient(HTTP_HOST="shared-test.localhost").get("/api/v1/admin/config/")
     assert public.status_code == 200
     assert public.json()["style"] == "calm"
@@ -337,24 +330,29 @@ def test_parse_look(real_styles):
     assert sections.parse_look("") is None
 
 
-def test_palette_must_belong_to_the_style(real_styles):
-    from apps.tenant_config.serializers import TenantConfigSerializer
+def test_oklch_to_hex_matches_the_frontend_conversion():
+    assert sections.oklch_to_hex("oklch(0.5 0 0)") == "#636363"  # oklchToHex in site-styles.ts
+    assert sections.oklch_to_hex("oklch(1 0 0)") == "#ffffff"
+    assert sections.oklch_to_hex("#123456") == ""
 
-    assert TenantConfigSerializer(data={"style": "journal", "palette": "sage"}, partial=True).is_valid()
-    bad = TenantConfigSerializer(data={"style": "journal", "palette": "mint"}, partial=True)
-    assert not bad.is_valid() and "palette" in bad.errors
+
+def test_primary_hex_follows_the_look(real_styles):
+    own = sections.primary_hex("journal")
+    assert own.startswith("#") and len(own) == 7
+    assert sections.primary_hex("journal", "sage") != own  # the colourway's brand colour
+    assert sections.primary_hex("journal", "mint") == own  # not one of its palettes
+    assert sections.primary_hex("") == sections.primary_hex(sections.default_style())
 
 
 @pytest.mark.django_db
-def test_patching_style_alone_clears_a_stale_palette(tenant_ctx, real_styles):
-    """Review focus 1: the copilot and the admin page change style without
-    touching palette; a palette from the old style must not block the save."""
+def test_config_patch_cannot_change_the_look(tenant_ctx, real_styles):
+    """The look changes through config/look/ (it restyles the pages); the
+    editor's autosave sends the whole config and must not undo it."""
     from apps.tenant_config.models import TenantConfig
-    from apps.tenant_config.serializers import TenantConfigSerializer
 
     cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Glow")
     cfg.style, cfg.palette = "journal", "sage"
     cfg.save()
-    ser = TenantConfigSerializer(cfg, data={"style": "grid"}, partial=True)
+    ser = TenantConfigSerializer(cfg, data={"style": "grid", "palette": ""}, partial=True)
     assert ser.is_valid(), ser.errors
-    assert ser.validated_data["palette"] == ""
+    assert "style" not in ser.validated_data and "palette" not in ser.validated_data

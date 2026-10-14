@@ -1,10 +1,16 @@
-import { SITE_STYLES } from "@shared/sections/styles";
+import { SITE_STYLES, rankStylesForNiche } from "@shared/sections/styles";
 import type { SiteStyle, SiteStylePalette } from "@shared/sections/types";
 
 export { SITE_STYLES };
 
 export function getSiteStyle(id?: string | null): SiteStyle | undefined {
   return id ? SITE_STYLES[id] : undefined;
+}
+
+/** The look a site wears: its style, or the default look while it has none
+ *  (mid-provisioning) — sections.default_style() on the backend. */
+export function siteLook(styleId?: string | null): SiteStyle {
+  return getSiteStyle(styleId) ?? rankStylesForNiche("general")[0];
 }
 
 /** The looks a coach can filter by, in the order the chips show them. The
@@ -136,6 +142,14 @@ export function oklchToHex(color: string): string | undefined {
       .join("")
   );
 }
+
+/** The brand colour a site wears, as hex (browser bar, PWA icon, the logo
+ *  studio's starting colour) — primary_hex() on the backend. */
+export const lookPrimaryHex = (
+  styleId?: string | null,
+  paletteId?: string | null,
+): string =>
+  oklchToHex(paletteOf(siteLook(styleId), paletteId).primary) ?? "#1a56db";
 
 /** The modes the toggle steps through: styles are light or dark, no dim. */
 export const themeModes = (styled: boolean) =>

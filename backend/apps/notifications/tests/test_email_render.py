@@ -3,6 +3,7 @@ import pytest
 from apps.notifications import email_render
 from apps.notifications.models import Announcement
 from apps.tenant_config.models import TenantConfig
+from apps.tenant_config.sections import primary_hex
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -15,7 +16,7 @@ def _cfg(**kw):
     # test_setup_status.py) is mid-request on, raising DoesNotExist there.
     cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Zen")
     cfg.brand_name = kw.pop("brand_name", "Zen")
-    cfg.theme = kw.pop("theme", "ocean")
+    cfg.style = kw.pop("style", "journal")
     for field, value in kw.items():
         setattr(cfg, field, value)
     cfg.save()
@@ -31,7 +32,7 @@ def test_render_has_title_cta_and_unsub(tenant_ctx):
     assert "Body" in html
     assert "https://t.example.com/courses/x" in html  # CTA absolute
     assert "unsubscribe" in html.lower()
-    assert email_render.THEME_EMAIL_COLORS["ocean"] in html
+    assert primary_hex("journal") in html  # the look's brand colour
 
 
 def test_unsubscribe_token_roundtrip(tenant_ctx):

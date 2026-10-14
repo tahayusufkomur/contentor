@@ -84,8 +84,6 @@ def build_config_overrides(answers: dict, *, brand_name: str, landing_sections: 
         modules.update(GOAL_MODULES.get(goal, ()))
 
     return {
-        "theme": answers.get("theme") or "ocean",
-        "font_family": answers.get("font_family") or "Inter",
         "navbar_config": {
             "links": links,
             "cta": {"text": copy["cta"], "href": "/courses"},

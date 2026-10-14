@@ -303,18 +303,17 @@ export function EditorStoreProvider({
   }));
 
   // Notify the parent (→ debounced autosave) whenever page content changes,
-  // skipping the initial mount so loading the editor never triggers a save.
+  // never for the pages it loaded with, so loading the editor never triggers
+  // a save — a "first run" flag did, as StrictMode re-runs the mount effect.
   // A server sync is skipped too: it re-states what the server already has,
   // and echoing it back would clobber-race a concurrent save.
   const onPagesChangeRef = useRef(onPagesChange);
   onPagesChangeRef.current = onPagesChange;
-  const mounted = useRef(false);
+  const notifiedPages = useRef(state.pages);
   const skipNextSave = useRef(false);
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      return;
-    }
+    if (state.pages === notifiedPages.current) return;
+    notifiedPages.current = state.pages;
     if (skipNextSave.current) {
       skipNextSave.current = false;
       return;

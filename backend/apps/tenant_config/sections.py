@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import html
 import json
+import math
+import re
 from functools import cache
 from pathlib import Path
 
@@ -152,6 +154,45 @@ def parse_look(value) -> tuple[str, str] | None:
     if style(sid) is None or (pid and pid not in palettes(sid)):
         return None
     return sid, pid
+
+
+def default_style(niche="general") -> str:
+    """The look a site without one wears: the best enabled one for its niche."""
+    ranked = rank_styles(niche)
+    return ranked[0]["id"] if ranked else ""
+
+
+def oklch_to_hex(color) -> str:
+    """An oklch() colour as sRGB hex; "" when it is not oklch(). Mirrors
+    oklchToHex in frontend-customer/src/lib/site-styles.ts."""
+    m = re.match(r"oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)", str(color or ""))
+    if not m:
+        return ""
+    lum, chroma, hue = map(float, m.groups())
+    a, b = chroma * math.cos(math.radians(hue)), chroma * math.sin(math.radians(hue))
+    l_ = (lum + 0.3963377774 * a + 0.2158037573 * b) ** 3
+    m_ = (lum - 0.1055613458 * a - 0.0638541728 * b) ** 3
+    s_ = (lum - 0.0894841775 * a - 1.291485548 * b) ** 3
+    linear = (
+        4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_,
+        -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_,
+        -0.0041960863 * l_ - 0.7034186147 * m_ + 1.707614701 * s_,
+    )
+
+    def channel(v):
+        v = min(1.0, max(0.0, v))
+        return round((12.92 * v if v <= 0.0031308 else 1.055 * v ** (1 / 2.4) - 0.055) * 255)
+
+    return "#" + "".join(f"{channel(v):02x}" for v in linear)
+
+
+def primary_hex(style_id, palette_id="") -> str:
+    """The brand colour a site wears, as hex (emails, the logo tools): its
+    look's palette, or the default look's when it has none."""
+    sid = style_id if style(style_id) else default_style()
+    own = (style(sid) or {}).get("palette") or {}
+    palette = (palettes(sid).get(palette_id) or {}).get("palette") or own
+    return oklch_to_hex(palette.get("primary")) or "#1a56db"
 
 
 def recipes(style_id) -> dict:

@@ -1,6 +1,5 @@
-import { generateThemeCSS } from "@/lib/themes";
 import {
-  getSiteStyle,
+  siteLook,
   styleRootCss,
   TENANT_THEME_SHEET_ID,
 } from "@/lib/site-styles";
@@ -15,14 +14,11 @@ export function TenantThemeStyle({
   config: TenantConfig;
   off?: boolean;
 }) {
-  const siteStyle = getSiteStyle(config.style);
-  const css = siteStyle
-    ? styleRootCss(siteStyle, config.custom_css || "", config.palette)
-    : generateThemeCSS(
-        config.theme,
-        config.font_family,
-        config.custom_css || "",
-      );
+  const css = styleRootCss(
+    siteLook(config.style),
+    config.custom_css || "",
+    config.palette,
+  );
 
   return (
     <style

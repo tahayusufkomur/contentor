@@ -575,7 +575,7 @@ function LookPreview({
         aria-modal
         aria-label={`${look.label}, as a page`}
         style={{ ...SHELL_TOKENS, backgroundColor: "rgb(34 33 31 / 0.6)" }}
-        className="sf-shell fixed inset-0 z-50 flex flex-col p-3 backdrop-blur-sm motion-safe:animate-fade-in sm:p-6"
+        className="sf-shell fixed inset-0 z-[60] flex flex-col p-3 backdrop-blur-sm motion-safe:animate-fade-in sm:p-6"
         onClick={onClose}
       >
         <div

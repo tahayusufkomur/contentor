@@ -93,7 +93,7 @@ def seed_template_into_tenant(
     expanded_courses = _expand_courses(courses_data, TARGET_COURSES)
 
     with tenant_context(tenant):
-        # Tenant config is created at provision time; merge in theme/landing
+        # Tenant config is created at provision time; merge in its landing
         # without clobbering the coach's brand_name or locale.
         photo_map = _seed_photos(config_data, expanded_courses)
         _merge_config(tenant, config_data, photo_map)

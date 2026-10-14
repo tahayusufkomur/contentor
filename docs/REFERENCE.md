@@ -225,8 +225,10 @@ fixes) is LiveCraft's: see `../livecraft/docs/permissions.md`.
   a campaign references a MailCraft `template_id`, a `recipient_filter` JSON, and tracks
   per-recipient delivery. `CampaignStatus ∈ {sending, sent, partial, failed}`.
 - **`TenantConfig`** [T] (`apps.tenant_config`) — singleton per tenant: `brand_name`,
-  `logo`, `theme ∈ {ocean, ember, forest, sunset, violet, slate}`, `dark_mode_enabled`,
-  `font_family`, `custom_css`, `enabled_modules`, `navbar_config`, `landing_sections`,
+  `logo`, the look (`style` = a site style id from the section manifest, `palette` = one
+  of its colourways; colours, fonts and layouts all come from it, and it changes only
+  through `POST /api/v1/admin/config/look/`, which restyles the pages), `dark_mode_enabled`,
+  `custom_css`, `enabled_modules`, `navbar_config`, `landing_sections`,
   `default_locale`, `onboarding_completed`, `emailcraft_api_key`, plus per-tenant Zoom
   OAuth (`zoom_refresh_token` encrypted, `zoom_connected`, `zoom_connected_email`).
 
@@ -565,8 +567,9 @@ Tailwind, Radix, `sonner` toasts, JWT in the `contentor_access_token` cookie, an
 - **`src/lib/api-server.ts`** `serverFetch` attaches the JWT + **`X-Tenant-Domain`** on
   every SSR call (the multi-tenancy linchpin); `src/lib/api-client.ts` `clientFetch` uses
   same-origin cookies and special-cases demo read-only `403`s into a sign-up toast.
-- **Theming is per-tenant:** `TenantConfig` (theme/font/custom_css) → `src/lib/themes.ts`
-  `generateThemeCSS()` → injected via `TenantThemeStyle`; config cached ~60s by domain.
+- **Theming is per-tenant:** `TenantConfig` (style/palette/custom_css) → `src/lib/site-styles.ts`
+  `styleRootCss(siteLook(style))` → injected via `TenantThemeStyle`; config cached ~60s by
+  domain. A site with no style yet wears the default look (`siteLook` / `sections.default_style`).
 - **The coach admin (`/admin`) wears one look for every tenant:** under `/admin` that
   injected sheet is switched off (`ThemeProvider`, plus the root layout on a full load), so
   the admin shows the app's own house light/dark tokens (`styles/globals.css`). Its

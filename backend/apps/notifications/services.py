@@ -121,7 +121,7 @@ def send_announcement_to_recipients(announcement) -> None:
 
 
 def send_announcement_emails(announcement) -> int:
-    """Send the announcement as a theme-branded email to its recipients who have
+    """Send the announcement as an email in the site's colours to its recipients who have
     an email address and have not opted out. Returns the number emailed."""
     from django.db import connection
 

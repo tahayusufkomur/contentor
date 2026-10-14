@@ -37,7 +37,7 @@ import {
   loadStudioSession,
   saveStudioSession,
 } from "@/lib/logo/studio-session";
-import { getThemePalette } from "@/lib/themes";
+import { lookPrimaryHex } from "@/lib/site-styles";
 import {
   fetchCuratedCatalog,
   fetchLibrary,
@@ -76,15 +76,15 @@ export function LogoStudio({
   config,
   onSaved,
 }: LogoStudioProps) {
-  const theme = getThemePalette(config.theme);
+  const primaryHex = lookPrimaryHex(config.style, config.palette);
   // Stable seed recipe for gallery previews — recomputed only when the coach's
-  // saved config/theme changes, so the preview memo in CuratedGallery holds.
+  // saved config/look changes, so the preview memo in CuratedGallery holds.
   const previewBase = useMemo(
-    () => seedRecipe(config, theme.primaryHex),
-    [config, theme.primaryHex],
+    () => seedRecipe(config, primaryHex),
+    [config, primaryHex],
   );
   const [recipe, setRecipe] = useState<LogoRecipe>(() =>
-    seedRecipe(config, theme.primaryHex),
+    seedRecipe(config, primaryHex),
   );
   const [editHistory, setEditHistory] = useState<EditHistory<LogoRecipe>>(() =>
     createHistory(recipe),
@@ -208,8 +208,7 @@ export function LogoStudio({
     const saved = loadStudioSession();
     if (saved) {
       setBrief(saved.brief);
-      const restoredRecipe =
-        saved.recipe ?? seedRecipe(config, theme.primaryHex);
+      const restoredRecipe = saved.recipe ?? seedRecipe(config, primaryHex);
       setRecipe(restoredRecipe);
       setEditHistory(reset(restoredRecipe));
       setActiveElements(saved.elements);
@@ -220,7 +219,7 @@ export function LogoStudio({
       setDraftReady(saved.step === "editor" || saved.recipe !== null);
       return;
     }
-    const seeded = seedRecipe(config, theme.primaryHex);
+    const seeded = seedRecipe(config, primaryHex);
     setRecipe(seeded);
     setEditHistory(reset(seeded));
     setActiveElements(null);
@@ -733,7 +732,7 @@ export function LogoStudio({
                     brandName={brief.brandName || config.brand_name}
                     tagline={brief.tagline ?? ""}
                     baseRecipe={previewBase}
-                    primaryHex={theme.primaryHex}
+                    primaryHex={primaryHex}
                     onUseCurated={handleUseCurated}
                     onCreateFromCurated={handleCreateFromCurated}
                     onOpenChat={() => setChatOpen(true)}
@@ -758,7 +757,7 @@ export function LogoStudio({
                   refining={refining}
                   refineNotice={refineNotice}
                   onRefine={handleRefine}
-                  primaryHex={theme.primaryHex}
+                  primaryHex={primaryHex}
                   onGetNewIdeas={() => setStep("brief")}
                   onUploadMark={handleMarkUpload}
                   logoSvgRef={logoSvgRef}

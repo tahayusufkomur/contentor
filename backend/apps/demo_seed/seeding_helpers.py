@@ -218,6 +218,7 @@ def seed_config(tenant, niche):
         from apps.media.models import Photo
         from apps.tenant_config.defaults import default_pages
         from apps.tenant_config.models import TenantConfig
+        from apps.tenant_config.sections import default_style
 
         sections = config_data.get("landing_sections", {})
 
@@ -234,6 +235,8 @@ def seed_config(tenant, niche):
                 about["image_photo_id"] = str(photo.pk)
 
         config_data.setdefault("pages", default_pages(config_data["brand_name"]))
+        # Every site wears a look: the niche's best one.
+        config_data.setdefault("style", default_style(niche))
 
         return TenantConfig.objects.create(**config_data)
 

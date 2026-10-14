@@ -114,7 +114,7 @@ test("a create-course card confirms and links to the new draft", async ({ browse
   await page.close();
 });
 
-test("an edit-theme card confirms and applies", async ({ browser }) => {
+test("an edit-style card confirms and applies", async ({ browser }) => {
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
 
@@ -125,21 +125,21 @@ test("an edit-theme card confirms and applies", async ({ browser }) => {
       body:
         'data: {"type":"phase","phase":"thinking"}\n\n' +
         'data: {"type":"done","kind":"actions","text":"Switching it up.",' +
-        '"actions":[{"kind":"edit_theme","title":"Switch theme to Forest",' +
-        '"detail":"Colors change across the whole site — you can switch back anytime.","token":"e2e-theme-token"}]}\n\n',
+        '"actions":[{"kind":"edit_style","title":"Switch the site style to Nocturne",' +
+        '"detail":"Every section keeps its content and takes the new layout — you can switch back anytime.","token":"e2e-style-token"}]}\n\n',
     });
   });
   let executed = false;
   await page.route("**/api/v1/admin/copilot/execute/", async (route) => {
     executed = true;
-    await route.fulfill({ json: { result: { kind: "edit_theme", theme: "forest" } } });
+    await route.fulfill({ json: { result: { kind: "edit_style", style: "nocturne" } } });
   });
   await mockEmptyChats(page);
   await page.goto(`${TENANT}/?copilot=1`);
   await expect(page.getByText("Your AI assistant").first()).toBeVisible();
   await page.getByTestId("copilot-input").fill("make my site feel calmer");
   await page.getByRole("button", { name: "Send", exact: true }).click();
-  await expect(page.getByText("Switch theme to Forest")).toBeVisible();
+  await expect(page.getByText("Switch the site style to Nocturne")).toBeVisible();
   await page.getByRole("button", { name: "Apply", exact: true }).click();
   await expect(page.getByText("Applied", { exact: true })).toBeVisible();
   expect(executed).toBe(true);

@@ -26,16 +26,6 @@ from . import logo_converse as logo_converse_mod
 
 logger = logging.getLogger(__name__)
 
-# Theme id -> primaryHex. KEEP IN SYNC with frontend-customer/src/lib/themes.ts.
-THEME_PRIMARY_HEX = {
-    "ocean": "#1a56db",
-    "ember": "#c2410c",
-    "forest": "#15803d",
-    "sunset": "#e11d48",
-    "violet": "#7c3aed",
-    "slate": "#334155",
-}
-
 _DRAFT_CACHE_PREFIX = "logo_draft:"
 _DRAFT_TTL_SECONDS = 600
 _MAX_CRITIQUE_IMAGES = 3

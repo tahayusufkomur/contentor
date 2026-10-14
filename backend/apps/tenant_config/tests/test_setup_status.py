@@ -153,7 +153,7 @@ def test_config_save_tracks_page_and_look_edits(client, config):
         "/api/v1/admin/config/",
         {
             "pages": {"home": {"blocks": [{"id": "b1", "type": "richText", "enabled": True}]}, "about": {"blocks": []}},
-            "theme": "ember",
+            "logo_url": "https://cdn.example.com/new-logo.png",
         },
         format="json",
     )
@@ -391,3 +391,58 @@ def test_first_blog_post_autocompletes(client, config, wizard_goals_tenant):
         assert _items(body)["first_blog_post"]["done"] is True
     finally:
         BlogPost.objects.filter(slug="hello-setup-test").delete()
+
+
+def test_site_look_lists_the_looks_and_wears_a_picked_one(client, config):
+    config.style, config.palette = "journal", ""
+    config.pages = {"home": {"blocks": [{"id": "b1", "type": "section.hero", "variant": "journal.split"}]}}
+    config.save()
+    with patch("apps.tenant_config.interview_milestones._look_photos", return_value=[]):
+        body = client.get("/api/v1/admin/config/look/").json()
+        assert body["kind"] == "style" and body["options"]
+        assert body["current"] == {"style": "journal", "palette": ""}
+
+        res = client.post("/api/v1/admin/config/look/", {"look": "grid:mono"}, format="json")
+    assert res.status_code == 200, res.content
+    assert res.json()["current"] == {"style": "grid", "palette": "mono"}
+    config.refresh_from_db()
+    assert (config.style, config.palette) == ("grid", "mono")
+    assert config.pages["home"]["blocks"][0]["variant"].startswith("grid.")  # the pages take its layouts
+    assert config.setup_progress.get("look_edited") is True
+    TenantConfig.objects.filter(pk=config.pk).update(style="", palette="", pages={})  # the shared tenant's
+
+
+def test_site_look_refuses_an_unknown_look(client, config):
+    for look in ("nope", "journal:mint", ""):
+        res = client.post("/api/v1/admin/config/look/", {"look": look}, format="json")
+        assert res.status_code == 400, look
+
+
+def test_timezone_change_retimes_drafted_classes_and_must_be_real(client, config):
+    from django.core.cache import cache
+    from django.db import connection
+
+    cache.delete(f"tenant:{connection.tenant.schema_name}:config")
+    try:
+        assert client.patch("/api/v1/admin/config/", {"timezone": "Mars/Olympus"}, format="json").status_code == 400
+        with patch("apps.tenant_config.interview_milestones.apply_schedule") as retime:
+            res = client.patch("/api/v1/admin/config/", {"timezone": "America/Toronto"}, format="json")
+            assert res.status_code == 200, res.content
+            retime.assert_called_once()
+            client.patch("/api/v1/admin/config/", {"timezone": "America/Toronto"}, format="json")
+            retime.assert_called_once()  # unchanged: nothing to re-time
+        config.refresh_from_db()
+        assert config.timezone == "America/Toronto"
+    finally:
+        TenantConfig.objects.filter(pk=config.pk).update(timezone="UTC")  # the shared tenant's
+        cache.delete(f"tenant:{connection.tenant.schema_name}:config")
+
+
+def test_a_student_cannot_change_the_site(config):
+    student = User.objects.create_user(email="student-cfg@x.com", name="S", password="x", role="student")  # noqa: S106
+    c = APIClient(HTTP_HOST=HOST)
+    c.force_authenticate(user=student)
+    assert c.patch("/api/v1/admin/config/", {"brand_name": "Hacked"}, format="json").status_code == 403
+    assert c.post("/api/v1/admin/config/look/", {"look": "grid"}, format="json").status_code == 403
+    config.refresh_from_db()
+    assert config.brand_name != "Hacked"

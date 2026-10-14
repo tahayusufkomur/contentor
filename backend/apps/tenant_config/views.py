@@ -9,7 +9,7 @@ from django.db.models import Sum
 from django.http import StreamingHttpResponse
 from rest_framework.decorators import api_view, permission_classes, renderer_classes, throttle_classes
 from rest_framework.generics import RetrieveUpdateAPIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
@@ -25,7 +25,7 @@ from apps.courses.models import Course, Video
 from apps.downloads.models import DownloadFile
 from apps.media.models import Photo
 
-from . import help_bot, logo_api
+from . import help_bot, logo_api, sections
 from .models import TenantConfig
 from .serializers import TenantConfigSerializer
 
@@ -79,7 +79,8 @@ class TenantConfigView(RetrieveUpdateAPIView):
     def get_permissions(self):
         if self.request.method == "GET":
             return [AllowAny()]
-        return [IsAuthenticated()]
+        # The site is the coach's: a signed-in student must not rewrite it.
+        return [IsCoachOrOwner()]
 
     def get_object(self):
         cache_key = f"tenant:{connection.tenant.schema_name}:config"
@@ -96,7 +97,8 @@ class TenantConfigView(RetrieveUpdateAPIView):
         instance = serializer.instance
         old_pages = _json.loads(_json.dumps(instance.pages or {}, sort_keys=True))
         old_pages = _strip_volatile_urls(old_pages)
-        old_look = (instance.theme, instance.font_family, instance.style, _logo_signal(instance))
+        old_look = (instance.style, instance.palette, _logo_signal(instance))
+        old_zone = instance.timezone
 
         config = serializer.save()
 
@@ -107,7 +109,7 @@ class TenantConfigView(RetrieveUpdateAPIView):
         for key, value in new_pages.items():
             if old_pages.get(key) != value:
                 edited.add(key)
-        new_look = (config.theme, config.font_family, config.style, _logo_signal(config))
+        new_look = (config.style, config.palette, _logo_signal(config))
         changed = False
         if sorted(edited) != progress.get("pages_edited", []):
             progress["pages_edited"] = sorted(edited)
@@ -121,6 +123,31 @@ class TenantConfigView(RetrieveUpdateAPIView):
 
         cache_key = f"tenant:{connection.tenant.schema_name}:config"
         cache.delete(cache_key)
+        if config.timezone != old_zone:
+            from .interview_milestones import apply_schedule
+
+            apply_schedule(connection.tenant)  # a drafted class keeps its hour in the new zone
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsCoachOrOwner])
+def site_look(request):
+    """The site's look after setup: GET the setup interview's look cards (best
+    match first) with the look the site wears; POST ``{"look": "<style>" or
+    "<style>:<palette>"}`` to wear another — the pages take its layouts."""
+    from .interview_brief import answers_of
+    from .interview_milestones import apply_style, style_cards
+
+    tenant = connection.tenant
+    if request.method == "POST":
+        data = request.data if isinstance(request.data, dict) else {}
+        look = sections.parse_look(data.get("look"))
+        if look is None or look[0] not in sections.enabled_styles():
+            return Response({"detail": "unknown_look"}, status=400)
+        apply_style(tenant, *look)
+    config = TenantConfig.objects.first()
+    current = {"style": config.style, "palette": config.palette} if config else {"style": "", "palette": ""}
+    return Response({**style_cards(answers_of(tenant), tenant), "current": current})
 
 
 def _format_storage_size(size_bytes: int) -> str:
@@ -229,7 +256,7 @@ def logo_converse(request):
     raw_brief = data.get("brief") if isinstance(data.get("brief"), dict) else {}
     brief = {
         "brand_name": (config.brand_name if config else "") or "My Brand",
-        "primary_hex": logo_api.THEME_PRIMARY_HEX.get(config.theme if config else "ocean", "#1a56db"),
+        "primary_hex": sections.primary_hex(config.style, config.palette) if config else sections.primary_hex(""),
         "niche": str(raw_brief.get("niche") or "")[:120],
         "style_chips": ", ".join(str(c)[:20] for c in (raw_brief.get("style_chips") or [])[:3]),
         "vibe": str(raw_brief.get("vibe") or "")[:200],

@@ -137,7 +137,7 @@ One place: Edit site. It opens your real site with an editor panel on the left, 
 **Pages** (site content): your site has six pages — Home, About, Programs (courses), Pricing, FAQ, and Contact. Pick a page at the top of the Pages tab, then add, reorder, and edit its content blocks while seeing your real site. Selecting a block scrolls the site to it. (The Pricing page shows on your site under "Plans".)
 
 **Site → Brand** (look & feel):
-- **Theme**: choose one of six color themes — Ocean, Ember, Forest, Sunset, Violet, Slate — plus a dark-mode toggle and a font choice.
+- **Look**: your site's layouts, colours and fonts come as one look. "Change look" shows the same looks the setup interview offered, each in its colourways; pick one and every page takes it, keeping its content. There is also a dark-mode toggle for visitors.
 - **Logo**: upload your logo, or open the **Logo Studio** from the Brand section to create one visually.
 - **AI Brand Pack**: inside the Logo Studio, paid plans can generate an AI-assisted brand pack (logo directions/branding). Free plans see an upgrade prompt; generation has a usage allowance.
 - Your choices apply to your whole site and to branded emails.

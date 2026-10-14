@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-import { getThemePalette } from "@/lib/themes";
+import { lookPrimaryHex } from "@/lib/site-styles";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ export async function GET(request: Request): Promise<Response> {
 
   const slug = await getTenantSlug();
   const config = slug !== "__platform__" ? await fetchTenantConfig(slug) : null;
-  const theme = getThemePalette(config?.theme);
+  const primaryHex = lookPrimaryHex(config?.style, config?.palette);
   const brand = config?.brand_name || "Contentor";
   // Prefer the Logo Studio's square mark; fall back to the wide logo, then
   // to the brand-initial tile.
@@ -76,7 +76,7 @@ export async function GET(request: Request): Promise<Response> {
           height: size,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: theme.primaryHex,
+          backgroundColor: primaryHex,
         }}
       >
         {child}

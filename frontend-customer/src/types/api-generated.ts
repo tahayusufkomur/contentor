@@ -435,6 +435,32 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/config/look/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description The site's look after setup: GET the setup interview's look cards (best
+     *     match first) with the look the site wears; POST ``{"look": "<style>" or
+     *     "<style>:<palette>"}`` to wear another — the pages take its layouts.
+     */
+    get: operations["v1_admin_config_look_retrieve"];
+    put?: never;
+    /**
+     * @description The site's look after setup: GET the setup interview's look cards (best
+     *     match first) with the look the site wears; POST ``{"look": "<style>" or
+     *     "<style>:<palette>"}`` to wear another — the pages take its layouts.
+     */
+    post: operations["v1_admin_config_look_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/content-calendar/": {
     parameters: {
       query?: never;
@@ -10206,11 +10232,9 @@ export interface components {
       /** Format: uuid */
       icon_id?: string | null;
       logo_recipe?: unknown;
-      theme?: components["schemas"]["ThemeEnum"];
-      style?: string;
-      palette?: string;
+      readonly style?: string;
+      readonly palette?: string;
       dark_mode_enabled?: boolean;
-      font_family?: string;
       custom_css?: string;
       enabled_modules?: unknown;
       social_links?: unknown;
@@ -10534,11 +10558,9 @@ export interface components {
       /** Format: uuid */
       icon_id?: string | null;
       logo_recipe?: unknown;
-      theme?: components["schemas"]["ThemeEnum"];
-      style?: string;
-      palette?: string;
+      readonly style: string;
+      readonly palette: string;
       dark_mode_enabled?: boolean;
-      font_family?: string;
       custom_css?: string;
       enabled_modules?: unknown;
       social_links?: unknown;
@@ -10550,16 +10572,6 @@ export interface components {
       timezone?: string;
       onboarding_completed?: boolean;
     };
-    /**
-     * @description * `ocean` - Ocean
-     *     * `ember` - Ember
-     *     * `forest` - Forest
-     *     * `sunset` - Sunset
-     *     * `violet` - Violet
-     *     * `slate` - Slate
-     * @enum {string}
-     */
-    ThemeEnum: "ocean" | "ember" | "forest" | "sunset" | "violet" | "slate";
     UserAdmin: {
       readonly id: number;
       /** Format: email */
@@ -11346,6 +11358,42 @@ export interface operations {
     };
   };
   v1_admin_config_logo_refine_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_config_look_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_config_look_create: {
     parameters: {
       query?: never;
       header?: never;

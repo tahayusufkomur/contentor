@@ -3,20 +3,9 @@ from django.core import signing
 
 from apps.core.models import Domain
 from apps.tenant_config.defaults import sanitize_rich_text
+from apps.tenant_config.sections import primary_hex
 
 _SALT = "notifications.email.unsubscribe"
-
-# Keys MUST match TenantTheme choice values (tenant_config/models.py):
-# ocean, ember, forest, sunset, violet, slate
-THEME_EMAIL_COLORS = {
-    "ocean": "#0391F9",
-    "ember": "#ea580c",
-    "forest": "#16a34a",
-    "sunset": "#f97316",
-    "violet": "#7c3aed",
-    "slate": "#334155",
-}
-_DEFAULT_COLOR = "#0391F9"
 
 
 def tenant_base_url(tenant) -> str:
@@ -45,12 +34,12 @@ def _abs(base_url: str, link: str) -> str:
 
 
 def announcement_email_html(announcement, cfg, base_url: str):
-    """Return (subject, html) for a theme-branded announcement email.
+    """Return (subject, html) for an announcement email in the site's colours.
 
     The caller must set ``announcement.email_unsub_url`` (a transient attribute,
     not a DB field) to the per-recipient unsubscribe link before calling.
     """
-    color = THEME_EMAIL_COLORS.get(getattr(cfg, "theme", ""), _DEFAULT_COLOR)
+    color = primary_hex(cfg.style, cfg.palette) if cfg else primary_hex("")
     brand = (cfg.brand_name if cfg else "") or "Contentor"
     subject = announcement.title or brand
     body = sanitize_rich_text(announcement.body or "")

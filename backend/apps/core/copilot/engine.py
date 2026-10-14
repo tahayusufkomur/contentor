@@ -75,8 +75,6 @@ SYSTEM_PROMPT = (
     "- draft_announcement: write an announcement to students as a DRAFT the "
     "coach reviews and sends from their admin (title, body_html with simple "
     "tags, optional internal link); you can never send anything yourself\n"
-    "- edit_theme: switch the site's color theme; theme must be one of: "
-    "ocean, ember, forest, sunset, violet, slate\n"
     "- edit_navbar: change the navbar layout (one of: classic, centered, "
     "split, minimal, pill) and/or its call-to-action button (cta_text plus "
     "cta_href, an internal path like /courses); include only what changes\n"
@@ -181,8 +179,8 @@ def _style_guide():
     catalog = "; ".join(f"{sid} ({s.get('label', sid)}: {s.get('mood', '')})" for sid, s in enabled.items())
     return (
         "- edit_style: switch the site's design style (section layouts, fonts "
-        "and colors); every section keeps its content. On a site with a "
-        "style, colors come from the style — use edit_style, not edit_theme. "
+        "and colors — a site's colors and fonts come only from its style); "
+        "every section keeps its content. "
         f"style must be one of: {catalog}\n"
     )
 
@@ -299,11 +297,6 @@ class DraftAnnouncementAction(BaseModel):
     title: str
     body_html: str = ""
     link: str = ""
-
-
-class EditThemeAction(BaseModel):
-    kind: Literal["edit_theme"]
-    theme: str
 
 
 class EditStyleAction(BaseModel):
@@ -424,7 +417,6 @@ CopilotAction = Annotated[
     | CreateEventAction
     | CreateBlogPostAction
     | DraftAnnouncementAction
-    | EditThemeAction
     | EditStyleAction
     | EditNavbarAction
     | EditSeoAction
@@ -499,19 +491,19 @@ def _pages_digest(tenant):
 
 
 def _chrome_digest(tenant):
-    """One-line current theme/style/navbar state for the user turn."""
+    """One-line current style/navbar state for the user turn."""
     from apps.tenant_config.models import TenantConfig
 
     with tenant_context(tenant):
         cfg = TenantConfig.objects.first()
     if cfg is None:
-        return "Theme: ocean; Style: none (classic blocks); Navbar: layout=classic, cta=none"
+        return "Style: none (classic blocks); Navbar: layout=classic, cta=none"
     nav = cfg.navbar_config or {}
     cta = nav.get("cta") or {}
     cta_part = f"'{cta.get('text')}' -> {cta.get('href')}" if cta.get("text") else "none"
     style = sections.style(cfg.style)
     style_part = f"{cfg.style} ({style.get('label', cfg.style)})" if style else "none (classic blocks)"
-    return f"Theme: {cfg.theme}; Style: {style_part}; Navbar: layout={nav.get('layout') or 'classic'}, cta={cta_part}"
+    return f"Style: {style_part}; Navbar: layout={nav.get('layout') or 'classic'}, cta={cta_part}"
 
 
 def _tenant_zone(tenant):
@@ -1231,14 +1223,6 @@ def _card(tenant, action):
             "title": f"Publish post: {post_title[:100]}",
             "detail": "Goes live for students the moment you confirm.",
             "token": tokens.stash_action(schema, {"kind": "publish_blog_post", "post_id": action.post_id}),
-        }
-    if isinstance(action, EditThemeAction):
-        theme = chrome.clean_theme(action.theme)
-        return {
-            "kind": "edit_theme",
-            "title": f"Switch theme to {chrome.theme_label(theme)}",
-            "detail": "Colors change across the whole site — you can switch back anytime.",
-            "token": tokens.stash_action(schema, {"kind": "edit_theme", "theme": theme}),
         }
     if isinstance(action, EditStyleAction):
         style_id = chrome.clean_style(action.style)

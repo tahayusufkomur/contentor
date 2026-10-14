@@ -116,7 +116,7 @@
   },
   "settingsHub": {
     "title": "More settings",
-    "brand": "Site name, logo, colours and fonts",
+    "brand": "Site name, logo and look",
     "menu": "Site menu and header button",
     "community": "Community on or off, and its welcome message",
     "assistant": "The assistant your students see",
@@ -419,7 +419,7 @@
       },
       "look": {
         "title": "Pick your look",
-        "description": "Choose your colors, font and logo."
+        "description": "Choose your look and logo."
       },
       "first_course": {
         "title": "Create your first course",

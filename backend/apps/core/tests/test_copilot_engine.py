@@ -46,7 +46,9 @@ def _run(parsed, style=""):
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -79,7 +81,9 @@ def test_edit_pages_action_becomes_card_with_changes_and_token():
         mock.patch.object(engine.site_ai, "preview_edit", return_value=({"home": []}, {}, Decimal("0"))),
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -106,7 +110,9 @@ def test_add_block_card_carries_the_built_block():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -127,7 +133,9 @@ def test_invalid_actions_are_dropped_and_fallback_answer_returned():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -144,7 +152,9 @@ def test_failed_model_call_still_reports_cost():
     with (
         mock.patch.object(engine.core_ai, "structured", side_effect=AiError("boom", cost_usd=Decimal("0.004"))),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -174,7 +184,9 @@ def test_create_course_action_becomes_card_with_stashed_params():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -208,7 +220,9 @@ def test_create_event_card_requires_future_date():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -238,7 +252,9 @@ def test_create_event_onsite_card_stashes_location_and_kind():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -271,7 +287,9 @@ def test_create_blog_post_card_maps_summary_to_excerpt():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -309,7 +327,9 @@ def test_draft_announcement_card_maps_params_and_states_inert_detail():
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -323,24 +343,6 @@ def test_draft_announcement_card_maps_params_and_states_inert_detail():
     stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
     assert stashed["params"]["title"] == "New timetable"
     assert stashed["params"]["link"] == "/courses"
-
-
-def test_edit_theme_card_stashes_normalized_theme():
-    from apps.core.copilot import tokens as copilot_tokens
-
-    parsed = _turn(kind="actions", text="", actions=[{"kind": "edit_theme", "theme": "Forest"}])
-    payload, _ = _run(parsed)
-    (card,) = payload["actions"]
-    assert card["kind"] == "edit_theme"
-    assert "Forest" in card["title"]
-    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
-    assert stashed == {"kind": "edit_theme", "theme": "forest"}
-
-
-def test_edit_theme_unknown_id_dropped_with_fallback():
-    parsed = _turn(kind="actions", text="", actions=[{"kind": "edit_theme", "theme": "midnight"}])
-    payload, _ = _run(parsed)
-    assert payload["kind"] == "answer"  # unknown theme dropped, fallback answer
 
 
 def test_edit_navbar_card_carries_layout_and_cta():
@@ -380,7 +382,9 @@ def test_user_turn_includes_chrome_digest():
     with (
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -388,7 +392,7 @@ def test_user_turn_includes_chrome_digest():
         mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         engine.run_turn(TENANT, [], [], "hello")
-    assert "Theme: ocean" in captured["user"]
+    assert "Style: journal" in captured["user"]
 
 
 def test_system_prompt_carries_platform_knowledge_and_addenda():
@@ -406,7 +410,9 @@ def test_system_prompt_carries_platform_knowledge_and_addenda():
     with (
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -440,7 +446,9 @@ def test_ask_over_cap_is_steered_and_coerced_to_answer():
     with (
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -465,7 +473,9 @@ def test_cap_zero_leaves_asks_uncapped():
     with (
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -503,7 +513,9 @@ def test_ask_outside_transcript_window_does_not_trip_cap():
     with (
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -532,7 +544,9 @@ def test_under_cap_ask_passes_through():
     with (
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -900,7 +914,9 @@ def test_user_turn_includes_courses_digest():
     with (
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -1118,7 +1134,9 @@ def test_user_turn_includes_events_and_posts_digests():
     with (
         mock.patch.object(engine.core_ai, "structured", side_effect=fake_structured),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
@@ -1483,7 +1501,9 @@ def test_setup_digest_no_config_reports_site_open(tenant_ctx):
 def test_user_turn_includes_stats_and_setup():
     with (
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
-        mock.patch.object(engine, "_chrome_digest", return_value="Theme: ocean; Navbar: layout=classic, cta=none"),
+        mock.patch.object(
+            engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
+        ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),

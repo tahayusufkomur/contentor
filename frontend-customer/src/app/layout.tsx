@@ -13,10 +13,9 @@ import { TenantThemeEnforcer } from "@/components/shared/tenant-theme-enforcer";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
 import {
   ADMIN_THEME_COOKIE,
-  getSiteStyle,
   isAdminPath,
-  oklchToHex,
-  paletteOf,
+  lookPrimaryHex,
+  siteLook,
   styleDefaultTheme,
   styleFontsHref,
   themeStorageKey,
@@ -29,7 +28,6 @@ import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { getAuthUser } from "@/lib/auth";
 import { COOKIE_NAME } from "@/lib/constants";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
-import { getThemePalette } from "@/lib/themes";
 import { TrackPageView } from "@shared/tracking/track-page-view";
 
 // Routes that must stay reachable even when the site is unpublished, so the
@@ -87,14 +85,8 @@ export async function generateViewport(): Promise<Viewport> {
   }
   const slug = await getTenantSlug();
   const config = await fetchTenantConfig(slug);
-  const style = getSiteStyle(config?.style);
-  // A styled site wears its palette; the legacy `theme` field is never set by it.
-  const themeColor =
-    (style && oklchToHex(paletteOf(style, config?.palette).primary)) ||
-    getThemePalette(config?.theme).primaryHex;
-
   return {
-    themeColor,
+    themeColor: lookPrimaryHex(config?.style, config?.palette),
     viewportFit: "cover",
   };
 }
@@ -164,7 +156,7 @@ export default async function RootLayout({
     );
   }
   const gated = await isSiteGated(config, slug);
-  const siteStyle = getSiteStyle(config?.style);
+  const siteStyle = config ? siteLook(config.style) : undefined;
   const cookieStore = await cookies();
   const hasSession = Boolean(cookieStore.get(COOKIE_NAME)?.value);
   // The coach admin wears the app's own look, in her own light/dark.
@@ -184,15 +176,8 @@ export default async function RootLayout({
     >
       <head>
         {config && <TenantThemeStyle config={config} off={inAdmin} />}
-        {siteStyle ? (
+        {siteStyle && (
           <link href={styleFontsHref(siteStyle)} rel="stylesheet" />
-        ) : (
-          config?.font_family && (
-            <link
-              href={`https://fonts.googleapis.com/css2?family=${encodeURIComponent(config.font_family)}&display=swap`}
-              rel="stylesheet"
-            />
-          )
         )}
       </head>
       <body

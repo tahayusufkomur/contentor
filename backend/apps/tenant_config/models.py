@@ -4,15 +4,6 @@ from django.db import models
 from apps.core.constants import LOCALE_CHOICES, LOCALE_EN
 
 
-class TenantTheme(models.TextChoices):
-    OCEAN = "ocean", "Ocean"
-    EMBER = "ember", "Ember"
-    FOREST = "forest", "Forest"
-    SUNSET = "sunset", "Sunset"
-    VIOLET = "violet", "Violet"
-    SLATE = "slate", "Slate"
-
-
 class TenantConfig(models.Model):
     brand_name = models.CharField(max_length=100)
     logo_url = models.CharField(max_length=2000, blank=True, default="")
@@ -24,11 +15,10 @@ class TenantConfig(models.Model):
     # Logo Studio composer state (versioned; see TenantConfigSerializer
     # .validate_logo_recipe for the shape). Empty dict = no studio design.
     logo_recipe = models.JSONField(default=dict, blank=True)
-    theme = models.CharField(max_length=30, choices=TenantTheme.choices, default=TenantTheme.OCEAN)
     dark_mode_enabled = models.BooleanField(default=True)
-    font_family = models.CharField(max_length=100, default="Inter")
-    # Site style id from the section manifest (apps.tenant_config.sections);
-    # "" = legacy theme/font rendering.
+    # The look: a site style id from the section manifest
+    # (apps.tenant_config.sections) — its colours, fonts and layouts. "" wears
+    # sections.default_style() (a site mid-provisioning, a test fixture).
     style = models.CharField(max_length=40, blank=True, default="")
     # Alternative colourway of ``style`` (its "palettes" in the manifest);
     # "" = the style's own palette. Ignored when it does not belong to ``style``.

@@ -167,11 +167,10 @@ export interface TenantConfig {
   icon_id?: string | null;
   /** Logo Studio composer state; empty object = no saved design. */
   logo_recipe?: Partial<import("./logo").LogoRecipe> | Record<string, never>;
-  theme: string;
   dark_mode_enabled: boolean;
-  font_family: string;
   custom_css: string;
-  /** Site style id (packages/shared/src/sections/styles); "" = legacy theme. */
+  /** The look: a site style id (packages/shared/src/sections/styles); ""
+   *  wears the default look (siteLook). Changed only via config/look/. */
   style?: string;
   /** Alternative colourway of `style` ("" = the style's own palette). */
   palette?: string;

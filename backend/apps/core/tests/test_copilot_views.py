@@ -351,22 +351,6 @@ def test_execute_edit_block_fields_busts_cache(client):
     assert cache.get("tenant:shared_test:config") is None
 
 
-def test_execute_edit_theme_writes_theme_flips_look_edited_and_busts_cache(client, coach):
-    from django.core.cache import cache
-
-    from apps.tenant_config.models import TenantConfig
-
-    cache.set("tenant:shared_test:config", "sentinel", timeout=300)
-    token = copilot_tokens.stash_action("shared_test", {"kind": "edit_theme", "theme": "forest"})
-    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
-    assert resp.status_code == 200, resp.content
-    assert resp.json()["result"] == {"kind": "edit_theme", "theme": "forest"}
-    cfg = TenantConfig.objects.first()
-    assert cfg.theme == "forest"
-    assert cfg.setup_progress.get("look_edited") is True
-    assert cache.get("tenant:shared_test:config") is None
-
-
 def test_execute_edit_navbar_merges_and_preserves_links(client, coach):
     from django.core.cache import cache
 
@@ -387,17 +371,6 @@ def test_execute_edit_navbar_merges_and_preserves_links(client, coach):
     assert cfg.navbar_config["cta"] == {"text": "Join now", "href": "/plans"}
     assert cfg.navbar_config["links"] == [{"label": "Courses", "href": "/courses"}]
     assert cache.get("tenant:shared_test:config") is None
-
-
-def test_execute_edit_theme_invalid_stashed_id_returns_400(client, coach):
-    # Defense in depth: even a stashed payload is re-validated at execute time.
-    from apps.tenant_config.models import TenantConfig
-
-    TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
-    token = copilot_tokens.stash_action("shared_test", {"kind": "edit_theme", "theme": "midnight"})
-    resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
-    assert resp.status_code == 400
-    assert "theme must be one of" in resp.json()["detail"]
 
 
 def test_execute_edit_seo_writes_meta_description_and_busts_cache(client, coach):
@@ -782,18 +755,18 @@ def test_execute_pages_action_records_pages_inverse(client, coach):
     assert row.inverse["pages"] == before
 
 
-def test_execute_theme_action_records_old_theme(client, coach):
+def test_execute_seo_action_records_old_description(client, coach):
     from apps.tenant_config.models import CopilotAudit, TenantConfig
 
     cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
-    cfg.theme = "ocean"
-    cfg.save(update_fields=["theme"])
-    token = copilot_tokens.stash_action("shared_test", {"kind": "edit_theme", "theme": "ember"})
+    cfg.meta_description = "Old text"
+    cfg.save(update_fields=["meta_description"])
+    token = copilot_tokens.stash_action("shared_test", {"kind": "edit_seo", "meta_description": "New text"})
     resp = client.post("/api/v1/admin/copilot/execute/", {"token": token}, format="json")
     assert resp.status_code == 200, resp.content
     row = CopilotAudit.objects.latest("created_at")
     # ...plus a stamp of what the change left, checked before any undo.
-    assert row.inverse == {"kind": "edit_theme", "theme": "ocean", "after": row.inverse["after"]}
+    assert row.inverse == {"kind": "edit_seo", "meta_description": "Old text", "after": row.inverse["after"]}
     assert len(row.inverse["after"]) == 16
 
 
@@ -850,14 +823,14 @@ def test_audit_write_failure_never_fails_the_execute(client, coach, monkeypatch)
 def test_audit_feed_returns_entries_newest_first(client, coach):
     from apps.tenant_config.models import CopilotAudit
 
-    CopilotAudit.objects.create(kind="edit_theme", summary="Switched theme to forest")
+    CopilotAudit.objects.create(kind="edit_style", summary="Switched site style to journal")
     CopilotAudit.objects.create(kind="add_block", summary="Added a faq section to home")
     resp = client.get("/api/v1/admin/copilot/audit/")
     assert resp.status_code == 200
     entries = resp.json()["entries"]
     assert [e["summary"] for e in entries[:2]] == [
         "Added a faq section to home",
-        "Switched theme to forest",
+        "Switched site style to journal",
     ]
     assert entries[0]["kind"] == "add_block" and "created_at" in entries[0]
 
@@ -876,13 +849,13 @@ def _toggle_token(enabled):
     )
 
 
-def _theme_token(theme):
+def _seo_token(text):
     from apps.tenant_config.models import TenantConfig
 
-    # Order-independence under xdist: edit_theme's execute 400s without a
+    # Order-independence under xdist: edit_seo's execute 400s without a
     # TenantConfig row, and no fixture guarantees one exists.
     TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="T")
-    return copilot_tokens.stash_action("shared_test", {"kind": "edit_theme", "theme": theme})
+    return copilot_tokens.stash_action("shared_test", {"kind": "edit_seo", "meta_description": text})
 
 
 def _execute_token(client, token):
@@ -926,13 +899,13 @@ def test_undo_restores_pages_snapshot(client, coach):
 
 def test_undo_rejects_non_latest(client, coach):
     first = _execute_token(client, _toggle_token(enabled=False))
-    _execute_token(client, _theme_token("ember"))
+    _execute_token(client, _seo_token("Fresh text"))
     res = client.post("/api/v1/admin/copilot/undo/", {"audit_id": first.json()["audit_id"]}, format="json")
     assert res.status_code == 400
 
 
 def test_undo_twice_rejected(client, coach):
-    res = _execute_token(client, _theme_token("ember"))
+    res = _execute_token(client, _seo_token("Fresh text"))
     client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
     again = client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
     assert again.status_code == 400
@@ -1089,7 +1062,7 @@ def test_undo_deletes_a_draft_post_and_a_draft_announcement_but_not_sent_ones(cl
 def test_audit_feed_says_what_can_still_be_undone(client, coach):
     course = _create_course(client)
     older_edit = _execute_token(client, _toggle_token(enabled=False))
-    newer_edit = _execute_token(client, _theme_token("ember"))
+    newer_edit = _execute_token(client, _seo_token("Fresh text"))
     undone = _create_course(client)
     _undo(client, undone)
     entries = {e["id"]: e for e in client.get("/api/v1/admin/copilot/audit/").json()["entries"]}
@@ -1127,7 +1100,7 @@ def test_execute_edit_curriculum_changes_the_course_and_is_logged(client, coach)
 def test_undo_busts_cache(client, coach):
     from django.core.cache import cache
 
-    res = _execute_token(client, _theme_token("ember"))
+    res = _execute_token(client, _seo_token("Fresh text"))
     cache.set("tenant:shared_test:config", "sentinel", timeout=300)
     undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
     assert undo.status_code == 200, undo.content
@@ -1502,6 +1475,8 @@ def test_execute_edit_style_restyles_every_page_and_undo_restores(client, coach,
     from django.core.cache import cache
 
     cfg = _styled_config()
+    cfg.palette = "sage"
+    cfg.save(update_fields=["palette"])
     pages_before = cfg.pages
     cache.set("tenant:shared_test:config", "sentinel", timeout=300)
     res = _execute_token(client, copilot_tokens.stash_action("shared_test", {"kind": "edit_style", "style": "bold"}))
@@ -1510,6 +1485,7 @@ def test_execute_edit_style_restyles_every_page_and_undo_restores(client, coach,
     assert cache.get("tenant:shared_test:config") is None
     cfg.refresh_from_db()
     assert cfg.style == "bold"
+    assert cfg.palette == ""  # the new style wears its own colours
     assert cfg.setup_progress.get("look_edited") is True
     assert cfg.pages["home"]["blocks"][0] == {
         "id": "blk_a",
@@ -1524,7 +1500,7 @@ def test_execute_edit_style_restyles_every_page_and_undo_restores(client, coach,
     undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": res.json()["audit_id"]}, format="json")
     assert undo.status_code == 200, undo.content
     cfg.refresh_from_db()
-    assert cfg.style == "calm"
+    assert (cfg.style, cfg.palette) == ("calm", "sage")
     assert cfg.pages == pages_before
 
 

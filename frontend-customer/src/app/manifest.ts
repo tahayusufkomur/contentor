@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { getSiteStyle, oklchToHex, paletteOf } from "@/lib/site-styles";
-import { getThemePalette } from "@/lib/themes";
+import { lookPrimaryHex } from "@/lib/site-styles";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
@@ -9,10 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const slug = await getTenantSlug();
   const config = slug !== "__platform__" ? await fetchTenantConfig(slug) : null;
-  const style = getSiteStyle(config?.style);
-  const themeColor =
-    (style && oklchToHex(paletteOf(style, config?.palette).primary)) ||
-    getThemePalette(config?.theme).primaryHex;
+  const themeColor = lookPrimaryHex(config?.style, config?.palette);
   const name = config?.brand_name ?? "Contentor";
   const v = config?.icon_id ?? config?.logo_id ?? "default";
 

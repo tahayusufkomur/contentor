@@ -28,7 +28,6 @@ export const ACTION_KINDS = [
   "create_event",
   "create_blog_post",
   "draft_announcement",
-  "edit_theme",
   "edit_style",
   "edit_navbar",
   "edit_seo",

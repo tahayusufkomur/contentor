@@ -142,7 +142,7 @@ describe("isCreateKind", () => {
     expect(isCreateKind("create_blog_post")).toBe(true);
     expect(isCreateKind("edit_pages")).toBe(false);
     expect(isCreateKind("add_block")).toBe(false);
-    expect(isCreateKind("edit_theme")).toBe(false);
+    expect(isCreateKind("edit_style")).toBe(false);
     expect(isCreateKind("edit_navbar")).toBe(false);
     expect(isCreateKind("set_block_image")).toBe(false);
   });
@@ -157,7 +157,7 @@ describe("isUndoableKind", () => {
     expect(isUndoableKind("edit_block_fields")).toBe(true);
     expect(isUndoableKind("toggle_block")).toBe(true);
     expect(isUndoableKind("duplicate_block")).toBe(true);
-    expect(isUndoableKind("edit_theme")).toBe(true);
+    expect(isUndoableKind("edit_style")).toBe(true);
     expect(isUndoableKind("edit_navbar")).toBe(true);
     expect(isUndoableKind("edit_seo")).toBe(true);
     expect(isUndoableKind("set_block_image")).toBe(true);

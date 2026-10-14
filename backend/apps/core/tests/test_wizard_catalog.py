@@ -2,7 +2,6 @@ import pytest
 
 from apps.core.onboarding import wizard_catalog as wc
 from apps.tenant_config.defaults import KNOWN_BLOCK_TYPES, KNOWN_PAGE_KEYS
-from apps.tenant_config.models import TenantTheme
 from apps.tenant_config.serializers import _NAVBAR_LAYOUTS
 
 pytestmark = pytest.mark.django_db
@@ -10,19 +9,6 @@ pytestmark = pytest.mark.django_db
 
 # The events page is built by the site composer only, never by the classic wizard.
 WIZARD_PAGES = set(KNOWN_PAGE_KEYS) - {"events"}
-
-
-def test_themes_match_tenant_theme_enum():
-    assert set(wc.THEMES) == set(TenantTheme.values)
-
-
-def test_theme_ranking_covers_all_niches_with_valid_themes():
-    from apps.core.demo.seed_template import available_niches
-
-    assert set(wc.THEME_RANKING) == set(available_niches())
-    for ranked in wc.THEME_RANKING.values():
-        assert len(ranked) == 3
-        assert set(ranked) <= set(wc.THEMES)
 
 
 def test_navbar_and_hero_enums_are_valid_subsets():
@@ -45,27 +31,28 @@ def test_page_layouts_cover_all_pages_with_known_blocks():
 
 def test_recommended_answers_complete_and_fallback():
     rec = wc.recommended_answers("yoga")
-    assert rec["theme"] == "forest"
+    assert rec["niche"] == "yoga"
+    assert "theme" not in rec and "font_family" not in rec  # the look is the style
     assert set(rec["page_layouts"]) == WIZARD_PAGES
     assert rec["logo"] == {"mode": "wordmark", "curated_id": None}
     assert wc.recommended_answers("no-such-niche")["niche"] == "general"
 
 
 def test_validate_answers_accepts_valid_partial():
-    assert wc.validate_answers({"theme": "forest", "goals": ["sell_courses"]}) == []
+    assert wc.validate_answers({"navbar_layout": "pill", "goals": ["sell_courses"]}) == []
 
 
 @pytest.mark.parametrize(
     "partial",
     [
-        {"theme": "neon"},
+        {"theme": "forest"},
         {"nonsense_key": 1},
         {"description": "x" * 501},
         {"goals": ["sell_courses", "hack"]},
         {"page_layouts": {"home": "no-such-layout"}},
         {"page_layouts": {"basement": "home-spotlight"}},
         {"logo": {"mode": "ai"}},
-        {"font_family": "Comic Sans"},
+        {"font_family": "Lora"},
         {"hero_style": "gigantic"},
         {"navbar_layout": "sidebar"},
     ],

@@ -2,14 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ChevronRight,
-  Clock,
-  Globe,
-  Save,
-  Sparkles,
-  Trash2,
-} from "lucide-react";
+import { ChevronRight, Clock, Globe, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
@@ -34,78 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
 import type { TenantConfig } from "@/types/tenant";
 import { MailboxSettingsSection } from "@/components/admin/mailbox/mailbox-settings";
-import { EraseDemoDialog } from "@/components/setup/erase-demo-dialog";
-import { useDemoContent } from "@/lib/setup-assistant";
-
-const COMMON_TIMEZONES = [
-  "UTC",
-  "Europe/London",
-  "Europe/Paris",
-  "Europe/Berlin",
-  "Europe/Istanbul",
-  "Europe/Moscow",
-  "Asia/Dubai",
-  "Asia/Kolkata",
-  "Asia/Shanghai",
-  "Asia/Tokyo",
-  "Australia/Sydney",
-  "Pacific/Auckland",
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "America/Sao_Paulo",
-];
-
-function DemoContentCard() {
-  const t = useTranslations("admin");
-  const demo = useDemoContent();
-  const [eraseOpen, setEraseOpen] = useState(false);
-
-  if (!demo?.present) return null;
-
-  const counts = demo.counts;
-  const summary = [
-    counts.courses > 0 &&
-      t("setup.erase.countCourses", { count: counts.courses }),
-    counts.downloads > 0 &&
-      t("setup.erase.countDownloads", { count: counts.downloads }),
-    counts.live_events > 0 &&
-      t("setup.erase.countLive", { count: counts.live_events }),
-    counts.plans > 0 && t("setup.erase.countPlans", { count: counts.plans }),
-    counts.bundles > 0 &&
-      t("setup.erase.countBundles", { count: counts.bundles }),
-    counts.videos > 0 && t("setup.erase.countVideos", { count: counts.videos }),
-    counts.photos > 0 && t("setup.erase.countPhotos", { count: counts.photos }),
-  ]
-    .filter(Boolean)
-    .join(", ");
-
-  return (
-    <div className="max-w-lg">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
-            {t("setup.items.demo_cleanup.title")}
-          </CardTitle>
-          <CardDescription>{summary}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button
-            variant="destructive"
-            className="gap-2"
-            onClick={() => setEraseOpen(true)}
-          >
-            <Trash2 className="h-4 w-4" />
-            {t("setup.erase.confirm")}
-          </Button>
-        </CardContent>
-      </Card>
-      <EraseDemoDialog open={eraseOpen} onClose={() => setEraseOpen(false)} />
-    </div>
-  );
-}
+import { timeZones } from "@/lib/interview";
 
 export default function SettingsPage() {
   const t = useTranslations("admin");
@@ -202,7 +124,7 @@ export default function SettingsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {COMMON_TIMEZONES.map((tz) => (
+                    {timeZones(config.timezone || "UTC").map((tz) => (
                       <SelectItem key={tz} value={tz}>
                         {tz.replace(/_/g, " ")}
                       </SelectItem>
@@ -218,8 +140,6 @@ export default function SettingsPage() {
           </Card>
         </div>
       )}
-
-      <DemoContentCard />
 
       <MailboxSettingsSection />
 
