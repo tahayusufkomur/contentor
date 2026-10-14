@@ -135,12 +135,16 @@ def analyze(text: str) -> dict:
 
     clean = text.strip()[:4000]
     empty = {"facts": [], "summary": ""}
-    if not clean or not ai_compose.compose_available():
+    if not clean:
         return empty
 
+    # The cache first: provisioning re-reads the About step's analysis, and a
+    # hub health probe that blips in between must not throw it away.
     key = "about-analyze:2:" + hashlib.sha256(clean.encode()).hexdigest()
     if (hit := cache.get(key)) is not None:
         return hit
+    if not ai_compose.compose_available():
+        return empty
 
     try:
         parsed, cost, _model = core_ai.structured(

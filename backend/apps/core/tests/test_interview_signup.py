@@ -228,3 +228,24 @@ def test_analyze_gives_trimmed_items_for_tile_questions():
     by_field = {f["field"]: f for f in facts}
     assert by_field["credentials"]["items"] == ["BBM Level 1.", "Yin Yoga & Anatomy training."]
     assert by_field["teaches"]["items"] == []
+
+
+def test_analyze_keeps_its_result_when_the_ai_probe_blips():
+    """Provisioning reads the About step's analysis again; a hub health probe
+    that times out in between must not throw it away."""
+    import uuid
+
+    from apps.core import ai as core_ai
+    from apps.core.onboarding import about_check
+
+    parsed = about_check.AboutAnalysis(facts=[about_check.FactItem(field="story", value="I teach yoga.")])
+    text = f"bio {uuid.uuid4()}"
+    with (
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.onboarding.ai_compose.record_spend"),
+        mock.patch.object(core_ai, "structured", return_value=(parsed, 0.0, "m")),
+    ):
+        first = about_check.analyze(text)
+    assert first["facts"]
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
+        assert about_check.analyze(text) == first

@@ -428,13 +428,12 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
             with tenant_context(tenant):
                 from apps.tenant_config import interview
 
+                # Applied, it is marked done; else the bio stays for /setup's
+                # first load to try once more (setup_flow._interview_state).
                 try:
                     interview.apply_initial_about(tenant, initial_about)
                 except Exception:
                     logger.exception("Initial about import failed during provisioning for %s", tenant.slug)
-            tenant.wizard_state = {**(tenant.wizard_state or {}), "initial_about_done": True}
-            tenant.wizard_state.pop("initial_about", None)
-            tenant.save(update_fields=["wizard_state"])
 
         _set_provisioning_stage(tenant, "finalizing")
         tenant.provisioning_status = "ready"
