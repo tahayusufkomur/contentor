@@ -79,7 +79,7 @@ export function LockedMark({ feature }: { feature: EntitlementKey }) {
   if (!locked) return null;
   return (
     <span title={t("nav.locked")} className="inline-flex">
-      <Lock className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+      <Lock className="h-3 w-3 opacity-60" aria-hidden="true" />
       <span className="sr-only">{t("nav.locked")}</span>
     </span>
   );

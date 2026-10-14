@@ -96,33 +96,33 @@ function AdminShellContent({ children, user }: AdminShellProps) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <MobileHeader title={t("title")} sections={navSections} user={user} />
 
-        {/* Top Header Bar with Global Cmd+K Search & View Site. The ref sits
-            below MobileHeader in flow, so the published clearance covers
-            both bars — the copilot drawer starts beneath them. */}
+        {/* Top bar, 52 px: the search pill, the assistant and "View site" as
+            paper pills with hairlines (spec 5.6). The ref sits below
+            MobileHeader in flow, so the published clearance covers both bars
+            and the copilot drawer starts beneath them. */}
         <div
           ref={topbarRef}
-          className="border-b bg-card px-4 py-2.5 flex items-center justify-between gap-4"
+          className="flex h-[52px] items-center justify-between gap-3 border-b bg-background px-4"
         >
           <button
             type="button"
             onClick={() => setCmdOpen(true)}
-            className="flex items-center gap-2.5 px-3 py-1.5 text-xs text-muted-foreground bg-muted/50 hover:bg-muted/80 rounded-lg border transition-colors w-full min-w-0 max-w-sm"
+            className="flex h-9 w-full min-w-0 max-w-sm items-center gap-2.5 rounded-full border bg-background px-3 text-caption text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            <Search className="h-3.5 w-3.5" />
+            <Search className="h-4 w-4 shrink-0" />
             <span className="truncate">{t("palette.placeholder")}</span>
-            <kbd className="ml-auto hidden sm:inline-flex items-center gap-0.5 font-mono text-[10px] bg-background border px-1.5 py-0.5 rounded shadow-sm text-foreground/80">
+            <kbd className="ml-auto hidden items-center gap-0.5 rounded-md border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
               ⌘K
             </kbd>
           </button>
 
           <Button
             variant="outline"
-            size="sm"
-            className="ml-auto h-8 shrink-0 gap-1.5 text-xs font-medium shadow-sm"
+            className="ml-auto shrink-0 gap-1.5 rounded-full px-3"
             onClick={dock.toggle}
             aria-pressed={dock.isOpen}
           >
-            <Sparkles className="h-3.5 w-3.5" />
+            <Sparkles className="h-4 w-4" />
             <span>{t("dock.title")}</span>
             {setup &&
               !setup.dismissed &&
@@ -136,13 +136,12 @@ function AdminShellContent({ children, user }: AdminShellProps) {
           <Button
             asChild
             variant="outline"
-            size="sm"
-            className="hidden h-8 shrink-0 gap-1.5 text-xs font-medium shadow-sm md:inline-flex"
+            className="hidden shrink-0 gap-1.5 rounded-full px-3 md:inline-flex"
           >
             <Link href="/" target="_blank" rel="noopener noreferrer">
-              <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>View Site</span>
-              <ExternalLink className="h-3 w-3 text-muted-foreground/60" />
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <span>{t("viewSite")}</span>
+              <ExternalLink className="h-3 w-3 text-muted-foreground" />
             </Link>
           </Button>
         </div>

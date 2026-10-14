@@ -23,43 +23,48 @@ export function SectionTabs({
   if (section.items.length < 2 && hidden === 0) return null;
 
   return (
+    // The <nav> keeps the section's name: e2e finds the strip as
+    // getByRole("navigation", { name: section.label }).
     <nav
       aria-label={section.label}
-      className="flex items-center gap-1 overflow-x-auto border-b bg-card px-4"
+      className="flex items-center overflow-x-auto border-b bg-background px-4 py-2"
     >
-      {section.items.map((item) => (
-        <NavLink
-          key={item.href}
-          href={item.href}
-          target={item.external ? "_blank" : undefined}
-          rel={item.external ? "noopener noreferrer" : undefined}
-          className={({ active }) =>
-            cn(
-              "-mb-px flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm transition-colors",
-              active
-                ? "border-foreground font-medium text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground",
-            )
-          }
-        >
-          <span>{item.label}</span>
-          {item.external && (
-            <ExternalLink className="h-3 w-3 text-muted-foreground/60" />
-          )}
-          {item.requiresEntitlement && (
-            <LockedMark feature={item.requiresEntitlement} />
-          )}
-        </NavLink>
-      ))}
-      {hidden > 0 && (
-        <button
-          type="button"
-          onClick={() => onExpand(section.id)}
-          className="shrink-0 px-3 py-2.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {t("nav.more", { count: hidden })}
-        </button>
-      )}
+      {/* Segmented control on second paper; the active page is an ink pill */}
+      <div className="inline-flex h-9 shrink-0 items-center gap-1 rounded-full bg-muted p-1">
+        {section.items.map((item) => (
+          <NavLink
+            key={item.href}
+            href={item.href}
+            target={item.external ? "_blank" : undefined}
+            rel={item.external ? "noopener noreferrer" : undefined}
+            className={({ active }) =>
+              cn(
+                "flex h-7 shrink-0 items-center gap-1.5 rounded-full px-3 text-caption font-medium transition-colors",
+                active
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground",
+              )
+            }
+          >
+            <span>{item.label}</span>
+            {item.external && (
+              <ExternalLink className="h-3 w-3 opacity-60" aria-hidden="true" />
+            )}
+            {item.requiresEntitlement && (
+              <LockedMark feature={item.requiresEntitlement} />
+            )}
+          </NavLink>
+        ))}
+        {hidden > 0 && (
+          <button
+            type="button"
+            onClick={() => onExpand(section.id)}
+            className="h-7 shrink-0 rounded-full px-3 text-caption text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {t("nav.more", { count: hidden })}
+          </button>
+        )}
+      </div>
     </nav>
   );
 }
