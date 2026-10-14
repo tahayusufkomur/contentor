@@ -509,13 +509,13 @@ export function HelpBubble() {
           type="button"
           aria-label={t("bubbleLabel")}
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+          className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full border bg-background text-foreground shadow-sm hover:bg-accent motion-safe:transition-colors"
         >
           <MessageCircleQuestion className="h-6 w-6" />
         </button>
       )}
       {open && (
-        <div className="fixed bottom-6 right-6 z-50 flex h-[min(560px,calc(100dvh-3rem))] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border bg-background shadow-2xl">
+        <div className="fixed bottom-6 right-6 z-50 flex h-[min(560px,calc(100dvh-3rem))] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-tile border bg-background shadow-sm">
           <div className="flex items-center justify-between border-b px-4 py-3">
             <span className="text-sm font-semibold">{t("title")}</span>
             <button
