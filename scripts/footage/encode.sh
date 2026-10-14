@@ -89,7 +89,7 @@ phone() {
 poster() { q -i "$OUT/clips/$1.mp4" -frames:v 1 -c:v libaom-av1 -still-picture 1 -crf 32 -cpu-used 4 -pix_fmt yuv420p "$OUT/posters/$1.avif"; }
 # avif <in> <out> <w:h> <crf>: a still, scaled to cover the box and center-cropped.
 avif() {
-  q -i "$1" -vf "scale=$3:force_original_aspect_ratio=increase:flags=lanczos,crop=$3" -frames:v 1 \
+  q -i "$1" -vf "scale=$3:force_original_aspect_ratio=increase:flags=lanczos,crop=$3:exact=1" -frames:v 1 \
     -c:v libaom-av1 -still-picture 1 -crf "$4" -cpu-used 4 -pix_fmt yuv420p "$2"
 }
 # still <key> <in> <w:h> <small w:h> <crf> <small crf>
@@ -154,7 +154,7 @@ hero() {
   filt="$filt[h0][h1][h2][h3]concat=n=4:v=1:a=0[v]"
   q "${inputs[@]}" -filter_complex "$filt" -map "[v]" -an -c:v libx264 -preset slow -crf 23 \
     -maxrate 1.6M -bufsize 3.2M -pix_fmt yuv420p -movflags +faststart "$OUT/clips/hero-looks.mp4"
-  webm hero-looks 34 1.6M
+  webm hero-looks 40 1.6M
   phone hero-looks 0.6M
   poster hero-looks
   echo "clip  hero-looks  $(kb "$OUT/clips/hero-looks.mp4") KB"

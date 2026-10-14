@@ -1,5 +1,16 @@
 {
   "items": {
+    "hero-looks": {
+      "kind": "clip",
+      "src": "/media/clips/hero-looks.mp4",
+      "width": 1600,
+      "height": 1000,
+      "bytes": 2380485,
+      "poster": "/media/posters/hero-looks.avif",
+      "webm": "/media/clips/hero-looks.webm",
+      "phoneSrc": "/media/clips/hero-looks-phone.mp4",
+      "durationS": 12
+    },
     "clip-student-phone": {
       "kind": "clip",
       "src": "/media/clips/clip-student-phone.mp4",
@@ -299,6 +310,114 @@
       "alt": "A woman sits cross-legged in a lotus meditation pose atop a round cushion on a woven rug over wooden flooring. Her eyes are closed in peaceful contemplation with hands rested in her lap, wearing a beige crewneck sweater and dark gray trousers in a serene room near a sunlit window.",
       "license": "curated-api-standard",
       "srcSmall": "/media/stills/still-wellness-small.avif"
+    },
+    "look-journal": {
+      "kind": "still",
+      "src": "/media/stills/look-journal.avif",
+      "width": 750,
+      "height": 1624,
+      "bytes": 28143,
+      "alt": "The Quiet Journal look on a phone: the home page of Mara Lindqvist, a yoga teacher",
+      "srcSmall": "/media/stills/look-journal-small.avif"
+    },
+    "look-kinetic": {
+      "kind": "still",
+      "src": "/media/stills/look-kinetic.avif",
+      "width": 750,
+      "height": 1624,
+      "bytes": 26229,
+      "alt": "The Kinetic Club look on a phone: the home page of Iron & Oak Strength",
+      "srcSmall": "/media/stills/look-kinetic-small.avif"
+    },
+    "look-encore": {
+      "kind": "still",
+      "src": "/media/stills/look-encore.avif",
+      "width": 750,
+      "height": 1624,
+      "bytes": 34541,
+      "alt": "The Encore look on a phone: the home page of Theo Okafor, a music teacher",
+      "srcSmall": "/media/stills/look-encore-small.avif"
+    },
+    "look-studiofloor": {
+      "kind": "still",
+      "src": "/media/stills/look-studiofloor.avif",
+      "width": 750,
+      "height": 1624,
+      "bytes": 25846,
+      "alt": "The Studio Floor look on a phone: the home page of Saffron Belly Dance",
+      "srcSmall": "/media/stills/look-studiofloor-small.avif"
+    },
+    "look-tavola": {
+      "kind": "still",
+      "src": "/media/stills/look-tavola.avif",
+      "width": 750,
+      "height": 1624,
+      "bytes": 24988,
+      "alt": "The Tavola look on a phone: the home page of The Weeknight Kitchen",
+      "srcSmall": "/media/stills/look-tavola-small.avif"
+    },
+    "look-primer": {
+      "kind": "still",
+      "src": "/media/stills/look-primer.avif",
+      "width": 750,
+      "height": 1624,
+      "bytes": 25900,
+      "alt": "The Primer look on a phone: the home page of Lucía Ferrer, a language tutor",
+      "srcSmall": "/media/stills/look-primer-small.avif"
+    },
+    "look-dojo": {
+      "kind": "still",
+      "src": "/media/stills/look-dojo.avif",
+      "width": 750,
+      "height": 1624,
+      "bytes": 34655,
+      "alt": "The Dojo look on a phone: the home page of Kenji Mori Karate",
+      "srcSmall": "/media/stills/look-dojo-small.avif"
+    },
+    "look-workshop": {
+      "kind": "still",
+      "src": "/media/stills/look-workshop.avif",
+      "width": 750,
+      "height": 1624,
+      "bytes": 31581,
+      "alt": "The Workshop look on a phone: the home page of Studio Ochre, a painting teacher",
+      "srcSmall": "/media/stills/look-workshop-small.avif"
+    },
+    "look-atelier": {
+      "kind": "still",
+      "src": "/media/stills/look-atelier.avif",
+      "width": 750,
+      "height": 1624,
+      "bytes": 19296,
+      "alt": "The Atelier look on a phone: the home page of Elif Aydın Makeup",
+      "srcSmall": "/media/stills/look-atelier-small.avif"
+    },
+    "look-sprout": {
+      "kind": "still",
+      "src": "/media/stills/look-sprout.avif",
+      "width": 750,
+      "height": 1624,
+      "bytes": 30509,
+      "alt": "The Sprout look on a phone: the home page of Kind Mornings, a family coach",
+      "srcSmall": "/media/stills/look-sprout-small.avif"
+    },
+    "look-trail": {
+      "kind": "still",
+      "src": "/media/stills/look-trail.avif",
+      "width": 750,
+      "height": 1624,
+      "bytes": 25401,
+      "alt": "The Trail look on a phone: the home page of Ridge & Pine Guiding",
+      "srcSmall": "/media/stills/look-trail-small.avif"
+    },
+    "look-nocturne": {
+      "kind": "still",
+      "src": "/media/stills/look-nocturne.avif",
+      "width": 750,
+      "height": 1624,
+      "bytes": 22393,
+      "alt": "The Nocturne look on a phone: the home page of Quiet Hours, a wellness coach",
+      "srcSmall": "/media/stills/look-nocturne-small.avif"
     }
   }
 }

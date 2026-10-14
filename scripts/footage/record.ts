@@ -522,3 +522,119 @@ test("setup-compose", async ({ browser }) => {
   s.mark("scrolled");
   await s.save("setup-compose");
 });
+
+// ── The site in twelve looks (Phase 2 chapters 1 and 3) ───────────────────
+
+type Brief = { id: string; brand: string; niche: string; description: string; followups?: { q: string; a: string }[]; goals?: string[] };
+
+const EXTRA_BRIEFS: Brief[] = [
+  {
+    id: "martial-arts",
+    brand: "Kenji Mori Karate",
+    niche: "martial_arts",
+    description:
+      "I teach traditional karate to adults who never trained before. Classes build stance, balance and confidence step by step, with plenty of pad work and no sparring until you are ready.",
+    followups: [{ q: "Who is your ideal student?", a: "Adults from 25 to 50, men and women, who want discipline and fitness without a fight-club feel." }],
+    goals: ["sell_courses", "run_live_classes", "build_community"],
+  },
+  {
+    id: "beauty",
+    brand: "Elif Aydın Makeup",
+    niche: "beauty",
+    description:
+      "I teach everyday makeup to women who feel lost in the beauty aisle: one fresh ten-minute face first, then evening and event looks, with the products they already own.",
+    followups: [{ q: "Who is your ideal student?", a: "Women from 25 to 45 who want to look polished for work and events without a full kit." }],
+    goals: ["sell_courses", "run_live_classes", "sell_downloads"],
+  },
+  {
+    id: "family",
+    brand: "Kind Mornings",
+    niche: "family",
+    description:
+      "I help parents of toddlers turn mornings and bedtimes into calm routines: short video lessons, printable routine charts and a weekly live question hour.",
+    followups: [{ q: "Who is your ideal student?", a: "Tired parents of one- to four-year-olds who want fewer battles at the door and at bedtime." }],
+    goals: ["sell_courses", "run_live_classes", "sell_downloads"],
+  },
+  {
+    id: "outdoors",
+    brand: "Ridge & Pine Guiding",
+    niche: "outdoors",
+    description:
+      "I prepare beginners for their first multi-day hikes: route planning, packing light, map reading and safe pacing, then guided weekend trips in the Alps.",
+    followups: [{ q: "Who is your ideal student?", a: "City people in their 30s and 40s who walk a lot but have never slept on a mountain." }],
+    goals: ["sell_courses", "run_live_classes", "build_community"],
+  },
+];
+const BRIEFS: Brief[] = [
+  ...JSON.parse(fs.readFileSync(path.resolve(__dirname, "../../e2e/fixtures/site-eval-briefs.json"), "utf8")),
+  ...EXTRA_BRIEFS,
+];
+/** Phase 2's twelve look cards, each composed for the brief of its niche. */
+const LOOK_BRIEFS: Record<string, string> = {
+  journal: "yoga",
+  kinetic: "fitness",
+  encore: "music",
+  studiofloor: "dance",
+  tavola: "cooking",
+  primer: "language-tutoring",
+  dojo: "martial-arts",
+  workshop: "painting",
+  atelier: "beauty",
+  sprout: "family",
+  trail: "outdoors",
+  nocturne: "wellness",
+};
+/** The hero's four-looks cut (encode.sh HERO_LOOKS, same order). */
+const HERO_LOOKS = ["journal", "tavola", "encore", "kinetic"];
+
+/** Scroll the page through so lazy images load, back to the top, then settle. */
+async function preload(page: Page) {
+  await settle(page);
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight / 2) {
+      scrollTo(0, y);
+      await new Promise((r) => setTimeout(r, 150));
+    }
+    scrollTo(0, 0);
+  });
+  await settle(page);
+}
+
+for (const [look, briefId] of Object.entries(LOOK_BRIEFS)) {
+  test(`looks:${look}`, async ({ browser }) => {
+    test.setTimeout(20 * 60_000);
+    await hubFree();
+    const brief = BRIEFS.find((b) => b.id === briefId)!;
+    const out = manage(["eval_compose_site", "--style", look, "--brief", JSON.stringify(brief)]);
+    const composed = JSON.parse(out.split("\n").pop()!) as { host: string; plan_source: string; pages: { key: string; status: string }[] };
+    // Review Focus 2: a fallen-back plan or a failed build is not filmed.
+    expect(composed.plan_source, `${look}: the site plan fell back to the recipe; re-run -g looks:${look}`).toBe("ai");
+    expect(composed.pages.find((p) => p.key === "home")?.status, `${look}: home did not build`).toBe("ready");
+    const site = `http://${composed.host}/`;
+
+    // The look card's phone render.
+    const still = await open(browser, "phone", { video: false });
+    await still.page.goto(site);
+    await preload(still.page);
+    await still.page.screenshot({ path: path.join(RAW, `look-${look}.png`) });
+    await still.save(`look-${look}`);
+    if (!HERO_LOOKS.includes(look)) return;
+
+    // The hero's cuts: about six seconds of the home page on a desktop and on a phone.
+    for (const [profile, name, dy] of [
+      ["desktop", `site-${look}`, 900],
+      ["phone", `site-${look}-phone`, 520],
+    ] as const) {
+      const s = await open(browser, profile);
+      await s.page.goto(site);
+      await preload(s.page);
+      s.mark("ready");
+      await s.page.waitForTimeout(800);
+      s.mark("scroll");
+      await glide(s.page, dy, 4_000);
+      await s.page.waitForTimeout(800);
+      s.mark("end");
+      await s.save(name);
+    }
+  });
+}
