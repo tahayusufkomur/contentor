@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex w-fit items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] [&>svg]:size-3",
+  "inline-flex w-fit items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring [&>svg]:size-3",
   {
     variants: {
       variant: {
@@ -12,16 +12,13 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground",
         outline: "border-border text-foreground",
-        // No semantic success/warning tokens in the house system — express
-        // positive state with the marketing accent, neutral with muted.
-        success:
-          "border-transparent bg-marketing-accent/15 text-marketing-accent",
+        // No success/warning tokens in the set (spec 5.1): a positive state is
+        // brass text on second paper, a neutral one muted text on it.
+        success: "border-transparent bg-muted text-marketing-accent",
         warning: "border-transparent bg-muted text-muted-foreground",
-        brand: "border-transparent bg-primary/10 text-primary",
-        // Amber "premium / paid feature" treatment — matches the app's
-        // monetize-nudge + live upsell color, with explicit light/dark variants
-        // so it reads as premium (not alarm) in both themes.
-        pro: "border-transparent bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+        brand: "border-transparent bg-muted text-foreground",
+        // "Paid" — premium reads as a brass hairline, not an alarm.
+        pro: "border-marketing-accent bg-transparent text-marketing-accent",
         accent: "border-transparent bg-accent text-accent-foreground",
         glass: "border-border bg-card text-card-foreground",
       },

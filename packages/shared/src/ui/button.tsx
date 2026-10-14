@@ -5,25 +5,24 @@ import { Loader2 } from "lucide-react";
 import { cn } from "../lib/utils";
 
 const buttonVariants = cva(
-  "relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 motion-safe:active:scale-[0.98] [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:border-destructive aria-invalid:ring-destructive/20",
+  "relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 motion-safe:active:scale-[0.98] [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-invalid:border-destructive aria-invalid:ring-destructive",
   {
     variants: {
       variant: {
-        default:
-          "bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs",
+        // Ink on paper; the press scale is the only hover/press motion.
+        default: "bg-primary text-primary-foreground",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-xs focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
+          "bg-destructive text-destructive-foreground focus-visible:ring-destructive",
         outline:
-          "border bg-background text-foreground shadow-xs hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-xs",
+          "border bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        // Legacy "brand" — now the standard primary action in the house palette.
-        brand:
-          "bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs",
+        // Legacy names, kept for their callers (signup, dashboard, pricing,
+        // the admin's AI badge): the same classes as the primary pair.
+        brand: "bg-primary text-primary-foreground",
         glass:
-          "bg-card text-card-foreground border shadow-xs hover:bg-accent hover:text-accent-foreground",
+          "border bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
       },
       size: {
         default: "h-9 px-4 py-2",
