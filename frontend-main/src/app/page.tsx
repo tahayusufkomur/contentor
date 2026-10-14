@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { BuildChapter } from "@/components/landing/build-chapter";
 import { Hero } from "@/components/landing/hero";
 import { LocalNav } from "@/components/shared/local-nav";
 import { PlatformFooter } from "@/components/shared/platform-footer";
@@ -20,6 +21,7 @@ export default async function HomePage() {
       />
       <main>
         <Hero />
+        <BuildChapter />
       </main>
       <PlatformFooter />
     </div>
