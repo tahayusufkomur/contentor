@@ -23,13 +23,13 @@ function StateIcon({
   children: React.ReactNode;
 }) {
   const styles: Record<typeof variant, string> = {
-    primary: "text-primary bg-primary/10",
-    success: "text-emerald-500 bg-emerald-500/10",
-    destructive: "text-destructive bg-destructive/10",
+    primary: "text-primary",
+    success: "text-chart-2",
+    destructive: "text-destructive",
   };
   return (
     <div
-      className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl glass-strong ${styles[variant]}`}
+      className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted ${styles[variant]}`}
     >
       {children}
     </div>

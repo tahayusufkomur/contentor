@@ -37,11 +37,6 @@ export function SignupShell({
     // less motion, keeping only opacity.
     <MotionConfig reducedMotion="user">
       <div className="fixed inset-0 z-50 overflow-hidden bg-background">
-        <div aria-hidden className="absolute inset-0 -z-10">
-          <div className="aurora animate-aurora" />
-          <div className="grid-fade absolute inset-0 opacity-40" />
-        </div>
-
         <div className="flex h-full w-full flex-col items-center px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]">
           <header className="flex w-full items-center gap-3 pt-1 md:max-w-[640px]">
             <button
@@ -176,7 +171,7 @@ export function SlideHeader({
 }) {
   return (
     <div className="flex-shrink-0 text-center">
-      <h2 className="text-display text-[24px] leading-tight tracking-[-0.02em] md:text-[26px]">
+      <h2 className="text-title-2 text-balance text-foreground">
         {heading}
       </h2>
       <p className="mx-auto mt-2 max-w-[46ch] text-[14px] leading-relaxed text-muted-foreground">
