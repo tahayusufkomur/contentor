@@ -63,11 +63,11 @@ export function PublishControls({
   );
 
   return (
-    <div className="mt-5 space-y-3 rounded-xl border border-border/60 p-4">
+    <div className="mt-5 space-y-3 rounded-xl border p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           {published ? (
-            <Eye className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <Eye className="h-4 w-4 text-chart-2" />
           ) : (
             <EyeOff className="h-4 w-4 text-muted-foreground" />
           )}
@@ -93,11 +93,11 @@ export function PublishControls({
       </div>
 
       {!published && (
-        <div className="space-y-1.5 border-t border-border/60 pt-3">
+        <div className="space-y-1.5 border-t pt-3">
           <label className="text-[12px] font-medium text-muted-foreground">
             Preview password{" "}
             {hasPassword && (
-              <span className="text-emerald-600 dark:text-emerald-400">
+              <span className="text-muted-foreground">
                 · set
               </span>
             )}
