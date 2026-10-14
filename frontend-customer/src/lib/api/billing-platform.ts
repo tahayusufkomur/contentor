@@ -7,11 +7,7 @@
 import { clientFetch } from "@/lib/api-client";
 
 export type PlatformSubscriptionStatus =
-  | "free"
-  | "incomplete"
-  | "active"
-  | "past_due"
-  | "canceled";
+  "free" | "incomplete" | "active" | "past_due" | "canceled";
 
 export interface PlanBrief {
   id: number | null;

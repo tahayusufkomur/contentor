@@ -38,12 +38,7 @@ import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 type FilterType =
-  | "all"
-  | "course"
-  | "download"
-  | "live_class"
-  | "live_stream"
-  | "bundle";
+  "all" | "course" | "download" | "live_class" | "live_stream" | "bundle";
 
 const TYPE_LABELS: Record<string, string> = {
   course: "Course",

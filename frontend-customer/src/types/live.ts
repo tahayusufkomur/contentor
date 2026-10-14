@@ -92,10 +92,7 @@ export interface OnsiteEvent {
 }
 
 export type CalendarEventType =
-  | "live_class"
-  | "live_stream"
-  | "onsite_event"
-  | "zoom_class";
+  "live_class" | "live_stream" | "onsite_event" | "zoom_class";
 
 export interface CalendarEvent {
   id: number;

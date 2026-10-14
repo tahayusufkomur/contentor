@@ -138,8 +138,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
         // PATCH by the whole image. Same wire rule LogoStudio.handleSave
         // applies. v1 and v2 recipes both keep mark.url at the same path.
         const recipe = payload.logo_recipe as
-          | { mark?: { type?: string; url?: string } }
-          | undefined;
+          { mark?: { type?: string; url?: string } } | undefined;
         if (recipe && recipe.mark?.type === "image") {
           payload.logo_recipe = {
             ...recipe,

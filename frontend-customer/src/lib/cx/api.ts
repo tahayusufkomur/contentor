@@ -4,11 +4,7 @@ import type { CxSpec } from "@shared/cx/types";
 import type { Block } from "@/types/tenant";
 
 export type CxSource =
-  | "ai"
-  | "disabled"
-  | "upgrade_required"
-  | "quota_exhausted"
-  | "error";
+  "ai" | "disabled" | "upgrade_required" | "quota_exhausted" | "error";
 
 export interface CxResult {
   block: Block | null;
