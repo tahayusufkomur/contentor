@@ -54,7 +54,9 @@ export type Cell =
  * column; null for a plan the page has no column for. */
 export function planKeyFromName(name: string): PlanKey | null {
   const lower = name.toLowerCase();
-  return (PLAN_KEYS as readonly string[]).includes(lower) ? (lower as PlanKey) : null;
+  return (PLAN_KEYS as readonly string[]).includes(lower)
+    ? (lower as PlanKey)
+    : null;
 }
 
 /** Features a plan includes: the locale's list, corrected by what the live

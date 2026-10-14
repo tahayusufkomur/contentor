@@ -13,10 +13,17 @@ interface BlogCoverProps {
  * title's initial in hairline ink, the first tag as an eyebrow. Never a
  * broken image: the <img> is only rendered when there is a URL, and its
  * alt is empty, so a failed load paints nothing over the paper. */
-export function BlogCover({ post, priority = false, className }: BlogCoverProps) {
+export function BlogCover({
+  post,
+  priority = false,
+  className,
+}: BlogCoverProps) {
   return (
     <div
-      className={cn("relative overflow-hidden rounded-tile bg-muted", className)}
+      className={cn(
+        "relative overflow-hidden rounded-tile bg-muted",
+        className,
+      )}
       style={{ aspectRatio: "16 / 9" }}
     >
       {post.cover_photo_url ? (

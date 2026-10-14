@@ -35,7 +35,10 @@ export default async function PlatformBlogPostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [user, post] = await Promise.all([getAuthUser(), fetchPlatformPost(slug)]);
+  const [user, post] = await Promise.all([
+    getAuthUser(),
+    fetchPlatformPost(slug),
+  ]);
   if (!post) notFound();
 
   const jsonLd = {
@@ -60,10 +63,15 @@ export default async function PlatformBlogPostPage({
         />
         <article>
           <header className="mx-auto max-w-text px-6 text-center">
-            <time className="text-caption text-muted-foreground" dateTime={post.published_at}>
+            <time
+              className="text-caption text-muted-foreground"
+              dateTime={post.published_at}
+            >
               {new Date(post.published_at).toLocaleDateString()}
             </time>
-            <h1 className="mt-3 text-display-2 text-balance text-foreground">{post.title}</h1>
+            <h1 className="mt-3 text-display-2 text-balance text-foreground">
+              {post.title}
+            </h1>
             {post.excerpt && (
               <p className="mx-auto mt-4 max-w-[640px] text-body-lg text-balance text-muted-foreground">
                 {post.excerpt}

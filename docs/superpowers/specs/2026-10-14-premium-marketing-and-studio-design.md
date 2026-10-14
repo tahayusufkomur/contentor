@@ -1,6 +1,6 @@
 # Premium marketing site and coach studio — design
 
-Date: 2026-10-14 · Status: approved in conversation by the owner 2026-10-14; spec awaiting the owner's review · Phase 0 done 2026-10-14 · Phase 4 done 2026-10-14 · Phase 1 done 2026-10-14 · media cache rule created 2026-10-14, live check pending Phase 5 · Phase 2 done 2026-10-14
+Date: 2026-10-14 · Status: approved in conversation by the owner 2026-10-14; spec awaiting the owner's review · Phase 0 done 2026-10-14 · Phase 4 done 2026-10-14 · Phase 1 done 2026-10-14 · media cache rule created 2026-10-14, live check pending Phase 5 · Phase 2 done 2026-10-14 · Phase 3 done 2026-10-14
 
 ## 1. Goal
 

@@ -13,7 +13,10 @@ import { DeletePlatform } from "@/components/dashboard/delete-platform";
 
 /** Status as a coloured dot and a word (spec 5.5). Token colours only:
  * chart-2 is the system's green, marketing-accent its brass. */
-const STATUS: Record<MyTenant["provisioning_status"], { label: string; dot: string }> = {
+const STATUS: Record<
+  MyTenant["provisioning_status"],
+  { label: string; dot: string }
+> = {
   ready: { label: "Live", dot: "bg-chart-2" },
   provisioning: { label: "Setting up", dot: "bg-marketing-accent" },
   pending: { label: "Pending", dot: "bg-muted-foreground" },
@@ -45,7 +48,10 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
 
       <div className="mt-5 flex items-center gap-4 text-caption text-muted-foreground">
         <span>
-          Plan <span className="font-medium text-foreground">{tenant.plan_name ?? "Free"}</span>
+          Plan{" "}
+          <span className="font-medium text-foreground">
+            {tenant.plan_name ?? "Free"}
+          </span>
         </span>
         <span className="inline-flex items-center gap-1">
           <Clock className="size-3" />
@@ -59,7 +65,12 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
 
       <div className="mt-7 flex flex-wrap items-center gap-2">
         {isReady ? (
-          <Button asChild variant="brand" size="sm" className="gap-1.5 rounded-full">
+          <Button
+            asChild
+            variant="brand"
+            size="sm"
+            className="gap-1.5 rounded-full"
+          >
             <a href={tenant.studio_url}>
               Open studio
               <ArrowUpRight className="size-3.5" />
@@ -98,12 +109,19 @@ function EmptyState() {
       <div className="mx-auto flex size-16 items-center justify-center rounded-3xl bg-muted">
         <Sparkles className="size-7 text-foreground" />
       </div>
-      <h2 className="mt-6 text-title-2 text-foreground">Launch your first platform</h2>
+      <h2 className="mt-6 text-title-2 text-foreground">
+        Launch your first platform
+      </h2>
       <p className="mx-auto mt-3 max-w-md text-body text-muted-foreground">
         Create a beautifully designed studio for your courses, live classes, and
         email campaigns — all under your own brand.
       </p>
-      <Button asChild variant="brand" size="lg" className="mt-7 gap-2 rounded-full">
+      <Button
+        asChild
+        variant="brand"
+        size="lg"
+        className="mt-7 gap-2 rounded-full"
+      >
         <Link href="/signup">
           <Plus className="size-4" />
           New platform
@@ -139,7 +157,12 @@ export default async function DashboardPage() {
           </div>
 
           {tenants.length > 0 && (
-            <Button asChild variant="brand" size="lg" className="gap-2 rounded-full">
+            <Button
+              asChild
+              variant="brand"
+              size="lg"
+              className="gap-2 rounded-full"
+            >
               <Link href="/signup">
                 <Plus className="size-4" />
                 New platform

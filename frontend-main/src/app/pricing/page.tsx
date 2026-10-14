@@ -25,7 +25,8 @@ const FAQ_KEYS = ["switch", "trial", "payments", "limits"] as const;
 const HIGHLIGHTED: PlanKey = "starter";
 /** The compare grid: a label column on md+, then one column per plan. On a
  * phone the label spans the row above the three cells. */
-const COLUMNS = "grid grid-cols-3 gap-3 md:grid-cols-[1.4fr_repeat(3,1fr)] md:gap-6";
+const COLUMNS =
+  "grid grid-cols-3 gap-3 md:grid-cols-[1.4fr_repeat(3,1fr)] md:gap-6";
 
 function CellView({
   cell,
@@ -42,7 +43,11 @@ function CellView({
   if (cell.kind === "yes") {
     return (
       <>
-        <Check aria-hidden className="size-4 text-foreground" strokeWidth={2.5} />
+        <Check
+          aria-hidden
+          className="size-4 text-foreground"
+          strokeWidth={2.5}
+        />
         <span className="sr-only">{included}</span>
       </>
     );
@@ -97,7 +102,9 @@ export default async function PricingPage() {
       <section className="px-6 pb-16 pt-24 md:pb-24 md:pt-32">
         <div className="mx-auto max-w-text text-center">
           <p className="text-eyebrow text-muted-foreground">Pricing</p>
-          <h1 className="mt-4 text-display text-balance text-foreground">{t("title")}</h1>
+          <h1 className="mt-4 text-display text-balance text-foreground">
+            {t("title")}
+          </h1>
           <p className="mx-auto mt-5 max-w-[640px] text-body-lg text-balance text-muted-foreground">
             {t("subtitle")}
           </p>
@@ -110,20 +117,26 @@ export default async function PricingPage() {
           {/* Plan header: the one sticky element on this page, so it sits
               directly under the 48 px header. Opaque second paper hides the
               rows scrolling beneath it. */}
-          <div className={`sticky top-12 z-30 -mx-6 border-b bg-muted px-6 py-4 ${COLUMNS}`}>
+          <div
+            className={`sticky top-12 z-30 -mx-6 border-b bg-muted px-6 py-4 ${COLUMNS}`}
+          >
             <div className="hidden md:block" aria-hidden />
             {PLAN_KEYS.map((key) => (
               <div key={key} className="min-w-0">
                 <p className="truncate text-eyebrow text-muted-foreground">
                   {t(`plans.${key}.name`)}
                   {key === HIGHLIGHTED && (
-                    <span className="ml-2 text-marketing-accent">{t("popular")}</span>
+                    <span className="ml-2 text-marketing-accent">
+                      {t("popular")}
+                    </span>
                   )}
                 </p>
                 <p className="mt-1 truncate text-title-2 text-foreground md:text-title">
                   {price(key)}
                 </p>
-                <p className="text-caption text-muted-foreground">{t(`plans.${key}.period`)}</p>
+                <p className="text-caption text-muted-foreground">
+                  {t(`plans.${key}.period`)}
+                </p>
               </div>
             ))}
           </div>
@@ -151,15 +164,21 @@ export default async function PricingPage() {
           {/* Feature table */}
           <div className="mt-10 border-t">
             {FEATURE_KEYS.map((feature) => (
-              <div key={feature} className={`${COLUMNS} items-center border-b py-4`}>
+              <div
+                key={feature}
+                className={`${COLUMNS} items-center border-b py-4`}
+              >
                 <p className="col-span-3 text-caption font-medium text-foreground md:col-span-1">
                   {t(`features.${feature}`)}
                 </p>
                 {PLAN_KEYS.map((key) => (
                   <div key={key} className="flex min-w-0 items-center">
                     <CellView
-                      cell={featureCell(feature, included[key], planByKey[key] ?? null, () =>
-                        t(`plans.${key}.features.${feature}`),
+                      cell={featureCell(
+                        feature,
+                        included[key],
+                        planByKey[key] ?? null,
+                        () => t(`plans.${key}.features.${feature}`),
                       )}
                       included={t("compare.included")}
                       notIncluded={t("compare.notIncluded")}
@@ -177,7 +196,9 @@ export default async function PricingPage() {
         <div className="mx-auto max-w-[760px]">
           <div className="text-center">
             <p className="text-eyebrow text-muted-foreground">Questions</p>
-            <h2 className="mt-4 text-title text-foreground">{t("faq.title")}</h2>
+            <h2 className="mt-4 text-title text-foreground">
+              {t("faq.title")}
+            </h2>
           </div>
           <div className="mt-12 border-t">
             {FAQ_KEYS.map((key) => (
@@ -205,10 +226,17 @@ export default async function PricingPage() {
           <p className="mx-auto mt-4 max-w-[560px] text-body text-muted-foreground">
             {t("cta2.subtitle")}
           </p>
-          <Button asChild variant="brand" size="xl" className="mt-8 rounded-full">
+          <Button
+            asChild
+            variant="brand"
+            size="xl"
+            className="mt-8 rounded-full"
+          >
             <Link href="/signup">{t("cta2.button")}</Link>
           </Button>
-          <p className="mt-4 text-caption text-muted-foreground">{t("cta2.trustNote")}</p>
+          <p className="mt-4 text-caption text-muted-foreground">
+            {t("cta2.trustNote")}
+          </p>
         </div>
       </section>
 

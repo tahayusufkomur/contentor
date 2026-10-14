@@ -25,7 +25,14 @@ const PHOTO_KEY = "still-yoga";
 function authPhoto(): Still | null {
   try {
     const item = media(PHOTO_KEY);
-    if (!item || item.kind !== "still" || !item.src || !item.width || !item.height) return null;
+    if (
+      !item ||
+      item.kind !== "still" ||
+      !item.src ||
+      !item.width ||
+      !item.height
+    )
+      return null;
     return {
       src: item.src,
       srcSmall: item.srcSmall ?? item.src,
@@ -41,7 +48,13 @@ function authPhoto(): Still | null {
  * coach photograph fills the other half with the wordmark over it. The
  * photograph is decoration (alt=""), so a failed load paints nothing over
  * the second paper beneath it. No aurora, no grid, no gradient text. */
-export function AuthShell({ eyebrow, title, subtitle, children, footer }: AuthShellProps) {
+export function AuthShell({
+  eyebrow,
+  title,
+  subtitle,
+  children,
+  footer,
+}: AuthShellProps) {
   const photo = authPhoto();
 
   return (
@@ -76,9 +89,15 @@ export function AuthShell({ eyebrow, title, subtitle, children, footer }: AuthSh
           </div>
 
           <div className="text-center">
-            {eyebrow && <p className="text-eyebrow text-muted-foreground">{eyebrow}</p>}
-            <h1 className="mt-2 text-title-2 text-balance text-foreground">{title}</h1>
-            {subtitle && <p className="mt-3 text-body text-muted-foreground">{subtitle}</p>}
+            {eyebrow && (
+              <p className="text-eyebrow text-muted-foreground">{eyebrow}</p>
+            )}
+            <h1 className="mt-2 text-title-2 text-balance text-foreground">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="mt-3 text-body text-muted-foreground">{subtitle}</p>
+            )}
           </div>
 
           <div className="mt-8">{children}</div>

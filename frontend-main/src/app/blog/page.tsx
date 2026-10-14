@@ -16,7 +16,10 @@ export const metadata = {
 const formatDate = (iso: string) => new Date(iso).toLocaleDateString();
 
 export default async function PlatformBlogIndexPage() {
-  const [user, posts] = await Promise.all([getAuthUser(), fetchPlatformPosts()]);
+  const [user, posts] = await Promise.all([
+    getAuthUser(),
+    fetchPlatformPosts(),
+  ]);
   // The API orders by -published_at: the first post is the newest.
   const [latest, ...rest] = posts;
 
@@ -24,7 +27,9 @@ export default async function PlatformBlogIndexPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <PlatformHeader user={user} />
       <main className="flex-1 pb-20 pt-10 md:pt-14">
-        <h1 className="mx-auto max-w-media px-6 text-eyebrow text-muted-foreground">Blog</h1>
+        <h1 className="mx-auto max-w-media px-6 text-eyebrow text-muted-foreground">
+          Blog
+        </h1>
 
         {!latest && (
           <p className="mx-auto max-w-text px-6 pt-16 text-body text-muted-foreground">
@@ -33,10 +38,16 @@ export default async function PlatformBlogIndexPage() {
         )}
 
         {latest && (
-          <NavLink href={`/blog/${latest.slug}`} className="group mx-auto mt-6 block max-w-media px-6">
+          <NavLink
+            href={`/blog/${latest.slug}`}
+            className="group mx-auto mt-6 block max-w-media px-6"
+          >
             <BlogCover post={latest} priority />
             <div className="mx-auto mt-8 max-w-text text-center md:mt-10">
-              <time className="text-caption text-muted-foreground" dateTime={latest.published_at}>
+              <time
+                className="text-caption text-muted-foreground"
+                dateTime={latest.published_at}
+              >
                 {formatDate(latest.published_at)}
               </time>
               <h2 className="mt-3 text-display-2 text-balance text-foreground decoration-1 underline-offset-8 group-hover:underline">
@@ -64,7 +75,9 @@ export default async function PlatformBlogIndexPage() {
                   <h3 className="mt-2 text-title-2 text-balance text-foreground decoration-1 underline-offset-4 group-hover:underline">
                     {post.title}
                   </h3>
-                  <p className="mt-2 text-body text-muted-foreground">{post.excerpt}</p>
+                  <p className="mt-2 text-body text-muted-foreground">
+                    {post.excerpt}
+                  </p>
                 </NavLink>
               </li>
             ))}

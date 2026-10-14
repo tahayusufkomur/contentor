@@ -171,9 +171,7 @@ export function SlideHeader({
 }) {
   return (
     <div className="flex-shrink-0 text-center">
-      <h2 className="text-title-2 text-balance text-foreground">
-        {heading}
-      </h2>
+      <h2 className="text-title-2 text-balance text-foreground">{heading}</h2>
       <p className="mx-auto mt-2 max-w-[46ch] text-[14px] leading-relaxed text-muted-foreground">
         {subhead}
       </p>

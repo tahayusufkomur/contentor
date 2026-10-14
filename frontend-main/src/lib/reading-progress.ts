@@ -8,7 +8,8 @@ export function readingProgress(
   viewportHeight: number,
   offset = 0,
 ): number {
-  if (!Number.isFinite(top) || !Number.isFinite(height) || height <= 0) return 0;
+  if (!Number.isFinite(top) || !Number.isFinite(height) || height <= 0)
+    return 0;
   const travel = height - (viewportHeight - offset);
   if (travel <= 0) return top <= offset ? 1 : 0;
   return Math.min(1, Math.max(0, (offset - top) / travel));

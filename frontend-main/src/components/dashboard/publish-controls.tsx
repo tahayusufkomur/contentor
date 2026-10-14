@@ -97,9 +97,7 @@ export function PublishControls({
           <label className="text-[12px] font-medium text-muted-foreground">
             Preview password{" "}
             {hasPassword && (
-              <span className="text-muted-foreground">
-                · set
-              </span>
+              <span className="text-muted-foreground">· set</span>
             )}
           </label>
           <div className="flex gap-2">
