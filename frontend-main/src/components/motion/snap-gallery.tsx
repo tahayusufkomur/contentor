@@ -23,7 +23,9 @@ export function SnapGallery({ label, items, itemClassName }: SnapGalleryProps) {
     if (!el) return;
     const onScroll = () => {
       const first = el.firstElementChild as HTMLElement | null;
-      const step = first ? first.offsetWidth + parseFloat(getComputedStyle(el).columnGap || "0") : 1;
+      const step = first
+        ? first.offsetWidth + parseFloat(getComputedStyle(el).columnGap || "0")
+        : 1;
       setIndex(Math.round(el.scrollLeft / step));
     };
     el.addEventListener("scroll", onScroll, { passive: true });
@@ -39,7 +41,11 @@ export function SnapGallery({ label, items, itemClassName }: SnapGalleryProps) {
 
   const last = items.length - 1;
   return (
-    <section aria-roledescription="carousel" aria-label={label} className="relative">
+    <section
+      aria-roledescription="carousel"
+      aria-label={label}
+      className="relative"
+    >
       <ul
         ref={scroller}
         className="flex snap-x snap-mandatory gap-5 overflow-x-auto px-6 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:px-[max(24px,calc((100vw-1440px)/2))]"
@@ -75,7 +81,9 @@ export function SnapGallery({ label, items, itemClassName }: SnapGalleryProps) {
               onClick={() => goTo(i)}
               className={cn(
                 "size-1.5 rounded-full transition-colors",
-                i === index ? "bg-foreground" : "bg-border hover:bg-muted-foreground",
+                i === index
+                  ? "bg-foreground"
+                  : "bg-border hover:bg-muted-foreground",
               )}
             />
           ))}

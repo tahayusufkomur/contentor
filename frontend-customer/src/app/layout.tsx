@@ -159,11 +159,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html
-      lang={locale}
-      className={GeistSans.variable}
-      suppressHydrationWarning
-    >
+    <html lang={locale} className={GeistSans.variable} suppressHydrationWarning>
       <head>
         {config && <TenantThemeStyle config={config} off={inAdmin} />}
         {siteStyle && (

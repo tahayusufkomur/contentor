@@ -243,33 +243,29 @@
   animation: reveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: calc(var(--stagger-index, 0) * 80ms);
 }
-.stagger-children.visible > *:nth-child(2) { --stagger-index: 1; }
-.stagger-children.visible > *:nth-child(3) { --stagger-index: 2; }
-.stagger-children.visible > *:nth-child(4) { --stagger-index: 3; }
-.stagger-children.visible > *:nth-child(5) { --stagger-index: 4; }
-.stagger-children.visible > *:nth-child(6) { --stagger-index: 5; }
-.stagger-children.visible > *:nth-child(n + 7) { --stagger-index: 6; }
+.stagger-children.visible > *:nth-child(2) {
+  --stagger-index: 1;
+}
+.stagger-children.visible > *:nth-child(3) {
+  --stagger-index: 2;
+}
+.stagger-children.visible > *:nth-child(4) {
+  --stagger-index: 3;
+}
+.stagger-children.visible > *:nth-child(5) {
+  --stagger-index: 4;
+}
+.stagger-children.visible > *:nth-child(6) {
+  --stagger-index: 5;
+}
+.stagger-children.visible > *:nth-child(n + 7) {
+  --stagger-index: 6;
+}
 
-/* Nav link underline dot */
+/* Nav link */
 .nav-link {
   position: relative;
   transition: color 0.2s ease;
-}
-.nav-link::after {
-  content: "";
-  position: absolute;
-  bottom: -6px;
-  left: 50%;
-  width: 4px;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--primary);
-  transform: translateX(-50%) scale(0);
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.nav-link:hover::after,
-.nav-link[data-active="true"]::after {
-  transform: translateX(-50%) scale(1);
 }
 
 .btn-press:active {

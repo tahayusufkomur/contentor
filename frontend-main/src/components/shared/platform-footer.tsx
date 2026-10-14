@@ -34,29 +34,29 @@ export function PlatformFooter() {
   ];
 
   return (
-    <footer className="relative mt-32 border-t bg-background">
-      <div className="mx-auto max-w-6xl px-6 py-16 md:px-8">
-        <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+    <footer className="mt-32 bg-muted">
+      <div className="mx-auto max-w-media px-6 py-14">
+        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="max-w-sm">
             <Link href="/" className="inline-flex items-center">
               <Wordmark className="text-base" />
             </Link>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-3 text-caption text-muted-foreground">
               {t("tagline")}
             </p>
           </div>
 
           {sections.map((section) => (
             <div key={section.heading}>
-              <p className="text-eyebrow text-muted-foreground">
+              <p className="text-caption font-semibold text-foreground">
                 {section.heading}
               </p>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-3 space-y-2">
                 {section.links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      className="text-caption text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {link.label}
                     </Link>
@@ -67,7 +67,7 @@ export function PlatformFooter() {
           ))}
         </div>
 
-        <div className="mt-16 flex flex-col items-start justify-between gap-4 border-t pt-8 text-xs text-muted-foreground sm:flex-row sm:items-center">
+        <div className="mt-10 border-t pt-6 text-[12px] text-muted-foreground">
           <p>{t("copyright", { year: new Date().getFullYear() })}</p>
         </div>
       </div>

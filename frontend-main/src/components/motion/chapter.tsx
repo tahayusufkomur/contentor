@@ -1,7 +1,12 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export interface ChapterProps {
@@ -18,7 +23,15 @@ export interface ChapterProps {
 
 /** One landing chapter (spec 5.2): eyebrow, title and lead hold at the top,
  * then scale to 0.96 and fade as the chapter leaves the viewport. */
-export function Chapter({ id, eyebrow, title, lead, dark, className, children }: ChapterProps) {
+export function Chapter({
+  id,
+  eyebrow,
+  title,
+  lead,
+  dark,
+  className,
+  children,
+}: ChapterProps) {
   const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -42,8 +55,12 @@ export function Chapter({ id, eyebrow, title, lead, dark, className, children }:
         style={reduced ? undefined : { scale, opacity }}
         className="mx-auto max-w-text px-6 text-center"
       >
-        {eyebrow && <p className="text-eyebrow text-muted-foreground">{eyebrow}</p>}
-        <h2 className="mt-3 text-display-2 text-foreground text-balance">{title}</h2>
+        {eyebrow && (
+          <p className="text-eyebrow text-muted-foreground">{eyebrow}</p>
+        )}
+        <h2 className="mt-3 text-display-2 text-foreground text-balance">
+          {title}
+        </h2>
         {lead && (
           <p className="mx-auto mt-5 max-w-[640px] text-body-lg text-muted-foreground text-balance">
             {lead}

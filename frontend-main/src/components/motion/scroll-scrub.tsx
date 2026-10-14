@@ -28,7 +28,13 @@ export interface ScrollScrubProps {
   className?: string;
 }
 
-function Caption({ band, progress }: { band: ScrubBand; progress: MotionValue<number> }) {
+function Caption({
+  band,
+  progress,
+}: {
+  band: ScrubBand;
+  progress: MotionValue<number>;
+}) {
   const opacity = useTransform(progress, (p) => bandOpacity(p, band));
   return (
     <motion.div
@@ -43,12 +49,23 @@ function Caption({ band, progress }: { band: ScrubBand; progress: MotionValue<nu
 /** A sticky stage inside a tall track: scroll progress drives the video's
  * playhead and the caption bands (spec 5.2). Reduced motion: the poster and
  * the last band, static, no track. */
-export function ScrollScrub({ src, poster, width, height, bands, vh = 3, className }: ScrollScrubProps) {
+export function ScrollScrub({
+  src,
+  poster,
+  width,
+  height,
+  bands,
+  vh = 3,
+  className,
+}: ScrollScrubProps) {
   const track = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const reduced = useReducedMotion();
   const [near, setNear] = useState(false);
-  const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
+  const { scrollYProgress } = useScroll({
+    target: track,
+    offset: ["start start", "end end"],
+  });
 
   // Load the clip one screen before the track arrives, not on page load.
   useEffect(() => {
@@ -74,14 +91,28 @@ export function ScrollScrub({ src, poster, width, height, bands, vh = 3, classNa
     return (
       <figure className={cn("relative mx-auto max-w-media", className)}>
         {/* eslint-disable-next-line @next/next/no-img-element -- sized AVIF poster, no optimisation wanted */}
-        <img src={poster} alt="" width={width} height={height} className="w-full rounded-tile" />
-        {last && <div className="mx-auto mt-6 max-w-text px-6 text-center">{last.node}</div>}
+        <img
+          src={poster}
+          alt=""
+          width={width}
+          height={height}
+          className="w-full rounded-tile"
+        />
+        {last && (
+          <div className="mx-auto mt-6 max-w-text px-6 text-center">
+            {last.node}
+          </div>
+        )}
       </figure>
     );
   }
 
   return (
-    <div ref={track} style={{ height: `${vh * 100}vh` }} className={cn("relative", className)}>
+    <div
+      ref={track}
+      style={{ height: `${vh * 100}vh` }}
+      className={cn("relative", className)}
+    >
       <div className="sticky top-0 flex h-screen items-center">
         <div className="relative mx-auto w-full max-w-media px-6">
           <video

@@ -46,13 +46,11 @@ export function PlatformHeader({ user }: { user?: User | null }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 px-4 pt-4">
+    <header className="sticky top-0 z-50 border-b bg-background backdrop-blur-md">
       <div
         className={cn(
-          "mx-auto flex h-14 max-w-6xl items-center justify-between rounded-full border px-4 transition-all duration-300 sm:px-5",
-          scrolled
-            ? "border-border bg-background/80 shadow-sm backdrop-blur-sm"
-            : "border-transparent",
+          "mx-auto flex h-12 max-w-media items-center justify-between px-6 transition-colors duration-300",
+          scrolled && "border-border",
         )}
       >
         <Logo />
@@ -60,26 +58,26 @@ export function PlatformHeader({ user }: { user?: User | null }) {
         <nav className="hidden items-center gap-7 md:flex">
           <NavLink
             href="/#features"
-            className="nav-link text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="nav-link text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {t("features")}
           </NavLink>
           <NavLink
             href="/pricing"
-            className="nav-link text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="nav-link text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {t("pricing")}
           </NavLink>
           <NavLink
             href="/blog"
-            className="nav-link text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="nav-link text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {t("blog")}
           </NavLink>
           {user && (
             <NavLink
               href={user.is_superuser ? "/admin" : "/dashboard"}
-              className="nav-link text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="nav-link text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {user.is_superuser ? t("dashboard") : t("myPlatforms")}
             </NavLink>
@@ -105,10 +103,15 @@ export function PlatformHeader({ user }: { user?: User | null }) {
             </>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm" className="h-9">
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="h-8 rounded-full px-3"
+              >
                 <Link href="/login">{t("signIn")}</Link>
               </Button>
-              <Button asChild size="sm" variant="brand" className="h-9">
+              <Button asChild size="sm" className="h-8 rounded-full px-4">
                 <Link href="/signup">{t("getStarted")}</Link>
               </Button>
             </>
@@ -133,21 +136,21 @@ export function PlatformHeader({ user }: { user?: User | null }) {
           <nav className="flex flex-col gap-4">
             <NavLink
               href="/#features"
-              className="text-base font-medium text-foreground/80 hover:text-foreground"
+              className="text-base font-medium text-foreground hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
               {t("features")}
             </NavLink>
             <NavLink
               href="/pricing"
-              className="text-base font-medium text-foreground/80 hover:text-foreground"
+              className="text-base font-medium text-foreground hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
               {t("pricing")}
             </NavLink>
             <NavLink
               href="/blog"
-              className="text-base font-medium text-foreground/80 hover:text-foreground"
+              className="text-base font-medium text-foreground hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
               {t("blog")}
@@ -157,7 +160,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
               <>
                 <NavLink
                   href={user.is_superuser ? "/admin" : "/dashboard"}
-                  className="text-base font-medium text-foreground/80"
+                  className="text-base font-medium text-foreground"
                   onClick={() => setMobileOpen(false)}
                 >
                   {user.is_superuser ? t("dashboard") : t("myPlatforms")}
