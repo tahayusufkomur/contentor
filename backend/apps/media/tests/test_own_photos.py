@@ -384,6 +384,7 @@ def test_the_library_finds_a_photo_by_what_it_shows_and_lists_her_own(owner, upl
     client = client_for(owner)
     assert [p["title"] for p in client.get("/api/v1/photos/?search=warrior").json()["results"]] == ["IMG 2231"]
     assert [p["title"] for p in client.get("/api/v1/photos/?own=1").json()["results"]] == ["IMG 2231"]
+    assert [p["title"] for p in client.get("/api/v1/photos/?own=0").json()["results"]] == ["catalog copy"]
 
 
 @pytest.mark.django_db(transaction=True)

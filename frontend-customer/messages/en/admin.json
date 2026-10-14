@@ -580,6 +580,10 @@
     "subtitle": "The photos and videos you use on your site, in courses and in posts.",
     "photos": "Photos",
     "videos": "Videos",
+    "mine": "My photos",
+    "contentor": "Contentor photos",
+    "emptyMine": "No photos of your own yet. Drop some above to add them.",
+    "emptyContentor": "No Contentor photos yet. Photos picked from the library for your site show up here.",
     "delete": "Delete",
     "confirmDelete": "Delete “{title}”? This cannot be undone.",
     "upload": {

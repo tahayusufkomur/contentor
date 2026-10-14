@@ -120,7 +120,7 @@ export function ImageLibraryDialog({
         CATEGORIES.find((entry) => entry.key === category) ?? CATEGORIES[0];
       if (tab === "mine") {
         const data = await clientFetch<{ results: TenantPhoto[] }>(
-          `/api/v1/photos/?search=${encodeURIComponent(query)}`,
+          `/api/v1/photos/?own=1&search=${encodeURIComponent(query)}`,
         );
         if (signal.cancelled) return;
         setMyPhotos(data.results ?? []);

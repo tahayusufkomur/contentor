@@ -20,8 +20,12 @@ def photo_list_create(request):
         if search:
             # The description too: an indexed photo is found by what it shows.
             qs = qs.filter(Q(title__icontains=search) | Q(alt_text__icontains=search))
-        if request.query_params.get("own") == "1":
+        # own=1: the photos she uploaded; own=0: Contentor's (catalog copies, logo marks, demo content).
+        own = request.query_params.get("own")
+        if own == "1":
             qs = qs.exclude(index_status="")
+        elif own == "0":
+            qs = qs.filter(index_status="")
         qs = apply_tag_filter(qs, request)
         qs = apply_ordering(qs, request, ["title", "created_at", "file_size"])
         paginator = StandardPagination()

@@ -57,6 +57,10 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<MediaItemPayload | null>(null);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
+  // Her own uploads apart from the ones Contentor placed (library copies,
+  // logo marks, demo content).
+  const [source, setSource] = useState<"mine" | "contentor">("mine");
+  const t = useTranslations("admin.media");
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<Photo>> => {
@@ -66,6 +70,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
       sp.set("ordering", params.ordering);
       if (params.search) sp.set("search", params.search);
       if (tagFilter.length) sp.set("tags", tagFilter.join(","));
+      sp.set("own", source === "mine" ? "1" : "0");
       const data = await clientFetch<{
         results: Photo[];
         next: string | null;
@@ -73,7 +78,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
       }>(`/api/v1/photos/?${sp.toString()}`);
       return { results: data.results, next: data.next, count: data.count };
     },
-    [tagFilter],
+    [tagFilter, source],
   );
 
   const photoFields: FieldConfig<Photo>[] = [
@@ -112,11 +117,24 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
 
   return (
     <>
+      <div className="mb-4 flex gap-2">
+        {(["mine", "contentor"] as const).map((key) => (
+          <Button
+            key={key}
+            variant={source === key ? "default" : "outline"}
+            size="sm"
+            aria-pressed={source === key}
+            onClick={() => setSource(key)}
+          >
+            {t(key)}
+          </Button>
+        ))}
+      </div>
       <MediaBrowser<Photo>
         ref={browserRef}
         persistKey="photos"
         fetchPage={fetchPage}
-        filterKey={tagFilter.join(",")}
+        filterKey={`${source}:${tagFilter.join(",")}`}
         filterSlot={
           <TagFilterBar
             scope="photo"
@@ -127,7 +145,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
         sortOptions={SORT_OPTIONS}
         defaultSort="-created_at"
         emptyIcon={ImageIcon}
-        emptyMessage="No photos yet. Upload photos to get started."
+        emptyMessage={t(source === "mine" ? "emptyMine" : "emptyContentor")}
         getItemId={(p) => p.id}
         onDelete={async (selection) => {
           await batchedAsync(
