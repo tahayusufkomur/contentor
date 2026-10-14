@@ -30,7 +30,9 @@ export function AdminBrowserBar() {
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute(
         "content",
-        resolvedTheme === "dark" ? ADMIN_THEME_COLOR.dark : ADMIN_THEME_COLOR.light,
+        resolvedTheme === "dark"
+          ? ADMIN_THEME_COLOR.dark
+          : ADMIN_THEME_COLOR.light,
       );
   }, [admin, resolvedTheme]);
   return null;

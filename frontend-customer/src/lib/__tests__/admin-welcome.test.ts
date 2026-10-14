@@ -62,7 +62,9 @@ describe("lookSummary", () => {
 
   it("falls back to the style's own palette for an unknown id, and to the default look for no style", () => {
     expect(lookSummary("journal", "mint").palette).toBe(journal.paletteLabel);
-    expect(lookSummary(undefined, undefined).label).toBe(siteLook(undefined).label);
+    expect(lookSummary(undefined, undefined).label).toBe(
+      siteLook(undefined).label,
+    );
     expect(lookSummary(null, null).colors).toHaveLength(4);
   });
 });

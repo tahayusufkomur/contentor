@@ -1,7 +1,16 @@
 {
   "title": "Admin",
   "viewSite": "View site",
-  "welcome": "Welcome, {name}",
+  "welcome": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening",
+    "hello": "Hello",
+    "withName": "{greeting}, {name}",
+    "overview": "Here is an overview of your site.",
+    "whatsLeft": "Here’s what’s left to get your site live.",
+    "look": "{look} · {palette}"
+  },
   "badges": {
     "ai": "AI",
     "aiTooltip": "AI-powered feature",

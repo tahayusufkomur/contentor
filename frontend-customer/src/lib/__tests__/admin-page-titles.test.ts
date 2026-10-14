@@ -7,8 +7,9 @@ const SRC = path.resolve(__dirname, "../..");
 
 /** Pages whose <h1> lives in a component rather than in page.tsx. */
 const TITLE_FILE: Record<string, string> = {};
-/** The inbox is a mail client: its folder rail is its heading. */
-const NO_TITLE = new Set(["/admin/inbox"]);
+/** The inbox is a mail client: its folder rail is its heading. Home greets the
+ *  coach by name (premium spec 5.6); its sidebar row still reads "Home". */
+const NO_TITLE = new Set(["/admin/inbox", "/admin"]);
 
 describe("one name per page", () => {
   const items = buildAdminNav((key) => key)

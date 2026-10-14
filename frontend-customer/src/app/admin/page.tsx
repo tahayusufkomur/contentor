@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,20 +10,23 @@ import { PageState } from "@/components/ui/page-state";
 import { clientFetch } from "@/lib/api-client";
 import {
   BookOpen,
-  Download,
-  HardDrive,
-  Plus,
-  Upload,
-  Users,
   DollarSign,
+  ExternalLink,
+  HardDrive,
+  Mail,
+  Newspaper,
+  Plus,
+  Users,
+  Video,
 } from "lucide-react";
 import { UsageAdoptionCard } from "@/components/admin/usage-adoption-card";
 import { formatMoney } from "@/lib/format";
 import { useSetupStatus, useTenantCurrency } from "@/lib/setup-assistant";
 import { PublishCard } from "@/components/admin/publish-card";
 import { SetupGuideCard } from "@/components/admin/setup-guide-card";
-
-import { Mail, Newspaper, Video } from "lucide-react";
+import { useAdminUser } from "@/hooks/use-admin-user";
+import { useTenant } from "@/hooks/use-tenant";
+import { firstName, greetingKey, lookSummary } from "@/lib/admin-welcome";
 
 export const dynamic = "force-dynamic";
 
@@ -36,11 +39,24 @@ interface DashboardStats {
 
 export default function AdminDashboard() {
   const t = useTranslations("admin");
+  const user = useAdminUser();
+  const config = useTenant();
   const currency = useTenantCurrency();
   const setup = useSetupStatus();
   // Until the status loads, show the overview line rather than flash "what's left".
   const published =
     !setup || Boolean(setup.items.find((i) => i.key === "publish")?.done);
+
+  // The clock is read on the client after mount: the server's zone is not
+  // hers, and a server-rendered "Good evening" patched to "Good morning"
+  // would flash. Until then the heading is a neutral hello.
+  const [hour, setHour] = useState<number | null>(null);
+  useEffect(() => setHour(new Date().getHours()), []);
+  const greeting = t(`welcome.${greetingKey(hour)}`);
+  const name = firstName(user?.name);
+  const heading = name ? t("welcome.withName", { greeting, name }) : greeting;
+  const look = lookSummary(config?.style, config?.palette);
+
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     students: 0,
@@ -86,60 +102,68 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header & Quick Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {t("nav.items.home")}
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            {published
-              ? "Here is an overview of your site."
-              : "Here's what's left to get your site live."}
+      {/* Welcome frame (spec 5.6): the greeting in `title`, the site's look
+          and palette with "View site", the quick actions. The Today feed of
+          the admin refactor's Phase 4 lands under this header later. */}
+      <header className="flex flex-col gap-5 border-b pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-title text-foreground">{heading}</h1>
+          <p className="mt-2 text-caption text-muted-foreground">
+            {published ? t("welcome.overview") : t("welcome.whatsLeft")}
           </p>
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-caption">
+            <span className="flex items-center gap-1" aria-hidden="true">
+              {look.colors.map((color, i) => (
+                <span
+                  key={i}
+                  // The site's own palette, not studio chrome: the one place
+                  // a colour is data rather than a token.
+                  className="size-3.5 rounded-full border border-border"
+                  style={{ background: color }}
+                />
+              ))}
+            </span>
+            <span className="font-medium text-foreground">
+              {t("welcome.look", { look: look.label, palette: look.palette })}
+            </span>
+            <Link
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-medium text-marketing-accent hover:underline"
+            >
+              {t("viewSite")}
+              <ExternalLink className="size-3" aria-hidden="true" />
+            </Link>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button asChild size="sm" className="gap-1.5 shadow-sm">
+          <Button asChild size="sm" className="gap-1.5">
             <Link href="/admin/courses/new">
               <Plus className="h-4 w-4" />
               New Course
             </Link>
           </Button>
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="gap-1.5 shadow-sm"
-          >
+          <Button asChild size="sm" variant="outline" className="gap-1.5">
             <Link href="/admin/live">
               <Video className="h-4 w-4" />
               Live Event
             </Link>
           </Button>
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="gap-1.5 shadow-sm"
-          >
+          <Button asChild size="sm" variant="outline" className="gap-1.5">
             <Link href="/admin/messages/new">
               <Mail className="h-4 w-4" />
               Message
             </Link>
           </Button>
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="gap-1.5 shadow-sm"
-          >
+          <Button asChild size="sm" variant="outline" className="gap-1.5">
             <Link href="/admin/blog">
               <Newspaper className="h-4 w-4" />
               Blog
             </Link>
           </Button>
         </div>
-      </div>
+      </header>
 
       <SetupGuideCard />
       <PublishCard />
@@ -168,14 +192,14 @@ export default function AdminDashboard() {
           {statCards.map((stat) => (
             <Card key={stat.title}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-caption font-medium text-muted-foreground">
                   {stat.title}
                 </CardTitle>
                 <stat.icon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">{stat.value}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-title-2 tabular-nums">{stat.value}</p>
+                <p className="text-caption text-muted-foreground">
                   {stat.description}
                 </p>
               </CardContent>
