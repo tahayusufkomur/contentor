@@ -26,6 +26,7 @@ import { paletteEntries } from "@/lib/admin-palette";
 import { gateAdminNav } from "@/lib/admin-nav-gate";
 import { useSetupStatus } from "@/lib/setup-assistant";
 import type { User } from "@/types/auth";
+import { AdminUserContext } from "@/hooks/use-admin-user";
 
 interface AdminShellProps {
   children: React.ReactNode;
@@ -34,11 +35,13 @@ interface AdminShellProps {
 
 export function AdminShell({ children, user }: AdminShellProps) {
   return (
-    <EntitlementsProvider>
-      <AssistantDockProvider>
-        <AdminShellContent user={user}>{children}</AdminShellContent>
-      </AssistantDockProvider>
-    </EntitlementsProvider>
+    <AdminUserContext.Provider value={user ?? null}>
+      <EntitlementsProvider>
+        <AssistantDockProvider>
+          <AdminShellContent user={user}>{children}</AdminShellContent>
+        </AssistantDockProvider>
+      </EntitlementsProvider>
+    </AdminUserContext.Provider>
   );
 }
 
