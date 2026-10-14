@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import Link from "next/link";
 import { Check, X } from "lucide-react";
 import { getTranslations } from "next-intl/server";
@@ -13,12 +12,11 @@ import { ScrollReveal } from "@/components/landing/scroll-reveal";
 import { Parallax } from "@/components/landing/parallax";
 import { formatPlanPrice } from "@shared/lib/format-plan-price";
 import { getAuthUser } from "@/lib/auth";
-import { BASE_DOMAIN, DJANGO_API_URL } from "@/lib/constants";
+import { PLAN_KEYS, planKeyFromName, type PlanKey, type PlanSummary } from "@/lib/plans";
+import { fetchPlans } from "@/lib/plans-server";
 
 import { PricingCta } from "./PricingCta";
 
-const PLAN_KEYS = ["free", "starter", "pro"] as const;
-type PlanKey = (typeof PLAN_KEYS)[number];
 const FAQ_KEYS = ["switch", "trial", "payments", "limits"] as const;
 
 const PLAN_FEATURE_KEYS: Record<PlanKey, readonly string[]> = {
@@ -60,36 +58,6 @@ const PLAN_HIGHLIGHT: Record<PlanKey, boolean> = {
   pro: false,
 };
 
-// Maps server-side PlatformPlan.name (lowercased) to a PLAN_KEY. The seed
-// command writes "Free", "starter", "pro" — keep both casings tolerated.
-function planKeyFromName(name: string): PlanKey | null {
-  const lower = name.toLowerCase();
-  if (lower === "free") return "free";
-  if (lower === "starter") return "starter";
-  if (lower === "pro") return "pro";
-  return null;
-}
-
-interface PlanSummary {
-  id: number;
-  name: string;
-  is_free: boolean;
-  currency: string;
-  amount_cents: number | null;
-  max_students: number;
-  max_storage_gb: number;
-  max_streaming_hours: number;
-  max_campaign_emails: number;
-  transaction_fee_pct: string;
-  is_live_enabled: boolean;
-}
-
-interface PlansResponse {
-  region: string;
-  currency: string;
-  plans: PlanSummary[];
-}
-
 /** A limit of 0 means "unlimited" across the platform plan model. */
 function limitText(value: number, unit: string, plural: string): string {
   if (value <= 0) return `Unlimited ${plural}`;
@@ -119,28 +87,6 @@ function dynamicFeatureLabel(
         : `Email campaigns (${plan.max_campaign_emails.toLocaleString()}/mo)`;
     default:
       return null; // descriptive — fall back to i18n
-  }
-}
-
-async function fetchPlans(): Promise<PlansResponse | null> {
-  const country = headers().get("cf-ipcountry");
-  try {
-    const res = await fetch(
-      `${DJANGO_API_URL}/api/v1/billing/platform/plans/`,
-      {
-        headers: {
-          "X-Tenant-Domain": BASE_DOMAIN,
-          // Server-side fetch loses the visitor: forward Cloudflare's country
-          // so the API picks EUR vs USD for them.
-          ...(country ? { "CF-IPCountry": country } : {}),
-        },
-        cache: "no-store",
-      },
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
   }
 }
 
