@@ -1,12 +1,7 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export interface ChapterProps {
@@ -33,13 +28,21 @@ export function Chapter({
   children,
 }: ChapterProps) {
   const ref = useRef<HTMLElement>(null);
-  const reduced = useReducedMotion();
+  const [reduced, setReduced] = useState(false);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["end end", "end start"],
   });
   const scale = useTransform(scrollYProgress, [0, 1], [1, 0.96]);
   const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   return (
     <section

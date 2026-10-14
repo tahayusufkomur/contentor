@@ -226,6 +226,7 @@ section[id] {
 
 /* Honor reduced motion */
 @media (prefers-reduced-motion: reduce) {
+  .reveal-fade-up,
   .animate-on-scroll,
   .hero-scroll-out,
   .stagger-children > *,

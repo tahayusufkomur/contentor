@@ -1,6 +1,5 @@
 import { NavLink } from "@/components/ui/nav-link";
 import { Wordmark } from "@/components/shared/logo-mark";
-import { media } from "@/lib/media";
 
 interface AuthShellProps {
   eyebrow?: string;
@@ -10,39 +9,15 @@ interface AuthShellProps {
   footer?: React.ReactNode;
 }
 
-interface Still {
-  src: string;
-  srcSmall: string;
-  width: number;
-  height: number;
-}
-
-/** The 4:5 coach photograph beside the form (spec 5.5; Phase 1 manifest). */
-const PHOTO_KEY = "still-yoga";
-
-/** Null when the manifest lacks the key or the accessor throws: the photo
- * half then stays second paper with the wordmark and the form does not move. */
-function authPhoto(): Still | null {
-  try {
-    const item = media(PHOTO_KEY);
-    if (
-      !item ||
-      item.kind !== "still" ||
-      !item.src ||
-      !item.width ||
-      !item.height
-    )
-      return null;
-    return {
-      src: item.src,
-      srcSmall: item.srcSmall ?? item.src,
-      width: item.width,
-      height: item.height,
-    };
-  } catch {
-    return null;
-  }
-}
+/** The 4:5 coach photograph beside the form (spec 5.5; Phase 1 manifest).
+ * Inlined rather than reading `@/lib/media` because AuthShell is imported by
+ * client pages (/login, /callback) and media.json belongs on the server. */
+const PHOTO = {
+  src: "/media/stills/still-yoga.avif",
+  srcSmall: "/media/stills/still-yoga-small.avif",
+  width: 1600,
+  height: 2000,
+} as const;
 
 /** White auth page (spec 5.5): a 420 px centred form; on desktop one 4:5
  * coach photograph fills the other half with the wordmark over it. The
@@ -55,7 +30,7 @@ export function AuthShell({
   children,
   footer,
 }: AuthShellProps) {
-  const photo = authPhoto();
+  const photo = PHOTO;
 
   return (
     <div className="grid min-h-screen bg-background lg:grid-cols-2">

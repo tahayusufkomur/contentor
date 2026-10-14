@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import {
   Circle,
   Copy,
@@ -16,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ModalPortal } from "@/components/ui/modal-portal";
+import { NavLink } from "@/components/ui/nav-link";
 import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
@@ -179,7 +179,7 @@ export function PublishCard() {
               type="button"
               aria-label="Close"
               onClick={() => setWentLive(false)}
-              className="absolute inset-0 bg-black/50"
+              className="absolute inset-0 bg-foreground opacity-50"
             />
             <div
               role="dialog"
@@ -213,12 +213,12 @@ export function PublishCard() {
                   <Copy className="h-3.5 w-3.5" /> Share install guide
                 </Button>
                 <Button asChild size="sm">
-                  <Link
+                  <NavLink
                     href="/admin/students"
                     onClick={() => setWentLive(false)}
                   >
                     Invite your first students
-                  </Link>
+                  </NavLink>
                 </Button>
               </div>
               <div className="flex justify-end">
@@ -237,21 +237,18 @@ export function PublishCard() {
       {tenant && (
         <Card
           id="publish-card"
-          className={
-            tenant.is_published ? "" : "border-amber-500/40 bg-amber-500/10"
-          }
+          className={tenant.is_published ? "" : "border-border bg-muted"}
         >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               {tenant.is_published ? (
                 <>
-                  <Globe className="h-4 w-4 text-emerald-600" /> Your site is
-                  live
+                  <Globe className="h-4 w-4 text-chart-2" /> Your site is live
                 </>
               ) : (
                 <>
-                  <Rocket className="h-4 w-4 text-amber-600" /> Publish your
-                  site
+                  <Rocket className="h-4 w-4 text-marketing-accent" /> Publish
+                  your site
                 </>
               )}
             </CardTitle>
@@ -260,10 +257,8 @@ export function PublishCard() {
             {tenant.is_published ? (
               <>
                 <p className="text-sm text-muted-foreground">
-                  <span className="font-medium text-emerald-700 dark:text-emerald-400">
-                    ● Live
-                  </span>{" "}
-                  — students can find and install your site.
+                  <span className="font-medium text-chart-2">● Live</span> —
+                  students can find and install your site.
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                   <Button asChild variant="outline" size="sm" className="gap-1">
@@ -309,8 +304,8 @@ export function PublishCard() {
                   students find and install it.
                 </p>
                 {!canPublish && (
-                  <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-                    <p className="mb-2 text-sm font-medium text-amber-700 dark:text-amber-300">
+                  <div className="rounded-md border border-border bg-background p-3">
+                    <p className="mb-2 text-sm font-medium text-foreground">
                       Finish these first to publish:
                     </p>
                     <ul className="space-y-1.5">
@@ -318,13 +313,13 @@ export function PublishCard() {
                         const meta = blockerMeta(key, { onFreePlan: freePlan });
                         return (
                           <li key={key}>
-                            <Link
+                            <NavLink
                               href={meta.href}
-                              className="flex items-center gap-2 text-sm text-amber-700 underline-offset-2 hover:underline dark:text-amber-300"
+                              className="flex items-center gap-2 text-sm text-marketing-accent underline-offset-2 hover:underline"
                             >
                               <Circle className="h-3.5 w-3.5 shrink-0" />
                               {meta.label}
-                            </Link>
+                            </NavLink>
                           </li>
                         );
                       })}

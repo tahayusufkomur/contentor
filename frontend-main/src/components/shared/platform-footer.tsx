@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { NavLink } from "@/components/ui/nav-link";
 import { Wordmark } from "@/components/shared/logo-mark";
 
 export function PlatformFooter() {
@@ -38,9 +38,9 @@ export function PlatformFooter() {
       <div className="mx-auto max-w-media px-6 py-14">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="max-w-sm">
-            <Link href="/" className="inline-flex items-center">
+            <NavLink href="/" className="inline-flex items-center">
               <Wordmark className="text-base" />
-            </Link>
+            </NavLink>
             <p className="mt-3 text-caption text-muted-foreground">
               {t("tagline")}
             </p>
@@ -54,12 +54,21 @@ export function PlatformFooter() {
               <ul className="mt-3 space-y-2">
                 {section.links.map((link) => (
                   <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-caption text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      {link.label}
-                    </Link>
+                    {link.href === "#" ? (
+                      <a
+                        href={link.href}
+                        className="text-caption text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <NavLink
+                        href={link.href}
+                        className="text-caption text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {link.label}
+                      </NavLink>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -47,7 +47,7 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
     // without a label (the assistant panel is <aside aria-label="Assistant">).
     <aside
       className={cn(
-        "hidden flex-col border-r bg-muted transition-[width] duration-200 ease-expo md:flex",
+        "hidden flex-col border-r bg-muted motion-safe:transition-[width] duration-200 ease-expo md:flex",
         collapsed ? "w-16" : "w-60",
       )}
     >
@@ -71,7 +71,7 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
         >
           <ChevronLeft
             className={cn(
-              "h-4 w-4 transition-transform",
+              "h-4 w-4 motion-safe:transition-transform",
               collapsed && "rotate-180",
             )}
           />

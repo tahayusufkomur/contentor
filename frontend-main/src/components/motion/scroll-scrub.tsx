@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   motion,
   useMotionValueEvent,
-  useReducedMotion,
   useScroll,
   useTransform,
   type MotionValue,
@@ -48,7 +47,7 @@ function Caption({
 
 /** A sticky stage inside a tall track: scroll progress drives the video's
  * playhead and the caption bands (spec 5.2). Reduced motion: the poster and
- * the last band, static, no track. */
+ * all bands in reading order, static, no track. */
 export function ScrollScrub({
   src,
   poster,
@@ -60,17 +59,26 @@ export function ScrollScrub({
 }: ScrollScrubProps) {
   const track = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
-  const reduced = useReducedMotion();
+  const [reduced, setReduced] = useState(false);
   const [near, setNear] = useState(false);
   const { scrollYProgress } = useScroll({
     target: track,
     offset: ["start start", "end end"],
   });
 
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
   // Load the clip one screen before the track arrives, not on page load.
   useEffect(() => {
     const el = track.current;
     if (!el || reduced) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const io = new IntersectionObserver(
       ([entry]) => entry.isIntersecting && (setNear(true), io.disconnect()),
       { rootMargin: "100% 0px" },
@@ -87,23 +95,26 @@ export function ScrollScrub({
   });
 
   if (reduced) {
-    const last = bands[bands.length - 1];
     return (
-      <figure className={cn("relative mx-auto max-w-media", className)}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- sized AVIF poster, no optimisation wanted */}
-        <img
-          src={poster}
-          alt=""
-          width={width}
-          height={height}
-          className="w-full rounded-tile"
-        />
-        {last && (
-          <div className="mx-auto mt-6 max-w-text px-6 text-center">
-            {last.node}
-          </div>
-        )}
-      </figure>
+      <div ref={track} className={cn("relative", className)}>
+        <figure className="relative mx-auto max-w-media px-6">
+          {/* eslint-disable-next-line @next/next/no-img-element -- sized AVIF poster, no optimisation wanted */}
+          <img
+            src={poster}
+            alt=""
+            width={width}
+            height={height}
+            loading="lazy"
+            decoding="async"
+            className="w-full rounded-tile bg-muted"
+          />
+          <ol className="mx-auto mt-8 max-w-text space-y-4 text-center">
+            {bands.map((band, i) => (
+              <li key={i}>{band.node}</li>
+            ))}
+          </ol>
+        </figure>
+      </div>
     );
   }
 

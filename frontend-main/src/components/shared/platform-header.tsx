@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { NavLink } from "@/components/ui/nav-link";
 import { useNavigate } from "@shared/navigation/navigation-provider";
@@ -109,10 +108,10 @@ export function PlatformHeader({ user }: { user?: User | null }) {
                 size="sm"
                 className="h-8 rounded-full px-3"
               >
-                <Link href="/login">{t("signIn")}</Link>
+                <NavLink href="/login">{t("signIn")}</NavLink>
               </Button>
               <Button asChild size="sm" className="h-8 rounded-full px-4">
-                <Link href="/signup">{t("getStarted")}</Link>
+                <NavLink href="/signup">{t("getStarted")}</NavLink>
               </Button>
             </>
           )}
@@ -185,14 +184,14 @@ export function PlatformHeader({ user }: { user?: User | null }) {
             ) : (
               <div className="flex flex-col gap-2 pt-1">
                 <Button asChild variant="outline" className="w-full">
-                  <Link href="/login" onClick={() => setMobileOpen(false)}>
+                  <NavLink href="/login" onClick={() => setMobileOpen(false)}>
                     {t("signIn")}
-                  </Link>
+                  </NavLink>
                 </Button>
                 <Button asChild variant="brand" className="w-full">
-                  <Link href="/signup" onClick={() => setMobileOpen(false)}>
+                  <NavLink href="/signup" onClick={() => setMobileOpen(false)}>
                     {t("getStarted")}
-                  </Link>
+                  </NavLink>
                 </Button>
               </div>
             )}

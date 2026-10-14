@@ -43,6 +43,12 @@ export async function StudentsChapter() {
               >
                 <img
                   src={still.src}
+                  srcSet={
+                    still.srcSmall
+                      ? `${still.srcSmall} ${(still.width ?? 1600) / 2}w, ${still.src} ${still.width ?? 1600}w`
+                      : undefined
+                  }
+                  sizes="(min-width: 768px) 800px, 100vw"
                   alt={still.alt ?? ""}
                   width={still.width}
                   height={still.height}

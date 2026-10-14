@@ -148,11 +148,11 @@
       "items": {
         "freePlan": {
           "q": "Is there really a free plan?",
-          "a": "Yes! Our free plan is free forever — no credit card required. You get up to 10 students and 1 GB of storage: enough to build your site and teach free classes to a small group. Selling courses, live classes and payouts to your Stripe account need the Starter plan ($19.90/mo) — upgrade anytime as you grow."
+          "a": "Yes! Our free plan is free forever — no credit card required. You get up to 10 students and 1 GB of storage: enough to build your site and teach free classes to a small group. Selling courses, live classes and payouts to your Stripe account need the Starter plan — upgrade anytime as you grow."
         },
         "technical": {
           "q": "Do I need technical skills?",
-          "a": "Not at all. If you can use social media, you can use Contentor. Everything is drag-and-drop with no coding required."
+          "a": "Not at all. You answer a few plain questions or ask the assistant in your own words — no coding required."
         },
         "customDomain": {
           "q": "Can I use my own domain?",

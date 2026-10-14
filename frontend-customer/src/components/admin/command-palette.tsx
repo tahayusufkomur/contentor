@@ -115,7 +115,7 @@ export function CommandPalette({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
-        <div className="flex items-center border-b px-4 py-3 gap-3 bg-muted/30">
+        <div className="flex items-center border-b px-4 py-3 gap-3 bg-muted">
           <Search className="h-5 w-5 text-muted-foreground shrink-0" />
           <input
             ref={inputRef}
@@ -125,13 +125,13 @@ export function CommandPalette({
             onChange={(e) => setQuery(e.target.value)}
             className="w-full bg-transparent text-sm font-medium focus:outline-none placeholder:text-muted-foreground"
           />
-          <kbd className="hidden sm:inline-flex items-center gap-1 rounded border bg-muted px-2 py-0.5 text-xs text-muted-foreground font-mono">
+          <kbd className="hidden sm:inline-flex items-center gap-1 rounded border bg-background px-2 py-0.5 text-xs text-muted-foreground font-mono">
             ESC
           </kbd>
         </div>
 
         {/* Command Items List */}
-        <div className="overflow-y-auto p-2 divide-y divide-border/40">
+        <div className="overflow-y-auto p-2 divide-y divide-border">
           {filteredItems.length === 0 && (
             <p className="px-4 pb-2 pt-4 text-center text-sm text-muted-foreground">
               {t("palette.empty")}
@@ -166,7 +166,7 @@ export function CommandPalette({
                   <div
                     className={`p-1.5 rounded-md ${
                       isSelected
-                        ? "bg-primary-foreground/10 text-primary-foreground"
+                        ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
@@ -182,7 +182,7 @@ export function CommandPalette({
                   <span
                     className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full ${
                       isSelected
-                        ? "bg-primary-foreground/20 text-primary-foreground"
+                        ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
@@ -223,7 +223,7 @@ export function CommandPalette({
         </div>
 
         {/* Footer info */}
-        <div className="flex items-center justify-between border-t px-4 py-2 bg-muted/20 text-xs text-muted-foreground">
+        <div className="flex items-center justify-between border-t px-4 py-2 bg-muted text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
             <span>
               <kbd className="font-mono rounded border px-1 bg-muted">↑</kbd>{" "}

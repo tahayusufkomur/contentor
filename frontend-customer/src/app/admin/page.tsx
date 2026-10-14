@@ -2,9 +2,9 @@
 
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { NavLink } from "@/components/ui/nav-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
 import { clientFetch } from "@/lib/api-client";
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
             <span className="font-medium text-foreground">
               {t("welcome.look", { look: look.label, palette: look.palette })}
             </span>
-            <Link
+            <NavLink
               href="/"
               target="_blank"
               rel="noopener noreferrer"
@@ -134,33 +134,33 @@ export default function AdminDashboard() {
             >
               {t("viewSite")}
               <ExternalLink className="size-3" aria-hidden="true" />
-            </Link>
+            </NavLink>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild size="sm" className="gap-1.5">
-            <Link href="/admin/courses/new">
+            <NavLink href="/admin/courses/new">
               <Plus className="h-4 w-4" />
               New Course
-            </Link>
+            </NavLink>
           </Button>
           <Button asChild size="sm" variant="outline" className="gap-1.5">
-            <Link href="/admin/live">
+            <NavLink href="/admin/live">
               <Video className="h-4 w-4" />
               Live Event
-            </Link>
+            </NavLink>
           </Button>
           <Button asChild size="sm" variant="outline" className="gap-1.5">
-            <Link href="/admin/messages/new">
+            <NavLink href="/admin/messages/new">
               <Mail className="h-4 w-4" />
               Message
-            </Link>
+            </NavLink>
           </Button>
           <Button asChild size="sm" variant="outline" className="gap-1.5">
-            <Link href="/admin/blog">
+            <NavLink href="/admin/blog">
               <Newspaper className="h-4 w-4" />
               Blog
-            </Link>
+            </NavLink>
           </Button>
         </div>
       </header>

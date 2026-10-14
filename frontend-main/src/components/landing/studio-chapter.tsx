@@ -42,6 +42,13 @@ export async function StudioChapter() {
                 src={loop.src}
                 webm={loop.webm}
                 poster={still.src}
+                posterSrcSet={
+                  still.srcSmall
+                    ? `${still.srcSmall} ${(still.width ?? 1600) / 2}w, ${still.src} ${still.width ?? 1600}w`
+                    : undefined
+                }
+                posterSizes="(min-width: 768px) 50vw, 100vw"
+                posterLoading="lazy"
                 width={loop.width}
                 height={loop.height}
                 playOn="hover"

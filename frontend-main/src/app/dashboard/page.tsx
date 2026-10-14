@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowUpRight, Clock, Globe2, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NavLink } from "@/components/ui/nav-link";
 import { PlatformHeader } from "@/components/shared/platform-header";
 import { PlatformFooter } from "@/components/shared/platform-footer";
 import { Monogram } from "@/components/shared/logo-mark";
@@ -122,10 +122,10 @@ function EmptyState() {
         size="lg"
         className="mt-7 gap-2 rounded-full"
       >
-        <Link href="/signup">
+        <NavLink href="/signup">
           <Plus className="size-4" />
           New platform
-        </Link>
+        </NavLink>
       </Button>
     </div>
   );
@@ -163,10 +163,10 @@ export default async function DashboardPage() {
               size="lg"
               className="gap-2 rounded-full"
             >
-              <Link href="/signup">
+              <NavLink href="/signup">
                 <Plus className="size-4" />
                 New platform
-              </Link>
+              </NavLink>
             </Button>
           )}
         </div>

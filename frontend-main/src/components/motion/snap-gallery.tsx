@@ -36,7 +36,13 @@ export function SnapGallery({ label, items, itemClassName }: SnapGalleryProps) {
     const el = scroller.current;
     const child = el?.children[i] as HTMLElement | undefined;
     if (!el || !child) return;
-    el.scrollTo({ left: child.offsetLeft - el.offsetLeft, behavior: "smooth" });
+    const reduced =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollTo({
+      left: child.offsetLeft - el.offsetLeft,
+      behavior: reduced ? "auto" : "smooth",
+    });
   };
 
   const last = items.length - 1;
@@ -48,6 +54,8 @@ export function SnapGallery({ label, items, itemClassName }: SnapGalleryProps) {
     >
       <ul
         ref={scroller}
+        tabIndex={0}
+        aria-label={label}
         className="flex snap-x snap-mandatory gap-5 overflow-x-auto px-6 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:px-[max(24px,calc((100vw-1440px)/2))]"
       >
         {items.map((item, i) => (

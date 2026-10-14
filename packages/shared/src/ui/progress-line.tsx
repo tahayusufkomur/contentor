@@ -23,7 +23,7 @@ export function ProgressLine({
       aria-valuemin={determinate ? 0 : undefined}
       aria-valuemax={determinate ? 100 : undefined}
       aria-valuenow={determinate ? Math.round(value * 100) : undefined}
-      className={cn("h-0.5 w-full overflow-hidden bg-primary/20", className)}
+      className={cn("h-0.5 w-full overflow-hidden bg-muted", className)}
     >
       {determinate ? (
         <div

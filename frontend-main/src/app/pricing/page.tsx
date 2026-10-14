@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { Check, ChevronDown, Minus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
+import { NavLink } from "@/components/ui/nav-link";
 import { PlatformHeader } from "@/components/shared/platform-header";
 import { PlatformFooter } from "@/components/shared/platform-footer";
 import { formatPlanPrice } from "@shared/lib/format-plan-price";
@@ -98,147 +98,149 @@ export default async function PricingPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <PlatformHeader user={user} />
 
-      {/* Hero */}
-      <section className="px-6 pb-16 pt-24 md:pb-24 md:pt-32">
-        <div className="mx-auto max-w-text text-center">
-          <p className="text-eyebrow text-muted-foreground">Pricing</p>
-          <h1 className="mt-4 text-display text-balance text-foreground">
-            {t("title")}
-          </h1>
-          <p className="mx-auto mt-5 max-w-[640px] text-body-lg text-balance text-muted-foreground">
-            {t("subtitle")}
-          </p>
-        </div>
-      </section>
+      <main className="flex-1">
+        {/* Hero */}
+        <section className="px-6 pb-16 pt-24 md:pb-24 md:pt-32">
+          <div className="mx-auto max-w-text text-center">
+            <p className="text-eyebrow text-muted-foreground">Pricing</p>
+            <h1 className="mt-4 text-display text-balance text-foreground">
+              {t("title")}
+            </h1>
+            <p className="mx-auto mt-5 max-w-[640px] text-body-lg text-balance text-muted-foreground">
+              {t("subtitle")}
+            </p>
+          </div>
+        </section>
 
-      {/* Compare */}
-      <section className="bg-muted">
-        <div className="mx-auto max-w-text px-6 pb-20 pt-6 md:pb-28">
-          {/* Plan header: the one sticky element on this page, so it sits
+        {/* Compare */}
+        <section className="bg-muted">
+          <div className="mx-auto max-w-text px-6 pb-20 pt-6 md:pb-28">
+            {/* Plan header: the one sticky element on this page, so it sits
               directly under the 48 px header. Opaque second paper hides the
               rows scrolling beneath it. */}
-          <div
-            className={`sticky top-12 z-30 -mx-6 border-b bg-muted px-6 py-4 ${COLUMNS}`}
-          >
-            <div className="hidden md:block" aria-hidden />
-            {PLAN_KEYS.map((key) => (
-              <div key={key} className="min-w-0">
-                <p className="truncate text-eyebrow text-muted-foreground">
-                  {t(`plans.${key}.name`)}
-                  {key === HIGHLIGHTED && (
-                    <span className="ml-2 text-marketing-accent">
-                      {t("popular")}
-                    </span>
-                  )}
-                </p>
-                <p className="mt-1 truncate text-title-2 text-foreground md:text-title">
-                  {price(key)}
-                </p>
-                <p className="text-caption text-muted-foreground">
-                  {t(`plans.${key}.period`)}
-                </p>
-              </div>
-            ))}
-          </div>
+            <div
+              className={`sticky top-12 z-30 -mx-6 border-b bg-muted px-6 py-4 ${COLUMNS}`}
+            >
+              <div className="hidden md:block" aria-hidden />
+              {PLAN_KEYS.map((key) => (
+                <div key={key} className="min-w-0">
+                  <p className="truncate text-eyebrow text-muted-foreground">
+                    {t(`plans.${key}.name`)}
+                    {key === HIGHLIGHTED && (
+                      <span className="ml-2 text-marketing-accent">
+                        {t("popular")}
+                      </span>
+                    )}
+                  </p>
+                  <p className="mt-1 truncate text-title-2 text-foreground md:text-title">
+                    {price(key)}
+                  </p>
+                  <p className="text-caption text-muted-foreground">
+                    {t(`plans.${key}.period`)}
+                  </p>
+                </div>
+              ))}
+            </div>
 
-          {/* Description and CTA: scroll away with the page */}
-          <div className={`${COLUMNS} mt-6`}>
-            <div className="hidden md:block" aria-hidden />
-            {PLAN_KEYS.map((key) => (
-              <div key={key} className="flex min-w-0 flex-col">
-                <p className="hidden flex-1 text-caption text-muted-foreground md:block">
-                  {t(`plans.${key}.description`)}
-                </p>
-                <PricingCta
-                  planId={planByKey[key]?.id ?? null}
-                  isFreePlan={key === "free"}
-                  isAuthenticated={user != null}
-                  variant={key === HIGHLIGHTED ? "brand" : "outline"}
-                  size="lg"
-                  className="w-full rounded-full md:mt-5"
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Feature table */}
-          <div className="mt-10 border-t">
-            {FEATURE_KEYS.map((feature) => (
-              <div
-                key={feature}
-                className={`${COLUMNS} items-center border-b py-4`}
-              >
-                <p className="col-span-3 text-caption font-medium text-foreground md:col-span-1">
-                  {t(`features.${feature}`)}
-                </p>
-                {PLAN_KEYS.map((key) => (
-                  <div key={key} className="flex min-w-0 items-center">
-                    <CellView
-                      cell={featureCell(
-                        feature,
-                        included[key],
-                        planByKey[key] ?? null,
-                        () => t(`plans.${key}.features.${feature}`),
-                      )}
-                      included={t("compare.included")}
-                      notIncluded={t("compare.notIncluded")}
-                    />
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="px-6 py-20 md:py-28">
-        <div className="mx-auto max-w-[760px]">
-          <div className="text-center">
-            <p className="text-eyebrow text-muted-foreground">Questions</p>
-            <h2 className="mt-4 text-title text-foreground">
-              {t("faq.title")}
-            </h2>
-          </div>
-          <div className="mt-12 border-t">
-            {FAQ_KEYS.map((key) => (
-              <details key={key} className="group border-b py-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-body font-medium text-foreground [&::-webkit-details-marker]:hidden">
-                  {t(`faq.items.${key}.q`)}
-                  <ChevronDown
-                    aria-hidden
-                    className="size-4 shrink-0 text-muted-foreground group-open:rotate-180 motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-expo"
+            {/* Description and CTA: scroll away with the page */}
+            <div className={`${COLUMNS} mt-6`}>
+              <div className="hidden md:block" aria-hidden />
+              {PLAN_KEYS.map((key) => (
+                <div key={key} className="flex min-w-0 flex-col">
+                  <p className="hidden flex-1 text-caption text-muted-foreground md:block">
+                    {t(`plans.${key}.description`)}
+                  </p>
+                  <PricingCta
+                    planId={planByKey[key]?.id ?? null}
+                    isFreePlan={key === "free"}
+                    isAuthenticated={user != null}
+                    variant={key === HIGHLIGHTED ? "brand" : "outline"}
+                    size="lg"
+                    className="w-full rounded-full md:mt-5"
                   />
-                </summary>
-                <p className="mt-3 max-w-[640px] text-body text-muted-foreground">
-                  {t(`faq.items.${key}.a`)}
-                </p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
+                </div>
+              ))}
+            </div>
 
-      {/* Final CTA */}
-      <section className="bg-muted px-6 py-20 md:py-28">
-        <div className="mx-auto max-w-text text-center">
-          <h2 className="text-title text-foreground">{t("cta2.title")}</h2>
-          <p className="mx-auto mt-4 max-w-[560px] text-body text-muted-foreground">
-            {t("cta2.subtitle")}
-          </p>
-          <Button
-            asChild
-            variant="brand"
-            size="xl"
-            className="mt-8 rounded-full"
-          >
-            <Link href="/signup">{t("cta2.button")}</Link>
-          </Button>
-          <p className="mt-4 text-caption text-muted-foreground">
-            {t("cta2.trustNote")}
-          </p>
-        </div>
-      </section>
+            {/* Feature table */}
+            <div className="mt-10 border-t">
+              {FEATURE_KEYS.map((feature) => (
+                <div
+                  key={feature}
+                  className={`${COLUMNS} items-center border-b py-4`}
+                >
+                  <p className="col-span-3 text-caption font-medium text-foreground md:col-span-1">
+                    {t(`features.${feature}`)}
+                  </p>
+                  {PLAN_KEYS.map((key) => (
+                    <div key={key} className="flex min-w-0 items-center">
+                      <CellView
+                        cell={featureCell(
+                          feature,
+                          included[key],
+                          planByKey[key] ?? null,
+                          () => t(`plans.${key}.features.${feature}`),
+                        )}
+                        included={t("compare.included")}
+                        notIncluded={t("compare.notIncluded")}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="px-6 py-20 md:py-28">
+          <div className="mx-auto max-w-[760px]">
+            <div className="text-center">
+              <p className="text-eyebrow text-muted-foreground">Questions</p>
+              <h2 className="mt-4 text-title text-foreground">
+                {t("faq.title")}
+              </h2>
+            </div>
+            <div className="mt-12 border-t">
+              {FAQ_KEYS.map((key) => (
+                <details key={key} className="group border-b py-5">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-body font-medium text-foreground [&::-webkit-details-marker]:hidden">
+                    {t(`faq.items.${key}.q`)}
+                    <ChevronDown
+                      aria-hidden
+                      className="size-4 shrink-0 text-muted-foreground group-open:rotate-180 motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-expo"
+                    />
+                  </summary>
+                  <p className="mt-3 max-w-[640px] text-body text-muted-foreground">
+                    {t(`faq.items.${key}.a`)}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="bg-muted px-6 py-20 md:py-28">
+          <div className="mx-auto max-w-text text-center">
+            <h2 className="text-title text-foreground">{t("cta2.title")}</h2>
+            <p className="mx-auto mt-4 max-w-[560px] text-body text-muted-foreground">
+              {t("cta2.subtitle")}
+            </p>
+            <Button
+              asChild
+              variant="brand"
+              size="xl"
+              className="mt-8 rounded-full"
+            >
+              <NavLink href="/signup">{t("cta2.button")}</NavLink>
+            </Button>
+            <p className="mt-4 text-caption text-muted-foreground">
+              {t("cta2.trustNote")}
+            </p>
+          </div>
+        </section>
+      </main>
 
       <PlatformFooter />
     </div>
