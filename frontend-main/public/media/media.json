@@ -22,23 +22,27 @@
       "phoneSrc": "/media/clips/clip-student-phone-phone.mp4",
       "durationS": 4.8
     },
-    "scrub-setup": {
-      "kind": "scrub",
-      "src": "/media/clips/scrub-setup.mp4",
+    "clip-setup": {
+      "kind": "clip",
+      "src": "/media/clips/clip-setup.mp4",
       "width": 1280,
       "height": 800,
-      "bytes": 1319130,
-      "poster": "/media/posters/scrub-setup.avif",
-      "durationS": 5.3
+      "bytes": 1205764,
+      "poster": "/media/posters/clip-setup.avif",
+      "webm": "/media/clips/clip-setup.webm",
+      "phoneSrc": "/media/clips/clip-setup-phone.mp4",
+      "durationS": 11.6
     },
-    "scrub-assistant": {
-      "kind": "scrub",
-      "src": "/media/clips/scrub-assistant.mp4",
+    "clip-assistant": {
+      "kind": "clip",
+      "src": "/media/clips/clip-assistant.mp4",
       "width": 1280,
       "height": 800,
-      "bytes": 883379,
-      "poster": "/media/posters/scrub-assistant.avif",
-      "durationS": 2.6
+      "bytes": 388337,
+      "poster": "/media/posters/clip-assistant.avif",
+      "webm": "/media/clips/clip-assistant.webm",
+      "phoneSrc": "/media/clips/clip-assistant-phone.mp4",
+      "durationS": 7.4
     },
     "loop-courses": {
       "kind": "loop",

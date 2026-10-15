@@ -6,8 +6,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { SITE_STYLES } from "@shared/sections/styles";
 import {
-  ASSISTANT_SCRUB,
-  BUILD_SCRUB,
+  ASSISTANT_CLIP,
+  BUILD_CLIP,
   HERO_CLIP,
   LANDING_MEDIA,
   LOOK_CARDS,
@@ -32,7 +32,7 @@ const item = (key: string): Item => manifest.items[key];
 const size = (p: string) =>
   statSync(path.join(PUBLIC, p.replace(/^\//, ""))).size;
 const MB = 1024 * 1024;
-const CLIPS = [HERO_CLIP, STUDENT_CLIP, BUILD_SCRUB, ASSISTANT_SCRUB];
+const CLIPS = [HERO_CLIP, STUDENT_CLIP, BUILD_CLIP, ASSISTANT_CLIP];
 const STILLS = Object.entries(LANDING_MEDIA)
   .filter(([, kind]) => kind === "still")
   .map(([key]) => key);
@@ -49,10 +49,11 @@ describe("landing media keys", () => {
       expect(() => size(item(key).src), item(key).src).not.toThrow();
     },
   );
-  it("clips and scrubs carry a poster; the hero and the student clip a phone encode", () => {
-    for (const key of CLIPS) expect(item(key).poster, key).toBeTruthy();
-    for (const key of [HERO_CLIP, STUDENT_CLIP])
+  it("every clip carries a poster and a phone encode", () => {
+    for (const key of CLIPS) {
+      expect(item(key).poster, key).toBeTruthy();
       expect(item(key).phoneSrc, key).toBeTruthy();
+    }
   });
   it("every still has alt text and an 800 px twin", () => {
     for (const key of STILLS) {
@@ -80,31 +81,27 @@ describe("landing media budget (spec 5.7)", () => {
     ...STUDIO_TILES.map((t) => t.still),
     ...STUDENT_TILES.map((t) => t.still),
   ].map((k) => item(k).src);
-  it("desktop: hero + two scrubs + student clip + stills ≤ 8 MB", () => {
+  it("desktop: four clips + stills ≤ 8 MB", () => {
     const looks = LOOK_CARDS.slice(0, 4).flatMap((c) => [
       item(c.still).src,
       item(c.render).src,
     ]);
     const total = sum([
-      item(HERO_CLIP).src,
-      item(BUILD_SCRUB).src,
-      item(ASSISTANT_SCRUB).src,
-      item(STUDENT_CLIP).src,
+      ...CLIPS.map((k) => item(k).src),
       ...posters,
       ...tileStills,
       ...looks,
     ]);
     expect(total / MB, `${(total / MB).toFixed(2)} MB`).toBeLessThanOrEqual(8);
   });
-  it("phone: phone encodes, static scrubs, two look cards ≤ 4 MB", () => {
+  it("phone: phone encodes, two look cards ≤ 4 MB", () => {
     const small = (k: string) => item(k).srcSmall ?? item(k).src;
     const looks = LOOK_CARDS.slice(0, 2).flatMap((c) => [
       small(c.still),
       small(c.render),
     ]);
     const total = sum([
-      item(HERO_CLIP).phoneSrc as string,
-      item(STUDENT_CLIP).phoneSrc as string,
+      ...CLIPS.map((k) => item(k).phoneSrc as string),
       ...posters,
       ...tileStills,
       ...looks,

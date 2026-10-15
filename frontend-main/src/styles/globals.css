@@ -11,7 +11,7 @@
   * {
     @apply border-border;
   }
-  /* LocalNav's height with its border: the scrub stage sticks beneath it. */
+  /* LocalNav's height with its border. */
   :root {
     --localnav-h: 45px;
   }

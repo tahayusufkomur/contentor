@@ -5,8 +5,8 @@
 
 export const CHAPTER_IDS = [
   "hero",
-  "build",
   "looks",
+  "build",
   "studio",
   "assistant",
   "students",
@@ -16,8 +16,8 @@ export const CHAPTER_IDS = [
 export type ChapterId = (typeof CHAPTER_IDS)[number];
 
 export const HERO_CLIP = "hero-looks";
-export const BUILD_SCRUB = "scrub-setup";
-export const ASSISTANT_SCRUB = "scrub-assistant";
+export const BUILD_CLIP = "clip-setup";
+export const ASSISTANT_CLIP = "clip-assistant";
 export const STUDENT_CLIP = "clip-student-phone";
 
 /** Twelve of the twenty looks, one niche each (spec 5.4 ch. 3). `still` is
@@ -73,14 +73,14 @@ export const FAQ_KEYS = [
   "contract",
 ] as const;
 
-export type LandingMediaKind = "clip" | "scrub" | "loop" | "still";
+export type LandingMediaKind = "clip" | "loop" | "still";
 
 /** Every key the page reads, with the kind each must have in media.json. */
 export const LANDING_MEDIA: Record<string, LandingMediaKind> = {
   [HERO_CLIP]: "clip",
   [STUDENT_CLIP]: "clip",
-  [BUILD_SCRUB]: "scrub",
-  [ASSISTANT_SCRUB]: "scrub",
+  [BUILD_CLIP]: "clip",
+  [ASSISTANT_CLIP]: "clip",
   ...Object.fromEntries(
     STUDIO_TILES.flatMap((t) => [
       [t.still, "still"],

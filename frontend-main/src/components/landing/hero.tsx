@@ -15,7 +15,7 @@ export async function Hero() {
   const t = await getTranslations("marketing.hero");
   const clip = media(HERO_CLIP);
   return (
-    <section id="hero" className="scroll-mt-24 pt-16 md:pt-24">
+    <section id="hero" className="scroll-mt-24 pt-12 md:pt-16">
       <div className="hero-scroll-out mx-auto max-w-text px-6 text-center">
         <h1 className="text-display text-foreground text-balance">
           {t("title")}
@@ -33,7 +33,7 @@ export async function Hero() {
           {t("cta")}
         </NavLink>
       </div>
-      <div className="mt-12 md:mt-16 md:px-6">
+      <div className="mt-10 md:mt-12 md:px-6">
         <MediaVideo
           src={clip.src}
           webm={clip.webm}

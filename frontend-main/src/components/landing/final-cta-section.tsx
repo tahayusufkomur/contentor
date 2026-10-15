@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 export async function FinalCtaSection() {
   const t = await getTranslations("marketing.start.cta");
   return (
-    <section className="mx-auto mt-24 max-w-media px-6">
-      <div className="rounded-tile bg-muted px-8 py-16 text-center md:py-24">
+    <section className="mx-auto mt-16 max-w-media px-6">
+      <div className="rounded-tile bg-muted px-8 py-12 text-center md:py-16">
         <h3 className="text-display-2 text-foreground text-balance">
           {t("title")}
         </h3>

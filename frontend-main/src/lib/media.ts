@@ -4,7 +4,7 @@
 // the whole manifest to the browser.
 import manifest from "../../public/media/media.json";
 
-export type MediaKind = "clip" | "scrub" | "loop" | "still";
+export type MediaKind = "clip" | "loop" | "still";
 
 export interface MediaItem {
   kind: MediaKind;
@@ -12,9 +12,9 @@ export interface MediaItem {
   width: number;
   height: number;
   bytes: number;
-  poster?: string; // every clip | scrub | loop
+  poster?: string; // every clip | loop
   webm?: string; // clips and loops
-  phoneSrc?: string; // 720 px encode; hero and the student clip
+  phoneSrc?: string; // 720 px encode; every clip
   durationS?: number;
   srcSmall?: string; // every still: the small AVIF
   alt?: string; // every still

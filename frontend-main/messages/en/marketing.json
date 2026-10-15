@@ -21,7 +21,8 @@
     "eyebrow": "Getting started",
     "title": "Say what you teach. We build the rest.",
     "lead": "Answer a few plain questions about your work, choose a look that fits your voice, and watch your pages come together.",
-    "bands": {
+    "videoLabel": "The setup interview, the look gallery and a coach's pages composing",
+    "steps": {
       "one": "Tell us what you teach and who comes to your classes.",
       "two": "Pick a look from the gallery and preview it with your own words.",
       "three": "Your home page, courses, and schedule compose in moments."
@@ -73,7 +74,8 @@
     "eyebrow": "Studio assistant",
     "title": "An assistant that drafts. You approve.",
     "lead": "Describe a course, a class, or a page change in plain words. Review the draft card before anything touches your site.",
-    "bands": {
+    "videoLabel": "The studio assistant drafting a course outline, then applying and undoing it",
+    "steps": {
       "one": "Describe the course you want to teach in a single sentence.",
       "two": "A structured outline of modules and lessons appears for your review.",
       "three": "Apply what fits, edit any line, or undo with one click."

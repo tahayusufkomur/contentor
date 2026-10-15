@@ -22,8 +22,8 @@ const LOOKS = ["journal", "kinetic", "encore", "studiofloor", "tavola", "primer"
 const KEYS = [
   "hero-looks",
   "clip-student-phone",
-  "scrub-setup",
-  "scrub-assistant",
+  "clip-setup",
+  "clip-assistant",
   ...TILES.map((t) => `loop-${t}`),
   ...TILES.map((t) => `tile-${t}`),
   "tile-student-dashboard",
@@ -38,20 +38,14 @@ const M = 1000 * K;
 function targets(key) {
   if (key === "hero-looks") return { src: 2.5 * M, webm: 2.5 * M, phoneSrc: 1 * M, poster: 120 * K };
   if (key === "clip-student-phone") return { src: 0.6 * M, webm: 0.6 * M, phoneSrc: 0.4 * M, poster: 120 * K };
-  if (key.startsWith("scrub-")) return { src: 1.5 * M, poster: 120 * K };
+  if (key === "clip-setup" || key === "clip-assistant") return { src: 1.5 * M, webm: 1.5 * M, phoneSrc: 0.5 * M, poster: 120 * K };
   if (key.startsWith("loop-")) return { src: 0.8 * M, webm: 0.8 * M, poster: 120 * K };
   if (key.startsWith("still-")) return { src: 160 * K, srcSmall: 60 * K };
   if (key.startsWith("look-")) return { src: 120 * K, srcSmall: 50 * K };
   return { src: 120 * K }; // tile-*
 }
 const kindOf = (key) =>
-  key === "hero-looks" || key.startsWith("clip-")
-    ? "clip"
-    : key.startsWith("scrub-")
-      ? "scrub"
-      : key.startsWith("loop-")
-        ? "loop"
-        : "still";
+  key === "hero-looks" || key.startsWith("clip-") ? "clip" : key.startsWith("loop-") ? "loop" : "still";
 
 const ffprobe = (file, entries) =>
   JSON.parse(
@@ -65,7 +59,6 @@ const dims = (file) => {
   return { width: s.width, height: s.height };
 };
 const seconds = (file) => Math.round(Number(ffprobe(file, "format=duration").format.duration) * 10) / 10;
-const allKeyframes = (file) => ffprobe(file, "frame=key_frame").frames.every((f) => f.key_frame === 1);
 const url = (file) => "/" + path.relative(PUBLIC, file).split(path.sep).join("/");
 
 const errors = [];
@@ -117,8 +110,6 @@ for (const key of KEYS) {
     }
     if (f.phoneSrc) item.phoneSrc = url(f.phoneSrc);
     item.durationS = seconds(f.src);
-    // Review Focus 4: a scrub with predicted frames stalls on every seek.
-    if (kind === "scrub" && !allKeyframes(f.src)) errors.push(`${key}: not all-keyframe: encode.sh must pass -g 1`);
   }
   for (const [field, max] of Object.entries(targets(key))) {
     if (!f[field]) continue;

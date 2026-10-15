@@ -8,7 +8,7 @@
 # frontend-main/public/media/{clips,posters,stills}. Then run
 # `node scripts/footage/manifest.mjs`.
 # Spec 5.3: h264 CRF 23 with maxrate ≤ 2.5 Mbit/s and +faststart, a VP9 twin,
-# -g 1 only for scrubs, a 720 px phone encode, AVIF posters from the first
+# a 720 px phone encode, AVIF posters from the first
 # frame, 2x AVIF stills. Each maxrate below is that ceiling lowered to Phase 2's
 # per-file target: target bytes × 8 / clip seconds (hero 2.5 MB / 12 s ≈ 1.6M).
 # macOS /bin/bash is 3.2: no associative arrays.
@@ -16,19 +16,14 @@
 # not hashed and prod caches /media/* (7-day edge TTL, 1-day browser TTL), so
 # visitors otherwise get the old footage for up to a week.
 # Before shipping a clip, look at its frames for a dev hostname: record.ts
-# rewrites "<slug>.localhost" in the page, and scrub-setup.mp4 shipped once with
-# it (fixed 2026-10-15 by painting maralindqvist.contentor.app over the preview
-# chrome's address on the encoded frames).
+# rewrites "<slug>.localhost" in the page. The setup-looks and setup-compose
+# recordings predate that and carry the coach domain painted over the preview's
+# address pill (2026-10-15); a re-recording needs no paint.
 set -euo pipefail
 export LC_ALL=C # awk prints "2.50", never "2,50"
 cd "$(dirname "$0")/../.."
 RAW=e2e/eval-shots/footage
 OUT=frontend-main/public/media
-# Scrubs are all-keyframe, so every frame costs a whole picture. Over 1.5 MB:
-# raise SCRUB_SPEED (fewer frames, same story) before SCRUB_CRF (28 at most).
-SCRUB_FPS=${SCRUB_FPS:-10}
-SCRUB_SPEED=${SCRUB_SPEED:-4.2}
-SCRUB_CRF=${SCRUB_CRF:-28}
 HERO_LOOKS="journal tavola encore kinetic"
 LOOKS="journal kinetic encore studiofloor tavola primer dojo workshop atelier sprout trail nocturne"
 NICHES="yoga fitness music dance cooking language martial-arts crafts beauty family outdoors wellness"
@@ -45,7 +40,7 @@ kb() { echo $(($(wc -c <"$1") / 1000)); }
 mark() { jq -er --arg k "$2" '.[$k]' "$RAW/$1.marks.json" || { echo "no mark $2 in $1.marks.json: re-record $1" >&2; return 1; }; }
 
 # segments <key> <kind> <flow:fromMark:toMark>...: the segments joined into clips/<key>.mp4.
-#   scrub: all-keyframe, sped up by SCRUB_SPEED;  loop: sped up to fit 3.8 s;  phone: 750×1624.
+#   clip: sped up by SPEED (default 2), plays in view;  loop: sped up to fit 3.8 s;  phone: 750×1624.
 segments() {
   local key=$1 kind=$2
   shift 2
@@ -61,10 +56,10 @@ segments() {
     n=$((n + 1))
   done
   case $kind in
-    scrub)
-      speed=$SCRUB_SPEED
-      vf="fps=$SCRUB_FPS,scale=1280:800:flags=lanczos"
-      x264="-preset slow -crf $SCRUB_CRF -g 1 -keyint_min 1 -sc_threshold 0 -bf 0" ;;
+    clip)
+      speed=${SPEED:-2}
+      vf="fps=25,scale=1280:800:flags=lanczos"
+      x264="-preset slow -crf 24 -maxrate 1.2M -bufsize 2.4M" ;;
     loop)
       speed=$(awk -v t="$total" 'BEGIN{printf "%.3f", (t > 3.8 ? t / 3.8 : 1)}')
       vf="fps=25,scale=1280:800:flags=lanczos"
@@ -106,6 +101,10 @@ still() {
   avif "$2" "$OUT/stills/$1-small.avif" "$4" "$6"
   echo "still $1  $(kb "$OUT/stills/$1.avif") KB / $(kb "$OUT/stills/$1-small.avif") KB"
 }
+# story <key>: a chapter clip's twin, phone encode and poster.
+story() {
+  if [ -f "$OUT/clips/$1.mp4" ]; then webm "$1" 40 1.2M; phone "$1" 0.4M; poster "$1"; fi
+}
 # loop <key> <flow:from:to>: a studio tile's hover loop with its twin and poster.
 loop() {
   segments "$1" loop "$2"
@@ -133,13 +132,13 @@ studio() {
   for t in courses live messages community media blog logo; do still "tile-$t" "$RAW/tile-$t.png" 1600:1000 800:500 28 32; done
 }
 assistant() {
-  segments scrub-assistant scrub assistant:start:drafting assistant:card:end
-  if [ -f "$OUT/clips/scrub-assistant.mp4" ]; then poster scrub-assistant; fi
+  SPEED=1.5 segments clip-assistant clip assistant:start:drafting assistant:card:end
+  story clip-assistant
 }
 setup() {
-  segments scrub-setup scrub setup-answer:ask-1:sent setup-answer:ask-2:picked setup-looks:gallery:gallery-picked setup-looks:opened:kept \
+  segments clip-setup clip setup-answer:ask-1:sent setup-answer:ask-2:picked setup-looks:gallery:gallery-picked setup-looks:opened:kept \
     setup-compose:composing:composing-held setup-compose:built:scrolled
-  if [ -f "$OUT/clips/scrub-setup.mp4" ]; then poster scrub-setup; fi
+  story clip-setup
 }
 # hero: four looks × 3 s from the "scroll" mark, the phone cut laid over the desktop cut.
 hero() {

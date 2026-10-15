@@ -13,10 +13,10 @@ const SPAN: Record<2 | 3 | 4, string> = {
   4: "md:col-span-4",
 };
 
-/** Chapter 4 (spec 5.4): "Every tool, one calm place." Seven studio tiles in a
- * six-column bento; each shows its 2x still and plays a short loop on hover,
- * focus or tap. Loops never load otherwise, which keeps them out of the
- * scroll budget. */
+/** "Every tool, one calm place." Seven studio tiles in a six-column bento;
+ * each shows its 2x still and plays a short loop on hover, focus or tap. Loops
+ * never load otherwise, which keeps them out of the scroll budget. Below
+ * md the tiles are one native scroll-snap row instead of seven screens. */
 export async function StudioChapter() {
   const t = await getTranslations("marketing.studio");
   return (
@@ -28,7 +28,7 @@ export async function StudioChapter() {
     >
       <Reveal
         stagger
-        className="mx-auto grid max-w-media gap-5 px-6 md:grid-cols-6"
+        className="mx-auto flex max-w-[1200px] snap-x snap-mandatory scroll-px-6 gap-5 overflow-x-auto px-6 [scrollbar-width:none] md:grid md:grid-cols-6 md:overflow-visible [&::-webkit-scrollbar]:hidden"
       >
         {STUDIO_TILES.map((tile) => {
           const still = media(tile.still);
@@ -36,7 +36,10 @@ export async function StudioChapter() {
           return (
             <div
               key={tile.key}
-              className={cn("flex flex-col gap-4", SPAN[tile.span])}
+              className={cn(
+                "flex w-[80%] shrink-0 snap-start flex-col gap-4 md:w-auto",
+                SPAN[tile.span],
+              )}
             >
               <MediaVideo
                 src={loop.src}

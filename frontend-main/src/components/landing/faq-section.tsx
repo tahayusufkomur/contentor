@@ -11,7 +11,7 @@ export async function FaqSection() {
   return (
     <section
       aria-labelledby="faq-title"
-      className="mx-auto mt-24 max-w-text px-6"
+      className="mx-auto mt-16 max-w-text px-6"
     >
       <h3 id="faq-title" className="text-title text-foreground">
         {t("title")}

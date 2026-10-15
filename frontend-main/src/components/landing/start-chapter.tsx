@@ -22,7 +22,7 @@ async function PricingTeaser({ live = true }: { live?: boolean }) {
   return (
     <section
       aria-labelledby="teaser-title"
-      className="mx-auto mt-24 max-w-media px-6"
+      className="mx-auto mt-16 max-w-media px-6"
     >
       <h3 id="teaser-title" className="text-title text-foreground">
         {t("title")}

@@ -5,9 +5,9 @@ import { MediaVideo } from "@/components/ui/media-video";
 import { STUDENT_CLIP, STUDENT_TILES } from "@/lib/landing";
 import { media } from "@/lib/media";
 
-/** Chapter 6 (spec 5.4): "Your students, on every screen." Real phone
- * footage inside a CSS device frame (an ink slab with rounded corners, no
- * image asset) beside the student dashboard and a live class as stills. */
+/** "Your students, on every screen." Real phone footage inside a CSS device
+ * frame (an ink slab with rounded corners, no image asset) beside the student
+ * dashboard and a live class as stills, side by side from tablet width up. */
 export async function StudentsChapter() {
   const t = await getTranslations("marketing.students");
   const clip = media(STUDENT_CLIP);
@@ -34,7 +34,7 @@ export async function StudentsChapter() {
             />
           </div>
         </Reveal>
-        <Reveal stagger className="grid gap-5">
+        <Reveal stagger className="grid gap-5 sm:grid-cols-2">
           {STUDENT_TILES.map((tile) => {
             const still = media(tile.still);
             return (
@@ -50,7 +50,7 @@ export async function StudentsChapter() {
                       ? `${still.srcSmall} ${(still.width ?? 1600) / 2}w, ${still.src} ${still.width ?? 1600}w`
                       : undefined
                   }
-                  sizes="(min-width: 768px) 800px, 100vw"
+                  sizes="(min-width: 640px) 50vw, 100vw"
                   alt={still.alt ?? ""}
                   width={still.width}
                   height={still.height}

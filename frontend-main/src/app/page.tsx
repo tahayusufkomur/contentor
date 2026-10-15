@@ -13,8 +13,8 @@ import { PlatformHeader } from "@/components/shared/platform-header";
 import { getAuthUser } from "@/lib/auth";
 import { CHAPTER_IDS } from "@/lib/landing";
 
-/** The landing: eight chapters on real footage (spec 5.4). Chapters are
- * server components; the motion kit beneath them is the client. */
+/** The landing: eight chapters on real footage. Proof (the looks) comes
+ * straight after the hero; nothing is tied to the scroll position. */
 export default async function HomePage() {
   const [user, t] = await Promise.all([
     getAuthUser(),
@@ -30,8 +30,8 @@ export default async function HomePage() {
       />
       <main>
         <Hero />
-        <BuildChapter />
         <LooksChapter />
+        <BuildChapter />
         <StudioChapter />
         <AssistantChapter />
         <StudentsChapter />

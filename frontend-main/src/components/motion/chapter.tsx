@@ -1,7 +1,4 @@
-"use client";
-
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface ChapterProps {
@@ -16,8 +13,8 @@ export interface ChapterProps {
   children: ReactNode;
 }
 
-/** One landing chapter (spec 5.2): eyebrow, title and lead hold at the top,
- * then scale to 0.96 and fade as the chapter leaves the viewport. */
+/** One landing chapter: eyebrow, title and lead, then its content. No
+ * scroll-linked motion: scrolling stays native, so it stays smooth. */
 export function Chapter({
   id,
   eyebrow,
@@ -27,37 +24,16 @@ export function Chapter({
   className,
   children,
 }: ChapterProps) {
-  const ref = useRef<HTMLElement>(null);
-  const [reduced, setReduced] = useState(false);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["end end", "end start"],
-  });
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.96]);
-  const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
   return (
     <section
       id={id}
-      ref={ref}
       className={cn(
-        "scroll-mt-24 py-[72px] md:py-[120px]",
+        "scroll-mt-24 py-16 md:py-24",
         dark && "dark bg-background text-foreground",
         className,
       )}
     >
-      <motion.header
-        style={reduced ? undefined : { scale, opacity }}
-        className="mx-auto max-w-text px-6 text-center"
-      >
+      <header className="mx-auto max-w-text px-6 text-center">
         {eyebrow && (
           <p className="text-eyebrow text-muted-foreground">{eyebrow}</p>
         )}
@@ -65,12 +41,12 @@ export function Chapter({
           {title}
         </h2>
         {lead && (
-          <p className="mx-auto mt-5 max-w-[640px] text-body-lg text-muted-foreground text-balance">
+          <p className="mx-auto mt-4 max-w-[640px] text-body-lg text-muted-foreground text-balance">
             {lead}
           </p>
         )}
-      </motion.header>
-      <div className="mt-14 md:mt-20">{children}</div>
+      </header>
+      <div className="mt-10 md:mt-14">{children}</div>
     </section>
   );
 }
