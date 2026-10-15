@@ -792,7 +792,7 @@ function AboutStep({
                   maxLength={8000}
                   rows={10}
                   placeholder={t("aboutTextPlaceholder")}
-                  className="flex min-h-[240px] w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex min-h-[240px] w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <div className="flex justify-end text-[11px] text-muted-foreground">
                   <span>{text.length} / 8000</span>

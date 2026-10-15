@@ -12,7 +12,7 @@ const sheet = readFileSync(
 const block = (selector: string) =>
   sheet.match(new RegExp(`${selector}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
 const light = readTokens(block(":root"));
-const dark = readTokens(block("\\.dark"));
+const dark = readTokens(block("\\.dark,\\s*\\.dim"));
 
 // Spec 5.7: text pairs read at 4.5:1 on both papers, in both schemes.
 const PAIRS: [string, string][] = [

@@ -166,7 +166,7 @@ export function PreviewChatCard() {
               placeholder={t("assistant.previewPlaceholder")}
               aria-label={t("assistant.previewPlaceholder")}
               maxLength={2000}
-              className="min-w-0 flex-1 rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              className="min-w-0 flex-1 rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
             />
             <Button
               type="submit"

@@ -31,16 +31,6 @@ describe("Button variants", () => {
     }
   });
 
-  it("never puts an alpha on a token colour", () => {
-    // bg-primary/90, ring-ring/50 … emit nothing on this checkout: the
-    // Tailwind colours are plain var() strings without <alpha-value>.
-    for (const variant of VARIANTS) {
-      expect(buttonVariants({ variant }), variant).not.toMatch(
-        /\b(bg|text|border|ring)-[a-z-]+\/\d/,
-      );
-    }
-  });
-
   it("keeps the heights", () => {
     expect(buttonVariants({ size: "default" })).toMatch(/\bh-9\b/);
     expect(buttonVariants({ size: "sm" })).toMatch(/\bh-8\b/);

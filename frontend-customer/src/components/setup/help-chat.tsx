@@ -412,7 +412,7 @@ export function HelpChat({ onNavigate }: { onNavigate: () => void }) {
           onChange={(e) => setInput(e.target.value)}
           placeholder={t("setup.help.placeholder")}
           maxLength={2000}
-          className="min-w-0 flex-1 rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="min-w-0 flex-1 rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
         />
         <button
           type="submit"

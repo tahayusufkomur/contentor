@@ -33,7 +33,7 @@ export function StepSlider({
         value={idx}
         aria-label={label}
         onChange={(e) => onChange(options[Number(e.target.value)].value)}
-        className="w-full cursor-pointer accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        className="w-full cursor-pointer accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
       <div className="flex justify-between gap-1">
         {options.map((o, i) => (

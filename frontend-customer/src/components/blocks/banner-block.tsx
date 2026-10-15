@@ -60,7 +60,7 @@ export function BannerBlock({ data, editable }: BlockComponentProps) {
       type="button"
       onClick={handleDismiss}
       aria-label="Dismiss announcement"
-      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <X className="h-4 w-4" />
     </button>

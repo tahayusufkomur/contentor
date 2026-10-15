@@ -65,7 +65,7 @@ const COUNTRIES: { code: string; name: string; dial: string }[] = [
 
 const SELECT_CLASS =
   "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none " +
-  "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]";
+  "focus-visible:border-ring focus-visible:ring-ring focus-visible:ring-[3px]";
 
 function dialFor(code: string): string {
   return COUNTRIES.find((c) => c.code === code)?.dial ?? "+1";
