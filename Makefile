@@ -174,6 +174,8 @@ wiki-sync: ## Mirror the generated wiki (.gitnexus/wiki/) into docs/wiki/ withou
 	@# The generator omits final newlines; pre-commit's end-of-file-fixer adds
 	@# them back — normalize here or every refresh ping-pongs a 93-file EOL diff.
 	@find docs/wiki -name '*.md' | while read -r f; do [ -n "$$(tail -c1 "$$f")" ] && printf '\n' >> "$$f"; done; true
+	@# Same for prettier: committed pages get formatted, the raw output undoes it.
+	@cd frontend-customer && npx --no-install prettier --write --log-level warn ../docs/wiki
 
 # ============================================================================
 # Stripe

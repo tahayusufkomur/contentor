@@ -19,8 +19,8 @@ That matters because every task in the codebase is declared with the app-less `@
 `__all__` pins the single public name. `celery_app` is what tooling and `celery -A config` resolve; the compose services use the more explicit module path:
 
 ```yaml
-command: celery -A config.celery worker -l info --concurrency=2 # celery-worker
-command: celery -A config.celery beat -l info # celery-beat
+command: celery -A config.celery worker -l info --concurrency=2   # celery-worker
+command: celery -A config.celery beat -l info                     # celery-beat
 ```
 
 Both forms work — `-A config` goes through this re-export, `-A config.celery` imports the module directly.

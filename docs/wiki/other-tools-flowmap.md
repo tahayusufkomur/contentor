@@ -162,7 +162,7 @@ Two design points worth preserving: **`full` is excluded from list responses** (
 `createServer(db)` returns a bare `node:http` server — no framework, and it takes the db as an argument rather than opening one itself, which is exactly what makes `server.test.js` able to bind port 0 against a temp database.
 
 | Route                                     | Purpose                                                                  |
-| ----------------------------------------- | ------------------------------------------------------------------------ |
+| ----------------------------------------- | ------------------------------------------------------------------------ | -------- |
 | `GET /`                                   | Serves `web/index.html` (the test asserts the body matches `/flowmap/i`) |
 | `GET /styles.css`, `/app.js`, `/vendor/*` | Static assets                                                            |
 | `POST /api/screens`                       | Bulk upsert an array of screen records                                   |
