@@ -145,7 +145,7 @@ export function AppSidebar({
                 <button
                   type="button"
                   onClick={() => toggleSection(section.id)}
-                  className="flex w-full items-center justify-between rounded-md px-3 pb-1 pt-3 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground/70 transition-colors hover:text-foreground"
+                  className="flex w-full items-center justify-between rounded-md px-3 pb-1 pt-3 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <span>{section.label}</span>
                   <ChevronDown

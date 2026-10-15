@@ -46,7 +46,7 @@ export function FaqEtiquette({ block, editable }: SectionProps) {
             >
               <summary className="grid cursor-pointer grid-cols-[3rem_minmax(0,1fr)_auto] items-baseline gap-x-4 py-6 select-none transition-colors">
                 <span
-                  className="dojo-faq-num font-display text-[1.15rem] font-extrabold text-muted-foreground/70 transition-colors"
+                  className="dojo-faq-num font-display text-[1.15rem] font-extrabold text-muted-foreground transition-colors"
                   aria-hidden="true"
                 >
                   {pad2(i)}.

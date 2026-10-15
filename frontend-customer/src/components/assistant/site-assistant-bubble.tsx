@@ -316,7 +316,7 @@ export function SiteAssistantBubble() {
             </button>
           </div>
           {mode === "human" && (
-            <div className="border-b bg-accent/50 px-4 py-2 text-xs text-muted-foreground">
+            <div className="border-b bg-muted/50 px-4 py-2 text-xs text-muted-foreground">
               {t("humanModeNotice", { name: agentLabel })}
             </div>
           )}
@@ -396,7 +396,7 @@ export function SiteAssistantBubble() {
                                     ),
                                   );
                                 }}
-                                className={`rounded p-1 transition-colors hover:bg-accent ${message.rated === r ? "text-primary" : "text-muted-foreground/60"} disabled:hover:bg-transparent`}
+                                className={`rounded p-1 transition-colors hover:bg-accent ${message.rated === r ? "text-primary" : "text-muted-foreground"} disabled:hover:bg-transparent`}
                               >
                                 {r === "up" ? (
                                   <ThumbsUp className="h-3.5 w-3.5" />

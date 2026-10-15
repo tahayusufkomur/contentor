@@ -133,7 +133,7 @@ export default function BlogEditorPage() {
             value={post.title}
             onChange={(e) => patch({ title: e.target.value })}
             placeholder={t("blog.untitled")}
-            className="w-full border-none bg-transparent text-3xl font-semibold outline-none placeholder:text-muted-foreground/50"
+            className="w-full border-none bg-transparent text-3xl font-semibold outline-none placeholder:text-muted-foreground"
           />
 
           <Textarea

@@ -243,7 +243,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
               className={cn(
                 "rounded-md border px-3 py-1.5 text-sm uppercase",
                 (navbar.logo_size ?? "md") === size
-                  ? "border-primary bg-primary/10 text-primary"
+                  ? "border-primary bg-primary/10 text-foreground"
                   : "text-muted-foreground hover:border-foreground",
               )}
             >
@@ -285,7 +285,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
                 className={cn(
                   "rounded-md border px-3 py-1.5 text-sm",
                   (navbar.logo_layout ?? "horizontal") === opt.id
-                    ? "border-primary bg-primary/10 text-primary"
+                    ? "border-primary bg-primary/10 text-foreground"
                     : "text-muted-foreground hover:border-foreground",
                 )}
               >

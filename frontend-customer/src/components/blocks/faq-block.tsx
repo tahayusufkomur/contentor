@@ -115,7 +115,7 @@ export function FaqBlock({ data, editable }: BlockComponentProps) {
                   id={`${baseId}-q-${i}`}
                   aria-expanded={isOpen}
                   aria-controls={`${baseId}-a-${i}`}
-                  className="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-medium transition-colors hover:bg-accent/50"
+                  className="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-medium transition-colors hover:bg-muted/50"
                   onClick={() => setOpen(isOpen ? null : i)}
                 >
                   <span>{item.q}</span>

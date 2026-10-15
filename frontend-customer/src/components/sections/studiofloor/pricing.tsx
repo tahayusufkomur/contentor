@@ -59,7 +59,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                         STUDIO PASS // 0{i + 1}
                       </span>
                       {isFeatured && (
-                        <span className="rounded-full bg-primary/20 px-2.5 py-0.5 studiofloor-display text-[0.72rem] font-extrabold italic text-primary shadow-[0_0_8px_var(--primary)]">
+                        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 studiofloor-display text-[0.72rem] font-extrabold italic text-primary shadow-[0_0_8px_var(--primary)]">
                           MOST POPULAR
                         </span>
                       )}
@@ -81,7 +81,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                     {/* Perforated ticket tear line */}
                     <div className="my-6 flex items-center gap-2">
                       <div className="h-px flex-1 border-t border-dashed border-border" />
-                      <span className="studiofloor-display text-[0.68rem] tracking-widest text-muted-foreground/60">
+                      <span className="studiofloor-display text-[0.68rem] tracking-widest text-muted-foreground">
                         TEAR HERE
                       </span>
                       <div className="h-px flex-1 border-t border-dashed border-border" />

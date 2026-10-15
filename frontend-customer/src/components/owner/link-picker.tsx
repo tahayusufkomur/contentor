@@ -159,7 +159,7 @@ export function LinkPickerModal({
                 className={cn(
                   "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors",
                   tab === t.id
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-primary/10 text-foreground"
                     : "text-muted-foreground hover:bg-accent",
                 )}
               >

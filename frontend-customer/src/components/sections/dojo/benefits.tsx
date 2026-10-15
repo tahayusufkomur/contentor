@@ -25,7 +25,7 @@ export function BenefitsDisciplines({ block, editable }: SectionProps) {
               </span>
               <span
                 aria-hidden="true"
-                className="font-display text-[0.95rem] font-bold text-muted-foreground/60 select-none"
+                className="font-display text-[0.95rem] font-bold text-muted-foreground select-none"
               >
                 {["一", "二", "三", "四", "五", "六"][i] || pad2(i)}
               </span>
@@ -79,7 +79,7 @@ export function BenefitsDisciplines({ block, editable }: SectionProps) {
                         </span>
                         <span
                           aria-hidden="true"
-                          className="font-display text-[0.95rem] font-bold text-muted-foreground/60 select-none"
+                          className="font-display text-[0.95rem] font-bold text-muted-foreground select-none"
                         >
                           {["一", "二", "三", "四", "五", "六"][i] || pad2(i)}
                         </span>

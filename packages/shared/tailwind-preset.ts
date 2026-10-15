@@ -1,5 +1,36 @@
 import type { Config } from "tailwindcss";
 
+type ColorTree = { [key: string]: string | ColorTree };
+
+/** Gives every token colour in the tree an opacity modifier.
+ *
+ *  The tokens are whole colours (`oklch(…)`, `color-mix(…)`), and Tailwind v3
+ *  cannot put alpha into an opaque `var()`: with plain `"var(--primary)"`
+ *  strings, `bg-primary/10`, `hover:bg-primary/90` or `ring-ring/50` emitted no
+ *  rule at all. With a modifier the colour is now mixed toward transparent;
+ *  without one the class still emits the bare `var()`, so nothing else moves.
+ *  (`bg-primary bg-opacity-50`, the pre-modifier spelling, stays unsupported.) */
+export function alphaTokens<T extends ColorTree>(colors: T): T {
+  const leaf =
+    (token: string) =>
+    ({
+      opacityVariable,
+      opacityValue,
+    }: {
+      opacityVariable?: string;
+      opacityValue?: string;
+    } = {}) =>
+      opacityValue === undefined || opacityVariable
+        ? token
+        : `color-mix(in oklab, ${token} calc(${opacityValue} * 100%), transparent)`;
+  return Object.fromEntries(
+    Object.entries(colors).map(([key, value]) => [
+      key,
+      typeof value === "string" ? leaf(value) : alphaTokens(value),
+    ]),
+  ) as unknown as T;
+}
+
 // Loading/feedback motion shared by both apps. Decorative only — callers gate
 // usage behind `motion-safe:` so reduced-motion users get static equivalents.
 const preset: Partial<Config> = {

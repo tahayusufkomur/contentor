@@ -65,7 +65,7 @@ export function StyleControls({ block, onChange }: StyleControlsProps) {
                     className={cn(
                       "rounded-md border px-2 py-1 text-xs transition-colors",
                       current === opt.value
-                        ? "border-primary bg-primary/10 text-primary"
+                        ? "border-primary bg-primary/10 text-foreground"
                         : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
                     )}
                   >

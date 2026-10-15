@@ -99,7 +99,7 @@ export function MarkControls({
                       },
                     })
                   }
-                  className={`flex h-9 items-center justify-center rounded-md border ${active ? "border-primary bg-primary/10 text-primary" : "hover:border-foreground"}`}
+                  className={`flex h-9 items-center justify-center rounded-md border ${active ? "border-primary bg-primary/10 text-foreground" : "hover:border-foreground"}`}
                 >
                   <svg viewBox="0 0 24 24" width={20} height={20}>
                     <AbstractMark
@@ -146,7 +146,7 @@ export function MarkControls({
                           },
                         })
                       }
-                      className={`flex h-8 items-center justify-center rounded-md border ${active ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:border-foreground"}`}
+                      className={`flex h-8 items-center justify-center rounded-md border ${active ? "border-primary bg-primary/10 text-foreground" : "text-muted-foreground hover:border-foreground"}`}
                     >
                       <Icon className="h-4 w-4" />
                     </button>

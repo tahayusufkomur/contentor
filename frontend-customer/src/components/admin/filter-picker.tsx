@@ -117,7 +117,7 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
           </div>
           <div className="flex flex-wrap gap-1.5">
             {g.options.length === 0 && (
-              <span className="text-xs text-muted-foreground/70">
+              <span className="text-xs text-muted-foreground">
                 No options yet — add one.
               </span>
             )}

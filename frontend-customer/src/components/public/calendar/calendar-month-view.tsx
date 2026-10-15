@@ -122,11 +122,9 @@ export function CalendarMonthView({
                     <span
                       className={cn(
                         "text-xs",
-                        selected
-                          ? "text-primary font-bold"
-                          : hasEvents
-                            ? "text-foreground font-bold"
-                            : "text-muted-foreground font-medium",
+                        selected || hasEvents
+                          ? "text-foreground font-bold"
+                          : "text-muted-foreground font-medium",
                       )}
                     >
                       {date.getDate()}
@@ -147,7 +145,7 @@ export function CalendarMonthView({
                           config.bgClass,
                         )}
                       >
-                        <span className="font-semibold text-muted-foreground">
+                        <span className="font-semibold text-foreground">
                           {formatTime(event.scheduled_at, timezone)}
                         </span>{" "}
                         <span className="text-foreground">{event.title}</span>
@@ -155,7 +153,7 @@ export function CalendarMonthView({
                     );
                   })}
                   {overflow > 0 && (
-                    <span className="text-[10px] font-bold text-primary pl-1.5 mt-0.5">
+                    <span className="text-[10px] font-bold text-foreground pl-1.5 mt-0.5">
                       +{overflow} more
                     </span>
                   )}
@@ -187,7 +185,7 @@ export function CalendarMonthView({
         <div className="p-4 md:p-6 md:absolute md:inset-0 md:overflow-y-auto">
           {/* Header */}
           <div className="mb-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-1">
               {isToday(selectedDate) ? "Today" : "Selected Day"}
             </p>
             <h3 className="font-display text-xl font-bold tracking-tight text-foreground">
@@ -212,7 +210,7 @@ export function CalendarMonthView({
                 <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-muted flex items-center justify-center">
                   <CalendarDays className="w-5 h-5 text-muted-foreground" />
                 </div>
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-foreground">
                   No events scheduled
                 </p>
               </div>

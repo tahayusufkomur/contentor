@@ -660,7 +660,7 @@ export function LogoStudio({
                           (s.id === "editor" && !draftReady)
                         }
                         onClick={() => setStep(s.id)}
-                        className={`rounded-md px-2.5 py-1.5 text-sm ${step === s.id ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:text-foreground disabled:opacity-40"}`}
+                        className={`rounded-md px-2.5 py-1.5 text-sm ${step === s.id ? "bg-primary/10 font-medium text-foreground" : "text-muted-foreground hover:text-foreground disabled:opacity-40"}`}
                       >
                         {s.label}
                       </button>

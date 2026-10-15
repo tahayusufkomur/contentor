@@ -432,7 +432,7 @@ export function StudioChat({
                     onClick={() => navigate(s.id)}
                     className={`rounded-md px-2 py-1 text-xs font-medium ${
                       st === "current"
-                        ? "bg-primary/10 text-primary"
+                        ? "bg-primary/10 text-foreground"
                         : st === "done"
                           ? "text-foreground hover:bg-accent"
                           : "text-muted-foreground/50"

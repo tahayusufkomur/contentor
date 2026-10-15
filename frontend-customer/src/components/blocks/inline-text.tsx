@@ -56,7 +56,7 @@ export function InlineText({
     "aria-label": field,
     className: cn(
       "cursor-text rounded-sm outline-none focus:ring-2 focus:ring-primary/40",
-      "empty:before:text-muted-foreground/50 empty:before:content-[attr(data-placeholder)]",
+      "empty:before:text-muted-foreground empty:before:content-[attr(data-placeholder)]",
       className,
     ),
     onInput: (e: React.FormEvent<HTMLElement>) =>

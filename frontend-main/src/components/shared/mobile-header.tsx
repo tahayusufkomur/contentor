@@ -30,7 +30,7 @@ export function MobileHeader({ title, sections }: MobileHeaderProps) {
         <nav className="border-b bg-card p-2 space-y-1">
           {sections.map((section) => (
             <div key={section.id}>
-              <p className="px-3 pb-1 pt-3 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              <p className="px-3 pb-1 pt-3 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
                 {section.label}
               </p>
               {section.items.map((item) => {
