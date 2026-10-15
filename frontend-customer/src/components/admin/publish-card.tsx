@@ -179,7 +179,7 @@ export function PublishCard() {
               type="button"
               aria-label="Close"
               onClick={() => setWentLive(false)}
-              className="absolute inset-0 bg-foreground opacity-50"
+              className="absolute inset-0 bg-black/50"
             />
             <div
               role="dialog"

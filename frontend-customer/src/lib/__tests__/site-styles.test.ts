@@ -8,8 +8,8 @@ import {
   styleDefaultTheme,
   styleRootCss,
   styleVars,
-  themeModes,
 } from "@/lib/site-styles";
+import { contrastRatio } from "@shared/lib/contrast";
 import { rankStylesForNiche } from "@shared/sections/styles";
 
 describe("paletteOf", () => {
@@ -47,9 +47,25 @@ describe("modePalette", () => {
     const css = styleRootCss(SITE_STYLES.journal);
     expect(css).toMatch(/:root \{[\s\S]*\.dark, \.dim \{/);
   });
-  it("styled sites toggle light and dark only", () => {
-    expect(themeModes(true)).toEqual(["light", "dark"]);
-    expect(themeModes(false)).toContain("dim");
+});
+
+describe("marketing accent", () => {
+  it("is the tenant's accent where it reads on muted, her ink where not", () => {
+    for (const s of Object.values(SITE_STYLES))
+      for (const id of [null, ...(s.palettes ?? []).map((p) => p.id)]) {
+        const v = styleVars(s, id);
+        const label = `${s.id}/${id ?? "own"}`;
+        expect([v.accent, v.foreground], label).toContain(
+          v["marketing-accent"],
+        );
+        expect(
+          contrastRatio(v["marketing-accent"], v.muted),
+          label,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    expect(styleVars(SITE_STYLES.journal)["marketing-accent"]).toBe(
+      SITE_STYLES.journal.palette.accent,
+    );
   });
 });
 

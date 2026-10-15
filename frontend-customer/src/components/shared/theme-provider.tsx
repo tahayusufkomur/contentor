@@ -8,12 +8,16 @@ import { Toaster } from "sonner";
 import { isAdminPath, TENANT_THEME_SHEET_ID } from "@/lib/site-styles";
 import { ADMIN_THEME_COLOR } from "@/lib/admin-theme-color";
 
+// A stored "dim" paints as dark (the layout's `value` map) until
+// TenantThemeEnforcer rewrites it, so it counts as dark here too.
+const isDark = (theme?: string) => theme === "dark" || theme === "dim";
+
 /** The app's toasts: in the admin they follow its light/dark (on the site
  *  they are light, as they always were). */
 export function AppToaster() {
   const { resolvedTheme } = useTheme();
   const admin = isAdminPath(usePathname());
-  const dark = admin && resolvedTheme === "dark";
+  const dark = admin && isDark(resolvedTheme);
   return (
     <Toaster position="top-center" richColors theme={dark ? "dark" : "light"} />
   );
@@ -30,7 +34,7 @@ export function AdminBrowserBar() {
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute(
         "content",
-        resolvedTheme === "dark"
+        isDark(resolvedTheme)
           ? ADMIN_THEME_COLOR.dark
           : ADMIN_THEME_COLOR.light,
       );

@@ -1,3 +1,4 @@
+import { contrastRatio } from "@shared/lib/contrast";
 import { SITE_STYLES, rankStylesForNiche } from "@shared/sections/styles";
 import type { SiteStyle, SiteStylePalette } from "@shared/sections/types";
 
@@ -142,10 +143,6 @@ export const lookPrimaryHex = (
 ): string =>
   oklchToHex(paletteOf(siteLook(styleId), paletteId).primary) ?? "#1a56db";
 
-/** The modes the toggle steps through: styles are light or dark, no dim. */
-export const themeModes = (styled: boolean) =>
-  styled ? ["light", "dark"] : ["light", "dim", "dark"];
-
 /** Each style's content width (its sections' WRAP) — the site header and
  *  footer align to it via --site-wrap / --site-gutter(-md). */
 const SITE_WRAP: Record<string, string> = {
@@ -183,6 +180,17 @@ export function styleVars(
 ): Record<string, string> {
   const own = paletteOf(style, paletteId);
   const p = mode ? modePalette(own, mode) : own;
+  // The shared badges' "success"/"pro" text and the checkout tick read
+  // --marketing-accent: the tenant's accent where it reads as text on muted
+  // (4.5:1), her ink where it does not (bright yellows, pale fills).
+  // ponytail: a derived scheme is color-mix() strings we cannot measure; its
+  // dark lifts the accent toward white (>= 5.4:1 on every shipped palette), its
+  // light deepens it too little for many, so dark keeps it and light uses ink.
+  const accentReads =
+    p === own
+      ? Boolean(parseOklch(p.accent) && parseOklch(p.surface)) &&
+        contrastRatio(p.accent, p.surface) >= 4.5
+      : mode === "dark";
   return {
     background: p.background,
     foreground: p.foreground,
@@ -198,6 +206,10 @@ export function styleVars(
     "muted-foreground": p.mutedForeground,
     accent: p.accent,
     "accent-foreground": p.accentForeground,
+    "marketing-accent": accentReads ? p.accent : p.foreground,
+    "marketing-accent-foreground": accentReads
+      ? p.accentForeground
+      : p.background,
     destructive: DESTRUCTIVE,
     "destructive-foreground": DESTRUCTIVE_FG,
     border: p.border,

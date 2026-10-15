@@ -183,7 +183,10 @@ export default async function RootLayout({
                 ? styleDefaultTheme(siteStyle, config?.palette)
                 : "light"
             }
-            themes={["light", "dim", "dark"]}
+            themes={["light", "dark"]}
+            // A "dim" stored before looks were light/dark only paints as dark,
+            // from the first-paint script on (TenantThemeEnforcer rewrites it).
+            value={{ light: "light", dark: "dark", dim: "dark" }}
             enableSystem={false}
             forcedTheme={
               config?.dark_mode_enabled === false
