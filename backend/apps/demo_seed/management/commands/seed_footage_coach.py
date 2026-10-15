@@ -588,6 +588,16 @@ class Command(BaseCommand):
 
         try:
             call_command("seed_connect_test", tenant=SLUG, stdout=self.stdout)
+            # Stripe's checkout shows the account's name: hers, not the test data's URL.
+            import stripe
+
+            tenant.refresh_from_db()
+            stripe.api_key = settings.STRIPE_SECRET_KEY
+            stripe.Account.modify(
+                tenant.stripe_account_id,
+                business_profile={"name": BRAND, "url": f"https://{SLUG}.contentor.app"},
+                settings={"payments": {"statement_descriptor": "MARA LINDQVIST YOGA"}},
+            )
         except Exception as exc:  # no sk_test key or no network: checkout won't work, the rest does
             self.stderr.write(f"  ! Stripe test account not attached: {exc}")
 

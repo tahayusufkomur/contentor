@@ -10,7 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 // The repo root has no node_modules, so @playwright/test does not resolve from
 // here: import e2e's copy (the same file the runner and e2e/helpers load).
-import { expect, test, type Browser, type Locator, type Page } from "../../e2e/node_modules/@playwright/test";
+import { chromium, expect, test, type Browser, type Locator, type Page } from "../../e2e/node_modules/@playwright/test";
 import { manage } from "../../e2e/helpers/compose";
 
 const RAW = path.resolve(__dirname, "../../e2e/eval-shots/footage");
@@ -657,3 +657,302 @@ for (const [look, briefId] of Object.entries(LOOK_BRIEFS)) {
     }
   });
 }
+
+// ── Mara's school: the success-led landing (2026-10-15) ────────────────────
+// Every flow below films one lived-in coach, Mara Lindqvist on maralindqvist
+// (seed it: `python manage.py seed_footage_coach`). mara-keep also needs
+// LiveCraft (`make dev` in ../livecraft) and the webcam loops in RAW/cams:
+// <student>.mjpeg from the students' Pix4Less headshots and mara-host.mjpeg
+// from one of her site photos, each looped by ffmpeg with a slow drift.
+
+const MARA = "maralindqvist";
+const LIVECRAFT = "http://localhost:7800";
+
+/** POST to LiveCraft's client API with its dev key. */
+async function livecraft(p: string, data: object) {
+  const res = await fetch(LIVECRAFT + p, {
+    method: "POST",
+    headers: { "x-api-key": "dev-key", "content-type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  expect(res.ok, `${p}: ${res.status} ${await res.clone().text()}`).toBe(true);
+  return res.json();
+}
+
+const joinUrl = async (room: string, name: string, role: "host" | "participant") =>
+  (await livecraft(`/api/v1/rooms/${room}/join`, { identity: name.toLowerCase().replace(/[^a-z]+/g, "-"), name, role }))
+    .join_url as string;
+
+/** A browser whose camera is a looping webcam clip from RAW/cams. */
+const withCam = (cam: string) =>
+  chromium.launch({
+    args: [
+      "--use-fake-device-for-media-stream",
+      "--use-fake-ui-for-media-stream",
+      `--use-file-for-fake-video-capture=${path.join(RAW, "cams", `${cam}.mjpeg`)}`,
+    ],
+  });
+
+/** Students join with their camera off; turn it on. */
+const startVideo = (page: Page) => page.getByTitle("Start Video").click({ timeout: 20_000 }).catch(() => {});
+
+/** Thursday's class: Mara and five students, every camera on. */
+const CLASS: [string, "host" | "participant", string][] = [
+  ["Mara Lindqvist", "host", "mara-host"],
+  ["Lena Fischer", "participant", "lena-fischer"],
+  ["Tomás Reyes", "participant", "tomas-reyes"],
+  ["Hannah Okafor", "participant", "hannah-okafor"],
+  ["Daniel Weber", "participant", "daniel-weber"],
+  ["Aiko Sato", "participant", "aiko-sato"],
+];
+
+test("mara-keep", async ({ browser }) => {
+  test.setTimeout(6 * 60_000);
+  expect((await fetch(LIVECRAFT).catch(() => null))?.ok, "LiveCraft down: make dev in ../livecraft").toBe(true);
+  // Her site: a class live now, so Priya's list shows it with Join.
+  const coach = await open(browser, "tile", { slug: MARA, role: "coach", video: false });
+  const created = await coach.ctx.request.post(url(MARA, "/api/v1/live/"), {
+    data: {
+      title: "Thursday slow flow",
+      description: "Forty-five minutes for hips, spine and shoulders.",
+      scheduled_at: new Date(Date.now() + 60_000).toISOString(),
+    },
+  });
+  expect(created.status(), await created.text()).toBe(201);
+  const cls = await created.json();
+  expect((await coach.ctx.request.post(url(MARA, `/api/v1/live/${cls.id}/start/`))).ok()).toBeTruthy();
+  // The room: LiveCraft, everyone seated before Priya arrives.
+  const room = `mara-${Date.now().toString(36)}`;
+  await livecraft("/api/v1/rooms", { room, title: "Thursday slow flow", layout: "meeting" });
+  const seated: Browser[] = [];
+  try {
+    for (const [name, role, cam] of CLASS) {
+      const b = await withCam(cam);
+      seated.push(b);
+      const p = await (await b.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
+      await p.goto(await joinUrl(room, name, role));
+      if (role === "participant") await startVideo(p);
+    }
+    const phone = await withCam("priya-raghavan");
+    seated.push(phone);
+    const s = await open(phone, "phone", { slug: MARA, role: "student" });
+    const { page } = s;
+    await page.goto(url(MARA, "/dashboard"));
+    await settle(page);
+    s.mark("dash");
+    await page.waitForTimeout(1_200);
+    await glide(page, 420, 1_600);
+    s.mark("dash-end");
+    await page.goto(url(MARA, "/live-classes"));
+    const join = page.getByRole("link", { name: /Join/ }).first();
+    await expect(join).toBeVisible({ timeout: 30_000 });
+    await settle(page);
+    s.mark("live");
+    await page.waitForTimeout(1_000);
+    await join.tap();
+    s.mark("live-tap");
+    // Contentor runs LiveCraft's fake in dev, so the tap opens nothing: take her into the room.
+    await page.goto(await joinUrl(room, "Priya Raghavan", "participant"));
+    await startVideo(page);
+    await expect.poll(() => page.locator("video").count(), { timeout: 30_000 }).toBeGreaterThanOrEqual(4);
+    await page.waitForTimeout(1_500);
+    s.mark("room");
+    await page.waitForTimeout(4_000);
+    s.mark("end");
+    await page.screenshot({ path: path.join(RAW, "chip-live-src.png") });
+    await s.save("mara-keep");
+  } finally {
+    for (const b of seated) await b.close();
+    await coach.ctx.request.post(url(MARA, `/api/v1/live/${cls.id}/stop/`));
+    await coach.ctx.request.delete(url(MARA, `/api/v1/live/${cls.id}/`));
+    await coach.ctx.close();
+  }
+});
+
+test("mara-found", async ({ browser }) => {
+  test.setTimeout(4 * 60_000);
+  // An article on her site, as a visitor reads it.
+  const v = await open(browser, "tile", { slug: MARA });
+  await v.page.goto(url(MARA, "/blog/why-your-hips-feel-tight-after-a-day-at-the-desk"));
+  await settle(v.page);
+  v.mark("article");
+  await v.page.waitForTimeout(1_000);
+  await glide(v.page, 700, 3_000);
+  v.mark("article-end");
+  await v.save("mara-article");
+  // Her studio: the articles, then the campaigns that carried them.
+  const s = await open(browser, "tile", { slug: MARA, role: "coach" });
+  await s.page.goto(url(MARA, "/admin/blog"));
+  await settle(s.page);
+  s.mark("blog");
+  await sweep(s.page, 1_500);
+  s.mark("blog-end");
+  await s.page.goto(url(MARA, "/admin/messages"));
+  await settle(s.page);
+  s.mark("sent");
+  await sweep(s.page, 1_500);
+  s.mark("sent-end");
+  await s.save("mara-found");
+});
+
+/** A student who has not bought A Kinder Back (reset each take); prints her login token. */
+const BUYER_PY = `
+from django_tenants.utils import tenant_context
+from apps.accounts.models import User
+from apps.accounts.tokens import create_jwt
+from apps.billing.models import Payment
+from apps.courses.models import Enrollment
+from apps.core.models import Tenant
+t = Tenant.objects.get(slug="${MARA}")
+with tenant_context(t):
+    u, _ = User.objects.get_or_create(email="elin.s@demo.test", defaults={"name": "Elin Strom", "role": "student"})
+    Payment.objects.filter(student=u).delete()
+    Enrollment.objects.filter(user=u).delete()
+    print(create_jwt(u, t))
+`;
+
+/** What Stripe's webhook does on checkout.session.completed (no listener in dev). */
+const COMPLETE_PY = `
+from django_tenants.utils import tenant_context
+from apps.billing.models import Payment
+from apps.billing.views.payments import grant_access_for_payment
+from apps.core.models import Tenant
+with tenant_context(Tenant.objects.get(slug="${MARA}")):
+    p = Payment.objects.filter(student__email="elin.s@demo.test", status="pending").order_by("-id").first()
+    p.status, p.provider = "completed", "stripe"
+    p.save(update_fields=["status", "provider"])
+    grant_access_for_payment(p)
+    print(p.pk)
+`;
+
+test("mara-paid", async ({ browser }) => {
+  test.setTimeout(5 * 60_000);
+  const jwt = manage(["shell", "-c", BUYER_PY]).split("\n").pop()!;
+  const s = await open(browser, "tile", { slug: MARA });
+  await s.ctx.addCookies([
+    { name: "contentor_access_token", value: jwt, domain: `${MARA}.localhost`, path: "/", httpOnly: true, secure: false, sameSite: "Lax" },
+  ]);
+  const { page } = s;
+  await page.goto(url(MARA, "/courses/a-kinder-back"));
+  await settle(page);
+  s.mark("course");
+  await page.waitForTimeout(1_200);
+  await page.getByRole("button", { name: /Buy|Enroll|Get started|Purchase/i }).first().click();
+  // Her checkout: the item and its price, then Stripe's page.
+  const pay = page.getByRole("button", { name: /^Pay / });
+  await expect(pay).toBeVisible({ timeout: 30_000 });
+  await settle(page);
+  s.mark("checkout");
+  await page.waitForTimeout(1_200);
+  await pay.click();
+  await page.waitForURL(/checkout\.stripe\.com/, { timeout: 60_000 });
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await page.waitForTimeout(800);
+  s.mark("stripe");
+  // The card option's button has no box of its own (the row around it is the target).
+  await page.getByTestId("card-accordion-item-button").evaluate((b: HTMLElement) => b.click());
+  await page.locator('input[name="cardNumber"]').waitFor({ timeout: 20_000 });
+  // Stripe's own fields ignore synthetic typing: set them through the native setter.
+  await page.evaluate(() => {
+    const set = (name: string, value: string) => {
+      const el = document.querySelector<HTMLInputElement>(`input[name="${name}"]`);
+      if (!el) return;
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(el, value);
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+    set("cardNumber", "4242 4242 4242 4242");
+    set("cardExpiry", "12 / 34");
+    set("cardCvc", "123");
+    set("billingName", "Elin Strom");
+    set("billingPostalCode", "11345");
+  });
+  await page.waitForTimeout(1_500);
+  s.mark("filled");
+  await page.getByTestId("hosted-payment-submit-button").click();
+  await page.waitForURL(new RegExp(`${MARA}\\.localhost`), { timeout: 90_000 });
+  await page.waitForTimeout(1_200);
+  manage(["shell", "-c", COMPLETE_PY]);
+  await expect(page.getByText(/Confirming your payment/)).toHaveCount(0, { timeout: 30_000 });
+  await settle(page);
+  s.mark("paid");
+  await page.waitForTimeout(2_000);
+  s.mark("paid-end");
+  await s.save("mara-buy");
+  // Her side: the sales, then what reaches her bank.
+  const c = await open(browser, "tile", { slug: MARA, role: "coach" });
+  await c.page.goto(url(MARA, "/admin/store"));
+  await settle(c.page);
+  c.mark("store");
+  await c.page.waitForTimeout(1_200);
+  await c.page.getByRole("button", { name: "Payments", exact: true }).click();
+  await settle(c.page);
+  c.mark("sales");
+  await c.page.screenshot({ path: path.join(RAW, "chip-sale-src.png") });
+  await sweep(c.page, 1_500);
+  c.mark("sales-end");
+  await c.page.goto(url(MARA, "/admin/payouts"));
+  await settle(c.page);
+  c.mark("payouts");
+  await c.page.waitForTimeout(2_000);
+  c.mark("payouts-end");
+  await c.save("mara-paid");
+});
+
+test("mara-assistant", async ({ browser }) => {
+  test.setTimeout(6 * 60_000);
+  await hubFree();
+  const s = await open(browser, "tile", { slug: MARA, role: "coach" });
+  const { page } = s;
+  await page.goto(url(MARA, "/admin/courses"));
+  const line = page.getByTestId("describe-course");
+  await expect(line).toBeVisible({ timeout: 30_000 });
+  await settle(page);
+  s.mark("start");
+  await line.click();
+  await line.pressSequentially("A four-week course for desk workers: hips, spine and shoulders, twenty minutes a day", {
+    delay: 28,
+  });
+  await page.getByRole("button", { name: "Draft it" }).click();
+  s.mark("drafting");
+  const apply = page.getByRole("button", { name: "Apply", exact: true });
+  await expect(apply, "no draft card: the assistant asked a question or the hub run failed").toBeVisible({ timeout: 180_000 });
+  s.mark("card");
+  await page.waitForTimeout(2_500);
+  await apply.click();
+  const undo = page.getByRole("button", { name: "Undo" });
+  await expect(undo).toBeVisible({ timeout: 60_000 });
+  s.mark("applied");
+  await page.waitForTimeout(2_000);
+  s.mark("end");
+  // Leave her catalog as it was (off camera: after the last mark).
+  await undo.click();
+  await expect(undo).toHaveCount(0, { timeout: 30_000 });
+  await s.save("mara-assistant");
+});
+
+test("mara-site", async ({ browser }) => {
+  test.setTimeout(3 * 60_000);
+  const s = await open(browser, "desktop", { slug: MARA });
+  await s.page.goto(url(MARA, "/"));
+  await preload(s.page);
+  s.mark("ready");
+  await s.page.waitForTimeout(800);
+  s.mark("scroll");
+  await glide(s.page, 900, 4_000);
+  await s.page.waitForTimeout(800);
+  s.mark("end");
+  await s.save("mara-site");
+});
+
+test("mara-chips", async ({ browser }) => {
+  test.setTimeout(2 * 60_000);
+  // A student's post, cut from her community feed (2x still).
+  const c = await open(browser, "tile", { slug: MARA, role: "coach", video: false });
+  await c.page.goto(url(MARA, "/admin/community"));
+  const post = c.page.getByTestId("post-card").filter({ hasText: /Day 10 of Desk Reset/ });
+  await expect(post).toBeVisible({ timeout: 30_000 });
+  await settle(c.page);
+  await post.screenshot({ path: path.join(RAW, "chip-post.png") });
+  await c.save("mara-chips");
+});

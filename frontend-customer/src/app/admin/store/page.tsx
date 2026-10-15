@@ -25,7 +25,7 @@ interface Product {
   type: string;
   price: string;
   currency: string;
-  sales?: number;
+  sales_count?: number;
 }
 
 interface BundleListItem {
@@ -172,7 +172,7 @@ function ProductsTab() {
                     {p.price} {p.currency}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    {p.sales ?? 0}
+                    {p.sales_count ?? 0}
                   </td>
                 </tr>
               ))
