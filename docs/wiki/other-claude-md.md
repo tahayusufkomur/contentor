@@ -30,27 +30,27 @@ graph LR
 
 Precedence, most to least authoritative: a direct user instruction in the conversation → these instruction files → skill workflows → default model behavior. Within the files, the project `CLAUDE.md` is what this document covers; the global file carries cross-project triggers (e.g. `/graphify`), and `MEMORY.md` carries one-line pointers into per-fact memory files.
 
-The practical consequence: `CLAUDE.md` states repo-wide law, `MEMORY.md` states *situational* history ("prod curated-logo re-seed still pending"). Don't move history into `CLAUDE.md` — it goes stale and it is loaded into every session forever. Conversely, don't put invariants in memory, where they are only recalled by relevance match.
+The practical consequence: `CLAUDE.md` states repo-wide law, `MEMORY.md` states _situational_ history ("prod curated-logo re-seed still pending"). Don't move history into `CLAUDE.md` — it goes stale and it is loaded into every session forever. Conversely, don't put invariants in memory, where they are only recalled by relevance match.
 
 ## Section anatomy
 
 Each top-level `##` section answers a distinct question an agent asks early in a task.
 
-| Section | Answers | Kept accurate by |
-|---|---|---|
-| Project Overview | What is this, and who are the three actors? | Rarely changes; the coach/student/superadmin glossary is load-bearing for every other doc |
-| Commands | How do I do X without inventing a command? | Must mirror `make help` — see below |
-| Architecture → Backend | Which app owns this concern, and is it SHARED or TENANT? | `backend/config/settings/base.py` app lists |
-| Architecture → Multi-Tenancy | The four tenancy traps | The most consequential section; also mirrored in a memory file |
-| Docker Services | What runs, on what port, and which container migrates | `docker-compose.yml` |
-| Local fakes + e2e | Which integrations are stubbed, and how many specs exist | `e2e/specs/` count and `e2e/impact-map.json` |
-| MailCraft Integration | The sibling-repo contract | `../django-contentor-email-builder/` |
-| Active Documentation | Where the deeper docs live and which are historical | `docs/` layout |
-| Flowmap | The three modes of the user-flow tool | `tools/flowmap/` |
-| Rules | Absolute prohibitions | Human decision only |
-| Loading & feedback conventions | The frontend UX contract, and what lint enforces | `scripts/check-loading-patterns.mjs` |
-| Home-server deploy | Prod topology and the deploy entry point | `docker-compose.prod.yml`, `Caddyfile` |
-| GitNexus (managed block) | Code-intelligence tool policy | Generated — see below |
+| Section                        | Answers                                                  | Kept accurate by                                                                          |
+| ------------------------------ | -------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Project Overview               | What is this, and who are the three actors?              | Rarely changes; the coach/student/superadmin glossary is load-bearing for every other doc |
+| Commands                       | How do I do X without inventing a command?               | Must mirror `make help` — see below                                                       |
+| Architecture → Backend         | Which app owns this concern, and is it SHARED or TENANT? | `backend/config/settings/base.py` app lists                                               |
+| Architecture → Multi-Tenancy   | The four tenancy traps                                   | The most consequential section; also mirrored in a memory file                            |
+| Docker Services                | What runs, on what port, and which container migrates    | `docker-compose.yml`                                                                      |
+| Local fakes + e2e              | Which integrations are stubbed, and how many specs exist | `e2e/specs/` count and `e2e/impact-map.json`                                              |
+| MailCraft Integration          | The sibling-repo contract                                | `../django-contentor-email-builder/`                                                      |
+| Active Documentation           | Where the deeper docs live and which are historical      | `docs/` layout                                                                            |
+| Flowmap                        | The three modes of the user-flow tool                    | `tools/flowmap/`                                                                          |
+| Rules                          | Absolute prohibitions                                    | Human decision only                                                                       |
+| Loading & feedback conventions | The frontend UX contract, and what lint enforces         | `scripts/check-loading-patterns.mjs`                                                      |
+| Home-server deploy             | Prod topology and the deploy entry point                 | `docker-compose.prod.yml`, `Caddyfile`                                                    |
+| GitNexus (managed block)       | Code-intelligence tool policy                            | Generated — see below                                                                     |
 
 ### The managed GitNexus block
 
@@ -68,7 +68,7 @@ Everything between those markers is tool-owned and regenerated by GitNexus tooli
 
 These are the claims in `CLAUDE.md` that map directly onto failure modes. When contributing to the repo, they are the shortlist worth internalizing:
 
-**Tenancy.** Browser traffic hits `/api/v1/*` through Caddy straight to Django — it is *not* proxied through Next.js. Server-side `fetch()` from either Next app must send `X-Tenant-Domain`, because Node's undici drops a custom `Host` header and the request resolves against the public schema instead. Build the domain from the slug (`${slug}.${BASE_DOMAIN}`); `getTenantDomain()` returns empty inside `generateMetadata` and `manifest.ts`.
+**Tenancy.** Browser traffic hits `/api/v1/*` through Caddy straight to Django — it is _not_ proxied through Next.js. Server-side `fetch()` from either Next app must send `X-Tenant-Domain`, because Node's undici drops a custom `Host` header and the request resolves against the public schema instead. Build the domain from the slug (`${slug}.${BASE_DOMAIN}`); `getTenantDomain()` returns empty inside `generateMetadata` and `manifest.ts`.
 
 **Auth.** `TenantJWTAuthentication` is the default DRF auth class, so `AllowAny` alone does not open an endpoint. Public views (magic link, OAuth, signup) must also carry `@authentication_classes([])`.
 
@@ -82,16 +82,16 @@ These are the claims in `CLAUDE.md` that map directly onto failure modes. When c
 
 ## Contributing to CLAUDE.md
 
-There is a strict rule in this very file — *"Never create new `.md` files unless explicitly asked"* — which makes `CLAUDE.md` itself one of the few docs you are expected to edit in place rather than supplement.
+There is a strict rule in this very file — _"Never create new `.md` files unless explicitly asked"_ — which makes `CLAUDE.md` itself one of the few docs you are expected to edit in place rather than supplement.
 
-**When to add something.** Add a line when an agent (or a new human) would otherwise have to learn it by breaking something, *and* the fact is stable. The multi-tenancy `X-Tenant-Domain` note is the archetype: cheap to state, expensive to rediscover.
+**When to add something.** Add a line when an agent (or a new human) would otherwise have to learn it by breaking something, _and_ the fact is stable. The multi-tenancy `X-Tenant-Domain` note is the archetype: cheap to state, expensive to rediscover.
 
 **When not to.** Don't restate what the code already says. An app list that duplicates `INSTALLED_APPS` verbatim is churn; a one-line "what this app owns" gloss per app — which is what the Architecture section actually does — is not. Don't record in-flight status ("prod re-seed pending") here; that's what auto-memory is for. Don't add a command that isn't in the `Makefile`.
 
 **Keeping the mirrors honest.** Several passages assert counts and flags that decay:
 
 - The `## Commands` block should track `make help`. If you add a target, add the line.
-- The e2e paragraph states concrete numbers (24 non-Stripe specs of 26 files, 2 Stripe specs auto-skipping without `STRIPE_E2E`). Adding a spec means updating that sentence *and* adding an `e2e/impact-map.json` entry — the selector self-test in `make lint` fails on an unmapped spec, which is the enforcement mechanism for the map, not for the prose.
+- The e2e paragraph states concrete numbers (24 non-Stripe specs of 26 files, 2 Stripe specs auto-skipping without `STRIPE_E2E`). Adding a spec means updating that sentence _and_ adding an `e2e/impact-map.json` entry — the selector self-test in `make lint` fails on an unmapped spec, which is the enforcement mechanism for the map, not for the prose.
 - Forward references to unfinished work carry pointers (e.g. `make typecheck` is noted as advisory, "not yet gated in `make lint`", citing Task 3 of `docs/superpowers/plans/2026-07-17-vibe-coding-restructure.md`). When such a task lands, delete the caveat rather than leaving a stale "not yet".
 
 **Tone.** The file is dense and imperative on purpose. Prefer one sentence with the reason embedded ("celery skips to avoid races") over a paragraph of background. Every added line costs context in every future session.

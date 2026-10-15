@@ -4,18 +4,18 @@
 
 This is the Next.js `public/` directory for the tenant-facing portal (`frontend-customer`). It holds two unrelated groups of files that happen to share a directory, and telling them apart is the main thing to understand before touching anything here:
 
-| Path | Size | Tracked? | Role |
-|---|---|---|---|
-| `sw.js` | 52 KB | no (generated) | Compiled Serwist service worker |
-| `swe-worker-<hash>.js` | 433 B | no (generated) | Serwist companion Web Worker |
-| `offline.html` | 1.7 KB | yes | Offline document fallback |
-| `icons/.gitkeep` | — | yes | Placeholder; PWA icons are generated at runtime |
-| `logos/` | 220 MB, 784 PNG + `logo_meta.json` | yes | Curated **logo** catalog (build-time data, not served) |
-| `curated-photos/` | 288 MB, 355 JPG + 115 PNG + `photo_meta.json` | yes | Curated **photo** catalog (build-time data, not served) |
+| Path                   | Size                                          | Tracked?       | Role                                                    |
+| ---------------------- | --------------------------------------------- | -------------- | ------------------------------------------------------- |
+| `sw.js`                | 52 KB                                         | no (generated) | Compiled Serwist service worker                         |
+| `swe-worker-<hash>.js` | 433 B                                         | no (generated) | Serwist companion Web Worker                            |
+| `offline.html`         | 1.7 KB                                        | yes            | Offline document fallback                               |
+| `icons/.gitkeep`       | —                                             | yes            | Placeholder; PWA icons are generated at runtime         |
+| `logos/`               | 220 MB, 784 PNG + `logo_meta.json`            | yes            | Curated **logo** catalog (build-time data, not served)  |
+| `curated-photos/`      | 288 MB, 355 JPG + 115 PNG + `photo_meta.json` | yes            | Curated **photo** catalog (build-time data, not served) |
 
 Group 1 (`sw.js`, `swe-worker-*.js`, `offline.html`, `icons/`) is the PWA runtime surface — small, mostly generated, served to browsers.
 
-Group 2 (`logos/`, `curated-photos/`) is ~500 MB of committed image assets that are *never fetched from this path at runtime*. They are the git-committed source of truth for the platform's curated asset catalogs, read by Django management commands and uploaded to object storage. They live under `public/` only because the dev compose file bind-mounts them into the Django container from here.
+Group 2 (`logos/`, `curated-photos/`) is ~500 MB of committed image assets that are _never fetched from this path at runtime_. They are the git-committed source of truth for the platform's curated asset catalogs, read by Django management commands and uploaded to object storage. They live under `public/` only because the dev compose file bind-mounts them into the Django container from here.
 
 ---
 
@@ -30,7 +30,8 @@ const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
   cacheOnNavigation: true,
-  disable: process.env.NODE_ENV === "development" && process.env.SERWIST_DEV !== "1",
+  disable:
+    process.env.NODE_ENV === "development" && process.env.SERWIST_DEV !== "1",
   additionalPrecacheEntries: [{ url: "/offline.html", revision }],
 });
 ```
@@ -63,7 +64,7 @@ The filename is content-hashed, so it changes across builds — hence the `publi
 
 Fully self-contained (inline `<style>`, no external requests, no framework), because it must render with zero network. Supports light and dark via `color-scheme: light dark` plus a `prefers-color-scheme: dark` block, and offers a single `location.reload()` button. It is precached through `additionalPrecacheEntries` with a `revision` set to a fresh `randomUUID()` per build, so every build invalidates the cached copy.
 
-Because it's hand-written and committed, this is the one file in group 1 you *do* edit directly. Keep it dependency-free.
+Because it's hand-written and committed, this is the one file in group 1 you _do_ edit directly. Keep it dependency-free.
 
 ### `icons/`
 
@@ -132,15 +133,15 @@ Both are unset in production, which disables the mirror. Production seeding uses
 
 ## Related code
 
-| Concern | Where |
-|---|---|
-| Service worker source | `frontend-customer/src/app/sw.ts` |
-| Serwist build config | `frontend-customer/next.config.mjs` |
-| PWA manifest + icons | `frontend-customer/src/app/manifest.ts`, `src/app/pwa-icon/` |
-| Update toast / push subscription | `src/components/shared/sw-update-toast.tsx`, `src/lib/push.ts` |
-| Curated catalog models | `backend/apps/core/models.py` (`CuratedLogo`, `CuratedPhoto`) |
-| Seeders | `backend/apps/core/management/commands/seed_curated_{logos,photos}.py` |
-| DB→repo mirror | `backend/apps/core/signals.py::_mirror_curated_logos` |
-| Sync-dir settings | `backend/config/settings/base.py` (`CURATED_LOGO_SYNC_DIR`, `CURATED_PHOTO_SYNC_DIR`) |
-| Blog-side consumption | `backend/apps/blog/curated.py`, `src/components/admin/blog/image-library-dialog.tsx` |
-| Tests | `e2e/specs/08-pwa.spec.ts`, `e2e/specs/1{7,8}-*.spec.ts`, `backend/apps/core/tests/test_curated_{logos,photos}.py` |
+| Concern                          | Where                                                                                                              |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Service worker source            | `frontend-customer/src/app/sw.ts`                                                                                  |
+| Serwist build config             | `frontend-customer/next.config.mjs`                                                                                |
+| PWA manifest + icons             | `frontend-customer/src/app/manifest.ts`, `src/app/pwa-icon/`                                                       |
+| Update toast / push subscription | `src/components/shared/sw-update-toast.tsx`, `src/lib/push.ts`                                                     |
+| Curated catalog models           | `backend/apps/core/models.py` (`CuratedLogo`, `CuratedPhoto`)                                                      |
+| Seeders                          | `backend/apps/core/management/commands/seed_curated_{logos,photos}.py`                                             |
+| DB→repo mirror                   | `backend/apps/core/signals.py::_mirror_curated_logos`                                                              |
+| Sync-dir settings                | `backend/config/settings/base.py` (`CURATED_LOGO_SYNC_DIR`, `CURATED_PHOTO_SYNC_DIR`)                              |
+| Blog-side consumption            | `backend/apps/blog/curated.py`, `src/components/admin/blog/image-library-dialog.tsx`                               |
+| Tests                            | `e2e/specs/08-pwa.spec.ts`, `e2e/specs/1{7,8}-*.spec.ts`, `backend/apps/core/tests/test_curated_{logos,photos}.py` |

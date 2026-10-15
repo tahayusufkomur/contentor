@@ -5,32 +5,32 @@
 The coach-facing side of two related communication surfaces inside the tenant portal:
 
 - **Mailbox** — real email conversations between a coach and their students, sent and received through the coach's own address.
-- **Notifications** — in-app *announcements* (optionally mirrored as push and email) that a coach broadcasts to a filtered slice of their students, plus the student-facing feed those announcements land in.
+- **Notifications** — in-app _announcements_ (optionally mirrored as push and email) that a coach broadcasts to a filtered slice of their students, plus the student-facing feed those announcements land in.
 
-Both are thin clients over `/api/v1/…` endpoints in the tenant schema. This module owns the API bindings, the admin UI, and the PWA push subscription handshake. It deliberately owns *very little* mailbox UI — the conversation list/thread/composer live in the shared package and are consumed here.
+Both are thin clients over `/api/v1/…` endpoints in the tenant schema. This module owns the API bindings, the admin UI, and the PWA push subscription handshake. It deliberately owns _very little_ mailbox UI — the conversation list/thread/composer live in the shared package and are consumed here.
 
 ---
 
 ## File map
 
-| Path | Role |
-|---|---|
-| `lib/mailbox.ts` | Typed bindings for `/api/v1/mailbox/*` |
-| `lib/announcements.ts` | Typed bindings for `/api/v1/admin/notifications/*` and `/api/v1/notifications/*` |
-| `lib/push.ts` | Web Push capability checks + VAPID subscribe handshake |
-| `app/admin/inbox/page.tsx`, `loading.tsx` | Inbox route (`force-dynamic`) + its skeleton |
-| `components/admin/mailbox/inbox-client.tsx` | Tenant wrapper around the shared inbox; renders the upsell banner |
-| `components/admin/mailbox/mailbox-settings.tsx` | `MailboxSettingsSection` — address picker, three-way by plan/domain |
-| `app/admin/notifications/page.tsx` | Compose + tabbed History / Recurring / Templates |
-| `app/admin/notifications/[id]/page.tsx` | `ReceiptPage` — per-recipient delivery receipt |
-| `components/admin/announcement-compose.tsx` | The composer, incl. `TemplatePickerModal` |
-| `components/admin/announcement-history.tsx` | Sent + scheduled announcements |
-| `components/admin/announcement-recurring-list.tsx` | Recurring schedules (pause/resume/delete) |
-| `components/admin/announcement-templates-list.tsx` | Saved (non-builtin) templates |
-| `components/shared/announcement-bell.tsx` | Student-facing feed dropdown |
-| `components/shared/push-optin.tsx` | Student-facing push opt-in prompt |
+| Path                                               | Role                                                                             |
+| -------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `lib/mailbox.ts`                                   | Typed bindings for `/api/v1/mailbox/*`                                           |
+| `lib/announcements.ts`                             | Typed bindings for `/api/v1/admin/notifications/*` and `/api/v1/notifications/*` |
+| `lib/push.ts`                                      | Web Push capability checks + VAPID subscribe handshake                           |
+| `app/admin/inbox/page.tsx`, `loading.tsx`          | Inbox route (`force-dynamic`) + its skeleton                                     |
+| `components/admin/mailbox/inbox-client.tsx`        | Tenant wrapper around the shared inbox; renders the upsell banner                |
+| `components/admin/mailbox/mailbox-settings.tsx`    | `MailboxSettingsSection` — address picker, three-way by plan/domain              |
+| `app/admin/notifications/page.tsx`                 | Compose + tabbed History / Recurring / Templates                                 |
+| `app/admin/notifications/[id]/page.tsx`            | `ReceiptPage` — per-recipient delivery receipt                                   |
+| `components/admin/announcement-compose.tsx`        | The composer, incl. `TemplatePickerModal`                                        |
+| `components/admin/announcement-history.tsx`        | Sent + scheduled announcements                                                   |
+| `components/admin/announcement-recurring-list.tsx` | Recurring schedules (pause/resume/delete)                                        |
+| `components/admin/announcement-templates-list.tsx` | Saved (non-builtin) templates                                                    |
+| `components/shared/announcement-bell.tsx`          | Student-facing feed dropdown                                                     |
+| `components/shared/push-optin.tsx`                 | Student-facing push opt-in prompt                                                |
 
-Everything in `components/admin/**` and `app/admin/**` is coach-only. `components/shared/announcement-bell.tsx` and `push-optin.tsx` are the *student* halves — `PushOptIn` is mounted globally from `src/app/layout.tsx` and self-suppresses on `/admin` routes.
+Everything in `components/admin/**` and `app/admin/**` is coach-only. `components/shared/announcement-bell.tsx` and `push-optin.tsx` are the _student_ halves — `PushOptIn` is mounted globally from `src/app/layout.tsx` and self-suppresses on `/admin` routes.
 
 ---
 
@@ -120,7 +120,7 @@ Three mutually exclusive renders, in the order the code checks them:
 2. `!has_custom_domain` → read-only send-only card with a plan upsell. No form.
 3. otherwise → custom-domain picker + "Enable inbox" switch (`saveSettings`).
 
-Both writable paths validate the local part client-side against `LOCAL_PART_RE = /^[a-zA-Z0-9._-]+$/` and disable Save while unchanged (`isUnchanged` / `platformUnchanged`) so a no-op PUT can't be fired. Server-side rejections on the platform path are mapped through `CLAIM_ERRORS` — `taken`, `reserved_local_part`, `invalid_local_part`, `upgrade_required`, `feature_unavailable` — read out of `ApiError.data.detail` in `useAsyncAction`'s `onError` and surfaced *inline* under the field, not as a toast, because they're field-level validation. The custom-domain path has no equivalent map and just uses `errorToast`; if you add server-side claim errors there, mirror the `CLAIM_ERRORS` treatment.
+Both writable paths validate the local part client-side against `LOCAL_PART_RE = /^[a-zA-Z0-9._-]+$/` and disable Save while unchanged (`isUnchanged` / `platformUnchanged`) so a no-op PUT can't be fired. Server-side rejections on the platform path are mapped through `CLAIM_ERRORS` — `taken`, `reserved_local_part`, `invalid_local_part`, `upgrade_required`, `feature_unavailable` — read out of `ApiError.data.detail` in `useAsyncAction`'s `onError` and surfaced _inline_ under the field, not as a toast, because they're field-level validation. The custom-domain path has no equivalent map and just uses `errorToast`; if you add server-side claim errors there, mirror the `CLAIM_ERRORS` treatment.
 
 ---
 
@@ -154,7 +154,7 @@ Each row's title in history links to the receipt page.
 
 ### Receipt page
 
-`ReceiptPage` (`admin/notifications/[id]/page.tsx`) is the delivery report: four `Stat` tiles (recipients, push sent, read, failed) over a filterable per-recipient table. `read_count` from the list serializer is *not* used here — the page recomputes `readCount` from `data.recipients` alongside the failed count, so both stats derive from the same array as the rows. The status filter (`all | sent | failed | expired | none`) is client-side over the already-loaded `recipients`, memoized on `[data, statusFilter]`. Loading uses `PageState` with an `onRetry` that bumps `reloadKey`; the fetch effect uses the same `cancelled` guard as elsewhere.
+`ReceiptPage` (`admin/notifications/[id]/page.tsx`) is the delivery report: four `Stat` tiles (recipients, push sent, read, failed) over a filterable per-recipient table. `read_count` from the list serializer is _not_ used here — the page recomputes `readCount` from `data.recipients` alongside the failed count, so both stats derive from the same array as the rows. The status filter (`all | sent | failed | expired | none`) is client-side over the already-loaded `recipients`, memoized on `[data, statusFilter]`. Loading uses `PageState` with an `onRetry` that bumps `reloadKey`; the fetch effect uses the same `cancelled` guard as elsewhere.
 
 ### Student side
 

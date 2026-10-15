@@ -10,14 +10,14 @@ Design specs: `docs/superpowers/specs/2026-07-09-ai-blog-design.md` (blog + AI e
 
 ## Two blogs, one engine
 
-| | Coach blog | Platform blog |
-|---|---|---|
-| Models | `blog.BlogPost`, `BlogTopicIdea`, `BlogAutopilot` (TENANT_APPS) | `core.PlatformBlogPost` (public schema) |
-| Views | `views.py` (+ `admin_urls.py`, `urls.py`) | `platform_views.py` (+ `urls_platform.py`) |
-| Brief | `ai.brand_brief(config, course_titles)` from `TenantConfig` + `Course` | frozen `platform_views.PLATFORM_BRIEF` |
-| Auth for writes | `IsCoachOrOwner` | `IsSuperUser` |
-| Metering | USD **and** quota, keyed by `tenant_schema` | USD only, under `tenant_schema="public"` |
-| Photos, placements, autopilot | yes | no |
+|                               | Coach blog                                                             | Platform blog                              |
+| ----------------------------- | ---------------------------------------------------------------------- | ------------------------------------------ |
+| Models                        | `blog.BlogPost`, `BlogTopicIdea`, `BlogAutopilot` (TENANT_APPS)        | `core.PlatformBlogPost` (public schema)    |
+| Views                         | `views.py` (+ `admin_urls.py`, `urls.py`)                              | `platform_views.py` (+ `urls_platform.py`) |
+| Brief                         | `ai.brand_brief(config, course_titles)` from `TenantConfig` + `Course` | frozen `platform_views.PLATFORM_BRIEF`     |
+| Auth for writes               | `IsCoachOrOwner`                                                       | `IsSuperUser`                              |
+| Metering                      | USD **and** quota, keyed by `tenant_schema`                            | USD only, under `tenant_schema="public"`   |
+| Photos, placements, autopilot | yes                                                                    | no                                         |
 
 `apps/blog/ai.py` is shared by both. It owns prompts, output validation, budgets and quotas — nothing else. Actual provider calls live in `apps.core.ai` (`AI_PROVIDER`: `anthropic` in prod, `cli` locally against the developer's Claude subscription).
 
@@ -28,7 +28,7 @@ Design specs: `docs/superpowers/specs/2026-07-09-ai-blog-design.md` (blog + AI e
 Four rules, all enforced by structure rather than by review:
 
 1. **One model call per post.** `generate_post()` is a single `core_ai.structured()` call returning a validated `_BlogDraft` — no outline→draft→polish chain.
-2. **Static prompts are byte-frozen and cached.** `BLOG_STATIC_PROMPT` and `TOPIC_STATIC_PROMPT` are sent with `cache_control: ephemeral` by the provider layer. Interpolating tenant data into them would fragment the cache per tenant and destroy the hit rate, so *all* per-tenant state travels in the small user message: `brand_brief()`, the topic, the coach's instructions, and `available_photos_block()`. **Any edit to a static prompt must bump `PROMPT_VERSION`.**
+2. **Static prompts are byte-frozen and cached.** `BLOG_STATIC_PROMPT` and `TOPIC_STATIC_PROMPT` are sent with `cache_control: ephemeral` by the provider layer. Interpolating tenant data into them would fragment the cache per tenant and destroy the hit rate, so _all_ per-tenant state travels in the small user message: `brand_brief()`, the topic, the coach's instructions, and `available_photos_block()`. **Any edit to a static prompt must bump `PROMPT_VERSION`.**
 3. **The model emits markdown sections, never HTML** (~30% cheaper). `render_body()` converts and sanitizes server-side.
 4. **Topics are batched 12-at-a-time** on the cheaper `BLOG_AI_TOPIC_MODEL` into `BlogTopicIdea` rows, so picking a topic never costs a per-decision LLM call.
 
@@ -36,7 +36,7 @@ Four rules, all enforced by structure rather than by review:
 
 The model is forced into `_BlogDraft`: `title`, `slug`, `meta_description`, `excerpt`, `tags`, `cover_photo_id`, and `sections: list[_Section]` where each `_Section` is `{heading, body_markdown, photo_id}`. An empty `heading` means continuation paragraphs with no `<h2>` — that's how the intro section arrives.
 
-`_draft_fields()` turns a validated draft into a `BlogPost`-ready dict and is deliberately shared by the blocking and streaming paths so the two cannot drift. Note what it *drops*: the model's `slug` is ignored (callers re-derive via `models.unique_slug`), photo ids not in the caller-supplied `valid_ids` set become `""` / are dropped, `image_placements` is truncated to 2, and every string is length-clamped to its column width. An empty rendered body raises `BlogAiError`.
+`_draft_fields()` turns a validated draft into a `BlogPost`-ready dict and is deliberately shared by the blocking and streaming paths so the two cannot drift. Note what it _drops_: the model's `slug` is ignored (callers re-derive via `models.unique_slug`), photo ids not in the caller-supplied `valid_ids` set become `""` / are dropped, `image_placements` is truncated to 2, and every string is length-clamped to its column width. An empty rendered body raises `BlogAiError`.
 
 ### Trust boundary: `render_body()`
 
@@ -80,7 +80,7 @@ Curated selection is **deliberately non-LLM**: lowercase token overlap (`_tokens
 
 Curated candidates are wrapped in `CuratedCandidate`, which duck-types the `.id/.title/.alt_text` trio `available_photos_block()` reads. Their ids are namespaced `curated:<pk>` so they can never collide with tenant `Photo` UUIDs. After generation, `resolve_curated_photo_ids(fields)` mutates the fields dict in place, swapping chosen `curated:` ids for real tenant `Photo` UUIDs via `core.curated_photos.materialize.materialize_curated_photo()`. Unknown ids **fail open** — `""` cover, dropped placement — mirroring the never-invent-an-id contract. It must run inside the tenant context, since it creates `media.Photo` rows.
 
-`materialize_curated_photo()` is copy-on-use: the new `Photo` points at the *shared* platform object key (no storage duplication), deduped by `s3_key`. Deleting the tenant `Photo` never touches storage, and catalog rows are only ever `enabled=False`, never deleted — so the reference can't break. The same helper backs the coach-facing `curated_photo_use` endpoint and onboarding's `ai_photos.photo_for`.
+`materialize_curated_photo()` is copy-on-use: the new `Photo` points at the _shared_ platform object key (no storage duplication), deduped by `s3_key`. Deleting the tenant `Photo` never touches storage, and catalog rows are only ever `enabled=False`, never deleted — so the reference can't break. The same helper backs the coach-facing `curated_photo_use` endpoint and onboarding's `ai_photos.photo_for`.
 
 ### Serve-time placement rendering (`placements.py`)
 
@@ -120,9 +120,9 @@ flowchart TD
 
 `_generate_sse()` encodes a deliberate, load-bearing decision: **quota commits the moment the model produces its first output**, not on completion.
 
-- `commit()` (idempotent via a `nonlocal` flag) runs on the first `preview` *or* the `result` — whichever lands first — calling `record_success` + `consume_free_grant`.
+- `commit()` (idempotent via a `nonlocal` flag) runs on the first `preview` _or_ the `result` — whichever lands first — calling `record_success` + `consume_free_grant`.
 - Cancelling, closing the tab, and losing the connection all happen after that instant, so all three consume a slot exactly like a finished post. Charging on completion would make "watch the title appear, cancel, retry" a free reroll — and the live preview is precisely what makes that reroll tempting.
-- A provider failure *before* any output charges nothing: `commit()` never ran.
+- A provider failure _before_ any output charges nothing: `commit()` never ran.
 - USD lands in the `finally` block, which also runs on `GeneratorExit` (client disconnect) — an abandoned stream still accrues what it spent. A stream aborted mid-flight has no usage object to read and accrues `0`, which is why **quota, not budget, is the meter that actually caps abuse here.**
 
 ### Topics
@@ -161,10 +161,12 @@ Only the worker that successfully advances `next_run_at` spawns the generation t
 Route names are stable; mount prefixes come from wherever the URL conf is included (all under `/api/v1/`).
 
 **Public tenant site** (`urls.py`) — `authentication_classes = []` is mandatory, since `TenantJWTAuthentication` is the DRF default:
+
 - `posts/` → `PublicPostList` (published only, 12/page)
 - `posts/<slug>/` → `PublicPostDetail` (injects placement images + signed cover URL)
 
 **Coach admin** (`admin_urls.py`, all `IsCoachOrOwner`):
+
 - `posts/` CRUD → `BlogPostAdminViewSet`
 - `ai/status/` → `blog_ai_status` (raw `ai.availability(connection.tenant)`)
 - `generate/` → `blog_generate` (JSON or SSE)
@@ -173,7 +175,7 @@ Route names are stable; mount prefixes come from wherever the URL conf is includ
 
 **Platform** (`urls_platform.py`): `posts/`, `posts/<slug>/` (both anonymous, published only), `generate/` → `platform_blog_generate` (`IsSuperUser`).
 
-**Curated photo library** (`core/curated_photos/urls.py`, `IsCoachOrOwner` — unlike the anonymous curated *logo* catalog): `""` → `curated_photo_search` (`?kind=&q=`, 60 max, hops to the public schema explicitly), `<pk>/use/` → `curated_photo_use`. The search view refuses to sign any `image_key` outside the `platform/` prefix, so a bad catalog row can't become a presigned URL into tenant storage.
+**Curated photo library** (`core/curated_photos/urls.py`, `IsCoachOrOwner` — unlike the anonymous curated _logo_ catalog): `""` → `curated_photo_search` (`?kind=&q=`, 60 max, hops to the public schema explicitly), `<pk>/use/` → `curated_photo_use`. The search view refuses to sign any `image_key` outside the `platform/` prefix, so a bad catalog row can't become a presigned URL into tenant storage.
 
 ---
 
@@ -197,7 +199,7 @@ Route names are stable; mount prefixes come from wherever the URL conf is includ
 
 - Changing `BLOG_STATIC_PROMPT` or `TOPIC_STATIC_PROMPT` without bumping `PROMPT_VERSION` silently invalidates cache accounting. Never interpolate anything tenant-specific into them — put it in `brand_brief()`.
 - Add a field to `_BlogDraft`? Update `_draft_fields()` (both paths depend on it) and length-clamp it to the model column.
-- Any new generation entry point must go through `ai.availability()` first, then `record_attempt_cost()` on *every* exit path including failures, and `record_success()` + `consume_free_grant()` only on validated success.
+- Any new generation entry point must go through `ai.availability()` first, then `record_attempt_cost()` on _every_ exit path including failures, and `record_success()` + `consume_free_grant()` only on validated success.
 - `resolve_curated_photo_ids()` creates `media.Photo` rows — it must run inside `tenant_context`, never in the public schema.
 - Anything model-generated that ends up in `body_html` must pass through `render_body()`; anything human-authored through `clean_rich_html()`. There is no third route.
 - Don't put image URLs in `body_html`. Presigned URLs expire; `image_placements` + `placements.py` is the mechanism.

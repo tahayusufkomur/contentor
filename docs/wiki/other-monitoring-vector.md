@@ -38,12 +38,12 @@ That pattern is tied to Django's console formatter in `backend/config/settings/b
 
 `include_containers` matches by **prefix**, which is what makes one list cover both environments:
 
-| Config entry | Dev container | Prod container |
-|---|---|---|
-| `contentor-django` | `contentor-django-1` | `contentor-django` |
-| `contentor-celery` | `contentor-celery-worker-1`, `…-beat-1` | `contentor-celery-worker`, `contentor-celery-beat` |
-| `contentor-caddy` | `contentor-caddy-dev` | `contentor-caddy` |
-| `contentor-nextjs` | `contentor-nextjs-main-1`, `…-customer-1` | `contentor-nextjs-main`, `…-customer` |
+| Config entry       | Dev container                             | Prod container                                     |
+| ------------------ | ----------------------------------------- | -------------------------------------------------- |
+| `contentor-django` | `contentor-django-1`                      | `contentor-django`                                 |
+| `contentor-celery` | `contentor-celery-worker-1`, `…-beat-1`   | `contentor-celery-worker`, `contentor-celery-beat` |
+| `contentor-caddy`  | `contentor-caddy-dev`                     | `contentor-caddy`                                  |
+| `contentor-nextjs` | `contentor-nextjs-main-1`, `…-customer-1` | `contentor-nextjs-main`, `…-customer`              |
 
 Django normalizes those variants back to a stable service name via `service_from_container()` / `_CONTAINER_RE`, which strips the `contentor-` prefix and the `-dev` / `-1` suffixes. So a dev `contentor-caddy-dev` and a prod `contentor-caddy` both store as `caddy`, and `LOGBOOK_LEVEL_FLOORS` keys (`django`, `celery-worker`, `celery-beat`, `*`) apply identically in both.
 
@@ -81,7 +81,7 @@ buffer: { type: disk, max_size: 268435488, when_full: drop_newest }
 - **`max_events: 400` is below the backend's `MAX_BATCH = 500`** in `backend/apps/logbook/views/ingest.py`, which returns 413 above it. The 100-event margin exists so that a batch is never rejected wholesale. If you raise it, raise `MAX_BATCH` first.
 - **`timeout_secs: 2`** bounds how stale the superadmin → Logs panel can be on a quiet system.
 - **`X-Logs-Token`** is compared against `settings.LOGS_INGEST_TOKEN` with `hmac.compare_digest`. An empty token server-side disables ingest entirely (503); a mismatch is 403. Dev defaults to `dev-logs-token`; prod uses `${LOGS_INGEST_TOKEN:?…}` so the stack refuses to start without it.
-- **Disk buffer, 256 MiB** — that value is Vector's disk-buffer minimum, not a tuned number. It survives a Django restart or a migration-blocked entrypoint without losing the logs that explain why. `when_full: drop_newest` prefers keeping the *oldest* buffered events, which are the ones nearest the incident that started the backlog.
+- **Disk buffer, 256 MiB** — that value is Vector's disk-buffer minimum, not a tuned number. It survives a Django restart or a migration-blocked entrypoint without losing the logs that explain why. `when_full: drop_newest` prefers keeping the _oldest_ buffered events, which are the ones nearest the incident that started the backlog.
 - **`api: { enabled: false }`** — no GraphQL/playground port exposed.
 
 The sink retries non-2xx responses, which is why the ingest view is written to never 500 on bad data: `_int_or_none` clamps out-of-range integers and `_ip_or_none` validates before the `inet` column, precisely so a single poisoned event can't make Vector retry the same failing batch forever. Preserve that invariant if you touch either side.
@@ -90,7 +90,7 @@ The sink retries non-2xx responses, which is why the ingest view is written to n
 
 Dev and prod mount the same file, so `vector.yaml` must stay environment-agnostic — parametrize through env vars (as `LOGS_INGEST_TOKEN` does), never fork the file. Prod additionally sets `mem_limit: 128m` and `restart: unless-stopped`; both environments gate startup on `depends_on: django: service_healthy`, so the first batch never hits a Django that's still migrating.
 
-Config changes need a container restart (`docker compose restart vector` — the mount is read-only, and Vector doesn't hot-reload here). Verify end to end by generating an ERROR in the Django container and watching it appear under superadmin → Logs. To exercise the *backend* half without Vector at all, POST a shaped batch directly, as `e2e/specs/24-admin-logs.spec.ts` does:
+Config changes need a container restart (`docker compose restart vector` — the mount is read-only, and Vector doesn't hot-reload here). Verify end to end by generating an ERROR in the Django container and watching it appear under superadmin → Logs. To exercise the _backend_ half without Vector at all, POST a shaped batch directly, as `e2e/specs/24-admin-logs.spec.ts` does:
 
 ```
 POST /api/v1/platform/logs/ingest/

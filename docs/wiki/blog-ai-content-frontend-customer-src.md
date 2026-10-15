@@ -11,22 +11,22 @@ Those two halves never share a fetch path, and that split is the single most imp
 
 ## File map
 
-| Path | Role |
-|---|---|
-| `src/lib/blog-api.ts` | Coach-facing client (`clientFetch`) for every `/api/v1/admin/blog/*` endpoint + all shared TS types |
-| `src/lib/blog-public.ts` | Server-side fetchers for the public blog; owns the `X-Tenant-Domain` header |
-| `src/lib/curated-photos-api.ts` | Platform curated photo library search + materialize |
-| `src/lib/html-headings.ts` | `parseH2Headings` — extracts H2 text from `body_html` for image anchoring |
-| `src/app/admin/blog/page.tsx` | Post list, AI status/credits, upsell, autopilot card, generate dialog entry |
-| `src/app/admin/blog/[id]/page.tsx` | The editor page — owns the whole post object in local state |
-| `src/app/(public)/blog/page.tsx` | Public index (server component) |
-| `src/app/(public)/blog/[slug]/page.tsx` | Public post + metadata + `BlogPosting` JSON-LD |
-| `src/components/admin/blog/post-editor.tsx` | TipTap rich-text editor (H2/H3, bold, italic, list, link) |
-| `src/components/admin/blog/cover-picker.tsx` | Cover image slot |
-| `src/components/admin/blog/inline-images.tsx` | `image_placements` editor (photo ↔ H2 heading pairs) |
-| `src/components/admin/blog/image-library-dialog.tsx` | Shared picker: curated library vs. tenant photos |
-| `src/components/admin/blog/generate-dialog.tsx` | Streaming AI generation with topic chips + phase/preview UI |
-| `src/components/admin/blog/autopilot-card.tsx` | Scheduled-generation settings |
+| Path                                                 | Role                                                                                                |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `src/lib/blog-api.ts`                                | Coach-facing client (`clientFetch`) for every `/api/v1/admin/blog/*` endpoint + all shared TS types |
+| `src/lib/blog-public.ts`                             | Server-side fetchers for the public blog; owns the `X-Tenant-Domain` header                         |
+| `src/lib/curated-photos-api.ts`                      | Platform curated photo library search + materialize                                                 |
+| `src/lib/html-headings.ts`                           | `parseH2Headings` — extracts H2 text from `body_html` for image anchoring                           |
+| `src/app/admin/blog/page.tsx`                        | Post list, AI status/credits, upsell, autopilot card, generate dialog entry                         |
+| `src/app/admin/blog/[id]/page.tsx`                   | The editor page — owns the whole post object in local state                                         |
+| `src/app/(public)/blog/page.tsx`                     | Public index (server component)                                                                     |
+| `src/app/(public)/blog/[slug]/page.tsx`              | Public post + metadata + `BlogPosting` JSON-LD                                                      |
+| `src/components/admin/blog/post-editor.tsx`          | TipTap rich-text editor (H2/H3, bold, italic, list, link)                                           |
+| `src/components/admin/blog/cover-picker.tsx`         | Cover image slot                                                                                    |
+| `src/components/admin/blog/inline-images.tsx`        | `image_placements` editor (photo ↔ H2 heading pairs)                                                |
+| `src/components/admin/blog/image-library-dialog.tsx` | Shared picker: curated library vs. tenant photos                                                    |
+| `src/components/admin/blog/generate-dialog.tsx`      | Streaming AI generation with topic chips + phase/preview UI                                         |
+| `src/components/admin/blog/autopilot-card.tsx`       | Scheduled-generation settings                                                                       |
 
 ## Two data paths
 
@@ -44,7 +44,7 @@ graph LR
 
 `blog-public.ts` runs in Node during SSR, where the Host header is useless (undici drops custom `Host`, so `django` resolves to the public schema). Every request therefore goes through `domainHeader()`, which strips the port off `getTenantDomain()` and emits `X-Tenant-Domain`. Both public fetchers are deliberately **soft-failing**: `no-store`, an 8s `AbortSignal.timeout`, and `catch → []` / `catch → null`. A flaky backend produces an empty blog index, not a 500 on the coach's marketing site. `fetchPublishedPost` returning `null` is what drives `notFound()` in the post route.
 
-If you add a public field, remember it must be added to `BlogPostPublic` *and* be present in the Django public serializer — the admin type (`BlogPostAdmin`) is a separate, richer shape and they intentionally do not converge.
+If you add a public field, remember it must be added to `BlogPostPublic` _and_ be present in the Django public serializer — the admin type (`BlogPostAdmin`) is a separate, richer shape and they intentionally do not converge.
 
 ## The editor page
 
@@ -64,7 +64,7 @@ Every child that mutates the post takes `onPatched={patch}`. Two different persi
 
 ### Regenerate is a swap, not an in-place rewrite
 
-The `regenerate` handler is the one genuinely surprising piece of control flow. The generate endpoint always creates a *new* post, so regenerating an existing one is a three-step dance:
+The `regenerate` handler is the one genuinely surprising piece of control flow. The generate endpoint always creates a _new_ post, so regenerating an existing one is a three-step dance:
 
 1. `generatePost({ custom_topic: post.title })` → a fresh post row.
 2. `updatePost(post.id, …)` copying the new content onto the post being edited.
@@ -76,20 +76,20 @@ Local state is then reconciled with `{ ...post, ...fresh, id: post.id, slug: pos
 
 `fetchAiStatus()` returns `BlogAiStatus`, whose `reason` field drives the whole gating UI:
 
-| `reason` | UI effect |
-|---|---|
-| `upgrade_required` | List page shows the dashed upsell strip; "Write with AI" is disabled with `blog.upgradeTitle` |
-| `quota_exhausted` | `blog.errQuota` toast on attempt |
-| `disabled` / `budget` | `blog.errBudget` toast |
-| `null` (eligible) | Credit counter (`blog.creditsLeft`) renders; autopilot card mounts |
+| `reason`              | UI effect                                                                                     |
+| --------------------- | --------------------------------------------------------------------------------------------- |
+| `upgrade_required`    | List page shows the dashed upsell strip; "Write with AI" is disabled with `blog.upgradeTitle` |
+| `quota_exhausted`     | `blog.errQuota` toast on attempt                                                              |
+| `disabled` / `budget` | `blog.errBudget` toast                                                                        |
+| `null` (eligible)     | Credit counter (`blog.creditsLeft`) renders; autopilot card mounts                            |
 
-`GenerateResponse.source` carries the *same* vocabulary back from a generation attempt, plus `"ai"` and `"error"`. Both `GenerateDialog` and the editor's `regenerate` map it to translation keys with identical logic — if you add a new refusal reason, both call sites need updating.
+`GenerateResponse.source` carries the _same_ vocabulary back from a generation attempt, plus `"ai"` and `"error"`. Both `GenerateDialog` and the editor's `regenerate` map it to translation keys with identical logic — if you add a new refusal reason, both call sites need updating.
 
 ### Streaming
 
 `generatePostStream` is the streaming twin of `generatePost`: same URL, same terminal `GenerateResponse`, but it reports progress through `AiStreamHandlers<DraftPreview>` (`src/lib/ai-stream.ts`). `DraftPreview` is headings-only (`title`, `excerpt`, `headings`) — enough for `<AiDraftPreview>` to show the post taking shape so a ~45 s wait doesn't read as a hang. `<AiProgress>` renders the phase strip (`preparing` → `drafting` → `rendering`) from the `onPhase` callback.
 
-**Cancellation still burns a credit.** The server commits quota at the first preview, so aborting is an outcome, not a retry — `GenerateDialog` catches it via `isAbortError(err)`, shows an *info* toast (`blog.cancelled`), and the cancel button carries the `blog.cancelKeepsCredit` note. Don't "fix" this into an error toast or a silent retry.
+**Cancellation still burns a credit.** The server commits quota at the first preview, so aborting is an outcome, not a retry — `GenerateDialog` catches it via `isAbortError(err)`, shows an _info_ toast (`blog.cancelled`), and the cancel button carries the `blog.cancelKeepsCredit` note. Don't "fix" this into an error toast or a silent retry.
 
 While `generating` is true the dialog swaps its whole body for the progress view and disables both the close button and backdrop-click dismissal — the abort must go through the explicit Cancel so the coach sees the credit warning.
 
@@ -147,12 +147,12 @@ Inline-image styling is applied via arbitrary-variant selectors on the prose con
 
 ## Backend counterparts
 
-| Frontend | Django |
-|---|---|
-| `blog-api.ts` | `apps/blog` admin viewsets under `/api/v1/admin/blog/` |
-| `blog-public.ts` | `apps/blog` public read endpoints under `/api/v1/blog/` |
-| `curated-photos-api.ts` | `apps/core/curated_photos` (public schema, shared catalog) |
-| `parseH2Headings` ↔ `image_placements` | `apps/blog/placements.py` (serve-time figure injection) |
-| streaming generate | `apps/blog/ai.py` (`render_body()` + nh3 sanitization, quota commit) |
+| Frontend                               | Django                                                               |
+| -------------------------------------- | -------------------------------------------------------------------- |
+| `blog-api.ts`                          | `apps/blog` admin viewsets under `/api/v1/admin/blog/`               |
+| `blog-public.ts`                       | `apps/blog` public read endpoints under `/api/v1/blog/`              |
+| `curated-photos-api.ts`                | `apps/core/curated_photos` (public schema, shared catalog)           |
+| `parseH2Headings` ↔ `image_placements` | `apps/blog/placements.py` (serve-time figure injection)              |
+| streaming generate                     | `apps/blog/ai.py` (`render_body()` + nh3 sanitization, quota commit) |
 
 After changing any blog serializer, run `npm run gen:api` in `frontend-customer` and diff `src/types/api-generated.ts` — the hand-written types in `blog-api.ts` are not generated, so a serializer change silently drifts from them until someone checks.

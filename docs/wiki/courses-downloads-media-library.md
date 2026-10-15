@@ -4,10 +4,10 @@
 
 The content layer of a Contentor tenant, end to end: the five per-tenant Django apps that store and gate what a coach publishes, and the tenant-portal surfaces that let coaches manage it and students consume it.
 
-| Sub-module | Covers |
-|---|---|
-| [Backend apps](courses-downloads-media-library-backend-apps.md) | `courses`, `downloads`, `media`, `filters`, `tags` — models, serializers, access gating, mount points under `/api/v1/` |
-| [Frontend (`frontend-customer/src`)](courses-downloads-media-library-frontend-customer-src.md) | Public catalog, student player, and the `admin/*` library screens |
+| Sub-module                                                                                     | Covers                                                                                                                 |
+| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [Backend apps](courses-downloads-media-library-backend-apps.md)                                | `courses`, `downloads`, `media`, `filters`, `tags` — models, serializers, access gating, mount points under `/api/v1/` |
+| [Frontend (`frontend-customer/src`)](courses-downloads-media-library-frontend-customer-src.md) | Public catalog, student player, and the `admin/*` library screens                                                      |
 
 Both halves are strictly per-tenant. The backend relies on `django-tenants` setting the Postgres `search_path` (no tenant FK on any model); the frontend relies on `X-Tenant-Domain` reaching Django through `clientFetch` in `src/lib/api-client.ts`. Neither side carries a tenant identifier in its own data.
 
@@ -44,7 +44,7 @@ Three cross-cutting contracts do most of the work:
 
 **Taxonomy is shared, not duplicated.** `tags` and `filters` are standalone apps consumed by the others — `CourseCreateUpdateSerializer` delegates to `tag_ids_field` from `apps/tags/serializers.py`, and on the frontend the same `TagInput` / `FilterPicker` components appear inside `CourseForm` while `TagFilterBar` drives both `AdminDownloadsPage` and `PhotosPage`. Facets a coach assigns in the admin library are the same facets `FacetPills` renders in the public catalog.
 
-**Media is a library, not a per-course upload.** `media` owns photos and videos as first-class tenant assets. `MediaPickerBase` and `uploadToPresignedUrl` handle the browser→object-store leg for every kind of asset; `BatchDropzone` reuses that path for bulk drops on `admin/photos` and `admin/videos`. Courses then *reference* library items — `PhotoPicker` inside `CourseForm` selects an existing photo rather than uploading a new one — which is why a cover image can be swapped without touching the course.
+**Media is a library, not a per-course upload.** `media` owns photos and videos as first-class tenant assets. `MediaPickerBase` and `uploadToPresignedUrl` handle the browser→object-store leg for every kind of asset; `BatchDropzone` reuses that path for bulk drops on `admin/photos` and `admin/videos`. Courses then _reference_ library items — `PhotoPicker` inside `CourseForm` selects an existing photo rather than uploading a new one — which is why a cover image can be swapped without touching the course.
 
 **One generic admin toolkit, four asset kinds.** `MediaBrowser`, `LightboxModal`, and the shared picker base are kind-agnostic; courses, downloads, photos, and videos differ mainly in which endpoint they point at.
 

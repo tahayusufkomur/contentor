@@ -12,11 +12,11 @@ One deploy, N tenants. Nothing about a tenant is baked in at build time; the ide
 
 Everything downstream depends on three headers that `src/middleware.ts` stamps on every request:
 
-| Header | Value | Consumed by |
-|---|---|---|
-| `x-tenant-slug` | first label of the host (`acme` from `acme.localhost`), or the whole host for custom domains | `getTenantSlug()`, BFF routes |
-| `x-tenant-domain` | full host including port | `serverFetch()`, `fetchTenantConfig()` |
-| `x-pathname` | `request.nextUrl.pathname` | root layout's publish gate |
+| Header            | Value                                                                                        | Consumed by                            |
+| ----------------- | -------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `x-tenant-slug`   | first label of the host (`acme` from `acme.localhost`), or the whole host for custom domains | `getTenantSlug()`, BFF routes          |
+| `x-tenant-domain` | full host including port                                                                     | `serverFetch()`, `fetchTenantConfig()` |
+| `x-pathname`      | `request.nextUrl.pathname`                                                                   | root layout's publish gate             |
 
 In development, an `x-dev-tenant` request header overrides the slug — this is how the e2e suite and manual tooling drive a specific tenant without DNS.
 
@@ -38,7 +38,7 @@ Note the split: the browser talks to Django **directly** through Caddy for `/api
 
 `src/lib/api-server.ts` — `serverFetch<T>()` runs in server components and route handlers. It reads the JWT from the `COOKIE_NAME` cookie and forwards `X-Tenant-Domain` from the middleware header. **The header is mandatory**: Node's undici silently drops a custom `Host`, so without it `http://django:8000` resolves to the public schema and the tenant's data disappears.
 
-`src/lib/api-client.ts` — `clientFetch<T>()` runs in the browser and hits *relative* paths (`/api/v1/courses/enrolled/`). The browser's own `Host` carries the tenant; cookies go along via `credentials: "same-origin"`. It attaches the tracking session id header and normalizes failures into `ApiError` (status + parsed body + `Retry-After` when the server hinted one).
+`src/lib/api-client.ts` — `clientFetch<T>()` runs in the browser and hits _relative_ paths (`/api/v1/courses/enrolled/`). The browser's own `Host` carries the tenant; cookies go along via `credentials: "same-origin"`. It attaches the tracking session id header and normalizes failures into `ApiError` (status + parsed body + `Retry-After` when the server hinted one).
 
 Both guard against `res.json()` throwing on an empty body — a 204, or a success Cloudflare stripped `Content-Length` from, returns `undefined as T` rather than a parse error.
 
@@ -53,12 +53,12 @@ Around `clientFetch` sit three helpers worth knowing before writing your own ret
 `src/lib/tenant.ts` is the single door to tenant identity.
 
 ```ts
-getTenantSlug()   // x-tenant-slug header, or "unknown"
-getTenantDomain() // x-tenant-domain header, or ""
-fetchTenantConfig(slug) // → TenantConfig | null
+getTenantSlug(); // x-tenant-slug header, or "unknown"
+getTenantDomain(); // x-tenant-domain header, or ""
+fetchTenantConfig(slug); // → TenantConfig | null
 ```
 
-`fetchTenantConfig` prefers the *live* request host over a slug-built guess, so TR tenants (`<slug>.tr.contentor.app`) and custom domains resolve to the correct `Domain` row. It falls back to `${slug}.${BASE_DOMAIN}` only where headers aren't available — `generateMetadata` and `manifest.ts`.
+`fetchTenantConfig` prefers the _live_ request host over a slug-built guess, so TR tenants (`<slug>.tr.contentor.app`) and custom domains resolve to the correct `Domain` row. It falls back to `${slug}.${BASE_DOMAIN}` only where headers aren't available — `generateMetadata` and `manifest.ts`.
 
 Two behaviors here are load-bearing and easy to break:
 
@@ -77,7 +77,7 @@ The resolved config flows to the client through `TenantProvider` → `TenantCont
 3. Inject `<TenantThemeStyle>` (a `<style>` tag of generated CSS variables) plus the tenant's Google Font link into `<head>`.
 4. Wrap children in `NextIntlClientProvider` → `ThemeProvider` → `TenantProvider` → `NavigationProvider`.
 
-**Font variable naming matters.** Instrument Sans is exposed as `--font-instrument`, *not* `--font-sans`, so it never shadows the tenant's own `--font-sans` override injected at `:root` by `TenantThemeStyle` or the builder's live preview. `globals.css` points `--font-sans` at it as the fallback default.
+**Font variable naming matters.** Instrument Sans is exposed as `--font-instrument`, _not_ `--font-sans`, so it never shadows the tenant's own `--font-sans` override injected at `:root` by `TenantThemeStyle` or the builder's live preview. `globals.css` points `--font-sans` at it as the fallback default.
 
 ### The publish gate
 
@@ -161,7 +161,7 @@ Auth is JWT-in-httpOnly-cookie. `src/lib/auth.ts` provides the server-side surfa
 - `requireAuth()` → redirects to `/login?toast=Please+log+in+to+continue&toast_type=info` when unauthenticated.
 - `requireRole(user, roles)` → redirects to `/` on mismatch.
 
-**Every server-rendered navigation blocks on `getAuthUser()` before streaming**, so it's wrapped in a 60s `createTtlPromiseCache` keyed by `${tenantDomain}:${token}`. The cache (`src/lib/ttl-promise-cache.ts`) stores the *promise*, so concurrent callers share one in-flight request, and it drops entries whose fetcher returns `null` or rejects — transient failures never stick. The tradeoff: a role change takes up to 60s to propagate. Logout is unaffected, since the cookie disappears and the key is never hit again.
+**Every server-rendered navigation blocks on `getAuthUser()` before streaming**, so it's wrapped in a 60s `createTtlPromiseCache` keyed by `${tenantDomain}:${token}`. The cache (`src/lib/ttl-promise-cache.ts`) stores the _promise_, so concurrent callers share one in-flight request, and it drops entries whose fetcher returns `null` or rejects — transient failures never stick. The tradeoff: a role change takes up to 60s to propagate. Logout is unaffected, since the cookie disappears and the key is never hit again.
 
 The BFF routes under `app/api/auth/` handle the cookie-setting flows Django can't do cross-origin:
 
@@ -186,11 +186,11 @@ The information architecture lives in two pure, unit-tested modules:
 
 Three fail-safe rules in `AdminShellContent` are worth preserving:
 
-- `hasSiteAi` reads `entitlements?.site_ai === true` explicitly rather than using `useIsLocked()`, which fails *open*. Failing open here would briefly hide the manual editor from a free coach.
+- `hasSiteAi` reads `entitlements?.site_ai === true` explicitly rather than using `useIsLocked()`, which fails _open_. Failing open here would briefly hide the manual editor from a free coach.
 - `published` is derived from the setup checklist item whose `source === "auto"` — a coach can manually tick `publish` in the Setup Assistant, and a manual tick must never unlock Marketing.
 - `stateReady` (both `status` and `config` non-null) gates the whole gating pass, so an established coach never sees a flash of locks they already cleared.
 
-`AdminShell` splits into `AdminShell` + `AdminShellContent` for a specific React reason documented in the file: a component returning a Provider in its own JSX is an *ancestor* of that provider, so `useEntitlements()` called in `AdminShell` would only ever see the context default. The consumer has to live one level below.
+`AdminShell` splits into `AdminShell` + `AdminShellContent` for a specific React reason documented in the file: a component returning a Provider in its own JSX is an _ancestor_ of that provider, so `useEntitlements()` called in `AdminShell` would only ever see the context default. The consumer has to live one level below.
 
 Entitlements themselves are pure logic in `lib/entitlements.ts` (`EntitlementKey`, `isFeatureLocked`) with the network wrapper isolated in `lib/api/entitlements.ts`. `isFeatureLocked` returns false while entitlements are null, so a "Paid" badge never flashes on for a coach whose paid plan hasn't resolved yet.
 
@@ -214,15 +214,15 @@ The portal is installable per tenant, with tenant branding all the way down.
 **`sw.ts`** is a Serwist service worker (`next.config.mjs` wires `swSrc` → `public/sw.js`; disabled in dev unless `SERWIST_DEV=1`). Its most important feature is `guardedCache`, prepended to `defaultCache` so it matches first:
 
 ```ts
-NEVER_CACHE       = [/^\/admin/, /^\/checkout/, /^\/api\/v1\/(auth|billing)/]
-NEVER_CACHE_HOSTS = ["stripe.com", "stream-io-api.com", "getstream.io"]
+NEVER_CACHE = [/^\/admin/, /^\/checkout/, /^\/api\/v1\/(auth|billing)/];
+NEVER_CACHE_HOSTS = ["stripe.com", "stream-io-api.com", "getstream.io"];
 ```
 
 Those go through `NetworkOnly`. Never cache auth, billing, or third-party payment/chat traffic. Document requests fall back to `/offline.html`. The worker also handles `push` (rendering notifications with the branded icon) and `notificationclick` (focus an existing window and navigate it, else open a new one).
 
 Client-side PWA components in the root layout: `InstallPrompt` (captures `beforeinstallprompt`, shows an iOS hint where that event doesn't exist, dismissal persisted in `localStorage`, never shown under `/admin` or in standalone), `SwUpdateToast` (listens for `updatefound` → `installed` with an existing controller, offers a refresh toast), `PushOptIn`, and `UsageReporter`. `/install` renders `InstallGuide` with theme-aware SVG illustrations (`install-illustrations.tsx`) — the SVGs reference OKLCH tokens directly as `var(--token)`, never wrapped in `hsl()`, and are `aria-hidden` since the adjacent step text carries the meaning.
 
-`lib/push.ts` (`pushSupported`, `isStandalone`, `subscribeToPush`) and `lib/usage.ts` (`detectPlatform`, `reportUsageOncePerSession`) back these. `reportUsageOncePerSession` sets its `sessionStorage` flag *before* the request so a failure never re-fires, and swallows all errors — telemetry must never affect the page.
+`lib/push.ts` (`pushSupported`, `isStandalone`, `subscribeToPush`) and `lib/usage.ts` (`detectPlatform`, `reportUsageOncePerSession`) back these. `reportUsageOncePerSession` sets its `sessionStorage` flag _before_ the request so a failure never re-fires, and swallows all errors — telemetry must never affect the page.
 
 ## Internationalization
 
@@ -230,7 +230,7 @@ Client-side PWA components in the root layout: `InstallPrompt` (captures `before
 
 `src/i18n/request.ts` implements that resolution and loads four message namespaces in parallel: `admin`, `student`, `common`, `pwa` from `messages/<locale>/`.
 
-`LanguageSwitcher` POSTs to `/api/v1/auth/users/me/locale/` *and* sets the `user-locale` cookie client-side — the cookie is what makes the toggle work for anonymous visitors, then `router.refresh()` re-renders. TR strings still need native review.
+`LanguageSwitcher` POSTs to `/api/v1/auth/users/me/locale/` _and_ sets the `user-locale` cookie client-side — the cookie is what makes the toggle work for anonymous visitors, then `router.refresh()` re-renders. TR strings still need native review.
 
 ## Navigation and feedback
 

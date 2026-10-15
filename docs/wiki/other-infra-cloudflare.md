@@ -2,9 +2,9 @@
 
 # Other — `infra/cloudflare`
 
-The only thing under `infra/cloudflare/` is **`mailbox-worker/`**: a standalone Cloudflare Email Worker, deployed as `mailbox-inbound`, that is the entry point for *all* inbound email for coach domains. It is the one piece of Contentor that runs outside the Docker stack and outside the Django/Next.js codebase — it lives on Cloudflare's edge, has its own `package.json`, and is deployed with `wrangler`, not `make deploy`.
+The only thing under `infra/cloudflare/` is **`mailbox-worker/`**: a standalone Cloudflare Email Worker, deployed as `mailbox-inbound`, that is the entry point for _all_ inbound email for coach domains. It is the one piece of Contentor that runs outside the Docker stack and outside the Django/Next.js codebase — it lives on Cloudflare's edge, has its own `package.json`, and is deployed with `wrangler`, not `make deploy`.
 
-Everything else about receiving mail (tenant resolution, persistence, attachments) is Django's job. The Worker's entire contract is: *parse the message, sign it, POST it, decide whether to bounce.*
+Everything else about receiving mail (tenant resolution, persistence, attachments) is Django's job. The Worker's entire contract is: _parse the message, sign it, POST it, decide whether to bounce._
 
 ## Layout
 
@@ -48,12 +48,12 @@ The single exported handler. Steps, in order:
 
 `packAttachments()` inlines attachment bytes as base64 in the JSON body (there is no separate upload step from the edge). Two caps:
 
-| Constant | Value | Meaning |
-|---|---|---|
-| `MAX_FILE_BYTES` | 10 MB | single attachment ceiling |
+| Constant          | Value | Meaning                               |
+| ----------------- | ----- | ------------------------------------- |
+| `MAX_FILE_BYTES`  | 10 MB | single attachment ceiling             |
 | `MAX_TOTAL_BYTES` | 20 MB | cumulative ceiling across one message |
 
-An attachment that breaches either cap — or whose `content` isn't an `ArrayBuffer` — is still emitted, but as `{filename, content_type, size, omitted: true}` with no bytes. Django honours `omitted` and creates a `MessageAttachment` row with an empty `storage_key`, so the coach sees *that* a file was sent and why it isn't downloadable. Never silently drop an entry from the array; the metadata is the point.
+An attachment that breaches either cap — or whose `content` isn't an `ArrayBuffer` — is still emitted, but as `{filename, content_type, size, omitted: true}` with no bytes. Django honours `omitted` and creates a `MessageAttachment` row with an empty `storage_key`, so the coach sees _that_ a file was sent and why it isn't downloadable. Never silently drop an entry from the array; the metadata is the point.
 
 `toBase64()` chunks at `0x8000` bytes before `String.fromCharCode(...)` — spreading a multi-MB `Uint8Array` in one call blows the argument limit. Keep the chunking if you touch this.
 
@@ -64,7 +64,8 @@ An attachment that breaches either cap — or whose `content` isn't an `ArrayBuf
 ```js
 if (!resp.ok) {
   console.error(`mailbox inbound webhook returned ${resp.status}`);
-  if (resp.status >= 500) message.setReject("Temporary failure delivering to mailbox");
+  if (resp.status >= 500)
+    message.setReject("Temporary failure delivering to mailbox");
 }
 ```
 
@@ -78,12 +79,12 @@ Django deliberately answers **200** for foreign/unclaimed domains too (`views.in
 
 ## Django side of the contract
 
-| Concern | Code |
-|---|---|
-| Signature verification | `apps/mailbox/signing.py` — `verify_inbound_signature()` recomputes `sign_payload(request.body, settings.MAILBOX_INBOUND_SECRET)` and compares with `hmac.compare_digest` |
-| Endpoint | `apps/mailbox/views.py::inbound` — `@csrf_exempt`, `@authentication_classes([])`, `AllowAny`; 401 on bad signature, 400 on unparseable JSON |
-| Tenant resolution | recipient domain → `CustomDomain.objects.filter(domain=..., mailbox_enabled=True, provisioning_status="live")`; fallback `resolve_platform_recipient()` for `<x>@PLATFORM_MAIL_DOMAIN`; fallback public-schema platform inbox |
-| Persistence | `apps/mailbox/inbound.py::receive_inbound` — dedupes on `message_id`, creates `Message` + `MessageAttachment`, bumps `Conversation.unread_count` |
+| Concern                | Code                                                                                                                                                                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Signature verification | `apps/mailbox/signing.py` — `verify_inbound_signature()` recomputes `sign_payload(request.body, settings.MAILBOX_INBOUND_SECRET)` and compares with `hmac.compare_digest`                                                     |
+| Endpoint               | `apps/mailbox/views.py::inbound` — `@csrf_exempt`, `@authentication_classes([])`, `AllowAny`; 401 on bad signature, 400 on unparseable JSON                                                                                   |
+| Tenant resolution      | recipient domain → `CustomDomain.objects.filter(domain=..., mailbox_enabled=True, provisioning_status="live")`; fallback `resolve_platform_recipient()` for `<x>@PLATFORM_MAIL_DOMAIN`; fallback public-schema platform inbox |
+| Persistence            | `apps/mailbox/inbound.py::receive_inbound` — dedupes on `message_id`, creates `Message` + `MessageAttachment`, bumps `Conversation.unread_count`                                                                              |
 
 Two invariants the Worker must not break:
 
@@ -103,12 +104,12 @@ Both are no-ops when `CLOUDFLARE_EMAIL_WORKER_NAME` is empty — `mailbox_enable
 
 ## Configuration
 
-| Where | Key | Value |
-|---|---|---|
-| `wrangler.toml` `[vars]` | `WEBHOOK_URL` | `https://contentor.app/api/v1/mailbox/inbound/` (committed, not secret) |
-| Wrangler secret | `MAILBOX_INBOUND_SECRET` | `openssl rand -hex 32`, set via `npx wrangler secret put` |
-| `.env.prod` | `MAILBOX_INBOUND_SECRET` | **the same value** — read into `settings.MAILBOX_INBOUND_SECRET` (`config/settings/base.py:519`) |
-| `.env.prod` | `CLOUDFLARE_EMAIL_WORKER_NAME` | `mailbox-inbound` — read into `settings.CLOUDFLARE_EMAIL_WORKER_NAME` (`base.py:520`) |
+| Where                    | Key                            | Value                                                                                            |
+| ------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `wrangler.toml` `[vars]` | `WEBHOOK_URL`                  | `https://contentor.app/api/v1/mailbox/inbound/` (committed, not secret)                          |
+| Wrangler secret          | `MAILBOX_INBOUND_SECRET`       | `openssl rand -hex 32`, set via `npx wrangler secret put`                                        |
+| `.env.prod`              | `MAILBOX_INBOUND_SECRET`       | **the same value** — read into `settings.MAILBOX_INBOUND_SECRET` (`config/settings/base.py:519`) |
+| `.env.prod`              | `CLOUDFLARE_EMAIL_WORKER_NAME` | `mailbox-inbound` — read into `settings.CLOUDFLARE_EMAIL_WORKER_NAME` (`base.py:520`)            |
 
 Deploy is independent of the app deploy:
 
@@ -121,11 +122,11 @@ npx wrangler secret put MAILBOX_INBOUND_SECRET   # or: npm run secret
 
 The secret is a shared symmetric key with a copy on both sides — rotating it is a two-place, non-atomic change. Update the Wrangler secret and `.env.prod` together and expect a window where in-flight mail 401s (and, per the bounce rules, is dropped). Do it during quiet hours.
 
-Domains provisioned *before* the Worker existed have a forward-style catch-all rule and won't reach it. Re-run `_step_email_auth` (or re-save mailbox settings) with `mailbox_enabled=True` to rebind.
+Domains provisioned _before_ the Worker existed have a forward-style catch-all rule and won't reach it. Re-run `_step_email_auth` (or re-save mailbox settings) with `mailbox_enabled=True` to rebind.
 
 ## Working on it locally
 
-There is no dev-stack counterpart — the dev environment uses `EMAIL_SINK_ENABLED` for *outbound* mail and has no inbound path. To exercise the Django half without Cloudflare, POST a hand-signed body:
+There is no dev-stack counterpart — the dev environment uses `EMAIL_SINK_ENABLED` for _outbound_ mail and has no inbound path. To exercise the Django half without Cloudflare, POST a hand-signed body:
 
 ```bash
 BODY='{"from":"s@example.com","to":"hi@coach.example","subject":"t","attachments":[]}'

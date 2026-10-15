@@ -64,19 +64,19 @@ sequenceDiagram
 
 **Host → builder**
 
-| Type | When | Payload |
-|---|---|---|
+| Type                      | When                                                     | Payload                                                                                                      |
+| ------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `MAILCRAFT_LOAD_TEMPLATE` | after `READY`, and on `templateJson`/`templateId` change | `{json}` if `templateJson` is set, else `{template_id}` — `templateJson` takes precedence and short-circuits |
-| `MAILCRAFT_INIT` | after `READY`, and on any theme/color change | `{context: {themeMode, chromeColor?, canvasColor?}}` |
-| `MAILCRAFT_REQUEST_SAVE` | on imperative `requestSave()` | — |
+| `MAILCRAFT_INIT`          | after `READY`, and on any theme/color change             | `{context: {themeMode, chromeColor?, canvasColor?}}`                                                         |
+| `MAILCRAFT_REQUEST_SAVE`  | on imperative `requestSave()`                            | —                                                                                                            |
 
 **Builder → host**
 
-| Type | Effect |
-|---|---|
-| `MAILCRAFT_READY` | sets `builderReady`, fires `onReady` — gates all outbound messages |
-| `MAILCRAFT_SAVE` | fires `onSave({html, json})`, defaulting to `""`/`{}` |
-| `MAILCRAFT_TEMPLATE_SAVED` | fires `onTemplateSaved` and resolves a pending `requestSave()` |
+| Type                       | Effect                                                             |
+| -------------------------- | ------------------------------------------------------------------ |
+| `MAILCRAFT_READY`          | sets `builderReady`, fires `onReady` — gates all outbound messages |
+| `MAILCRAFT_SAVE`           | fires `onSave({html, json})`, defaulting to `""`/`{}`              |
+| `MAILCRAFT_TEMPLATE_SAVED` | fires `onTemplateSaved` and resolves a pending `requestSave()`     |
 
 `MAILCRAFT_TEMPLATE_SAVED` is read defensively in both casings — `template_id`/`templateId`, `template_name`/`templateName` — because the builder has shipped both. It is ignored entirely when the id is empty.
 
@@ -87,7 +87,9 @@ The parent (typically a "Send" or "Save & continue" button in `ComposePage`) dri
 ```tsx
 const builderRef = useRef<EmailBuilderIframeHandle>(null);
 const saved = await builderRef.current?.requestSave();
-if (!saved) { /* builder never confirmed — do not proceed */ }
+if (!saved) {
+  /* builder never confirmed — do not proceed */
+}
 ```
 
 `requestSave()` stashes the promise's `resolve` in `saveResolverRef`, posts `MAILCRAFT_REQUEST_SAVE`, and waits. Note the two ways it yields `null`:
@@ -118,12 +120,12 @@ Renders a filterable grid of `EmailTemplate`s. It owns filter state only — fet
 
 Four filters, each initialized from `window.location.search` and written back through `syncParam`:
 
-| State | Param | Default | Values |
-|---|---|---|---|
-| `search` | `q` | `""` | free text, matched case-insensitively against `template.name` |
-| `category` | `category` | `All` | All / Welcome / Newsletter / Promotional / Transactional / Event |
-| `source` | `source` | `All` | All / Saved / Gallery |
-| `gridSize` | `size` | `medium` | small / medium / large |
+| State      | Param      | Default  | Values                                                           |
+| ---------- | ---------- | -------- | ---------------------------------------------------------------- |
+| `search`   | `q`        | `""`     | free text, matched case-insensitively against `template.name`    |
+| `category` | `category` | `All`    | All / Welcome / Newsletter / Promotional / Transactional / Event |
+| `source`   | `source`   | `All`    | All / Saved / Gallery                                            |
+| `gridSize` | `size`     | `medium` | small / medium / large                                           |
 
 `syncParam(key, value, defaultValue)` deletes the param when the value equals its default and rewrites the URL with `history.replaceState` — no Next.js navigation, so filtering never re-renders the route or refetches. The trade-off is that filter changes don't create history entries and the Back button won't step through them. Every `updateX` callback goes through `syncParam`; add new filters the same way rather than calling `replaceState` directly.
 

@@ -19,22 +19,22 @@ Each target runs `npm install --silent && npx playwright install chromium` first
 
 Preconditions the suite assumes (and mostly enforces itself):
 
-| Requirement | Enforced by |
-|---|---|
-| Dev stack up (`make dev`) | `global-setup.ts` — health probe, fails with "start it with `make dev` first" |
-| `demo-yoga` tenant seeded | `global-setup.ts` — probes `/api/v1/admin/config/` with `X-Tenant-Domain`, seeds only if missing (`E2E_SEED=1` forces a re-seed) |
-| `EMAIL_SINK_ENABLED=true` | `helpers/email.ts` — throws a pointed error if `/api/v1/dev/emails/latest/` 5xx's |
-| `LIVE_FAKE_ENABLED=true` | `04-live-class` probes the token response and `test.skip()`s if the real GetStream key comes back |
-| Real Stripe test keys + `stripe listen` | `20`/`21` gate on `STRIPE_E2E` |
+| Requirement                             | Enforced by                                                                                                                      |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Dev stack up (`make dev`)               | `global-setup.ts` — health probe, fails with "start it with `make dev` first"                                                    |
+| `demo-yoga` tenant seeded               | `global-setup.ts` — probes `/api/v1/admin/config/` with `X-Tenant-Domain`, seeds only if missing (`E2E_SEED=1` forces a re-seed) |
+| `EMAIL_SINK_ENABLED=true`               | `helpers/email.ts` — throws a pointed error if `/api/v1/dev/emails/latest/` 5xx's                                                |
+| `LIVE_FAKE_ENABLED=true`                | `04-live-class` probes the token response and `test.skip()`s if the real GetStream key comes back                                |
+| Real Stripe test keys + `stripe listen` | `20`/`21` gate on `STRIPE_E2E`                                                                                                   |
 
 ### Env gates
 
-| Variable | Effect |
-|---|---|
-| `STRIPE_E2E=1` | Enables `20-stripe-platform`, `21-stripe-marketplace` |
-| `E2E_BILLING_BYPASS=1` | Enables `23-wizard-ai-logo` (needs `BILLING_BYPASS_ENABLED=true` in `.env`) |
-| `LOGO_EVAL=1` | Enables `90-logo-eval`, the manual AI contact-sheet eval |
-| `E2E_SEED=1` | Forces `seed_plans` + `seed_dev_tenants` even when demo-yoga is already reachable |
+| Variable               | Effect                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| `STRIPE_E2E=1`         | Enables `20-stripe-platform`, `21-stripe-marketplace`                             |
+| `E2E_BILLING_BYPASS=1` | Enables `23-wizard-ai-logo` (needs `BILLING_BYPASS_ENABLED=true` in `.env`)       |
+| `LOGO_EVAL=1`          | Enables `90-logo-eval`, the manual AI contact-sheet eval                          |
+| `E2E_SEED=1`           | Forces `seed_plans` + `seed_dev_tenants` even when demo-yoga is already reachable |
 
 ## Runner configuration
 
@@ -82,7 +82,7 @@ export const REPO_ROOT
 
 `manage()` is the suite's fixture primitive. Most non-trivial specs pass `["shell", "-c", <python source>]` to set up or tear down rows the HTTP API can't reach: `01`/`19`/`26` sweep leftover `e2e-*` tenants, `16`/`22` promote `demo-yoga` to a paid `PlatformSubscription` and seed `AiConversation` fixtures, `15-community` resolves the seeded student's email, `18` deletes a stranded `CuratedLogo`. Errors are re-thrown with stderr attached, so a broken shell snippet surfaces as a readable message rather than an opaque non-zero exit.
 
-**The raw-SQL rule.** `PlatformSubscription` rows must be deleted with `connection.cursor().execute("DELETE FROM core_platformsubscription …")`, never `.delete()`. `Payment.platform_subscription` is a cross-schema FK (`db_constraint=False`), so Django's cascade collector reaches for the tenant-only `billing_payment` table from a public-schema shell and dies with *relation does not exist* — regardless of delete order. Specs `01`, `16`, `19`, `20`, `21`, `22`, `26` all encode this workaround; copy it rather than rediscovering it.
+**The raw-SQL rule.** `PlatformSubscription` rows must be deleted with `connection.cursor().execute("DELETE FROM core_platformsubscription …")`, never `.delete()`. `Payment.platform_subscription` is a cross-schema FK (`db_constraint=False`), so Django's cascade collector reaches for the tenant-only `billing_payment` table from a public-schema shell and dies with _relation does not exist_ — regardless of delete order. Specs `01`, `16`, `19`, `20`, `21`, `22`, `26` all encode this workaround; copy it rather than rediscovering it.
 
 ### `helpers/email.ts` — the dev sink
 
@@ -106,39 +106,39 @@ The single upload fixture, used by `02` (course thumbnail), `05` (MinIO round-tr
 
 Numbered roughly in feature order; the number is also the key used in `impact-map.json`. Note there are two `15-*` files.
 
-| Spec | Covers | Notable gate / mechanism |
-|---|---|---|
-| `00-smoke` | health endpoint; coach and student JWTs reach `/admin` and `/dashboard` | always runs first in a selected set |
-| `01-signup-onboarding` | full wizard walk → tenant provisions; auto-advance cards disable while saving; "finish the rest for me" fast path | sweeps `e2e-studio-*` tenants in `beforeAll` |
-| `02-courses` | course create (API + one-submit UI with thumbnail/module/lesson); nested atomic create; student detail + learn page | creates via API where a Radix switch is unclickable headless |
-| `03-calendar` | calendar API non-empty; `/calendar` renders; view toggle writes `?view=`; event detail `<h1>` | prefers a `live_stream` event (unique pk namespace) |
-| `04-live-class` | create → start → student fake token → `/live/[id]` renders | skips unless `api_key === "fake-local"` |
-| `05-media` | presign → PUT to MinIO → complete → photo detail → presigned GET byte-length match | asserts `upload_url` points at `localhost:9000` |
-| `06-announcements` | coach composes → Celery fan-out → student feed API poll → bell dropdown | 20 s poll loop on `/notifications/feed/` |
-| `07-mailbox` | inbox renders; settings section; compose → conversation → email sink | inbound webhook test is `test.skip`ped (needs `MAILBOX_INBOUND_SECRET` + a real `CustomDomain`) |
-| `08-pwa` | manifest validity; SW registration, with a dev-mode fallback asserting `sw.js` / `offline.html` are served | tolerates `@serwist/next` disabling SW in dev |
-| `09-builder` | brand-name edit in the Edit-site sidebar → autosave PATCH → public header | restores the original brand in `finally` |
-| `10-impersonation` | coach "Log in as" → `/impersonate` token redemption → banner → Exit back to `/admin` | same-tab throughout; accepts a `window.confirm` |
-| `11-login-code` | emailed 6-digit code login (the PWA path), wrong code then right code | boots its own `e2e-code` tenant; clears magic-link throttle keys in Redis |
-| `12-downloads` | paid download with price + in-place tag created in a single submit | UI drives, API confirms persisted values |
-| `13-events-page` | `/events` against the +90 d calendar window; cross-links to and from `/calendar` | branches on whether upcoming events exist |
-| `14-navbar-layouts` | navbar layout preset → `header[data-nav-layout]`; brand-name toggle and logo-size XL next to a saved logo | whole-object PATCH restore of `navbar_config` in `finally` |
-| `15-community` | enable → join → post → pin → report → remove → ban → unban | unbans all banned members in `beforeAll`; house Tabs/Switch are plain buttons with `aria-checked`, not Radix |
-| `15-logo-studio` | brief → curated ideas → editor → save; asserts persisted schema-v3 recipe (`layout`, `tagline`, `name`) | reads the "Design with AI" door's copy before clicking (free tier navigates away) |
-| `16-site-assistant` | free tenant has no bubble; paid+enabled coach configures a greeting; visitor chats and rates; transcript → "Add to knowledge" prefill | forces free state, promotes to paid, restores free in `finally`; AI-content assertions gated on live `/assistant/status/` reason |
-| `17-logo-curated-library` | pick a curated ready-made logo and save it | accepts `custom` (traced vector) or `image` (untraced PNG) marks |
-| `18-curated-library-admin` | superadmin adds a curated logo via adminkit GALLERY mode → coach sees it in Ideas → superadmin deletes it | sweeps a stranded `E2E Curated Logo` row in `beforeAll` |
-| `19-wizard-recovery` | recovery email resumes the wizard at the saved step; a dead link with empty localStorage shows the resume screen | wipes `contentor_wizard_token` to simulate another device |
-| `20-stripe-platform` | platform subscription through real hosted Checkout → webhook flips status active | `STRIPE_E2E`; resolves the starter plan id at runtime; cancels + raw-SQL deletes at the end |
-| `21-stripe-marketplace` | student buys a fresh paid course through Connect Checkout → completed order | `STRIPE_E2E`; `seed_connect_test`, synthetic active subscription, cleanup in `finally` |
-| `22-assistant-takeover` | coach takeover round-trip, hand-back, "talk to a human" email + badge; superadmin cross-tenant console | provider-dependent scenario isolated in its own `test()` so `test.skip()` can't abort the others |
-| `23-wizard-ai-logo` | AI logo door unlocks via bypass checkout | `E2E_BILLING_BYPASS=1` |
-| `24-admin-logs` | log ingest → panel rows → dynamic facet narrowing; pageview beacon through the real Vector pipeline | activity query uses schema name `demo_yoga`, time-scoped, asserts a strict increase over a pre-visit baseline |
-| `25-navigation-feedback` | optimistic nav highlight + progress bar before commit and cleared after; stalled refinement dims rows via `aria-busy` | stalls the `_rsc` request (pre-commit) and the API request (post-commit) separately |
-| `26-content-first-wizard` | treatment-bucket coach authors a real published course during signup; verified in the tenant schema | asserts the theme step is *absent* to prove the branch |
-| `27-nav-stage-gating` | Marketing locked-but-reachable behind a forged `source:"manual"` publish; Content's "+ N more" disclosure; unlocked state on the real published tenant | stubs `/admin/setup-status/` to forge the exact forgeable signal |
-| `28-admin-site-ai` | Site AI preview → apply → allowance decrement; free-tier upgrade surface with a working manual-edit escape hatch | stubs status/preview/apply so the spec never spends the tenant's real metered allowance |
-| `90-logo-eval` | manual AI contact sheets into `eval-shots/` for four fixed briefs | `LOGO_EVAL=1`; not a pass/fail spec |
+| Spec                       | Covers                                                                                                                                                 | Notable gate / mechanism                                                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `00-smoke`                 | health endpoint; coach and student JWTs reach `/admin` and `/dashboard`                                                                                | always runs first in a selected set                                                                                              |
+| `01-signup-onboarding`     | full wizard walk → tenant provisions; auto-advance cards disable while saving; "finish the rest for me" fast path                                      | sweeps `e2e-studio-*` tenants in `beforeAll`                                                                                     |
+| `02-courses`               | course create (API + one-submit UI with thumbnail/module/lesson); nested atomic create; student detail + learn page                                    | creates via API where a Radix switch is unclickable headless                                                                     |
+| `03-calendar`              | calendar API non-empty; `/calendar` renders; view toggle writes `?view=`; event detail `<h1>`                                                          | prefers a `live_stream` event (unique pk namespace)                                                                              |
+| `04-live-class`            | create → start → student fake token → `/live/[id]` renders                                                                                             | skips unless `api_key === "fake-local"`                                                                                          |
+| `05-media`                 | presign → PUT to MinIO → complete → photo detail → presigned GET byte-length match                                                                     | asserts `upload_url` points at `localhost:9000`                                                                                  |
+| `06-announcements`         | coach composes → Celery fan-out → student feed API poll → bell dropdown                                                                                | 20 s poll loop on `/notifications/feed/`                                                                                         |
+| `07-mailbox`               | inbox renders; settings section; compose → conversation → email sink                                                                                   | inbound webhook test is `test.skip`ped (needs `MAILBOX_INBOUND_SECRET` + a real `CustomDomain`)                                  |
+| `08-pwa`                   | manifest validity; SW registration, with a dev-mode fallback asserting `sw.js` / `offline.html` are served                                             | tolerates `@serwist/next` disabling SW in dev                                                                                    |
+| `09-builder`               | brand-name edit in the Edit-site sidebar → autosave PATCH → public header                                                                              | restores the original brand in `finally`                                                                                         |
+| `10-impersonation`         | coach "Log in as" → `/impersonate` token redemption → banner → Exit back to `/admin`                                                                   | same-tab throughout; accepts a `window.confirm`                                                                                  |
+| `11-login-code`            | emailed 6-digit code login (the PWA path), wrong code then right code                                                                                  | boots its own `e2e-code` tenant; clears magic-link throttle keys in Redis                                                        |
+| `12-downloads`             | paid download with price + in-place tag created in a single submit                                                                                     | UI drives, API confirms persisted values                                                                                         |
+| `13-events-page`           | `/events` against the +90 d calendar window; cross-links to and from `/calendar`                                                                       | branches on whether upcoming events exist                                                                                        |
+| `14-navbar-layouts`        | navbar layout preset → `header[data-nav-layout]`; brand-name toggle and logo-size XL next to a saved logo                                              | whole-object PATCH restore of `navbar_config` in `finally`                                                                       |
+| `15-community`             | enable → join → post → pin → report → remove → ban → unban                                                                                             | unbans all banned members in `beforeAll`; house Tabs/Switch are plain buttons with `aria-checked`, not Radix                     |
+| `15-logo-studio`           | brief → curated ideas → editor → save; asserts persisted schema-v3 recipe (`layout`, `tagline`, `name`)                                                | reads the "Design with AI" door's copy before clicking (free tier navigates away)                                                |
+| `16-site-assistant`        | free tenant has no bubble; paid+enabled coach configures a greeting; visitor chats and rates; transcript → "Add to knowledge" prefill                  | forces free state, promotes to paid, restores free in `finally`; AI-content assertions gated on live `/assistant/status/` reason |
+| `17-logo-curated-library`  | pick a curated ready-made logo and save it                                                                                                             | accepts `custom` (traced vector) or `image` (untraced PNG) marks                                                                 |
+| `18-curated-library-admin` | superadmin adds a curated logo via adminkit GALLERY mode → coach sees it in Ideas → superadmin deletes it                                              | sweeps a stranded `E2E Curated Logo` row in `beforeAll`                                                                          |
+| `19-wizard-recovery`       | recovery email resumes the wizard at the saved step; a dead link with empty localStorage shows the resume screen                                       | wipes `contentor_wizard_token` to simulate another device                                                                        |
+| `20-stripe-platform`       | platform subscription through real hosted Checkout → webhook flips status active                                                                       | `STRIPE_E2E`; resolves the starter plan id at runtime; cancels + raw-SQL deletes at the end                                      |
+| `21-stripe-marketplace`    | student buys a fresh paid course through Connect Checkout → completed order                                                                            | `STRIPE_E2E`; `seed_connect_test`, synthetic active subscription, cleanup in `finally`                                           |
+| `22-assistant-takeover`    | coach takeover round-trip, hand-back, "talk to a human" email + badge; superadmin cross-tenant console                                                 | provider-dependent scenario isolated in its own `test()` so `test.skip()` can't abort the others                                 |
+| `23-wizard-ai-logo`        | AI logo door unlocks via bypass checkout                                                                                                               | `E2E_BILLING_BYPASS=1`                                                                                                           |
+| `24-admin-logs`            | log ingest → panel rows → dynamic facet narrowing; pageview beacon through the real Vector pipeline                                                    | activity query uses schema name `demo_yoga`, time-scoped, asserts a strict increase over a pre-visit baseline                    |
+| `25-navigation-feedback`   | optimistic nav highlight + progress bar before commit and cleared after; stalled refinement dims rows via `aria-busy`                                  | stalls the `_rsc` request (pre-commit) and the API request (post-commit) separately                                              |
+| `26-content-first-wizard`  | treatment-bucket coach authors a real published course during signup; verified in the tenant schema                                                    | asserts the theme step is _absent_ to prove the branch                                                                           |
+| `27-nav-stage-gating`      | Marketing locked-but-reachable behind a forged `source:"manual"` publish; Content's "+ N more" disclosure; unlocked state on the real published tenant | stubs `/admin/setup-status/` to forge the exact forgeable signal                                                                 |
+| `28-admin-site-ai`         | Site AI preview → apply → allowance decrement; free-tier upgrade surface with a working manual-edit escape hatch                                       | stubs status/preview/apply so the spec never spends the tenant's real metered allowance                                          |
+| `90-logo-eval`             | manual AI contact sheets into `eval-shots/` for four fixed briefs                                                                                      | `LOGO_EVAL=1`; not a pass/fail spec                                                                                              |
 
 ## Recurring patterns
 
@@ -146,15 +146,15 @@ These conventions recur across the suite; follow them in new specs.
 
 **Set up over the API, assert over the UI.** When a control is unreliable headless (`02`'s publish switch) or the setup isn't what's under test (`14`'s logo seed, `21`'s course), create state with `ctx.request` and reserve the browser for the behaviour being tested. Conversely, when persistence is the claim, drive the UI and confirm via the API (`12`).
 
-**Self-healing `beforeAll`.** With `retries: 1` and no DB reset, a failed run leaves debris that turns the *next* run's `getByText` into a strict-mode violation or dead-ends it entirely. `01`, `19`, `26` drop `e2e-*` tenants; `15-community` unbans everyone; `18` deletes its own leftover row; `16`/`22` wipe AI conversations before seeding. Cleanup at the end of a test is not sufficient on its own.
+**Self-healing `beforeAll`.** With `retries: 1` and no DB reset, a failed run leaves debris that turns the _next_ run's `getByText` into a strict-mode violation or dead-ends it entirely. `01`, `19`, `26` drop `e2e-*` tenants; `15-community` unbans everyone; `18` deletes its own leftover row; `16`/`22` wipe AI conversations before seeding. Cleanup at the end of a test is not sufficient on its own.
 
 **Restore in `finally`.** Anything mutated on the shared `demo-yoga` tenant is put back even when the assertion fails: brand name (`09`), whole `navbar_config` / logo fields (`14`), platform plan and assistant config (`16`, `22`), synthetic subscriptions (`20`, `21`).
 
 **Unique stamps.** Titles and bodies carry `Date.now()` so reruns can't collide or trip strict mode.
 
-**Deterministic waits, never sleeps.** `page.waitForResponse` on the specific autosave PATCH (`09`, `14`, `15-logo-studio`, `16`), `expect.poll` / `expect(...).toPass()` for asynchronous pipelines (`06` Celery, `20`/`21` webhooks, `24` Vector), and route interception to *widen* a window rather than race it (`01` holds the wizard PATCH 1.5 s; `25` stalls `_rsc` and the students API).
+**Deterministic waits, never sleeps.** `page.waitForResponse` on the specific autosave PATCH (`09`, `14`, `15-logo-studio`, `16`), `expect.poll` / `expect(...).toPass()` for asynchronous pipelines (`06` Celery, `20`/`21` webhooks, `24` Vector), and route interception to _widen_ a window rather than race it (`01` holds the wizard PATCH 1.5 s; `25` stalls `_rsc` and the students API).
 
-**Network stubbing where the real thing is slow, costly or non-deterministic.** `27` forges a `setup-status` field that a real tenant can't produce; `28` stubs the metered Site AI endpoints entirely. Both files document *why* stubbing is the more precise regression guard, not a shortcut — keep that discipline.
+**Network stubbing where the real thing is slow, costly or non-deterministic.** `27` forges a `setup-status` field that a real tenant can't produce; `28` stubs the metered Site AI endpoints entirely. Both files document _why_ stubbing is the more precise regression guard, not a shortcut — keep that discipline.
 
 **Provider-availability skips.** `AI_PROVIDER=cli` in dev shells a real Claude subscription; no stub CLI ships in the image. `16` and `22` assert every gating/UI/navigation claim unconditionally, then read the live `/api/v1/assistant/status/` reason and `test.skip()` only the assertions that need a completed model answer. Because a mid-test `test.skip()` aborts the rest of that test body, `22` deliberately splits provider-dependent and provider-independent scenarios into separate `test()` blocks.
 
@@ -168,7 +168,7 @@ These conventions recur across the suite; follow them in new specs.
 
 `make e2e-changed` runs `scripts/select_tests.py --mode e2e`, which maps the git diff to a spec set:
 
-- **backend** — keyed by Django app name (`apps/<app>/…`). An app with no map entry widens to *all* specs (fail-closed); an entry of `"none"` contributes only the smoke spec.
+- **backend** — keyed by Django app name (`apps/<app>/…`). An app with no map entry widens to _all_ specs (fail-closed); an entry of `"none"` contributes only the smoke spec.
 - **frontend-customer** — keyed by longest path prefix (`src/components/assistant`, `src/lib/navbar.ts`, …). An unmapped path widens to all specs.
 - **frontend-main** — a single flat list; the app has no unit suite, so e2e plus typecheck is its coverage.
 - **manual** — specs excluded from automatic selection (`90-logo-eval`).
@@ -180,7 +180,7 @@ These conventions recur across the suite; follow them in new specs.
 ## Adding a spec
 
 1. Name it `NN-slug.spec.ts` in `e2e/specs/`; the number is the impact-map key.
-2. Open with a header comment stating what is covered, what is deliberately *not*, and any non-obvious selector or environment contract. Every spec here does this, and it is the suite's primary documentation.
+2. Open with a header comment stating what is covered, what is deliberately _not_, and any non-obvious selector or environment contract. Every spec here does this, and it is the suite's primary documentation.
 3. Get identity from `helpers/auth.ts`; never hand-roll a login.
 4. Add an entry to `e2e/impact-map.json` for the backend app / frontend path the spec guards, then run `make lint`.
 5. Make it rerunnable: unique-stamped data, a self-healing `beforeAll` for anything it might strand, and restore-in-`finally` for shared `demo-yoga` state.

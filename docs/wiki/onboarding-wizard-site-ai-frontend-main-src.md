@@ -6,20 +6,20 @@ The coach-facing signup funnel: from "pick a brand name" to a provisioned tenant
 
 ## Scope
 
-| Path | Role |
-|---|---|
-| `app/signup/page.tsx`, `signup-form.tsx` | Entry: brand name → name/email → verification email (or the short authenticated path) |
-| `app/signup/verify/page.tsx` | The funnel's outer state machine: verify → wizard → provisioning → ready/expired |
-| `app/signup/verify/wizard/WizardFlow.tsx` | Wizard orchestrator — loads state, owns answers, dispatches steps |
-| `.../wizard/WizardShell.tsx` | Chrome: chapter rail, progress bar, slide transitions, footer |
-| `.../wizard/steps.tsx` | Presentation primitives (`OptionCard`, `OptionList`, `SlideHeader`) + business/look steps |
-| `.../wizard/pages-steps.tsx`, `previews.tsx` | Page-layout step and the mockup/wireframe preview widgets |
-| `.../wizard/content-steps.tsx` | Content-first flow: course/event/blog steps + `ProvisioningGate` |
-| `.../wizard/logo-review-steps.tsx`, `ai-logo.tsx` | Logo picker (wordmark / curated / AI) and the paid AI door |
-| `.../wizard/reveal-chat.tsx` | Post-provision "make it warmer" site editing |
-| `lib/wizard/machine.ts` | Pure step machine — order, skipping, progress, "finish the rest" |
-| `lib/wizard/types.ts` | `WizardCatalog`, `WizardAnswers`, `WizardState*` contracts |
-| `lib/wizard/api.ts`, `logo-api.ts` | Fetchers. Token always rides in the request **body**, never the URL |
+| Path                                              | Role                                                                                      |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `app/signup/page.tsx`, `signup-form.tsx`          | Entry: brand name → name/email → verification email (or the short authenticated path)     |
+| `app/signup/verify/page.tsx`                      | The funnel's outer state machine: verify → wizard → provisioning → ready/expired          |
+| `app/signup/verify/wizard/WizardFlow.tsx`         | Wizard orchestrator — loads state, owns answers, dispatches steps                         |
+| `.../wizard/WizardShell.tsx`                      | Chrome: chapter rail, progress bar, slide transitions, footer                             |
+| `.../wizard/steps.tsx`                            | Presentation primitives (`OptionCard`, `OptionList`, `SlideHeader`) + business/look steps |
+| `.../wizard/pages-steps.tsx`, `previews.tsx`      | Page-layout step and the mockup/wireframe preview widgets                                 |
+| `.../wizard/content-steps.tsx`                    | Content-first flow: course/event/blog steps + `ProvisioningGate`                          |
+| `.../wizard/logo-review-steps.tsx`, `ai-logo.tsx` | Logo picker (wordmark / curated / AI) and the paid AI door                                |
+| `.../wizard/reveal-chat.tsx`                      | Post-provision "make it warmer" site editing                                              |
+| `lib/wizard/machine.ts`                           | Pure step machine — order, skipping, progress, "finish the rest"                          |
+| `lib/wizard/types.ts`                             | `WizardCatalog`, `WizardAnswers`, `WizardState*` contracts                                |
+| `lib/wizard/api.ts`, `logo-api.ts`                | Fetchers. Token always rides in the request **body**, never the URL                       |
 
 ## The wizard token
 
@@ -53,7 +53,7 @@ Two details that are easy to break:
 
 ## The step machine (`lib/wizard/machine.ts`)
 
-Pure functions, no React and no fetch. The server's `WizardCatalog` supplies the *vocabulary* (which niches, themes, fonts, layouts exist); this module decides only **order and skipping**.
+Pure functions, no React and no fetch. The server's `WizardCatalog` supplies the _vocabulary_ (which niches, themes, fonts, layouts exist); this module decides only **order and skipping**.
 
 - `buildSteps(catalog, answers)` — classic flow: business → look → pages → logo → review. It skips `pages.pricing` when no selling goal is chosen, skips any page with fewer than two catalog layouts, and only inserts `business.followups` when AI actually returned questions.
 - `buildContentSteps(catalog, answers)` — content-first flow: business → content → logo → review. `content.event` appears only for live/onsite goals, `content.blog` only for `write_blog`. It deliberately shares no code with `buildSteps` so the classic flow stays byte-for-byte identical while the holdout runs.
@@ -75,12 +75,12 @@ One `useEffect` (guarded by `loadedRef`) loads `getWizardCatalog()` and `readWiz
 
 ### Four ways an answer gets committed
 
-| Helper | Used by | Behaviour |
-|---|---|---|
-| `draft(partial)` | multi-select (`goals`), free text (`describe`, `followups`), logo picking | Local state only; persisted later by Continue |
-| `selectAndAdvance(partial)` | single-select steps (niche, all of `look.*`, all of `pages.*`) | PATCH + advance in one motion; these steps render **no** Continue button |
-| `commitContent` / `skipContent` | content steps | The step already POSTed a real course/event/post; only the `*_created` flag is persisted. Skipping advances with no flag set — the publish gate and admin checklist surface the gap later |
-| `handleContinue` | everything else | Persists `currentSlice()` and advances; on `review` it finalizes |
+| Helper                          | Used by                                                                   | Behaviour                                                                                                                                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `draft(partial)`                | multi-select (`goals`), free text (`describe`, `followups`), logo picking | Local state only; persisted later by Continue                                                                                                                                             |
+| `selectAndAdvance(partial)`     | single-select steps (niche, all of `look.*`, all of `pages.*`)            | PATCH + advance in one motion; these steps render **no** Continue button                                                                                                                  |
+| `commitContent` / `skipContent` | content steps                                                             | The step already POSTed a real course/event/post; only the `*_created` flag is persisted. Skipping advances with no flag set — the publish gate and admin checklist surface the gap later |
+| `handleContinue`                | everything else                                                           | Persists `currentSlice()` and advances; on `review` it finalizes                                                                                                                          |
 
 All of them funnel through `commit()`, which PATCHes `/wizard/state/` and — on `ApiError` 409 — treats the wizard as already finalized and jumps to provisioning.
 
@@ -95,7 +95,7 @@ Two special cases in `handleContinue`:
 
 ## Shell and presentation
 
-`WizardShell` is a fixed full-screen overlay. It wraps everything in `<MotionConfig reducedMotion="user">`, which makes framer-motion drop every transform/layout animation when the OS asks for reduced motion — so **no component below it needs to gate motion by hand**. The header (back button, chapter rail, progress bar) sits *outside* the width-morphing column so the progress bar keeps one width across steps; the column itself morphs between `640px` and `~1100px` via the `wide` prop. `AnimatePresence mode="wait"` keyed on `stepId` plus the `direction` prop (`1` forward, `-1` back) produces the slide.
+`WizardShell` is a fixed full-screen overlay. It wraps everything in `<MotionConfig reducedMotion="user">`, which makes framer-motion drop every transform/layout animation when the OS asks for reduced motion — so **no component below it needs to gate motion by hand**. The header (back button, chapter rail, progress bar) sits _outside_ the width-morphing column so the progress bar keeps one width across steps; the column itself morphs between `640px` and `~1100px` via the `wide` prop. `AnimatePresence mode="wait"` keyed on `stepId` plus the `direction` prop (`1` forward, `-1` back) produces the slide.
 
 `steps.tsx` owns the shared vocabulary: `listVariants`/`itemVariants` (staggered cascade), `OptionList`, `SlideHeader`, and `OptionCard` — a motion button with an optional preview child, a title/subtitle stack, a corner badge, and an animated check. Note `OptionCard` deliberately avoids `text-center` on the button and dims via `[&:disabled>*]:opacity-50` (the entrance animation leaves an inline `opacity:1` on the button that would beat `disabled:opacity-*`).
 

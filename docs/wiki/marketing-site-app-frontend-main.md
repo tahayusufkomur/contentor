@@ -6,11 +6,11 @@ The public face of Contentor: the marketing site, auth entry points, coach signu
 
 Caddy decides which app a request reaches:
 
-| Host | App |
-|---|---|
-| `contentor.app`, `tr.contentor.app` (dev: `localhost`, `tr.localhost`) | **`frontend-main`** |
-| anything else (`*.contentor.app` tenant subdomains) | `frontend-customer` |
-| `/api/*`, `/static/*`, apex `/django-admin/*` | Django, directly — never proxied through Next |
+| Host                                                                   | App                                           |
+| ---------------------------------------------------------------------- | --------------------------------------------- |
+| `contentor.app`, `tr.contentor.app` (dev: `localhost`, `tr.localhost`) | **`frontend-main`**                           |
+| anything else (`*.contentor.app` tenant subdomains)                    | `frontend-customer`                           |
+| `/api/*`, `/static/*`, apex `/django-admin/*`                          | Django, directly — never proxied through Next |
 
 So this app only ever serves two hosts per environment, and the only thing it needs to derive from the `Host` header is **which locale/region to render** — not which tenant. Tenancy lives in `frontend-customer`.
 
@@ -57,7 +57,7 @@ Two caveats worth knowing before you touch locale code:
 ```ts
 const APEX_PAIRS = [
   ["contentor.app", "tr.contentor.app"],
-  ["localhost",     "tr.localhost"],
+  ["localhost", "tr.localhost"],
 ] as const;
 ```
 
@@ -94,7 +94,7 @@ headers: {
 }
 ```
 
-`X-Tenant-Domain` is required because Node's undici drops a custom `Host` header, so Django would resolve the public schema by accident. For this app the target *is* the public schema, but the header must still be explicit. Both `getAuthUser()` and `getMyTenants()` swallow errors and return `null`/`[]` — pages decide what to do with an empty result rather than crashing the render.
+`X-Tenant-Domain` is required because Node's undici drops a custom `Host` header, so Django would resolve the public schema by accident. For this app the target _is_ the public schema, but the header must still be explicit. Both `getAuthUser()` and `getMyTenants()` swallow errors and return `null`/`[]` — pages decide what to do with an empty result rather than crashing the render.
 
 `requireAuth()` / `requireSuperuser()` are the redirecting variants used by layouts.
 
@@ -117,7 +117,7 @@ Sections live in `components/landing/`: `HeroSection`, `ProductMockup`, `SocialP
 All copy-bearing sections are `"use client"` and pull strings via `useTranslations("marketing.<section>")`. They share a pattern: a frozen `as const` key array drives the render, and the keys index into the message files.
 
 ```ts
-const FAQ_KEYS = ["freePlan", "technical", /* … */] as const;
+const FAQ_KEYS = ["freePlan", "technical" /* … */] as const;
 // renders t(`items.${key}.q`) / t(`items.${key}.a`)
 ```
 
@@ -150,7 +150,7 @@ Both handlers go through `useAsyncAction` (`@shared/hooks/use-async-action`) for
 
 - **`PlatformHeader`** — sticky pill header on every public page. Takes `user?: User | null` from the server component above it; swaps sign-in/get-started for a user chip + sign-out (`POST /api/auth/logout`, then `navigate("/")` + `router.refresh()`). Deep-links signed-in users to `/admin` or `/dashboard` based on `is_superuser`.
 - **`PlatformFooter`** — link columns from the `common.footer` / `common.nav` namespaces, plus `LanguageSwitcher`. The switcher computes the other-locale URL from `window.location` **inside a `useEffect`**, deliberately: branching on `typeof window` during render made the server emit nothing and the client an `<a href>`, which hydration-mismatched. Keep the "render href-less, fill in after mount" shape if you touch it.
-- **`AppSidebar`** — collapsible admin nav. Groups default to open on both server and client render (matching markup), then layer persisted collapse state from `localStorage["admin-nav-open-sections"]` in an effect. Active-section detection uses `isNavItemActive({ pathname, pendingHref }, href)` from `@shared/navigation/navigation-state`, so a group auto-opens for a *pending* navigation, not just a committed one. `toggleSection` resolves `prev[id] ?? true` before flipping, because schema-driven groups have no key in the initial state.
+- **`AppSidebar`** — collapsible admin nav. Groups default to open on both server and client render (matching markup), then layer persisted collapse state from `localStorage["admin-nav-open-sections"]` in an effect. Active-section detection uses `isNavItemActive({ pathname, pendingHref }, href)` from `@shared/navigation/navigation-state`, so a group auto-opens for a _pending_ navigation, not just a committed one. `toggleSection` resolves `prev[id] ?? true` before flipping, because schema-driven groups have no key in the initial state.
 - **`ThemeToggle`** — thin wrapper injecting `MODES = ["light", "dim", "dark"]` into the shared toggle, so every mount cycles all three.
 
 Several `components/shared/*` and `components/ui/*` files are pure re-exports of `@shared/*` (e.g. `empty-state.tsx`, `lib/utils.ts`). Prefer importing through the local alias so a future divergence has one place to live.

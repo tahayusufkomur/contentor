@@ -8,22 +8,22 @@ It is mounted once, unconditionally, from `src/app/layout.tsx` (`RootLayout → 
 
 ## Why this file is self-contained
 
-`frontend-customer` has an equivalent widget backed by `lib/assistant.ts`. `frontend-main` is a **separate Next.js app** — there is no cross-app import boundary — so the polling reducer (`applyThreadPoll`) is duplicated here verbatim, structure-for-structure. When you change polling semantics in one app, change the other. The doc comment on `applyThreadPoll` points at the customer-side original as the canonical history of *why* the reducer has this exact shape.
+`frontend-customer` has an equivalent widget backed by `lib/assistant.ts`. `frontend-main` is a **separate Next.js app** — there is no cross-app import boundary — so the polling reducer (`applyThreadPoll`) is duplicated here verbatim, structure-for-structure. When you change polling semantics in one app, change the other. The doc comment on `applyThreadPoll` points at the customer-side original as the canonical history of _why_ the reducer has this exact shape.
 
 ## Backend contract
 
 Five endpoints, all called with `credentials: "same-origin"` (the visitor is anonymous; the session id is the correlation key, not a cookie identity):
 
-| Endpoint | Called by | Purpose |
-|---|---|---|
-| `GET /api/v1/help/status/` | mount effect in `HelpBubble` | `{ enabled: boolean }` — kill switch |
-| `POST /api/v1/help/chat/` | `streamChat` | send transcript, read SSE-framed answer |
-| `GET /api/v1/help/thread/?session=&after=` | `fetchThread` | this session's persisted thread |
-| `POST /api/v1/help/human-message/` | `sendHumanMessage` | visitor message while in human mode |
-| `POST /api/v1/help/human-request/` | `requestHuman` | ask for a human agent |
-| `POST /api/v1/ai/rate/` | `rateAnswer` | thumbs up/down on one answer |
+| Endpoint                                   | Called by                    | Purpose                                 |
+| ------------------------------------------ | ---------------------------- | --------------------------------------- |
+| `GET /api/v1/help/status/`                 | mount effect in `HelpBubble` | `{ enabled: boolean }` — kill switch    |
+| `POST /api/v1/help/chat/`                  | `streamChat`                 | send transcript, read SSE-framed answer |
+| `GET /api/v1/help/thread/?session=&after=` | `fetchThread`                | this session's persisted thread         |
+| `POST /api/v1/help/human-message/`         | `sendHumanMessage`           | visitor message while in human mode     |
+| `POST /api/v1/help/human-request/`         | `requestHuman`               | ask for a human agent                   |
+| `POST /api/v1/ai/rate/`                    | `rateAnswer`                 | thumbs up/down on one answer            |
 
-`streamChat` handles a dual-shaped response. If `Content-Type` is `application/json`, the backend did *not* stream: either it's a caps/config problem (throws `"unavailable"`) or `{ mode: "human" }`, meaning the conversation flipped to human mode server-side between the visitor typing and the POST landing. In that case the message is already stored and the poller will deliver the reply, so `streamChat` resolves `"human"` and `send()` drops the empty streaming placeholder it had optimistically appended.
+`streamChat` handles a dual-shaped response. If `Content-Type` is `application/json`, the backend did _not_ stream: either it's a caps/config problem (throws `"unavailable"`) or `{ mode: "human" }`, meaning the conversation flipped to human mode server-side between the visitor typing and the POST landing. In that case the message is already stored and the poller will deliver the reply, so `streamChat` resolves `"human"` and `send()` drops the empty streaming placeholder it had optimistically appended.
 
 Otherwise the body is read as a stream of `\n\n`-separated frames, each with a `data: ` line carrying `{ type: "delta" | "done" | "error", ... }`. Deltas are appended to the last message; `done` carries `transcript_id`, `rate_token` and follow-up `suggestions` (captured as `AnswerMeta`). A stream that ends without a `done` frame throws — a truncated answer is treated as a failure, not a partial success.
 
@@ -94,6 +94,6 @@ Note: this widget predates / sits outside the shared loading conventions in CLAU
 
 - **Changing polling semantics?** Mirror the change in `frontend-customer/src/lib/assistant.ts::applyThreadPoll` and keep the doc comments in sync.
 - **Adding a new response mode to `/help/chat/`?** It must arrive as JSON with a `mode` field; `streamChat` currently throws `"unavailable"` for any JSON body other than `mode: "human"`.
-- **Adding a new marketing link target?** Extend `LINK_RE`'s alternation *and* the backend persona prompt — either alone silently drops the link.
+- **Adding a new marketing link target?** Extend `LINK_RE`'s alternation _and_ the backend persona prompt — either alone silently drops the link.
 - **New `system` marker?** Add it to `systemLine()` with a translation key under `marketing.helpBot`, or it renders as nothing.
 - The pure functions (`resolveSession`, `applyThreadPoll`) are deliberately DOM-free and are the right place to add unit tests for expiry and replay behavior.

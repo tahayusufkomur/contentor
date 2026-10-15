@@ -2,17 +2,17 @@
 
 # Onboarding Wizard & Site AI
 
-The path from "a coach typed a brand name on the marketing site" to "a provisioned tenant serving an AI-composed, AI-written site" — plus the AI editing surfaces that keep that site changeable afterwards. This is the only area of the product where a *paying customer's entire site is authored by the system*, which is why it spans two frontends, a dedicated Django package, a shared pure resolver, and an offline capture tool.
+The path from "a coach typed a brand name on the marketing site" to "a provisioned tenant serving an AI-composed, AI-written site" — plus the AI editing surfaces that keep that site changeable afterwards. This is the only area of the product where a _paying customer's entire site is authored by the system_, which is why it spans two frontends, a dedicated Django package, a shared pure resolver, and an offline capture tool.
 
 ## Sub-modules
 
-| Sub-module | Role |
-|---|---|
+| Sub-module                                                                     | Role                                                                                                                                                     |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Backend — `apps/core/onboarding/`](onboarding-wizard-site-ai-backend-apps.md) | The orchestrator: wizard-token auth, answer persistence, AI content/photo/logo generation, tenant provisioning, page composition, site-AI edit endpoints |
-| [frontend-main](onboarding-wizard-site-ai-frontend-main-src.md) | The signup funnel and wizard UI: `WizardFlow`, the step components, the logo design chat (`AiLogoDoor`), the provisioning screen |
-| [frontend-customer](onboarding-wizard-site-ai-frontend-customer-src.md) | Post-onboarding: `AdminSiteAiPage` — natural-language site edits with a preview/apply gate |
-| [packages/shared](onboarding-wizard-site-ai-packages-shared.md) | `wizard/mockups.ts` — niche + mockup name → ordered candidate screenshot URLs, with fallback policy |
-| [tools/wizard-mockups](onboarding-wizard-site-ai-tools-wizard-mockups.md) | `capture.mjs` — regenerates those screenshots by driving a real browser against a real tenant site |
+| [frontend-main](onboarding-wizard-site-ai-frontend-main-src.md)                | The signup funnel and wizard UI: `WizardFlow`, the step components, the logo design chat (`AiLogoDoor`), the provisioning screen                         |
+| [frontend-customer](onboarding-wizard-site-ai-frontend-customer-src.md)        | Post-onboarding: `AdminSiteAiPage` — natural-language site edits with a preview/apply gate                                                               |
+| [packages/shared](onboarding-wizard-site-ai-packages-shared.md)                | `wizard/mockups.ts` — niche + mockup name → ordered candidate screenshot URLs, with fallback policy                                                      |
+| [tools/wizard-mockups](onboarding-wizard-site-ai-tools-wizard-mockups.md)      | `capture.mjs` — regenerates those screenshots by driving a real browser against a real tenant site                                                       |
 
 ## How they fit together
 

@@ -12,10 +12,10 @@ If you are adding a test, changing a migration, or touching container dependenci
 
 A single `python:3.12-slim` image serves dev, prod, and CI. The variation is entirely in build args, so the runtime layout (`WORKDIR /app/backend`, entrypoint, port) is identical everywhere.
 
-| Build arg | Default | Purpose |
-|---|---|---|
-| `PIP_REQUIREMENTS` | `dev.txt` | Which file under `requirements/` to install. Prod compose passes `prod.txt` so the production image ships Sentry/Prometheus and **not** pytest/ruff/mypy/ipdb. |
-| `INSTALL_CLAUDE_CLI` | `0` | Dev-only. When dev compose passes `1`, the Claude Code CLI is installed and symlinked to `/usr/local/bin/claude`, which is what the "Ask Contentor" help bot's local provider (`HELP_BOT_PROVIDER=cli`) shells out to. Auth comes from `CLAUDE_CODE_OAUTH_TOKEN` in `.env` (generate once via `claude setup-token`). Prod never sets this. |
+| Build arg            | Default   | Purpose                                                                                                                                                                                                                                                                                                                                    |
+| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PIP_REQUIREMENTS`   | `dev.txt` | Which file under `requirements/` to install. Prod compose passes `prod.txt` so the production image ships Sentry/Prometheus and **not** pytest/ruff/mypy/ipdb.                                                                                                                                                                             |
+| `INSTALL_CLAUDE_CLI` | `0`       | Dev-only. When dev compose passes `1`, the Claude Code CLI is installed and symlinked to `/usr/local/bin/claude`, which is what the "Ask Contentor" help bot's local provider (`HELP_BOT_PROVIDER=cli`) shells out to. Auth comes from `CLAUDE_CODE_OAUTH_TOKEN` in `.env` (generate once via `claude setup-token`). Prod never sets this. |
 
 Build-time notes worth preserving when editing:
 
@@ -71,7 +71,7 @@ This is the substantive code in the module. Its central design decision:
 
 > **One PostgreSQL tenant schema, created once per session and never dropped.**
 
-`create_schema(sync_schema=True)` — which runs the full tenant migration set — is by far the most expensive operation in the suite. Creating a schema per test module roughly doubled total runtime. Instead a single tenant (`schema_name="shared_test"`, domain `shared-test.localhost`) is built once and shared, and test isolation is achieved by *deleting rows* rather than by rebuilding schemas.
+`create_schema(sync_schema=True)` — which runs the full tenant migration set — is by far the most expensive operation in the suite. Creating a schema per test module roughly doubled total runtime. Instead a single tenant (`schema_name="shared_test"`, domain `shared-test.localhost`) is built once and shared, and test isolation is achieved by _deleting rows_ rather than by rebuilding schemas.
 
 ### Fixture map
 
@@ -104,7 +104,7 @@ The counterweight to never dropping the schema. `django_db(transaction=True)` te
 
 #### `tenant_ctx`
 
-The fixture most tests actually want. Wraps the body in `tenant_context(tenant)` and calls `_clean_tenant_tables()` **both before and after** the test. Cleaning *before* matters under pytest-xdist: load balancing makes ordering nondeterministic, so a test may inherit committed rows from a `transaction=True` test that ran just ahead of it on the same worker.
+The fixture most tests actually want. Wraps the body in `tenant_context(tenant)` and calls `_clean_tenant_tables()` **both before and after** the test. Cleaning _before_ matters under pytest-xdist: load balancing makes ordering nondeterministic, so a test may inherit committed rows from a `transaction=True` test that ran just ahead of it on the same worker.
 
 #### `_clean_tenant_tables()` and `TENANT_CLEANUP_MODELS`
 
@@ -118,13 +118,13 @@ Naively issuing `.objects.all().delete()` for every model costs ~2 queries each,
 
 Deletes five Redis key patterns around every test. Each addresses a distinct cross-test bleed:
 
-| Pattern | What it clears | Failure it prevents |
-|---|---|---|
-| `ratelimit:*` | `TenantRateLimitMiddleware` counters | Middleware-level 429s |
-| `*throttle*` | DRF `AnonRateThrottle` (e.g. contact form 5/min) | `APIClient` always looks like `127.0.0.1`, so >5 requests in 60s across tests → 429 |
-| `*logo-ai*` | Logo Studio AI Brand Pack 30-day result cache (`logo-ai:pack:*`) | A cached pack from a prior run makes a later run skip the real AI path |
-| `*ai-answer*` | Assistant first-turn answer cache (`apps.core.assistant`) | One test's cached answer bleeds into another asking the same question |
-| `*ai-sess*` | Per-session daily cap | A reused session id arrives already capped |
+| Pattern       | What it clears                                                   | Failure it prevents                                                                 |
+| ------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `ratelimit:*` | `TenantRateLimitMiddleware` counters                             | Middleware-level 429s                                                               |
+| `*throttle*`  | DRF `AnonRateThrottle` (e.g. contact form 5/min)                 | `APIClient` always looks like `127.0.0.1`, so >5 requests in 60s across tests → 429 |
+| `*logo-ai*`   | Logo Studio AI Brand Pack 30-day result cache (`logo-ai:pack:*`) | A cached pack from a prior run makes a later run skip the real AI path              |
+| `*ai-answer*` | Assistant first-turn answer cache (`apps.core.assistant`)        | One test's cached answer bleeds into another asking the same question               |
+| `*ai-sess*`   | Per-session daily cap                                            | A reused session id arrives already capped                                          |
 
 The leading wildcards are required for the last three: those are written through `django.core.cache.cache`, so Django's key function prefixes them with `:<version>:`, whereas `ratelimit:*` is written with a raw redis client. The whole body is wrapped in a bare `except Exception` (`# noqa: S110`) — Redis being unavailable must not fail the suite.
 
@@ -136,7 +136,7 @@ The dev container exports `CURATED_LOGO_SYNC_DIR` pointing at a repo bind mount.
 
 Guarantees the canonical `"Free"` `PlatformPlan` row (name from `settings.BILLING_FREE_PLAN_NAME`, defaults in `_FREE_PLAN_DEFAULTS`) exists before every db test. The problem it solves is subtle and worth reading before you "simplify" it:
 
-A `transaction=True` test flushes the public schema, deleting rows seeded by *data migrations* — including the Free plan backfilled by `0005_backfill_free_plan.py`. Nothing recreates it, and `--reuse-db` never reruns migrations, so **the first such test in a session permanently removes it from that worker's database**. The symptom surfaces much later as an unrelated `PlatformPlan.DoesNotExist` in whatever test happens to need it next (`apps/core/tests/test_seed_dev_tenants.py` resolves it by name via `seed_dev_tenants._resolve_plan`). Re-`get_or_create`ing it before every db test sidesteps the flush entirely. Django's `serialized_rollback` was tried and reverted — it collides with already-present `ContentType` rows on a fresh or reused DB. The fixture short-circuits (`yield; return`) when the test has no `django_db` marker.
+A `transaction=True` test flushes the public schema, deleting rows seeded by _data migrations_ — including the Free plan backfilled by `0005_backfill_free_plan.py`. Nothing recreates it, and `--reuse-db` never reruns migrations, so **the first such test in a session permanently removes it from that worker's database**. The symptom surfaces much later as an unrelated `PlatformPlan.DoesNotExist` in whatever test happens to need it next (`apps/core/tests/test_seed_dev_tenants.py` resolves it by name via `seed_dev_tenants._resolve_plan`). Re-`get_or_create`ing it before every db test sidesteps the flush entirely. Django's `serialized_rollback` was tried and reverted — it collides with already-present `ContentType` rows on a fresh or reused DB. The fixture short-circuits (`yield; return`) when the test has no `django_db` marker.
 
 ---
 
@@ -158,13 +158,13 @@ def test_something(tenant_ctx, api_client):
 
 ### Failure patterns and their real causes
 
-| Symptom | Almost always means |
-|---|---|
-| `ProgrammingError` on a column that exists in a model | New migration + `--reuse-db`. Run `make test-fresh`. |
-| `PlatformPlan.DoesNotExist` in an unrelated test | A `transaction=True` test flushed public — check `_ensure_free_plan` is still autouse. |
-| Any `test_seed_dev_tenants.py` failure (one test or all of them) | Reused-DB dirt. Rerun that file with `--create-db`. |
-| Unexplained `429` | A rate-limit or throttle key pattern not covered by `_purge_rate_limit_keys`. |
-| Rows appearing that no test created | A tenant model missing from `TENANT_CLEANUP_MODELS`, leaked from a previous session. |
+| Symptom                                                          | Almost always means                                                                    |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `ProgrammingError` on a column that exists in a model            | New migration + `--reuse-db`. Run `make test-fresh`.                                   |
+| `PlatformPlan.DoesNotExist` in an unrelated test                 | A `transaction=True` test flushed public — check `_ensure_free_plan` is still autouse. |
+| Any `test_seed_dev_tenants.py` failure (one test or all of them) | Reused-DB dirt. Rerun that file with `--create-db`.                                    |
+| Unexplained `429`                                                | A rate-limit or throttle key pattern not covered by `_purge_rate_limit_keys`.          |
+| Rows appearing that no test created                              | A tenant model missing from `TENANT_CLEANUP_MODELS`, leaked from a previous session.   |
 
 ---
 

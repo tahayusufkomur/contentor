@@ -4,8 +4,8 @@
 
 The billing module in `frontend-customer` covers two distinct money flows that happen to share a URL namespace:
 
-1. **Marketplace billing** — a *student* buys or subscribes to a *coach's* content (courses, downloads, live classes/streams, bundles, tenant subscription plans). Money flows student → coach's Stripe Connect account, minus the platform fee.
-2. **Platform billing** — the *coach* pays Contentor for their own SaaS plan (Free / Starter / Pro). Money flows coach → platform.
+1. **Marketplace billing** — a _student_ buys or subscribes to a _coach's_ content (courses, downloads, live classes/streams, bundles, tenant subscription plans). Money flows student → coach's Stripe Connect account, minus the platform fee.
+2. **Platform billing** — the _coach_ pays Contentor for their own SaaS plan (Free / Starter / Pro). Money flows coach → platform.
 
 Both are served from `/api/v1/billing/`, but the platform side lives under `/api/v1/billing/platform/*` and is scoped to the coach, while everything else is tenant-scoped and student-facing. Keeping this distinction straight is the single most useful thing to know when working in this module — `SubscriptionTile` (coach's own plan) and `(student)/subscriptions/page.tsx` (student's memberships in this tenant) look similar and mean completely different things.
 
@@ -13,14 +13,14 @@ Both are served from `/api/v1/billing/`, but the platform side lives under `/api
 
 ## File map
 
-| Layer | Files |
-|---|---|
-| Types | `src/types/billing.ts` — `AccessInfo`, `StoreItem`, `Bundle`, `CartItem`, `SubscriptionPlan(Detail)` |
-| Pure helpers | `src/lib/billing-interval.ts`, `src/lib/entitlements.ts`, `src/lib/cart.ts` |
-| API wrappers | `src/lib/api/billing-platform.ts`, `src/lib/api/entitlements.ts` |
+| Layer             | Files                                                                                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Types             | `src/types/billing.ts` — `AccessInfo`, `StoreItem`, `Bundle`, `CartItem`, `SubscriptionPlan(Detail)`                                                         |
+| Pure helpers      | `src/lib/billing-interval.ts`, `src/lib/entitlements.ts`, `src/lib/cart.ts`                                                                                  |
+| API wrappers      | `src/lib/api/billing-platform.ts`, `src/lib/api/entitlements.ts`                                                                                             |
 | Shared components | `src/components/billing/{price-badge,subscribe-button,content-picker}.tsx`, `src/components/admin/{entitlements-provider,feature-badges,monetize-nudge}.tsx` |
-| Coach routes | `app/admin/billing/**`, `app/admin/payouts/page.tsx` |
-| Student routes | `app/(student)/{checkout,checkout/success,orders,subscriptions}/`, `app/(public)/{store,plans}/**` |
+| Coach routes      | `app/admin/billing/**`, `app/admin/payouts/page.tsx`                                                                                                         |
+| Student routes    | `app/(student)/{checkout,checkout/success,orders,subscriptions}/`, `app/(public)/{store,plans}/**`                                                           |
 
 Everything talks to Django through `clientFetch` (`@/lib/api-client`) from client components, or `serverFetch` (`@/lib/api-server`) from server components — `app/(public)/plans/[id]/page.tsx` is the one server-rendered page here (`export const dynamic = "force-dynamic"`).
 
@@ -73,7 +73,7 @@ Error handling on the pay action is delegated to `useAsyncAction`'s `onError`, w
 
 `components/billing/content-picker.tsx` is the shared multi-select used by bundle create/edit and plan-access management. It loads `GET billing/products/`, **drops rows with `type === "bundle"`** (no bundles inside bundles), and filters client-side by type + title substring. Selection is a controlled `SelectedItem[]` (`content_type`, `object_id`, `title`, `price`) owned by the parent.
 
-Note the type asymmetry it papers over: when adding, it prefers `product.content_type ?? product.type`; when *loading* an existing bundle, `EditBundlePage` normalizes Django content-type labels back to picker types via `CONTENT_TYPE_NAME_MAP` (`courses.course → course`, `downloads.downloadfile → download`, `live.liveclass → live_class`, `live.livestream → live_stream`), falling back to the raw numeric content-type id as a string. If you add a sellable model, you must extend both that map and `TYPE_FILTERS`/`TYPE_LABEL_MAP`/`TYPE_BADGE_VARIANT`.
+Note the type asymmetry it papers over: when adding, it prefers `product.content_type ?? product.type`; when _loading_ an existing bundle, `EditBundlePage` normalizes Django content-type labels back to picker types via `CONTENT_TYPE_NAME_MAP` (`courses.course → course`, `downloads.downloadfile → download`, `live.liveclass → live_class`, `live.livestream → live_stream`), falling back to the raw numeric content-type id as a string. If you add a sellable model, you must extend both that map and `TYPE_FILTERS`/`TYPE_LABEL_MAP`/`TYPE_BADGE_VARIANT`.
 
 Bundle pages compute "Original Price (sum of items)" locally from the selected items' prices. `EditBundlePage` additionally keeps `initialOriginalPrice` from the server so the field doesn't collapse to `0.00` when item prices can't be resolved from the product list.
 
@@ -85,11 +85,11 @@ Plan access (`admin/billing/plans/[id]/page.tsx`) loads plan + `plans/:id/access
 
 `src/lib/api/billing-platform.ts` is the thin typed wrapper for the coach-facing endpoints:
 
-| Function | Endpoint |
-|---|---|
-| `getSubscription()` | `GET billing/platform/subscription/` |
-| `listPlatformPlans()` | `GET billing/platform/plans/` |
-| `startCheckout(planId)` | `POST billing/platform/checkout/` |
+| Function                | Endpoint                             |
+| ----------------------- | ------------------------------------ |
+| `getSubscription()`     | `GET billing/platform/subscription/` |
+| `listPlatformPlans()`   | `GET billing/platform/plans/`        |
+| `startCheckout(planId)` | `POST billing/platform/checkout/`    |
 
 `PlatformPlanSummary.prices` is a per-currency map of `{ amount_cents, available }`. `available` means a Stripe price id is configured for that currency — **the id itself never reaches the client**. The flat `amount_cents` / `currency` fields are a legacy region-default and should not be used for new UI.
 

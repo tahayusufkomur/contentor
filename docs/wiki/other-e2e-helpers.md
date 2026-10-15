@@ -2,19 +2,19 @@
 
 # e2e/helpers — Shared Playwright Test Utilities
 
-Five small, dependency-light modules that every Playwright spec in `e2e/specs/` leans on. They exist because the same four problems recur in every spec: *get an authenticated browser*, *reach into Django*, *read an email the app just sent*, *pin a nondeterministic A/B bucket*, and *pay a Stripe Checkout page*. Each helper solves exactly one of those and nothing else.
+Five small, dependency-light modules that every Playwright spec in `e2e/specs/` leans on. They exist because the same four problems recur in every spec: _get an authenticated browser_, _reach into Django_, _read an email the app just sent_, _pin a nondeterministic A/B bucket_, and _pay a Stripe Checkout page_. Each helper solves exactly one of those and nothing else.
 
 None of them import each other except `auth.ts → compose.ts`. There is no shared fixture file, no global setup, no page-object layer — specs import the functions they need directly.
 
 ## Module map
 
-| File | Exports | Job |
-|---|---|---|
-| `compose.ts` | `manage`, `REPO_ROOT` | Run `manage.py` inside the running `django` container |
-| `auth.ts` | `coachContext`, `studentContext`, `superadminContext`, `MAIN`, `TENANT`, `TENANT_HOST` | Pre-authenticated `BrowserContext` per role |
-| `email.ts` | `latestEmail`, `firstLink` | Read the dev email sink; extract the first link |
-| `holdout.ts` | `wizardBucket`, `bucketedEmail` | Deterministic wizard A/B bucket selection |
-| `stripe.ts` | `payStripeCheckout` | Drive a Stripe-hosted Checkout page to payment |
+| File         | Exports                                                                                | Job                                                   |
+| ------------ | -------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `compose.ts` | `manage`, `REPO_ROOT`                                                                  | Run `manage.py` inside the running `django` container |
+| `auth.ts`    | `coachContext`, `studentContext`, `superadminContext`, `MAIN`, `TENANT`, `TENANT_HOST` | Pre-authenticated `BrowserContext` per role           |
+| `email.ts`   | `latestEmail`, `firstLink`                                                             | Read the dev email sink; extract the first link       |
+| `holdout.ts` | `wizardBucket`, `bucketedEmail`                                                        | Deterministic wizard A/B bucket selection             |
+| `stripe.ts`  | `payStripeCheckout`                                                                    | Drive a Stripe-hosted Checkout page to payment        |
 
 ```mermaid
 graph LR
@@ -34,7 +34,7 @@ graph LR
 ## `compose.ts` — the escape hatch into Django
 
 ```ts
-export function manage(args: string[]): string
+export function manage(args: string[]): string;
 ```
 
 Synchronously runs `docker compose exec -T django python manage.py <args>` from `REPO_ROOT` (resolved two levels up from `__dirname`, so it works regardless of Playwright's cwd) and returns trimmed stdout. On failure it rethrows with `stderr`/`stdout`/`message` folded into the message — without that, `execFileSync` gives you an exit code and nothing usable.
@@ -54,12 +54,12 @@ When you need new seed behaviour, add or extend a management command in `backend
 
 ## `auth.ts` — pre-authenticated browser contexts
 
-The suite never logs in through the UI (except in specs that are *about* login). Instead it mints a JWT out-of-band and injects it as the `contentor_access_token` cookie.
+The suite never logs in through the UI (except in specs that are _about_ login). Instead it mints a JWT out-of-band and injects it as the `contentor_access_token` cookie.
 
 ```ts
-coachContext(browser)       // role=coach,      demo-yoga.localhost, tenant demo-yoga
-studentContext(browser)     // role=student,    demo-yoga.localhost, tenant demo-yoga
-superadminContext(browser)  // role=superadmin, localhost (no tenant)
+coachContext(browser); // role=coach,      demo-yoga.localhost, tenant demo-yoga
+studentContext(browser); // role=student,    demo-yoga.localhost, tenant demo-yoga
+superadminContext(browser); // role=superadmin, localhost (no tenant)
 ```
 
 All three are thin wrappers over `roleContext(browser, role, host, tenant?)`, which:
@@ -72,7 +72,7 @@ The cookie mirrors what the app sets in dev: `httpOnly: true`, `secure: false`, 
 
 ### The token cache
 
-`issueToken` memoizes in a module-level `Map` keyed `${role}:${tenant ?? ""}`. Each `manage` call boots a full Django process (~2s), and the issued JWTs are valid for days, so a spec file that opens ten coach contexts pays the 2s once. The cache lives for the lifetime of the Node process — Playwright workers are separate processes, so expect one mint per (role, tenant) *per worker*.
+`issueToken` memoizes in a module-level `Map` keyed `${role}:${tenant ?? ""}`. Each `manage` call boots a full Django process (~2s), and the issued JWTs are valid for days, so a spec file that opens ten coach contexts pays the 2s once. The cache lives for the lifetime of the Node process — Playwright workers are separate processes, so expect one mint per (role, tenant) _per worker_.
 
 If you add a fourth role, add a wrapper next to the existing three rather than exporting `roleContext`; the wrappers are where the host/tenant pairing is documented.
 
@@ -87,8 +87,8 @@ Consumers: `15-logo-studio`, `16-site-assistant`, `17-logo-curated-library`, `20
 ## `email.ts` — reading what the app sent
 
 ```ts
-await latestEmail(to)  // → { subject, html }
-firstLink(html)        // → first href, HTML-unescaped
+await latestEmail(to); // → { subject, html }
+firstLink(html); // → first href, HTML-unescaped
 ```
 
 `latestEmail` polls `GET http://localhost/api/v1/dev/emails/latest/?to=<to>` every 500ms for up to 15s. The status handling encodes the two distinct failure modes:
@@ -112,21 +112,21 @@ The onboarding wizard assigns each new signup to `control` or `treatment`. The a
 `wizardBucket` is a line-for-line mirror of `backend/apps/core/onboarding/experiments.py::assign_wizard_bucket`:
 
 ```ts
-sha256(`${email}:${region}`).at(-1) & 1 ? "treatment" : "control"
+sha256(`${email}:${region}`).at(-1) & 1 ? "treatment" : "control";
 ```
 
 `bucketedEmail(prefix, want, region?)` walks `${prefix}0@example.com`, `${prefix}1@example.com`, … until one hashes into `want`. Roughly half of candidates match, so it returns in a couple of iterations; it gives up at 100 and throws.
 
 Used by `23-wizard-ai-logo` and `26-content-first-wizard`.
 
-**This file is a mirror, and mirrors rot.** If you change the bucketing function, region default, or hash input format on the backend, change it here in the same commit — otherwise the specs silently start exercising the wrong flow and only *look* like they pass.
+**This file is a mirror, and mirrors rot.** If you change the bucketing function, region default, or hash input format on the backend, change it here in the same commit — otherwise the specs silently start exercising the wrong flow and only _look_ like they pass.
 
 ---
 
 ## `stripe.ts` — paying a hosted Checkout page
 
 ```ts
-await payStripeCheckout(page)
+await payStripeCheckout(page);
 ```
 
 One function, entered when the page has already navigated to Stripe. It asserts the URL matches `checkout.stripe.com|accessible.stripe.com`, then branches on which of Stripe's two Checkout layouts it landed on and fills the universal test card `4242 4242 4242 4242` with expiry `12/34`, CVC `123`.
@@ -135,7 +135,7 @@ Every field is typed with `pressSequentially({ delay: 50 })` rather than `fill()
 
 ### Layout detection
 
-Detection is by the presence of a **"Choose a currency:"** text node, waited on for up to 10s, absence meaning the standard layout. This signal is load-bearing and non-obvious: `hosted-payment-submit-button` exists on *both* layouts and can't discriminate, and the previously-used `data-testid="card-accordion-item"` isn't in the real DOM at all.
+Detection is by the presence of a **"Choose a currency:"** text node, waited on for up to 10s, absence meaning the standard layout. This signal is load-bearing and non-obvious: `hosted-payment-submit-button` exists on _both_ layouts and can't discriminate, and the previously-used `data-testid="card-accordion-item"` isn't in the real DOM at all.
 
 ```mermaid
 graph TD
@@ -146,7 +146,7 @@ graph TD
 
 ### Standard — `checkout.stripe.com`
 
-Platform subscriptions, single payment method. Waits for `getByTestId("hosted-payment-submit-button")` to confirm render, then fills card/expiry/CVC and *conditionally* fills email, cardholder name, and postal code — each guarded by an `isVisible()` check, because Stripe omits fields it already knows (a known customer has no email field). Submits via the testid button.
+Platform subscriptions, single payment method. Waits for `getByTestId("hosted-payment-submit-button")` to confirm render, then fills card/expiry/CVC and _conditionally_ fills email, cardholder name, and postal code — each guarded by an `isVisible()` check, because Stripe omits fields it already knows (a known customer has no email field). Submits via the testid button.
 
 ### Connect / Adaptive Pricing — `accessible.stripe.com`
 

@@ -8,7 +8,7 @@ Because of that, the Makefile is the de-facto contract between contributors and 
 
 ## Design principles
 
-**Everything runs where it belongs.** Backend work executes *inside* the `django` container via `docker compose exec django …`; frontend unit tests and formatters run *on the host* via `cd <app> && npx …`; typechecks run *inside* the Next.js containers. This split is deliberate and not cosmetic — see [Container vs. host](#container-vs-host).
+**Everything runs where it belongs.** Backend work executes _inside_ the `django` container via `docker compose exec django …`; frontend unit tests and formatters run _on the host_ via `cd <app> && npx …`; typechecks run _inside_ the Next.js containers. This split is deliberate and not cosmetic — see [Container vs. host](#container-vs-host).
 
 **Two compose files, one variable.** Dev uses the implicit `docker-compose.yml`. Prod is reached only through the single variable at the top of the file:
 
@@ -16,7 +16,7 @@ Because of that, the Makefile is the de-facto contract between contributors and 
 PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 ```
 
-`docker-compose.prod.yml` is self-contained, *not* an override layer, which is why `PROD_COMPOSE` passes `-f` alone rather than stacking files. Only `prod-build` and `prod-config` use it — actual production deployment happens on the remote host (see [Deploy](#deploy)).
+`docker-compose.prod.yml` is self-contained, _not_ an override layer, which is why `PROD_COMPOSE` passes `-f` alone rather than stacking files. Only `prod-build` and `prod-config` use it — actual production deployment happens on the remote host (see [Deploy](#deploy)).
 
 **Self-documenting targets.** Every target intended for humans carries a `## description` comment, which `make help` extracts.
 
@@ -32,7 +32,7 @@ PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
 Two things to note when editing:
 
 - The `$$` escaping is mandatory. `$$` reaches the shell as a literal `$` — for the regex end anchor and for awk's `$1`/`$2`. A single `$` would be interpreted by `make` as an (empty) variable and silently break the output.
-- **The target list in each `grep -E` alternation is an explicit allowlist**, not a category tag. Adding a target with a `##` comment does *not* make it appear in `make help` — you must also add its name to the relevant alternation. Several existing targets are currently invisible for exactly this reason: `ai-check`, `check-i18n`, `seed-demo-assets`, `capture-wizard-mockups`, `stripe-listen`, and all three `flowmap*` targets. Adding a new target means editing two places.
+- **The target list in each `grep -E` alternation is an explicit allowlist**, not a category tag. Adding a target with a `##` comment does _not_ make it appear in `make help` — you must also add its name to the relevant alternation. Several existing targets are currently invisible for exactly this reason: `ai-check`, `check-i18n`, `seed-demo-assets`, `capture-wizard-mockups`, `stripe-listen`, and all three `flowmap*` targets. Adding a new target means editing two places.
 
 ## Target groups
 
@@ -40,13 +40,13 @@ Two things to note when editing:
 
 Five targets sit on a spectrum from gentle to destructive:
 
-| Target | Volumes | `.next` | Runs in foreground |
-|---|---|---|---|
-| `restart` | kept | kept | no (`-d`) |
-| `reset` | **wiped** (`-v`) | kept | no (`-d`) |
-| `down` | **wiped** (`-v`) | kept | — |
-| `dev` | kept | kept | **yes** |
-| `dev-reset` | **wiped** (`-v`) | **removed** | **yes** |
+| Target      | Volumes          | `.next`     | Runs in foreground |
+| ----------- | ---------------- | ----------- | ------------------ |
+| `restart`   | kept             | kept        | no (`-d`)          |
+| `reset`     | **wiped** (`-v`) | kept        | no (`-d`)          |
+| `down`      | **wiped** (`-v`) | kept        | —                  |
+| `dev`       | kept             | kept        | **yes**            |
+| `dev-reset` | **wiped** (`-v`) | **removed** | **yes**            |
 
 Note that `down` passes `-v`: stopping the stack destroys the Postgres and Redis volumes. There is no "stop but keep my data" target — use `docker compose stop` directly for that.
 
@@ -59,7 +59,7 @@ dev:
 	docker compose up --build
 ```
 
-MinIO is started first *and waited on* (`--wait`) so that `scripts/mirror_demo_assets.py` — a host-side Python script — has a live S3 endpoint to mirror the `demo/*` media into before the rest of the stack comes up. `dev-reset` repeats the same sequence after wiping volumes and both `.next` build caches. This ordering is the reason neither target can be collapsed into a single `docker compose up`.
+MinIO is started first _and waited on_ (`--wait`) so that `scripts/mirror_demo_assets.py` — a host-side Python script — has a live S3 endpoint to mirror the `demo/*` media into before the rest of the stack comes up. `dev-reset` repeats the same sequence after wiping volumes and both `.next` build caches. This ordering is the reason neither target can be collapsed into a single `docker compose up`.
 
 ```mermaid
 flowchart LR
@@ -70,6 +70,7 @@ flowchart LR
     style E stroke-dasharray: 4 4
     style D stroke-dasharray: 4 4
 ```
+
 <sub>Dashed steps run only for `dev-reset`.</sub>
 
 ### Database
@@ -87,7 +88,7 @@ seed:
 
 `--force` makes `seed_dev_tenants` idempotent-by-recreation, so `make seed` is safe to re-run.
 
-`seed-demo-assets` is host-run (not `docker compose exec`) because it needs `.env.prod` credentials to read the production bucket and MinIO's *external* endpoint to write. `capture-wizard-mockups` is the only target in the file with a **prerequisite** — it declares `seed-demo-assets` so the mockup screenshots capture real media rather than placeholders. It also accepts `ARGS`:
+`seed-demo-assets` is host-run (not `docker compose exec`) because it needs `.env.prod` credentials to read the production bucket and MinIO's _external_ endpoint to write. `capture-wizard-mockups` is the only target in the file with a **prerequisite** — it declares `seed-demo-assets` so the mockup screenshots capture real media rather than placeholders. It also accepts `ARGS`:
 
 ```bash
 make capture-wizard-mockups ARGS="--niche belly_dance"
@@ -135,7 +136,7 @@ Note it hits `localhost` (port 80, Caddy), not the Django container directly —
 
 ### Stripe
 
-`stripe-listen` first verifies the Stripe CLI is installed with a `command -v` guard and a `brew install` hint, then hands off to `./scripts/stripe_listen_auto.sh .env`. The script forwards test-mode events to the local webhook endpoint *and* rewrites `STRIPE_WEBHOOK_SECRET` in `.env` in place — which is why it takes the env file as an argument rather than reading a hardcoded path.
+`stripe-listen` first verifies the Stripe CLI is installed with a `command -v` guard and a `brew install` hint, then hands off to `./scripts/stripe_listen_auto.sh .env`. The script forwards test-mode events to the local webhook endpoint _and_ rewrites `STRIPE_WEBHOOK_SECRET` in `.env` in place — which is why it takes the env file as an argument rather than reading a hardcoded path.
 
 ### Deploy
 
@@ -177,12 +178,12 @@ All four e2e targets run from `e2e/` and share a preamble: `npm install --silent
 
 Knowing where a recipe executes explains most of the Makefile's apparent inconsistencies.
 
-| Runs in a container | Runs on the host |
-|---|---|
-| `migrate*`, `makemigrations`, `seed`, `shell`, `ai-check` | `dev`/`dev-reset` compose orchestration |
-| `test*` (except `test-changed`) — via `django` | `seed-demo-assets`, `mirror_demo_assets.py` |
-| `typecheck`, `typecheck-backend` | `test-frontend`, `format`, `lint` scripts |
-| — | `e2e*`, `flowmap*`, `capture-wizard-mockups` |
+| Runs in a container                                       | Runs on the host                             |
+| --------------------------------------------------------- | -------------------------------------------- |
+| `migrate*`, `makemigrations`, `seed`, `shell`, `ai-check` | `dev`/`dev-reset` compose orchestration      |
+| `test*` (except `test-changed`) — via `django`            | `seed-demo-assets`, `mirror_demo_assets.py`  |
+| `typecheck`, `typecheck-backend`                          | `test-frontend`, `format`, `lint` scripts    |
+| —                                                         | `e2e*`, `flowmap*`, `capture-wizard-mockups` |
 
 The recurring reasons: Python/Django needs the container's environment and DB network; `packages/shared` only resolves inside the container's symlinked `node_modules`; Playwright and MinIO-mirroring need a browser and host-reachable URLs respectively; `select_tests.py` needs the host's git worktree.
 

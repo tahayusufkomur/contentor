@@ -2,19 +2,19 @@
 
 # Courses, Downloads & Media Library
 
-The content layer of a Contentor tenant. Five per-tenant Django apps — `courses`, `downloads`, `media`, `filters`, `tags` — that together answer one question: *what can this coach publish, and which of it may this student see right now?*
+The content layer of a Contentor tenant. Five per-tenant Django apps — `courses`, `downloads`, `media`, `filters`, `tags` — that together answer one question: _what can this coach publish, and which of it may this student see right now?_
 
 All five live in `TENANT_APPS`, so every table exists once per tenant schema. There is no tenant foreign key anywhere in these models; isolation comes from `django-tenants` setting the Postgres `search_path` before the view runs. A `Course` row simply cannot reference another tenant's `Lesson`.
 
 ## Mount points
 
-| App | URL prefix | Module |
-|---|---|---|
-| `courses` | `/api/v1/courses/` | `backend/apps/courses/urls.py` |
+| App         | URL prefix           | Module                           |
+| ----------- | -------------------- | -------------------------------- |
+| `courses`   | `/api/v1/courses/`   | `backend/apps/courses/urls.py`   |
 | `downloads` | `/api/v1/downloads/` | `backend/apps/downloads/urls.py` |
-| `media` | `/api/v1/photos/` | `backend/apps/media/urls.py` |
-| `filters` | `/api/v1/filters/` | `backend/apps/filters/urls.py` |
-| `tags` | `/api/v1/tags/` | `backend/apps/tags/urls.py` |
+| `media`     | `/api/v1/photos/`    | `backend/apps/media/urls.py`     |
+| `filters`   | `/api/v1/filters/`   | `backend/apps/filters/urls.py`   |
+| `tags`      | `/api/v1/tags/`      | `backend/apps/tags/urls.py`      |
 
 Note the mismatch: the app is `apps.media`, the route is `photos/`, and the model is `Photo`. The app label is generic because it is the tenant's object-storage registry; today the only thing registered there is images.
 
@@ -29,11 +29,11 @@ graph LR
     Student -.Progress.-> Lesson
 ```
 
-**`Course`** (`apps/courses/models.py`) is the only sluggable content type here — `save()` derives the slug from the title and de-duplicates it with a `-1`, `-2` suffix loop before delegating to `super().save()`. Every course route is keyed on that slug, so renaming a course does *not* change its URL (the slug is only generated when empty, and `CourseCreateUpdateSerializer` never exposes it as writable — it's `read_only_fields` in the studio panel too).
+**`Course`** (`apps/courses/models.py`) is the only sluggable content type here — `save()` derives the slug from the title and de-duplicates it with a `-1`, `-2` suffix loop before delegating to `super().save()`. Every course route is keyed on that slug, so renaming a course does _not_ change its URL (the slug is only generated when empty, and `CourseCreateUpdateSerializer` never exposes it as writable — it's `read_only_fields` in the studio panel too).
 
 **`Module` → `Lesson`** is a plain two-level tree, both ordered by an integer `order` column with a `Meta.ordering` default. Nothing enforces contiguity or uniqueness of `order`; the nested create path assigns 1-based positional values, and the module/lesson endpoints let a coach set anything.
 
-**`Video`** is a standalone library object, not a child of a lesson. A lesson can point at a `Video` (`SET_NULL`) *or* carry a bare `video_url` string, and `LessonSerializer._get_s3_key()` resolves the pair — `video.s3_key` wins, `video_url` is the fallback. The same either/or shape repeats on `Course.thumbnail` (FK to `media.Photo`) vs `Course.thumbnail_url` (string). Both fields are the legacy-string escape hatch for content that was never uploaded through the media library; the FK is the modern path. New code should write the FK.
+**`Video`** is a standalone library object, not a child of a lesson. A lesson can point at a `Video` (`SET_NULL`) _or_ carry a bare `video_url` string, and `LessonSerializer._get_s3_key()` resolves the pair — `video.s3_key` wins, `video_url` is the fallback. The same either/or shape repeats on `Course.thumbnail` (FK to `media.Photo`) vs `Course.thumbnail_url` (string). Both fields are the legacy-string escape hatch for content that was never uploaded through the media library; the FK is the modern path. New code should write the FK.
 
 **`Enrollment`** and **`Progress`** are the student-side rows, each `unique_together` on `(user, …)`. `Enrollment.payment_id` is a bare `IntegerField`, not an FK to billing — it is a soft pointer only.
 
@@ -61,14 +61,14 @@ Serializers surface this as an `access_info` object (`asdict(AccessInfo)`) on `C
 
 This trips people up. Four of the five access reasons create **no `Enrollment` row at all** — a student who buys a course directly, gets it in a bundle, or unlocks it via subscription is never "enrolled". Two consequences, both handled explicitly:
 
-- `_has_unlocked_access()` in `apps/courses/views.py` gates progress endpoints on `access_reason in ("purchased", "bundle", "subscription")` *in addition to* the `Enrollment` check. Free courses deliberately fall outside this set — a free course still requires an explicit `POST /enroll/` first.
+- `_has_unlocked_access()` in `apps/courses/views.py` gates progress endpoints on `access_reason in ("purchased", "bundle", "subscription")` _in addition to_ the `Enrollment` check. Free courses deliberately fall outside this set — a free course still requires an explicit `POST /enroll/` first.
 - `enrolled_courses` unions the two populations by hand: it walks active `Enrollment` rows, then queries `Subscription` + `SubscriptionPlanAccess` (via `ContentType.get_for_model(Course)`) for plan-linked published courses not already seen, tagging those with `via_subscription: True`. Enrollment-sourced entries get `enrolled_at`; both get a computed `progress_percent`.
 
 Those `apps.billing` imports are function-local, not module-level — keep them that way to avoid an app-loading cycle.
 
 ### Lesson content is gated twice
 
-`LessonSerializer._is_unlocked()` decides whether a requester sees a lesson's paid payload. It returns `True` for `is_free_preview` lessons, `True` for owner/coach, and otherwise defers to a `course_has_access` boolean injected into context. `CourseDetailSerializer.get_modules()` computes that boolean *once* per course with `service.check_access(...)` and passes it down — a lesson serializer never resolves access on its own.
+`LessonSerializer._is_unlocked()` decides whether a requester sees a lesson's paid payload. It returns `True` for `is_free_preview` lessons, `True` for owner/coach, and otherwise defers to a `course_has_access` boolean injected into context. `CourseDetailSerializer.get_modules()` computes that boolean _once_ per course with `service.check_access(...)` and passes it down — a lesson serializer never resolves access on its own.
 
 Two fields respect it: `get_video_signed_url()` (returns `None` when locked, and also for anonymous users regardless) and `get_content_html()` (returns `""` when locked). The written body is paid content just like the video; if you add another paid field to `Lesson`, route it through `_is_unlocked()`.
 
@@ -106,7 +106,7 @@ def course_list_create(request):
     return _course_create(request)
 ```
 
-`is_coach_or_owner()` (`apps/core/permissions.py`) is the single source of truth for that role test; the `IsCoachOrOwner` permission class wraps the same function. Use the class when *all* methods on the view are coach-only (`module_create`, `lesson_detail`, `video_list_create`, `photo_list_create`, everything in `filters` and `tags`); use the helper for per-branch checks.
+`is_coach_or_owner()` (`apps/core/permissions.py`) is the single source of truth for that role test; the `IsCoachOrOwner` permission class wraps the same function. Use the class when _all_ methods on the view are coach-only (`module_create`, `lesson_detail`, `video_list_create`, `photo_list_create`, everything in `filters` and `tags`); use the helper for per-branch checks.
 
 Visibility filtering uses the same helper. `_course_list` restricts to `is_published=True` for non-coaches; `course_detail` returns **404, not 403**, for an unpublished course requested by a student — deliberate, so the existence of draft content isn't leaked. `download_list_create` similarly hides "orphan" rows (`file_url=""`) from students.
 
@@ -130,18 +130,18 @@ Two distinct authoring paths, intentionally separated:
 
 **Incremental edit.** `validate_modules()` rejects `modules` outright when `self.instance is not None` — you cannot PUT a new curriculum over an existing course. Post-creation edits go through the dedicated `module_create` / `module_detail` / `lesson_create` / `lesson_detail` endpoints, each of which re-resolves the course by slug and scopes the child lookup to it (`get_object_or_404(Lesson, pk=lesson_id, module__course=course)`) so a lesson id from another course can't be addressed.
 
-**HTML is a trust boundary.** Both `_NestedLessonSerializer` and `LessonCreateSerializer` define `validate_content_html()` calling `clean_rich_html()` from `apps/core/sanitize.py`. Coach-authored HTML is sanitized *before storage*, not on render. Any new serializer that writes `Lesson.content_html` must carry the same validator — there is no model-level or signal-level fallback.
+**HTML is a trust boundary.** Both `_NestedLessonSerializer` and `LessonCreateSerializer` define `validate_content_html()` calling `clean_rich_html()` from `apps/core/sanitize.py`. Coach-authored HTML is sanitized _before storage_, not on render. Any new serializer that writes `Lesson.content_html` must carry the same validator — there is no model-level or signal-level fallback.
 
 ## Taxonomy: `tags` vs `filters`
 
 Two superficially similar apps with opposite audiences. Get this wrong and content ends up categorized in the invisible system.
 
-| | `tags` | `filters` |
-|---|---|---|
-| Audience | Coach-only, admin-side | Public / student-facing |
-| Shape | Flat free-text labels | `FilterGroup` (dimension) → `FilterOption` (value) |
-| Scoping | Per content type via `scope` | Per content kind via `applies_to` |
-| Attached to | courses, videos, photos, downloads, events | courses (and events) |
+|             | `tags`                                     | `filters`                                          |
+| ----------- | ------------------------------------------ | -------------------------------------------------- |
+| Audience    | Coach-only, admin-side                     | Public / student-facing                            |
+| Shape       | Flat free-text labels                      | `FilterGroup` (dimension) → `FilterOption` (value) |
+| Scoping     | Per content type via `scope`               | Per content kind via `applies_to`                  |
+| Attached to | courses, videos, photos, downloads, events | courses (and events)                               |
 
 **Tags** are pools partitioned by `scope` — one of `course`, `video`, `photo`, `download`, `event` (all four live-event models share the single `event` pool). Uniqueness is `(scope, slug)`. The enforcement mechanism is `tag_ids_field(scope)` in `apps/tags/serializers.py`, a `PrimaryKeyRelatedField` whose queryset is pre-filtered to that scope — passing a video tag id to a course rejects it as "does not exist". Every content-create serializer in this module uses it (`CourseCreateUpdateSerializer`, `VideoCreateSerializer`, `PhotoCreateSerializer`, `DownloadFileCreateSerializer`), as does `apps/live/serializers.py`.
 

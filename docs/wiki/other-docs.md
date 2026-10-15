@@ -2,7 +2,7 @@
 
 # `docs/` — Project Documentation
 
-The `docs/` tree is Contentor's written memory. It holds no executable code, but several files are actively *maintained by tooling* (`make wiki`, the `/po` skill) and one directory is fully generated. Treating everything in here as "just markdown you can edit" is the main way to break it.
+The `docs/` tree is Contentor's written memory. It holds no executable code, but several files are actively _maintained by tooling_ (`make wiki`, the `/po` skill) and one directory is fully generated. Treating everything in here as "just markdown you can edit" is the main way to break it.
 
 This page describes what lives in `docs/`, which files are authoritative for what, which are generated, and the conventions for adding to or archiving from it.
 
@@ -34,12 +34,12 @@ docs/
 
 Every file in `docs/` falls into one of four classes, and the class determines who may edit it and how it stays true.
 
-| Class | Files | Edited by | Truth mechanism |
-|---|---|---|---|
-| **Reference** | `REFERENCE.md`, `GLOSSARY.md` | humans, by hand | verified against code at each major revision; future-facing claims marked **(inferred)** |
-| **Living plan** | `PRODUCT.md` | the `/po` skill (humans may edit freely) | `/po review` re-verifies every claim against git/prod and re-ranks; each pass appends an audit stamp |
-| **Generated** | `wiki/*.md`, `screenshot-map/index.html` | tooling only | regenerated from source; hand edits are destroyed on the next run |
-| **Historical** | `superpowers/specs/`, `superpowers/plans/` | append-only; archived when shipped | never updated after the feature lands — the archive *is* the record |
+| Class           | Files                                      | Edited by                                | Truth mechanism                                                                                      |
+| --------------- | ------------------------------------------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Reference**   | `REFERENCE.md`, `GLOSSARY.md`              | humans, by hand                          | verified against code at each major revision; future-facing claims marked **(inferred)**             |
+| **Living plan** | `PRODUCT.md`                               | the `/po` skill (humans may edit freely) | `/po review` re-verifies every claim against git/prod and re-ranks; each pass appends an audit stamp |
+| **Generated**   | `wiki/*.md`, `screenshot-map/index.html`   | tooling only                             | regenerated from source; hand edits are destroyed on the next run                                    |
+| **Historical**  | `superpowers/specs/`, `superpowers/plans/` | append-only; archived when shipped       | never updated after the feature lands — the archive _is_ the record                                  |
 
 Mixing these up is the failure mode. Editing a `wiki/` page by hand loses the edit at the next `make wiki-sync`. Editing an archived plan rewrites history that other docs cite by slug.
 
@@ -60,7 +60,7 @@ graph LR
 
 The longest and most load-bearing document (~42 KB). Read it before any substantial change. Its sections map to the system in the order you need them:
 
-1. **What Contentor is** — the three roles (superadmin / coach / student) and the *two distinct subscription concepts*: `PlatformSubscription` (coach → platform, public schema, live) vs `Subscription`/`Payment` (student → coach, tenant schema, marketplace). This distinction is the single most common source of confusion in the codebase; the doc says so explicitly.
+1. **What Contentor is** — the three roles (superadmin / coach / student) and the _two distinct subscription concepts_: `PlatformSubscription` (coach → platform, public schema, live) vs `Subscription`/`Payment` (student → coach, tenant schema, marketplace). This distinction is the single most common source of confusion in the codebase; the doc says so explicitly.
 2. **Tech stack & topology** — the Caddy → {Django, nextjs-main, nextjs-customer} routing diagram and the service list from `docker-compose.yml`.
 3. **Multi-tenancy & regions** — schema-per-tenant, the `global`/`tr` region split (`tr_` schema prefix, `(email, region)` user uniqueness), and the middleware chain that resolves a tenant: `RegionResolverMiddleware` → `HeaderAwareTenantMiddleware` → `DemoReadOnlyMiddleware` → … → `TenantRateLimitMiddleware`. The `X-Tenant-Domain` header rule and the `/api/webhooks/*` → forced-`public` exception are documented here.
 4. **Domain model** — §4.1–4.16, one subsection per app, with every model tagged **[P]** (public schema) or **[T]** (tenant schema). This is the fastest way to answer "which schema does this table live in?"
@@ -74,7 +74,7 @@ Short, grouped by theme, **bold** marks the preferred term when two words compet
 
 The distinctions worth memorizing before writing anything user-facing:
 
-- **Main app** (`frontend-main`) vs **coach app** (`frontend-customer`) — *both have an `/admin`*. The **superadmin panel** is inside the main app; the **coach admin** is inside the coach app. Never conflate them.
+- **Main app** (`frontend-main`) vs **coach app** (`frontend-customer`) — _both have an `/admin`_. The **superadmin panel** is inside the main app; the **coach admin** is inside the coach app. Never conflate them.
 - **Platform plan** (`PlatformPlan`, coach-facing Free/Starter/Pro) vs **(coach) subscription plan** (`SubscriptionPlan`, a membership a coach sells to students).
 - **Dual-access pricing** — `pricing_type` is only `free` or `paid`; subscription access is additive via `SubscriptionPlanAccess`, not a third pricing type.
 
@@ -94,7 +94,7 @@ Answer any "what's next / what is left" question from this file, and prefer runn
 
 The marketing-side companion to `PRODUCT.md`'s product gates: positioning (the "your school, your brand, your money — we're invisible" wedge), the landing-page truth-fix table, content to record, the founding-creator motion, channels, and instrumentation targets. Its §0 restates `PRODUCT.md`'s hard gates — deploy, live-money verify, rotate secrets — because driving traffic before those pass wastes first impressions.
 
-Note the open discrepancy it flags: marketing copy follows the *seeded* transaction fees (8% / 6% from `seed_plans.py`) while the decision log says 5% / 4%. Reconcile in the plan records before touching copy.
+Note the open discrepancy it flags: marketing copy follows the _seeded_ transaction fees (8% / 6% from `seed_plans.py`) while the decision log says 5% / 4%. Reconcile in the plan records before touching copy.
 
 ## The audit pair
 
@@ -145,7 +145,7 @@ The feature-work record, split by document type:
 
 Both use a `YYYY-MM-DD-<slug>` filename convention, which is what makes spec↔plan pairing and archive-matching mechanical.
 
-**Archiving rule (from `CLAUDE.md`):** the top level holds work that is *in progress, unmerged, or undeployed*, plus a few living tooling references (`screenshot-map`, `flowmap-service`). Once a feature is fully implemented **and deployed to prod**, its spec and plan move to `specs/archive/` and `plans/archive/`. Current split: 37 active / 37 archived specs, 53 active / 52 archived plans.
+**Archiving rule (from `CLAUDE.md`):** the top level holds work that is _in progress, unmerged, or undeployed_, plus a few living tooling references (`screenshot-map`, `flowmap-service`). Once a feature is fully implemented **and deployed to prod**, its spec and plan move to `specs/archive/` and `plans/archive/`. Current split: 37 active / 37 archived specs, 53 active / 52 archived plans.
 
 Note that "deployed" is the bar, not "merged" — `PRODUCT.md` regularly shows tens of merged-but-undeployed commits, and those specs stay at the top level. Archiving early makes the active surface lie about what's live.
 
@@ -155,13 +155,13 @@ Note that "deployed" is the bar, not "merged" — `PRODUCT.md` regularly shows t
 
 ## How `docs/` connects to the rest of the repo
 
-| From | To | Mechanism |
-|---|---|---|
-| `Makefile` | `docs/wiki/` | `make wiki` / `make wiki-sync` write it via rsync from `.gitnexus/` |
-| `/po` skill | `docs/PRODUCT.md` | reads, re-verifies against git + prod health endpoints, rewrites and stamps |
-| `CLAUDE.md` | all of `docs/` | the index — points at wiki pages, PRODUCT, REFERENCE, GLOSSARY, superpowers |
-| `docs/superpowers/plans/` | `.superpowers/sdd/progress.md` | the session ledger tracks plan execution state |
-| `docs/AUDIT-FINDINGS.md` | branch work | the P0–P4 units are the intended branch boundaries |
+| From                      | To                             | Mechanism                                                                   |
+| ------------------------- | ------------------------------ | --------------------------------------------------------------------------- |
+| `Makefile`                | `docs/wiki/`                   | `make wiki` / `make wiki-sync` write it via rsync from `.gitnexus/`         |
+| `/po` skill               | `docs/PRODUCT.md`              | reads, re-verifies against git + prod health endpoints, rewrites and stamps |
+| `CLAUDE.md`               | all of `docs/`                 | the index — points at wiki pages, PRODUCT, REFERENCE, GLOSSARY, superpowers |
+| `docs/superpowers/plans/` | `.superpowers/sdd/progress.md` | the session ledger tracks plan execution state                              |
+| `docs/AUDIT-FINDINGS.md`  | branch work                    | the P0–P4 units are the intended branch boundaries                          |
 
 Nothing in `docs/` is imported by application code, and no build step reads it. Its only automated consumers are the tooling above.
 

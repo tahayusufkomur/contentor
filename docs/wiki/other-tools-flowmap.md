@@ -4,7 +4,7 @@
 
 A local, self-contained dev tool that maps Contentor's real user journeys. It crawls both Next.js frontends, screenshots every route, asks the `claude` CLI to name the distinct user flows it can see, stores everything in SQLite, and renders each flow as a left→right DAG of actual screenshots at `http://localhost:7878`.
 
-Flowmap is a *reference* tool, not part of the shipped product. Nothing in the app imports it (the call graph shows zero incoming calls into this module), and `flowmap.db` plus `walk-shots/` are gitignored — the artifacts are meant to be rebuilt, not committed.
+Flowmap is a _reference_ tool, not part of the shipped product. Nothing in the app imports it (the call graph shows zero incoming calls into this module), and `flowmap.db` plus `walk-shots/` are gitignored — the artifacts are meant to be rebuilt, not committed.
 
 ## Why it exists
 
@@ -80,7 +80,7 @@ Two pure functions carry the logic; Playwright is the wrapper around them.
 `resolveUrl(route, targets)` turns a discovered route into a URL that can actually be visited:
 
 - Static routes pass straight through with `status: "ok"`.
-- A dynamic route with no entry in `targets.json` returns `status: "skipped"`, `note: "no target in targets.json"` — the crawl reports these rather than erroring, which is why the coverage goal is *0 skipped / 0 errored*.
+- A dynamic route with no entry in `targets.json` returns `status: "skipped"`, `note: "no target in targets.json"` — the crawl reports these rather than erroring, which is why the coverage goal is _0 skipped / 0 errored_.
 - Lookup prefers a **per-frontend** mapping over the flat one: `targets.dynamic[frontend][url]` wins, then `targets.dynamic[url]`. This exists because the same route pattern means different things in each app — `/admin/m/[model]` resolves to `/admin/m/platform-plans` on main and `/admin/m/users` on customer.
 
 `classify({ httpStatus, finalUrl, role })` decides whether a captured page counts:
@@ -94,7 +94,7 @@ That role-sensitive redirect check is the single most useful signal in the crawl
 
 This file is where the crawl meets reality, and it's the most common source of a degraded run. It holds:
 
-- `tenantSlug` / `tenantHost` / `mainHost` — must match a locally seeded demo tenant (`make seed-demos`). Wrong values mean *every* dynamic route reports skipped.
+- `tenantSlug` / `tenantHost` / `mainHost` — must match a locally seeded demo tenant (`make seed-demos`). Wrong values mean _every_ dynamic route reports skipped.
 - `dynamic` — concrete instances per route, keyed by frontend then route URL, pointing at real seeded entities (`/courses/vinyasa-flow-volume-17`, `/live/157`, `/admin/students/8`). IDs drift when the seed changes; reseed and update.
 - `localStorage` — per-screen client state to inject before navigating, keyed by screen key. Values are JSON-stringified. This is how client-state-only pages capture something real: `customer|/checkout` gets a populated `contentor_cart` so the screenshot shows a cart rather than an empty state.
 
@@ -104,14 +104,14 @@ The `_comment` / `_dynamic_comment` / `_localStorage_comment` keys are intention
 
 `resolveLinkToRoute(href, routes)` maps a raw `href` scraped off a page back to a screen key, returning `null` when it can't:
 
-| Input | Result |
-|---|---|
-| `http://demo-yoga.localhost/admin/courses` | `customer\|/admin/courses` |
-| `http://demo-yoga.localhost/admin/courses/123?x=1#h` | `customer\|/admin/courses/[id]` |
-| `http://demo-yoga.localhost/admin/courses/` | `customer\|/admin/courses` (trailing slash normalized) |
-| `http://localhost/admin/courses` | `null` (foreign host) |
-| `mailto:x@y.com` | `null` |
-| `http://demo-yoga.localhost/nope` | `null` (no matching route) |
+| Input                                                | Result                                                 |
+| ---------------------------------------------------- | ------------------------------------------------------ |
+| `http://demo-yoga.localhost/admin/courses`           | `customer\|/admin/courses`                             |
+| `http://demo-yoga.localhost/admin/courses/123?x=1#h` | `customer\|/admin/courses/[id]`                        |
+| `http://demo-yoga.localhost/admin/courses/`          | `customer\|/admin/courses` (trailing slash normalized) |
+| `http://localhost/admin/courses`                     | `null` (foreign host)                                  |
+| `mailto:x@y.com`                                     | `null`                                                 |
+| `http://demo-yoga.localhost/nope`                    | `null` (no matching route)                             |
 
 Query strings and fragments are dropped, trailing slashes normalized, and concrete IDs folded back into their dynamic pattern.
 
@@ -143,17 +143,17 @@ When flow identification comes back empty, read the warnings before suspecting t
 
 `open(path)` returns a handle over two tables (screens, flows + steps). The API, as exercised by `db.test.js`:
 
-| Method | Behavior |
-|---|---|
-| `upsertScreen({ key, url, role, frontend, title, thumb, full })` | Idempotent on `key` — a second call with the same key overwrites title/thumb/full |
-| `getScreens()` | List **without** the `full` field (`full === undefined`) |
-| `getScreen(key)` | Single screen **with** `full`; `null` when missing |
-| `createFlow({ name, description, steps })` | Returns the new flow id; steps are `{ from, to, label? }` |
-| `listFlows()` | Flow summaries with a computed `stepCount` |
-| `getFlow(id)` | Flow with ordered `steps` **and** `screens` — the deduped set of screens the steps touch (a 2-step chain over 3 distinct screens yields `screens.length === 3`); `null` when missing |
-| `deleteFlow(id)` | Cascades to steps; the flow disappears from both `listFlows()` and `getFlow()` |
-| `reset()` | Truncates screens and flows |
-| `close()` | Release the handle |
+| Method                                                           | Behavior                                                                                                                                                                             |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `upsertScreen({ key, url, role, frontend, title, thumb, full })` | Idempotent on `key` — a second call with the same key overwrites title/thumb/full                                                                                                    |
+| `getScreens()`                                                   | List **without** the `full` field (`full === undefined`)                                                                                                                             |
+| `getScreen(key)`                                                 | Single screen **with** `full`; `null` when missing                                                                                                                                   |
+| `createFlow({ name, description, steps })`                       | Returns the new flow id; steps are `{ from, to, label? }`                                                                                                                            |
+| `listFlows()`                                                    | Flow summaries with a computed `stepCount`                                                                                                                                           |
+| `getFlow(id)`                                                    | Flow with ordered `steps` **and** `screens` — the deduped set of screens the steps touch (a 2-step chain over 3 distinct screens yields `screens.length === 3`); `null` when missing |
+| `deleteFlow(id)`                                                 | Cascades to steps; the flow disappears from both `listFlows()` and `getFlow()`                                                                                                       |
+| `reset()`                                                        | Truncates screens and flows                                                                                                                                                          |
+| `close()`                                                        | Release the handle                                                                                                                                                                   |
 
 Two design points worth preserving: **`full` is excluded from list responses** (full-page screenshots are large base64 blobs; the sidebar and graph only need `thumb`), and **`getFlow` denormalizes the involved screens** so the renderer can draw a flow without a second round of per-screen fetches.
 
@@ -161,18 +161,18 @@ Two design points worth preserving: **`full` is excluded from list responses** (
 
 `createServer(db)` returns a bare `node:http` server — no framework, and it takes the db as an argument rather than opening one itself, which is exactly what makes `server.test.js` able to bind port 0 against a temp database.
 
-| Route | Purpose |
-|---|---|
-| `GET /` | Serves `web/index.html` (the test asserts the body matches `/flowmap/i`) |
-| `GET /styles.css`, `/app.js`, `/vendor/*` | Static assets |
-| `POST /api/screens` | Bulk upsert an array of screen records |
-| `GET /api/screens` | List screens (no `full`) — also the source of valid screen keys |
-| `GET /api/screens/:key` | One screen with `full` (key must be URL-encoded — it contains `|` and `/`) |
-| `POST /api/flows` | Create a flow, returns `{ id }` |
-| `GET /api/flows` | Flow summaries with `stepCount` |
-| `GET /api/flows/:id` | Flow with `steps` + `screens` |
-| `DELETE /api/flows/:id` | Delete a flow |
-| `POST /api/reset` | Wipe everything |
+| Route                                     | Purpose                                                                  |
+| ----------------------------------------- | ------------------------------------------------------------------------ |
+| `GET /`                                   | Serves `web/index.html` (the test asserts the body matches `/flowmap/i`) |
+| `GET /styles.css`, `/app.js`, `/vendor/*` | Static assets                                                            |
+| `POST /api/screens`                       | Bulk upsert an array of screen records                                   |
+| `GET /api/screens`                        | List screens (no `full`) — also the source of valid screen keys          |
+| `GET /api/screens/:key`                   | One screen with `full` (key must be URL-encoded — it contains `          | `and`/`) |
+| `POST /api/flows`                         | Create a flow, returns `{ id }`                                          |
+| `GET /api/flows`                          | Flow summaries with `stepCount`                                          |
+| `GET /api/flows/:id`                      | Flow with `steps` + `screens`                                            |
+| `DELETE /api/flows/:id`                   | Delete a flow                                                            |
+| `POST /api/reset`                         | Wipe everything                                                          |
 
 Error contract: malformed JSON bodies → **400**, unknown routes → **404**.
 
@@ -188,7 +188,7 @@ The DOM is small and stable, and `app.js` reaches into it by id — renaming any
 - `#flowmenu` / `.menuitem` — per-flow context menu.
 - `#toast` — transient status messages.
 
-Styling is a hand-written dark theme (`#0f1115` background, `#e7e9ee` text, `#7aa2f7` accent) — it deliberately does *not* use the app's design system, since this is a dev tool served outside either Next.js app.
+Styling is a hand-written dark theme (`#0f1115` background, `#e7e9ee` text, `#7aa2f7` accent) — it deliberately does _not_ use the app's design system, since this is a dev tool served outside either Next.js app.
 
 ## Testing
 
@@ -229,15 +229,15 @@ Flows can also be authored by hand against the running server (`POST /api/flows`
 
 ## Common failure modes
 
-| Symptom | Cause |
-|---|---|
-| Every dynamic route reports `skipped` | `tenantSlug`/`tenantHost` in `targets.json` don't match a seeded tenant — run `make seed-demos` and check |
-| One dynamic route reports `skipped` | Missing entry under `dynamic.<frontend>` in `targets.json` |
-| Coach/student screenshots all show `/login` | Stale or wrong JWT — `classify` is correctly flagging these as errors |
-| Screenshots of blank/empty client-only pages | Needs a `localStorage` entry keyed by screen key |
-| An expected edge is missing from the graph | Hub suppression (≥70% inbound) — check `suppressedCount` |
-| Flow identification returns nothing | Read `parseFlows` warnings before blaming the graph |
-| Blank pages / hangs during a crawl | Usually a transient `nextjs-customer` 502, not a code bug |
+| Symptom                                      | Cause                                                                                                     |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Every dynamic route reports `skipped`        | `tenantSlug`/`tenantHost` in `targets.json` don't match a seeded tenant — run `make seed-demos` and check |
+| One dynamic route reports `skipped`          | Missing entry under `dynamic.<frontend>` in `targets.json`                                                |
+| Coach/student screenshots all show `/login`  | Stale or wrong JWT — `classify` is correctly flagging these as errors                                     |
+| Screenshots of blank/empty client-only pages | Needs a `localStorage` entry keyed by screen key                                                          |
+| An expected edge is missing from the graph   | Hub suppression (≥70% inbound) — check `suppressedCount`                                                  |
+| Flow identification returns nothing          | Read `parseFlows` warnings before blaming the graph                                                       |
+| Blank pages / hangs during a crawl           | Usually a transient `nextjs-customer` 502, not a code bug                                                 |
 
 ## Where to look next
 

@@ -2,7 +2,7 @@
 
 # `backend/scripts` — container entrypoint
 
-The only file in this module is `backend/scripts/entrypoint.sh`, the shell entrypoint baked into the Django image. It is the single place where schema migrations, static-file collection and baseline data seeding happen, and it is deliberately the *only* place — no other container in the stack runs those steps.
+The only file in this module is `backend/scripts/entrypoint.sh`, the shell entrypoint baked into the Django image. It is the single place where schema migrations, static-file collection and baseline data seeding happen, and it is deliberately the _only_ place — no other container in the stack runs those steps.
 
 ## Role in the image
 

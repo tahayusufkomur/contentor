@@ -6,18 +6,18 @@ The marketing site's slice of the billing stack. It is deliberately thin: it rea
 
 Files in scope:
 
-| Path | Role |
-|---|---|
-| `frontend-main/src/lib/api/billing-platform.ts` | Browser-side fetch wrappers for `/api/v1/billing/platform/*` |
-| `frontend-main/src/app/pricing/page.tsx` | Server component: fetches the live catalog, renders three plan cards + FAQ |
-| `frontend-main/src/app/pricing/PricingCta.tsx` | Client component: the per-card button that either routes to signup or starts checkout |
-| `frontend-main/src/app/pricing/loading.tsx` | Route skeleton |
+| Path                                            | Role                                                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `frontend-main/src/lib/api/billing-platform.ts` | Browser-side fetch wrappers for `/api/v1/billing/platform/*`                          |
+| `frontend-main/src/app/pricing/page.tsx`        | Server component: fetches the live catalog, renders three plan cards + FAQ            |
+| `frontend-main/src/app/pricing/PricingCta.tsx`  | Client component: the per-card button that either routes to signup or starts checkout |
+| `frontend-main/src/app/pricing/loading.tsx`     | Route skeleton                                                                        |
 
 ## Two fetch paths, one endpoint
 
 `GET /api/v1/billing/platform/plans/` is called from **both sides**, and the difference matters.
 
-- **Server-side** (`fetchPlans` in `page.tsx`) hits the absolute `DJANGO_API_URL` and *must* send `X-Tenant-Domain: BASE_DOMAIN`. This is the multi-tenancy rule from `CLAUDE.md`: Node's undici drops a custom `Host`, so without the header Django would resolve the tenant from `Host: django` and the request would land on the wrong schema. `cache: "no-store"` keeps prices from being frozen into the build.
+- **Server-side** (`fetchPlans` in `page.tsx`) hits the absolute `DJANGO_API_URL` and _must_ send `X-Tenant-Domain: BASE_DOMAIN`. This is the multi-tenancy rule from `CLAUDE.md`: Node's undici drops a custom `Host`, so without the header Django would resolve the tenant from `Host: django` and the request would land on the wrong schema. `cache: "no-store"` keeps prices from being frozen into the build.
 - **Client-side** (`listPlans` in `billing-platform.ts`) uses a relative `/api/v1/...` path with `credentials: "same-origin"`. The browser is already on the marketing apex, so Caddy routes it to Django with the correct Host and the JWT cookie rides along — no explicit tenant header needed.
 
 `listPlans` currently has no caller in the pricing route; the page uses its own server-side fetch. It exists for client-side consumers of the same catalog. Note the two `PlanSummary` types have **drifted**: `billing-platform.ts` declares `stripe_price_id_present`, while `page.tsx` declares `transaction_fee_pct` and `is_live_enabled`. If you touch the platform-plans serializer, reconcile both — and regenerate `api-generated.ts` per the repo convention.
@@ -69,10 +69,13 @@ Three helpers turn a `PlanSummary` into card text:
 
 - **`formatPrice(currency, amountCents)`** — minor units → `Intl.NumberFormat` in the plan's currency, dropping decimals for whole amounts (`1900 USD` → `$19`). Wrapped in try/catch because an unrecognized currency code from the backend would otherwise throw and take the whole server render down; the fallback is `"19 USD"`.
 - **`limitText(value, unit, plural)`** — encodes the platform-wide convention that **`0` means unlimited**, not zero.
-- **`dynamicFeatureLabel(featureKey, plan)`** — handles only the *quantitative* bullets (`students`, `storage`, `fee`, `campaigns`) and returns `null` for descriptive ones (`courseBuilder`, `branding`, `domain`, `support`), which fall through to i18n at the call site:
+- **`dynamicFeatureLabel(featureKey, plan)`** — handles only the _quantitative_ bullets (`students`, `storage`, `fee`, `campaigns`) and returns `null` for descriptive ones (`courseBuilder`, `branding`, `domain`, `support`), which fall through to i18n at the call site:
 
   ```ts
-  {(plan && dynamicFeatureLabel(featureKey, plan)) ?? t(`plans.${key}.features.${featureKey}`)}
+  {
+    (plan && dynamicFeatureLabel(featureKey, plan)) ??
+      t(`plans.${key}.features.${featureKey}`);
+  }
   ```
 
 The check/cross state per bullet comes from `includedSet`, seeded from the i18n `plans.<key>.included` array and then **overridden by live capabilities** — `is_live_enabled` and `max_campaign_emails > 0` add or remove the `live` and `campaigns` keys. The intent: the page can never advertise a capability the backend won't actually grant, even if translations lag behind a plan change.

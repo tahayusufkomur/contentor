@@ -33,12 +33,12 @@ The dependency rule is strict: feature modules own personas, knowledge, gating a
 
 ### Call shapes
 
-| Function | Shape | CLI support |
-|---|---|---|
-| `structured(system, user, output_model, model, max_tokens)` | One schema-validated call → `(parsed, cost_usd, model)` | Yes (schema appended to system prompt, pydantic-validated, one retry) |
-| `structured_stream(...)` | Generator: `("partial", dict)*` then one `("done", (parsed, cost, model))` | Degrades: no partials, straight to `done` |
-| `structured_messages(system, messages, ...)` | Structured over a full messages array (base64 images allowed) | No — raises `AiError`; gate with `supports_vision()` |
-| `stream_text(system, history, model, max_tokens)` | Generator: `("delta", text)*` then one `("done", {cost_usd, provider, model})` | Yes (`stream-json --include-partial-messages`) |
+| Function                                                    | Shape                                                                          | CLI support                                                           |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `structured(system, user, output_model, model, max_tokens)` | One schema-validated call → `(parsed, cost_usd, model)`                        | Yes (schema appended to system prompt, pydantic-validated, one retry) |
+| `structured_stream(...)`                                    | Generator: `("partial", dict)*` then one `("done", (parsed, cost, model))`     | Degrades: no partials, straight to `done`                             |
+| `structured_messages(system, messages, ...)`                | Structured over a full messages array (base64 images allowed)                  | No — raises `AiError`; gate with `supports_vision()`                  |
+| `stream_text(system, history, model, max_tokens)`           | Generator: `("delta", text)*` then one `("done", {cost_usd, provider, model})` | Yes (`stream-json --include-partial-messages`)                        |
 
 Both providers validate against the **same pydantic `output_model`**, so callers get identical guarantees regardless of environment.
 

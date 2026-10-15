@@ -6,11 +6,11 @@ Contentor runs two blogs on one engine: a **coach blog** on every tenant site, a
 
 ## Sub-modules
 
-| Page | Scope |
-|---|---|
-| [Blog & AI Content — backend-apps](blog-ai-content-backend-apps.md) | `apps.blog` models, AI engine (`ai.py`), curated-photo matching (`curated.py`), placement injection (`placements.py`), autopilot tasks |
-| [Blog & AI Content — frontend-customer-src](blog-ai-content-frontend-customer-src.md) | Coach admin at `/admin/blog` + public tenant reader at `/blog`, `/blog/[slug]` |
-| [Blog & AI Content — frontend-main-src](blog-ai-content-frontend-main-src.md) | Platform reader at `/blog` + superadmin composer at `/admin/blog` |
+| Page                                                                                  | Scope                                                                                                                                  |
+| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [Blog & AI Content — backend-apps](blog-ai-content-backend-apps.md)                   | `apps.blog` models, AI engine (`ai.py`), curated-photo matching (`curated.py`), placement injection (`placements.py`), autopilot tasks |
+| [Blog & AI Content — frontend-customer-src](blog-ai-content-frontend-customer-src.md) | Coach admin at `/admin/blog` + public tenant reader at `/blog`, `/blog/[slug]`                                                         |
+| [Blog & AI Content — frontend-main-src](blog-ai-content-frontend-main-src.md)         | Platform reader at `/blog` + superadmin composer at `/admin/blog`                                                                      |
 
 ## How the pieces fit
 

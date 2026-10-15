@@ -27,7 +27,7 @@ e2e/playwright-report/
 
 ### `index.html`
 
-The whole report in one file: the React app plus the serialized test tree (suites, tests, steps, timings, attachment references). Attachments are *not* inlined — they are fetched from `data/` by hash, which is why the report only works when served from this directory. Open it with:
+The whole report in one file: the React app plus the serialized test tree (suites, tests, steps, timings, attachment references). Attachments are _not_ inlined — they are fetched from `data/` by hash, which is why the report only works when served from this directory. Open it with:
 
 ```bash
 cd e2e && npx playwright show-report
@@ -37,11 +37,11 @@ cd e2e && npx playwright show-report
 
 Filenames are the SHA1 of the file contents, so identical attachments across tests dedupe to one file. Three kinds are present in the current snapshot:
 
-| Ext | Count | What it is | Produced by |
-|---|---|---|---|
-| `.md` | 3 | `_error-context` — AI-oriented failure summary | Playwright, automatically on failure |
-| `.png` | 3 | Failure screenshot | `use.screenshot: "only-on-failure"` |
-| `.zip` | 3 | Full trace (DOM snapshots, network, console, actions) | `use.trace: "retain-on-failure"` |
+| Ext    | Count | What it is                                            | Produced by                          |
+| ------ | ----- | ----------------------------------------------------- | ------------------------------------ |
+| `.md`  | 3     | `_error-context` — AI-oriented failure summary        | Playwright, automatically on failure |
+| `.png` | 3     | Failure screenshot                                    | `use.screenshot: "only-on-failure"`  |
+| `.zip` | 3     | Full trace (DOM snapshots, network, console, actions) | `use.trace: "retain-on-failure"`     |
 
 The zips dominate the size (13 MB / 8.4 MB / 4.5 MB). Open one without going through the HTML report:
 
@@ -64,7 +64,7 @@ This is the part worth knowing. On each failure Playwright writes a markdown att
 1. **`# Instructions`** — a fixed prompt aimed at an LLM ("Following Playwright test failed. Explain why, be concise…"). Playwright emits this verbatim; it is not repo-authored.
 2. **`# Test info`** — test title and `file:line` of the test declaration.
 3. **`# Error details`** — the timeout/assertion text, the failing locator, and the expect call log.
-4. **A YAML accessibility snapshot** — the page's accessible tree at the moment of failure. This is the single most useful block: it shows what *was* on screen instead of what the locator wanted, including `[disabled]` states.
+4. **A YAML accessibility snapshot** — the page's accessible tree at the moment of failure. This is the single most useful block: it shows what _was_ on screen instead of what the locator wanted, including `[disabled]` states.
 5. **`# Test source`** — the spec file with the failing line marked `>`.
 
 Reading one of these usually replaces opening the trace.
@@ -97,7 +97,7 @@ The `"coach walks the full wizard and the tenant provisions"` test, failing insi
 - button "Full tour" [disabled]
 ```
 
-Still on the *Home page* step, with all three cards disabled — i.e. the step's `PATCH /api/v1/onboarding/wizard/state/` was in flight (or never resolved) and the wizard never advanced. That is exactly the save-then-advance window the spec's own long comment above `pickCard` describes, and which the sibling test `"auto-advance cards disable while a pick is saving"` deliberately exercises by stalling the PATCH by 1.5 s via `page.route`.
+Still on the _Home page_ step, with all three cards disabled — i.e. the step's `PATCH /api/v1/onboarding/wizard/state/` was in flight (or never resolved) and the wizard never advanced. That is exactly the save-then-advance window the spec's own long comment above `pickCard` describes, and which the sibling test `"auto-advance cards disable while a pick is saving"` deliberately exercises by stalling the PATCH by 1.5 s via `page.route`.
 
 These artifacts predate `62196335 fix(onboarding): close wizard provision double-enqueue race` (2026-08-03) by about a week. Do not read them as current status — re-run `make e2e-spec SPEC=01-signup-onboarding` to find out where things actually stand.
 
@@ -117,7 +117,7 @@ graph LR
 ```
 
 - **`e2e/playwright.config.ts`** is the only thing that controls what lands here. `screenshot: "only-on-failure"` and `trace: "retain-on-failure"` mean a fully green run produces a report with no `data/` attachments at all. `retries: 1` means every failure can produce two sets.
-- **`e2e/test-results/`** holds the same artifacts in human-readable per-test directories (`01-signup-onboarding-coach-6e69d-d-and-the-tenant-provisions/`). When you need to find *this test's* trace, look there rather than hash-hunting in `data/`.
+- **`e2e/test-results/`** holds the same artifacts in human-readable per-test directories (`01-signup-onboarding-coach-6e69d-d-and-the-tenant-provisions/`). When you need to find _this test's_ trace, look there rather than hash-hunting in `data/`.
 - **`workers: 1` / `fullyParallel: false`** — specs share tenant state, so the report is always a strictly serial timeline. A failure early in a spec commonly cascades into later ones; check ordering before assuming independent bugs.
 - Suite composition (31 files in `e2e/specs/`, Stripe specs gated on `STRIPE_E2E`, selective runs via `e2e/impact-map.json`) is documented in `CLAUDE.md`; this directory just reflects whichever subset ran.
 

@@ -32,11 +32,11 @@ graph LR
 
 ### Schema versions
 
-| Version | Status | Notes |
-|---|---|---|
-| `LogoRecipeV1` | input-only | flat `font`, `colors.badge_bg/mark_fg/text`, `overrides.*` |
-| `LogoRecipeV2` | input-only | current shape, but mark colors are plain hex strings |
-| `LogoRecipe` (v3) | **live** | mark color roles widen to `MarkFill = string \| Fill`, enabling gradient marks |
+| Version           | Status     | Notes                                                                          |
+| ----------------- | ---------- | ------------------------------------------------------------------------------ |
+| `LogoRecipeV1`    | input-only | flat `font`, `colors.badge_bg/mark_fg/text`, `overrides.*`                     |
+| `LogoRecipeV2`    | input-only | current shape, but mark colors are plain hex strings                           |
+| `LogoRecipe` (v3) | **live**   | mark color roles widen to `MarkFill = string \| Fill`, enabling gradient marks |
 
 `migrate.ts` is the only upgrade path: `isRecipe(value)` narrows unknown JSON to `AnyLogoRecipe` (accepting versions 1, 2, 3), and `migrateRecipe` normalizes to v3. v2→v3 is a pure version bump (the widened type is backward-compatible); v1→v3 is a lossless field remap — `badge_name`/`icon_name` collapse to `horizontal`, `overrides` become `elements`, and the tagline style is synthesized at weight 500 / `tracking 0.08` / `case: "upper"`.
 
@@ -50,7 +50,7 @@ graph LR
 - `initials` — derived from `recipe.name` via `initialsFor`; four styles (`plain`, `monogram`, `split`, `overlap`) drawn by `InitialsMark`. Also the universal fallback for an unknown icon key or a missing image URL.
 - `abstract` — a seeded parametric mark (see below).
 - `image` — an uploaded/curated PNG at `mark.url`.
-- `custom` — an **AI Brand Pack** vector mark: a list of `CustomMarkPath` in a `0..100` viewBox whose `fill` is a *role token* (`mark` / `mark2` / `accent`), never raw hex. That indirection is what lets one AI mark be recolored across all 24 palettes and re-exported as a dark variant without regenerating geometry.
+- `custom` — an **AI Brand Pack** vector mark: a list of `CustomMarkPath` in a `0..100` viewBox whose `fill` is a _role token_ (`mark` / `mark2` / `accent`), never raw hex. That indirection is what lets one AI mark be recolored across all 24 palettes and re-exported as a dark variant without regenerating geometry.
 
 ---
 
@@ -65,7 +65,7 @@ Two entry points:
 
 - **Text never overflows** by construction: `fitFontSize` estimates width as `length × (0.58 + tracking)` and shrinks to fit the slot's `budget`, floored at 22px. The tagline is additionally capped at `0.42 ×` the name size, so the hierarchy holds at every brand-name length.
 - **Element placement scales about the slot center**, not the origin: `translate(offset + c·(1 − scale)) scale(scale)`. That's why nudging and scaling in the fine-tune canvas feel independent.
-- **Emblem is inverted**: the badge becomes the container and the name is drawn *on top of it*, so `nameColor` switches from `colors.text` to `solidOf(colors.mark)` for contrast, and `ComposedMark` shrinks the mark content to `0.3 × size` and lifts it (`padY = 0.18 × size`) to leave room.
+- **Emblem is inverted**: the badge becomes the container and the name is drawn _on top of it_, so `nameColor` switches from `colors.text` to `solidOf(colors.mark)` for contrast, and `ComposedMark` shrinks the mark content to `0.3 × size` and lifts it (`padY = 0.18 × size`) to leave room.
 - **Badge-aware mark color** (`ComposedMark`): with a filled badge the mark paints with its own fill; with no badge or an outline-only badge it takes the badge's solid color so it stays visible on white.
 
 ### Fills and gradients
@@ -104,12 +104,12 @@ The single source of truth for every enum the coach can pick, and the file with 
 
 ### Keep-in-sync contracts
 
-| Client | Backend | What drifts if you forget |
-|---|---|---|
-| `PALETTES()` ids | `logo_recipe.py` `PALETTE_IDS` | `validate_recipe` rejects a palette the UI offers |
-| `LOGO_FONTS` families | `logo_ai.py` `_FONT_CATALOG` | AI returns a font the client can't resolve → silent fallback to Inter |
-| `migrateRecipe` | `logo_recipe.py` upgrade | client and server disagree on the same stored row |
-| `BrandPackPath` / `_Element` | `logo_ai.py` structured-output schema | AI marks fail to materialize |
+| Client                       | Backend                               | What drifts if you forget                                             |
+| ---------------------------- | ------------------------------------- | --------------------------------------------------------------------- |
+| `PALETTES()` ids             | `logo_recipe.py` `PALETTE_IDS`        | `validate_recipe` rejects a palette the UI offers                     |
+| `LOGO_FONTS` families        | `logo_ai.py` `_FONT_CATALOG`          | AI returns a font the client can't resolve → silent fallback to Inter |
+| `migrateRecipe`              | `logo_recipe.py` upgrade              | client and server disagree on the same stored row                     |
+| `BrandPackPath` / `_Element` | `logo_ai.py` structured-output schema | AI marks fail to materialize                                          |
 
 ---
 
@@ -146,7 +146,7 @@ An AI response is untrusted input. Both compose paths apply the same guards, and
 
 ## Two-pass drafts (`render-draft.tsx`)
 
-The AI critiques its own work by *looking* at it. A converse turn or a refine returns **draft** designs; the coach's browser rasterizes them and posts the PNGs back so the model can return polished finals. This file is the client half of that loop, and it's browser-only.
+The AI critiques its own work by _looking_ at it. A converse turn or a refine returns **draft** designs; the coach's browser rasterizes them and posts the PNGs back so the model can return polished finals. This file is the client half of that loop, and it's browser-only.
 
 `renderRecipesToPngs(recipes, stage)`:
 
@@ -164,8 +164,8 @@ Per-card failures are swallowed: the caller still gets images for the rest and a
 
 `svgToPngBlob(svg, width, height, fonts)` rasterizes a live `<svg>` DOM node to a PNG blob. Two browser behaviors dictate nearly the whole file, and both are documented at length in the source — read that header before touching it:
 
-1. **An SVG drawn through `<img>`/canvas is a separate rendering context** and does *not* inherit the page's webfonts, no matter what `document.fonts` reports. To get `<text>` in the brand font, an `@font-face` with a `data:` URI `src` must be embedded inside the SVG.
-2. **Canvas tainting.** Drawing an SVG-as-image that references *any* external `http(s):` resource makes the canvas non-origin-clean — `toBlob()` throws `SecurityError`, or the resource renders blank. Permissive CORS headers on the inner resource don't help; that context doesn't do per-resource CORS negotiation. The only reliable fix: **leave zero external references in the serialized SVG.**
+1. **An SVG drawn through `<img>`/canvas is a separate rendering context** and does _not_ inherit the page's webfonts, no matter what `document.fonts` reports. To get `<text>` in the brand font, an `@font-face` with a `data:` URI `src` must be embedded inside the SVG.
+2. **Canvas tainting.** Drawing an SVG-as-image that references _any_ external `http(s):` resource makes the canvas non-origin-clean — `toBlob()` throws `SecurityError`, or the resource renders blank. Permissive CORS headers on the inner resource don't help; that context doesn't do per-resource CORS negotiation. The only reliable fix: **leave zero external references in the serialized SVG.**
 
 So, in order: clone the SVG and stamp explicit `width`/`height`; inline every `<image href>` via `imageToDataUrl`; inline an `@font-face` per unique `(family, weight)`; serialize, load as a blob URL, `img.decode()`, `drawImage`, `toBlob`, and revoke the URL in a `finally`.
 
@@ -195,15 +195,15 @@ The scoring functions are pure and cheap by design — they run on every keystro
 
 ## Consumers
 
-| Consumer | Uses |
-|---|---|
-| `components/logo/logo-studio.tsx` | `defaultRecipe`, `isRecipe`/`migrateRecipe` (seeding a draft), `applyRefinedDesign`, `svgToPngBlob`, `imageToDataUrl`, `renderRecipesToPngs`, `logoViewBox` |
-| `components/logo/studio-chat.tsx` | `composeIconPreview` / `composeConverseDesign` per card, `LogoRenderer`/`MarkRenderer`, `renderDraftPngs` per turn |
-| `components/logo/studio-canvas.tsx`, `studio-editor.tsx` | `LogoRenderer`, `MarkRenderer`, `logoViewBox` (hit-testing + fine-tune) |
-| `components/logo/curated-gallery.tsx` | `LogoRenderer` for tiles |
-| `components/logo/create-similar.ts` | `composeIconPreview`/`composeConverseDesign`, `renderDraftPngs` |
-| `logo/studio-panel/global-controls.tsx` | `applyPalette` |
-| wizard `verify/wizard/ai-logo.tsx` + `lib/wizard/logo-api.ts` | `composeConverseDesign` (via `designRecipe`), then `LogoRenderer`/`MarkRenderer` in `renderFinalPngs` |
+| Consumer                                                      | Uses                                                                                                                                                        |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `components/logo/logo-studio.tsx`                             | `defaultRecipe`, `isRecipe`/`migrateRecipe` (seeding a draft), `applyRefinedDesign`, `svgToPngBlob`, `imageToDataUrl`, `renderRecipesToPngs`, `logoViewBox` |
+| `components/logo/studio-chat.tsx`                             | `composeIconPreview` / `composeConverseDesign` per card, `LogoRenderer`/`MarkRenderer`, `renderDraftPngs` per turn                                          |
+| `components/logo/studio-canvas.tsx`, `studio-editor.tsx`      | `LogoRenderer`, `MarkRenderer`, `logoViewBox` (hit-testing + fine-tune)                                                                                     |
+| `components/logo/curated-gallery.tsx`                         | `LogoRenderer` for tiles                                                                                                                                    |
+| `components/logo/create-similar.ts`                           | `composeIconPreview`/`composeConverseDesign`, `renderDraftPngs`                                                                                             |
+| `logo/studio-panel/global-controls.tsx`                       | `applyPalette`                                                                                                                                              |
+| wizard `verify/wizard/ai-logo.tsx` + `lib/wizard/logo-api.ts` | `composeConverseDesign` (via `designRecipe`), then `LogoRenderer`/`MarkRenderer` in `renderFinalPngs`                                                       |
 
 Note the wizard flow: `useThisLogo → designRecipe → composeConverseDesign` builds the recipe, and `useThisLogo → renderFinalPngs → LogoRenderer/MarkRenderer` rasterizes it — the same two halves the Studio uses, wired to a different UI.
 
@@ -213,6 +213,6 @@ Note the wizard flow: `useThisLogo → designRecipe → composeConverseDesign` b
 
 - **Client-only files** are marked: `logo-renderer.tsx` and `render-draft.tsx` carry `"use client"`, and `export.ts` / `render-draft.tsx` touch `document`, `FileReader`, `canvas` and `requestAnimationFrame`. `types.ts`, `catalog.ts`, `composer.ts`, `migrate.ts`, `abstract.ts` and `curated-rank.ts` are import-safe from a server component.
 - **Some header comments carry pre-move paths** (`lib/logo/migrate.ts`, `types/logo.ts`, `components/logo/abstract-mark.tsx`) from before this code became a shared package. The referenced modules are now siblings in this directory; fix them opportunistically.
-- **Adding a badge shape, layout, palette, font or abstract family is a two-repo change** — extend the union in `types.ts`, the catalog, the renderer *and* the backend validator/AI catalog in the same commit.
+- **Adding a badge shape, layout, palette, font or abstract family is a two-repo change** — extend the union in `types.ts`, the catalog, the renderer _and_ the backend validator/AI catalog in the same commit.
 - **New AI-supplied fields need a clamp.** Follow `clampScale`/`clampTracking`/`markFillFor`: resolve against a catalog or clamp to a range, and apply the identical rule in both `composeConverseDesign` and `applyRefinedDesign`.
 - **Purity is the test strategy.** `abstractSpec`, `migrateRecipe`, `briefKeywords`/`rankCuratedLogos`, and the compose functions are all DOM-free so vitest can assert determinism and cross-language parity directly; keep new logic on that side of the line wherever possible.

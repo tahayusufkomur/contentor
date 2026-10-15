@@ -10,7 +10,7 @@ Repo-level tooling that supports development of Contentor but never ships to use
 
 ## Selective test running — `scripts/select_tests.py`
 
-Maps a git diff to the *smallest sufficient* set of backend tests, vitest runs, and Playwright e2e specs. Invoked as `make test-changed` (`--mode backend`) and `make e2e-changed` (`--mode e2e`); `--plan` (the `PLAN=1` make variable) prints the selection without running anything, `--base REF` diffs against something other than `HEAD`.
+Maps a git diff to the _smallest sufficient_ set of backend tests, vitest runs, and Playwright e2e specs. Invoked as `make test-changed` (`--mode backend`) and `make e2e-changed` (`--mode e2e`); `--plan` (the `PLAN=1` make variable) prints the selection without running anything, `--base REF` diffs against something other than `HEAD`.
 
 ### Design: a pure core with a thin shell
 
@@ -20,25 +20,25 @@ All selection logic lives in `build_plan(changed_files, importers, backend_apps,
 
 The guiding principle is **fail-closed**: any path the selector does not recognize widens the run rather than silently skipping coverage.
 
-| Changed path | Effect |
-|---|---|
-| `docs/`, `.claude/`, `tools/`, `scripts/`, `*.md`, `Makefile`, root screenshots… (`IGNORED_*`) | Nothing runs |
-| `backend/apps/<app>/…` (known app) | That app's tests **plus its direct importers** (from `build_import_graph`, which greps every app's `.py` files for `apps.<name>` references) |
-| `backend/apps/core|accounts|adminkit/`, `backend/config/`, `backend/conftest.py`… (`WIDE_*`) | Full backend suite + all e2e specs |
-| Any `*/migrations/*` under `backend/` | Full suite with `--create-db` (a reused test DB would miss the new schema) |
-| `packages/shared/` | Full vitest suite + all e2e specs |
-| `frontend-customer/…` | Vitest `--changed`, plus e2e specs from the longest matching prefix in `e2e/impact-map.json` (`_longest_prefix`); unmapped path → all specs |
-| `frontend-main/…` | The impact map's `frontend-main` spec list (no unit suite exists; typecheck + e2e cover it) |
-| `e2e/specs/X.spec.ts` | Spec `X` selects itself; any other `e2e/` file → all specs |
-| Anything unrecognized (e.g. `Caddyfile`, compose files) | Full backend + all e2e |
+| Changed path                                                                                   | Effect                                                                                                                                       |
+| ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/`, `.claude/`, `tools/`, `scripts/`, `*.md`, `Makefile`, root screenshots… (`IGNORED_*`) | Nothing runs                                                                                                                                 |
+| `backend/apps/<app>/…` (known app)                                                             | That app's tests **plus its direct importers** (from `build_import_graph`, which greps every app's `.py` files for `apps.<name>` references) |
+| `backend/apps/core                                                                             | accounts                                                                                                                                     | adminkit/`, `backend/config/`, `backend/conftest.py`… (`WIDE_*`) | Full backend suite + all e2e specs |
+| Any `*/migrations/*` under `backend/`                                                          | Full suite with `--create-db` (a reused test DB would miss the new schema)                                                                   |
+| `packages/shared/`                                                                             | Full vitest suite + all e2e specs                                                                                                            |
+| `frontend-customer/…`                                                                          | Vitest `--changed`, plus e2e specs from the longest matching prefix in `e2e/impact-map.json` (`_longest_prefix`); unmapped path → all specs  |
+| `frontend-main/…`                                                                              | The impact map's `frontend-main` spec list (no unit suite exists; typecheck + e2e cover it)                                                  |
+| `e2e/specs/X.spec.ts`                                                                          | Spec `X` selects itself; any other `e2e/` file → all specs                                                                                   |
+| Anything unrecognized (e.g. `Caddyfile`, compose files)                                        | Full backend + all e2e                                                                                                                       |
 
-Whenever *any* e2e impact exists, `00-smoke` (`SMOKE_SPEC`) is always included. Backend apps map to e2e specs through the `backend` section of `e2e/impact-map.json`; an app with no entry fails closed to all specs, and an explicit `"none"` entry means smoke-only.
+Whenever _any_ e2e impact exists, `00-smoke` (`SMOKE_SPEC`) is always included. Backend apps map to e2e specs through the `backend` section of `e2e/impact-map.json`; an app with no entry fails closed to all specs, and an explicit `"none"` entry means smoke-only.
 
 ### The self-test is a lint gate
 
-`run_self_tests()` runs the fixture cases *and* two repo-level invariants: the import graph must contain a known real edge (`billing` → `courses`), and every spec in `e2e/specs/` must be referenced somewhere in `e2e/impact-map.json` (or its `manual` list), with no references to nonexistent specs. This runs inside `make lint`, so **adding a new e2e spec without an impact-map entry fails lint** — that is the mechanism keeping the map trustworthy.
+`run_self_tests()` runs the fixture cases _and_ two repo-level invariants: the import graph must contain a known real edge (`billing` → `courses`), and every spec in `e2e/specs/` must be referenced somewhere in `e2e/impact-map.json` (or its `manual` list), with no references to nonexistent specs. This runs inside `make lint`, so **adding a new e2e spec without an impact-map entry fails lint** — that is the mechanism keeping the map trustworthy.
 
-`execute()` then runs the plan: backend suites via `docker compose exec django pytest` (skipping apps with no `tests/` dir, per `_has_tests`), vitest from `frontend-customer/`, and in e2e mode `npx playwright test` with the selected spec stems. In backend mode it only *prints* the e2e impact, since e2e needs the dev stack up.
+`execute()` then runs the plan: backend suites via `docker compose exec django pytest` (skipping apps with no `tests/` dir, per `_has_tests`), vitest from `frontend-customer/`, and in e2e mode `npx playwright test` with the selected spec stems. In backend mode it only _prints_ the e2e impact, since e2e needs the dev stack up.
 
 ---
 
@@ -49,7 +49,7 @@ Copies the real `demo/photos/*` and `demo/videos/*` objects from the **prod buck
 Safety properties worth preserving when editing:
 
 - **Write guard:** refuses to write unless the destination endpoint contains `localhost`, `minio`, or `127.0.0.1`, and refuses if source and destination endpoints are identical. Prod can never be a write target.
-- **Graceful absence:** a missing `.env.prod` exits 0 with a note (expected on machines without prod creds — `make dev` must not be blocked); every *real* failure exits non-zero.
+- **Graceful absence:** a missing `.env.prod` exits 0 with a note (expected on machines without prod creds — `make dev` must not be blocked); every _real_ failure exits non-zero.
 - **Idempotent:** existing destination keys are skipped via `head_object` unless `--force`; `--dry-run` lists without copying; `--prefix` (repeatable) narrows the mirror.
 - Creates the destination bucket if the MinIO volume is fresh (safe only because of the endpoint guard).
 
@@ -61,7 +61,7 @@ The S3 client uses path-style addressing + SigV4 — the same choice as `backend
 
 ### `scripts/check-i18n-parity.mjs`
 
-Compares `messages/en/*.json` against `messages/tr/*.json` in both `frontend-main` and `frontend-customer`. Fails (exit 1) if a namespace file exists in one locale but not the other, or if the *flattened dotted key sets* of a shared namespace drift (`flatten()` recurses into nested objects). Output lists each `only in en:` / `only in tr:` key, so fixing drift is mechanical.
+Compares `messages/en/*.json` against `messages/tr/*.json` in both `frontend-main` and `frontend-customer`. Fails (exit 1) if a namespace file exists in one locale but not the other, or if the _flattened dotted key sets_ of a shared namespace drift (`flatten()` recurses into nested objects). Output lists each `only in en:` / `only in tr:` key, so fixing drift is mechanical.
 
 ### `scripts/check-loading-patterns.mjs`
 
@@ -98,7 +98,7 @@ flowchart LR
    - `resolveUrl()` maps dynamic routes to concrete seeded entities from `crawler/targets.json` (per-frontend map wins over the flat map; no entry → status `skipped`). The `tenantSlug`/IDs in `targets.json` must match a locally seeded demo tenant (`demo-yoga`) or every dynamic route skips.
    - Client-state-only pages (e.g. `/checkout`, which reads the cart from localStorage) get their state seeded via `addInitScript` from `targets.localStorage` so they capture populated, not empty.
    - `/live/` and `/live-stream/` never reach `networkidle` (the video SDK holds connections open), so `waitStrategy()` falls back to `domcontentloaded` + a paint delay.
-   - The customer app's "Site not found" fallback renders with HTTP 200 on *transient* tenant-config fetch failures, so `isSiteNotFound()` detects it by its copy and the capture retries up to 3× before `classify()` accepts it as a real error.
+   - The customer app's "Site not found" fallback renders with HTTP 200 on _transient_ tenant-config fetch failures, so `isSiteNotFound()` detects it by its copy and the capture retries up to 3× before `classify()` accepts it as a real error.
    - `classify()` also flags HTTP ≥ 400 and authenticated routes that land on `/login` (auth failed). The Next.js dev overlay (`<nextjs-portal>`) is CSS-hidden so HMR warnings never appear in screenshots.
 5. **Images** (`crawler/thumbnail.js`) — `makeImages()` downscales the PNG to `thumb`/`full` JPEG data URLs using a canvas in a neutral `about:blank` page (no native image dependency; neutral page so the captured site's CSP can't block the `data:` image).
 6. **Graph** (`crawler/graph.js`) — `buildGraph()` resolves each page's `<a href>` links back to discovered routes (`routeMatches` handles dynamic segments), dedupes, drops self-loops, then applies **global-nav suppression**: a target linked from ≥ 70 % of a frontend's pages (`GLOBAL_NAV_THRESHOLD`) is navbar/footer chrome and its incoming edges are dropped, keeping the board readable.
@@ -110,7 +110,7 @@ Flags: `--reset` wipes the DB first; `--screens-only` refreshes screenshots whil
 
 - **`db.js`** — `node:sqlite` (`DatabaseSync`, hence the `--experimental-sqlite` flag on every entry point) with three tables: `screens` (keyed `"<frontend>|<url>"`, thumbnails stored inline as data URLs), `flows`, `flow_steps`. `listFlows()` computes each flow's `primaryRole` (highest-privilege role among its screens, superadmin > coach > student, falling back to a role word in the name) for the sidebar grouping.
 - **`server.js`** — dependency-free `node:http` server (port `FLOWMAP_PORT`, default 7878): JSON API (`GET/POST /api/screens`, `GET/POST/DELETE /api/flows`, `POST /api/reset`), vendored Cytoscape/dagre from `node_modules`, and path-traversal-guarded static serving of `web/`.
-- **`web/app.js`** — the sidebar groups flows by role (Superadmin/Coach/Student/Public); selecting one renders its DAG with cytoscape-dagre using screenshot thumbnails as node textures. Clicking a node opens a lightbox that *walks the flow*: forward steps follow outgoing edges (numbered options at branches, drivable with `1,1,1…`), Back retraces your actual path. Right-clicking a flow copies a text reference suitable for pasting to Claude.
+- **`web/app.js`** — the sidebar groups flows by role (Superadmin/Coach/Student/Public); selecting one renders its DAG with cytoscape-dagre using screenshot thumbnails as node textures. Clicking a node opens a lightbox that _walks the flow_: forward steps follow outgoing edges (numbered options at branches, drivable with `1,1,1…`), Back retraces your actual path. Right-clicking a flow copies a text reference suitable for pasting to Claude.
 - **`query.js`** (was `make flowmap-show`) — read-only text dump of flows/screens, no server or browser needed.
 - **`walk.js`** — verifier: live-walks one flow end-to-end (`node --experimental-sqlite walk.js <flowId> [outDir]`), logging in per role, resolving each screen through the same `resolveUrl`/`classify`/site-not-found-retry logic as capture, screenshotting every step to `walk-shots/flow-<id>/`, and printing a per-step JSON report. Exits non-zero on any skip, error, or auth redirect — the contract being that a registered flow is only trustworthy if every step renders a real screen.
 

@@ -8,14 +8,14 @@ Everything here lives under the `/admin/email` route tree in `frontend-customer`
 
 ## Layout
 
-| Path | Role |
-|---|---|
-| `src/lib/email-api.ts` | The only place that knows the `/api/v1/email/*` contract. Thin typed wrappers over `clientFetch`. |
-| `src/app/admin/email/page.tsx` | Campaign dashboard — list, filter, drill in. |
-| `src/app/admin/email/compose/page.tsx` | Three-step wizard: choose → design → send. |
-| `src/app/admin/email/templates/page.tsx` | Template library (mine / gallery) with preview + delete. |
-| `src/app/admin/email/campaigns/[id]/page.tsx` | Campaign detail: metadata, rendered preview, recipient table. |
-| `src/components/admin/email/recipient-selector.tsx` | Audience picker used by step 3 of the wizard. |
+| Path                                                | Role                                                                                              |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `src/lib/email-api.ts`                              | The only place that knows the `/api/v1/email/*` contract. Thin typed wrappers over `clientFetch`. |
+| `src/app/admin/email/page.tsx`                      | Campaign dashboard — list, filter, drill in.                                                      |
+| `src/app/admin/email/compose/page.tsx`              | Three-step wizard: choose → design → send.                                                        |
+| `src/app/admin/email/templates/page.tsx`            | Template library (mine / gallery) with preview + delete.                                          |
+| `src/app/admin/email/campaigns/[id]/page.tsx`       | Campaign detail: metadata, rendered preview, recipient table.                                     |
+| `src/components/admin/email/recipient-selector.tsx` | Audience picker used by step 3 of the wizard.                                                     |
 
 Shared building blocks come from `packages/shared` (`@shared/…`) — `EmailBuilderIframe`, `TemplateGrid`, `useAsyncAction`, `useNavigate` — so they can be reused by `frontend-main`. Only `RecipientSelector` is local, because "recipients" means tenant students and is meaningless outside this app.
 
@@ -146,4 +146,4 @@ Contributing here means staying inside the repo-wide frontend rules (see CLAUDE.
 - Programmatic navigation is `useNavigate()`, never `router.push`.
 - Status tints follow the shared pattern in this module: a theme-agnostic low-opacity fill plus a `dark:`-stepped foreground (`bg-emerald-500/15 text-emerald-700 dark:text-emerald-300`). `STATUS_COLORS` is duplicated between the dashboard and detail pages — keep them in sync or lift them.
 - All four pages set `export const dynamic = "force-dynamic"`: they're tenant-scoped and auth-dependent, so nothing here may be statically prerendered.
-- After changing an email serializer on the backend, run `npm run gen:api` in `frontend-customer` and review the `src/types/api-generated.ts` diff. `email-api.ts` types are hand-written and will *not* fail the build when the contract moves — a surprising generated diff is your only warning.
+- After changing an email serializer on the backend, run `npm run gen:api` in `frontend-customer` and review the `src/types/api-generated.ts` diff. `email-api.ts` types are hand-written and will _not_ fail the build when the contract moves — a surprising generated diff is your only warning.

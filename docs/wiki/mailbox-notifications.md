@@ -8,13 +8,13 @@ The deliberate seams between them are `apps.core.email.send_email` and `sanitize
 
 ## Sub-modules
 
-| Page | Owns |
-|---|---|
-| [Backend apps](mailbox-notifications-backend-apps.md) | `apps.mailbox` (dual-listed, threading, identity, attachments) and `apps.notifications` (push, announcements, audience, recurrence, Celery fanout) |
-| [Cloudflare Email Worker](mailbox-notifications-infra-cloudflare.md) | Inbound edge: parse MIME → HMAC-sign → POST `/api/v1/mailbox/inbound/` → bounce or accept |
-| [Shared mailbox UI](mailbox-notifications-packages-shared.md) | `packages/shared/src/mailbox` — `InboxClient`, `ConversationList`, `ThreadView`, `MessageEditor` |
-| [Tenant portal](mailbox-notifications-frontend-customer-src.md) | Coach mailbox route, announcement admin (`announcement-compose`, `-history`, `-recurring-list`, `-templates-list`), receipt page, PWA push handshake |
-| [Platform app](mailbox-notifications-frontend-main-src.md) | Superadmin `/admin/inbox` route shell + platform HTTP client |
+| Page                                                                 | Owns                                                                                                                                                 |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Backend apps](mailbox-notifications-backend-apps.md)                | `apps.mailbox` (dual-listed, threading, identity, attachments) and `apps.notifications` (push, announcements, audience, recurrence, Celery fanout)   |
+| [Cloudflare Email Worker](mailbox-notifications-infra-cloudflare.md) | Inbound edge: parse MIME → HMAC-sign → POST `/api/v1/mailbox/inbound/` → bounce or accept                                                            |
+| [Shared mailbox UI](mailbox-notifications-packages-shared.md)        | `packages/shared/src/mailbox` — `InboxClient`, `ConversationList`, `ThreadView`, `MessageEditor`                                                     |
+| [Tenant portal](mailbox-notifications-frontend-customer-src.md)      | Coach mailbox route, announcement admin (`announcement-compose`, `-history`, `-recurring-list`, `-templates-list`), receipt page, PWA push handshake |
+| [Platform app](mailbox-notifications-frontend-main-src.md)           | Superadmin `/admin/inbox` route shell + platform HTTP client                                                                                         |
 
 ## The dual-listing, and why the UI is shared
 
@@ -45,7 +45,7 @@ Coach composes in `announcement-compose.tsx`, picking an audience filter; `audie
 
 All announcement CRUD in the portal goes through one binding file, `src/lib/announcements.ts` (`listAnnouncements`, `listTemplates`, `deleteRecurring`, `getAnnouncement`) — the admin components are thin lists over it.
 
-## Where things are *not*
+## Where things are _not_
 
 - No notification components live in `packages/shared/src/mailbox` — its only "notification" surface is sonner toasts plus `useAsyncAction` loading state.
 - `frontend-main` owns no mailbox UI at all; it is a route shell plus a platform API client.

@@ -2,7 +2,7 @@
 
 # Mailbox & Notifications — `frontend-main`
 
-The superadmin-facing half of Contentor's mailbox. `frontend-main` is the marketing/platform app, and its `/admin/inbox` route is where **we** (the platform owner) read and answer mail from coaches. This module is deliberately thin: it supplies a *platform* HTTP client and a route shell, then hands all UI to the shared mailbox components that `frontend-customer` also uses.
+The superadmin-facing half of Contentor's mailbox. `frontend-main` is the marketing/platform app, and its `/admin/inbox` route is where **we** (the platform owner) read and answer mail from coaches. This module is deliberately thin: it supplies a _platform_ HTTP client and a route shell, then hands all UI to the shared mailbox components that `frontend-customer` also uses.
 
 ## Why it exists
 
@@ -10,10 +10,10 @@ The superadmin-facing half of Contentor's mailbox. `frontend-main` is the market
 
 The shared UI in `packages/shared/src/mailbox/*` imports from `@/lib/mailbox`. Each app resolves that path to its own client:
 
-| App | `@/lib/mailbox` resolves to | Base path | Auth |
-|---|---|---|---|
-| `frontend-main` | `src/lib/platform-mailbox-api.ts` | `/api/v1/platform/mailbox` | same-origin admin cookie |
-| `frontend-customer` | its own tenant mailbox client | tenant mailbox endpoints | tenant JWT |
+| App                 | `@/lib/mailbox` resolves to       | Base path                  | Auth                     |
+| ------------------- | --------------------------------- | -------------------------- | ------------------------ |
+| `frontend-main`     | `src/lib/platform-mailbox-api.ts` | `/api/v1/platform/mailbox` | same-origin admin cookie |
+| `frontend-customer` | its own tenant mailbox client     | tenant mailbox endpoints   | tenant JWT               |
 
 ```mermaid
 graph LR
@@ -34,15 +34,15 @@ Every request goes through the shared `api-client` (`src/lib/api-client.ts`), wh
 
 ### Operations
 
-| Function | Request | Returns |
-|---|---|---|
-| `listConversations()` | `GET conversations/` | `ConversationListItem[]` |
-| `getConversation(id)` | `GET conversations/:id/` | `ConversationDetail` (list item + `messages`) |
-| `compose(body)` | `POST compose/` | `{ conversation_id, message_id }` |
-| `reply(id, body)` | `POST conversations/:id/reply/` | `{ message_id }` |
-| `uploadAttachment(file)` | `POST attachments/` | `MessageAttachment` |
-| `updateConversation(id, patch)` | `PATCH conversations/:id/` | updated `ConversationListItem` |
-| `deleteConversation(id)` | `DELETE conversations/:id/` | `void` |
+| Function                        | Request                         | Returns                                       |
+| ------------------------------- | ------------------------------- | --------------------------------------------- |
+| `listConversations()`           | `GET conversations/`            | `ConversationListItem[]`                      |
+| `getConversation(id)`           | `GET conversations/:id/`        | `ConversationDetail` (list item + `messages`) |
+| `compose(body)`                 | `POST compose/`                 | `{ conversation_id, message_id }`             |
+| `reply(id, body)`               | `POST conversations/:id/reply/` | `{ message_id }`                              |
+| `uploadAttachment(file)`        | `POST attachments/`             | `MessageAttachment`                           |
+| `updateConversation(id, patch)` | `PATCH conversations/:id/`      | updated `ConversationListItem`                |
+| `deleteConversation(id)`        | `DELETE conversations/:id/`     | `void`                                        |
 
 `compose` takes `OutgoingMessage & { to: string; subject: string }` — a new thread needs a recipient and subject; `reply` reuses the existing thread's, so it takes bare `OutgoingMessage`.
 
@@ -76,7 +76,7 @@ Attachments are uploaded before the message that references them:
 `ConversationDetail extends ConversationListItem`, so a detail response is a superset of a list row and the same components render both. Two naming details matter when reading `ConversationListItem`:
 
 - `counterparty_email` / `counterparty_name` — the platform-inbox framing (the coach you're talking to).
-- `student_email` / `student_name` — carried for shape parity with the tenant mailbox, where the counterparty *is* a student. On the platform side treat `counterparty_*` as authoritative.
+- `student_email` / `student_name` — carried for shape parity with the tenant mailbox, where the counterparty _is_ a student. On the platform side treat `counterparty_*` as authoritative.
 
 `MailboxMessage.direction` is `"inbound" | "outbound"` relative to the mailbox owner: inbound is mail the superadmin received, outbound is what we sent. Both `text` and `html` are present — prefer `html` for display and keep `text` for previews and search.
 

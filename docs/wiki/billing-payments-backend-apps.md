@@ -4,10 +4,10 @@
 
 The billing app owns **two distinct money flows** that share models, providers, and one webhook endpoint. Keeping them straight is the single most important thing to understand before touching this code:
 
-| Flow | Who pays whom | Stripe mechanism | State lives in |
-|---|---|---|---|
-| **Platform subscription** | Coach → Contentor | Checkout on the *platform* account, prices from `PlatformPlan.prices` | `core.PlatformSubscription` (public schema) |
-| **Marketplace** | Student → Coach | **Direct charges** on the coach's *connected* account (`stripe_account=…`), platform takes an `application_fee` | `billing.Payment` / `billing.Subscription` (tenant schema) |
+| Flow                      | Who pays whom     | Stripe mechanism                                                                                                | State lives in                                             |
+| ------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **Platform subscription** | Coach → Contentor | Checkout on the _platform_ account, prices from `PlatformPlan.prices`                                           | `core.PlatformSubscription` (public schema)                |
+| **Marketplace**           | Student → Coach   | **Direct charges** on the coach's _connected_ account (`stripe_account=…`), platform takes an `application_fee` | `billing.Payment` / `billing.Subscription` (tenant schema) |
 
 Everything else — the provider abstraction, the monetization gate, the webhook router — exists to keep those two from bleeding into each other.
 
@@ -43,7 +43,7 @@ apps/billing/
 
 All billing models are **tenant-schema** (`TENANT_APPS`). They describe what happens inside one coach's studio.
 
-- **`SubscriptionPlan`** — a recurring membership the coach sells. `billing_interval_months` (1–36) is the cycle. The `stripe_price_id` / `stripe_price_amount_cents` / `stripe_price_interval_months` triple records *what the current Stripe Price was minted for*; when price or cycle changes, a **new** Price is provisioned and existing subscribers stay on the old one (decision **D1**, grandfathering). Stripe Prices are immutable — never try to mutate one.
+- **`SubscriptionPlan`** — a recurring membership the coach sells. `billing_interval_months` (1–36) is the cycle. The `stripe_price_id` / `stripe_price_amount_cents` / `stripe_price_interval_months` triple records _what the current Stripe Price was minted for_; when price or cycle changes, a **new** Price is provisioned and existing subscribers stay on the old one (decision **D1**, grandfathering). Stripe Prices are immutable — never try to mutate one.
 - **`SubscriptionPlanAccess`** — generic FK rows saying "this plan unlocks that content".
 - **`Subscription`** — a student's membership. `pending_plan` holds a scheduled plan change applied on the next `invoice.paid`. `provider` is `stripe` or `bypass`; `provider_subscription_id` is the webhook join key.
 - **`Payment` / `PaymentItem`** — one charge, N items. `platform_fee` + `submerchant_payout` split the amount. `PaymentItem.is_refunded` supports per-item refunds of a multi-item charge. Note `Payment.platform_subscription` is a FK into the **public** schema with `db_constraint=False` — django-tenants would otherwise create a per-schema FK that breaks cross-schema `TRUNCATE` on test teardown. Integrity is ORM-level only.
@@ -72,8 +72,8 @@ More than a stub: it writes a synthetic `WebhookEvent` row (observability parity
 
 Two helpers in `apps/core/monetization.py` guard every money path:
 
-- `is_paid_active(tenant)` — paid plan + active `PlatformSubscription`. Gate for *reaching* Connect onboarding and for publishing/selling paid content.
-- `can_monetize(tenant)` — `is_paid_active` **and** `stripe_charges_enabled`. Gate for *taking a real payment right now*.
+- `is_paid_active(tenant)` — paid plan + active `PlatformSubscription`. Gate for _reaching_ Connect onboarding and for publishing/selling paid content.
+- `can_monetize(tenant)` — `is_paid_active` **and** `stripe_charges_enabled`. Gate for _taking a real payment right now_.
 
 Under bypass both short-circuit to true once the plan is paid, or the marketplace would be untestable offline.
 
@@ -128,7 +128,7 @@ The success page polls `GET /payments/<id>/` (scoped to `student=request.user`, 
 
 Order matters — Stripe first, local state second, so a failed refund leaves access intact. `connect.refund_payment` deliberately omits `refund_application_fee`: **the platform keeps its fee**, only the coach's share returns to the buyer. Refunding a course item deactivates the `Enrollment`; the parent payment becomes `refunded` or `partially_refunded`.
 
-`GET /earnings/` aggregates completed sales (excluding `platform_subscription`-linked rows — those are the coach paying *us*) and, outside bypass, adds the live Connect balance from `connect.retrieve_balance`.
+`GET /earnings/` aggregates completed sales (excluding `platform_subscription`-linked rows — those are the coach paying _us_) and, outside bypass, adds the live Connect balance from `connect.retrieve_balance`.
 
 ## Webhooks
 
@@ -144,7 +144,7 @@ One endpoint, `POST /api/webhooks/stripe/` (`views/webhooks.py:stripe_webhook`),
 
 - new row → process
 - existing row with `processed_at` set → genuine duplicate, ack 200
-- existing row *without* `processed_at` → a prior attempt failed, **reprocess**
+- existing row _without_ `processed_at` → a prior attempt failed, **reprocess**
 
 Getting this wrong would silently drop any transiently-failed event forever.
 

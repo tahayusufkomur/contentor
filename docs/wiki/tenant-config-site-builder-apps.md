@@ -9,7 +9,7 @@
 3. **What's still demo content, and can this site go live?** — the seed registry (`SeededObject`), Setup Assistant checklist and publish gate (`setup_items.py`, `demo_content.py`)
 4. **What do the two chatbots know?** — the coach's student-facing assistant (`AssistantConfig`/`AssistantKnowledgeEntry`/`AssistantLink`, `assistant_views.py`) and "Ask Contentor", the coach's own help bot (`help_bot.py`, views in `views.py`)
 
-The app deliberately has **no service layer**: the serializer *is* the trust boundary, and the pure-data modules (`defaults.py`, `seeding.py`) are importable from migrations and management commands without dragging in Django models or DRF.
+The app deliberately has **no service layer**: the serializer _is_ the trust boundary, and the pure-data modules (`defaults.py`, `seeding.py`) are importable from migrations and management commands without dragging in Django models or DRF.
 
 ---
 
@@ -19,16 +19,16 @@ The app deliberately has **no service layer**: the serializer *is* the trust bou
 
 Notable fields and why they're shaped the way they are:
 
-| Field | Notes |
-|---|---|
-| `logo` / `logo_url`, `icon` / `icon_url` | FK-preferred, raw-URL fallback. The FK is durable; the URL is a presigned string that expires. `to_representation` always re-derives the URL from the FK when one exists. |
-| `logo_recipe` | Versioned Logo Studio composer state. Validation + v1→v2 upgrade live in `logo_recipe.py`; the serializer just delegates. |
-| `landing_sections` | **Legacy.** The old single-page landing config, superseded by `pages`. Still populated as a backfill source and read-time fallback. Slated for removal once `pages` is proven in prod. |
-| `pages` | The builder tree (see below). |
-| `page_templates` | Coach-saved "my templates" — same block shape as `pages`, validated by the same code path. Built-in starter templates live in the frontend, not here. |
-| `setup_progress` | Setup Assistant state: `{"pages_edited": [...], "look_edited": bool, "manual": {key: True}}`. Auto-detection is **append-only** — nothing ever un-marks a page as edited. |
+| Field                                    | Notes                                                                                                                                                                                  |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `logo` / `logo_url`, `icon` / `icon_url` | FK-preferred, raw-URL fallback. The FK is durable; the URL is a presigned string that expires. `to_representation` always re-derives the URL from the FK when one exists.              |
+| `logo_recipe`                            | Versioned Logo Studio composer state. Validation + v1→v2 upgrade live in `logo_recipe.py`; the serializer just delegates.                                                              |
+| `landing_sections`                       | **Legacy.** The old single-page landing config, superseded by `pages`. Still populated as a backfill source and read-time fallback. Slated for removal once `pages` is proven in prod. |
+| `pages`                                  | The builder tree (see below).                                                                                                                                                          |
+| `page_templates`                         | Coach-saved "my templates" — same block shape as `pages`, validated by the same code path. Built-in starter templates live in the frontend, not here.                                  |
+| `setup_progress`                         | Setup Assistant state: `{"pages_edited": [...], "look_edited": bool, "manual": {key: True}}`. Auto-detection is **append-only** — nothing ever un-marks a page as edited.              |
 
-Reads are cached: `TenantConfigView.get_object` caches the instance under `tenant:{schema_name}:config` for 300s and `perform_update` deletes that key. Because the cached instance can be stale-ish, `perform_update` JSON-normalizes before comparing (see *Autosave idempotence* below).
+Reads are cached: `TenantConfigView.get_object` caches the instance under `tenant:{schema_name}:config` for 300s and `perform_update` deletes that key. Because the cached instance can be stale-ish, `perform_update` JSON-normalizes before comparing (see _Autosave idempotence_ below).
 
 `GET /api/v1/config/` is `AllowAny` — the public tenant site renders from it. `PATCH` requires authentication.
 
@@ -62,7 +62,7 @@ Blocks are **theme-locked by default**: they carry content, the theme supplies s
 - `BLOCK_STYLE_ALLOWLIST` decides which keys each block type may carry. `hero` gets only `textColor` (a token background would sit behind its image, and its height is min-height-driven so spacing is a no-op). Dynamic blocks get spacing + heading textColor only, never a background that would push their themed inner cards out of contrast.
 - `sanitize_block_style` **drops** unknown keys and values rather than rejecting them — forward-compat with a frontend that may ship new controls first. It also omits no-op values (`background: "default"`, `spacing: "normal"`), so an unstyled block serializes byte-for-byte as it did before overrides existed.
 
-The frontend may surface a *subset* of these controls; it must never widen the set.
+The frontend may surface a _subset_ of these controls; it must never widen the set.
 
 ### Rich text
 
@@ -70,7 +70,7 @@ The frontend may surface a *subset* of these controls; it must never widen the s
 
 ### Legacy conversion
 
-`pages_from_landing_sections()` performs the one-way legacy→builder conversion: the six fixed sections map onto the home page (`about` → `imageText`, `courses` → `courseGrid`, …), preserving enabled flags, content, and photo ids. The converted About and FAQ content is *also* copied onto their dedicated pages so they aren't empty. It's called from three places — the backfill migration, the seed commands, and `to_representation` as a read-time fallback for tenants with no `pages` yet — which is what keeps real and demo tenants converting identically.
+`pages_from_landing_sections()` performs the one-way legacy→builder conversion: the six fixed sections map onto the home page (`about` → `imageText`, `courses` → `courseGrid`, …), preserving enabled flags, content, and photo ids. The converted About and FAQ content is _also_ copied onto their dedicated pages so they aren't empty. It's called from three places — the backfill migration, the seed commands, and `to_representation` as a read-time fallback for tenants with no `pages` yet — which is what keeps real and demo tenants converting identically.
 
 ---
 
@@ -85,7 +85,7 @@ The frontend may surface a *subset* of these controls; it must never widen the s
 - `validate_custom_css` → `clean_css` from `apps.core.sanitize`. This CSS is injected into a `<style>` tag on every tenant page, so the `</style>` breakout vector and active-content constructs are stripped before storage.
 - `validate_logo_recipe` → `logo_recipe.upgrade_recipe()` then `validate_recipe()`; `{}` clears the design.
 
-`_clean_photo_id` deserves its own note. `Photo.id` is a `UUIDField`, and a malformed value reaching `Photo.objects.filter(pk=...)` raises Django's `ValidationError` *during query construction* — which DRF's exception handler does **not** turn into a 400. So photo ids are validated and clamped (not merely length-capped) on both the write path and the read path.
+`_clean_photo_id` deserves its own note. `Photo.id` is a `UUIDField`, and a malformed value reaching `Photo.objects.filter(pk=...)` raises Django's `ValidationError` _during query construction_ — which DRF's exception handler does **not** turn into a 400. So photo ids are validated and clamped (not merely length-capped) on both the write path and the read path.
 
 **Read path.** `to_representation` does considerably more than serialize:
 
@@ -100,7 +100,7 @@ graph TD
     G --> H[_sign_assets: re-derive url<br/>from photo_id / video_id]
 ```
 
-`_sign_tree` recurses over dicts *and* lists, which is why the same function handles the `pages` dict and the `page_templates` list. It collects every `photo_id`/`video_id` in the tree first, issues **one** bulk query per asset type, then walks again to write fresh presigned URLs — no N+1 regardless of block count.
+`_sign_tree` recurses over dicts _and_ lists, which is why the same function handles the `pages` dict and the `page_templates` list. It collects every `photo_id`/`video_id` in the tree first, issues **one** bulk query per asset type, then walks again to write fresh presigned URLs — no N+1 regardless of block count.
 
 Injecting tenant metadata (`tenant_name`, `tenant_slug`, `niche`, `is_published`, `has_preview_password`) into the config response saves the frontend a second round-trip. `niche` is read-only — the builder uses it to seed new blocks with niche-appropriate example content.
 
@@ -124,7 +124,7 @@ Each row is `(content_type, object_id, fingerprint, niche)`. The **fingerprint**
 Three helpers, one implementation shared by the seeder and the erase endpoint:
 
 - **`register_seeded(objs, niche)`** — bulk-creates rows. Critically, it calls `obj.refresh_from_db()` first: a freshly-created object can hold Python-native values (`Course.price` as `int 0`) that stringify differently from what the DB round-trips (`Decimal('0.00')`) — same value, different hash. The erase endpoint always fingerprints a freshly-fetched row, so registration must match that baseline.
-- **`refresh_seeded_fingerprints(objs)`** — re-baselines after a *system*-driven mutation (onboarding AI renames, thumbnail picks). Without it, AI edits made right after seeding would read as coach edits and break the erase flow. Called from `apps/core/tasks._apply_compose_extras` and `core/onboarding/ai_photos.apply_photo_picks`.
+- **`refresh_seeded_fingerprints(objs)`** — re-baselines after a _system_-driven mutation (onboarding AI renames, thumbnail picks). Without it, AI edits made right after seeding would read as coach edits and break the erase flow. Called from `apps/core/tasks._apply_compose_extras` and `core/onboarding/ai_photos.apply_photo_picks`.
 
 Callers of `register_seeded` span `core/demo/seed_template.py`, `core/onboarding/seeding_content.py`, `core/onboarding/starter_post.py`, `core/onboarding/ai_photos.py`, and the `backfill_seed_registry` management command.
 
@@ -162,15 +162,15 @@ Progress counts **core** items only; optional ones never inflate the denominator
 
 `publish_blockers(config, tenant)` returns the unmet requirement keys for going live (empty = ready). Unlike the checklist, it reads real state only — a manual "mark done" never satisfies a hard publish requirement.
 
-| Blocker | Condition |
-|---|---|
-| `look` | no logo and `look_edited` not set |
-| `first_course` | no own **published** course and no own download |
-| `first_event` | only if wizard goals include `run_live_classes`/`in_person_events` **and** the plan has `is_live_enabled` |
-| `first_blog_post` | only if goals include `write_blog`; own **published** post required |
-| `payouts` | only if own paid content exists (`_has_paid_content`) and `can_monetize(tenant)` is false |
+| Blocker           | Condition                                                                                                 |
+| ----------------- | --------------------------------------------------------------------------------------------------------- |
+| `look`            | no logo and `look_edited` not set                                                                         |
+| `first_course`    | no own **published** course and no own download                                                           |
+| `first_event`     | only if wizard goals include `run_live_classes`/`in_person_events` **and** the plan has `is_live_enabled` |
+| `first_blog_post` | only if goals include `write_blog`; own **published** post required                                       |
+| `payouts`         | only if own paid content exists (`_has_paid_content`) and `can_monetize(tenant)` is false                 |
 
-Content blockers are goal- *and* entitlement-conditional on purpose: a coach is never gated on a content type they didn't choose, nor on one their plan can't create — the free plan has `is_live_enabled` false, which would otherwise leave the gate permanently unsatisfiable. `_live_entitled` uses `getattr(..., None)` because Django's reverse-one-to-one raises a `DoesNotExist` that also subclasses `AttributeError`, covering "no subscription".
+Content blockers are goal- _and_ entitlement-conditional on purpose: a coach is never gated on a content type they didn't choose, nor on one their plan can't create — the free plan has `is_live_enabled` false, which would otherwise leave the gate permanently unsatisfiable. `_live_entitled` uses `getattr(..., None)` because Django's reverse-one-to-one raises a `DoesNotExist` that also subclasses `AttributeError`, covering "no subscription".
 
 `demo_cleanup` is **deliberately not a blocker** (decision recorded in the AI-seeding plan): seeded content is niche-appropriate starter content a coach may reasonably ship as-is. It stays a non-blocking nudge in the checklist.
 
@@ -216,24 +216,24 @@ Both are `AiConversation`-backed (`apps.core.models`) and share the takeover mac
 
 All routes are mounted under `/api/v1/` (see `urls.py`):
 
-| Route | Handler | Auth |
-|---|---|---|
-| `config/` | `TenantConfigView` (Retrieve/Update) | GET `AllowAny`, PATCH `IsAuthenticated` |
-| `stats/` | `admin_stats` | `IsCoachOrOwner` |
-| `setup-status/` | `setup_status` (GET/PATCH) | `IsCoachOrOwner` |
-| `demo-content/`, `demo-content/erase/` | `demo_content`, `erase_demo_content` | `IsCoachOrOwner` |
-| `config/logo-ai/status/`, `config/logo-converse/`, `.../finish/`, `config/logo-refine/` | `logo_api` wrappers | `IsCoachOrOwner` |
-| `help-bot/{chat,status,thread,human-message,human-request}/` | Ask Contentor | `IsCoachOrOwner` (+ throttle on chat) |
-| `assistant/config,knowledge,links,transcripts,preview-chat,conversations/*` | `assistant_views` | `IsCoachOrOwner` |
+| Route                                                                                   | Handler                              | Auth                                    |
+| --------------------------------------------------------------------------------------- | ------------------------------------ | --------------------------------------- |
+| `config/`                                                                               | `TenantConfigView` (Retrieve/Update) | GET `AllowAny`, PATCH `IsAuthenticated` |
+| `stats/`                                                                                | `admin_stats`                        | `IsCoachOrOwner`                        |
+| `setup-status/`                                                                         | `setup_status` (GET/PATCH)           | `IsCoachOrOwner`                        |
+| `demo-content/`, `demo-content/erase/`                                                  | `demo_content`, `erase_demo_content` | `IsCoachOrOwner`                        |
+| `config/logo-ai/status/`, `config/logo-converse/`, `.../finish/`, `config/logo-refine/` | `logo_api` wrappers                  | `IsCoachOrOwner`                        |
+| `help-bot/{chat,status,thread,human-message,human-request}/`                            | Ask Contentor                        | `IsCoachOrOwner` (+ throttle on chat)   |
+| `assistant/config,knowledge,links,transcripts,preview-chat,conversations/*`             | `assistant_views`                    | `IsCoachOrOwner`                        |
 
 ---
 
 ## Contributing notes
 
-- **Adding a block type** — add it to `CONTENT_BLOCK_TYPES` or `DYNAMIC_BLOCK_TYPES` *and* give it an entry in `BLOCK_STYLE_ALLOWLIST` (a missing entry means `frozenset()` — every override silently dropped). No serializer change is needed; `_clean_block` reads the catalog.
-- **Adding a style override key** — extend the enum tuple, the allowlist entries, *and* `sanitize_block_style` (it checks keys explicitly, not generically). Keep the no-op-omission behaviour so unstyled blocks don't gain a `style` key.
+- **Adding a block type** — add it to `CONTENT_BLOCK_TYPES` or `DYNAMIC_BLOCK_TYPES` _and_ give it an entry in `BLOCK_STYLE_ALLOWLIST` (a missing entry means `frozenset()` — every override silently dropped). No serializer change is needed; `_clean_block` reads the catalog.
+- **Adding a style override key** — extend the enum tuple, the allowlist entries, _and_ `sanitize_block_style` (it checks keys explicitly, not generically). Keep the no-op-omission behaviour so unstyled blocks don't gain a `style` key.
 - **Adding a checklist item** — add the key to `ALL_ITEM_KEYS` (otherwise `PATCH /setup-status/` 400s on it), `add(...)` it in `compute_setup_state`, and add the frontend copy. Decide deliberately whether it belongs in `publish_blockers` — most nudges don't.
 - **Keep `defaults.py` and `seeding.py` model-free.** Migrations import them. Views/serializers use function-local imports for cross-app models (`Course`, `Photo`, `BlogPost`, …) to avoid app-loading cycles — follow that pattern.
-- **Anything read back from `pages`/`page_templates` must survive re-signing.** If you add a new asset-reference field, teach `_collect_asset_ids`/`_sign_assets` about it *and* `_strip_volatile_urls` in `views.py`, or autosave will start false-positive-marking pages as edited.
+- **Anything read back from `pages`/`page_templates` must survive re-signing.** If you add a new asset-reference field, teach `_collect_asset_ids`/`_sign_assets` about it _and_ `_strip_volatile_urls` in `views.py`, or autosave will start false-positive-marking pages as edited.
 - **After changing the serializer**, run `npm run gen:api` in `frontend-customer` and review the `src/types/api-generated.ts` diff.
 - Tests live in `backend/apps/tenant_config/tests/` (`test_pages_serializer.py`, `test_student_bot.py`, `test_assistant_*.py`); `_has_own` is also exercised from `core/tests/test_wizard_content.py`.

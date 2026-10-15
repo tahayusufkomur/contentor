@@ -33,7 +33,7 @@ The most important structures defined here:
 
 **DRF defaults.** `TenantJWTAuthentication` is the default authentication class and `IsAuthenticated` the default permission. This has a project-wide consequence: any public endpoint must set `@authentication_classes([])` — `AllowAny` alone still runs the JWT authenticator and can 401. The `DEFAULT_THROTTLE_RATES` dict is the single registry of every scoped throttle (help bot, wizard endpoints, signup, AI rates); add new scopes here, not inline.
 
-**AI configuration.** `AI_PROVIDER` selects `"anthropic"` (prod, real API key) or `"cli"` (local dev, the developer's Claude subscription via the `claude` binary). Each AI feature (logo studio, help bot, blog generation, onboarding compose, student bot) gets its own model setting plus USD budget kill-switches and per-tenant caps — all env-overridable. `GEMINI_API_KEY` is intentionally *not* routed through `AI_PROVIDER`; image generation is a separate modality with its own off-switch (unset key = feature off, no fakes needed in CI).
+**AI configuration.** `AI_PROVIDER` selects `"anthropic"` (prod, real API key) or `"cli"` (local dev, the developer's Claude subscription via the `claude` binary). Each AI feature (logo studio, help bot, blog generation, onboarding compose, student bot) gets its own model setting plus USD budget kill-switches and per-tenant caps — all env-overridable. `GEMINI_API_KEY` is intentionally _not_ routed through `AI_PROVIDER`; image generation is a separate modality with its own off-switch (unset key = feature off, no fakes needed in CI).
 
 **Local-fake flags.** `BILLING_BYPASS_ENABLED`, `LIVE_FAKE_ENABLED`, `EMAIL_SINK_ENABLED`, and `DOMAINS_BYPASS_ENABLED` swap external services (Stripe, GetStream, Resend, Route 53/Cloudflare) for deterministic fakes. Each has a hard refusal in `prod.py` (see below).
 
@@ -70,13 +70,13 @@ Inherits from `dev.py`, then:
 
 `config.urls` is the single `ROOT_URLCONF` for all hosts; tenancy is resolved from the `Host` header by middleware, not by URL routing. The layout:
 
-| Prefix | Purpose |
-|---|---|
-| `/django-admin/` | Django admin (apex `/admin/*` is the superadmin SPA, routed to Next.js by Caddy) |
-| `/api/webhooks/stripe/` | Stripe webhook — declared **before** any `/api/v1/` route |
-| `/api/health/`, `/api/schema/` | Health probe; drf-spectacular OpenAPI (both auth-free) |
-| `/api/v1/…` | Everything else, one `include()` per app |
-| `/api/v1/dev/` | Mounted only when `EMAIL_SINK_ENABLED` (prod refuses the flag, so this surface cannot exist in prod) |
+| Prefix                         | Purpose                                                                                              |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `/django-admin/`               | Django admin (apex `/admin/*` is the superadmin SPA, routed to Next.js by Caddy)                     |
+| `/api/webhooks/stripe/`        | Stripe webhook — declared **before** any `/api/v1/` route                                            |
+| `/api/health/`, `/api/schema/` | Health probe; drf-spectacular OpenAPI (both auth-free)                                               |
+| `/api/v1/…`                    | Everything else, one `include()` per app                                                             |
+| `/api/v1/dev/`                 | Mounted only when `EMAIL_SINK_ENABLED` (prod refuses the flag, so this surface cannot exist in prod) |
 
 Ordering matters in three documented places: the Stripe webhook precedes `/api/v1/` and pairs with `@authentication_classes([])` on the view (region + tenant middleware also skip `/api/webhooks/*`); `/api/v1/platform/email/`, `/platform/blog/`, and the logbook platform routes are declared before the broader `apps.core.platform` include so they resolve first.
 

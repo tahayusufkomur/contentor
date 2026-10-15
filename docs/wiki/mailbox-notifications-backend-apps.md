@@ -12,12 +12,12 @@ They share almost no code — the one deliberate seam is `apps.core.email.send_e
 
 ### Why it's dual-listed
 
-`apps.mailbox` appears in **both** `SHARED_APPS` and `TENANT_APPS` (see `CLAUDE.md` → SHARED_APPS). The same three tables (`Conversation`, `Message`, `MessageAttachment`) therefore exist in the public schema *and* in every tenant schema:
+`apps.mailbox` appears in **both** `SHARED_APPS` and `TENANT_APPS` (see `CLAUDE.md` → SHARED_APPS). The same three tables (`Conversation`, `Message`, `MessageAttachment`) therefore exist in the public schema _and_ in every tenant schema:
 
-| Schema | What it is | Who reads it | Sends from |
-|---|---|---|---|
-| tenant | Coach ↔ student mailbox | `IsCoachOrOwner` (`urls.py`) | `sending_identity(connection.tenant)` |
-| public | Superadmin platform inbox | `IsSuperUser` (`urls_platform.py`) | `settings.PLATFORM_SUPPORT_FROM` |
+| Schema | What it is                | Who reads it                       | Sends from                            |
+| ------ | ------------------------- | ---------------------------------- | ------------------------------------- |
+| tenant | Coach ↔ student mailbox   | `IsCoachOrOwner` (`urls.py`)       | `sending_identity(connection.tenant)` |
+| public | Superadmin platform inbox | `IsSuperUser` (`urls_platform.py`) | `settings.PLATFORM_SUPPORT_FROM`      |
 
 This is why `views.py` is structured as thin permission wrappers around shared private bodies — `conversation_list` and `platform_conversation_list` both call `_conversation_list`; same for `_conversation_detail`, `_compose`, `_reply`, `_upload_attachment`. There is exactly one behavioural fork in the whole app, and it lives in `services.send_message`:
 
@@ -77,7 +77,7 @@ Threading is by counterparty, not by `References` header. `services.get_or_creat
 
 Storage goes through `apps.core.storage` (`build_s3_path("mailbox", uuid4().hex, filename)` → S3/MinIO). Two directions:
 
-- **Outbound:** the composer POSTs each file to `attachments/` *before* send. `MessageAttachment.message` is nullable precisely for this — the row exists unlinked. `send_message` then claims them: `filter(id__in=ids, message__isnull=True)`, and a count mismatch raises `ValueError("Unknown or already-sent attachment.")` (surfaced as a 400 by `_compose`/`_reply`). This makes attachment IDs single-use and prevents attaching someone else's already-sent file. Unclaimed rows are orphans — nothing reaps them today.
+- **Outbound:** the composer POSTs each file to `attachments/` _before_ send. `MessageAttachment.message` is nullable precisely for this — the row exists unlinked. `send_message` then claims them: `filter(id__in=ids, message__isnull=True)`, and a count mismatch raises `ValueError("Unknown or already-sent attachment.")` (surfaced as a 400 by `_compose`/`_reply`). This makes attachment IDs single-use and prevents attaching someone else's already-sent file. Unclaimed rows are orphans — nothing reaps them today.
 - **Inbound:** attachments arrive base64-inline in the webhook payload. Anything failing validation, missing content, or flagged `omitted` by the Worker gets a row with `omitted=True` and an empty `storage_key`. A storage exception is logged and downgraded to `omitted` rather than failing the whole message — receiving the text matters more than the file.
 
 `MessageAttachmentSerializer.download_url` returns `""` for omitted rows, otherwise a presigned URL minted per serialization.
@@ -92,15 +92,15 @@ The `Message` row is created **only after** `send_email` returns truthy; a falsy
 
 Coach (`urls.py`, all `IsCoachOrOwner`):
 
-| Path | Methods | Notes |
-|---|---|---|
-| `conversations/` | GET | `select_related("student").prefetch_related("messages__attachments")` — the serializer's `_last_message` walks the prefetched list, so dropping the prefetch is an N+1 |
-| `conversations/<pk>/` | GET, PATCH, DELETE | GET marks inbound messages read and zeroes `unread_count`; PATCH accepts only `is_archived` / `is_spam` |
-| `conversations/<pk>/reply/` | POST | |
-| `compose/` | POST | creates-or-reuses the open conversation |
-| `attachments/` | POST | `MultiPartParser` |
-| `settings/` | GET, PUT | address picker |
-| `inbound/` | POST | unauthenticated, HMAC-signed |
+| Path                        | Methods            | Notes                                                                                                                                                                  |
+| --------------------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `conversations/`            | GET                | `select_related("student").prefetch_related("messages__attachments")` — the serializer's `_last_message` walks the prefetched list, so dropping the prefetch is an N+1 |
+| `conversations/<pk>/`       | GET, PATCH, DELETE | GET marks inbound messages read and zeroes `unread_count`; PATCH accepts only `is_archived` / `is_spam`                                                                |
+| `conversations/<pk>/reply/` | POST               |                                                                                                                                                                        |
+| `compose/`                  | POST               | creates-or-reuses the open conversation                                                                                                                                |
+| `attachments/`              | POST               | `MultiPartParser`                                                                                                                                                      |
+| `settings/`                 | GET, PUT           | address picker                                                                                                                                                         |
+| `inbound/`                  | POST               | unauthenticated, HMAC-signed                                                                                                                                           |
 
 Platform (`urls_platform.py`, all `IsSuperUser`): the same five handlers minus `settings/` and `inbound/`.
 
@@ -114,11 +114,11 @@ Changing a claimed platform local part releases the old one for anyone else to c
 
 ### Surface
 
-| Layer | File | Audience |
-|---|---|---|
-| Student API, prefix `/api/v1/notifications/` | `urls.py` / `views.py` | `IsAuthenticated`, except `vapid-key/` and `email/unsubscribe/` (both `authentication_classes([])` + `AllowAny`) |
-| Coach admin API | `admin_urls.py` / `admin_views.py` | `IsCoachOrOwner` |
-| Background | `tasks.py` | Celery worker + beat |
+| Layer                                        | File                               | Audience                                                                                                         |
+| -------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Student API, prefix `/api/v1/notifications/` | `urls.py` / `views.py`             | `IsAuthenticated`, except `vapid-key/` and `email/unsubscribe/` (both `authentication_classes([])` + `AllowAny`) |
+| Coach admin API                              | `admin_urls.py` / `admin_views.py` | `IsCoachOrOwner`                                                                                                 |
+| Background                                   | `tasks.py`                         | Celery worker + beat                                                                                             |
 
 Student endpoints: `vapid-key/`, `subscribe/`, `unsubscribe/`, `feed/`, `feed/<pk>/read/`, `email/unsubscribe/`.
 Coach endpoints: announcement CRUD + `announcements/preview/`, `templates/`, `recurring/`.
@@ -211,7 +211,7 @@ All four scheduled tasks share one shape — iterate `get_tenant_model().objects
 
 ## Cross-cutting conventions
 
-- **Anything a coach typed goes through `sanitize_rich_text`** — on the way in (`validate_body` on the announcement, template, and recurring serializers) *and* on the way out (`MessageSerializer.get_html`, `announcement_email_html`, `send_message`). Belt and braces, because rows predate the input-side sanitizer.
+- **Anything a coach typed goes through `sanitize_rich_text`** — on the way in (`validate_body` on the announcement, template, and recurring serializers) _and_ on the way out (`MessageSerializer.get_html`, `announcement_email_html`, `send_message`). Belt and braces, because rows predate the input-side sanitizer.
 - **Push bodies are plaintext.** `payloads.strip_to_text` uses `nh3.clean(html, tags=set(), attributes={})` plus `html.unescape` — don't hand raw HTML to a push payload.
 - **Public endpoints must set `@authentication_classes([])`.** `TenantJWTAuthentication` is the DRF default; `AllowAny` alone still runs the authenticator and 401s on a malformed token. `vapid_key`, `email_unsubscribe`, and `inbound` all do this (`views.py` even carries the CLAUDE.md reminder inline).
 - **Celery never has an ambient tenant.** Every task signature carries `schema_name` or iterates tenants itself.

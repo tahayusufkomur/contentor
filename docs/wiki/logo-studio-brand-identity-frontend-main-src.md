@@ -6,8 +6,8 @@ I have what I need. Writing the documentation now.
 
 Two distinct concerns share this module's name, and keeping them apart is the first thing to understand:
 
-1. **Contentor's own brand lockup** (`components/shared/logo-mark.tsx`) — the *platform's* wordmark and monogram, rendered as pure text in house design tokens. Used by the marketing site chrome.
-2. **The Logo Studio engine** (`lib/logo/*`, `components/logo/*`, `types/logo.ts`) — the recipe-based logo *authoring and rasterizing* system a coach uses to design **their own** brand mark. In `frontend-main` every one of these files is a one-line re-export of `packages/shared/src/logo/*`; the implementation lives in the shared package, and `frontend-main` consumes it only from the onboarding wizard.
+1. **Contentor's own brand lockup** (`components/shared/logo-mark.tsx`) — the _platform's_ wordmark and monogram, rendered as pure text in house design tokens. Used by the marketing site chrome.
+2. **The Logo Studio engine** (`lib/logo/*`, `components/logo/*`, `types/logo.ts`) — the recipe-based logo _authoring and rasterizing_ system a coach uses to design **their own** brand mark. In `frontend-main` every one of these files is a one-line re-export of `packages/shared/src/logo/*`; the implementation lives in the shared package, and `frontend-main` consumes it only from the onboarding wizard.
 
 ## Part 1 — Contentor's brand lockup
 
@@ -45,17 +45,17 @@ The practical consequence: **changing the header lockup is a one-file, one-compo
 
 `frontend-main` mirrors the shared package with `export * from "@shared/logo/…"` files so that app code can import `@/lib/logo/composer` rather than reaching across the workspace. `@shared/*` maps to `../packages/shared/src/*` in `frontend-main/tsconfig.json`. `frontend-customer` does exactly the same thing, file for file — that is what makes the studio's core shareable between the coach-facing studio and the wizard.
 
-| Local path | Shared module | What it provides |
-|---|---|---|
-| `types/logo.ts` | `logo/types` | `LogoRecipe` (v3, live), `LogoRecipeV1`/`V2` (migration inputs only), `AnyLogoRecipe`, `LogoMark`, `Fill`, `TextStyle`, `RecipeLayout`, `BadgeShape` |
-| `lib/logo/catalog.ts` | `logo/catalog` | `LOGO_ICONS` / `ICON_GROUPS` (curated lucide set), `LOGO_FONTS` / `LOGO_FONT_FAMILIES` / `fontEntry`, `PALETTES(primaryHex)`, `applyPalette`, `TEXT_COLORS`, `initialsFor`, `defaultRecipe` |
-| `lib/logo/composer.ts` | `logo/composer` | AI Brand Pack → recipe: `composeIconPreview`, `composeConverseDesign`, `applyRefinedDesign`, plus `ConverseDesign` / `RefinedDesign` / `Brief` / `StyleChip` types |
-| `lib/logo/abstract.ts` | `logo/abstract` | `abstractSpec(family, seed)` + `mulberry32` seeded PRNG, `ABSTRACT_FAMILIES` |
-| `components/logo/abstract-mark.tsx` | `logo/abstract-mark` | `AbstractMark` — paints an `abstractSpec` into an SVG `<g>` |
-| `components/logo/logo-renderer.tsx` | `logo/logo-renderer` | `LogoRenderer` (full lockup), `MarkRenderer` (square mark), `logoViewBox`, `MARK_VIEWBOX`, `Badge`, `MarkContent`, `asFill`/`solidOf` |
-| `lib/logo/export.ts` | `logo/export` | `svgToPngBlob(svg, w, h, fonts)`, `imageToDataUrl`, `FontSpec` |
-| `lib/logo/render-draft.tsx` | `logo/render-draft` | `fontsFor(recipe)`, `renderRecipesToPngs`, `renderDraftPngs` — off-screen rasterizer |
-| `lib/logo/migrate.ts` | `logo/migrate` | `isRecipe`, `migrateRecipe` |
+| Local path                          | Shared module        | What it provides                                                                                                                                                                            |
+| ----------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `types/logo.ts`                     | `logo/types`         | `LogoRecipe` (v3, live), `LogoRecipeV1`/`V2` (migration inputs only), `AnyLogoRecipe`, `LogoMark`, `Fill`, `TextStyle`, `RecipeLayout`, `BadgeShape`                                        |
+| `lib/logo/catalog.ts`               | `logo/catalog`       | `LOGO_ICONS` / `ICON_GROUPS` (curated lucide set), `LOGO_FONTS` / `LOGO_FONT_FAMILIES` / `fontEntry`, `PALETTES(primaryHex)`, `applyPalette`, `TEXT_COLORS`, `initialsFor`, `defaultRecipe` |
+| `lib/logo/composer.ts`              | `logo/composer`      | AI Brand Pack → recipe: `composeIconPreview`, `composeConverseDesign`, `applyRefinedDesign`, plus `ConverseDesign` / `RefinedDesign` / `Brief` / `StyleChip` types                          |
+| `lib/logo/abstract.ts`              | `logo/abstract`      | `abstractSpec(family, seed)` + `mulberry32` seeded PRNG, `ABSTRACT_FAMILIES`                                                                                                                |
+| `components/logo/abstract-mark.tsx` | `logo/abstract-mark` | `AbstractMark` — paints an `abstractSpec` into an SVG `<g>`                                                                                                                                 |
+| `components/logo/logo-renderer.tsx` | `logo/logo-renderer` | `LogoRenderer` (full lockup), `MarkRenderer` (square mark), `logoViewBox`, `MARK_VIEWBOX`, `Badge`, `MarkContent`, `asFill`/`solidOf`                                                       |
+| `lib/logo/export.ts`                | `logo/export`        | `svgToPngBlob(svg, w, h, fonts)`, `imageToDataUrl`, `FontSpec`                                                                                                                              |
+| `lib/logo/render-draft.tsx`         | `logo/render-draft`  | `fontsFor(recipe)`, `renderRecipesToPngs`, `renderDraftPngs` — off-screen rasterizer                                                                                                        |
+| `lib/logo/migrate.ts`               | `logo/migrate`       | `isRecipe`, `migrateRecipe`                                                                                                                                                                 |
 
 Note the gap: **`curated-rank` has no local re-export.** `app/signup/verify/wizard/logo-review-steps.tsx` imports `briefKeywords` / `rankCuratedLogos` / `applyAiRank` straight from `@shared/logo/curated-rank`. If you add a local `lib/logo/curated-rank.ts`, migrate that import too rather than leaving both paths live.
 
@@ -77,7 +77,7 @@ Two sync constraints are load-bearing and called out in the source headers:
 `svgToPngBlob` exists because of two browser constraints documented at length in `export.ts`, and they explain nearly every line of it:
 
 1. An SVG rasterized through `<img>`/canvas is a separate rendering context and does **not** inherit the page's webfonts. Fonts must be embedded as an inline `@font-face` with a `data:` `src`.
-2. Canvas tainting: any remaining `http(s):` reference inside the serialized SVG — a font `url()`, an `<image href>` — makes the canvas non-origin-clean, so `toBlob()` throws `SecurityError` or the resource renders blank. Every external reference must be inlined as a `data:` URI first (that's what `imageToDataUrl` is for). A failed *font* fetch degrades gracefully; a failed *mark image* fetch throws, because there's no acceptable fallback.
+2. Canvas tainting: any remaining `http(s):` reference inside the serialized SVG — a font `url()`, an `<image href>` — makes the canvas non-origin-clean, so `toBlob()` throws `SecurityError` or the resource renders blank. Every external reference must be inlined as a `data:` URI first (that's what `imageToDataUrl` is for). A failed _font_ fetch degrades gracefully; a failed _mark image_ fetch throws, because there's no acceptable fallback.
 
 If you touch export and see a blank glyph or a `SecurityError`, assume something reintroduced an external reference into the serialized SVG.
 
@@ -85,7 +85,7 @@ If you touch export and see a blank glyph or a `SecurityError`, assume something
 
 `frontend-main`'s only consumer of the studio engine is onboarding step "Design with AI": `app/signup/verify/wizard/ai-logo.tsx`, backed by the client in `lib/wizard/logo-api.ts`.
 
-`ai-logo.tsx` is a four-state door — `locked` (plan cards → Stripe checkout), `syncing` (the `?upgraded=1` round-trip, posting `session_id` to `checkout/sync/` with a wizard-state poll as fallback), `chat` (a staged `icon → name → tagline` conversation), and `picked`. The chat stage reuses the studio's **two-pass converse flow**: a turn returns *draft* designs; `renderDraftPngs` mounts them off-screen via `createRoot` into a detached container, rasterizes each with `svgToPngBlob` (bare `MarkRenderer` at 512 square for the icon stage, full `LogoRenderer` at 600-wide for later stages), and posts the PNGs back so the model can critique its own output and return polished finals. Rasterization is best-effort per card — a card that fails is skipped, and the caller still holds the raw drafts.
+`ai-logo.tsx` is a four-state door — `locked` (plan cards → Stripe checkout), `syncing` (the `?upgraded=1` round-trip, posting `session_id` to `checkout/sync/` with a wizard-state poll as fallback), `chat` (a staged `icon → name → tagline` conversation), and `picked`. The chat stage reuses the studio's **two-pass converse flow**: a turn returns _draft_ designs; `renderDraftPngs` mounts them off-screen via `createRoot` into a detached container, rasterizes each with `svgToPngBlob` (bare `MarkRenderer` at 512 square for the icon stage, full `LogoRenderer` at 600-wide for later stages), and posts the PNGs back so the model can critique its own output and return polished finals. Rasterization is best-effort per card — a card that fails is skipped, and the caller still holds the raw drafts.
 
 `lib/wizard/logo-api.ts` is deliberately **not** a mirror of the studio's `converse-api.ts` / `refine-api.ts`. It's a separate set of wizard-token-authenticated fetchers against `backend/apps/core/onboarding/wizard_logo.py`, following `lib/wizard/api.ts`'s `request()` idiom, with the token in the request **body**, never the URL. It borrows only the `ConverseTurnResponse` / `RefineResponse` shapes, and its `designRecipe` wraps `composeConverseDesign` — the same accessor the coach-facing studio's design cards use.
 

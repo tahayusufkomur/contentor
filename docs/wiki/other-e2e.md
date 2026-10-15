@@ -2,19 +2,19 @@
 
 # `e2e/` — Playwright end-to-end harness (config & scaffolding)
 
-This module is the *harness* for Contentor's end-to-end suite: the Playwright configuration, the global setup that guarantees a usable stack before any spec runs, the TypeScript/npm project that makes `e2e/` self-contained, and the impact map that lets CI run only the specs a diff can plausibly break. The specs themselves live in `e2e/specs/` and the reusable page-driving code in `e2e/helpers/`; everything documented here is the plumbing around them.
+This module is the _harness_ for Contentor's end-to-end suite: the Playwright configuration, the global setup that guarantees a usable stack before any spec runs, the TypeScript/npm project that makes `e2e/` self-contained, and the impact map that lets CI run only the specs a diff can plausibly break. The specs themselves live in `e2e/specs/` and the reusable page-driving code in `e2e/helpers/`; everything documented here is the plumbing around them.
 
 Unlike the backend (`pytest`) and frontend (`vitest`) suites, these tests do **not** run inside a container and do not spin up their own environment. They drive the real dev stack over `http://localhost` — the same Caddy edge, Django, and both Next.js apps that `make dev` serves. That single design decision explains most of the choices below.
 
 ## Files
 
-| File | Role |
-|---|---|
-| `playwright.config.ts` | Single Playwright project: test dir, timeouts, serial execution, artifacts |
-| `global-setup.ts` | Pre-flight health check + idempotent, cache-aware tenant seeding |
-| `impact-map.json` | Data for `scripts/select_tests.py --mode e2e`: source path → affected specs |
-| `package.json` | Standalone npm project (`contentor-e2e`) — only `@playwright/test`, `typescript`, `@types/node` |
-| `tsconfig.json` | ES2022 / CommonJS, `strict`, `resolveJsonModule`, Node types |
+| File                   | Role                                                                                            |
+| ---------------------- | ----------------------------------------------------------------------------------------------- |
+| `playwright.config.ts` | Single Playwright project: test dir, timeouts, serial execution, artifacts                      |
+| `global-setup.ts`      | Pre-flight health check + idempotent, cache-aware tenant seeding                                |
+| `impact-map.json`      | Data for `scripts/select_tests.py --mode e2e`: source path → affected specs                     |
+| `package.json`         | Standalone npm project (`contentor-e2e`) — only `@playwright/test`, `typescript`, `@types/node` |
+| `tsconfig.json`        | ES2022 / CommonJS, `strict`, `resolveJsonModule`, Node types                                    |
 
 `package.json` is deliberately separate from both frontends: the suite must not inherit Next.js/React types or bundler config, and `make e2e` installs it on demand (`npm install --silent && npx playwright install chromium`).
 
@@ -35,7 +35,7 @@ use: { baseURL: "http://localhost", screenshot: "only-on-failure", trace: "retai
 
 The two settings worth understanding before you change anything:
 
-**`workers: 1` + `fullyParallel: false` are load-bearing.** Every spec drives the *same* seeded tenants (`demo-yoga` and friends) in a shared Postgres schema. Specs create courses, publish content, take payments, and mutate tenant config. Running two workers means two specs racing on one tenant's rows — the failure mode is a spec that passes alone and fails in the suite. If you need speed, shrink specs or narrow selection via `make e2e-changed`; don't raise the worker count.
+**`workers: 1` + `fullyParallel: false` are load-bearing.** Every spec drives the _same_ seeded tenants (`demo-yoga` and friends) in a shared Postgres schema. Specs create courses, publish content, take payments, and mutate tenant config. Running two workers means two specs racing on one tenant's rows — the failure mode is a spec that passes alone and fails in the suite. If you need speed, shrink specs or narrow selection via `make e2e-changed`; don't raise the worker count.
 
 **`baseURL: "http://localhost"` means Caddy does the routing.** Specs navigate to a tenant by host (`http://demo-yoga.localhost/...`) and to the marketing app via the apex; Caddy's catch-all sends anything that isn't the apex or `tr.` locale to `nextjs-customer`. There is no per-tenant test config because there is no per-tenant proxy config.
 
@@ -78,7 +78,7 @@ The map is consumed by `scripts/select_tests.py` (`make e2e-changed`, optionally
 
 Three behaviors follow from the selector rather than the file, and they're the ones that bite:
 
-**Fail-closed.** A backend app with *no* key in `backend` selects **every** spec, and the selector logs `no e2e impact-map entry -> all specs (fail-closed)`. Adding a new Django app without a map entry silently makes `make e2e-changed` as expensive as `make e2e`. Give every new app either a spec list or an explicit `"none"`.
+**Fail-closed.** A backend app with _no_ key in `backend` selects **every** spec, and the selector logs `no e2e impact-map entry -> all specs (fail-closed)`. Adding a new Django app without a map entry silently makes `make e2e-changed` as expensive as `make e2e`. Give every new app either a spec list or an explicit `"none"`.
 
 **`00-smoke` always runs.** Whenever any spec is selected, the smoke spec is unioned in.
 

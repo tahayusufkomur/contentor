@@ -8,11 +8,11 @@ The key property: **these are real screenshots of the real rendering stack**, no
 
 ## Prerequisites
 
-| Requirement | Why |
-|---|---|
-| Dev stack up (`make dev`) | The script shells into the `django` container and browses `nextjs-customer` through Caddy |
-| `make seed-demo-assets` | Mirrors demo photos/videos into dev MinIO. Without it, presigned URLs 404 and the capture aborts |
-| `npm install` in `tools/wizard-mockups/` | Playwright + Chromium |
+| Requirement                              | Why                                                                                              |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Dev stack up (`make dev`)                | The script shells into the `django` container and browses `nextjs-customer` through Caddy        |
+| `make seed-demo-assets`                  | Mirrors demo photos/videos into dev MinIO. Without it, presigned URLs 404 and the capture aborts |
+| `npm install` in `tools/wizard-mockups/` | Playwright + Chromium                                                                            |
 
 No manual tenant seeding — the script reseeds the scratch tenant itself, per niche.
 
@@ -73,6 +73,7 @@ Layout shots use `fullPage: true`. A viewport-only crop had made layouts that sh
 **Non-OK main document.** A 502 (typically `nextjs-customer` OOM-killed mid-run) renders as a blank white page with zero image requests, so the media guard never fires. Without the status check, the tool would write blank thumbnails and exit 0 — one batch shipped 162 blank WebPs that way. The error points at the recovery step: `docker compose up -d nextjs-customer`, wait for it, retry.
 
 **Broken media.** Tracked at three levels:
+
 - a `response` listener catching `image`/`media` responses with status ≥ 400 — at the network layer, so CSS `background-image` fetches count, not just `<img>`
 - a `requestfailed` listener for the same resource types
 - a post-load DOM sweep for `<img>` elements that are `complete` with `naturalWidth === 0`, catching failures the response listener can't attribute, without tripping on below-fold lazy images
@@ -87,11 +88,11 @@ Next.js's dev overlay (`nextjs-portal`) is hidden via an injected style tag befo
 
 Four constants in this file mirror definitions elsewhere. Adding a catalog option means editing both sides.
 
-| Constant | Mirrors |
-|---|---|
-| `LAYOUTS` | `PAGE_LAYOUTS` in `backend/apps/core/onboarding/wizard_catalog.py` |
-| `THEMES`, `HEROES` | `THEMES` / `HERO_STYLES` in the same catalog module |
-| `NICHES` | `backend/apps/demo_seed/data/`, minus `general`, and `MOCKUP_NICHES` in `packages/shared/src/wizard/mockups.ts` |
+| Constant           | Mirrors                                                                                                         |
+| ------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `LAYOUTS`          | `PAGE_LAYOUTS` in `backend/apps/core/onboarding/wizard_catalog.py`                                              |
+| `THEMES`, `HEROES` | `THEMES` / `HERO_STYLES` in the same catalog module                                                             |
+| `NICHES`           | `backend/apps/demo_seed/data/`, minus `general`, and `MOCKUP_NICHES` in `packages/shared/src/wizard/mockups.ts` |
 
 `general` is excluded on purpose: it's deliberately sparse (no plans, FAQ disabled) and would produce empty-state screenshots. The wizard maps it to the `yoga` set instead.
 

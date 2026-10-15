@@ -6,11 +6,11 @@ This module is the client side of Contentor's tenant-level AI assistant system: 
 
 There are three distinct chat surfaces, backed by two client libraries:
 
-| Surface | Component | Audience | Library | Backend prefix |
-|---|---|---|---|---|
-| Site assistant bubble | `SiteAssistantBubble` (`components/assistant/site-assistant-bubble.tsx`) | Students & anonymous visitors on the tenant site | `lib/assistant.ts` (public half) | `/api/v1/assistant/…` |
-| Setup help chat | `HelpChat` (`components/setup/help-chat.tsx`) | Coaches, inside the setup panel's "help" tab | `lib/help-bot.ts` | `/api/v1/admin/help-bot/…` |
-| Admin console | `AssistantPage` + cards (`app/admin/assistant/`) | Coaches configuring & supervising the site assistant | `lib/assistant.ts` (admin half) | `/api/v1/admin/assistant/…` |
+| Surface               | Component                                                                | Audience                                             | Library                          | Backend prefix              |
+| --------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------- | -------------------------------- | --------------------------- |
+| Site assistant bubble | `SiteAssistantBubble` (`components/assistant/site-assistant-bubble.tsx`) | Students & anonymous visitors on the tenant site     | `lib/assistant.ts` (public half) | `/api/v1/assistant/…`       |
+| Setup help chat       | `HelpChat` (`components/setup/help-chat.tsx`)                            | Coaches, inside the setup panel's "help" tab         | `lib/help-bot.ts`                | `/api/v1/admin/help-bot/…`  |
+| Admin console         | `AssistantPage` + cards (`app/admin/assistant/`)                         | Coaches configuring & supervising the site assistant | `lib/assistant.ts` (admin half)  | `/api/v1/admin/assistant/…` |
 
 All three share one wire contract (SSE streaming, thread polling, markdown-lite answers) but differ in auth: the student-facing endpoints use plain `fetch` with an anonymous session id, while everything coach-facing goes through `clientFetch` (cookie-session auth, JSON handling, demo-readonly toast).
 
@@ -33,7 +33,7 @@ Split into two halves, clearly separated in the file.
 **Public half (student/visitor, plain `fetch`):**
 
 - `useAssistantStatus()` — React hook over a module-level status cache (`statusCache` + `listeners` + `refreshAssistantStatus()`). Every mounted widget shares one `/api/v1/assistant/status/` fetch; `broadcast()` fans updates out to all subscribers. `AssistantStatus` carries `enabled`, a `reason` (`ok | disabled | upgrade_required | budget | quota | session_limit`), the coach's `greeting`, `suggested_questions`, `brand`, `human_handoff`, and `link_whitelist`. Failures fail soft to `null` — the widget renders nothing.
-- `streamAssistantChat(messages, onDelta, onDone?)` — POSTs the full history to `/api/v1/assistant/chat/` and reads an SSE stream (see [SSE contract](#sse-streaming-contract)). Resolves `"ai"` on a normal answer, `"human"` if the conversation raced into human mode server-side, and throws `AssistantUnavailable` (carrying the server's `reason`) when gated. One important nuance: a `session_limit` gate is a **per-visitor** cap, so it is deliberately *not* broadcast into the shared status cache — flipping `enabled: false` there would unmount the widget before it could render its inline "capped for today" message. Tenant-wide reasons (`disabled`/`budget`/`quota`) *do* collapse the shared status.
+- `streamAssistantChat(messages, onDelta, onDone?)` — POSTs the full history to `/api/v1/assistant/chat/` and reads an SSE stream (see [SSE contract](#sse-streaming-contract)). Resolves `"ai"` on a normal answer, `"human"` if the conversation raced into human mode server-side, and throws `AssistantUnavailable` (carrying the server's `reason`) when gated. One important nuance: a `session_limit` gate is a **per-visitor** cap, so it is deliberately _not_ broadcast into the shared status cache — flipping `enabled: false` there would unmount the widget before it could render its inline "capped for today" message. Tenant-wide reasons (`disabled`/`budget`/`quota`) _do_ collapse the shared status.
 - `fetchThread(after)` / `sendHumanMessage` / `requestHuman` — the polling and human-handoff endpoints. `fetchThread` maps a 404 to an **empty `ThreadPayload`, not `null`**: a brand-new session's first poll always 404s (the conversation row is created lazily by the chat POST), and that is a definitive "zero messages" answer. Only genuine failures (network, 5xx) return `null` so the poller skips the tick. Collapsing 404 into `null` would break hydration — see below.
 - `applyThreadPoll(thread, lastId, initial)` — the pure poll-tick reducer both widgets use. On the `initial` tick it replays the entire stored thread (all roles); on later ticks it appends only `agent`/`system` rows, because `user`/`assistant` rows are already local echoes from `send()`. Returns the rows to append plus the new high-water-mark message id. It is pure precisely so vitest can cover it without a DOM.
 - Session identity: `getSessionId()`/`touchSession()` persist a UUID in localStorage under `contentor.ai.session.assistant`, rotated after 24h idle (`SESSION_IDLE_MS`). `resolveSession(raw, now)` is the pure rotation logic, again for DOM-free tests.
@@ -42,7 +42,7 @@ Split into two halves, clearly separated in the file.
 
 **Admin half (coach, `clientFetch`):**
 
-- Config: `getAssistantConfig`/`putAssistantConfig`. The GET/PUT *response* uses the field name `human_handoff` while the PUT *request* uses `human_handoff_enabled`; `normalizeAdminConfig` renames on the way in so consumers only ever see `human_handoff_enabled`.
+- Config: `getAssistantConfig`/`putAssistantConfig`. The GET/PUT _response_ uses the field name `human_handoff` while the PUT _request_ uses `human_handoff_enabled`; `normalizeAdminConfig` renames on the way in so consumers only ever see `human_handoff_enabled`.
 - Knowledge base CRUD: `listKnowledge`/`createKnowledge`/`updateKnowledge`/`deleteKnowledge`.
 - Link registry CRUD: `listLinks`/`createLink`/`updateLink`/`deleteLink`.
 - Takeover console: `listConversations`, `getConversationThread(id, after)`, `takeoverConversation`, `releaseConversation`, `sendAgentMessage` — all return a full `ThreadPayload`.
@@ -66,7 +66,7 @@ These streams intentionally bypass `clientFetch`, which JSON-parses whole bodies
 
 Both chat widgets run the same effect shape: an immediate `tick()` plus a `setInterval` (5s in AI mode, tightened to 3s once a human is involved or has been requested). Each tick fetches messages `after` the high-water mark in `lastIdRef` and feeds them through `applyThreadPoll`.
 
-The subtle part is deciding whether a tick is the widget's **first successful** one (`initial`), which triggers a full-thread replay. That flag lives in `hydratedRef` and is captured synchronously *before* the `await` — a suggested-question chip can add local messages while the first fetch is still in flight, and `hydratedRef` (unlike `lastIdRef` or the message list) is never touched by `send()`, so it can't be raced by the concurrent local echo. It is deliberately **not** derived from `lastId === 0`: a genuinely empty first fetch never advances `lastId`, which would keep treating every later tick as "initial" and re-replay the first Q&A exchange on top of its own local echo. This is also why `fetchThread`/`fetchHelpThread` map 404 to an empty payload — hydration must complete on that always-404 first tick of a brand-new session.
+The subtle part is deciding whether a tick is the widget's **first successful** one (`initial`), which triggers a full-thread replay. That flag lives in `hydratedRef` and is captured synchronously _before_ the `await` — a suggested-question chip can add local messages while the first fetch is still in flight, and `hydratedRef` (unlike `lastIdRef` or the message list) is never touched by `send()`, so it can't be raced by the concurrent local echo. It is deliberately **not** derived from `lastId === 0`: a genuinely empty first fetch never advances `lastId`, which would keep treating every later tick as "initial" and re-replay the first Q&A exchange on top of its own local echo. This is also why `fetchThread`/`fetchHelpThread` map 404 to an empty payload — hydration must complete on that always-404 first tick of a brand-new session.
 
 If you change any of this, keep the three pieces consistent: the reducer (`applyThreadPoll`), the 404 mapping in the fetchers, and the `hydratedRef` capture in both widgets.
 
@@ -79,7 +79,7 @@ The loop, end to end: a visitor clicks "talk to a human" → `requestHuman()` fl
 Assistant answers use a markdown-lite contract: plain text, `**bold**`, and `[label](href)` links rendered as navigation buttons rather than inline anchors. Extraction is a two-stage design, and the division of labor matters:
 
 1. A **syntactic regex** (`LINK_RE`, per-surface) is only a first pass. It rejects the obvious `//evil.com` protocol-relative form but cannot rule out parser quirks like `/\evil.com` (WHATWG URL parsing treats that backslash as a second slash).
-2. The **actual safety boundary** resolves every extracted href with the real `URL` parser: `decideLink(href, origin, whitelist)` for the student bubble (`"internal"` only when the resolved origin matches the page's own; `"external"` only on an *exact* match against the coach's `link_whitelist`; otherwise dropped), and `isSameOriginPath`/`parseAnswer` in `format-answer.ts` for the admin surfaces (same-origin only). `HelpChat`'s regex additionally restricts hrefs to `/admin/…` paths.
+2. The **actual safety boundary** resolves every extracted href with the real `URL` parser: `decideLink(href, origin, whitelist)` for the student bubble (`"internal"` only when the resolved origin matches the page's own; `"external"` only on an _exact_ match against the coach's `link_whitelist`; otherwise dropped), and `isSameOriginPath`/`parseAnswer` in `format-answer.ts` for the admin surfaces (same-origin only). `HelpChat`'s regex additionally restricts hrefs to `/admin/…` paths.
 
 `parseAnswer(content, origin)` takes `origin` as an explicit parameter instead of reading `window.location` so it stays pure and SSR-safe; callers read the origin once at the component level. Never "simplify" one of these surfaces down to regex-only filtering.
 
@@ -91,7 +91,7 @@ Mounted by `StudentLayout` and `PublicLayout` — **only for non-owners**, so th
 
 ### `HelpChat`
 
-Same skeleton as the bubble with two differences. It has no `open` state — `SetupAssistantPanel` only mounts it while the coach is on the help tab, so mount lifetime *is* visibility and the polling effect runs unconditionally. And its conversation starters are context-aware: it reads `useSetupStatus()` and surfaces suggestions for undone setup items (payouts, publish) ahead of the evergreen ones.
+Same skeleton as the bubble with two differences. It has no `open` state — `SetupAssistantPanel` only mounts it while the coach is on the help tab, so mount lifetime _is_ visibility and the polling effect runs unconditionally. And its conversation starters are context-aware: it reads `useSetupStatus()` and surfaces suggestions for undone setup items (payouts, publish) ahead of the evergreen ones.
 
 ## The coach admin page (`/admin/assistant`)
 
@@ -106,7 +106,7 @@ Same skeleton as the bubble with two differences. It has no `open` state — `Se
 
 `ConversationsCard` has its own concurrency discipline worth understanding before editing: `mergeThread` dedupes incoming messages by id and only moves the high-water mark forward, so a poll tick that was in flight when a takeover replaced the thread can apply harmlessly twice. Stale responses are guarded two ways — the polling effect uses a per-instance `cancelled` flag (sufficient because the effect re-runs per conversation), while the one-shot handlers (`openThread`, `handleTakeover`, `handleRelease`, `handleSend`) compare against `activeRef`, a synchronous mirror of `active`, because they don't re-run on render and a coach can switch conversations before their promise resolves.
 
-The improvement loop: every assistant answer in a thread has an "Add to knowledge" button. `precedingUserMessage` walks the thread backwards to find the *question* the answer responded to, and `handleAddToKnowledge` in the page prefills `KnowledgeCard` with it and scrolls there — teaching the assistant the thing it was asked, not the answer it gave.
+The improvement loop: every assistant answer in a thread has an "Add to knowledge" button. `precedingUserMessage` walks the thread backwards to find the _question_ the answer responded to, and `handleAddToKnowledge` in the page prefills `KnowledgeCard` with it and scrolls there — teaching the assistant the thing it was asked, not the answer it gave.
 
 ## Testing notes
 

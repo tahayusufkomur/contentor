@@ -13,10 +13,10 @@ Two sub-modules, one per side of the wire:
 
 The defining structural fact of this module: the console talks to **two unrelated Django surfaces**, and which one a screen uses tells you what kind of screen it is.
 
-| Surface | Backend origin | What the frontend does with it |
-|---|---|---|
-| `/api/v1/platform-admin/<key>/` | admin-kit CRUD generated from the ~20 `ModelAdmin` declarations | Generic list/detail/edit — plans, subscriptions, tenant rows |
-| `/api/v1/platform/…` | bespoke `@api_view` handlers in `core/platform/views.py` | Dashboards and rollups: `AdminDashboardPage`, `AdminAiUsagePage`, `TenantDetailPage`, `PlatformUsageCard` |
+| Surface                         | Backend origin                                                  | What the frontend does with it                                                                            |
+| ------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `/api/v1/platform-admin/<key>/` | admin-kit CRUD generated from the ~20 `ModelAdmin` declarations | Generic list/detail/edit — plans, subscriptions, tenant rows                                              |
+| `/api/v1/platform/…`            | bespoke `@api_view` handlers in `core/platform/views.py`        | Dashboards and rollups: `AdminDashboardPage`, `AdminAiUsagePage`, `TenantDetailPage`, `PlatformUsageCard` |
 
 Aggregation lives entirely on the backend. `platform_dashboard` composes `_platform_mrr` and `_marketplace_totals`; `platform_ai_usage` composes `_ai_feature_rollups`. The frontend receives finished numbers and formats them (`formatBytes`, `currencyMap`, `statusBadgeVariant`) — there is no client-side math to get wrong, and no second place where MRR is defined.
 

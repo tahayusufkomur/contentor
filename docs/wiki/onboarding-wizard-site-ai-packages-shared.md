@@ -2,42 +2,42 @@
 
 # Wizard Mockups (`packages/shared/src/wizard/mockups.ts`)
 
-Shared resolver that maps a coach's **niche** plus a **mockup name** to an ordered list of candidate screenshot URLs. It is the single point that decides *which* real screenshot the onboarding wizard shows a coach when they pick a theme, hero style, or page layout — and the guarantee that a missing screenshot degrades to a fallback instead of a broken image.
+Shared resolver that maps a coach's **niche** plus a **mockup name** to an ordered list of candidate screenshot URLs. It is the single point that decides _which_ real screenshot the onboarding wizard shows a coach when they pick a theme, hero style, or page layout — and the guarantee that a missing screenshot degrades to a fallback instead of a broken image.
 
 The module is pure: no imports, no I/O, no React. Roughly 25 lines of code carrying a fair amount of policy.
 
 ## Why it exists
 
-The signup wizard asks coaches to choose visual options (theme, hero style, per-page layout). Abstract wireframe sketches tested poorly compared to *real* screenshots of a site with content that matches the coach's niche — a pole-dance coach sees a pole-dance site, not generic lorem sections.
+The signup wizard asks coaches to choose visual options (theme, hero style, per-page layout). Abstract wireframe sketches tested poorly compared to _real_ screenshots of a site with content that matches the coach's niche — a pole-dance coach sees a pole-dance site, not generic lorem sections.
 
 Those screenshots are pre-captured build artifacts, not runtime renders. That creates a coverage problem: the niche catalog (`backend/apps/demo_seed/data/*.json`) grows faster than screenshot capture runs. `mockupSrcs` absorbs that gap so the two can drift without ever producing a broken `<img>` in a coach's face during signup.
 
 ## API
 
 ```ts
-export const MOCKUP_NICHES: readonly string[];  // 7 captured niches
+export const MOCKUP_NICHES: readonly string[]; // 7 captured niches
 export const FALLBACK_NICHE = "yoga";
 export function mockupSrcs(niche: string | undefined, name: string): string[];
 ```
 
 `mockupSrcs` returns candidates in preference order:
 
-| Input | Result |
-|---|---|
-| `("belly_dance", "theme-ocean")` | `["/wizard-mockups/belly_dance/theme-ocean.webp", "/wizard-mockups/yoga/theme-ocean.webp"]` |
-| `("yoga", "hero-split")` | `["/wizard-mockups/yoga/hero-split.webp"]` — no duplicate fallback |
-| `("general", …)` / `(undefined, …)` / unknown niche | yoga only |
+| Input                                               | Result                                                                                      |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `("belly_dance", "theme-ocean")`                    | `["/wizard-mockups/belly_dance/theme-ocean.webp", "/wizard-mockups/yoga/theme-ocean.webp"]` |
+| `("yoga", "hero-split")`                            | `["/wizard-mockups/yoga/hero-split.webp"]` — no duplicate fallback                          |
+| `("general", …)` / `(undefined, …)` / unknown niche | yoga only                                                                                   |
 
 `name` is the mockup id, not a filename — the `.webp` extension and `/wizard-mockups/<niche>/` prefix are the module's business. Callers build it from catalog ids: `theme-${theme}`, `hero-${style}`, or a bare layout id (`home-story`, `about-portrait`, `faq-list`, …).
 
-Note `"general"` is deliberately *not* in `MOCKUP_NICHES`. It exists in `demo_seed/data/` but its content module is intentionally sparse (no plans, FAQ disabled), so capturing it would produce empty-state screenshots that misrepresent the layout. It falls through to yoga like any unknown niche.
+Note `"general"` is deliberately _not_ in `MOCKUP_NICHES`. It exists in `demo_seed/data/` but its content module is intentionally sparse (no plans, FAQ disabled), so capturing it would produce empty-state screenshots that misrepresent the layout. It falls through to yoga like any unknown niche.
 
 ## How consumers use the list
 
-Callers try each candidate in order and swap to a hand-drawn CSS sketch when *every* candidate fails. Two components implement this, both in `frontend-main/src/app/signup/verify/wizard/`:
+Callers try each candidate in order and swap to a hand-drawn CSS sketch when _every_ candidate fails. Two components implement this, both in `frontend-main/src/app/signup/verify/wizard/`:
 
 - **`ScreenshotThumbnail`** (`previews.tsx`) — generic; takes `srcs` + a `fallback` node. Used by `ThemeStep` and `HeroStep` in `steps.tsx`.
-- **`LayoutThumbnail`** (`pages-steps.tsx`) — same pattern inline, falling back to `MiniPageSketch`. It renders the shot uncropped inside `BrowserFrame` because the coach is choosing a *whole page*; cropping would hide the blocks that distinguish two layouts.
+- **`LayoutThumbnail`** (`pages-steps.tsx`) — same pattern inline, falling back to `MiniPageSketch`. It renders the shot uncropped inside `BrowserFrame` because the coach is choosing a _whole page_; cropping would hide the blocks that distinguish two layouts.
 
 Both track failures in a `Record<string, boolean>` **keyed by URL**, then pick `srcs.find((s) => !failed[s])`. Keying by URL rather than by index matters: a coach can change niche mid-wizard, and the new niche's file must get a fresh attempt rather than inheriting the previous one's failure.
 

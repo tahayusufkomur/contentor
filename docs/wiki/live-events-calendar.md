@@ -2,7 +2,7 @@
 
 # Live Events & Calendar
 
-Everything time-based that a coach sells: **live classes** (in-app WebRTC calls), **live streams** (in-app broadcast + chat), **Zoom classes** (external link), and **onsite events** (physical address). The four event types share one shape end to end — near-identical models, one unified calendar feed, one detail page — and diverge only in *how the event is delivered* and *what secret the student receives on access*.
+Everything time-based that a coach sells: **live classes** (in-app WebRTC calls), **live streams** (in-app broadcast + chat), **Zoom classes** (external link), and **onsite events** (physical address). The four event types share one shape end to end — near-identical models, one unified calendar feed, one detail page — and diverge only in _how the event is delivered_ and _what secret the student receives on access_.
 
 Two halves:
 
@@ -13,11 +13,11 @@ Two halves:
 
 Three contracts carry the whole module:
 
-| Contract | Backend | Frontend |
-|---|---|---|
-| Unified feed | `calendar_events` → `_to_calendar_event` flattens all four types into one event shape | `CalendarClient.fetchEvents` / `EventsList` render it type-agnostically |
-| Access + secret | detail endpoint resolves entitlement, returns `room_name` / Zoom link / address only when granted | `EventDetailClient` branches to buy, log in, or join |
-| Realtime token | `generate_user_token` (via `get_client`, faked under `LIVE_FAKE_ENABLED`) | `LiveStreamRoom.fetchToken` / `CallJoiner`, both releasing via `call-session.releaseCall` |
+| Contract        | Backend                                                                                           | Frontend                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Unified feed    | `calendar_events` → `_to_calendar_event` flattens all four types into one event shape             | `CalendarClient.fetchEvents` / `EventsList` render it type-agnostically                   |
+| Access + secret | detail endpoint resolves entitlement, returns `room_name` / Zoom link / address only when granted | `EventDetailClient` branches to buy, log in, or join                                      |
+| Realtime token  | `generate_user_token` (via `get_client`, faked under `LIVE_FAKE_ENABLED`)                         | `LiveStreamRoom.fetchToken` / `CallJoiner`, both releasing via `call-session.releaseCall` |
 
 ```mermaid
 graph LR

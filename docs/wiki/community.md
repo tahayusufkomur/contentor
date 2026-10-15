@@ -6,20 +6,20 @@ The Community module is Contentor's in-tenant social feed: a Facebook-group-styl
 
 Three audiences touch it:
 
-| Audience | Surface | Code |
-|---|---|---|
-| Student | `/community` in frontend-customer | `app/(student)/community/page.tsx` + `components/community/*` |
+| Audience          | Surface                                 | Code                                                            |
+| ----------------- | --------------------------------------- | --------------------------------------------------------------- |
+| Student           | `/community` in frontend-customer       | `app/(student)/community/page.tsx` + `components/community/*`   |
 | Coach (moderator) | `/admin/community` in frontend-customer | `app/admin/community/page.tsx` + `components/admin/community/*` |
-| Superadmin | `/admin/community` in frontend-main | `platform_views.community_reports_rollup` |
+| Superadmin        | `/admin/community` in frontend-main     | `platform_views.community_reports_rollup`                       |
 
 ## Data model
 
 `backend/apps/community/models.py` holds five models plus three module constants (`REACTION_EMOJIS`, `AUTO_HIDE_THRESHOLD = 3`, `MAX_POST_IMAGES = 4`).
 
-- **`CommunitySettings`** — per-tenant singleton at `pk=1`, always reached via `CommunitySettings.load()` (a `get_or_create`, so it never 404s on a fresh tenant). `is_enabled` is *the* feature gate; the docstring is explicit that the legacy `"community"` entry in `TenantConfig.enabled_modules` is inert — don't add checks against it.
+- **`CommunitySettings`** — per-tenant singleton at `pk=1`, always reached via `CommunitySettings.load()` (a `get_or_create`, so it never 404s on a fresh tenant). `is_enabled` is _the_ feature gate; the docstring is explicit that the legacy `"community"` entry in `TenantConfig.enabled_modules` is inert — don't add checks against it.
 - **`CommunityMember`** — a `OneToOne` on the tenant user, created lazily on first access (`services.get_or_create_member`), carrying the community identity (`display_name`, `avatar_url` for external URLs / `avatar_key` for uploads) and the moderation state (`is_banned`, `muted_until`, `requires_approval`). `is_muted` is a property comparing `muted_until` against now — mutes expire on their own, nothing sweeps them.
 - **`Post`** / **`Comment`** — both use the same `PostStatus` enum (`visible`, `pending`, `hidden`, `removed`), so status handling is symmetric across the two. Posts carry `image_keys` (JSON list of S3 keys), `is_pinned`, and denormalized `comment_count` / `reaction_count`.
-- **`Reaction`** — one row per (member, target), pointing at *either* a post or a comment. DB constraints enforce that: two partial unique constraints plus a `reaction_exactly_one_target` check.
+- **`Reaction`** — one row per (member, target), pointing at _either_ a post or a comment. DB constraints enforce that: two partial unique constraints plus a `reaction_exactly_one_target` check.
 - **`Report`** — same either/or shape as `Reaction`, with `uniq_report_reporter_post` / `uniq_report_reporter_comment` making a report idempotent per member, and `resolved_by` / `resolved_at` / `action_taken` recording the moderator decision.
 
 The polymorphic "post or comment" pattern shows up everywhere downstream: services and view helpers take `post=None, comment=None` keyword pairs and build `kwargs = {"post": post} if post else {"comment": comment}`. Follow that convention rather than introducing a generic FK.
@@ -53,13 +53,13 @@ flowchart LR
 
 **Creating a post** (`views.posts`, POST): gate → `CommunityPostThrottle` → serialize → save with `status = PENDING if member.requires_approval else VISIBLE`. Only a `VISIBLE` post triggers `tasks.fanout_community_post.delay(post.id, connection.schema_name)`. Note the throttle is instantiated and called manually (`throttle.allow_request(request, None)`) rather than declared on the view, because GET and POST share one function-based view and only writes should be limited. Scopes are `community_posts` / `community_comments` in DRF settings.
 
-**Reading the feed** (`views.posts`, GET): `CursorPagination` (`FeedPagination`, page size 20, ordered `-created_at, -id`) over non-pinned posts the member may see — `VISIBLE`, plus their *own* `PENDING` posts so an author sees their submission with an "Awaiting approval" badge. On the first page only (no `cursor` param), the response is augmented with `pinned` (all pinned visible posts) and `welcome_message`. Any client must therefore treat those two keys as first-page-only; `CommunityFeedPage` in `types/community.ts` marks them optional and documents why.
+**Reading the feed** (`views.posts`, GET): `CursorPagination` (`FeedPagination`, page size 20, ordered `-created_at, -id`) over non-pinned posts the member may see — `VISIBLE`, plus their _own_ `PENDING` posts so an author sees their submission with an "Awaiting approval" badge. On the first page only (no `cursor` param), the response is augmented with `pinned` (all pinned visible posts) and `welcome_message`. Any client must therefore treat those two keys as first-page-only; `CommunityFeedPage` in `types/community.ts` marks them optional and documents why.
 
 **Reactions** (`_handle_reaction`): `PUT` validates the emoji against `REACTION_EMOJIS`, then `update_or_create` — swapping ❤️ for 🎉 is not a new reaction, so `adjust_reaction_count(+1)` fires only when `created`. `DELETE` decrements only when a row was actually deleted.
 
-**Counters** are maintained by `services.adjust_comment_count` / `adjust_reaction_count`, both of which use an `F()` expression *plus* a `reaction_count__gte=max(0, -delta)` filter — an atomic update that also refuses to go negative. Never `save()` a counter field by hand.
+**Counters** are maintained by `services.adjust_comment_count` / `adjust_reaction_count`, both of which use an `F()` expression _plus_ a `reaction_count__gte=max(0, -delta)` filter — an atomic update that also refuses to go negative. Never `save()` a counter field by hand.
 
-**Ownership vs. moderation.** Author-facing edit/delete (`post_detail`, `comment_detail`) scope the lookup by `author=member`, so a member can only ever touch their own row, and those paths *delete* the record. Moderators never delete: `moderation_views` route through `services.resolve_target`, which sets `status = REMOVED` and keeps the row for audit. `comment_detail` and `resolve_target` both decrement the parent post's `comment_count`, each guarding on the comment having been countable (`VISIBLE`, or `VISIBLE`/`HIDDEN` respectively) so a double-removal can't double-decrement.
+**Ownership vs. moderation.** Author-facing edit/delete (`post_detail`, `comment_detail`) scope the lookup by `author=member`, so a member can only ever touch their own row, and those paths _delete_ the record. Moderators never delete: `moderation_views` route through `services.resolve_target`, which sets `status = REMOVED` and keeps the row for audit. `comment_detail` and `resolve_target` both decrement the parent post's `comment_count`, each guarding on the comment having been countable (`VISIBLE`, or `VISIBLE`/`HIDDEN` respectively) so a double-removal can't double-decrement.
 
 ## Reporting and auto-hide
 
@@ -89,7 +89,7 @@ Routes live in `urls.py` under the module prefix (`/api/v1/community/…`, mount
 `tasks.py` holds two Celery tasks, each taking `(id, schema_name)` and re-entering the tenant via `django_tenants.utils.tenant_context` — the standard pattern in this codebase, since a worker has no ambient tenant. `_with_tenant` returns `None` for an unknown schema so a task fired against a deleted tenant exits quietly instead of raising.
 
 - `fanout_community_post` — pushes to every member's subscriptions except the author's, but **only if the author is a moderator** (`is_moderator(post.author.user)`) and `notify_on_coach_post` is on. Student posts never fan out; this is a coach-broadcast channel, not a firehose.
-- `notify_post_comment` — pushes to the post author when someone *else* comments (`comment.author_id == comment.post.author_id` short-circuits).
+- `notify_post_comment` — pushes to the post author when someone _else_ comments (`comment.author_id == comment.post.author_id` short-circuits).
 
 Both build payloads in `payloads.py`, which composes `apps.notifications.payloads._brand()` and trims the body to 120 chars. The module comment is load-bearing: the payload shape matches `apps.notifications` exactly so the existing student service worker renders community pushes with no changes. Delivery itself is `apps.notifications.services.send_to_subscriptions`.
 

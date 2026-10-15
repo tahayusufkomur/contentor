@@ -4,11 +4,11 @@
 
 This module is the content half of the tenant portal: everything a coach uploads and everything a student consumes. It spans three distinct surfaces built on one set of shared types and one shared admin toolkit:
 
-| Surface | Routes | Audience |
-|---|---|---|
-| Public catalog | `(public)/courses`, `(public)/courses/[slug]` | Anonymous visitors + logged-out students |
-| Player | `(student)/learn/[slug]` | Enrolled students |
-| Admin library | `admin/courses`, `admin/courses/new`, `admin/courses/[slug]`, `admin/downloads`, `admin/photos`, `admin/videos` | The coach (tenant owner) |
+| Surface        | Routes                                                                                                          | Audience                                 |
+| -------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Public catalog | `(public)/courses`, `(public)/courses/[slug]`                                                                   | Anonymous visitors + logged-out students |
+| Player         | `(student)/learn/[slug]`                                                                                        | Enrolled students                        |
+| Admin library  | `admin/courses`, `admin/courses/new`, `admin/courses/[slug]`, `admin/downloads`, `admin/photos`, `admin/videos` | The coach (tenant owner)                 |
 
 All four asset kinds — courses, downloadable files, photos, videos — are managed through the same generic `MediaBrowser` shell, and the same tagging/filtering primitives. Understanding `MediaBrowser` + `InlineEditPanel` + the presign upload dance gets you ~80% of the admin code.
 
@@ -16,7 +16,7 @@ All four asset kinds — courses, downloadable files, photos, videos — are man
 
 ## Data model (`src/types/`)
 
-The TypeScript types mirror the Django serializers in `apps.courses`, `apps.downloads`, `apps.media`, `apps.tags`, and `apps.filters`. They are hand-maintained, *not* the generated `src/types/api-generated.ts` — if you change a backend serializer, update these too.
+The TypeScript types mirror the Django serializers in `apps.courses`, `apps.downloads`, `apps.media`, `apps.tags`, and `apps.filters`. They are hand-maintained, _not_ the generated `src/types/api-generated.ts` — if you change a backend serializer, update these too.
 
 ### Course hierarchy — `types/course.ts`
 
@@ -33,7 +33,7 @@ Course  ──(CourseDetail extends)──▶  Module[]  ──▶  Lesson[]
 
 This trips people up: courses (and live events) carry **both** classification systems, and they are unrelated.
 
-- **`FilterGroup` / `FilterOption`** (`apps.filters`) — coach-defined *faceted* filters, structured and student-facing. A group has `applies_to: "course" | "event" | "both"`; options belong to a group. Surfaced publicly via `FacetPills`.
+- **`FilterGroup` / `FilterOption`** (`apps.filters`) — coach-defined _faceted_ filters, structured and student-facing. A group has `applies_to: "course" | "event" | "both"`; options belong to a group. Surfaced publicly via `FacetPills`.
 - **`Tag`** (`apps.tags`) — flat free-text labels scoped to a content-type pool (`TagScope = "course" | "video" | "photo" | "download" | "event"`). **Admin-only** — used solely to organize the library. Surfaced via `TagInput` (write) and `TagFilterBar` (read/filter).
 
 Write-side, both use an id-array convention: `filter_option_ids` and `tag_ids` on PUT/PATCH bodies, while reads return the full `filter_options` / `tags` objects. Every admin edit path therefore maps back down before opening an editor:
@@ -82,7 +82,7 @@ The actual grid comes from `CourseGridBlock` → `CourseCatalogClient`. So **to 
 
 `force-dynamic` server component fetching via `serverFetch` (which attaches `X-Tenant-Domain`; see the multi-tenancy notes in CLAUDE.md). A failed fetch is swallowed into a "Course not found" empty state rather than throwing — a 404 and a 500 look identical to the visitor.
 
-It computes curriculum totals locally (`getTotalDuration`, `formatTotalDuration`) and renders the full lesson list to *everyone* — locked lessons show a `Lock` icon, `is_free_preview` lessons show `Play` + a "Free Preview" badge. Purchase/unlock is entirely `EnrollButton`'s job.
+It computes curriculum totals locally (`getTotalDuration`, `formatTotalDuration`) and renders the full lesson list to _everyone_ — locked lessons show a `Lock` icon, `is_free_preview` lessons show `Play` + a "Free Preview" badge. Purchase/unlock is entirely `EnrollButton`'s job.
 
 ---
 
@@ -123,20 +123,20 @@ Two triggers, both funnelling into `reportProgress(watchedSeconds, completed)`:
 
 All four admin list pages (`courses`, `downloads`, `photos`, `videos`) are thin configuration around `MediaBrowser<T>`. The contract:
 
-| Prop | Role |
-|---|---|
-| `fetchPage(params: FetchPageParams) → FetchPageResult<T>` | You build the query string; MediaBrowser owns `limit`/`offset`/`ordering`/`search` |
-| `getItemId` | Identity for selection & delete — `slug` for courses, `id` elsewhere |
-| `persistKey` | Persists view mode/sort per list |
-| `filterSlot` + `filterKey` | Extra filter UI (always a `TagFilterBar` here); `filterKey` is the reload trigger |
-| `renderGalleryItem` / `renderListRow` / `renderExpandedRow` | The three render modes |
-| `onDelete(selection: BulkSelection)` | Bulk delete |
-| `ref: MediaBrowserHandle` | `refresh()` after any mutation |
+| Prop                                                        | Role                                                                               |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `fetchPage(params: FetchPageParams) → FetchPageResult<T>`   | You build the query string; MediaBrowser owns `limit`/`offset`/`ordering`/`search` |
+| `getItemId`                                                 | Identity for selection & delete — `slug` for courses, `id` elsewhere               |
+| `persistKey`                                                | Persists view mode/sort per list                                                   |
+| `filterSlot` + `filterKey`                                  | Extra filter UI (always a `TagFilterBar` here); `filterKey` is the reload trigger  |
+| `renderGalleryItem` / `renderListRow` / `renderExpandedRow` | The three render modes                                                             |
+| `onDelete(selection: BulkSelection)`                        | Bulk delete                                                                        |
+| `ref: MediaBrowserHandle`                                   | `refresh()` after any mutation                                                     |
 
 Two rules that are easy to get wrong when adding a page:
 
 1. **`filterKey` must change when your external filter changes** (`filterKey={tagFilter.join(",")}`), or the list won't reload. `fetchPage` being a new closure is not enough.
-2. **`selection.mode === "all"` means "everything matching the current query", not "the loaded page".** Downloads, photos and videos each hand-roll a paginate-to-collect-ids loop (limit 100 until `next` is null) before batch-deleting. Courses currently do *not* — `handleBulkDelete` only uses `selection.ids`, so a select-all delete there only deletes loaded rows. Worth knowing before you rely on it.
+2. **`selection.mode === "all"` means "everything matching the current query", not "the loaded page".** Downloads, photos and videos each hand-roll a paginate-to-collect-ids loop (limit 100 until `next` is null) before batch-deleting. Courses currently do _not_ — `handleBulkDelete` only uses `selection.ids`, so a select-all delete there only deletes loaded rows. Worth knowing before you rely on it.
 
 Deletes go through `batchedAsync` from `lib/api-client` (concurrency-limited fan-out), then `browserRef.current?.refresh()`.
 
@@ -186,7 +186,7 @@ flowchart TD
 
 **A — `admin/downloads/page.tsx`.** Record first, then presign with `{ filename, content_type, category: "download", download_id }`, then a raw `XMLHttpRequest` PUT (used instead of `fetch` purely to get `upload.onprogress`), then `/upload/complete/` with the same `s3_key` + `download_id`. If you add a new uploadable content type, the `category` string must be recognised by the backend presign view in `apps.media`.
 
-**B — `admin/videos/page.tsx`.** Only the *record creation* step is wrapped in `useAsyncAction`; the chunked transfer is owned by `useChunkedUpload()`, which surfaces its own `state.uploading / state.progress / state.error` plus `retry()` and `abort()` and is deliberately left outside the standard loading conventions. Duration is extracted client-side before upload via `extractDuration(file)` (loads the file into a detached `<video>` and reads `loadedmetadata`), and the title is pre-filled from `stripExtension(file.name)`. Remember `URL.revokeObjectURL` on the preview — `clearUpload()` handles it.
+**B — `admin/videos/page.tsx`.** Only the _record creation_ step is wrapped in `useAsyncAction`; the chunked transfer is owned by `useChunkedUpload()`, which surfaces its own `state.uploading / state.progress / state.error` plus `retry()` and `abort()` and is deliberately left outside the standard loading conventions. Duration is extracted client-side before upload via `extractDuration(file)` (loads the file into a detached `<video>` and reads `loadedmetadata`), and the title is pre-filled from `stripExtension(file.name)`. Remember `URL.revokeObjectURL` on the preview — `clearUpload()` handles it.
 
 **C — `BatchDropzone`**, mounted unconditionally on the photos and videos pages, takes a `category` and calls back `onUploadComplete → refresh()`. This is the path in the traced execution flows (`PhotosPage → BatchDropzone → handleFilesAdded → uploadSingleFile → clientFetch`).
 

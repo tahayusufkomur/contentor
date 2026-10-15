@@ -2,10 +2,10 @@
 
 # Tenant Config & Site Builder
 
-Everything that makes a coach's tenant site *theirs* — brand, navigation, page content, and the "is this ready to go live?" question — is owned by this module group. It spans exactly two halves that talk over one endpoint:
+Everything that makes a coach's tenant site _theirs_ — brand, navigation, page content, and the "is this ready to go live?" question — is owned by this module group. It spans exactly two halves that talk over one endpoint:
 
 - **[Backend — `apps/tenant_config`](tenant-config-site-builder-apps.md)** — the tenant-schema app holding `TenantConfig` (theme, fonts, logo, navbar, custom CSS, and the `pages` block tree), the seed registry (`SeededObject`), the Setup Assistant checklist and publish gate (`setup_items.py`, `demo_content.py`), and `AssistantConfig` for the chatbots.
-- **[Frontend — `frontend-customer/src`](tenant-config-site-builder-src.md)** — the in-place editor: a sidebar (`edit-sidebar.tsx`) that mounts over the *live* public site for coach/owner users, backed by `owner/canvas/editor-store.tsx` and the block registry in `lib/blocks/registry.tsx`.
+- **[Frontend — `frontend-customer/src`](tenant-config-site-builder-src.md)** — the in-place editor: a sidebar (`edit-sidebar.tsx`) that mounts over the _live_ public site for coach/owner users, backed by `owner/canvas/editor-store.tsx` and the block registry in `lib/blocks/registry.tsx`.
 
 ## The single seam
 

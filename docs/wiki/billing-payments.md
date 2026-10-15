@@ -4,10 +4,10 @@
 
 Contentor's money layer. It spans one Django app and both frontends, and it exists to serve **two independent money flows** that share models, providers, and a single webhook endpoint:
 
-| Flow | Who pays whom | Stripe mechanism | Where state lives |
-|---|---|---|---|
-| **Platform subscription** | Coach → Contentor | Checkout on the platform account, prices from `PlatformPlan.prices` | `core.PlatformSubscription` (public schema) |
-| **Marketplace** | Student → Coach | Direct charges on the coach's connected account, platform takes an `application_fee` | `billing.Payment` / `billing.Subscription` (tenant schema) |
+| Flow                      | Who pays whom     | Stripe mechanism                                                                     | Where state lives                                          |
+| ------------------------- | ----------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| **Platform subscription** | Coach → Contentor | Checkout on the platform account, prices from `PlatformPlan.prices`                  | `core.PlatformSubscription` (public schema)                |
+| **Marketplace**           | Student → Coach   | Direct charges on the coach's connected account, platform takes an `application_fee` | `billing.Payment` / `billing.Subscription` (tenant schema) |
 
 Every question about this module reduces to "which flow is this?" — the two never share a schema, a Stripe account, or a webhook handler, even though they share the code path that receives the events.
 
@@ -50,6 +50,6 @@ Before a coach can take marketplace money at all, `connect_onboard` sends them t
 ## Working here
 
 - Identify the flow first. A change to platform billing that touches `webhooks_connect` (or vice versa) is almost certainly in the wrong file.
-- `stripe_webhook` is a shared entry point with per-flow handlers; signature verification (`verify_webhook_signature` → `_get_webhook_secret`) resolves a *different* secret per flow.
+- `stripe_webhook` is a shared entry point with per-flow handlers; signature verification (`verify_webhook_signature` → `_get_webhook_secret`) resolves a _different_ secret per flow.
 - Webhooks — not the checkout response — are the source of truth for subscription and payment state in both flows.
 - Currency and fee percentage are derived server-side (`tenant_charge_currency`, `_get_fee_pct`); never accept either from a client.

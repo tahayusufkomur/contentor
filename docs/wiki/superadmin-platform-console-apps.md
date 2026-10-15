@@ -4,17 +4,17 @@
 
 The superadmin console is the platform owner's control surface: every coach workspace, every plan, every subscription, every AI dollar spent, all read and written from the **public schema**. Its backend is deliberately split into two halves that answer to different needs:
 
-| Half | Files | Shape |
-|---|---|---|
-| **Declarative model admin** | `apps/core/admin_panels.py` | ~20 `ModelAdmin` declarations on `platform_site`; the admin-kit generates CRUD/list/action endpoints under `/api/v1/platform-admin/<key>/` |
-| **Bespoke aggregate API** | `apps/core/platform/{views,serializers,uploads,urls}.py` | Hand-written `@api_view` endpoints under `/api/v1/platform/…` for dashboards, rollups, plan pricing, and the AI-conversation console |
-| (legacy) **Django admin** | `apps/core/admin.py` | The classic `/django-admin/` fallback, region-scoped; not the SPA |
+| Half                        | Files                                                    | Shape                                                                                                                                      |
+| --------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Declarative model admin** | `apps/core/admin_panels.py`                              | ~20 `ModelAdmin` declarations on `platform_site`; the admin-kit generates CRUD/list/action endpoints under `/api/v1/platform-admin/<key>/` |
+| **Bespoke aggregate API**   | `apps/core/platform/{views,serializers,uploads,urls}.py` | Hand-written `@api_view` endpoints under `/api/v1/platform/…` for dashboards, rollups, plan pricing, and the AI-conversation console       |
+| (legacy) **Django admin**   | `apps/core/admin.py`                                     | The classic `/django-admin/` fallback, region-scoped; not the SPA                                                                          |
 
 Everything in this module is gated by `IsSuperUser` (`apps/core/permissions.py`) — `request.user.is_authenticated and request.user.is_superuser`. There is no per-object permission layer here; if you are a superuser you see the whole fleet.
 
 ## Why two halves?
 
-The admin-kit is excellent at "here is a table, let me filter/edit/act on rows." It is useless at "MRR by currency across tenant schemas." So anything that is *a model with columns* lives in `admin_panels.py`, and anything that is *a computed number or a cross-schema sweep* lives in `platform/views.py`. The two halves overlap deliberately in exactly one place — plan pricing — and share `apps.core.stripe_pricing.apply_amounts` so the grandfathering rules cannot drift between them.
+The admin-kit is excellent at "here is a table, let me filter/edit/act on rows." It is useless at "MRR by currency across tenant schemas." So anything that is _a model with columns_ lives in `admin_panels.py`, and anything that is _a computed number or a cross-schema sweep_ lives in `platform/views.py`. The two halves overlap deliberately in exactly one place — plan pricing — and share `apps.core.stripe_pricing.apply_amounts` so the grandfathering rules cannot drift between them.
 
 ```mermaid
 graph LR
@@ -30,7 +30,7 @@ graph LR
 
 ## Half 1 — `admin_panels.py`: the registered models
 
-Registration is a decorator on `platform_site` (`apps/adminkit/sites.py`), keyed by `ModelAdmin.key` (defaults to the slugified plural label). `AdminSite.get_urls()` then mints five routes per key: list/create, `meta/`, `actions/<name>/`, `autocomplete/<field>/`, and detail. The frontend renders tables and forms purely from the `meta/` payload, so the declaration *is* the UI contract.
+Registration is a decorator on `platform_site` (`apps/adminkit/sites.py`), keyed by `ModelAdmin.key` (defaults to the slugified plural label). `AdminSite.get_urls()` then mints five routes per key: list/create, `meta/`, `actions/<name>/`, `autocomplete/<field>/`, and detail. The frontend renders tables and forms purely from the `meta/` payload, so the declaration _is_ the UI contract.
 
 ### The capability flags are the real security model
 
@@ -73,7 +73,7 @@ Both land in `apps.accounts.impersonation`, which mints a short-lived token, log
 
 - `current_step` — `wizard_state["current_step"]`
 - `answered` — length of `wizard_state["answers"]`
-- `last_activity` — `max()` over `wizard_state["step_timestamps"]`; these are `timezone.now().isoformat()` strings, so lexicographic max *is* chronological max
+- `last_activity` — `max()` over `wizard_state["step_timestamps"]`; these are `timezone.now().isoformat()` strings, so lexicographic max _is_ chronological max
 
 Computed columns are methods on the admin (resolved by `ModelAdmin.get_computed_columns` / `compute_column`) with an optional `short_description` for the header. `WebhookEventAdmin.state` uses the same mechanism to collapse `processed_at` + `processing_error` into `pending`/`processed`/`failed`.
 
@@ -97,7 +97,7 @@ _usage_admin("onboarding-ai-usage", OnboardingAiUsage, "composes_used", "…")
 
 ## Half 2 — `platform/`: the bespoke API
 
-Routed from `config/urls.py` at `api/v1/platform/`. **Ordering matters** there: `platform_email`, `blog.urls_platform`, `logbook.urls_platform`, `mailbox`, and `community` declare narrower `/platform/<sub>/` prefixes *before* `apps.core.platform.urls` is included, so those routes win.
+Routed from `config/urls.py` at `api/v1/platform/`. **Ordering matters** there: `platform_email`, `blog.urls_platform`, `logbook.urls_platform`, `mailbox`, and `community` declare narrower `/platform/<sub>/` prefixes _before_ `apps.core.platform.urls` is included, so those routes win.
 
 ### Cross-schema aggregation
 
@@ -116,7 +116,7 @@ Money is serialized as `str(Decimal)`, never a float, throughout.
 `platform_plans` (GET/POST) and `platform_plan_detail` (GET/PATCH/DELETE) are the bespoke plan editor, validated by `PlatformPlanCreateSerializer` / `PlatformPlanUpdateSerializer` (both plain `Serializer`s, not ModelSerializers). Three rules are encoded in the serializers:
 
 - **`name` is create-only.** It is the stable key `seed_plans` upserts by and the Stripe `lookup_key` derives from (`contentor_<name.lower()>_<currency>_monthly`). `PlatformPlanCreateSerializer.validate_name` enforces case-insensitive uniqueness; the update serializer simply omits the field.
-- **`amounts` is a currency→minor-units map** (`{"USD": 1990, "TRY": 99900}`), validated against `CURRENCY_CHOICES` by the shared `_validate_currency_map`. Each changed entry provisions a *new* immutable Stripe Price and transfers the lookup key onto it — existing subscribers are grandfathered onto the old Price. `apply_amounts` mutates the plan in place, records touched columns on `update_fields`, and leaves `plan.save()` to the caller; it also keeps the legacy whole-unit `price_monthly` in sync with USD.
+- **`amounts` is a currency→minor-units map** (`{"USD": 1990, "TRY": 99900}`), validated against `CURRENCY_CHOICES` by the shared `_validate_currency_map`. Each changed entry provisions a _new_ immutable Stripe Price and transfers the lookup key onto it — existing subscribers are grandfathered onto the old Price. `apply_amounts` mutates the plan in place, records touched columns on `update_fields`, and leaves `plan.save()` to the caller; it also keeps the legacy whole-unit `price_monthly` in sync with USD.
 - **DELETE is soft.** `_archive_plan` sets `is_active=False`, and returns **409** if `plan.tenants.exists()` (the `PROTECT` FK). `PATCH is_active=False` is routed to the same helper so both paths are guarded identically. Note the asymmetry from the admin-kit half: `apply_amounts` runs on PATCH only when `amounts` is truthy **and** the plan is not free.
 
 ### `platform_tenant_detail`
@@ -140,14 +140,14 @@ Four endpoints implement human takeover of `help_bot` conversations. Scope is en
 
 The state machine, with the actual status codes:
 
-| Endpoint | Guard | Effect |
-|---|---|---|
-| `…/thread/` | — | `maybe_auto_release`, then `assistant.thread_payload(after_id=?after)` for polling |
-| `…/takeover/` | already `STATUS_HUMAN` → **409** | sets `STATUS_HUMAN`, `agent_user_id`, `agent_label = "Contentor support"`, clears `human_requested`, appends a `agent_joined:` system message |
-| `…/message/` | not `STATUS_HUMAN` → **403**; empty body → **400** | appends an `agent` message (truncated to 2000 chars) |
-| `…/release/` | — | back to `STATUS_AI` + `assistant_resumed` system message; idempotent |
+| Endpoint      | Guard                                              | Effect                                                                                                                                        |
+| ------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `…/thread/`   | —                                                  | `maybe_auto_release`, then `assistant.thread_payload(after_id=?after)` for polling                                                            |
+| `…/takeover/` | already `STATUS_HUMAN` → **409**                   | sets `STATUS_HUMAN`, `agent_user_id`, `agent_label = "Contentor support"`, clears `human_requested`, appends a `agent_joined:` system message |
+| `…/message/`  | not `STATUS_HUMAN` → **403**; empty body → **400** | appends an `agent` message (truncated to 2000 chars)                                                                                          |
+| `…/release/`  | —                                                  | back to `STATUS_AI` + `assistant_resumed` system message; idempotent                                                                          |
 
-Every mutating endpoint calls `assistant.maybe_auto_release(convo)` *before* checking status, so a stale takeover is reaped rather than blocking. Message and thread transport lives in `apps.core.assistant` (`append_message`, `thread_payload`) — shared with the coach-facing side, so don't reimplement it here. Pagination in `platform_ai_conversations` is a fetch-N+1 `has_more` probe (`_CONVO_PAGE = 20`), not DRF pagination.
+Every mutating endpoint calls `assistant.maybe_auto_release(convo)` _before_ checking status, so a stale takeover is reaped rather than blocking. Message and thread transport lives in `apps.core.assistant` (`append_message`, `thread_payload`) — shared with the coach-facing side, so don't reimplement it here. Pagination in `platform_ai_conversations` is a fetch-N+1 `has_more` probe (`_CONVO_PAGE = 20`), not DRF pagination.
 
 ### `uploads.py` — the platform asset upload
 

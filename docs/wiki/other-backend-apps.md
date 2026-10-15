@@ -42,13 +42,13 @@ Migrations are the only place the shared-schema data model is recorded end to en
 
 ### `apps.accounts` — the custom `User`
 
-| Migration | What it establishes |
-|---|---|
-| `0001_initial` | `User` with `email`, `name`, `avatar_url`, `role` (`owner`/`coach`/`student`), `payment_customer_id`, `is_staff`, `is_active` |
-| `0002_user_accessible_regions_user_preferred_locale_and_more` | Adds `region` (`global`/`tr`, indexed), `preferred_locale`, `accessible_regions` (Postgres `ArrayField`) |
-| `0003_alter_user_accessible_regions_alter_user_region` | Makes `accessible_regions` nullable; rewrites the `region` help text to say it's informational — **auth-time isolation is enforced by `Tenant.region` via JWT claims** |
-| `0004_alter_user_email_and_more` | Drops `unique=True` on `email`; adds `UniqueConstraint(("email", "region"), name="accounts_user_email_region_unique")` |
-| `0005_user_first_pwa_at_user_last_display_mode_and_more` | PWA telemetry: `first_pwa_at`, `last_display_mode`, `last_platform` |
+| Migration                                                     | What it establishes                                                                                                                                                    |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0001_initial`                                                | `User` with `email`, `name`, `avatar_url`, `role` (`owner`/`coach`/`student`), `payment_customer_id`, `is_staff`, `is_active`                                          |
+| `0002_user_accessible_regions_user_preferred_locale_and_more` | Adds `region` (`global`/`tr`, indexed), `preferred_locale`, `accessible_regions` (Postgres `ArrayField`)                                                               |
+| `0003_alter_user_accessible_regions_alter_user_region`        | Makes `accessible_regions` nullable; rewrites the `region` help text to say it's informational — **auth-time isolation is enforced by `Tenant.region` via JWT claims** |
+| `0004_alter_user_email_and_more`                              | Drops `unique=True` on `email`; adds `UniqueConstraint(("email", "region"), name="accounts_user_email_region_unique")`                                                 |
+| `0005_user_first_pwa_at_user_last_display_mode_and_more`      | PWA telemetry: `first_pwa_at`, `last_display_mode`, `last_platform`                                                                                                    |
 
 `0004` is the one to internalise: **email alone is not a unique key.** The same person can own tenants in both the `global` and `tr` regions with the same address. Any code doing `User.objects.get(email=...)` in the public schema is a latent `MultipleObjectsReturned`. Inside a tenant schema the table is per-tenant, so the constraint is effectively per-tenant-per-region.
 
@@ -56,14 +56,14 @@ Note also that `User` lives in `SHARED_APPS` **and** is materialised into every 
 
 ### `apps.billing` — marketplace payments
 
-| Migration | What it establishes |
-|---|---|
-| `0001_initial` | `SubscriptionPlan`, `Subscription`, `Payment` (with `platform_fee` / `submerchant_payout` split), `SubscriptionPlanAccess` (generic FK access grants) |
-| `0002_add_access_models` | `Bundle`, `BundleItem`, `PaymentItem` — all generic-FK, all `unique_together` on `(parent, content_type, object_id)` |
-| `0003_alter_payment_provider` | Adds the `bypass` provider alongside `iyzico` / `stripe` |
-| `0004_payment_platform_subscription` | `Payment.platform_subscription` → `core.PlatformSubscription`, **`db_constraint=False`** |
-| `0005_subscription_cancel_at_period_end_and_more` | Stripe Connect fields on `Subscription` (`provider`, `provider_customer_id`, `provider_subscription_id`, `cancel_at_period_end`) and on `SubscriptionPlan` (`stripe_price_id`, `stripe_price_amount_cents`) |
-| `0006_subscriptionplan_billing_interval_months_and_more` | `billing_interval_months` validated to 1–36, plus `stripe_price_interval_months` for drift detection against the mirrored Stripe price |
+| Migration                                                | What it establishes                                                                                                                                                                                         |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0001_initial`                                           | `SubscriptionPlan`, `Subscription`, `Payment` (with `platform_fee` / `submerchant_payout` split), `SubscriptionPlanAccess` (generic FK access grants)                                                       |
+| `0002_add_access_models`                                 | `Bundle`, `BundleItem`, `PaymentItem` — all generic-FK, all `unique_together` on `(parent, content_type, object_id)`                                                                                        |
+| `0003_alter_payment_provider`                            | Adds the `bypass` provider alongside `iyzico` / `stripe`                                                                                                                                                    |
+| `0004_payment_platform_subscription`                     | `Payment.platform_subscription` → `core.PlatformSubscription`, **`db_constraint=False`**                                                                                                                    |
+| `0005_subscription_cancel_at_period_end_and_more`        | Stripe Connect fields on `Subscription` (`provider`, `provider_customer_id`, `provider_subscription_id`, `cancel_at_period_end`) and on `SubscriptionPlan` (`stripe_price_id`, `stripe_price_amount_cents`) |
+| `0006_subscriptionplan_billing_interval_months_and_more` | `billing_interval_months` validated to 1–36, plus `stripe_price_interval_months` for drift detection against the mirrored Stripe price                                                                      |
 
 `db_constraint=False` on `Payment.platform_subscription` is deliberate and must not be "fixed": `Payment` is a tenant-schema table, `PlatformSubscription` is public-schema. Postgres cannot enforce a foreign key across schemas the way django-tenants lays them out, so the FK is ORM-level only. Adding the constraint back will break `migrate_schemas`.
 
@@ -111,7 +111,7 @@ graph LR
 
 - **`restore_public`** — re-inserts the tenant + domain rows into the public schema and returns the `Tenant`. Needed because `django_db(transaction=True)` tests run as `TransactionTestCase`, whose teardown flushes the whole public schema. It temporarily sets `Tenant.auto_create_schema = False` around the `get_or_create` so the re-insert doesn't try to build the schema again.
 
-- **`tenant_ctx`** — wraps the test in `tenant_context(tenant)` and calls `_clean_tenant_tables()` both before and after. Cleaning *before* matters under `pytest-xdist`: transaction tests commit for real and load-balancing makes ordering nondeterministic, so a test can inherit committed rows from whatever ran previously on that worker.
+- **`tenant_ctx`** — wraps the test in `tenant_context(tenant)` and calls `_clean_tenant_tables()` both before and after. Cleaning _before_ matters under `pytest-xdist`: transaction tests commit for real and load-balancing makes ordering nondeterministic, so a test can inherit committed rows from whatever ran previously on that worker.
 
 Use `tenant_ctx` when your test creates tenant-schema rows (users, courses, payments). Use `restore_public` when you need the public-schema `Tenant` row but will manage schema switching yourself.
 
@@ -125,15 +125,15 @@ Use `tenant_ctx` when your test creates tenant-schema rows (users, courses, paym
 
 ### Autouse fixtures
 
-| Fixture | Purpose |
-|---|---|
-| `_clear_rate_limits` | Runs `_purge_rate_limit_keys()` before and after every test — deletes Redis keys matching `ratelimit:*`, `*throttle*`, `*logo-ai*`, `*ai-answer*`, `*ai-sess*` |
-| `_curated_mirror_off` | Forces `settings.CURATED_LOGO_SYNC_DIR = ""` so no test writes into the repo bind mount or MinIO |
-| `_ensure_free_plan` | `get_or_create`s the canonical `Free` `PlatformPlan` before each `django_db` test |
+| Fixture               | Purpose                                                                                                                                                        |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `_clear_rate_limits`  | Runs `_purge_rate_limit_keys()` before and after every test — deletes Redis keys matching `ratelimit:*`, `*throttle*`, `*logo-ai*`, `*ai-answer*`, `*ai-sess*` |
+| `_curated_mirror_off` | Forces `settings.CURATED_LOGO_SYNC_DIR = ""` so no test writes into the repo bind mount or MinIO                                                               |
+| `_ensure_free_plan`   | `get_or_create`s the canonical `Free` `PlatformPlan` before each `django_db` test                                                                              |
 
 Each exists because of a real, hard-to-diagnose failure:
 
-- DRF's `AnonRateThrottle` keys on client IP, which is always `127.0.0.1` for `APIClient`. Without purging, the sixth request in 60s across *any* tests returns 429. The `*logo-ai*`, `*ai-answer*` and `*ai-sess*` patterns are written via `django.core.cache`, so Django's key function prefixes them with `:<version>:` — hence the leading wildcard, same as `*throttle*`.
+- DRF's `AnonRateThrottle` keys on client IP, which is always `127.0.0.1` for `APIClient`. Without purging, the sixth request in 60s across _any_ tests returns 429. The `*logo-ai*`, `*ai-answer*` and `*ai-sess*` patterns are written via `django.core.cache`, so Django's key function prefixes them with `:<version>:` — hence the leading wildcard, same as `*throttle*`.
 - The `Free` plan is seeded by `core/migrations/0005_backfill_free_plan.py`. A `transaction=True` flush deletes it, `--reuse-db` never reruns migrations, so the first such test in a session permanently removes it from that worker's database — surfacing later as a `PlatformPlan.DoesNotExist` in something unrelated (typically `apps/core/tests/test_seed_dev_tenants.py`). Re-creating it defensively sidesteps the flush entirely; `serialized_rollback` was tried and reverted (it collides with existing `ContentType` rows).
 
 ### The `--reuse-db` contract
@@ -162,13 +162,13 @@ The `HTTP_HOST` is what `HeaderAwareTenantMiddleware` resolves into the `shared_
 
 ### `force_authenticate` vs. a real cookie
 
-`force_authenticate` bypasses `TenantJWTAuthentication` entirely — fine when you're testing view logic and permissions. When the *token* is the thing under test, set the cookie for real:
+`force_authenticate` bypasses `TenantJWTAuthentication` entirely — fine when you're testing view logic and permissions. When the _token_ is the thing under test, set the cookie for real:
 
 ```python
 client.cookies["contentor_access_token"] = create_jwt(owner, owner_tenant())
 ```
 
-`apps/accounts/tests/test_impersonation.py` does this throughout, because the impersonation flow's whole point is cookie mechanics: `/api/v1/auth/impersonate/verify/` stashes the caller's session in `contentor_impersonator_return` for studio scope and stashes *nothing* for platform scope, and `/stop/` reports `restored: true`/`false` accordingly.
+`apps/accounts/tests/test_impersonation.py` does this throughout, because the impersonation flow's whole point is cookie mechanics: `/api/v1/auth/impersonate/verify/` stashes the caller's session in `contentor_impersonator_return` for studio scope and stashes _nothing_ for platform scope, and `/stop/` reports `restored: true`/`false` accordingly.
 
 ### Patch at the import site
 
@@ -179,7 +179,7 @@ with patch("apps.accounts.authentication.connection") as mock_conn:
     mock_conn.tenant.schema_name = "shared_test"
 ```
 
-Same pattern with `apps.accounts.backends.connection` for `AdminJWTBackend`. Billing mocks the boundary function where it is *used*, not where it is defined — `patch("apps.billing.views.payments.can_monetize", ...)` — while Stripe calls are patched at their definition site (`apps.billing.providers.connect.create_marketplace_checkout`) because the view calls them via the module. Get this backwards and the patch silently does nothing while the test still passes for the wrong reason.
+Same pattern with `apps.accounts.backends.connection` for `AdminJWTBackend`. Billing mocks the boundary function where it is _used_, not where it is defined — `patch("apps.billing.views.payments.can_monetize", ...)` — while Stripe calls are patched at their definition site (`apps.billing.providers.connect.create_marketplace_checkout`) because the view calls them via the module. Get this backwards and the patch silently does nothing while the test still passes for the wrong reason.
 
 Throttled endpoints are unblocked with a class-level decorator:
 
@@ -201,7 +201,7 @@ It uses `restore_public` plus explicit `with tenant_context(tenant):` blocks to 
 
 ### Schema guards
 
-`test_studio_site_404_on_public_schema_host` authenticates with an *unsaved* `User(...)` instance on purpose — the point is that the studio-admin schema guard must fire before any tenant-schema query is attempted, so the user never needs to exist.
+`test_studio_site_404_on_public_schema_host` authenticates with an _unsaved_ `User(...)` instance on purpose — the point is that the studio-admin schema guard must fire before any tenant-schema query is attempted, so the user never needs to exist.
 
 ---
 
@@ -209,7 +209,7 @@ It uses `restore_public` plus explicit `with tenant_context(tenant):` blocks to 
 
 **`apps/accounts/tests/`** — the auth surface, and the densest security-regression coverage in the repo.
 
-- `test_tokens_extended.py` / `test_auth.py` / `test_wizard_token.py` — round-trips and negative cases for `create_jwt`, `create_magic_link_token`, `create_signup_token`, `create_wizard_token` and their verifiers. Cross-purpose rejection is asserted in both directions: a magic-link token must fail `verify_signup_token`, and `verify_wizard_token` deliberately *accepts* a signup token (continuity during its 15-minute window). `decode_wizard_token_allow_expired` skips expiry but still verifies signature and purpose.
+- `test_tokens_extended.py` / `test_auth.py` / `test_wizard_token.py` — round-trips and negative cases for `create_jwt`, `create_magic_link_token`, `create_signup_token`, `create_wizard_token` and their verifiers. Cross-purpose rejection is asserted in both directions: a magic-link token must fail `verify_signup_token`, and `verify_wizard_token` deliberately _accepts_ a signup token (continuity during its 15-minute window). `decode_wizard_token_allow_expired` skips expiry but still verifies signature and purpose.
 - `test_authentication.py` — `TenantJWTAuthentication` returns `None` (anonymous), never raises, for every failure mode: no token, expired, garbled, wrong tenant, missing user. Cookie and `Bearer` header are both accepted.
 - `test_admin_backend.py` — hardening for `AdminJWTBackend` (audit item P1-B). It must validate the same tenant/region claims as the DRF authenticator, reject any token carrying a `purpose` (magic-link, impersonation), reject non-staff users, and return `None` rather than `KeyError` on a signature-valid token with no `user_id`.
 - `test_login_code.py` / `test_verify_code.py` — the 6-digit code flow in `apps.accounts.login_code`: single-use, tenant-scoped, five-attempt lockout that kills the key, and a failed check that must **not** extend the code's TTL (asserted via `cache.ttl()` against real Redis). All failure responses share one generic `detail` string so the endpoint isn't an account-existence oracle. Login uses `email__iexact` so a lowercase attempt against a mixed-case legacy account doesn't create a duplicate.

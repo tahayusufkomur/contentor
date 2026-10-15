@@ -53,7 +53,7 @@ Data with no call graph, coupled to code by key path or filename rather than by 
 
 ## 4. Testing, observability, and dev tooling
 
-- [e2e](e2e.md) — Playwright config, global setup, and `impact-map.json`; [e2e/specs](e2e-specs.md) drives the *running dev stack* (not a hermetic environment) across both frontends and Django; [e2e/helpers](e2e-helpers.md) supplies the five recurring primitives (`compose`, `auth`, email sink, holdout pinning, Stripe Checkout). [e2e/playwright-report](e2e-playwright-report.md) is regenerated output — read for failure context, never edited.
+- [e2e](e2e.md) — Playwright config, global setup, and `impact-map.json`; [e2e/specs](e2e-specs.md) drives the _running dev stack_ (not a hermetic environment) across both frontends and Django; [e2e/helpers](e2e-helpers.md) supplies the five recurring primitives (`compose`, `auth`, email sink, holdout pinning, Stripe Checkout). [e2e/playwright-report](e2e-playwright-report.md) is regenerated output — read for failure context, never edited.
 - [monitoring/vector](monitoring-vector.md) — dumb transport only; all parsing, level filtering, and tenant extraction happen in `apps/logbook`. That IS the observability stack; there is no metrics stack.
 - [infra/cloudflare](infra-cloudflare.md) — the `mailbox-inbound` Email Worker, the only Contentor component running outside Docker and outside `make deploy` (deployed via `wrangler`).
 - [scripts](scripts.md) — operator-run bash: prod Postgres backup/restore, Stripe webhook forwarding.

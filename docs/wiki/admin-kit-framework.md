@@ -8,10 +8,10 @@ A schema-driven admin framework: one Python declaration per model produces a ful
 
 Two sites exist:
 
-| Site | Namespace | Mounted at | Audience | Schema |
-|---|---|---|---|---|
-| `platform_site` | `platform-admin` | `/api/v1/platform-admin/` | superadmin (`IsSuperUser`) | public |
-| `studio_site` | `studio-admin` | `/api/v1/studio-admin/` | coach/owner (`IsCoachOrOwner`) | tenant-only |
+| Site            | Namespace        | Mounted at                | Audience                       | Schema      |
+| --------------- | ---------------- | ------------------------- | ------------------------------ | ----------- |
+| `platform_site` | `platform-admin` | `/api/v1/platform-admin/` | superadmin (`IsSuperUser`)     | public      |
+| `studio_site`   | `studio-admin`   | `/api/v1/studio-admin/`   | coach/owner (`IsCoachOrOwner`) | tenant-only |
 
 Both are rendered by the same frontend components, mounted at `/admin/m` in `frontend-main` (platform) and `frontend-customer` (studio) — those four `page.tsx` files are the entire per-app integration.
 
@@ -36,7 +36,7 @@ graph LR
 
 ### Registration and autodiscovery
 
-`AdminkitConfig.ready()` calls `autodiscover_modules("admin_panels")`. Every Django app declares its admins in `admin_panels.py` — deliberately *not* `admin.py`, so the kit coexists with Django's own admin without clashing. The app itself has **no models**; it is pure framework.
+`AdminkitConfig.ready()` calls `autodiscover_modules("admin_panels")`. Every Django app declares its admins in `admin_panels.py` — deliberately _not_ `admin.py`, so the kit coexists with Django's own admin without clashing. The app itself has **no models**; it is pure framework.
 
 ```python
 from apps.adminkit.options import ModelAdmin, admin_action
@@ -66,24 +66,24 @@ Three derived-config methods drive everything downstream:
 
 - `get_form_fields()` — writable names in declaration order; skips pk, non-editable, auto-created, `auto_now`/`auto_now_add` date fields, `exclude`, and `readonly_fields`.
 - `get_serializer_field_names()` — everything the API exposes: pk + form fields + readonly fields + any `list_display` entry that is a real model field.
-- `get_computed_columns()` — `list_display` entries that are *not* model fields, i.e. admin methods or `__str__`. These are rendered by `compute_column()` at list time and labelled via `column_label()` (which honours a `short_description` attribute on the method, Django-style).
+- `get_computed_columns()` — `list_display` entries that are _not_ model fields, i.e. admin methods or `__str__`. These are rendered by `compute_column()` at list time and labelled via `column_label()` (which honours a `short_description` attribute on the method, Django-style).
 
 ### Sites and the URL surface
 
 `AdminSite.get_urls()` emits a site-level `meta/` route plus five routes per registered model. `urls_platform.py` / `urls_studio.py` are one-liners that expose them.
 
-| Route | Verb(s) | Purpose |
-|---|---|---|
-| `meta/` | GET | Site meta: namespace, title, visible models |
-| `<key>/` | GET, POST | List (paginated, searched, filtered, ordered) / create |
-| `<key>/meta/` | GET | Full `model_meta()` contract for this model |
-| `<key>/<int:pk>/` | GET, PUT, PATCH, DELETE | Retrieve / update / partial update / destroy |
-| `<key>/actions/<action_name>/` | POST | Run a bulk or row action over `{"ids": [...]}` |
-| `<key>/autocomplete/<field_name>/` | GET | FK options as `{results: [{value, label}]}` |
+| Route                              | Verb(s)                 | Purpose                                                |
+| ---------------------------------- | ----------------------- | ------------------------------------------------------ |
+| `meta/`                            | GET                     | Site meta: namespace, title, visible models            |
+| `<key>/`                           | GET, POST               | List (paginated, searched, filtered, ordered) / create |
+| `<key>/meta/`                      | GET                     | Full `model_meta()` contract for this model            |
+| `<key>/<int:pk>/`                  | GET, PUT, PATCH, DELETE | Retrieve / update / partial update / destroy           |
+| `<key>/actions/<action_name>/`     | POST                    | Run a bulk or row action over `{"ids": [...]}`         |
+| `<key>/autocomplete/<field_name>/` | GET                     | FK options as `{results: [{value, label}]}`            |
 
 Note the pk converter is `<int:pk>` — models with non-integer primary keys are not currently addressable.
 
-The site-level `meta` view filters the model list through `_visible_models()`, which hides any admin whose own `permission_classes` all fail for the requesting user. Careful: at the *site meta* level those classes are treated as an **extra** gate on top of the site default, whereas `build_viewset` uses `admin.permission_classes or site.permission_classes` — i.e. on the endpoints they **replace** the site default. If you narrow an admin, narrow it (don't widen it) or the index card and the endpoint will disagree.
+The site-level `meta` view filters the model list through `_visible_models()`, which hides any admin whose own `permission_classes` all fail for the requesting user. Careful: at the _site meta_ level those classes are treated as an **extra** gate on top of the site default, whereas `build_viewset` uses `admin.permission_classes or site.permission_classes` — i.e. on the endpoints they **replace** the site default. If you narrow an admin, narrow it (don't widen it) or the index card and the endpoint will disagree.
 
 ### The generic viewset
 
@@ -91,7 +91,7 @@ The site-level `meta` view filters the model list through `_visible_models()`, w
 
 What the viewset adds over `ModelViewSet`:
 
-- **`initial()`** — for `tenant_only` sites, raises `Http404` when `connection.schema_name` is the public schema, *before* auth runs. The studio's models have no public-schema tables; this keeps apex requests from erroring out of the ORM.
+- **`initial()`** — for `tenant_only` sites, raises `Http404` when `connection.schema_name` is the public schema, _before_ auth runs. The studio's models have no public-schema tables; this keeps apex requests from erroring out of the ORM.
 - **`filter_queryset()`** — the whole list query language:
   - `?q=` ORs `icontains` across `search_fields`; adds `.distinct()` if any search field spans a relation (`__`).
   - Each entry in `list_filters`: a string is matched exactly (with `"true"`/`"false"` coerced to booleans, and `.distinct()` when the field is M2M); a non-string is a **filter descriptor** and gets to run its own `filter_queryset(qs, value)`.
@@ -110,7 +110,7 @@ Serializers are cached in `_SERIALIZER_CACHE` keyed by `id(admin)`. Admin instan
 `field_schema(admin, name, field)` is the heart of the contract. It maps each DRF field to a `type` (`_field_type`: m2m, fk, boolean, multichoice, choice, integer, decimal, datetime, date, email, url, json, else `text` for a model `TextField`, else `string`), then layers on:
 
 - `image` type + `upload_url` / `upload_prefix` for anything in `admin.image_fields`;
-- `default` via `_scalar_default`, which falls back to the *model* field's default when DRF leaves it to `.save()` — so auto-built create forms start from the value the model would have used;
+- `default` via `_scalar_default`, which falls back to the _model_ field's default when DRF leaves it to `.save()` — so auto-built create forms start from the value the model would have used;
 - `max_length`, `decimal_places`, and `min_value`/`max_value` scraped from both `MinValueValidator`/`MaxValueValidator` and the field's own attributes;
 - `choices` — **only** after the type is known to be choice-ish. There is a load-bearing ordering comment here: `RelatedField.choices` is a property that evaluates the whole queryset, so touching it unconditionally would fire a full table read per FK field on every meta request.
 
@@ -130,7 +130,7 @@ Serializers are cached in `_SERIALIZER_CACHE` keyed by `id(admin)`. Admin instan
 - A **relation that isn't a serializer field** → `_relation_filter_choices` turns an FK/M2M into a choice of the related objects, again with counts. This is what lets you filter by an M2M tag that never appears in `list_display` or the form.
 - A **filter descriptor object** → delegates to its own `.schema(model)`.
 
-`TagChoiceFilter` is the one built-in descriptor. It targets a comma-separated tag `CharField` where a bare field name would give a useless exact-match box. It computes the distinct tags across all rows (normalized the same way the coach galleries split them: split on `,`, strip, lowercase, drop blanks — matching `frontend-customer`'s `library-catalog.ts`), orders choices by descending count, and filters with a `__iregex` anchored on comma boundaries so `art` never matches `startup` or `cart`. Its `name` is the *query-param* key (default `tag`), which is why `filter_queryset` reads `params.get(name.name)` for descriptors.
+`TagChoiceFilter` is the one built-in descriptor. It targets a comma-separated tag `CharField` where a bare field name would give a useless exact-match box. It computes the distinct tags across all rows (normalized the same way the coach galleries split them: split on `,`, strip, lowercase, drop blanks — matching `frontend-customer`'s `library-catalog.ts`), orders choices by descending count, and filters with a `__iregex` anchored on comma boundaries so `art` never matches `startup` or `cart`. Its `name` is the _query-param_ key (default `tag`), which is why `filter_queryset` reads `params.get(name.name)` for descriptors.
 
 Be aware that `filter_schema` is genuinely query-heavy — one `COUNT` per choice, plus a full column scan for `TagChoiceFilter`. It runs on every `<key>/meta/` request, so a `list_filters` entry over a high-cardinality relation is expensive by construction.
 
@@ -156,18 +156,18 @@ Everything lives in `packages/shared/src/admin-kit/`, imported as `@shared/admin
 
 > If your local (non-Docker) tsserver flags `cannot find module 'react'` in these files, that's expected: bare-specifier resolution for `packages/shared` only works inside the containers, via the `node_modules` symlink in each Dockerfile.
 
-| File | Role |
-|---|---|
-| `client.ts` | `createAdminClient(apiBase)` — every endpoint, plus `AdminKitError` |
-| `types.ts` | The TS mirror of the backend contract |
-| `model-index.tsx` | `AdminModelIndex` — landing grid, one card per model from site meta |
-| `model-page.tsx` | `AdminModelPage` — all state: meta, list, search, filters, selection, actions, paging, overlays |
-| `model-list.tsx` | Presentational table: columns, sort headers, selection, row actions |
-| `model-form.tsx` | Slide-over create/edit form generated from `form_fields` |
-| `widgets.tsx` | `CellValue` (schema → table cell) and `FieldInput` (schema → input), plus `ImageFieldInput` |
-| `primitives.tsx` | `KitButton`/`KitInput`/`KitTextarea`/`KitSelect`/`KitToggle`/`KitBanner`/`KitSkeletonRows`, and `kitIcon` |
-| `gallery-view.tsx` | Gallery list mode: image cards + drop-a-PNG zone |
-| `json-record-modal.tsx` | Gallery mode's create/edit surface: image pane + one JSON textarea |
+| File                    | Role                                                                                                      |
+| ----------------------- | --------------------------------------------------------------------------------------------------------- |
+| `client.ts`             | `createAdminClient(apiBase)` — every endpoint, plus `AdminKitError`                                       |
+| `types.ts`              | The TS mirror of the backend contract                                                                     |
+| `model-index.tsx`       | `AdminModelIndex` — landing grid, one card per model from site meta                                       |
+| `model-page.tsx`        | `AdminModelPage` — all state: meta, list, search, filters, selection, actions, paging, overlays           |
+| `model-list.tsx`        | Presentational table: columns, sort headers, selection, row actions                                       |
+| `model-form.tsx`        | Slide-over create/edit form generated from `form_fields`                                                  |
+| `widgets.tsx`           | `CellValue` (schema → table cell) and `FieldInput` (schema → input), plus `ImageFieldInput`               |
+| `primitives.tsx`        | `KitButton`/`KitInput`/`KitTextarea`/`KitSelect`/`KitToggle`/`KitBanner`/`KitSkeletonRows`, and `kitIcon` |
+| `gallery-view.tsx`      | Gallery list mode: image cards + drop-a-PNG zone                                                          |
+| `json-record-modal.tsx` | Gallery mode's create/edit surface: image pane + one JSON textarea                                        |
 
 ### Client
 
@@ -203,7 +203,7 @@ Errors from the server land as `errors` (inline, per field) plus `formError` (ba
 
 ### Gallery mode
 
-Set `list_mode = "gallery"` plus a `gallery_image_field` (which must be in `image_fields` *and* in `list_display`, so rows carry its `{key, url}` value). This replaces the table + slide-over form with a bulk-curation workflow — it is what the curated logo/photo catalogs use.
+Set `list_mode = "gallery"` plus a `gallery_image_field` (which must be in `image_fields` _and_ in `list_display`, so rows carry its `{key, url}` value). This replaces the table + slide-over form with a bulk-curation workflow — it is what the curated logo/photo catalogs use.
 
 The flow: drop or pick a PNG → `galleryUpload` POSTs it to the image field's `upload_url` → `JsonRecordModal` opens in `create` mode with a prefilled JSON record. `initialJson` seeds `title` from the filename, `position` past the largest on the current page, and `enabled: true`. `parseRecord` validates that the textarea holds a JSON object whose keys are all editable non-image fields, returning `{data}` or `{error}` — it never throws. Save merges in the image key and creates the row.
 

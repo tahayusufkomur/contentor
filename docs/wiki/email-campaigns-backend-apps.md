@@ -2,7 +2,7 @@
 
 # Email Campaigns — `backend/apps/email_campaigns` + `backend/apps/platform_email`
 
-Two sibling Django apps that let a **coach email their students** (`email_campaigns`, tenant schema) and a **superadmin email their coaches** (`platform_email`, public schema). Both are thin orchestration layers over an external email builder — **MailCraft**, referred to in code as *EmailCraft* — plus Celery for the actual fan-out send.
+Two sibling Django apps that let a **coach email their students** (`email_campaigns`, tenant schema) and a **superadmin email their coaches** (`platform_email`, public schema). Both are thin orchestration layers over an external email builder — **MailCraft**, referred to in code as _EmailCraft_ — plus Celery for the actual fan-out send.
 
 The coach app is the original; `platform_email` is a deliberate mirror of it. Everything shared lives in `email_campaigns` and is imported by `platform_email` — most importantly the HTTP client (`emailcraft_client`) and the status enums.
 
@@ -12,14 +12,14 @@ The coach app is the original; `platform_email` is a deliberate mirror of it. Ev
 
 Neither app renders email HTML itself, and neither stores template content. The division of labour:
 
-| Concern | Owner |
-|---|---|
+| Concern                                    | Owner                                                   |
+| ------------------------------------------ | ------------------------------------------------------- |
 | Template authoring (drag-and-drop builder) | MailCraft, embedded in the frontend via a session token |
-| Template storage, per-recipient render | MailCraft (`render_template`) |
-| Recipient resolution, quota, audit trail | these apps |
-| Actual SMTP delivery | `apps.core.email.send_email` (Resend) |
+| Template storage, per-recipient render     | MailCraft (`render_template`)                           |
+| Recipient resolution, quota, audit trail   | these apps                                              |
+| Actual SMTP delivery                       | `apps.core.email.send_email` (Resend)                   |
 
-A campaign row is therefore a *send record*: which MailCraft template id, which recipient filter, and per-recipient outcomes.
+A campaign row is therefore a _send record_: which MailCraft template id, which recipient filter, and per-recipient outcomes.
 
 ---
 
@@ -46,12 +46,12 @@ The request path never sends email. `send_campaign` validates, writes an `EmailC
 
 Lives in `email_campaigns` but is imported verbatim by `platform_email`. Two auth modes:
 
-- **Site-level** (`_site_headers`) — `Authorization: Token <EMAILCRAFT_TOKEN>`. Used for the two endpoints that operate *across* organizations: `provision_organization` and `configure_variables`.
+- **Site-level** (`_site_headers`) — `Authorization: Token <EMAILCRAFT_TOKEN>`. Used for the two endpoints that operate _across_ organizations: `provision_organization` and `configure_variables`.
 - **Org-level** (`_org_headers`) — `X-API-Key: <per-org key>`. Everything else: templates, gallery, session, render, export.
 
 All calls funnel through `_request_with_fallback(method, paths, ...)`, which exists because MailCraft's API prefix is unstable. Each call site passes both variants (`/api/templates` and `/api/v1/templates`), and `_variants()` additionally expands each into trailing-slash and non-trailing-slash forms. The helper walks that expanded list and returns the **first non-404** response; anything in `fallback_status_codes` (default `{404}`) is treated as "wrong path, try the next one". `export_html` and `render_template` widen this to `{404, 405}` because a wrong-prefix POST there can surface as a method-not-allowed.
 
-Consequence worth knowing when adding an endpoint: a genuine 404 from the *correct* path is indistinguishable from a path miss, so it comes back as a raised `HTTPError` from the last attempt rather than a clean not-found. `get_template` failures in `copy_template` are mapped to a 404 response for exactly this reason.
+Consequence worth knowing when adding an endpoint: a genuine 404 from the _correct_ path is indistinguishable from a path miss, so it comes back as a raised `HTTPError` from the last attempt rather than a clean not-found. `get_template` failures in `copy_template` are mapped to a 404 response for exactly this reason.
 
 `DEFAULT_VARIABLES` declares the single merge variable both apps use — `Name`. Personalization is deliberately minimal; `render_template` is called once per recipient with `{"Name": ...}`.
 
@@ -75,7 +75,7 @@ if not updated:
 
 Whoever loses the race discards its own key and adopts the stored one. There's a second path for the same problem: if MailCraft returns no `api_key` (the org already existed), the code re-reads the row before giving up. `configure_variables` is best-effort — a failure there is logged as a warning and provisioning still succeeds.
 
-`setup_email` exists purely so the frontend dashboard can trigger provisioning early rather than paying for it on the first template list. It returns `{"ready": True, "provisioned": <bool>}` where `provisioned` reports whether *this* call created the org.
+`setup_email` exists purely so the frontend dashboard can trigger provisioning early rather than paying for it on the first template list. It returns `{"ready": True, "provisioned": <bool>}` where `provisioned` reports whether _this_ call created the org.
 
 ### Recipient resolution
 
@@ -83,11 +83,11 @@ Two separate `recipients.py` modules with the same shape (`resolve_recipients(fi
 
 **Coach** (`email_campaigns/recipients.py`) — active `role="student"` users:
 
-| `type` | extra keys | resolution |
-|---|---|---|
-| `all` | — | every active student |
-| `course` | `course_ids` | via active `Enrollment` rows, `.distinct()` on user_id |
-| `individual` | `user_ids` | direct pk filter, still constrained to active students |
+| `type`       | extra keys   | resolution                                             |
+| ------------ | ------------ | ------------------------------------------------------ |
+| `all`        | —            | every active student                                   |
+| `course`     | `course_ids` | via active `Enrollment` rows, `.distinct()` on user_id |
+| `individual` | `user_ids`   | direct pk filter, still constrained to active students |
 
 **Platform** (`platform_email/recipients.py`) — active `role="coach"` users, with `FILTER_TYPES = ("all_coaches", "plan", "tenant", "individual")`. The plan/tenant filters go through an indirection: tenants don't FK to their owner, they carry `owner_email`, so `_emails_for_tenants()` collects owner emails from the matched tenants and the query becomes `email__in=emails`. Coaches without a matching public `User` row simply drop out.
 
@@ -160,22 +160,22 @@ Only the worker that wins the `SCHEDULED → SENDING` flip spawns the sender, so
 
 Both apps expose a near-identical route table (`urls.py`), differing in permission class and a couple of endpoints:
 
-| Route | Coach (`IsCoachOrOwner`) | Platform (`IsSuperUser`) |
-|---|---|---|
-| `setup/` | ✅ | ✅ |
-| `session/` | ✅ | ✅ |
-| `templates/`, `templates/<id>/`, `templates/copy/`, `templates/preview/` | ✅ | ✅ |
-| `gallery/` | ✅ | ✅ |
-| `send/` | ✅ (accepts `scheduled_at`) | ✅ |
-| `campaigns/`, `campaigns/<pk>/`, `campaigns/<pk>/recipients/` | ✅ (`DELETE` cancels a `SCHEDULED` campaign) | ✅ (read-only) |
-| `recipient-options/` | — | ✅ |
+| Route                                                                    | Coach (`IsCoachOrOwner`)                     | Platform (`IsSuperUser`) |
+| ------------------------------------------------------------------------ | -------------------------------------------- | ------------------------ |
+| `setup/`                                                                 | ✅                                           | ✅                       |
+| `session/`                                                               | ✅                                           | ✅                       |
+| `templates/`, `templates/<id>/`, `templates/copy/`, `templates/preview/` | ✅                                           | ✅                       |
+| `gallery/`                                                               | ✅                                           | ✅                       |
+| `send/`                                                                  | ✅ (accepts `scheduled_at`)                  | ✅                       |
+| `campaigns/`, `campaigns/<pk>/`, `campaigns/<pk>/recipients/`            | ✅ (`DELETE` cancels a `SCHEDULED` campaign) | ✅ (read-only)           |
+| `recipient-options/`                                                     | —                                            | ✅                       |
 
 Notes on individual endpoints:
 
 - **`session/`** mints a short-lived MailCraft session token for the embedded builder iframe, scoped to an origin. The coach origin comes from `_get_tenant_origin()` — the primary `Domain` if the tenant has a custom one, else `https://<subdomain>.<CONTENTOR_DOMAIN>`. The platform origin is just `https://<CONTENTOR_DOMAIN>`.
 - **`templates/copy/`** is a read-then-write against MailCraft: fetch the source, re-create it as `"Copy of <name>"`. There is no MailCraft-side duplicate call.
 - **`templates/preview/`** batch-renders up to 20 templates through a `ThreadPoolExecutor(max_workers=4)` with a 10s per-future timeout, returning `{"previews": {...}, "errors": {...}}` — partial success is normal and the frontend must handle a template appearing in neither map.
-- **`send/`** rejects a duplicate in-flight campaign with **409** when the same sender already has a `SCHEDULED`/`SENDING` campaign with the same `template_id` *and* `subject`. This is a double-submit guard, not a general uniqueness rule — the same email can be sent again once the first one finishes.
+- **`send/`** rejects a duplicate in-flight campaign with **409** when the same sender already has a `SCHEDULED`/`SENDING` campaign with the same `template_id` _and_ `subject`. This is a double-submit guard, not a general uniqueness rule — the same email can be sent again once the first one finishes.
 - **`campaigns/`** paginates with `limit` (default 20, clamped to 1–100) and `offset`, both parsed defensively. Response shape is `{"count", "results"}`.
 - **`recipient-options/`** (platform only) returns coaches, active plans, and tenants in one payload for the recipient picker.
 - **`DELETE campaigns/<pk>/`** (coach only) hard-deletes, and only for `SCHEDULED`. Anything else is a 400 — sent and in-flight campaigns are immutable history.
@@ -201,7 +201,7 @@ Only `email_campaigns` registers a Django admin (`EmailCampaignAdmin`, read-only
 
 ## Contributor notes
 
-- **Adding a MailCraft endpoint:** add a function to `emailcraft_client.py`, pass *both* path prefixes, pick `_site_headers` vs `_org_headers` by whether the call is cross-org, and widen `fallback_status_codes` to include `405` if it's a POST that might 405 on a wrong prefix.
+- **Adding a MailCraft endpoint:** add a function to `emailcraft_client.py`, pass _both_ path prefixes, pick `_site_headers` vs `_org_headers` by whether the call is cross-org, and widen `fallback_status_codes` to include `405` if it's a POST that might 405 on a wrong prefix.
 - **Adding a recipient filter type:** it's three edits per app — the branch in `resolve_recipients`, the `type`/required-keys check in `SendEmailSerializer.validate_recipient_filter` (plus `FILTER_TYPES` on the platform side), and the label in `_build_recipient_summary`. Miss the third and campaigns silently show an empty summary.
 - **Changing the send loop:** remember `max_retries=0` — the loop is not idempotent. Any retry story needs per-recipient dedup first.
 - **Schema discipline:** in `send_campaign_emails`, model imports are function-local and the campaign is re-fetched inside each `tenant_context` block. Don't hoist them; querying a tenant model outside its context hits the wrong schema.

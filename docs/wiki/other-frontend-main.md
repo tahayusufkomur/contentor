@@ -2,19 +2,19 @@
 
 # Other — frontend-main
 
-This module is the **build, tooling, and configuration layer** of `frontend-main/` — the marketing/signup/onboarding Next.js app. It contains no application logic and no exported runtime symbols; it is the set of files that decide *how* the app is compiled, containerized, styled, typed, and tested. There are no call-graph edges here by design: these files are consumed by `next`, `tsc`, `docker build`, `tailwindcss`, and `vitest`, not by application code.
+This module is the **build, tooling, and configuration layer** of `frontend-main/` — the marketing/signup/onboarding Next.js app. It contains no application logic and no exported runtime symbols; it is the set of files that decide _how_ the app is compiled, containerized, styled, typed, and tested. There are no call-graph edges here by design: these files are consumed by `next`, `tsc`, `docker build`, `tailwindcss`, and `vitest`, not by application code.
 
 Files covered:
 
-| File | Owns |
-|---|---|
-| `Dockerfile` | dev + production images, monorepo `packages/` resolution |
-| `next.config.mjs` | standalone output, `externalDir`, router `staleTimes`, `/api/v1` rewrite, next-intl plugin wiring |
-| `package.json` | dependency set + the `dev`/`build`/`lint`/`typecheck`/`test` scripts |
-| `tailwind.config.ts` | multi-theme `dark:` variant, house colour tokens, content globs including `packages/shared` |
-| `postcss.config.mjs` | tailwind + autoprefixer |
-| `tsconfig.json` | strict TS, `@/*` and `@shared/*` path aliases |
-| `vitest.config.ts` | pure-logic unit test scope |
+| File                 | Owns                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| `Dockerfile`         | dev + production images, monorepo `packages/` resolution                                          |
+| `next.config.mjs`    | standalone output, `externalDir`, router `staleTimes`, `/api/v1` rewrite, next-intl plugin wiring |
+| `package.json`       | dependency set + the `dev`/`build`/`lint`/`typecheck`/`test` scripts                              |
+| `tailwind.config.ts` | multi-theme `dark:` variant, house colour tokens, content globs including `packages/shared`       |
+| `postcss.config.mjs` | tailwind + autoprefixer                                                                           |
+| `tsconfig.json`      | strict TS, `@/*` and `@shared/*` path aliases                                                     |
+| `vitest.config.ts`   | pure-logic unit test scope                                                                        |
 
 ## The cross-cutting problem: `packages/shared` lives outside the app
 
@@ -34,9 +34,9 @@ graph LR
 ```
 
 - **`tsconfig.json`** maps `@shared/*` → `../packages/shared/src/*` so the type checker resolves the alias.
-- **`next.config.mjs`** sets `experimental.externalDir: true` (Next refuses to compile files outside the app root otherwise) and appends this app's `node_modules` to `config.resolve.modules` so webpack can resolve bare specifiers *from* shared files.
+- **`next.config.mjs`** sets `experimental.externalDir: true` (Next refuses to compile files outside the app root otherwise) and appends this app's `node_modules` to `config.resolve.modules` so webpack can resolve bare specifiers _from_ shared files.
 - **`Dockerfile`** creates a root-level symlink `/node_modules → /app/node_modules` in both the `dev` and `builder` stages. This is deliberately a symlink rather than `tsconfig` `paths` entries for react/etc.: adding paths mappings for bare specifiers breaks `@types` resolution project-wide (noted inline in the Dockerfile, from Task 3 of the vibe-coding-restructure plan).
-- **`tailwind.config.ts`** adds `../packages/shared/src/**/*` to `content`. Without it, classes used *only* in shared components are never generated — the comment records a real regression (`max-h-32` dropped, unconstrained image pushing the gallery modal's Save/Delete buttons offscreen).
+- **`tailwind.config.ts`** adds `../packages/shared/src/**/*` to `content`. Without it, classes used _only_ in shared components are never generated — the comment records a real regression (`max-h-32` dropped, unconstrained image pushing the gallery modal's Save/Delete buttons offscreen).
 - **`vitest.config.ts`** re-declares both aliases (`@`, `@shared`) independently, since Vitest does not read `tsconfig` paths.
 
 **If you add a new shared package or move `packages/shared`, all five of these need updating.**
@@ -64,7 +64,7 @@ output: "standalone"
 experimental: { externalDir: true, staleTimes: { dynamic: 30, static: 180 } }
 ```
 
-- **`staleTimes.dynamic: 30`** overrides Next 14.2's default of `0`, which refetched the RSC payload on every revisit and made panel-to-panel navigation feel slow. The inline rationale for why this is safe is worth preserving: the router cache holds the *payload*, not component state, so client pages still remount and re-`clientFetch` on arrival — freshness comes from the client fetch, not the router cache.
+- **`staleTimes.dynamic: 30`** overrides Next 14.2's default of `0`, which refetched the RSC payload on every revisit and made panel-to-panel navigation feel slow. The inline rationale for why this is safe is worth preserving: the router cache holds the _payload_, not component state, so client pages still remount and re-`clientFetch` on arrival — freshness comes from the client fetch, not the router cache.
 - **`rewrites()`** proxies `/api/v1/:path*` → `${NEXT_PUBLIC_API_URL || "http://django:8000"}/api/v1/:path*`. This is a convenience path for same-origin client calls; the primary browser→Django route in both dev and prod is **direct via Caddy**, not through Next. Server-side `fetch()` to Django must still set `X-Tenant-Domain` — the rewrite does nothing for tenancy resolution.
 - **`withNextIntl('./src/i18n/request.ts')`** wraps the whole config. The plugin is what makes `getRequestConfig` in `src/i18n/request.ts` the message loader; that config resolves the locale from the request host via `resolveHost()` in `src/i18n/config.ts` (apex `contentor.app` → `en`, `tr.contentor.app` → `tr`) and loads the `marketing`, `pricing`, `auth`, `common`, and `wizard` namespaces from `messages/<locale>/`. If you add a namespace JSON, add it to that `Promise.all` — the config layer only points the plugin at the file.
 
@@ -75,11 +75,17 @@ experimental: { externalDir: true, staleTimes: { dynamic: 30, static: 180 } }
 The distinctive piece is the **`darkMode` variant list**. Rather than the default `.dark` class, `dark:` is configured to fire under every dark-family theme:
 
 ```ts
-darkMode: ["variant", [
-  "&:is(.dark, .dark *)", "&:is(.dim, .dim *)", "&:is(.midnight, .midnight *)",
-  "&:is(.graphite, .graphite *)", "&:is(.graphite-plus, .graphite-plus *)",
-  "&:is(.graphite-bright, .graphite-bright *)",
-]]
+darkMode: [
+  "variant",
+  [
+    "&:is(.dark, .dark *)",
+    "&:is(.dim, .dim *)",
+    "&:is(.midnight, .midnight *)",
+    "&:is(.graphite, .graphite *)",
+    "&:is(.graphite-plus, .graphite-plus *)",
+    "&:is(.graphite-bright, .graphite-bright *)",
+  ],
+];
 ```
 
 `matte` is intentionally absent — it is a light theme. **When adding a new dark-family theme, add its class here or every `dark:` utility silently no-ops under it.**

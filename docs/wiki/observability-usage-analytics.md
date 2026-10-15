@@ -4,10 +4,10 @@
 
 Two independent telemetry subsystems live under this umbrella:
 
-| Subsystem | App | Schema | Audience | Answers |
-|---|---|---|---|---|
-| **Logbook** | `apps.logbook` | public | superadmin | "What happened on the platform, to whom, and how fast?" |
-| **Usage** | `apps.usage` | per-tenant | coach/owner | "Are my students installing the PWA?" |
+| Subsystem   | App            | Schema     | Audience    | Answers                                                 |
+| ----------- | -------------- | ---------- | ----------- | ------------------------------------------------------- |
+| **Logbook** | `apps.logbook` | public     | superadmin  | "What happened on the platform, to whom, and how fast?" |
+| **Usage**   | `apps.usage`   | per-tenant | coach/owner | "Are my students installing the PWA?"                   |
 
 They share nothing but a philosophy: telemetry is best-effort and must never break the thing it observes. Every capture path here is wrapped in a suppressor, a `try`, or a fire-and-forget `fetch().catch(() => {})`.
 
@@ -17,7 +17,7 @@ There is no Prometheus/Grafana/Loki stack — observability is an in-app feature
 
 ## Part 1 — Logbook
 
-### The core idea: logs *are* the event bus
+### The core idea: logs _are_ the event bus
 
 The request path performs **zero DB writes**. `RequestActivityMiddleware` emits one JSON line to stdout; Docker collects it; the `vector` container ships it to Django's ingest endpoint; ingest parses it back into rows. The same transport carries ordinary container logs (`LogEntry`) and structured request activity (`RequestEvent`) — they diverge only at parse time, based on the logger name.
 
@@ -48,7 +48,7 @@ Vector is intentionally dumb — it knows nothing about line formats. **All** fo
 
 Two ordering constraints, both load-bearing:
 
-- **Registered LAST in `MIDDLEWARE`** so its `process_response` runs *first* on the way out — by then DRF has set `request.user` (DRF's `Request.user` setter propagates to the underlying `HttpRequest`). Move it earlier and every authenticated request logs as anonymous.
+- **Registered LAST in `MIDDLEWARE`** so its `process_response` runs _first_ on the way out — by then DRF has set `request.user` (DRF's `Request.user` setter propagates to the underlying `HttpRequest`). Move it earlier and every authenticated request logs as anonymous.
 - `_record()` runs inside `contextlib.suppress(Exception)`. A bug in activity capture must never turn a 200 into a 500.
 
 Skipped: `OPTIONS` preflights, and any path matching `settings.LOGBOOK_ACTIVITY_EXCLUDE_PREFIXES` (keeps the ingest endpoint from logging itself into a feedback loop, among other things).
@@ -60,13 +60,13 @@ Two helpers are shared with the pageview beacon:
 
 #### `context.py` — attributing arbitrary log lines to a user
 
-Ordinary log lines (`logger.warning("...")` anywhere in the codebase) also want a user label, but middleware can't provide one: DRF resolves the JWT at *view* level, after middleware has already run. The fix is a `ContextVar`:
+Ordinary log lines (`logger.warning("...")` anywhere in the codebase) also want a user label, but middleware can't provide one: DRF resolves the JWT at _view_ level, after middleware has already run. The fix is a `ContextVar`:
 
 1. `TenantJWTAuthentication.authenticate()` calls `set_current_user(label)` on success.
 2. `UserContextFilter` (a `logging.Filter` wired into the Django log formatter) stamps `record.user` on every record.
 3. `UserContextMiddleware` calls `reset_current_user()` in a `finally`.
 
-Step 3 is not optional hygiene. Gunicorn runs `gthread` workers that **reuse threads** — without the reset, a line logged between requests (Celery-adjacent code, a background thread, a signal handler) would carry the *previous* request's user.
+Step 3 is not optional hygiene. Gunicorn runs `gthread` workers that **reuse threads** — without the reset, a line logged between requests (Celery-adjacent code, a background thread, a signal handler) would carry the _previous_ request's user.
 
 `UserContextFilter.filter()` swallows every exception and falls back to `"-"`: logging must never raise.
 
@@ -74,7 +74,7 @@ Step 3 is not optional hygiene. Gunicorn runs `gthread` workers that **reuse thr
 
 Client-side navigations never touch Django, so the activity middleware can't see them. `PageViewTrackView` accepts a POST from the frontend and emits the same JSON shape with `kind: "pageview"` (and `status`/`duration_ms` as `None`).
 
-- `authentication_classes = [TenantJWTAuthentication]` + `AllowAny` — auth is *optional*; an invalid token returns `None` and the visitor is recorded as anonymous.
+- `authentication_classes = [TenantJWTAuthentication]` + `AllowAny` — auth is _optional_; an invalid token returns `None` and the visitor is recorded as anonymous.
 - `PageViewThrottle` overrides `get_cache_key()` to bucket by `client_ip(request)`. DRF's default anon ident would resolve to Caddy's address, making one shared bucket for every anonymous visitor on the internet. Rate from `settings.LOGBOOK_PAGEVIEW_RATE` (default `"60/min"`).
 - Validation is one check: `path` must start with `/`. Both `path` and `referrer` go through `redact_path()`.
 - Returns `202` — the caller gets no useful information back and shouldn't wait.
@@ -98,13 +98,13 @@ Container name → service via `service_from_container()`, which strips the `con
 
 Per-family dispatch:
 
-| Container | Strategy |
-|---|---|
+| Container                                | Strategy                                                                                                                       |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `django`, `celery-worker`, `celery-beat` | `_parse_app_line()`: `_DJANGO_RE` (level / logger / `[tenant=…]` / optional `[user=…]` / message) → `_GUNICORN_RE` → heuristic |
-| `caddy` | JSON line, read `level` |
-| `postgres` | `_POSTGRES_RE` (`LOG:` / `ERROR:` / `STATEMENT:` …) |
-| `redis` | `_REDIS_RE`; only the `#` mark is a WARNING |
-| anything else (Next.js, unknown) | `_heuristic_level()` — `⨯` or word-boundary `error`/`warn` |
+| `caddy`                                  | JSON line, read `level`                                                                                                        |
+| `postgres`                               | `_POSTGRES_RE` (`LOG:` / `ERROR:` / `STATEMENT:` …)                                                                            |
+| `redis`                                  | `_REDIS_RE`; only the `#` mark is a WARNING                                                                                    |
+| anything else (Next.js, unknown)         | `_heuristic_level()` — `⨯` or word-boundary `error`/`warn`                                                                     |
 
 **Unparseable lines are kept as INFO with the raw line as the message.** A parser bug must degrade fidelity, never silently drop logs. Every regex uses `re.DOTALL` so a multi-line Python traceback stays one event.
 
@@ -127,7 +127,7 @@ Vector reaches Django on the compose-internal network, but the token guards the 
 
 The body of the loop is a fan-out: `parsed.activity is not None` → `RequestEvent`, else `passes_floor(...)` → `LogEntry`. Both are written with `bulk_create(..., ignore_conflicts=True, batch_size=500)`.
 
-**Poison-batch hardening.** Vector retries failed batches, so a single malformed field that raises inside `bulk_create` would 500 the batch *forever*. Hence:
+**Poison-batch hardening.** Vector retries failed batches, so a single malformed field that raises inside `bulk_create` would 500 the batch _forever_. Hence:
 
 - `_ip_or_none()` validates through `ipaddress.ip_address()` before the `inet` column, coercing to `str()` first — `ip_address(123)` is a valid packed address (`0.0.0.123`), which is never what a caller meant.
 - `_int_or_none(value, max_value)` rejects non-ints, rejects `bool` explicitly (it's an `int` subtype, so `true` must not persist as `1`), and clamps to the column's range — `status=99999999999` would otherwise raise `DataError`.
@@ -158,11 +158,11 @@ GET /api/v1/platform/activity/          → keyset page of RequestEvent
 GET /api/v1/platform/activity/facets/   → kinds, methods, status_classes, tenants, users
 ```
 
-**Faceted-search semantics.** Each facet dimension is counted under every *other* active filter (plus `q`/`since`/`until`) but never its own. `_facet(build_qs, params, param_name, field, ...)` calls `build_qs(params, skip=param_name)` to achieve this. Practical effect: selecting `level=ERROR` narrows the *container* options to containers that actually have errors, while the *level* facet keeps showing the alternatives you could switch to. Zero-count options are omitted; `tenants`/`users` are capped at `FACET_LIMIT` (20), and the logs-facets endpoint accepts `users_q` for server-side search within that truncated list.
+**Faceted-search semantics.** Each facet dimension is counted under every _other_ active filter (plus `q`/`since`/`until`) but never its own. `_facet(build_qs, params, param_name, field, ...)` calls `build_qs(params, skip=param_name)` to achieve this. Practical effect: selecting `level=ERROR` narrows the _container_ options to containers that actually have errors, while the _level_ facet keeps showing the alternatives you could switch to. Zero-count options are omitted; `tenants`/`users` are capped at `FACET_LIMIT` (20), and the logs-facets endpoint accepts `users_q` for server-side search within that truncated list.
 
 **Keyset pagination.** `_paginate()` orders by `(-ts, -id)` and encodes the cursor as `"<iso-ts>|<id>"`, resuming with `Q(ts__lt=cts) | (Q(ts=cts) & Q(id__lt=id))`. The `id` tiebreak is what makes equal-timestamp rows (very common — one request emits several lines in the same millisecond) paginate without duplicates or gaps. It over-fetches `PAGE_SIZE + 1` (100 + 1) to decide whether `next_cursor` is set.
 
-**Malformed params are `400`, never ignored.** `_apply_time_and_q` raises `ValidationError` for an unparseable `since`/`until`; `_paginate` raises for a malformed `cursor`; `_activity_queryset` raises for an unknown `status_class` or a non-IP `ip`. An unfiltered result set mid-incident is worse than an error — you'd read it as "no errors" when it's actually "your filter didn't apply." Note that `status_class`/`ip` are validated *even when that dimension is skipped* for facet-building, so the contract doesn't depend on which facet happens to construct the queryset first.
+**Malformed params are `400`, never ignored.** `_apply_time_and_q` raises `ValidationError` for an unparseable `since`/`until`; `_paginate` raises for a malformed `cursor`; `_activity_queryset` raises for an unknown `status_class` or a non-IP `ip`. An unfiltered result set mid-incident is worse than an error — you'd read it as "no errors" when it's actually "your filter didn't apply." Note that `status_class`/`ip` are validated _even when that dimension is skipped_ for facet-building, so the contract doesn't depend on which facet happens to construct the queryset first.
 
 `status_class` maps `2xx`/`3xx`/`4xx`/`5xx` to half-open ranges via `_STATUS_CLASSES`; multiple values OR together (`_status_class_q`). The status facet is computed with per-class `.count()` calls rather than through `_facet`, since it aggregates over ranges rather than distinct values.
 
@@ -181,7 +181,7 @@ Two Celery-beat tasks implement a hot-store/cold-store split.
 **`purge_logbook`** does two things per kind:
 
 1. **Hard cap** — deletes anything older than `LOGBOOK_HARD_CAP_DAYS` regardless of archive status, at `logger.error` level. A persistently failing archive must not grow the table forever. Because the error is itself a log line, it lands in the panel — the system reports its own data loss.
-2. **Normal purge** — deletes days older than `LOGBOOK_RETENTION_DAYS` *that have a `LogArchiveDay` ledger row*.
+2. **Normal purge** — deletes days older than `LOGBOOK_RETENTION_DAYS` _that have a `LogArchiveDay` ledger row_.
 
 The ledger row is the safety interlock: no archive record, no deletion (until the hard cap).
 
@@ -230,17 +230,17 @@ Always `204` — the client has nothing to do with a response.
 
 ## Configuration reference
 
-| Setting | Used by | Purpose |
-|---|---|---|
-| `LOGS_INGEST_TOKEN` | `logs_ingest` | Shared secret; empty disables ingest (`503`) |
-| `LOGBOOK_LEVEL_FLOORS` | `passes_floor` | Per-container minimum level, `"*"` fallback (default `WARNING`) |
-| `LOGBOOK_ACTIVITY_EXCLUDE_PREFIXES` | `RequestActivityMiddleware` | Paths that produce no activity row |
-| `LOGBOOK_REDACT_PARAMS` | `redact_path` | Query params whose values become `redacted` |
-| `LOGBOOK_PAGEVIEW_RATE` | `PageViewThrottle` | Beacon rate limit per real client IP (default `60/min`) |
-| `LOGBOOK_ARCHIVE_PREFIXES` | `archive_day` | S3 key prefix per kind |
-| `LOGBOOK_RETENTION_DAYS` | `purge_logbook` | Hot-store window for archived days |
-| `LOGBOOK_HARD_CAP_DAYS` | `purge_logbook`, `_day_range` | Unconditional deletion age |
-| `AWS_BUCKET_NAME` | `archive_day` | Archive bucket (MinIO in dev, Hetzner in prod) |
+| Setting                             | Used by                       | Purpose                                                         |
+| ----------------------------------- | ----------------------------- | --------------------------------------------------------------- |
+| `LOGS_INGEST_TOKEN`                 | `logs_ingest`                 | Shared secret; empty disables ingest (`503`)                    |
+| `LOGBOOK_LEVEL_FLOORS`              | `passes_floor`                | Per-container minimum level, `"*"` fallback (default `WARNING`) |
+| `LOGBOOK_ACTIVITY_EXCLUDE_PREFIXES` | `RequestActivityMiddleware`   | Paths that produce no activity row                              |
+| `LOGBOOK_REDACT_PARAMS`             | `redact_path`                 | Query params whose values become `redacted`                     |
+| `LOGBOOK_PAGEVIEW_RATE`             | `PageViewThrottle`            | Beacon rate limit per real client IP (default `60/min`)         |
+| `LOGBOOK_ARCHIVE_PREFIXES`          | `archive_day`                 | S3 key prefix per kind                                          |
+| `LOGBOOK_RETENTION_DAYS`            | `purge_logbook`               | Hot-store window for archived days                              |
+| `LOGBOOK_HARD_CAP_DAYS`             | `purge_logbook`, `_day_range` | Unconditional deletion age                                      |
+| `AWS_BUCKET_NAME`                   | `archive_day`                 | Archive bucket (MinIO in dev, Hetzner in prod)                  |
 
 Middleware ordering in `settings`: `UserContextMiddleware` needs to wrap the request; `RequestActivityMiddleware` must be **last**.
 

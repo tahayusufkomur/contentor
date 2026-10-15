@@ -12,14 +12,14 @@ Everything here lives in the **public schema** (`apps.domains` is a SHARED_APP).
 
 **`CustomDomain`** — one row per purchased domain, the provisioning state machine's carrier.
 
-| Group | Fields | Notes |
-|---|---|---|
-| Identity | `tenant`, `domain` (unique), `is_primary` | `domain` is globally unique across the platform |
-| Registrar | `registrar` (default `route53`), `registrar_status`, `contact` (JSON) | `contact` is the raw Route 53 contact dict |
-| External ids | `cloudflare_zone_id`, `resend_domain_id` | also serve as per-step idempotency markers |
-| Mail | `forward_to_email`, `mailbox_local_part`, `mailbox_enabled` | drives Cloudflare Email Routing (worker vs. forward) |
-| Money | `cost_minor` (registrar wholesale, USD), `price_minor` (coach-facing), `currency`, `fx_rate` | see [Pricing](#pricing) |
-| State | `provisioning_status`, `failed_step`, `dns_records_done`, `expires_at`, `auto_renew` | statuses in `PROVISIONING_STATUSES` |
+| Group        | Fields                                                                                       | Notes                                                |
+| ------------ | -------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Identity     | `tenant`, `domain` (unique), `is_primary`                                                    | `domain` is globally unique across the platform      |
+| Registrar    | `registrar` (default `route53`), `registrar_status`, `contact` (JSON)                        | `contact` is the raw Route 53 contact dict           |
+| External ids | `cloudflare_zone_id`, `resend_domain_id`                                                     | also serve as per-step idempotency markers           |
+| Mail         | `forward_to_email`, `mailbox_local_part`, `mailbox_enabled`                                  | drives Cloudflare Email Routing (worker vs. forward) |
+| Money        | `cost_minor` (registrar wholesale, USD), `price_minor` (coach-facing), `currency`, `fx_rate` | see [Pricing](#pricing)                              |
+| State        | `provisioning_status`, `failed_step`, `dns_records_done`, `expires_at`, `auto_renew`         | statuses in `PROVISIONING_STATUSES`                  |
 
 **`DomainSubscription`** — 1:1 with `CustomDomain`, mirrors the annual Stripe subscription (`provider_subscription_id` is indexed because webhooks look up by it).
 
@@ -43,13 +43,13 @@ rounded **up to a whole currency unit** (a multiple of 100 minor units), so coac
 
 The module talks to three external systems, and each one is an ABC + real client + offline double, chosen by a package-level factory that keys off `settings.DOMAINS_BYPASS_ENABLED`:
 
-| Port | ABC | Real | Offline | Factory |
-|---|---|---|---|---|
-| Registrar | `registrar/base.Registrar` | `Route53Registrar` | `BypassRegistrar` | `get_registrar()` |
-| DNS | `cloudflare/base.Cloudflare` | `CloudflareClient` | `FakeCloudflare` | `get_cloudflare()` |
+| Port       | ABC                             | Real                  | Offline             | Factory                |
+| ---------- | ------------------------------- | --------------------- | ------------------- | ---------------------- |
+| Registrar  | `registrar/base.Registrar`      | `Route53Registrar`    | `BypassRegistrar`   | `get_registrar()`      |
+| DNS        | `cloudflare/base.Cloudflare`    | `CloudflareClient`    | `FakeCloudflare`    | `get_cloudflare()`     |
 | Email auth | `email_auth/base.ResendDomains` | `ResendDomainsClient` | `FakeResendDomains` | `get_resend_domains()` |
 
-The real client is imported *inside* the factory, so a bypass environment never imports `boto3`/`requests` config it doesn't have. Every port raises one exception type carrying a `code` — `RegistrarError`, `CloudflareError`, `ResendError` — so callers never see a raw SDK traceback.
+The real client is imported _inside_ the factory, so a bypass environment never imports `boto3`/`requests` config it doesn't have. Every port raises one exception type carrying a `code` — `RegistrarError`, `CloudflareError`, `ResendError` — so callers never see a raw SDK traceback.
 
 `BypassRegistrar` is deterministic rather than random: a domain is "taken" iff its name contains the substring `taken`, price is fixed at `$9.99`, and `suggest()` returns `<stem>1.com … <stem>N.com`. E2e and unit tests rely on that contract.
 
@@ -105,20 +105,20 @@ Domain events ride the **same Stripe endpoint as the rest of billing**: `apps.bi
 
 Resolution order in `_resolve_custom_domain`:
 
-1. `metadata["domains_custom_domain_id"]` — set by `billing.create_domain_checkout` on both the Checkout Session *and* `subscription_data`, so it survives onto the subscription object.
+1. `metadata["domains_custom_domain_id"]` — set by `billing.create_domain_checkout` on both the Checkout Session _and_ `subscription_data`, so it survives onto the subscription object.
 2. Fall back to subscription id → `DomainSubscription` lookup, for invoice events whose metadata lives on the subscription rather than the invoice.
 
-`_subscription_id_from_obj` handles three shapes of the invoice→subscription link: the object's own `id` (subscription events), the legacy top-level `subscription` field (string *or* expanded dict), and the newer `parent.subscription_details.subscription`.
+`_subscription_id_from_obj` handles three shapes of the invoice→subscription link: the object's own `id` (subscription events), the legacy top-level `subscription` field (string _or_ expanded dict), and the newer `parent.subscription_details.subscription`.
 
 Handled events:
 
-| Event | Effect |
-|---|---|
-| `checkout.session.completed` | subscription → `active`, store provider ids, enqueue `provision_domain` **inside `transaction.on_commit`** |
-| `customer.subscription.created` / `.updated` | store ids; `active`/`trialing` → `active` |
-| `customer.subscription.deleted` | delete the `core.Domain` row, domain → `lapsed`, subscription → `canceled` |
-| `invoice.paid` | enqueue `renew_domain` **only if** the domain is already `live` (the first invoice must not trigger a renewal) |
-| `invoice.payment_failed` | subscription → `past_due` |
+| Event                                        | Effect                                                                                                         |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `checkout.session.completed`                 | subscription → `active`, store provider ids, enqueue `provision_domain` **inside `transaction.on_commit`**     |
+| `customer.subscription.created` / `.updated` | store ids; `active`/`trialing` → `active`                                                                      |
+| `customer.subscription.deleted`              | delete the `core.Domain` row, domain → `lapsed`, subscription → `canceled`                                     |
+| `invoice.paid`                               | enqueue `renew_domain` **only if** the domain is already `live` (the first invoice must not trigger a renewal) |
+| `invoice.payment_failed`                     | subscription → `past_due`                                                                                      |
 
 The `on_commit` wrapper is not cosmetic: enqueuing inline would let a provisioning task run against a domain whose activation transaction later rolled back.
 
@@ -130,22 +130,22 @@ The `on_commit` wrapper is not cosmetic: enqueuing inline would let a provisioni
 
 `views.py` is deliberately split. The middle section holds tenant-agnostic core functions — `_search_response`, `_checkout_response`, `_current_response`, `_retry_response`, `_destroy_response` — that take an **explicit** tenant and only touch public-schema models plus the provider services. Two thin view layers wrap them:
 
-| Layer | Mount | Tenant resolution | Permission |
-|---|---|---|---|
-| `search` / `checkout` / `current` / `retry` / `destroy` | `/api/v1/domains/*` (this app's `urls.py`) | `connection.tenant` — request already ran through tenant routing | `IsCoachOrOwner` |
-| `account_*` | `/api/v1/me/tenants/<slug>/domain/*` (routed from `apps.core.me`) | `_owned_tenant()` — `slug` + `owner_email__iexact` of the JWT user | `IsAuthenticated` + ownership check |
+| Layer                                                   | Mount                                                             | Tenant resolution                                                  | Permission                          |
+| ------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------- |
+| `search` / `checkout` / `current` / `retry` / `destroy` | `/api/v1/domains/*` (this app's `urls.py`)                        | `connection.tenant` — request already ran through tenant routing   | `IsCoachOrOwner`                    |
+| `account_*`                                             | `/api/v1/me/tenants/<slug>/domain/*` (routed from `apps.core.me`) | `_owned_tenant()` — `slug` + `owner_email__iexact` of the JWT user | `IsAuthenticated` + ownership check |
 
 The account variants exist because the coach dashboard lives on the **apex** (`contentor.app`), which resolves to the public schema, so the coach's public JWT is what authenticates. They're the ones the frontend actually uses. A slug the requester doesn't own returns `404`, not `403`.
 
 ### Endpoints
 
-| Method / path (tenant-scoped) | Behaviour |
-|---|---|
-| `GET search/?q=` | `_normalize_query` → availability + suggestions, each priced via `_priced` |
-| `POST checkout/` | re-check availability, price, create `CustomDomain` + `DomainSubscription` in one transaction, open Stripe Checkout |
-| `GET ` (root) | latest `CustomDomain` for the tenant, or `null` |
-| `POST <pk>/retry/` | re-enqueue `provision_domain`; `409 NOT_FAILED` unless status is `failed` |
-| `DELETE <pk>/` | tear down (below) |
+| Method / path (tenant-scoped) | Behaviour                                                                                                           |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `GET search/?q=`              | `_normalize_query` → availability + suggestions, each priced via `_priced`                                          |
+| `POST checkout/`              | re-check availability, price, create `CustomDomain` + `DomainSubscription` in one transaction, open Stripe Checkout |
+| `GET ` (root)                 | latest `CustomDomain` for the tenant, or `null`                                                                     |
+| `POST <pk>/retry/`            | re-enqueue `provision_domain`; `409 NOT_FAILED` unless status is `failed`                                           |
+| `DELETE <pk>/`                | tear down (below)                                                                                                   |
 
 Input handling worth calling out:
 
@@ -169,7 +169,7 @@ The coach-facing flow lives on the marketing app under `/dashboard/domain/[slug]
 
 **BFF layer** — `src/app/api/tenants/[slug]/domain/**/route.ts` (four handlers: `search`, `checkout`, `status`, `[id]`, `[id]/retry`). Each reads the httpOnly JWT cookie, forwards to the corresponding `/api/v1/me/tenants/<slug>/domain/…` endpoint with `Authorization: Bearer` and `X-Tenant-Domain: BASE_DOMAIN`. That header is mandatory — Node's undici drops a custom `Host`, and without `X-Tenant-Domain` Django resolves to the public schema (which is what these account endpoints want, hence `BASE_DOMAIN` rather than the tenant host). `status` and `search` set `cache: "no-store"`.
 
-Note the BFF path `/status` maps to the Django *root* endpoint (`current`), and `DELETE` passes a bare `204` through without a JSON body.
+Note the BFF path `/status` maps to the Django _root_ endpoint (`current`), and `DELETE` passes a bare `204` through without a JSON body.
 
 **Client wrapper** — `src/lib/domains.ts` exports the typed calls (`searchDomains`, `startCheckout`, `getDomainStatus`, `retryProvision`, `removeDomain`), a shared `jsonOrThrow` that surfaces `detail || error`, and `formatPrice` (an `Intl.NumberFormat` currency format with a plain-string fallback for unknown codes). The `x-tenant-host` header it sends is consumed by nothing downstream — the route handlers override it with `X-Tenant-Domain` — so treat it as vestigial rather than as the tenant signal.
 
@@ -206,17 +206,17 @@ All async buttons go through `useAsyncAction` and `<Button loading>`, per the re
 
 ## Settings
 
-| Setting | Used by |
-|---|---|
-| `DOMAINS_BYPASS_ENABLED` | all three provider factories, `create_domain_checkout`, Stripe teardown |
-| `DOMAINS_FX_RATES`, `DOMAINS_MARKUP_MULTIPLIER`, `DOMAINS_DEFAULT_CURRENCY` | `compute_price`, `_currency` |
-| `AWS_ROUTE53_ACCESS_KEY_ID` / `AWS_ROUTE53_SECRET_ACCESS_KEY` | `Route53Registrar` |
-| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | `CloudflareClient` |
-| `CLOUDFLARE_TUNNEL_HOSTNAME` | `_step_dns_records` (CNAME target) |
-| `CLOUDFLARE_EMAIL_WORKER_NAME` | `_step_email_auth` (worker vs. forward routing) |
-| `RESEND_API_KEY` | `ResendDomainsClient` |
-| `STRIPE_SECRET_KEY` | domain checkout + best-effort cancellation |
-| `CONTENTOR_DOMAIN`, `SITE_SCHEME` | `_apex_origin()` for Stripe redirect URLs |
+| Setting                                                                     | Used by                                                                 |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `DOMAINS_BYPASS_ENABLED`                                                    | all three provider factories, `create_domain_checkout`, Stripe teardown |
+| `DOMAINS_FX_RATES`, `DOMAINS_MARKUP_MULTIPLIER`, `DOMAINS_DEFAULT_CURRENCY` | `compute_price`, `_currency`                                            |
+| `AWS_ROUTE53_ACCESS_KEY_ID` / `AWS_ROUTE53_SECRET_ACCESS_KEY`               | `Route53Registrar`                                                      |
+| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`                             | `CloudflareClient`                                                      |
+| `CLOUDFLARE_TUNNEL_HOSTNAME`                                                | `_step_dns_records` (CNAME target)                                      |
+| `CLOUDFLARE_EMAIL_WORKER_NAME`                                              | `_step_email_auth` (worker vs. forward routing)                         |
+| `RESEND_API_KEY`                                                            | `ResendDomainsClient`                                                   |
+| `STRIPE_SECRET_KEY`                                                         | domain checkout + best-effort cancellation                              |
+| `CONTENTOR_DOMAIN`, `SITE_SCHEME`                                           | `_apex_origin()` for Stripe redirect URLs                               |
 
 ---
 
@@ -229,6 +229,6 @@ The test suite in `apps/domains/tests/` is organized per seam: `test_pricing`, `
 ## Notes for contributors
 
 - **Adding a provisioning step**: write `_step_x(cd)`, give it a persisted idempotency marker (a field it can check to no-op), add `("x", "_step_x")` to `_STEPS` at the right position, add `"x"` to `PROVISIONING_STATUSES` with a migration, and add the matching label to the frontend `STEPS` array in `provisioning-status.tsx` — the two lists are coupled by status key and a mismatch silently mis-renders the checklist.
-- **Adding a provider method**: add it to the ABC *and* the fake in the same change. The fakes are the contract the tests and e2e specs run against.
+- **Adding a provider method**: add it to the ABC _and_ the fake in the same change. The fakes are the contract the tests and e2e specs run against.
 - **Anything that raises out of a step must be retry-safe**, because `provision_domain` will re-run the whole chain from step 1.
 - **New views should call the `_*_response` core functions**, not reimplement logic — otherwise the tenant-scoped and account-scoped surfaces drift apart.

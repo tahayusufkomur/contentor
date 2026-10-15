@@ -22,7 +22,7 @@ The wizard's layout/theme/hero pickers used to show CSS sketches. Showing the co
 The consumer is `packages/shared/src/wizard/mockups.ts`:
 
 ```ts
-mockupSrcs(niche, name) // → ["/wizard-mockups/<niche>/<name>.webp", "/wizard-mockups/yoga/<name>.webp"]
+mockupSrcs(niche, name); // → ["/wizard-mockups/<niche>/<name>.webp", "/wizard-mockups/yoga/<name>.webp"]
 ```
 
 `frontend-main/src/app/signup/verify/wizard/steps.tsx` (themes, heroes) and `pages-steps.tsx` (page layouts) try each candidate in order and fall back to a CSS sketch when all of them 404. That fallback chain is why an uncaptured niche or a newly added catalog option degrades gracefully instead of showing a broken image — but it's also why silently-bad captures are dangerous: a written-but-blank file looks "captured" to every consumer.
@@ -42,13 +42,13 @@ The basename **is** the contract — it must equal the catalog option's id, beca
 
 Image settings (all constants at the top of `capture.mjs`):
 
-| Constant | Value | Note |
-|---|---|---|
-| `VIEWPORT` | 1280 × 960 | render viewport |
-| `DEVICE_SCALE` | 2 | capture at 2×, then supersample down — noticeably crisper text/photos than a 1× capture at the same output size |
-| `OUTPUT_WIDTH` | 800 | final width; height follows aspect ratio |
-| `WEBP_QUALITY` | 0.85 | |
-| `HERO_CLIP` | 1280 × 640 from origin | hero cards only sell the top of the page |
+| Constant       | Value                  | Note                                                                                                            |
+| -------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `VIEWPORT`     | 1280 × 960             | render viewport                                                                                                 |
+| `DEVICE_SCALE` | 2                      | capture at 2×, then supersample down — noticeably crisper text/photos than a 1× capture at the same output size |
+| `OUTPUT_WIDTH` | 800                    | final width; height follows aspect ratio                                                                        |
+| `WEBP_QUALITY` | 0.85                   |                                                                                                                 |
+| `HERO_CLIP`    | 1280 × 640 from origin | hero cards only sell the top of the page                                                                        |
 
 Framing differs per shot type, deliberately:
 
@@ -80,8 +80,11 @@ Everything server-side goes through one helper:
 
 ```js
 function manage(args) {
-  execFileSync("docker", ["compose", "exec", "-T", "django", "python", "manage.py", ...args],
-    { cwd: repoRoot, stdio: "inherit" });
+  execFileSync(
+    "docker",
+    ["compose", "exec", "-T", "django", "python", "manage.py", ...args],
+    { cwd: repoRoot, stdio: "inherit" },
+  );
 }
 ```
 
@@ -97,11 +100,11 @@ Crucially it also creates **one extra domain per capture target** — `wm-<layou
 
 This is the least obvious part of the tool, and each layer bit at least once:
 
-| Cache | Where | Defeated by |
-|---|---|---|
-| Chromium HTTP cache | browser | `Network.setCacheDisabled` over a CDP session |
-| Django `TenantConfigView.get_object()`, 5 min | `apps/tenant_config/views.py`; invalidated only on the DRF update path | the management commands write via ORM, so they `cache.delete(f"tenant:{schema}:config")` themselves |
-| `fetchTenantConfig()`, 60 s in-memory, keyed by domain | `frontend-customer/src/lib/tenant.ts` | **per-option domains** — nothing else can reach it |
+| Cache                                                  | Where                                                                  | Defeated by                                                                                         |
+| ------------------------------------------------------ | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Chromium HTTP cache                                    | browser                                                                | `Network.setCacheDisabled` over a CDP session                                                       |
+| Django `TenantConfigView.get_object()`, 5 min          | `apps/tenant_config/views.py`; invalidated only on the DRF update path | the management commands write via ORM, so they `cache.delete(f"tenant:{schema}:config")` themselves |
+| `fetchTenantConfig()`, 60 s in-memory, keyed by domain | `frontend-customer/src/lib/tenant.ts`                                  | **per-option domains** — nothing else can reach it                                                  |
 
 The third one is the reason for the `wm-*` domain fan-out: two options captured back to back on one domain would serve the first option's cached config for the second, producing two identical screenshots labelled differently.
 
@@ -109,7 +112,7 @@ The third one is the reason for the `wm-*` domain fan-out: two options captured 
 
 `capture()` refuses to write in two situations, both learned from shipped-broken batches:
 
-- **Non-OK main document.** A 502 (typically `nextjs-customer` OOM-killed mid-run) renders as a blank white page that issues *zero* image requests, so the media guard can't see it. Without this check the tool wrote 162 blank 1408-byte WebPs and exited 0. The error message names the recovery step.
+- **Non-OK main document.** A 502 (typically `nextjs-customer` OOM-killed mid-run) renders as a blank white page that issues _zero_ image requests, so the media guard can't see it. Without this check the tool wrote 162 blank 1408-byte WebPs and exited 0. The error message names the recovery step.
 - **Broken media.** Tracked at the network layer (`response` + `requestfailed` listeners filtered to `image`/`media`) so CSS `background-image` fetches count, not just `<img>`; plus a DOM second net for `img.complete && naturalWidth === 0`. Trips when dev MinIO has been wiped and presigned demo photos 404 — error points at `make seed-demo-assets`.
 
 Next's dev overlay is hidden with a `nextjs-portal{display:none}` style tag before shooting, same as `tools/flowmap/crawler/capture.js`.
@@ -124,12 +127,12 @@ Next's dev overlay is hidden with a `nextjs-portal{display:none}` style tag befo
 
 `capture.mjs` hand-mirrors four lists. Nothing enforces this; drift shows up as missing or stale thumbnails, not as an error.
 
-| In `capture.mjs` | Source of truth |
-|---|---|
-| `NICHES` | `backend/apps/demo_seed/data/` minus `general` — **and** `MOCKUP_NICHES` in `packages/shared/src/wizard/mockups.ts` |
-| `LAYOUTS` | `wizard_catalog.PAGE_LAYOUTS` (`backend/apps/core/onboarding/wizard_catalog.py`) |
-| `THEMES` | `wizard_catalog.THEMES` |
-| `HEROES` | `wizard_catalog.HERO_STYLES` |
+| In `capture.mjs` | Source of truth                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `NICHES`         | `backend/apps/demo_seed/data/` minus `general` — **and** `MOCKUP_NICHES` in `packages/shared/src/wizard/mockups.ts` |
+| `LAYOUTS`        | `wizard_catalog.PAGE_LAYOUTS` (`backend/apps/core/onboarding/wizard_catalog.py`)                                    |
+| `THEMES`         | `wizard_catalog.THEMES`                                                                                             |
+| `HEROES`         | `wizard_catalog.HERO_STYLES`                                                                                        |
 
 `general` is excluded on purpose: it's a deliberately sparse blank-slate module (no plans, FAQ disabled) that would screenshot as empty states. The wizard maps it to the `yoga` set via `FALLBACK_NICHE`.
 
@@ -181,11 +184,11 @@ Backend command behaviour is covered by `backend/apps/core/tests/test_seed_wizar
 
 ## Troubleshooting
 
-| Symptom | Cause | Fix |
-|---|---|---|
-| `main document returned 502 … refusing to capture` | `nextjs-customer` down or OOM-killed | `docker compose up -d nextjs-customer`, wait for a 200, resume per-niche |
-| `page has broken media … refusing to capture` | dev MinIO wiped, presigned demo photos 404 | `make seed-demo-assets` |
-| `wizard-mockups tenant … not found` | scratch tenant missing | `docker compose exec django python manage.py seed_wizard_mockup_tenant --niche yoga` (or just rerun the capture) |
-| Two options produced identical images | a shared domain or a live config cache | confirm the `wm-*` domain exists for that option (reseed), and that the command purged `tenant:wizard_mockups:config` |
-| 1408-byte `.webp` files | pre-guard blank captures from an old run | delete and recapture that niche |
-| `Unknown niche 'x'` / `Unknown argument` | `NICHES` drift or a typo'd flag | check the list against `demo_seed/data/` |
+| Symptom                                            | Cause                                      | Fix                                                                                                                   |
+| -------------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `main document returned 502 … refusing to capture` | `nextjs-customer` down or OOM-killed       | `docker compose up -d nextjs-customer`, wait for a 200, resume per-niche                                              |
+| `page has broken media … refusing to capture`      | dev MinIO wiped, presigned demo photos 404 | `make seed-demo-assets`                                                                                               |
+| `wizard-mockups tenant … not found`                | scratch tenant missing                     | `docker compose exec django python manage.py seed_wizard_mockup_tenant --niche yoga` (or just rerun the capture)      |
+| Two options produced identical images              | a shared domain or a live config cache     | confirm the `wm-*` domain exists for that option (reseed), and that the command purged `tenant:wizard_mockups:config` |
+| 1408-byte `.webp` files                            | pre-guard blank captures from an old run   | delete and recapture that niche                                                                                       |
+| `Unknown niche 'x'` / `Unknown argument`           | `NICHES` drift or a typo'd flag            | check the list against `demo_seed/data/`                                                                              |

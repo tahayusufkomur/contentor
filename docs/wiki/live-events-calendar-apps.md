@@ -8,14 +8,14 @@
 
 ## The four event types
 
-All four models are structurally near-identical. What differs is *how the event is delivered* and *what secret the coach hands out*:
+All four models are structurally near-identical. What differs is _how the event is delivered_ and _what secret the coach hands out_:
 
-| Model | Delivery | Secret field(s) | Live status label | GetStream? |
-|---|---|---|---|---|
-| `LiveClass` | In-app WebRTC call (`default` call type) | `room_name` (server-generated) | `"live"` | yes |
-| `LiveStream` | In-app broadcast (`livestream` call type, backstage → live) | `room_name` | `"live"` | yes |
-| `ZoomClass` | External Zoom meeting | `zoom_link`, `zoom_meeting_id` | `"live"` | no |
-| `OnsiteEvent` | In-person venue | `address` (`location` stays public) | `"ongoing"` | no |
+| Model         | Delivery                                                    | Secret field(s)                     | Live status label | GetStream? |
+| ------------- | ----------------------------------------------------------- | ----------------------------------- | ----------------- | ---------- |
+| `LiveClass`   | In-app WebRTC call (`default` call type)                    | `room_name` (server-generated)      | `"live"`          | yes        |
+| `LiveStream`  | In-app broadcast (`livestream` call type, backstage → live) | `room_name`                         | `"live"`          | yes        |
+| `ZoomClass`   | External Zoom meeting                                       | `zoom_link`, `zoom_meeting_id`      | `"live"`          | no         |
+| `OnsiteEvent` | In-person venue                                             | `address` (`location` stays public) | `"ongoing"`       | no         |
 
 Shared fields across all four: `title`, `description`, `instructor` (FK to the tenant user), `status`, `pricing_type`/`price`, `duration_minutes`, `scheduled_at`/`started_at`/`ended_at`, `thumbnail`/`thumbnail_url`, plus M2M `filter_options` (`filters.FilterOption`) and `tags` (`tags.Tag`). `LiveClass` and `LiveStream` additionally carry `recording` (FK to `courses.Video`), `recording_url`, and `auto_recording`.
 
@@ -23,7 +23,7 @@ Shared fields across all four: `title`, `description`, `instructor` (FK to the t
 
 This is the single most common source of confusion in this app. There are **two** status values and they are not the same thing:
 
-- **`status` (DB column)** — the lifecycle field. Written by the start/stop endpoints and by `_ScheduledOnCreateMixin`. Used for *queryset filtering* (hiding drafts from students) and as a guard on start/stop.
+- **`status` (DB column)** — the lifecycle field. Written by the start/stop endpoints and by `_ScheduledOnCreateMixin`. Used for _queryset filtering_ (hiding drafts from students) and as a guard on start/stop.
 - **`computed_status` (property)** — derived on the fly from `scheduled_at + duration_minutes` via `_EventStatusMixin._computed_status()`:
 
 ```
@@ -47,14 +47,14 @@ The calendar feeds report `computed_status`; the CRUD serializers report the sto
 
 Five separate `urls_*.py` modules, each mounted independently under `/api/v1/` by the project URLconf:
 
-| Module | Routes |
-|---|---|
-| `urls.py` | `""`, `"<pk>/"`, `"<pk>/start/"`, `"<pk>/stop/"`, `"<pk>/token/"` → `LiveClass` |
-| `urls_streams.py` | same five → `LiveStream` |
-| `urls_zoom.py` | `""`, `"<pk>/"` → `ZoomClass` (no start/stop/token) |
-| `urls_onsite.py` | `""`, `"<pk>/"` → `OnsiteEvent` |
-| `urls_calendar.py` | `""`, `"<event_type>/<pk>/"` → student calendar |
-| `urls_content_calendar.py` | `""` → `/api/v1/admin/content-calendar/` |
+| Module                     | Routes                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| `urls.py`                  | `""`, `"<pk>/"`, `"<pk>/start/"`, `"<pk>/stop/"`, `"<pk>/token/"` → `LiveClass` |
+| `urls_streams.py`          | same five → `LiveStream`                                                        |
+| `urls_zoom.py`             | `""`, `"<pk>/"` → `ZoomClass` (no start/stop/token)                             |
+| `urls_onsite.py`           | `""`, `"<pk>/"` → `OnsiteEvent`                                                 |
+| `urls_calendar.py`         | `""`, `"<event_type>/<pk>/"` → student calendar                                 |
+| `urls_content_calendar.py` | `""` → `/api/v1/admin/content-calendar/`                                        |
 
 All views are function-based (`@api_view`), not ViewSets.
 
@@ -85,7 +85,7 @@ Everything routes through `apps.core.access.ContentAccessService`. Three separat
 
 **3. `access_info`.** `get_access_info` first checks `context["access_map"]` (a caller-supplied pk → `AccessInfo` map for bulk N+1 avoidance), then falls back to per-object resolution. For anonymous viewers it constructs `AccessInfo` directly: free → `has_access=True, access_reason="free"`; paid → `has_access=False, unlock_methods=["purchase"]` with `content_currency(obj)`.
 
-Because `access_info` is serializer-level, the *existence* and price of paid content is always public — only the join details and recordings are gated.
+Because `access_info` is serializer-level, the _existence_ and price of paid content is always public — only the join details and recordings are gated.
 
 ---
 

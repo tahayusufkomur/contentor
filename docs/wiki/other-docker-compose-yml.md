@@ -29,14 +29,17 @@ Note that the browser talks to Django **directly through Caddy** at `/api/v1/*`;
 ## Services
 
 ### `caddy`
+
 `caddy:2-alpine`, the only container publishing port 80. Health is probed against the admin API (`:2019/config/`) rather than a route, so the check passes even if an upstream is down. `depends_on` here is start-order only (no `condition`), which is deliberate — Caddy tolerates upstreams appearing late.
 
 ### `postgres` / `redis`
+
 Both publish their native ports to the host so `psql`, `redis-cli`, and IDE tooling work without exec'ing into a container. Postgres data persists in the `postgres_data` volume; `make down` removes volumes, `make dev-reset` wipes and rebuilds from scratch. Redis is capped at `256mb` with `allkeys-lru` — it is a cache and Celery broker, not durable storage, so eviction under dev load is expected and harmless.
 
 Both have real healthchecks, and `django` gates on `service_healthy` for both. That gate is what makes the migration-on-boot entrypoint safe.
 
 ### `minio` + `minio-init`
+
 MinIO stands in for Hetzner/S3 object storage. API on `:9000`, console on `:9001`, credentials taken from `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` (defaulting to `minioadmin`) so the same env vars drive both the fake and the real backend.
 
 `minio-init` is a one-shot `mc` container that waits for MinIO to be healthy, registers the `local` alias, and creates the bucket named by `AWS_BUCKET_NAME` (default `contentor-dev-private`). The `|| true` on `mc mb -p` makes it idempotent across restarts. It exits immediately after; a `minio-init` container in `Exited (0)` state is the success case.
@@ -44,6 +47,7 @@ MinIO stands in for Hetzner/S3 object storage. API on `:9000`, console on `:9001
 One gotcha inherited from presigned URLs: `AWS_ENDPOINT_EXTERNAL` in `.env` must point at a host the **browser** can reach (`localhost:9000`), not the in-network `minio:9000`, or uploads and downloads fail in the browser while working fine from Django.
 
 ### `django`
+
 Built from `./backend` with `INSTALL_CLAUDE_CLI=1`, because AI features (Design-with-AI, logo conversation, site assistant) shell out to the `claude` CLI from inside the container.
 
 The gunicorn command carries two non-obvious, comment-documented settings:
@@ -60,6 +64,7 @@ Two extra bind mounts exist for the curated-asset pipelines: `frontend-customer/
 **This container is the only one that runs migrations and `collectstatic`**, in its entrypoint. Celery containers deliberately skip that step to avoid concurrent `migrate_schemas` races.
 
 ### `nextjs-main` / `nextjs-customer`
+
 Both build from the repo root context (so `./packages` is in scope) against their own Dockerfile's `dev` target, and run `npm run dev -- -p 3000`. Neither publishes a host port — all traffic arrives via Caddy.
 
 Mounts are **per-path, not whole-directory**: `src`, `public`, `messages`, `next.config.mjs`, `package.json`, plus `/packages` for the shared workspace code; `nextjs-main` additionally mounts `middleware.ts`. This keeps the container's `node_modules` and `.next` intact instead of being shadowed by the host's. The tradeoff: a **new** top-level file or a dependency change is invisible until you rebuild, and single-file mounts (`next.config.mjs`, `middleware.ts`) don't track host-side file replacement in all editors — a config edit that appears to have no effect usually means a rebuild is needed, not a code bug.
@@ -69,9 +74,11 @@ Mounts are **per-path, not whole-directory**: `src`, `public`, `messages`, `next
 `NEXT_PUBLIC_BASE_DOMAIN` derives from `CONTENTOR_DOMAIN`; tenant hostnames are built as `${slug}.${BASE_DOMAIN}`.
 
 ### `celery-worker` / `celery-beat`
+
 Same `./backend` image, no reload flag — **a code change to a task is not picked up until the worker restarts**, which is a frequent source of "my fix didn't take effect" confusion. The worker gates on `django: service_healthy`, guaranteeing migrations have completed before any task runs; beat gates on the worker (start-order only).
 
 ### `vector`
+
 `timberio/vector` reads the Docker socket read-only and ships every container's logs into the in-app logbook (superadmin → Logs), authenticated with `LOGS_INGEST_TOKEN` — shared with the `django` service, defaulting to `dev-logs-token`. Config lives at `./monitoring/vector/vector.yaml`; `vector_data` persists its disk buffer/checkpoints.
 
 This is the whole observability story: there is no Prometheus/Loki/Grafana stack (it was removed — see commit `43cbf5e`). Logs go in the app.
@@ -80,14 +87,14 @@ This is the whole observability story: there is no Prometheus/Loki/Grafana stack
 
 Every value comes from `.env` at the repo root, with `${VAR:-default}` fallbacks in this file so a bare checkout still boots. The flags that most change dev behaviour:
 
-| Variable | Effect |
-|---|---|
-| `CONTENTOR_DOMAIN` | Base host for Caddy routing and both frontends (default `localhost`) |
-| `LIVE_FAKE_ENABLED` | Stubs GetStream so live-class specs run offline |
-| `EMAIL_SINK_ENABLED` | Captures outbound mail; read back via `GET /api/v1/dev/emails/latest/?to=` |
-| `BILLING_BYPASS_ENABLED` | `false` in dev (real Stripe test mode); `true` for fully offline payments |
-| `AWS_ENDPOINT_EXTERNAL` | Host used in presigned URLs — must be browser-reachable |
-| `LOGS_INGEST_TOKEN` | Shared secret between `vector` and Django's log ingest endpoint |
+| Variable                 | Effect                                                                     |
+| ------------------------ | -------------------------------------------------------------------------- |
+| `CONTENTOR_DOMAIN`       | Base host for Caddy routing and both frontends (default `localhost`)       |
+| `LIVE_FAKE_ENABLED`      | Stubs GetStream so live-class specs run offline                            |
+| `EMAIL_SINK_ENABLED`     | Captures outbound mail; read back via `GET /api/v1/dev/emails/latest/?to=` |
+| `BILLING_BYPASS_ENABLED` | `false` in dev (real Stripe test mode); `true` for fully offline payments  |
+| `AWS_ENDPOINT_EXTERNAL`  | Host used in presigned URLs — must be browser-reachable                    |
+| `LOGS_INGEST_TOKEN`      | Shared secret between `vector` and Django's log ingest endpoint            |
 
 `config.settings.prod` refuses to start with `LIVE_FAKE_ENABLED` or `EMAIL_SINK_ENABLED` set, so these are structurally dev-only.
 

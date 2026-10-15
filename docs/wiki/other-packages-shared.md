@@ -8,20 +8,20 @@
 
 Two consequences follow directly from that design, and they explain most of the module's rules:
 
-1. **Dependencies resolve from the consuming app**, not from the package. If `packages/shared/src/mailbox/…` imports `sonner`, then *both* apps must have `sonner` installed. There is no dependency manifest here to declare it, so a missing dep surfaces as a type error or a runtime module-not-found in whichever app forgot it.
+1. **Dependencies resolve from the consuming app**, not from the package. If `packages/shared/src/mailbox/…` imports `sonner`, then _both_ apps must have `sonner` installed. There is no dependency manifest here to declare it, so a missing dep surfaces as a type error or a runtime module-not-found in whichever app forgot it.
 2. **Every change is a two-app change.** There is no versioning boundary to absorb a breaking edit. A signature change in `src/ui/` lands in `frontend-main` and `frontend-customer` simultaneously.
 
 ## Directory map
 
-| Path | Contents | Consumed by |
-|---|---|---|
-| `src/admin-kit/` | Generic backend-data browser | `/admin/m` routes **only** |
-| `src/mailbox/` | Inbox UI | both apps |
-| `src/email/` | Email-builder UI | both apps |
-| `src/ui/` | Shared primitives | both apps |
-| `src/logo/` | Logo studio engine — renderer, catalog, composer, export | both apps |
-| `src/auth/` | Session cookie routes | both apps |
-| `tailwind-preset.ts` | Shared loading/feedback motion | both apps' Tailwind configs |
+| Path                 | Contents                                                 | Consumed by                 |
+| -------------------- | -------------------------------------------------------- | --------------------------- |
+| `src/admin-kit/`     | Generic backend-data browser                             | `/admin/m` routes **only**  |
+| `src/mailbox/`       | Inbox UI                                                 | both apps                   |
+| `src/email/`         | Email-builder UI                                         | both apps                   |
+| `src/ui/`            | Shared primitives                                        | both apps                   |
+| `src/logo/`          | Logo studio engine — renderer, catalog, composer, export | both apps                   |
+| `src/auth/`          | Session cookie routes                                    | both apps                   |
+| `tailwind-preset.ts` | Shared loading/feedback motion                           | both apps' Tailwind configs |
 
 ### `src/admin-kit/` — read the scope note carefully
 
@@ -29,7 +29,7 @@ Two consequences follow directly from that design, and they explain most of the 
 
 This distinction matters because "the admin" is ambiguous in this codebase. If you're changing coach-facing admin behavior and you're editing `packages/shared/src/admin-kit/`, you are almost certainly in the wrong place. Conversely, an `admin-kit` change has a much smaller blast radius than its name suggests.
 
-(Note that `admin-kit` here is the *frontend* browser; the Django-side `apps.adminkit` app that registers API admin sites via `admin_panels.py` autodiscovery is a separate thing that happens to share the name.)
+(Note that `admin-kit` here is the _frontend_ browser; the Django-side `apps.adminkit` app that registers API admin sites via `admin_panels.py` autodiscovery is a separate thing that happens to share the name.)
 
 ### `src/logo/` — the logo studio engine
 
@@ -43,7 +43,7 @@ Shared route handlers for session cookies. Both apps mount them, which is what k
 
 These are not stylistic preferences; violating them breaks compilation in at least one app.
 
-**Never import `@/...` from inside `packages/shared`.** `@/` is an *app-local* alias — it resolves to `frontend-main/src` in one app and `frontend-customer/src` in the other. A shared file that reaches for `@/components/...` either fails to resolve or, worse, silently resolves to a *different* file depending on which app compiled it. Internal imports within `packages/shared` are **relative**.
+**Never import `@/...` from inside `packages/shared`.** `@/` is an _app-local_ alias — it resolves to `frontend-main/src` in one app and `frontend-customer/src` in the other. A shared file that reaches for `@/components/...` either fails to resolve or, worse, silently resolves to a _different_ file depending on which app compiled it. Internal imports within `packages/shared` are **relative**.
 
 **Apps consume via one-line re-export shims.** Rather than importing `@shared/...` at every call site, each app creates a thin shim at its own conventional path — e.g. `frontend-customer/src/components/ui/modal-portal.tsx` re-exports the shared implementation. App code imports `@/components/ui/modal-portal` as it always has. This keeps app-internal import paths stable and gives each app a single place to intercept, wrap, or temporarily fork a shared component.
 
@@ -60,14 +60,14 @@ graph LR
 
 The one non-`src/` file. It exports a `Partial<Config>` Tailwind preset carrying the loading/feedback motion vocabulary both apps share:
 
-| Keyframe | Animation utility | Used for |
-|---|---|---|
-| `shimmer` (background-position 200% → -200%) | `animate-shimmer` (1.8s linear infinite) | skeleton shimmer |
-| `fade-in` (opacity 0 → 1) | `animate-fade-in` (0.2s ease-out both) | content appearing |
-| `fade-in-up` (opacity + 4px translateY) | `animate-fade-in-up` (0.2s ease-out both) | content appearing with lift |
+| Keyframe                                           | Animation utility                                            | Used for                    |
+| -------------------------------------------------- | ------------------------------------------------------------ | --------------------------- |
+| `shimmer` (background-position 200% → -200%)       | `animate-shimmer` (1.8s linear infinite)                     | skeleton shimmer            |
+| `fade-in` (opacity 0 → 1)                          | `animate-fade-in` (0.2s ease-out both)                       | content appearing           |
+| `fade-in-up` (opacity + 4px translateY)            | `animate-fade-in-up` (0.2s ease-out both)                    | content appearing with lift |
 | `progress-indeterminate` (translateX -100% → 300%) | `animate-progress-indeterminate` (1.1s ease-in-out infinite) | indeterminate progress bars |
 
-Every animation here is **decorative only**. The preset does not gate itself — the source comment is explicit that *callers* apply `motion-safe:` so reduced-motion users get a static equivalent. Writing `animate-shimmer` without the `motion-safe:` prefix is a bug, and `scripts/check-loading-patterns.mjs` (which runs in `make lint`) enforces the surrounding spinner/skeleton conventions.
+Every animation here is **decorative only**. The preset does not gate itself — the source comment is explicit that _callers_ apply `motion-safe:` so reduced-motion users get a static equivalent. Writing `animate-shimmer` without the `motion-safe:` prefix is a bug, and `scripts/check-loading-patterns.mjs` (which runs in `make lint`) enforces the surrounding spinner/skeleton conventions.
 
 Note the durations are deliberately short (0.2s for the fade family) and the two infinite animations are the only long-running ones. If you add a keyframe here, keep it in the same register — this preset is the shared motion budget for both apps, and anything longer or bouncier will read as inconsistent wherever it lands.
 
@@ -81,7 +81,7 @@ make test-frontend    # frontend-customer vitest
 make lint             # pre-commit, incl. check-loading-patterns.mjs
 ```
 
-`make typecheck` is the one that catches the failure modes specific to this module: a stray `@/` import, a dependency present in one app's `node_modules` but not the other's, or a signature change that only one app's call sites were updated for. Run it after *any* edit here, not just ones that feel risky.
+`make typecheck` is the one that catches the failure modes specific to this module: a stray `@/` import, a dependency present in one app's `node_modules` but not the other's, or a signature change that only one app's call sites were updated for. Run it after _any_ edit here, not just ones that feel risky.
 
 A practical checklist before you commit a change to `packages/shared`:
 

@@ -4,12 +4,12 @@
 
 This module is the root of the tenant-portal Next.js app's source tree. It contains no application logic of its own — it holds the two artifacts that every other file in `frontend-customer` inherits from:
 
-| File | Role |
-|------|------|
-| `frontend-customer/src/CLAUDE.md` | The local authoring contract: which conventions a new file must copy, and which files must not be edited casually. |
+| File                                       | Role                                                                                                                                                                          |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `frontend-customer/src/CLAUDE.md`          | The local authoring contract: which conventions a new file must copy, and which files must not be edited casually.                                                            |
 | `frontend-customer/src/styles/globals.css` | The single global stylesheet: Tailwind entry point, design-token definitions for light/dark, and the handful of third-party and PWA overrides that can't live in a component. |
 
-Everything else under `src/` (`app/`, `components/`, `lib/`, `types/`) is documented by its own area. Treat this page as the entry point you read *before* adding a file anywhere in the app.
+Everything else under `src/` (`app/`, `components/`, `lib/`, `types/`) is documented by its own area. Treat this page as the entry point you read _before_ adding a file anywhere in the app.
 
 ---
 
@@ -53,7 +53,7 @@ These files are depended on by many callers at once, so changes to them are wide
 - `lib/api-client.ts` — the fetch door above.
 - `lib/blocks/registry.tsx` — the page-builder block registry; every renderable block type resolves through it.
 
-Together, `media-browser` + `inline-edit-panel` + `tag-filter-bar` *are* the admin CRUD framework. A new admin resource should be a configuration of these, not a reimplementation. Per the root `CLAUDE.md`, run `impact` on any symbol in these files before editing it.
+Together, `media-browser` + `inline-edit-panel` + `tag-filter-bar` _are_ the admin CRUD framework. A new admin resource should be a configuration of these, not a reimplementation. Per the root `CLAUDE.md`, run `impact` on any symbol in these files before editing it.
 
 ### Shared code lives in `packages/shared`
 
@@ -84,7 +84,7 @@ Two tokens are worth calling out because they behave differently from the rest:
 - **`--font-sans`** defaults to `var(--font-instrument), system-ui, sans-serif`. The comment marks it as the tenant override seam: **tenants override `--font-sans` at `:root` via `TenantThemeStyle`.** Per-tenant theming is a runtime CSS-variable override on top of these defaults, not a rebuild — which is what lets one deployment serve every tenant's branding.
 - **`--marketing-accent`** / `--marketing-accent-foreground` exist so marketing-styled surfaces inside the portal can reach for a distinct accent without hijacking `--primary`.
 
-`.dark` redefines the same set. Because both blocks declare the *same variable names*, dark mode costs nothing at the component level — components reference tokens, never raw colors.
+`.dark` redefines the same set. Because both blocks declare the _same variable names_, dark mode costs nothing at the component level — components reference tokens, never raw colors.
 
 ```mermaid
 graph TD
@@ -95,13 +95,13 @@ graph TD
     TW --> C["Components"]
 ```
 
-**When adding a token:** add it to *both* `:root` and `.dark`. A token defined only in `:root` silently inherits the light value in dark mode, which reads as a theming bug in one mode only.
+**When adding a token:** add it to _both_ `:root` and `.dark`. A token defined only in `:root` silently inherits the light value in dark mode, which reads as a theming bug in one mode only.
 
 ### 2.2 Base resets and the cinematic background
 
 A short second `@layer base` block applies `border-border` to `*` and `bg-background text-foreground` to `body` — the shadcn-style baseline that makes unstyled elements land on theme.
 
-`--cinematic-bg` is a stacked set of four `radial-gradient()`s (three ellipses plus a circle, each with its own position and alpha) defined per theme, and surfaced as the `.bg-cinematic` utility in `@layer utilities`. The utility pins `background-position: center top`, `background-repeat: no-repeat`, and `background-attachment: fixed`, so the gradient field stays put while content scrolls. The light and dark variants use different lightness *and* different alphas — the dark version is deliberately more opaque to stay visible against a near-black background.
+`--cinematic-bg` is a stacked set of four `radial-gradient()`s (three ellipses plus a circle, each with its own position and alpha) defined per theme, and surfaced as the `.bg-cinematic` utility in `@layer utilities`. The utility pins `background-position: center top`, `background-repeat: no-repeat`, and `background-attachment: fixed`, so the gradient field stays put while content scrolls. The light and dark variants use different lightness _and_ different alphas — the dark version is deliberately more opaque to stay visible against a near-black background.
 
 ### 2.3 GetStream Video SDK overrides
 
@@ -123,7 +123,7 @@ These live in `globals.css` rather than a component because they target SDK-owne
 ## 3. How this module connects outward
 
 - **Downward into `src/`** — every route and component in the app inherits the tokens from `globals.css` and is expected to follow the conventions in `src/CLAUDE.md`. Neither file is imported by name in most code; they are ambient.
-- **Sideways to `frontend-main`** — via `packages/shared` / `@shared/*`. `frontend-main` maintains its own `globals.css`; the token *names* overlap by convention, so shared components can rely on `--primary` and friends existing in both apps.
+- **Sideways to `frontend-main`** — via `packages/shared` / `@shared/*`. `frontend-main` maintains its own `globals.css`; the token _names_ overlap by convention, so shared components can rely on `--primary` and friends existing in both apps.
 - **Upward to the backend** — through `clientFetch` to `/api/v1/*`, and through `TenantThemeStyle`, which materializes per-tenant `tenant_config` theme values (theme, branding, fonts) as CSS variables layered over the `:root` defaults here.
 - **To the e2e suite** — the SDK overrides and safe-area utilities are what make the live-class specs and mobile-viewport specs render sanely; `LIVE_FAKE_ENABLED=true` stubs GetStream but the DOM class names (and therefore these rules) still apply.
 

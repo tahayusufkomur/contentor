@@ -4,7 +4,7 @@
 
 `frontend-customer/messages/` holds the translation catalogs for the tenant-facing Next.js app — the portal students browse and the admin surface coaches use to run their studio. Everything user-visible in that app resolves through these JSON files.
 
-There is no executable code in this module. It is pure data consumed by `next-intl`'s message loader, which is why the call graph is empty: nothing here imports anything, and nothing here is imported by name. The coupling is by *key path*, enforced at runtime (and by TypeScript, if augmented types are wired up) rather than by an import edge.
+There is no executable code in this module. It is pure data consumed by `next-intl`'s message loader, which is why the call graph is empty: nothing here imports anything, and nothing here is imported by name. The coupling is by _key path_, enforced at runtime (and by TypeScript, if augmented types are wired up) rather than by an import edge.
 
 ## Layout
 
@@ -23,16 +23,16 @@ Two locales — `en` and `tr` — matching the platform's marketing split (`cont
 
 ## Namespace boundaries
 
-The split is by *audience and surface*, not by feature:
+The split is by _audience and surface_, not by feature:
 
-| Namespace | Audience | Contains |
-|---|---|---|
-| `admin` | Coach (tenant owner) | Nav, Site AI, site assistant config, blog editor, inbox, setup checklist, settings, subscription |
-| `student` | Student (end user in a tenant) | Home dashboard, magic-link/Google auth, the student-facing assistant bubble |
-| `common` | Both | `actions.*` (save/cancel/delete…), `nav.*`, `language.*` |
-| `pwa` | Both | Install prompt, iOS/Android install guide, push-notification opt-in |
+| Namespace | Audience                       | Contains                                                                                         |
+| --------- | ------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `admin`   | Coach (tenant owner)           | Nav, Site AI, site assistant config, blog editor, inbox, setup checklist, settings, subscription |
+| `student` | Student (end user in a tenant) | Home dashboard, magic-link/Google auth, the student-facing assistant bubble                      |
+| `common`  | Both                           | `actions.*` (save/cancel/delete…), `nav.*`, `language.*`                                         |
+| `pwa`     | Both                           | Install prompt, iOS/Android install guide, push-notification opt-in                              |
 
-This mirrors the two roles that share the same Next.js app: `frontend-customer` serves the public tenant site *and* the coach's admin panel under `/admin/*`. When adding a string, pick the namespace by *who reads it*. A label a coach sees while configuring the assistant belongs in `admin.assistant`; the greeting a visitor sees in the chat bubble belongs in `student.assistant`. Both exist, and they are deliberately not shared — `admin.assistant.previewPlaceholder` ("Ask a question…") duplicates `student.assistant.placeholder` because the coach-facing preview and the live widget can diverge in tone without one edit silently changing the other.
+This mirrors the two roles that share the same Next.js app: `frontend-customer` serves the public tenant site _and_ the coach's admin panel under `/admin/*`. When adding a string, pick the namespace by _who reads it_. A label a coach sees while configuring the assistant belongs in `admin.assistant`; the greeting a visitor sees in the chat bubble belongs in `student.assistant`. Both exist, and they are deliberately not shared — `admin.assistant.previewPlaceholder` ("Ask a question…") duplicates `student.assistant.placeholder` because the coach-facing preview and the live widget can diverge in tone without one edit silently changing the other.
 
 `common.actions` is the exception: generic verbs are shared. Note that `admin.json` still defines its own `blog.editorSave`, `inbox.send`, `assistant.save` etc. — these are context-specific ("Save entry" vs "Save") and shouldn't be collapsed into `common.actions.save`.
 
@@ -52,7 +52,7 @@ en: "{count} of {limit} AI edits left this month"
 tr: "Bu ay kalan yapay zekâ düzenlemesi: {count}/{limit}"
 ```
 
-Same two names, completely different position. That is expected and correct. What is *not* acceptable is dropping one, or inventing a `{plan}` that the caller doesn't pass.
+Same two names, completely different position. That is expected and correct. What is _not_ acceptable is dropping one, or inventing a `{plan}` that the caller doesn't pass.
 
 A few keys carry placeholders that the Turkish translation attaches a suffix to — `admin.subscription.changePlan.upgradeTo` is `"{plan}'a yükselt"`. Turkish vowel harmony means the correct suffix depends on the plan name's last vowel, so these are approximations rather than grammatically perfect for every value. Worth knowing before "fixing" one.
 
@@ -63,7 +63,7 @@ Some strings hardcode product names and addresses that must survive translation 
 - `Contentor` — `admin.setup.help.title` is `"Ask Contentor"` / `"Contentor'a Sor"`. The Turkish form takes a possessive apostrophe; the brand itself is never translated.
 - `support@contentor.app` — appears in `admin.setup.help.unavailable` and `.quota` in both locales. If support routing changes, grep both files.
 - `Starter` / `Pro` — plan names in `admin.blog.upgradeBody`, untranslated by design (they match what billing returns).
-- `{brand}` in `student.*` is the *tenant's* brand, injected at runtime, with `student.auth.fallbackBrand` ("your account" / "hesabınız") as the fallback when a tenant has no brand name set.
+- `{brand}` in `student.*` is the _tenant's_ brand, injected at runtime, with `student.auth.fallbackBrand` ("your account" / "hesabınız") as the fallback when a tenant has no brand name set.
 
 ## Notable structures
 
@@ -102,7 +102,7 @@ Emoji appear in exactly two places and are shared across locales: `🎉` in `adm
 
 The `en` catalog is deliberately plain and second-person: "Get your studio live", "Make the first thing visitors see yours." Error strings pair a plain statement with a retry instruction — "Could not save. Please try again." — and never surface technical detail. Follow that when adding strings; a new error message reading "Request failed with status 500" would be out of place.
 
-One inconsistency to be aware of: `tr/admin.json` mixes formality. Most of it uses the formal *siz* form ("Kaydedildi.", "Lütfen tekrar deneyin."), but `setup.*` switched to informal *sen* ("Stüdyonu yayına hazırla", "Öğrencilerine selam ver"). New `setup.*` strings should match the informal register already there; everything else stays formal.
+One inconsistency to be aware of: `tr/admin.json` mixes formality. Most of it uses the formal _siz_ form ("Kaydedildi.", "Lütfen tekrar deneyin."), but `setup.*` switched to informal _sen_ ("Stüdyonu yayına hazırla", "Öğrencilerine selam ver"). New `setup.*` strings should match the informal register already there; everything else stays formal.
 
 ## Adding or changing a string
 
@@ -112,4 +112,4 @@ One inconsistency to be aware of: `tr/admin.json` mixes formality. Most of it us
 4. Reference it as `t('path.to.key')` under the namespace matching the file name.
 5. Run `make format` — Prettier formats these JSON files, and `make lint` fails on unformatted output.
 
-When *removing* a key, remove it from both locales, and grep the app for the key path first — these files have no import edges, so a dead key looks identical to a live one from inside this directory. That asymmetry is the main hazard of the module: nothing in `messages/` tells you whether a string is still used. `grep -rn "keyName" frontend-customer/src` is the only check.
+When _removing_ a key, remove it from both locales, and grep the app for the key path first — these files have no import edges, so a dead key looks identical to a live one from inside this directory. That asymmetry is the main hazard of the module: nothing in `messages/` tells you whether a string is still used. `grep -rn "keyName" frontend-customer/src` is the only check.

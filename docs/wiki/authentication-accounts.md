@@ -10,14 +10,14 @@ There are no server-side sessions. A signed HS256 JWT in the `contentor_access_t
 
 All tokens are HS256 JWTs signed with `settings.SECRET_KEY`, minted in `tokens.py`. They are distinguished by a `purpose` claim — session tokens are the only kind **without** one, and `AdminJWTBackend` relies on that to reject every special-purpose token:
 
-| Token | Factory | Purpose claim | TTL | Notes |
-|---|---|---|---|---|
-| Session | `create_jwt(user, tenant, region=None, extra_claims=None)` | *(none)* | `JWT_EXPIRY_DAYS` | Carries `user_id`, `tenant_id` (schema name), `role`, `region`. `extra_claims` is how impersonation adds `imp`. |
-| Magic link | `create_magic_link_token` / `verify_magic_link_token` | `magic_link` | `MAGIC_LINK_EXPIRY_MINUTES` | Carries only `email` + tenant; user is created on redeem. |
-| Signup | `create_signup_token` / `verify_signup_token` | `signup` | same as magic link | Used by coach signup (in `apps.core`). |
-| Wizard | `create_wizard_token` / `verify_wizard_token` | `wizard` (verify also accepts `signup`) | `WIZARD_TOKEN_EXPIRY_DAYS` | Long-lived so a coach can resume the pre-provision onboarding wizard. `decode_wizard_token_allow_expired` skips only the `exp` check (signature still enforced) — used by recovery, which re-sends a fresh link to the owner's email, never trusts the caller. |
-| Impersonation | `create_impersonation_token` / `verify_impersonation_token` | `impersonation` | 120 s | Single-use via `jti`; carries `target_user_id`, `impersonator_email`, `scope`. |
-| OAuth state | `_create_oauth_state` / `_verify_oauth_state` (in `views.py`) | `google_oauth` | 10 min | Replaces state cookies; carries tenant, origin, region through Google's fixed redirect_uri. |
+| Token         | Factory                                                       | Purpose claim                           | TTL                         | Notes                                                                                                                                                                                                                                                          |
+| ------------- | ------------------------------------------------------------- | --------------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Session       | `create_jwt(user, tenant, region=None, extra_claims=None)`    | _(none)_                                | `JWT_EXPIRY_DAYS`           | Carries `user_id`, `tenant_id` (schema name), `role`, `region`. `extra_claims` is how impersonation adds `imp`.                                                                                                                                                |
+| Magic link    | `create_magic_link_token` / `verify_magic_link_token`         | `magic_link`                            | `MAGIC_LINK_EXPIRY_MINUTES` | Carries only `email` + tenant; user is created on redeem.                                                                                                                                                                                                      |
+| Signup        | `create_signup_token` / `verify_signup_token`                 | `signup`                                | same as magic link          | Used by coach signup (in `apps.core`).                                                                                                                                                                                                                         |
+| Wizard        | `create_wizard_token` / `verify_wizard_token`                 | `wizard` (verify also accepts `signup`) | `WIZARD_TOKEN_EXPIRY_DAYS`  | Long-lived so a coach can resume the pre-provision onboarding wizard. `decode_wizard_token_allow_expired` skips only the `exp` check (signature still enforced) — used by recovery, which re-sends a fresh link to the owner's email, never trusts the caller. |
+| Impersonation | `create_impersonation_token` / `verify_impersonation_token`   | `impersonation`                         | 120 s                       | Single-use via `jti`; carries `target_user_id`, `impersonator_email`, `scope`.                                                                                                                                                                                 |
+| OAuth state   | `_create_oauth_state` / `_verify_oauth_state` (in `views.py`) | `google_oauth`                          | 10 min                      | Replaces state cookies; carries tenant, origin, region through Google's fixed redirect_uri.                                                                                                                                                                    |
 
 ## Request authentication
 
@@ -28,7 +28,7 @@ All tokens are HS256 JWTs signed with `settings.SECRET_KEY`, minted in `tokens.p
 
 Deliberate design choice: expired/invalid tokens return `None` rather than raising, so `AllowAny` views see an anonymous user instead of a 403, while `IsAuthenticated` views still reject. On success it also calls `apps.logbook.context.set_current_user` so log lines are attributed.
 
-> Because the default auth class rejects bad tokens by returning `None` but still *runs*, truly public endpoints (magic link, OAuth, signup) must set `@authentication_classes([])` — `AllowAny` alone is not enough (see CLAUDE.md).
+> Because the default auth class rejects bad tokens by returning `None` but still _runs_, truly public endpoints (magic link, OAuth, signup) must set `@authentication_classes([])` — `AllowAny` alone is not enough (see CLAUDE.md).
 
 **`AdminJWTBackend`** (`backends.py`) lets an already-logged-in staff user into the classic Django admin without a password, from the same cookie. It applies the same tenant and region checks plus two admin-specific ones: the payload must have no `purpose` (so magic-link/signup/impersonation/oauth tokens can never open an admin session) and the user must be `is_staff` and `is_active`.
 
@@ -71,7 +71,7 @@ Redemption happens on the target tenant's domain:
 
 - The `frontend-customer/src/app/impersonate/page.tsx` landing page posts the token to `/api/auth/impersonate/verify`, which proxies to Django **forwarding the current cookie** so Django can stash it.
 - `impersonate_verify` burns the `jti` in Redis (`SET NX EX 130`; if Redis is down it logs and proceeds — the 120 s expiry still bounds replay), then issues a normal session JWT with an `imp: {by, scope}` extra claim.
-- **Studio scope** (coach→student, same domain): if the existing cookie is a non-impersonated owner/coach session for this tenant, it's stashed in the `contentor_impersonator_return` cookie so "Exit" restores the coach in place. **Platform scope** (superadmin arriving cross-domain) must *not* adopt whatever session sits on the subdomain — any stale return cookie is cleared.
+- **Studio scope** (coach→student, same domain): if the existing cookie is a non-impersonated owner/coach session for this tenant, it's stashed in the `contentor_impersonator_return` cookie so "Exit" restores the coach in place. **Platform scope** (superadmin arriving cross-domain) must _not_ adopt whatever session sits on the subdomain — any stale return cookie is cleared.
 - `impersonate_stop` either restores the stashed session or just clears everything (`restored: false`), and the `ImpersonationBanner` routes accordingly: restored → `/admin`, platform scope → apex `/admin`, else `/`.
 
 The banner state comes from `/users/me/`, which surfaces `impersonating` **from the signed session claim** (`request.auth["imp"]`) — it cannot be spoofed by setting a cookie.

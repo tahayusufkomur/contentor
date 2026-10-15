@@ -2,29 +2,40 @@
 
 # Mailbox — `packages/shared/src/mailbox`
 
-The shared inbox UI: a Gmail-shaped, three-pane-ish email client used by **both** Next.js apps. It renders conversation folders, threads, a rich-text composer with attachments, and the archive/spam/delete actions — all against an API client the *consuming app* provides.
+The shared inbox UI: a Gmail-shaped, three-pane-ish email client used by **both** Next.js apps. It renders conversation folders, threads, a rich-text composer with attachments, and the archive/spam/delete actions — all against an API client the _consuming app_ provides.
 
 There are no notification components in this directory. Every user-visible outcome in this module is a **sonner toast** (`toast.success` / `toast.error`) plus per-action loading state from `useAsyncAction`; that is the whole "notifications" surface here. Student/in-app notifications live elsewhere (backend `apps.notifications` and app-local UI).
 
 ## The one seam that matters: `@/lib/mailbox`
 
-`packages/shared` is source-only, consumed through the `@shared/*` tsconfig alias, and its house rule is *never import `@/...`* (that alias is app-local). This module is the deliberate exception:
+`packages/shared` is source-only, consumed through the `@shared/*` tsconfig alias, and its house rule is _never import `@/...`_ (that alias is app-local). This module is the deliberate exception:
 
 ```ts
-import { compose, reply, listConversations, getConversation,
-         updateConversation, deleteConversation, uploadAttachment } from "@/lib/mailbox";
-import type { ConversationListItem, ConversationDetail,
-              MailboxMessage, MessageAttachment } from "@/lib/mailbox";
+import {
+  compose,
+  reply,
+  listConversations,
+  getConversation,
+  updateConversation,
+  deleteConversation,
+  uploadAttachment,
+} from "@/lib/mailbox";
+import type {
+  ConversationListItem,
+  ConversationDetail,
+  MailboxMessage,
+  MessageAttachment,
+} from "@/lib/mailbox";
 ```
 
 `@/lib/mailbox` resolves per-app, and that is how one UI drives two different backends:
 
-| Consumer | Resolves to | API base |
-|---|---|---|
-| `frontend-customer` (coach admin) | `src/lib/mailbox.ts` | `/api/v1/mailbox` — tenant-schema coach ↔ student mailbox |
-| `frontend-main` (superadmin) | `src/lib/mailbox.ts` → `platform-mailbox-api.ts` | `/api/v1/platform/mailbox` — public-schema platform inbox |
+| Consumer                          | Resolves to                                      | API base                                                  |
+| --------------------------------- | ------------------------------------------------ | --------------------------------------------------------- |
+| `frontend-customer` (coach admin) | `src/lib/mailbox.ts`                             | `/api/v1/mailbox` — tenant-schema coach ↔ student mailbox |
+| `frontend-main` (superadmin)      | `src/lib/mailbox.ts` → `platform-mailbox-api.ts` | `/api/v1/platform/mailbox` — public-schema platform inbox |
 
-Both modules export structurally identical functions and types (the platform one drops `getSettings`/`saveSettings`). **The implicit contract is that duplication** — add a call site in this module and you must add the function to *both* app-side clients, or the other app fails `make typecheck`. Everything else imported here is relative (`../ui/button`, `../hooks/use-async-action`).
+Both modules export structurally identical functions and types (the platform one drops `getSettings`/`saveSettings`). **The implicit contract is that duplication** — add a call site in this module and you must add the function to _both_ app-side clients, or the other app fails `make typecheck`. Everything else imported here is relative (`../ui/button`, `../hooks/use-async-action`).
 
 ## Component map
 
@@ -60,18 +71,25 @@ liveRef.current = { threadId: thread?.id ?? null, replySending };
 
 - `openConversation` (via `useAsyncAction`) → `getConversation(id)` then `loadList()`. The refetch is what clears the unread dot: the backend marks messages read on GET, so the list must be re-pulled.
 - `sendReply` (via `useAsyncAction`) → `reply(thread.id, draft)`, `editorRef.current?.clear()`, re-fetch the thread, success toast.
-- `patchConversation(id, patch, doneMsg)` → `updateConversation`, toast, close the thread if it was the one moved, `loadList()`. Note this one is a hand-rolled `try/catch`, *not* `useAsyncAction`, so archive/spam have no loading state — the optimistic-feeling UX comes from the toast, not from a pending indicator.
+- `patchConversation(id, patch, doneMsg)` → `updateConversation`, toast, close the thread if it was the one moved, `loadList()`. Note this one is a hand-rolled `try/catch`, _not_ `useAsyncAction`, so archive/spam have no loading state — the optimistic-feeling UX comes from the toast, not from a pending indicator.
 - `doDelete` (via `useAsyncAction`) → `deleteConversation(deletingId)`; `deletingId` doubles as "dialog is open".
 
-**Layout:** `topBanner` (optional `ReactNode`) renders above everything — `frontend-customer` uses it for the send-only / upgrade upsell driven by `getSettings().can_receive`; `frontend-main` passes nothing. Below it, `FolderRail` sits beside *either* the search-box + list *or* the thread view. Thread view fully replaces the list (a mobile-first choice that also applies on desktop). Overlays stack above: `ComposeCard` at `z-[120]`, `DeleteConfirmDialog` (in a `ModalPortal`) at `z-[130]`.
+**Layout:** `topBanner` (optional `ReactNode`) renders above everything — `frontend-customer` uses it for the send-only / upgrade upsell driven by `getSettings().can_receive`; `frontend-main` passes nothing. Below it, `FolderRail` sits beside _either_ the search-box + list _or_ the thread view. Thread view fully replaces the list (a mobile-first choice that also applies on desktop). Overlays stack above: `ComposeCard` at `z-[120]`, `DeleteConfirmDialog` (in a `ModalPortal`) at `z-[130]`.
 
 ## `message-editor.tsx` — TipTap + attachments
 
 The most reusable piece, used by both `ComposeCard` and `ThreadView`'s reply box. `forwardRef` with an imperative handle:
 
 ```ts
-interface MessageEditorHandle { clear: () => void; isEmpty: () => boolean }
-interface OutgoingDraft { text: string; html: string; attachmentIds: number[] }
+interface MessageEditorHandle {
+  clear: () => void;
+  isEmpty: () => boolean;
+}
+interface OutgoingDraft {
+  text: string;
+  html: string;
+  attachmentIds: number[];
+}
 ```
 
 TipTap config: `StarterKit` with `heading`, `codeBlock`, and `horizontalRule` disabled, plus `Underline`, `Link` (`openOnClick: false`, `autolink: true`), and `Placeholder`. `immediatelyRender: false` is required — this is an App Router client component and SSR hydration mismatches otherwise. The editor returns `null` until `useEditor` resolves, so nothing renders on the server pass.
@@ -102,11 +120,11 @@ The list row swaps its timestamp for quick actions on hover (`group-hover:hidden
 
 Partitions attachments into inline images (`content_type.startsWith("image/")` and not omitted) rendered as thumbnails, and everything else as file chips with a `humanSize` label. Both link straight to `download_url` (a presigned S3/MinIO URL) in a new tab — hence the `@next/next/no-img-element` disable, since the presigned host varies and can't be in `next.config` image domains.
 
-`omitted: true` is the backend's signal that an inbound attachment was too large to store; it renders as a dashed, non-clickable chip reading *"too large, ask the sender to share another way."* Preserve that branch — it's the only user-facing explanation for a missing file.
+`omitted: true` is the backend's signal that an inbound attachment was too large to store; it renders as a dashed, non-clickable chip reading _"too large, ask the sender to share another way."_ Preserve that branch — it's the only user-facing explanation for a missing file.
 
 ## Contributing notes
 
-- **Both apps compile this from source.** Any change here ships to the coach admin *and* the superadmin inbox. Verify with `make typecheck` and `make test-frontend`, not just one app's dev server.
+- **Both apps compile this from source.** Any change here ships to the coach admin _and_ the superadmin inbox. Verify with `make typecheck` and `make test-frontend`, not just one app's dev server.
 - Adding an API call means touching three files: this module, `frontend-customer/src/lib/mailbox.ts`, and `frontend-main/src/lib/platform-mailbox-api.ts`.
 - `humanSize` is duplicated in `attachment-list.tsx` and `message-editor.tsx`. If a third copy appears, lift it into `src/lib/`.
 - Async buttons here already use `<Button loading={...}>` and `<Spinner>`; raw `animate-spin` will fail `scripts/check-loading-patterns.mjs` in `make lint`.

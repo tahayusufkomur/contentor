@@ -2,7 +2,7 @@
 
 # `scripts/` — Operational Shell Scripts
 
-Standalone bash utilities that operate on the Contentor stack from *outside* the application: disaster recovery for the production Postgres cluster, and local Stripe webhook plumbing for development. These scripts have no Python imports, no Django dependency, and no callers inside the codebase — they are invoked by a human operator, by cron, or via `make` targets.
+Standalone bash utilities that operate on the Contentor stack from _outside_ the application: disaster recovery for the production Postgres cluster, and local Stripe webhook plumbing for development. These scripts have no Python imports, no Django dependency, and no callers inside the codebase — they are invoked by a human operator, by cron, or via `make` targets.
 
 > Not covered here: `scripts/select_tests.py`, `scripts/check-loading-patterns.mjs`, `scripts/install-git-hooks.sh`, and `scripts/refresh-wiki.sh`, which belong to the test-selection, lint, and wiki-tooling areas respectively.
 
@@ -10,11 +10,11 @@ Standalone bash utilities that operate on the Contentor stack from *outside* the
 
 ## Contents
 
-| Script | Runs on | Trigger | Destructive? |
-|---|---|---|---|
-| `backup_db.sh` | prod host | nightly cron | no |
-| `restore_db.sh` | prod host (or a scratch dev stack) | manual, with typed confirmation | **yes** |
-| `stripe_listen_auto.sh` | developer laptop | `make stripe-listen` | no |
+| Script                  | Runs on                            | Trigger                         | Destructive? |
+| ----------------------- | ---------------------------------- | ------------------------------- | ------------ |
+| `backup_db.sh`          | prod host                          | nightly cron                    | no           |
+| `restore_db.sh`         | prod host (or a scratch dev stack) | manual, with typed confirmation | **yes**      |
+| `stripe_listen_auto.sh` | developer laptop                   | `make stripe-listen`            | no           |
 
 ---
 
@@ -33,7 +33,7 @@ All three scripts share a small set of habits worth preserving when adding new o
 
 ## `backup_db.sh` — full cluster backup
 
-### Why a *cluster* dump
+### Why a _cluster_ dump
 
 Contentor is schema-per-tenant (`django-tenants`): every coach's data is a schema inside a single database on a single Postgres volume. A per-database or per-schema dump would need to enumerate tenants and would drift as tenants are created. `pg_dumpall` sidesteps that entirely — it emits every database plus roles and other globals, so a single artifact is a complete, self-consistent picture of all tenants.
 
@@ -55,7 +55,7 @@ flowchart TD
 
 ### Key details
 
-**Dump invocation.** The dump runs *inside* the postgres container, not against a published port (prod publishes none):
+**Dump invocation.** The dump runs _inside_ the postgres container, not against a published port (prod publishes none):
 
 ```bash
 COMPOSE=(docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE")
@@ -84,15 +84,15 @@ A real gzip'd `pg_dumpall` is far larger than 500 bytes. The bad artifact is del
 
 ### Environment variables
 
-| Variable | Source | Default | Role |
-|---|---|---|---|
-| `ENV_FILE` | shell | `.env.prod` | which env file to source |
-| `POSTGRES_USER` | env file | `contentor` | `pg_dumpall -U` |
-| `POSTGRES_PASSWORD` | env file | **required** | `PGPASSWORD` |
-| `BACKUP_S3_BUCKET` | env file | falls back to `AWS_BUCKET_NAME` | offsite destination |
-| `AWS_ACCESS_KEY_ID` | env file | — | gates the upload attempt |
-| `AWS_ENDPOINT` | env file | — | non-AWS S3-compatible endpoint |
-| `BACKUP_RETAIN_DAYS` | env file | `14` | local pruning window |
+| Variable             | Source   | Default                         | Role                           |
+| -------------------- | -------- | ------------------------------- | ------------------------------ |
+| `ENV_FILE`           | shell    | `.env.prod`                     | which env file to source       |
+| `POSTGRES_USER`      | env file | `contentor`                     | `pg_dumpall -U`                |
+| `POSTGRES_PASSWORD`  | env file | **required**                    | `PGPASSWORD`                   |
+| `BACKUP_S3_BUCKET`   | env file | falls back to `AWS_BUCKET_NAME` | offsite destination            |
+| `AWS_ACCESS_KEY_ID`  | env file | —                               | gates the upload attempt       |
+| `AWS_ENDPOINT`       | env file | —                               | non-AWS S3-compatible endpoint |
+| `BACKUP_RETAIN_DAYS` | env file | `14`                            | local pruning window           |
 
 ### Operator setup (one-time, on the prod box)
 
@@ -128,7 +128,7 @@ Replays a `backup_db.sh` artifact into a running postgres container. **This over
 
 ### Safety layers
 
-1. **Typed confirmation.** The prompt requires the literal string `RESTORE`; anything else aborts. This is an interactive `read -r -p`, which means the script is deliberately *not* runnable from cron.
+1. **Typed confirmation.** The prompt requires the literal string `RESTORE`; anything else aborts. This is an interactive `read -r -p`, which means the script is deliberately _not_ runnable from cron.
 2. **`ON_ERROR_STOP=1`.** `psql` aborts at the first failing statement rather than grinding on and leaving a half-restored cluster that looks superficially fine.
 3. **Compose file follows `ENV_FILE`.** Prod restores use `docker-compose.prod.yml`; anything else (i.e. a dev drill with `ENV_FILE=.env`) uses the default dev compose:
 
@@ -231,7 +231,7 @@ if [[ "$line" =~ (whsec_[a-zA-Z0-9]+) ]]; then
 
 An inline `python3 -c` heredoc then writes the secret to two destinations:
 
-1. **`$ENV_FILE`** — a `re.sub` with `flags=re.MULTILINE` replaces an existing `^STRIPE_WEBHOOK_SECRET=` line, or appends one if absent. This is what a *future* `docker compose up` will pick up.
+1. **`$ENV_FILE`** — a `re.sub` with `flags=re.MULTILINE` replaces an existing `^STRIPE_WEBHOOK_SECRET=` line, or appends one if absent. This is what a _future_ `docker compose up` will pick up.
 2. **`backend/.stripe_whsec`** — a single-line file inside the bind-mounted backend directory. Because the mount is live, the running Django container sees the new secret immediately, with no restart. This is the path that makes the sync actually useful mid-session; env-file changes alone would require recreating the container.
 
 Anything on the Django side that reads the webhook secret should therefore prefer `backend/.stripe_whsec` (falling back to the env var) — that ordering is what gives the no-restart behaviour.
@@ -248,7 +248,7 @@ Run it in a second terminal alongside `make e2e-stripe`; the Stripe e2e specs ne
 ### Known rough edges
 
 - The `python3 -c` block interpolates `$ENV_FILE` and `$WHSEC` directly into the Python source. Fine for the two shapes those values take (a repo-relative path, a `whsec_` token), but it is string interpolation into code — don't extend the pattern with arbitrary user input.
-- The regex fires on *any* line containing a `whsec_` token, so it will re-write on every restart banner. That is idempotent and harmless, but it does mean the env file is rewritten more often than strictly necessary.
+- The regex fires on _any_ line containing a `whsec_` token, so it will re-write on every restart banner. That is idempotent and harmless, but it does mean the env file is rewritten more often than strictly necessary.
 - `set -e` does not propagate into the `while` loop's subshell — a failed Python write logs nothing beyond Python's own traceback and the listener keeps running.
 - `backend/.stripe_whsec` must stay gitignored; it holds a live signing secret.
 

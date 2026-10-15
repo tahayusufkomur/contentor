@@ -2,24 +2,24 @@
 
 # Logo Studio & Brand Identity (`frontend-customer/src`)
 
-The Logo Studio is the coach-facing tool that turns a brand name and a one-paragraph brief into a real, exportable logo. It is a single full-screen modal mounted from the site-settings **Brand** tab, backed by a JSON *recipe* (not a bitmap) that is rendered live as SVG, edited by direct manipulation, optionally designed/refined by AI, and finally rasterized in the browser and uploaded as `logo`/`icon` PNGs on the tenant config.
+The Logo Studio is the coach-facing tool that turns a brand name and a one-paragraph brief into a real, exportable logo. It is a single full-screen modal mounted from the site-settings **Brand** tab, backed by a JSON _recipe_ (not a bitmap) that is rendered live as SVG, edited by direct manipulation, optionally designed/refined by AI, and finally rasterized in the browser and uploaded as `logo`/`icon` PNGs on the tenant config.
 
-Everything visual is a pure function of one `LogoRecipe`. That single invariant is what makes the whole module work: previews, gallery cards, chat candidates, the editor canvas, the dark variant, the two-pass AI critique renders, and the brand-kit zip all feed the *same* `LogoRenderer`/`MarkRenderer` pair.
+Everything visual is a pure function of one `LogoRecipe`. That single invariant is what makes the whole module work: previews, gallery cards, chat candidates, the editor canvas, the dark variant, the two-pass AI critique renders, and the brand-kit zip all feed the _same_ `LogoRenderer`/`MarkRenderer` pair.
 
 ---
 
 ## Where the code lives
 
-| Path | Role |
-|---|---|
-`components/logo/logo-studio.tsx` | The container. Owns recipe, undo history, step, brief, chat reducer, AI status, session persistence, save. |
-`components/logo/studio-brief.tsx` | Step 1 — brand name, niche, tagline, vibe, style chips. |
-`components/logo/studio-entrance.tsx` + `curated-gallery.tsx` | Step 2 — the "Ideas" wall: two entry cards (ready-made vs Design with AI) over a grid of composed curated concepts. |
-`components/logo/studio-chat.tsx` | Design-with-AI: the Describe → Icon → Name → Tagline wizard and the async turn driver. |
-`components/logo/create-similar.ts` | One-shot "Create your own" from a curated logo — chains two converse turns headlessly. |
-`components/logo/studio-editor.tsx`, `studio-canvas.tsx`, `studio-panel/*` | Step 3 — canvas + contextual control rail + real-context previews + brand-kit download. |
-`lib/logo/*` | Non-React logic: API clients, pure reducers, ranking, composition, brand-kit export. Each has a sibling test in `lib/logo/__tests__/`. |
-`packages/shared/src/logo/*` | The engine shared with `frontend-main`'s signup wizard: renderer, catalog, composer, recipe types, migration, rasterizer, curated ranking. |
+| Path                                                                       | Role                                                                                                                                       |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `components/logo/logo-studio.tsx`                                          | The container. Owns recipe, undo history, step, brief, chat reducer, AI status, session persistence, save.                                 |
+| `components/logo/studio-brief.tsx`                                         | Step 1 — brand name, niche, tagline, vibe, style chips.                                                                                    |
+| `components/logo/studio-entrance.tsx` + `curated-gallery.tsx`              | Step 2 — the "Ideas" wall: two entry cards (ready-made vs Design with AI) over a grid of composed curated concepts.                        |
+| `components/logo/studio-chat.tsx`                                          | Design-with-AI: the Describe → Icon → Name → Tagline wizard and the async turn driver.                                                     |
+| `components/logo/create-similar.ts`                                        | One-shot "Create your own" from a curated logo — chains two converse turns headlessly.                                                     |
+| `components/logo/studio-editor.tsx`, `studio-canvas.tsx`, `studio-panel/*` | Step 3 — canvas + contextual control rail + real-context previews + brand-kit download.                                                    |
+| `lib/logo/*`                                                               | Non-React logic: API clients, pure reducers, ranking, composition, brand-kit export. Each has a sibling test in `lib/logo/__tests__/`.     |
+| `packages/shared/src/logo/*`                                               | The engine shared with `frontend-main`'s signup wizard: renderer, catalog, composer, recipe types, migration, rasterizer, curated ranking. |
 
 Files like `components/logo/logo-renderer.tsx`, `abstract-mark.tsx`, `render-draft.tsx` and `lib/logo/{catalog,composer,migrate,abstract}.ts` are **one-line re-export shims** over `@shared/logo/*`. Edit the shared source; the shims exist only to keep app-internal import paths stable.
 
@@ -44,7 +44,7 @@ Files like `components/logo/logo-renderer.tsx`, `abstract-mark.tsx`, `render-dra
 
 Two details drive a lot of downstream code:
 
-- **`mark.type === "custom"`** is the AI/traced vector mark: a list of `CustomMarkPath` whose `fill` is a *role token* (`"mark" | "mark2" | "accent"`), never raw hex. That indirection is why one AI mark can be recolored by a palette swap, by the `MarkControls` secondary/accent pickers, and by `darkVariant()` without touching path data.
+- **`mark.type === "custom"`** is the AI/traced vector mark: a list of `CustomMarkPath` whose `fill` is a _role token_ (`"mark" | "mark2" | "accent"`), never raw hex. That indirection is why one AI mark can be recolored by a palette swap, by the `MarkControls` secondary/accent pickers, and by `darkVariant()` without touching path data.
 - **`elements`** holds placement only. The canvas drags/scales write here; nothing else does. `LogoRenderer.place()` composes `offset` with a scale-about-center translate so scaling doesn't drift the element.
 
 `seedRecipe()` in `logo-studio.tsx` is the single entry into the schema: `isRecipe(config.logo_recipe) ? migrateRecipe(...) : defaultRecipe(brand_name, primaryHex)`.
@@ -78,7 +78,7 @@ Two sources sit side by side on the same wall.
 
 Each card is a **complete concept**, not a bare mark. `composeCuratedPreview()` picks a `StyleProfile` from the logo's tags (elegant/bold/playful/minimal/organic/tech, with a default pool) and deterministically varies font vibe, layout, badge shape and palette from `hashString(filename) + index`. Same logo always previews the same way; different logos on the wall look different. Traced logos (`markPaths` present) become `mark: {type: "custom"}` and may get a badge; untraced PNG art becomes `mark: {type: "image"}` with `badge: "none"`, because the raster already carries its own colors and silhouette.
 
-`onUse` hands back *exactly the previewed recipe*. `handleUseCurated` short-circuits for traced marks; for untraced PNGs it fetches the image, uploads it via `uploadPng`, and swaps the display-only `photo_id: ""` for a real one before entering the editor.
+`onUse` hands back _exactly the previewed recipe_. `handleUseCurated` short-circuits for traced marks; for untraced PNGs it fetches the image, uploads it via `uploadPng`, and swaps the display-only `photo_id: ""` for a real one before entering the editor.
 
 **Design with AI (paid).** The entrance card and the per-card "Create your own" button both check `logoAiStatus.eligible`, falling back to `handleUpgrade()` → `/admin/billing/subscription`.
 
@@ -112,9 +112,9 @@ The ⌘/Ctrl+Z / ⇧⌘Z / ⌘Y listener attaches only while `open && step === "
 
 ## Session persistence
 
-`lib/logo/studio-session.ts` writes `contentor_logo_studio` in `localStorage`, schema v3, 14-day TTL. `LogoStudio` debounces the write ~500ms while open. Both read *and* write are fully try/caught — a disabled, full, or private-mode `localStorage` degrades to "no restore" and never breaks the studio. `loadStudioSession` still accepts v1/v2 payloads (a v1 restore simply has no `chat` slice). `clearStudioSession()` fires on successful save and on "Start over".
+`lib/logo/studio-session.ts` writes `contentor_logo_studio` in `localStorage`, schema v3, 14-day TTL. `LogoStudio` debounces the write ~500ms while open. Both read _and_ write are fully try/caught — a disabled, full, or private-mode `localStorage` degrades to "no restore" and never breaks the studio. `loadStudioSession` still accepts v1/v2 payloads (a v1 restore simply has no `chat` slice). `clearStudioSession()` fires on successful save and on "Start over".
 
-The persisted chat slice is the `ChatSnapshot` — stage, transcript, pins — deliberately *without* the transient `status`/`done`, which always start fresh via `chatDispatch({type: "hydrate", snapshot})`.
+The persisted chat slice is the `ChatSnapshot` — stage, transcript, pins — deliberately _without_ the transient `status`/`done`, which always start fresh via `chatDispatch({type: "hydrate", snapshot})`.
 
 ---
 
@@ -128,7 +128,7 @@ The persisted chat slice is the `ChatSnapshot` — stage, transcript, pins — d
 
 `lib/logo/chat-state.ts` is React-free and unit-tested. `ChatState` = `{stage, messages, pinnedIcon, pinnedLockup, status, done}` where `stage: "icon" | "name" | "tagline"` mirrors the backend. `chatReducer` handles `user_message` (→ `designing`), `draft_received` (→ `reviewing`), `final_received`, `turn_failed`, `pin`, `use_brief_tagline`, `back`, `hydrate`. `pin` is the advance: icon→name, name→tagline, tagline→`done`. `back` to an earlier stage clears the pins downstream of it.
 
-`lib/logo/wizard-view.ts` derives the view: `activeStep` (an empty transcript means the coach hasn't described their brand, so **Describe** is a fourth, client-only step in front of the three backend stages), `stepStatus`, `currentCandidates` (only the *latest* assistant turn **for the current stage** renders; older turns stay purely as backend context), `currentSelection` (drives "Your logo so far"), and `briefTaglineButtonLabel`.
+`lib/logo/wizard-view.ts` derives the view: `activeStep` (an empty transcript means the coach hasn't described their brand, so **Describe** is a fourth, client-only step in front of the three backend stages), `stepStatus`, `currentCandidates` (only the _latest_ assistant turn **for the current stage** renders; older turns stay purely as backend context), `currentSelection` (drives "Your logo so far"), and `briefTaglineButtonLabel`.
 
 Assistant messages carry the `stage` they were generated for, which is what keeps "Pick this" from letting an icon candidate be re-pinned as a lockup after the coach has moved on.
 
@@ -136,28 +136,28 @@ Assistant messages carry the `stage` they were generated for, which is what keep
 
 Every AI turn is render → critique:
 
-1. `fetchConverseTurnStream(body, {onPhase, onPreview}, signal)` → `POST /api/v1/admin/config/logo-converse/`, streamed via `streamAi`. Server phases (`designing`, `illustrating`, `tracing`) drive `AiProgress`; rows are built from phases the server *actually announced*, since image generation and tracing only happen on the icon stage and only when enabled. `TurnPreview` shows the reply and concept headings forming.
+1. `fetchConverseTurnStream(body, {onPhase, onPreview}, signal)` → `POST /api/v1/admin/config/logo-converse/`, streamed via `streamAi`. Server phases (`designing`, `illustrating`, `tracing`) drive `AiProgress`; rows are built from phases the server _actually announced_, since image generation and tracing only happen on the icon stage and only when enabled. `TurnPreview` shows the reply and concept headings forming.
 2. If `phase === "draft"` with a `token`: `renderDraftPngs(designs, stage, brandName)` composes each design into a recipe and rasterizes it **off-screen** (`createRoot` into a detached, fixed, `left:-10000px` container; `flushSync` + one `requestAnimationFrame` so layout settles and fonts warm; `MarkRenderer` at 512² for icon stage, `LogoRenderer` at 600-wide otherwise).
 3. `fetchConverseFinish(token, images)` → the AI critiques its own rendered work and returns polished finals.
 
 **Any failure in steps 2–3 falls back to the drafts the client already holds.** That rule is repeated verbatim in `studio-chat.tsx`, `create-similar.ts` and `handleRefine` — a step must never land blank.
 
-Two honesty details: cancelling via `abortRef` reports *"Cancelled — that used one of your design turns"*, because the server commits the turn at the first preview; and pass B (`status === "reviewing"`) shows a plain spinner rather than a phase list, since it has no server-side steps to report.
+Two honesty details: cancelling via `abortRef` reports _"Cancelled — that used one of your design turns"_, because the server commits the turn at the first preview; and pass B (`status === "reviewing"`) shows a plain spinner rather than a phase list, since it has no server-side steps to report.
 
 ### Auto-fetch
 
-Entering a stage auto-fires `AUTO_PROMPTS[stage]` so a step lands on options, not an empty box — guarded by a per-stage `fetchedRef` set so a *failed* turn shows its notice instead of looping. Describe never auto-fetches; `submitDescribe` pre-marks `"icon"` as fetched so a failed describe isn't silently re-fired with the generic prompt. Effects call through `runTurnRef.current` so auto-fetch never sends against a stale transcript.
+Entering a stage auto-fires `AUTO_PROMPTS[stage]` so a step lands on options, not an empty box — guarded by a per-stage `fetchedRef` set so a _failed_ turn shows its notice instead of looping. Describe never auto-fetches; `submitDescribe` pre-marks `"icon"` as fetched so a failed describe isn't silently re-fired with the generic prompt. Effects call through `runTurnRef.current` so auto-fetch never sends against a stale transcript.
 
 When `state.done && state.pinnedLockup`, a `usedRef`-guarded effect hands `composeConverseDesign(pinnedLockup, brandName)` up exactly once via `onUseDesign` → `handleCustomize`.
 
 ### "Create your own" (`generateSimilar`)
 
-The headless twin of the wizard, for one-click "make me something like this curated logo". It runs the *same* staged endpoints and the same two-pass loop — no new backend surface — for a cost of 2 turns:
+The headless twin of the wizard, for one-click "make me something like this curated logo". It runs the _same_ staged endpoints and the same two-pass loop — no new backend surface — for a cost of 2 turns:
 
 1. **icon stage** — "Recreate this icon concept in the same spirit…" seeded from the curated logo's `prompt` (or `title`).
 2. **name stage** — pins the chosen mark with the chat's exact pin shape (`{mark_elements: picked.elements, mark_paths: picked.paths}`; traced paths must be inherited verbatim because they can't be recompiled from elements) and asks for the full lockup.
 
-A gated or empty turn throws `SimilarError` with a coach-readable message from `GATE_NOTICES`. If the *name* turn fails after a good icon, it returns `kind: "icon"` — the icon wrapped in `composeIconPreview`'s clean default lockup — so the spent turn isn't wasted, and `LogoStudio` surfaces "style the text in the editor".
+A gated or empty turn throws `SimilarError` with a coach-readable message from `GATE_NOTICES`. If the _name_ turn fails after a good icon, it returns `kind: "icon"` — the icon wrapped in `composeIconPreview`'s clean default lockup — so the spent turn isn't wasted, and `LogoStudio` surfaces "style the text in the editor".
 
 ### Refinement
 
@@ -171,7 +171,7 @@ The trust boundary between AI output and the renderer:
 - `composeConverseDesign(design, brandName)` — stage-2/3 candidate → complete recipe, materialized faithfully (no dice).
 - `applyRefinedDesign(recipe, design, {keepMark})` — folds a refinement onto the current draft, leaving name, tagline text and element placement untouched.
 
-All three treat the AI response as untrusted: font family must be in `LOGO_FONT_FAMILIES`, weight must exist in the resolved family (`taglineWeight` snaps to the heaviest available for single-weight Script families rather than requesting a 404ing Google Fonts variant), `tracking` clamps to −0.1…0.4, `mark_scale` to 0.6…1.8, gradient `angle` to 0…360. Palette *roles* (`primary`/`secondary`/`accent`/`ink`/`white`) are resolved to hex through `resolveRole`, and a `white` mark with no badge behind it is guarded to `ink` so it can't vanish.
+All three treat the AI response as untrusted: font family must be in `LOGO_FONT_FAMILIES`, weight must exist in the resolved family (`taglineWeight` snaps to the heaviest available for single-weight Script families rather than requesting a 404ing Google Fonts variant), `tracking` clamps to −0.1…0.4, `mark_scale` to 0.6…1.8, gradient `angle` to 0…360. Palette _roles_ (`primary`/`secondary`/`accent`/`ink`/`white`) are resolved to hex through `resolveRole`, and a `white` mark with no badge behind it is guarded to `ink` so it can't vanish.
 
 ---
 
@@ -204,15 +204,15 @@ Two constraints shaped this file:
 
 **Backend endpoints** (all `apps.tenant_config`):
 
-| Endpoint | Client |
-|---|---|
-`GET /api/v1/logos/curated/` | `fetchCuratedCatalog` (plain `fetch`) |
-`GET /api/v1/admin/config/logo-ai/status/` | `fetchLogoAiStatus` |
-`POST /api/v1/admin/config/logo-converse/` | `fetchConverseTurn`, `fetchConverseTurnStream` |
-`POST /api/v1/admin/config/logo-converse/finish/` | `fetchConverseFinish`, `fetchRefineFinish` |
-`POST /api/v1/admin/config/logo-refine/` | `fetchLogoRefine` |
-`POST /api/v1/upload/{presign,complete}/` | `uploadPng` |
-`PATCH /api/v1/admin/config/` | `handleSave` |
+| Endpoint                                          | Client                                         |
+| ------------------------------------------------- | ---------------------------------------------- |
+| `GET /api/v1/logos/curated/`                      | `fetchCuratedCatalog` (plain `fetch`)          |
+| `GET /api/v1/admin/config/logo-ai/status/`        | `fetchLogoAiStatus`                            |
+| `POST /api/v1/admin/config/logo-converse/`        | `fetchConverseTurn`, `fetchConverseTurnStream` |
+| `POST /api/v1/admin/config/logo-converse/finish/` | `fetchConverseFinish`, `fetchRefineFinish`     |
+| `POST /api/v1/admin/config/logo-refine/`          | `fetchLogoRefine`                              |
+| `POST /api/v1/upload/{presign,complete}/`         | `uploadPng`                                    |
+| `PATCH /api/v1/admin/config/`                     | `handleSave`                                   |
 
 **Shared with `frontend-main`.** `packages/shared/src/logo/` is the engine; the signup wizard's logo step consumes the same `rankCuratedLogos`, renderer and catalog. Changes there affect both apps — verify with `make typecheck` and `make test-frontend`.
 

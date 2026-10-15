@@ -20,14 +20,14 @@ graph LR
     E[AGENTS.md<br/>GitNexus tool protocol] --> D
 ```
 
-| File | Owns | Shape | Tracked |
-|---|---|---|---|
-| `CLAUDE.md` | Full architecture, app-by-app breakdown, loading/UX conventions, deploy, rules | Long-form prose, ~200 lines | yes |
-| `agent.context.md` | Compressed architecture summary + **current task state** + the handful of invariants that break silently | Bullet list, ~30 lines | yes |
-| `agent.commands.json` | Named → shell-command mapping with descriptions | JSON array under `commands[]` | yes |
-| `AGENTS.md` | GitNexus MCP usage protocol (`impact`, `detect_changes`, `query`, `context`) | Generated block, `<!-- gitnexus:start -->` delimited | **no** (untracked) |
+| File                  | Owns                                                                                                     | Shape                                                | Tracked            |
+| --------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------ |
+| `CLAUDE.md`           | Full architecture, app-by-app breakdown, loading/UX conventions, deploy, rules                           | Long-form prose, ~200 lines                          | yes                |
+| `agent.context.md`    | Compressed architecture summary + **current task state** + the handful of invariants that break silently | Bullet list, ~30 lines                               | yes                |
+| `agent.commands.json` | Named → shell-command mapping with descriptions                                                          | JSON array under `commands[]`                        | yes                |
+| `AGENTS.md`           | GitNexus MCP usage protocol (`impact`, `detect_changes`, `query`, `context`)                             | Generated block, `<!-- gitnexus:start -->` delimited | **no** (untracked) |
 
-`agent.context.md` is the *lossy summary* layer. When a fact appears in both it and `CLAUDE.md` and they disagree, `CLAUDE.md` wins — it is the maintained document, and it is the one the project's own rules point contributors at.
+`agent.context.md` is the _lossy summary_ layer. When a fact appears in both it and `CLAUDE.md` and they disagree, `CLAUDE.md` wins — it is the maintained document, and it is the one the project's own rules point contributors at.
 
 ## Section-by-section
 
@@ -50,17 +50,17 @@ The referenced code is real and still present in `packages/shared/src/admin-kit/
 Two consequences for contributors:
 
 1. **Treat this section as historical.** A "Completed Implementations" list has no expiry date and no CI check behind it. Read the components before trusting the summary.
-2. **If you extend the section, extend it as state.** Task context belongs here precisely because it does *not* belong in `CLAUDE.md`. Durable architecture facts should migrate up to `CLAUDE.md`; finished task lists should eventually be deleted rather than accumulated.
+2. **If you extend the section, extend it as state.** Task context belongs here precisely because it does _not_ belong in `CLAUDE.md`. Durable architecture facts should migrate up to `CLAUDE.md`; finished task lists should eventually be deleted rather than accumulated.
 
 ### `## Invariants & Routing Rules`
 
 The three technical entries here are the highest-value lines in the file, because each describes a failure that is silent rather than loud:
 
 - **Browser `/api/v1/*` calls go directly to Django**, via Caddy — they are not proxied through Next.js. A Next.js API route that "helpfully" forwards them adds a hop that loses tenant identity.
-- **Next.js server-side `fetch()` to Django must send `X-Tenant-Domain`.** This is the classic one. Node's undici silently drops a custom `Host` header, so `Host: django` resolves to the *public* schema and the request returns plausible-looking wrong data instead of an error. `HeaderAwareTenantMiddleware` in `apps.core` is what reads the header.
+- **Next.js server-side `fetch()` to Django must send `X-Tenant-Domain`.** This is the classic one. Node's undici silently drops a custom `Host` header, so `Host: django` resolves to the _public_ schema and the request returns plausible-looking wrong data instead of an error. `HeaderAwareTenantMiddleware` in `apps.core` is what reads the header.
 - **Build the tenant domain as `${slug}.${BASE_DOMAIN}`.** Don't reach for a runtime helper in `generateMetadata` or `manifest.ts` — those execute in a context where the request-derived tenant lookup returns empty.
 
-The fourth entry — *"Work exclusively on the `main` branch as requested"* — is a captured user instruction from the session that produced this file, not a standing repository policy. Do not read it as a branching convention. Confirm the intended branch with the user; the project's own rules elsewhere are stricter about commits (never commit unless explicitly asked) than about branch choice.
+The fourth entry — _"Work exclusively on the `main` branch as requested"_ — is a captured user instruction from the session that produced this file, not a standing repository policy. Do not read it as a branching convention. Confirm the intended branch with the user; the project's own rules elsewhere are stricter about commits (never commit unless explicitly asked) than about branch choice.
 
 ### `## CLI / Development Commands`
 
@@ -76,7 +76,7 @@ Since nothing validates it, the discipline has to be manual:
 
 - **Adding a durable fact?** Put it in `CLAUDE.md` and only summarize here if an agent would be materially worse off without it in the first 30 lines of context.
 - **Adding a command?** Add it to `agent.commands.json` (name/command/description) so it's consumable programmatically; mirror it here only if it's one of the daily-driver few.
-- **Adding an invariant?** It belongs here if and only if violating it fails *quietly*. Loud failures don't need a briefing entry — the stack trace is the documentation.
+- **Adding an invariant?** It belongs here if and only if violating it fails _quietly_. Loud failures don't need a briefing entry — the stack trace is the documentation.
 - **Task-state section drifted?** Delete the stale entries. An out-of-date "Completed Implementations" list is worse than no list, because an agent will skip verification on the strength of it.
 - **Don't regenerate `AGENTS.md` by hand** — it carries a `<!-- gitnexus:start -->` marker and is currently untracked, meaning it's tool-generated output rather than a maintained doc.
 

@@ -6,10 +6,10 @@ This module is the coach-facing surface for AI-assisted site editing inside a te
 
 Two files make up the whole thing:
 
-| File | Role |
-|------|------|
+| File                             | Role                                                                                                                 |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `src/app/admin/site-ai/page.tsx` | `AdminSiteAiPage` — the client route: status, instruction box, streaming progress, preview/apply gate, upsell states |
-| `src/lib/site-ai-api.ts` | Typed client for `/api/v1/admin/site-ai/*` — `fetchSiteAiStatus`, `previewSiteEdit`, `applySiteEdit` |
+| `src/lib/site-ai-api.ts`         | Typed client for `/api/v1/admin/site-ai/*` — `fetchSiteAiStatus`, `previewSiteEdit`, `applySiteEdit`                 |
 
 The backend counterpart is `backend/apps/core/site_ai_admin.py`; the AI budget and provider selection come from the same onboarding infrastructure (`apps/core/onboarding/`, `apps/core/ai.py`).
 
@@ -72,10 +72,10 @@ const refreshStatus = useCallback(async () => {
 Two rules drive this. First, `CLAUDE.md`'s loading convention: a full skeleton is for first load only, so a mutation must never flip `loading` back on and blank the page. Second, the Apply response already carries the authoritative `remaining`, which is applied optimistically before the resync fires:
 
 ```ts
-setStatus((prev) => prev ? { ...prev, remaining: res.remaining } : prev);
+setStatus((prev) => (prev ? { ...prev, remaining: res.remaining } : prev));
 ```
 
-The resync exists to pick up the *derived* fields — `enabled` and `reason` may flip once the last allowance is spent — not the counter. If it fails, the optimistic state is still correct enough, and surfacing a resync error after a successful Apply would be actively misleading.
+The resync exists to pick up the _derived_ fields — `enabled` and `reason` may flip once the last allowance is spent — not the counter. If it fails, the optimistic state is still correct enough, and surfacing a resync error after a successful Apply would be actively misleading.
 
 If you add another mutation to this page, follow the same shape: optimistic patch from the mutation response, then `void refreshStatus()`. Never `void load()`.
 

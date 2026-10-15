@@ -6,12 +6,12 @@ Coaches design their own brand mark inside Contentor — no external tool, no up
 
 ## Sub-modules
 
-| Page | Owns |
-|---|---|
-| [packages-shared](logo-studio-brand-identity-packages-shared.md) | The recipe schema + migrations, the pure SVG renderer, the icon/font/palette catalogs, AI-design materializers, the canvas PNG export pipeline, the curated ranker |
-| [backend-apps](logo-studio-brand-identity-backend-apps.md) | AI design/refine/converse endpoints, geometry compiler, recipe validation, quota accounting (`LogoAiUsage`), and the public-schema curated catalog (`CuratedLogo`) |
-| [frontend-customer-src](logo-studio-brand-identity-frontend-customer-src.md) | The coach-facing full-screen Logo Studio — gallery, chat, direct-manipulation editor, export/upload |
-| [frontend-main-src](logo-studio-brand-identity-frontend-main-src.md) | The signup wizard's logo step, plus Contentor's *own* platform lockup (`logo-mark.tsx` — unrelated to the engine) |
+| Page                                                                         | Owns                                                                                                                                                               |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [packages-shared](logo-studio-brand-identity-packages-shared.md)             | The recipe schema + migrations, the pure SVG renderer, the icon/font/palette catalogs, AI-design materializers, the canvas PNG export pipeline, the curated ranker |
+| [backend-apps](logo-studio-brand-identity-backend-apps.md)                   | AI design/refine/converse endpoints, geometry compiler, recipe validation, quota accounting (`LogoAiUsage`), and the public-schema curated catalog (`CuratedLogo`) |
+| [frontend-customer-src](logo-studio-brand-identity-frontend-customer-src.md) | The coach-facing full-screen Logo Studio — gallery, chat, direct-manipulation editor, export/upload                                                                |
+| [frontend-main-src](logo-studio-brand-identity-frontend-main-src.md)         | The signup wizard's logo step, plus Contentor's _own_ platform lockup (`logo-mark.tsx` — unrelated to the engine)                                                  |
 
 `packages/shared/src/logo` is the load-bearing piece: `frontend-main`'s `lib/logo/*` and `types/logo.ts` are one-line re-exports of it, so both apps render byte-identical output from the same recipe.
 

@@ -2,7 +2,7 @@
 
 # Core Platform & Multi-Tenancy (`apps.core`)
 
-`apps.core` is the foundation of Contentor's schema-per-tenant architecture. It lives in **SHARED_APPS** (public schema only) and owns everything that must exist *before* a tenant schema is even resolved: the `Tenant` model itself, the middleware pipeline that turns a hostname into a schema, region/locale resolution, tenant provisioning, the platform billing plan model, content access control, and the shared utilities (storage, email, sanitization, throttling) that every other app builds on.
+`apps.core` is the foundation of Contentor's schema-per-tenant architecture. It lives in **SHARED_APPS** (public schema only) and owns everything that must exist _before_ a tenant schema is even resolved: the `Tenant` model itself, the middleware pipeline that turns a hostname into a schema, region/locale resolution, tenant provisioning, the platform billing plan model, content access control, and the shared utilities (storage, email, sanitization, throttling) that every other app builds on.
 
 If you are touching request routing, tenant lifecycle, or anything that spans tenants, you are working in this module.
 
@@ -37,7 +37,7 @@ Extends django-tenants' `TenantMainMiddleware` with two critical behaviors:
 Redis sliding-window rate limiter (100 req/min default, 10 req/min for `/api/v1/upload/`), applied only to tenant schemas — public-schema traffic is exempt. Three design decisions worth knowing:
 
 - **Buckets are per client IP, not per tenant** — one abuser can't throttle a whole tenant's visitors, and a spoofed `X-Tenant-Domain` can't exhaust a victim tenant's window.
-- **The tenant's own admins are exempt.** `_is_admin()` decodes the JWT *before* DRF auth runs and requires `payload["tenant_id"] == schema_name` — a coach's token for tenant A must not exempt them on tenant B, since the tenant is resolved from a spoofable header.
+- **The tenant's own admins are exempt.** `_is_admin()` decodes the JWT _before_ DRF auth runs and requires `payload["tenant_id"] == schema_name` — a coach's token for tenant A must not exempt them on tenant B, since the tenant is resolved from a spoofable header.
 - **`/api/v1/admin/config/` is never limited** (`EXEMPT_PATHS`). It resolves whether a site exists on every server-rendered page load; throttling it would make a valid tenant render "Site not found" under load.
 
 Rates are settings-overridable (`TENANT_RATE_LIMIT_DEFAULT` / `TENANT_RATE_LIMIT_UPLOAD`) so the e2e suite, whose traffic shares one IP, doesn't trip 429s in dev.
@@ -86,7 +86,7 @@ Content catalogs (`CuratedLogo`, `CuratedPhoto`, `PlatformBlogPost`) also live h
 
 ## Tenant provisioning (`tasks.py`)
 
-Provisioning is split so the wizard can create a schema *early* (when the coach reaches the content step) and compose the site *later* (at the reveal):
+Provisioning is split so the wizard can create a schema _early_ (when the coach reaches the content step) and compose the site _later_ (at the reveal):
 
 ```mermaid
 flowchart TD
@@ -100,7 +100,7 @@ flowchart TD
     PT --> RD
 ```
 
-- **`provision_tenant_schema()`** — the shared core: creates the schema (`create_schema(check_if_exists=True)`), the owner `User` in the public schema (role `coach`) *and* inside the tenant schema (role `owner`, `is_staff`), and a default `TenantConfig` via `_create_default_config()`. Every step is idempotent (`get_or_create`, existence guards) so Celery retries complete a partial signup instead of duplicating rows. Note the region rule: an existing public user's `region` is never mutated — it records first-signup origin only.
+- **`provision_tenant_schema()`** — the shared core: creates the schema (`create_schema(check_if_exists=True)`), the owner `User` in the public schema (role `coach`) _and_ inside the tenant schema (role `owner`, `is_staff`), and a default `TenantConfig` via `_create_default_config()`. Every step is idempotent (`get_or_create`, existence guards) so Celery retries complete a partial signup instead of duplicating rows. Note the region rule: an existing public user's `region` is never mutated — it records first-signup origin only.
 - **`provision_tenant`** — the classic full path: schema, then niche seeding (`seed_template_into_tenant`), then wizard-answer overlay, then `ready`.
 - **`provision_wizard_schema`** — content-first early path: schema/owner/config only, stops at `provisioned`. It must accept the `provisioning` status too — the enqueueing endpoint sets that synchronously to close a double-poll race, so refusing it would make every call see its own handoff state and no-op.
 - **`compose_wizard_site`** — finishes a `provisioned` tenant: applies wizard answers, best-effort seeds starter posts/draft products, marks `ready`. **Fail-soft**: AI failures fall back to deterministic pages and still reach `ready`; only unexpected errors retry.
@@ -109,7 +109,7 @@ flowchart TD
 
 `_apply_wizard_answers()` orchestrates the AI passes (`_compose_pages_with_ai`, `_pick_photos_with_ai`, `_seed_starter_post`), each run through `_run_ai_step()` — a one-worker `ThreadPoolExecutor` with a hard timeout that returns `(result, "ok")` or `(None, "failed")` and **never raises**. Two constraints to respect if you modify these:
 
-- The worker thread gets fresh DB connections that land on the **public** schema — tenant-schema reads/writes must happen in the caller's thread inside `tenant_context`. That's why `_gather_content_items()` reads courses/downloads *before* the thread is spawned.
+- The worker thread gets fresh DB connections that land on the **public** schema — tenant-schema reads/writes must happen in the caller's thread inside `tenant_context`. That's why `_gather_content_items()` reads courses/downloads _before_ the thread is spawned.
 - Per-step status is recorded in `wizard_state` (`ai_compose_status`, `ai_photos_status`, `ai_blog_status`) as the once-only guard, so retries don't re-spend AI budget.
 
 Other beat tasks here: `send_wizard_recovery_emails` (hourly drop-off nudge, at most one per tenant via the `recovery_email_sent_at` NULL filter), `cleanup_abandoned_signups` (two-stage: warn, then `tenant.delete(force_drop=True)` after the grace period — selection guards live in `onboarding/recovery.py`), `purge_ai_transcripts`, and `rank_curated_logos` (fire-and-forget wizard helper; every failure path is a silent no-op because the wizard has a client-side fallback rank).
@@ -124,7 +124,7 @@ The check order is a strict waterfall — the first matching rule wins:
 2. **Free content** (`pricing_type == "free"`).
 3. **Direct purchase** — a non-refunded `PaymentItem` in a `completed`/`partially_refunded` payment.
 4. **Bundle purchase** — a purchased `Bundle` containing the content.
-5. **Subscription** — either the content is linked to one of the user's active plans (`SubscriptionPlanAccess`), or it's `subscription`-priced, in which case *any* active subscription unlocks it.
+5. **Subscription** — either the content is linked to one of the user's active plans (`SubscriptionPlanAccess`), or it's `subscription`-priced, in which case _any_ active subscription unlocks it.
 6. **No access** — `unlock_methods` tells the frontend what to offer (`purchase`, `subscribe`).
 
 Two things to preserve when changing this:
@@ -146,7 +146,7 @@ Three cooperating pieces protect the unauthenticated AI endpoints (wizard follow
 
 ### Object storage (`storage.py`)
 
-`get_s3_client(external=False)` builds a boto3 client configured for both MinIO (dev) and Hetzner (prod) — path-style addressing + SigV4. `external=True` swaps to `AWS_ENDPOINT_EXTERNAL`, the endpoint reachable from the *browser*; all presigned-URL generation uses it.
+`get_s3_client(external=False)` builds a boto3 client configured for both MinIO (dev) and Hetzner (prod) — path-style addressing + SigV4. `external=True` swaps to `AWS_ENDPOINT_EXTERNAL`, the endpoint reachable from the _browser_; all presigned-URL generation uses it.
 
 Tenant isolation is prefix-based: `build_s3_path(category, *parts)` produces `tenants/<slug>/<category>/...` from the current connection's tenant. The security-critical counterpart is **`is_tenant_scoped_key(s3_key)`** — any client-supplied key (the upload "complete" endpoints) must pass it, or a coach could point a record at, and get a presigned URL for, any object in the bucket, including other tenants'. `is_blocked_content_type()` rejects uploads that could execute as active content (HTML/JS). `sign_if_s3_key()` is the convenience used by serializers: presign S3 keys, pass HTTP URLs through untouched.
 
@@ -179,7 +179,7 @@ The trust boundary for coach/student-authored content. `clean_rich_html()` (nh3,
 - Public (unauthenticated) endpoints must set `@authentication_classes([])` — `AllowAny` alone doesn't bypass `TenantJWTAuthentication`.
 - Never change `Tenant.region` or `billing_currency` after creation — the `pre_save` signal will raise.
 - New AI features: copy the `*AiUsage` contract exactly (DB-backed, spend-on-attempt, quota-on-success).
-- New access rules: update both `get_access_info` *and* `bulk_check_access`.
+- New access rules: update both `get_access_info` _and_ `bulk_check_access`.
 - Client-supplied S3 keys: always validate with `is_tenant_scoped_key()`.
 - Provisioning tasks must stay idempotent — every step is designed to be safely re-run by a Celery retry.
 - The curated-logo signals (`_mirror_curated_logos`) sync the DB catalog to the repo's `logo_meta.json` in dev; they deliberately skip writing an empty list when the table is empty, because that file is the seeder's input and the only local copy of the catalog.

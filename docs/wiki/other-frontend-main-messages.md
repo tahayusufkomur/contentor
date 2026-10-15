@@ -8,10 +8,10 @@ Static translation catalogs for the marketing/signup app (`frontend-main`). Thes
 
 `frontend-main` is the public face of Contentor: the marketing site, pricing page, coach signup, login, and the AI-first onboarding wizard. Every user-visible string in those surfaces lives here rather than in JSX, so that the app can serve two locales from the same components:
 
-| Locale | Routed via | Directory |
-|---|---|---|
-| English (default) | `Host(localhost)` / `Host(contentor.app)` | `messages/en/` |
-| Turkish | `Host(tr.localhost)` / `Host(tr.contentor.app)` | `messages/tr/` |
+| Locale            | Routed via                                      | Directory      |
+| ----------------- | ----------------------------------------------- | -------------- |
+| English (default) | `Host(localhost)` / `Host(contentor.app)`       | `messages/en/` |
+| Turkish           | `Host(tr.localhost)` / `Host(tr.contentor.app)` | `messages/tr/` |
 
 The locale is not a URL path segment — it is derived from the host (apex vs. `tr.` subdomain) and Caddy routes both to the same `nextjs-main` container. That means **the catalog pair is the only thing that differs between the two sites**; a key present in `en/` but missing in `tr/` is a visible defect on the Turkish site, not a build error.
 
@@ -34,7 +34,7 @@ messages/
 
 Three top-level groups tracking the three auth surfaces:
 
-- **`signup`** — the two-step signup form (`brandStepHeading` → `contactStepHeading`), the "check your email" confirmation, and a nested **`signup.verify`** group for the post-click verification screen. `verify` models a small state machine in copy: `verifying*` → `provisioning*` → `ready*` / `error*`, with each state carrying its own `Eyebrow` / `Title` / `Subtitle` triple. There is also an `authTitle` / `authSubtitle` / `authSubmit` variant used when an already-signed-in coach creates a *second* platform (no email verification needed).
+- **`signup`** — the two-step signup form (`brandStepHeading` → `contactStepHeading`), the "check your email" confirmation, and a nested **`signup.verify`** group for the post-click verification screen. `verify` models a small state machine in copy: `verifying*` → `provisioning*` → `ready*` / `error*`, with each state carrying its own `Eyebrow` / `Title` / `Subtitle` triple. There is also an `authTitle` / `authSubtitle` / `authSubmit` variant used when an already-signed-in coach creates a _second_ platform (no email verification needed).
 - **`login`** — magic-link form plus `googleCta` and a `googleErrors` map. The `googleErrors` keys (`googleDenied`, `invalidState`, `tenantMismatch`, `tokenExchangeFailed`, `userinfoFailed`, `noEmail`) correspond to the failure modes the Django OAuth callback returns as an error code in the redirect query string — the frontend looks the code up in this map and falls back to `generic`. **Adding a new OAuth failure code on the backend requires a new key in both locales**, otherwise the user sees a raw `next-intl` missing-key fallback.
 - **`callback`** — the interstitial shown while a magic-link token is exchanged.
 
@@ -71,7 +71,7 @@ Each plan follows a two-part pattern that is easy to get wrong:
 }
 ```
 
-`features` is the full label set for **every** row rendered on that plan's card, including features the plan does *not* have; `included` is the subset rendered as satisfied. That's why `free.features` lists `live`, `branding`, and `domain` but `free.included` omits them — the card shows those rows struck through / greyed rather than hiding them, giving all three columns the same row count. **Any key added to `features` must be considered for `included`; any key in `included` must exist in `features`.**
+`features` is the full label set for **every** row rendered on that plan's card, including features the plan does _not_ have; `included` is the subset rendered as satisfied. That's why `free.features` lists `live`, `branding`, and `domain` but `free.included` omits them — the card shows those rows struck through / greyed rather than hiding them, giving all three columns the same row count. **Any key added to `features` must be considered for `included`; any key in `included` must exist in `features`.**
 
 Prices are also literal strings, and the two locales diverge in currency: `en/` uses `$0` / `$19` / `$49`, `tr/` uses `₺0` / `₺999` / `₺2.499` (with Turkish thousands separator). These are display-only — the actual amounts charged come from the backend `Plan` model and Stripe, so a change here does **not** change billing. Keeping them in sync with `apps.billing` plan data is a manual chore. `comingSoon` / `comingSoonNote` and `errors.priceNotAvailable` cover the case where a region has no configured Stripe price yet.
 
@@ -108,13 +108,13 @@ Key groups and how they map to wizard state:
 
 Only ICU simple arguments are used — no plurals, no select, no date/number skeletons:
 
-| Argument | Where |
-|---|---|
-| `{email}` | `auth.signup.verifyDescription`, `auth.login.checkInbox` |
-| `{name}` | `auth.signup.authSubtitle`, `marketing.helpBot.agentJoined` / `humanModeNotice` |
-| `{domain}` | `auth.signup.verify.openCta` |
-| `{year}` | `common.footer.copyright` |
-| `{count}` | `marketing.features.illustrations.lessonsCount` / `watchingCount`, `wizard.revealChat.remaining` |
+| Argument   | Where                                                                                            |
+| ---------- | ------------------------------------------------------------------------------------------------ |
+| `{email}`  | `auth.signup.verifyDescription`, `auth.login.checkInbox`                                         |
+| `{name}`   | `auth.signup.authSubtitle`, `marketing.helpBot.agentJoined` / `humanModeNotice`                  |
+| `{domain}` | `auth.signup.verify.openCta`                                                                     |
+| `{year}`   | `common.footer.copyright`                                                                        |
+| `{count}`  | `marketing.features.illustrations.lessonsCount` / `watchingCount`, `wizard.revealChat.remaining` |
 
 `{count}` here is a plain substitution, not an ICU `plural` — the surrounding copy is written to work for any number ("Free refinements left: 1"). If you need real pluralization, you'll be adding the first ICU plural in this catalog; do it in both locales at once, since Turkish has different plural rules than English.
 

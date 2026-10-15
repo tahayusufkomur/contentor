@@ -38,10 +38,10 @@ The deliberate alternative — `tsconfig` `paths` entries for bare specifiers �
 
 `NEXT_PUBLIC_*` values are inlined into the client bundle at build time, so they arrive as `ARG`s in the `builder` stage:
 
-| Arg | Used by |
-| --- | --- |
-| `NEXT_PUBLIC_API_URL` | Django origin (also feeds the `rewrites()` fallback) |
-| `NEXT_PUBLIC_BASE_DOMAIN` | tenant-subdomain construction; `allowedDevOrigins` |
+| Arg                             | Used by                                                 |
+| ------------------------------- | ------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`           | Django origin (also feeds the `rewrites()` fallback)    |
+| `NEXT_PUBLIC_BASE_DOMAIN`       | tenant-subdomain construction; `allowedDevOrigins`      |
 | `NEXT_PUBLIC_GETSTREAM_API_KEY` | in-browser `stream-chat` / `@stream-io/video-react-sdk` |
 
 Adding a new `NEXT_PUBLIC_*` means touching three places: the `ARG`/`ENV` pair here, the compose build args, and `.env.prod.example`. Anything not listed here is server-only and read at runtime.
@@ -58,7 +58,7 @@ The exported config is `withSerwist(withNextIntl(nextConfig))` — plugin order 
 
 ### Performance knobs (read the comments before changing)
 
-**`experimental.staleTimes: { dynamic: 30, static: 180 }`** — Next 14.2 defaults `dynamic` to `0`, which makes every revisit refetch the RSC payload. 30 seconds makes panel-to-panel navigation in the admin feel instant. This is safe for freshness because the router cache stores the *payload*, not component state: client pages still remount and re-run their `clientFetch` on arrival.
+**`experimental.staleTimes: { dynamic: 30, static: 180 }`** — Next 14.2 defaults `dynamic` to `0`, which makes every revisit refetch the RSC payload. 30 seconds makes panel-to-panel navigation in the admin feel instant. This is safe for freshness because the router cache stores the _payload_, not component state: client pages still remount and re-run their `clientFetch` on arrival.
 
 **`onDemandEntries: { maxInactiveAge: 3600_000, pagesBufferLength: 100 }`** — dev-only. The default ~1 minute age meant returning to an admin panel re-triggered a webpack compile (638+ modules, 1.5–2s each) once the entry expired. Keeping an hour of compiled routes alive was one half of the 2026-07-23 admin-slowness fix.
 
@@ -76,7 +76,12 @@ The exported config is `withSerwist(withNextIntl(nextConfig))` — plugin order 
 ### Routing
 
 ```js
-rewrites: [{ source: "/api/v1/:path*", destination: `${NEXT_PUBLIC_API_URL || "http://django:8000"}/api/v1/:path*` }]
+rewrites: [
+  {
+    source: "/api/v1/:path*",
+    destination: `${NEXT_PUBLIC_API_URL || "http://django:8000"}/api/v1/:path*`,
+  },
+];
 ```
 
 This is a **fallback**, not the primary API path. In both dev and prod, Caddy routes `/api/*` to Django directly, so browser requests never traverse Next. Server-side `fetch()` from RSCs also calls Django directly and must set `X-Tenant-Domain` (undici drops custom `Host` headers — see the multi-tenancy notes in `CLAUDE.md`).
@@ -94,7 +99,7 @@ withSerwistInit({
   cacheOnNavigation: true,
   disable: NODE_ENV === "development" && SERWIST_DEV !== "1",
   additionalPrecacheEntries: [{ url: "/offline.html", revision }],
-})
+});
 ```
 
 The SW is **off in dev** unless you set `SERWIST_DEV=1` — otherwise stale precached assets make hot reload behave erratically. `revision` is a fresh `randomUUID()` per build, which busts the `/offline.html` precache entry on every build (and means two builds of identical source produce different `sw.js` output — expected, not a bug).
@@ -114,7 +119,7 @@ The config extends `../packages/shared/tailwind-preset`. Design-token changes th
 ### Dark mode covers three classes
 
 ```ts
-darkMode: ["variant", ["&:is(.dark, .dark *)", "&:is(.dim, .dim *)"]]
+darkMode: ["variant", ["&:is(.dark, .dark *)", "&:is(.dim, .dim *)"]];
 ```
 
 The app ships a soft-dark **`dim`** theme in addition to `dark` (themes are driven by `next-themes`). Without the second selector, every `dark:` utility would render light under Dim. Any new dark-family theme class must be appended here.
@@ -125,10 +130,10 @@ The app ships a soft-dark **`dim`** theme in addition to `dark` (themes are driv
 content: [
   "./src/**/*.{js,ts,jsx,tsx,mdx}",
   "../packages/shared/src/**/*.{js,ts,jsx,tsx,mdx}",
-]
+];
 ```
 
-Classes used *only* inside `@shared/*` components were silently dropped before the second glob existed — the JIT compiler never saw those files. The failure mode is subtle: a real regression from this was `max-h-32` vanishing from the gallery JSON modal's image preview, letting the image push the Save/Delete buttons off-screen. If a shared component renders unstyled, suspect a missing content glob before suspecting the component.
+Classes used _only_ inside `@shared/*` components were silently dropped before the second glob existed — the JIT compiler never saw those files. The failure mode is subtle: a real regression from this was `max-h-32` vanishing from the gallery JSON modal's image preview, letting the image push the Save/Delete buttons off-screen. If a shared component renders unstyled, suspect a missing content glob before suspecting the component.
 
 ### Color tokens are CSS variables
 
@@ -156,7 +161,9 @@ Standard Next 14 strict setup, with three project-specific details:
 
 ```ts
 // vitest.config.ts — pure-logic tests only (src/lib/logo)
-test: { include: ["src/**/__tests__/**/*.test.ts"] }
+test: {
+  include: ["src/**/__tests__/**/*.test.ts"];
+}
 ```
 
 Note the `.test.ts` (not `.tsx`) include pattern — this is intentional, and it encodes the repo convention: **React components are not unit-tested here.** Component correctness is covered by `npm run build` (type + build errors) and the Playwright suite in `e2e/`. Vitest is reserved for pure logic — currently the logo-generation math under `src/lib/logo`.
@@ -169,13 +176,13 @@ Run with `npm test` in the app, or `make test-frontend` from the repo root.
 
 ## npm scripts worth knowing
 
-| Script | Notes |
-| --- | --- |
-| `postinstall` | `scripts/fix-mediapipe-exports.js` — patches the broken `exports` map; runs automatically on install |
-| `dev` / `build` / `start` | standard Next; `build` produces the standalone output |
-| `test` | `vitest run` (see above) |
-| `typecheck` | `tsc --noEmit` |
-| `gen:api` | `openapi-typescript http://localhost/api/schema/ -o src/types/api-generated.ts` |
+| Script                    | Notes                                                                                                |
+| ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `postinstall`             | `scripts/fix-mediapipe-exports.js` — patches the broken `exports` map; runs automatically on install |
+| `dev` / `build` / `start` | standard Next; `build` produces the standalone output                                                |
+| `test`                    | `vitest run` (see above)                                                                             |
+| `typecheck`               | `tsc --noEmit`                                                                                       |
+| `gen:api`                 | `openapi-typescript http://localhost/api/schema/ -o src/types/api-generated.ts`                      |
 
 `gen:api` requires the dev stack to be up (it fetches drf-spectacular's live schema through Caddy). Per repo convention, run it after **any** backend serializer change and read the diff of `src/types/api-generated.ts` — an unexpected diff there means the API contract moved under you.
 
@@ -192,7 +199,7 @@ The dependency list explains most of what the app can do:
 - **i18n & theming** — `next-intl`, `next-themes`
 - **UI** — Radix primitives, `lucide-react`, `class-variance-authority`, `clsx`, `tailwind-merge`, `sonner` for toasts
 
-`sonner` is the sanctioned toast layer in both apps; `lucide-react`'s `Loader2` is explicitly *banned* in app code by `scripts/check-loading-patterns.mjs` in favour of `<Button loading>` / `<Spinner>`.
+`sonner` is the sanctioned toast layer in both apps; `lucide-react`'s `Loader2` is explicitly _banned_ in app code by `scripts/check-loading-patterns.mjs` in favour of `<Button loading>` / `<Spinner>`.
 
 ---
 

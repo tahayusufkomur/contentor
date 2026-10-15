@@ -7,7 +7,7 @@
 Treat it as two things at once:
 
 1. **A build queue.** A plan at the top level of `plans/` is executable work — an agent or a human can open it and implement task-by-task with no other context.
-2. **A decision record.** The paired spec explains *why* the design is what it is, including what was explicitly rejected. That rationale exists nowhere else in the repo.
+2. **A decision record.** The paired spec explains _why_ the design is what it is, including what was explicitly rejected. That rationale exists nowhere else in the repo.
 
 ---
 
@@ -40,11 +40,15 @@ A spec is the output of a brainstorming session with the product owner. It captu
 **Status:** Approved (brainstorm w/ Taha), pending implementation plan
 **Scope:** dev + prod
 
-## Problem        — what is broken today, in concrete terms
-## Goals          — numbered, each independently checkable
-## Non-goals      — with the reason for exclusion, not just the exclusion
-## Current state  — facts the design leans on (optional but common)
-## Architecture   — usually an ASCII data-flow block
+## Problem — what is broken today, in concrete terms
+
+## Goals — numbered, each independently checkable
+
+## Non-goals — with the reason for exclusion, not just the exclusion
+
+## Current state — facts the design leans on (optional but common)
+
+## Architecture — usually an ASCII data-flow block
 ```
 
 Two conventions carry most of the value:
@@ -52,7 +56,7 @@ Two conventions carry most of the value:
 - **`Status:` is prose, not an enum.** Real values range from `Approved design, pending implementation plan` (7 specs) through `Draft — pending owner review (see §2 for the veto list)` to a verbatim quote of the owner's direction: `Approved direction from product owner ("logos are repetitive, amateur, ugly — coaches should say Wow, and it shouldn't cost us much")`. When you write a spec, say what kind of approval you actually have.
 - **Non-goals record rejections with their cost.** The error-logging spec doesn't just say "no Loki/Grafana" — it says Loki was rejected because it would cost ~300–400MB RAM on a box where every service is `mem_limit`-rationed, and adds "revisit only if volume grows ~100×". That is the reusable part. Follow it.
 
-Specs describing an architecture that already shipped are the fastest way to understand a subsystem's constraints — but for *current* callers and behavior, trust `docs/wiki/` and the GitNexus MCP tools instead. A spec is a snapshot of intent at one date.
+Specs describing an architecture that already shipped are the fastest way to understand a subsystem's constraints — but for _current_ callers and behavior, trust `docs/wiki/` and the GitNexus MCP tools instead. A spec is a snapshot of intent at one date.
 
 ### Plan (`plans/*.md`)
 
@@ -68,14 +72,17 @@ A plan is an executable script for an agent that has zero prior context. 51 of t
 **Tech Stack:** the exact frameworks/versions in play.
 
 ## Global Constraints
+
 ## File structure
+
 ## Task 1: … / Task 2: … / … / Task N: Integration verification
+
 ## Self-review notes (addressed)
 ```
 
 **`Global Constraints`** is the section that prevents the most rework. It records the things an agent would otherwise get wrong by assuming symmetry between the two frontends or between apps. Real examples from `2026-06-24-custom-domain-wizard-frontend.md`:
 
-- `frontend-main` has no `Select`, `AlertDialog`, or `sonner` — use a native styled `<select>`, an inline two-button confirm, and inline status messaging, *not* toasts.
+- `frontend-main` has no `Select`, `AlertDialog`, or `sonner` — use a native styled `<select>`, an inline two-button confirm, and inline status messaging, _not_ toasts.
 - The dashboard area is hardcoded English, not next-intl — do not add i18n keys.
 - No frontend test runner exists in `frontend-main`, so task verification is `npx tsc --noEmit` clean plus a final browser smoke.
 - Staging discipline: stage explicit paths only; never `git add -A`.
@@ -86,19 +93,21 @@ A plan is an executable script for an agent that has zero prior context. 51 of t
 ### Task 3: resolve_audience + counts
 
 **Files:**
+
 - Create: backend/apps/notifications/audience.py
-- Test:   backend/apps/notifications/tests/test_audience.py
+- Test: backend/apps/notifications/tests/test_audience.py
 
 **Interfaces:**
+
 - Consumes: apps.accounts.models.User, apps.core.access.ContentAccessService
 - Produces: resolve_audience(filters: dict) -> QuerySet[User]
-           audience_counts(filters: dict) -> dict
+  audience_counts(filters: dict) -> dict
 
-- [ ] Step 1: Write the failing test        (full test body, inline)
-- [ ] Step 2: Run to verify it fails        (exact command + expected failure)
-- [ ] Step 3: Implement                     (full implementation, inline)
+- [ ] Step 1: Write the failing test (full test body, inline)
+- [ ] Step 2: Run to verify it fails (exact command + expected failure)
+- [ ] Step 3: Implement (full implementation, inline)
 - [ ] Step 4: Run tests to verify they pass (exact command + expected result)
-- [ ] Step 5: Commit                        (exact git add + commit message)
+- [ ] Step 5: Commit (exact git add + commit message)
 ```
 
 The **`Interfaces: Consumes / Produces`** block is load-bearing, not decoration. It is the contract that lets tasks be handed to independent subagents: task 7 can be written against `audience_counts`'s signature before task 3 exists. Keep it exact — including whether a helper takes `schema_name`, and whether an API field is `filters` (serializer) or `filters_json` (model).
@@ -145,14 +154,14 @@ Both files stay in the archive. If you find two plans for one feature, look for 
 
 ## Connections to the rest of the repo
 
-| Where | Relationship |
-|---|---|
-| `.superpowers/` (gitignored, `.gitignore:54`) | Ephemeral SDD execution state — `sdd/briefs/`, `sdd/phase1-task-N-brief.md` + matching `-report.md`, `progress.md`, and per-review `*.diff` snapshots. A brief is one task lifted verbatim out of a plan for a single subagent. Never commit these; never treat them as documentation. |
-| `docs/PRODUCT.md` | The living product plan, maintained via the `/po` skill. It cites specs by path for backlog items (e.g. line 72 links the AI-assistants-governance spec with an effort estimate) and cites `.superpowers/sdd/progress.md` for in-flight carry-overs. `/po` is the right entry point for "what's next"; this directory is the entry point for "how was that decided". |
-| Source docstrings | ~29 files back-link to a spec or plan on the first lines of a module — `backend/apps/blog/curated.py:8` → the curated-photos spec, `backend/apps/core/ai.py:2` → the shared-AI-provider spec, `backend/apps/core/onboarding/content.py:10` → the wizard-content-apis plan. When you add a module that implements a design here, add the same one-line pointer. |
-| `docs/wiki/` | GitNexus-generated per-area architecture pages, regenerated with `make wiki`. Complementary, not overlapping: the wiki describes current structure, superpowers docs describe intent and history. For exact callers and blast radius, use the GitNexus MCP tools over either. |
-| `docs/REFERENCE.md`, `docs/GLOSSARY.md` | The stable comprehensive reference and canonical terminology. Specs frequently link to them ("Companion docs: `../../REFERENCE.md`, `../../GLOSSARY.md`") instead of restating domain definitions. |
-| `../docs/plans/`, `../docs/specs/` | Platform-level planning that predates this directory. Historical, not maintained. |
+| Where                                         | Relationship                                                                                                                                                                                                                                                                                                                                                         |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.superpowers/` (gitignored, `.gitignore:54`) | Ephemeral SDD execution state — `sdd/briefs/`, `sdd/phase1-task-N-brief.md` + matching `-report.md`, `progress.md`, and per-review `*.diff` snapshots. A brief is one task lifted verbatim out of a plan for a single subagent. Never commit these; never treat them as documentation.                                                                               |
+| `docs/PRODUCT.md`                             | The living product plan, maintained via the `/po` skill. It cites specs by path for backlog items (e.g. line 72 links the AI-assistants-governance spec with an effort estimate) and cites `.superpowers/sdd/progress.md` for in-flight carry-overs. `/po` is the right entry point for "what's next"; this directory is the entry point for "how was that decided". |
+| Source docstrings                             | ~29 files back-link to a spec or plan on the first lines of a module — `backend/apps/blog/curated.py:8` → the curated-photos spec, `backend/apps/core/ai.py:2` → the shared-AI-provider spec, `backend/apps/core/onboarding/content.py:10` → the wizard-content-apis plan. When you add a module that implements a design here, add the same one-line pointer.       |
+| `docs/wiki/`                                  | GitNexus-generated per-area architecture pages, regenerated with `make wiki`. Complementary, not overlapping: the wiki describes current structure, superpowers docs describe intent and history. For exact callers and blast radius, use the GitNexus MCP tools over either.                                                                                        |
+| `docs/REFERENCE.md`, `docs/GLOSSARY.md`       | The stable comprehensive reference and canonical terminology. Specs frequently link to them ("Companion docs: `../../REFERENCE.md`, `../../GLOSSARY.md`") instead of restating domain definitions.                                                                                                                                                                   |
+| `../docs/plans/`, `../docs/specs/`            | Platform-level planning that predates this directory. Historical, not maintained.                                                                                                                                                                                                                                                                                    |
 
 ---
 

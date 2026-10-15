@@ -2,18 +2,18 @@
 
 # Email Campaigns
 
-Two parallel email products built from one set of parts: **coach → student** campaigns inside a tenant, and **superadmin → coach** campaigns at the platform level. Neither side renders email HTML itself — both delegate design and rendering to **MailCraft** (called *EmailCraft* in backend code) and use Celery for the actual fan-out.
+Two parallel email products built from one set of parts: **coach → student** campaigns inside a tenant, and **superadmin → coach** campaigns at the platform level. Neither side renders email HTML itself — both delegate design and rendering to **MailCraft** (called _EmailCraft_ in backend code) and use Celery for the actual fan-out.
 
 The coach side came first; the platform side is a deliberate mirror of it, sharing the backend HTTP client, the status enums, and the React components — differing only in audience, recipient filters, and API namespace.
 
 ## Sub-modules
 
-| Page | Contains |
-|---|---|
-| [Email Campaigns — backend-apps](email-campaigns-backend-apps.md) | `apps.email_campaigns` (tenant schema) + `apps.platform_email` (public schema): models, `emailcraft_client`, `recipients.py`, Celery tasks, `/api/v1/email/*` and platform-email views |
-| [Email Campaigns — packages-shared](email-campaigns-packages-shared.md) | `EmailBuilderIframe`, `TemplateGrid`, `TemplateCard` — the builder embed and template browser used by both apps |
-| [Email Campaigns — frontend-customer-src](email-campaigns-frontend-customer-src.md) | Coach UI under `/admin/email`, `src/lib/email-api.ts` |
-| [Email Campaigns — frontend-main-src](email-campaigns-frontend-main-src.md) | Superadmin UI under `/admin/email`, `src/lib/platform-email-api.ts` (plus an `email-api.ts` alias shim so shared components resolve) |
+| Page                                                                                | Contains                                                                                                                                                                               |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Email Campaigns — backend-apps](email-campaigns-backend-apps.md)                   | `apps.email_campaigns` (tenant schema) + `apps.platform_email` (public schema): models, `emailcraft_client`, `recipients.py`, Celery tasks, `/api/v1/email/*` and platform-email views |
+| [Email Campaigns — packages-shared](email-campaigns-packages-shared.md)             | `EmailBuilderIframe`, `TemplateGrid`, `TemplateCard` — the builder embed and template browser used by both apps                                                                        |
+| [Email Campaigns — frontend-customer-src](email-campaigns-frontend-customer-src.md) | Coach UI under `/admin/email`, `src/lib/email-api.ts`                                                                                                                                  |
+| [Email Campaigns — frontend-main-src](email-campaigns-frontend-main-src.md)         | Superadmin UI under `/admin/email`, `src/lib/platform-email-api.ts` (plus an `email-api.ts` alias shim so shared components resolve)                                                   |
 
 ## How the pieces fit
 

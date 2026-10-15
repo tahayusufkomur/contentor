@@ -6,7 +6,7 @@ A flat, machine-readable registry of the canonical commands an AI coding agent s
 
 ## Purpose
 
-Contentor's day-to-day operations are all funneled through `make` targets that wrap Docker Compose (see `Makefile` and `CLAUDE.md` → *Commands*). That indirection is deliberate — almost nothing runs on the host; tests, migrations, and shells all execute inside the `django` container. `agent.commands.json` is the agent-facing projection of that surface: the subset of targets an agent actually needs, each with a stable `name` an agent can reference and a one-line `description` of intent.
+Contentor's day-to-day operations are all funneled through `make` targets that wrap Docker Compose (see `Makefile` and `CLAUDE.md` → _Commands_). That indirection is deliberate — almost nothing runs on the host; tests, migrations, and shells all execute inside the `django` container. `agent.commands.json` is the agent-facing projection of that surface: the subset of targets an agent actually needs, each with a stable `name` an agent can reference and a one-line `description` of intent.
 
 It is **descriptive, not executable**. Nothing in the repo reads this file at build or run time; there is no loader, no schema validator, and no code path that imports it. Its consumer is whatever tooling or agent harness chooses to read it.
 
@@ -22,11 +22,11 @@ The document is a single object with one key, `commands`, holding an array of en
 }
 ```
 
-| Field | Meaning |
-|---|---|
-| `name` | Stable kebab-case identifier. The lookup key — treat it as an API surface; renaming one breaks any harness referencing it. |
-| `command` | Literal shell string to execute from the repository root. |
-| `description` | Human/agent-readable statement of what the command does and where it runs. |
+| Field         | Meaning                                                                                                                    |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `name`        | Stable kebab-case identifier. The lookup key — treat it as an API surface; renaming one breaks any harness referencing it. |
+| `command`     | Literal shell string to execute from the repository root.                                                                  |
+| `description` | Human/agent-readable statement of what the command does and where it runs.                                                 |
 
 ### Placeholders
 
@@ -49,7 +49,7 @@ graph LR
     A --> E["Quality gates<br/>lint, typecheck, sync-definitions"]
 ```
 
-**Stack lifecycle.** `dev-up` → `make dev` brings up the full Compose stack (Caddy, Postgres, Redis, Django, both Next.js apps, Celery, MinIO) with hot reload. `dev-reset` → `make dev-reset` is the destructive variant: it wipes volumes and `.next` caches and rebuilds. Because it drops the database volume, a `dev-reset` invalidates any seeded tenant data — a follow-up seed is required, but no `seed` entry is registered here (see *Gaps*).
+**Stack lifecycle.** `dev-up` → `make dev` brings up the full Compose stack (Caddy, Postgres, Redis, Django, both Next.js apps, Celery, MinIO) with hot reload. `dev-reset` → `make dev-reset` is the destructive variant: it wipes volumes and `.next` caches and rebuilds. Because it drops the database volume, a `dev-reset` invalidates any seeded tenant data — a follow-up seed is required, but no `seed` entry is registered here (see _Gaps_).
 
 **Tests.** `test-backend` runs the full pytest suite inside the `django` container. `test-backend-app` narrows it to one Django app via the `APP` placeholder. `test-frontend` runs the Vitest suite for `frontend-customer` — note that `frontend-main` has no registered test command, matching the repo's actual state where `make test-frontend` targets only the customer app.
 

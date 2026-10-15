@@ -6,11 +6,11 @@ Everything Contentor does with Claude flows through this module group: one backe
 
 The split is by tier, not by feature:
 
-| Sub-module | Owns |
-|---|---|
-| [Backend](ai-infrastructure-assistants-backend-apps.md) | The provider layer (`apps/core/ai.py`), SSE framing (`apps/core/ai_sse.py`), the takeover kernel (`apps/core/assistant.py`), and the two bots — `apps/tenant_config/help_bot.py` (coach-facing "Ask Contentor") and `apps/tenant_config/student_bot.py` (tenant site assistant), plus their config/knowledge/conversation views in `assistant_views.py`. |
-| [frontend-customer](ai-infrastructure-assistants-frontend-customer-src.md) | The tenant-side surfaces: `SiteAssistantBubble` for students and visitors, the coach's help bubble, the `/admin/assistant` console (`KnowledgeCard`, `ConversationsCard`, `PreviewChatCard`), and the two client libs `src/lib/assistant.ts` / `src/lib/help-bot.ts`. |
-| [frontend-main](ai-infrastructure-assistants-frontend-main-src.md) | One self-contained file — `components/shared/help-bubble.tsx` — the anonymous-visitor "Ask Contentor" bubble on the marketing site, mounted unconditionally from `RootLayout`. |
+| Sub-module                                                                 | Owns                                                                                                                                                                                                                                                                                                                                                     |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Backend](ai-infrastructure-assistants-backend-apps.md)                    | The provider layer (`apps/core/ai.py`), SSE framing (`apps/core/ai_sse.py`), the takeover kernel (`apps/core/assistant.py`), and the two bots — `apps/tenant_config/help_bot.py` (coach-facing "Ask Contentor") and `apps/tenant_config/student_bot.py` (tenant site assistant), plus their config/knowledge/conversation views in `assistant_views.py`. |
+| [frontend-customer](ai-infrastructure-assistants-frontend-customer-src.md) | The tenant-side surfaces: `SiteAssistantBubble` for students and visitors, the coach's help bubble, the `/admin/assistant` console (`KnowledgeCard`, `ConversationsCard`, `PreviewChatCard`), and the two client libs `src/lib/assistant.ts` / `src/lib/help-bot.ts`.                                                                                    |
+| [frontend-main](ai-infrastructure-assistants-frontend-main-src.md)         | One self-contained file — `components/shared/help-bubble.tsx` — the anonymous-visitor "Ask Contentor" bubble on the marketing site, mounted unconditionally from `RootLayout`.                                                                                                                                                                           |
 
 ## How the tiers compose
 

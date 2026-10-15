@@ -2,23 +2,23 @@
 
 # Superadmin Platform Console (`frontend-main/src/app/admin`)
 
-The platform console is the superadmin ("us") surface of Contentor: the screens where the platform owner inspects tenants, revenue, AI spend, and live help-bot conversations across *all* tenants. It lives inside the **marketing** app (`frontend-main`), not the tenant portal, because it is served from the apex host (`contentor.app` / `localhost`) and must work before any tenant context exists.
+The platform console is the superadmin ("us") surface of Contentor: the screens where the platform owner inspects tenants, revenue, AI spend, and live help-bot conversations across _all_ tenants. It lives inside the **marketing** app (`frontend-main`), not the tenant portal, because it is served from the apex host (`contentor.app` / `localhost`) and must work before any tenant context exists.
 
 Everything here is a thin, read-mostly UI over two distinct Django API surfaces. There is almost no client-side business logic — the interesting code is nav composition (`admin-shell.tsx`) and the conversation takeover loop (`ai/page.tsx`).
 
 ## File map
 
-| Path | Kind | Role |
-|---|---|---|
-| `app/admin/layout.tsx` | Server | Superuser gate + shell mount |
-| `app/admin/admin-shell.tsx` | Client | Sidebar/mobile-header chrome, nav composition from site meta |
-| `app/admin/page.tsx` | Client | Platform dashboard (stat grid, adoption, recent tenants) |
-| `app/admin/ai/page.tsx` | Client | AI spend rollup + platform-wide conversations console |
-| `app/admin/settings/page.tsx` | Server (static) | Read-only environment/config display |
-| `app/admin/tenants/[slug]/page.tsx` | Client | Per-tenant drill-down + active toggle |
-| `app/admin/*/loading.tsx` | Server | Route-segment skeletons |
-| `components/admin/platform-usage-card.tsx` | Client | PWA adoption card (used by the dashboard) |
-| `types/tenant.ts` | Types | Shared platform response shapes + `formatCurrencyMap` |
+| Path                                       | Kind            | Role                                                         |
+| ------------------------------------------ | --------------- | ------------------------------------------------------------ |
+| `app/admin/layout.tsx`                     | Server          | Superuser gate + shell mount                                 |
+| `app/admin/admin-shell.tsx`                | Client          | Sidebar/mobile-header chrome, nav composition from site meta |
+| `app/admin/page.tsx`                       | Client          | Platform dashboard (stat grid, adoption, recent tenants)     |
+| `app/admin/ai/page.tsx`                    | Client          | AI spend rollup + platform-wide conversations console        |
+| `app/admin/settings/page.tsx`              | Server (static) | Read-only environment/config display                         |
+| `app/admin/tenants/[slug]/page.tsx`        | Client          | Per-tenant drill-down + active toggle                        |
+| `app/admin/*/loading.tsx`                  | Server          | Route-segment skeletons                                      |
+| `components/admin/platform-usage-card.tsx` | Client          | PWA adoption card (used by the dashboard)                    |
+| `types/tenant.ts`                          | Types           | Shared platform response shapes + `formatCurrencyMap`        |
 
 ## Auth and rendering model
 
@@ -30,7 +30,7 @@ Every page under the layout is a client component that fetches with `credentials
 
 The console deliberately mixes a generic admin kit with bespoke pages, and the distinction matters when adding features:
 
-- **`/api/v1/platform-admin`** — the adminkit model API. `createAdminClient()` (`@shared/admin-kit/client`) talks to it; `siteMeta()` returns the registered models (`key`, `label_plural`, `icon`). Generic CRUD lists render at `/admin/m/{key}` and `/admin/m` (the model index), which are *not* part of this module — they're the shared admin-kit routes. Adding a model here means registering an `admin_panels.py` panel in the backend, not writing a page.
+- **`/api/v1/platform-admin`** — the adminkit model API. `createAdminClient()` (`@shared/admin-kit/client`) talks to it; `siteMeta()` returns the registered models (`key`, `label_plural`, `icon`). Generic CRUD lists render at `/admin/m/{key}` and `/admin/m` (the model index), which are _not_ part of this module — they're the shared admin-kit routes. Adding a model here means registering an `admin_panels.py` panel in the backend, not writing a page.
 - **`/api/v1/platform/*`** — hand-rolled aggregate read models for the bespoke pages: `dashboard/`, `usage/`, `ai-usage/`, `ai-conversations/…`, `tenants/{slug}/`.
 
 Rule of thumb: if the screen is "browse/edit rows of one model," register an admin panel and let it land at `/admin/m/{key}`. If it's a cross-model rollup or an interactive workflow, it becomes a bespoke page here.
@@ -90,13 +90,13 @@ The superadmin's live view over **every** help-bot conversation platform-wide �
 
 API calls, all under `/api/v1/platform/ai-conversations/`:
 
-| Function | Request |
-|---|---|
-| `fetchConversations(audience)` | `GET /?audience=` (`""`, `coach`, or `visitor`) |
-| `fetchConversationThread(id, after)` | `GET /{id}/thread/?after={highWaterMark}` |
-| `takeoverConversation(id)` | `POST /{id}/takeover/` |
-| `releaseConversation(id)` | `POST /{id}/release/` |
-| `sendConversationMessage(id, content, after)` | `POST /{id}/message/` with `{content, after}` |
+| Function                                      | Request                                         |
+| --------------------------------------------- | ----------------------------------------------- |
+| `fetchConversations(audience)`                | `GET /?audience=` (`""`, `coach`, or `visitor`) |
+| `fetchConversationThread(id, after)`          | `GET /{id}/thread/?after={highWaterMark}`       |
+| `takeoverConversation(id)`                    | `POST /{id}/takeover/`                          |
+| `releaseConversation(id)`                     | `POST /{id}/release/`                           |
+| `sendConversationMessage(id, content, after)` | `POST /{id}/message/` with `{content, after}`   |
 
 Every mutation returns a full `ThreadPayload`, so the UI never has to reconstruct state from an action result — it just applies what came back.
 
@@ -116,7 +116,7 @@ stateDiagram-v2
 The tricky parts, all deliberate — read the inline comments before changing them:
 
 - **`activeRef` mirrors `activeId` synchronously.** `setState` is async, so an in-flight response for conversation A can land after the superadmin has clicked B. Every async continuation compares `activeRef.current !== forId` and skips applying itself to the drawer. Row patches (`patchRow`) still apply unconditionally, since those target a row by id and are always correct.
-- **`openThread` is a plain async function, not `useAsyncAction`.** The hook's single in-flight guard would swallow a click on B while A is still loading, making the staleness checks above unreachable. Threads must stay independently switchable. The mutation handlers (`handleTakeover`, `handleRelease`, `handleSend`) *do* use `useAsyncAction` — there the double-submit guard is what you want.
+- **`openThread` is a plain async function, not `useAsyncAction`.** The hook's single in-flight guard would swallow a click on B while A is still loading, making the staleness checks above unreachable. Threads must stay independently switchable. The mutation handlers (`handleTakeover`, `handleRelease`, `handleSend`) _do_ use `useAsyncAction` — there the double-submit guard is what you want.
 - **Two polling loops with different intervals.** The list refreshes every `CONVO_LIST_POLL_MS` (10s) **only while no thread is open** (`if (activeId !== null) return`), so the list never rewrites under someone mid-reply. The open thread polls every `CONVO_THREAD_POLL_MS` (3s), passing `lastIdRef.current` as `after` for incremental fetches. Background poll failures are silently swallowed — the next tick retries.
 - **`mergeThread` is append-only and id-deduped**, and advances `lastIdRef` via `Math.max`. Polling and an optimistic action response can deliver the same message; dedup by `id` makes that harmless.
 - **`conversationSystemLine`** decodes `system`-role tokens emitted by the backend takeover kernel (`agent_joined:<name>`, `assistant_resumed`, `human_requested`) into plain-English centered lines. Unrecognized tokens render `null` — forward-compatible by design, so a new backend token is invisible rather than raw.
@@ -140,13 +140,13 @@ Fully static server component. Displays `BASE_DOMAIN` (from `@/lib/constants`, i
 
 Each route segment has a `loading.tsx` built from the presets in `@/components/ui/skeletons` (`SkeletonPageHeader`, `SkeletonCardGrid`, `SkeletonTable`, `SkeletonForm`), which satisfies the repo-wide rule that every segment has a `loading.tsx` at or above it (enforced by `scripts/check-loading-patterns.mjs` in `make lint`).
 
-Because the pages are client components fetching in `useEffect`, those files only cover the server-render gap. The *data* loading states are inline: local `StatSkeleton` / `TableSkeleton` / `DetailSkeleton` components defined per file, gated on `data === null`. This is older than the `PageState` + `@/components/ui/skeletons` convention described in `CLAUDE.md`; new pages here should use `PageState` with shared presets instead of hand-rolling another `StatSkeleton`.
+Because the pages are client components fetching in `useEffect`, those files only cover the server-render gap. The _data_ loading states are inline: local `StatSkeleton` / `TableSkeleton` / `DetailSkeleton` components defined per file, gated on `data === null`. This is older than the `PageState` + `@/components/ui/skeletons` convention described in `CLAUDE.md`; new pages here should use `PageState` with shared presets instead of hand-rolling another `StatSkeleton`.
 
 ## Conventions and gotchas for contributors
 
-- **These pages predate several current frontend conventions.** They use raw `next/link` (the house rule is `<NavLink>`), plain `fetch` rather than a shared api client, and per-file skeleton components. Match the *current* conventions in new code rather than the surrounding style; don't mass-migrate as a drive-by.
+- **These pages predate several current frontend conventions.** They use raw `next/link` (the house rule is `<NavLink>`), plain `fetch` rather than a shared api client, and per-file skeleton components. Match the _current_ conventions in new code rather than the surrounding style; don't mass-migrate as a drive-by.
 - **`useAsyncAction` vs. plain async is a real decision here**, not incidental. Use the hook when a double-submit guard helps (mutations); avoid it when concurrent invocations must be allowed and disambiguated (thread switching).
 - **Error handling is intentionally uneven by importance.** The dashboard and tenant detail fail loudly (full-page banner); `PlatformUsageCard`, site meta, and background polls fail silently. Keep supplementary widgets non-fatal.
-- **Response shapes belong in `types/tenant.ts`** when shared across pages (`PlatformDashboard`, `PlatformPlan`, `PlatformSubscriptionRow`, `WebhookEventRow`, `Tenant`); page-local shapes like `TenantDetail`, `AiUsageRollup`, and `ConversationRow` stay in their page files. If you change the corresponding Django serializers, regenerate types in `frontend-customer` (`npm run gen:api`) — but note these platform types are hand-written, so they will *not* update themselves and must be edited by hand.
+- **Response shapes belong in `types/tenant.ts`** when shared across pages (`PlatformDashboard`, `PlatformPlan`, `PlatformSubscriptionRow`, `WebhookEventRow`, `Tenant`); page-local shapes like `TenantDetail`, `AiUsageRollup`, and `ConversationRow` stay in their page files. If you change the corresponding Django serializers, regenerate types in `frontend-customer` (`npm run gen:api`) — but note these platform types are hand-written, so they will _not_ update themselves and must be edited by hand.
 - **To add a nav entry:** register the admin panel in the backend and, if it deserves a specific section, add a `ModelRef` to the right `SECTIONS` entry. Do nothing and it appears under "More." To suppress it, add its key to `HIDDEN_MODELS`.
 - **To add a bespoke page:** create `app/admin/<name>/page.tsx` plus a `loading.tsx`, add a `StaticRef` to `SECTIONS`, and expose the aggregate under `/api/v1/platform/` in `apps/core/platform/`.

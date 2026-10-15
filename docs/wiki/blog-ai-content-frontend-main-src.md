@@ -11,15 +11,15 @@ Everything here is **public-schema only** — this is the platform's own blog, n
 
 ## File map
 
-| Path | Role |
-|---|---|
-| `src/lib/platform-blog.ts` | Server-side read helpers (`fetchPlatformPosts`, `fetchPlatformPost`) + the `PlatformBlogPost` shape |
-| `src/lib/platform-blog-admin.ts` | Superadmin client (`listPlatformPosts`, `generatePlatformPost`) + `PlatformBlogPostAdmin` |
-| `src/app/blog/page.tsx` | Public index (`PlatformBlogIndexPage`) |
-| `src/app/blog/[slug]/page.tsx` | Public post (`PlatformBlogPostPage`) + `generateMetadata` |
-| `src/app/blog/loading.tsx`, `src/app/blog/[slug]/loading.tsx` | Route skeletons |
-| `src/app/admin/blog/page.tsx` | Superadmin page (`PlatformBlogAdminPage`) |
-| `src/components/admin/blog-composer.tsx` | `BlogComposer` — the "Write with AI" form |
+| Path                                                          | Role                                                                                                |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `src/lib/platform-blog.ts`                                    | Server-side read helpers (`fetchPlatformPosts`, `fetchPlatformPost`) + the `PlatformBlogPost` shape |
+| `src/lib/platform-blog-admin.ts`                              | Superadmin client (`listPlatformPosts`, `generatePlatformPost`) + `PlatformBlogPostAdmin`           |
+| `src/app/blog/page.tsx`                                       | Public index (`PlatformBlogIndexPage`)                                                              |
+| `src/app/blog/[slug]/page.tsx`                                | Public post (`PlatformBlogPostPage`) + `generateMetadata`                                           |
+| `src/app/blog/loading.tsx`, `src/app/blog/[slug]/loading.tsx` | Route skeletons                                                                                     |
+| `src/app/admin/blog/page.tsx`                                 | Superadmin page (`PlatformBlogAdminPage`)                                                           |
+| `src/components/admin/blog-composer.tsx`                      | `BlogComposer` — the "Write with AI" form                                                           |
 
 ## Data flow
 
@@ -61,7 +61,10 @@ Both public routes are `export const dynamic = "force-dynamic"` with `cache: "no
 `PlatformBlogPostPage` parallelizes the two things it needs:
 
 ```ts
-const [user, post] = await Promise.all([getAuthUser(), fetchPlatformPost(slug)]);
+const [user, post] = await Promise.all([
+  getAuthUser(),
+  fetchPlatformPost(slug),
+]);
 ```
 
 `getAuthUser()` feeds `<PlatformHeader user={user} />` so a logged-in coach sees their account state while reading the blog. The header/footer pair (`PlatformHeader`, `PlatformFooter`) is the standard marketing chrome, and it's what pulls these routes into the shared navigation stack — `PlatformHeader` renders `NavLink`, which drives the top progress bar via `useNavigation`.
@@ -89,11 +92,11 @@ Its own list is a plain `useEffect` load of `listPlatformPosts()` on mount, with
 
 `BlogComposer` collects a required `topic` and optional `instructions`, then calls `generatePlatformPost`. The interesting part is the response contract — `GenerateResponse` carries a `source` discriminator, and the component branches on all three:
 
-| `source` | Meaning | UI |
-|---|---|---|
-| `"ai"` | Draft created; `post` is populated | `onGenerated(post)`, inputs cleared |
-| `"budget"` | Monthly AI spend cap hit | "AI writing is temporarily unavailable (monthly budget reached)." |
-| `"error"` | Generation failed server-side | Generic error message |
+| `source`   | Meaning                            | UI                                                                |
+| ---------- | ---------------------------------- | ----------------------------------------------------------------- |
+| `"ai"`     | Draft created; `post` is populated | `onGenerated(post)`, inputs cleared                               |
+| `"budget"` | Monthly AI spend cap hit           | "AI writing is temporarily unavailable (monthly budget reached)." |
+| `"error"`  | Generation failed server-side      | Generic error message                                             |
 
 The `budget` case is the one to know about: the backend returns **HTTP 200 with `source: "budget"`**, not an error status. `jsonFetch` therefore resolves normally and the `catch` block never runs — a budget refusal is a successful response with a soft-failure payload. Any new caller of `generatePlatformPost` must check `source` explicitly, or a budget exhaustion will silently look like success with a `null` post.
 

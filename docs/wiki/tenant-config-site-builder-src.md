@@ -10,18 +10,18 @@ Everything the builder reads and writes is one Django resource: `GET/PATCH /api/
 
 ## File map
 
-| Area | Files |
-|---|---|
-| Editor shell | `components/owner/edit-sidebar.tsx`, `edit-mode.tsx` |
-| Editor state | `components/owner/canvas/editor-store.tsx` |
-| Live canvas | `canvas/edit-mode-canvas.tsx`, `canvas/sortable-block-shell.tsx`, `canvas/block-toolbar.tsx` |
-| Drag & drop | `canvas/canvas-dnd-provider.tsx`, `canvas/dnd-collision.ts`, `canvas/drop-zone.tsx`, `canvas/palette-drag-source.tsx`, `canvas/types.ts` |
-| Sidebar tabs | `blocks-tab.tsx`, `brand-tab.tsx`, `navbar-tab.tsx`, `block-form.tsx`, `field-renderer.tsx`, `style-controls.tsx`, `step-slider.tsx` |
-| Pickers / modals | `link-picker.tsx`, `rich-editor.tsx`, `template-gallery.tsx`, `logo-uploader.tsx` |
-| Block system | `lib/blocks/registry.tsx`, `types.ts`, `field-schema.ts`, `style.ts`, `pages.ts`, `examples.ts`, `example-images.ts`, `page-templates.ts`, `fetch-dynamic-data.ts` |
-| Renderers | `components/blocks/block-renderer.tsx`, `page-renderer.tsx`, `page-view.tsx`, `inline-text.tsx`, `editable-body.tsx`, plus one component per block type |
-| Server plumbing | `lib/tenant.ts` (`fetchTenantConfig`, `configCache`), `app/api/admin/config/route.ts` |
-| Non-builder config | `app/admin/settings/page.tsx` (timezone, demo cleanup, mailbox) |
+| Area               | Files                                                                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Editor shell       | `components/owner/edit-sidebar.tsx`, `edit-mode.tsx`                                                                                                               |
+| Editor state       | `components/owner/canvas/editor-store.tsx`                                                                                                                         |
+| Live canvas        | `canvas/edit-mode-canvas.tsx`, `canvas/sortable-block-shell.tsx`, `canvas/block-toolbar.tsx`                                                                       |
+| Drag & drop        | `canvas/canvas-dnd-provider.tsx`, `canvas/dnd-collision.ts`, `canvas/drop-zone.tsx`, `canvas/palette-drag-source.tsx`, `canvas/types.ts`                           |
+| Sidebar tabs       | `blocks-tab.tsx`, `brand-tab.tsx`, `navbar-tab.tsx`, `block-form.tsx`, `field-renderer.tsx`, `style-controls.tsx`, `step-slider.tsx`                               |
+| Pickers / modals   | `link-picker.tsx`, `rich-editor.tsx`, `template-gallery.tsx`, `logo-uploader.tsx`                                                                                  |
+| Block system       | `lib/blocks/registry.tsx`, `types.ts`, `field-schema.ts`, `style.ts`, `pages.ts`, `examples.ts`, `example-images.ts`, `page-templates.ts`, `fetch-dynamic-data.ts` |
+| Renderers          | `components/blocks/block-renderer.tsx`, `page-renderer.tsx`, `page-view.tsx`, `inline-text.tsx`, `editable-body.tsx`, plus one component per block type            |
+| Server plumbing    | `lib/tenant.ts` (`fetchTenantConfig`, `configCache`), `app/api/admin/config/route.ts`                                                                              |
+| Non-builder config | `app/admin/settings/page.tsx` (timezone, demo cleanup, mailbox)                                                                                                    |
 
 ---
 
@@ -42,7 +42,7 @@ A `Block` is deliberately loose: an `id`, a `type` from the registry, an optiona
 
 `PageKey` is a fixed six-key set (`home`, `about`, `courses`, `pricing`, `faq`, `contact`), mirrored server-side as `KNOWN_PAGE_KEYS`. `lib/blocks/pages.ts` owns the key↔route mapping and the one mismatch worth knowing: **`pricing` renders at `/plans`**. `pageKeyForPath()` is the only place that inverts it.
 
-Image and video fields are structured, not URLs: `{ url, photo_id }` / `{ url, video_id }`. `url` is a *signed* URL that the serializer re-derives from the id on every read — so it is safe to treat as ephemeral and must never be relied on as stored state.
+Image and video fields are structured, not URLs: `{ url, photo_id }` / `{ url, video_id }`. `url` is a _signed_ URL that the serializer re-derives from the id on every read — so it is safe to treat as ephemeral and must never be relied on as stored state.
 
 ---
 
@@ -69,7 +69,7 @@ graph LR
 
 `PageView` branches on `getAuthUser()`: a coach gets the editable `EditModeCanvas`, everyone else gets the static `PageRenderer`. **Both funnel into the same `BlockRenderer`**, which is the load-bearing invariant of the whole feature — edit-mode markup and published markup cannot diverge, because there is only one render path. `BlockRenderer` also drops disabled blocks, silently skips unknown `type`s (forward compat with newer block types in stored config), and wraps the block in `blockStyleClasses(block)` only when a style override exists, so unstyled public DOM is byte-identical to a build with no style feature at all.
 
-`fetchDynamicData` fetches only the datasets that the page's *enabled* blocks reference — `dynamicKeysForBlocks` walks blocks and collects each definition's `dynamicDataKey` (`courses` | `plans` | `events` | `storeProducts`). A page with no dynamic blocks makes zero extra requests, and a failing endpoint leaves that slice `undefined` so the block renders its own empty state instead of failing the page.
+`fetchDynamicData` fetches only the datasets that the page's _enabled_ blocks reference — `dynamicKeysForBlocks` walks blocks and collects each definition's `dynamicDataKey` (`courses` | `plans` | `events` | `storeProducts`). A page with no dynamic blocks makes zero extra requests, and a failing endpoint leaves that slice `undefined` so the block renders its own empty state instead of failing the page.
 
 ### Config fetching and the cache
 
@@ -105,7 +105,7 @@ Three subtleties in `persistConfig` / `flushPending` that are easy to break:
 
 `app/api/admin/config/route.ts` is a thin Next route handler that forwards `GET`/`PATCH` to Django with the JWT cookie as a bearer token and — critically — an explicit `X-Tenant-Domain` header built from `x-tenant-slug` + `BASE_DOMAIN`. (Node's undici drops custom `Host` headers, so without this the request resolves to the public schema.)
 
-Its second job is cache invalidation: after a successful PATCH it calls `configCache.clear()`. `fetchTenantConfig` keys the cache by live tenant *domain*, not slug, so clearing the whole map is the reliable way to keep `router.refresh()` from re-rendering the preview from a stale config.
+Its second job is cache invalidation: after a successful PATCH it calls `configCache.clear()`. `fetchTenantConfig` keys the cache by live tenant _domain_, not slug, so clearing the whole map is the reliable way to keep `router.refresh()` from re-rendering the preview from a stale config.
 
 ---
 
@@ -122,15 +122,15 @@ Actions: `insert`, `remove`, `duplicate`, `reorder`, `update`, `setEnabled`, `ap
 Two mechanisms worth understanding before touching the reducer:
 
 - **Edit coalescing.** `update` carries `at: Date.now()`. If the patch touches a single field, the key `"<blockId>:<field>"` matches `lastEditKey`, and less than `COALESCE_MS` (700 ms) has elapsed, the edit folds into the current history entry instead of pushing a new one — so typing isn't undone character-by-character.
-- **Reveal.** `selectBlock(id, { reveal: true })` sets `revealBlockId` *and* bumps `revealSeq`. `SortableBlockShell` watches both and calls `scrollIntoView({ block: "center" })` (honouring `prefers-reduced-motion`). The counter makes a repeat request for the same block re-centre it, and pairing id+seq stops a later canvas click from re-firing the previous scroll. Sidebar selections reveal; canvas clicks don't (the block is already on screen).
+- **Reveal.** `selectBlock(id, { reveal: true })` sets `revealBlockId` _and_ bumps `revealSeq`. `SortableBlockShell` watches both and calls `scrollIntoView({ block: "center" })` (honouring `prefers-reduced-motion`). The counter makes a repeat request for the same block re-centre it, and pairing id+seq stops a later canvas click from re-firing the previous scroll. Sidebar selections reveal; canvas clicks don't (the block is already on screen).
 
 Consumers use `useEditorStore()` (throws outside the provider) or `useOptionalEditorStore()` (returns `null` on the public/student path — that's how `EditModeCanvas` degrades to a static render if the layout couldn't load the config).
 
-The provider also fetches `/api/v1/photos/` once into a ref and pipes every `insertBlock` through `applyExampleImages`, filling *empty* image slots on hero / imageText / gallery / testimonials with random library photos so a freshly added block lands visually complete. Logos (brand marks), videos, and dynamic blocks are intentionally skipped.
+The provider also fetches `/api/v1/photos/` once into a ref and pipes every `insertBlock` through `applyExampleImages`, filling _empty_ image slots on hero / imageText / gallery / testimonials with random library photos so a freshly added block lands visually complete. Logos (brand marks), videos, and dynamic blocks are intentionally skipped.
 
 ### Edit mode is a separate, coarser flag
 
-`edit-mode.tsx` is a boolean context, provided by `EditSidebar` and read by the canvas. Default **off**: a coach browsing their own site sees exactly what a visitor sees, with one floating "Edit site" button. The initial value is `!initialConfig.onboarding_completed` (a coach still onboarding lands in the editor); a returning coach's last choice is restored from `localStorage["contentor:edit-mode"]` *after mount*, deliberately kept out of initial state to avoid an SSR hydration gap.
+`edit-mode.tsx` is a boolean context, provided by `EditSidebar` and read by the canvas. Default **off**: a coach browsing their own site sees exactly what a visitor sees, with one floating "Edit site" button. The initial value is `!initialConfig.onboarding_completed` (a coach still onboarding lands in the editor); a returning coach's last choice is restored from `localStorage["contentor:edit-mode"]` _after mount_, deliberately kept out of initial state to avoid an SSR hydration gap.
 
 Deep links win over the restore because their effect is declared later: `/?edit=1`, `&section=brand|navbar`, `&studio=1`. These are read from `window.location.search`, **not `useSearchParams`**, to avoid the Next 14 client-side Suspense bailout. Every legacy entry point (admin nav, command palette, publish card, setup assistant) routes through them.
 
@@ -168,7 +168,7 @@ Helpers exported alongside it: `getBlockDef`, `BLOCKS_BY_GROUP` (the palette's g
 
 ### Per-block style overrides ("hybrid theme-lock")
 
-`lib/blocks/style.ts` implements a deliberately narrow escape hatch: `background`, `spacing`, `align`, `textColor`. Values are **theme tokens, never raw colours**, so dark mode and theme switching keep working. Classes are applied by `BlockRenderer` as a wrapper using `[&>*]:!…` so they beat the block's own `<section>` classes, and are spelled out as full literals so Tailwind's JIT scanner emits them. Background presets force a contrasting foreground onto headings/body/buttons; `textColor` is composed *last* so it wins the same-variant conflict via tailwind-merge. Dynamic blocks appear in `HEADING_ONLY_TEXT_COLOR_TYPES` — their text colour touches the section heading only, so themed inner cards keep guaranteed contrast.
+`lib/blocks/style.ts` implements a deliberately narrow escape hatch: `background`, `spacing`, `align`, `textColor`. Values are **theme tokens, never raw colours**, so dark mode and theme switching keep working. Classes are applied by `BlockRenderer` as a wrapper using `[&>*]:!…` so they beat the block's own `<section>` classes, and are spelled out as full literals so Tailwind's JIT scanner emits them. Background presets force a contrasting foreground onto headings/body/buttons; `textColor` is composed _last_ so it wins the same-variant conflict via tailwind-merge. Dynamic blocks appear in `HEADING_ONLY_TEXT_COLOR_TYPES` — their text colour touches the section heading only, so themed inner cards keep guaranteed contrast.
 
 `STYLE_CONTROLS` decides which controls the editor surfaces per type; it is a **subset of** the server's `BLOCK_STYLE_ALLOWLIST` (backend `defaults.py`), which is authoritative. Selecting a `STYLE_DEFAULTS` value deletes that key, and an empty style object becomes `undefined` — matching the server, which also drops `background:"default"` / `spacing:"normal"`.
 
@@ -190,11 +190,11 @@ Helpers exported alongside it: `getBlockDef`, `BLOCKS_BY_GROUP` (the palette's g
 
 `CanvasDndProvider` hosts a single `DndContext` spanning the sidebar palette and the page canvas, which means two different drag operations share one collision space. `canvas/types.ts` namespaces the ids to keep them apart:
 
-| id form | meaning |
-|---|---|
-| `palette:<type>` | dragging a new block from the palette |
-| `dropzone:<pageKey>:<index>` | an insertion slot |
-| raw block id | reordering an existing block |
+| id form                      | meaning                               |
+| ---------------------------- | ------------------------------------- |
+| `palette:<type>`             | dragging a new block from the palette |
+| `dropzone:<pageKey>:<index>` | an insertion slot                     |
+| raw block id                 | reordering an existing block          |
 
 `dnd-collision.ts` switches strategy on that prefix: a palette drag collides **only** with drop zones (`pointerWithin`, falling back to `closestCenter`); a block reorder collides **only** with the other block sortables. `handleDragEnd` correspondingly either `insertBlock(page, newBlock(type, niche), index)` or `reorderBlocks(page, from, to)`.
 

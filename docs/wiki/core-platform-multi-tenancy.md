@@ -12,11 +12,11 @@ Three questions get answered for each request, in order, by middleware defined h
 
 ## Sub-modules
 
-| Page | Owns |
-|------|------|
-| [Backend entry points](core-platform-multi-tenancy-backend.md) | `manage.py`, how the project root and platform layer fit together, the public-vs-tenant schema split |
-| [`config`](core-platform-multi-tenancy-config.md) | Settings (base/dev/prod/test), `ROOT_URLCONF`, Celery app + beat schedule, WSGI/ASGI |
-| [`apps.core`](core-platform-multi-tenancy-apps.md) | `Tenant` model, middleware implementations, provisioning, plans, `access.py`, storage/email/sanitization/throttling utilities |
+| Page                                                           | Owns                                                                                                                          |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [Backend entry points](core-platform-multi-tenancy-backend.md) | `manage.py`, how the project root and platform layer fit together, the public-vs-tenant schema split                          |
+| [`config`](core-platform-multi-tenancy-config.md)              | Settings (base/dev/prod/test), `ROOT_URLCONF`, Celery app + beat schedule, WSGI/ASGI                                          |
+| [`apps.core`](core-platform-multi-tenancy-apps.md)             | `Tenant` model, middleware implementations, provisioning, plans, `access.py`, storage/email/sanitization/throttling utilities |
 
 ## How they fit together
 

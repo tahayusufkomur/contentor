@@ -4,7 +4,7 @@
 
 The single source of truth for UI primitives and interaction behavior across both Next.js apps (`frontend-main`, `frontend-customer`). It holds three things: styled presentational primitives (`src/ui/`), the navigation-feedback layer (`src/navigation/` + a few components in `src/ui/`), and the async-action layer (`src/hooks/`).
 
-Everything here is framework-coupled to Next 14's App Router and Tailwind, but the *logic* inside it deliberately is not — see [Pure cores](#pure-cores).
+Everything here is framework-coupled to Next 14's App Router and Tailwind, but the _logic_ inside it deliberately is not — see [Pure cores](#pure-cores).
 
 ## Consumption model: re-export shims
 
@@ -47,9 +47,9 @@ Components with visual variants use `class-variance-authority` and export the va
 
 Two files are intentionally React-free so vitest can cover them (repo convention: vitest covers pure logic, not rendering):
 
-| Pure module | React wrapper |
-|---|---|
-| `src/hooks/async-runner.ts` — `createAsyncRunner`, `errorMessage` | `src/hooks/use-async-action.ts` |
+| Pure module                                                                                                | React wrapper                                           |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `src/hooks/async-runner.ts` — `createAsyncRunner`, `errorMessage`                                          | `src/hooks/use-async-action.ts`                         |
 | `src/navigation/navigation-state.ts` — `defaultActiveMatch`, `isNavItemActive`, `createProgressController` | `src/ui/nav-link.tsx`, `src/ui/navigation-progress.tsx` |
 
 When you change behavior in this module, the change usually belongs in the pure core, with the wrapper left as a thin binding. That's where the tests are.
@@ -69,12 +69,17 @@ A closure-scoped `inFlight` flag gates re-entry: a second call while the first i
 ### `useAsyncAction` (the app-facing hook)
 
 ```tsx
-const { run, loading } = useAsyncAction(async () => {
-  await api.saveCourse(draft);
-  router.refresh();
-}, { successToast: "Saved" });
+const { run, loading } = useAsyncAction(
+  async () => {
+    await api.saveCourse(draft);
+    router.refresh();
+  },
+  { successToast: "Saved" },
+);
 
-<Button loading={loading} onClick={run}>Save</Button>
+<Button loading={loading} onClick={run}>
+  Save
+</Button>;
 ```
 
 Per the repo's loading conventions, every async handler in either app goes through this hook — it supplies the loading flag, the double-submit guard, and a default error toast in one place.
@@ -114,7 +119,7 @@ Mount `<NavigationProvider>` above the app tree; `useNavigation()` throws outsid
 Three clearing paths, all necessary:
 
 1. **Commit effect** (`[pathname]`) — the primary signal for cross-segment navigation.
-2. **Query-only effect** (`[isPending, pendingHref, pathname]`) — a same-path/different-search navigation never changes `pathname`, so effect 1 never re-fires. Here there's no new segment to stream, so the transition's own completion *is* a usable signal; the effect only clears when `pendingHref.split("?")[0] === pathname`.
+2. **Query-only effect** (`[isPending, pendingHref, pathname]`) — a same-path/different-search navigation never changes `pathname`, so effect 1 never re-fires. Here there's no new segment to stream, so the transition's own completion _is_ a usable signal; the effect only clears when `pendingHref.split("?")[0] === pathname`.
 3. **15s watchdog** — a navigation that never commits (aborted, blocked by a route guard, network failure) must not strand `pendingHref` forever.
 
 `navigate()` compares `href` against `window.location.pathname + window.location.search`, not `pathname`. `usePathname()` drops the query string, so comparing against it alone would swallow a `"/x?tab=a"` → `"/x"` navigation — and since `NavLink` already called `preventDefault()`, that link would be entirely dead.
@@ -127,7 +132,7 @@ Three clearing paths, all necessary:
 isNavItemActive({ pathname, pendingHref }, href, match?): boolean
 ```
 
-`pendingHref ?? pathname` — the pending destination wins, which is what makes a clicked item highlight *before* the route commits rather than after.
+`pendingHref ?? pathname` — the pending destination wins, which is what makes a clicked item highlight _before_ the route commits rather than after.
 
 `defaultActiveMatch` is exact-match plus segment-boundary descendants. Two deliberate rules: root-ish hrefs (`"/"`, `"/admin"`) match only exactly, or they'd claim every page beneath them; and the `href + "/"` check is what stops `/admin/live` from highlighting while you're on `/admin/live-streams`. Pass a custom `ActiveMatch` via `NavLink`'s `activeMatch` prop for anything unusual.
 
@@ -136,7 +141,10 @@ isNavItemActive({ pathname, pendingHref }, href, match?): boolean
 The only sanctioned way to render an internal link — raw `next/link` in app code is a review failure, because it bypasses both the progress bar and the pre-commit highlight.
 
 ```tsx
-<NavLink href="/admin/courses" className={({ active }) => cn("px-3", active && "bg-accent")}>
+<NavLink
+  href="/admin/courses"
+  className={({ active }) => cn("px-3", active && "bg-accent")}
+>
   {({ pending }) => <>Courses {pending && <Spinner size="sm" />}</>}
 </NavLink>
 ```
@@ -157,12 +165,12 @@ A delay-then-show state machine: `start()` arms a `delayMs` timer, `finish()` ca
 
 These four components encode the repo's loading conventions; `scripts/check-loading-patterns.mjs` (part of `make lint`) enforces their use — no raw `<Loader2>`/`animate-spin` in app code, and every route segment needs a `loading.tsx` at or above it.
 
-| Component | Use for |
-|---|---|
-| `PageState` | Client-page **initial** load: takes `loading`, `error`, `skeleton`, optional `onRetry`. |
-| `StaleContainer` | **Refinement** loads — search, sort, filter, paginate. |
-| `Skeleton` + `skeletons.tsx` presets | The skeleton bodies both of the above consume, and `loading.tsx` files. |
-| `Spinner` | Standalone indeterminate waits; `center` for a `min-h-[50vh]` block. |
+| Component                            | Use for                                                                                 |
+| ------------------------------------ | --------------------------------------------------------------------------------------- |
+| `PageState`                          | Client-page **initial** load: takes `loading`, `error`, `skeleton`, optional `onRetry`. |
+| `StaleContainer`                     | **Refinement** loads — search, sort, filter, paginate.                                  |
+| `Skeleton` + `skeletons.tsx` presets | The skeleton bodies both of the above consume, and `loading.tsx` files.                 |
+| `Spinner`                            | Standalone indeterminate waits; `center` for a `min-h-[50vh]` block.                    |
 
 `PageState` renders the skeleton, then a `role="alert"` error block (`errorMessage(error, "Failed to load this page. Please try again.")` — reusing the async-runner helper), then children wrapped in `motion-safe:animate-fade-in-up`. `error` is typed `unknown`: any truthy value renders the error state, an `Error` yields its message.
 
@@ -195,7 +203,7 @@ These four components encode the repo's loading conventions; `scripts/check-load
 
 **`ModalPortal`** portals children into `document.body` and locks `body` scroll for its lifetime, restoring the previous `overflow` on unmount. The portal matters because a `position: fixed` overlay is trapped by any transformed or `overflow`-clipped ancestor — escaping to `body` is what makes it cover the real viewport and scroll its own body rather than the page behind it. It returns `null` until mounted, so it is SSR-safe but contributes nothing to the server HTML.
 
-**`ThemeToggle`** wraps `next-themes`. With the default `modes={["light", "dark"]}` it's the classic CSS-crossfaded sun/moon toggle; with three or more modes it becomes a cycle button stepping `light → dim → dark → light`, labeled from `MODE_META`. It gates `setTheme` on `mounted` to avoid hydration mismatch on `resolvedTheme`. Note this file imports `@/components/ui/button` and `@/lib/utils` rather than the relative `./button` / `../lib/utils` used everywhere else in the package — it resolves through the *consuming app's* aliases, so it only compiles inside an app that defines them.
+**`ThemeToggle`** wraps `next-themes`. With the default `modes={["light", "dark"]}` it's the classic CSS-crossfaded sun/moon toggle; with three or more modes it becomes a cycle button stepping `light → dim → dark → light`, labeled from `MODE_META`. It gates `setTheme` on `mounted` to avoid hydration mismatch on `resolvedTheme`. Note this file imports `@/components/ui/button` and `@/lib/utils` rather than the relative `./button` / `../lib/utils` used everywhere else in the package — it resolves through the _consuming app's_ aliases, so it only compiles inside an app that defines them.
 
 ## Adding or changing a component
 

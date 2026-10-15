@@ -24,9 +24,9 @@ One account-level deployment (`name = "mailbox-inbound"`, `wrangler.toml`) serve
 
 `export default { async email(message, env) }` — the Cloudflare [Email Worker](https://developers.cloudflare.com/email-routing/email-workers/) handler. `message` is an `EmailMessage` (`.from`, `.to`, `.raw`, `.setReject()`); `env` supplies the two bindings:
 
-| Binding | Source | Value |
-|---|---|---|
-| `WEBHOOK_URL` | `[vars]` in `wrangler.toml` (committed) | `https://contentor.app/api/v1/mailbox/inbound/` |
+| Binding                  | Source                                  | Value                                                     |
+| ------------------------ | --------------------------------------- | --------------------------------------------------------- |
+| `WEBHOOK_URL`            | `[vars]` in `wrangler.toml` (committed) | `https://contentor.app/api/v1/mailbox/inbound/`           |
 | `MAILBOX_INBOUND_SECRET` | `wrangler secret put` (never committed) | 32-byte hex, must equal Django's `MAILBOX_INBOUND_SECRET` |
 
 The handler flow is linear:
@@ -83,30 +83,30 @@ Two consequences worth remembering: any middleware or proxy that re-serialises t
 Attachments are inlined as base64 rather than uploaded to storage from the edge, so the Worker enforces its own size budget:
 
 ```js
-const MAX_FILE_BYTES  = 10 * 1024 * 1024;  // per file — mirrors apps/mailbox/attachments.py
-const MAX_TOTAL_BYTES = 20 * 1024 * 1024;  // per message, Worker-only
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // per file — mirrors apps/mailbox/attachments.py
+const MAX_TOTAL_BYTES = 20 * 1024 * 1024; // per message, Worker-only
 ```
 
-An attachment that is too large, pushes the running total over budget, or has no `ArrayBuffer` body is still reported — as `{filename, content_type, size, omitted: true}` — instead of being dropped. `receive_inbound` creates a `MessageAttachment` row with `omitted=True` and an empty `storage_key`, so the coach sees *"an attachment was here and we didn't keep it"* rather than nothing. Preserve that behaviour when touching this function; silently skipping is a worse failure mode than an omitted marker.
+An attachment that is too large, pushes the running total over budget, or has no `ArrayBuffer` body is still reported — as `{filename, content_type, size, omitted: true}` — instead of being dropped. `receive_inbound` creates a `MessageAttachment` row with `omitted=True` and an empty `storage_key`, so the coach sees _"an attachment was here and we didn't keep it"_ rather than nothing. Preserve that behaviour when touching this function; silently skipping is a worse failure mode than an omitted marker.
 
 `toBase64` chunks at `0x8000` bytes before `String.fromCharCode(...)` because spreading a multi-megabyte `Uint8Array` into a single call blows the argument limit.
 
-Note the asymmetry with the backend: Django's `MAX_FILES_PER_MESSAGE = 4` is an *outbound/upload* rule and is **not** applied to inbound mail, so a message with twenty small attachments passes through. Django independently re-validates each inlined file with `validate_attachment` (size + MIME allowlist) before `store_attachment` writes it to S3, and flips `omitted=True` on rejection — so the Worker's caps are a bandwidth guard, not the security boundary.
+Note the asymmetry with the backend: Django's `MAX_FILES_PER_MESSAGE = 4` is an _outbound/upload_ rule and is **not** applied to inbound mail, so a message with twenty small attachments passes through. Django independently re-validates each inlined file with `validate_attachment` (size + MIME allowlist) before `store_attachment` writes it to S3, and flips `omitted=True` on rejection — so the Worker's caps are a bandwidth guard, not the security boundary.
 
 ## Failure handling and retry semantics
 
-| Webhook response | Worker action | Effect on the sender |
-|---|---|---|
-| 2xx | nothing | delivered |
-| 4xx (401 bad signature, 400 bad JSON) | log only | silently consumed, no retry |
-| 5xx | `message.setReject("Temporary failure delivering to mailbox")` | Cloudflare bounces with a temporary failure |
-| `fetch` throws | handler rejects | Cloudflare treats it as a delivery failure |
+| Webhook response                      | Worker action                                                  | Effect on the sender                        |
+| ------------------------------------- | -------------------------------------------------------------- | ------------------------------------------- |
+| 2xx                                   | nothing                                                        | delivered                                   |
+| 4xx (401 bad signature, 400 bad JSON) | log only                                                       | silently consumed, no retry                 |
+| 5xx                                   | `message.setReject("Temporary failure delivering to mailbox")` | Cloudflare bounces with a temporary failure |
+| `fetch` throws                        | handler rejects                                                | Cloudflare treats it as a delivery failure  |
 
-A subtlety: **unknown recipients never reach the 4xx path.** `views.inbound` returns `200` for foreign domains ("drop without leaking") — it deliberately does not signal whether an address exists. So in practice 4xx means *misconfiguration* (secret mismatch, mangled body), which is why it's logged loudly but not bounced: bouncing on a bad secret would spray failure notices at real senders while an operator fixes an env var.
+A subtlety: **unknown recipients never reach the 4xx path.** `views.inbound` returns `200` for foreign domains ("drop without leaking") — it deliberately does not signal whether an address exists. So in practice 4xx means _misconfiguration_ (secret mismatch, mangled body), which is why it's logged loudly but not bounced: bouncing on a bad secret would spray failure notices at real senders while an operator fixes an env var.
 
 ## Backend counterpart — what the payload becomes
 
-`views.inbound` (`backend/apps/mailbox/views.py`) is `@authentication_classes([])` + `@permission_classes([AllowAny])` + `@csrf_exempt`; the HMAC *is* the auth. It resolves the recipient in two tiers, then a fallback:
+`views.inbound` (`backend/apps/mailbox/views.py`) is `@authentication_classes([])` + `@permission_classes([AllowAny])` + `@csrf_exempt`; the HMAC _is_ the auth. It resolves the recipient in two tiers, then a fallback:
 
 1. **Custom domain** — `CustomDomain.objects.filter(domain=…, mailbox_enabled=True, provisioning_status="live")` → `tenant_context(cd.tenant)`.
 2. **Platform address** — `resolve_platform_recipient(to_email)` for a paid coach's `<x>@contentor.app`.
@@ -128,7 +128,7 @@ elif cd.forward_to_email:
     cf.enable_email_routing(zone_id=cd.cloudflare_zone_id, forward_to=cd.forward_to_email)
 ```
 
-`CLOUDFLARE_EMAIL_WORKER_NAME` must match `name` in `wrangler.toml` (`mailbox-inbound`). Domains provisioned *before* the Worker existed keep a plain forwarding rule — set `mailbox_enabled=True` and re-run `_step_email_auth` for those, as the README describes.
+`CLOUDFLARE_EMAIL_WORKER_NAME` must match `name` in `wrangler.toml` (`mailbox-inbound`). Domains provisioned _before_ the Worker existed keep a plain forwarding rule — set `mailbox_enabled=True` and re-run `_step_email_auth` for those, as the README describes.
 
 ## Local development
 
