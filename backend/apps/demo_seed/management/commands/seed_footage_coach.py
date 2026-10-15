@@ -10,13 +10,14 @@ by the real composer (the agent hub; ``--no-compose`` keeps the skeleton
 pages) and a Stripe test-mode account is attached so checkout works.
 
 Always rebuilds the tenant from scratch. Dev only. Students wear the faces in
-static/footage_faces (AI headshots, one per name). Photos are placeholders:
+static/footage_faces (AI headshots, one per name); her logo is static/footage_logo.webp. Photos are placeholders:
 course, article and class covers reuse the photographs the composer placed on
 her site (the demo yoga set without it); the owner swaps them later.
 """
 
 from __future__ import annotations
 
+import io
 import random
 import re
 import unicodedata
@@ -531,6 +532,10 @@ def _ascii(text):
 # One AI-generated headshot per student (Pix4Less), served as this app's static
 # files: avatar_url is a 200-char field, too short for a signed storage URL.
 FACES = Path(__file__).resolve().parents[2] / "static" / "footage_faces"
+# Her mark: a Pix4Less logo (generated for her, a seated side bend), installed
+# as a catalog pick lands so the header tints it and sets her name beside it.
+LOGO_ASSET = "30eabd19-4829-4151-839e-68f9bc5a418f"
+LOGO_FILE = FACES.parent / "footage_logo.webp"
 
 
 def _face(name):
@@ -594,6 +599,7 @@ class Command(BaseCommand):
             self.stdout.write("  composing her site with the real composer (a few minutes)...")
             sc.compose_site(tenant)
             self._covers_from_site(tenant)
+        self._logo(tenant)  # after the covers: they reuse every non-demo photo
         cache.delete(f"tenant:{tenant.schema_name}:config")
         self._report(tenant)
 
@@ -1034,6 +1040,30 @@ class Command(BaseCommand):
                     photo = placed[(i + 2) % len(placed)]
                     model.objects.filter(pk=event.pk).update(thumbnail=photo, thumbnail_url=photo.s3_key)
             self.stdout.write(f"  covers: {len(placed)} site photographs reused")
+
+    def _logo(self, tenant):
+        from PIL import Image
+
+        from apps.core.curated_images.cache import CONTENT_TYPE, tenant_key_for
+        from apps.core.curated_logos.clean import clean_curated_png
+        from apps.core.platform.uploads import _store_object
+        from apps.media.models import Photo
+        from apps.tenant_config.interview_milestones import apply_logo
+
+        with tenant_context(tenant):
+            body = clean_curated_png(LOGO_FILE.read_bytes(), "WEBP")
+            width, height = Image.open(io.BytesIO(body)).size
+            key = tenant_key_for(LOGO_ASSET)
+            _store_object(key, io.BytesIO(body), CONTENT_TYPE)
+            Photo.objects.create(
+                s3_key=key,
+                title="Seated side bend",
+                content_type=CONTENT_TYPE,
+                file_size=len(body),
+                width=width,
+                height=height,
+            )
+            apply_logo(tenant, {"logo": {"mode": "curated", "asset_id": LOGO_ASSET, "layout": "horizontal"}})
 
     def _report(self, tenant):
         from apps.billing.models import Payment, Subscription
