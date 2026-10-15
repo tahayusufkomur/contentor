@@ -12,6 +12,13 @@
 # frame, 2x AVIF stills. Each maxrate below is that ceiling lowered to Phase 2's
 # per-file target: target bytes × 8 / clip seconds (hero 2.5 MB / 12 s ≈ 1.6M).
 # macOS /bin/bash is 3.2: no associative arrays.
+# After any re-encode, purge /media/* at Cloudflare's edge: the filenames are
+# not hashed and prod caches /media/* (7-day edge TTL, 1-day browser TTL), so
+# visitors otherwise get the old footage for up to a week.
+# Before shipping a clip, look at its frames for a dev hostname: record.ts
+# rewrites "<slug>.localhost" in the page, and scrub-setup.mp4 shipped once with
+# it (fixed 2026-10-15 by painting maralindqvist.contentor.app over the preview
+# chrome's address on the encoded frames).
 set -euo pipefail
 export LC_ALL=C # awk prints "2.50", never "2,50"
 cd "$(dirname "$0")/../.."

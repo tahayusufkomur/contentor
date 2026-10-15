@@ -28,6 +28,8 @@ const PROFILES = {
 type Profile = keyof typeof PROFILES;
 
 const url = (slug: string, p: string) => `http://${slug}.localhost${p}`;
+/** What the footage shows where the dev host would be (every scratch tenant is Mara Lindqvist). */
+const SHOWN_HOST = "maralindqvist.contentor.app";
 
 /** A context as `role` on `slug` (no role: a visitor). Records unless video is
  * false; a still-only context renders with reduced motion (final layout). */
@@ -53,14 +55,31 @@ async function open(
       { name: "contentor_access_token", value: jwt, domain: `${o.slug}.localhost`, path: "/", httpOnly: true, secure: false, sameSite: "Lax" },
     ]);
   }
-  // Next's dev badge stays out of the footage.
-  await ctx.addInitScript(() => {
+  // Next's dev badge stays out of the footage, and so does the dev hostname:
+  // the setup flow's preview chrome prints the tenant's host, which here is
+  // <scratch-slug>.localhost. Shown as the footage coach's real-looking domain.
+  // ponytail: starts at load so hydration still sees the server's text; a host
+  // on screen before load stays in those first frames (check them).
+  await ctx.addInitScript((shown: string) => {
     addEventListener("DOMContentLoaded", () => {
       const s = document.createElement("style");
       s.textContent = "nextjs-portal{display:none!important}";
       document.head.append(s);
     });
-  });
+    const fix = (n: Node) => {
+      const w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT);
+      for (let t = w.currentNode as Node | null; t; t = w.nextNode())
+        if (t.nodeValue?.includes(".localhost")) t.nodeValue = t.nodeValue.replace(/[\w-]+\.localhost/g, shown);
+    };
+    addEventListener("load", () => {
+      fix(document.body);
+      new MutationObserver((ms) => ms.forEach((m) => fix(m.target))).observe(document.body, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+      });
+    });
+  }, SHOWN_HOST);
   const page = await ctx.newPage();
   const t0 = Date.now(); // the video starts with the page
   const marks: Record<string, number> = {};
