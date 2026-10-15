@@ -28,17 +28,26 @@ const HIGHLIGHTED: PlanKey = "starter";
 const COLUMNS =
   "grid grid-cols-3 gap-3 md:grid-cols-[1.4fr_repeat(3,1fr)] md:gap-6";
 
+/** One compare cell. The sr-only text names the plan (and, for a yes/no
+ * cell, the feature) so a screen reader does not read a bare "Included". */
 function CellView({
   cell,
+  plan,
   included,
   notIncluded,
 }: {
   cell: Cell;
+  plan: string;
   included: string;
   notIncluded: string;
 }) {
   if (cell.kind === "text") {
-    return <span className="text-caption text-foreground">{cell.label}</span>;
+    return (
+      <span className="text-caption text-foreground">
+        <span className="sr-only">{plan}: </span>
+        {cell.label}
+      </span>
+    );
   }
   if (cell.kind === "yes") {
     return (
@@ -86,12 +95,21 @@ export default async function PricingPage() {
     ]),
   ) as Record<PlanKey, Set<string>>;
   // Price from the backend when the plan resolved; the locale fallback keeps
-  // the page rendering if the API is unavailable.
-  const price = (key: PlanKey) => {
+  // the page rendering if the API is unavailable. Free is shown in the paid
+  // plans' currency so "$0" never sits beside "€19.90". null = a paid plan
+  // with no price in this currency yet (shown as "coming soon", not "€0").
+  const paidCurrency = plansData?.plans.find((p) => !p.is_free)?.currency;
+  const price = (key: PlanKey): string | null => {
     const plan = planByKey[key];
-    return plan && !plan.is_free
-      ? formatPlanPrice(plan.currency, plan.amount_cents)
-      : t(`plans.${key}.price`);
+    if (key === "free" || plan?.is_free) {
+      return paidCurrency
+        ? formatPlanPrice(paidCurrency, 0)
+        : t(`plans.${key}.price`);
+    }
+    if (!plan) return t(`plans.${key}.price`);
+    return plan.amount_cents == null
+      ? null
+      : formatPlanPrice(plan.currency, plan.amount_cents);
   };
 
   return (
@@ -122,24 +140,37 @@ export default async function PricingPage() {
               className={`sticky top-12 z-30 -mx-6 border-b bg-muted px-6 py-4 ${COLUMNS}`}
             >
               <div className="hidden md:block" aria-hidden />
-              {PLAN_KEYS.map((key) => (
-                <div key={key} className="min-w-0">
-                  <p className="truncate text-eyebrow text-muted-foreground">
-                    {t(`plans.${key}.name`)}
-                    {key === HIGHLIGHTED && (
-                      <span className="ml-2 text-marketing-accent">
-                        {t("popular")}
-                      </span>
+              {PLAN_KEYS.map((key) => {
+                const amount = price(key);
+                return (
+                  <div key={key} className="min-w-0">
+                    {/* The badge takes its own line on phones instead of
+                      truncating beside the plan name. */}
+                    <p className="text-eyebrow text-muted-foreground">
+                      {t(`plans.${key}.name`)}
+                      {key === HIGHLIGHTED && (
+                        <span className="block text-marketing-accent md:ml-2 md:inline">
+                          {t("popular")}
+                        </span>
+                      )}
+                    </p>
+                    {amount == null ? (
+                      <p className="mt-1 text-caption text-muted-foreground">
+                        {t("comingSoon")}
+                      </p>
+                    ) : (
+                      <>
+                        <p className="mt-1 truncate text-title-2 text-foreground md:text-title">
+                          {amount}
+                        </p>
+                        <p className="text-caption text-muted-foreground">
+                          {t(`plans.${key}.period`)}
+                        </p>
+                      </>
                     )}
-                  </p>
-                  <p className="mt-1 truncate text-title-2 text-foreground md:text-title">
-                    {price(key)}
-                  </p>
-                  <p className="text-caption text-muted-foreground">
-                    {t(`plans.${key}.period`)}
-                  </p>
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Description and CTA: scroll away with the page */}
@@ -181,8 +212,15 @@ export default async function PricingPage() {
                           planByKey[key] ?? null,
                           () => t(`plans.${key}.features.${feature}`),
                         )}
-                        included={t("compare.included")}
-                        notIncluded={t("compare.notIncluded")}
+                        plan={t(`plans.${key}.name`)}
+                        included={t("compare.included", {
+                          plan: t(`plans.${key}.name`),
+                          feature: t(`features.${feature}`),
+                        })}
+                        notIncluded={t("compare.notIncluded", {
+                          plan: t(`plans.${key}.name`),
+                          feature: t(`features.${feature}`),
+                        })}
                       />
                     </div>
                   ))}
@@ -242,7 +280,7 @@ export default async function PricingPage() {
         </section>
       </main>
 
-      <PlatformFooter />
+      <PlatformFooter flush />
     </div>
   );
 }

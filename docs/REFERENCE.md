@@ -547,8 +547,10 @@ Tailwind, Radix, `sonner` toasts, JWT in the `contentor_access_token` cookie, an
   `/dashboard`, `/admin/{tenants,tenants/[slug],plans,billing,settings,health}`.
 - Routed on `Host(contentor.app)` (and `localhost`).
 - Apex-only — **no** `X-Tenant-Domain`; talks to the `public` schema.
-- House design system: OKLCH tokens, 7 themes (light/matte/graphite·/midnight/dark),
-  Geist fonts. (See the `house-design-system` skill.)
+- Look: the shared token sheet `packages/shared/src/styles/tokens.css` (both apps).
+  Marketing is light-only, with two dark cinematic chapters on the landing; brass
+  accent `--marketing-accent` = `oklch(0.52 0.12 65)`; Geist in both apps. The coach
+  studio (`frontend-customer` admin) deliberately leaves the house design system.
 - API helpers in `src/lib/api/` (`billing-platform.ts`, `onboarding.ts`); cookie name +
   `DJANGO_API_URL` in `src/lib/constants.ts`.
 
@@ -606,6 +608,13 @@ via `scripts/select_tests.py` + `e2e/impact-map.json`), `make lint`, `make forma
 - **Deploy:** from the Mac, `cd ~/ws/home-server && ./deploy.sh contentor` (rsync + build
   + up + health). Tunnel ingress: `./deploy.sh edge`. Secrets in `.env.prod` (gitignored,
   rsynced; template `.env.prod.example`).
+- **Marketing media:** `frontend-main/public/media/*` filenames are not hashed; prod
+  serves them behind a Cloudflare cache rule (7-day edge TTL, 1-day browser TTL).
+  After any re-encode, purge the `/media/*` prefix at the edge or visitors see the old
+  footage for up to a week. Pipeline in `scripts/footage/`: `record.ts` → `encode.sh`
+  → `manifest.mjs` (their headers are the runbook; `make footage` prints it). Budgets
+  are enforced by `frontend-main/src/lib/__tests__/media-budget.test.ts` and
+  `landing-media.test.ts`.
 
 ---
 

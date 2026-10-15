@@ -94,8 +94,8 @@
     "support": "Support"
   },
   "compare": {
-    "included": "Included",
-    "notIncluded": "Not included"
+    "included": "{plan}: {feature} included",
+    "notIncluded": "{plan}: {feature} not included"
   },
   "faq": {
     "title": "Frequently asked questions",

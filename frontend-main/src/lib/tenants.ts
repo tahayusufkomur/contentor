@@ -9,7 +9,12 @@ export interface MyTenant {
   is_active: boolean;
   is_published: boolean;
   has_preview_password: boolean;
-  provisioning_status: "pending" | "provisioning" | "ready" | "failed";
+  provisioning_status:
+    | "pending"
+    | "provisioning"
+    | "provisioned"
+    | "ready"
+    | "failed";
   plan_name: string | null;
   domain: string;
   studio_url: string;

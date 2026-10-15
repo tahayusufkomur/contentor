@@ -19,12 +19,14 @@ const STATUS: Record<
 > = {
   ready: { label: "Live", dot: "bg-chart-2" },
   provisioning: { label: "Setting up", dot: "bg-marketing-accent" },
+  provisioned: { label: "Setting up", dot: "bg-marketing-accent" },
   pending: { label: "Pending", dot: "bg-muted-foreground" },
   failed: { label: "Setup failed", dot: "bg-destructive" },
 };
 
 function PlatformCard({ tenant }: { tenant: MyTenant }) {
-  const status = STATUS[tenant.provisioning_status];
+  // Fallback: an unknown backend value must never 500 the dashboard.
+  const status = STATUS[tenant.provisioning_status] ?? STATUS.pending;
   const isReady = tenant.provisioning_status === "ready" && tenant.is_active;
 
   return (
@@ -186,7 +188,7 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <PlatformFooter />
+      <PlatformFooter flush />
     </div>
   );
 }

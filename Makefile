@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets format stripe-listen deploy prod-build prod-config e2e e2e-stripe e2e-spec eval-sites test-changed e2e-changed wiki wiki-sync sections-sync
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets format stripe-listen deploy prod-build prod-config e2e e2e-stripe e2e-spec eval-sites test-changed e2e-changed wiki wiki-sync sections-sync footage
 
 # Prod env lives in Cloudflare KV (fleet scripts/secrets.sh, Touch ID), not on
 # disk. Targets that need it materialize .env.prod for that one command only.
@@ -23,7 +23,7 @@ help: ## Show this help
 	@grep -E '^(test|test-backend|test-app|test-changed|test-frontend|test-fresh|typecheck|typecheck-backend|lint|format):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Utilities ---\033[0m"
-	@grep -E '^(shell|health-check|wiki|wiki-sync):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^(shell|health-check|wiki|wiki-sync|footage):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Deploy ---\033[0m"
 	@grep -E '^(deploy|prod-build|prod-config):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -213,6 +213,14 @@ e2e-stripe: ## e2e incl. real Stripe test-mode specs (needs sk_test keys in .env
 e2e-spec: ## Run one e2e spec by substring: make e2e-spec SPEC=04-live-class
 	@test -n "$(SPEC)" || { echo "usage: make e2e-spec SPEC=<spec-substring>  (e.g. SPEC=04-live-class)"; exit 1; }
 	cd e2e && npm install --silent && npx playwright install chromium && npx playwright test $(SPEC)
+
+footage: ## Print the landing-media runbook (record -> encode -> manifest); runs nothing
+	@echo "Landing media (scripts/footage/; read each file's header first). Heavy: nothing else heavy alongside."
+	@echo "  1. cd e2e && npx playwright test -c ../scripts/footage/footage.config.ts -g <flow>"
+	@echo "  2. scripts/footage/encode.sh <group>...   (photos student studio assistant setup looks all)"
+	@echo "  3. node scripts/footage/manifest.mjs [--partial]"
+	@echo "Then check the budgets (media-budget.test.ts, landing-media.test.ts) and, after deploy,"
+	@echo "purge /media/* at Cloudflare's edge (unhashed names, 7-day edge TTL)."
 
 eval-sites: ## Manual site-quality eval for one style, never CI: make eval-sites STYLE=journal [BRIEFS=yoga,chess]
 	@test -n "$(STYLE)" || { echo "usage: make eval-sites STYLE=<style-id> [BRIEFS=<id,id>]  (briefs: e2e/fixtures/site-eval-briefs.json)"; exit 1; }

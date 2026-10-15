@@ -4,7 +4,9 @@ import { useTranslations } from "next-intl";
 import { NavLink } from "@/components/ui/nav-link";
 import { Wordmark } from "@/components/shared/logo-mark";
 
-export function PlatformFooter() {
+/** `flush` drops the top margin for pages whose last section is already
+ * `bg-muted`, so no paper strip shows between two muted bands. */
+export function PlatformFooter({ flush = false }: { flush?: boolean }) {
   const t = useTranslations("common.footer");
   const tNav = useTranslations("common.nav");
 
@@ -34,7 +36,7 @@ export function PlatformFooter() {
   ];
 
   return (
-    <footer className="mt-32 bg-muted">
+    <footer className={flush ? "border-t bg-muted" : "mt-32 bg-muted"}>
       <div className="mx-auto max-w-media px-6 py-14">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="max-w-sm">

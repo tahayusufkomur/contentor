@@ -15,8 +15,8 @@ interface AuthShellProps {
 const PHOTO = {
   src: "/media/stills/still-yoga.avif",
   srcSmall: "/media/stills/still-yoga-small.avif",
-  width: 1600,
-  height: 2000,
+  width: 1280,
+  height: 1600,
 } as const;
 
 /** White auth page (spec 5.5): a 420 px centred form; on desktop one 4:5
@@ -43,6 +43,7 @@ export function AuthShell({
             width={photo.width}
             height={photo.height}
             alt=""
+            loading="lazy"
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover"
           />
