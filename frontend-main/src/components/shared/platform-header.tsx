@@ -23,7 +23,15 @@ function Logo() {
   );
 }
 
-export function PlatformHeader({ user }: { user?: User | null }) {
+/** `sticky={false}` where a LocalNav takes the top (the landing): the global
+ * bar scrolls away and the product nav sticks, as on Apple's pages. */
+export function PlatformHeader({
+  user,
+  sticky = true,
+}: {
+  user?: User | null;
+  sticky?: boolean;
+}) {
   const router = useRouter();
   const navigate = useNavigate();
   const t = useTranslations("common.nav");
@@ -45,7 +53,12 @@ export function PlatformHeader({ user }: { user?: User | null }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background backdrop-blur-md">
+    <header
+      className={cn(
+        "z-50 border-b bg-background/80 backdrop-blur-md",
+        sticky ? "sticky top-0" : "relative",
+      )}
+    >
       <div
         className={cn(
           "mx-auto flex h-12 max-w-media items-center justify-between px-6 transition-colors duration-300",

@@ -11,8 +11,9 @@ export interface LocalNavProps {
   cta: { href: string; label: string };
 }
 
-/** Apple-style product nav under the header (spec 5.4): the page's name on
- * the left, chapter anchors and the CTA on the right. The active anchor
+/** Apple-style product nav under the header (spec 5.4): it sticks at the
+ * top once the header (rendered `sticky={false}`) has scrolled away. The
+ * page's name, not the brand, on the left, chapter anchors and the CTA on the right. The active anchor
  * follows the chapter in view. On phones only the title and the CTA show. */
 export function LocalNav({ title, items, cta }: LocalNavProps) {
   const [active, setActive] = useState(items[0]?.id);
@@ -36,9 +37,9 @@ export function LocalNav({ title, items, cta }: LocalNavProps) {
   return (
     <nav
       aria-label={title}
-      className="sticky top-12 z-40 border-b bg-background backdrop-blur-md"
+      className="sticky top-0 z-40 h-[var(--localnav-h)] border-b bg-background/80 backdrop-blur-md"
     >
-      <div className="mx-auto flex h-11 max-w-media items-center justify-between px-6">
+      <div className="mx-auto flex h-full max-w-media items-center justify-between px-6">
         <span className="text-caption font-semibold text-foreground">
           {title}
         </span>

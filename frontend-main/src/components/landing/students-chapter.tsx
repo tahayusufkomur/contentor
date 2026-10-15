@@ -28,6 +28,7 @@ export async function StudentsChapter() {
               poster={clip.poster!}
               width={clip.width}
               height={clip.height}
+              posterLoading="lazy"
               label={t("phoneLabel")}
               className="rounded-[34px]"
             />
@@ -41,6 +42,7 @@ export async function StudentsChapter() {
                 key={tile.key}
                 className="rounded-tile bg-muted p-5 md:p-6"
               >
+                {/* eslint-disable-next-line @next/next/no-img-element -- sized AVIF with its own srcSet */}
                 <img
                   src={still.src}
                   srcSet={

@@ -35,14 +35,14 @@ export async function AssistantChapter() {
         width={clip.width}
         height={clip.height}
         bands={scrubBands([captions[0], captions[1], captions[2]])}
-        className="hidden md:block"
+        className="hidden stage:motion-safe:block"
       />
       <StaticScrub
         poster={clip.poster!}
         width={clip.width}
         height={clip.height}
         bands={[...captions]}
-        className="md:hidden"
+        className="stage:motion-safe:hidden"
       />
     </Chapter>
   );

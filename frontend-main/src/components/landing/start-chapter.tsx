@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCtaSection } from "@/components/landing/final-cta-section";
@@ -8,12 +9,14 @@ import { teaserRows } from "@/lib/plans";
 import { fetchPlans } from "@/lib/plans-server";
 
 /** Three plan names with live prices from the same fetch pricing uses. When
- * Django does not answer, the names render without a price (Review Focus 5). */
-async function PricingTeaser() {
+ * Django does not answer, the names render without a price (Review Focus 5);
+ * `live={false}` is that names-only render, the Suspense fallback the page
+ * streams first. */
+async function PricingTeaser({ live = true }: { live?: boolean }) {
   const [t, tp, plans] = await Promise.all([
     getTranslations("marketing.start.pricing"),
     getTranslations("pricing.plans"),
-    fetchPlans(),
+    live ? fetchPlans() : null,
   ]);
   const rows = teaserRows(plans);
   return (
@@ -69,7 +72,9 @@ export async function StartChapter() {
       lead={t("lead")}
     >
       <FoundingCreatorsSection />
-      <PricingTeaser />
+      <Suspense fallback={<PricingTeaser live={false} />}>
+        <PricingTeaser />
+      </Suspense>
       <FaqSection />
       <FinalCtaSection />
     </Chapter>

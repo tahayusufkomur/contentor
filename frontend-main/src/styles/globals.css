@@ -11,6 +11,10 @@
   * {
     @apply border-border;
   }
+  /* LocalNav's height with its border: the scrub stage sticks beneath it. */
+  :root {
+    --localnav-h: 45px;
+  }
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -30,8 +34,8 @@
    ───────────────────────────────────────────────────────── */
 .text-eyebrow {
   text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  font-size: 12px;
   font-weight: 600;
 }
 /* @tailwindcss/typography on the token sheet: prose-neutral's grey palette is

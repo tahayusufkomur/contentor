@@ -3,14 +3,15 @@ import type { ScrubBand } from "@/components/motion/scroll-scrub";
 import { cn } from "@/lib/utils";
 
 /** Three caption windows across a scrub: the first is visible at rest, the
- * last stays to the end (Phase 0's bandOpacity treats from=0 / to=1 so). */
+ * last stays to the end (Phase 0's bandOpacity treats from=0 / to=1 so). The
+ * 0.08 gaps (bandOpacity's fade) keep two pills from crossing on screen. */
 export function scrubBands(
   nodes: [ReactNode, ReactNode, ReactNode],
 ): ScrubBand[] {
   return [
-    { from: 0, to: 0.36, node: nodes[0] },
-    { from: 0.3, to: 0.7, node: nodes[1] },
-    { from: 0.64, to: 1, node: nodes[2] },
+    { from: 0, to: 0.3, node: nodes[0] },
+    { from: 0.38, to: 0.62, node: nodes[1] },
+    { from: 0.7, to: 1, node: nodes[2] },
   ];
 }
 
@@ -24,10 +25,12 @@ export function ScrubCaption({ children }: { children: ReactNode }) {
   );
 }
 
-/** What a phone shows instead of the sticky scrub (spec 5.7: ≤ 4 MB on a
- * phone, so the all-keyframe clip never loads there): the poster, then the
- * captions in reading order. Switched by CSS (`md:hidden` here, `hidden
- * md:block` on ScrollScrub) so there is no hydration mismatch and no shift. */
+/** What a phone (or a reader asking for reduced motion) sees instead of the
+ * sticky scrub (spec 5.7: ≤ 4 MB on a phone, so the all-keyframe clip never
+ * loads there): the poster, then the captions in reading order. Switched by
+ * CSS (`stage:motion-safe:hidden` here, `hidden stage:motion-safe:block` on
+ * ScrollScrub; `stage` = at least 768 × 600, so a landscape phone stays
+ * here) so there is no hydration mismatch and no shift. */
 export function StaticScrub({
   poster,
   width,
@@ -43,6 +46,7 @@ export function StaticScrub({
 }) {
   return (
     <figure className={cn("mx-auto max-w-media px-6", className)}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- sized AVIF poster, no optimisation wanted */}
       <img
         src={poster}
         alt=""

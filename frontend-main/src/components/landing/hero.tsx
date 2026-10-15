@@ -42,6 +42,7 @@ export async function Hero() {
           poster={clip.poster!}
           width={clip.width}
           height={clip.height}
+          posterPriority
           label={t("videoLabel")}
           className="mx-auto max-w-media md:rounded-tile"
         />

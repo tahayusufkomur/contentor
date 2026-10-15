@@ -22,9 +22,9 @@ export default async function HomePage() {
   ]);
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <PlatformHeader user={user} />
+      <PlatformHeader user={user} sticky={false} />
       <LocalNav
-        title="Contentor"
+        title={t("title")}
         items={CHAPTER_IDS.map((id) => ({ id, label: t(id) }))}
         cta={{ href: "/signup", label: t("cta") }}
       />

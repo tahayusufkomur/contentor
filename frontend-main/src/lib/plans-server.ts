@@ -17,10 +17,12 @@ export async function fetchPlans(): Promise<PlansResponse | null> {
           ...(country ? { "CF-IPCountry": country } : {}),
         },
         cache: "no-store",
+        // The landing streams around this; a slow Django costs 2 s at most.
+        signal: AbortSignal.timeout(2000),
       },
     );
     if (!res.ok) return null;
-    return res.json();
+    return await res.json(); // await: a bad body lands in the catch
   } catch {
     return null;
   }

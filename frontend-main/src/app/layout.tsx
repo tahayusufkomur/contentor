@@ -15,9 +15,10 @@ import { TrackPageView } from "@shared/tracking/track-page-view";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "Contentor - Monetize Your Content",
+  // No title.template: blog pages already set "… — Contentor" in full.
+  title: "Contentor — Teach under your own name",
   description:
-    "Launch your own branded site for courses, live classes, and more.",
+    "Classes, live sessions, and a calm studio for your students, built around your craft, with your name on every screen.",
 };
 
 export default async function RootLayout({

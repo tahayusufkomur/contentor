@@ -37,6 +37,7 @@ const tile = (p: string, text = 110) => ({
 
 /** key path → max characters. */
 const CAPS: Record<string, number> = {
+  "landingNav.title": 20,
   "landingNav.cta": 12,
   ...Object.fromEntries(CHAPTER_IDS.map((id) => [`landingNav.${id}`, 10])),
   "hero.title": 40,

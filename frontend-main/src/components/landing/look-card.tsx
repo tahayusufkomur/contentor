@@ -21,6 +21,7 @@ export function LookCard({ name, still, render, renderAlt }: LookCardProps) {
   return (
     <figure className="flex flex-col">
       <div className="flex h-[260px] gap-3 md:h-[440px]">
+        {/* eslint-disable-next-line @next/next/no-img-element -- sized AVIF with its own srcSet */}
         <img
           src={still.src}
           srcSet={srcSet(still)}
@@ -32,6 +33,7 @@ export function LookCard({ name, still, render, renderAlt }: LookCardProps) {
           decoding="async"
           className="h-full w-auto aspect-[4/5] rounded-tile bg-muted object-cover"
         />
+        {/* eslint-disable-next-line @next/next/no-img-element -- sized AVIF with its own srcSet */}
         <img
           src={render.src}
           srcSet={srcSet(render)}

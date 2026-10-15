@@ -22,6 +22,8 @@ describe("scrubTime", () => {
   it("maps progress to seconds on a frame grid", () => {
     expect(scrubTime(0.5, 10)).toBe(5);
     expect(scrubTime(0.333, 10, 30)).toBeCloseTo(3.3333, 3);
+    // The scrub clips are 10 fps (encode.sh SCRUB_FPS): a 0.1 s grid.
+    expect(scrubTime(0.333, 10, 10)).toBeCloseTo(3.3, 5);
   });
   it("clamps progress reported outside 0–1", () => {
     expect(scrubTime(-0.02, 10)).toBe(0);

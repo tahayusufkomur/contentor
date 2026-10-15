@@ -19,7 +19,10 @@ export interface MediaVideoProps {
   posterSrcSet?: string;
   posterSizes?: string;
   posterLoading?: "eager" | "lazy";
-  /** Smaller encode for phones; chosen on <= 767 px viewports. */
+  /** fetchpriority="high" on the poster: the page's LCP image (the hero). */
+  posterPriority?: boolean;
+  /** Smaller encode for phones; chosen unless DESKTOP_MQ matches, so a
+   * landscape phone gets it too. */
   phoneSrc?: string;
   /** VP9 twin; listed first so browsers that can take it do. */
   webm?: string;
@@ -39,6 +42,9 @@ export interface MediaVideoProps {
 
 type NavWithSaveData = Navigator & { connection?: { saveData?: boolean } };
 
+/** The preset's `stage` screen: wide and tall enough for desktop media. */
+const DESKTOP_MQ = "(min-width: 768px) and (min-height: 600px)";
+
 /** Poster first, file after idle, play only in view (ported from Pix4Less's
  * hero: spec 5.2). The poster is a plain <img> with explicit size so the
  * layout never shifts; posters are already sized AVIF. */
@@ -50,6 +56,7 @@ export function MediaVideo({
   posterSrcSet,
   posterSizes,
   posterLoading,
+  posterPriority,
   phoneSrc,
   webm,
   loop = true,
@@ -67,9 +74,9 @@ export function MediaVideo({
   const hover = playOn === "hover";
 
   useEffect(() => {
-    const phoneMq = window.matchMedia("(max-width: 767px)");
-    setIsPhone(phoneMq.matches);
-    const onPhoneChange = (e: MediaQueryListEvent) => setIsPhone(e.matches);
+    const phoneMq = window.matchMedia(DESKTOP_MQ);
+    setIsPhone(!phoneMq.matches);
+    const onPhoneChange = (e: MediaQueryListEvent) => setIsPhone(!e.matches);
     phoneMq.addEventListener("change", onPhoneChange);
     return () => phoneMq.removeEventListener("change", onPhoneChange);
   }, []);
@@ -210,6 +217,7 @@ export function MediaVideo({
         width={width}
         height={height}
         loading={posterLoading ?? (hover ? "lazy" : undefined)}
+        fetchPriority={posterPriority ? "high" : undefined}
         decoding="async"
         className={cn(
           "absolute inset-0 h-full w-full object-cover motion-safe:transition-opacity duration-700 ease-expo",
@@ -232,11 +240,7 @@ export function MediaVideo({
           className="absolute inset-0 h-full w-full object-cover"
         >
           {wanted && usePhoneSource && (
-            <source
-              src={phoneSrc}
-              media="(max-width: 767px)"
-              type="video/mp4"
-            />
+            <source src={phoneSrc} type="video/mp4" />
           )}
           {wanted && !usePhoneSource && webm && (
             <source src={webm} type="video/webm" />

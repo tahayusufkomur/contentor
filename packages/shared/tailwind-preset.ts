@@ -48,6 +48,10 @@ const preset: Partial<Config> = {
         caption: ["14px", { lineHeight: "1.43" }],
       },
       maxWidth: { text: "980px", media: "1440px" },
+      // The landing's desktop path (sticky scrubs, desktop encodes): wide AND
+      // tall, so a landscape phone stays on the phone path. MediaVideo's
+      // DESKTOP_MQ is the same query.
+      screens: { stage: { raw: "(min-width: 768px) and (min-height: 600px)" } },
       transitionTimingFunction: { expo: "cubic-bezier(0.22, 1, 0.36, 1)" },
       borderRadius: { tile: "18px" },
       keyframes: {
