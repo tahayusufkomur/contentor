@@ -1,6 +1,6 @@
 # Premium marketing site and coach studio — design
 
-Date: 2026-10-14 · Status: approved in conversation by the owner 2026-10-14; spec awaiting the owner's review · Phase 0 done 2026-10-14 · Phase 4 done 2026-10-14 · Phase 1 done 2026-10-14 · media cache rule created 2026-10-14, live check pending Phase 5 · Phase 2 done 2026-10-14 · Phase 3 done 2026-10-14
+Date: 2026-10-14 · Status: approved in conversation by the owner 2026-10-14; spec awaiting the owner's review · Phase 0 done 2026-10-14 · Phase 4 done 2026-10-14 · Phase 1 done 2026-10-14 · media cache rule created 2026-10-14, live check pending Phase 5 · Phase 2 done 2026-10-14 · Phase 3 done 2026-10-14 · Phase 5 done 2026-10-15: deployed to prod (both nodes) and verified
 
 ## 1. Goal
 
@@ -27,20 +27,20 @@ Success looks like:
 
 ## 2. Decisions
 
-| # | Decision | Source |
-|---|---|---|
-| D1 | "Admin" means the coach-facing surfaces: the coach dashboard in `frontend-main` and the coach studio shell in `frontend-customer`. The superadmin console is untouched. | Owner, 2026-10-14 |
-| D2 | The studio is re-skinned to the new visual system, not kept on the house design system. This deliberately leaves the s3Administrator house tokens for Contentor; a future session must not "restore" them. | Owner, 2026-10-14 |
-| D3 | Media is real product footage recorded from the running app, plus Pix4Less photography with a person in frame and a few image-to-video loops. No stock footage of actors, no invented mockups. | Owner, 2026-10-14 |
-| D4 | Light-first and monochrome. Marketing pages render light always, as apple.com does; the only dark is two cinematic chapters. The marketing theme toggle goes. The studio keeps the coach's one light/dark choice (owner, 2026-10-14, "one dark toggle for site and admin"), so the token set has a dark variant. | Owner, 2026-10-14; refined here |
-| D5 | Accent is brass. One warm hue for links, the primary pill and small highlights; never a background. Apple blue was offered and declined. | Owner, 2026-10-14 |
-| D6 | Geist everywhere. SF Pro cannot be licensed for the web; Geist is already installed in `frontend-main` and is the closest neighbour. The studio moves from Instrument to Geist so both apps feel like one product. Tenant sites keep their per-look fonts. | Constraint + design |
-| D7 | Token names do not change. The shadcn names (`--background`, `--foreground`, `--muted`, `--primary`, `--marketing-accent`, …) keep every shared primitive working; only their values change. `--accent` stays the hover tint; `--marketing-accent` becomes brass. | Design |
-| D8 | The five unused themes in `frontend-main` (matte, graphite, graphite-plus/bright, dim, midnight) are deleted. Light and dark remain. | Design |
-| D9 | No new runtime dependency. framer-motion, next-themes, next-intl and geist are already installed; the motion kit is built on framer-motion, simple reveals stay CSS. | Constraint |
-| D10 | The studio's 44 pages are not rewritten. They inherit the look through the shell and the shared primitives (`packages/shared/src/ui`). Only the shell, the primitives and the Overview welcome are touched. | Scope |
-| D11 | Copy is rewritten in phase 2 with the copywriting and page-CRO skills, through `messages/en/marketing.json`. This spec gives each chapter a brief, not final lines. Only the English locale exists. | Scope |
-| D12 | The e2e impact map, the loading/feedback conventions (`scripts/check-loading-patterns.mjs`), `<NavLink>`/`useNavigate()` and the pre-commit gate apply unchanged. | Constraint |
+| #   | Decision                                                                                                                                                                                                                                                                                                         | Source                          |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| D1  | "Admin" means the coach-facing surfaces: the coach dashboard in `frontend-main` and the coach studio shell in `frontend-customer`. The superadmin console is untouched.                                                                                                                                          | Owner, 2026-10-14               |
+| D2  | The studio is re-skinned to the new visual system, not kept on the house design system. This deliberately leaves the s3Administrator house tokens for Contentor; a future session must not "restore" them.                                                                                                       | Owner, 2026-10-14               |
+| D3  | Media is real product footage recorded from the running app, plus Pix4Less photography with a person in frame and a few image-to-video loops. No stock footage of actors, no invented mockups.                                                                                                                   | Owner, 2026-10-14               |
+| D4  | Light-first and monochrome. Marketing pages render light always, as apple.com does; the only dark is two cinematic chapters. The marketing theme toggle goes. The studio keeps the coach's one light/dark choice (owner, 2026-10-14, "one dark toggle for site and admin"), so the token set has a dark variant. | Owner, 2026-10-14; refined here |
+| D5  | Accent is brass. One warm hue for links, the primary pill and small highlights; never a background. Apple blue was offered and declined.                                                                                                                                                                         | Owner, 2026-10-14               |
+| D6  | Geist everywhere. SF Pro cannot be licensed for the web; Geist is already installed in `frontend-main` and is the closest neighbour. The studio moves from Instrument to Geist so both apps feel like one product. Tenant sites keep their per-look fonts.                                                       | Constraint + design             |
+| D7  | Token names do not change. The shadcn names (`--background`, `--foreground`, `--muted`, `--primary`, `--marketing-accent`, …) keep every shared primitive working; only their values change. `--accent` stays the hover tint; `--marketing-accent` becomes brass.                                                | Design                          |
+| D8  | The five unused themes in `frontend-main` (matte, graphite, graphite-plus/bright, dim, midnight) are deleted. Light and dark remain.                                                                                                                                                                             | Design                          |
+| D9  | No new runtime dependency. framer-motion, next-themes, next-intl and geist are already installed; the motion kit is built on framer-motion, simple reveals stay CSS.                                                                                                                                             | Constraint                      |
+| D10 | The studio's 44 pages are not rewritten. They inherit the look through the shell and the shared primitives (`packages/shared/src/ui`). Only the shell, the primitives and the Overview welcome are touched.                                                                                                      | Scope                           |
+| D11 | Copy is rewritten in phase 2 with the copywriting and page-CRO skills, through `messages/en/marketing.json`. This spec gives each chapter a brief, not final lines. Only the English locale exists.                                                                                                              | Scope                           |
+| D12 | The e2e impact map, the loading/feedback conventions (`scripts/check-loading-patterns.mjs`), `<NavLink>`/`useNavigate()` and the pre-commit gate apply unchanged.                                                                                                                                                | Constraint                      |
 
 ## 3. Findings (survey of 2026-10-14)
 
@@ -94,20 +94,20 @@ Lives in `packages/shared/src/styles/tokens.css` (new) and `packages/shared/tail
 
 Light tokens (marketing and studio light):
 
-| Token | Value | Role |
-|---|---|---|
-| `--background` | `oklch(1 0 0)` | paper |
-| `--muted` | `oklch(0.97 0.004 80)` | second paper, alternating sections, tiles |
-| `--card` | `oklch(1 0 0)` | tiles on second paper |
-| `--foreground` | `oklch(0.2 0.005 80)` | ink |
-| `--muted-foreground` | `oklch(0.5 0.01 80)` | secondary text, 4.5:1 on both papers |
-| `--border` | `oklch(0.9 0.004 80)` | hairline |
-| `--primary` / `--primary-foreground` | ink / paper | the primary button |
-| `--accent` / `--accent-foreground` | `oklch(0.95 0.005 80)` / ink | hover tint (unchanged role) |
-| `--marketing-accent` | `oklch(0.52 0.12 65)` | brass: links, highlights, 4.5:1 on paper |
-| `--marketing-accent-foreground` | paper | text on a brass fill (rare) |
-| `--ring` | ink | 3 px focus ring |
-| `--radius` | `0.75rem` | studio controls; media tiles use 18 px; pills use 999 px |
+| Token                                | Value                        | Role                                                     |
+| ------------------------------------ | ---------------------------- | -------------------------------------------------------- |
+| `--background`                       | `oklch(1 0 0)`               | paper                                                    |
+| `--muted`                            | `oklch(0.97 0.004 80)`       | second paper, alternating sections, tiles                |
+| `--card`                             | `oklch(1 0 0)`               | tiles on second paper                                    |
+| `--foreground`                       | `oklch(0.2 0.005 80)`        | ink                                                      |
+| `--muted-foreground`                 | `oklch(0.5 0.01 80)`         | secondary text, 4.5:1 on both papers                     |
+| `--border`                           | `oklch(0.9 0.004 80)`        | hairline                                                 |
+| `--primary` / `--primary-foreground` | ink / paper                  | the primary button                                       |
+| `--accent` / `--accent-foreground`   | `oklch(0.95 0.005 80)` / ink | hover tint (unchanged role)                              |
+| `--marketing-accent`                 | `oklch(0.52 0.12 65)`        | brass: links, highlights, 4.5:1 on paper                 |
+| `--marketing-accent-foreground`      | paper                        | text on a brass fill (rare)                              |
+| `--ring`                             | ink                          | 3 px focus ring                                          |
+| `--radius`                           | `0.75rem`                    | studio controls; media tiles use 18 px; pills use 999 px |
 
 Dark tokens (studio dark and the landing's cinematic chapters): background `oklch(0.13 0.005 80)`,
 card `oklch(0.18 0.005 80)`, muted `oklch(0.22 0.005 80)`, foreground `oklch(0.96 0.004 80)`,
@@ -117,16 +117,16 @@ marketing-accent `oklch(0.78 0.11 75)`. A cinematic chapter is simply `<section 
 
 Type (Geist; preset `fontSize` entries, desktop / phone):
 
-| Name | Size / line / tracking | Use |
-|---|---|---|
-| `display` | 80 / 1.05 / −0.03em (56 on phone) | hero line |
-| `display-2` | 56 / 1.07 / −0.028em (40) | chapter titles |
-| `title` | 40 / 1.1 / −0.02em (32) | section titles, studio welcome |
-| `title-2` | 28 / 1.14 / −0.015em (24) | tile titles |
-| `body-lg` | 21 / 1.4 / −0.01em (19) | chapter lead |
-| `body` | 17 / 1.47 / −0.01em | prose |
-| `caption` | 14 / 1.43 | captions, studio secondary |
-| `eyebrow` | 12 / 1 / +0.12em uppercase | existing `.text-eyebrow` |
+| Name        | Size / line / tracking            | Use                            |
+| ----------- | --------------------------------- | ------------------------------ |
+| `display`   | 80 / 1.05 / −0.03em (56 on phone) | hero line                      |
+| `display-2` | 56 / 1.07 / −0.028em (40)         | chapter titles                 |
+| `title`     | 40 / 1.1 / −0.02em (32)           | section titles, studio welcome |
+| `title-2`   | 28 / 1.14 / −0.015em (24)         | tile titles                    |
+| `body-lg`   | 21 / 1.4 / −0.01em (19)           | chapter lead                   |
+| `body`      | 17 / 1.47 / −0.01em               | prose                          |
+| `caption`   | 14 / 1.43                         | captions, studio secondary     |
+| `eyebrow`   | 12 / 1 / +0.12em uppercase        | existing `.text-eyebrow`       |
 
 Layout: text column 980 px, media column 1440 px, gutter 24 px, chapter padding 120 px desktop and
 72 px phone. Marketing tiles are flat on second paper with no shadow and no border; studio cards are
@@ -149,7 +149,7 @@ framer-motion's `MotionConfig reducedMotion="user"` plus the existing CSS guard:
   motion: poster plus the last band, static, no sticky track.
 - `Reveal` — the existing `ScrollReveal`, kept as is, with a `stagger` prop for grids.
 - `SnapGallery` — horizontal `scroll-snap`, arrow buttons, keyboard, `aria-roledescription=
-  "carousel"`, dots. Native scrolling, no JS motion.
+"carousel"`, dots. Native scrolling, no JS motion.
 
 `MediaVideo` (in `packages/shared/src/ui/`) is Pix4Less's `HeroBackgroundVideo` generalised:
 `src`, `poster`, `aspect`, `loop`, `sources` for a phone-sized encode via `<source media>`. Poster
@@ -182,7 +182,7 @@ downloaded once, stored as AVIF at 1600 and 800 px, alt text from the Pix4Less d
 noted in `media.json`. Four to six loops of five seconds come from the same image-to-video step that
 produced the Pix4Less motion previews; if that route is manual, Veo through the existing Gemini key.
 
-*Planning amendment (2026-10-14):* the plans settled the media list as the 44 keys the landing
+_Planning amendment (2026-10-14):_ the plans settled the media list as the 44 keys the landing
 consumes (Phase 2 plan, "Contracts consumed"). Twelve niches instead of eight: beauty, family,
 outdoors and wellness are added. The loops are seven ≤ 4 s studio screen loops cut from the
 recordings, for the chapter 4 bento. The image-to-video loops, the 16:9 banners and the studio
@@ -270,14 +270,14 @@ header and the dashboard and stays only in the superadmin sidebar.
 
 Each phase gets its own implementation plan (writing-plans) and ships on its own.
 
-| Phase | Deliverable | Gate |
-|---|---|---|
-| 0 Foundations | shared token sheet and preset, dead themes removed, Geist in both apps, motion kit, `MediaVideo`, header, local nav, footer | `make typecheck`, `make lint`, `make test-frontend`, `make e2e-spec SPEC=00-smoke` |
-| 1 Media | `scripts/footage/`, recordings, Pix4Less picks, loops, encodes, `media.json`, the budget test | budget test green |
-| 2 Landing | the eight chapters, copy in `marketing.json`, Cloudflare media cache rule | Lighthouse budgets, reduced-motion and phone pass, axe clean |
-| 3 Public pages | pricing, blog, login, signup, verify, dashboard | `make e2e-spec` for 01, 11, 25 |
-| 4 Studio | tokens in `frontend-customer`, shell, primitives, Overview frame, raw-colour sweep | e2e 00, 02, 05, 25, 27 |
-| 5 Ship | visual pass at 375, 1024 and 1440 in both colour schemes where they apply, `make deploy`, prod screenshots | prod verified |
+| Phase          | Deliverable                                                                                                                 | Gate                                                                               |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 0 Foundations  | shared token sheet and preset, dead themes removed, Geist in both apps, motion kit, `MediaVideo`, header, local nav, footer | `make typecheck`, `make lint`, `make test-frontend`, `make e2e-spec SPEC=00-smoke` |
+| 1 Media        | `scripts/footage/`, recordings, Pix4Less picks, loops, encodes, `media.json`, the budget test                               | budget test green                                                                  |
+| 2 Landing      | the eight chapters, copy in `marketing.json`, Cloudflare media cache rule                                                   | Lighthouse budgets, reduced-motion and phone pass, axe clean                       |
+| 3 Public pages | pricing, blog, login, signup, verify, dashboard                                                                             | `make e2e-spec` for 01, 11, 25                                                     |
+| 4 Studio       | tokens in `frontend-customer`, shell, primitives, Overview frame, raw-colour sweep                                          | e2e 00, 02, 05, 25, 27                                                             |
+| 5 Ship         | visual pass at 375, 1024 and 1440 in both colour schemes where they apply, `make deploy`, prod screenshots                  | prod verified                                                                      |
 
 Phases 0 and 1 run in parallel (one heavy job at a time on the VM: recordings and e2e never
 overlap). Phase 2 needs both. Phase 4 needs 0 only. Phase 1's studio takes (studio tiles, loops, the assistant scrub, the setup and student takes) are re-recorded after Phase 4 merges and before Phase 5 deploys, so the footage shows the new studio; its coach stills and site takes need nothing after Phase 0. Phase 3 needs 0, and its login photograph
