@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 
+import { ContentorBadge } from "@shared/ui/contentor-brand";
+
 import { useTenant } from "@/hooks/use-tenant";
 import { visibleNavLinks, type SiteMenu } from "@/lib/navbar";
 
@@ -60,6 +62,7 @@ export function PublicFooter({
             ))}
           </ul>
         )}
+        {config.show_badge && <ContentorBadge />}
       </div>
     </footer>
   );

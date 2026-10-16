@@ -70,6 +70,13 @@ class TenantConfigSerializer(serializers.ModelSerializer):
     icon_id = serializers.PrimaryKeyRelatedField(
         source="icon", queryset=Photo.objects.all(), allow_null=True, required=False
     )
+    show_badge = serializers.SerializerMethodField()
+
+    def get_show_badge(self, obj) -> bool:
+        """A free-plan site credits the platform in its footer ("Built with
+        Contentor"); a paid plan teaches under its own name alone."""
+        tenant = getattr(connection, "tenant", None)
+        return tenant is not None and not tenant.has_paid_platform_plan
 
     def validate_timezone(self, value):
         from zoneinfo import available_timezones
@@ -191,6 +198,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             "custom_css",
             "enabled_modules",
             "social_links",
+            "show_badge",
             "meta_description",
             "navbar_config",
             "landing_sections",

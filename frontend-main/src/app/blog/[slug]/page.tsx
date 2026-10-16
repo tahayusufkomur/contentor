@@ -24,7 +24,8 @@ export async function generateMetadata({
       title: post.title,
       description: post.meta_description || post.excerpt,
       type: "article",
-      ...(post.cover_photo_url ? { images: [post.cover_photo_url] } : {}),
+      // A post without a cover shares the site card instead of no image.
+      images: [post.cover_photo_url || "/og.jpg"],
     },
   };
 }

@@ -1,47 +1,20 @@
 {
   "backend": {
-    "billing": [
-      "20-stripe-platform",
-      "21-stripe-marketplace"
-    ],
+    "billing": ["20-stripe-platform", "21-stripe-marketplace"],
     "blog": "none",
-    "community": [
-      "15-community"
-    ],
-    "courses": [
-      "02-courses"
-    ],
-    "domains": [
-      "01-signup-onboarding"
-    ],
-    "downloads": [
-      "12-downloads"
-    ],
+    "community": ["15-community"],
+    "courses": ["02-courses"],
+    "domains": ["01-signup-onboarding"],
+    "downloads": ["12-downloads"],
     "email_campaigns": "none",
-    "filters": [
-      "02-courses"
-    ],
-    "live": [
-      "03-calendar",
-      "04-live-class",
-      "13-events-page"
-    ],
-    "logbook": [
-      "24-admin-logs"
-    ],
-    "mailbox": [
-      "07-mailbox"
-    ],
-    "media": [
-      "05-media"
-    ],
-    "notifications": [
-      "06-announcements"
-    ],
+    "filters": ["02-courses"],
+    "live": ["03-calendar", "04-live-class", "13-events-page"],
+    "logbook": ["24-admin-logs"],
+    "mailbox": ["07-mailbox"],
+    "media": ["05-media"],
+    "notifications": ["06-announcements"],
     "platform_email": "none",
-    "tags": [
-      "02-courses"
-    ],
+    "tags": ["02-courses"],
     "tenant_config": [
       "01-signup-onboarding",
       "09-builder",
@@ -56,101 +29,50 @@
     "usage": "none"
   },
   "frontend-customer": {
-    "src/app/(student)/community": [
-      "15-community"
-    ],
-    "src/app/(student)/learn": [
-      "02-courses"
-    ],
-    "src/app/live": [
-      "04-live-class"
-    ],
-    "src/app/manifest.ts": [
-      "08-pwa"
-    ],
-    "src/app/sw.ts": [
-      "08-pwa"
-    ],
-    "src/components/assistant": [
-      "16-site-assistant",
-      "22-assistant-takeover"
-    ],
+    "src/app/(student)/community": ["15-community"],
+    "src/app/(student)/learn": ["02-courses"],
+    "src/app/live": ["04-live-class"],
+    "src/app/manifest.ts": ["08-pwa"],
+    "src/app/sw.ts": ["08-pwa"],
+    "src/components/assistant": ["16-site-assistant", "22-assistant-takeover"],
     "src/components/blocks": [
       "09-builder",
       "14-navbar-layouts",
       "30-custom-components"
     ],
-    "src/components/cx": [
-      "30-custom-components"
-    ],
-    "src/components/community": [
-      "15-community"
-    ],
-    "src/components/live": [
-      "04-live-class"
-    ],
+    "src/components/cx": ["30-custom-components"],
+    "src/components/community": ["15-community"],
+    "src/components/live": ["04-live-class"],
     "src/components/logo": [
       "15-logo-studio",
       "17-logo-curated-library",
       "18-curated-library-admin"
     ],
-    "src/lib/assistant.ts": [
-      "16-site-assistant",
-      "22-assistant-takeover"
-    ],
+    "src/lib/assistant.ts": ["16-site-assistant", "22-assistant-takeover"],
     "src/lib/blocks": [
       "09-builder",
       "14-navbar-layouts",
       "30-custom-components"
     ],
-    "src/lib/cx": [
-      "30-custom-components"
-    ],
-    "src/lib/community": [
-      "15-community"
-    ],
+    "src/lib/cx": ["30-custom-components"],
+    "src/lib/community": ["15-community"],
     "src/lib/logo": [
       "15-logo-studio",
       "17-logo-curated-library",
       "18-curated-library-admin"
     ],
-    "src/lib/mailbox.ts": [
-      "07-mailbox"
-    ],
-    "src/lib/navbar.ts": [
-      "14-navbar-layouts"
-    ],
-    "src/components/ui/nav-link.tsx": [
-      "25-navigation-feedback"
-    ],
-    "src/components/ui/navigation-progress.tsx": [
-      "25-navigation-feedback"
-    ],
-    "src/components/ui/stale-container.tsx": [
-      "25-navigation-feedback"
-    ],
-    "src/lib/admin-nav.ts": [
-      "27-nav-stage-gating"
-    ],
-    "src/lib/admin-nav-gate.ts": [
-      "27-nav-stage-gating"
-    ],
-    "src/components/shared/app-sidebar.tsx": [
-      "27-nav-stage-gating"
-    ],
-    "src/components/admin/admin-shell.tsx": [
-      "27-nav-stage-gating"
-    ],
-    "src/components/copilot": [
-      "01-signup-onboarding",
-      "29-copilot"
-    ],
-    "src/lib/copilot": [
-      "29-copilot"
-    ],
-    "src/components/admin/describe-it.tsx": [
-      "29-copilot"
-    ],
+    "src/lib/mailbox.ts": ["07-mailbox"],
+    "src/lib/navbar.ts": ["14-navbar-layouts"],
+    "src/components/ui/nav-link.tsx": ["25-navigation-feedback"],
+    "src/components/ui/navigation-progress.tsx": ["25-navigation-feedback"],
+    "src/components/ui/stale-container.tsx": ["25-navigation-feedback"],
+    "src/lib/admin-nav.ts": ["27-nav-stage-gating"],
+    "src/lib/admin-nav-gate.ts": ["27-nav-stage-gating"],
+    "src/components/shared/app-sidebar.tsx": ["27-nav-stage-gating"],
+    "src/components/admin/admin-shell.tsx": ["27-nav-stage-gating"],
+    "src/components/copilot": ["01-signup-onboarding", "29-copilot"],
+    "src/lib/copilot": ["29-copilot"],
+    "src/components/admin/describe-it.tsx": ["29-copilot"],
     "src/components/admin/assistant-dock.tsx": [
       "27-nav-stage-gating",
       "29-copilot"
@@ -159,40 +81,23 @@
       "27-nav-stage-gating",
       "29-copilot"
     ],
-    "src/lib/assistant-dock.ts": [
-      "27-nav-stage-gating",
-      "29-copilot"
-    ],
-    "src/app/admin/site-ai": [
-      "29-copilot"
-    ],
-    "src/app/setup": [
-      "01-signup-onboarding"
-    ],
-    "src/components/setup-flow": [
-      "01-signup-onboarding"
-    ],
-    "src/lib/setup-flow.ts": [
-      "01-signup-onboarding"
-    ],
-    "src/lib/interview.ts": [
-      "01-signup-onboarding"
-    ],
+    "src/lib/assistant-dock.ts": ["27-nav-stage-gating", "29-copilot"],
+    "src/app/admin/site-ai": ["29-copilot"],
+    "src/app/setup": ["01-signup-onboarding"],
+    "src/components/setup-flow": ["01-signup-onboarding"],
+    "src/lib/setup-flow.ts": ["01-signup-onboarding"],
+    "src/lib/interview.ts": ["01-signup-onboarding"],
     "src/components/sections": [
       "01-signup-onboarding",
       "09-builder",
       "30-custom-components"
     ],
-    "src/components/owner/cx-composer.tsx": [
-      "30-custom-components"
-    ],
-    "src/components/owner/cx-refine.tsx": [
-      "30-custom-components"
-    ],
-    "src/lib/site-styles.ts": [
-      "01-signup-onboarding",
-      "09-builder"
-    ]
+    "src/components/owner/cx-composer.tsx": ["30-custom-components"],
+    "src/components/owner/cx-refine.tsx": ["30-custom-components"],
+    "src/lib/site-styles.ts": ["01-signup-onboarding", "09-builder"],
+    "src/components/shared/public-footer.tsx": ["14-navbar-layouts"],
+    "src/types/tenant.ts": "none",
+    "src/types/api-generated.ts": "none"
   },
   "frontend-main": [
     "01-signup-onboarding",
@@ -200,10 +105,8 @@
     "11-login-code",
     "18-curated-library-admin",
     "22-assistant-takeover",
-    "24-admin-logs"
+    "24-admin-logs",
+    "31-landing"
   ],
-  "manual": [
-    "90-logo-eval",
-    "91-site-eval"
-  ]
+  "manual": ["90-logo-eval", "91-site-eval"]
 }

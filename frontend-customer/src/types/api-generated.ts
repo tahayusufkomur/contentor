@@ -10238,6 +10238,11 @@ export interface components {
       custom_css?: string;
       enabled_modules?: unknown;
       social_links?: unknown;
+      /**
+       * @description A free-plan site credits the platform in its footer ("Built with
+       *     Contentor"); a paid plan teaches under its own name alone.
+       */
+      readonly show_badge?: boolean;
       meta_description?: string;
       navbar_config?: unknown;
       landing_sections?: unknown;
@@ -10313,7 +10318,11 @@ export interface components {
      * @enum {string}
      */
     PaymentAdminStatusEnum:
-      "pending" | "completed" | "failed" | "refunded" | "partially_refunded";
+      | "pending"
+      | "completed"
+      | "failed"
+      | "refunded"
+      | "partially_refunded";
     /**
      * @description * `one_time` - One Time
      *     * `subscription` - Subscription
@@ -10403,7 +10412,10 @@ export interface components {
      * @enum {string}
      */
     PlatformSubscriptionAdminStatusEnum:
-      "incomplete" | "active" | "past_due" | "canceled";
+      | "incomplete"
+      | "active"
+      | "past_due"
+      | "canceled";
     PostAdmin: {
       readonly id: number;
       body: string;
@@ -10547,7 +10559,11 @@ export interface components {
      * @enum {string}
      */
     TenantAdminProvisioningStatusEnum:
-      "pending" | "provisioning" | "provisioned" | "ready" | "failed";
+      | "pending"
+      | "provisioning"
+      | "provisioned"
+      | "ready"
+      | "failed";
     TenantConfig: {
       readonly id: number;
       brand_name: string;
@@ -10564,6 +10580,11 @@ export interface components {
       custom_css?: string;
       enabled_modules?: unknown;
       social_links?: unknown;
+      /**
+       * @description A free-plan site credits the platform in its footer ("Built with
+       *     Contentor"); a paid plan teaches under its own name alone.
+       */
+      readonly show_badge: boolean;
       meta_description?: string;
       navbar_config?: unknown;
       landing_sections?: unknown;

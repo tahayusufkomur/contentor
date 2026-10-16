@@ -4,7 +4,11 @@ export interface NavLink {
 }
 
 export type NavbarLayout =
-  "classic" | "centered" | "split" | "minimal" | "pill";
+  | "classic"
+  | "centered"
+  | "split"
+  | "minimal"
+  | "pill";
 
 export type NavbarLogoSize = "sm" | "md" | "lg" | "xl";
 
@@ -138,7 +142,13 @@ export interface PageConfig {
 }
 
 export type PageKey =
-  "home" | "about" | "courses" | "pricing" | "faq" | "contact" | "events";
+  | "home"
+  | "about"
+  | "courses"
+  | "pricing"
+  | "faq"
+  | "contact"
+  | "events";
 
 export type PagesConfig = Partial<Record<PageKey, PageConfig>>;
 
@@ -176,6 +186,8 @@ export interface TenantConfig {
   palette?: string;
   enabled_modules: string[];
   social_links: Record<string, string>;
+  /** Free-plan sites carry the "Built with Contentor" badge in the footer. */
+  show_badge?: boolean;
   meta_description: string;
   navbar_config: NavbarConfig;
   /** Legacy single-page config. Superseded by `pages`; kept for back-compat. */
