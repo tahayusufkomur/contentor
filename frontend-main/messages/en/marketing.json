@@ -1,120 +1,100 @@
 {
-  "landingNav": {
-    "title": "Coach sites",
-    "hero": "Overview",
-    "build": "Build",
-    "looks": "Looks",
-    "studio": "Studio",
-    "assistant": "Assistant",
-    "students": "Students",
-    "money": "Money",
-    "start": "Start",
-    "cta": "Start free"
-  },
   "hero": {
-    "title": "Teach under your own name.",
-    "lead": "Classes, live sessions, and a calm studio for your students—built around your craft, with your name on every screen.",
-    "cta": "Create your space",
-    "videoLabel": "A finished coach site in four looks across desktop and phone screens"
+    "title": "Teach what you love. We'll help you make a living from it.",
+    "lead": "Your own site, classes students come back to, and payments that go straight to you. Set up in an afternoon, with help at every step.",
+    "cta": "Start free",
+    "secondary": "See how it works"
   },
-  "build": {
-    "eyebrow": "Getting started",
-    "title": "Say what you teach. We build the rest.",
-    "lead": "Answer a few plain questions about your work, choose a look that fits your voice, and watch your pages come together.",
-    "videoLabel": "The setup interview, the look gallery and a coach's pages composing",
+  "for": {
+    "eyebrow": "Who it's for",
+    "title": "Made for people who teach.",
+    "lead": "Yoga, strength, music, languages, cooking and more. Each craft gets a look made for it, and you make it yours.",
+    "galleryLabel": "Coaching niches and their looks",
+    "renderAlt": "Phone preview of a coach site in the {look} look",
+    "niches": {
+      "journal": "Yoga teachers",
+      "kinetic": "Strength coaches",
+      "encore": "Music teachers",
+      "studiofloor": "Dance teachers",
+      "tavola": "Cooking teachers",
+      "primer": "Language tutors",
+      "dojo": "Martial arts coaches",
+      "workshop": "Art teachers",
+      "atelier": "Makeup artists",
+      "sprout": "Parenting coaches",
+      "trail": "Outdoor guides",
+      "nocturne": "Wellness coaches"
+    }
+  },
+  "path": {
+    "eyebrow": "How it works",
+    "title": "Your path to paying students.",
+    "lead": "From a blank page to students who pay you every month. Every clip below is the real product.",
     "steps": {
-      "one": "Tell us what you teach and who comes to your classes.",
-      "two": "Pick a look from the gallery and preview it with your own words.",
-      "three": "Your home page, courses, and schedule compose in moments."
-    }
-  },
-  "looks": {
-    "eyebrow": "Editorial looks",
-    "title": "A site that looks like you.",
-    "lead": "Each look has its own typography, palette, and rhythm—from quiet yoga journals to bold strength clubs and warm kitchens.",
-    "galleryLabel": "Twelve looks across coaching niches",
-    "renderAlt": "Phone preview of a coach site in the {look} look"
-  },
-  "studio": {
-    "eyebrow": "Coach studio",
-    "title": "Every tool, one calm place.",
-    "lead": "Run your courses, live sessions, inbox, community, media, blog, and brand from one quiet workspace.",
-    "tiles": {
-      "courses": {
-        "title": "Courses",
-        "text": "Organize modules, video lessons, and reading notes in a clear outline your students can follow at their pace."
+      "launch": {
+        "title": "Launch in an afternoon",
+        "text": "Answer a few plain questions about what you teach, pick a look, and watch your home page, courses and schedule build themselves.",
+        "tools": "Setup interview · Looks for your craft · Logo studio · Your own photos",
+        "videoLabel": "A coach answers the setup questions, picks a look and her site builds"
       },
-      "live": {
-        "title": "Live classes",
-        "text": "Schedule group sessions with built-in video, chat, and automatic reminders for everyone enrolled."
+      "found": {
+        "title": "Get found",
+        "text": "Write articles that bring new readers, send them to everyone on your list, and keep it all on your own domain.",
+        "tools": "Articles · Email campaigns · Your own domain",
+        "videoLabel": "A coach's article on her site, then the articles and campaigns in her studio"
       },
-      "messages": {
-        "title": "Messages",
-        "text": "Answer student questions and send announcements from a focused inbox without leaving your studio."
+      "keep": {
+        "title": "Keep students coming back",
+        "text": "Live classes with reminders, a community of their own and progress they can see, on any phone.",
+        "tools": "Live classes · Community · Progress · Installs like an app",
+        "videoLabel": "A student checks her progress, then joins a live class on her phone"
       },
-      "community": {
-        "title": "Community",
-        "text": "Host discussions, practice check-ins, and shared wins in a space that belongs to your students."
-      },
-      "media": {
-        "title": "Media library",
-        "text": "Upload videos, audio, and photographs once and reuse them across every lesson, page, and article."
-      },
-      "blog": {
-        "title": "Articles",
-        "text": "Draft and publish essays, practice notes, and recipes that bring new readers to your teaching."
-      },
-      "logo": {
-        "title": "Logo studio",
-        "text": "Shape a wordmark and icon that match your site's typography and palette in a few quiet steps."
+      "paid": {
+        "title": "Get paid directly",
+        "text": "Sell courses and memberships from your own pages. Payments go straight to your Stripe account, under your name.",
+        "tools": "Courses · Memberships · Stripe payouts · Your name on receipts",
+        "videoLabel": "A student buys a course, then the sale and payout in the coach's studio"
       }
     }
   },
-  "assistant": {
-    "eyebrow": "Studio assistant",
-    "title": "An assistant that drafts. You approve.",
-    "lead": "Describe a course, a class, or a page change in plain words. Review the draft card before anything touches your site.",
-    "videoLabel": "The studio assistant drafting a course outline, then applying and undoing it",
-    "steps": {
-      "one": "Describe the course you want to teach in a single sentence.",
-      "two": "A structured outline of modules and lessons appears for your review.",
-      "three": "Apply what fits, edit any line, or undo with one click."
-    }
-  },
-  "students": {
-    "eyebrow": "Student experience",
-    "title": "Your students, on every screen.",
-    "lead": "From a phone on the train to a laptop at home, your students step straight into their lessons and live rooms.",
-    "phoneLabel": "A student opening her course lesson and joining a live class on a phone",
+  "support": {
+    "eyebrow": "You're not alone",
+    "title": "Help at every step.",
+    "lead": "An assistant drafts the work for you, and real people help you set up and move in.",
+    "videoLabel": "The studio assistant drafts a four-week course from one sentence",
     "tiles": {
-      "dashboard": {
-        "title": "Personal dashboard",
-        "text": "Students pick up right where they left off, with their enrolled courses, progress, and upcoming sessions."
+      "assistant": {
+        "title": "An assistant that drafts",
+        "text": "Describe a course, a class or a page change in plain words. Review the draft, then apply it or undo it."
       },
-      "live": {
-        "title": "Live class room",
-        "text": "One tap joins the video room with live chat and replays ready when the session wraps."
+      "founder": {
+        "title": "Set up with you",
+        "text": "Our founding coaches get a one-on-one call where we build their site, courses and payments together."
+      },
+      "migrate": {
+        "title": "Bring your students along",
+        "text": "Moving from another platform? Rebuild your courses and invite your students by email. Founding coaches move with our help."
       }
     }
   },
-  "money": {
-    "eyebrow": "Your business",
-    "title": "Then the money follows.",
-    "lead": "When your teaching has a home your students trust, selling courses and memberships feels natural.",
-    "tiles": {
-      "stripe": {
-        "title": "Stripe & memberships",
-        "text": "Sell individual courses or recurring memberships with checkout built right into your pages."
-      },
-      "payouts": {
-        "title": "Direct payouts",
-        "text": "Student payments go straight to your own Stripe account—we never hold your earnings."
-      },
-      "brand": {
-        "title": "Your name on the receipt",
-        "text": "Every checkout, email, and receipt carries your school's name and identity, never ours."
-      }
-    }
+  "earnings": {
+    "eyebrow": "What you could earn",
+    "title": "Run your own numbers.",
+    "lead": "Your students, your price. This is what reaches you after our fee and your plan.",
+    "students": "Paying students",
+    "price": "Monthly price",
+    "plan": "Your plan",
+    "plans": {
+      "starter": "Starter",
+      "pro": "Pro"
+    },
+    "keep": "You keep each month",
+    "yearly": "{amount} a year",
+    "gross": "Your students pay",
+    "fee": "Our fee ({pct}%)",
+    "planCost": "Your plan",
+    "note": "Before Stripe's own card fee. An estimate, not a promise.",
+    "fallback": "See the plans and their fees"
   },
   "start": {
     "eyebrow": "Begin",

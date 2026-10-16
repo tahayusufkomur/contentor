@@ -1,6 +1,7 @@
 {
   "nav": {
-    "features": "Features",
+    "howItWorks": "How it works",
+    "whoFor": "Who it's for",
     "pricing": "Pricing",
     "blog": "Blog",
     "faq": "FAQ",

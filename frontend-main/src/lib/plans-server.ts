@@ -1,10 +1,12 @@
+import { cache } from "react";
 import { headers } from "next/headers";
 import { BASE_DOMAIN, DJANGO_API_URL } from "@/lib/constants";
 import type { PlansResponse } from "@/lib/plans";
 
-/** Live plans from Django, or null when it did not answer. Pricing and the
- * landing teaser share this one fetch. */
-export async function fetchPlans(): Promise<PlansResponse | null> {
+/** Live plans from Django, or null when it did not answer. Pricing, the
+ * landing teaser and the earnings calculator share this one fetch (cached per
+ * request, so the landing asks once). */
+export const fetchPlans = cache(async (): Promise<PlansResponse | null> => {
   const country = headers().get("cf-ipcountry");
   try {
     const res = await fetch(
@@ -26,4 +28,4 @@ export async function fetchPlans(): Promise<PlansResponse | null> {
   } catch {
     return null;
   }
-}
+});

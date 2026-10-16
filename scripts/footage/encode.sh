@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Encode the landing's media from the raw footage and photos.
 #
-#   scripts/footage/encode.sh <group>...   groups: photos student studio assistant setup looks all
+#   scripts/footage/encode.sh <group>...   groups: photos landing looks all
 #
 # Reads e2e/eval-shots/footage/ (record.ts's <flow>.webm + <flow>.marks.json +
 # PNG stills; photos/<niche>.* from Pix4Less) and writes
@@ -24,7 +24,6 @@ export LC_ALL=C # awk prints "2.50", never "2,50"
 cd "$(dirname "$0")/../.."
 RAW=e2e/eval-shots/footage
 OUT=frontend-main/public/media
-HERO_LOOKS="journal tavola encore kinetic"
 LOOKS="journal kinetic encore studiofloor tavola primer dojo workshop atelier sprout trail nocturne"
 NICHES="yoga fitness music dance cooking language martial-arts crafts beauty family outdoors wellness"
 
@@ -40,7 +39,7 @@ kb() { echo $(($(wc -c <"$1") / 1000)); }
 mark() { jq -er --arg k "$2" '.[$k]' "$RAW/$1.marks.json" || { echo "no mark $2 in $1.marks.json: re-record $1" >&2; return 1; }; }
 
 # segments <key> <kind> <flow:fromMark:toMark>...: the segments joined into clips/<key>.mp4.
-#   clip: sped up by SPEED (default 2), plays in view;  loop: sped up to fit 3.8 s;  phone: 750×1624.
+#   clip: sped up by SPEED (default 2), plays in view;  phone: 750×1624.
 segments() {
   local key=$1 kind=$2
   shift 2
@@ -60,10 +59,6 @@ segments() {
       speed=${SPEED:-2}
       vf="fps=25,scale=1280:800:flags=lanczos"
       x264="-preset slow -crf 24 -maxrate 1.2M -bufsize 2.4M" ;;
-    loop)
-      speed=$(awk -v t="$total" 'BEGIN{printf "%.3f", (t > 3.8 ? t / 3.8 : 1)}')
-      vf="fps=25,scale=1280:800:flags=lanczos"
-      x264="-preset slow -crf 23 -maxrate 1.5M -bufsize 3M" ;;
     phone)
       speed=1
       vf="fps=25,scale=750:1624:flags=lanczos"
@@ -105,77 +100,43 @@ still() {
 story() {
   if [ -f "$OUT/clips/$1.mp4" ]; then webm "$1" 40 1.2M; phone "$1" 0.4M; poster "$1"; fi
 }
-# loop <key> <flow:from:to>: a studio tile's hover loop with its twin and poster.
-loop() {
-  segments "$1" loop "$2"
-  if [ -f "$OUT/clips/$1.mp4" ]; then webm "$1" 40 1.2M; poster "$1"; fi
-}
-
 photos() {
   local n
   for n in $NICHES; do still "still-$n" "$(ls "$RAW"/photos/"$n".* 2>/dev/null | head -1)" 1280:1600 640:800 40 42; done
 }
-student() {
-  segments clip-student-phone phone student-phone:dash:dash-tap student-phone:lesson:lesson-end student-phone:live:live-tap
-  if [ -f "$OUT/clips/clip-student-phone.mp4" ]; then
-    webm clip-student-phone 40 0.6M
-    phone clip-student-phone 0.4M
-    poster clip-student-phone
-  fi
-  still tile-student-dashboard "$RAW/tile-student-dashboard.png" 1600:1000 800:500 28 32
-  still tile-live-class "$RAW/tile-live-class.png" 1600:1000 800:500 28 32
-}
-studio() {
-  local t
-  for t in courses messages community media blog logo; do loop "loop-$t" "studio-tiles:$t-start:$t-end"; done
-  loop loop-live studio-live:form:created
-  for t in courses live messages community media blog logo; do still "tile-$t" "$RAW/tile-$t.png" 1600:1000 800:500 28 32; done
-}
-assistant() {
-  SPEED=1.5 segments clip-assistant clip assistant:start:drafting assistant:card:end
-  story clip-assistant
-}
-setup() {
-  segments clip-setup clip setup-answer:ask-1:sent setup-answer:ask-2:picked setup-looks:gallery:gallery-picked setup-looks:opened:kept \
-    setup-compose:composing:composing-held setup-compose:built:scrolled
-  story clip-setup
-}
-# hero: four looks × 3 s from the "scroll" mark, the phone cut laid over the desktop cut.
-hero() {
-  local inputs=() filt="" i=0 l f s
-  for l in $HERO_LOOKS; do
-    for f in "site-$l" "site-$l-phone"; do
-      [ -f "$RAW/$f.webm" ] || { echo "skip hero-looks: no $f.webm (record looks:$l first)"; return 0; }
-    done
-    s=$(mark "site-$l" scroll)
-    inputs+=(-ss "$s" -t 3 -i "$RAW/site-$l.webm")
-    s=$(mark "site-$l-phone" scroll)
-    inputs+=(-ss "$s" -t 3 -i "$RAW/site-$l-phone.webm")
-    filt="$filt[$((2 * i)):v]setpts=PTS-STARTPTS,fps=25,scale=1600:1000:flags=lanczos,setsar=1[d$i];"
-    # ponytail: square ink frame round the phone; rounded corners need an alpha mask, add if the owner asks
-    filt="$filt[$((2 * i + 1)):v]setpts=PTS-STARTPTS,fps=25,scale=-2:820:flags=lanczos,pad=iw+16:ih+16:8:8:color=0x1d1d1f,setsar=1[p$i];"
-    filt="$filt[d$i][p$i]overlay=x=W-w-72:y=H-h-48:shortest=1[h$i];"
-    i=$((i + 1))
-  done
-  filt="$filt[h0][h1][h2][h3]concat=n=4:v=1:a=0[v]"
-  q "${inputs[@]}" -filter_complex "$filt" -map "[v]" -an -c:v libx264 -preset slow -crf 23 \
-    -maxrate 1.6M -bufsize 3.2M -pix_fmt yuv420p -movflags +faststart "$OUT/clips/hero-looks.mp4"
-  webm hero-looks 40 1.6M
-  phone hero-looks 0.6M
-  poster hero-looks
-  echo "clip  hero-looks  $(kb "$OUT/clips/hero-looks.mp4") KB"
+# landing: Mara's school (record.ts mara-*): the path's four clips, the
+# assistant, the hero photo and the three cut-outs laid over it.
+landing() {
+  segments path-launch clip setup-answer:ask-1:sent setup-looks:gallery:gallery-picked \
+    setup-compose:built:scrolled mara-site:scroll:end
+  story path-launch
+  SPEED=1.25 segments path-found clip mara-article:article:article-end mara-found:blog:blog-end mara-found:sent:sent-end
+  story path-found
+  segments path-keep phone mara-keep:dash:dash-end mara-keep:live:live-tap mara-keep:room:end
+  if [ -f "$OUT/clips/path-keep.mp4" ]; then webm path-keep 40 0.6M; phone path-keep 0.4M; poster path-keep; fi
+  SPEED=1.25 segments path-paid clip mara-buy:course:checkout mara-buy:paid:paid-end mara-paid:sales:sales-end \
+    mara-paid:payouts:payouts-end
+  story path-paid
+  SPEED=1.5 segments support-assistant clip mara-assistant:start:drafting mara-assistant:card:end
+  story support-assistant
+  still hero-coach "$RAW/photos/hero-coach.webp" 2400:1350 1200:675 34 36
+  # The cut-outs: her newest sales, the class strip on Priya's phone, Priya's post (2x screenshots).
+  if [ -f "$RAW/chip-sale-src.png" ]; then q -i "$RAW/chip-sale-src.png" -vf crop=1984:372:528:504 "$RAW/chip-sale.png"; fi
+  if [ -f "$RAW/chip-live-src.png" ]; then q -i "$RAW/chip-live-src.png" -vf crop=750:240:0:1280 "$RAW/chip-live.png"; fi
+  still chip-sale "$RAW/chip-sale.png" 1984:372 992:186 26 30
+  still chip-live "$RAW/chip-live.png" 750:240 375:120 28 32
+  still chip-post "$RAW/chip-post.png" 1472:328 736:164 26 30
 }
 looks() {
   local l
-  hero
   for l in $LOOKS; do still "look-$l" "$RAW/look-$l.png" 750:1624 375:812 30 32; done
 }
 
-[ $# -gt 0 ] || { echo "usage: $0 photos|student|studio|assistant|setup|looks|all ..." >&2; exit 1; }
+[ $# -gt 0 ] || { echo "usage: $0 photos|landing|looks|all ..." >&2; exit 1; }
 for g in "$@"; do
   case $g in
-    all) photos; student; studio; assistant; setup; looks ;;
-    photos | student | studio | assistant | setup | looks) "$g" ;;
+    all) photos; landing; looks ;;
+    photos | landing | looks) "$g" ;;
     *) echo "unknown group: $g" >&2; exit 1 ;;
   esac
 done

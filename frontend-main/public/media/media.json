@@ -1,199 +1,96 @@
 {
   "items": {
-    "hero-looks": {
+    "path-launch": {
       "kind": "clip",
-      "src": "/media/clips/hero-looks.mp4",
-      "width": 1600,
-      "height": 1000,
-      "bytes": 2380485,
-      "poster": "/media/posters/hero-looks.avif",
-      "webm": "/media/clips/hero-looks.webm",
-      "phoneSrc": "/media/clips/hero-looks-phone.mp4",
-      "durationS": 12
+      "src": "/media/clips/path-launch.mp4",
+      "width": 1280,
+      "height": 800,
+      "bytes": 952118,
+      "poster": "/media/posters/path-launch.avif",
+      "webm": "/media/clips/path-launch.webm",
+      "phoneSrc": "/media/clips/path-launch-phone.mp4",
+      "durationS": 7.8
     },
-    "clip-student-phone": {
+    "path-found": {
       "kind": "clip",
-      "src": "/media/clips/clip-student-phone.mp4",
+      "src": "/media/clips/path-found.mp4",
+      "width": 1280,
+      "height": 800,
+      "bytes": 380238,
+      "poster": "/media/posters/path-found.avif",
+      "webm": "/media/clips/path-found.webm",
+      "phoneSrc": "/media/clips/path-found-phone.mp4",
+      "durationS": 6.1
+    },
+    "path-keep": {
+      "kind": "clip",
+      "src": "/media/clips/path-keep.mp4",
       "width": 750,
       "height": 1624,
-      "bytes": 314723,
-      "poster": "/media/posters/clip-student-phone.avif",
-      "webm": "/media/clips/clip-student-phone.webm",
-      "phoneSrc": "/media/clips/clip-student-phone-phone.mp4",
-      "durationS": 4.8
+      "bytes": 560869,
+      "poster": "/media/posters/path-keep.avif",
+      "webm": "/media/clips/path-keep.webm",
+      "phoneSrc": "/media/clips/path-keep-phone.mp4",
+      "durationS": 8.1
     },
-    "clip-setup": {
+    "path-paid": {
       "kind": "clip",
-      "src": "/media/clips/clip-setup.mp4",
+      "src": "/media/clips/path-paid.mp4",
       "width": 1280,
       "height": 800,
-      "bytes": 1205764,
-      "poster": "/media/posters/clip-setup.avif",
-      "webm": "/media/clips/clip-setup.webm",
-      "phoneSrc": "/media/clips/clip-setup-phone.mp4",
-      "durationS": 11.6
+      "bytes": 212436,
+      "poster": "/media/posters/path-paid.avif",
+      "webm": "/media/clips/path-paid.webm",
+      "phoneSrc": "/media/clips/path-paid-phone.mp4",
+      "durationS": 6.1
     },
-    "clip-assistant": {
+    "support-assistant": {
       "kind": "clip",
-      "src": "/media/clips/clip-assistant.mp4",
+      "src": "/media/clips/support-assistant.mp4",
       "width": 1280,
       "height": 800,
-      "bytes": 388337,
-      "poster": "/media/posters/clip-assistant.avif",
-      "webm": "/media/clips/clip-assistant.webm",
-      "phoneSrc": "/media/clips/clip-assistant-phone.mp4",
-      "durationS": 7.4
+      "bytes": 191538,
+      "poster": "/media/posters/support-assistant.avif",
+      "webm": "/media/clips/support-assistant.webm",
+      "phoneSrc": "/media/clips/support-assistant-phone.mp4",
+      "durationS": 6.1
     },
-    "loop-courses": {
-      "kind": "loop",
-      "src": "/media/clips/loop-courses.mp4",
-      "width": 1280,
-      "height": 800,
-      "bytes": 343237,
-      "poster": "/media/posters/loop-courses.avif",
-      "webm": "/media/clips/loop-courses.webm",
-      "durationS": 3.8
-    },
-    "loop-live": {
-      "kind": "loop",
-      "src": "/media/clips/loop-live.mp4",
-      "width": 1280,
-      "height": 800,
-      "bytes": 134421,
-      "poster": "/media/posters/loop-live.avif",
-      "webm": "/media/clips/loop-live.webm",
-      "durationS": 2.4
-    },
-    "loop-messages": {
-      "kind": "loop",
-      "src": "/media/clips/loop-messages.mp4",
-      "width": 1280,
-      "height": 800,
-      "bytes": 42355,
-      "poster": "/media/posters/loop-messages.avif",
-      "webm": "/media/clips/loop-messages.webm",
-      "durationS": 3.8
-    },
-    "loop-community": {
-      "kind": "loop",
-      "src": "/media/clips/loop-community.mp4",
-      "width": 1280,
-      "height": 800,
-      "bytes": 93312,
-      "poster": "/media/posters/loop-community.avif",
-      "webm": "/media/clips/loop-community.webm",
-      "durationS": 3.8
-    },
-    "loop-media": {
-      "kind": "loop",
-      "src": "/media/clips/loop-media.mp4",
-      "width": 1280,
-      "height": 800,
-      "bytes": 67501,
-      "poster": "/media/posters/loop-media.avif",
-      "webm": "/media/clips/loop-media.webm",
-      "durationS": 3.8
-    },
-    "loop-blog": {
-      "kind": "loop",
-      "src": "/media/clips/loop-blog.mp4",
-      "width": 1280,
-      "height": 800,
-      "bytes": 110856,
-      "poster": "/media/posters/loop-blog.avif",
-      "webm": "/media/clips/loop-blog.webm",
-      "durationS": 3.8
-    },
-    "loop-logo": {
-      "kind": "loop",
-      "src": "/media/clips/loop-logo.mp4",
-      "width": 1280,
-      "height": 800,
-      "bytes": 44235,
-      "poster": "/media/posters/loop-logo.avif",
-      "webm": "/media/clips/loop-logo.webm",
-      "durationS": 3.8
-    },
-    "tile-courses": {
+    "hero-coach": {
       "kind": "still",
-      "src": "/media/stills/tile-courses.avif",
-      "width": 1600,
-      "height": 1000,
-      "bytes": 55189,
-      "alt": "The Courses page of a coach's studio, listing her yoga courses",
-      "srcSmall": "/media/stills/tile-courses-small.avif"
+      "src": "/media/stills/hero-coach.avif",
+      "width": 2400,
+      "height": 1350,
+      "bytes": 60256,
+      "alt": "A yoga teacher kneels behind a student on a light green mat, a hand on her back, guiding a seated forward bend in a bright, sunlit studio",
+      "license": "curated-api-standard",
+      "srcSmall": "/media/stills/hero-coach-small.avif"
     },
-    "tile-live": {
+    "chip-sale": {
       "kind": "still",
-      "src": "/media/stills/tile-live.avif",
-      "width": 1600,
-      "height": 1000,
-      "bytes": 49947,
-      "alt": "The Live page of the studio, with upcoming classes and a line to describe a new one",
-      "srcSmall": "/media/stills/tile-live-small.avif"
+      "src": "/media/stills/chip-sale.avif",
+      "width": 1984,
+      "height": 372,
+      "bytes": 11227,
+      "alt": "A coach's latest sales: Elin Strom paid $59 for A Kinder Back, then two membership charges",
+      "srcSmall": "/media/stills/chip-sale-small.avif"
     },
-    "tile-messages": {
+    "chip-live": {
       "kind": "still",
-      "src": "/media/stills/tile-messages.avif",
-      "width": 1600,
-      "height": 1000,
-      "bytes": 19803,
-      "alt": "The studio inbox, with the coach's mail folders and conversations",
-      "srcSmall": "/media/stills/tile-messages-small.avif"
+      "src": "/media/stills/chip-live.avif",
+      "width": 750,
+      "height": 240,
+      "bytes": 8804,
+      "alt": "A live class on a phone: Mara Lindqvist hosting, students Priya, Tomás and Hannah on camera",
+      "srcSmall": "/media/stills/chip-live-small.avif"
     },
-    "tile-community": {
+    "chip-post": {
       "kind": "still",
-      "src": "/media/stills/tile-community.avif",
-      "width": 1600,
-      "height": 1000,
-      "bytes": 24288,
-      "alt": "The community page of the studio, with students' posts and replies",
-      "srcSmall": "/media/stills/tile-community-small.avif"
-    },
-    "tile-media": {
-      "kind": "still",
-      "src": "/media/stills/tile-media.avif",
-      "width": 1600,
-      "height": 1000,
-      "bytes": 31321,
-      "alt": "The studio's media library, with the upload dropzone, photo and video tabs, and shape filters",
-      "srcSmall": "/media/stills/tile-media-small.avif"
-    },
-    "tile-blog": {
-      "kind": "still",
-      "src": "/media/stills/tile-blog.avif",
-      "width": 1600,
-      "height": 1000,
-      "bytes": 32126,
-      "alt": "The studio's blog page, with drafted and published posts",
-      "srcSmall": "/media/stills/tile-blog-small.avif"
-    },
-    "tile-logo": {
-      "kind": "still",
-      "src": "/media/stills/tile-logo.avif",
-      "width": 1600,
-      "height": 1000,
-      "bytes": 17645,
-      "alt": "Logo Studio over the coach's site, with the brand brief and style options",
-      "srcSmall": "/media/stills/tile-logo-small.avif"
-    },
-    "tile-student-dashboard": {
-      "kind": "still",
-      "src": "/media/stills/tile-student-dashboard.avif",
-      "width": 1600,
-      "height": 1000,
-      "bytes": 28294,
-      "alt": "A student's dashboard on the coach's site, with her courses and progress",
-      "srcSmall": "/media/stills/tile-student-dashboard-small.avif"
-    },
-    "tile-live-class": {
-      "kind": "still",
-      "src": "/media/stills/tile-live-class.avif",
-      "width": 1600,
-      "height": 1000,
-      "bytes": 34647,
-      "alt": "The student's live classes page, with a class live now and a Join button",
-      "srcSmall": "/media/stills/tile-live-class-small.avif"
+      "src": "/media/stills/chip-post.avif",
+      "width": 1472,
+      "height": 328,
+      "bytes": 10955,
+      "alt": "Priya Raghavan's post in the community: Day 10 of Desk Reset, with 17 hearts and 2 replies",
+      "srcSmall": "/media/stills/chip-post-small.avif"
     },
     "still-yoga": {
       "kind": "still",

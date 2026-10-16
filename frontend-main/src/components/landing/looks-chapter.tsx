@@ -6,33 +6,32 @@ import { SnapGallery } from "@/components/motion/snap-gallery";
 import { LOOK_CARDS } from "@/lib/landing";
 import { media } from "@/lib/media";
 
-/** Chapter 3 (spec 5.4): "A site that looks like you." Twelve of the twenty
- * looks, one niche each, as a native scroll-snap gallery. */
+/** "Who it's for": twelve kinds of coach, each beside a site in the look made
+ * for her craft, as a native scroll-snap gallery. */
 export async function LooksChapter() {
-  const t = await getTranslations("marketing.looks");
+  const t = await getTranslations("marketing.for");
   return (
     <Chapter
-      id="looks"
+      id="for"
       eyebrow={t("eyebrow")}
       title={t("title")}
       lead={t("lead")}
     >
       <SnapGallery
         label={t("galleryLabel")}
-        items={LOOK_CARDS.map((card) => {
-          const name = SITE_STYLES[card.look].label;
-          return {
-            key: card.look,
-            node: (
-              <LookCard
-                name={name}
-                still={media(card.still)}
-                render={media(card.render)}
-                renderAlt={t("renderAlt", { look: name })}
-              />
-            ),
-          };
-        })}
+        items={LOOK_CARDS.map((card) => ({
+          key: card.look,
+          node: (
+            <LookCard
+              name={t(`niches.${card.look}`)}
+              still={media(card.still)}
+              render={media(card.render)}
+              renderAlt={t("renderAlt", {
+                look: SITE_STYLES[card.look].label,
+              })}
+            />
+          ),
+        }))}
       />
     </Chapter>
   );

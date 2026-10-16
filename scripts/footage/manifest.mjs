@@ -4,7 +4,7 @@
 // on. Run from the repo root:
 //   node scripts/footage/manifest.mjs [--partial]
 // --partial leaves out keys whose main file is not encoded yet (so stills can
-// ship before the footage); the final run has no flag and needs all 44 keys.
+// ship before the footage); the final run has no flag and needs every key.
 // MEDIA_DIR points it at a copy of public/media (Task 9's negative check).
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -15,37 +15,33 @@ const DIR = process.env.MEDIA_DIR ?? path.join(PUBLIC, "media");
 const partial = process.argv.includes("--partial");
 const META = JSON.parse(readFileSync("scripts/footage/stills.json", "utf8"));
 
-const TILES = ["courses", "live", "messages", "community", "media", "blog", "logo"];
 const NICHES = ["yoga", "fitness", "music", "dance", "cooking", "language", "martial-arts", "crafts", "beauty", "family", "outdoors", "wellness"];
 const LOOKS = ["journal", "kinetic", "encore", "studiofloor", "tavola", "primer", "dojo", "workshop", "atelier", "sprout", "trail", "nocturne"];
-// The 44 keys Phase 2 reads (docs/superpowers/plans/2026-10-14-premium-phase-2-landing.md, "Contracts consumed").
+// The success-led landing's clips (encode.sh landing), all on Mara's school.
+const CLIPS = ["path-launch", "path-found", "path-keep", "path-paid", "support-assistant"];
+// Every key the landing reads (frontend-main/src/lib/landing.ts LANDING_MEDIA).
 const KEYS = [
-  "hero-looks",
-  "clip-student-phone",
-  "clip-setup",
-  "clip-assistant",
-  ...TILES.map((t) => `loop-${t}`),
-  ...TILES.map((t) => `tile-${t}`),
-  "tile-student-dashboard",
-  "tile-live-class",
+  ...CLIPS,
+  "hero-coach",
+  "chip-sale",
+  "chip-live",
+  "chip-post",
   ...NICHES.map((n) => `still-${n}`),
   ...LOOKS.map((l) => `look-${l}`),
 ];
 
 const K = 1000;
 const M = 1000 * K;
-/** Phase 2's per-file targets, in bytes. */
+/** Per-file targets, in bytes. */
 function targets(key) {
-  if (key === "hero-looks") return { src: 2.5 * M, webm: 2.5 * M, phoneSrc: 1 * M, poster: 120 * K };
-  if (key === "clip-student-phone") return { src: 0.6 * M, webm: 0.6 * M, phoneSrc: 0.4 * M, poster: 120 * K };
-  if (key === "clip-setup" || key === "clip-assistant") return { src: 1.5 * M, webm: 1.5 * M, phoneSrc: 0.5 * M, poster: 120 * K };
-  if (key.startsWith("loop-")) return { src: 0.8 * M, webm: 0.8 * M, poster: 120 * K };
+  if (key === "path-keep") return { src: 0.8 * M, webm: 0.8 * M, phoneSrc: 0.5 * M, poster: 150 * K };
+  if (CLIPS.includes(key)) return { src: 1.5 * M, webm: 1.5 * M, phoneSrc: 0.5 * M, poster: 120 * K };
+  if (key === "hero-coach") return { src: 320 * K, srcSmall: 110 * K };
   if (key.startsWith("still-")) return { src: 160 * K, srcSmall: 60 * K };
   if (key.startsWith("look-")) return { src: 120 * K, srcSmall: 50 * K };
-  return { src: 120 * K }; // tile-*
+  return { src: 120 * K, srcSmall: 50 * K }; // chip-*
 }
-const kindOf = (key) =>
-  key === "hero-looks" || key.startsWith("clip-") ? "clip" : key.startsWith("loop-") ? "loop" : "still";
+const kindOf = (key) => (CLIPS.includes(key) ? "clip" : "still");
 
 const ffprobe = (file, entries) =>
   JSON.parse(
@@ -119,14 +115,6 @@ for (const key of KEYS) {
   }
   items[key] = item;
 }
-// A studio tile's still is its loop's poster on the landing (Phase 2 Task 7): same shape.
-for (const t of TILES) {
-  const a = items[`tile-${t}`];
-  const b = items[`loop-${t}`];
-  if (a && b && Math.abs(a.width / a.height - b.width / b.height) > 0.01)
-    errors.push(`tile-${t} ${a.width}×${a.height} and loop-${t} ${b.width}×${b.height} differ in shape`);
-}
-
 console.log(rows.join("\n"));
 if (errors.length) {
   console.error(`\n${errors.length} problem(s), media.json not written:\n- ${errors.join("\n- ")}`);

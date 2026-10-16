@@ -23,15 +23,8 @@ function Logo() {
   );
 }
 
-/** `sticky={false}` where a LocalNav takes the top (the landing): the global
- * bar scrolls away and the product nav sticks, as on Apple's pages. */
-export function PlatformHeader({
-  user,
-  sticky = true,
-}: {
-  user?: User | null;
-  sticky?: boolean;
-}) {
+/** The one marketing bar, sticky on every page. */
+export function PlatformHeader({ user }: { user?: User | null }) {
   const router = useRouter();
   const navigate = useNavigate();
   const t = useTranslations("common.nav");
@@ -56,7 +49,7 @@ export function PlatformHeader({
     <header
       className={cn(
         "z-50 border-b bg-background/80 backdrop-blur-md",
-        sticky ? "sticky top-0" : "relative",
+        "sticky top-0",
       )}
     >
       <div
@@ -69,10 +62,16 @@ export function PlatformHeader({
 
         <nav className="hidden items-center gap-7 md:flex">
           <NavLink
-            href="/#studio"
+            href="/#path"
             className="nav-link text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            {t("features")}
+            {t("howItWorks")}
+          </NavLink>
+          <NavLink
+            href="/#for"
+            className="nav-link text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {t("whoFor")}
           </NavLink>
           <NavLink
             href="/pricing"
@@ -147,11 +146,18 @@ export function PlatformHeader({
         <div className="mx-auto mt-2 max-w-6xl rounded-xl border bg-popover px-6 py-5 shadow-sm md:hidden">
           <nav className="flex flex-col gap-4">
             <NavLink
-              href="/#studio"
+              href="/#path"
               className="text-base font-medium text-foreground hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
-              {t("features")}
+              {t("howItWorks")}
+            </NavLink>
+            <NavLink
+              href="/#for"
+              className="text-base font-medium text-foreground hover:text-foreground"
+              onClick={() => setMobileOpen(false)}
+            >
+              {t("whoFor")}
             </NavLink>
             <NavLink
               href="/pricing"

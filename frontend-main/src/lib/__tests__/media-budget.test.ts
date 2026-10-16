@@ -1,6 +1,6 @@
 // Holds public/media honest (spec 5.3): every file media.json names exists and
-// is the size it claims, the hero clip stays ≤ 3 MB and every other clip
-// ≤ 2 MB, the folder ≤ 35 MB, and every coach photograph shows a person.
+// is the size it claims, every clip ≤ 2 MB, the folder ≤ 35 MB, and every
+// coach photograph shows a person.
 // Phase 2's landing-media.test.ts adds the full-scroll sums; not repeated here.
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
@@ -59,12 +59,11 @@ describe("media budget (spec 5.3)", () => {
       expect(item.bytes, key).toBe(statSync(onDisk(item.src)).size);
     }
   });
-  it("the hero clip ≤ 3 MB and every other clip ≤ 2 MB, each encode", () => {
-    for (const [key, item] of entries) {
+  it("every clip ≤ 2 MB, each encode", () => {
+    for (const [, item] of entries) {
       if (item.kind === "still") continue;
-      const cap = key === "hero-looks" ? 3 * MB : 2 * MB;
       for (const p of videos(item))
-        expect(statSync(onDisk(p)).size, p).toBeLessThanOrEqual(cap);
+        expect(statSync(onDisk(p)).size, p).toBeLessThanOrEqual(2 * MB);
     }
   });
   it("public/media ≤ 35 MB", () => {

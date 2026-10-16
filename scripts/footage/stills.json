@@ -1,31 +1,4 @@
 {
-  "tile-courses": {
-    "alt": "The Courses page of a coach's studio, listing her yoga courses"
-  },
-  "tile-live": {
-    "alt": "The Live page of the studio, with upcoming classes and a line to describe a new one"
-  },
-  "tile-messages": {
-    "alt": "The studio inbox, with the coach's mail folders and conversations"
-  },
-  "tile-community": {
-    "alt": "The community page of the studio, with students' posts and replies"
-  },
-  "tile-media": {
-    "alt": "The studio's media library, with the upload dropzone, photo and video tabs, and shape filters"
-  },
-  "tile-blog": {
-    "alt": "The studio's blog page, with drafted and published posts"
-  },
-  "tile-logo": {
-    "alt": "Logo Studio over the coach's site, with the brand brief and style options"
-  },
-  "tile-student-dashboard": {
-    "alt": "A student's dashboard on the coach's site, with her courses and progress"
-  },
-  "tile-live-class": {
-    "alt": "The student's live classes page, with a class live now and a Join button"
-  },
   "look-journal": {
     "alt": "The Quiet Journal look on a phone: the home page of Mara Lindqvist, a yoga teacher"
   },
@@ -121,5 +94,18 @@
     "pix4lessId": "44b228ba-d236-4f72-abfb-a84c3f0d2028",
     "alt": "A woman sits cross-legged in a lotus meditation pose atop a round cushion on a woven rug over wooden flooring. Her eyes are closed in peaceful contemplation with hands rested in her lap, wearing a beige crewneck sweater and dark gray trousers in a serene room near a sunlit window.",
     "license": "curated-api-standard"
+  },
+  "hero-coach": {
+    "alt": "A yoga teacher kneels behind a student on a light green mat, a hand on her back, guiding a seated forward bend in a bright, sunlit studio",
+    "license": "curated-api-standard"
+  },
+  "chip-sale": {
+    "alt": "A coach's latest sales: Elin Strom paid $59 for A Kinder Back, then two membership charges"
+  },
+  "chip-live": {
+    "alt": "A live class on a phone: Mara Lindqvist hosting, students Priya, Tomás and Hannah on camera"
+  },
+  "chip-post": {
+    "alt": "Priya Raghavan's post in the community: Day 10 of Desk Reset, with 17 hearts and 2 replies"
   }
 }

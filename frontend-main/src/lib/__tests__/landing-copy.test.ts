@@ -1,15 +1,9 @@
-// The copy brief as a test: every key the chapters read exists, fits its
+// The copy brief as a test: every key the sections read exists, fits its
 // length cap, carries no invented number, and helpBot is untouched.
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import {
-  CHAPTER_IDS,
-  FAQ_KEYS,
-  MONEY_TILES,
-  STUDENT_TILES,
-  STUDIO_TILES,
-} from "@/lib/landing";
+import { FAQ_KEYS, LOOK_CARDS, PATH_STEPS, SUPPORT_TILES } from "@/lib/landing";
 
 const messages = JSON.parse(
   readFileSync(
@@ -37,42 +31,43 @@ const tile = (p: string, text = 110) => ({
 
 /** key path → max characters. */
 const CAPS: Record<string, number> = {
-  "landingNav.title": 20,
-  "landingNav.cta": 12,
-  ...Object.fromEntries(CHAPTER_IDS.map((id) => [`landingNav.${id}`, 10])),
-  "hero.title": 40,
-  "hero.lead": 120,
+  "hero.title": 64,
+  "hero.lead": 140,
   "hero.cta": 20,
-  "hero.videoLabel": 90,
-  ...heads("build"),
-  "build.videoLabel": 90,
-  "build.steps.one": 90,
-  "build.steps.two": 90,
-  "build.steps.three": 90,
-  ...heads("looks"),
-  "looks.galleryLabel": 40,
-  "looks.renderAlt": 60,
-  ...heads("studio"),
+  "hero.secondary": 20,
+  ...heads("for"),
+  "for.galleryLabel": 40,
+  "for.renderAlt": 60,
+  ...Object.fromEntries(LOOK_CARDS.map((c) => [`for.niches.${c.look}`, 24])),
+  ...heads("path"),
   ...Object.assign(
     {},
-    ...STUDIO_TILES.map((t) => tile(`studio.tiles.${t.key}`)),
+    ...PATH_STEPS.map(({ key }) => ({
+      [`path.steps.${key}.title`]: 32,
+      [`path.steps.${key}.text`]: 160,
+      [`path.steps.${key}.tools`]: 90,
+      [`path.steps.${key}.videoLabel`]: 90,
+    })),
   ),
-  ...heads("assistant"),
-  "assistant.videoLabel": 90,
-  "assistant.steps.one": 90,
-  "assistant.steps.two": 90,
-  "assistant.steps.three": 90,
-  ...heads("students"),
-  "students.phoneLabel": 90,
+  ...heads("support"),
+  "support.videoLabel": 90,
   ...Object.assign(
     {},
-    ...STUDENT_TILES.map((t) => tile(`students.tiles.${t.key}`)),
+    ...SUPPORT_TILES.map((k) => tile(`support.tiles.${k}`, 140)),
   ),
-  ...heads("money"),
-  ...Object.assign(
-    {},
-    ...MONEY_TILES.map((k) => tile(`money.tiles.${k}`, 120)),
-  ),
+  ...heads("earnings"),
+  "earnings.students": 24,
+  "earnings.price": 24,
+  "earnings.plan": 24,
+  "earnings.plans.starter": 12,
+  "earnings.plans.pro": 12,
+  "earnings.keep": 30,
+  "earnings.yearly": 30,
+  "earnings.gross": 24,
+  "earnings.fee": 30,
+  "earnings.planCost": 24,
+  "earnings.note": 120,
+  "earnings.fallback": 60,
   ...heads("start"),
   "start.founding.eyebrow": 24,
   "start.founding.title": 44,
@@ -138,8 +133,10 @@ describe("landing copy", () => {
       expect(get(key) as string, key).not.toMatch(/\d/);
     }
   });
-  it("renderAlt names the look", () => {
-    expect(get("looks.renderAlt")).toContain("{look}");
+  it("renderAlt names the look; the calculator's lines take their numbers", () => {
+    expect(get("for.renderAlt")).toContain("{look}");
+    expect(get("earnings.yearly")).toContain("{amount}");
+    expect(get("earnings.fee")).toContain("{pct}");
   });
   it("the replaced section namespaces are gone", () => {
     for (const ns of [
@@ -150,6 +147,13 @@ describe("landing copy", () => {
       "finalCta",
       "foundingCreators",
       "faq",
+      "landingNav",
+      "build",
+      "looks",
+      "studio",
+      "assistant",
+      "students",
+      "money",
     ])
       expect(messages[ns], ns).toBeUndefined();
   });

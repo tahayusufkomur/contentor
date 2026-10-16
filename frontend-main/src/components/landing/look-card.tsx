@@ -1,7 +1,7 @@
 import type { MediaItem } from "@/lib/media";
 
 export interface LookCardProps {
-  /** The look's display name from the catalog, e.g. "Quiet Journal". */
+  /** The caption: who the look is for, e.g. "Yoga teachers". */
   name: string;
   /** 4:5 coach photograph. */
   still: MediaItem;
@@ -11,7 +11,7 @@ export interface LookCardProps {
 }
 
 /** One gallery slide (spec 5.4 ch. 3): the coach beside her site on a phone,
- * both cropped to one row height, the look's name as the caption. Images are
+ * both cropped to one row height, captioned with who it is for. Images are
  * lazy with an 800 px source for phones; the gallery is well below the fold. */
 export function LookCard({ name, still, render, renderAlt }: LookCardProps) {
   const srcSet = (m: MediaItem) =>

@@ -1,27 +1,38 @@
-// What the landing is made of: chapter ids, the twelve look cards, the seven
-// studio tiles, the FAQ keys and every media key the chapters read. Pure data
-// so landing-media.test.ts and landing-copy.test.ts can hold the page against
-// media.json, the look catalog and marketing.json.
+// What the landing is made of: its section ids, the media each section reads,
+// the twelve niche cards, the path's four steps and the FAQ keys. Pure data so
+// landing-media.test.ts and landing-copy.test.ts can hold the page against
+// media.json and marketing.json. Every clip and screen is one demo coach, Mara
+// Lindqvist (record.ts mara-*, seeded by seed_footage_coach).
 
-export const CHAPTER_IDS = [
+/** Section anchors in page order; the header links to "path" and "for". */
+export const SECTION_IDS = [
   "hero",
-  "looks",
-  "build",
-  "studio",
-  "assistant",
-  "students",
-  "money",
+  "for",
+  "path",
+  "support",
+  "earnings",
   "start",
 ] as const;
-export type ChapterId = (typeof CHAPTER_IDS)[number];
 
-export const HERO_CLIP = "hero-looks";
-export const BUILD_CLIP = "clip-setup";
-export const ASSISTANT_CLIP = "clip-assistant";
-export const STUDENT_CLIP = "clip-student-phone";
+/** The hero photograph and the real screens laid over it. */
+export const HERO_PHOTO = "hero-coach";
+export const HERO_CHIPS = ["chip-post", "chip-live", "chip-sale"] as const;
 
-/** Twelve of the twenty looks, one niche each (spec 5.4 ch. 3). `still` is
- * the 4:5 coach photograph, `render` the look's phone screenshot. */
+/** The path to paying students: one clip per step. `phone`: filmed on a phone. */
+export const PATH_STEPS = [
+  { key: "launch", clip: "path-launch", phone: false },
+  { key: "found", clip: "path-found", phone: false },
+  { key: "keep", clip: "path-keep", phone: true },
+  { key: "paid", clip: "path-paid", phone: false },
+] as const;
+
+/** "You're not alone": the assistant's clip and the cards beside it. */
+export const SUPPORT_CLIP = "support-assistant";
+export const SUPPORT_TILES = ["assistant", "founder", "migrate"] as const;
+
+/** Twelve of the twenty looks, one niche each. `still` is the 4:5 coach
+ * photograph, `render` the look's phone screenshot; the caption names the
+ * niche (marketing.for.niches.<look>). */
 export const LOOK_CARDS = [
   { look: "journal", still: "still-yoga", render: "look-journal" },
   { look: "kinetic", still: "still-fitness", render: "look-kinetic" },
@@ -37,32 +48,6 @@ export const LOOK_CARDS = [
   { look: "nocturne", still: "still-wellness", render: "look-nocturne" },
 ] as const;
 
-/** Bento tiles (ch. 4): a 2x still and a short loop that plays on hover or
- * tap. `span` is the tile's width in a six-column grid: 4+2 / 2+2+2 / 3+3. */
-export const STUDIO_TILES = [
-  { key: "courses", still: "tile-courses", loop: "loop-courses", span: 4 },
-  { key: "live", still: "tile-live", loop: "loop-live", span: 2 },
-  { key: "messages", still: "tile-messages", loop: "loop-messages", span: 2 },
-  {
-    key: "community",
-    still: "tile-community",
-    loop: "loop-community",
-    span: 2,
-  },
-  { key: "media", still: "tile-media", loop: "loop-media", span: 2 },
-  { key: "blog", still: "tile-blog", loop: "loop-blog", span: 3 },
-  { key: "logo", still: "tile-logo", loop: "loop-logo", span: 3 },
-] as const;
-
-/** Chapter 6's two tiles beside the phone footage. */
-export const STUDENT_TILES = [
-  { key: "dashboard", still: "tile-student-dashboard" },
-  { key: "live", still: "tile-live-class" },
-] as const;
-
-/** Chapter 7's three flat tiles: text only, no numbers (spec 5.4 ch. 7). */
-export const MONEY_TILES = ["stripe", "payouts", "brand"] as const;
-
 export const FAQ_KEYS = [
   "freePlan",
   "technical",
@@ -73,21 +58,14 @@ export const FAQ_KEYS = [
   "contract",
 ] as const;
 
-export type LandingMediaKind = "clip" | "loop" | "still";
+export type LandingMediaKind = "clip" | "still";
 
 /** Every key the page reads, with the kind each must have in media.json. */
 export const LANDING_MEDIA: Record<string, LandingMediaKind> = {
-  [HERO_CLIP]: "clip",
-  [STUDENT_CLIP]: "clip",
-  [BUILD_CLIP]: "clip",
-  [ASSISTANT_CLIP]: "clip",
-  ...Object.fromEntries(
-    STUDIO_TILES.flatMap((t) => [
-      [t.still, "still"],
-      [t.loop, "loop"],
-    ]),
-  ),
-  ...Object.fromEntries(STUDENT_TILES.map((t) => [t.still, "still"])),
+  [HERO_PHOTO]: "still",
+  ...Object.fromEntries(HERO_CHIPS.map((k) => [k, "still"])),
+  ...Object.fromEntries(PATH_STEPS.map((s) => [s.clip, "clip"])),
+  [SUPPORT_CLIP]: "clip",
   ...Object.fromEntries(
     LOOK_CARDS.flatMap((c) => [
       [c.still, "still"],

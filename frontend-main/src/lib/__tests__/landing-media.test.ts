@@ -1,19 +1,17 @@
-// Holds the landing against Phase 1's manifest: every key the chapters read
-// exists with the right kind and a real file (Review Focus 1), clips carry
-// phone encodes (Review Focus 2), and a full scroll stays inside spec 5.7.
+// Holds the landing against the manifest: every key the sections read exists
+// with the right kind and a real file, clips carry phone encodes, and a full
+// scroll stays inside spec 5.7.
 import { readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { SITE_STYLES } from "@shared/sections/styles";
 import {
-  ASSISTANT_CLIP,
-  BUILD_CLIP,
-  HERO_CLIP,
+  HERO_CHIPS,
+  HERO_PHOTO,
   LANDING_MEDIA,
   LOOK_CARDS,
-  STUDENT_CLIP,
-  STUDENT_TILES,
-  STUDIO_TILES,
+  PATH_STEPS,
+  SUPPORT_CLIP,
 } from "@/lib/landing";
 
 interface Item {
@@ -32,7 +30,7 @@ const item = (key: string): Item => manifest.items[key];
 const size = (p: string) =>
   statSync(path.join(PUBLIC, p.replace(/^\//, ""))).size;
 const MB = 1024 * 1024;
-const CLIPS = [HERO_CLIP, STUDENT_CLIP, BUILD_CLIP, ASSISTANT_CLIP];
+const CLIPS = [...PATH_STEPS.map((s) => s.clip), SUPPORT_CLIP];
 const STILLS = Object.entries(LANDING_MEDIA)
   .filter(([, kind]) => kind === "still")
   .map(([key]) => key);
@@ -43,7 +41,7 @@ describe("landing media keys", () => {
     (key, kind) => {
       expect(
         item(key),
-        `${key} is missing from public/media/media.json — Phase 1's recording list`,
+        `${key} is missing from public/media/media.json: scripts/footage/encode.sh landing`,
       ).toBeDefined();
       expect(item(key).kind).toBe(kind);
       expect(() => size(item(key).src), item(key).src).not.toThrow();
@@ -67,21 +65,14 @@ describe("landing media keys", () => {
     for (const c of LOOK_CARDS)
       expect(SITE_STYLES[c.look]?.enabled, c.look).toBe(true);
   });
-  it("studio tiles fill three rows of six columns", () => {
-    expect(STUDIO_TILES.reduce((a, t) => a + t.span, 0)).toBe(18);
-  });
 });
 
 describe("landing media budget (spec 5.7)", () => {
-  // What a full scroll loads. Loops play on hover only (not counted); look
-  // cards are lazy, so count the cards a viewport shows plus one.
+  // What a full scroll loads. Look cards are lazy, so count the cards a
+  // viewport shows plus one.
   const sum = (paths: string[]) => paths.reduce((a, p) => a + size(p), 0);
   const posters = CLIPS.map((k) => item(k).poster as string);
-  const tileStills = [
-    ...STUDIO_TILES.map((t) => t.still),
-    ...STUDENT_TILES.map((t) => t.still),
-  ].map((k) => item(k).src);
-  it("desktop: four clips + stills ≤ 8 MB", () => {
+  it("desktop: five clips, the hero and its screens, four cards ≤ 8 MB", () => {
     const looks = LOOK_CARDS.slice(0, 4).flatMap((c) => [
       item(c.still).src,
       item(c.render).src,
@@ -89,12 +80,13 @@ describe("landing media budget (spec 5.7)", () => {
     const total = sum([
       ...CLIPS.map((k) => item(k).src),
       ...posters,
-      ...tileStills,
+      item(HERO_PHOTO).src,
+      ...HERO_CHIPS.map((k) => item(k).src),
       ...looks,
     ]);
     expect(total / MB, `${(total / MB).toFixed(2)} MB`).toBeLessThanOrEqual(8);
   });
-  it("phone: phone encodes, two look cards ≤ 4 MB", () => {
+  it("phone: phone encodes, small stills, two cards ≤ 4 MB", () => {
     const small = (k: string) => item(k).srcSmall ?? item(k).src;
     const looks = LOOK_CARDS.slice(0, 2).flatMap((c) => [
       small(c.still),
@@ -103,7 +95,8 @@ describe("landing media budget (spec 5.7)", () => {
     const total = sum([
       ...CLIPS.map((k) => item(k).phoneSrc as string),
       ...posters,
-      ...tileStills,
+      small(HERO_PHOTO),
+      ...HERO_CHIPS.map(small),
       ...looks,
     ]);
     expect(total / MB, `${(total / MB).toFixed(2)} MB`).toBeLessThanOrEqual(4);

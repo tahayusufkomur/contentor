@@ -14,7 +14,7 @@ export function PlatformFooter({ flush = false }: { flush?: boolean }) {
     {
       heading: t("product"),
       links: [
-        { label: tNav("features"), href: "/#studio" },
+        { label: tNav("howItWorks"), href: "/#path" },
         { label: tNav("pricing"), href: "/pricing" },
         { label: tNav("getStarted"), href: "/signup" },
       ],

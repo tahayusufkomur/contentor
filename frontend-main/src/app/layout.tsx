@@ -16,9 +16,9 @@ import "@/styles/globals.css";
 
 export const metadata: Metadata = {
   // No title.template: blog pages already set "… — Contentor" in full.
-  title: "Contentor — Teach under your own name",
+  title: "Contentor — Teach what you love, and make a living from it",
   description:
-    "Classes, live sessions, and a calm studio for your students, built around your craft, with your name on every screen.",
+    "Your own site, classes students come back to, and payments that go straight to you. Set up in an afternoon, with help at every step.",
 };
 
 export default async function RootLayout({

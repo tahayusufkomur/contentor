@@ -11,10 +11,6 @@
   * {
     @apply border-border;
   }
-  /* LocalNav's height with its border. */
-  :root {
-    --localnav-h: 45px;
-  }
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
