@@ -812,7 +812,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "difference",
         "What makes their approach theirs",
-        "What do you do differently from other teachers?",
+        "What do you do differently from other creators?",
         (
             "Small groups",
             "Personal attention",

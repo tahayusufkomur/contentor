@@ -12,7 +12,9 @@ to use in conversation, code, and commits.
 ## People & roles
 
 - **Coach** — the tenant owner; a paying customer who runs a site on Contentor. (Older
-  copy says "content creator / creator" — prefer **coach**.) In code: `User.role` is
+  copy says "content creator / creator" — prefer **coach**.) **Customer-facing copy**
+  (landing, setup interview) says **creator**, never "teacher", and calls what they
+  build their **platform**, never "school". In code: `User.role` is
   `coach` in the public schema and `owner` in the tenant schema (same person, two rows).
 - **Student** — an end user inside one coach's tenant who consumes/buys content.
   `User.role = student`, exists only in that tenant's schema.

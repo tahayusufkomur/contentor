@@ -101,7 +101,7 @@ blog, a community.
 - "course_topic": Any specific course topic they mention wanting to offer.
 - "live_topic": Any live class, retreat, or event topic mentioned.
 - "outcome": What students get out of working with them (e.g. "Less stress, better sleep").
-- "difference": What they do differently from other teachers (e.g. "Small groups, my own method").
+- "difference": What they do differently from other creators (e.g. "Small groups, my own method").
 - "tone": What tone fits their voice: Warm, Energetic, Calm, Expert, Playful, Confident, or Sensual.
 
 For "teaches", "offers", "audience", "outcome", "difference", "story" and "credentials" also give items: \

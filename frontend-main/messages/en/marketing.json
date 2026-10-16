@@ -12,14 +12,14 @@
     "galleryLabel": "Coaching niches and their looks",
     "renderAlt": "Phone preview of a coach site in the {look} look",
     "niches": {
-      "journal": "Yoga teachers",
+      "journal": "Yoga creators",
       "kinetic": "Strength coaches",
-      "encore": "Music teachers",
-      "studiofloor": "Dance teachers",
-      "tavola": "Cooking teachers",
+      "encore": "Music creators",
+      "studiofloor": "Dance creators",
+      "tavola": "Cooking creators",
       "primer": "Language tutors",
       "dojo": "Martial arts coaches",
-      "workshop": "Art teachers",
+      "workshop": "Art creators",
       "atelier": "Makeup artists",
       "sprout": "Parenting coaches",
       "trail": "Outdoor guides",
@@ -115,14 +115,14 @@
         },
         "featured": {
           "title": "Featured on this page",
-          "text": "Your school showcased here as a founding creator — free exposure to every visitor."
+          "text": "Your platform showcased here as a founding creator — free exposure to every visitor."
         }
       },
       "cta": "Claim a founding spot",
       "note": "Limited to 20 coaches. When they're gone, they're gone."
     },
     "pricing": {
-      "title": "Three plans, from first draft to full school",
+      "title": "Three plans, from first draft to full platform",
       "text": "Build your site and teach a small group free forever. Upgrade when you are ready to sell courses, host live classes, or connect a domain.",
       "cta": "Compare all plans"
     },
@@ -160,7 +160,7 @@
       }
     },
     "cta": {
-      "title": "Start building your school today.",
+      "title": "Start building your platform today.",
       "text": "Shape your site, draft your first course, and see how your work looks in minutes.",
       "button": "Start free",
       "note": "Free forever plan. No credit card required."

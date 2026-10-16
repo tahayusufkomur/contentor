@@ -1,7 +1,7 @@
 import type { MediaItem } from "@/lib/media";
 
 export interface LookCardProps {
-  /** The caption: who the look is for, e.g. "Yoga teachers". */
+  /** The caption: who the look is for, e.g. "Yoga creators". */
   name: string;
   /** 4:5 coach photograph. */
   still: MediaItem;
