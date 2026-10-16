@@ -124,28 +124,11 @@ screens() {
     echo "loop  screens-$d  $(kb "$OUT/clips/screens-$d.mp4") KB"
   done
 }
-# landing: Mara's school (record.ts mara-*): the path's four clips, the
-# assistant, the hero photo and the three cut-outs laid over it.
+# landing: Mara's school (record.ts setup-* + mara-site): the launch clip.
 landing() {
   segments path-launch clip setup-answer:ask-1:sent setup-looks:gallery:gallery-picked \
     setup-compose:built:scrolled mara-site:scroll:end
   story path-launch
-  SPEED=1.25 segments path-found clip mara-article:article:article-end mara-found:blog:blog-end mara-found:sent:sent-end
-  story path-found
-  segments path-keep phone mara-keep:dash:dash-end mara-keep:live:live-tap mara-keep:room:end
-  if [ -f "$OUT/clips/path-keep.mp4" ]; then webm path-keep 40 0.6M; phone path-keep 0.4M; poster path-keep; fi
-  SPEED=1.25 segments path-paid clip mara-buy:course:checkout mara-buy:paid:paid-end mara-paid:sales:sales-end \
-    mara-paid:payouts:payouts-end
-  story path-paid
-  SPEED=1.5 segments support-assistant clip mara-assistant:start:drafting mara-assistant:card:end
-  story support-assistant
-  still hero-coach "$RAW/photos/hero-coach.webp" 2400:1350 1200:675 34 36
-  # The cut-outs: her newest sales, the class strip on Priya's phone, Priya's post (2x screenshots).
-  if [ -f "$RAW/chip-sale-src.png" ]; then q -i "$RAW/chip-sale-src.png" -vf crop=1984:372:528:504 "$RAW/chip-sale.png"; fi
-  if [ -f "$RAW/chip-live-src.png" ]; then q -i "$RAW/chip-live-src.png" -vf crop=750:240:0:1280 "$RAW/chip-live.png"; fi
-  still chip-sale "$RAW/chip-sale.png" 1984:372 992:186 26 30
-  still chip-live "$RAW/chip-live.png" 750:240 375:120 28 32
-  still chip-post "$RAW/chip-post.png" 1472:328 736:164 26 30
 }
 looks() {
   local l
