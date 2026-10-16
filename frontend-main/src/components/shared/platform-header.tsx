@@ -7,6 +7,7 @@ import { useNavigate } from "@shared/navigation/navigation-provider";
 import { LogOut, Menu, User as UserIcon, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Wordmark } from "@/components/shared/logo-mark";
+import { ThemeToggle } from "@shared/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { User } from "@/types/auth";
@@ -95,51 +96,54 @@ export function PlatformHeader({ user }: { user?: User | null }) {
           )}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
-          {user ? (
-            <>
-              <span className="ml-1 max-w-[140px] truncate text-[13px] text-muted-foreground">
-                {user.name || user.email}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                loading={signingOut}
-                className="h-8 gap-1.5"
-              >
-                <LogOut className="h-4 w-4" />
-                {t("signOut")}
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                asChild
-                variant="ghost"
-                size="sm"
-                className="h-8 rounded-full px-3"
-              >
-                <NavLink href="/login">{t("signIn")}</NavLink>
-              </Button>
-              <Button asChild size="sm" className="h-8 rounded-full px-4">
-                <NavLink href="/signup">{t("getStarted")}</NavLink>
-              </Button>
-            </>
-          )}
-        </div>
+        <div className="flex items-center gap-1">
+          <ThemeToggle compact className="shrink-0 text-muted-foreground" />
+          <div className="hidden items-center gap-2 md:flex">
+            {user ? (
+              <>
+                <span className="ml-1 max-w-[140px] truncate text-[13px] text-muted-foreground">
+                  {user.name || user.email}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  loading={signingOut}
+                  className="h-8 gap-1.5"
+                >
+                  <LogOut className="h-4 w-4" />
+                  {t("signOut")}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 rounded-full px-3"
+                >
+                  <NavLink href="/login">{t("signIn")}</NavLink>
+                </Button>
+                <Button asChild size="sm" className="h-8 rounded-full px-4">
+                  <NavLink href="/signup">{t("getStarted")}</NavLink>
+                </Button>
+              </>
+            )}
+          </div>
 
-        <button
-          className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground md:hidden"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle navigation"
-        >
-          {mobileOpen ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <Menu className="h-5 w-5" />
-          )}
-        </button>
+          <button
+            className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground md:hidden"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle navigation"
+          >
+            {mobileOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </button>
+        </div>
       </div>
 
       {mobileOpen && (

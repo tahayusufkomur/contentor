@@ -66,6 +66,9 @@ export default async function RootLayout({
           hrefLang="x-default"
           href={`${scheme}://${apex}`}
         />
+        {/* The site has its own dark theme: Dark Reader leaves it (and the
+            logo's colours) alone instead of re-inverting it. */}
+        <meta name="darkreader-lock" />
       </head>
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
@@ -73,8 +76,8 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="light"
-            enableSystem={false}
+            defaultTheme="system"
+            enableSystem
             disableTransitionOnChange
             themes={["light", "dark"]}
           >

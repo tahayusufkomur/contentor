@@ -5,6 +5,8 @@ import { cn } from "../lib/utils";
  * The Contentor mark: an ink tile carrying an open ring whose last stretch
  * turns brass, the way the wordmark's "or" does. Fixed artwork, identical to
  * frontend-main/src/app/icon.svg; sized in em so it scales with text beside it.
+ * Under .dark the tile lifts a step and gains a hairline edge so it does not
+ * dissolve into the page; the cream ring then reads as the light "C".
  */
 export function Mark({ className }: { className?: string }) {
   return (
@@ -13,7 +15,24 @@ export function Mark({ className }: { className?: string }) {
       aria-hidden
       className={cn("size-[1.3em] shrink-0", className)}
     >
-      <rect width="32" height="32" rx="8" fill="#171614" />
+      <rect
+        width="32"
+        height="32"
+        rx="8"
+        fill="#171614"
+        className="dark:fill-[#262421]"
+      />
+      <rect
+        x="0.5"
+        y="0.5"
+        width="31"
+        height="31"
+        rx="7.5"
+        fill="none"
+        stroke="#f5f3ef"
+        strokeOpacity={0.16}
+        className="hidden dark:block"
+      />
       <g
         fill="none"
         strokeWidth={4.6}

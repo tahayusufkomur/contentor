@@ -4,9 +4,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tokens come from packages/shared/src/styles/tokens.css (spec 5.1): light
- * always on marketing and the coach dashboard; .dark is used by the superadmin
- * console's toggle and by cinematic chapters (<section class="dark">). */
+/* Tokens come from packages/shared/src/styles/tokens.css (spec 5.1): light by
+ * default, .dark on <html> when the system or the header toggle picks it. */
 @layer base {
   * {
     @apply border-border;
