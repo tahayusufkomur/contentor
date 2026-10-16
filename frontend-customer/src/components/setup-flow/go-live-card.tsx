@@ -6,7 +6,11 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { startCheckout } from "@/lib/api/billing-platform";
+import {
+  getSubscription,
+  startCheckout,
+  updateSubscription,
+} from "@/lib/api/billing-platform";
 import { formatPrice } from "@/lib/interview";
 import {
   BLOCKERS,
@@ -20,7 +24,9 @@ import { PayoutsCard } from "./payouts-card";
 
 /** The last stretch: a paid plan and Stripe only when the coach sells, two
  * ways out of both ("go live now, sell later" keeps her prices, "make it
- * free" drops them), then publish. */
+ * free" drops them), then publish. A coach with no Free plan starts the
+ * Starter trial first, with no way out; the trial cannot sell, so the ways
+ * out come back for a site that sells. */
 export function GoLiveCard({
   api,
   onPublished,
@@ -41,7 +47,11 @@ export function GoLiveCard({
   useEffect(() => {
     const url = new URL(window.location.href);
     if (!url.searchParams.has("checkout")) return;
+    // Back from Checkout: the server pulls the session (the webhook can trail).
+    const session = url.searchParams.get("session_id");
+    if (session) void getSubscription(session).catch(() => {});
     url.searchParams.delete("checkout");
+    url.searchParams.delete("session_id");
     window.history.replaceState(null, "", url.pathname + url.search);
   }, []);
   // Stripe's webhook is usually seconds; past a minute stop waiting and show
@@ -90,6 +100,17 @@ export function GoLiveCard({
       window.location.href = checkout_url;
     },
     { errorToast: "Couldn’t open checkout. Try again." },
+  );
+  const { run: startNow, loading: starting } = useAsyncAction(
+    async () => {
+      const sub = await updateSubscription("start_now");
+      if (sub.status !== "active")
+        toast.error(
+          "Your card couldn’t be charged yet. Check it with your bank and try again.",
+        );
+      await load();
+    },
+    { errorToast: "Couldn’t start your plan. Try again." },
   );
   const { run: makeFree, loading: freeing } = useAsyncAction(
     async () => setState(await api.goliveAction("make_free")),
@@ -219,11 +240,73 @@ export function GoLiveCard({
     </p>
   );
 
+  // Plan names are stored lowercase ("starter"); shown capitalised.
+  const planName = (plan: { name: string }) =>
+    plan.name.charAt(0).toUpperCase() + plan.name.slice(1);
+  const day = (date: Date) =>
+    date.toLocaleDateString(undefined, { month: "long", day: "numeric" });
+
+  if (state.needs_plan && state.plan && state.plan.trial_days > 0) {
+    const price = formatPrice(state.plan.amount_cents, state.plan.currency);
+    const days = state.plan.trial_days;
+    const firstCharge = day(new Date(Date.now() + days * 86_400_000));
+    return shell(
+      <>
+        <p className="text-[15px] font-semibold">
+          Start your {days}-day free trial
+        </p>
+        <p className="mt-1 text-[14px] leading-relaxed text-[var(--sf-graphite)]">
+          {planName(state.plan)} is free until {firstCharge}
+          {price ? `, then ${price} a month` : ""}. Add your card now: cancel
+          any time before then and you won’t be charged. You’ll come straight
+          back here.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            onClick={() => checkout()}
+            loading={checkingOut}
+            className="rounded-full px-6"
+          >
+            Start free trial
+          </Button>
+        </div>
+      </>,
+    );
+  }
+
+  if (state.needs_start && state.plan) {
+    const price = formatPrice(state.plan.amount_cents, state.plan.currency);
+    const ends = state.trial_end ? ` on ${day(new Date(state.trial_end))}` : "";
+    return shell(
+      <>
+        <p className="text-[15px] font-semibold">
+          Selling opens when your plan starts
+        </p>
+        <p className="mt-1 text-[14px] leading-relaxed text-[var(--sf-graphite)]">
+          A trial can’t take payments. Start your {planName(state.plan)} plan
+          today to sell right away{price ? ` (${price} a month)` : ""}, or go
+          live now and sell once your trial ends{ends}.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            onClick={() => startNow()}
+            loading={starting}
+            loadingText="Starting your plan…"
+            className="rounded-full px-6"
+          >
+            Start my plan now
+          </Button>
+          {later}
+          {free}
+        </div>
+        {!confirmFree && laterHint}
+      </>,
+    );
+  }
+
   if (state.needs_plan && state.plan) {
     const price = formatPrice(state.plan.amount_cents, state.plan.currency);
-    // Plan names are stored lowercase ("starter"); shown capitalised.
-    const name =
-      state.plan.name.charAt(0).toUpperCase() + state.plan.name.slice(1);
+    const name = planName(state.plan);
     return shell(
       <>
         <p className="text-[15px] font-semibold">

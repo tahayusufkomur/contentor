@@ -2,9 +2,12 @@
 
 Mounted at `/api/v1/billing/platform/`. Phase 1 ships:
 
-  - `POST /checkout/` — start a Stripe Checkout session for the active tenant.
+  - `POST /checkout/` — start a Stripe Checkout session for the active tenant
+    (Starter opens as a trial for coaches who signed up without a Free plan).
   - `GET  /subscription/` — return the current PlatformSubscription state, or
-    Free if none.
+    Free if none ("none" for a tenant that needs a plan).
+  - `POST /subscription/` — the coach's plan actions: start a trial's plan now,
+    cancel, or take a cancel back.
 
 Cancel, portal, invoices land in Phase 2.
 """
@@ -14,6 +17,7 @@ from __future__ import annotations
 import logging
 
 from django.db import connection, transaction
+from django_tenants.utils import schema_context
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -23,11 +27,13 @@ from rest_framework.decorators import (
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from apps.accounts.models import User
 from apps.billing.providers import get_provider
 from apps.billing.providers.types import ProviderError
 from apps.core.constants import CURRENCY_USD, REGION_DEFAULT_LOCALE
 from apps.core.currency import currency_for_country
 from apps.core.models import Domain, PlatformPlan, PlatformSubscription
+from apps.core.monetization import TRIAL_PLAN_NAME, trial_days_for
 from apps.core.permissions import IsCoachOrOwner
 
 logger = logging.getLogger(__name__)
@@ -108,6 +114,23 @@ def start_checkout(request):
         )
 
     tenant = connection.tenant
+    # Checkout opens a new Stripe subscription: beside a running one (a trial
+    # included), both would bill. Plan switches go through support until they
+    # change the subscription in place.
+    running = PlatformSubscription.objects.filter(
+        tenant=tenant,
+        provider__in=(PlatformSubscription.PROVIDER_STRIPE, PlatformSubscription.PROVIDER_BYPASS),
+        status__in=(
+            PlatformSubscription.STATUS_TRIALING,
+            PlatformSubscription.STATUS_ACTIVE,
+            PlatformSubscription.STATUS_PAST_DUE,
+        ),
+    )
+    if running.exists():
+        return Response(
+            {"error": "PLAN_RUNNING", "detail": "A plan is already running; contact support to switch plans."},
+            status=status.HTTP_409_CONFLICT,
+        )
 
     # Lock billing_currency on first checkout. We do it inside a transaction
     # with select_for_update to prevent two concurrent checkouts racing on the
@@ -137,15 +160,21 @@ def start_checkout(request):
     cancel_url = f"{back}{sep}checkout=cancel"
     locale = _resolve_locale(request.user, tenant)
 
+    # The plan is the owner's, on their platform account (public schema):
+    # request.user is this schema's copy, whose id means someone else there.
+    with schema_context("public"):
+        account = User.objects.filter(email__iexact=tenant.owner_email).order_by("id").first()
+
     provider = get_provider()
     try:
         session = provider.create_checkout_session(
             tenant=tenant,
-            user=request.user,
+            user=account or request.user,
             plan=plan,
             success_url=success_url,
             cancel_url=cancel_url,
             locale=locale,
+            trial_days=trial_days_for(tenant, plan),
         )
     except ProviderError as exc:
         logger.warning(
@@ -175,20 +204,53 @@ def _serialize_plan(plan: PlatformPlan | None) -> dict:
     return {"id": plan.pk, "name": plan.name, "is_free": plan.is_free}
 
 
-@api_view(["GET"])
+def _trial_offer(tenant) -> dict | None:
+    """The trial a checkout would open with right now, for the plan cards."""
+    plan = PlatformPlan.objects.filter(name__iexact=TRIAL_PLAN_NAME, is_active=True).first()
+    days = trial_days_for(tenant, plan) if plan else 0
+    return {"plan_id": plan.pk, "days": days} if days else None
+
+
+@api_view(["GET", "POST"])
 @permission_classes([IsCoachOrOwner])
 def get_subscription(request):
     """Return current PlatformSubscription state for the active tenant.
 
-    Free-tier tenants (no subscription, or canceled) get `{"status": "free"}`.
+    Free-tier tenants (no subscription, or canceled) get `{"status": "free"}`;
+    a tenant that needs a plan gets `{"status": "none", "paused": …}` instead.
+    POST `{action}` applies a plan action first (see `_apply_action`).
     """
     tenant = connection.tenant
+    if request.method == "POST":
+        error = _apply_action(tenant, request.data.get("action"))
+        if error is not None:
+            return error
+    elif session_id := request.query_params.get("session_id"):
+        # Back from Checkout: pull the session ourselves rather than wait on
+        # the webhook (it can trail the redirect; dev may get none at all).
+        from .webhooks_platform import sync_platform_checkout_session
+
+        if not tenant.is_subscription_active:
+            with schema_context("public"):  # where the webhook runs, and the users it names live
+                sync_platform_checkout_session(tenant, session_id)
     try:
-        sub = tenant.platform_subscription
+        sub = PlatformSubscription.objects.get(tenant=tenant)
     except PlatformSubscription.DoesNotExist:
         sub = None
 
     if sub is None or sub.status == PlatformSubscription.STATUS_CANCELED:
+        if tenant.requires_plan:
+            return Response(
+                {
+                    "status": "none",
+                    "plan": {"id": None, "name": "", "is_free": False},
+                    "currency": tenant.billing_currency,
+                    "is_active": False,
+                    "paused": tenant.is_paused,
+                    "trial": _trial_offer(tenant),
+                },
+                status=status.HTTP_200_OK,
+            )
         # Look up the Free plan by name so the UI can render a name + id.
         from django.conf import settings as dj_settings
 
@@ -213,10 +275,39 @@ def get_subscription(request):
             "current_period_start": sub.current_period_start.isoformat() if sub.current_period_start else None,
             "current_period_end": sub.current_period_end.isoformat() if sub.current_period_end else None,
             "cancel_at_period_end": sub.cancel_at_period_end,
-            "is_active": sub.status in ("active", "past_due"),
+            "is_active": sub.status in ("trialing", "active", "past_due"),
+            "paused": False,
+            "trial": None,
         },
         status=status.HTTP_200_OK,
     )
+
+
+def _apply_action(tenant, action) -> Response | None:
+    """ "start_now" ends a trial today (selling opens once the first charge
+    goes through), "cancel" ends the plan when its period or trial ends (a
+    trial cancelled in time is never charged), "resume" takes a cancel back.
+    Returns an error response, or None once applied."""
+    from .webhooks_platform import _handle_subscription_event
+
+    if action not in ("start_now", "cancel", "resume"):
+        return Response({"error": "INVALID_ACTION"}, status=status.HTTP_400_BAD_REQUEST)
+    sub = (
+        PlatformSubscription.objects.filter(tenant=tenant, provider__in=("stripe", "bypass"))
+        .exclude(status=PlatformSubscription.STATUS_CANCELED)
+        .first()
+    )
+    if sub is None or (action == "start_now" and sub.status != PlatformSubscription.STATUS_TRIALING):
+        return Response({"error": "NOT_APPLICABLE"}, status=status.HTTP_409_CONFLICT)
+    try:
+        updated = get_provider().update_subscription(sub, action)
+    except ProviderError as exc:
+        logger.warning("plan action %s failed tenant=%s: %s", action, tenant.schema_name, exc)
+        return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+    if updated is not None:
+        # The webhook brings the same object; syncing now shows it at once.
+        _handle_subscription_event({"data": {"object": updated}})
+    return None
 
 
 def _compute_entitlements(tenant) -> dict:
@@ -245,6 +336,8 @@ def _compute_entitlements(tenant) -> dict:
     paid = tenant.has_paid_platform_plan
     paid_active = is_paid_active(tenant)
     return {
+        # Not a feature: lets "selling needs Starter" say "after your trial".
+        "trialing": tenant.platform_subscription.status == PlatformSubscription.STATUS_TRIALING if plan else False,
         "live": bool(plan and plan.is_live_enabled),
         "ai_blog": bool(paid and plan and plan.max_ai_blog_posts > 0),
         "site_ai": bool(paid and plan and plan.max_site_ai_updates > 0),

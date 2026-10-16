@@ -20,7 +20,10 @@ import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
 import { blockerMeta } from "@/lib/publish-blockers";
-import { useIsLocked } from "@/components/admin/entitlements-provider";
+import {
+  useEntitlements,
+  useIsLocked,
+} from "@/components/admin/entitlements-provider";
 import { refreshSetupStatus, useSetupStatus } from "@/lib/setup-assistant";
 import { ApiError } from "@/types/api";
 
@@ -69,6 +72,7 @@ export function PublishCard() {
   const [wentLive, setWentLive] = useState(false);
   const status = useSetupStatus();
   const freePlan = useIsLocked("selling");
+  const trialing = useEntitlements().entitlements?.trialing;
   const blockers = status?.publish_blockers ?? [];
   const canPublish = blockers.length === 0;
 
@@ -310,7 +314,10 @@ export function PublishCard() {
                     </p>
                     <ul className="space-y-1.5">
                       {blockers.map((key) => {
-                        const meta = blockerMeta(key, { onFreePlan: freePlan });
+                        const meta = blockerMeta(key, {
+                          onFreePlan: freePlan,
+                          trialing,
+                        });
                         return (
                           <li key={key}>
                             <NavLink

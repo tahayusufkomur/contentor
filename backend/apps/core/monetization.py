@@ -3,7 +3,9 @@
 Free coaches can never get paid in the app: no payouts, no paid
 content/subscriptions/bundles. Charging students requires a **paid plan**
 (Starter/Pro) with an **active** platform subscription, and — to actually move
-money — completed Stripe Connect onboarding (`charges_enabled`).
+money — completed Stripe Connect onboarding (`charges_enabled`). A trial is
+not active: it runs Starter's features, but selling waits for the first charge
+(decision 2026-10-16).
 
 Two questions, two helpers:
   - `is_paid_active(tenant)`  — may this tenant *reach* payout onboarding /
@@ -26,8 +28,27 @@ if TYPE_CHECKING:
     from .models import Tenant
 
 
+# New coaches start on a Starter trial, card taken at checkout and charged when
+# it ends (decision 2026-10-16); there is no Free plan for them to fall back on.
+TRIAL_DAYS = 14
+TRIAL_PLAN_NAME = "starter"
+
+
 def _bypass() -> bool:
     return bool(getattr(settings, "BILLING_BYPASS_ENABLED", False))
+
+
+def trial_days_for(tenant: Tenant, plan) -> int:
+    """The free days a checkout for `plan` opens with: Starter's trial, once
+    per tenant, for coaches who signed up without a Free plan. Kept-free
+    tenants upgrade to sell, so theirs starts paid."""
+    from .models import PlatformSubscription
+
+    if not tenant.requires_plan or (plan.name or "").lower() != TRIAL_PLAN_NAME:
+        return 0
+    if PlatformSubscription.objects.filter(tenant=tenant).exists():
+        return 0  # a trial or a plan already ran
+    return TRIAL_DAYS
 
 
 def is_paid_active(tenant: Tenant | None) -> bool:
@@ -40,10 +61,13 @@ def is_paid_active(tenant: Tenant | None) -> bool:
     plan = getattr(tenant, "plan", None)
     if tenant is None or plan is None or plan.is_free:
         return False
-    if _bypass():
-        return True
     # Avoid a circular import at module load.
     from .models import PlatformSubscription
+
+    if _bypass():
+        # The reverse one-to-one's DoesNotExist is an AttributeError: no row, no trial.
+        sub = getattr(tenant, "platform_subscription", None)
+        return getattr(sub, "status", None) != PlatformSubscription.STATUS_TRIALING
 
     return PlatformSubscription.objects.filter(tenant=tenant, status=PlatformSubscription.STATUS_ACTIVE).exists()
 

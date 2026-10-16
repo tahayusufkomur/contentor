@@ -69,7 +69,7 @@ export const FOUNDING_PERKS = [
 ] as const;
 
 export const FAQ_KEYS = [
-  "freePlan",
+  "trial",
   "technical",
   "payments",
   "customDomain",

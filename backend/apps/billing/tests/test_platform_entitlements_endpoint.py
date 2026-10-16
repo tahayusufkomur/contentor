@@ -130,6 +130,7 @@ def test_entitlements_free_tenant_locks_every_feature(restore_public):
 
     assert response.status_code == 200, response.content
     body = response.json()
+    assert body.pop("trialing") is False  # not a feature: the trial flag
     assert set(body) == FEATURE_KEYS
     assert all(value is False for value in body.values()), body
 
@@ -143,6 +144,7 @@ def test_entitlements_full_paid_tenant_unlocks_every_feature(restore_public, ful
 
     assert response.status_code == 200, response.content
     body = response.json()
+    assert body.pop("trialing") is False  # not a feature: the trial flag
     assert set(body) == FEATURE_KEYS
     assert all(value is True for value in body.values()), body
 

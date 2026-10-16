@@ -2,7 +2,8 @@
 // fetch lives in plans-server.ts so this file is testable without a request.
 import { formatPlanPrice } from "@shared/lib/format-plan-price";
 
-export const PLAN_KEYS = ["free", "starter", "pro"] as const;
+// No Free plan since 2026-10-16: new coaches start on a Starter trial.
+export const PLAN_KEYS = ["starter", "pro"] as const;
 export type PlanKey = (typeof PLAN_KEYS)[number];
 
 export interface PlanSummary {
@@ -26,10 +27,9 @@ export interface PlansResponse {
 }
 
 // Maps server-side PlatformPlan.name (lowercased) to a PLAN_KEY. The seed
-// command writes "Free", "starter", "pro" — keep both casings tolerated.
+// command writes "starter", "pro" — keep any casing tolerated.
 export function planKeyFromName(name: string): PlanKey | null {
   const lower = name.toLowerCase();
-  if (lower === "free") return "free";
   if (lower === "starter") return "starter";
   if (lower === "pro") return "pro";
   return null;

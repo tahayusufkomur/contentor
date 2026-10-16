@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
 import {
   getSubscription,
+  updateSubscription,
   type PlatformSubscriptionState,
   type PlatformSubscriptionStatus,
 } from "@/lib/api/billing-platform";
@@ -20,16 +24,23 @@ interface Props {
   pollUntilActive?: boolean;
   /** Display a "checkout canceled" notice above the tile. */
   showCanceledNotice?: boolean;
+  /** Called once a plan runs (trial or paid), e.g. to lift the paused admin. */
+  onLive?: () => void;
 }
+
+/** A plan that runs the site: a trial, a paid plan, or one whose card failed. */
+const LIVE: PlatformSubscriptionStatus[] = ["trialing", "active", "past_due"];
 
 function StatusBadge({ status }: { status: PlatformSubscriptionStatus }) {
   const t = useTranslations("admin.subscription.status");
   const variantByStatus: Record<
     PlatformSubscriptionStatus,
-    "default" | "secondary" | "success" | "warning" | "destructive"
+    "default" | "secondary" | "success" | "warning" | "destructive" | "brand"
   > = {
     free: "secondary",
+    none: "warning",
     incomplete: "warning",
+    trialing: "brand",
     active: "success",
     past_due: "warning",
     canceled: "destructive",
@@ -53,20 +64,27 @@ function formatDate(value: string | null | undefined, locale = "en") {
 export function SubscriptionTile({
   pollUntilActive = false,
   showCanceledNotice = false,
+  onLive,
 }: Props) {
   const t = useTranslations("admin.subscription");
   const [state, setState] = useState<PlatformSubscriptionState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     let pollTimer: ReturnType<typeof setInterval> | null = null;
     const pollDeadline = Date.now() + 30_000;
+    // Back from Checkout: the first fetch has the server pull the session.
+    let session: string | null = pollUntilActive
+      ? new URLSearchParams(window.location.search).get("session_id")
+      : null;
 
     async function fetchOnce(): Promise<PlatformSubscriptionState | null> {
       try {
-        const data = await getSubscription();
+        const data = await getSubscription(session);
+        session = null;
         if (!cancelled) {
           setState(data);
           setLoading(false);
@@ -87,18 +105,20 @@ export function SubscriptionTile({
 
     fetchOnce().then((data) => {
       if (cancelled || !pollUntilActive) return;
-      // Stop polling once we observe an active/past_due state, or once the
-      // 30-second budget expires.
-      if (data && (data.status === "active" || data.status === "past_due"))
+      // Stop polling once a plan runs, or once the 30-second budget expires.
+      if (data && LIVE.includes(data.status)) {
+        onLive?.();
         return;
+      }
       pollTimer = setInterval(async () => {
         if (cancelled || Date.now() > pollDeadline) {
           if (pollTimer) clearInterval(pollTimer);
           return;
         }
         const next = await fetchOnce();
-        if (next && (next.status === "active" || next.status === "past_due")) {
+        if (next && LIVE.includes(next.status)) {
           if (pollTimer) clearInterval(pollTimer);
+          onLive?.();
         }
       }, 2500);
     });
@@ -107,7 +127,24 @@ export function SubscriptionTile({
       cancelled = true;
       if (pollTimer) clearInterval(pollTimer);
     };
-  }, [pollUntilActive, t]);
+  }, [pollUntilActive, onLive, t]);
+
+  const { run: act, loading: acting } = useAsyncAction(
+    async (action: "start_now" | "cancel" | "resume") => {
+      const next = await updateSubscription(action);
+      setState(next);
+      setConfirmCancel(false);
+      if (action === "start_now" && next.status !== "active")
+        toast.error(t("startNowFailed"));
+    },
+    { errorToast: t("actionError") },
+  );
+
+  const trialing = state?.status === "trialing";
+  // Stripe-billed plans only: a granted plan has nothing to cancel here.
+  const selfServe =
+    state?.provider === "stripe" || state?.provider === "bypass";
+  const end = formatDate(state?.current_period_end);
 
   return (
     <div className="space-y-4">
@@ -132,6 +169,8 @@ export function SubscriptionTile({
             </div>
           ) : error ? (
             <p className="text-destructive">{error}</p>
+          ) : state?.status === "none" ? (
+            <p className="text-muted-foreground">{t("noneNotice")}</p>
           ) : state ? (
             <dl className="grid gap-3 sm:grid-cols-2">
               <div>
@@ -148,11 +187,9 @@ export function SubscriptionTile({
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t("nextBillingDate")}
+                  {trialing ? t("trialEnds") : t("nextBillingDate")}
                 </dt>
-                <dd className="font-medium">
-                  {formatDate(state.current_period_end)}
-                </dd>
+                <dd className="font-medium">{end}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -165,13 +202,77 @@ export function SubscriptionTile({
                   <p className="text-muted-foreground">{t("freeNotice")}</p>
                 </div>
               )}
+              {trialing && !state.cancel_at_period_end && (
+                <div className="sm:col-span-2">
+                  <p className="text-muted-foreground">
+                    {t("trialNotice", { date: end })}
+                  </p>
+                </div>
+              )}
               {state.cancel_at_period_end && (
                 <div className="sm:col-span-2">
                   <p className="text-amber-700 dark:text-amber-300">
-                    {t("cancelsOn", {
-                      date: formatDate(state.current_period_end),
-                    })}
+                    {t("cancelsOn", { date: end })}
                   </p>
+                </div>
+              )}
+              {selfServe && LIVE.includes(state.status) && (
+                <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
+                  {state.cancel_at_period_end ? (
+                    <Button
+                      size="sm"
+                      onClick={() => act("resume")}
+                      loading={acting}
+                    >
+                      {t("keepPlan")}
+                    </Button>
+                  ) : confirmCancel ? (
+                    <>
+                      <span className="w-full text-muted-foreground">
+                        {t(
+                          trialing ? "confirmCancelTrial" : "confirmCancelPlan",
+                          {
+                            date: end,
+                          },
+                        )}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => act("cancel")}
+                        loading={acting}
+                      >
+                        {t(trialing ? "cancelTrial" : "cancelPlan")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setConfirmCancel(false)}
+                      >
+                        {t("keepPlan")}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      {trialing && (
+                        <Button
+                          size="sm"
+                          onClick={() => act("start_now")}
+                          loading={acting}
+                          loadingText={t("starting")}
+                        >
+                          {t("startNow")}
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setConfirmCancel(true)}
+                      >
+                        {t(trialing ? "cancelTrial" : "cancelPlan")}
+                      </Button>
+                    </>
+                  )}
                 </div>
               )}
             </dl>

@@ -24,9 +24,9 @@ import { PricingCta } from "./PricingCta";
 const FAQ_KEYS = ["switch", "trial", "payments", "limits"] as const;
 const HIGHLIGHTED: PlanKey = "starter";
 /** The compare grid: a label column on md+, then one column per plan. On a
- * phone the label spans the row above the three cells. */
+ * phone the label spans the row above the two cells. */
 const COLUMNS =
-  "grid grid-cols-3 gap-3 md:grid-cols-[1.4fr_repeat(3,1fr)] md:gap-6";
+  "grid grid-cols-2 gap-3 md:grid-cols-[1.4fr_repeat(2,1fr)] md:gap-6";
 
 /** One compare cell. The sr-only text names the plan (and, for a yes/no
  * cell, the feature) so a screen reader does not read a bare "Included". */
@@ -95,17 +95,10 @@ export default async function PricingPage() {
     ]),
   ) as Record<PlanKey, Set<string>>;
   // Price from the backend when the plan resolved; the locale fallback keeps
-  // the page rendering if the API is unavailable. Free is shown in the paid
-  // plans' currency so "$0" never sits beside "€19.90". null = a paid plan
-  // with no price in this currency yet (shown as "coming soon", not "€0").
-  const paidCurrency = plansData?.plans.find((p) => !p.is_free)?.currency;
+  // the page rendering if the API is unavailable. null = a plan with no price
+  // in this currency yet (shown as "coming soon", not "€0").
   const price = (key: PlanKey): string | null => {
     const plan = planByKey[key];
-    if (key === "free" || plan?.is_free) {
-      return paidCurrency
-        ? formatPlanPrice(paidCurrency, 0)
-        : t(`plans.${key}.price`);
-    }
     if (!plan) return t(`plans.${key}.price`);
     return plan.amount_cents == null
       ? null
@@ -166,6 +159,11 @@ export default async function PricingPage() {
                         <p className="text-caption text-muted-foreground">
                           {t(`plans.${key}.period`)}
                         </p>
+                        {key === "starter" && (
+                          <p className="text-caption font-medium text-marketing-accent">
+                            {t("plans.starter.trial")}
+                          </p>
+                        )}
                       </>
                     )}
                   </div>
@@ -183,8 +181,8 @@ export default async function PricingPage() {
                   </p>
                   <PricingCta
                     planId={planByKey[key]?.id ?? null}
-                    isFreePlan={key === "free"}
                     isAuthenticated={user != null}
+                    label={key === "starter" ? t("trialCta") : undefined}
                     variant={key === HIGHLIGHTED ? "brand" : "outline"}
                     size="lg"
                     className="w-full rounded-full md:mt-5"
@@ -200,7 +198,7 @@ export default async function PricingPage() {
                   key={feature}
                   className={`${COLUMNS} items-center border-b py-4`}
                 >
-                  <p className="col-span-3 text-caption font-medium text-foreground md:col-span-1">
+                  <p className="col-span-2 text-caption font-medium text-foreground md:col-span-1">
                     {t(`features.${feature}`)}
                   </p>
                   {PLAN_KEYS.map((key) => (

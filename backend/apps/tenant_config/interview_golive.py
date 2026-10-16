@@ -1,12 +1,15 @@
 """Go-live for the /setup interview: what still stands between the coach and
 a published site (a paid plan and Stripe only when they sell), publishing,
 and two ways out: "go live now, sell later" (paid items held) and "make it
-free"."""
+free". A coach who signed up without a Free plan starts the Starter trial
+first, whatever the site sells; the ways out then cover the trial, which
+cannot sell."""
 
 import logging
 from contextlib import suppress
 
-from apps.core.monetization import can_monetize, is_paid_active
+from apps.core.models import PlatformSubscription
+from apps.core.monetization import can_monetize, is_paid_active, trial_days_for
 
 from . import interview_brief as brief
 from . import site_qa
@@ -26,7 +29,13 @@ def _starter_plan(tenant) -> dict | None:
         return None
     currency = (tenant.billing_currency or "USD").upper()
     entry = _build_prices(plan).get(currency) or {}
-    return {"id": plan.pk, "name": plan.name, "amount_cents": entry.get("amount_cents"), "currency": currency}
+    return {
+        "id": plan.pk,
+        "name": plan.name,
+        "amount_cents": entry.get("amount_cents"),
+        "currency": currency,
+        "trial_days": trial_days_for(tenant, plan),
+    }
 
 
 # The choices that need a paid plan, by question: classes need it to run,
@@ -68,13 +77,29 @@ def golive_state(tenant) -> dict:
     # hold still needs the plan and payouts).
     sells = paid_content or (answers.get("sells") == "paid" and held is None)
     wants_live = wants_live and held is None
-    needs_plan = (sells or wants_live) and not paid
+    sub = getattr(tenant, "platform_subscription", None)  # DoesNotExist is an AttributeError
+    trialing = getattr(sub, "status", None) == PlatformSubscription.STATUS_TRIALING
+    if tenant.requires_plan:
+        # No Free plan to go live on: the trial first. It cannot sell, so a
+        # site that sells starts the plan now or takes a way out.
+        needs_plan = tenant.is_paused
+        needs_start = trialing and sells
+    else:
+        needs_plan = (sells or wants_live) and not paid
+        needs_start = False
     needs_payouts = paid_content and paid and not can_monetize(tenant)
     # Every step left, with its time, shown at once (it used to appear one card at a time).
     steps = [
         *(
-            [{"id": "plan", "label": "Choose a plan", "minutes": 2, "done": not needs_plan}]
-            if sells or wants_live
+            [
+                {
+                    "id": "plan",
+                    "label": "Start your free trial" if tenant.requires_plan else "Choose a plan",
+                    "minutes": 2,
+                    "done": not needs_plan,
+                }
+            ]
+            if sells or wants_live or tenant.requires_plan
             else []
         ),
         *(
@@ -98,13 +123,20 @@ def golive_state(tenant) -> dict:
         # The finished site's last visual check, started here once it is built.
         "qa": site_qa.ensure(tenant, config) if ready else None,
         "needs_plan": needs_plan,
+        # A trial whose site sells: selling opens when the plan starts.
+        "needs_start": needs_start,
+        "trial_end": sub.current_period_end.isoformat() if trialing and sub.current_period_end else None,
         "needs_payouts": needs_payouts,
-        "plan": _starter_plan(tenant) if needs_plan else None,
+        "plan": _starter_plan(tenant) if needs_plan or needs_start else None,
         "blockers": _open_blockers(config, tenant, flow),
         "steps": steps,
         "summary": _summary(tenant, answers, flow),
         # What "make it free" would change, said before the coach agrees to it.
-        "free_effects": _free_effects(tenant, answers, flow) if needs_plan or needs_payouts else [],
+        "free_effects": (
+            _free_effects(tenant, answers, flow)
+            if (needs_plan and not tenant.requires_plan) or needs_start or needs_payouts
+            else []
+        ),
         # What waits, with its prices, until she can take payments.
         "held": _held_lines(held or {}, flow),
     }

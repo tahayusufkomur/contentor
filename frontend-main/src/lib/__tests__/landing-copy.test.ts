@@ -38,7 +38,7 @@ const CAPS: Record<string, number> = {
   "hero.cta": 20,
   "hero.secondary": 20,
   ...Object.fromEntries(
-    ["free", "card", "time"].map((k) => [`hero.trust.${k}`, 24]),
+    ["trial", "cancel", "time"].map((k) => [`hero.trust.${k}`, 24]),
   ),
   "hero.you": 12,
   "hero.youText": 20,
@@ -164,8 +164,15 @@ describe("landing copy", () => {
     for (const key of Object.keys(CAPS)) {
       if (key.startsWith("founder.offer") || key.startsWith("start.faq"))
         continue;
-      expect(get(key) as string, key).not.toMatch(/\d/);
+      // The trial's length is the offer, not an invented number.
+      const words = (get(key) as string).replace(/\b14(-day| days)\b/g, "");
+      expect(words, key).not.toMatch(/\d/);
     }
+  });
+  it("promises the trial, never the retired free plan (decision 2026-10-16)", () => {
+    const copy = JSON.stringify(messages);
+    expect(copy).not.toMatch(/free forever|free plan|no (credit )?card/i);
+    expect(get("hero.trust.trial")).toContain("14");
   });
   it("renderAlt names the look; the calculator's lines take their numbers", () => {
     expect(get("for.renderAlt")).toContain("{look}");

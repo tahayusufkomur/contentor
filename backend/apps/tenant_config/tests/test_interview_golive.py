@@ -377,3 +377,46 @@ def test_what_is_held_follows_the_drafts_as_they_are_when_she_goes_live(client, 
     new_course.refresh_from_db(), new_live.refresh_from_db(), extra.refresh_from_db()
     assert new_course.is_published is True and extra.is_active is True
     assert new_live.status == "scheduled"  # not "draft": the second click didn't overwrite it
+
+
+def _without_free_plan(tenant_ctx):
+    """A coach who signed up after Free was retired (decision 2026-10-16),
+    with Starter the cheapest plan on offer."""
+    from apps.core.models import PlatformPlan
+
+    PlatformPlan.objects.exclude(name="starter").update(is_active=False)
+    PlatformPlan.objects.update_or_create(
+        name="starter", defaults={"price_monthly": 19, "transaction_fee_pct": 8, "is_active": True}
+    )
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(requires_plan=True)
+
+
+def test_a_coach_without_a_free_plan_starts_the_trial_first(client, tenant_ctx):
+    """Even a free site needs the trial, and there is no way out of it."""
+    _without_free_plan(tenant_ctx)
+    _course(paid=False)
+    with mock.patch("apps.tenant_config.interview_golive.fire"):
+        body = client.get(URL).json()
+    assert body["needs_plan"] is True and body["plan"]["trial_days"] == 14
+    assert body["free_effects"] == [] and body["steps"][0]["label"] == "Start your free trial"
+
+
+def test_a_trial_that_sells_starts_the_plan_or_takes_a_way_out(client, tenant_ctx):
+    from django_tenants.utils import schema_context
+
+    from apps.core.models import PlatformPlan, PlatformSubscription
+
+    _without_free_plan(tenant_ctx)
+    _course(paid=True)
+    with schema_context("public"):  # the subscription's user lives there
+        PlatformSubscription.objects.create(
+            tenant=tenant_ctx,
+            user=User.objects.create_user(email="c@gl.test", name="C", password="x", role="owner"),  # noqa: S106
+            plan=PlatformPlan.objects.get(name="starter"),
+            status=PlatformSubscription.STATUS_TRIALING,
+            provider="stripe",
+        )
+    with mock.patch("apps.tenant_config.interview_golive.fire"):
+        body = client.get(URL).json()
+    assert body["needs_plan"] is False and body["needs_start"] is True
+    assert body["plan"]["name"] == "starter"  # what starting it now costs

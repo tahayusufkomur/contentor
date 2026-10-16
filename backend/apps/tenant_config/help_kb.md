@@ -6,7 +6,7 @@ Audience note for the assistant: the reader of your answers is a **coach** — t
 
 Contentor is a platform where a coach gets their own branded website on a personal subdomain (custom domain possible via support) and sells to their students:
 courses (video lessons), downloads (digital files), live sessions, and memberships/bundles — plus a community feed, email campaigns, announcements with push notifications, and a two-way email inbox.
-The coach pays Contentor a monthly plan (Free, Starter, or Pro); students pay the coach directly through the coach's connected Stripe account, and Contentor keeps a small commission per sale.
+The coach pays Contentor a monthly plan (Starter or Pro, after a 14-day Starter trial; coaches who joined before 16 October 2026 may still be on Free); students pay the coach directly through the coach's connected Stripe account, and Contentor keeps a small commission per sale.
 Students sign in on the coach's site with a passwordless email link or Google — no passwords.
 The coach runs everything from the admin area on their own site.
 
@@ -19,10 +19,12 @@ The coach runs everything from the admin area on their own site.
 | Pro | $49.90/mo | €49.90/mo | 500 | 500 GB | 500 hours/mo | 5,000 | 30 | 6% |
 
 - Billing is monthly, via Stripe. Currency (USD or EUR) is set from the coach's country at signup and cannot be changed later.
-- **Free plan cannot make money**: no paid content, no student payments, no payouts, no live sessions. Selling requires an active Starter or Pro subscription plus completed payout setup (see Payouts & billing).
+- **New coaches start with a 14-day free Starter trial** (no Free plan since 16 October 2026). The card is added at checkout when going live and is first charged when the trial ends, unless the coach cancels before. The trial runs everything in Starter except selling: paid content waits until the plan starts. **Start my plan now** (Settings → Your plan) ends the trial early to sell right away.
+- **No plan, site paused**: if a trial is cancelled or a plan ends, visitors see a "back soon" page and the admin opens on the plan picker. Nothing is deleted; choosing a plan brings the site back at once.
+- The Free plan (only for coaches who joined before 16 October 2026) **cannot make money**: no paid content, no student payments, no payouts, no live sessions. Selling requires an active Starter or Pro subscription plus completed payout setup (see Payouts & billing).
 - Commission is Contentor's cut of each student payment (8% Starter, 6% Pro). The rest goes to the coach.
 - Upgrade: open **Settings → Your plan**, choose the plan, complete checkout. Downgrading requires contacting support.
-- Cancel: from the same Settings → Your plan page. If payment fails, the subscription becomes "Past due"; after a grace period the site drops to Free.
+- Cancel: from the same Settings → Your plan page (**Cancel trial** / **Cancel plan**; it ends when the trial or the paid month ends, and **Keep my plan** takes it back). If payment fails, the subscription becomes "Past due"; after a grace period the plan ends (Free for coaches who still have it, a paused site for everyone else).
 - Do not quote any other price, limit, or percentage than the table above.
 
 ## Courses

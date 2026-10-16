@@ -88,6 +88,13 @@ export function ChangePlanCard() {
 
   const sortedPlans = useMemo(() => (plans ? sortPlans(plans) : []), [plans]);
   const currentPlanId = subscription?.plan?.id ?? null;
+  // A running Stripe plan (a trial too) switches through support: a second
+  // checkout would open a second subscription, and both would bill.
+  const planRunning =
+    ["trialing", "active", "past_due"].includes(subscription?.status ?? "") &&
+    (subscription?.provider === "stripe" ||
+      subscription?.provider === "bypass");
+  const trial = subscription?.trial ?? null;
   const currentPlanIndex = useMemo(() => {
     if (currentPlanId == null) return -1;
     return sortedPlans.findIndex((p) => p.id === currentPlanId);
@@ -183,6 +190,11 @@ export function ChangePlanCard() {
                       </span>
                       <span className="text-sm text-muted-foreground">/mo</span>
                     </div>
+                    {trial?.plan_id === plan.id && (
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {t("trialNote", { days: trial.days })}
+                      </p>
+                    )}
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <Separator />
@@ -245,18 +257,28 @@ export function ChangePlanCard() {
                     <UpgradeButton
                       plan={plan}
                       isCurrent={isCurrent}
-                      isDowngrade={isDowngrade}
+                      isDowngrade={isDowngrade || (planRunning && !isCurrent)}
                       available={available}
                       label={
                         isCurrent
                           ? t("currentPlan")
-                          : isDowngrade
-                            ? t("downgrade")
-                            : t("upgradeTo", {
-                                plan:
-                                  plan.name.charAt(0).toUpperCase() +
-                                  plan.name.slice(1),
-                              })
+                          : planRunning
+                            ? t("switchViaSupport")
+                            : isDowngrade
+                              ? t("downgrade")
+                              : trial?.plan_id === plan.id
+                                ? t("startTrial", { days: trial.days })
+                                : t(
+                                    // No plan at all (a paused site): nothing to upgrade from.
+                                    subscription?.status === "none"
+                                      ? "choose"
+                                      : "upgradeTo",
+                                    {
+                                      plan:
+                                        plan.name.charAt(0).toUpperCase() +
+                                        plan.name.slice(1),
+                                    },
+                                  )
                       }
                       loadingLabel={t("processing")}
                       errorLabel={t("error")}

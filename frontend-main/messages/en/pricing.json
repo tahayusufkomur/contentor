@@ -1,6 +1,6 @@
 {
   "title": "Simple, transparent pricing",
-  "subtitle": "Start free and scale as you grow. No hidden fees.",
+  "subtitle": "Try Starter free for 14 days. No hidden fees, and you can cancel any time.",
   "popular": "Popular",
   "cta": "Get Started",
   "ctaProcessing": "Processing...",
@@ -9,27 +9,9 @@
     "generic": "Something went wrong starting checkout. Please try again."
   },
   "periods": {
-    "forever": "forever",
     "monthly": "/month"
   },
   "plans": {
-    "free": {
-      "name": "Free",
-      "price": "$0",
-      "period": "forever",
-      "description": "Get started with the basics. Perfect for testing the waters.",
-      "features": {
-        "students": "Up to 10 students",
-        "storage": "1 GB storage",
-        "courseBuilder": "Basic course builder",
-        "support": "Community support",
-        "fee": "0% transaction fee",
-        "live": "Live classes",
-        "branding": "Custom branding",
-        "domain": "Custom domain"
-      },
-      "included": ["students", "storage", "courseBuilder", "support", "fee"]
-    },
     "starter": {
       "name": "Starter",
       "price": "$19.90",
@@ -53,7 +35,8 @@
         "branding",
         "campaigns",
         "fee"
-      ]
+      ],
+      "trial": "Free for 14 days"
     },
     "pro": {
       "name": "Pro",
@@ -68,13 +51,15 @@
         "domain": "Custom domain",
         "campaigns": "Email campaigns (5,000/mo)",
         "fee": "6% transaction fee",
-        "support": "Priority support"
+        "support": "Priority support",
+        "branding": "Custom branding"
       },
       "included": [
         "students",
         "storage",
         "courseBuilder",
         "live",
+        "branding",
         "domain",
         "campaigns",
         "fee",
@@ -101,12 +86,12 @@
     "title": "Frequently asked questions",
     "items": {
       "switch": {
-        "q": "Can I switch plans at any time?",
-        "a": "Yes. You can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is prorated."
+        "q": "Can I switch plans?",
+        "a": "Yes. Write to us and we switch your plan, with billing prorated. You can cancel any time from your admin."
       },
       "trial": {
         "q": "Is there a free trial?",
-        "a": "Better — there's a free forever plan. Build your entire platform on it with no credit card and no time limit, and upgrade only when you're ready to sell."
+        "a": "Yes. Starter is free for 14 days. You add a card when your site goes live, and the first charge comes when the trial ends, unless you cancel before. Everything in Starter works during the trial except selling, which opens when your plan starts."
       },
       "payments": {
         "q": "What payment methods do you accept?",
@@ -120,10 +105,11 @@
   },
   "cta2": {
     "title": "Ready to get started?",
-    "subtitle": "Launch free today and grow with us as a founding creator.",
-    "button": "Get Started",
-    "trustNote": "Free plan available. No credit card required."
+    "subtitle": "Start your free trial today and grow with us as a founding creator.",
+    "button": "Start free trial",
+    "trustNote": "Free for 14 days. Cancel any time."
   },
   "comingSoon": "Pricing in your currency is coming soon",
-  "comingSoonNote": "We're finalizing local pricing. Please check back shortly."
+  "comingSoonNote": "We're finalizing local pricing. Please check back shortly.",
+  "trialCta": "Start free trial"
 }

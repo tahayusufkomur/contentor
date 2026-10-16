@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { requireAuth, requireRole } from "@/lib/auth";
 import { getTenantSlug } from "@/lib/tenant";
-import { setupFlowActive } from "@/app/setup/gate";
+import { setupFlowActive, sitePaused } from "@/app/setup/gate";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { PausedPlanPicker } from "@/components/admin/paused-plan-picker";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,12 @@ export default async function AdminLayout({
 }) {
   const user = await requireAuth();
   await requireRole(user, ["owner", "coach"]);
+  const slug = await getTenantSlug();
   // Guided onboarding owns the coach until it ends.
-  if (await setupFlowActive(await getTenantSlug())) redirect("/setup");
-  return <AdminShell user={user}>{children}</AdminShell>;
+  if (await setupFlowActive(slug)) redirect("/setup");
+  return (
+    <AdminShell user={user}>
+      {(await sitePaused(slug)) ? <PausedPlanPicker /> : children}
+    </AdminShell>
+  );
 }

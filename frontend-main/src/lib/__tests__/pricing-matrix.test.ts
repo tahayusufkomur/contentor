@@ -28,7 +28,7 @@ const boom = () => {
 
 describe("planKeyFromName", () => {
   it("tolerates the seed's casings and rejects unknown plans", () => {
-    expect(planKeyFromName("Free")).toBe("free");
+    expect(planKeyFromName("Free")).toBeNull(); // retired 2026-10-16
     expect(planKeyFromName("starter")).toBe("starter");
     expect(planKeyFromName("PRO")).toBe("pro");
     expect(planKeyFromName("enterprise")).toBeNull();

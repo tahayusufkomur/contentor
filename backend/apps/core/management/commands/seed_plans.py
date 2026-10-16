@@ -80,6 +80,9 @@ class Command(BaseCommand):
         plans = [
             {
                 "name": free_name,
+                # Retired 2026-10-16: kept for the tenants that still have it,
+                # out of the catalog (new coaches start on a Starter trial).
+                "is_active": False,
                 "price_monthly": 0,
                 "transaction_fee_pct": 0,
                 "max_students": 10,

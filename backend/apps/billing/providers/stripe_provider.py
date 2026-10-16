@@ -65,6 +65,7 @@ class StripeProvider(PaymentProvider):
         success_url: str,
         cancel_url: str,
         locale: str = "en",
+        trial_days: int = 0,
     ) -> CheckoutSession:
         client = _client()
 
@@ -89,6 +90,10 @@ class StripeProvider(PaymentProvider):
         # Stripe replaces `{CHECKOUT_SESSION_ID}` with the real session id when
         # redirecting back to success_url.
         success_with_token = f"{success_url}{'&' if '?' in success_url else '?'}session_id={{CHECKOUT_SESSION_ID}}"
+        subscription_data: dict[str, Any] = {"metadata": metadata}
+        if trial_days:
+            # Subscription mode collects the card even when nothing is due today.
+            subscription_data["trial_period_days"] = trial_days
 
         try:
             session = client.checkout.Session.create(
@@ -97,7 +102,7 @@ class StripeProvider(PaymentProvider):
                 customer_email=getattr(user, "email", None),
                 locale=normalized_locale,
                 metadata=metadata,
-                subscription_data={"metadata": metadata},
+                subscription_data=subscription_data,
                 success_url=success_with_token,
                 cancel_url=cancel_url,
             )
@@ -109,6 +114,17 @@ class StripeProvider(PaymentProvider):
             expires_at=datetime.fromtimestamp(session.expires_at, tz=UTC),
             provider_session_id=session.id,
         )
+
+    def update_subscription(self, sub: Any, action: str) -> dict | None:
+        changes = {
+            "start_now": {"trial_end": "now"},
+            "cancel": {"cancel_at_period_end": True},
+            "resume": {"cancel_at_period_end": False},
+        }[action]
+        try:
+            return _client().Subscription.modify(sub.provider_subscription_id, **changes)
+        except stripe.error.StripeError as exc:
+            raise ProviderError(str(exc), code="PROVIDER_ERROR") from exc
 
     def verify_webhook_signature(self, payload: bytes, sig_header: str) -> Any:
         """Verify the Stripe-Signature header and return the parsed Event.

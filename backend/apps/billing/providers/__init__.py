@@ -37,8 +37,19 @@ class PaymentProvider(ABC):
         success_url: str,
         cancel_url: str,
         locale: str = "en",
+        trial_days: int = 0,
     ) -> CheckoutSession:
-        """Open a hosted checkout session and return a value object."""
+        """Open a hosted checkout session and return a value object.
+        `trial_days` > 0 starts the plan as a trial: the card is taken now
+        and first charged when the trial ends."""
+
+    @abstractmethod
+    def update_subscription(self, sub: Any, action: str) -> dict | None:
+        """Apply a coach's plan action: "start_now" ends a trial today (the
+        first charge runs now), "cancel" ends the plan when its period (or
+        trial) ends, "resume" takes a pending cancel back. Returns the
+        provider's subscription object to sync from, or None when the local
+        row was updated directly."""
 
 
 def get_provider() -> PaymentProvider:

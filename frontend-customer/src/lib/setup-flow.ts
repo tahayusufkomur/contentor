@@ -157,6 +157,7 @@ export const startConnectOnboarding = () =>
 
 /** Which step fixes each publish blocker, and how to say it. */
 export const BLOCKERS: Record<string, { label: string; step: string }> = {
+  plan: { label: "Start your free trial", step: "plan" },
   first_course: { label: "Publish your first course", step: "course" },
   payouts: { label: "Connect payouts", step: "payouts" },
   first_event: { label: "Schedule your first live class", step: "event" },
@@ -467,12 +468,18 @@ export interface GoLiveState {
     fixed: string[];
   } | null;
   needs_plan: boolean;
+  /** A trial whose site sells: selling opens when the plan starts. */
+  needs_start: boolean;
+  /** When the trial's first charge runs (ISO), while one runs. */
+  trial_end: string | null;
   needs_payouts: boolean;
   plan: {
     id: number;
     name: string;
     amount_cents: number | null;
     currency: string;
+    /** Free days a checkout opens with now (0 = paid from today). */
+    trial_days: number;
   } | null;
   blockers: string[];
   /** Every step left before going live, with its time. */

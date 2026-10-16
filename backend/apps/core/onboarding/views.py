@@ -265,6 +265,8 @@ def creator_signup_verify(request):
         # Assigned here and only here: the resume branch above must leave a
         # returning coach's bucket untouched. email:region is the stable key.
         wizard_bucket=assign_wizard_bucket(f"{email}:{region}"),
+        # No Free plan any more: a Starter trial (card at checkout) or a paid plan.
+        requires_plan=True,
     )
     Domain.objects.create(
         domain=tenant_fqdn,

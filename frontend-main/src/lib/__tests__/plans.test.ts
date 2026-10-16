@@ -18,7 +18,6 @@ const plan = (name: string, amount_cents: number | null, currency = "USD") => ({
 describe("teaserRows", () => {
   it("renders names only when the API did not answer (Review Focus 5)", () => {
     expect(teaserRows(null)).toEqual([
-      { key: "free", price: null },
       { key: "starter", price: null },
       { key: "pro", price: null },
     ]);
@@ -29,8 +28,8 @@ describe("teaserRows", () => {
       currency: "USD",
       plans: [plan("pro", 4990), plan("Free", null), plan("starter", 1990)],
     };
+    // The retired Free plan has no row, even if an old API still lists it.
     expect(teaserRows(data)).toEqual([
-      { key: "free", price: "$0" },
       { key: "starter", price: "$19.90" },
       { key: "pro", price: "$49.90" },
     ]);
@@ -42,7 +41,6 @@ describe("teaserRows", () => {
       plans: [plan("starter", 1990, "EUR"), plan("business", 9900, "EUR")],
     };
     expect(teaserRows(data)).toEqual([
-      { key: "free", price: null },
       { key: "starter", price: "€19.90" },
       { key: "pro", price: null },
     ]);
@@ -51,7 +49,7 @@ describe("teaserRows", () => {
 
 describe("planKeyFromName", () => {
   it("tolerates the seed's casings and rejects strangers", () => {
-    expect(planKeyFromName("Free")).toBe("free");
+    expect(planKeyFromName("Free")).toBeNull(); // retired 2026-10-16
     expect(planKeyFromName("PRO")).toBe("pro");
     expect(planKeyFromName("enterprise")).toBeNull();
   });

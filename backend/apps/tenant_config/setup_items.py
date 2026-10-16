@@ -108,6 +108,7 @@ def publish_blockers(config, tenant) -> list[str]:
                               goals ask for one AND their plan entitles them to it
       - ``first_blog_post`` — an own published post, only if the goals ask for one
       - ``payouts``         — Connect onboarding done, only if paid content exists
+      - ``plan``            — a trial or paid plan, for a tenant with no Free plan
 
     Content blockers are goal- AND entitlement-conditional: a coach is never
     gated on a content type they did not choose, nor on one their plan cannot
@@ -130,6 +131,8 @@ def publish_blockers(config, tenant) -> list[str]:
     seeded = _seeded_by_label()
 
     blockers = []
+    if getattr(tenant, "is_paused", False):
+        blockers.append("plan")
     if not (bool(progress.get("look_edited")) or bool(config.logo_id or config.logo_url)):
         blockers.append("look")
     # demo_cleanup is NO LONGER a publish blocker: seeded content is now

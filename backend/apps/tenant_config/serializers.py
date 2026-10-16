@@ -279,6 +279,9 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             # gate when it isn't published (owners + valid preview cookie pass).
             data["is_published"] = bool(getattr(tenant, "is_published", True))
             data["has_preview_password"] = bool(getattr(tenant, "preview_password", ""))
+            # No plan where one is needed: visitors get a "back soon" page, the
+            # coach's admin opens on the plan picker.
+            data["paused"] = bool(getattr(tenant, "is_paused", False))
         # Guided onboarding gate: the customer app redirects owners to /setup.
         data["setup_flow_active"] = (instance.setup_flow or {}).get("status") == "active"
         return data

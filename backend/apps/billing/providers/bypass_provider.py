@@ -38,6 +38,7 @@ class BypassProvider(PaymentProvider):
         success_url: str,
         cancel_url: str,
         locale: str = "en",
+        trial_days: int = 0,
     ) -> CheckoutSession:
         # Import lazily — apps.core models aren't loaded when providers package
         # is imported at startup (no AppConfig.ready ordering guarantee).
@@ -47,7 +48,7 @@ class BypassProvider(PaymentProvider):
 
         session_id = f"bypass_cs_{uuid.uuid4().hex}"
         now = timezone.now()
-        period_end = now + timedelta(days=30)
+        period_end = now + timedelta(days=trial_days or 30)
 
         # Synthetic webhook for observability parity with the Stripe adapter.
         WebhookEvent.objects.create(
@@ -99,7 +100,7 @@ class BypassProvider(PaymentProvider):
             defaults={
                 "user": resolved_user if getattr(resolved_user, "pk", None) else None,
                 "plan": plan,
-                "status": "active",
+                "status": "trialing" if trial_days else "active",
                 "provider": "bypass",
                 "provider_subscription_id": f"bypass_sub_{uuid.uuid4().hex}",
                 "provider_customer_id": f"bypass_cus_{uuid.uuid4().hex}",
@@ -117,3 +118,15 @@ class BypassProvider(PaymentProvider):
             expires_at=now + timedelta(hours=1),
             provider_session_id=session_id,
         )
+
+    def update_subscription(self, sub: Any, action: str) -> dict | None:
+        from apps.core.models import PlatformSubscription
+
+        if action == "start_now":
+            now = timezone.now()
+            sub.status = PlatformSubscription.STATUS_ACTIVE
+            sub.current_period_start, sub.current_period_end = now, now + timedelta(days=30)
+        else:
+            sub.cancel_at_period_end = action == "cancel"
+        sub.save()
+        return None

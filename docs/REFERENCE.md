@@ -156,17 +156,24 @@ models point at the shared `accounts.User` table.
   `provisioning_status ∈ {pending, provisioning, ready,
   failed}`, `is_demo`, `template_niche`, `template_goals`, `template_seed_status ∈
   {pending, seeding, ready, skipped, failed}`. Property `is_subscription_active` →
-  True iff a `PlatformSubscription` exists with status in `{active, past_due}`.
+  True iff a `PlatformSubscription` exists with status in `{trialing, active, past_due}`.
+  `requires_plan` (set at signup since 2026-10-16) means no Free plan to fall back on:
+  `is_paused` (no trial or plan) hides the site from visitors and opens the admin on the
+  plan picker.
 - **`Domain`** [P] (extends `DomainMixin`) — maps an FQDN to a tenant; `ssl_status ∈
   {pending, active, error}`.
-- **`PlatformPlan`** [P] — coach-facing plan (Free/Starter/Pro). Quotas:
+- **`PlatformPlan`** [P] — coach-facing plan (Starter/Pro; Free retired 2026-10-16,
+  `is_active=False`, kept for the tenants that still have it). Quotas:
   `max_students`, `max_storage_gb`, `max_streaming_hours`, `max_campaign_emails`;
   `transaction_fee_pct` (platform's cut of student payments — used by the future
   marketplace); `is_live_enabled`; `prices` JSONB `{ "USD": {amount_cents, stripe_price_id},
   "EUR": {…} }`. `get_price(currency)` and `is_free` helpers.
 - **`PlatformSubscription`** [P] — the coach→platform subscription. OneToOne to `Tenant`,
-  FK to `User` + `PlatformPlan`. `status ∈ {incomplete, active, past_due, canceled}`,
-  `provider ∈ {stripe, bypass}`, Stripe ids, period fields, `cancel_at_period_end`.
+  FK to `User` + `PlatformPlan`. `status ∈ {incomplete, trialing, active, past_due,
+  canceled}`, `provider ∈ {stripe, bypass, manual}`, Stripe ids, period fields,
+  `cancel_at_period_end`. New coaches start Starter as a 14-day Stripe trial (card at
+  Checkout, `monetization.trial_days_for`); a trial runs the plan's features but cannot
+  sell (`is_paid_active` needs `active`).
 - **`TenantUsage`** [P] — monthly metering rollup `(tenant, month)`: `student_count`,
   `storage_bytes`, `streaming_minutes`, `emails_sent`.
 - **`WebhookEvent`** [P] — idempotency record, unique `(provider, provider_event_id)`.
@@ -711,7 +718,7 @@ Clarified with the owner (June 2026):
 |---|---|
 | Near-term roadmap | **M2 marketplace + finish platform billing (Phase 3–4).** Not: sibling migration, feature depth, a go-live push. |
 | Sibling sites (`gorkemHanciYoga`, `zeyneple.art`, …) | **Separate products that only share infra** (the `contentor-prod` bucket / home server). Not Contentor tenants; no merge planned. |
-| Revenue model | **Both layers** — coach Free/Starter/Pro subscriptions (live now) + a marketplace `transaction_fee_pct` cut on student sales (M2). |
+| Revenue model | **Both layers** — coach Starter/Pro subscriptions after a 14-day Starter trial (no Free plan for coaches since 2026-10-16) + a marketplace `transaction_fee_pct` cut on student sales (M2). |
 | M2 provider | **Stripe Connect.** |
 | Marketplace funds flow | **Coach is merchant of record**; platform skims `transaction_fee_pct`. |
 | Market focus | **Global-first.** |

@@ -65,10 +65,22 @@ def _upsert_subscription_from_event(*, tenant, user, plan, session_obj, subscrip
     period_start = None
     period_end = None
     sub_status = PlatformSubscription.STATUS_ACTIVE
+    existing = (
+        PlatformSubscription.objects.filter(tenant=tenant, provider_subscription_id=provider_sub_id).first()
+        if provider_sub_id
+        else None
+    )
     if subscription_obj is not None:
         period_start, period_end = _sub_period(subscription_obj)
         raw_status = subscription_obj.get("status", "active")
         sub_status = _map_stripe_status(raw_status)
+    elif existing is not None:
+        # The subscription events own status and period, and often arrive
+        # first: this session only links the row (a trial must stay one).
+        sub_status = existing.status
+        period_start, period_end = existing.current_period_start, existing.current_period_end
+    elif session_obj is not None and session_obj.get("payment_status") == "no_payment_required":
+        sub_status = PlatformSubscription.STATUS_TRIALING  # nothing charged today: the trial
 
     sub, _ = PlatformSubscription.objects.update_or_create(
         tenant=tenant,
@@ -104,7 +116,8 @@ def _upsert_subscription_from_event(*, tenant, user, plan, session_obj, subscrip
 def _map_stripe_status(stripe_status: str) -> str:
     mapping = {
         "active": PlatformSubscription.STATUS_ACTIVE,
-        "trialing": PlatformSubscription.STATUS_ACTIVE,
+        # Its own status: a trial runs the plan's features, selling waits for the first charge.
+        "trialing": PlatformSubscription.STATUS_TRIALING,
         "past_due": PlatformSubscription.STATUS_PAST_DUE,
         "unpaid": PlatformSubscription.STATUS_PAST_DUE,
         "canceled": PlatformSubscription.STATUS_CANCELED,
@@ -146,7 +159,9 @@ def sync_platform_checkout_session(tenant, session_id: str) -> bool:
             session_id,
         )
         return False
-    user = _resolve_user(metadata)
+    # The same fallback as the subscription events: the metadata names the
+    # tenant-schema user, which the public schema may not have.
+    user = _resolve_user(metadata) or User.objects.filter(email=tenant.owner_email).first()
     plan = _resolve_plan(metadata)
     if not (user and plan):
         logger.warning("checkout sync: unresolved metadata refs session=%s metadata=%s", session_id, dict(metadata))
@@ -243,8 +258,9 @@ def _handle_platform_subscription_deleted(event):
     """customer.subscription.deleted (platform): the coach's subscription has
     actually ended (Stripe fires this at period end for cancel-at-period-end, or
     immediately for a hard cancel). Mark our PlatformSubscription canceled so the
-    post_save signal reverts the tenant to the Free plan — otherwise a canceled
-    coach keeps their paid plan forever."""
+    post_save signal reverts the tenant to the Free plan (a tenant that needs a
+    plan pauses instead) — otherwise a canceled coach keeps their paid plan
+    forever."""
     sub_obj = event["data"]["object"]
     provider_sub_id = sub_obj.get("id") or ""
     if not provider_sub_id:
@@ -258,7 +274,7 @@ def _handle_platform_subscription_deleted(event):
         sub.status = PlatformSubscription.STATUS_CANCELED
         sub.cancel_at_period_end = False
         sub.save(update_fields=["status", "cancel_at_period_end", "updated_at"])
-        logger.info("platform subscription %s canceled; tenant reverted to Free", provider_sub_id)
+        logger.info("platform subscription %s canceled; its plan ended", provider_sub_id)
 
 
 def _handle_invoice_paid(event):
@@ -288,6 +304,8 @@ def _handle_invoice_paid(event):
 
     # Create a Payment row in the tenant schema.
     amount_cents = invoice.get("amount_paid") or invoice.get("amount_due") or 0
+    if not amount_cents:
+        return  # a trial's opening invoice: nothing was paid
     currency = (invoice.get("currency") or "USD").upper()
     provider_payment_id = invoice.get("payment_intent") or invoice.get("id") or ""
 

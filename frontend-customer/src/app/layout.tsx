@@ -50,14 +50,16 @@ async function isSiteGated(
 ): Promise<boolean> {
   if (!config) return false;
   const published = config.is_published ?? true;
-  if (published) return false;
+  if (published && !config.paused) return false;
 
   const hdrs = await headers();
   const pathname = hdrs.get("x-pathname") || "";
   if (GATE_BYPASS_PREFIXES.some((p) => pathname.startsWith(p))) return false;
 
+  // The preview password opens an unpublished site, never a paused one.
   const cookieStore = await cookies();
   if (
+    !config.paused &&
     cookieStore.get("contentor_preview")?.value === (config.tenant_slug || slug)
   )
     return false;
@@ -208,6 +210,7 @@ export default async function RootLayout({
                   <PreviewGate
                     brandName={config?.brand_name}
                     hasPassword={config?.has_preview_password}
+                    paused={config?.paused}
                   />
                 ) : (
                   <>

@@ -27,6 +27,24 @@ async function signupThroughVerify(page: Page, brand: string, email: string) {
   await page.goto(link);
 }
 
+/** Going live starts the Starter trial at Stripe Checkout (card upfront).
+ * Without Stripe the spec records the trial the webhook would. */
+function grantTrial() {
+  manage([
+    "shell",
+    "-c",
+    "from datetime import timedelta\n" +
+      "from django.utils import timezone\n" +
+      "from apps.accounts.models import User\n" +
+      "from apps.core.models import PlatformPlan, PlatformSubscription, Tenant\n" +
+      `t = Tenant.objects.get(slug='e2e-studio-${stamp}')\n` +
+      "PlatformSubscription.objects.update_or_create(tenant=t, defaults=dict(\n" +
+      "    user=User.objects.filter(email=t.owner_email).first(), plan=PlatformPlan.objects.get(name='starter'),\n" +
+      `    status='trialing', provider='stripe', provider_subscription_id='sub_e2e_${stamp}',\n` +
+      "    current_period_end=timezone.now() + timedelta(days=14)))",
+  ]);
+}
+
 test.beforeAll(() => {
   // Self-healing sweep of tenants left by previous runs (raw SQL for the
   // cross-schema PlatformSubscription FK; see git history of this spec).
@@ -76,8 +94,10 @@ test("signup lands in /setup and the interview ends in a published site", async 
   // A drafted course or class to approve.
   const looksGood = guide.getByRole("button", { name: "Looks good, continue" });
   const goLive = guide.getByRole("button", { name: "Go live", exact: true });
-  // The first payments tile is a paid one, so go-live offers the plan; the
-  // spec takes the free way out instead of Stripe.
+  // Going live starts the free trial first (Stripe Checkout, recorded here).
+  const startTrial = guide.getByRole("button", { name: "Start free trial" });
+  // The first payments tile is a paid one, and a trial cannot sell; the spec
+  // takes the free way out instead of starting the plan.
   const makeFree = guide.getByRole("button", { name: "Make it free and go live now" });
   // The photos question: a screen of its own, with an upload and a way past it.
   const stockPhotos = guide.getByRole("button", { name: "Choose photos for me", exact: true });
@@ -94,7 +114,15 @@ test("signup lands in /setup and the interview ends in a published site", async 
       return "I completed a 200-hour yoga teacher training in 2019.";
     return "Whatever you think fits best";
   };
-  const action = decide.or(looksGood).or(goLive).or(makeFree).or(tile).or(zone).or(place).or(stockPhotos);
+  const action = decide
+    .or(looksGood)
+    .or(goLive)
+    .or(startTrial)
+    .or(makeFree)
+    .or(tile)
+    .or(zone)
+    .or(place)
+    .or(stockPhotos);
   for (let i = 0; i < 40; i++) {
     // Wait for the work in flight to finish, then for the next screen's controls.
     await busy.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
@@ -104,6 +132,11 @@ test("signup lands in /setup and the interview ends in a published site", async 
     await keepLook.waitFor({ state: "visible", timeout: 2_000 }).catch(() => {});
     if (await keepLook.isVisible()) await keepLook.click();
     if (await goLive.isVisible()) break;
+    if (await startTrial.isVisible()) {
+      grantTrial();
+      await page.reload();
+      continue;
+    }
     if (await makeFree.isVisible()) {
       await makeFree.click();
       // Going free first says what it changes, then asks (nothing to change: no ask).

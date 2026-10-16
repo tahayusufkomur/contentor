@@ -19,7 +19,10 @@ export type EntitlementKey =
   | "platform_mailbox"
   | "selling";
 
-export type Entitlements = Record<EntitlementKey, boolean>;
+export type Entitlements = Record<EntitlementKey, boolean> & {
+  /** On a trial: selling opens when the plan starts, not on an upgrade. */
+  trialing?: boolean;
+};
 
 /**
  * Whether a "Paid" badge should show for `feature`.

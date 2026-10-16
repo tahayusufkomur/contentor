@@ -3,11 +3,11 @@
     "pill": "<b>Founding creators</b>: we set you up, one on one",
     "title": "You're the expert. <accent>We're your whole team.</accent>",
     "lead": "Contentor works like a team behind you. It builds your site, brings students in, keeps them coming back and gets you paid.",
-    "cta": "Start free",
+    "cta": "Start free trial",
     "secondary": "Meet your team",
     "trust": {
-      "free": "Free forever plan",
-      "card": "No card needed",
+      "trial": "14 days free",
+      "cancel": "Cancel any time",
       "time": "Live in an afternoon"
     },
     "you": "You",
@@ -136,8 +136,8 @@
     "planCost": "Your plan",
     "note": "Before Stripe's own card fee. An estimate, not a promise.",
     "fallback": "See the plans and their fees",
-    "cta": "Start free",
-    "ctaNote": "Free forever plan. No card needed."
+    "cta": "Start free trial",
+    "ctaNote": "Free for 14 days. Cancel any time."
   },
   "founder": {
     "eyebrow": "The person behind your team",
@@ -171,16 +171,16 @@
   },
   "start": {
     "pricing": {
-      "title": "Free to start. Upgrade when you sell.",
-      "text": "Build your site and teach a small group free, for as long as you like. Upgrade when you're ready to sell courses, go live or use your own domain.",
+      "title": "Try Starter free for 14 days.",
+      "text": "Build your site, invite students and run live classes before you pay anything. Selling opens when your plan starts. Cancel any time before the first charge.",
       "cta": "Compare all plans"
     },
     "faq": {
       "title": "Questions, answered",
       "items": {
-        "freePlan": {
-          "q": "Is there really a free plan?",
-          "a": "Yes! Our free plan is free forever — no credit card required. You get up to 10 students and 1 GB of storage: enough to build your site and teach free classes to a small group. Selling courses, live classes and payouts to your Stripe account need the Starter plan — upgrade anytime as you grow."
+        "trial": {
+          "q": "How does the free trial work?",
+          "a": "Starter is free for 14 days. You add a card when your site goes live, and the first charge comes when the trial ends, unless you cancel before in one click from your admin. Everything in Starter works except selling: paid courses open when your plan starts, or start it early to sell right away."
         },
         "technical": {
           "q": "Do I need technical skills?",
@@ -188,7 +188,7 @@
         },
         "payments": {
           "q": "How do payments work?",
-          "a": "Selling starts on the Starter plan. We integrate directly with Stripe: payments go straight to your own Stripe account — we never hold your money — minus a small transaction fee (8% on Starter, 6% on Pro). You can sell one-time courses or recurring subscriptions."
+          "a": "Selling starts when your plan does. We integrate directly with Stripe: payments go straight to your own Stripe account, so we never hold your money, minus a small transaction fee (8% on Starter, 6% on Pro). You can sell one-time courses or recurring subscriptions."
         },
         "customDomain": {
           "q": "Can I use my own domain?",
@@ -200,15 +200,15 @@
         },
         "contract": {
           "q": "Is there a long-term contract?",
-          "a": "No contracts, no commitments. All plans are month-to-month. You can cancel or change plans anytime."
+          "a": "No contracts and no commitments. Plans are month to month, and you can cancel any time from your admin."
         }
       }
     },
     "cta": {
       "title": "Your team is ready when you are.",
       "text": "Your site, your students and your payments, looked after from day one.",
-      "button": "Start free",
-      "note": "Free forever plan. No credit card required."
+      "button": "Start free trial",
+      "note": "Free for 14 days. Cancel any time."
     }
   },
   "helpBot": {

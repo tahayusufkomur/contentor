@@ -105,6 +105,15 @@ class Tenant(TenantMixin):
         default=False,
         help_text="The free plan's one-off AI blog generation has been spent. Lifetime, never reset.",
     )
+    requires_plan = models.BooleanField(
+        default=False,
+        # In the database too: code without this field still inserts tenants.
+        db_default=False,
+        help_text=(
+            "Signed up after the Free plan was retired (2026-10-16): with no trial or paid plan the "
+            "site pauses instead of falling back to Free. False keeps a tenant's Free plan."
+        ),
+    )
     recovery_email_sent_at = models.DateTimeField(
         null=True,
         blank=True,
@@ -141,23 +150,33 @@ class Tenant(TenantMixin):
 
     @property
     def is_subscription_active(self) -> bool:
-        """True iff a PlatformSubscription exists with status in {active, past_due}.
+        """True iff a PlatformSubscription exists with status in {trialing, active, past_due}.
 
-        Free-tier tenants (no PlatformSubscription row) return False here; quota
-        helpers separately fall back to Free limits for them.
+        A trial runs its plan's features; selling waits for the paid plan
+        (`monetization.is_paid_active`). Free-tier tenants (no
+        PlatformSubscription row) return False here; quota helpers separately
+        fall back to Free limits for them.
         """
         try:
             sub = self.platform_subscription
         except PlatformSubscription.DoesNotExist:
             return False
-        return sub.status in ("active", "past_due")
+        return sub.status in ("trialing", "active", "past_due")
+
+    @property
+    def is_paused(self) -> bool:
+        """A tenant that needs a plan and has none, before its trial or after
+        its plan ended: the public site hides like an unpublished one and the
+        admin opens on the plan picker. Nothing is deleted."""
+        return self.requires_plan and not self.is_subscription_active
 
     @property
     def has_paid_platform_plan(self) -> bool:
-        """Active/past-due subscription on a non-Free plan.
+        """Trialing, active or past-due subscription on a non-Free plan.
 
-        Gates paid-tier perks (e.g. the platform mailbox address). past_due
-        counts as paid so a failed card doesn't instantly cut off inbound mail.
+        Gates paid-tier perks (e.g. the platform mailbox address): a trial
+        tries them. past_due counts as paid so a failed card doesn't instantly
+        cut off inbound mail.
         """
         if not self.is_subscription_active:
             return False
@@ -274,11 +293,13 @@ class PlatformSubscription(models.Model):
     """
 
     STATUS_INCOMPLETE = "incomplete"
+    STATUS_TRIALING = "trialing"
     STATUS_ACTIVE = "active"
     STATUS_PAST_DUE = "past_due"
     STATUS_CANCELED = "canceled"
     STATUS_CHOICES = [
         (STATUS_INCOMPLETE, "Incomplete"),
+        (STATUS_TRIALING, "Trialing"),
         (STATUS_ACTIVE, "Active"),
         (STATUS_PAST_DUE, "Past due"),
         (STATUS_CANCELED, "Canceled"),

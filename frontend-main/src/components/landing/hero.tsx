@@ -29,7 +29,7 @@ const WIRES = [
   "M676 260 C626 260 631 150 583 150",
 ];
 
-const TRUST = ["free", "card", "time"] as const;
+const TRUST = ["trial", "cancel", "time"] as const;
 
 /** The promise, then the creator with her whole team around her: six roles
  * that take turns at work (CSS only, globals.css .team-turn; reduced motion

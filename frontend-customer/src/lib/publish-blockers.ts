@@ -4,6 +4,7 @@ export const PUBLISH_BLOCKER_META: Record<
   string,
   { label: string; href: string }
 > = {
+  plan: { label: "Choose a plan", href: "/admin/billing" },
   look: { label: "Add your logo", href: "/?edit=1&studio=1" },
   first_course: {
     label: "Publish your first course or download",
@@ -25,12 +26,15 @@ export const PUBLISH_BLOCKER_META: Record<
 
 export function blockerMeta(
   key: string,
-  opts: { onFreePlan?: boolean } = {},
+  opts: { onFreePlan?: boolean; trialing?: boolean } = {},
 ): { label: string; href: string } {
-  // On the free plan "connect payments" is a dead end: paid content needs Starter first.
+  // Without a paid plan "connect payments" is a dead end: paid content needs
+  // Starter first (on a trial, Starter's first charge).
   if (key === "payouts" && opts.onFreePlan) {
     return {
-      label: "Paid content needs the Starter plan — upgrade, or make it free",
+      label: opts.trialing
+        ? "Paid content waits for your plan to start — start it now, or make it free"
+        : "Paid content needs the Starter plan — upgrade, or make it free",
       href: "/admin/billing",
     };
   }

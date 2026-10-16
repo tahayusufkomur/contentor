@@ -17,7 +17,7 @@ import "@/styles/globals.css";
 
 const TITLE = "Contentor — You're the expert. We're your whole team.";
 const DESCRIPTION =
-  "Contentor works like a team behind you: it builds your site, brings students in, keeps them coming back and gets you paid. Free to start.";
+  "Contentor works like a team behind you: it builds your site, brings students in, keeps them coming back and gets you paid. Try it free for 14 days.";
 // public/og.jpg: scripts/footage/og-image.mjs renders it from the hero's photo.
 const OG_IMAGE = {
   url: "/og.jpg",

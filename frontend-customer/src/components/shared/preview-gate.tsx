@@ -9,9 +9,16 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 interface PreviewGateProps {
   brandName?: string;
   hasPassword?: boolean;
+  /** The site is paused (its plan ended), not yet launched: no preview. */
+  paused?: boolean;
 }
 
-export function PreviewGate({ brandName, hasPassword }: PreviewGateProps) {
+export function PreviewGate({
+  brandName,
+  hasPassword: withPassword,
+  paused,
+}: PreviewGateProps) {
+  const hasPassword = withPassword && !paused;
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
 
@@ -44,9 +51,11 @@ export function PreviewGate({ brandName, hasPassword }: PreviewGateProps) {
             {brandName || "Coming soon"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {hasPassword
-              ? "This site is launching soon. Enter the preview password to take a look."
-              : "This site is launching soon. Check back shortly."}
+            {paused
+              ? "This site is taking a short break. Check back soon."
+              : hasPassword
+                ? "This site is launching soon. Enter the preview password to take a look."
+                : "This site is launching soon. Check back shortly."}
           </p>
         </div>
 

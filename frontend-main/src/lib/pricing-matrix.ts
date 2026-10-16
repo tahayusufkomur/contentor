@@ -2,7 +2,8 @@
 // lists and the live PlatformPlan records. Pure so vitest can pin it; the
 // page only renders what this returns.
 
-export const PLAN_KEYS = ["free", "starter", "pro"] as const;
+// No Free plan since 2026-10-16: new coaches start on a Starter trial.
+export const PLAN_KEYS = ["starter", "pro"] as const;
 export type PlanKey = (typeof PLAN_KEYS)[number];
 
 /** Row order of the compare table. */
@@ -50,8 +51,9 @@ export type Cell =
   | { kind: "yes" }
   | { kind: "no" };
 
-/** Maps PlatformPlan.name (the seed writes "Free", "starter", "pro") to a
- * column; null for a plan the page has no column for. */
+/** Maps PlatformPlan.name (the seed writes "starter", "pro"; the retired
+ * "Free" has no column) to a column; null for a plan the page has no column
+ * for. */
 export function planKeyFromName(name: string): PlanKey | null {
   const lower = name.toLowerCase();
   return (PLAN_KEYS as readonly string[]).includes(lower)

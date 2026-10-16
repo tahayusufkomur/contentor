@@ -4,6 +4,7 @@ import { blockerMeta, PUBLISH_BLOCKER_META } from "../publish-blockers";
 describe("publish blockers", () => {
   it("labels every key the backend can return", () => {
     for (const key of [
+      "plan",
       "look",
       "first_course",
       "first_event",
@@ -19,6 +20,12 @@ describe("publish blockers", () => {
     expect(meta.href).toBe("/admin/billing");
     expect(meta.label).toMatch(/Starter/);
     expect(blockerMeta("payouts").href).toBe("/admin/payouts");
+  });
+
+  it("tells a trial coach that selling waits for the plan, not an upgrade", () => {
+    const meta = blockerMeta("payouts", { onFreePlan: true, trialing: true });
+    expect(meta.href).toBe("/admin/billing");
+    expect(meta.label).toMatch(/plan to start/);
   });
 
   it("never hides an unknown blocker", () => {

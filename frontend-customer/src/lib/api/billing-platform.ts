@@ -7,7 +7,13 @@
 import { clientFetch } from "@/lib/api-client";
 
 export type PlatformSubscriptionStatus =
-  "free" | "incomplete" | "active" | "past_due" | "canceled";
+  | "free"
+  | "none"
+  | "incomplete"
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled";
 
 export interface PlanBrief {
   id: number | null;
@@ -24,11 +30,30 @@ export interface PlatformSubscriptionState {
   current_period_end?: string | null;
   cancel_at_period_end?: boolean;
   is_active: boolean;
+  /** No plan where one is needed: the site is paused. */
+  paused?: boolean;
+  /** The trial a checkout would open with now (Starter's, once). */
+  trial?: { plan_id: number; days: number } | null;
 }
 
-export async function getSubscription(): Promise<PlatformSubscriptionState> {
+/** `sessionId` (back from Checkout) has the server pull that session first. */
+export async function getSubscription(
+  sessionId?: string | null,
+): Promise<PlatformSubscriptionState> {
+  const query = sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : "";
+  return clientFetch<PlatformSubscriptionState>(
+    `/api/v1/billing/platform/subscription/${query}`,
+  );
+}
+
+/** "start_now" ends a trial today (the first charge runs now), "cancel"
+ *  ends the plan when its trial or period ends, "resume" takes that back. */
+export async function updateSubscription(
+  action: "start_now" | "cancel" | "resume",
+): Promise<PlatformSubscriptionState> {
   return clientFetch<PlatformSubscriptionState>(
     "/api/v1/billing/platform/subscription/",
+    { method: "POST", body: JSON.stringify({ action }) },
   );
 }
 

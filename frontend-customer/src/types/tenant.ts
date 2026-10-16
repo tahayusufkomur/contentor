@@ -205,6 +205,9 @@ export interface TenantConfig {
   niche?: string;
   /** Publish gate: when false the public site is hidden behind a preview gate. */
   is_published?: boolean;
+  /** A plan is needed and none runs: visitors get a "back soon" page and the
+   *  admin opens on the plan picker. */
+  paused?: boolean;
   has_preview_password?: boolean;
   /** Guided onboarding (/setup) still running — coach routes redirect there. */
   setup_flow_active?: boolean;

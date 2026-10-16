@@ -11,10 +11,10 @@ import { ApiError } from "@/types/api";
 
 interface PricingCtaProps {
   planId: number | null;
-  /** Free plans don't checkout — they route to /signup instead. */
-  isFreePlan: boolean;
   /** True when the marketing user is logged in. Unauthenticated users get routed to /signup. */
   isAuthenticated: boolean;
+  /** The button's words; "Get Started" when unset. */
+  label?: string;
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
   className?: string;
@@ -22,15 +22,16 @@ interface PricingCtaProps {
 
 /**
  * Pricing-card CTA. Three behaviors:
- *  - Anonymous or Free plan: route to /signup so onboarding kicks in.
+ *  - Anonymous: route to /signup so onboarding kicks in (the Starter trial
+ *    starts when the site goes live).
  *  - Authenticated coach on a paid plan: hit /api/v1/billing/platform/checkout/
  *    and redirect to the Stripe-hosted URL.
  *  - On API error: show an inline error string; the surrounding card stays.
  */
 export function PricingCta({
   planId,
-  isFreePlan,
   isAuthenticated,
+  label,
   variant = "default",
   size,
   className,
@@ -42,7 +43,7 @@ export function PricingCta({
   const { run: handleClick, loading } = useAsyncAction(
     async () => {
       setError(null);
-      if (!isAuthenticated || isFreePlan || planId == null) {
+      if (!isAuthenticated || planId == null) {
         navigate("/signup");
         return;
       }
@@ -74,7 +75,7 @@ export function PricingCta({
         size={size}
         className={className}
       >
-        {t("cta")}
+        {label ?? t("cta")}
       </Button>
       {error != null && (
         <p className="mt-2 text-sm text-destructive">{error}</p>

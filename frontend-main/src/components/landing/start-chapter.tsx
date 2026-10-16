@@ -28,7 +28,7 @@ async function PricingTeaser({ live = true }: { live?: boolean }) {
       <p className="mt-3 max-w-[640px] text-body-lg text-muted-foreground">
         {t("text")}
       </p>
-      <div className="mt-8 grid gap-5 md:grid-cols-3">
+      <div className="mt-8 grid gap-5 md:grid-cols-2">
         {rows.map(({ key, price }) => (
           <div key={key} className="rounded-tile bg-muted p-7">
             <p className="text-caption font-semibold text-foreground">
