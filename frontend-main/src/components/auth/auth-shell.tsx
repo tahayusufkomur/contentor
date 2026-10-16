@@ -52,7 +52,7 @@ export function AuthShell({
           href="/"
           className="absolute left-8 top-8 inline-flex rounded-full bg-background px-3.5 py-1.5"
         >
-          <Wordmark className="text-base" />
+          <Wordmark className="text-xl" />
         </NavLink>
       </aside>
 
@@ -60,7 +60,7 @@ export function AuthShell({
         <div className="w-full max-w-[420px]">
           <div className="mb-10 flex justify-center lg:hidden">
             <NavLink href="/">
-              <Wordmark className="text-base" />
+              <Wordmark className="text-xl" />
             </NavLink>
           </div>
 

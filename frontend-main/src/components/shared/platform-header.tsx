@@ -18,7 +18,7 @@ function Logo() {
       className="flex items-center select-none"
       aria-label="Contentor"
     >
-      <Wordmark className="text-base" />
+      <Wordmark className="text-xl" />
     </NavLink>
   );
 }

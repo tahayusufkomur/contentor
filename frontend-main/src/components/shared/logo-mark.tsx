@@ -1,22 +1,51 @@
+import { Mark } from "@shared/ui/contentor-brand";
 import { cn } from "@/lib/utils";
+
+export { Mark };
 
 interface WordmarkProps {
   className?: string;
 }
 
+// The last "o" as a play button, drawn to Geist SemiBold's "o" in 1/1000 em
+// (ink 39..564 wide, -12..546 tall; box = advance less the -25 tracking).
+const ell = (rx: number, ry: number) =>
+  `M${301.5 - rx} 279a${rx} ${ry} 0 1 0 ${2 * rx} 0a${rx} ${ry} 0 1 0 ${-2 * rx} 0Z`;
+
+function PlayO() {
+  return (
+    <svg
+      viewBox="0 0 578 558"
+      aria-hidden
+      fill="currentColor"
+      className="inline-block h-[0.558em] w-[0.578em] align-[-0.012em]"
+    >
+      <path d={ell(262.5, 279) + ell(150.5, 167)} fillRule="evenodd" />
+      <path d="M243.5 191L401.5 279L243.5 367Z" />
+    </svg>
+  );
+}
+
 /**
- * Text wordmark — the primary brand lockup. Pure text in house tokens, no
- * image. Use in headers, footers, and any horizontal brand row.
+ * The brand lockup: the mark IS the word's C, a big initial centred on the
+ * letters, then "ontentor" whose last "o" is a play button. House tokens; use
+ * in headers, footers, and any horizontal brand row; size it with a text class.
  */
 export function Wordmark({ className }: WordmarkProps) {
   return (
     <span
+      role="img"
+      aria-label="Contentor"
       className={cn(
-        "font-semibold tracking-tight text-foreground select-none",
+        "whitespace-nowrap font-semibold tracking-tight text-foreground select-none",
         className,
       )}
     >
-      Content<span className="text-marketing-accent">or</span>
+      <Mark className="mr-[0.08em] inline-block size-[1.3em] align-[-0.3em]" />
+      ontent
+      <span className="text-marketing-accent">
+        <PlayO />r
+      </span>
     </span>
   );
 }
