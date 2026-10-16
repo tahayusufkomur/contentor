@@ -41,6 +41,9 @@ const ALLOW = new Set([
   "frontend-customer/src/components/live/control-bar.tsx",
   "frontend-customer/src/components/live-stream/stream-host-view.tsx",
   "frontend-customer/src/components/live-stream/stream-viewer-view.tsx",
+  // The landing's "Mara is live" badge over the producer's scene: the same
+  // decorative live dot, on marketing footage.
+  "frontend-main/src/components/landing/team-chapter.tsx",
 
   // Decorative indeterminate progress-bar flourish under the already-present
   // <Spinner/> on the magic-link "verifying" state — not itself a spinner or

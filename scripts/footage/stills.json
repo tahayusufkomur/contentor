@@ -107,5 +107,25 @@
   },
   "chip-post": {
     "alt": "Priya Raghavan's post in the community: Day 10 of Desk Reset, with 17 hearts and 2 replies"
+  },
+  "screens-creator": {
+    "pix4lessId": "e20d830a-eb2d-4b97-8232-bd1bfd3bceb7",
+    "alt": "Mara Lindqvist streams a live yoga class from her home studio, a camera and a soft light set up in front of her mat",
+    "license": "curated-api-standard"
+  },
+  "screens-laptop": {
+    "pix4lessId": "acd33473-9285-46ac-aaff-e11678f4a5c5",
+    "alt": "Lena watches Mara's live class on a laptop at her kitchen table, the rest of the class in tiles beside it",
+    "license": "curated-api-standard"
+  },
+  "screens-tablet": {
+    "pix4lessId": "a4da68a8-b8f2-4607-b710-ba668f8a7b8c",
+    "alt": "Hannah follows Mara's live class on a tablet propped on a stool in front of her yoga mat",
+    "license": "curated-api-standard"
+  },
+  "screens-phone": {
+    "pix4lessId": "07d2c5e0-7037-4549-b2f5-c340d96091a6",
+    "alt": "Priya smiles at Mara's live class on her phone from the sofa",
+    "license": "curated-api-standard"
   }
 }

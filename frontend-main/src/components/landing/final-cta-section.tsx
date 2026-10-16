@@ -10,9 +10,9 @@ export async function FinalCtaSection() {
   return (
     <section className="mx-auto mt-16 max-w-media px-6">
       <div className="rounded-tile bg-muted px-8 py-12 text-center md:py-16">
-        <h3 className="text-display-2 text-foreground text-balance">
+        <h2 className="text-display-2 text-foreground text-balance">
           {t("title")}
-        </h3>
+        </h2>
         <p className="mx-auto mt-4 max-w-[560px] text-body-lg text-muted-foreground">
           {t("text")}
         </p>

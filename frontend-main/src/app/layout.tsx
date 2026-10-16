@@ -15,15 +15,15 @@ import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { TrackPageView } from "@shared/tracking/track-page-view";
 import "@/styles/globals.css";
 
-const TITLE = "Contentor — Teach what you love, and make a living from it";
+const TITLE = "Contentor — You're the expert. We're your whole team.";
 const DESCRIPTION =
-  "Your own site, classes students come back to, and payments that go straight to you. Set up in an afternoon, with help at every step.";
-// public/og.jpg: scripts/footage/og-image.mjs renders it from the hero still.
+  "Contentor works like a team behind you: it builds your site, brings students in, keeps them coming back and gets you paid. Free to start.";
+// public/og.jpg: scripts/footage/og-image.mjs renders it from the hero's photo.
 const OG_IMAGE = {
   url: "/og.jpg",
   width: 1200,
   height: 630,
-  alt: "Contentor — a yoga teacher guiding a student in a sunlit studio",
+  alt: "Contentor — a creator filming a yoga class at home, camera and light set up",
 };
 
 export const metadata: Metadata = {

@@ -6,12 +6,11 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { SITE_STYLES } from "@shared/sections/styles";
 import {
-  HERO_CHIPS,
   HERO_PHOTO,
   LANDING_MEDIA,
+  LIVE_CLIPS,
   LOOK_CARDS,
-  PATH_STEPS,
-  SUPPORT_CLIP,
+  TEAM_CLIP,
 } from "@/lib/landing";
 
 interface Item {
@@ -30,7 +29,7 @@ const item = (key: string): Item => manifest.items[key];
 const size = (p: string) =>
   statSync(path.join(PUBLIC, p.replace(/^\//, ""))).size;
 const MB = 1024 * 1024;
-const CLIPS = [...PATH_STEPS.map((s) => s.clip), SUPPORT_CLIP];
+const CLIPS = [TEAM_CLIP, ...LIVE_CLIPS.map((c) => c.media)];
 const STILLS = Object.entries(LANDING_MEDIA)
   .filter(([, kind]) => kind === "still")
   .map(([key]) => key);
@@ -68,12 +67,12 @@ describe("landing media keys", () => {
 });
 
 describe("landing media budget (spec 5.7)", () => {
-  // What a full scroll loads. Look cards are lazy, so count the cards a
-  // viewport shows plus one.
+  // What a full scroll loads, every team role played once. Look cards are
+  // lazy, so count the cards a viewport shows plus one.
   const sum = (paths: string[]) => paths.reduce((a, p) => a + size(p), 0);
   const posters = CLIPS.map((k) => item(k).poster as string);
-  it("desktop: five clips, the hero and its screens, four cards ≤ 8 MB", () => {
-    const looks = LOOK_CARDS.slice(0, 4).flatMap((c) => [
+  it("desktop: every clip, the hero photo, five cards ≤ 8 MB", () => {
+    const looks = LOOK_CARDS.slice(0, 5).flatMap((c) => [
       item(c.still).src,
       item(c.render).src,
     ]);
@@ -81,7 +80,6 @@ describe("landing media budget (spec 5.7)", () => {
       ...CLIPS.map((k) => item(k).src),
       ...posters,
       item(HERO_PHOTO).src,
-      ...HERO_CHIPS.map((k) => item(k).src),
       ...looks,
     ]);
     expect(total / MB, `${(total / MB).toFixed(2)} MB`).toBeLessThanOrEqual(8);
@@ -96,7 +94,6 @@ describe("landing media budget (spec 5.7)", () => {
       ...CLIPS.map((k) => item(k).phoneSrc as string),
       ...posters,
       small(HERO_PHOTO),
-      ...HERO_CHIPS.map(small),
       ...looks,
     ]);
     expect(total / MB, `${(total / MB).toFixed(2)} MB`).toBeLessThanOrEqual(4);

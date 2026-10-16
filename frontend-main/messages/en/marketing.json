@@ -1,12 +1,29 @@
 {
   "hero": {
-    "title": "Teach what you love. We'll help you make a living from it.",
-    "lead": "Your own site, classes students come back to, and payments that go straight to you. Set up in an afternoon, with help at every step.",
+    "pill": "<b>Founding creators</b>: we set you up, one on one",
+    "title": "You're the expert. <accent>We're your whole team.</accent>",
+    "lead": "Contentor works like a team behind you. It builds your site, brings students in, keeps them coming back and gets you paid.",
     "cta": "Start free",
-    "secondary": "See how it works"
+    "secondary": "Meet your team",
+    "trust": {
+      "free": "Free forever plan",
+      "card": "No card needed",
+      "time": "Live in an afternoon"
+    },
+    "you": "You",
+    "youText": "just create",
+    "onIt": "on it",
+    "done": "done",
+    "roles": {
+      "designer": "Builds your site, look and logo",
+      "marketer": "Writes articles, sends campaigns",
+      "producer": "Streams your classes to any screen",
+      "community": "Reminds students by push and email",
+      "assistant": "Answers students, day and night",
+      "cashier": "Takes payments, straight to your Stripe"
+    }
   },
   "for": {
-    "eyebrow": "Who it's for",
     "title": "Made for people who teach.",
     "lead": "Yoga, strength, music, languages, cooking and more. Each craft gets a look made for it, and you make it yours.",
     "galleryLabel": "Coaching niches and their looks",
@@ -26,54 +43,78 @@
       "nocturne": "Wellness coaches"
     }
   },
-  "path": {
-    "eyebrow": "How it works",
-    "title": "Your path to paying students.",
-    "lead": "From a blank page to students who pay you every month. Every clip below is the real product.",
-    "steps": {
-      "launch": {
-        "title": "Launch in an afternoon",
-        "text": "Answer a few plain questions about what you teach, pick a look, and watch your home page, courses and schedule build themselves.",
+  "team": {
+    "eyebrow": "Meet your team",
+    "title": "Everyone you'd need to hire, already at work.",
+    "lead": "Six specialists in one platform. Pick one to watch them work.",
+    "tabsLabel": "Your team",
+    "roles": {
+      "designer": {
+        "name": "Designer",
+        "title": "A site made for your craft, in one afternoon.",
+        "text": "Answer a few plain questions. Your home page, courses, schedule, look and logo build themselves, and you can change anything by asking.",
         "tools": "Setup interview · Looks for your craft · Logo studio · Your own photos",
-        "videoLabel": "A coach answers the setup questions, picks a look and her site builds"
+        "sceneLabel": "A coach answers the setup questions, picks a look and her site builds"
       },
-      "found": {
-        "title": "Get found",
-        "text": "Write articles that bring new readers, send them to everyone on your list, and keep it all on your own domain.",
-        "tools": "Articles · Email campaigns · Your own domain",
-        "videoLabel": "A coach's article on her site, then the articles and campaigns in her studio"
+      "marketer": {
+        "name": "Marketer",
+        "title": "New students find you while you teach.",
+        "text": "Articles that answer what your students search for, on Google and in ChatGPT, and campaigns you write once that send themselves.",
+        "tools": "Articles on autopilot · Search-ready pages · Email campaigns · Your own domain",
+        "sceneLabel": "A student asks Google, then ChatGPT, for a yoga teacher; both point to Mara's site"
       },
-      "keep": {
-        "title": "Keep students coming back",
-        "text": "Live classes with reminders, a community of their own and progress they can see, on any phone.",
-        "tools": "Live classes · Community · Progress · Installs like an app",
-        "videoLabel": "A student checks her progress, then joins a live class on her phone"
+      "producer": {
+        "name": "Producer",
+        "title": "Teach live from your own site.",
+        "text": "Go live in one click. Students join from a laptop, a tablet or a phone, with no Zoom to pay for and no links to send.",
+        "tools": "Live classes · In-person classes · Your calendar",
+        "sceneLabel": "Lena, Hannah and Priya follow Mara's live class on a laptop, a tablet and a phone",
+        "live": "Mara is live",
+        "devices": {
+          "laptop": "Lena, on her laptop",
+          "tablet": "Hannah, on a tablet",
+          "phone": "Priya, on her phone"
+        }
       },
-      "paid": {
-        "title": "Get paid directly",
-        "text": "Sell courses and memberships from your own pages. Payments go straight to your Stripe account, under your name.",
-        "tools": "Courses · Memberships · Stripe payouts · Your name on receipts",
-        "videoLabel": "A student buys a course, then the sale and payout in the coach's studio"
-      }
-    }
-  },
-  "support": {
-    "eyebrow": "You're not alone",
-    "title": "Help at every step.",
-    "lead": "An assistant drafts the work for you, and real people help you set up and move in.",
-    "videoLabel": "The studio assistant drafts a four-week course from one sentence",
-    "tiles": {
+      "community": {
+        "name": "Community manager",
+        "title": "Students who keep coming back.",
+        "text": "Before every class, each student gets a reminder: a push on their phone, an email and a note in their app. In between, your community keeps talking.",
+        "tools": "Push reminders · Email · Community · Your app on their phone",
+        "sceneLabel": "One reminder from Mara arrives as a push, an email and a note in her students' app",
+        "scene": {
+          "sent": "Sent once, everywhere",
+          "from": "Mara Lindqvist",
+          "now": "now",
+          "title": "Morning flow starts soon",
+          "body": "Tap to join. See you on the mat.",
+          "channels": {
+            "push": "Push",
+            "email": "Email",
+            "app": "In the app"
+          }
+        }
+      },
       "assistant": {
-        "title": "An assistant that drafts",
-        "text": "Describe a course, a class or a page change in plain words. Review the draft, then apply it or undo it."
+        "name": "Assistant",
+        "title": "Your site answers students while you sleep.",
+        "text": "The assistant on your site answers questions and points students to the right course. In your studio, it drafts a whole course from one sentence.",
+        "tools": "Site assistant · Course drafts · Help in your studio",
+        "sceneLabel": "At night a student asks Mara's assistant for help, buys the course it suggests, and the payment reaches Mara's silenced phone"
       },
-      "founder": {
-        "title": "Set up with you",
-        "text": "Our founding coaches get a one-on-one call where we build their site, courses and payments together."
-      },
-      "migrate": {
-        "title": "Bring your students along",
-        "text": "Moving from another platform? Rebuild your courses and invite your students by email. Founding coaches move with our help."
+      "cashier": {
+        "name": "Cashier",
+        "title": "Paid directly, under your name.",
+        "text": "Sell courses and memberships from your own pages. Payments go straight to your Stripe account. We never hold your money.",
+        "tools": "Courses · Memberships · Stripe payouts · Your name on receipts",
+        "sceneLabel": "Payments from Mara's students land in her Stripe account one after another",
+        "scene": {
+          "today": "Today",
+          "received": "Payment received",
+          "now": "now",
+          "ago": "{minutes} min ago",
+          "from": "from {name} · {item}"
+        }
       }
     }
   },
@@ -94,40 +135,48 @@
     "fee": "Our fee ({pct}%)",
     "planCost": "Your plan",
     "note": "Before Stripe's own card fee. An estimate, not a promise.",
-    "fallback": "See the plans and their fees"
+    "fallback": "See the plans and their fees",
+    "cta": "Start free",
+    "ctaNote": "Free forever plan. No card needed."
   },
-  "start": {
-    "eyebrow": "Begin",
-    "title": "Open your studio when you are ready.",
-    "lead": "Start on the free plan with no time limit, or join our first group of founding coaches for hands-on setup.",
-    "founding": {
-      "eyebrow": "Founding creators",
-      "title": "Be one of our first 20 coaches",
-      "text": "We're launching Contentor with a small group of founding creators — set up personally, one on one, by the founder.",
+  "founder": {
+    "eyebrow": "The person behind your team",
+    "title": "I'll set you up myself.",
+    "text": "I'm Taha, and I built Contentor so creators can spend their time on their craft instead of on tools. Join as a founding creator and you get me: I set up your site, courses and payments with you, one on one, and you can message me whenever you're stuck.",
+    "signature": "Taha, founder of Contentor",
+    "offer": {
+      "title": "Founding creators",
+      "text": "For our first 20 creators:",
       "perks": {
         "concierge": {
-          "title": "We build your platform with you",
-          "text": "A 1-on-1 onboarding call where we set up your site, courses, and payments together — you bring the content, we do the rest."
+          "title": "Set up with you, one on one",
+          "text": "A call where we build your site, courses and payments together. You bring the content."
         },
         "discount": {
           "title": "50% off for 12 months",
-          "text": "Lock in founding pricing on Starter or Pro for your entire first year."
+          "text": "Founding pricing on Starter or Pro for your whole first year."
+        },
+        "migration": {
+          "title": "A hands-on move",
+          "text": "Coming from another platform? We help you move your courses and students, free."
         },
         "featured": {
           "title": "Featured on this page",
-          "text": "Your platform showcased here as a founding creator — free exposure to every visitor."
+          "text": "Your site shown here as a founding creator, in front of every visitor."
         }
       },
       "cta": "Claim a founding spot",
-      "note": "Limited to 20 coaches. When they're gone, they're gone."
-    },
+      "note": "Limited to 20 creators. When they're gone, they're gone."
+    }
+  },
+  "start": {
     "pricing": {
-      "title": "Three plans, from first draft to full platform",
-      "text": "Build your site and teach a small group free forever. Upgrade when you are ready to sell courses, host live classes, or connect a domain.",
+      "title": "Free to start. Upgrade when you sell.",
+      "text": "Build your site and teach a small group free, for as long as you like. Upgrade when you're ready to sell courses, go live or use your own domain.",
       "cta": "Compare all plans"
     },
     "faq": {
-      "title": "Frequently asked questions",
+      "title": "Questions, answered",
       "items": {
         "freePlan": {
           "q": "Is there really a free plan?",
@@ -135,23 +184,19 @@
         },
         "technical": {
           "q": "Do I need technical skills?",
-          "a": "Not at all. You answer a few plain questions or ask the assistant in your own words — no coding required."
-        },
-        "customDomain": {
-          "q": "Can I use my own domain?",
-          "a": "Yes — on the Pro plan you can connect your own custom domain. And on every paid plan your platform runs fully under your brand: your students never see Contentor."
+          "a": "Not at all. You answer a few plain questions, or ask the assistant in your own words. No code, ever."
         },
         "payments": {
           "q": "How do payments work?",
           "a": "Selling starts on the Starter plan. We integrate directly with Stripe: payments go straight to your own Stripe account — we never hold your money — minus a small transaction fee (8% on Starter, 6% on Pro). You can sell one-time courses or recurring subscriptions."
         },
-        "liveClasses": {
-          "q": "How do live classes work?",
-          "a": "Live classes are included on every paid plan — WebRTC video with built-in chat, scheduling, and reminders. Starter includes 100 streaming hours per month, Pro includes 500."
+        "customDomain": {
+          "q": "Can I use my own domain?",
+          "a": "Yes — on the Pro plan you can connect your own custom domain. And on every paid plan your platform runs fully under your brand: your students never see Contentor."
         },
         "migration": {
-          "q": "Can I migrate from another platform?",
-          "a": "Yes. Most coaches rebuild their courses with our builder and invite their students by email within a day. As a founding creator, we'll help you migrate personally — hands-on and free."
+          "q": "Can I move from another platform?",
+          "a": "Yes. Most creators rebuild their courses with our builder and invite their students by email within a day. As a founding creator, we'll help you move personally — hands-on and free."
         },
         "contract": {
           "q": "Is there a long-term contract?",
@@ -160,8 +205,8 @@
       }
     },
     "cta": {
-      "title": "Start building your platform today.",
-      "text": "Shape your site, draft your first course, and see how your work looks in minutes.",
+      "title": "Your team is ready when you are.",
+      "text": "Your site, your students and your payments, looked after from day one.",
       "button": "Start free",
       "note": "Free forever plan. No credit card required."
     }

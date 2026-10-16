@@ -1,9 +1,10 @@
 // e2e/specs/31-landing.spec.ts
 //
 // The marketing landing (frontend-main "/"): the one page a prospective coach
-// sees first. Guards the chapters the success-led page is built from, the
-// single header, the brand lockup and the share card, at desktop and phone
-// width. Copy is asserted by its stable headings, not full sentences.
+// sees first. Guards the chapters the team-led page is built from, the hero's
+// links into the team chapter, the single header, the brand lockup and the
+// share card, at desktop and phone width. Copy is asserted by its stable
+// headings, not full sentences.
 
 import { test, expect } from "@playwright/test";
 import { MAIN } from "../helpers/auth";
@@ -24,21 +25,32 @@ test("the landing carries one header, the brand, every chapter and the share car
 
   // The chapters, in the order the page tells the coach's story.
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Teach what you love",
+    "You're the expert",
   );
-  for (const id of ["for", "path", "support", "earnings", "start"]) {
+  for (const id of ["for", "team", "earnings", "founding", "start"]) {
     await expect(page.locator(`#${id}`)).toBeAttached();
   }
-  for (const step of [
-    "Launch in an afternoon",
-    "Get found",
-    "Keep students coming back",
-    "Get paid directly",
-  ]) {
+  const roles = [
+    "Designer",
+    "Marketer",
+    "Producer",
+    "Community manager",
+    "Assistant",
+    "Cashier",
+  ];
+  for (const name of roles) {
     await expect(
-      page.locator("#path").getByText(step, { exact: true }),
+      page.locator("#team").getByRole("tab", { name, exact: true }),
     ).toBeVisible();
   }
+  // A role in the hero opens that role in the team chapter.
+  await page.locator('#hero a[href="#team-cashier"]').click();
+  await expect(
+    page.locator("#team").getByRole("tab", { name: "Cashier", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#team-panel")).toContainText(
+    "Paid directly, under your name.",
+  );
   await expect(page.locator("#earn-students")).toBeAttached();
   await expect(page.locator("#earn-price")).toBeAttached();
 

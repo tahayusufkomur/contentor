@@ -1,34 +1,46 @@
 // What the landing is made of: its section ids, the media each section reads,
-// the twelve niche cards, the path's four steps and the FAQ keys. Pure data so
+// the twelve niche cards, the team's six roles and the FAQ keys. Pure data so
 // landing-media.test.ts and landing-copy.test.ts can hold the page against
 // media.json and marketing.json. Every clip and screen is one demo coach, Mara
 // Lindqvist (record.ts mara-*, seeded by seed_footage_coach).
 
-/** Section anchors in page order; the header links to "path" and "for". */
+/** Section anchors in page order; the header links to "team" and "for". */
 export const SECTION_IDS = [
   "hero",
   "for",
-  "path",
-  "support",
+  "team",
   "earnings",
+  "founding",
   "start",
 ] as const;
 
-/** The hero photograph and the real screens laid over it. */
-export const HERO_PHOTO = "hero-coach";
-export const HERO_CHIPS = ["chip-post", "chip-live", "chip-sale"] as const;
+/** The creator at the centre of the hero's team: Mara recording a class. */
+export const HERO_PHOTO = "screens-creator";
 
-/** The path to paying students: one clip per step. `phone`: filmed on a phone. */
-export const PATH_STEPS = [
-  { key: "launch", clip: "path-launch", phone: false },
-  { key: "found", clip: "path-found", phone: false },
-  { key: "keep", clip: "path-keep", phone: true },
-  { key: "paid", clip: "path-paid", phone: false },
+/** "Your whole team": the six roles the hero lists and the team chapter
+ * plays, in the order of the coach's path. `ms` is how long the chapter
+ * stays on a role before moving on: long enough for its scene to land. */
+export const TEAM_ROLES = [
+  { key: "designer", ms: 8000 },
+  { key: "marketer", ms: 13000 },
+  { key: "producer", ms: 7000 },
+  { key: "community", ms: 6500 },
+  { key: "assistant", ms: 9500 },
+  { key: "cashier", ms: 8500 },
 ] as const;
 
-/** "You're not alone": the assistant's clip and the cards beside it. */
-export const SUPPORT_CLIP = "support-assistant";
-export const SUPPORT_TILES = ["assistant", "founder", "migrate"] as const;
+export type TeamRole = (typeof TEAM_ROLES)[number]["key"];
+
+/** The designer's footage: the setup interview, a look picked, the site built. */
+export const TEAM_CLIP = "path-launch";
+
+/** The producer's scene: students following Mara's live class on each kind of
+ * screen (scripts/footage/screens.py lays the recording onto each photo). */
+export const LIVE_CLIPS = [
+  { key: "laptop", media: "screens-laptop" },
+  { key: "tablet", media: "screens-tablet" },
+  { key: "phone", media: "screens-phone" },
+] as const;
 
 /** Twelve of the twenty looks, one niche each. `still` is the 4:5 coach
  * photograph, `render` the look's phone screenshot; the caption names the
@@ -48,12 +60,19 @@ export const LOOK_CARDS = [
   { look: "nocturne", still: "still-wellness", render: "look-nocturne" },
 ] as const;
 
+/** The founding offer, in the order the founder section lists it. */
+export const FOUNDING_PERKS = [
+  "concierge",
+  "discount",
+  "migration",
+  "featured",
+] as const;
+
 export const FAQ_KEYS = [
   "freePlan",
   "technical",
-  "customDomain",
   "payments",
-  "liveClasses",
+  "customDomain",
   "migration",
   "contract",
 ] as const;
@@ -63,9 +82,8 @@ export type LandingMediaKind = "clip" | "still";
 /** Every key the page reads, with the kind each must have in media.json. */
 export const LANDING_MEDIA: Record<string, LandingMediaKind> = {
   [HERO_PHOTO]: "still",
-  ...Object.fromEntries(HERO_CHIPS.map((k) => [k, "still"])),
-  ...Object.fromEntries(PATH_STEPS.map((s) => [s.clip, "clip"])),
-  [SUPPORT_CLIP]: "clip",
+  [TEAM_CLIP]: "clip",
+  ...Object.fromEntries(LIVE_CLIPS.map((c) => [c.media, "clip"])),
   ...Object.fromEntries(
     LOOK_CARDS.flatMap((c) => [
       [c.still, "still"],

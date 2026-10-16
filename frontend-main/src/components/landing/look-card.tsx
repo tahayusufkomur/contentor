@@ -10,9 +10,9 @@ export interface LookCardProps {
   renderAlt: string;
 }
 
-/** One gallery slide (spec 5.4 ch. 3): the coach beside her site on a phone,
+/** One card of the "Who it's for" row: the coach beside her site on a phone,
  * both cropped to one row height, captioned with who it is for. Images are
- * lazy with an 800 px source for phones; the gallery is well below the fold. */
+ * lazy; the small twins cover these sizes at 2x. */
 export function LookCard({ name, still, render, renderAlt }: LookCardProps) {
   const srcSet = (m: MediaItem) =>
     m.srcSmall
@@ -20,12 +20,12 @@ export function LookCard({ name, still, render, renderAlt }: LookCardProps) {
       : undefined;
   return (
     <figure className="flex flex-col">
-      <div className="flex h-[260px] gap-3 md:h-[440px]">
+      <div className="flex h-[200px] gap-3 md:h-[260px]">
         {/* eslint-disable-next-line @next/next/no-img-element -- sized AVIF with its own srcSet */}
         <img
           src={still.src}
           srcSet={srcSet(still)}
-          sizes="(max-width: 767px) 208px, 352px"
+          sizes="(max-width: 767px) 160px, 208px"
           alt={still.alt ?? ""}
           width={still.width}
           height={still.height}
@@ -37,7 +37,7 @@ export function LookCard({ name, still, render, renderAlt }: LookCardProps) {
         <img
           src={render.src}
           srcSet={srcSet(render)}
-          sizes="(max-width: 767px) 120px, 203px"
+          sizes="(max-width: 767px) 92px, 120px"
           alt={renderAlt}
           width={render.width}
           height={render.height}

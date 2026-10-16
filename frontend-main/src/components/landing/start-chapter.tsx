@@ -2,8 +2,6 @@ import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCtaSection } from "@/components/landing/final-cta-section";
-import { FoundingCreatorsSection } from "@/components/landing/founding-creators-section";
-import { Chapter } from "@/components/motion/chapter";
 import { NavLink } from "@/components/ui/nav-link";
 import { teaserRows } from "@/lib/plans";
 import { fetchPlans } from "@/lib/plans-server";
@@ -22,11 +20,11 @@ async function PricingTeaser({ live = true }: { live?: boolean }) {
   return (
     <section
       aria-labelledby="teaser-title"
-      className="mx-auto mt-16 max-w-media px-6"
+      className="mx-auto max-w-media px-6"
     >
-      <h3 id="teaser-title" className="text-title text-foreground">
+      <h2 id="teaser-title" className="text-title text-foreground">
         {t("title")}
-      </h3>
+      </h2>
       <p className="mt-3 max-w-[640px] text-body-lg text-muted-foreground">
         {t("text")}
       </p>
@@ -60,23 +58,16 @@ async function PricingTeaser({ live = true }: { live?: boolean }) {
   );
 }
 
-/** Chapter 8 (spec 5.4): the close — founding creators, the pricing teaser,
- * the FAQ and the final call, each on second paper. */
-export async function StartChapter() {
-  const t = await getTranslations("marketing.start");
+/** The close: the pricing teaser, the FAQ and the last call, each on second
+ * paper. */
+export function StartChapter() {
   return (
-    <Chapter
-      id="start"
-      eyebrow={t("eyebrow")}
-      title={t("title")}
-      lead={t("lead")}
-    >
-      <FoundingCreatorsSection />
+    <div id="start" className="scroll-mt-24 pb-16 md:pb-24">
       <Suspense fallback={<PricingTeaser live={false} />}>
         <PricingTeaser />
       </Suspense>
       <FaqSection />
       <FinalCtaSection />
-    </Chapter>
+    </div>
   );
 }

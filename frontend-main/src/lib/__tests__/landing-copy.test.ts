@@ -3,7 +3,12 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { FAQ_KEYS, LOOK_CARDS, PATH_STEPS, SUPPORT_TILES } from "@/lib/landing";
+import {
+  FAQ_KEYS,
+  FOUNDING_PERKS,
+  LOOK_CARDS,
+  TEAM_ROLES,
+} from "@/lib/landing";
 
 const messages = JSON.parse(
   readFileSync(
@@ -19,42 +24,67 @@ const get = (p: string) =>
       messages,
     );
 
-const heads = (ns: string) => ({
+const heads = (ns: string, title = 44) => ({
   [`${ns}.eyebrow`]: 24,
-  [`${ns}.title`]: 44,
+  [`${ns}.title`]: title,
   [`${ns}.lead`]: 140,
-});
-const tile = (p: string, text = 110) => ({
-  [`${p}.title`]: 32,
-  [`${p}.text`]: text,
 });
 
 /** key path → max characters. */
 const CAPS: Record<string, number> = {
+  "hero.pill": 64,
   "hero.title": 64,
   "hero.lead": 140,
   "hero.cta": 20,
   "hero.secondary": 20,
-  ...heads("for"),
+  ...Object.fromEntries(
+    ["free", "card", "time"].map((k) => [`hero.trust.${k}`, 24]),
+  ),
+  "hero.you": 12,
+  "hero.youText": 20,
+  "hero.onIt": 10,
+  "hero.done": 10,
+  ...Object.fromEntries(TEAM_ROLES.map(({ key }) => [`hero.roles.${key}`, 40])),
+  "for.title": 44,
+  "for.lead": 140,
   "for.galleryLabel": 40,
   "for.renderAlt": 60,
   ...Object.fromEntries(LOOK_CARDS.map((c) => [`for.niches.${c.look}`, 24])),
-  ...heads("path"),
+  ...heads("team", 48),
+  "team.tabsLabel": 24,
   ...Object.assign(
     {},
-    ...PATH_STEPS.map(({ key }) => ({
-      [`path.steps.${key}.title`]: 32,
-      [`path.steps.${key}.text`]: 160,
-      [`path.steps.${key}.tools`]: 90,
-      [`path.steps.${key}.videoLabel`]: 90,
+    ...TEAM_ROLES.map(({ key }) => ({
+      [`team.roles.${key}.name`]: 20,
+      [`team.roles.${key}.title`]: 48,
+      [`team.roles.${key}.text`]: 160,
+      [`team.roles.${key}.tools`]: 90,
+      [`team.roles.${key}.sceneLabel`]: 140,
     })),
   ),
-  ...heads("support"),
-  "support.videoLabel": 90,
-  ...Object.assign(
-    {},
-    ...SUPPORT_TILES.map((k) => tile(`support.tiles.${k}`, 140)),
+  "team.roles.producer.live": 24,
+  ...Object.fromEntries(
+    ["laptop", "tablet", "phone"].map((k) => [
+      `team.roles.producer.devices.${k}`,
+      28,
+    ]),
   ),
+  "team.roles.community.scene.sent": 28,
+  "team.roles.community.scene.from": 24,
+  "team.roles.community.scene.now": 8,
+  "team.roles.community.scene.title": 28,
+  "team.roles.community.scene.body": 40,
+  ...Object.fromEntries(
+    ["push", "email", "app"].map((k) => [
+      `team.roles.community.scene.channels.${k}`,
+      12,
+    ]),
+  ),
+  "team.roles.cashier.scene.today": 16,
+  "team.roles.cashier.scene.received": 28,
+  "team.roles.cashier.scene.now": 8,
+  "team.roles.cashier.scene.ago": 20,
+  "team.roles.cashier.scene.from": 40,
   ...heads("earnings"),
   "earnings.students": 24,
   "earnings.price": 24,
@@ -68,21 +98,25 @@ const CAPS: Record<string, number> = {
   "earnings.planCost": 24,
   "earnings.note": 120,
   "earnings.fallback": 60,
-  ...heads("start"),
-  "start.founding.eyebrow": 24,
-  "start.founding.title": 44,
-  "start.founding.text": 160,
+  "earnings.cta": 20,
+  "earnings.ctaNote": 60,
+  "founder.eyebrow": 32,
+  "founder.title": 44,
+  "founder.text": 320,
+  "founder.signature": 40,
+  "founder.offer.title": 24,
+  "founder.offer.text": 60,
   ...Object.assign(
     {},
-    ...["concierge", "discount", "featured"].map((k) => ({
-      [`start.founding.perks.${k}.title`]: 36,
-      [`start.founding.perks.${k}.text`]: 140,
+    ...FOUNDING_PERKS.map((k) => ({
+      [`founder.offer.perks.${k}.title`]: 36,
+      [`founder.offer.perks.${k}.text`]: 140,
     })),
   ),
-  "start.founding.cta": 24,
-  "start.founding.note": 80,
+  "founder.offer.cta": 24,
+  "founder.offer.note": 80,
   "start.pricing.title": 44,
-  "start.pricing.text": 140,
+  "start.pricing.text": 160,
   "start.pricing.cta": 24,
   "start.faq.title": 44,
   ...Object.assign(
@@ -126,9 +160,9 @@ describe("landing copy", () => {
     expect((v as string).trim().length, key).toBeGreaterThan(0);
     expect((v as string).length, `${key}: "${v}"`).toBeLessThanOrEqual(cap);
   });
-  it("carries no numbers outside the founding tile and the FAQ (spec: no invented numbers)", () => {
+  it("carries no numbers outside the founding offer and the FAQ (spec: no invented numbers)", () => {
     for (const key of Object.keys(CAPS)) {
-      if (key.startsWith("start.founding") || key.startsWith("start.faq"))
+      if (key.startsWith("founder.offer") || key.startsWith("start.faq"))
         continue;
       expect(get(key) as string, key).not.toMatch(/\d/);
     }
@@ -154,8 +188,14 @@ describe("landing copy", () => {
       "assistant",
       "students",
       "money",
+      "screens",
+      "path",
+      "support",
     ])
       expect(messages[ns], ns).toBeUndefined();
+  });
+  it("promises only the channels the product sends on (push, email, the app)", () => {
+    expect(JSON.stringify(messages)).not.toMatch(/whatsapp|telegram/i);
   });
   it("helpBot keeps every key the help bubble reads", () => {
     for (const k of HELP_BOT_KEYS)

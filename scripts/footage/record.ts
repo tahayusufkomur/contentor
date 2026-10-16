@@ -689,6 +689,8 @@ const withCam = (cam: string) =>
     args: [
       "--use-fake-device-for-media-stream",
       "--use-fake-ui-for-media-stream",
+      // No "Click to enable audio" prompt over the room.
+      "--autoplay-policy=no-user-gesture-required",
       `--use-file-for-fake-video-capture=${path.join(RAW, "cams", `${cam}.mjpeg`)}`,
     ],
   });
@@ -766,6 +768,73 @@ test("mara-keep", async ({ browser }) => {
     await coach.ctx.request.post(url(MARA, `/api/v1/live/${cls.id}/stop/`));
     await coach.ctx.request.delete(url(MARA, `/api/v1/live/${cls.id}/`));
     await coach.ctx.close();
+  }
+});
+
+/** "One platform on every screen": Mara's live class from three seats, each a
+ * 2x still and a few seconds of video (the same moment on every screen) that
+ * screens.py lays onto its photograph (photos/screens-*). The loop's start per
+ * seat goes to mara-screens.marks.json. */
+const SEATS = [
+  { name: "Lena Fischer", cam: "lena-fischer", viewport: { width: 1440, height: 900 }, phone: false, out: "screen-laptop" },
+  { name: "Hannah Okafor", cam: "hannah-okafor", viewport: { width: 1180, height: 820 }, phone: false, out: "screen-tablet" },
+  { name: "Priya Raghavan", cam: "priya-raghavan", viewport: { width: 390, height: 844 }, phone: true, out: "screen-phone" },
+];
+
+test("mara-screens", async () => {
+  test.setTimeout(5 * 60_000);
+  expect((await fetch(LIVECRAFT).catch(() => null))?.ok, "LiveCraft down: make dev in ../livecraft").toBe(true);
+  const room = `mara-${Date.now().toString(36)}`;
+  await livecraft("/api/v1/rooms", { room, title: "Thursday slow flow", layout: "meeting" });
+  const seated: Browser[] = [];
+  try {
+    for (const [name, role, cam] of CLASS.filter(([n]) => !SEATS.some((s) => s.name === n))) {
+      const b = await withCam(cam);
+      seated.push(b);
+      const p = await (await b.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
+      await p.goto(await joinUrl(room, name, role));
+      if (role === "participant") await startVideo(p);
+    }
+    const seats: { page: Page; out: string; t0: number }[] = [];
+    for (const s of SEATS) {
+      const b = await withCam(s.cam);
+      seated.push(b);
+      const ctx = await b.newContext({
+        viewport: s.viewport,
+        deviceScaleFactor: 2,
+        isMobile: s.phone,
+        hasTouch: s.phone,
+        recordVideo: { dir: path.join(RAW, ".tmp"), size: s.viewport },
+      });
+      const page = await ctx.newPage();
+      const t0 = Date.now(); // the video starts with the page
+      // LiveCraft's own Next dev badge stays out of the stills too.
+      await page.addInitScript(() =>
+        addEventListener("DOMContentLoaded", () => {
+          const st = document.createElement("style");
+          st.textContent = "nextjs-portal{display:none!important}";
+          document.head.append(st);
+        }),
+      );
+      await page.goto(await joinUrl(room, s.name, "participant"));
+      await startVideo(page);
+      seats.push({ page, out: s.out, t0 });
+    }
+    for (const { page, out } of seats) {
+      await expect.poll(() => page.locator("video").count(), { timeout: 30_000 }).toBeGreaterThanOrEqual(4);
+      await page.waitForTimeout(3_000);
+      await page.screenshot({ path: path.join(RAW, `${out}.png`) });
+    }
+    const marks = Object.fromEntries(seats.map(({ out, t0 }) => [out, Math.round((Date.now() - t0) / 100) / 10]));
+    await seats[0].page.waitForTimeout(4_000);
+    for (const { page, out } of seats) {
+      await page.context().close();
+      await page.video()!.saveAs(path.join(RAW, `${out}.webm`));
+      await page.video()!.delete();
+    }
+    fs.writeFileSync(path.join(RAW, "mara-screens.marks.json"), JSON.stringify(marks, null, 2) + "\n");
+  } finally {
+    for (const b of seated) await b.close();
   }
 });
 

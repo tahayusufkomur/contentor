@@ -19,6 +19,10 @@ const NICHES = ["yoga", "fitness", "music", "dance", "cooking", "language", "mar
 const LOOKS = ["journal", "kinetic", "encore", "studiofloor", "tavola", "primer", "dojo", "workshop", "atelier", "sprout", "trail", "nocturne"];
 // The success-led landing's clips (encode.sh landing), all on Mara's school.
 const CLIPS = ["path-launch", "path-found", "path-keep", "path-paid", "support-assistant"];
+// "One platform on every screen": the creator (a still), then a student on
+// each device watching her live (loops, encode.sh screens).
+const SCREENS = ["creator", "laptop", "tablet", "phone"];
+const LOOPS = ["screens-laptop", "screens-tablet", "screens-phone"];
 // Every key the landing reads (frontend-main/src/lib/landing.ts LANDING_MEDIA).
 const KEYS = [
   ...CLIPS,
@@ -26,6 +30,7 @@ const KEYS = [
   "chip-sale",
   "chip-live",
   "chip-post",
+  ...SCREENS.map((d) => `screens-${d}`),
   ...NICHES.map((n) => `still-${n}`),
   ...LOOKS.map((l) => `look-${l}`),
 ];
@@ -37,11 +42,13 @@ function targets(key) {
   if (key === "path-keep") return { src: 0.8 * M, webm: 0.8 * M, phoneSrc: 0.5 * M, poster: 150 * K };
   if (CLIPS.includes(key)) return { src: 1.5 * M, webm: 1.5 * M, phoneSrc: 0.5 * M, poster: 120 * K };
   if (key === "hero-coach") return { src: 320 * K, srcSmall: 110 * K };
+  if (LOOPS.includes(key)) return { src: 0.7 * M, webm: 0.7 * M, phoneSrc: 0.35 * M, poster: 120 * K };
+  if (key.startsWith("screens-")) return { src: 200 * K, srcSmall: 70 * K };
   if (key.startsWith("still-")) return { src: 160 * K, srcSmall: 60 * K };
   if (key.startsWith("look-")) return { src: 120 * K, srcSmall: 50 * K };
   return { src: 120 * K, srcSmall: 50 * K }; // chip-*
 }
-const kindOf = (key) => (CLIPS.includes(key) ? "clip" : "still");
+const kindOf = (key) => (CLIPS.includes(key) || LOOPS.includes(key) ? "clip" : "still");
 
 const ffprobe = (file, entries) =>
   JSON.parse(
@@ -105,6 +112,7 @@ for (const key of KEYS) {
       if (statSync(f.webm).size > item.bytes) errors.push(`${key}: webm bigger than the mp4: raise its VP9 -crf in encode.sh`);
     }
     if (f.phoneSrc) item.phoneSrc = url(f.phoneSrc);
+    if (META[key]?.alt) item.alt = META[key].alt; // a loop that carries meaning (screens-*)
     item.durationS = seconds(f.src);
   }
   for (const [field, max] of Object.entries(targets(key))) {

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Encode the landing's media from the raw footage and photos.
 #
-#   scripts/footage/encode.sh <group>...   groups: photos landing looks all
+#   scripts/footage/encode.sh <group>...   groups: photos screens landing looks all
 #
 # Reads e2e/eval-shots/footage/ (record.ts's <flow>.webm + <flow>.marks.json +
 # PNG stills; photos/<niche>.* from Pix4Less) and writes
@@ -104,6 +104,26 @@ photos() {
   local n
   for n in $NICHES; do still "still-$n" "$(ls "$RAW"/photos/"$n".* 2>/dev/null | head -1)" 1280:1600 640:800 40 42; done
 }
+# screens: "One platform on every screen", Mara streaming (a still) and three
+# students watching her live (photos/screens-*: Pix4Less; screens.py lays the
+# recorded class onto each screen, frame by frame). Each loop plays its frames
+# forward then back, so it never jumps.
+screens() {
+  still screens-creator "$RAW/photos/screens-creator.jpg" 1280:1600 640:800 30 32
+  local d f
+  for d in laptop tablet phone; do
+    f="$RAW/photos/screens-$d-frames"
+    [ -d "$f" ] || { echo "skip screens-$d: run scripts/footage/screens.py"; continue; }
+    q -framerate 25 -i "$f/%04d.png" -filter_complex \
+      "[0]scale=960:1200:force_original_aspect_ratio=increase,crop=960:1200,split[a][b];[b]reverse[r];[a][r]concat=n=2:v=1:a=0[v]" \
+      -map "[v]" -an -c:v libx264 -preset slow -crf 24 -maxrate 1M -bufsize 2M -pix_fmt yuv420p \
+      -movflags +faststart "$OUT/clips/screens-$d.mp4"
+    webm "screens-$d" 38
+    phone "screens-$d" 0.4M
+    poster "screens-$d"
+    echo "loop  screens-$d  $(kb "$OUT/clips/screens-$d.mp4") KB"
+  done
+}
 # landing: Mara's school (record.ts mara-*): the path's four clips, the
 # assistant, the hero photo and the three cut-outs laid over it.
 landing() {
@@ -132,11 +152,11 @@ looks() {
   for l in $LOOKS; do still "look-$l" "$RAW/look-$l.png" 750:1624 375:812 30 32; done
 }
 
-[ $# -gt 0 ] || { echo "usage: $0 photos|landing|looks|all ..." >&2; exit 1; }
+[ $# -gt 0 ] || { echo "usage: $0 photos|screens|landing|looks|all ..." >&2; exit 1; }
 for g in "$@"; do
   case $g in
-    all) photos; landing; looks ;;
-    photos | landing | looks) "$g" ;;
+    all) photos; screens; landing; looks ;;
+    photos | screens | landing | looks) "$g" ;;
     *) echo "unknown group: $g" >&2; exit 1 ;;
   esac
 done

@@ -13,9 +13,9 @@ export async function FaqSection() {
       aria-labelledby="faq-title"
       className="mx-auto mt-16 max-w-text px-6"
     >
-      <h3 id="faq-title" className="text-title text-foreground">
+      <h2 id="faq-title" className="text-title text-foreground">
         {t("title")}
-      </h3>
+      </h2>
       <div className="mt-8 border-t">
         {FAQ_KEYS.map((key) => (
           <details key={key} name="landing-faq" className="group border-b">
