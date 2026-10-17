@@ -11,6 +11,7 @@ import { ImpersonationBanner } from "@/components/shared/impersonation-banner";
 import { MobileHeader } from "@/components/shared/mobile-header";
 import { UserMenu } from "@/components/shared/user-menu";
 import { CommandPalette } from "@/components/admin/command-palette";
+import { RunsWatcher } from "@/components/copilot/runs-watcher";
 import { EntitlementsProvider } from "@/components/admin/entitlements-provider";
 import {
   AssistantDock,
@@ -154,6 +155,7 @@ function AdminShellContent({ children, user }: AdminShellProps) {
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
       <AssistantDock />
+      <RunsWatcher />
       <CommandPalette
         open={cmdOpen}
         onOpenChange={setCmdOpen}

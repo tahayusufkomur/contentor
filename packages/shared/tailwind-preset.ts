@@ -74,6 +74,13 @@ const preset: Partial<Config> = {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(300%)" },
         },
+        // A specialist at work: a soft ring breathing out in its own colour,
+        // which the face sets as --busy-color.
+        busy: {
+          "0%": { boxShadow: "0 0 0 0 var(--busy-color, currentColor)" },
+          "70%": { boxShadow: "0 0 0 6px transparent" },
+          "100%": { boxShadow: "0 0 0 0 transparent" },
+        },
       },
       animation: {
         shimmer: "shimmer 1.8s linear infinite",
@@ -81,6 +88,7 @@ const preset: Partial<Config> = {
         "fade-in-up": "fade-in-up 0.2s ease-out both",
         "progress-indeterminate":
           "progress-indeterminate 1.1s ease-in-out infinite",
+        busy: "busy 1.6s ease-out infinite",
       },
     },
   },

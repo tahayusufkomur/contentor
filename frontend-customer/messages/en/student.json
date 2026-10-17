@@ -129,6 +129,11 @@
     "creatingPhoto": "Creating your photo…",
     "dictate": "Speak instead of typing",
     "stopDictation": "Stop listening",
-    "micBlocked": "Microphone access is blocked. Allow it in your browser to speak."
+    "micBlocked": "Microphone access is blocked. Allow it in your browser to speak.",
+    "working": "{name} is working on it…",
+    "stop": "Stop",
+    "stopping": "Stopping…",
+    "stopped": "Stopped. Nothing else will change.",
+    "failed": "That didn't work. Try again."
   }
 }

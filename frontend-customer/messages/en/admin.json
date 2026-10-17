@@ -259,7 +259,10 @@
         "Who on my team does what?",
         "How did this week go?"
       ]
-    }
+    },
+    "ready": "Ready for you",
+    "readyToast": "{name} is done.",
+    "open": "Open"
   },
   "assistant": {
     "title": "Site assistant",

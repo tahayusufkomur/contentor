@@ -13,17 +13,28 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/ui/nav-link";
+import { Spinner } from "@/components/ui/spinner";
 import { parseAnswer } from "@/components/admin/assistant/format-answer";
-import { isAbortError } from "@/lib/ai-stream";
 import { useAssistantDock } from "@/lib/assistant-dock";
 import {
-  converseCopilot,
   createCopilotChat,
   deleteCopilotChat,
   fetchCopilotChat,
   fetchCopilotChats,
+  fetchOpenRuns,
+  markRunSeen,
   patchCopilotChatEntries,
+  startRun,
+  stopRun,
 } from "@/lib/copilot/api";
+import {
+  isActive,
+  onRunFinished,
+  trackRun,
+  unwatchRun,
+  useRuns,
+  watchRun,
+} from "@/lib/copilot/runs";
 import { usePathname } from "next/navigation";
 import { activeSection, buildAdminNav } from "@/lib/admin-nav";
 import { starterKey } from "@/lib/copilot/starters";
@@ -32,7 +43,12 @@ import {
   specialistFor,
   type SpecialistKey,
 } from "@/lib/copilot/team";
-import { reduceChat, toTranscript } from "@/lib/copilot/state";
+import {
+  pendingEntry,
+  reduceChat,
+  resolveRun,
+  toTranscript,
+} from "@/lib/copilot/state";
 import {
   loadUiState,
   persistableEntries,
@@ -43,13 +59,15 @@ import type {
   AttachedPhoto,
   ChatEntry,
   CopilotChatRow,
+  OpenRun,
   SelectionPayload,
 } from "@/lib/copilot/types";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { ActionCard, ApplyAllBar, CardBundleProvider } from "./action-card";
 import { CopilotComposer } from "./composer";
 import { SelectionOverlay } from "./selection-overlay";
-import { SpecialistByline } from "./specialist-face";
+import { OPEN_CHAT_EVENT } from "./runs-watcher";
+import { SpecialistByline, SpecialistFace } from "./specialist-face";
 import { TeamHeader } from "./team-header";
 
 /** Assistant text with the markdown-lite link contract: `[label](/path)`
@@ -206,7 +224,6 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
       })?.label ?? "",
     [pathname, tAdmin],
   );
-  const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const chatIdRef = useRef<number | null>(null);
   chatIdRef.current = chatId;
@@ -319,7 +336,6 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
   const newChat = useCallback(() => {
     threadRef.current += 1;
     bootStaleRef.current = true;
-    abortRef.current?.abort();
     setChatId(null);
     setEntries([]);
     setSelections([]);
@@ -332,7 +348,6 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
     async (id: number) => {
       threadRef.current += 1;
       bootStaleRef.current = true;
-      abortRef.current?.abort();
       const detail = await fetchCopilotChat(id);
       setChatId(detail.id);
       setEntries(detail.entries);
@@ -410,37 +425,160 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
         },
       ];
       setEntries(withCoach);
-      const controller = new AbortController();
-      abortRef.current = controller;
-      try {
-        const done = await converseCopilot(
-          {
-            message: message || t("attachedOnly"),
-            transcript: toTranscript(before),
-            selections,
-            attached_photos: attachedNow.map((p) => p.id),
-            ...(pathname ? { context: { path: pathname } } : {}),
-            // A fresh conversation (the search box's ask) has no pick yet:
-            // newChat() cleared it in this same tick.
-            specialist: fresh ? specialistFor(pathname) : active,
-          },
-          { onPhase: () => {} },
-          controller.signal,
-        );
-        const next = reduceChat(withCoach, done);
+      const thread = threadRef.current;
+      // A fresh conversation (the search box's ask) has no pick yet:
+      // newChat() cleared it in this same tick.
+      const specialist = fresh ? specialistFor(pathname) : active;
+      // The run names the chat it answers in, so "ready for you" can open
+      // it: a new chat is saved first.
+      let chat = chatIdRef.current;
+      if (chat === null) {
+        try {
+          const row = await createCopilotChat(persistableEntries(withCoach));
+          setChats((prev) => [row, ...prev]);
+          chat = row.id;
+          if (threadRef.current === thread) setChatId(row.id);
+        } catch {
+          // Server chats unavailable: the run still answers here.
+        }
+      }
+      const started = await startRun({
+        message: message || t("attachedOnly"),
+        transcript: toTranscript(before),
+        selections,
+        attached_photos: attachedNow.map((p) => p.id),
+        ...(pathname ? { context: { path: pathname } } : {}),
+        specialist,
+        chat,
+      });
+      setSelections([]);
+      updateAttached([]);
+      const next =
+        "kind" in started
+          ? reduceChat(withCoach, { kind: started.kind })
+          : [...withCoach, pendingEntry(started.id, specialist)];
+      if (!("kind" in started)) trackRun(started.id, specialist, chat);
+      if (threadRef.current === thread) {
         setEntries(next);
-        setSelections([]);
-        updateAttached([]);
         persist(next);
-      } catch (err) {
-        if (isAbortError(err)) return;
-        throw err;
-      } finally {
-        abortRef.current = null;
+      } else if (chat !== null) {
+        // She opened another thread meanwhile: the reply resumes in its own.
+        void patchCopilotChatEntries(chat, persistableEntries(next)).catch(
+          () => {},
+        );
       }
     },
     { errorToast: t("error") },
   );
+
+  // Every reply still being written: follow its run, and tell the store the
+  // panel shows it (no "ready for you" toast for what she is looking at).
+  const pendingRuns = useMemo(
+    () =>
+      entries.flatMap((e) =>
+        e.kind === "pending" && e.run
+          ? [{ id: e.run, specialist: asSpecialist(e.specialist) }]
+          : [],
+      ),
+    [entries],
+  );
+  const pendingKey = pendingRuns.map((r) => r.id).join(",");
+  useEffect(() => {
+    for (const r of pendingRuns) {
+      trackRun(r.id, r.specialist, chatIdRef.current);
+      watchRun(r.id);
+    }
+    return () => pendingRuns.forEach((r) => unwatchRun(r.id));
+    // Keyed on the ids: a new array with the same runs changes nothing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingKey]);
+
+  // A run that ended takes its pending entry's place.
+  const allRuns = useRuns();
+  useEffect(() => {
+    let next = entries;
+    const ended: number[] = [];
+    for (const r of pendingRuns) {
+      const run = allRuns.get(r.id);
+      if (!run || isActive(run.status)) continue;
+      next = resolveRun(next, run, {
+        stopped: t("stopped"),
+        failed: t("failed"),
+      });
+      ended.push(run.id);
+    }
+    if (next === entries) return;
+    setEntries(next);
+    persist(next);
+    ended.forEach((id) => void markRunSeen(id).catch(() => {}));
+  }, [allRuns, entries, pendingRuns, persist, t]);
+
+  const { run: stop, loading: stopping } = useAsyncAction(
+    async (id: number) => {
+      await stopRun(id);
+      trackRun(id, active);
+    },
+    { errorToast: t("error") },
+  );
+
+  // Work finished in her other chats that she has not seen yet.
+  const [ready, setReady] = useState<OpenRun[]>([]);
+  useEffect(() => {
+    if (!docked || !open) return;
+    let cancelled = false;
+    fetchOpenRuns()
+      .then(({ runs }) => {
+        if (cancelled) return;
+        setReady(runs.filter((r) => !isActive(r.status) && r.chat !== null));
+        runs
+          .filter((r) => isActive(r.status))
+          .forEach((r) => trackRun(r.id, r.specialist, r.chat));
+      })
+      .catch(() => {});
+    const off = onRunFinished((run) => {
+      if (run.chat === null) return;
+      setReady((prev) => [
+        ...prev.filter((r) => r.id !== run.id),
+        {
+          id: run.id,
+          status: run.status,
+          specialist: run.specialist,
+          chat: run.chat,
+          summary: run.reply?.text?.slice(0, 160) ?? "",
+          finished_at: null,
+        },
+      ]);
+    });
+    return () => {
+      cancelled = true;
+      off();
+    };
+  }, [docked, open]);
+  const readyHere = ready.filter(
+    (r) => r.chat !== chatId && !pendingRuns.some((p) => p.id === r.id),
+  );
+  const openReady = useCallback(
+    (r: OpenRun) => {
+      setReady((prev) => prev.filter((x) => x.id !== r.id));
+      void markRunSeen(r.id).catch(() => {});
+      if (r.chat !== null) void openChatSafe(r.chat);
+    },
+    [openChatSafe],
+  );
+
+  // The studio's "ready for you" toast asks for a chat by id.
+  useEffect(() => {
+    const onOpenChat = (event: Event) => {
+      const chat = (event as CustomEvent<{ chat?: number }>).detail?.chat;
+      if (typeof chat === "number" && chat !== chatIdRef.current) {
+        void openChatSafe(chat);
+      }
+    };
+    window.addEventListener(OPEN_CHAT_EVENT, onOpenChat);
+    return () => window.removeEventListener(OPEN_CHAT_EVENT, onOpenChat);
+  }, [openChatSafe]);
+
+  const working = pendingRuns.length > 0;
 
   // Words handed over by the admin's search box: asked as a new conversation,
   // so a thread still loading (or an older one on screen) is left alone.
@@ -462,7 +600,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
   }, [pendingAsk, sending, clearAsk, newChat, send]);
 
   const starters =
-    docked && pathname && !sending && askedOn !== pathname
+    docked && pathname && !sending && !working && askedOn !== pathname
       ? ((picked
           ? tAdmin.raw(`team.starters.${active}`)
           : tAdmin.raw(`dock.starters.${starterKey(pathname)}`)) as string[])
@@ -565,6 +703,30 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
           />
         )}
 
+        {docked && view === "chat" && readyHere.length > 0 && (
+          <ul className="space-y-1 border-b px-3 py-2">
+            {readyHere.slice(-3).map((r) => (
+              <li key={r.id} className="flex items-center gap-2 text-xs">
+                <SpecialistFace k={asSpecialist(r.specialist)} size="sm" />
+                <span className="min-w-0 flex-1 truncate">
+                  <span className="font-medium text-foreground">
+                    {tAdmin("team.ready")}
+                  </span>{" "}
+                  <span className="text-muted-foreground">{r.summary}</span>
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 shrink-0 px-2 text-xs"
+                  onClick={() => openReady(r)}
+                >
+                  {tAdmin("team.open")}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+
         {view === "list" ? (
           <div className="flex-1 overflow-y-auto p-2">
             {chats.length === 0 && (
@@ -624,7 +786,28 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
                     {e.role === "assistant" && (
                       <SpecialistByline k={asSpecialist(e.specialist)} />
                     )}
-                    {e.text === "__unavailable__" ? (
+                    {e.kind === "pending" ? (
+                      <span className="flex items-center gap-2 text-muted-foreground">
+                        <Spinner className="size-3.5 shrink-0" />
+                        <span className="min-w-0 flex-1">
+                          {t("working", {
+                            name: tAdmin(
+                              `team.specialists.${asSpecialist(e.specialist)}.name`,
+                            ),
+                          })}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 shrink-0 px-2"
+                          loading={stopping}
+                          loadingText={t("stopping")}
+                          onClick={() => e.run && stop(e.run)}
+                        >
+                          {t("stop")}
+                        </Button>
+                      </span>
+                    ) : e.text === "__unavailable__" ? (
                       t("resting")
                     ) : e.role === "assistant" ? (
                       <AssistantText text={e.text} />
@@ -717,7 +900,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
                   : undefined
               }
               onSend={send}
-              sending={sending}
+              sending={sending || working}
               attached={attached}
               onAttach={(p) => updateAttached((prev) => [...prev, p])}
               onRemoveAttachment={(id) =>

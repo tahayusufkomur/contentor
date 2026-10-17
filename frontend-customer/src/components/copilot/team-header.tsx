@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
+import { useBusySpecialists } from "@/lib/copilot/runs";
 import { SPECIALIST_KEYS, type SpecialistKey } from "@/lib/copilot/team";
 import { cn } from "@/lib/utils";
 import { SpecialistFace } from "./specialist-face";
@@ -20,6 +21,7 @@ export function TeamHeader({
   onPick: (k: SpecialistKey) => void;
 }) {
   const t = useTranslations("admin");
+  const busy = useBusySpecialists();
   return (
     <div className="border-b px-3 py-2.5">
       <div
@@ -44,7 +46,7 @@ export function TeamHeader({
                 : "opacity-75 outline-none hover:opacity-100 focus-visible:opacity-100",
             )}
           >
-            <SpecialistFace k={k} />
+            <SpecialistFace k={k} busy={busy.includes(k)} />
           </button>
         ))}
       </div>
