@@ -42,7 +42,7 @@ def _turn(**kw):
     return engine.CopilotTurn.model_validate(kw)
 
 
-def _run(parsed, style=""):
+def _run(parsed, style="", **kw):
     with (
         mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
         mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
@@ -62,15 +62,51 @@ def _run(parsed, style=""):
             return_value=[{"page": "home", "block_type": "hero", "field": "heading", "old": "a", "new": "b"}],
         ),
     ):
-        return engine.run_turn(TENANT, [], [], "hi")
+        return engine.run_turn(TENANT, [], [], "hi", **kw)
 
 
 def test_answer_and_ask_pass_through():
     payload, cost = _run(_turn(kind="answer", text="You can sell courses."))
-    assert payload == {"kind": "answer", "text": "You can sell courses."}
+    assert payload == {"kind": "answer", "text": "You can sell courses.", "specialist": "assistant"}
     assert cost == Decimal("0.01")
     payload, _ = _run(_turn(kind="ask", text="Warmer how — colors or copy?"))
     assert payload["kind"] == "ask"
+
+
+def test_the_reply_is_signed_by_the_specialist_who_answered():
+    payload, _ = _run(_turn(kind="answer", text="Sales are up."), specialist="finance")
+    assert payload["specialist"] == "finance"
+    payload, _ = _run(_turn(kind="answer", text="Hi."), specialist="ceo")
+    assert payload["specialist"] == "assistant"
+
+
+def test_cards_carry_their_owner():
+    edit = _turn(kind="actions", text="", actions=[{"kind": "edit_pages", "instruction": "warmer hero"}])
+    (card,) = _run(edit)[0]["actions"]
+    assert card["owner"] == "designer"
+    course = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "create_course", "title": "Yoga Foundations", "price": 49, "modules": []}],
+    )
+    (card,) = _run(course)[0]["actions"]
+    assert card["owner"] == "content"
+    message = _turn(
+        kind="actions",
+        text="",
+        actions=[{"kind": "draft_announcement", "title": "Launch", "body_html": "<p>Hi</p>"}],
+    )
+    (card,) = _run(message, specialist="marketing")[0]["actions"]
+    assert card["owner"] == "marketing"
+    (card,) = _run(message, specialist="assistant")[0]["actions"]
+    assert card["owner"] == "community"
+
+
+def test_the_model_hears_the_specialists_section():
+    with mock.patch.object(engine, "_system", wraps=engine._system) as system:
+        _run(_turn(kind="answer", text="ok"), specialist="content")
+    system.assert_called_once_with("content")
+    assert "You are the Content Creating Specialist." in engine._system("content")
 
 
 def test_edit_pages_action_becomes_card_with_changes_and_token():
@@ -456,7 +492,7 @@ def test_ask_over_cap_is_steered_and_coerced_to_answer():
         mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
     ):
         payload, _ = engine.run_turn(TENANT, transcript, [], "warmer")
-    assert payload == {"kind": "answer", "text": "Which page do you mean?"}
+    assert payload == {"kind": "answer", "text": "Which page do you mean?", "specialist": "assistant"}
     assert "Do not ask another clarifying question" in captured["user"]
 
 
@@ -1931,4 +1967,5 @@ def test_edit_curriculum_with_a_foreign_id_drops_the_card_with_its_reason(tenant
     assert payload == {
         "kind": "answer",
         "text": "I couldn't make that change: that module is not in this course. Nothing on your site was changed.",
+        "specialist": "assistant",
     }

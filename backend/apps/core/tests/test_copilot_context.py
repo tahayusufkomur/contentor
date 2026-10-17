@@ -117,6 +117,16 @@ def test_the_system_prompt_does_not_change_with_the_page(tenant_ctx, course):
     assert systems[0] == systems[1]
 
 
+def test_each_specialists_prompt_is_the_same_for_every_tenant(tenant_ctx):
+    """Prompt-cache rule: a specialist's system prompt carries no tenant data,
+    so every creator shares one cached prefix per specialist."""
+    answer = engine.CopilotTurn.model_validate({"kind": "answer", "text": "ok"})
+    with mock.patch.object(engine.core_ai, "structured", return_value=(answer, Decimal("0"), "m")) as structured:
+        engine.run_turn(tenant_ctx, [], [], "hi", specialist="finance")
+    assert structured.call_args.kwargs["system"] == engine._system("finance")
+    assert engine._system("finance") != engine._system("designer")
+
+
 def test_converse_hands_the_cleaned_context_to_the_engine(tenant_ctx):
     from rest_framework.test import APIClient
 

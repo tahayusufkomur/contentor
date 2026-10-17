@@ -19,7 +19,7 @@ from django_tenants.utils import tenant_context
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
-from apps.core.copilot import blocks, chrome, content, logos, photos, tokens
+from apps.core.copilot import blocks, chrome, content, logos, photos, team, tokens
 from apps.core.copilot import context as page_context
 from apps.core.onboarding import site_ai
 from apps.tenant_config import sections
@@ -30,8 +30,8 @@ MAX_TRANSCRIPT = 20
 MAX_SELECTIONS = 5
 
 SYSTEM_PROMPT = (
-    "You are the coach's site copilot on a website-builder platform for "
-    "coaches. You can answer questions about their site, ask a clarifying "
+    "You are one of the coach's team of AI specialists on a website-builder "
+    "platform for coaches; your role is described below. You can answer questions about their site, ask a clarifying "
     "question when the request is genuinely ambiguous, or propose concrete "
     "actions. Prefer acting once intent is clear; do not ask about details "
     "you can choose sensibly yourself.\n"
@@ -1373,14 +1373,14 @@ _KB_HEADER = (
 )
 
 
-def _system():
-    """SYSTEM_PROMPT + platform KB. Still byte-identical across tenants —
-    the KB is platform-level and help_bot's fingerprint cache keeps the
-    string stable between addenda edits, so the prompt-cache prefix stays
-    warm."""
+def _system(specialist):
+    """SYSTEM_PROMPT + the answering specialist's section + platform KB.
+    Byte-identical across tenants for each specialist — the KB is
+    platform-level and help_bot's fingerprint cache keeps the string stable
+    between addenda edits, so six prompt-cache prefixes stay warm."""
     from apps.tenant_config import help_bot
 
-    return SYSTEM_PROMPT + _KB_HEADER + help_bot.knowledge_text("coach")
+    return SYSTEM_PROMPT + "\n\n" + team.prompt_section(specialist) + _KB_HEADER + help_bot.knowledge_text("coach")
 
 
 CAP_STEER = (
@@ -1403,11 +1403,22 @@ def _asks_so_far(transcript):
     )
 
 
-def run_turn(tenant, transcript, selections, message, attachments=None, context=None, *, timeout_seconds=None):
+def run_turn(
+    tenant,
+    transcript,
+    selections,
+    message,
+    attachments=None,
+    context=None,
+    *,
+    specialist=team.DEFAULT,
+    timeout_seconds=None,
+):
     # Bound the transcript once, up front, to the same trailing window
     # _user_turn applies — the ask-cap count and the model's actual visible
     # context must agree on the same bounded view, or a stale "ask" outside
     # the model's window can spuriously trip the cap.
+    specialist = team.clean(specialist)
     windowed_transcript = [e for e in list(transcript) if isinstance(e, dict)][-MAX_TRANSCRIPT:]
     cap = _ask_cap()
     capped = cap > 0 and _asks_so_far(windowed_transcript) >= cap
@@ -1415,7 +1426,7 @@ def run_turn(tenant, transcript, selections, message, attachments=None, context=
     if capped:
         user += CAP_STEER
     parsed, cost, _model = core_ai.structured(
-        system=_system(),
+        system=_system(specialist),
         user=user,
         output_model=CopilotTurn,
         model=settings.COPILOT_MODEL,
@@ -1429,14 +1440,16 @@ def run_turn(tenant, transcript, selections, message, attachments=None, context=
     if parsed.kind == "ask" and capped:
         # Hard cap: the question still reads fine as a statement-of-need,
         # but without the quick-reply ask affordance it ends the loop.
-        return {"kind": "answer", "text": parsed.text}, cost
+        return {"kind": "answer", "text": parsed.text, "specialist": specialist}, cost
     if parsed.kind in ("answer", "ask"):
-        return {"kind": parsed.kind, "text": parsed.text}, cost
+        return {"kind": parsed.kind, "text": parsed.text, "specialist": specialist}, cost
     cards = []
     drop_reason = None
     for action in parsed.actions:
         try:
-            cards.append(_card(tenant, action))
+            card = _card(tenant, action)
+            card["owner"] = team.owner_of(card["kind"], action.model_dump(mode="json"), writer=specialist)
+            cards.append(card)
         except (
             blocks.BlockOpError,
             chrome.ChromeOpError,
@@ -1457,5 +1470,5 @@ def run_turn(tenant, transcript, selections, message, attachments=None, context=
         text = "I couldn't turn that into a change I can make — could you rephrase?"
         if drop_reason:
             text = f"I couldn't make that change: {drop_reason}. Nothing on your site was changed."
-        return {"kind": "answer", "text": text}, cost
-    return {"kind": "actions", "text": parsed.text, "actions": cards}, cost
+        return {"kind": "answer", "text": text, "specialist": specialist}, cost
+    return {"kind": "actions", "text": parsed.text, "actions": cards, "specialist": specialist}, cost
