@@ -25,14 +25,18 @@ export function MomentsScreens({ block, editable }: SectionProps) {
           />
         )}
 
-        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 md:gap-8">
+        <ul
+          className={cn(
+            "grid gap-6 sm:grid-cols-2 md:gap-8",
+            // Four across: rows of three would leave the fourth frame alone.
+            photos.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-3",
+          )}
+        >
           {photos.map((p, i) => (
             <li
               key={i}
               className={cn(
-                photos.length % 3 === 1 &&
-                  i === photos.length - 1 &&
-                  "sm:col-span-2 lg:col-span-1",
+                photos.length === 1 && "sm:col-span-2 lg:col-span-1",
               )}
             >
               <WindowChrome

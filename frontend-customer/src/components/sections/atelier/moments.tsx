@@ -39,7 +39,12 @@ export function MomentsLookbook({ block, editable }: SectionProps) {
           aria-label={alt || "Moments lookbook"}
           className={cn(
             "grid grid-cols-1 gap-8 sm:grid-cols-2 md:gap-10",
-            photos.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2",
+            // Four across: rows of three would leave the fourth arch alone.
+            photos.length === 4
+              ? "lg:grid-cols-4"
+              : photos.length >= 3
+                ? "md:grid-cols-3"
+                : "md:grid-cols-2",
           )}
         >
           {photos.map((p, i) => {
