@@ -54,6 +54,9 @@ const preset: Partial<Config> = {
       screens: { stage: { raw: "(min-width: 768px) and (min-height: 600px)" } },
       transitionTimingFunction: { expo: "cubic-bezier(0.22, 1, 0.36, 1)" },
       borderRadius: { tile: "18px" },
+      // Tailwind 3.4 ships no `aria-invalid:` variant; the shared Button and
+      // Input use it for the destructive border and ring.
+      aria: { invalid: 'invalid="true"' },
       keyframes: {
         shimmer: {
           "0%": { backgroundPosition: "200% 0" },

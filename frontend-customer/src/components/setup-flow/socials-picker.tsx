@@ -4,7 +4,7 @@ import { socialLink, socialOk, socialSite } from "@/lib/interview";
 import { cn } from "@/lib/utils";
 
 const INPUT =
-  "h-10 w-full rounded-xl border border-[var(--sf-line-strong)] bg-white px-3 text-[14px] text-[var(--sf-ink)] outline-none transition-[border-color,box-shadow] focus:border-[var(--sf-ink)] focus:shadow-[0_0_0_3px_var(--sf-brass-soft)] disabled:opacity-50";
+  "h-10 w-full rounded-xl border border-[var(--sf-line-strong)] bg-white px-3 text-[14px] text-[var(--sf-ink)] outline-none transition-[border-color,box-shadow] focus:border-[var(--sf-ink)] focus:shadow-[0_0_0_3px_var(--sf-brass-soft)] disabled:opacity-50 aria-invalid:border-destructive";
 
 /** A detail for each choice ticked: a handle or profile link per social
  * network by default (a link has to be on that network's own site, and the
