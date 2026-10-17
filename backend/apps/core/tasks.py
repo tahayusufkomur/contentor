@@ -710,3 +710,12 @@ def send_wizard_recovery_emails():
     if sent:
         logger.info("wizard recovery: sent %d email(s)", sent)
     return sent
+
+
+@shared_task(queue="agents", ignore_result=True)
+def run_copilot(schema_name, run_id):
+    """One of the team's runs (apps.core.copilot.runs), on the agents worker
+    so it never waits behind a site build on the default queue."""
+    from apps.core.copilot import runs
+
+    runs.execute(schema_name, run_id)

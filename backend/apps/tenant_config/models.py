@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from apps.core.constants import LOCALE_CHOICES, LOCALE_EN
 
@@ -214,3 +215,55 @@ class CopilotAudit(models.Model):
 
     def __str__(self):
         return f"{self.kind}: {self.summary}"
+
+
+class CopilotRun(models.Model):
+    """One piece of the team's work: a message she sent to a specialist,
+    carried out by the agents worker (apps.core.copilot.runs). ``request``
+    is the cleaned turn input, ``result`` the finished payload; progress is
+    the append-only CopilotRunEvent log the studio polls."""
+
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="copilot_runs",
+    )
+    # The thread it answers in, for the "ready for you" link.
+    chat = models.ForeignKey(CopilotChat, null=True, blank=True, on_delete=models.SET_NULL, related_name="runs")
+    specialist = models.CharField(max_length=20)
+    request = models.JSONField(default=dict, blank=True)
+    status = models.CharField(max_length=10, default="queued")
+    result = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Set on every write, so a run nobody advances can be told apart.
+    updated_at = models.DateTimeField(default=timezone.now)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    seen_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        app_label = "tenant_config"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.specialist} run {self.pk}: {self.status}"
+
+
+class CopilotRunEvent(models.Model):
+    """One step of a run, numbered per run from 1 (``seq``); the studio asks
+    for the events after the last one it saw."""
+
+    run = models.ForeignKey(CopilotRun, on_delete=models.CASCADE, related_name="events")
+    seq = models.PositiveIntegerField()
+    type = models.CharField(max_length=24)
+    data = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "tenant_config"
+        ordering = ["seq"]
+        constraints = [models.UniqueConstraint(fields=["run", "seq"], name="copilot_run_event_seq")]
+
+    def __str__(self):
+        return f"{self.run_id}#{self.seq} {self.type}"
