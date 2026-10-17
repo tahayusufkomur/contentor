@@ -438,7 +438,9 @@ function drawLayer(
           key={id}
           data-layer={id}
           className={styles.layer}
-          style={box(frame)}
+          // Clipped to its frame: her zoom, and a look's hover scale on the img, would otherwise
+          // draw the photo over the panel and the words.
+          style={{ ...box(frame), overflow: "hidden" }}
         >
           {photo(ctx, true)}
         </div>

@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { CoverArt } from "@/components/covers/cover-art";
 import { LookFonts } from "@/components/covers/look-fonts";
-import { fitLines, LEADING, textSize } from "@/lib/covers/layouts";
+import { fitLines, LAYOUTS, LEADING, textSize } from "@/lib/covers/layouts";
 import { coverPalette, readableOn } from "@/lib/covers/palette";
 import {
   defaultRecipe,
@@ -249,6 +249,8 @@ describe("CoverArt photo", () => {
       "brightness(1.2) contrast(0.9) saturate(1.1)",
     );
     expect(darken.style.background).toBe("rgb(0 0 0 / 0.4)");
+    // Zoomed about the focus, the photo is clipped to its frame, not drawn over the panel and the words.
+    expect(layer(card, "photo")?.style.overflow).toBe("hidden");
 
     const plain = within(parse(draw(design())), "card");
     const plainImg = plain.find((e) => e.attrs.src === PHOTO_URL)!;
@@ -258,6 +260,26 @@ describe("CoverArt photo", () => {
     expect(plain.some((e) => e.style.background?.startsWith("rgb(0 0 0"))).toBe(
       false,
     );
+    // Clipped at zoom 1 too: a look's `group-hover:scale-*` on the img would otherwise push it out.
+    expect(layer(plain, "photo")?.style.overflow).toBe("hidden");
+  });
+
+  it("clips the photo to its frame in every layout and size", () => {
+    let photos = 0;
+    for (const layout of LAYOUTS) {
+      const d = design((r) => {
+        r.layout = layout;
+        r.photo.zoom = 2;
+      });
+      for (const size of ["card", "wide", "banner"] as const) {
+        const photo = layer(within(parse(draw(d)), size), "photo");
+        // The `title` layout has no photo; every other has one, clipped.
+        if (layout === "title") expect(photo).toBeUndefined();
+        else expect(photo?.style.overflow, `${layout} ${size}`).toBe("hidden");
+        if (photo) photos++;
+      }
+    }
+    expect(photos).toBe(5 * 3);
   });
 
   it("shows the photo alone in a frame under 180 px, and the panel colour with no photo", () => {
