@@ -21,7 +21,7 @@ from rest_framework.utils.encoders import JSONEncoder
 from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import context as page_context
-from apps.core.copilot import engine
+from apps.core.copilot import engine, tokens
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotChat, CopilotRun, CopilotRunEvent
 
@@ -97,15 +97,17 @@ def execute(schema_name, run_id):
         req = run.request or {}
         payload, cost = None, Decimal("0")
         try:
-            payload, cost = engine.run_turn(
-                tenant,
-                req.get("transcript") or [],
-                req.get("selections") or [],
-                req.get("message") or "",
-                req.get("attachments") or [],
-                page_context.clean(tenant, req.get("context")),
-                specialist=run.specialist,
-            )
+            # Its cards stay usable as long as the reply can be opened.
+            with tokens.lasting(int((OPEN_WINDOW + timedelta(hours=1)).total_seconds())):
+                payload, cost = engine.run_turn(
+                    tenant,
+                    req.get("transcript") or [],
+                    req.get("selections") or [],
+                    req.get("message") or "",
+                    req.get("attachments") or [],
+                    page_context.clean(tenant, req.get("context")),
+                    specialist=run.specialist,
+                )
         except core_ai.AiError as exc:
             cost = getattr(exc, "cost_usd", None) or Decimal("0")
             logger.exception("copilot run failed schema=%s run=%s", schema_name, run_id)

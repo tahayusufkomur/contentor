@@ -5,6 +5,8 @@ confirms. The proposal payload (which can embed a full recomposed pages tree)
 is cached server-side under a fresh jti; the client only ever holds a small
 JWT. take_action pops the cache entry, so a token works exactly once."""
 
+from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
@@ -16,11 +18,28 @@ _PURPOSE = "copilot_action"
 _KEY = "copilot:action:{jti}"
 
 
+# How long a minted card stays usable. A streamed turn's cards live while its
+# chat is open; a run's reply can be opened for a day ("ready for you"), so
+# runs mint inside lasting() for that long.
+_TTL = ContextVar("copilot_token_ttl", default=1800)
+
+
 class ActionTokenError(Exception):
     pass
 
 
-def stash_action(tenant_schema, action, ttl=1800):
+@contextmanager
+def lasting(seconds):
+    """Cards minted inside this block stay usable for ``seconds``."""
+    reset = _TTL.set(seconds)
+    try:
+        yield
+    finally:
+        _TTL.reset(reset)
+
+
+def stash_action(tenant_schema, action, ttl=None):
+    ttl = ttl or _TTL.get()
     jti = uuid4().hex
     cache.set(_KEY.format(jti=jti), action, timeout=ttl)
     payload = {

@@ -341,3 +341,32 @@ def test_chat_entries_keep_the_run_id():
     )
     assert cleaned[0] == {"role": "assistant", "text": "", "kind": "pending", "specialist": "finance", "run": 5}
     assert all("run" not in entry for entry in cleaned[1:])
+
+
+def test_run_cards_last_as_long_as_their_reply_can_be_opened(coach):
+    import jwt
+    from django.core.cache import cache
+
+    from apps.core.copilot import tokens
+
+    def jti_ttl(token):
+        jti = jwt.decode(token, options={"verify_signature": False})["jti"]
+        return cache.ttl(f"copilot:action:{jti}")
+
+    run = _run(coach)
+    minted = {}
+
+    def turn(*args, **kwargs):
+        minted["token"] = tokens.stash_action(SCHEMA, {"kind": "add_block"})
+        return {"kind": "actions", "text": "ok", "actions": []}, Decimal("0")
+
+    with (
+        mock.patch("apps.core.copilot.runs.engine.run_turn", side_effect=turn),
+        mock.patch("apps.core.copilot.runs.ai_compose.record_spend"),
+    ):
+        runs.execute(SCHEMA, run.id)
+
+    # A run's reply can be opened for a day ("ready for you"): its cards too.
+    assert jti_ttl(minted["token"]) > runs.OPEN_WINDOW.total_seconds()
+    # A card minted outside a run keeps the short life.
+    assert jti_ttl(tokens.stash_action(SCHEMA, {"kind": "add_block"})) <= 1800
