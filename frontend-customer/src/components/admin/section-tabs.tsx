@@ -3,7 +3,6 @@
 import { ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { LockedMark } from "@/components/admin/feature-badges";
 import type { NavSection } from "@/components/shared/app-sidebar";
 import { NavLink } from "@/components/ui/nav-link";
 import { cn } from "@/lib/utils";
@@ -49,9 +48,6 @@ export function SectionTabs({
             <span>{item.label}</span>
             {item.external && (
               <ExternalLink className="h-3 w-3 opacity-60" aria-hidden="true" />
-            )}
-            {item.requiresEntitlement && (
-              <LockedMark feature={item.requiresEntitlement} />
             )}
           </NavLink>
         ))}

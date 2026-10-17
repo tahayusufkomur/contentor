@@ -27,7 +27,7 @@ async function signupThroughVerify(page: Page, brand: string, email: string) {
   await page.goto(link);
 }
 
-/** Going live starts the Starter trial at Stripe Checkout (card upfront).
+/** The card comes before the site: the Starter trial at Stripe Checkout.
  * Without Stripe the spec records the trial the webhook would. */
 function grantTrial() {
   manage([
@@ -38,8 +38,10 @@ function grantTrial() {
       "from apps.accounts.models import User\n" +
       "from apps.core.models import PlatformPlan, PlatformSubscription, Tenant\n" +
       `t = Tenant.objects.get(slug='e2e-studio-${stamp}')\n` +
+      // The checkout endpoint makes the owner's platform account; the spec skips it.
+      "u = User.objects.get_or_create(email=t.owner_email, region=t.region, defaults=dict(name='E2E Coach', role='coach'))[0]\n" +
       "PlatformSubscription.objects.update_or_create(tenant=t, defaults=dict(\n" +
-      "    user=User.objects.filter(email=t.owner_email).first(), plan=PlatformPlan.objects.get(name='starter'),\n" +
+      "    user=u, plan=PlatformPlan.objects.get(name='starter'),\n" +
       `    status='trialing', provider='stripe', provider_subscription_id='sub_e2e_${stamp}',\n` +
       "    current_period_end=timezone.now() + timedelta(days=14)))",
   ]);
@@ -66,6 +68,10 @@ test("signup lands in /setup and the interview ends in a published site", async 
   // spec is structurally deterministic. Page builds on the AI hub are slow.
   test.setTimeout(1_200_000);
   await signupThroughVerify(page, `E2E Studio ${stamp}`, `e2e-coach-${stamp}@contentor.test`);
+  // No site before the card: the verify page offers the trial first.
+  await expect(page.getByRole("button", { name: en.signup.verify.card.cta })).toBeVisible({ timeout: 20_000 });
+  grantTrial();
+  await page.reload();
 
   await page.waitForURL(/e2e-studio-[\w-]+\.localhost\/setup/, { timeout: 120_000 });
   await expect(page.getByText("What do you teach?")).toBeVisible({ timeout: 30_000 });
@@ -94,8 +100,6 @@ test("signup lands in /setup and the interview ends in a published site", async 
   // A drafted course or class to approve.
   const looksGood = guide.getByRole("button", { name: "Looks good, continue" });
   const goLive = guide.getByRole("button", { name: "Go live", exact: true });
-  // Going live starts the free trial first (Stripe Checkout, recorded here).
-  const startTrial = guide.getByRole("button", { name: "Start free trial" });
   // The first payments tile is a paid one, and a trial cannot sell; the spec
   // takes the free way out instead of starting the plan.
   const makeFree = guide.getByRole("button", { name: "Make it free and go live now" });
@@ -117,7 +121,6 @@ test("signup lands in /setup and the interview ends in a published site", async 
   const action = decide
     .or(looksGood)
     .or(goLive)
-    .or(startTrial)
     .or(makeFree)
     .or(tile)
     .or(zone)
@@ -132,11 +135,6 @@ test("signup lands in /setup and the interview ends in a published site", async 
     await keepLook.waitFor({ state: "visible", timeout: 2_000 }).catch(() => {});
     if (await keepLook.isVisible()) await keepLook.click();
     if (await goLive.isVisible()) break;
-    if (await startTrial.isVisible()) {
-      grantTrial();
-      await page.reload();
-      continue;
-    }
     if (await makeFree.isVisible()) {
       await makeFree.click();
       // Going free first says what it changes, then asks (nothing to change: no ask).

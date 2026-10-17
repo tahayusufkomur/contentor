@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { AiBadge, PaidFeatureBadge } from "@/components/admin/feature-badges";
+import { AiBadge } from "@/components/admin/feature-badges";
 import { LogoUploader } from "@/components/owner/logo-uploader";
 import { LogoStudio } from "@/components/logo/logo-studio";
 import { LookPicker } from "@/components/owner/look-picker";
@@ -44,7 +44,6 @@ export function BrandTab({
         <div className="flex items-center gap-2">
           <Label>Logo</Label>
           <AiBadge />
-          <PaidFeatureBadge feature="logo_studio" />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button

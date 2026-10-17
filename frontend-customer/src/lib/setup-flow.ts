@@ -342,14 +342,6 @@ export const isReview = (c: GuideCards | null | undefined): c is ReviewCard =>
 export const isPhotos = (c: GuideCards | null | undefined): c is PhotoCards =>
   c?.kind === "photos";
 
-/** The paid plan some of a question's options need (backend interview_golive.plan_badge). */
-export interface PlanBadge {
-  name: string;
-  amount_cents: number | null;
-  currency: string;
-  options: string[];
-}
-
 export interface GuideTurn {
   ack: string;
   question: string;
@@ -383,8 +375,6 @@ export interface GuideTurn {
   starter?: boolean;
   /** One line under the question: why it matters. */
   why?: string;
-  /** The plan the listed paid options need, shown on their tiles. */
-  plan?: PlanBadge | null;
   cards?: GuideCards | null;
   /** Work this turn just started ("I'm starting on your About page now."). */
   status?: string;

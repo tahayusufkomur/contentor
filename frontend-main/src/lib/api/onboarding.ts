@@ -202,6 +202,20 @@ export async function requestHandoff(
   return res.json();
 }
 
+/** The trial's Stripe Checkout: the card comes before the site is built. */
+export async function startSignupCheckout(
+  token: string,
+): Promise<{ checkout_url: string }> {
+  const res = await fetch("/api/v1/onboarding/signup/checkout/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+    credentials: "same-origin",
+  });
+  if (!res.ok) throw new Error("checkout_failed");
+  return res.json();
+}
+
 /** Re-send the "continue your setup" email for an expired link. */
 export async function recoverSignup(token: string): Promise<void> {
   const res = await fetch("/api/v1/onboarding/wizard/recover/", {

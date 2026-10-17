@@ -50,9 +50,7 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
       icon: BookOpen,
       items: [
         item("courses", "/admin/courses", BookOpen),
-        item("liveEvents", "/admin/live", Video, {
-          requiresEntitlement: "live",
-        }),
+        item("liveEvents", "/admin/live", Video),
         item("downloads", "/admin/downloads", Download),
       ],
     },
@@ -63,9 +61,7 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
       items: [
         item("students", "/admin/students", Users),
         item("communityFeed", "/admin/community", MessagesSquare),
-        item("inbox", "/admin/inbox", Inbox, {
-          requiresEntitlement: "platform_mailbox",
-        }),
+        item("inbox", "/admin/inbox", Inbox),
       ],
     },
     {
@@ -74,9 +70,7 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
       icon: Bell,
       items: [
         item("messages", "/admin/messages", Bell),
-        item("blog", "/admin/blog", Newspaper, {
-          requiresEntitlement: "ai_blog",
-        }),
+        item("blog", "/admin/blog", Newspaper),
       ],
     },
     {
@@ -84,12 +78,8 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
       label: t("nav.sections.money"),
       icon: Wallet,
       items: [
-        item("payouts", "/admin/payouts", Wallet, {
-          requiresEntitlement: "payouts",
-        }),
-        item("store", "/admin/store", Store, {
-          requiresEntitlement: "selling",
-        }),
+        item("payouts", "/admin/payouts", Wallet),
+        item("store", "/admin/store", Store),
       ],
     },
     {
@@ -100,12 +90,9 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
         item("editSite", "/?edit=1", Pencil, { external: true }),
         item("design", "/?edit=1&section=brand", Palette, {
           external: true,
-          requiresEntitlement: "logo_studio",
         }),
         item("media", "/admin/media", ImageIcon),
-        item("assistant", "/admin/assistant", MessageCircleQuestion, {
-          requiresEntitlement: "student_bot",
-        }),
+        item("assistant", "/admin/assistant", MessageCircleQuestion),
       ],
     },
     {

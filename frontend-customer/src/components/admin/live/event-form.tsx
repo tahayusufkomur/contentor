@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { FilterPicker } from "@/components/admin/filter-picker";
-import { PaidFeatureBadge } from "@/components/admin/feature-badges";
 import { TagInput } from "@/components/admin/tag-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -144,7 +143,6 @@ export function EventForm({
             </select>
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
               {t(`kinds.${kind}.hint`)}
-              {config.room && <PaidFeatureBadge feature="live" />}
             </p>
           </div>
 

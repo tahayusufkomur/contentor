@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { PageState } from "@/components/ui/page-state";
+import { useEntitlements } from "@/components/admin/entitlements-provider";
 import { clientFetch } from "@/lib/api-client";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
@@ -362,24 +363,30 @@ function StatusRow({
 }
 
 function UpgradeGate() {
+  // On a trial the plan is there already: payouts open when it starts.
+  const trialing = useEntitlements().entitlements?.trialing;
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
           <Lock className="h-5 w-5 text-muted-foreground" />
-          <CardTitle>Upgrade to start selling</CardTitle>
+          <CardTitle>
+            {trialing
+              ? "Payouts open when your plan starts"
+              : "Upgrade to start selling"}
+          </CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Getting paid requires a paid plan with an active subscription. On the
-          free plan everything you offer must be free — no payouts, paid
-          content, or subscriptions.
+          {trialing
+            ? "A free trial can’t take payments. Start your plan now to connect Stripe and sell, or keep building and sell once your trial ends."
+            : "Getting paid requires a paid plan with an active subscription. On the free plan everything you offer must be free — no payouts, paid content, or subscriptions."}
         </p>
         <Button asChild className="gap-2">
           <Link href="/admin/billing">
             <Wallet className="h-4 w-4" />
-            View plans
+            {trialing ? "Start my plan now" : "View plans"}
           </Link>
         </Button>
       </CardContent>

@@ -30,7 +30,6 @@ import { announceSiteUpdated, SITE_UPDATED_EVENT } from "@/lib/site-events";
 import { clientFetch } from "@/lib/api-client";
 import { siteLook, styleFontsHref } from "@/lib/site-styles";
 import { Spinner } from "@/components/ui/spinner";
-import { EntitlementsProvider } from "@/components/admin/entitlements-provider";
 import { TenantContext } from "@/hooks/use-tenant";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
 import { SetupAssistantBubble } from "@/components/setup/setup-assistant-bubble";
@@ -327,184 +326,180 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
               }}
             />
             <div className="relative flex min-h-screen">
-              {/* Sidebar — only mounted while editing. EntitlementsProvider is
-                  normally mounted by AdminShell, which doesn't wrap the public
-                  site; the panel needs it for the Logo Studio's paid badge. */}
+              {/* Sidebar — only mounted while editing. */}
               {editMode && (
-                <EntitlementsProvider>
-                  <aside
-                    className="fixed left-0 top-0 z-50 flex h-full flex-col border-r bg-background transition-all duration-300 ease-in-out"
-                    style={{
-                      width: open ? SIDEBAR_WIDTH : 0,
-                      overflow: open ? undefined : "hidden",
-                    }}
+                <aside
+                  className="fixed left-0 top-0 z-50 flex h-full flex-col border-r bg-background transition-all duration-300 ease-in-out"
+                  style={{
+                    width: open ? SIDEBAR_WIDTH : 0,
+                    overflow: open ? undefined : "hidden",
+                  }}
+                >
+                  {/* Header */}
+                  <div
+                    className="flex items-center justify-between border-b px-5 py-4"
+                    style={{ minWidth: SIDEBAR_WIDTH }}
                   >
-                    {/* Header */}
-                    <div
-                      className="flex items-center justify-between border-b px-5 py-4"
-                      style={{ minWidth: SIDEBAR_WIDTH }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-sm font-semibold">Edit site</h2>
-                        {saving && <Spinner size="sm" label="Saving" />}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <UndoRedoControls />
-                        <button
-                          onClick={() => toggleEditMode(false)}
-                          className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                          title="Exit edit mode — preview your site"
-                        >
-                          <Eye className="h-4 w-4" /> Done
-                        </button>
-                        <button
-                          onClick={() => setOpen(false)}
-                          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                          title="Collapse panel"
-                        >
-                          <PanelLeftClose className="h-4 w-4" />
-                        </button>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold">Edit site</h2>
+                      {saving && <Spinner size="sm" label="Saving" />}
                     </div>
-
-                    {/* Always-on setup progress: same panel as /admin */}
-                    <SetupSidebarRow minWidth={SIDEBAR_WIDTH} />
-
-                    {/* Mode tabs — Site settings vs Page content */}
-                    <div
-                      className="flex gap-1 border-b p-2"
-                      style={{ minWidth: SIDEBAR_WIDTH }}
-                    >
+                    <div className="flex items-center gap-1">
+                      <UndoRedoControls />
                       <button
-                        onClick={() => setMode("site")}
-                        className={cn(
-                          "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                          mode === "site"
-                            ? "bg-primary/10 text-foreground"
-                            : "text-muted-foreground hover:bg-accent",
-                        )}
+                        onClick={() => toggleEditMode(false)}
+                        className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        title="Exit edit mode — preview your site"
                       >
-                        <Settings className="h-4 w-4" /> Site
+                        <Eye className="h-4 w-4" /> Done
                       </button>
                       <button
-                        onClick={() => setMode("pages")}
-                        className={cn(
-                          "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                          mode === "pages"
-                            ? "bg-primary/10 text-foreground"
-                            : "text-muted-foreground hover:bg-accent",
-                        )}
+                        onClick={() => setOpen(false)}
+                        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        title="Collapse panel"
                       >
-                        <LayoutList className="h-4 w-4" /> Pages
+                        <PanelLeftClose className="h-4 w-4" />
                       </button>
                     </div>
+                  </div>
 
-                    {/* `overscroll-contain`: reaching either end of the panel
+                  {/* Always-on setup progress: same panel as /admin */}
+                  <SetupSidebarRow minWidth={SIDEBAR_WIDTH} />
+
+                  {/* Mode tabs — Site settings vs Page content */}
+                  <div
+                    className="flex gap-1 border-b p-2"
+                    style={{ minWidth: SIDEBAR_WIDTH }}
+                  >
+                    <button
+                      onClick={() => setMode("site")}
+                      className={cn(
+                        "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        mode === "site"
+                          ? "bg-primary/10 text-foreground"
+                          : "text-muted-foreground hover:bg-accent",
+                      )}
+                    >
+                      <Settings className="h-4 w-4" /> Site
+                    </button>
+                    <button
+                      onClick={() => setMode("pages")}
+                      className={cn(
+                        "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        mode === "pages"
+                          ? "bg-primary/10 text-foreground"
+                          : "text-muted-foreground hover:bg-accent",
+                      )}
+                    >
+                      <LayoutList className="h-4 w-4" /> Pages
+                    </button>
+                  </div>
+
+                  {/* `overscroll-contain`: reaching either end of the panel
                       must NOT chain the wheel through to the page behind it —
                       the surface under the pointer is the one that scrolls. */}
-                    <div
-                      className="flex-1 overflow-y-auto overscroll-contain"
-                      style={{ minWidth: SIDEBAR_WIDTH }}
-                    >
-                      {mode === "site" ? (
-                        <>
-                          <p className="px-5 pb-1 pt-4 text-xs text-muted-foreground">
-                            Brand and navigation apply across every page.
-                          </p>
-                          {SITE_SECTIONS.map((section) => (
-                            <div
-                              key={section.id}
-                              className="border-b last:border-b-0"
+                  <div
+                    className="flex-1 overflow-y-auto overscroll-contain"
+                    style={{ minWidth: SIDEBAR_WIDTH }}
+                  >
+                    {mode === "site" ? (
+                      <>
+                        <p className="px-5 pb-1 pt-4 text-xs text-muted-foreground">
+                          Brand and navigation apply across every page.
+                        </p>
+                        {SITE_SECTIONS.map((section) => (
+                          <div
+                            key={section.id}
+                            className="border-b last:border-b-0"
+                          >
+                            <button
+                              onClick={() => toggleSection(section.id)}
+                              className="flex w-full items-center gap-3 px-5 py-3.5 text-sm font-medium transition-colors hover:bg-muted/50"
                             >
-                              <button
-                                onClick={() => toggleSection(section.id)}
-                                className="flex w-full items-center gap-3 px-5 py-3.5 text-sm font-medium transition-colors hover:bg-muted/50"
-                              >
-                                <span className="text-muted-foreground">
-                                  {section.icon}
-                                </span>
-                                <span className="flex-1 text-left">
-                                  {section.label}
-                                </span>
-                                <ChevronDown
-                                  className={cn(
-                                    "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                                    expanded.has(section.id) && "rotate-180",
-                                  )}
-                                />
-                              </button>
-                              <div
+                              <span className="text-muted-foreground">
+                                {section.icon}
+                              </span>
+                              <span className="flex-1 text-left">
+                                {section.label}
+                              </span>
+                              <ChevronDown
                                 className={cn(
-                                  "grid transition-all duration-200 ease-in-out",
-                                  expanded.has(section.id)
-                                    ? "grid-rows-[1fr] opacity-100"
-                                    : "grid-rows-[0fr] opacity-0",
+                                  "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                                  expanded.has(section.id) && "rotate-180",
                                 )}
-                              >
-                                <div className="overflow-hidden">
-                                  <div className="px-5 pb-5 pt-1">
-                                    {section.id === "brand" ? (
-                                      <BrandTab
-                                        config={config}
-                                        onChange={handleChange}
-                                        studioOpen={studioOpen}
-                                        onStudioOpenChange={setStudioOpen}
-                                        onApplyLook={applyLook}
-                                      />
-                                    ) : (
-                                      <NavbarTab
-                                        config={config}
-                                        onChange={handleChange}
-                                      />
-                                    )}
-                                  </div>
+                              />
+                            </button>
+                            <div
+                              className={cn(
+                                "grid transition-all duration-200 ease-in-out",
+                                expanded.has(section.id)
+                                  ? "grid-rows-[1fr] opacity-100"
+                                  : "grid-rows-[0fr] opacity-0",
+                              )}
+                            >
+                              <div className="overflow-hidden">
+                                <div className="px-5 pb-5 pt-1">
+                                  {section.id === "brand" ? (
+                                    <BrandTab
+                                      config={config}
+                                      onChange={handleChange}
+                                      studioOpen={studioOpen}
+                                      onStudioOpenChange={setStudioOpen}
+                                      onApplyLook={applyLook}
+                                    />
+                                  ) : (
+                                    <NavbarTab
+                                      config={config}
+                                      onChange={handleChange}
+                                    />
+                                  )}
                                 </div>
                               </div>
                             </div>
-                          ))}
-                        </>
-                      ) : (
-                        <div className="px-5 py-4">
-                          {/* Page switcher */}
-                          <p className="mb-2 text-xs font-medium text-muted-foreground">
-                            Editing page
-                          </p>
-                          <div className="mb-4 flex flex-wrap gap-1.5">
-                            {PAGE_KEYS.map((key) => (
-                              <button
-                                key={key}
-                                onClick={() => goToPage(PAGE_ROUTES[key])}
-                                className={cn(
-                                  "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
-                                  activePageKey === key
-                                    ? "border-primary bg-primary/10 text-foreground"
-                                    : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
-                                )}
-                              >
-                                {PAGE_LABELS[key]}
-                              </button>
-                            ))}
                           </div>
-
-                          {activePageKey ? (
-                            <BlocksTab
-                              key={activePageKey}
-                              pageKey={activePageKey}
-                              savedTemplates={config.page_templates ?? []}
-                              onSaveTemplate={handleSaveTemplate}
-                              onDeleteTemplate={handleDeleteTemplate}
-                            />
-                          ) : (
-                            <p className="text-xs text-muted-foreground">
-                              This page isn&apos;t editable from the builder.
-                              Pick a page above to edit its content.
-                            </p>
-                          )}
+                        ))}
+                      </>
+                    ) : (
+                      <div className="px-5 py-4">
+                        {/* Page switcher */}
+                        <p className="mb-2 text-xs font-medium text-muted-foreground">
+                          Editing page
+                        </p>
+                        <div className="mb-4 flex flex-wrap gap-1.5">
+                          {PAGE_KEYS.map((key) => (
+                            <button
+                              key={key}
+                              onClick={() => goToPage(PAGE_ROUTES[key])}
+                              className={cn(
+                                "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
+                                activePageKey === key
+                                  ? "border-primary bg-primary/10 text-foreground"
+                                  : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
+                              )}
+                            >
+                              {PAGE_LABELS[key]}
+                            </button>
+                          ))}
                         </div>
-                      )}
-                    </div>
-                  </aside>
-                </EntitlementsProvider>
+
+                        {activePageKey ? (
+                          <BlocksTab
+                            key={activePageKey}
+                            pageKey={activePageKey}
+                            savedTemplates={config.page_templates ?? []}
+                            onSaveTemplate={handleSaveTemplate}
+                            onDeleteTemplate={handleDeleteTemplate}
+                          />
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            This page isn&apos;t editable from the builder. Pick
+                            a page above to edit its content.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </aside>
               )}
 
               {/* The entry to the edit menu, on the left edge: it enters edit

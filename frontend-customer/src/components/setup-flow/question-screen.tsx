@@ -19,7 +19,6 @@ import {
   ownPicked,
   pickedOptions,
   prefilledPicks,
-  planLabel,
   scheduleSummary,
   scheduleValid,
   socialOk,
@@ -616,18 +615,6 @@ export function QuestionScreen({
                             )}
                           >
                             {step.details[o]}
-                          </span>
-                        )}
-                        {step.plan?.options.includes(o) && (
-                          <span
-                            className={cn(
-                              "mt-0.5 w-fit rounded-full px-2 py-0.5 text-[11.5px] font-medium",
-                              on
-                                ? "bg-[rgb(255_255_255/0.15)]"
-                                : "bg-[var(--sf-tint-strong)] text-[var(--sf-graphite)]",
-                            )}
-                          >
-                            {planLabel(step.plan)}
                           </span>
                         )}
                         {multi && (

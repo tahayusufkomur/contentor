@@ -162,7 +162,6 @@ GUIDE_KEYS = (
     "socials",
     "starter",
     "why",
-    "plan",
     "contact",
     "address",
     "prefill",
@@ -198,7 +197,6 @@ def guide_for(
             "socials": False,
             "starter": False,
             "why": "",
-            "plan": None,
             "contact": False,
             "address": False,
             "prefill": {},
@@ -558,8 +556,8 @@ def run_turn(
     ``message`` as a document the coach shared: read once for facts that fill
     only unsettled questions, never an edit or a redraft, and ImportUnavailableError
     (nothing applied) when the AI cannot read it."""
-    from . import interview_golive, setup_flow
     from . import interview_milestones as milestones
+    from . import setup_flow
 
     if imported:
         choice, spoken = None, False
@@ -647,8 +645,6 @@ def run_turn(
     # guide, so a reload doesn't announce finished work as starting.
     if note := started_note(fired):
         guide["status"] = note
-    # The plan the paid tiles need, stored with the question for going back.
-    guide["plan"] = interview_golive.plan_badge(tenant, guide["field"])
     guide["prefill"] = prefill_for(guide["field"], answers)
     guide.update(membership_prices(guide["field"], answers))
     if also:
@@ -789,7 +785,6 @@ def apply_initial_about(tenant, text: str) -> bool:
 
 
 def interview_state(tenant, flow: dict) -> dict:
-    from . import interview_golive
     from . import interview_milestones as milestones
 
     answers = brief.answers_of(tenant)
@@ -810,7 +805,6 @@ def interview_state(tenant, flow: dict) -> dict:
         guide["hints"] = guide["hints"] or {}
         # ...and one written before own options existed still gets its blank tile.
         guide["custom"] = bool(getattr(brief.FIELD_BY_ID.get(guide["field"] or ""), "custom", False))
-    guide["plan"] = interview_golive.plan_badge(tenant, guide["field"])  # live: a plan bought since hides it
     guide["prefill"] = prefill_for(guide["field"], answers)
     guide.update(membership_prices(guide["field"], answers))  # hers now, also on a question gone back to
     _apply_prefills_to_guide(guide, brief.FIELD_BY_ID.get(guide["field"] or ""), tenant, answers)

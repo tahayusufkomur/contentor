@@ -66,6 +66,16 @@ def subscription_mirror_plan_on_save(sender, instance, **kwargs):
     # A non-canceled subscription grants its plan; a canceled one reverts to Free.
     plan_id = None if instance.status == PlatformSubscription.STATUS_CANCELED else instance.plan_id
     _mirror_plan_onto_tenant(instance.tenant_id, plan_id)
+    # No site before its card: the trial starting builds a signup's site, once
+    # (the webhook and the return from Checkout both land here).
+    running = (PlatformSubscription.STATUS_TRIALING, PlatformSubscription.STATUS_ACTIVE)
+    unbuilt = Tenant.objects.filter(
+        pk=instance.tenant_id, requires_plan=True, provisioning_status="pending", template_seed_status="pending"
+    )
+    if instance.status in running and unbuilt.update(template_seed_status="seeding"):
+        from .onboarding.views import build_site
+
+        build_site(instance.tenant_id, instance.tenant.owner_email, getattr(instance.user, "name", ""))
 
 
 @receiver(post_delete, sender=PlatformSubscription)

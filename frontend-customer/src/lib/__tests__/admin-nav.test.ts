@@ -67,25 +67,6 @@ describe("buildAdminNav", () => {
     for (const s of nav)
       for (const i of s.items) expect(i.label).toBe(`nav.items.${i.key}`);
   });
-
-  it("locks only by entitlement, on the item", () => {
-    const locked = Object.fromEntries(
-      nav.flatMap((s) =>
-        s.items
-          .filter((i) => i.requiresEntitlement)
-          .map((i) => [i.href, i.requiresEntitlement]),
-      ),
-    );
-    expect(locked).toEqual({
-      "/admin/live": "live",
-      "/admin/inbox": "platform_mailbox",
-      "/admin/blog": "ai_blog",
-      "/admin/payouts": "payouts",
-      "/admin/store": "selling",
-      "/?edit=1&section=brand": "logo_studio",
-      "/admin/assistant": "student_bot",
-    });
-  });
 });
 
 describe("sectionHref", () => {

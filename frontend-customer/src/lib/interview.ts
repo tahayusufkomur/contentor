@@ -211,17 +211,6 @@ export function formatPrice(cents: number | null, currency: string): string {
   }).format(cents / 100);
 }
 
-/** "Starter plan · $19.90/mo": the plan a paid choice needs. */
-export function planLabel(plan: {
-  name: string;
-  amount_cents: number | null;
-  currency: string;
-}): string {
-  const name = plan.name.charAt(0).toUpperCase() + plan.name.slice(1);
-  const price = formatPrice(plan.amount_cents, plan.currency);
-  return price ? `${name} plan · ${price}/mo` : `${name} plan`;
-}
-
 export interface QuestionStep extends GuideTurn {
   /** What the coach answered (questions behind them only). */
   answer?: string;

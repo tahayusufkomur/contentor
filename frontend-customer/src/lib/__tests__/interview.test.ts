@@ -20,7 +20,6 @@ import {
   landedPage,
   noteOf,
   pickedOptions,
-  planLabel,
   questionSteps,
   SECTIONS,
   sectionOf,
@@ -273,17 +272,6 @@ describe("starterStart", () => {
     expect(starterStart("I found yoga when…")).toBe("I found yoga when");
     expect(starterStart("200-hour training...")).toBe("200-hour training");
     expect(starterStart("My own struggle with")).toBe("My own struggle with");
-  });
-});
-
-describe("planLabel", () => {
-  it("names the plan and its monthly price", () => {
-    expect(
-      planLabel({ name: "starter", amount_cents: 1990, currency: "usd" }),
-    ).toBe("Starter plan · $19.90/mo");
-    expect(
-      planLabel({ name: "pro", amount_cents: null, currency: "EUR" }),
-    ).toBe("Pro plan");
   });
 });
 

@@ -1,13 +1,15 @@
-"""Email verify creates AND provisions the site; interview tenants never get
-an up-front whole-site compose (pages build per interview milestone)."""
+"""Email verify creates the tenant; its site is built once its card is in (the
+trial running), never before. Interview tenants never get an up-front
+whole-site compose (pages build per interview milestone)."""
 
 from unittest import mock
 
 import pytest
 from rest_framework.test import APIClient
 
+from apps.accounts.models import User
 from apps.accounts.tokens import create_signup_token
-from apps.core.models import Tenant
+from apps.core.models import PlatformPlan, PlatformSubscription, Tenant
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -15,33 +17,106 @@ pytestmark = pytest.mark.django_db(transaction=True)
 @pytest.fixture(autouse=True)
 def _cleanup():
     yield
-    for tenant in Tenant.objects.filter(slug__in=["iv-studio-test", "iv-again-test"]):
+    from django.db import connection
+
+    tenants = list(Tenant.objects.filter(slug__in=["iv-studio-test", "iv-again-test"]))
+    with connection.cursor() as c:  # raw: the ORM cascade reaches billing_payment, a tenant table
+        c.execute("DELETE FROM core_platformsubscription WHERE tenant_id = ANY(%s)", [[t.id for t in tenants]])
+    for tenant in tenants:
         tenant.delete(force_drop=True)
 
 
-def _verify(brand):
+@pytest.fixture()
+def starter():
+    plan, _ = PlatformPlan.objects.update_or_create(
+        name="starter",
+        defaults={
+            "price_monthly": 19,
+            "transaction_fee_pct": 8,
+            "is_active": True,
+            "prices": {"USD": {"amount_cents": 1990, "stripe_price_id": "price_test_signup"}},
+        },
+    )
+    return plan
+
+
+def _verify(brand, **extra):
     token = create_signup_token("iv@test.dev", "Iv", brand, "global")
     client = APIClient(HTTP_HOST="localhost")
     with mock.patch("apps.core.tasks.provision_tenant.delay") as delay:
-        resp = client.post("/api/v1/onboarding/signup/verify/", {"token": token}, format="json")
+        resp = client.post("/api/v1/onboarding/signup/verify/", {"token": token, **extra}, format="json")
     return resp, delay
 
 
-def test_verify_marks_interview_and_enqueues_provisioning():
+def _trial(tenant, plan):
+    user, _ = User.objects.get_or_create(email=tenant.owner_email, region="global", defaults={"name": "Iv"})
+    return PlatformSubscription.objects.create(
+        tenant=tenant, user=user, plan=plan, status="trialing", provider="stripe", provider_subscription_id="sub_iv"
+    )
+
+
+def test_verify_takes_the_card_before_building_anything(starter):
     resp, delay = _verify("Iv Studio Test")
     assert resp.status_code == 201, resp.content
+    body = resp.json()
+    assert body["needs_card"] is True
+    assert body["plan"]["name"] == "starter" and body["plan"]["trial_days"] == 14
     tenant = Tenant.objects.get(slug="iv-studio-test")
     assert tenant.wizard_state["flow"] == "interview"
     assert tenant.wizard_state["answers"]["goals"] == []
     assert tenant.wizard_state["answers"]["style"]
-    delay.assert_called_once_with(tenant.id, "iv@test.dev", "Iv", "general")
-
-
-def test_reverify_does_not_enqueue_twice():
-    _verify("Iv Again Test")
-    resp, delay = _verify("Iv Again Test")
-    assert resp.status_code == 200
+    assert tenant.template_seed_status == "pending"
     delay.assert_not_called()
+
+
+def test_the_trial_starting_builds_the_site_once(starter):
+    _verify("Iv Studio Test")
+    tenant = Tenant.objects.get(slug="iv-studio-test")
+    with mock.patch("apps.core.tasks.provision_tenant.delay") as delay:
+        sub = _trial(tenant, starter)
+        sub.save()  # the webhook and the return from Checkout both land
+    delay.assert_called_once_with(tenant.id, "iv@test.dev", "Iv", "general")
+    resp, again = _verify("Iv Studio Test")
+    assert resp.status_code == 200 and resp.json()["needs_card"] is False
+    again.assert_not_called()
+
+
+def test_back_from_checkout_syncs_the_session(starter):
+    _verify("Iv Studio Test")
+    with mock.patch(
+        "apps.billing.views.webhooks_platform.sync_platform_checkout_session",
+        side_effect=lambda t, session_id: _trial(t, starter),
+    ) as sync:
+        resp, delay = _verify("Iv Studio Test", session_id="cs_test_123")
+    sync.assert_called_once()
+    assert resp.json()["needs_card"] is False
+    delay.assert_called_once()
+
+
+def test_signup_checkout_opens_a_trial_for_every_new_site(starter):
+    from apps.billing.providers.types import CheckoutSession
+
+    _verify("Iv Studio Test")
+    tenant = Tenant.objects.get(slug="iv-studio-test")
+    token = create_signup_token("iv@test.dev", "Iv", "Iv Studio Test", "global")
+    client = APIClient(HTTP_HOST="localhost")
+    provider = mock.Mock(name="stripe")
+    provider.create_checkout_session.return_value = CheckoutSession(
+        url="https://checkout.example/cs_1", expires_at=None, provider_session_id="cs_1"
+    )
+    with mock.patch("apps.billing.providers.get_provider", return_value=provider):
+        resp = client.post("/api/v1/onboarding/signup/checkout/", {"token": token}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["checkout_url"] == "https://checkout.example/cs_1"
+    kwargs = provider.create_checkout_session.call_args.kwargs
+    assert kwargs["tenant"] == tenant and kwargs["trial_days"] == 14
+    assert kwargs["user"].email == "iv@test.dev"  # the owner's platform account, made here
+    assert kwargs["success_url"] == f"http://localhost/signup/verify?token={token}&checkout=success"
+    # Once a plan runs, a second Checkout would bill twice.
+    with mock.patch("apps.core.tasks.provision_tenant.delay"):
+        _trial(tenant, starter)
+    resp = client.post("/api/v1/onboarding/signup/checkout/", {"token": token}, format="json")
+    assert resp.status_code == 409
 
 
 def test_provision_skips_whole_site_compose_for_interview_tenants():
@@ -72,6 +147,7 @@ def test_reverify_restarts_provisioning_that_never_ran():
     Tenant.objects.filter(pk=tenant.pk).update(
         created_at=timezone.now() - timedelta(minutes=10),
         wizard_state={"answers": {"niche": "yoga", "description": "Old wizard answers"}},
+        requires_plan=False,  # an old-wizard tenant, from before the card came first
     )
     resp, delay = _verify("Iv Again Test")
     assert resp.status_code == 200

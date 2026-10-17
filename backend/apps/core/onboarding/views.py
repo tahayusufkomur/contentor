@@ -1,5 +1,6 @@
 import logging
 from datetime import timedelta
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.utils import timezone
@@ -235,11 +236,19 @@ def creator_signup_verify(request):
         # Never provisioned (signed up under the old wizard, or the enqueue
         # was lost): start it now, or the verify page would poll forever.
         stale = timezone.now() - tenant.created_at > PROVISION_RETRY_AFTER
-        if tenant.provisioning_status == "pending" and stale:
+        if tenant.provisioning_status == "pending" and stale and not tenant.is_paused:
             old_answers = (tenant.wizard_state or {}).get("answers") or {}
             _start_interview_provisioning(
                 tenant, email, payload.get("name", ""), old_answers, initial_about=initial_about
             )
+        session_id = request.data.get("session_id")
+        if isinstance(session_id, str) and session_id and tenant.is_paused:
+            # Back from Checkout: pull the session rather than wait on the
+            # webhook. The trial starting is what builds the site (core.signals).
+            from apps.billing.views.webhooks_platform import sync_platform_checkout_session
+
+            sync_platform_checkout_session(tenant, session_id)
+            tenant = Tenant.objects.get(pk=tenant.pk)
         return Response(
             {
                 "slug": slug,
@@ -247,6 +256,7 @@ def creator_signup_verify(request):
                 "region": tenant.region,
                 "domain": tenant_fqdn,
                 "wizard_token": wizard_token,
+                **_card_step(tenant),
             }
         )
 
@@ -265,7 +275,7 @@ def creator_signup_verify(request):
         # Assigned here and only here: the resume branch above must leave a
         # returning coach's bucket untouched. email:region is the stable key.
         wizard_bucket=assign_wizard_bucket(f"{email}:{region}"),
-        # No Free plan any more: a Starter trial (card at checkout) or a paid plan.
+        # No Free plan any more: a Starter trial (card first) or a paid plan.
         requires_plan=True,
     )
     Domain.objects.create(
@@ -290,9 +300,77 @@ def creator_signup_verify(request):
             "domain": tenant_fqdn,
             "locale": REGION_DEFAULT_LOCALE.get(region, "en"),
             "wizard_token": wizard_token,
+            **_card_step(tenant),
         },
         status=201,
     )
+
+
+def _card_step(tenant) -> dict:
+    """No site is built before its card: a tenant that needs a plan and was
+    never built stops at the trial's Checkout first. Says what that trial is."""
+    if tenant.provisioning_status != "pending" or not tenant.is_paused:
+        return {"needs_card": False}
+    from apps.tenant_config.interview_golive import _starter_plan
+
+    return {"needs_card": True, "plan": _starter_plan(tenant)}
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def signup_checkout(request):
+    """The card before the site: Stripe Checkout for the Starter trial of a
+    tenant with no plan yet, back to /signup/verify, which syncs the session.
+    Every new tenant gets its own trial (``trial_days_for``)."""
+    payload, tenant, err = _resolve_tenant_from_wizard_token(request)
+    if err is not None:
+        return err
+    if not tenant.is_paused:
+        # A second subscription beside a running one would bill both.
+        return Response({"error": "PLAN_RUNNING"}, status=409)
+
+    from apps.accounts.models import User
+    from apps.billing.providers import get_provider
+    from apps.billing.providers.types import ProviderError
+    from apps.core.constants import REGION_DEFAULT_LOCALE
+    from apps.core.models import PlatformPlan
+    from apps.core.monetization import TRIAL_PLAN_NAME, trial_days_for
+
+    plan = PlatformPlan.objects.filter(name__iexact=TRIAL_PLAN_NAME, is_active=True).first()
+    if plan is None:
+        return Response({"error": "PLAN_NOT_FOUND"}, status=404)
+    region = tenant.region or "global"
+    locale = REGION_DEFAULT_LOCALE.get(region, "en")
+    # The plan is on the owner's platform account; the build reuses this row.
+    account, _ = User.objects.get_or_create(
+        email=tenant.owner_email,
+        region=region,
+        defaults={
+            "name": payload.get("name", ""),
+            "role": "coach",
+            "preferred_locale": locale,
+            "accessible_regions": [],
+        },
+    )
+    # The way back carries the token like the email link: the page's stored copy
+    # may not survive the trip (a private window, storage blocked).
+    back = f"{settings.SITE_SCHEME}://{request.get_host()}/signup/verify?{urlencode({'token': request.data['token']})}"
+    try:
+        session = get_provider().create_checkout_session(
+            tenant=tenant,
+            user=account,
+            plan=plan,
+            success_url=f"{back}&checkout=success",
+            cancel_url=f"{back}&checkout=cancel",
+            locale=locale,
+            trial_days=trial_days_for(tenant, plan),
+        )
+    except ProviderError as exc:
+        logger.warning("signup checkout failed slug=%s: %s", tenant.slug, exc)
+        return Response({"error": exc.code, "detail": str(exc)}, status=400)
+    logger.info("signup checkout started slug=%s", tenant.slug)
+    return Response({"checkout_url": session.url})
 
 
 def _resolve_tenant_from_signup_token(request) -> tuple[dict | None, Tenant | None, Response | None]:
@@ -478,24 +556,28 @@ PROVISION_RETRY_AFTER = timedelta(minutes=2)
 
 
 def _start_interview_provisioning(tenant, email, owner_name, answers=None, initial_about="") -> None:
-    """One onboarding: create the site now; the coach continues in /setup on
-    their own subdomain, where the interview fills the brief. ``answers``
-    (an old-wizard tenant's) are kept on top of the defaults."""
-    from django.db import transaction
-
+    """One onboarding: the coach continues in /setup on their own subdomain,
+    where the interview fills the brief. ``answers`` (an old-wizard tenant's)
+    are kept on top of the defaults. A tenant that needs a plan is built once
+    its trial runs (``core.signals``), not before its card."""
     from apps.core.onboarding.wizard_catalog import recommended_answers
-    from apps.core.tasks import provision_tenant
 
     merged = {**recommended_answers("general"), "goals": [], **(answers or {})}
     wizard_state = {"version": 2, "flow": "interview", "answers": merged}
     if initial_about:
         wizard_state["initial_about"] = initial_about
-    Tenant.objects.filter(pk=tenant.pk).update(
-        wizard_state=wizard_state,
-        template_niche="general",
-        template_seed_status="seeding",
-    )
-    tenant_id = tenant.id
+    Tenant.objects.filter(pk=tenant.pk).update(wizard_state=wizard_state, template_niche="general")
+    if not tenant.is_paused:
+        build_site(tenant.id, email, owner_name)
+
+
+def build_site(tenant_id, email, owner_name) -> None:
+    """Create the site (schema, owner, config) after this transaction commits."""
+    from django.db import transaction
+
+    from apps.core.tasks import provision_tenant
+
+    Tenant.objects.filter(pk=tenant_id).update(template_seed_status="seeding")
     transaction.on_commit(lambda: provision_tenant.delay(tenant_id, email, owner_name, "general"))
 
 

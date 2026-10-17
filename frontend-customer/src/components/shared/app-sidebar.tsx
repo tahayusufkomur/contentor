@@ -9,7 +9,6 @@ import { defaultActiveMatch } from "@shared/navigation/navigation-state";
 import { NavLink } from "@/components/ui/nav-link";
 import { Spinner } from "@/components/ui/spinner";
 import { sectionHref } from "@/lib/admin-nav";
-import type { EntitlementKey } from "@/lib/entitlements";
 
 export interface NavItem {
   /** Message key under `nav.items` — the page's one name. Its <h1> reads the
@@ -18,8 +17,6 @@ export interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  /** A quiet lock shows while the coach's plan lacks this entitlement. */
-  requiresEntitlement?: EntitlementKey;
   /** Opens the site editor in a new tab. */
   external?: boolean;
 }

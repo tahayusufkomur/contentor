@@ -19,7 +19,7 @@ The coach runs everything from the admin area on their own site.
 | Pro | $49.90/mo | €49.90/mo | 500 | 500 GB | 500 hours/mo | 5,000 | 30 | 6% |
 
 - Billing is monthly, via Stripe. Currency (USD or EUR) is set from the coach's country at signup and cannot be changed later.
-- **New coaches start with a 14-day free Starter trial** (no Free plan since 16 October 2026). The card is added at checkout when going live and is first charged when the trial ends, unless the coach cancels before. The trial runs everything in Starter except selling: paid content waits until the plan starts. **Start my plan now** (Settings → Your plan) ends the trial early to sell right away.
+- **New coaches start with a 14-day free Starter trial** (no Free plan since 16 October 2026). The card is added at checkout before the site is created (every new site gets its own trial) and is first charged when the trial ends, unless the coach cancels before. The trial runs everything in Starter except selling: paid content waits until the plan starts. **Start my plan now** (Settings → Your plan) ends the trial early to sell right away.
 - **No plan, site paused**: if a trial is cancelled or a plan ends, visitors see a "back soon" page and the admin opens on the plan picker. Nothing is deleted; choosing a plan brings the site back at once.
 - The Free plan (only for coaches who joined before 16 October 2026) **cannot make money**: no paid content, no student payments, no payouts, no live sessions. Selling requires an active Starter or Pro subscription plus completed payout setup (see Payouts & billing).
 - Commission is Contentor's cut of each student payment (8% Starter, 6% Pro). The rest goes to the coach.

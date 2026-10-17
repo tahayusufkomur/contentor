@@ -172,7 +172,7 @@ models point at the shared `accounts.User` table.
   FK to `User` + `PlatformPlan`. `status ∈ {incomplete, trialing, active, past_due,
   canceled}`, `provider ∈ {stripe, bypass, manual}`, Stripe ids, period fields,
   `cancel_at_period_end`. New coaches start Starter as a 14-day Stripe trial (card at
-  Checkout, `monetization.trial_days_for`); a trial runs the plan's features but cannot
+  Checkout before their site is built, `monetization.trial_days_for`); a trial runs the plan's features but cannot
   sell (`is_paid_active` needs `active`).
 - **`TenantUsage`** [P] — monthly metering rollup `(tenant, month)`: `student_count`,
   `storage_bytes`, `streaming_minutes`, `emails_sent`.
@@ -497,7 +497,12 @@ connected/submerchant account and the platform automatically takes `transaction_
 1. `POST /api/v1/onboarding/signup/` `{email, name, brand_name}` → validates, derives a
    slug, checks per-region uniqueness, mints a 15-min **signup token**, emails verification.
 2. `POST /api/v1/onboarding/signup/verify/` `{token}` → creates the **`Tenant`** + **`Domain`**
-   rows in `public` with `provisioning_status="pending"`. *Schema not yet created.*
+   rows in `public` with `provisioning_status="pending"`. *Schema not yet created.* A tenant
+   that needs a plan (every signup since 2026-10-16) answers `needs_card` and is built only
+   once its trial runs: `POST /api/v1/onboarding/signup/checkout/` `{token}` opens the Starter
+   trial's Stripe Checkout (each new tenant gets its own trial), back to `/signup/verify`
+   with `session_id`, which verify syncs; the `PlatformSubscription` post_save signal
+   (`core.signals`) then enqueues `provision_tenant` once.
 3. The coach answers a **niche questionnaire** and either:
    - `POST /api/v1/onboarding/seed-from-template/` `{token, niche, goals}` → records the
      niche, sets `template_seed_status="seeding"`, enqueues `provision_tenant.delay(…, niche)`; or

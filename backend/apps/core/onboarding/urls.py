@@ -10,6 +10,7 @@ from .views import (
     onboarding_handoff,
     provisioning_status,
     seed_from_template,
+    signup_checkout,
     skip_template,
 )
 
@@ -19,6 +20,7 @@ urlpatterns = [
     path("extract-doc/", extract_doc, name="onboarding-extract-doc"),
     path("signup/authenticated/", creator_signup_authenticated, name="creator-signup-authenticated"),
     path("signup/verify/", creator_signup_verify, name="creator-signup-verify"),
+    path("signup/checkout/", signup_checkout, name="creator-signup-checkout"),
     path("seed-from-template/", seed_from_template, name="seed-from-template"),
     path("skip-template/", skip_template, name="skip-template"),
     path("handoff/", onboarding_handoff, name="onboarding-handoff"),

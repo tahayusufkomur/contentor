@@ -13,10 +13,7 @@
   },
   "badges": {
     "ai": "AI",
-    "aiTooltip": "AI-powered feature",
-    "paid": "Paid",
-    "paidTooltip": "Available on paid plans",
-    "paidPartialTooltip": "Contains paid features"
+    "aiTooltip": "AI-powered feature"
   },
   "nav": {
     "sections": {
@@ -46,8 +43,7 @@
       "media": "Media",
       "messages": "Messages"
     },
-    "more": "+ {count} more",
-    "locked": "Not in your plan yet"
+    "more": "+ {count} more"
   },
   "store": {
     "subtitle": "What your students can buy from you.",

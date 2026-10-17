@@ -3,15 +3,33 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { AlertCircle, CheckCircle2, MailPlus, Rocket } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  CreditCard,
+  MailPlus,
+  Rocket,
+} from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { SignupFrame } from "../signup-shell";
-import { recoverSignup, requestHandoff } from "@/lib/api/onboarding";
+import { formatPlanName, formatPlanPrice } from "@shared/lib/format-plan-price";
+import {
+  recoverSignup,
+  requestHandoff,
+  startSignupCheckout,
+} from "@/lib/api/onboarding";
 import { ApiError } from "@/types/api";
 
-type VerifyState = "verifying" | "preparing" | "expired" | "error";
+type VerifyState = "verifying" | "card" | "preparing" | "expired" | "error";
+/** The trial the card step starts (backend interview_golive._starter_plan). */
+interface TrialPlan {
+  name: string;
+  amount_cents: number | null;
+  currency: string;
+  trial_days: number;
+}
 type ResumeState = "idle" | "sent" | "closed" | "failed";
 const TOKEN_KEY = "contentor_wizard_token";
 
@@ -36,15 +54,19 @@ function StateIcon({
   );
 }
 
-/** Verify the email, create the site, then hand the coach straight to their
- * own /setup — the whole onboarding happens there. */
+/** Verify the email, take the card for the free trial (Stripe Checkout, then
+ * back here), build the site, then hand the coach straight to their own
+ * /setup — the whole onboarding happens there. */
 export default function SignupVerifyPage() {
   const t = useTranslations("auth.signup");
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  // Back from the trial's Checkout (Stripe appends the session).
+  const sessionId = searchParams.get("session_id");
   const [state, setState] = useState<VerifyState>("verifying");
   const [error, setError] = useState("");
   const [domain, setDomain] = useState("");
+  const [plan, setPlan] = useState<TrialPlan | null>(null);
   const [resumeState, setResumeState] = useState<ResumeState>("idle");
   const resumeToken = useRef<string | null>(null);
   const started = useRef(false);
@@ -115,7 +137,7 @@ export default function SignupVerifyPage() {
     fetch("/api/v1/onboarding/signup/verify/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: proof }),
+      body: JSON.stringify({ token: proof, session_id: sessionId }),
       credentials: "same-origin",
     })
       .then(async (res) => {
@@ -133,6 +155,11 @@ export default function SignupVerifyPage() {
         }
         window.history.replaceState(null, "", "/signup/verify");
         setDomain(data.domain);
+        if (data.needs_card) {
+          setPlan(data.plan ?? null);
+          setState("card");
+          return;
+        }
         setState("preparing");
         if (data.status === "ready") void handoff(wizardToken);
         else waitForSite(data.slug, wizardToken);
@@ -141,7 +168,16 @@ export default function SignupVerifyPage() {
         setError(t("verify.errors.network"));
         setState("error");
       });
-  }, [token, t, handoff, waitForSite]);
+  }, [token, sessionId, t, handoff, waitForSite]);
+
+  const { run: checkout, loading: openingCheckout } = useAsyncAction(
+    async () => {
+      if (!resumeToken.current) return;
+      const { checkout_url } = await startSignupCheckout(resumeToken.current);
+      window.location.assign(checkout_url);
+    },
+    { errorToast: t("verify.card.failed") },
+  );
 
   const { run: resend, loading: resending } = useAsyncAction(
     async () => {
@@ -186,6 +222,45 @@ export default function SignupVerifyPage() {
             <strong className="text-foreground">{domain}</strong>
           </span>
         </div>
+      </SignupFrame>
+    );
+  }
+
+  if (state === "card") {
+    const days = plan?.trial_days || 14;
+    const firstCharge = new Date(Date.now() + days * 86_400_000);
+    return (
+      <SignupFrame
+        eyebrow={t("verify.card.eyebrow")}
+        title={t("verify.card.title", { days })}
+        subtitle={t("verify.card.subtitle", { domain })}
+      >
+        <StateIcon variant="primary">
+          <CreditCard className="h-6 w-6" />
+        </StateIcon>
+        {plan?.amount_cents ? (
+          <p className="mt-6 text-center text-[14px] text-muted-foreground">
+            {t("verify.card.terms", {
+              plan: formatPlanName(plan.name),
+              date: firstCharge.toLocaleDateString(undefined, {
+                month: "long",
+                day: "numeric",
+              }),
+              price: formatPlanPrice(plan.currency, plan.amount_cents),
+            })}
+          </p>
+        ) : null}
+        <Button
+          type="button"
+          variant="brand"
+          size="lg"
+          className="mt-7 w-full"
+          onClick={() => void checkout()}
+          loading={openingCheckout}
+          loadingText={t("verify.card.opening")}
+        >
+          {t("verify.card.cta")}
+        </Button>
       </SignupFrame>
     );
   }

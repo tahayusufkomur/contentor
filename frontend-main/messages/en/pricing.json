@@ -91,7 +91,7 @@
       },
       "trial": {
         "q": "Is there a free trial?",
-        "a": "Yes. Starter is free for 14 days. You add a card when your site goes live, and the first charge comes when the trial ends, unless you cancel before. Everything in Starter works during the trial except selling, which opens when your plan starts."
+        "a": "Yes. Starter is free for 14 days. You add a card when you create your site, and the first charge comes when the trial ends, unless you cancel before. Everything in Starter works during the trial except selling, which opens when your plan starts."
       },
       "payments": {
         "q": "What payment methods do you accept?",
