@@ -84,6 +84,7 @@
   ],
   "radius": "0rem",
   "photoWords": "high contrast dramatic studio lighting, dark background, motion, athletic, low angle",
+  "coverAspect": "4/5",
   "variants": {
     "hero": ["poster", "intro"],
     "story": ["outline"],

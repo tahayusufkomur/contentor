@@ -84,6 +84,7 @@
   ],
   "radius": "0rem",
   "photoWords": "corporate documentary, natural office light, candid professional at work with a client, muted navy and bone tones, medium format look",
+  "coverAspect": "4/3",
   "variants": {
     "hero": ["statement", "intro"],
     "story": ["memo"],

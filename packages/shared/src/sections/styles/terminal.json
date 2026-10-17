@@ -84,6 +84,7 @@
   ],
   "radius": "0.25rem",
   "photoWords": "developer at a laptop, code on a screen, desk setup, cool monitor glow, modern workspace, focused",
+  "coverAspect": "1/1",
   "variants": {
     "hero": ["prompt", "intro"],
     "story": ["readme"],

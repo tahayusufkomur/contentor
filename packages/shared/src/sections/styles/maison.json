@@ -84,6 +84,7 @@
   ],
   "radius": "0rem",
   "photoWords": "editorial portrait, soft directional studio light, ivory and black, minimal interior, tailored, composed",
+  "coverAspect": "3/4",
   "variants": {
     "hero": ["cover", "lookbook", "intro"],
     "story": ["atelier"],

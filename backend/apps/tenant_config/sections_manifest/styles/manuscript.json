@@ -84,6 +84,7 @@
   ],
   "radius": "0.125rem",
   "photoWords": "writer at a desk, notebook and pen, bookshelves, reading nook, warm lamp light, quiet, literary",
+  "coverAspect": "1/1",
   "variants": {
     "hero": ["titlepage", "intro"],
     "story": ["preface"],

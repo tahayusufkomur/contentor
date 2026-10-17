@@ -83,6 +83,7 @@
   ],
   "radius": "0rem",
   "photoWords": "gallery light, white wall, artwork in progress, hands making, the artist at work, large format, muted, documentary",
+  "coverAspect": "4/5",
   "variants": {
     "hero": ["exhibition", "intro"],
     "story": ["statement"],

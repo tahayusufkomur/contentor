@@ -84,6 +84,7 @@
   ],
   "radius": "1.5rem",
   "photoWords": "low warm lamp light, dusk, quiet interior, soft focus, a calm person resting or reading, deep blue and amber tones",
+  "coverAspect": "4/3",
   "variants": {
     "hero": ["lantern", "intro"],
     "story": ["evening"],

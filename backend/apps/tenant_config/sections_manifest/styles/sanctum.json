@@ -84,6 +84,7 @@
   ],
   "radius": "0.5rem",
   "photoWords": "candles and crystals, moonlit night sky, tarot cards, soft mystical light, deep indigo and gold, calm woman in meditation",
+  "coverAspect": "4/3",
   "variants": {
     "hero": ["observatory", "oracle", "intro"],
     "story": ["invocation", "origin"],

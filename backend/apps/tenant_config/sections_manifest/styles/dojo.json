@@ -84,6 +84,7 @@
   ],
   "radius": "0rem",
   "photoWords": "martial arts training, dojo or gym mat, gi or boxing gloves, disciplined focused athlete, black white and red, dramatic side light",
+  "coverAspect": "16/10",
   "variants": {
     "hero": ["hall", "banner", "intro"],
     "story": ["lineage"],

@@ -84,6 +84,7 @@
   ],
   "radius": "1.5rem",
   "photoWords": "parent and child together, family at home, toddlers playing, warm natural light, candid joyful moments, bright",
+  "coverAspect": "16/10",
   "variants": {
     "hero": ["mosaic", "playground", "intro"],
     "story": ["bubble", "hello"],

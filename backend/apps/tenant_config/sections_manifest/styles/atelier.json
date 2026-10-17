@@ -84,6 +84,7 @@
   ],
   "radius": "1.5rem",
   "photoWords": "beauty portrait, soft window light, skin close-up, makeup brushes, blush and cream tones, clean elegant, editorial",
+  "coverAspect": "3/4",
   "variants": {
     "hero": ["portrait", "intro"],
     "story": ["manifesto", "salon"],

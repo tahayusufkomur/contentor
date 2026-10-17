@@ -84,6 +84,7 @@
   ],
   "radius": "0.25rem",
   "photoWords": "intimate portrait, soft candlelight, satin and silk, deep red shadows, low warm light, rose, velvet drapery, graceful, elegant",
+  "coverAspect": "4/3",
   "variants": {
     "hero": ["portrait", "intro"],
     "story": ["confession"],

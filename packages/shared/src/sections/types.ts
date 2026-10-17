@@ -74,6 +74,10 @@ export interface SitePaletteVariant {
   palette: SiteStylePalette;
 }
 
+/** The shapes a look shows a course cover in, as the CSS `aspect-ratio` value
+ *  (width/height). */
+export type CoverAspect = "3/4" | "4/5" | "1/1" | "4/3" | "3/2" | "16/10";
+
 export interface SiteStyle {
   id: string;
   label: string;
@@ -118,6 +122,10 @@ export interface SiteStyle {
   radius: string;
   /** Appended to every stock-photo search so a site's photos share one look. */
   photoWords: string;
+  /** The shape the look shows a course cover in, read from its main course
+   *  card (components/sections/<id>/courses.tsx). A cover's Card size is drawn
+   *  in it; Wide (16/9) and Banner (3/1) are the same on every look. */
+  coverAspect: CoverAspect;
   /** Layout variants this style ships per family; the first is the default.
    *  `hero` must include "intro" (compact hero for inner pages). */
   variants: Record<FamilyId, string[]>;
