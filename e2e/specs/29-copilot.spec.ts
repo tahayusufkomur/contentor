@@ -407,6 +407,8 @@ test("the team answers on its own page, and her pick goes with the question", as
 
   await panel.getByRole("button", { name: "Financial Strategist" }).click();
   await expect(panel.getByText("You picked them")).toBeVisible();
+  // The message box asks the one who will answer.
+  await expect(panel.locator('[data-placeholder="Ask the Financial Strategist…"]')).toBeVisible();
   await panel.getByRole("button", { name: "How did sales go this month?" }).click();
   await expect(panel.getByText("Sales are steady.")).toBeVisible();
   expect(sent[0].specialist).toBe("finance");

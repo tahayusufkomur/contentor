@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { EditorContent, useEditor } from "@tiptap/react";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -42,6 +42,11 @@ export function CopilotComposer({
   const t = useTranslations("student.copilot");
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
+  // The placeholder follows whoever answers next (the team panel's pick), so
+  // the editor reads it live instead of fixing it at creation.
+  const placeholderText = placeholder ?? t("placeholder");
+  const placeholderRef = useRef(placeholderText);
+  placeholderRef.current = placeholderText;
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -55,7 +60,7 @@ export function CopilotComposer({
         orderedList: false,
         strike: false,
       }),
-      Placeholder.configure({ placeholder: placeholder ?? t("placeholder") }),
+      Placeholder.configure({ placeholder: () => placeholderRef.current }),
     ],
     editorProps: {
       attributes: {
@@ -65,6 +70,12 @@ export function CopilotComposer({
       },
     },
   });
+
+  // TipTap redraws the placeholder only on a transaction: send an empty one
+  // when it changes.
+  useEffect(() => {
+    if (editor && !editor.isDestroyed) editor.view.dispatch(editor.state.tr);
+  }, [editor, placeholderText]);
 
   const send = useCallback(() => {
     // uploading blocks send: a message fired mid-upload would travel
