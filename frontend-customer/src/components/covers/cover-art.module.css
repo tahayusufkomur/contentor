@@ -1,0 +1,202 @@
+/* The boxes CoverArt draws with. The root fills its positioned parent and is the size container:
+   text is set in cqmin (1% of its shorter side) and the size that shows follows its shape, so nothing
+   is measured. Every rule that shows or hides a size is one class and one attribute, so only source
+   order decides between them: the Card first, Wide and Banner by shape, the thumbnail last. */
+
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: size;
+}
+
+.root [data-size],
+.root [data-thumb] {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+/* The Card is the default, what a browser without container queries shows. */
+.root [data-size="card"] {
+  display: block;
+}
+
+/* Each look has its Card shape. The Card gives way to Wide at the mean of its shape and 16:9, and
+   Wide to Banner at the mean of 16:9 and 3:1 (2.3094). Ratios are written as integers, which every
+   browser reads; cover-art.test.ts checks them against the means. */
+
+/* 3:4 */
+@container (min-aspect-ratio: 11547/10000) {
+  .card_34 [data-size="card"] {
+    display: none;
+  }
+  .card_34 [data-size="wide"] {
+    display: block;
+  }
+}
+@container (min-aspect-ratio: 23094/10000) {
+  .card_34 [data-size="wide"] {
+    display: none;
+  }
+  .card_34 [data-size="banner"] {
+    display: block;
+  }
+}
+
+/* 4:5 */
+@container (min-aspect-ratio: 11926/10000) {
+  .card_45 [data-size="card"] {
+    display: none;
+  }
+  .card_45 [data-size="wide"] {
+    display: block;
+  }
+}
+@container (min-aspect-ratio: 23094/10000) {
+  .card_45 [data-size="wide"] {
+    display: none;
+  }
+  .card_45 [data-size="banner"] {
+    display: block;
+  }
+}
+
+/* 1:1 */
+@container (min-aspect-ratio: 13333/10000) {
+  .card_11 [data-size="card"] {
+    display: none;
+  }
+  .card_11 [data-size="wide"] {
+    display: block;
+  }
+}
+@container (min-aspect-ratio: 23094/10000) {
+  .card_11 [data-size="wide"] {
+    display: none;
+  }
+  .card_11 [data-size="banner"] {
+    display: block;
+  }
+}
+
+/* 4:3 */
+@container (min-aspect-ratio: 15396/10000) {
+  .card_43 [data-size="card"] {
+    display: none;
+  }
+  .card_43 [data-size="wide"] {
+    display: block;
+  }
+}
+@container (min-aspect-ratio: 23094/10000) {
+  .card_43 [data-size="wide"] {
+    display: none;
+  }
+  .card_43 [data-size="banner"] {
+    display: block;
+  }
+}
+
+/* 3:2 */
+@container (min-aspect-ratio: 16330/10000) {
+  .card_32 [data-size="card"] {
+    display: none;
+  }
+  .card_32 [data-size="wide"] {
+    display: block;
+  }
+}
+@container (min-aspect-ratio: 23094/10000) {
+  .card_32 [data-size="wide"] {
+    display: none;
+  }
+  .card_32 [data-size="banner"] {
+    display: block;
+  }
+}
+
+/* 16:10 */
+@container (min-aspect-ratio: 16865/10000) {
+  .card_1610 [data-size="card"] {
+    display: none;
+  }
+  .card_1610 [data-size="wide"] {
+    display: block;
+  }
+}
+@container (min-aspect-ratio: 23094/10000) {
+  .card_1610 [data-size="wide"] {
+    display: none;
+  }
+  .card_1610 [data-size="banner"] {
+    display: block;
+  }
+}
+
+/* Layers. A layer is placed by its frame (inline); the rest is the same for every one. */
+.layer {
+  position: absolute;
+}
+
+.fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cover {
+  object-fit: cover;
+}
+
+.contain {
+  object-fit: contain;
+}
+
+/* A word sits in a box sized for the lines it may take; its text is the one child, and the child never
+   shrinks, so a frame a little off its size lets the text spill rather than lose a line. The padding
+   and the matching negative margin give the clipped text room for the ascenders and descenders that a
+   tight line height puts outside the lines. */
+.words {
+  display: flex;
+  flex-direction: column;
+}
+
+.clamp {
+  flex: none;
+  padding-block: 0.1em;
+  margin-block: -0.1em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+/* A badge sits at the side of its frame its alignment names, in a box as wide as its text. */
+.badge {
+  display: flex;
+  align-items: center;
+}
+
+.pill {
+  max-width: 100%;
+  padding: 0.32em 0.7em;
+}
+
+/* The darkening behind a full photo's words. */
+.fade {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+/* Narrower than 180px (a fractional width included): the photo alone. Last, so it wins. */
+@container (max-width: 179.99px) {
+  .root [data-size] {
+    display: none;
+  }
+  .root [data-thumb] {
+    display: block;
+  }
+}
