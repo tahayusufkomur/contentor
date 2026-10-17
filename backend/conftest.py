@@ -59,7 +59,7 @@ from apps.downloads.models import DownloadFile
 from apps.email_campaigns.models import CampaignRecipient, EmailCampaign
 from apps.live.models import LiveClass, LiveStream
 from apps.mailbox.models import Conversation, Message
-from apps.media.models import Photo
+from apps.media.models import Design, Photo
 from apps.notifications.models import (
     Announcement,
     AnnouncementRecipient,
@@ -361,6 +361,7 @@ TENANT_CLEANUP_MODELS = [
     LiveClass,
     DownloadFile,
     Photo,
+    Design,
     Course,
     AnnouncementRecipient,
     Announcement,
