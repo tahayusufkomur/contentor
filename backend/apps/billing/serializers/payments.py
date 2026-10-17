@@ -11,6 +11,7 @@ class PaymentItemInputSerializer(serializers.Serializer):
         "download": "downloads.downloadfile",
         "live_class": "live.liveclass",
         "live_stream": "live.livestream",
+        "onsite_event": "live.onsiteevent",
         "bundle": "billing.bundle",
     }
 

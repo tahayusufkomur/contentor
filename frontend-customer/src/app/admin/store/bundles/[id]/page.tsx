@@ -39,6 +39,7 @@ const CONTENT_TYPE_NAME_MAP: Record<string, SelectedItem["content_type"]> = {
   "downloads.downloadfile": "download",
   "live.liveclass": "live_class",
   "live.livestream": "live_stream",
+  "live.onsiteevent": "onsite_event",
 };
 
 function normalizeBundleItemType(
@@ -52,7 +53,8 @@ function normalizeBundleItemType(
       contentTypeName === "course" ||
       contentTypeName === "download" ||
       contentTypeName === "live_class" ||
-      contentTypeName === "live_stream"
+      contentTypeName === "live_stream" ||
+      contentTypeName === "onsite_event"
     ) {
       return contentTypeName;
     }

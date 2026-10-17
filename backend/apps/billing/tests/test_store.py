@@ -8,14 +8,17 @@ Tests for:
 Uses shared tenant fixtures from conftest.py.
 """
 
+from datetime import timedelta
 from decimal import Decimal
 
 import pytest
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.billing.models import Bundle, BundleItem
 from apps.courses.models import Course
+from apps.live.models import OnsiteEvent
 
 SHARED_DOMAIN = "shared-test.localhost"
 
@@ -80,6 +83,17 @@ def paid_bundle(tenant_ctx, paid_course):
     return b
 
 
+def make_onsite_event(owner, title, *, days_from_now=7, pricing_type="paid"):
+    return OnsiteEvent.objects.create(
+        title=title,
+        instructor=owner,
+        status="scheduled",
+        pricing_type=pricing_type,
+        price=Decimal("20.00") if pricing_type == "paid" else Decimal("0.00"),
+        scheduled_at=timezone.now() + timedelta(days=days_from_now),
+    )
+
+
 def make_client(user=None):
     """Return an APIClient routing requests to the test tenant."""
     client = APIClient(HTTP_HOST=SHARED_DOMAIN)
@@ -138,6 +152,18 @@ class TestStoreList:
         for item in data:
             assert "paid" in item["title"].lower()
 
+    def test_lists_paid_in_person_classes_still_to_come(self, owner, student):
+        """A paid in-person class is sold in the store until it is over; a free one never is."""
+        make_onsite_event(owner, "Saturday Pads")
+        make_onsite_event(owner, "Last Week's Pads", days_from_now=-7)
+        make_onsite_event(owner, "Open Day", pricing_type="free")
+        response = make_client(student).get("/api/v1/billing/store/?type=onsite_event")
+        assert response.status_code == 200, response.content
+        data = response.json()
+        assert [item["title"] for item in data] == ["Saturday Pads"]
+        assert data[0]["price"] == "20.00"
+        assert data[0]["access_info"]["unlock_methods"] == ["purchase"]
+
     def test_unauthenticated_sees_items(self, paid_course):
         """Unauthenticated client gets items with has_access=False."""
         client = APIClient(HTTP_HOST=SHARED_DOMAIN)
@@ -166,6 +192,20 @@ class TestProductsList:
         assert len(data) >= 1
         for item in data:
             assert "sales_count" in item
+
+    def test_in_person_class_sales_are_counted(self, owner, student, settings):
+        """The coach's product list counts the seats sold, also for a class that is over."""
+        settings.BILLING_BYPASS_ENABLED = True
+        event = make_onsite_event(owner, "Saturday Pads")
+        bought = make_client(student).post(
+            "/api/v1/billing/payments/initialize/",
+            data={"items": [{"content_type": "onsite_event", "object_id": event.pk}]},
+            format="json",
+        )
+        assert bought.status_code == 201, bought.content
+        OnsiteEvent.objects.filter(pk=event.pk).update(scheduled_at=timezone.now() - timedelta(days=1))
+        products = make_client(owner).get("/api/v1/billing/products/").json()
+        assert [(p["type"], p["id"], p["sales_count"]) for p in products] == [("onsite_event", event.pk, 1)]
 
     def test_student_forbidden_products(self, paid_course, student):
         """Student receives 403 on /products/."""

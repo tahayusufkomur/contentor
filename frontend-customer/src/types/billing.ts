@@ -34,7 +34,13 @@ export interface StoreItem {
   id: number;
   title: string;
   description: string;
-  type: "course" | "download" | "live_class" | "live_stream" | "bundle";
+  type:
+    | "course"
+    | "download"
+    | "live_class"
+    | "live_stream"
+    | "onsite_event"
+    | "bundle";
   price: string;
   currency: string;
   thumbnail_url: string;

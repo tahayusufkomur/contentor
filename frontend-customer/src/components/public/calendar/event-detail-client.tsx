@@ -129,10 +129,12 @@ export function EventDetailClient({
                 {event.ended_at ? ` — ${formatTime(event.ended_at, tz)}` : ""}
               </span>
             </div>
-            {event.location && (
+            {(event.location || event.address) && (
               <div className="flex items-center gap-3 text-muted-foreground">
                 <MapPin className="h-5 w-5 shrink-0" />
-                <span>{event.location}</span>
+                <span>
+                  {[event.location, event.address].filter(Boolean).join(", ")}
+                </span>
               </div>
             )}
           </div>
@@ -219,6 +221,15 @@ function EventAction({
 
   // Logged in + has access (free, purchased, subscribed, or owner/coach)
   if (hasAccess) {
+    // Held in person: there is nothing to join online.
+    if (event.type === "onsite_event") {
+      return (
+        <p className="text-center text-sm text-muted-foreground">
+          You can attend this event.
+          {event.address ? " The address is in the details." : ""}
+        </p>
+      );
+    }
     if (isLive) {
       const joinHref =
         event.type === "live_stream"

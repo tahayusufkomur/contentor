@@ -126,6 +126,19 @@ class TestBundleCreate:
         assert len(data["items"]) == 1
         assert data["items"][0]["object_id"] == course.pk
 
+    def test_bundle_can_include_an_in_person_class(self, owner):
+        from apps.live.models import OnsiteEvent
+
+        event = OnsiteEvent.objects.create(title="Pads", instructor=owner, pricing_type="paid", price=Decimal("20.00"))
+        payload = {
+            "name": "Studio Pack",
+            "price": "50.00",
+            "items": [{"content_type": "onsite_event", "object_id": event.pk}],
+        }
+        response = make_client(owner).post("/api/v1/billing/bundles/", data=payload, format="json")
+        assert response.status_code == 201, response.content
+        assert response.json()["items"][0]["content_type_name"] == "live.onsiteevent"
+
     def test_bundle_currency_is_the_tenants_not_the_clients(self, owner, course):
         """Students must never see a currency the coach did not charge in."""
         from apps.billing.models import Bundle

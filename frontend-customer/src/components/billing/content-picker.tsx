@@ -32,7 +32,7 @@ const TYPE_FILTERS = [
   { label: "Download", value: "download" },
   { label: "Live Class", value: "live_class" },
   { label: "Live Stream", value: "live_stream" },
-  { label: "On-site Event", value: "onsite_event" },
+  { label: "In-Person Class", value: "onsite_event" },
 ];
 
 const TYPE_LABEL_MAP: Record<string, string> = {
@@ -40,7 +40,7 @@ const TYPE_LABEL_MAP: Record<string, string> = {
   download: "Download",
   live_class: "Live Class",
   live_stream: "Live Stream",
-  onsite_event: "On-site Event",
+  onsite_event: "In-Person Class",
 };
 
 const TYPE_BADGE_VARIANT: Record<

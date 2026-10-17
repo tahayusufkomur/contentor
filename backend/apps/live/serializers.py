@@ -453,3 +453,4 @@ class AccessInfoSerializer(serializers.Serializer):
 
 class CalendarEventDetailSerializer(CalendarEventSerializer):
     access_info = AccessInfoSerializer()
+    address = serializers.CharField(allow_blank=True, default="")

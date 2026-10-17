@@ -9,9 +9,11 @@ Tests for:
 Uses shared tenant fixtures from conftest.py.
 """
 
+from datetime import timedelta
 from decimal import Decimal
 
 import pytest
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
@@ -24,6 +26,7 @@ from apps.billing.models import (
     SubscriptionPlan,
 )
 from apps.courses.models import Course, Enrollment
+from apps.live.models import OnsiteEvent
 
 SHARED_DOMAIN = "shared-test.localhost"
 
@@ -62,6 +65,20 @@ def paid_course(tenant_ctx, owner):
         pricing_type="paid",
         price=Decimal("99.00"),
         is_published=True,
+    )
+
+
+@pytest.fixture()
+def paid_onsite_event(tenant_ctx, owner):
+    return OnsiteEvent.objects.create(
+        title="Saturday Pads",
+        instructor=owner,
+        status="scheduled",
+        location="Riverside Gym",
+        address="12 Mill Lane",
+        pricing_type="paid",
+        price=Decimal("20.00"),
+        scheduled_at=timezone.now() + timedelta(days=7),
     )
 
 
@@ -192,6 +209,49 @@ class TestPaymentInitialize:
         # Second purchase should fail
         resp2 = client.post("/api/v1/billing/payments/initialize/", data=payload, format="json")
         assert resp2.status_code == 400, resp2.content
+
+    def test_buying_an_in_person_class_reveals_its_address(self, student, paid_onsite_event):
+        """The street address is hidden until the student has paid for the class."""
+        client = make_client(student)
+        detail_url = f"/api/v1/calendar/onsite_event/{paid_onsite_event.pk}/"
+        before = client.get(detail_url).json()
+        assert before["location"] == "Riverside Gym"
+        assert before["address"] == ""
+        assert before["access_info"]["unlock_methods"] == ["purchase"]
+
+        payload = {"items": [{"content_type": "onsite_event", "object_id": paid_onsite_event.pk}]}
+        response = client.post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        assert response.status_code == 201, response.content
+        assert response.json()["amount"] == "20.00"
+
+        after = client.get(detail_url).json()
+        assert after["access_info"]["access_reason"] == "purchased"
+        assert after["address"] == "12 Mill Lane"
+        assert client.get(f"/api/v1/onsite-events/{paid_onsite_event.pk}/").json()["address"] == "12 Mill Lane"
+
+    def test_full_in_person_class_cannot_be_bought(self, student, paid_onsite_event):
+        """Seats sold stop at max_capacity; a refund frees the seat again."""
+        OnsiteEvent.objects.filter(pk=paid_onsite_event.pk).update(max_capacity=1)
+        payload = {"items": [{"content_type": "onsite_event", "object_id": paid_onsite_event.pk}]}
+        first = make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        assert first.status_code == 201, first.content
+
+        late = make_client(
+            User.objects.create_user(email="late@paymenttest.com", name="Late", password="secret123", role="student")
+        )
+        refused = late.post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        assert refused.status_code == 400, refused.content
+        assert "sold out" in refused.json()["detail"]
+
+        PaymentItem.objects.filter(payment_id=first.json()["payment_id"]).update(is_refunded=True)
+        assert late.post("/api/v1/billing/payments/initialize/", data=payload, format="json").status_code == 201
+
+    def test_in_person_class_that_is_over_cannot_be_bought(self, student, paid_onsite_event):
+        OnsiteEvent.objects.filter(pk=paid_onsite_event.pk).update(scheduled_at=timezone.now() - timedelta(days=1))
+        payload = {"items": [{"content_type": "onsite_event", "object_id": paid_onsite_event.pk}]}
+        response = make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        assert response.status_code == 400, response.content
+        assert not Payment.objects.filter(student=student).exists()
 
     def test_unauthenticated_returns_401(self, paid_course):
         """Unauthenticated user gets 401."""

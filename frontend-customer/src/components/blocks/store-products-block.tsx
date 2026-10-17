@@ -13,6 +13,7 @@ const TYPE_LABELS: Record<string, string> = {
   download: "Download",
   live_class: "Live Class",
   live_stream: "Live Stream",
+  onsite_event: "In-Person Class",
   bundle: "Bundle",
 };
 

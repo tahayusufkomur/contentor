@@ -43,7 +43,7 @@ const TYPE_CONFIG: Record<
     icon: Tv,
   },
   onsiteevent: {
-    label: "On-site Event",
+    label: "In-Person Class",
     icon: MapPin,
   },
   download: {

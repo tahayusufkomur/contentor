@@ -19,6 +19,7 @@ from apps.core.monetization import can_monetize
 from apps.core.pagination import StandardPagination
 from apps.core.permissions import IsOwner
 from apps.courses.models import Course, Enrollment
+from apps.live.models import OnsiteEvent
 
 from ..models import Bundle, BundleItem, Payment, PaymentItem, Subscription, SubscriptionPlan
 from ..serializers.payments import PaymentInitializeSerializer, PaymentItemInputSerializer
@@ -70,6 +71,27 @@ def _get_fee_pct() -> Decimal:
     return Decimal("10")
 
 
+def _seat_unavailable(obj) -> str | None:
+    """Why an in-person class can't be bought right now (no date, over, or full)."""
+    if not isinstance(obj, OnsiteEvent):
+        return None
+    if obj.computed_status in ("draft", "ended"):
+        return "is not on sale"
+    if obj.max_capacity is not None:
+        # ponytail: counts seats bought on their own. A seat is not held while a
+        # buyer is in Stripe checkout, and seats that come with a bundle are not
+        # counted; a seat-hold model if classes start overselling.
+        sold = PaymentItem.objects.filter(
+            content_type=ContentType.objects.get_for_model(OnsiteEvent),
+            object_id=obj.pk,
+            payment__status__in=("completed", "partially_refunded"),
+            is_refunded=False,
+        ).count()
+        if sold >= obj.max_capacity:
+            return "is sold out"
+    return None
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def payment_initialize(request):
@@ -119,6 +141,13 @@ def payment_initialize(request):
         if access_info.has_access and access_info.access_reason in ("purchased", "bundle"):
             return Response(
                 {"detail": f"Item '{obj}' is already owned by this user."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        seat_problem = _seat_unavailable(obj)
+        if seat_problem:
+            return Response(
+                {"detail": f"'{obj}' {seat_problem}."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

@@ -92,7 +92,10 @@ export interface OnsiteEvent {
 }
 
 export type CalendarEventType =
-  "live_class" | "live_stream" | "onsite_event" | "zoom_class";
+  | "live_class"
+  | "live_stream"
+  | "onsite_event"
+  | "zoom_class";
 
 export interface CalendarEvent {
   id: number;
@@ -114,4 +117,6 @@ export interface CalendarEvent {
 
 export interface CalendarEventDetail extends CalendarEvent {
   access_info: AccessInfo;
+  /** Street address of an in-person class; empty until the viewer has access. */
+  address?: string;
 }

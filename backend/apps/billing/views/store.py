@@ -15,7 +15,7 @@ from apps.core.permissions import IsCoachOrOwner
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.courses.models import Course
 from apps.downloads.models import DownloadFile
-from apps.live.models import LiveClass, LiveStream
+from apps.live.models import LiveClass, LiveStream, OnsiteEvent
 
 
 def _thumbnail_url(obj):
@@ -128,6 +128,24 @@ def _collect_store_items():
             }
         )
 
+    # In-person classes: paid
+    for event in OnsiteEvent.objects.filter(pricing_type="paid").select_related("thumbnail"):
+        items.append(
+            {
+                "id": event.pk,
+                "title": event.title,
+                "description": event.description,
+                "type": "onsite_event",
+                "price": event.price,
+                "currency": currency,
+                "thumbnail_url": _thumbnail_url(event),
+                "is_active": True,
+                "item_count": 0,
+                "original_price": None,
+                "_obj": event,
+            }
+        )
+
     # Bundles: active
     for bundle in Bundle.objects.filter(is_active=True).prefetch_related("items"):
         items.append(
@@ -152,7 +170,12 @@ def _collect_store_items():
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def store_list(request):
-    items = _collect_store_items()
+    # An in-person class with no date yet, or one that is over, is not for sale.
+    items = [
+        i
+        for i in _collect_store_items()
+        if not (i["type"] == "onsite_event" and i["_obj"].computed_status in ("draft", "ended"))
+    ]
 
     # Filter by type
     type_filter = request.query_params.get("type")
@@ -203,6 +226,7 @@ def products_list(request):
         "download": DownloadFile,
         "live_class": LiveClass,
         "live_stream": LiveStream,
+        "onsite_event": OnsiteEvent,
         "bundle": Bundle,
     }
 

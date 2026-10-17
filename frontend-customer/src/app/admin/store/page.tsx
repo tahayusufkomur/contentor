@@ -55,6 +55,7 @@ function ProductTypeBadge({ type }: { type: string }) {
     download: "secondary",
     live_class: "warning",
     live_stream: "success",
+    onsite_event: "outline",
     bundle: "default",
   };
   const labelMap: Record<string, string> = {
@@ -62,6 +63,7 @@ function ProductTypeBadge({ type }: { type: string }) {
     download: "Download",
     live_class: "Live Class",
     live_stream: "Live Stream",
+    onsite_event: "In-Person Class",
     bundle: "Bundle",
   };
   return (

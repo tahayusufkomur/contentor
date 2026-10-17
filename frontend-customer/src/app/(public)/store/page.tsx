@@ -38,13 +38,20 @@ import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 type FilterType =
-  "all" | "course" | "download" | "live_class" | "live_stream" | "bundle";
+  | "all"
+  | "course"
+  | "download"
+  | "live_class"
+  | "live_stream"
+  | "onsite_event"
+  | "bundle";
 
 const TYPE_LABELS: Record<string, string> = {
   course: "Course",
   download: "Download",
   live_class: "Live Class",
   live_stream: "Live Stream",
+  onsite_event: "In-Person Class",
   bundle: "Bundle",
 };
 
@@ -54,6 +61,7 @@ const FILTER_BUTTONS: { value: FilterType; label: string }[] = [
   { value: "download", label: "Downloads" },
   { value: "live_class", label: "Live Classes" },
   { value: "live_stream", label: "Live Streams" },
+  { value: "onsite_event", label: "In-Person Classes" },
   { value: "bundle", label: "Bundles" },
 ];
 
@@ -79,6 +87,7 @@ function getContentType(type: string): string {
     download: "download",
     live_class: "live_class",
     live_stream: "live_stream",
+    onsite_event: "onsite_event",
     bundle: "bundle",
   };
   return map[type] ?? type;

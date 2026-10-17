@@ -532,6 +532,8 @@ def calendar_event_detail(request, event_type, pk):
             )
 
     event["access_info"] = asdict(info)
+    # The street address is for those who can attend; the place name stays public.
+    event["address"] = getattr(obj, "address", "") if info.has_access else ""
 
     serializer = CalendarEventDetailSerializer(event)
     return Response(serializer.data)

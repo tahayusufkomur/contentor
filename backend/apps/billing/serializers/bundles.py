@@ -26,6 +26,7 @@ class BundleItemWriteSerializer(serializers.Serializer):
         "download": "downloads.downloadfile",
         "live_class": "live.liveclass",
         "live_stream": "live.livestream",
+        "onsite_event": "live.onsiteevent",
     }
 
     content_type = serializers.ChoiceField(choices=list(CONTENT_TYPE_MAP.keys()))
