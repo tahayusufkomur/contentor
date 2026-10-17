@@ -131,10 +131,10 @@
     "plan": "Your Contentor plan"
   },
   "dock": {
-    "title": "Assistant",
+    "title": "Your team",
     "close": "Close the assistant",
     "tabs": {
-      "assistant": "Assistant",
+      "assistant": "Team",
       "setup": "Setup",
       "help": "Help",
       "history": "History"
@@ -196,6 +196,70 @@
       ]
     },
     "undoFailed": "That did not work. Please try again."
+  },
+  "team": {
+    "label": "Your team",
+    "picked": "You picked them",
+    "answersIn": "Answers first in {section}",
+    "ask": "Ask the {name}…",
+    "specialists": {
+      "designer": {
+        "name": "Designer",
+        "job": "Your site, look, logo and photos"
+      },
+      "content": {
+        "name": "Content Creating Specialist",
+        "job": "Courses, classes and downloads"
+      },
+      "marketing": {
+        "name": "Marketing Specialist",
+        "job": "Articles, campaigns and search"
+      },
+      "community": {
+        "name": "Community manager",
+        "job": "Students, community and inbox"
+      },
+      "finance": {
+        "name": "Financial Strategist",
+        "job": "Prices, memberships, sales and payouts"
+      },
+      "assistant": {
+        "name": "Assistant",
+        "job": "Front desk: finds the right specialist"
+      }
+    },
+    "starters": {
+      "designer": [
+        "Make my home page feel warmer",
+        "Give my courses matching covers",
+        "Try a calmer look for my site"
+      ],
+      "content": [
+        "Draft a course from an idea",
+        "Schedule a weekly class for the next 4 weeks",
+        "Which courses are still drafts?"
+      ],
+      "marketing": [
+        "Suggest three article ideas for my students",
+        "Write an article about my newest course",
+        "Improve the text Google shows for my site"
+      ],
+      "community": [
+        "How many students joined this week?",
+        "Who went quiet lately?",
+        "Draft a welcome for new students"
+      ],
+      "finance": [
+        "How did sales go this month?",
+        "What should I charge for my next course?",
+        "How do I get paid?"
+      ],
+      "assistant": [
+        "What should I do next?",
+        "Who on my team does what?",
+        "How did this week go?"
+      ]
+    }
   },
   "assistant": {
     "title": "Site assistant",

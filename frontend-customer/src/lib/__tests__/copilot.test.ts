@@ -52,6 +52,18 @@ describe("buildSelectionPayload", () => {
 });
 
 describe("chat state", () => {
+  it("keeps who on the team wrote the reply", () => {
+    const next = reduceChat([], {
+      kind: "answer",
+      text: "Sales are up.",
+      specialist: "finance",
+    });
+    expect(next.at(-1)).toMatchObject({
+      role: "assistant",
+      specialist: "finance",
+    });
+  });
+
   const entries: ChatEntry[] = [{ role: "coach", text: "hi" }];
 
   it("appends answers and action cards", () => {

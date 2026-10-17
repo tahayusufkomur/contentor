@@ -19,6 +19,7 @@ export function reduceChat(
       text: done.text ?? "",
       cards: done.actions,
       kind: done.kind,
+      ...(done.specialist ? { specialist: done.specialist } : {}),
     },
   ];
 }

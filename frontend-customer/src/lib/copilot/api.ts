@@ -12,6 +12,7 @@ import type {
   ExecuteResponse,
   SelectionPayload,
 } from "./types";
+import type { SpecialistKey } from "./team";
 
 const BASE = "/api/v1/admin/copilot";
 
@@ -22,6 +23,8 @@ export const converseCopilot = (
     selections: SelectionPayload[];
     attached_photos?: string[];
     context?: CopilotContext;
+    /** Who on the team answers this turn. */
+    specialist?: SpecialistKey;
   },
   handlers: AiStreamHandlers<never>,
   signal?: AbortSignal,

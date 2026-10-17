@@ -1,3 +1,5 @@
+import type { SpecialistKey } from "./team";
+
 export interface SelectionPayload {
   path: string;
   block_id: string | null;
@@ -63,6 +65,8 @@ export interface ActionCard {
    * "creating your photo" reveal before showing the image. */
   reveal?: boolean;
   token: string;
+  /** The specialist who signs this work. */
+  owner?: SpecialistKey;
 }
 
 export interface ExecuteResult {
@@ -83,6 +87,8 @@ export interface CopilotDone {
   kind: "answer" | "ask" | "actions" | "unavailable";
   text?: string;
   actions?: ActionCard[];
+  /** Who on the team answered. */
+  specialist?: SpecialistKey;
 }
 
 export interface ChatEntry {
@@ -90,6 +96,8 @@ export interface ChatEntry {
   text: string;
   cards?: ActionCard[];
   kind?: CopilotDone["kind"];
+  /** Who on the team wrote an assistant reply. */
+  specialist?: SpecialistKey;
   /** Photos the coach attached to this message — kept in the transcript so
    * follow-up turns ("use it as the logo") can still reference the ids.
    * desc = the vision caption, so the model knows what each photo shows.
