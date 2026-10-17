@@ -81,7 +81,7 @@ def kept(kind, key, picture):
 def keep_with_history(coach, draft):
     """Keep it the way the designs API does, History row included."""
     result, inverse = designs.keep(draft)
-    action = {"kind": "keep_cover", "design_id": str(draft.pk), "title": result["title"], "made_by": ""}
+    action = {"kind": "keep_cover", "design_id": result["design_id"], "title": result["title"], "made_by": ""}
     audit_id = copilot_views._record_audit(connection.tenant, coach, action, result, inverse)
     assert audit_id is not None
     return result, inverse, audit_id
@@ -182,7 +182,8 @@ def test_keep_course_sets_thumbnail_and_returns_inverse(coach):
     assert draft.state == "kept"
     assert draft.kept_at is not None
     assert result == {
-        "id": str(draft.pk),
+        "id": item.pk,  # the record that was touched: what the page showing it reloads on after an Undo
+        "design_id": str(draft.pk),
         "title": "Yoga Basics",
         "target_kind": "course",
         "target_key": str(item.pk),
@@ -202,12 +203,17 @@ def test_keep_series_sets_every_row(coach):
     old, new = photo("old"), photo("new")
     morning = [session(coach, thumbnail=old, days=day) for day in (1, 2, 3)]
     evening = session(coach, title="Evening Flow", thumbnail=old)
-    result, inverse = designs.keep(designs.open_draft("live", "Morning Flow", recipe=on(new)))
+    draft = designs.open_draft("live", "Morning Flow", recipe=on(new))
+    result, inverse = designs.keep(draft)
     assert {row.thumbnail_id for row in LiveClass.objects.filter(title="Morning Flow")} == {new.pk}
     evening.refresh_from_db()
     assert evening.thumbnail_id == old.pk
     assert set(inverse["thumbnails"]) == {str(row.pk) for row in morning}
     assert (result["title"], result["target_kind"], result["target_key"]) == ("Morning Flow", "live", "Morning Flow")
+    # a series is touched through its first row
+    assert result["id"] == designs.target_rows("live", "Morning Flow")[0].pk
+    assert result["id"] in {row.pk for row in morning}
+    assert result["design_id"] == str(draft.pk)
 
 
 def test_keep_without_a_photo_clears_the_rows_photo(coach):
@@ -331,7 +337,8 @@ def test_undo_endpoint_restores_cover(coach, client):
     response = undo(client, audit_id)
 
     assert response.status_code == 200, response.content
-    assert response.json()["undone"] == "keep_cover"
+    # the course, so the admin page showing it reloads (as after Undo of set_course_cover)
+    assert response.json() == {"undone": "keep_cover", "id": item.pk}
     item.refresh_from_db()
     draft.refresh_from_db()
     assert item.thumbnail_id == old.pk
@@ -385,6 +392,7 @@ def test_a_session_added_later_does_not_stale_the_undo(coach, client):
     response = undo(client, audit_id)
 
     assert response.status_code == 200, response.content
+    assert response.json()["id"] == first.pk  # a series is reported through its first row
     first.refresh_from_db()
     later.refresh_from_db()
     assert first.thumbnail_id == old.pk  # only the rows that Keep wrote to are restored

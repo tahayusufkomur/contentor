@@ -145,7 +145,9 @@ def open_draft(
 def keep(design: Design) -> tuple[dict, dict]:
     """Make a draft the cover of its course or event series: its photo (none included) goes onto every
     row of the target, and the design kept before it is retired. Returns `(result, inverse)` for the
-    History row; `restore_cover(inverse)` is Undo."""
+    History row; `restore_cover(inverse)` is Undo. As for the other cover changes, `result["id"]` is
+    the record that was touched (the course, or the first row of the series), which is what the page
+    showing it reloads on when History undoes this; the design's own id is `result["design_id"]`."""
     with transaction.atomic():
         try:
             # Locked and current: a double submit waits here and then finds it kept.
@@ -183,7 +185,8 @@ def keep(design: Design) -> tuple[dict, dict]:
             row.thumbnail_id = photo_id
             row.save(update_fields=["thumbnail"])
     result = {
-        "id": str(design.pk),
+        "id": rows[0].pk,
+        "design_id": str(design.pk),
         "title": target_title(design.target_kind, design.target_key),
         "target_kind": design.target_kind,
         "target_key": design.target_key,
