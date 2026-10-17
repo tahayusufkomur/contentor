@@ -2,10 +2,11 @@
 //
 // Coach Copilot (backend/apps/core/copilot/; frontend
 // components/copilot/): the floating coach-only assistant on the tenant
-// site. Converse is stubbed at the network layer (real AI is slow and
-// non-deterministic); execute is stubbed so the spec never mutates
-// demo-yoga's real pages. What's under test is the widget loop: open via
-// deep link -> chat -> action card -> confirm -> executed.
+// site. Its turns are runs (start, then follow the events), stubbed at the
+// network layer (real AI is slow and non-deterministic); execute is stubbed
+// so the spec never mutates demo-yoga's real pages. What's under test is
+// the widget loop: open via deep link -> chat -> action card -> confirm ->
+// executed.
 
 import { test, expect } from "@playwright/test";
 import { coachContext, TENANT } from "../helpers/auth";
@@ -33,21 +34,101 @@ async function mockEmptyChats(page: import("@playwright/test").Page) {
   });
 }
 
+type Page = import("@playwright/test").Page;
+type Body = Record<string, any>;
+
+// The panel's turns are runs: POST runs/ starts one, GET runs/<id>/ returns
+// its events. `reply` is the turn's payload (what converse used to stream);
+// the first `pendingPolls` polls of each run answer "still thinking".
+async function stubRuns(
+  page: Page,
+  reply: (body: Body, n: number) => Body,
+  { pendingPolls = 0 }: { pendingPolls?: number } = {},
+) {
+  const sent: Body[] = [];
+  const stopped = new Set<number>();
+  const runs = new Map<number, { body: Body; payload: Body; polls: number }>();
+  await page.route("**/api/v1/admin/copilot/runs/**", async (route) => {
+    const req = route.request();
+    const path = new URL(req.url()).pathname;
+    if (path.endsWith("/runs/") && req.method() === "POST") {
+      const body = req.postDataJSON();
+      sent.push(body);
+      const id = 4240 + sent.length;
+      runs.set(id, { body, payload: reply(body, sent.length), polls: 0 });
+      return route.fulfill({
+        status: 201,
+        json: { id, status: "queued", specialist: body.specialist ?? "assistant" },
+      });
+    }
+    if (path.endsWith("/runs/open/")) return route.fulfill({ json: { runs: [] } });
+    const match = path.match(/\/runs\/(\d+)\/(stop\/|seen\/)?$/);
+    const run = match ? runs.get(Number(match[1])) : undefined;
+    if (!match || !run) return route.fallback();
+    const id = Number(match[1]);
+    if (match[2] === "stop/") {
+      stopped.add(id);
+      return route.fulfill({ json: { status: "stopped" } });
+    }
+    if (match[2] === "seen/") return route.fulfill({ status: 204, body: "" });
+    run.polls += 1;
+    const at = new Date().toISOString();
+    const head = {
+      id,
+      specialist: run.body.specialist ?? "assistant",
+      chat: run.body.chat ?? null,
+      seen: false,
+    };
+    const thinking = { seq: 1, type: "thinking", data: {}, at };
+    if (stopped.has(id))
+      return route.fulfill({
+        json: { ...head, status: "stopped", events: [thinking, { seq: 2, type: "stopped", data: {}, at }] },
+      });
+    if (run.polls <= pendingPolls)
+      return route.fulfill({ json: { ...head, status: "thinking", events: [thinking] } });
+    return route.fulfill({
+      json: {
+        ...head,
+        status: "done",
+        events: [
+          thinking,
+          { seq: 2, type: "reply", data: { payload: run.payload }, at },
+          { seq: 3, type: "done", data: {}, at },
+        ],
+      },
+    });
+  });
+  return { sent, stopped };
+}
+
+// One chat kept in memory: what the panel saves is what it reopens.
+async function memoryChats(page: Page) {
+  let chat: Body | null = null;
+  await page.route(/\/api\/v1\/admin\/copilot\/chats\//, async (route) => {
+    const req = route.request();
+    const listing = new URL(req.url()).pathname.endsWith("/chats/");
+    if (req.method() === "POST") {
+      chat = { id: 999, title: "e2e", updated_at: new Date().toISOString(), entries: req.postDataJSON().entries ?? [] };
+      return route.fulfill({ status: 201, json: chat });
+    }
+    if (req.method() === "PATCH" && chat) {
+      chat = { ...chat, entries: req.postDataJSON().entries ?? chat.entries };
+      return route.fulfill({ json: chat });
+    }
+    if (listing) return route.fulfill({ json: { chats: chat ? [chat] : [] } });
+    return route.fulfill({ json: chat ?? { id: 999, title: "e2e", updated_at: new Date().toISOString(), entries: [] } });
+  });
+}
+
 test("coach opens the copilot, gets an action card, and confirms it", async ({ browser }) => {
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
 
-  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "text/event-stream",
-      body:
-        'data: {"type":"phase","phase":"thinking"}\n\n' +
-        'data: {"type":"done","kind":"actions","text":"Here is my plan.",' +
-        '"actions":[{"kind":"add_block","title":"Add cta to home",' +
-        '"detail":"heading: Join us","token":"e2e-token"}]}\n\n',
-    });
-  });
+  await stubRuns(page, () => ({
+    kind: "actions",
+    text: "Here is my plan.",
+    actions: [{ kind: "add_block", title: "Add cta to home", detail: "heading: Join us", token: "e2e-token" }],
+  }));
   let executed = false;
   await page.route("**/api/v1/admin/copilot/execute/", async (route) => {
     executed = true;
@@ -83,17 +164,18 @@ test("a create-course card confirms and links to the new draft", async ({ browse
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
 
-  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "text/event-stream",
-      body:
-        'data: {"type":"phase","phase":"thinking"}\n\n' +
-        'data: {"type":"done","kind":"actions","text":"Course plan ready.",' +
-        '"actions":[{"kind":"create_course","title":"Create draft course: Yoga 101",' +
-        '"detail":"2 module(s), 6 lesson(s) — free","token":"e2e-course-token"}]}\n\n',
-    });
-  });
+  await stubRuns(page, () => ({
+    kind: "actions",
+    text: "Course plan ready.",
+    actions: [
+      {
+        kind: "create_course",
+        title: "Create draft course: Yoga 101",
+        detail: "2 module(s), 6 lesson(s) — free",
+        token: "e2e-course-token",
+      },
+    ],
+  }));
   let executed = false;
   await page.route("**/api/v1/admin/copilot/execute/", async (route) => {
     executed = true;
@@ -118,17 +200,18 @@ test("an edit-style card confirms and applies", async ({ browser }) => {
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
 
-  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "text/event-stream",
-      body:
-        'data: {"type":"phase","phase":"thinking"}\n\n' +
-        'data: {"type":"done","kind":"actions","text":"Switching it up.",' +
-        '"actions":[{"kind":"edit_style","title":"Switch the site style to Nocturne",' +
-        '"detail":"Every section keeps its content and takes the new layout — you can switch back anytime.","token":"e2e-style-token"}]}\n\n',
-    });
-  });
+  await stubRuns(page, () => ({
+    kind: "actions",
+    text: "Switching it up.",
+    actions: [
+      {
+        kind: "edit_style",
+        title: "Switch the site style to Nocturne",
+        detail: "Every section keeps its content and takes the new layout — you can switch back anytime.",
+        token: "e2e-style-token",
+      },
+    ],
+  }));
   let executed = false;
   await page.route("**/api/v1/admin/copilot/execute/", async (route) => {
     executed = true;
@@ -150,15 +233,10 @@ test("a KB-grounded answer renders admin links as buttons, not raw paths", async
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
 
-  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "text/event-stream",
-      body:
-        'data: {"type":"phase","phase":"thinking"}\n\n' +
-        'data: {"type":"done","kind":"answer","text":"You get paid through Stripe payouts. [Payouts](/admin/payouts)"}\n\n',
-    });
-  });
+  await stubRuns(page, () => ({
+    kind: "answer",
+    text: "You get paid through Stripe payouts. [Payouts](/admin/payouts)",
+  }));
   await mockEmptyChats(page);
   await page.goto(`${TENANT}/?copilot=1`);
   await page.getByTestId("copilot-input").fill("how do I get paid?");
@@ -173,19 +251,19 @@ test("edit_block_fields card shows diff rows and confirms", async ({ browser }) 
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
 
-  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "text/event-stream",
-      body:
-        'data: {"type":"phase","phase":"thinking"}\n\n' +
-        'data: {"type":"done","kind":"actions","text":"Updating the hero.",' +
-        '"actions":[{"kind":"edit_block_fields","title":"Update the hero on home",' +
-        '"detail":"1 field(s) change",' +
-        '"changes":[{"page":"home","block_type":"hero","field":"ctaHref","old":"/courses","new":"/pricing"}],' +
-        '"token":"e2e-fields-token"}]}\n\n',
-    });
-  });
+  await stubRuns(page, () => ({
+    kind: "actions",
+    text: "Updating the hero.",
+    actions: [
+      {
+        kind: "edit_block_fields",
+        title: "Update the hero on home",
+        detail: "1 field(s) change",
+        changes: [{ page: "home", block_type: "hero", field: "ctaHref", old: "/courses", new: "/pricing" }],
+        token: "e2e-fields-token",
+      },
+    ],
+  }));
   let executed = false;
   await page.route("**/api/v1/admin/copilot/execute/", async (route) => {
     executed = true;
@@ -208,19 +286,19 @@ test("a set-block-image card shows the photo preview and applies", async ({ brow
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
 
-  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "text/event-stream",
-      body:
-        'data: {"type":"phase","phase":"thinking"}\n\n' +
-        'data: {"type":"done","kind":"actions","text":"Here is a photo that fits.",' +
-        '"actions":[{"kind":"set_block_image","title":"Use the photo \'Sunlit yoga studio\'",' +
-        '"detail":"Ask for a different style anytime — nothing changes until you apply.",' +
-        '"image_url":"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==",' +
-        '"token":"e2e-photo-token"}]}\n\n',
-    });
-  });
+  await stubRuns(page, () => ({
+    kind: "actions",
+    text: "Here is a photo that fits.",
+    actions: [
+      {
+        kind: "set_block_image",
+        title: "Use the photo 'Sunlit yoga studio'",
+        detail: "Ask for a different style anytime — nothing changes until you apply.",
+        image_url: "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==",
+        token: "e2e-photo-token",
+      },
+    ],
+  }));
   let executed = false;
   await page.route("**/api/v1/admin/copilot/execute/", async (route) => {
     executed = true;
@@ -261,15 +339,7 @@ test("chats persist server-side: reload resumes, New chat starts fresh, the list
   // residue from an earlier execution.
   const marker = `remember this ${Date.now()}`;
 
-  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "text/event-stream",
-      body:
-        'data: {"type":"phase","phase":"thinking"}\n\n' +
-        'data: {"type":"done","kind":"answer","text":"Persisted answer."}\n\n',
-    });
-  });
+  await stubRuns(page, () => ({ kind: "answer", text: "Persisted answer." }));
   await page.goto(`${TENANT}/?copilot=1`);
   await expect(page.getByText("Your AI assistant").first()).toBeVisible();
   // A fresh thread regardless of what boot resumed.
@@ -340,8 +410,9 @@ test("the copilot rides along into /admin: stays open, keeps the chat, hides Sel
 });
 
 // ── The admin's assistant panel (phase 2 of the admin refactor) ─────────────
-// Converse and execute stay stubbed; what is under test is what the admin
-// sends (the page she is on, the intent of a "Describe it" line) and shows.
+// Runs, converse ("Describe it") and execute stay stubbed; what is under test
+// is what the admin sends (the page she is on, the intent of a "Describe it"
+// line) and shows.
 
 function sse(done: Record<string, unknown>) {
   return {
@@ -356,11 +427,7 @@ test("in the admin the assistant knows the page, offers its starters, and takes 
 }) => {
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
-  const sent: Record<string, any>[] = [];
-  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
-    sent.push(route.request().postDataJSON());
-    await route.fulfill(sse({ kind: "answer", text: `Answer ${sent.length}.` }));
-  });
+  const { sent } = await stubRuns(page, (_body, n) => ({ kind: "answer", text: `Answer ${n}.` }));
   await mockEmptyChats(page);
   await page.goto(`${TENANT}/admin/courses?assistant=assistant`);
 
@@ -389,11 +456,7 @@ test("in the admin the assistant knows the page, offers its starters, and takes 
 test("the team answers on its own page, and her pick goes with the question", async ({ browser }) => {
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
-  const sent: Record<string, any>[] = [];
-  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
-    sent.push(route.request().postDataJSON());
-    await route.fulfill(sse({ kind: "answer", text: "Sales are steady.", specialist: "finance" }));
-  });
+  const { sent } = await stubRuns(page, () => ({ kind: "answer", text: "Sales are steady.", specialist: "finance" }));
   await mockEmptyChats(page);
   await page.goto(`${TENANT}/admin/courses?assistant=assistant`);
 
@@ -412,6 +475,8 @@ test("the team answers on its own page, and her pick goes with the question", as
   await panel.getByRole("button", { name: "How did sales go this month?" }).click();
   await expect(panel.getByText("Sales are steady.")).toBeVisible();
   expect(sent[0].specialist).toBe("finance");
+  // She watched it arrive: no "ready for you" toast for it.
+  await expect(page.getByText("Financial Strategist is done.")).toHaveCount(0);
   // Faces she did not pick stay legible (dimmed, never faint).
   const designer = panel.getByRole("button", { name: "Designer" });
   expect(Number(await designer.evaluate((el) => getComputedStyle(el).opacity))).toBeGreaterThanOrEqual(0.75);
@@ -430,11 +495,7 @@ test("the team answers on its own page, and her pick goes with the question", as
 test("a question from search opens the panel when it was closed, and is sent once", async ({ browser }) => {
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
-  const sent: Record<string, any>[] = [];
-  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
-    sent.push(route.request().postDataJSON());
-    await route.fulfill(sse({ kind: "answer", text: "From a closed panel." }));
-  });
+  const { sent } = await stubRuns(page, () => ({ kind: "answer", text: "From a closed panel." }));
   await mockEmptyChats(page);
   await page.goto(`${TENANT}/admin/courses`);
   await expect(page.getByRole("complementary", { name: "Your team" })).toHaveCount(0);
@@ -519,5 +580,54 @@ test("History offers Undo only where the server says it still works", async ({ b
   await expect(panel.getByText(/Undone/)).toBeVisible();
   await expect(panel.getByRole("button", { name: "Undo" })).toHaveCount(0);
   expect(undone).toEqual([2]);
+  await page.close();
+});
+
+test("a run shows who is working, holds the message box, and can be stopped", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+  const { sent, stopped } = await stubRuns(page, () => ({ kind: "answer", text: "Never shown." }), {
+    pendingPolls: 100_000,
+  });
+  await mockEmptyChats(page);
+  await page.goto(`${TENANT}/admin/payouts?assistant=assistant`);
+  const panel = page.getByRole("complementary", { name: "Your team" });
+
+  await page.getByTestId("copilot-input").fill("How did sales go this month?");
+  await page.getByTestId("copilot-send").click();
+  // Money is the Financial Strategist's section.
+  await expect(panel.getByText("Financial Strategist is working on it…")).toBeVisible();
+  // One message at a time: the box waits for the reply, still saying Send.
+  await expect(page.getByTestId("copilot-send")).toBeDisabled();
+  await expect(page.getByTestId("copilot-send")).toHaveText("Send");
+
+  await panel.getByRole("button", { name: "Stop", exact: true }).click();
+  await expect(panel.getByText("Stopped. Nothing else will change.")).toBeVisible();
+  await expect(page.getByTestId("copilot-send")).toBeEnabled();
+  expect(stopped.size).toBe(1);
+  expect(sent).toHaveLength(1);
+  await page.close();
+});
+
+test("work finished while the panel was closed says it is ready, and Open shows it", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+  await stubRuns(page, () => ({ kind: "answer", text: "Sales are up 12%.", specialist: "finance" }), {
+    pendingPolls: 4,
+  });
+  await memoryChats(page);
+  await page.goto(`${TENANT}/admin/payouts?assistant=assistant`);
+  const panel = page.getByRole("complementary", { name: "Your team" });
+
+  await page.getByTestId("copilot-input").fill("How did sales go this month?");
+  await page.getByTestId("copilot-send").click();
+  await expect(panel.getByText("Financial Strategist is working on it…")).toBeVisible();
+  await page.getByRole("button", { name: "Close the assistant" }).click();
+  await expect(panel).toHaveCount(0);
+
+  // The work goes on with the panel closed; the toast says when it is done.
+  await expect(page.getByText("Financial Strategist is done.")).toBeVisible();
+  await page.getByRole("button", { name: "Open", exact: true }).click();
+  await expect(panel.getByText("Sales are up 12%.")).toBeVisible();
   await page.close();
 });
