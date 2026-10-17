@@ -79,10 +79,16 @@ export function modePalette(
       : dark
         ? mix(color, 55, "white", "oklch")
         : mix(color, 70, "black", "oklch");
+  // Ground and ink share a hue, so this is their 91/9 mix, written out: left
+  // as a mix, a surface this faint loses its hue in Chrome when a section
+  // mixes it again in oklch (a translucent card) and paints pink.
+  const surface = dark
+    ? `oklch(0.2493 ${+(0.91 * c + 0.0009).toFixed(5)} ${h})`
+    : `oklch(0.90705 ${+(0.91 * c + 0.0018).toFixed(5)} ${h})`;
   return {
     background: ground,
     foreground: ink,
-    surface: mix(ground, 91, ink),
+    surface,
     mutedForeground: mix(ink, 62, ground),
     primary: brand(p.primary),
     primaryForeground: ground,
@@ -180,7 +186,8 @@ const DESTRUCTIVE_FG = "oklch(0.985 0 0)";
 
 /** A style's compact palette → the full theme variable set the whole tenant
  *  app reads (shadcn tokens + brand + charts), plus the section-only tokens
- *  (--inverse, --font-display, --radius). Keys are without the leading `--`. */
+ *  (--surface, --inverse, --font-display, --radius). Keys are without the
+ *  leading `--`. */
 export function styleVars(
   style: SiteStyle,
   paletteId?: string | null,
@@ -232,6 +239,7 @@ export function styleVars(
     "chart-3": p.mutedForeground,
     "chart-4": p.foreground,
     "chart-5": p.border,
+    surface: p.surface,
     inverse: p.inverse,
     "inverse-foreground": p.inverseForeground,
     "font-display": `'${style.fonts.display}', Georgia, serif`,

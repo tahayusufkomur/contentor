@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   SITE_STYLES,
@@ -106,5 +108,37 @@ describe("rankStylesForNiche", () => {
     expect(rankStylesForNiche("pole_dance", [])[0].id).not.toBe("velvet");
     expect(rankStylesForNiche("yoga", "Sensual")[0].id).toBe("nocturne");
     expect(rankStylesForNiche("yoga", "Warm, Calm")[0].id).toBe("journal");
+  });
+});
+
+describe("section tokens", () => {
+  it("sections read only tokens styleVars emits or they define themselves", () => {
+    const dir = path.resolve(__dirname, "../../components/sections");
+    const src = (fs.readdirSync(dir, { recursive: true }) as string[])
+      .filter((f) => /\.(css|tsx?)$/.test(f))
+      .map((f) => fs.readFileSync(path.join(dir, f), "utf8"))
+      .join("\n");
+    const names = (re: RegExp) =>
+      new Set([...src.matchAll(re)].map((m) => m[1]));
+    const defined = names(/(?<!var\()--([a-zA-Z][\w-]*)/g);
+    const emitted = styleVars(SITE_STYLES.journal);
+    const undefinedTokens = [...names(/var\(--([\w-]+)/g)].filter(
+      (n) => !defined.has(n) && !(n in emitted),
+    );
+    expect(undefinedTokens).toEqual([]);
+  });
+  it("emits every surface, own or derived, as an oklch literal with its hue", () => {
+    for (const s of Object.values(SITE_STYLES))
+      for (const mode of ["light", "dark"] as const)
+        expect(styleVars(s, null, mode).surface).toMatch(
+          /^oklch\([\d.]+ [\d.]+ [\d.]+\)$/,
+        );
+  });
+  it("emits the palette's surface as --surface", () => {
+    const { palette } = SITE_STYLES.studiofloor;
+    expect(styleVars(SITE_STYLES.studiofloor).surface).toBe(palette.surface);
+    expect(styleRootCss(SITE_STYLES.studiofloor)).toContain(
+      `--surface: ${palette.surface};`,
+    );
   });
 });
