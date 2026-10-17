@@ -900,7 +900,8 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
                   : undefined
               }
               onSend={send}
-              sending={sending || working}
+              sending={sending}
+              waiting={working}
               attached={attached}
               onAttach={(p) => updateAttached((prev) => [...prev, p])}
               onRemoveAttachment={(id) =>

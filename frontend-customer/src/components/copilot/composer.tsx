@@ -26,6 +26,7 @@ import type { AttachedPhoto } from "@/lib/copilot/types";
 export function CopilotComposer({
   onSend,
   sending,
+  waiting = false,
   attached,
   onAttach,
   onRemoveAttachment,
@@ -35,6 +36,9 @@ export function CopilotComposer({
   placeholder?: string;
   onSend: (message: string) => void;
   sending: boolean;
+  /** A specialist is still working on the last message: the next one
+   *  waits for the reply (the button keeps saying Send, not Sending). */
+  waiting?: boolean;
   attached: AttachedPhoto[];
   onAttach: (photo: AttachedPhoto) => void;
   onRemoveAttachment: (id: string) => void;
@@ -80,12 +84,12 @@ export function CopilotComposer({
   const send = useCallback(() => {
     // uploading blocks send: a message fired mid-upload would travel
     // WITHOUT the photo still on its way to the library.
-    if (!editor || sending || uploading) return;
+    if (!editor || sending || waiting || uploading) return;
     const message = docToMessage(editor.getJSON() as TipTapNode);
     if (!message && attached.length === 0) return;
     editor.commands.clearContent();
     onSend(message);
-  }, [editor, sending, uploading, attached.length, onSend]);
+  }, [editor, sending, waiting, uploading, attached.length, onSend]);
 
   const uploadFiles = useCallback(
     async (files: FileList | File[]) => {
@@ -116,13 +120,14 @@ export function CopilotComposer({
       if (
         uploaded > 0 &&
         !sending &&
+        !waiting &&
         editor &&
         !docToMessage(editor.getJSON() as TipTapNode)
       ) {
         onSend("");
       }
     },
-    [attached.length, onAttach, editor, sending, onSend, t],
+    [attached.length, onAttach, editor, sending, waiting, onSend, t],
   );
 
   if (!editor) return null;
@@ -199,7 +204,7 @@ export function CopilotComposer({
               )}
             </button>
             <MicButton
-              disabled={sending}
+              disabled={sending || waiting}
               onText={(text, final) => {
                 if (!final || !text) return;
                 editor
@@ -215,7 +220,7 @@ export function CopilotComposer({
             onClick={send}
             loading={sending}
             loadingText={t("sending")}
-            disabled={uploading}
+            disabled={uploading || waiting}
             data-testid="copilot-send"
           >
             {t("send")}
