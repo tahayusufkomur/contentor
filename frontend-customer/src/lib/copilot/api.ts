@@ -10,25 +10,52 @@ import type {
   CopilotContext,
   CopilotDone,
   ExecuteResponse,
+  OpenRun,
+  RunDetail,
+  RunStatus,
   SelectionPayload,
 } from "./types";
 import type { SpecialistKey } from "./team";
 
 const BASE = "/api/v1/admin/copilot";
 
+export interface ConverseBody {
+  message: string;
+  transcript: { role: string; text: string; kind?: string }[];
+  selections: SelectionPayload[];
+  attached_photos?: string[];
+  context?: CopilotContext;
+  /** Who on the team answers this turn. */
+  specialist?: SpecialistKey;
+}
+
 export const converseCopilot = (
-  body: {
-    message: string;
-    transcript: { role: string; text: string; kind?: string }[];
-    selections: SelectionPayload[];
-    attached_photos?: string[];
-    context?: CopilotContext;
-    /** Who on the team answers this turn. */
-    specialist?: SpecialistKey;
-  },
+  body: ConverseBody,
   handlers: AiStreamHandlers<never>,
   signal?: AbortSignal,
 ) => streamAi<CopilotDone, never>(`${BASE}/converse/`, body, handlers, signal);
+
+/** The Team panel's turns run on the server (rung 1b): start one, then
+ * follow its events (lib/copilot/runs.ts). */
+export const startRun = (body: ConverseBody & { chat?: number | null }) =>
+  clientFetch<
+    | { id: number; status: RunStatus; specialist: SpecialistKey }
+    | { kind: "unavailable" }
+  >(`${BASE}/runs/`, { method: "POST", body: JSON.stringify(body) });
+
+export const fetchRun = (id: number, since = 0) =>
+  clientFetch<RunDetail>(`${BASE}/runs/${id}/?since=${since}`);
+
+export const fetchOpenRuns = () =>
+  clientFetch<{ runs: OpenRun[] }>(`${BASE}/runs/open/`);
+
+export const stopRun = (id: number) =>
+  clientFetch<{ status: RunStatus }>(`${BASE}/runs/${id}/stop/`, {
+    method: "POST",
+  });
+
+export const markRunSeen = (id: number) =>
+  clientFetch<void>(`${BASE}/runs/${id}/seen/`, { method: "POST" });
 
 export const fetchCopilotChats = () =>
   clientFetch<{ chats: CopilotChatRow[] }>(`${BASE}/chats/`);

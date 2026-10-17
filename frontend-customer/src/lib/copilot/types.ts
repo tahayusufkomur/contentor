@@ -91,13 +91,54 @@ export interface CopilotDone {
   specialist?: SpecialistKey;
 }
 
+/** Where a run of the team's work stands (apps.core.copilot.runs). */
+export type RunStatus =
+  | "queued"
+  | "thinking"
+  | "working"
+  | "done"
+  | "stopped"
+  | "failed";
+
+export interface RunEvent {
+  seq: number;
+  type: string;
+  data: Record<string, unknown>;
+  at: string;
+}
+
+export interface RunDetail {
+  id: number;
+  status: RunStatus;
+  specialist: SpecialistKey;
+  chat: number | null;
+  seen: boolean;
+  /** Only the events after the `since` the client asked with. */
+  events: RunEvent[];
+}
+
+/** One of her runs still going, or finished and not seen yet. */
+export interface OpenRun {
+  id: number;
+  status: RunStatus;
+  specialist: SpecialistKey;
+  chat: number | null;
+  summary: string;
+  finished_at: string | null;
+}
+
 export interface ChatEntry {
   role: "coach" | "assistant";
   text: string;
   cards?: ActionCard[];
-  kind?: CopilotDone["kind"];
+  /** pending: the run is still working; stopped/failed: a short note in
+   * its place. None of the three ever reaches the model. */
+  kind?: CopilotDone["kind"] | "pending" | "stopped" | "failed";
   /** Who on the team wrote an assistant reply. */
   specialist?: SpecialistKey;
+  /** The run behind an assistant reply (rung 1b): a pending entry resumes
+   * from it after a reload. */
+  run?: number;
   /** Photos the coach attached to this message — kept in the transcript so
    * follow-up turns ("use it as the logo") can still reference the ids.
    * desc = the vision caption, so the model knows what each photo shows.

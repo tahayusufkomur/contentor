@@ -12,12 +12,13 @@ export const PERSIST_MAX = 30;
 export function persistableEntries(entries: ChatEntry[]): ChatEntry[] {
   return entries
     .slice(-PERSIST_MAX)
-    .map(({ role, text, kind, attached, specialist }) => ({
+    .map(({ role, text, kind, attached, specialist, run }) => ({
       role,
       text,
       ...(kind ? { kind } : {}),
       ...(attached?.length ? { attached } : {}),
       ...(specialist ? { specialist } : {}),
+      ...(run ? { run } : {}),
     }));
 }
 

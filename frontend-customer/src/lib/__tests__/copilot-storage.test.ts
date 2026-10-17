@@ -38,6 +38,25 @@ describe("persistableEntries", () => {
     expect(kept.specialist).toBe("finance");
   });
 
+  it("keeps the run behind a reply, so a reply still being written can resume", () => {
+    const [kept] = persistableEntries([
+      {
+        role: "assistant",
+        text: "",
+        kind: "pending",
+        run: 12,
+        specialist: "finance",
+      },
+    ]);
+    expect(kept).toEqual({
+      role: "assistant",
+      text: "",
+      kind: "pending",
+      run: 12,
+      specialist: "finance",
+    });
+  });
+
   it("caps at the last PERSIST_MAX entries", () => {
     const many = Array.from({ length: PERSIST_MAX + 10 }, (_, i) => entry(i));
     const kept = persistableEntries(many);

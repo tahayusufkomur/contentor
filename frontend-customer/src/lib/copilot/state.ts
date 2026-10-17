@@ -1,28 +1,80 @@
+import type { RunState } from "./runs";
+import type { SpecialistKey } from "./team";
 import type { ChatEntry, CopilotDone } from "./types";
 
 const TRANSCRIPT_MAX = 20;
 const UNAVAILABLE_MARKER = "__unavailable__";
 
-/** Append the assistant's turn. Unavailable turns become a marker entry the
- * UI translates into the "assistant is resting" bubble. */
+/** The assistant's turn as a chat entry. Unavailable turns become a marker
+ * entry the UI translates into the "assistant is resting" bubble. */
+function replyEntry(done: CopilotDone): ChatEntry {
+  if (done.kind === "unavailable") {
+    return { role: "assistant", text: UNAVAILABLE_MARKER };
+  }
+  return {
+    role: "assistant",
+    text: done.text ?? "",
+    cards: done.actions,
+    kind: done.kind,
+    ...(done.specialist ? { specialist: done.specialist } : {}),
+  };
+}
+
+/** Append the assistant's turn. */
 export function reduceChat(
   entries: ChatEntry[],
   done: CopilotDone,
 ): ChatEntry[] {
-  if (done.kind === "unavailable") {
-    return [...entries, { role: "assistant", text: UNAVAILABLE_MARKER }];
-  }
-  return [
-    ...entries,
-    {
-      role: "assistant",
-      text: done.text ?? "",
-      cards: done.actions,
-      kind: done.kind,
-      ...(done.specialist ? { specialist: done.specialist } : {}),
-    },
-  ];
+  return [...entries, replyEntry(done)];
 }
+
+/** Where a reply will appear while its run works on it. */
+export function pendingEntry(
+  run: number,
+  specialist: SpecialistKey,
+): ChatEntry {
+  return { role: "assistant", text: "", kind: "pending", run, specialist };
+}
+
+/** Put a finished run's outcome where its pending entry stood. Entries
+ * without that run come back as they are (the same array), so a run never
+ * writes into a chat it does not belong to. */
+export function resolveRun(
+  entries: ChatEntry[],
+  run: RunState,
+  notes: { stopped: string; failed: string },
+): ChatEntry[] {
+  const at = entries.findIndex((e) => e.kind === "pending" && e.run === run.id);
+  if (at < 0) return entries;
+  let entry: ChatEntry;
+  if (run.status === "done" && run.reply) {
+    entry = { ...replyEntry(run.reply), run: run.id };
+  } else if (run.status === "stopped") {
+    entry = note("stopped", notes.stopped, run);
+  } else if (run.status === "failed" || run.status === "done") {
+    entry = note("failed", notes.failed, run);
+  } else {
+    return entries;
+  }
+  return [...entries.slice(0, at), entry, ...entries.slice(at + 1)];
+}
+
+function note(
+  kind: "stopped" | "failed",
+  text: string,
+  run: RunState,
+): ChatEntry {
+  return {
+    role: "assistant",
+    text,
+    kind,
+    specialist: run.specialist,
+    run: run.id,
+  };
+}
+
+/** UI notes in the chat that are not part of the conversation. */
+const NOTE_KINDS = new Set(["pending", "stopped", "failed"]);
 
 /** The stateless-server contract: transcript travels with each request.
  * The unavailable-turn marker is UI-only and must never reach the model.
@@ -32,7 +84,10 @@ export function toTranscript(
   entries: ChatEntry[],
 ): { role: string; text: string; kind?: string }[] {
   return entries
-    .filter((e) => e.text !== UNAVAILABLE_MARKER)
+    .filter(
+      (e) =>
+        e.text !== UNAVAILABLE_MARKER && !(e.kind && NOTE_KINDS.has(e.kind)),
+    )
     .slice(-TRANSCRIPT_MAX)
     .map((e) => {
       const note = e.attached?.length
