@@ -4,7 +4,12 @@ import type { EmailCampaign } from "@/lib/email-api";
 /** One vocabulary for the state of anything the coach sent her students,
  *  whichever backend sent it. */
 export type MessageStatus =
-  "draft" | "scheduled" | "sending" | "sent" | "partial" | "failed";
+  | "draft"
+  | "scheduled"
+  | "sending"
+  | "sent"
+  | "partial"
+  | "failed";
 
 export interface MessageRow {
   /** Unique across both kinds (an announcement and an email can share an id). */

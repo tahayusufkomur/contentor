@@ -31,7 +31,11 @@ export interface EventRow {
 }
 
 export type KindField =
-  "auto_recording" | "zoom_link" | "location" | "address" | "max_capacity";
+  | "auto_recording"
+  | "zoom_link"
+  | "location"
+  | "address"
+  | "max_capacity";
 
 interface KindConfig {
   /** Its CRUD endpoint (list/create; `<id>/` for one). */

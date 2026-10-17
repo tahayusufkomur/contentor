@@ -5,7 +5,11 @@ import type { BrandPackElement, RefinedDesign } from "@/lib/logo/composer";
 import type { LogoRecipe } from "@/types/logo";
 
 export type RefineSource =
-  "ai" | "disabled" | "upgrade_required" | "quota_exhausted" | "error";
+  | "ai"
+  | "disabled"
+  | "upgrade_required"
+  | "quota_exhausted"
+  | "error";
 
 export interface RefineResponse {
   design: RefinedDesign | null;

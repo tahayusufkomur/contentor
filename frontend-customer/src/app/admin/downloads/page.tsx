@@ -268,7 +268,9 @@ export default function AdminDownloadsPage() {
                     setForm({
                       ...form,
                       pricing_type: e.target.value as
-                        "free" | "paid" | "subscription",
+                        | "free"
+                        | "paid"
+                        | "subscription",
                     })
                   }
                 >

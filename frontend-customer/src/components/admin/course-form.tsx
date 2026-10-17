@@ -443,7 +443,9 @@ export function CourseForm({
                   }
                   onChange={(e) => {
                     const v = e.target.value as
-                      "free" | "paid" | "subscription";
+                      | "free"
+                      | "paid"
+                      | "subscription";
                     isCreate
                       ? setCreateForm({ ...createForm, pricing_type: v })
                       : setCourse(
