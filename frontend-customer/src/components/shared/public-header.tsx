@@ -139,7 +139,7 @@ function AuthCluster({
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {user.role === "owner" || user.role === "coach"
-              ? "Admin"
+              ? "Creator studio"
               : "Dashboard"}
           </NavLink>
           <AnnouncementBell />
@@ -343,7 +343,7 @@ export function PublicHeader({
               onClick={() => setMobileOpen(false)}
             >
               {user.role === "owner" || user.role === "coach"
-                ? "Admin"
+                ? "Creator studio"
                 : "Dashboard"}
             </NavLink>
             {authProps.showSubscribe && (

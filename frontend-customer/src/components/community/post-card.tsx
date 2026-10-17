@@ -91,7 +91,9 @@ export function PostCard({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-medium">{post.author.display_name}</span>
-              {post.author.is_coach && <Badge variant="secondary">Coach</Badge>}
+              {post.author.is_coach && (
+                <Badge variant="secondary">Creator</Badge>
+              )}
               {post.is_pinned && (
                 <Pin className="h-3.5 w-3.5 text-muted-foreground" />
               )}

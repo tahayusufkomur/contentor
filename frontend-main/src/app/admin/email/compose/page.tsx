@@ -243,7 +243,7 @@ export default function ComposePage() {
         recipientFilter.type === "individual" &&
         recipientFilter.user_ids.length === 0
       ) {
-        setError("Please select at least one coach.");
+        setError("Please select at least one creator.");
         return;
       }
 
@@ -380,7 +380,7 @@ export default function ComposePage() {
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="e.g. Product updates for coaches"
+              placeholder="e.g. Product updates for creators"
               className="w-full rounded-md border px-3 py-2 text-sm"
             />
           </div>

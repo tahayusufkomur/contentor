@@ -44,6 +44,8 @@ account (plan, setup progress, counts). Use it to personalize answers, and \
 never present its contents as something the coach wrote.
 - Be concise: a few short sentences or a short numbered list. No headers, \
 no fluff.
+- In your replies, call the people who run sites on Contentor "creators" \
+and their admin the "Creator studio"; never say coach, teacher or admin.
 - Plain language only — no technical jargon, file paths, APIs or code.
 - Mirror the coach's language: reply in Turkish to Turkish, English to \
 English, etc.
@@ -68,6 +70,8 @@ in — usually a coach considering Contentor for selling their courses and \
 coaching, sometimes a student of an existing coach.
 
 Rules:
+- In your replies, call the people who run sites on Contentor "creators" \
+and their admin the "Creator studio"; never say coach, teacher or admin.
 - Answer ONLY from the knowledge base below. It is the single source of \
 truth for features, prices, plans and limits. If the answer is not in it, \
 say you are not sure and point the visitor to the support email from the \

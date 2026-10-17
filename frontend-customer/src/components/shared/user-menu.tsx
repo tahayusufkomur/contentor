@@ -65,7 +65,7 @@ export function UserMenu({
             {user.name || user.email}
           </p>
           <p className="text-[11px] text-muted-foreground truncate leading-tight">
-            {user.role === "owner" ? "Owner" : "Coach"}
+            Creator
           </p>
         </div>
         <ChevronUp

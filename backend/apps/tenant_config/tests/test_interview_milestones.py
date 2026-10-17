@@ -311,7 +311,7 @@ def test_style_cards_rank_by_niche_then_tone_and_say_why():
     cards = ms.style_cards({"niche": "fitness", "teaches": "boxing", "tone": "Energetic, Warm"})
     first = cards["options"][0]
     assert first["recommended"] and first["style"] == "kinetic"
-    assert first["reason"] == "Made for boxing coaches, and it sounds energetic."
+    assert first["reason"] == "Made for boxing creators, and it sounds energetic."
     assert sections.tones_of("Warm, Calm") == ["warm", "calm"]
 
 

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Blog — Contentor",
   description:
-    "Guides and ideas for coaches and creators building an online business with Contentor.",
+    "Guides and ideas for creators building an online business with Contentor.",
 };
 
 const formatDate = (iso: string) => new Date(iso).toLocaleDateString();

@@ -164,7 +164,7 @@ export default function AdminDashboardPage() {
     {
       label: "Subscription MRR",
       value: formatCurrencyMap(data.platform_subscriptions?.mrr_by_currency),
-      description: `${data.platform_subscriptions?.active_subscriptions ?? 0} active coach subscriptions`,
+      description: `${data.platform_subscriptions?.active_subscriptions ?? 0} active creator subscriptions`,
       icon: Banknote,
       href: "/admin/m/platform-subscriptions",
     },
@@ -177,7 +177,7 @@ export default function AdminDashboardPage() {
     {
       label: "Marketplace Volume",
       value: formatCurrencyMap(data.marketplace?.gross_by_currency),
-      description: `${data.marketplace?.payment_count ?? 0} payments · ${data.monetization_ready_tenants ?? 0} coaches accepting payments`,
+      description: `${data.marketplace?.payment_count ?? 0} payments · ${data.monetization_ready_tenants ?? 0} creators accepting payments`,
       icon: Receipt,
     },
     {

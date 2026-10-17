@@ -15,13 +15,13 @@ PLATFORM_BRAND = "Contentor"
 def _build_recipient_summary(recipient_filter: dict) -> str:
     filter_type = recipient_filter.get("type", "")
     if filter_type == "all_coaches":
-        return "All coaches"
+        return "All creators"
     if filter_type == "plan":
         return f"{len(recipient_filter.get('plan_ids') or [])} plan(s)"
     if filter_type == "tenant":
         return f"{len(recipient_filter.get('tenant_ids') or [])} workspace(s)"
     if filter_type == "individual":
-        return f"{len(recipient_filter.get('user_ids') or [])} selected coach(es)"
+        return f"{len(recipient_filter.get('user_ids') or [])} selected creator(s)"
     return ""
 
 

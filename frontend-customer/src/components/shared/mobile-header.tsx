@@ -35,7 +35,7 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
         <NavLink
           href="/admin"
           className="truncate text-caption font-semibold tracking-tight text-foreground transition-colors hover:text-muted-foreground"
-          title="Back to Admin Overview"
+          title="Back to Creator studio"
         >
           {title}
         </NavLink>
@@ -109,9 +109,7 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
                   <p className="truncate text-caption font-medium">
                     {user.name || user.email}
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {user.role === "owner" ? "Owner" : "Coach"}
-                  </p>
+                  <p className="text-[11px] text-muted-foreground">Creator</p>
                 </div>
               </div>
               <ThemeToggle className="px-3 text-muted-foreground" />

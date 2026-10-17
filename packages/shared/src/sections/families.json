@@ -73,7 +73,7 @@
       }
     },
     "story": {
-      "label": "Coach story",
+      "label": "Creator story",
       "kind": "content",
       "imageHeavy": true,
       "fields": {
@@ -97,7 +97,7 @@
         "signature": {
           "type": "text",
           "max": 40,
-          "label": "Signature (coach name)"
+          "label": "Signature (creator name)"
         },
         "ctaLabel": {
           "type": "text",
@@ -279,7 +279,7 @@
         "attribution": {
           "type": "text",
           "max": 60,
-          "label": "Attribution (coach name)"
+          "label": "Attribution (creator name)"
         },
         "image": {
           "type": "image",

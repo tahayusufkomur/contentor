@@ -419,7 +419,7 @@ def help_bot_human_request(request):
         convo.save(update_fields=["human_requested", "human_requested_at", "updated_at"])
         assistant.append_message(convo, "system", "human_requested")
         try:
-            label = convo.user_label or "A coach"
+            label = convo.user_label or "A creator"
             send_email(
                 to=settings.HELP_BOT_ALERT_EMAIL or settings.RESEND_FROM_EMAIL,
                 subject=f"{label} asked for a human in Ask Contentor",

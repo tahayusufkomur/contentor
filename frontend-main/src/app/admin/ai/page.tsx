@@ -403,7 +403,7 @@ function ConversationsSection() {
           <div>
             <CardTitle className="text-lg">Conversations</CardTitle>
             <CardDescription>
-              Every help-bot conversation platform-wide — coach console and
+              Every help-bot conversation platform-wide — creator console and
               marketing visitor bubble.
             </CardDescription>
           </div>
@@ -414,7 +414,7 @@ function ConversationsSection() {
             aria-label="Filter by audience"
           >
             <option value="">All</option>
-            <option value="coach">Coaches</option>
+            <option value="coach">Creators</option>
             <option value="visitor">Visitors</option>
           </select>
         </CardHeader>
@@ -705,7 +705,7 @@ export default function AdminAiUsagePage() {
                   {data.ratings.unrated} unrated
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Preview (coach-testing) transcripts are excluded.
+                  Preview (creator-testing) transcripts are excluded.
                 </p>
               </CardContent>
             </Card>

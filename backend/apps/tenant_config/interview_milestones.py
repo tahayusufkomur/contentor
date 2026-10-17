@@ -668,7 +668,7 @@ def style_reason(style: dict | None, niche: str, tones: list[str], answers: dict
     subject = brief.subject_of(answers)
     parts = []
     if niche in (style.get("niches") or []) and subject:
-        parts.append(f"made for {subject} coaches")
+        parts.append(f"made for {subject} creators")
     if matched:
         parts.append(f"it sounds {' and '.join(matched)}")
     text = ", and ".join(parts)

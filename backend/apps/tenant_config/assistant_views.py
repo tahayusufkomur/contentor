@@ -567,7 +567,7 @@ def assistant_conversation_takeover(request, pk):
     convo = assistant.maybe_auto_release(convo)
     if convo.status == AiConversation.STATUS_HUMAN:
         return Response({"error": "already_taken_over"}, status=409)
-    label = (((getattr(request.user, "name", "") or "").split(" ")[0]) or "Coach")[:60]
+    label = (((getattr(request.user, "name", "") or "").split(" ")[0]) or "Creator")[:60]
     convo.status = AiConversation.STATUS_HUMAN
     convo.agent_user_id = request.user.id
     convo.agent_label = label

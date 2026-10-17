@@ -16,10 +16,10 @@ interface RecipientSelectorProps {
 }
 
 const TYPES = [
-  { key: "all_coaches", label: "All coaches" },
+  { key: "all_coaches", label: "All creators" },
   { key: "plan", label: "By plan" },
   { key: "tenant", label: "By workspace" },
-  { key: "individual", label: "Individual coaches" },
+  { key: "individual", label: "Individual creators" },
 ] as const;
 
 export function RecipientSelector({
@@ -181,7 +181,7 @@ export function RecipientSelector({
         <div className="space-y-2">
           <input
             type="text"
-            placeholder="Search coaches..."
+            placeholder="Search creators..."
             value={coachSearch}
             onChange={(event) => setCoachSearch(event.target.value)}
             className="w-full rounded-md border px-3 py-2 text-sm"
@@ -219,7 +219,7 @@ export function RecipientSelector({
             })}
             {filteredCoaches.length === 0 && (
               <p className="p-2 text-xs text-muted-foreground">
-                No coaches found.
+                No creators found.
               </p>
             )}
           </div>
@@ -232,7 +232,7 @@ export function RecipientSelector({
           : recipientCount !== null
             ? `${recipientCount} recipient${recipientCount === 1 ? "" : "s"}`
             : filterType === "all_coaches"
-              ? "All active coaches"
+              ? "All active creators"
               : "Recipients resolved on send"}
       </div>
     </div>

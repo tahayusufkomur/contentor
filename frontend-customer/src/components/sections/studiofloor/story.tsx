@@ -80,7 +80,7 @@ export function StoryBackstage({ block, editable }: SectionProps) {
                 field="signature"
                 editable={editable}
                 as="p"
-                placeholder="Coach name"
+                placeholder="Creator name"
                 className="studiofloor-display text-[1.4rem] font-extrabold italic text-primary"
               />
             </div>

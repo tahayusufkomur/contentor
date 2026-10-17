@@ -87,7 +87,7 @@
     "items": {
       "switch": {
         "q": "Can I switch plans?",
-        "a": "Yes. Write to us and we switch your plan, with billing prorated. You can cancel any time from your admin."
+        "a": "Yes. Write to us and we switch your plan, with billing prorated. You can cancel any time from your creator studio."
       },
       "trial": {
         "q": "Is there a free trial?",

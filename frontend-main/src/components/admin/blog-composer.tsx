@@ -56,7 +56,7 @@ export function BlogComposer({
       <input
         value={topic}
         onChange={(e) => setTopic(e.target.value)}
-        placeholder="Topic (e.g. Why coaches need their own website)"
+        placeholder="Topic (e.g. Why creators need their own website)"
         className="w-full rounded-md border bg-background px-3 py-2 text-sm"
       />
       <textarea

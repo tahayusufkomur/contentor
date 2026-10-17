@@ -55,7 +55,7 @@ export function ContactIssue({ block, editable }: SectionProps) {
               {showImage && (
                 <figure className="mt-8 mb-4 max-w-[14rem]">
                   <WindowChrome
-                    title="coach_avatar.raw"
+                    title="creator_avatar.raw"
                     tag="ID"
                     bodyClassName="p-0 overflow-hidden"
                   >

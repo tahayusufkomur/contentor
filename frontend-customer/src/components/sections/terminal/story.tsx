@@ -22,7 +22,7 @@ export function StoryReadme({ block, editable }: SectionProps) {
     <Section tone="console" label={alt}>
       <div className={WRAP}>
         <WindowChrome
-          title="~/coach/README.md"
+          title="~/creator/README.md"
           tag="UTF-8"
           bodyClassName="p-6 sm:p-10 md:p-12"
         >

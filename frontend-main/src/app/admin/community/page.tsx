@@ -67,7 +67,7 @@ export default function PlatformCommunityPage() {
         </h1>
         <p className="text-sm text-muted-foreground">
           Cross-tenant moderation rollup — open reports and posts awaiting
-          approval by coach community.
+          approval by creator community.
         </p>
       </div>
 
@@ -178,7 +178,7 @@ export default function PlatformCommunityPage() {
           </Card>
 
           <p className="text-xs text-muted-foreground">
-            To act on a report, impersonate the tenant&apos;s coach and use
+            To act on a report, impersonate the tenant&apos;s creator and use
             their Community → Reports tab.
           </p>
         </>

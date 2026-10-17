@@ -33,7 +33,7 @@ class PlatformPlanAdmin(ModelAdmin):
     label = "Platform Plan"
     label_plural = "Platform Plans"
     icon = "credit-card"
-    description = "The subscription tiers coaches can buy."
+    description = "The subscription tiers creators can buy."
     list_display = ("name", "price_monthly", "transaction_fee_pct", "max_students", "is_live_enabled", "is_active")
     search_fields = ("name",)
     list_filters = ("is_active", "is_live_enabled")
@@ -99,7 +99,7 @@ class PlatformPlanAdmin(ModelAdmin):
 @platform_site.register(Tenant)
 class TenantAdmin(ModelAdmin):
     icon = "building-2"
-    description = "Coach workspaces. Provisioning owns creation; edit sparingly."
+    description = "Creator workspaces. Provisioning owns creation; edit sparingly."
     list_display = (
         "name",
         "slug",
@@ -221,7 +221,7 @@ class TenantAdmin(ModelAdmin):
         return f"Activated {updated} tenant(s)."
 
     @admin_action(
-        label="Log in as admin",
+        label="Log in as creator",
         style="primary",
         row=True,
         confirm="Open a session as this tenant's admin? You'll act as them until you exit.",
@@ -247,7 +247,7 @@ class PlatformUserAdmin(ModelAdmin):
     label = "User"
     label_plural = "Users"
     icon = "users"
-    description = "Registered accounts (coaches & staff). Open a coach's workspace to debug as them."
+    description = "Registered accounts (creators & staff). Open a creator's workspace to debug as them."
     list_display = ("email", "name", "role", "region", "is_superuser", "date_joined", "last_login")
     search_fields = ("email", "name")
     list_filters = ("role", "region", "is_superuser")
@@ -262,7 +262,7 @@ class PlatformUserAdmin(ModelAdmin):
         label="Open workspace",
         style="primary",
         row=True,
-        confirm="Open this coach's workspace as their admin? You'll act as them until you exit.",
+        confirm="Open this creator's workspace as them? You'll act as them until you exit.",
     )
     def open_workspace(self, request, queryset):
         user = queryset.first()
@@ -279,7 +279,7 @@ class PlatformUserAdmin(ModelAdmin):
 @platform_site.register(PlatformSubscription)
 class PlatformSubscriptionAdmin(ModelAdmin):
     icon = "receipt"
-    description = "Coach subscriptions to platform plans (read-only; Stripe is the source of truth)."
+    description = "Creator subscriptions to platform plans (read-only; Stripe is the source of truth)."
     list_display = ("tenant", "plan", "status", "provider", "cancel_at_period_end", "current_period_end")
     search_fields = ("tenant__name", "tenant__slug", "provider_subscription_id")
     list_filters = ("status", "provider", "plan")
@@ -363,7 +363,7 @@ class CopilotSettingsAdmin(ModelAdmin):
     label_plural = "Copilot Settings"
     key = "copilot-settings"
     icon = "bot"
-    description = "Platform-wide knobs for the coach copilot (ask-cap steering)."
+    description = "Platform-wide knobs for the creator copilot (ask-cap steering)."
     list_display = ("max_asks_per_conversation", "updated_at")
     fields = ("max_asks_per_conversation",)
     can_create = False
@@ -374,7 +374,7 @@ class CopilotSettingsAdmin(ModelAdmin):
 class CuratedLogoAdmin(ModelAdmin):
     key = "curated-logos"
     icon = "images"
-    description = "Ready-made Logo Studio illustrations coaches can use for free."
+    description = "Ready-made Logo Studio illustrations creators can use for free."
     list_display = ("image_key", "title", "tags", "enabled", "position", "updated_at")
     search_fields = ("title", "tags", "prompt")
     list_filters = ("enabled", TagChoiceFilter())
@@ -390,7 +390,7 @@ class CuratedLogoAdmin(ModelAdmin):
 class CuratedPhotoAdmin(ModelAdmin):
     key = "curated-photos"
     icon = "image"
-    description = "Curated stock/illustration library coaches can drop into their blog posts."
+    description = "Curated stock/illustration library creators can drop into their blog posts."
     list_display = ("image_key", "title", "kind", "tags", "enabled", "position", "updated_at")
     search_fields = ("title", "tags", "prompt")
     list_filters = ("enabled", "kind", TagChoiceFilter())

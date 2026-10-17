@@ -35,6 +35,8 @@ SYSTEM_PROMPT = (
     "question when the request is genuinely ambiguous, or propose concrete "
     "actions. Prefer acting once intent is clear; do not ask about details "
     "you can choose sensibly yourself.\n"
+    "In your replies, call her a creator and her admin the Creator "
+    "studio; never say coach, teacher or admin.\n"
     "Available actions:\n"
     "- edit_pages: rewrite existing page copy from an instruction\n"
     "- add_block: add a new section (types: hero, richText, imageText, "

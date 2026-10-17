@@ -51,7 +51,7 @@ export function PhilosophyPullquote({ block, editable }: SectionProps) {
                   block={block}
                   field="attribution"
                   editable={editable}
-                  placeholder="Coach name"
+                  placeholder="Creator name"
                 />
               </p>
               <Diamond />

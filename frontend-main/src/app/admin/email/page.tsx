@@ -80,7 +80,7 @@ export default function PlatformEmailDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold">Email Campaigns</h1>
           <p className="text-sm text-muted-foreground">
-            Send emails to coaches across the platform.
+            Send emails to creators across the platform.
           </p>
         </div>
         <div className="flex gap-2">

@@ -11,7 +11,7 @@ class CustomDomainAdmin(ModelAdmin):
     label = "Custom Domain"
     label_plural = "Custom Domains"
     icon = "globe"
-    description = "Coach custom domains: registration + provisioning status, yearly price, expiry."
+    description = "Creator custom domains: registration + provisioning status, yearly price, expiry."
     list_display = ("domain", "tenant", "provisioning_status", "price_minor", "currency", "expires_at")
     search_fields = ("domain",)
     list_filters = ("provisioning_status", "currency")

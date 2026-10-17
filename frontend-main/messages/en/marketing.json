@@ -27,20 +27,20 @@
     "title": "Made for people who teach.",
     "lead": "Yoga, strength, music, languages, cooking and more. Each craft gets a look made for it, and you make it yours.",
     "galleryLabel": "Coaching niches and their looks",
-    "renderAlt": "Phone preview of a coach site in the {look} look",
+    "renderAlt": "Phone preview of a creator site in the {look} look",
     "niches": {
       "journal": "Yoga creators",
-      "kinetic": "Strength coaches",
+      "kinetic": "Strength creators",
       "encore": "Music creators",
       "studiofloor": "Dance creators",
       "tavola": "Cooking creators",
       "primer": "Language tutors",
-      "dojo": "Martial arts coaches",
+      "dojo": "Martial arts creators",
       "workshop": "Art creators",
       "atelier": "Makeup artists",
-      "sprout": "Parenting coaches",
+      "sprout": "Parenting creators",
       "trail": "Outdoor guides",
-      "nocturne": "Wellness coaches"
+      "nocturne": "Wellness creators"
     }
   },
   "team": {
@@ -54,7 +54,7 @@
         "title": "A site made for your craft, in one afternoon.",
         "text": "Answer a few plain questions. Your home page, courses, schedule, look and logo build themselves, and you can change anything by asking.",
         "tools": "Setup interview · Looks for your craft · Logo studio · Your own photos",
-        "sceneLabel": "A coach answers the setup questions, picks a look and her site builds"
+        "sceneLabel": "A creator answers the setup questions, picks a look and her site builds"
       },
       "marketer": {
         "name": "Marketer",
@@ -180,7 +180,7 @@
       "items": {
         "trial": {
           "q": "How does the free trial work?",
-          "a": "Starter is free for 14 days. You add a card when your site goes live, and the first charge comes when the trial ends, unless you cancel before in one click from your admin. Everything in Starter works except selling: paid courses open when your plan starts, or start it early to sell right away."
+          "a": "Starter is free for 14 days. You add a card when your site goes live, and the first charge comes when the trial ends, unless you cancel before in one click from your creator studio. Everything in Starter works except selling: paid courses open when your plan starts, or start it early to sell right away."
         },
         "technical": {
           "q": "Do I need technical skills?",
@@ -200,7 +200,7 @@
         },
         "contract": {
           "q": "Is there a long-term contract?",
-          "a": "No contracts and no commitments. Plans are month to month, and you can cancel any time from your admin."
+          "a": "No contracts and no commitments. Plans are month to month, and you can cancel any time from your creator studio."
         }
       }
     },

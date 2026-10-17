@@ -144,7 +144,7 @@ function CommentRow({
           <span className="font-medium">{comment.author.display_name}</span>
           {comment.author.is_coach && (
             <Badge variant="secondary" className="h-4 px-1 text-[10px]">
-              Coach
+              Creator
             </Badge>
           )}
           <span className="text-muted-foreground">

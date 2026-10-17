@@ -81,7 +81,7 @@ def tenant_admin_user(tenant):
 def impersonate_tenant_admin(request, tenant, *, scope: str = "platform") -> dict:
     owner = tenant_admin_user(tenant)
     if owner is None:
-        return {"detail": f"{tenant.name} has no owner/admin account to log in as."}
+        return {"detail": f"{tenant.name} has no creator account to log in as."}
     return issue_impersonation(request, tenant=tenant, target_user=owner, scope=scope)
 
 

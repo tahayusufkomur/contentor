@@ -57,7 +57,7 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
           <NavLink
             href="/admin"
             className="truncate text-caption font-semibold tracking-tight text-foreground transition-colors hover:text-muted-foreground"
-            title="Back to Admin Overview"
+            title="Back to Creator studio"
           >
             {title}
           </NavLink>

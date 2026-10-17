@@ -35,7 +35,7 @@ test("the coach admin wears the app's own look, not the site's", async ({
   await page.goto(`${TENANT}/`);
   expect(await sheet()).toBe("");
   // An in-app move does not re-render the root layout: the provider flips it.
-  await page.getByRole("link", { name: "Admin", exact: true }).first().click();
+  await page.getByRole("link", { name: "Creator studio", exact: true }).first().click();
   await expect(page).toHaveURL(/\/admin$/);
   await expect.poll(sheet).toBe("not all");
   await page.reload();
