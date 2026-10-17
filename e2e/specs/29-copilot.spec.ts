@@ -410,6 +410,18 @@ test("the team answers on its own page, and her pick goes with the question", as
   await panel.getByRole("button", { name: "How did sales go this month?" }).click();
   await expect(panel.getByText("Sales are steady.")).toBeVisible();
   expect(sent[0].specialist).toBe("finance");
+  // Faces she did not pick stay legible (dimmed, never faint).
+  const designer = panel.getByRole("button", { name: "Designer" });
+  expect(Number(await designer.evaluate((el) => getComputedStyle(el).opacity))).toBeGreaterThanOrEqual(0.75);
+
+  // A question from search starts a new conversation: her pick resets, and
+  // the section's specialist answers it.
+  await page.getByRole("button", { name: /Search pages/ }).click();
+  await page.getByPlaceholder("Search pages…").fill("what should I charge");
+  await page.keyboard.press("Enter");
+  await expect.poll(() => sent.length).toBe(2);
+  expect(sent[1].specialist).toBe("content");
+  await expect(panel.getByText("Answers first in Create")).toBeVisible();
   await page.close();
 });
 

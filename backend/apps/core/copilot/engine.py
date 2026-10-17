@@ -759,9 +759,11 @@ def _n(count, noun):
 
 def _money_line(now):
     """The Financial Strategist's numbers, read in the tenant's schema:
-    completed revenue per currency (never summed across currencies) this
-    calendar month and last, best sellers, her price range, memberships and
-    failed payments."""
+    student revenue per currency (never summed across currencies) this
+    calendar month and last, refunds, best sellers, her price range,
+    memberships and failed payments. Sales follow the earnings view's rule:
+    her own Contentor invoices (platform_subscription set) and refund rows
+    share the Payment table and are not sales."""
     from datetime import timedelta
 
     from django.contrib.contenttypes.models import ContentType
@@ -772,20 +774,21 @@ def _money_line(now):
 
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     last_start = (month_start - timedelta(days=1)).replace(day=1)
-    completed = Payment.objects.filter(status="completed")
+    sales = Payment.objects.filter(payment_type__in=("one_time", "subscription"), platform_subscription__isnull=True)
+    completed = sales.filter(status__in=("completed", "partially_refunded"))
 
     def revenue(payments):
         rows = payments.values("currency").annotate(total=Sum("amount"), n=Count("id")).order_by("currency")
         return ", ".join(f"{r['total']:.2f} {r['currency']} ({_n(r['n'], 'payment')})" for r in rows) or "none"
 
     parts = []
-    if not Payment.objects.exists():
+    if not sales.exists():
         parts.append("no payments yet")
     else:
         parts.append(f"revenue this month: {revenue(completed.filter(created_at__gte=month_start))}")
         parts.append(f"last month: {revenue(completed.filter(created_at__gte=last_start, created_at__lt=month_start))}")
         top = (
-            PaymentItem.objects.filter(payment__status="completed", payment__created_at__gte=now - timedelta(days=90))
+            PaymentItem.objects.filter(payment__in=completed, payment__created_at__gte=now - timedelta(days=90))
             .values("content_type", "object_id")
             .annotate(n=Count("id"))
             .order_by("-n")[:3]
@@ -808,7 +811,18 @@ def _money_line(now):
     past_due = Subscription.objects.filter(status="past_due").count()
     if past_due:
         parts.append(f"past-due memberships: {past_due}")
-    failed = Payment.objects.filter(status="failed", created_at__gte=month_start).count()
+    refunds = (
+        Payment.objects.filter(payment_type="refund", created_at__gte=month_start)
+        .values("currency")
+        .annotate(total=Sum("amount"), n=Count("id"))
+        .order_by("currency")
+    )
+    if refunds:
+        parts.append(
+            "refunds this month: "
+            + ", ".join(f"{r['total']:.2f} {r['currency']} ({_n(r['n'], 'refund')})" for r in refunds)
+        )
+    failed = sales.filter(status="failed", created_at__gte=month_start).count()
     if failed:
         parts.append(f"failed payments this month: {failed}")
     return "Money: " + "; ".join(parts)

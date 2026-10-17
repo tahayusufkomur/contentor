@@ -420,7 +420,9 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
             selections,
             attached_photos: attachedNow.map((p) => p.id),
             ...(pathname ? { context: { path: pathname } } : {}),
-            specialist: docked ? active : specialistFor(pathname),
+            // A fresh conversation (the search box's ask) has no pick yet:
+            // newChat() cleared it in this same tick.
+            specialist: fresh ? specialistFor(pathname) : active,
           },
           { onPhase: () => {} },
           controller.signal,

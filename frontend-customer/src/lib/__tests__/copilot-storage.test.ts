@@ -31,6 +31,13 @@ const entry = (i: number, over: Partial<ChatEntry> = {}): ChatEntry => ({
 });
 
 describe("persistableEntries", () => {
+  it("keeps who on the team wrote each reply", () => {
+    const [kept] = persistableEntries([
+      { role: "assistant", text: "Sales are up.", specialist: "finance" },
+    ]);
+    expect(kept.specialist).toBe("finance");
+  });
+
   it("caps at the last PERSIST_MAX entries", () => {
     const many = Array.from({ length: PERSIST_MAX + 10 }, (_, i) => entry(i));
     const kept = persistableEntries(many);

@@ -1531,20 +1531,23 @@ def _student(email, name, days_ago=0, last_login_days_ago=None):
     return user
 
 
-def _payment(student, amount, currency="EUR", status="completed", created_at=None, item=None):
+def _payment(
+    student, amount, currency="EUR", status="completed", created_at=None, item=None, payment_type="one_time", **extra
+):
     from django.contrib.contenttypes.models import ContentType
 
     from apps.billing.models import Payment, PaymentItem
 
     payment = Payment.objects.create(
         student=student,
-        payment_type="one_time",
+        payment_type=payment_type,
         status=status,
         amount=Decimal(amount),
         platform_fee=Decimal("0"),
         submerchant_payout=Decimal(amount),
         currency=currency,
         provider="bypass",
+        **extra,
     )
     if created_at is not None:
         Payment.objects.filter(pk=payment.pk).update(created_at=created_at)
@@ -1571,6 +1574,25 @@ def test_money_line_sums_each_currency_for_this_month_and_last(tenant_with_pages
     assert "revenue this month: 80.00 EUR (2 payments), 10.00 USD (1 payment)" in digest
     assert "last month: 40.00 EUR (1 payment)" in digest
     assert "failed payments this month: 1" in digest
+
+
+def test_her_own_plan_invoice_is_not_a_sale(tenant_with_pages):
+    """Her Contentor invoice lands in the same Payment table (platform_subscription
+    set); it is what she pays, not what her students paid."""
+    creator = _student("creator-self@x.com", "Creator")
+    _payment(creator, "29.00", payment_type="subscription", platform_subscription_id=999999)
+    assert "Money: no payments yet" in engine._stats_digest(tenant_with_pages)
+
+
+def test_revenue_counts_partly_refunded_sales_and_reports_refunds_apart(tenant_with_pages):
+    buyer = _student("refund-buyer@x.com", "Buyer")
+    _payment(buyer, "50.00")
+    _payment(buyer, "30.00", status="partially_refunded")
+    _payment(buyer, "29.00", payment_type="subscription", platform_subscription_id=999999)
+    _payment(buyer, "15.00", payment_type="refund")
+    digest = engine._stats_digest(tenant_with_pages)
+    assert "revenue this month: 80.00 EUR (2 payments)" in digest
+    assert "refunds this month: 15.00 EUR (1 refund)" in digest
 
 
 def test_money_line_names_best_sellers_and_the_price_range(tenant_with_pages):
