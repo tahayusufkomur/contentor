@@ -24,7 +24,7 @@
     }
   },
   "for": {
-    "title": "Made for people who teach.",
+    "title": "Made for creators.",
     "lead": "Yoga, strength, music, languages, cooking and more. Each craft gets a look made for it, and you make it yours.",
     "galleryLabel": "Coaching niches and their looks",
     "renderAlt": "Phone preview of a creator site in the {look} look",
@@ -34,7 +34,7 @@
       "encore": "Music creators",
       "studiofloor": "Dance creators",
       "tavola": "Cooking creators",
-      "primer": "Language tutors",
+      "primer": "Language creators",
       "dojo": "Martial arts creators",
       "workshop": "Art creators",
       "atelier": "Makeup artists",
@@ -58,14 +58,14 @@
       },
       "marketer": {
         "name": "Marketer",
-        "title": "New students find you while you teach.",
+        "title": "New students find you while you create.",
         "text": "Articles that answer what your students search for, on Google and in ChatGPT, and campaigns you write once that send themselves.",
         "tools": "Articles on autopilot · Search-ready pages · Email campaigns · Your own domain",
-        "sceneLabel": "A student asks Google, then ChatGPT, for a yoga teacher; both point to Mara's site"
+        "sceneLabel": "A student asks Google, then ChatGPT, for online yoga; both point to Mara's site"
       },
       "producer": {
         "name": "Producer",
-        "title": "Teach live from your own site.",
+        "title": "Go live from your own site.",
         "text": "Go live in one click. Students join from a laptop, a tablet or a phone, with no Zoom to pay for and no links to send.",
         "tools": "Live classes · In-person classes · Your calendar",
         "sceneLabel": "Lena, Hannah and Priya follow Mara's live class on a laptop, a tablet and a phone",

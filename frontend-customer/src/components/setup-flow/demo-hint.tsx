@@ -47,7 +47,7 @@ export function StarterDemo() {
   return (
     <div className="relative">
       <div className="flex h-[76px] flex-col rounded-2xl border border-[var(--sf-ink)] bg-[var(--sf-ink)] px-3.5 py-3 text-[13.5px] font-medium leading-snug text-[var(--sf-paper)] motion-safe:animate-[sf-demo-card_7s_ease-in-out_infinite]">
-        <span>I started teaching when…</span>
+        <span>I started when…</span>
         <span className="block max-w-[26ch] overflow-hidden whitespace-nowrap font-normal motion-safe:animate-[sf-demo-type_7s_steps(26,end)_infinite]">
           a friend asked me to cover
         </span>

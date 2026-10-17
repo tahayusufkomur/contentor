@@ -936,7 +936,7 @@ PHOTO_SHOTS = {
         "Upright",
         "4:5",
         "Most of your site: the opening photo, your story, the photo wall.",
-        "You teaching or practising, a portrait where we see your face, your students, your space.",
+        "You at work or practising, a portrait where we see your face, your students, your space.",
     ),
     "landscape": (
         "Wide",

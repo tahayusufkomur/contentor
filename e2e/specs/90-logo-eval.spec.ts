@@ -56,7 +56,7 @@ test.describe("logo eval wall", () => {
       // Fill the brief fields with `brief`, continue to Ideas.
       const nameInput = dialog.getByLabel("Brand name");
       await nameInput.fill(brief.name);
-      await dialog.getByLabel("What do you teach?").fill(brief.niche);
+      await dialog.getByLabel("What do you offer?").fill(brief.niche);
       await dialog
         .getByPlaceholder("e.g. calm, earthy, premium but approachable")
         .fill(brief.vibe);

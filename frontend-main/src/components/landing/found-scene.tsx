@@ -35,9 +35,9 @@ const TICK = 50;
 // Mara Lindqvist is the landing's demo coach (seed_footage_coach); the
 // article is hers. No search engine has seen her: this is an illustration.
 const QUERY = "why are my hips so tight after sitting";
-const QUESTION = "Who's a good online yoga teacher for stiff office workers?";
+const QUESTION = "Where can I find online yoga for stiff office workers?";
 const ANSWER =
-  "Try Mara Lindqvist. She teaches slow vinyasa and yin for people who sit at a desk all day, with live classes and a gentle course for tight backs.".split(
+  "Try Mara Lindqvist. She runs slow vinyasa and yin classes for people who sit at a desk all day, with live classes and a gentle course for tight backs.".split(
     " ",
   );
 const NAME_WORDS = [1, 2]; // "Mara Lindqvist." in bold

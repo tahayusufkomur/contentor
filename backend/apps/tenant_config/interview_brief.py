@@ -146,7 +146,7 @@ TONE_HINTS = {
         "Rest here. There's nothing to fix.",
         "Reset your mind in ten minutes flat.",
         "Breathe in. The room goes quiet.",
-        "Practices rooted in years of teaching.",
+        "Practices rooted in years of experience.",
         "Your brain needs a nap. Let's give it one.",
         "Trust the calm you already have.",
         "Warm, slow and deeply comforting.",
@@ -728,8 +728,8 @@ class Field:
 FIELDS: tuple[Field, ...] = (
     Field(
         "teaches",
-        "What they teach",
-        "Let's start with you. What do you teach?",
+        "What they offer",
+        "Let's start with you. What do you offer?",
         # The first screen, before any AI turn: eight tiles, typing covers the rest.
         (
             "Yoga",
@@ -748,7 +748,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "specialty",
         "Their specialty",
-        "Which kinds do you teach?",  # asked only after a broad tile; options from specialties_for()
+        "Which kinds do you offer?",  # asked only after a broad tile; options from specialties_for()
         kind="specialty",
         multi=True,
         custom=True,
@@ -760,13 +760,13 @@ FIELDS: tuple[Field, ...] = (
         "Their own photos",
         "Do you have photos of your own for your site?",
         kind="photos",  # the screen takes the uploads; the answer is "own" or "stock"
-        why="Your own photos make the site yours. Without them I pick photos that fit what you teach."
+        why="Your own photos make the site yours. Without them I pick photos that fit what you do."
         " Either way you can swap any photo later.",
     ),
     Field(
         "audience",
-        "Who they teach",
-        "Who are the students you love teaching most?",
+        "Who they work with",
+        "Who are the students you love working with most?",
         ("Complete beginners", "Busy professionals", "People coming back after an injury", "Parents", "Older adults"),
         multi=True,
         custom=True,
@@ -793,8 +793,8 @@ FIELDS: tuple[Field, ...] = (
     ),
     Field(
         "offers",
-        "How they teach",
-        "How will you teach your students?",
+        "How they work",
+        "How will you work with your students?",
         ("Digital Courses", "Live online classes", "In-person sessions", "Articles", "Community"),
         kind="offers",
         why="This decides which pages I build and what I ask you next.",
@@ -844,11 +844,11 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "story",
         "Their story",
-        "How did you come to teach this?",
+        "How did you get into this?",
         (
             "I first got into this when…",
             "It changed my life when…",
-            "I started teaching because…",
+            "I started because…",
             "Friends kept asking me to…",
             "I was struggling with… until",
             "My career took a turn when…",
@@ -861,11 +861,11 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "credentials",
         "Training and experience",
-        "Any training, certifications or years of teaching you'd like visitors to know about?",
+        "Any training, certifications or years of experience you'd like visitors to know about?",
         (
             "I trained in…",
             "I'm certified in…",
-            "I've been teaching for…",
+            "I've been doing this for…",
             "I studied at…",
             "I've worked with…",
             "I'm a member of…",
@@ -913,7 +913,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "memberships",
         "Memberships offered",
-        "A membership can cover everything, or one thing you teach. Which ones fit your students?",
+        "A membership can cover everything, or one thing you offer. Which ones fit your students?",
         kind="memberships",  # options come from membership_tiles()
         why="Each one is its own monthly subscription. You choose what each one unlocks as we build.",
         multi=True,
@@ -924,7 +924,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "course_topic",
         "First course topic",
-        "Let's build your first course. What should it teach?",
+        "Let's build your first course. What should it cover?",
         needs=("course",),
         group="course",
         delegable=True,

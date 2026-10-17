@@ -17,7 +17,7 @@
   },
   "nav": {
     "sections": {
-      "teach": "Teach",
+      "teach": "Create",
       "students": "Students",
       "reachOut": "Reach out",
       "money": "Money",
@@ -215,7 +215,7 @@
     "saved": "Saved.",
     "saveFailed": "Could not save. Please try again.",
     "usage": "{used} of {cap} questions used this month",
-    "knowledgeTitle": "Teach your assistant",
+    "knowledgeTitle": "Train your assistant",
     "knowledgeHint": "Add answers to questions your students ask. The assistant only uses what you write here and your published content.",
     "knowledgeAdd": "Add entry",
     "knowledgeCancel": "Cancel",

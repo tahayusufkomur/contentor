@@ -440,7 +440,7 @@ export function PhotosScreen({
               <h2 className="text-[15px] font-semibold">What to bring</h2>
               <p className="mt-1 text-[13.5px] leading-relaxed text-[var(--sf-graphite)]">
                 10 to 20 photos cover a whole site. Fewer is fine: I fill the
-                rest with photos that fit what you teach.
+                rest with photos that fit what you do.
               </p>
               <ul className="mt-4 flex flex-col gap-4">
                 {cards.guide.map((shot) => (

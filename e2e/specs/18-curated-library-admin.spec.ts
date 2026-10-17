@@ -110,7 +110,7 @@ test("superadmin adds a curated logo via the gallery; coach sees it", async ({
     const nameInput = dialog.getByLabel("Brand name");
     if (!(await nameInput.inputValue())) await nameInput.fill("Demo Yoga");
     // No style chip: an "elegant"-tagged seeded mark could outscore ours.
-    await dialog.getByLabel("What do you teach?").fill(NICHE);
+    await dialog.getByLabel("What do you offer?").fill(NICHE);
     await dialog.getByRole("button", { name: "Show my logo ideas" }).click();
 
     // The wall renders only after GET /api/v1/logos/curated/ — the whole

@@ -51,7 +51,7 @@ export function StudioBrief({
       </label>
 
       <label className="block space-y-1.5">
-        <span className="text-sm font-medium">What do you teach?</span>
+        <span className="text-sm font-medium">What do you offer?</span>
         <input
           className="w-full rounded-md border bg-background px-3 py-2 text-sm"
           value={brief.niche}

@@ -74,7 +74,7 @@ test("signup lands in /setup and the interview ends in a published site", async 
   await page.reload();
 
   await page.waitForURL(/e2e-studio-[\w-]+\.localhost\/setup/, { timeout: 120_000 });
-  await expect(page.getByText("What do you teach?")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("What do you offer?")).toBeVisible({ timeout: 30_000 });
 
   // First answer typed; then "Pick for me" where the guide may decide, the
   // first tile (and Continue) where only the coach knows, a typed answer

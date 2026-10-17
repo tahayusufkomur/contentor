@@ -32,7 +32,7 @@ test("coach uses a curated logo and saves it", async ({ browser }) => {
 
   const nameInput = dialog.getByLabel("Brand name");
   if (!(await nameInput.inputValue())) await nameInput.fill("Demo Yoga");
-  await dialog.getByLabel("What do you teach?").fill("yoga");
+  await dialog.getByLabel("What do you offer?").fill("yoga");
   await dialog.getByRole("button", { name: "Elegant" }).click();
   await dialog.getByRole("button", { name: "Show my logo ideas" }).click();
 

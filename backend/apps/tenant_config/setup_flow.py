@@ -39,12 +39,12 @@ from .setup_items import (
 logger = logging.getLogger(__name__)
 
 STEP_COPY = {
-    "course": ("Your first course", "Tell us what you want to teach — we'll draft the outline, price and cover."),
+    "course": ("Your first course", "Tell us what you want to create — we'll draft the outline, price and cover."),
     "event": ("Your first live session", "Pick a topic and we'll schedule a session students can join."),
     "post": ("Your first article", "A short post that shows visitors how you think and who you help."),
     "page:home": ("Home page", "The first thing visitors see."),
     "page:about": ("About page", "Your story, in your own words."),
-    "page:courses": ("Courses page", "Where students browse what you teach."),
+    "page:courses": ("Courses page", "Where students browse what you offer."),
     "page:pricing": ("Pricing page", "Your membership plans, side by side."),
     "page:faq": ("FAQ page", "Answers to what students ask before they join."),
     "page:contact": ("Contact page", "How students reach you."),

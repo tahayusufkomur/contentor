@@ -515,7 +515,7 @@ export const BLOCK_REGISTRY: Record<string, BlockDefinition> = {
       },
       { key: "showFilters", label: "Show search & filters", type: "toggle" },
       { key: "showPrice", label: "Show price", type: "toggle" },
-      { key: "showMeta", label: "Show instructor & lessons", type: "toggle" },
+      { key: "showMeta", label: "Show creator & lessons", type: "toggle" },
       {
         key: "filterGroups",
         label: "Filter facets",

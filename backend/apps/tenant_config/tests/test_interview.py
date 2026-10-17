@@ -101,7 +101,7 @@ def test_ai_asking_a_known_field_falls_back_to_priority(client, quiet):
     )
     body = client.post(URL, {"message": "Pottery"}, format="json").json()
     assert body["guide"]["field"] == "audience"
-    assert body["guide"]["question"] == "Who are the students you love teaching most?"
+    assert body["guide"]["question"] == "Who are the students you love working with most?"
     assert body["guide"]["ack"] == "Nice."
 
 
@@ -884,10 +884,10 @@ def test_a_shared_file_fills_several_questions_and_says_so(client, tenant_ctx, q
     assert answers["teaches"] == "Pottery" and answers["audience"] == "Desk workers"
     assert answers["credentials"].startswith("I trained") and answers["story"].startswith("I found")
     assert body["guide"]["ack"] == (
-        "From your file I filled in: what you teach, who you teach, your story, your training."
+        "From your file I filled in: what you offer, who you work with, your story, your training."
         " You can change any of them."
     )
-    assert body["guide"]["noted"] == ["who you teach", "your story", "your training"]  # not the question on screen
+    assert body["guide"]["noted"] == ["who you work with", "your story", "your training"]  # not the question on screen
     assert body["guide"]["field"] == "outcome"
     user = json.loads(quiet.calls[0]["user"])
     assert user["document"] is True and user["message"] == BIO and user["answering"] is None

@@ -40,7 +40,7 @@ test("coach creates a logo through brief, curated ideas, and editor", async ({
   // step below is a mutually-exclusive `step === "ideas"` render branch, so
   // `nameInput` no longer resolves once we've navigated past the Brief.
   const brand = (await nameInput.inputValue()) || "Demo Yoga";
-  await dialog.getByLabel("What do you teach?").fill("yoga");
+  await dialog.getByLabel("What do you offer?").fill("yoga");
   await dialog.getByLabel("Tagline (optional)").fill("Move every day");
   await dialog.getByRole("button", { name: "Elegant" }).click();
   await dialog.getByRole("button", { name: "Show my logo ideas" }).click();

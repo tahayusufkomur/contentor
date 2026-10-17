@@ -119,7 +119,7 @@ const PLACEHOLDER: Partial<Record<FamilyId, Partial<Block>>> = {
   },
   story: {
     heading: "Hi, I'm glad you're here",
-    body: "<p>Tell visitors how you started, who you teach and what a session with you feels like.</p>",
+    body: "<p>Tell visitors how you started, who you work with and what a session with you feels like.</p>",
   },
   benefits: {
     heading: "What you'll gain",
@@ -150,7 +150,7 @@ const PLACEHOLDER: Partial<Record<FamilyId, Partial<Block>>> = {
   faq: {
     heading: "Questions, answered",
     items: [
-      { q: "Who is this for?", a: "Describe who you teach." },
+      { q: "Who is this for?", a: "Describe who you work with." },
       { q: "Do I need experience?", a: "Say what a beginner needs." },
       { q: "How do I start?", a: "Explain the first step." },
     ],

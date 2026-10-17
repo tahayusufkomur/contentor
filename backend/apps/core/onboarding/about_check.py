@@ -19,7 +19,7 @@ CACHE_SECONDS = 24 * 3600
 
 FIELD_METADATA = {
     "teaches": {
-        "label": "What you teach",
+        "label": "What you offer",
         "answers": "Homepage hero & course catalog",
     },
     "audience": {
@@ -32,10 +32,10 @@ FIELD_METADATA = {
     },
     "credentials": {
         "label": "Training & certifications",
-        "answers": "Instructor bio & trust credentials",
+        "answers": "Creator bio & trust credentials",
     },
     "offers": {
-        "label": "How you teach",
+        "label": "How you work",
         "answers": "Which pages I build and what I ask next",
     },
     "location": {
@@ -122,7 +122,7 @@ Rules:
 - Only output fields that are clearly supported by the text. Never invent facts.
 - For each fact, keep value under 150 characters, clean and concise.
 - Output summary: 1 short sentence summarizing what was extracted \
-(e.g. "Found your teaching specialty, 10 years of credentials, and student audience."). \
+(e.g. "Found your specialty, 10 years of credentials, and student audience."). \
 Empty string if nothing found."""
 )
 

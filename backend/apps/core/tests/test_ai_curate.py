@@ -29,7 +29,7 @@ def test_brief_from_tenant_reads_wizard_answers():
     assert brief.niche == "yoga"
     assert brief.description == "Vinyasa for busy professionals"
     # Legacy wizard answers migrate into the interview brief: goals → offers.
-    assert brief.followups == (("Who?", "Office workers"), ("How they teach", "course"))
+    assert brief.followups == (("Who?", "Office workers"), ("How they work", "course"))
     assert brief.goals == ("sell_courses",)
     assert brief.style == "journal"
     assert brief.brand_name == "Glow Studio"

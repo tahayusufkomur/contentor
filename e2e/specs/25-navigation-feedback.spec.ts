@@ -55,7 +55,7 @@ test("sidebar navigation highlights the target and shows a loading state before 
   await expect(page.getByRole("navigation", { name: "Students" })).toBeVisible({
     timeout: 1000,
   });
-  await expect(page.getByRole("navigation", { name: "Teach" })).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Create" })).toHaveCount(0);
 
   // 2. The top progress bar appears while the navigation is in flight. This
   // is the regression net for a real Task 8 bug: `isPending` ended the

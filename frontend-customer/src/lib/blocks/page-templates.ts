@@ -57,7 +57,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
       }),
       tb("imageText", {
         heading: "My approach",
-        body: "Share what makes your teaching different.",
+        body: "Share what makes your work different.",
       }),
       tb("stats", {
         heading: "By the numbers",

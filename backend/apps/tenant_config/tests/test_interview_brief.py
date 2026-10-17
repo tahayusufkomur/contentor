@@ -154,11 +154,11 @@ def test_composer_facts_label_values():
             "course_price": 49.0,
         }
     )
-    assert {"q": "Who they teach", "a": "Desk workers"} in facts
-    assert {"q": "How they teach", "a": "course, live"} in facts
+    assert {"q": "Who they work with", "a": "Desk workers"} in facts
+    assert {"q": "How they work", "a": "course, live"} in facts
     assert {"q": "How students pay", "a": "course"} in facts
     assert {"q": "First course price", "a": "49"} in facts
-    assert not any(f["q"] == "What they teach" for f in facts)  # rides in description
+    assert not any(f["q"] == "What they offer" for f in facts)  # rides in description
 
 
 def test_migrate_legacy_prefills_once():
@@ -317,7 +317,7 @@ def test_a_broad_niche_asks_its_kinds_and_the_studio_name_opens_on_them():
     assert brief.missing(answers)[0].id == "specialty"
     kinds = brief.options_for(brief.FIELD_BY_ID["specialty"], answers)[0]
     assert "Belly dance" in kinds and "Hip hop" in kinds
-    assert default_question(brief.FIELD_BY_ID["specialty"], answers) == "Which kinds of dance do you teach?"
+    assert default_question(brief.FIELD_BY_ID["specialty"], answers) == "Which kinds of dance do you offer?"
     brief.apply_fact(answers, "specialty", "Belly dance, Hip hop")
     assert answers["niche"] == "belly_dance" and brief.subject_of(answers) == "belly dance"
     assert "specialty" not in [f.id for f in brief.missing(answers)]
@@ -330,7 +330,7 @@ def test_a_broad_niche_asks_its_kinds_and_the_studio_name_opens_on_them():
     # picking them fills the broad answer and the specialty together.
     opening = guide_for(brief.FIELD_BY_ID["teaches"], answers={}, brand="Bella Dance Academy")
     assert opening["multi"] and "Salsa & bachata" in opening["options"]
-    assert opening["question"].endswith("Which kinds of dance do you teach?")
+    assert opening["question"].endswith("Which kinds of dance do you offer?")
     picked = {}
     brief.apply_fact(picked, "teaches", "Belly dance, Ballet")
     assert picked["teaches"] == "Dance" and picked["specialty"] == "Belly dance, Ballet"
@@ -348,7 +348,7 @@ def test_a_studio_named_after_one_kind_asks_only_whether_there_is_more():
 
     brand = "Görkem's Face Yoga Studio"
     opening = guide_for(brief.FIELD_BY_ID["teaches"], answers={}, brand=brand)
-    assert opening["question"].endswith("Are you only teaching face yoga?")
+    assert opening["question"].endswith("Do you only offer face yoga?")
     assert opening["options"] == ["Only face yoga", "Face yoga and more"] and not opening["multi"]
 
     only = {}
@@ -360,7 +360,7 @@ def test_a_studio_named_after_one_kind_asks_only_whether_there_is_more():
     brief.apply_fact(more, "teaches", "Face yoga and more")
     assert more["teaches"] == "Yoga" and brief.missing(more)[0].id == "specialty"
     step = guide_for(brief.FIELD_BY_ID["specialty"], answers=more)
-    assert step["question"] == "What else do you teach besides face yoga?"
+    assert step["question"] == "What else do you offer besides face yoga?"
     assert "Face yoga" not in step["options"] and "Yin yoga" in step["options"]
     brief.apply_fact(more, "specialty", "Yin yoga, Hatha yoga")
     assert more["specialty"] == "Face yoga, Yin yoga, Hatha yoga" and more["niche"] == "face_yoga"
@@ -504,7 +504,7 @@ def test_a_bio_opens_on_what_it_says_and_asks_about_a_studio_name_that_disagrees
     assert opening["options"][:3] == ["Face yoga", "Yoga", "Dance"] and len(opening["options"]) == 8
     assert opening["multi"] and opening["custom"] and opening["icons"]["Face yoga"] == "flower-2"
     assert opening["question"] == (
-        "Your bio is about face yoga and yoga, but your studio name says dance. What do you teach?"
+        "Your bio is about face yoga and yoga, but your studio name says dance. What do you offer?"
     )
     # A name that agrees with the bio, or says nothing, is no conflict (a one-kind name included).
     for brand in ("Zen Yoga Studio", "Görkem's Face Yoga Studio", "Studio Nova"):
@@ -526,7 +526,7 @@ def test_several_broad_tiles_ask_the_kinds_of_each():
     kinds, icons, _ = brief.options_for(field, answers)
     assert kinds[:4] == ("Vinyasa yoga", "Belly dance", "Hatha yoga", "Hip hop")
     assert icons[:2] == ("flower-2", "music")
-    assert default_question(field, answers) == "Which kinds of yoga and dance do you teach?"
+    assert default_question(field, answers) == "Which kinds of yoga and dance do you offer?"
 
 
 @pytest.mark.django_db

@@ -64,12 +64,12 @@ test("seven sidebar rows; Teach is lit on a course page and its pages are tabs",
     sidebar(page).getByRole("link", { name: "Reach out" }),
   ).toBeVisible();
   await expect(
-    sidebar(page).getByRole("link", { name: "Teach" }),
+    sidebar(page).getByRole("link", { name: "Create" }),
   ).toHaveAttribute("aria-current", "page");
 
   // demo-yoga has every module on: all three Teach pages, nothing hidden
   // (the calendar is a view of Classes & events, not a page of its own).
-  const teach = page.getByRole("navigation", { name: "Teach" });
+  const teach = page.getByRole("navigation", { name: "Create" });
   await expect(teach.getByRole("link")).toHaveCount(3);
   await expect(teach.getByRole("button", { name: /\+ \d+ more/i })).toHaveCount(
     0,
@@ -88,7 +88,7 @@ test("a coach with no optional modules sees Courses and + more under Teach", asy
     const page = await coach.newPage();
     await page.goto(`${TENANT}/admin/courses`);
 
-    const teach = page.getByRole("navigation", { name: "Teach" });
+    const teach = page.getByRole("navigation", { name: "Create" });
     await expect(teach.getByRole("link", { name: "Courses" })).toHaveAttribute(
       "aria-current",
       "page",
@@ -105,12 +105,12 @@ test("a coach with no optional modules sees Courses and + more under Teach", asy
     // Search and Help can still send her to a page of a module that is off:
     // that page keeps its row and its tab lit rather than vanishing.
     await page.goto(`${TENANT}/admin/live`);
-    const there = page.getByRole("navigation", { name: "Teach" });
+    const there = page.getByRole("navigation", { name: "Create" });
     await expect(
       there.getByRole("link", { name: /classes & events/i }),
     ).toHaveAttribute("aria-current", "page");
     await expect(
-      sidebar(page).getByRole("link", { name: "Teach" }),
+      sidebar(page).getByRole("link", { name: "Create" }),
     ).toHaveAttribute("aria-current", "page");
 
     await page.close();

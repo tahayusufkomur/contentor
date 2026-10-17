@@ -197,7 +197,7 @@ def test_extract_doc_returns_analyzed_facts_in_real_time():
     sample_facts = [
         {
             "field": "teaches",
-            "label": "What you teach",
+            "label": "What you offer",
             "value": "Vinyasa yoga",
             "answers": "Homepage hero & course catalog",
         }
@@ -219,7 +219,7 @@ def test_extract_doc_returns_analyzed_facts_in_real_time():
 def test_extract_doc_flags_a_studio_name_its_bio_disagrees_with():
     client = APIClient(HTTP_HOST="localhost")
     facts = [
-        {"field": "teaches", "label": "What you teach", "value": "Face yoga and yoga", "items": ["Face yoga", "Yoga"]}
+        {"field": "teaches", "label": "What you offer", "value": "Face yoga and yoga", "items": ["Face yoga", "Yoga"]}
     ]
     with mock.patch("apps.core.onboarding.about_check.analyze", return_value={"facts": facts, "summary": ""}):
         post = lambda brand: client.post(  # noqa: E731

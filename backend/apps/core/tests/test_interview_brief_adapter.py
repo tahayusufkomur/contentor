@@ -25,11 +25,11 @@ def _tenant():
 def test_coach_brief_carries_interview_facts():
     brief = CoachBrief.from_tenant(_tenant())
     assert ("Old question?", "Old answer") in brief.followups
-    assert ("Who they teach", "Desk workers") in brief.followups
+    assert ("Who they work with", "Desk workers") in brief.followups
     assert ("Their story", "Taught for 12 years after a back injury") in brief.followups
 
 
 def test_composer_coach_data_carries_interview_facts():
     data = site_composer._coach_data(_tenant(), "Glow")
-    assert {"q": "Who they teach", "a": "Desk workers"} in data["followups"]
+    assert {"q": "Who they work with", "a": "Desk workers"} in data["followups"]
     assert data["description"] == "Gentle yoga for desk workers"

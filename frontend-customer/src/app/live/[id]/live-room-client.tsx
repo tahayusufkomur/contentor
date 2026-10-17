@@ -91,7 +91,7 @@ export default function LiveRoomClient({ liveClassId }: LiveRoomClientProps) {
             liveClass.status === "scheduled" ? (
               <p className="text-muted-foreground">
                 This class hasn&apos;t started yet. Check back when the
-                instructor goes live.
+                creator goes live.
               </p>
             ) : (
               <p className="text-muted-foreground">This class has ended.</p>

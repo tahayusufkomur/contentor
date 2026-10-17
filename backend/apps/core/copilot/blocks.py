@@ -123,7 +123,7 @@ BLOCK_SCHEMA.update(
 # section never renders empty. The coach sees it on the confirm card.
 _SECTION_PLACEHOLDERS = {
     "headline": "Welcome",
-    "body": "<p>A few words about who you are and how you teach.</p>",
+    "body": "<p>A few words about who you are and how you work.</p>",
     "statement": "Every student grows best at their own pace.",
     "ctaLabel": "Get started",
     "title": "{label} {n}",
