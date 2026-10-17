@@ -17,6 +17,9 @@ def _cfg(**kw):
     cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Zen")
     cfg.brand_name = kw.pop("brand_name", "Zen")
     cfg.style = kw.pop("style", "journal")
+    # A colourway left by another test (the copilot's edit_style one sets
+    # "sage") would recolour the email: reset it with the style.
+    cfg.palette = kw.pop("palette", "")
     for field, value in kw.items():
         setattr(cfg, field, value)
     cfg.save()

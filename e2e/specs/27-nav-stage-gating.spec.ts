@@ -15,7 +15,7 @@
 // caches per tenant for 5 minutes, so the helper clears that key too.
 //
 // Selector note: the sidebar is the only <aside> without an aria-label (the
-// assistant panel is an <aside aria-label="Assistant">), and a section's tab
+// team panel is an <aside aria-label="Your team">), and a section's tab
 // strip is the <nav> named after the section.
 
 import { test, expect } from "@playwright/test";
