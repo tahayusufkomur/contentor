@@ -32,11 +32,11 @@ test("the landing carries one header, the brand, every chapter and the share car
   }
   const roles = [
     "Designer",
-    "Marketer",
-    "Producer",
+    "Marketing Specialist",
+    "Content Creating Specialist",
     "Community manager",
     "Assistant",
-    "Cashier",
+    "Financial Strategist",
   ];
   for (const name of roles) {
     await expect(
@@ -46,10 +46,12 @@ test("the landing carries one header, the brand, every chapter and the share car
   // A role in the hero opens that role in the team chapter.
   await page.locator('#hero a[href="#team-cashier"]').click();
   await expect(
-    page.locator("#team").getByRole("tab", { name: "Cashier", exact: true }),
+    page
+      .locator("#team")
+      .getByRole("tab", { name: "Financial Strategist", exact: true }),
   ).toHaveAttribute("aria-selected", "true");
   await expect(page.locator("#team-panel")).toContainText(
-    "Paid directly, under your name.",
+    "Prices that sell, paid straight to you.",
   );
   await expect(page.locator("#earn-students")).toBeAttached();
   await expect(page.locator("#earn-price")).toBeAttached();

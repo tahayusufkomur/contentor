@@ -55,7 +55,8 @@ const CAPS: Record<string, number> = {
   ...Object.assign(
     {},
     ...TEAM_ROLES.map(({ key }) => ({
-      [`team.roles.${key}.name`]: 20,
+      // The owner's "Content Creating Specialist" is 27 characters.
+      [`team.roles.${key}.name`]: 28,
       [`team.roles.${key}.title`]: 48,
       [`team.roles.${key}.text`]: 160,
       [`team.roles.${key}.tools`]: 90,

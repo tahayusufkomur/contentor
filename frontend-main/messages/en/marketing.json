@@ -17,10 +17,10 @@
     "roles": {
       "designer": "Builds your site, look and logo",
       "marketer": "Writes articles, sends campaigns",
-      "producer": "Streams your classes to any screen",
+      "producer": "Drafts your courses, runs live classes",
       "community": "Reminds students by push and email",
       "assistant": "Answers students, day and night",
-      "cashier": "Takes payments, straight to your Stripe"
+      "cashier": "Suggests prices, pays you through Stripe"
     }
   },
   "for": {
@@ -57,17 +57,17 @@
         "sceneLabel": "A creator answers the setup questions, picks a look and her site builds"
       },
       "marketer": {
-        "name": "Marketer",
+        "name": "Marketing Specialist",
         "title": "New students find you while you create.",
         "text": "Articles that answer what your students search for, on Google and in ChatGPT, and campaigns you write once that send themselves.",
         "tools": "Articles on autopilot · Search-ready pages · Email campaigns · Your own domain",
         "sceneLabel": "A student asks Google, then ChatGPT, for online yoga; both point to Mara's site"
       },
       "producer": {
-        "name": "Producer",
-        "title": "Go live from your own site.",
-        "text": "Go live in one click. Students join from a laptop, a tablet or a phone, with no Zoom to pay for and no links to send.",
-        "tools": "Live classes · In-person classes · Your calendar",
+        "name": "Content Creating Specialist",
+        "title": "From one sentence to a course, then go live.",
+        "text": "Describe a course and its outline drafts itself, lesson by lesson. Then go live from your own site: students join from a laptop, a tablet or a phone.",
+        "tools": "Course drafts · Live classes · In-person classes · Your calendar",
         "sceneLabel": "Lena, Hannah and Priya follow Mara's live class on a laptop, a tablet and a phone",
         "live": "Mara is live",
         "devices": {
@@ -98,15 +98,15 @@
       "assistant": {
         "name": "Assistant",
         "title": "Your site answers students while you sleep.",
-        "text": "The assistant on your site answers questions and points students to the right course. In your studio, it drafts a whole course from one sentence.",
-        "tools": "Site assistant · Course drafts · Help in your studio",
+        "text": "The assistant on your site answers questions and points students to the right course. In your studio, it sends each request to the right specialist.",
+        "tools": "Site assistant · Help in your studio · Your front desk",
         "sceneLabel": "At night a student asks Mara's assistant for help, buys the course it suggests, and the payment reaches Mara's silenced phone"
       },
       "cashier": {
-        "name": "Cashier",
-        "title": "Paid directly, under your name.",
-        "text": "Sell courses and memberships from your own pages. Payments go straight to your Stripe account. We never hold your money.",
-        "tools": "Courses · Memberships · Stripe payouts · Your name on receipts",
+        "name": "Financial Strategist",
+        "title": "Prices that sell, paid straight to you.",
+        "text": "It reads your own sales to suggest prices, then payments go straight to your Stripe account, under your name. We never hold your money.",
+        "tools": "Price advice · Memberships · Stripe payouts · Your name on receipts",
         "sceneLabel": "Payments from Mara's students land in her Stripe account one after another",
         "scene": {
           "today": "Today",
