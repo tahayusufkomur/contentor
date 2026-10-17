@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -43,7 +43,7 @@ export function CoursesTreatments({ block, data, editable }: SectionProps) {
                   className="group grid items-center gap-x-6 gap-y-4 py-6 transition-colors duration-200 sm:grid-cols-[5rem_minmax(0,1fr)] md:grid-cols-[6rem_minmax(0,1fr)]"
                 >
                   <Img
-                    value={{ url: courseImage(c) }}
+                    value={courseCover(c)}
                     alt={c.title}
                     className={cn(
                       ARCH,

@@ -282,6 +282,29 @@ describe("CoverArt photo", () => {
     expect(photos).toBe(5 * 3);
   });
 
+  it("loads the photo lazily, or eagerly at high priority when asked, and never her logo eagerly", () => {
+    const imgs = (
+      src: string,
+      props: Partial<ComponentProps<typeof CoverArt>>,
+    ) =>
+      parse(draw(design(), props)).filter(
+        (e) => e.tag === "img" && e.attrs.src === src,
+      );
+    // The thumbnail's and one for each size.
+    expect(imgs(PHOTO_URL, {})).toHaveLength(4);
+    for (const img of imgs(PHOTO_URL, {})) {
+      expect(img.attrs.loading).toBe("lazy");
+      expect(img.attrs).not.toHaveProperty("fetchpriority");
+    }
+    for (const img of imgs(PHOTO_URL, { priority: true })) {
+      expect(img.attrs.loading).toBe("eager");
+      expect(img.attrs.fetchpriority).toBe("high");
+    }
+    const logos = imgs(LOGO_URL, { priority: true });
+    expect(logos.length).toBeGreaterThan(0);
+    for (const logo of logos) expect(logo.attrs.loading).toBe("lazy");
+  });
+
   it("shows the photo alone in a frame under 180 px, and the panel colour with no photo", () => {
     const palette = coverPalette(SITE_STYLES.atelier, null);
     const thumbOf = (d: CoverDesign) => {

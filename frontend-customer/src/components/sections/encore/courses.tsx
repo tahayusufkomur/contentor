@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -47,7 +47,7 @@ export function CoursesTracklist({ block, data, editable }: SectionProps) {
                 >
                   <Track>{pad2(i)}</Track>
                   <Img
-                    value={{ url: courseImage(c) }}
+                    value={courseCover(c)}
                     alt={c.title}
                     className="encore-zoom hidden aspect-square w-20 sm:block"
                   />

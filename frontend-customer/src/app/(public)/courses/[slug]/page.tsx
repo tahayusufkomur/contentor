@@ -5,6 +5,8 @@ import { EnrollButton } from "@/components/public/enroll-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { CoverArt } from "@/components/covers/cover-art";
+import { courseItem } from "@/lib/covers/items";
 import { formatDuration } from "@/lib/format";
 import { BookOpen, Clock, Lock, Play, User } from "lucide-react";
 import type { CourseDetail, Module } from "@/types/course";
@@ -59,8 +61,16 @@ export default async function CourseDetailPage({
       {/* Hero section */}
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          {/* Thumbnail */}
-          {course.thumbnail_signed_url || course.thumbnail_url ? (
+          {/* Thumbnail: the kept cover design, drawn live, or the photo. It leads the page. */}
+          {course.cover_design ? (
+            <div className="relative h-64 overflow-hidden rounded-[var(--radius)] md:h-80">
+              <CoverArt
+                design={course.cover_design}
+                item={courseItem(course)}
+                priority
+              />
+            </div>
+          ) : course.thumbnail_signed_url || course.thumbnail_url ? (
             <div className="overflow-hidden rounded-[var(--radius)]">
               <img
                 src={course.thumbnail_signed_url || course.thumbnail_url}

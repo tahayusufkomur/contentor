@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -66,7 +66,7 @@ export function CoursesDossier({ block, data, editable }: SectionProps) {
 
                     <div className="flex min-w-0 items-start gap-4 sm:items-center sm:gap-5">
                       <Img
-                        value={{ url: courseImage(c) }}
+                        value={courseCover(c)}
                         alt={c.title}
                         className="ledger-frame aspect-[4/3] w-20 shrink-0"
                       />

@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -46,7 +46,7 @@ export function CoursesPrivate({ block, data, editable }: SectionProps) {
                 className="group block overflow-hidden rounded-[var(--radius)] border border-border bg-muted"
               >
                 <Img
-                  value={{ url: courseImage(course) }}
+                  value={courseCover(course)}
                   alt={course.title}
                   className="aspect-[4/3] w-full velvet-zoom"
                 />

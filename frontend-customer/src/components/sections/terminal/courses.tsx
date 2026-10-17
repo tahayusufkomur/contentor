@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -61,7 +61,7 @@ export function CoursesModules({ block, data, editable }: SectionProps) {
                           </span>
 
                           <Img
-                            value={{ url: courseImage(c) }}
+                            value={courseCover(c)}
                             alt={c.title}
                             className="size-10 shrink-0 rounded-[var(--radius)] border border-border"
                           />

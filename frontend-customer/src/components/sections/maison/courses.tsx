@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -48,7 +48,7 @@ export function CoursesCollection({ block, data, editable }: SectionProps) {
                 <SmartLink href={courseHref(c)} className="group block">
                   <div className={FRAME}>
                     <Img
-                      value={{ url: courseImage(c) }}
+                      value={courseCover(c)}
                       alt={c.title}
                       className="maison-zoom aspect-[3/4] w-full"
                     />

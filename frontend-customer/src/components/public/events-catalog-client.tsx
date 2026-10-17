@@ -12,8 +12,10 @@ import {
   matchesFacets,
   type FacetSelection,
 } from "@/components/public/facet-pills";
+import { CoverArt } from "@/components/covers/cover-art";
 import { useTenant } from "@/hooks/use-tenant";
 import { formatEventWhen } from "@/lib/calendar-utils";
+import { eventItem } from "@/lib/covers/items";
 import type { CalendarEvent } from "@/types/live";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -69,13 +71,23 @@ export function EventsCatalogClient({
               >
                 <Card className="transition-all hover:shadow-md">
                   <CardContent className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4">
-                    {showCovers && event.thumbnail_signed_url && (
-                      <img
-                        src={event.thumbnail_signed_url}
-                        alt=""
-                        className="h-12 w-12 rounded-md object-cover"
-                      />
-                    )}
+                    {showCovers &&
+                      (event.cover_design ? (
+                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md">
+                          <CoverArt
+                            design={event.cover_design}
+                            item={eventItem(event, tz)}
+                          />
+                        </div>
+                      ) : (
+                        event.thumbnail_signed_url && (
+                          <img
+                            src={event.thumbnail_signed_url}
+                            alt=""
+                            className="h-12 w-12 rounded-md object-cover"
+                          />
+                        )
+                      ))}
                     <Badge variant="secondary" className="text-xs">
                       {TYPE_LABELS[event.type] ?? event.type}
                     </Badge>
@@ -113,13 +125,23 @@ export function EventsCatalogClient({
               href={`/calendar/${event.type}/${event.id}`}
             >
               <Card className="group h-full overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lg">
-                {showCovers && event.thumbnail_signed_url && (
-                  <img
-                    src={event.thumbnail_signed_url}
-                    alt=""
-                    className="h-36 w-full object-cover"
-                  />
-                )}
+                {showCovers &&
+                  (event.cover_design ? (
+                    <div className="relative h-36 w-full">
+                      <CoverArt
+                        design={event.cover_design}
+                        item={eventItem(event, tz)}
+                      />
+                    </div>
+                  ) : (
+                    event.thumbnail_signed_url && (
+                      <img
+                        src={event.thumbnail_signed_url}
+                        alt=""
+                        className="h-36 w-full object-cover"
+                      />
+                    )
+                  ))}
                 <CardContent className="space-y-3 p-5">
                   <Badge variant="secondary" className="text-xs">
                     {TYPE_LABELS[event.type] ?? event.type}

@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -46,7 +46,7 @@ export function CoursesRecipeCards({ block, data, editable }: SectionProps) {
                   )}
                 >
                   <Img
-                    value={{ url: courseImage(course) }}
+                    value={courseCover(course)}
                     alt={course.title}
                     className="aspect-[4/3] w-full tavola-zoom"
                   />

@@ -194,12 +194,15 @@ function badgeText(
         ? "New"
         : null;
     case "date": {
-      // The viewer's local date, as calendar-utils prints event dates.
-      // ponytail: local time, so a session within hours of midnight can print another day in a
-      // server render than in the browser; add a tenant time zone to CoverItem if that bites.
+      // In the item's time zone, as calendar-utils prints event dates; without one, the viewer's
+      // (a server render and the browser can then print different days near midnight).
       const start = item.startsAt ? new Date(item.startsAt) : null;
       return start && start >= now
-        ? start.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+        ? start.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            timeZone: item.timeZone || undefined,
+          })
         : null;
     }
     case "live":

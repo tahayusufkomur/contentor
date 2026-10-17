@@ -7,13 +7,15 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   coursePriceLabel,
+  eventCover,
   eventHref,
   eventPriceLabel,
   has,
 } from "./kit";
+import type { ImageValue } from "./kit";
 import { LocalWhen } from "./local-time";
 import type { SectionProps } from "./types";
 
@@ -21,6 +23,8 @@ import type { SectionProps } from "./types";
 // its own tokens (inverse band, display font, radius, primary). The first
 // item is a full-bleed billboard; the rest scroll sideways as 16:9 tiles.
 // A row holds more than a grid does, so `limit` "6" shows up to 12.
+// Billboard and tile print their own title over the cover, so a kept cover
+// design is drawn bare: its photo and colours, none of its words.
 
 const BAND =
   "bg-[var(--inverse)] text-[color:var(--inverse-foreground)] [--rows-dim:color-mix(in_oklch,var(--inverse-foreground)_68%,transparent)]";
@@ -37,7 +41,7 @@ function Billboard({
   action,
 }: {
   href: string;
-  image: string | null;
+  image: ImageValue;
   title: string;
   description?: string;
   meta: ReactNode;
@@ -49,7 +53,7 @@ function Billboard({
       className="group relative block overflow-hidden rounded-[var(--radius)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
       <Img
-        value={{ url: image }}
+        value={image}
         alt={title}
         priority
         className="aspect-[4/5] w-full sm:aspect-[16/9] lg:aspect-[21/9]"
@@ -91,7 +95,7 @@ function Tile({
   meta,
 }: {
   href: string;
-  image: string | null;
+  image: ImageValue;
   title: string;
   meta: ReactNode;
 }) {
@@ -102,11 +106,7 @@ function Tile({
         className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         <div className="relative overflow-hidden rounded-[var(--radius)] transition-transform duration-300 ease-out motion-safe:group-hover:scale-[1.04]">
-          <Img
-            value={{ url: image }}
-            alt={title}
-            className="aspect-video w-full"
-          />
+          <Img value={image} alt={title} className="aspect-video w-full" />
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-[linear-gradient(to_top,color-mix(in_oklch,var(--inverse)_94%,transparent)_8%,transparent_64%)]"
@@ -206,7 +206,7 @@ export function CoursesRows(props: SectionProps) {
         <>
           <Billboard
             href={courseHref(lead)}
-            image={courseImage(lead)}
+            image={courseCover(lead, "bare")}
             title={lead.title}
             description={lead.description}
             action="Start the course"
@@ -236,7 +236,7 @@ export function CoursesRows(props: SectionProps) {
                 <Tile
                   key={c.id}
                   href={courseHref(c)}
-                  image={courseImage(c)}
+                  image={courseCover(c, "bare")}
                   title={c.title}
                   meta={[coursePriceLabel(c), lessons(c)]
                     .filter(Boolean)
@@ -273,7 +273,7 @@ export function EventsRows(props: SectionProps) {
         <>
           <Billboard
             href={eventHref(next)}
-            image={next.thumbnail_signed_url}
+            image={eventCover(next, "bare")}
             title={next.title}
             description={next.description}
             action="Save your spot"
@@ -304,7 +304,7 @@ export function EventsRows(props: SectionProps) {
                 <Tile
                   key={`${e.type}:${e.id}`}
                   href={eventHref(e)}
-                  image={e.thumbnail_signed_url}
+                  image={eventCover(e, "bare")}
                   title={e.title}
                   meta={
                     <>

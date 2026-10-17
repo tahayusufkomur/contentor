@@ -6,9 +6,10 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
+  hasCover,
 } from "../kit";
 import type { SectionProps } from "../types";
 import {
@@ -54,10 +55,10 @@ export function CoursesContents({ block, data, editable }: SectionProps) {
                       {toRoman(i + 1)}.
                     </span>
 
-                    {courseImage(course) && (
+                    {hasCover(course) && (
                       <div className="manuscript-plate hidden size-16 shrink-0 overflow-hidden sm:block">
                         <Img
-                          value={{ url: courseImage(course) }}
+                          value={courseCover(course)}
                           alt={course.title}
                           className="size-full"
                         />

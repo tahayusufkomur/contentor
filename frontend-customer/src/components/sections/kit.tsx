@@ -11,12 +11,16 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { InlineText } from "@/components/blocks/inline-text";
 import { EditableBody } from "@/components/blocks/editable-body";
+import { CoverArt } from "@/components/covers/cover-art";
+import type { CoverArtProps } from "@/components/covers/cover-art";
 import { NavLink } from "@/components/ui/nav-link";
 import { PriceBadge } from "@/components/billing/price-badge";
+import { courseItem, eventItem } from "@/lib/covers/items";
 import { formatMoney } from "@/lib/format";
 import type { EditableContext } from "@/lib/blocks/types";
 import type { Block } from "@/types/tenant";
 import type { Course } from "@/types/course";
+import type { CoverDesign, CoverItem } from "@/types/design";
 import type { CalendarEvent } from "@/types/live";
 
 type Tag = "h1" | "h2" | "h3" | "h4" | "p" | "span" | "div";
@@ -87,6 +91,12 @@ export interface ImageValue {
   url?: string | null;
   photo_id?: string | null;
   alt?: string;
+  /** A kept cover design (a course's or event's), drawn live in place of the photo. */
+  design?: CoverDesign | null;
+  /** What the design is for: its title and dates. Without it the design is for `alt`'s title. */
+  item?: CoverItem;
+  /** `bare` leaves out the design's words and badge, where the look prints its own over it. */
+  mode?: CoverArtProps["mode"];
 }
 
 export function imageUrl(value: unknown): string | null {
@@ -96,7 +106,8 @@ export function imageUrl(value: unknown): string | null {
 
 /** A photo that is never broken: with no URL it renders a quiet tinted
  *  placeholder of the same box. Size the box with `className` (e.g.
- *  "aspect-[4/5] w-full"); the image covers it. */
+ *  "aspect-[4/5] w-full"); the image covers it. A value with a kept cover
+ *  `design` draws that instead, live (see courseCover and eventCover). */
 export function Img({
   value,
   alt = "",
@@ -111,13 +122,22 @@ export function Img({
   priority?: boolean;
 }) {
   const url = imageUrl(value);
-  const label = (value as ImageValue | undefined)?.alt || alt;
+  const v = value as ImageValue | undefined;
+  const label = v?.alt || alt;
   return (
     <div
       data-site-img-frame=""
       className={cn("relative overflow-hidden bg-muted", className)}
     >
-      {url ? (
+      {v?.design ? (
+        <CoverArt
+          design={v.design}
+          item={v.item ?? { title: label }}
+          mode={v.mode}
+          photoClassName={imgClassName}
+          priority={priority}
+        />
+      ) : url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={url}
@@ -180,6 +200,34 @@ export const courseHref = (c: Course) => `/courses/${c.slug}`;
 export const eventHref = (e: CalendarEvent) => `/calendar/${e.type}/${e.id}`;
 export const courseImage = (c: Course) =>
   c.thumbnail_signed_url || c.thumbnail_url || null;
+
+/** A course's cover for `Img`: its kept design when it has one, else its photo. `bare` where the
+ *  style prints the course's title over the cover itself. */
+export const courseCover = (
+  c: Course,
+  mode: ImageValue["mode"] = "full",
+): ImageValue => ({
+  url: courseImage(c),
+  design: c.cover_design ?? null,
+  item: courseItem(c),
+  mode,
+});
+
+/** An event's cover for `Img`, like courseCover. `timeZone` is the one its date badge reads in. */
+export const eventCover = (
+  e: CalendarEvent,
+  mode: ImageValue["mode"] = "full",
+  timeZone?: string | null,
+): ImageValue => ({
+  url: e.thumbnail_signed_url,
+  design: e.cover_design ?? null,
+  item: eventItem(e, timeZone),
+  mode,
+});
+
+/** Whether a course has a cover to show: a kept design, or a photo. */
+export const hasCover = (c: Course) =>
+  Boolean(c.cover_design || courseImage(c));
 
 /** Plain-text price in the tenant currency: "€49", "Free", "Included in
  *  membership", or "Owned" for a student who already has it. */

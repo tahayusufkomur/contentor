@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -53,7 +53,7 @@ function Poster({ course }: { course: Course }) {
     >
       <div className="relative aspect-[4/5] overflow-hidden bg-[var(--inverse)]">
         <Img
-          value={{ url: courseImage(course) }}
+          value={courseCover(course, "bare")}
           alt={course.title}
           className="absolute inset-0"
           imgClassName="grayscale contrast-[1.15] transition duration-500 ease-out group-hover:scale-[1.04] group-hover:grayscale-0"
@@ -84,7 +84,7 @@ function Feature({ course }: { course: Course }) {
       className="kinetic-focus-out group grid bg-[var(--inverse)] text-[color:var(--inverse-foreground)] [--k-rule:color-mix(in_oklch,var(--inverse-foreground)_22%,transparent)] lg:grid-cols-12"
     >
       <Img
-        value={{ url: courseImage(course) }}
+        value={courseCover(course)}
         alt={course.title}
         className="aspect-[4/3] lg:col-span-7 lg:aspect-auto lg:min-h-[30rem]"
         imgClassName="grayscale contrast-[1.15] transition duration-500 group-hover:grayscale-0"

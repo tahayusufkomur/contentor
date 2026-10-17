@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -54,7 +54,7 @@ export function CoursesPlates({ block, data, editable }: SectionProps) {
                 className="group block"
               >
                 <Img
-                  value={{ url: courseImage(c) }}
+                  value={courseCover(c)}
                   alt={c.title}
                   className="darkroom-zoom aspect-[4/5] w-full"
                 />

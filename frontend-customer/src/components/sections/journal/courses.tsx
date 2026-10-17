@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -44,7 +44,7 @@ function Lead({ course }: { course: Course }) {
       className="group grid gap-y-8 md:grid-cols-12 md:items-center md:gap-x-10"
     >
       <Img
-        value={{ url: courseImage(course) }}
+        value={courseCover(course)}
         alt={course.title}
         className="journal-zoom aspect-[4/5] w-full md:col-span-6 lg:col-span-5"
       />
@@ -76,7 +76,7 @@ function Card({ course, wide }: { course: Course; wide: boolean }) {
   return (
     <SmartLink href={courseHref(course)} className="group block">
       <Img
-        value={{ url: courseImage(course) }}
+        value={courseCover(course)}
         alt={course.title}
         className={cn(
           "journal-zoom w-full",

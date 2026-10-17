@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -58,7 +58,7 @@ export function CourseShowcaseProjects({
                 >
                   <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
                     <Img
-                      value={{ url: courseImage(course) }}
+                      value={courseCover(course)}
                       alt={course.title}
                       className="h-full w-full"
                     />

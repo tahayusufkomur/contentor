@@ -550,4 +550,24 @@ describe("resolveWords", () => {
       resolveWords(badge("date"), { title: "T", startsAt: "soon" }, now).badge,
     ).toBeNull();
   });
+
+  it("reads the date in the item's time zone when it has one, else in the viewer's", () => {
+    // 23:30 UTC on 2 November is the 3rd in Istanbul (UTC+3) and Auckland (UTC+13), still the 2nd in New York.
+    const startsAt = "2026-11-02T23:30:00Z";
+    const date = (timeZone?: string | null) =>
+      resolveWords(badge("date"), { title: "T", startsAt, timeZone }, now)
+        .badge;
+    expect(date("Europe/Istanbul")).toBe("Nov 3");
+    expect(date("Pacific/Auckland")).toBe("Nov 3");
+    expect(date("America/New_York")).toBe("Nov 2");
+    expect(date("UTC")).toBe("Nov 2");
+    // No zone (or an empty one): the viewer's own, as before.
+    const local = new Date(startsAt).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+    expect(date()).toBe(local);
+    expect(date(null)).toBe(local);
+    expect(date("")).toBe(local);
+  });
 });

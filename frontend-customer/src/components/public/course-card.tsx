@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
 import type { Course } from "@/types/course";
 import { PriceBadge } from "@/components/billing/price-badge";
+import { CoverArt } from "@/components/covers/cover-art";
+import { courseItem } from "@/lib/covers/items";
 
 export type CourseCardVariant = "elevated" | "bordered" | "minimal" | "overlay";
 
@@ -33,7 +35,18 @@ export function CourseCard({
   // arrive as thumbnail_signed_url with the legacy thumbnail_url empty —
   // the gate must accept either source, like the admin list does.
   const thumbSrc = course.thumbnail_signed_url || course.thumbnail_url;
-  const thumb = thumbSrc ? (
+  // A kept cover design is drawn live in a box of the photo's size. The overlay card prints the
+  // course's title over its cover, so the design leaves its own words out there.
+  const thumb = course.cover_design ? (
+    <div className="relative h-44 w-full">
+      <CoverArt
+        design={course.cover_design}
+        item={courseItem(course)}
+        mode={variant === "overlay" ? "bare" : "full"}
+        photoClassName="transition-transform duration-300 group-hover:scale-105"
+      />
+    </div>
+  ) : thumbSrc ? (
     <img
       src={thumbSrc}
       alt={course.title}

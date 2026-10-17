@@ -16,7 +16,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { CoverArt } from "@/components/covers/cover-art";
 import { useTenant } from "@/hooks/use-tenant";
+import { eventItem } from "@/lib/covers/items";
 import { EVENT_TYPE_CONFIG } from "@/lib/event-colors";
 import { formatTime } from "@/lib/calendar-utils";
 import type { CalendarEventDetail } from "@/types/live";
@@ -72,8 +74,16 @@ export function EventDetailClient({
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Main content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Thumbnail or gradient hero */}
-          {event.thumbnail_signed_url ? (
+          {/* The kept cover design (drawn live, it leads the page), the photo, or a gradient hero */}
+          {event.cover_design ? (
+            <div className="relative h-64 overflow-hidden rounded-[var(--radius)] md:h-80">
+              <CoverArt
+                design={event.cover_design}
+                item={eventItem(event, tz)}
+                priority
+              />
+            </div>
+          ) : event.thumbnail_signed_url ? (
             <div className="overflow-hidden rounded-[var(--radius)]">
               <img
                 src={event.thumbnail_signed_url}

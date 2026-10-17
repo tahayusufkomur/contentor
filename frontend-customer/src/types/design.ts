@@ -136,4 +136,6 @@ export interface CoverItem {
   title: string;
   createdAt?: string | null;
   startsAt?: string | null;
+  /** The zone the date badge reads `startsAt` in (the tenant's); none is the viewer's own. */
+  timeZone?: string | null;
 }

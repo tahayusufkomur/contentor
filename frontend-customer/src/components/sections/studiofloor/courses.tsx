@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -51,7 +51,7 @@ export function CourseShowcaseSetlist({ block, data, editable }: SectionProps) {
                   {/* Thumbnail */}
                   <div className="relative w-28 shrink-0 overflow-hidden rounded-[var(--radius)] border border-border/80 shadow-[0_0_12px_color-mix(in_oklch,var(--primary)_15%,transparent)] sm:w-36">
                     <Img
-                      value={{ url: courseImage(c) }}
+                      value={courseCover(c)}
                       alt={c.title}
                       className="aspect-[16/10] w-full"
                     />

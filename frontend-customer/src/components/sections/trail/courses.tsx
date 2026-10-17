@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -56,7 +56,7 @@ export function CoursesRoutes({ block, data, editable }: SectionProps) {
                   )}
                 >
                   <Img
-                    value={{ url: courseImage(c) }}
+                    value={courseCover(c)}
                     alt={c.title}
                     className="aspect-[16/10] w-full trail-zoom"
                   />

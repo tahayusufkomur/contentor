@@ -26,6 +26,9 @@ import { DescribeIt } from "@/components/admin/describe-it";
 import { useAssistantApplied } from "@/lib/site-events";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { DemoBadge } from "@/components/setup/demo-badge";
+import { CoverArt } from "@/components/covers/cover-art";
+import { LookFonts } from "@/components/covers/look-fonts";
+import { courseItem } from "@/lib/covers/items";
 import { formatMoney } from "@/lib/format";
 import { useTenantCurrency } from "@/lib/setup-assistant";
 import type { Course } from "@/types/course";
@@ -73,6 +76,8 @@ export default function AdminCoursesPage() {
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
+  // The look of the kept covers on the page: their fonts are not loaded on this screen by itself.
+  const [coverLook, setCoverLook] = useState<string | null>(null);
   // The assistant's panel created, changed or took back a course.
   useAssistantApplied(({ kind }) => {
     if (kind.includes("course") || kind.includes("curriculum")) {
@@ -92,6 +97,9 @@ export default function AdminCoursesPage() {
         { results: Course[]; next: string | null; count: number } | Course[]
       >(`/api/v1/courses/?${sp.toString()}`);
 
+      const rows = Array.isArray(data) ? data : data.results;
+      const look = rows.find((c) => c.cover_design)?.cover_design?.look;
+      if (look) setCoverLook(look);
       if (Array.isArray(data)) {
         return { results: data, next: null, count: data.length };
       }
@@ -189,7 +197,15 @@ export default function AdminCoursesPage() {
             href={`/admin/courses/${course.slug}`}
             className="group block overflow-hidden rounded-lg border bg-card"
           >
-            {course.thumbnail_signed_url ? (
+            {course.cover_design ? (
+              <div className="relative aspect-video overflow-hidden bg-muted">
+                <CoverArt
+                  design={course.cover_design}
+                  item={courseItem(course)}
+                  photoClassName="transition-transform duration-300 group-hover:scale-105"
+                />
+              </div>
+            ) : course.thumbnail_signed_url ? (
               <div className="relative aspect-video overflow-hidden bg-muted">
                 <img
                   src={course.thumbnail_signed_url}
@@ -286,6 +302,7 @@ export default function AdminCoursesPage() {
           ) : null
         }
       />
+      {coverLook && <LookFonts look={coverLook} />}
     </div>
   );
 }

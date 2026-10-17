@@ -49,6 +49,8 @@ export interface CoverArtProps {
   size?: CoverSize;
   /** On the photo's `<img>`: the look's photo effects (greyscale, hover zoom). */
   photoClassName?: string;
+  /** Load the photo at once, ahead of the rest of the page (the page's lead image); lazily otherwise. */
+  priority?: boolean;
   className?: string;
   /** The date the "New" and date badges are read against. */
   now?: Date;
@@ -149,6 +151,7 @@ interface Ctx {
   words: ReturnType<typeof resolveWords>;
   bare: boolean;
   photoClassName?: string;
+  priority?: boolean;
   /** Her photo's URL; none when she chose none or its row is gone. */
   photoUrl?: string;
   /** The words' colour where her style names none. */
@@ -249,7 +252,9 @@ function photo(ctx: Ctx, placeholder: boolean): ReactNode {
           <img
             src={ctx.photoUrl}
             alt=""
-            loading="lazy"
+            loading={ctx.priority ? "eager" : "lazy"}
+            // React 18 knows only the lowercase attribute (Next's own Image does the same).
+            {...(ctx.priority ? { fetchpriority: "high" } : {})}
             decoding="async"
             className={cn(styles.fill, styles.cover, ctx.photoClassName)}
             style={{ objectPosition: at }}
@@ -520,6 +525,7 @@ export function CoverArt({
   mode = "full",
   size,
   photoClassName,
+  priority,
   className,
   now = new Date(),
 }: CoverArtProps) {
@@ -535,6 +541,7 @@ export function CoverArt({
     words: resolveWords(recipe, item, now),
     bare: mode === "bare",
     photoClassName,
+    priority,
     photoUrl: recipe.photo.id ? design.photos[recipe.photo.id] : undefined,
     // Words sit on the panel, except over a full photo (or her own words on a photo-only cover).
     ink:

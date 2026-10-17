@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -39,7 +39,7 @@ export function CoursesSyllabus({ block, data, editable }: SectionProps) {
                   </span>
                   <div className="flex min-w-0 gap-5">
                     <Img
-                      value={{ url: courseImage(c) }}
+                      value={courseCover(c)}
                       alt={c.title}
                       className="aspect-[4/3] w-24 shrink-0 border border-border"
                     />

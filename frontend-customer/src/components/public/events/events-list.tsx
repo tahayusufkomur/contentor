@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { CalendarDays, MapPin, Radio, Video } from "lucide-react";
+import { CoverArt } from "@/components/covers/cover-art";
 import { useTenant } from "@/hooks/use-tenant";
 import { formatDateHeader, formatTime } from "@/lib/calendar-utils";
+import { eventItem } from "@/lib/covers/items";
 import type { CalendarEvent, CalendarEventType } from "@/types/live";
 
 const TYPE_META: Record<
@@ -69,7 +71,14 @@ export function EventsList({
                   href={`/calendar/${event.type}/${event.id}`}
                   className="group overflow-hidden rounded-xl border transition-shadow hover:shadow-md"
                 >
-                  {event.thumbnail_signed_url ? (
+                  {event.cover_design ? (
+                    <div className="relative h-36 w-full">
+                      <CoverArt
+                        design={event.cover_design}
+                        item={eventItem(event, tz)}
+                      />
+                    </div>
+                  ) : event.thumbnail_signed_url ? (
                     <img
                       src={event.thumbnail_signed_url}
                       alt=""

@@ -6,9 +6,10 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
+  hasCover,
 } from "../kit";
 import type { SectionProps } from "../types";
 import {
@@ -60,9 +61,9 @@ export function CourseShowcaseActivities({
                 <div>
                   {/* Activity Cover Image */}
                   <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-muted shadow-sm">
-                    {courseImage(c) ? (
+                    {hasCover(c) ? (
                       <Img
-                        value={{ url: courseImage(c) }}
+                        value={courseCover(c)}
                         alt={c.title}
                         className="h-full w-full"
                         imgClassName="transition-transform duration-500 ease-out motion-safe:group-hover:scale-105"

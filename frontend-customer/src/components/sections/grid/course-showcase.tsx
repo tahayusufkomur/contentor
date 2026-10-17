@@ -5,8 +5,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Head, Sheet, pad, textLink } from "./ui";
@@ -49,7 +49,7 @@ export function CourseCatalogue({ block, data, editable }: SectionProps) {
                 className="swiss-card group block"
               >
                 <Img
-                  value={{ url: courseImage(c) }}
+                  value={courseCover(c)}
                   alt={c.title}
                   className="swiss-photo aspect-square w-full"
                 />

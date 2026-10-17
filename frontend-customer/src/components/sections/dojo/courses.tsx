@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -58,7 +58,7 @@ export function CoursesBelts({ block, data, editable }: SectionProps) {
 
                   <div className="dojo-photo aspect-[16/10] w-full border-b border-border/60">
                     <Img
-                      value={{ url: courseImage(c) }}
+                      value={courseCover(c)}
                       alt={c.title}
                       className="h-full w-full"
                     />

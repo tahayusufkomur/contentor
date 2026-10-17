@@ -9,7 +9,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
 import { SkeletonCardGrid } from "@/components/ui/skeletons";
 import { EmptyState } from "@/components/shared/empty-state";
+import { CoverArt } from "@/components/covers/cover-art";
 import { clientFetch } from "@/lib/api-client";
+import { courseItem } from "@/lib/covers/items";
 import { BookOpen, GraduationCap, Play } from "lucide-react";
 import type { Course } from "@/types/course";
 
@@ -83,7 +85,15 @@ export default function DashboardPage() {
                 key={course.id}
                 className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5"
               >
-                {course.thumbnail_signed_url || course.thumbnail_url ? (
+                {course.cover_design ? (
+                  <div className="relative h-44 w-full overflow-hidden">
+                    <CoverArt
+                      design={course.cover_design}
+                      item={courseItem(course)}
+                      photoClassName="transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                ) : course.thumbnail_signed_url || course.thumbnail_url ? (
                   <div className="relative overflow-hidden">
                     <img
                       src={course.thumbnail_signed_url || course.thumbnail_url}

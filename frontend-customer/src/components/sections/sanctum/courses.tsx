@@ -6,8 +6,8 @@ import {
   Img,
   SmartLink,
   Txt,
+  courseCover,
   courseHref,
-  courseImage,
   has,
 } from "../kit";
 import type { SectionProps } from "../types";
@@ -89,7 +89,7 @@ export function CoursesPaths({ block, data, editable }: SectionProps) {
                 {/* Card Photo Window (Arch) */}
                 <figure className="my-5 overflow-hidden rounded-t-full border border-[color-mix(in_oklch,var(--primary)_40%,transparent)] p-1">
                   <Img
-                    value={{ url: courseImage(course) }}
+                    value={courseCover(course)}
                     alt={course.title}
                     className="sanctum-arch aspect-[4/3] w-full transition-transform duration-700 motion-safe:group-hover:scale-105"
                   />
