@@ -29,6 +29,7 @@ import {
 } from "@/lib/copilot/api";
 import {
   isActive,
+  isWatched,
   onRunFinished,
   trackRun,
   unwatchRun,
@@ -493,6 +494,9 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingKey]);
 
+  // Finished work from out of sight that she has not seen yet (the ready line).
+  const [ready, setReady] = useState<OpenRun[]>([]);
+
   // A run that ended takes its pending entry's place.
   const allRuns = useRuns();
   useEffect(() => {
@@ -511,6 +515,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
     setEntries(next);
     persist(next);
     ended.forEach((id) => void markRunSeen(id).catch(() => {}));
+    setReady((prev) => prev.filter((r) => !ended.includes(r.id)));
   }, [allRuns, entries, pendingRuns, persist, t]);
 
   const { run: stop, loading: stopping } = useAsyncAction(
@@ -522,21 +527,22 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
   );
 
   // Work finished in her other chats that she has not seen yet.
-  const [ready, setReady] = useState<OpenRun[]>([]);
   useEffect(() => {
     if (!docked || !open) return;
     let cancelled = false;
     fetchOpenRuns()
       .then(({ runs }) => {
         if (cancelled) return;
-        setReady(runs.filter((r) => !isActive(r.status) && r.chat !== null));
+        setReady(runs.filter((r) => r.status === "done" && r.chat !== null));
         runs
           .filter((r) => isActive(r.status))
           .forEach((r) => trackRun(r.id, r.specialist, r.chat));
       })
       .catch(() => {});
     const off = onRunFinished((run) => {
-      if (run.chat === null) return;
+      // Only finished work she did not watch land.
+      if (run.chat === null || run.status !== "done" || isWatched(run.id))
+        return;
       setReady((prev) => [
         ...prev.filter((r) => r.id !== run.id),
         {

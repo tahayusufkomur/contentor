@@ -13,6 +13,29 @@ import {
   trackRun,
 } from "@/lib/copilot/runs";
 import { saveUiState } from "@/lib/copilot/storage";
+import type { SpecialistKey } from "@/lib/copilot/team";
+import type { RunStatus } from "@/lib/copilot/types";
+
+const TOASTED = "copilot:toasted-runs";
+
+/** Runs already announced in this visit, so a reload does not repeat them. */
+function toasted(): Set<number> {
+  try {
+    const raw = window.sessionStorage.getItem(TOASTED);
+    return new Set(raw ? (JSON.parse(raw) as number[]) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function markToasted(id: number) {
+  try {
+    const ids = [...toasted(), id].slice(-50);
+    window.sessionStorage.setItem(TOASTED, JSON.stringify(ids));
+  } catch {
+    // Storage blocked: at worst a reload repeats the toast.
+  }
+}
 
 /** Asks the docked chat to show one thread (the panel listens). */
 export const OPEN_CHAT_EVENT = "contentor:open-chat";
@@ -35,25 +58,30 @@ export function RunsWatcher() {
   tRef.current = t;
   const openRef = useRef(() => dock.open("assistant"));
   openRef.current = () => dock.open("assistant");
+  const dockOpenRef = useRef(dock.isOpen);
+  dockOpenRef.current = dock.isOpen;
 
   useEffect(() => {
-    fetchOpenRuns()
-      .then(({ runs }) =>
-        runs
-          .filter((run) => isActive(run.status))
-          .forEach((run) => trackRun(run.id, run.specialist, run.chat)),
-      )
-      .catch(() => {});
-    return onRunFinished((run) => {
-      if (isWatched(run.id)) return;
+    /** Done work says it is ready; failed work says so; a stopped run was
+     *  her own doing and says nothing. */
+    const announce = (run: {
+      id: number;
+      status: RunStatus;
+      specialist: SpecialistKey;
+      chat: number | null;
+      summary?: string;
+    }) => {
+      if (run.status !== "done" && run.status !== "failed") return;
+      markToasted(run.id);
       const tr = tRef.current;
+      const name = tr(`team.specialists.${run.specialist}.name`);
       const chat = run.chat;
       toast(
-        tr("team.readyToast", {
-          name: tr(`team.specialists.${run.specialist}.name`),
-        }),
+        run.status === "done"
+          ? tr("team.readyToast", { name })
+          : tr("team.failedToast", { name }),
         {
-          description: run.reply?.text?.slice(0, 140),
+          description: run.status === "done" ? run.summary : undefined,
           // Long enough to read and reach Open; the reply also waits in its
           // chat, and the panel lists it as ready for you.
           duration: 12_000,
@@ -66,6 +94,26 @@ export function RunsWatcher() {
                 },
         },
       );
+    };
+
+    fetchOpenRuns()
+      .then(({ runs }) => {
+        runs
+          .filter((run) => isActive(run.status))
+          .forEach((run) => trackRun(run.id, run.specialist, run.chat));
+        // Work that finished while she was away. With the panel open, the
+        // panel itself shows it.
+        if (dockOpenRef.current) return;
+        const seen = toasted();
+        runs
+          .filter((run) => run.status === "done" && !seen.has(run.id))
+          .slice(0, 3)
+          .forEach(announce);
+      })
+      .catch(() => {});
+    return onRunFinished((run) => {
+      if (isWatched(run.id)) return;
+      announce({ ...run, summary: run.reply?.text?.slice(0, 140) });
     });
   }, []);
 

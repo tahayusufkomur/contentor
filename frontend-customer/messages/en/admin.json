@@ -262,6 +262,7 @@
     },
     "ready": "Ready for you",
     "readyToast": "{name} is done.",
+    "failedToast": "{name} couldn't finish that.",
     "open": "Open"
   },
   "assistant": {

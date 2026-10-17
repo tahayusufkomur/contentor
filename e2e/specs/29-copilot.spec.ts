@@ -39,11 +39,16 @@ type Body = Record<string, any>;
 
 // The panel's turns are runs: POST runs/ starts one, GET runs/<id>/ returns
 // its events. `reply` is the turn's payload (what converse used to stream);
-// the first `pendingPolls` polls of each run answer "still thinking".
+// the first `pendingPolls` polls of each run answer "still thinking", then
+// it ends as `outcome`. `open` is what runs/open/ lists (work from before).
 async function stubRuns(
   page: Page,
   reply: (body: Body, n: number) => Body,
-  { pendingPolls = 0 }: { pendingPolls?: number } = {},
+  {
+    pendingPolls = 0,
+    outcome = "done",
+    open = [],
+  }: { pendingPolls?: number; outcome?: "done" | "failed"; open?: Body[] } = {},
 ) {
   const sent: Body[] = [];
   const stopped = new Set<number>();
@@ -61,7 +66,7 @@ async function stubRuns(
         json: { id, status: "queued", specialist: body.specialist ?? "assistant" },
       });
     }
-    if (path.endsWith("/runs/open/")) return route.fulfill({ json: { runs: [] } });
+    if (path.endsWith("/runs/open/")) return route.fulfill({ json: { runs: open } });
     const match = path.match(/\/runs\/(\d+)\/(stop\/|seen\/)?$/);
     const run = match ? runs.get(Number(match[1])) : undefined;
     if (!match || !run) return route.fallback();
@@ -86,6 +91,10 @@ async function stubRuns(
       });
     if (run.polls <= pendingPolls)
       return route.fulfill({ json: { ...head, status: "thinking", events: [thinking] } });
+    if (outcome === "failed")
+      return route.fulfill({
+        json: { ...head, status: "failed", events: [thinking, { seq: 2, type: "failed", data: {}, at }] },
+      });
     return route.fulfill({
       json: {
         ...head,
@@ -629,5 +638,71 @@ test("work finished while the panel was closed says it is ready, and Open shows 
   await expect(page.getByText("Financial Strategist is done.")).toBeVisible();
   await page.getByRole("button", { name: "Open", exact: true }).click();
   await expect(panel.getByText("Sales are up 12%.")).toBeVisible();
+  await page.close();
+});
+
+test("a reply she watched land is not offered again as ready", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+  await stubRuns(page, () => ({ kind: "answer", text: "Sales are up 12%.", specialist: "finance" }));
+  await mockEmptyChats(page);
+  await page.goto(`${TENANT}/admin/payouts?assistant=assistant`);
+  const panel = page.getByRole("complementary", { name: "Your team" });
+
+  await page.getByTestId("copilot-input").fill("How did sales go this month?");
+  await page.getByTestId("copilot-send").click();
+  await expect(panel.getByText("Sales are up 12%.")).toBeVisible();
+  await panel.getByRole("button", { name: "New chat" }).click();
+  await expect(panel.getByText("Sales are up 12%.")).toHaveCount(0);
+  await expect(panel.getByText("Ready for you")).toHaveCount(0);
+  await page.close();
+});
+
+test("work that fails out of sight says so, never that it is done", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+  await stubRuns(page, () => ({ kind: "answer", text: "Never shown." }), { pendingPolls: 3, outcome: "failed" });
+  await mockEmptyChats(page);
+  await page.goto(`${TENANT}/admin/payouts?assistant=assistant`);
+  const panel = page.getByRole("complementary", { name: "Your team" });
+
+  await page.getByTestId("copilot-input").fill("How did sales go this month?");
+  await page.getByTestId("copilot-send").click();
+  await expect(panel.getByText("Financial Strategist is working on it…")).toBeVisible();
+  await page.getByRole("button", { name: "Close the assistant" }).click();
+  await expect(page.getByText("Financial Strategist couldn't finish that.")).toBeVisible();
+  await expect(page.getByText("Financial Strategist is done.")).toHaveCount(0);
+  await page.close();
+});
+
+test("work that finished while she was away is announced when she comes back, once", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+  await stubRuns(page, () => ({ kind: "answer", text: "" }), {
+    open: [
+      {
+        id: 4300,
+        status: "done",
+        specialist: "finance",
+        chat: 999,
+        summary: "Sales are up 12%.",
+        finished_at: new Date().toISOString(),
+      },
+    ],
+  });
+  await mockEmptyChats(page);
+
+  // The panel is closed: the studio says what is ready.
+  await page.goto(`${TENANT}/admin`);
+  await expect(page.getByText("Financial Strategist is done.")).toBeVisible();
+  await expect(page.getByText("Sales are up 12%.")).toBeVisible();
+
+  // Once per visit: a reload does not repeat it.
+  const listed = page.waitForResponse((r) => r.url().includes("/copilot/runs/open/"));
+  await page.reload();
+  await listed;
+  // A negative check: give the toast the moment it would need to appear.
+  await page.waitForTimeout(500);
+  await expect(page.getByText("Financial Strategist is done.")).toHaveCount(0);
   await page.close();
 });
