@@ -1,4 +1,5 @@
 import type { AccessInfo } from "./billing";
+import type { CoverDesign } from "./design";
 
 export interface LiveClass {
   id: number;
@@ -18,6 +19,7 @@ export interface LiveClass {
   started_at: string | null;
   ended_at: string | null;
   created_at: string;
+  cover_design?: CoverDesign | null;
   access_info?: AccessInfo;
   filter_options?: import("./course").FilterOption[];
   filter_option_ids?: number[];
@@ -43,6 +45,7 @@ export interface LiveStream {
   started_at: string | null;
   ended_at: string | null;
   created_at: string;
+  cover_design?: CoverDesign | null;
   access_info?: AccessInfo;
   filter_options?: import("./course").FilterOption[];
   filter_option_ids?: number[];
@@ -64,6 +67,7 @@ export interface ZoomClass {
   started_at: string | null;
   ended_at: string | null;
   created_at: string;
+  cover_design?: CoverDesign | null;
   filter_options?: import("./course").FilterOption[];
   filter_option_ids?: number[];
   tags?: import("./course").Tag[];
@@ -85,6 +89,7 @@ export interface OnsiteEvent {
   started_at: string | null;
   ended_at: string | null;
   created_at: string;
+  cover_design?: CoverDesign | null;
   filter_options?: import("./course").FilterOption[];
   filter_option_ids?: number[];
   tags?: import("./course").Tag[];
@@ -110,6 +115,7 @@ export interface CalendarEvent {
   ended_at: string | null;
   location: string;
   thumbnail_signed_url: string | null;
+  cover_design?: CoverDesign | null;
   filter_options?: import("./course").FilterOption[];
   /** Tenant charge currency (ISO code). */
   currency?: string;

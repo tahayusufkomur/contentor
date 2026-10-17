@@ -1,4 +1,5 @@
 import type { AccessInfo } from "./billing";
+import type { CoverDesign } from "./design";
 
 export interface Lesson {
   id: number;
@@ -60,6 +61,8 @@ export interface Course {
   thumbnail_url: string;
   thumbnail_id?: string | null;
   thumbnail_signed_url?: string;
+  /** The kept cover design, drawn live by CoverArt; null or absent when it has none. */
+  cover_design?: CoverDesign | null;
   price: string;
   pricing_type: "free" | "paid" | "subscription";
   is_published: boolean;
