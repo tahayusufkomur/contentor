@@ -69,7 +69,7 @@ test("coach creates a logo through brief, curated ideas, and editor", async ({
   const aiDoorText = (await aiDoor.innerText()).toLowerCase();
   if (aiDoorText.includes("upgrade to design")) {
     // Free-tier upsell — confirm the copy, don't click (it would navigate
-    // away to /admin/billing/subscription).
+    // away to /admin/billing).
     await expect(aiDoor).toContainText("Upgrade to design a bespoke logo");
   } else {
     // Eligible tenant — clicking opens the staged chat panel inline.

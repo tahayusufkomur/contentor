@@ -13,6 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, RefreshCw, Send, Sparkles } from "lucide-react";
 import { AiDraftPreview, AiProgress } from "@/components/ui/ai-progress";
 import { Button } from "@/components/ui/button";
+import { NavLink } from "@/components/ui/nav-link";
 import { Spinner } from "@/components/ui/spinner";
 import { isAbortError } from "@/lib/ai-stream";
 import { deriveAiBannerState } from "@/lib/logo/ai-banner";
@@ -655,7 +656,7 @@ function GateBanner({
           AI design is included with paid plans.
         </p>
         <Button asChild size="sm" variant="outline">
-          <a href="/admin/billing/subscription">Upgrade</a>
+          <NavLink href="/admin/billing">Upgrade</NavLink>
         </Button>
       </div>
     );

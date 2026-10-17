@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { NavLink } from "@/components/ui/nav-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
@@ -93,7 +94,7 @@ export default function BlogListPage() {
             {t("blog.upgradeBody")}
           </p>
           <Button asChild size="sm" variant="outline">
-            <a href="/admin/billing/subscription">{t("blog.upgrade")}</a>
+            <NavLink href="/admin/billing">{t("blog.upgrade")}</NavLink>
           </Button>
         </div>
       )}

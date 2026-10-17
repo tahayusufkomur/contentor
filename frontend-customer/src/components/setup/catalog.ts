@@ -51,7 +51,9 @@ export const SETUP_CATALOG: Record<string, CatalogEntry> = {
   first_course: { icon: BookOpen, href: "/admin/courses/new" },
   demo_cleanup: { icon: Trash2, href: null, action: "erase" },
   payouts: { icon: Wallet, href: "/admin/payouts" },
-  start_selling: { icon: Tag, href: "/admin/billing/subscription" },
+  // "Choose a plan": her own Contentor plan. What she held back goes on sale
+  // by itself once she has one (and payouts, the row above).
+  start_selling: { icon: Tag, href: "/admin/billing" },
   publish: { icon: Rocket, href: "/admin#publish-card" },
   first_download: { icon: Download, href: "/admin/downloads" },
   first_live: { icon: Video, href: "/admin/live" },

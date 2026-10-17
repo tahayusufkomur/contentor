@@ -558,7 +558,7 @@ export function LogoStudio({
   }
 
   function handleUpgrade() {
-    window.location.href = "/admin/billing/subscription";
+    window.location.href = "/admin/billing";
   }
 
   const handleClose = () => {
