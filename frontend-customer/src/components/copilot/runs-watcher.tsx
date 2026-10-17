@@ -54,6 +54,9 @@ export function RunsWatcher() {
         }),
         {
           description: run.reply?.text?.slice(0, 140),
+          // Long enough to read and reach Open; the reply also waits in its
+          // chat, and the panel lists it as ready for you.
+          duration: 12_000,
           action:
             chat === null
               ? undefined
