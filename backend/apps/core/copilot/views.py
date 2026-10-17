@@ -450,6 +450,9 @@ def _audit_summary(action, result):
         return f"Set the cover photo for event '{title}'" if title else "Set an event cover photo"
     if kind == "set_logo":
         return "Set a new logo"
+    if kind == "keep_cover":
+        title = action.get("title") or title
+        return f"Kept a new cover for '{title}'" if title else "Kept a new cover"
     if kind == "edit_course":
         return f"Updated course '{title}'" if title else "Updated a course"
     if kind == "edit_curriculum":
@@ -564,6 +567,10 @@ def _restored_state(inverse):
     if kind == "restore_event_cover":
         model = content.event_model(inverse.get("event_kind"))
         return list(model.objects.filter(pk=inverse.get("event_id")).values_list("thumbnail_id", flat=True))
+    if kind == "restore_cover_design":
+        from apps.media import designs
+
+        return designs.cover_state(inverse)
     cfg = TenantConfig.objects.first()
     if cfg is None:
         return None
@@ -676,6 +683,11 @@ def _apply_inverse(tenant, inverse):
             event.thumbnail_id = thumbnail_id
             event.save(update_fields=["thumbnail"])
             return
+        if kind == "restore_cover_design":
+            from apps.media import designs
+
+            designs.restore_cover(inverse)
+            return
         cfg = TenantConfig.objects.first()
         if cfg is None:
             raise blocks.BlockOpError("site is not set up yet")
@@ -710,6 +722,7 @@ def _apply_inverse(tenant, inverse):
 def copilot_undo(request):
     from django.utils import timezone
 
+    from apps.media.designs import DesignError
     from apps.tenant_config.models import CopilotAudit
 
     tenant = connection.tenant
@@ -730,7 +743,7 @@ def copilot_undo(request):
         if not _still_stands(tenant, entry.inverse):
             raise content.ContentOpError(SNAPSHOT_STALE)
         _apply_inverse(tenant, entry.inverse)
-    except (blocks.BlockOpError, chrome.ChromeOpError, content.ContentOpError) as exc:
+    except (blocks.BlockOpError, chrome.ChromeOpError, content.ContentOpError, DesignError) as exc:
         # Every refusal here is for good (she changed it, or its target is
         # gone): History stops offering it, and it no longer stands in front
         # of the change before it.

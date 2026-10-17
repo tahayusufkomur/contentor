@@ -5,6 +5,7 @@ from rest_framework import serializers
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.filters.models import FilterOption
 from apps.filters.serializers import FilterOptionSerializer
+from apps.media import designs
 from apps.tags.serializers import TagSerializer, tag_ids_field
 
 from .models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
@@ -54,7 +55,11 @@ class _ScheduledOnCreateMixin:
     def create(self, validated_data):
         if validated_data.get("scheduled_at"):
             validated_data["status"] = "scheduled"
-        return super().create(validated_data)
+        instance = super().create(validated_data)
+        # A session of a series that has a cover wears it (before the copilot's own auto cover, which
+        # skips a row that already has one).
+        designs.adopt_series_cover(instance)
+        return instance
 
     def update(self, instance, validated_data):
         # The same transition on edit: a draft that gets a date goes on the
