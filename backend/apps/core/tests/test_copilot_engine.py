@@ -1521,6 +1521,101 @@ def test_stats_digest_counts(tenant_with_pages):
     assert "students: 1" in digest
 
 
+def _student(email, name, days_ago=0, last_login_days_ago=None):
+    from apps.accounts.models import User
+
+    user = User.objects.create_user(email=email, name=name, password="x")  # noqa: S106
+    joined = timezone.now() - timedelta(days=days_ago)
+    last_login = None if last_login_days_ago is None else timezone.now() - timedelta(days=last_login_days_ago)
+    User.objects.filter(pk=user.pk).update(date_joined=joined, last_login=last_login)
+    return user
+
+
+def _payment(student, amount, currency="EUR", status="completed", created_at=None, item=None):
+    from django.contrib.contenttypes.models import ContentType
+
+    from apps.billing.models import Payment, PaymentItem
+
+    payment = Payment.objects.create(
+        student=student,
+        payment_type="one_time",
+        status=status,
+        amount=Decimal(amount),
+        platform_fee=Decimal("0"),
+        submerchant_payout=Decimal(amount),
+        currency=currency,
+        provider="bypass",
+    )
+    if created_at is not None:
+        Payment.objects.filter(pk=payment.pk).update(created_at=created_at)
+    if item is not None:
+        PaymentItem.objects.create(
+            payment=payment,
+            content_type=ContentType.objects.get_for_model(item),
+            object_id=item.pk,
+            item_price=Decimal(amount),
+            submerchant_payout=Decimal(amount),
+        )
+    return payment
+
+
+def test_money_line_sums_each_currency_for_this_month_and_last(tenant_with_pages):
+    buyer = _student("buyer@x.com", "Buyer")
+    month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    _payment(buyer, "30.00")
+    _payment(buyer, "50.00")
+    _payment(buyer, "10.00", currency="USD")
+    _payment(buyer, "40.00", created_at=month_start - timedelta(days=3))
+    _payment(buyer, "99.00", status="failed")
+    digest = engine._stats_digest(tenant_with_pages)
+    assert "revenue this month: 80.00 EUR (2 payments), 10.00 USD (1 payment)" in digest
+    assert "last month: 40.00 EUR (1 payment)" in digest
+    assert "failed payments this month: 1" in digest
+
+
+def test_money_line_names_best_sellers_and_the_price_range(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.courses.models import Course
+
+    owner = User.objects.create_user(email="money-owner@x.com", name="Owner", password="x", role="owner")  # noqa: S106
+    Course.objects.create(title="Morning Flow", instructor=owner, price=39, pricing_type="paid", is_published=True)
+    best = Course.objects.create(
+        title="Hip Opening Series", instructor=owner, price=59, pricing_type="paid", is_published=True
+    )
+    buyer = _student("best-buyer@x.com", "Buyer")
+    for _ in range(3):
+        _payment(buyer, "59.00", item=best)
+    digest = engine._stats_digest(tenant_with_pages)
+    assert "best sellers (90 days): Hip Opening Series (3)" in digest
+    assert "course prices: 39.00–59.00" in digest
+
+
+def test_money_and_students_lines_say_none_yet_on_an_empty_studio(tenant_with_pages):
+    digest = engine._stats_digest(tenant_with_pages)
+    assert "Money: no payments yet" in digest
+    assert "Students: none yet" in digest
+    assert "None" not in digest
+
+
+def test_students_line_is_counts_only(tenant_with_pages):
+    from apps.community.models import CommunityMember, Post, Report
+    from apps.mailbox.models import Conversation
+
+    newcomer = _student("ada@x.com", "Ada Newcomer")
+    _student("bea@x.com", "Bea Quiet", days_ago=30, last_login_days_ago=20)
+    Conversation.objects.create(counterparty_email="someone@x.com", unread_count=2)
+    member = CommunityMember.objects.create(user=newcomer, display_name="Ada")
+    post = Post.objects.create(author=member, body="Hello")
+    Report.objects.create(reporter=member, post=post, reason="spam")
+    digest = engine._stats_digest(tenant_with_pages)
+    assert (
+        "Students: 2 in total, 1 new this week, 1 quiet for 14+ days, "
+        "1 unread inbox conversation, 1 open community report"
+    ) in digest
+    for private in ("Ada", "Bea", "ada@x.com", "bea@x.com"):
+        assert private not in digest
+
+
 def test_setup_digest_lists_open_items(tenant_with_pages):
     digest = engine._setup_digest(tenant_with_pages)
     assert digest.startswith("Setup still open:") or digest == "Setup: all done"
@@ -1552,7 +1647,8 @@ def test_user_turn_includes_stats_and_setup():
 
 
 def test_system_prompt_steers_stats_and_setup():
-    assert "Stats line" in engine.SYSTEM_PROMPT
+    assert "Stats, Money and Students lines" in engine.SYSTEM_PROMPT
+    assert "the Students line is counts only" in engine.SYSTEM_PROMPT
     assert "Setup line" in engine.SYSTEM_PROMPT
     assert "never invent figures" in engine.SYSTEM_PROMPT
 

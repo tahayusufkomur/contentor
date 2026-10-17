@@ -190,8 +190,9 @@ def _style_guide():
 SYSTEM_PROMPT = SYSTEM_PROMPT + "\n" + _style_guide() + _field_guide()
 
 STATS_SETUP_STEER = (
-    "The user turn includes a Stats line (answer number questions from it — "
-    "never invent figures) and a Setup line. When the coach asks what to do "
+    "The user turn includes Stats, Money and Students lines (answer number "
+    "questions from them — never invent figures; the Students line is counts "
+    "only) and a Setup line. When the coach asks what to do "
     "next, use the open setup items: explain the top one or two in plain "
     "words and, where one maps to an action you have (logo, photos, events, "
     "blog), propose that card directly."
@@ -743,11 +744,107 @@ def _stats_digest(tenant):
             for kind in content.EVENT_KINDS
         )
         posts_live = BlogPost.objects.filter(status="published").count()
+        money = _money_line(timezone.now())
+        people = _students_line(timezone.now())
     return (
         f"Stats: students: {students} ({new_week} new this week); "
         f"published courses: {published} ({drafts} draft); "
-        f"upcoming events: {upcoming}; published posts: {posts_live}"
+        f"upcoming events: {upcoming}; published posts: {posts_live}\n{money}\n{people}"
     )
+
+
+def _n(count, noun):
+    return f"{count} {noun}{'' if count == 1 else 's'}"
+
+
+def _money_line(now):
+    """The Financial Strategist's numbers, read in the tenant's schema:
+    completed revenue per currency (never summed across currencies) this
+    calendar month and last, best sellers, her price range, memberships and
+    failed payments."""
+    from datetime import timedelta
+
+    from django.contrib.contenttypes.models import ContentType
+    from django.db.models import Count, Max, Min, Sum
+
+    from apps.billing.models import Payment, PaymentItem, Subscription
+    from apps.courses.models import Course
+
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    last_start = (month_start - timedelta(days=1)).replace(day=1)
+    completed = Payment.objects.filter(status="completed")
+
+    def revenue(payments):
+        rows = payments.values("currency").annotate(total=Sum("amount"), n=Count("id")).order_by("currency")
+        return ", ".join(f"{r['total']:.2f} {r['currency']} ({_n(r['n'], 'payment')})" for r in rows) or "none"
+
+    parts = []
+    if not Payment.objects.exists():
+        parts.append("no payments yet")
+    else:
+        parts.append(f"revenue this month: {revenue(completed.filter(created_at__gte=month_start))}")
+        parts.append(f"last month: {revenue(completed.filter(created_at__gte=last_start, created_at__lt=month_start))}")
+        top = (
+            PaymentItem.objects.filter(payment__status="completed", payment__created_at__gte=now - timedelta(days=90))
+            .values("content_type", "object_id")
+            .annotate(n=Count("id"))
+            .order_by("-n")[:3]
+        )
+        sellers = []
+        for row in top:
+            model = ContentType.objects.get_for_id(row["content_type"]).model_class()
+            item = model.objects.filter(pk=row["object_id"]).first() if model else None
+            if item is None:  # a sold item since deleted: leave it out
+                continue
+            title = getattr(item, "title", "") or getattr(item, "name", "")
+            if title:
+                sellers.append(f"{str(title)[:60]} ({row['n']})")
+        if sellers:
+            parts.append("best sellers (90 days): " + ", ".join(sellers))
+    prices = Course.objects.filter(is_published=True, price__gt=0).aggregate(low=Min("price"), high=Max("price"))
+    if prices["low"] is not None:
+        parts.append(f"course prices: {prices['low']:.2f}–{prices['high']:.2f}")
+    parts.append(f"active memberships: {Subscription.objects.filter(status='active').count()}")
+    past_due = Subscription.objects.filter(status="past_due").count()
+    if past_due:
+        parts.append(f"past-due memberships: {past_due}")
+    failed = Payment.objects.filter(status="failed", created_at__gte=month_start).count()
+    if failed:
+        parts.append(f"failed payments this month: {failed}")
+    return "Money: " + "; ".join(parts)
+
+
+def _students_line(now):
+    """The Community manager's numbers, read in the tenant's schema. Counts
+    only: no student's name or email ever reaches the model (spec T14)."""
+    from datetime import timedelta
+
+    from django.contrib.auth import get_user_model
+    from django.db.models import Q
+
+    from apps.community.models import Report
+    from apps.courses.models import Progress
+    from apps.mailbox.models import Conversation
+
+    students = get_user_model().objects.filter(role="student")
+    total = students.count()
+    cutoff = now - timedelta(days=14)
+    if total:
+        new = students.filter(date_joined__gte=now - timedelta(days=7)).count()
+        recently_active = Progress.objects.filter(updated_at__gte=cutoff).values("user_id")
+        quiet = (
+            students.filter(date_joined__lt=cutoff)
+            .filter(Q(last_login__isnull=True) | Q(last_login__lt=cutoff))
+            .exclude(pk__in=recently_active)
+            .count()
+        )
+        parts = [f"{total} in total", f"{new} new this week", f"{quiet} quiet for 14+ days"]
+    else:
+        parts = ["none yet"]
+    unread = Conversation.objects.filter(is_archived=False, is_spam=False, unread_count__gt=0).count()
+    reports = Report.objects.filter(status="open").count()
+    parts += [_n(unread, "unread inbox conversation"), _n(reports, "open community report")]
+    return "Students: " + ", ".join(parts)
 
 
 def _setup_digest(tenant):
