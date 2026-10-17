@@ -96,6 +96,7 @@ urlpatterns = [
     # Which public pages have content, so the menu hides empty ones.
     path("api/v1/site/menu/", site_menu, name="site-menu"),
     path("api/v1/photos/", include("apps.media.urls")),
+    path("api/v1/designs/", include("apps.media.design_urls")),
     path("api/v1/billing/", include("apps.billing.urls")),
     path("api/v1/domains/", include("apps.domains.urls")),
     path("api/v1/email/", include("apps.email_campaigns.urls")),

@@ -100,18 +100,32 @@ def _job_key(job_id: str) -> str:
     return f"curated-images:job:{job_id}"
 
 
-@api_view(["POST"])
+def _count_key() -> str:
+    # ponytail: the cap lives in the cache, so a Redis flush resets the month.
+    # Move it to a usage model if generation ever needs an audit trail.
+    return f"curated-images:generated:{connection.schema_name}:{timezone.now():%Y-%m}"
+
+
+def generation_allowance() -> dict:
+    """How many new photos this tenant has made this month, and how many it may still make."""
+    limit = settings.CURATED_IMAGE_GENERATE_MONTHLY_LIMIT
+    used = cache.get(_count_key(), 0)
+    return {"limit": limit, "used": used, "left": max(0, limit - used)}
+
+
+@api_view(["GET", "POST"])
 @permission_classes([IsCoachOrOwner])
 def curated_image_generate(request):
-    """Queue a brand-new image for when search finds nothing that fits. Unlike
-    search this costs credits per image, so each tenant gets a monthly cap."""
+    """GET: how many new images are left this month. POST: queue a brand-new
+    image for when search finds nothing that fits. Unlike search this costs
+    credits per image, so each tenant gets a monthly cap."""
+    if request.method == "GET":
+        return Response(generation_allowance())
     prompt = str(request.data.get("prompt") or "").strip()
     aspect_ratio = str(request.data.get("aspect_ratio") or "16:9")
     if not prompt or aspect_ratio not in client.GENERATION_ASPECT_RATIOS:
         return Response({"detail": "Describe the image you want."}, status=status.HTTP_400_BAD_REQUEST)
-    # ponytail: the cap lives in the cache, so a Redis flush resets the month.
-    # Move it to a usage model if generation ever needs an audit trail.
-    count_key = f"curated-images:generated:{connection.schema_name}:{timezone.now():%Y-%m}"
+    count_key = _count_key()
     if cache.get(count_key, 0) >= settings.CURATED_IMAGE_GENERATE_MONTHLY_LIMIT:
         return Response(
             {"detail": "You have used this month's image generations."}, status=status.HTTP_429_TOO_MANY_REQUESTS

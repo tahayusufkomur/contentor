@@ -612,10 +612,10 @@ def copilot_audit(request):
     tenant = connection.tenant
     with tenant_context(tenant):
         latest = _latest_snapshot()
-        # Only the inverse's kind: an inverse can hold a whole pages tree.
+        # Only the inverse's kind and the payload's maker: either can hold a whole pages tree.
         rows = list(
-            CopilotAudit.objects.annotate(inverse_kind=KT("inverse__kind")).values(
-                "id", "kind", "summary", "created_at", "undone_at", "inverse_kind"
+            CopilotAudit.objects.annotate(inverse_kind=KT("inverse__kind"), maker=KT("payload__made_by")).values(
+                "id", "kind", "summary", "created_at", "undone_at", "inverse_kind", "maker"
             )[:AUDIT_FEED_LIMIT]
         )
     restorable_id = latest.id if latest is not None and _still_stands(tenant, latest.inverse) else None
@@ -625,6 +625,8 @@ def copilot_audit(request):
             "kind": row["kind"],
             "summary": row["summary"],
             "created_at": row["created_at"],
+            # "" = she made it, otherwise the key of the specialist who did (only a Keep's payload says).
+            "by": row["maker"] or "",
             "undone": row["undone_at"] is not None,
             "undoable": row["undone_at"] is None
             and (row["inverse_kind"] == "delete_created" or row["id"] == restorable_id),

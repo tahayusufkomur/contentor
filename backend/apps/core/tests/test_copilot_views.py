@@ -835,6 +835,22 @@ def test_audit_feed_returns_entries_newest_first(client, coach):
     assert entries[0]["kind"] == "add_block" and "created_at" in entries[0]
 
 
+def test_audit_feed_signs_each_row_by_its_maker(client, coach):
+    from apps.tenant_config.models import CopilotAudit
+
+    CopilotAudit.objects.create(kind="keep_cover", summary="Kept hers", payload={"kind": "keep_cover", "made_by": ""})
+    CopilotAudit.objects.create(
+        kind="keep_cover", summary="Kept by the Designer", payload={"kind": "keep_cover", "made_by": "designer"}
+    )
+    CopilotAudit.objects.create(kind="edit_seo", summary="Updated the search description")  # no payload at all
+    entries = client.get("/api/v1/admin/copilot/audit/").json()["entries"]
+    assert {e["summary"]: e["by"] for e in entries[:3]} == {
+        "Kept hers": "",
+        "Kept by the Designer": "designer",
+        "Updated the search description": "",
+    }
+
+
 # --- undo -------------------------------------------------------------
 
 
@@ -1074,6 +1090,7 @@ def test_audit_feed_says_what_can_still_be_undone(client, coach):
         "kind": "create_course",
         "summary": "Created draft course 'Yoga 101'",
         "created_at": None,
+        "by": "",
         "undone": True,
         "undoable": False,
     }

@@ -664,7 +664,37 @@ def test_out_of_credits_reads_as_such(live_client, monkeypatch):
         client.generate("a red canoe", idempotency_key="key-2")
 
 
-def test_generate_endpoint_returns_a_tenant_photo_and_counts_against_the_cap(coach_client, settings):
+@pytest.fixture()
+def fresh_month(coach_client):
+    """This month's count of generated photos lives in the cache and outlasts a run: start it, and leave
+    it, at zero."""
+    from django.core.cache import cache
+
+    from apps.core.curated_images.views import _count_key
+
+    cache.delete(_count_key())
+    yield
+    cache.delete(_count_key())
+
+
+def test_generate_allowance_reports_what_is_left_this_month(coach_client, settings, fresh_month):
+    settings.CURATED_IMAGE_GENERATE_MONTHLY_LIMIT = 20
+    allowance = coach_client.get("/api/v1/curated-images/generate/")
+    assert allowance.status_code == 200
+    assert allowance.json() == {"limit": 20, "used": 0, "left": 20}
+
+    coach_client.post("/api/v1/curated-images/generate/", {"prompt": "yoga studio at dawn"}, format="json")
+    assert coach_client.get("/api/v1/curated-images/generate/").json() == {"limit": 20, "used": 1, "left": 19}
+
+    settings.CURATED_IMAGE_GENERATE_MONTHLY_LIMIT = 0  # lowered mid-month: never a negative count
+    assert coach_client.get("/api/v1/curated-images/generate/").json() == {"limit": 0, "used": 1, "left": 0}
+
+
+def test_generate_allowance_needs_a_coach(tenant_ctx):
+    assert APIClient(HTTP_HOST=HOST).get("/api/v1/curated-images/generate/").status_code in (401, 403)
+
+
+def test_generate_endpoint_returns_a_tenant_photo_and_counts_against_the_cap(coach_client, settings, fresh_month):
     settings.CURATED_IMAGE_GENERATE_MONTHLY_LIMIT = 1
     res = coach_client.post("/api/v1/curated-images/generate/", {"prompt": "yoga studio at dawn"}, format="json")
     assert res.status_code == 202, res.data
