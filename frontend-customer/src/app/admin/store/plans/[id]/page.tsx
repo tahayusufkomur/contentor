@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   ContentPicker,
+  type Product,
   type SelectedItem,
 } from "@/components/billing/content-picker";
 import { clientFetch } from "@/lib/api-client";
@@ -39,17 +40,21 @@ interface PlanDetail {
   currency: string;
   billing_interval_months: number;
   is_active: boolean;
-  items: Array<{ type: string; id: number; title: string }>;
 }
 
-/** The plan detail names a content type by its model; the picker and the
- *  access endpoint use the store's own keys. */
-const PICKER_TYPE: Record<string, string> = {
-  course: "course",
-  download: "download",
-  liveclass: "live_class",
-  livestream: "live_stream",
-};
+/** GET /billing/plans/<id>/access/: what the plan includes, in the shape PUT
+ *  takes back, and all it could include (members-only content too). */
+interface PlanContent {
+  content_type: string;
+  object_id: number;
+  title: string;
+  price: string;
+  pricing_type: string;
+}
+interface PlanAccess {
+  items: PlanContent[];
+  available: PlanContent[];
+}
 
 type Cycle = "1" | "12" | "custom";
 
@@ -72,6 +77,8 @@ export default function PlanPage() {
   const [months, setMonths] = useState("3");
   const [currency, setCurrency] = useState("");
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+  // A new plan has no access payload yet; the picker loads the store's own.
+  const [available, setAvailable] = useState<Product[] | undefined>();
   const [loading, setLoading] = useState(!isNew);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -81,8 +88,11 @@ export default function PlanPage() {
     let cancelled = false;
     setLoading(true);
     setLoadError(null);
-    clientFetch<PlanDetail>(`/api/v1/billing/plans/${id}/`)
-      .then((plan) => {
+    Promise.all([
+      clientFetch<PlanDetail>(`/api/v1/billing/plans/${id}/`),
+      clientFetch<PlanAccess>(`/api/v1/billing/plans/${id}/access/`),
+    ])
+      .then(([plan, access]) => {
         if (cancelled) return;
         setForm({
           name: plan.name,
@@ -94,15 +104,15 @@ export default function PlanPage() {
         setCycle(every === 1 ? "1" : every === 12 ? "12" : "custom");
         setMonths(String(every));
         setCurrency(plan.currency);
-        setSelectedItems(
-          plan.items
-            .filter((item) => PICKER_TYPE[item.type])
-            .map((item) => ({
-              content_type: PICKER_TYPE[item.type],
-              object_id: item.id,
-              title: item.title,
-              price: "0",
-            })),
+        setSelectedItems(access.items);
+        setAvailable(
+          access.available.map((item) => ({
+            id: item.object_id,
+            type: item.content_type,
+            title: item.title,
+            price: item.price,
+            pricing_type: item.pricing_type,
+          })),
         );
       })
       .catch((err) => {
@@ -287,6 +297,7 @@ export default function PlanPage() {
               <ContentPicker
                 selected={selectedItems}
                 onChange={setSelectedItems}
+                products={available}
               />
             </CardContent>
           </Card>

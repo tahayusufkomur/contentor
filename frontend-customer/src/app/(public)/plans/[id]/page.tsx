@@ -14,6 +14,7 @@ import {
   Tv,
   Download,
   ArrowLeft,
+  MapPin,
   Package,
   CheckCircle2,
 } from "lucide-react";
@@ -40,6 +41,10 @@ const TYPE_CONFIG: Record<
   livestream: {
     label: "Live Stream",
     icon: Tv,
+  },
+  onsiteevent: {
+    label: "On-site Event",
+    icon: MapPin,
   },
   download: {
     label: "Download",

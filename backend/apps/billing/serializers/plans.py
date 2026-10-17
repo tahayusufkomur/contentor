@@ -1,27 +1,20 @@
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
-from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
-
-
-class PlanAccessItemSerializer(serializers.ModelSerializer):
-    content_type_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = SubscriptionPlanAccess
-        fields = ["id", "content_type", "object_id", "content_type_name"]
-        read_only_fields = ["id"]
-
-    def get_content_type_name(self, obj):
-        return f"{obj.content_type.app_label}.{obj.content_type.model}"
+from apps.billing.models import SubscriptionPlan
 
 
 class PlanAccessWriteItemSerializer(serializers.Serializer):
+    """One piece of content a plan includes. GET /plans/<id>/access/ returns
+    items in this shape (plus title, price and pricing_type, which a PUT
+    ignores), so what the page loads is what it saves."""
+
     CONTENT_TYPE_MAP = {
         "course": "courses.course",
         "download": "downloads.downloadfile",
         "live_class": "live.liveclass",
         "live_stream": "live.livestream",
+        "onsite_event": "live.onsiteevent",
     }
 
     content_type = serializers.ChoiceField(choices=list(CONTENT_TYPE_MAP.keys()))
