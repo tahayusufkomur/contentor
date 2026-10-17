@@ -18,7 +18,7 @@ from rest_framework.response import Response
 
 from apps.core import ai as core_ai
 from apps.core.ai_sse import EventStreamRenderer, sse_frame, stream_response
-from apps.core.copilot import blocks, chrome, content, engine, logos, photos, tokens
+from apps.core.copilot import blocks, chrome, content, engine, logos, photos, team, tokens
 from apps.core.copilot import context as page_context
 from apps.core.copilot.tokens import ActionTokenError
 from apps.core.onboarding import ai_compose, site_ai
@@ -83,12 +83,15 @@ def copilot_converse(request):
     selections = _clean_selections(data.get("selections") if isinstance(data.get("selections"), list) else [])
     attachments = _clean_attachments(tenant, data.get("attached_photos"))
     context = page_context.clean(tenant, data.get("context"))
+    specialist = team.clean(data.get("specialist"))
 
     def frames():
         yield sse_frame({"type": "phase", "phase": "thinking"})
         cost = Decimal("0")
         try:
-            payload, cost = engine.run_turn(tenant, transcript, selections, message, attachments, context)
+            payload, cost = engine.run_turn(
+                tenant, transcript, selections, message, attachments, context, specialist=specialist
+            )
             yield sse_frame({"type": "done", **payload})
         except core_ai.AiError as exc:
             cost = getattr(exc, "cost_usd", None) or Decimal("0")
@@ -729,6 +732,9 @@ def _clean_chat_entries(raw):
         entry = {"role": role, "text": str(item.get("text") or "")[:CHAT_ENTRY_TEXT_MAX]}
         if isinstance(item.get("kind"), str) and item["kind"]:
             entry["kind"] = item["kind"][:20]
+        # Who on the team wrote the reply; unknown names are dropped.
+        if role == "assistant" and item.get("specialist") in team.KEYS:
+            entry["specialist"] = item["specialist"]
         attached = item.get("attached")
         if isinstance(attached, list):
             kept = [

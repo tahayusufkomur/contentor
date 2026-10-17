@@ -1266,6 +1266,37 @@ def test_chats_entries_keep_attached_photos(client):
     assert "attached" not in entries[1]
 
 
+def test_converse_hands_the_specialist_to_the_engine(client):
+    answer = ({"kind": "answer", "text": "ok", "specialist": "marketing"}, Decimal("0"))
+    for sent, expected in (("marketing", "marketing"), ("<script>", "assistant"), (None, "assistant")):
+        body = {"message": "hi"} if sent is None else {"message": "hi", "specialist": sent}
+        with (
+            mock.patch("apps.core.copilot.views.ai_compose.compose_available", return_value=True),
+            mock.patch("apps.core.copilot.views.engine.run_turn", return_value=answer) as run,
+        ):
+            resp = client.post("/api/v1/admin/copilot/converse/", body, format="json", HTTP_ACCEPT="text/event-stream")
+            _frames(resp)
+        assert run.call_args.kwargs["specialist"] == expected
+
+
+def test_chat_entries_keep_a_known_specialist_only(client):
+    created = client.post("/api/v1/admin/copilot/chats/", {}, format="json")
+    chat_id = created.json()["id"]
+    entries = [
+        {"role": "assistant", "text": "a", "specialist": "finance"},
+        {"role": "assistant", "text": "b", "specialist": "ceo"},
+        {"role": "assistant", "text": "c"},
+        {"role": "coach", "text": "d", "specialist": "finance"},
+    ]
+    patched = client.patch(f"/api/v1/admin/copilot/chats/{chat_id}/", {"entries": entries}, format="json")
+    assert patched.json()["entries"] == [
+        {"role": "assistant", "text": "a", "specialist": "finance"},
+        {"role": "assistant", "text": "b"},
+        {"role": "assistant", "text": "c"},
+        {"role": "coach", "text": "d"},
+    ]
+
+
 def test_chats_delete_and_missing_404(client):
     created = client.post("/api/v1/admin/copilot/chats/", {}, format="json")
     chat_id = created.json()["id"]
