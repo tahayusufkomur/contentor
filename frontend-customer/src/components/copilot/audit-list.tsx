@@ -15,6 +15,8 @@ import {
 import type { CopilotAuditEntry } from "@/lib/copilot/types";
 import { ApiError } from "@/types/api";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { ownerOf } from "@/lib/copilot/team";
+import { SpecialistFace } from "./specialist-face";
 
 /** One change, with Undo while the server says it can still be taken back. */
 function AuditRow({
@@ -53,6 +55,10 @@ function AuditRow({
   );
   return (
     <li className="flex items-center gap-3 p-3">
+      <SpecialistFace k={ownerOf(entry.kind)} size="sm" />
+      <span className="sr-only">
+        {t(`team.specialists.${ownerOf(entry.kind)}.name`)}
+      </span>
       <span className="min-w-0 flex-1">
         <span
           className={

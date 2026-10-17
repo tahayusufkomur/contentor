@@ -386,6 +386,33 @@ test("in the admin the assistant knows the page, offers its starters, and takes 
   await page.close();
 });
 
+test("the team answers on its own page, and her pick goes with the question", async ({ browser }) => {
+  const coach = await coachContext(browser); // demo-yoga
+  const page = await coach.newPage();
+  const sent: Record<string, any>[] = [];
+  await page.route("**/api/v1/admin/copilot/converse/", async (route) => {
+    sent.push(route.request().postDataJSON());
+    await route.fulfill(sse({ kind: "answer", text: "Sales are steady.", specialist: "finance" }));
+  });
+  await mockEmptyChats(page);
+  await page.goto(`${TENANT}/admin/courses?assistant=assistant`);
+
+  const panel = page.getByRole("complementary", { name: "Your team" });
+  // Courses sit in Create, the Content Creating Specialist's section.
+  await expect(panel.getByText("Answers first in Create")).toBeVisible();
+  await expect(panel.getByRole("button", { name: "Content Creating Specialist" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+
+  await panel.getByRole("button", { name: "Financial Strategist" }).click();
+  await expect(panel.getByText("You picked them")).toBeVisible();
+  await panel.getByRole("button", { name: "How did sales go this month?" }).click();
+  await expect(panel.getByText("Sales are steady.")).toBeVisible();
+  expect(sent[0].specialist).toBe("finance");
+  await page.close();
+});
+
 test("a question from search opens the panel when it was closed, and is sent once", async ({ browser }) => {
   const coach = await coachContext(browser); // demo-yoga
   const page = await coach.newPage();
@@ -396,7 +423,7 @@ test("a question from search opens the panel when it was closed, and is sent onc
   });
   await mockEmptyChats(page);
   await page.goto(`${TENANT}/admin/courses`);
-  await expect(page.getByRole("complementary", { name: "Assistant" })).toHaveCount(0);
+  await expect(page.getByRole("complementary", { name: "Your team" })).toHaveCount(0);
 
   await page.getByRole("button", { name: /Search pages/ }).click();
   await page.getByPlaceholder("Search pages…").fill("what should I do next");
@@ -440,6 +467,7 @@ test("Describe it drafts a class series beside the manual form: cards, Apply all
   await page.getByRole("button", { name: "Draft it" }).click();
   await expect(page.getByText("Schedule Zoom class: Office hour 2")).toBeVisible();
   expect(sent[0].context).toEqual({ path: "/admin/live", intent: "draft_event" });
+  expect(sent[0].specialist).toBe("content");
   // The manual way is still on the page.
   await expect(page.getByRole("button", { name: "New class or event" })).toBeVisible();
 
@@ -470,7 +498,7 @@ test("History offers Undo only where the server says it still works", async ({ b
   });
   await page.goto(`${TENANT}/admin/courses?assistant=history`);
 
-  const panel = page.getByRole("complementary", { name: "Assistant" });
+  const panel = page.getByRole("complementary", { name: "Your team" });
   await expect(panel.getByText("Published course 'Basics'")).toBeVisible();
   await expect(panel.getByRole("button", { name: "Undo" })).toHaveCount(1);
   await panel.getByRole("button", { name: "Undo" }).click();

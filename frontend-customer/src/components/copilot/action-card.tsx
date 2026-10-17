@@ -28,6 +28,7 @@ import type {
   ActionCard as ActionCardData,
   ExecuteResult,
 } from "@/lib/copilot/types";
+import { SpecialistByline } from "./specialist-face";
 
 /** Registry of proposed cards' raw (throwing) confirm functions for a single
  * assistant turn, keyed by a per-mount token — lets `ApplyAllBar` run every
@@ -240,6 +241,7 @@ export function ActionCard({
       className="mt-2 rounded-lg border bg-background p-3 text-sm"
       data-copilot-ui
     >
+      {card.owner && <SpecialistByline k={card.owner} />}
       <p className="font-medium">{card.title}</p>
       {card.image_url && <CardPhoto card={card} />}
       {card.detail && (

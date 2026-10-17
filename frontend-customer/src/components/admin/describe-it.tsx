@@ -65,6 +65,8 @@ export function DescribeIt({
               path: pathname ?? "/admin",
               intent: kind === "course" ? "draft_course" : "draft_event",
             },
+            // Courses and classes are the Content Creating Specialist's work.
+            specialist: "content",
           },
           { onPhase: () => {} },
           controller.signal,

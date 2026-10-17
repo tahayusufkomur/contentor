@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   ChevronLeft,
@@ -25,7 +25,13 @@ import {
   patchCopilotChatEntries,
 } from "@/lib/copilot/api";
 import { usePathname } from "next/navigation";
+import { activeSection, buildAdminNav } from "@/lib/admin-nav";
 import { starterKey } from "@/lib/copilot/starters";
+import {
+  asSpecialist,
+  specialistFor,
+  type SpecialistKey,
+} from "@/lib/copilot/team";
 import { reduceChat, toTranscript } from "@/lib/copilot/state";
 import {
   loadUiState,
@@ -43,6 +49,8 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { ActionCard, ApplyAllBar, CardBundleProvider } from "./action-card";
 import { CopilotComposer } from "./composer";
 import { SelectionOverlay } from "./selection-overlay";
+import { SpecialistByline } from "./specialist-face";
+import { TeamHeader } from "./team-header";
 
 /** Assistant text with the markdown-lite link contract: `[label](/path)`
  * links are stripped from the prose and rendered as tappable chips, so a
@@ -186,6 +194,18 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
     [],
   );
   const [selecting, setSelecting] = useState(false);
+  // Her own pick of a specialist holds for this conversation; otherwise the
+  // section she is in decides who answers.
+  const [picked, setPicked] = useState<SpecialistKey | null>(null);
+  const active = picked ?? specialistFor(pathname);
+  const sectionLabel = useMemo(
+    () =>
+      activeSection(buildAdminNav(tAdmin), {
+        pathname: pathname ?? "",
+        pendingHref: null,
+      })?.label ?? "",
+    [pathname, tAdmin],
+  );
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const chatIdRef = useRef<number | null>(null);
@@ -304,6 +324,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
     setEntries([]);
     setSelections([]);
     updateAttached([]);
+    setPicked(null);
     setView("chat");
   }, [updateAttached]);
 
@@ -317,6 +338,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
       setEntries(detail.entries);
       setSelections([]);
       updateAttached([]);
+      setPicked(null);
       setView("chat");
     },
     [updateAttached],
@@ -398,6 +420,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
             selections,
             attached_photos: attachedNow.map((p) => p.id),
             ...(pathname ? { context: { path: pathname } } : {}),
+            specialist: docked ? active : specialistFor(pathname),
           },
           { onPhase: () => {} },
           controller.signal,
@@ -438,7 +461,9 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
 
   const starters =
     docked && pathname && !sending && askedOn !== pathname
-      ? (tAdmin.raw(`dock.starters.${starterKey(pathname)}`) as string[])
+      ? ((picked
+          ? tAdmin.raw(`team.starters.${active}`)
+          : tAdmin.raw(`dock.starters.${starterKey(pathname)}`)) as string[])
       : [];
 
   if (!open && !docked) {
@@ -529,6 +554,15 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
           </span>
         </div>
 
+        {docked && view === "chat" && (
+          <TeamHeader
+            active={active}
+            picked={picked !== null}
+            sectionLabel={sectionLabel}
+            onPick={setPicked}
+          />
+        )}
+
         {view === "list" ? (
           <div className="flex-1 overflow-y-auto p-2">
             {chats.length === 0 && (
@@ -585,6 +619,9 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
                         : "mr-8 rounded-lg bg-muted p-2"
                     }
                   >
+                    {e.role === "assistant" && (
+                      <SpecialistByline k={asSpecialist(e.specialist)} />
+                    )}
                     {e.text === "__unavailable__" ? (
                       t("resting")
                     ) : e.role === "assistant" ? (
@@ -670,7 +707,13 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
               </div>
             )}
             <CopilotComposer
-              placeholder={docked ? tAdmin("dock.placeholder") : undefined}
+              placeholder={
+                docked
+                  ? tAdmin("team.ask", {
+                      name: tAdmin(`team.specialists.${active}.name`),
+                    })
+                  : undefined
+              }
               onSend={send}
               sending={sending}
               attached={attached}
