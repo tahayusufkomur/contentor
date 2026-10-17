@@ -32,7 +32,10 @@
     "src/app/(student)/community": ["15-community"],
     "src/app/(student)/learn": ["02-courses"],
     "src/app/live": ["04-live-class"],
+    "src/app/llms.txt": "none",
     "src/app/manifest.ts": ["08-pwa"],
+    "src/app/robots.ts": "none",
+    "src/app/sitemap.ts": "none",
     "src/app/sw.ts": ["08-pwa"],
     "src/components/assistant": ["16-site-assistant", "22-assistant-takeover"],
     "src/components/blocks": [
@@ -95,6 +98,7 @@
     "src/components/owner/cx-composer.tsx": ["30-custom-components"],
     "src/components/owner/cx-refine.tsx": ["30-custom-components"],
     "src/lib/site-styles.ts": ["01-signup-onboarding", "09-builder"],
+    "src/lib/site-index.ts": "none",
     "src/components/shared/public-footer.tsx": ["14-navbar-layouts"],
     "src/types/tenant.ts": "none",
     "src/types/api-generated.ts": "none"

@@ -36,6 +36,13 @@ def test_noindex_defaults_false(tenant_ctx):
     assert p.noindex is False
 
 
+def test_public_list_carries_noindex_for_the_sitemap(tenant_ctx):
+    BlogPost.objects.create(title="Hidden", slug="hidden", status="published", noindex=True)
+    BlogPost.objects.create(title="Shown", slug="shown", status="published")
+    res = APIClient(HTTP_HOST=HOST).get("/api/v1/blog/posts/")
+    assert {p["slug"]: p["noindex"] for p in res.data["results"]} == {"hidden": True, "shown": False}
+
+
 def test_coach_edit_clears_noindex(coach_client):
     p = BlogPost.objects.create(title="Seeded", slug="seeded", noindex=True, source="ai")
     resp = coach_client.patch(f"/api/v1/admin/blog/posts/{p.pk}/", {"title": "Seeded edited"}, format="json")

@@ -22,7 +22,8 @@ class BlogPostListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BlogPost
-        fields = ("slug", "title", "excerpt", "tags", "published_at", "cover_photo_url")
+        # noindex: the tenant sitemap leaves those posts out (frontend-customer/src/lib/site-index.ts).
+        fields = ("slug", "title", "excerpt", "noindex", "tags", "published_at", "cover_photo_url")
 
     def get_cover_photo_url(self, obj):
         return _cover_url(obj)
