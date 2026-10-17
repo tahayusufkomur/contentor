@@ -101,8 +101,9 @@ test("signup lands in /setup and the interview ends in a published site", async 
   const looksGood = guide.getByRole("button", { name: "Looks good, continue" });
   const goLive = guide.getByRole("button", { name: "Go live", exact: true });
   // The first payments tile is a paid one, and a trial cannot sell; the spec
-  // takes the free way out instead of starting the plan.
-  const makeFree = guide.getByRole("button", { name: "Make it free and go live now" });
+  // goes live now and sells later instead of starting the plan. There is no
+  // going free (decision 2026-10-17).
+  const sellLater = guide.getByRole("button", { name: "Go live now, sell later" });
   // The photos question: a screen of its own, with an upload and a way past it.
   const stockPhotos = guide.getByRole("button", { name: "Choose photos for me", exact: true });
   // A look tapped opens as a page; "Keep this look" answers the question.
@@ -121,7 +122,7 @@ test("signup lands in /setup and the interview ends in a published site", async 
   const action = decide
     .or(looksGood)
     .or(goLive)
-    .or(makeFree)
+    .or(sellLater)
     .or(tile)
     .or(zone)
     .or(place)
@@ -135,13 +136,9 @@ test("signup lands in /setup and the interview ends in a published site", async 
     await keepLook.waitFor({ state: "visible", timeout: 2_000 }).catch(() => {});
     if (await keepLook.isVisible()) await keepLook.click();
     if (await goLive.isVisible()) break;
-    if (await makeFree.isVisible()) {
-      await makeFree.click();
-      // Going free first says what it changes, then asks (nothing to change: no ask).
-      await guide
-        .getByRole("button", { name: "Yes, make it free" })
-        .click({ timeout: 10_000 })
-        .catch(() => {});
+    if (await sellLater.isVisible()) {
+      await expect(guide.getByRole("button", { name: /make it free/i })).toHaveCount(0);
+      await sellLater.click();
       await expect(goLive).toBeVisible({ timeout: 600_000 });
       break;
     }

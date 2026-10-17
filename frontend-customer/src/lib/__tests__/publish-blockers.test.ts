@@ -18,7 +18,7 @@ describe("publish blockers", () => {
   it("sends a free-plan coach to upgrade instead of to payouts", () => {
     const meta = blockerMeta("payouts", { onFreePlan: true });
     expect(meta.href).toBe("/admin/billing");
-    expect(meta.label).toMatch(/Starter/);
+    expect(meta.label).toMatch(/needs a plan/);
     expect(blockerMeta("payouts").href).toBe("/admin/payouts");
   });
 

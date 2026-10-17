@@ -162,8 +162,6 @@ def setup_flow_golive(request):
         try:
             if action == "publish":
                 interview_golive.publish(tenant)
-            elif action == "make_free":
-                interview_golive.make_free(tenant)
             elif action == "sell_later":
                 interview_golive.sell_later(tenant)
             else:

@@ -22,11 +22,11 @@ import { cn } from "@/lib/utils";
 import { ApiError } from "@/types/api";
 import { PayoutsCard } from "./payouts-card";
 
-/** The last stretch: a paid plan and Stripe only when the coach sells, two
- * ways out of both ("go live now, sell later" keeps her prices, "make it
- * free" drops them), then publish. A coach with no Free plan starts the
- * Starter trial first, with no way out; the trial cannot sell, so the ways
- * out come back for a site that sells. */
+/** The last stretch: a paid plan and Stripe only when the coach sells, one
+ * way out of both ("go live now, sell later" keeps her prices), then
+ * publish. There is no going free: only paid plans exist. A coach with no
+ * plan starts the Starter trial first; the trial cannot sell, so a site that
+ * sells starts its plan now or sells later. */
 export function GoLiveCard({
   api,
   onPublished,
@@ -36,8 +36,6 @@ export function GoLiveCard({
 }) {
   const [state, setState] = useState<GoLiveState | null>(null);
   const [payoutsReady, setPayoutsReady] = useState(false);
-  // "Make it free" first says what it will change, then asks.
-  const [confirmFree, setConfirmFree] = useState(false);
   const [returning, setReturning] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -55,7 +53,7 @@ export function GoLiveCard({
     window.history.replaceState(null, "", url.pathname + url.search);
   }, []);
   // Stripe's webhook is usually seconds; past a minute stop waiting and show
-  // the plan card again (with the free way out) instead of spinning forever.
+  // the plan card again (with its way out) instead of spinning forever.
   useEffect(() => {
     if (!returning) return;
     const t = setTimeout(() => {
@@ -111,10 +109,6 @@ export function GoLiveCard({
       await load();
     },
     { errorToast: "Couldn’t start your plan. Try again." },
-  );
-  const { run: makeFree, loading: freeing } = useAsyncAction(
-    async () => setState(await api.goliveAction("make_free")),
-    { errorToast: "Couldn’t switch to free. Try again." },
   );
   const { run: sellLater, loading: holding } = useAsyncAction(
     async () => setState(await api.goliveAction("sell_later")),
@@ -174,53 +168,6 @@ export function GoLiveCard({
       </p>,
     );
   }
-
-  const free =
-    confirmFree && state.free_effects.length > 0 ? (
-      <div
-        role="group"
-        aria-label="Make it free"
-        className="mt-1 w-full rounded-xl border border-[var(--sf-line)] bg-[var(--sf-tint)] p-3 text-[13.5px] leading-relaxed"
-      >
-        <p className="font-medium">Going free changes this:</p>
-        <ul className="mt-1.5 list-disc space-y-1 pl-5 text-[var(--sf-graphite)]">
-          {state.free_effects.map((effect) => (
-            <li key={effect}>{effect}</li>
-          ))}
-        </ul>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => makeFree()}
-            loading={freeing}
-            loadingText="Making it free…"
-            className="rounded-full px-4"
-          >
-            Yes, make it free
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setConfirmFree(false)}
-            className="rounded-full"
-          >
-            Keep my prices
-          </Button>
-        </div>
-      </div>
-    ) : (
-      <Button
-        variant="ghost"
-        onClick={() =>
-          state.free_effects.length ? setConfirmFree(true) : makeFree()
-        }
-        loading={freeing}
-        className="rounded-full"
-      >
-        Make it free and go live now
-      </Button>
-    );
 
   const later = (
     <Button
@@ -297,9 +244,8 @@ export function GoLiveCard({
             Start my plan now
           </Button>
           {later}
-          {free}
         </div>
-        {!confirmFree && laterHint}
+        {laterHint}
       </>,
     );
   }
@@ -325,9 +271,8 @@ export function GoLiveCard({
             Choose {name}
           </Button>
           {later}
-          {free}
         </div>
-        {!confirmFree && laterHint}
+        {laterHint}
       </>,
     );
   }
@@ -338,11 +283,8 @@ export function GoLiveCard({
         <div className="h-[340px]">
           <PayoutsCard onReady={setPayoutsReady} />
         </div>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {later}
-          {free}
-        </div>
-        {!confirmFree && laterHint}
+        <div className="mt-2 flex flex-wrap gap-2">{later}</div>
+        {laterHint}
       </>,
     );
   }

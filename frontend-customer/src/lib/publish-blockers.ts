@@ -33,8 +33,8 @@ export function blockerMeta(
   if (key === "payouts" && opts.onFreePlan) {
     return {
       label: opts.trialing
-        ? "Paid content waits for your plan to start — start it now, or make it free"
-        : "Paid content needs the Starter plan — upgrade, or make it free",
+        ? "Paid content waits for your plan to start — start it now, or keep it as a draft"
+        : "Paid content needs a plan — choose one, or keep it as a draft",
       href: "/admin/billing",
     };
   }

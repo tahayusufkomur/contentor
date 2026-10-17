@@ -1,9 +1,8 @@
 """Go-live for the /setup interview: what still stands between the coach and
 a published site (a paid plan and Stripe only when they sell), publishing,
-and two ways out: "go live now, sell later" (paid items held) and "make it
-free". A coach who signed up without a Free plan starts the Starter trial
-first, whatever the site sells; the ways out then cover the trial, which
-cannot sell."""
+and one way out: "go live now, sell later" (paid items held, prices kept).
+There is no going free: only paid plans exist, and a trial cannot sell, so a
+trial whose site sells starts its plan now or sells later."""
 
 import logging
 from contextlib import suppress
@@ -13,7 +12,7 @@ from apps.core.monetization import can_monetize, is_paid_active, trial_days_for
 
 from . import interview_brief as brief
 from . import site_qa
-from .interview_milestones import _draft_row, drop_draft, expand_class_series, fire, membership_plan_ids
+from .interview_milestones import _draft_row, expand_class_series, fire, membership_plan_ids
 from .models import TenantConfig
 from .setup_items import _has_paid_content, _live_entitled, _seeded_by_label, publish_blockers
 
@@ -111,12 +110,6 @@ def golive_state(tenant) -> dict:
         "blockers": _open_blockers(config, tenant, flow),
         "steps": steps,
         "summary": _summary(tenant, answers, flow),
-        # What "make it free" would change, said before the coach agrees to it.
-        "free_effects": (
-            _free_effects(tenant, answers, flow)
-            if (needs_plan and not tenant.requires_plan) or needs_start or needs_payouts
-            else []
-        ),
         # What waits, with its prices, until she can take payments.
         "held": _held_lines(held or {}, flow),
     }
@@ -178,41 +171,7 @@ def _summary(tenant, answers, flow) -> list[dict]:
     return lines
 
 
-def _free_effects(tenant, answers, flow) -> list[str]:
-    """What make_free() changes, in plain words: it used to switch off the
-    memberships and drop live classes without saying so."""
-    from apps.billing.models import SubscriptionPlan
-    from apps.courses.models import Course
-
-    out = []
-    drafts = flow.get("drafts") or {}
-    course = Course.objects.filter(pk=drafts.get("course")).exclude(pricing_type="free").first()
-    if course:
-        out.append(f"Your course \u201c{course.title}\u201d becomes free.")
-    names = list(
-        SubscriptionPlan.objects.filter(pk__in=membership_plan_ids(flow), is_active=True).values_list("name", flat=True)
-    )
-    if names:
-        joined = names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
-        out.append(f"{joined} {'is' if len(names) == 1 else 'are'} switched off.")
-    offers = set(answers.get("offers") or [])
-    if not _live_entitled(tenant) and {"live", "onsite"} & offers:
-        rest = offers - {"live", "onsite"}
-        out.append(
-            "Live classes need a paid plan, so they come off your site for now, with your first class."
-            + ("" if rest else " Your site goes live with its pages.")
-        )
-    else:
-        for key, what in (("event", "online class"), ("onsite", "in-person event")):
-            row = _draft_row(flow, key)
-            if row is not None and row.pricing_type != "free":
-                out.append(f"Your first {what} becomes free.")
-    if out:
-        out.append("You can choose a plan and add prices back any time.")
-    return out
-
-
-# Held, released and made free together; each keeps its own draft.
+# Held and released together; each keeps its own draft.
 _CLASSES = ("event", "onsite")
 
 
@@ -279,7 +238,7 @@ def _save_held(tenant, held) -> None:
 def sell_later(tenant) -> None:
     """Go live now and sell later: the paid course stays a draft, the
     memberships stay off and a class her plan can't run stays off the
-    calendar, all with her prices kept (make_free throws them away).
+    calendar, all with her prices kept.
     release_held() puts them on sale once she can take payments."""
     _save_held(tenant, _hold(tenant))
 
@@ -351,44 +310,3 @@ def publish(tenant) -> None:
             if not held.get(key):
                 expand_class_series(tenant, key)  # a weekly schedule becomes its classes
     setup_flow.act(tenant, "finish", publish=True)
-
-
-def make_free(tenant) -> None:
-    """The coach declined the plan or Stripe: everything free, live classes
-    (which need a paid plan) dropped from the offer for now."""
-    from apps.billing.models import SubscriptionPlan
-    from apps.courses.models import Course
-    from apps.live.models import LiveClass, OnsiteEvent
-
-    answers = brief.answers_of(tenant)
-    base = dict(answers)
-    answers["sells"] = "free"
-    answers["payments"] = ["free"]
-    for key in ("course_price", "memberships", "event_price", "onsite_price", *(f"{k}_access" for k in brief.ACCESS)):
-        answers.pop(key, None)
-    live_dropped = not _live_entitled(tenant) and bool({"live", "onsite"} & set(answers.get("offers") or []))
-    if live_dropped:
-        # Never invent an offer: with nothing left, the site goes live with its
-        # pages, and the empty offer list counts as settled.
-        rest = [o for o in answers["offers"] if o not in ("live", "onsite")]
-        answers["offers"] = rest
-        answers["goals"] = sorted({brief.OFFER_GOALS[o] for o in rest})
-        if not rest:
-            brief.delegate(answers, "offers")
-    brief.save_answers(tenant, answers, base=base)
-    flow = TenantConfig.objects.first().setup_flow or {}
-    drafts = flow.get("drafts") or {}
-    if drafts.get("course"):
-        Course.objects.filter(pk=drafts["course"]).exclude(pricing_type="free").update(pricing_type="free", price=0)
-    if live_dropped:
-        for key in _CLASSES:  # the drafted classes go with the live offer
-            if drafts.get(key):
-                drop_draft(tenant, key)
-    else:
-        for key in _CLASSES:
-            event = drafts.get(key) or {}
-            if event.get("id"):
-                model = OnsiteEvent if event.get("kind") == "onsite" else LiveClass
-                model.objects.filter(pk=event["id"]).exclude(pricing_type="free").update(pricing_type="free", price=0)
-    if plan_ids := membership_plan_ids(flow):
-        SubscriptionPlan.objects.filter(pk__in=plan_ids).update(is_active=False)
