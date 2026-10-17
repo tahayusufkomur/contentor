@@ -419,6 +419,29 @@ def test_targets_of_a_site_with_nothing_to_design(client, generated):
     assert body["generations_left"] == 17
 
 
+def test_target_photo_url_falls_back_to_the_legacy_thumbnail_url(coach, client):
+    """A row with no photo of its own can still wear the free-text link older rows carry: it lists with
+    that link, signed the way the course serializers sign it."""
+    chosen = photo("chosen")
+    course(coach, "Link only", thumbnail_url="https://cdn.example.com/cover.jpg")
+    course(coach, "Key only", thumbnail_url=build_s3_path("uploads", "old.jpg"))
+    course(coach, "Not hers", thumbnail_url="tenants/someone-else/old.jpg")  # a key this site may not be handed
+    course(coach, "Photo wins", thumbnail=chosen, thumbnail_url="https://cdn.example.com/old.jpg")
+    course(coach, "Bare")
+    session(coach, "Link class", thumbnail_url="https://cdn.example.com/class.jpg")
+
+    response = client.get(TARGETS)
+
+    assert response.status_code == 200, response.content
+    targets = {target["title"]: target for target in response.json()["targets"]}
+    assert targets["Link only"]["photo_url"] == "https://cdn.example.com/cover.jpg"
+    assert "uploads/old.jpg" in targets["Key only"]["photo_url"]
+    assert targets["Link class"]["photo_url"] == "https://cdn.example.com/class.jpg"  # a series, by its first row
+    assert "demo/chosen.jpg" in targets["Photo wins"]["photo_url"]  # the photo, not the old link
+    assert targets["Not hers"]["photo_url"] is None
+    assert targets["Bare"]["photo_url"] is None
+
+
 def test_targets_query_count_does_not_grow_with_rows(coach, client):
     def add(count, start):
         for number in range(start, start + count):

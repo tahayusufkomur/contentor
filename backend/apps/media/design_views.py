@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from apps.core.copilot import content
 from apps.core.curated_images.views import generation_allowance
 from apps.core.permissions import IsCoachOrOwner
-from apps.core.storage import generate_presigned_download_url
+from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.courses.models import Course
 
 from . import designs
@@ -25,9 +25,14 @@ from .models import Design, Photo
 KEPT_REFUSED = "a kept cover can't be changed; edit a copy"
 
 
-def _photo_url(photo):
-    """A link to a Photo row, or None (no photo, or one this site may not be handed a link to)."""
-    return (generate_presigned_download_url(photo.s3_key) or None) if photo and photo.s3_key else None
+def _photo_url(row):
+    """A link to the picture a course or event wears: its photo, else the free-text link older rows carry
+    (signed as the course serializers sign it). None for no picture, or one this site may not be handed a
+    link to."""
+    photo = row.thumbnail
+    if photo and photo.s3_key:
+        return generate_presigned_download_url(photo.s3_key) or None
+    return sign_if_s3_key(row.thumbnail_url) or None
 
 
 @api_view(["GET"])
@@ -58,7 +63,7 @@ def design_targets(request):
             "next_at": None,
             "status": None,
             **fields,
-            "photo_url": _photo_url(row.thumbnail),
+            "photo_url": _photo_url(row),
             "cover": designs.cover_for(row, ctx),
             "draft_id": drafts.get((kind, key)),
         }
