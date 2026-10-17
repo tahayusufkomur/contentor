@@ -113,7 +113,7 @@ test("signup lands in /setup and the interview ends in a published site", async 
   // so those questions take a real answer, not "you decide" words.
   const ownWords = async () => {
     const q = await guide.getByRole("heading", { level: 1 }).innerText();
-    if (/teach this|story|inspired|come to/i.test(q))
+    if (/teach this|story|inspired|come to|get into/i.test(q))
       return "I started teaching after yoga eased my own back pain from years at a desk.";
     if (/training|certif|background|experience|qualif/i.test(q))
       return "I completed a 200-hour yoga teacher training in 2019.";
