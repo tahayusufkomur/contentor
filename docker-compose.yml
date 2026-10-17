@@ -207,6 +207,22 @@ services:
       django:
         condition: service_healthy
 
+  # The team's runs (apps.core.copilot.runs): model calls are I/O-bound, so
+  # one process with a thread each, apart from the site builds above.
+  celery-agents:
+    build:
+      context: ./backend
+      args:
+        INSTALL_CLAUDE_CLI: "1"
+    command: celery -A config.celery worker -Q agents -P threads -c 8 -l info -n agents@%h
+    volumes:
+      - ./backend:/app/backend
+      - ${HOME}/ws/agent-studio-runs:/agent-studio-runs:ro
+    env_file: .env
+    depends_on:
+      django:
+        condition: service_healthy
+
   celery-beat:
     build:
       context: ./backend

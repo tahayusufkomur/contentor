@@ -45,7 +45,7 @@ _POSTGRES_RE = re.compile(
 _REDIS_RE = re.compile(r"^\d+:[A-Z] \d{1,2} \w{3} \d{4} [\d:.]+ (?P<mark>[.\-*#]) (?P<message>.*)$", re.DOTALL)
 _TS_NANO_RE = re.compile(r"^(.*\.\d{6})\d*([+-]\d{2}:\d{2})$")
 
-_APP_SERVICES = ("django", "celery-worker", "celery-beat")
+_APP_SERVICES = ("django", "celery-worker", "celery-agents", "celery-beat")
 
 
 @dataclass

@@ -208,3 +208,10 @@ def test_open_for_lists_her_active_and_unseen_finished_runs(coach):
 
     assert {row["id"] for row in rows} == {active.id, unseen.id}
     assert next(row for row in rows if row["id"] == unseen.id)["summary"] == "Sales are up"
+
+
+def test_agents_worker_logs_are_app_logs(settings):
+    from apps.logbook import parsing
+
+    assert "celery-agents" in parsing._APP_SERVICES
+    assert settings.LOGBOOK_LEVEL_FLOORS["celery-agents"] == "INFO"

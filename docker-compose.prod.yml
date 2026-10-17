@@ -157,6 +157,30 @@ services:
       django:
         condition: service_healthy
 
+  # The team's runs (apps.core.copilot.runs) on their own queue, so a run
+  # never waits behind a site build. Model calls are I/O-bound: one process,
+  # a thread per run. The grace period lets a deploy finish most runs.
+  celery-agents:
+    build:
+      context: ./backend
+      args:
+        PIP_REQUIREMENTS: prod.txt
+    container_name: contentor-celery-agents
+    restart: unless-stopped
+    mem_limit: 384m
+    stop_grace_period: 90s
+    logging: *logging
+    command: celery -A config.celery worker -Q agents -P threads -c 8 -l warning -n agents@%h
+    env_file: .env.prod
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.prod
+    networks:
+      - internal
+      - agentc
+    depends_on:
+      django:
+        condition: service_healthy
+
   # Headless Chromium for the site's final visual check
   # (apps.tenant_config.site_qa, off without ANTHROPIC_API_KEY); reached only
   # from inside the network.

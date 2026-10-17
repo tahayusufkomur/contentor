@@ -570,6 +570,7 @@ LOGBOOK_HARD_CAP_DAYS = 21  # purge even unarchived rows past this; logs ERROR
 LOGBOOK_LEVEL_FLOORS = {
     "django": "INFO",
     "celery-worker": "INFO",
+    "celery-agents": "INFO",
     "celery-beat": "INFO",
     "*": "WARNING",
 }
