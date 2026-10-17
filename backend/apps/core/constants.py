@@ -36,4 +36,6 @@ RESERVED_SLUGS = {
     "public",
     "rtc",
     "livecraft",
+    # Storage written with no tenant in context lands under tenants/unknown/.
+    "unknown",
 }

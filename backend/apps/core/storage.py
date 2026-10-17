@@ -1,9 +1,13 @@
+import logging
 from functools import lru_cache
 
 import boto3
 from botocore.config import Config
 from django.conf import settings
 from django.db import connection
+from django_tenants.utils import get_public_schema_name
+
+logger = logging.getLogger(__name__)
 
 
 def get_s3_client(external=False):
@@ -53,6 +57,30 @@ def is_tenant_scoped_key(s3_key):
     return s3_key.startswith(f"tenants/{get_tenant_slug()}/")
 
 
+# Keys outside every tenant's folder that any tenant may be handed a link to:
+# the demo seed's assets and the superadmin's platform art (the curated logo
+# and photo catalogs). The rest of the bucket is one tenant's private storage,
+# or ours (logs/archive/, activity/archive/).
+SHARED_KEY_PREFIXES = ("demo/", "platform/")
+
+
+def is_signable_key(s3_key):
+    """True if the CURRENT tenant may be handed a download link to s3_key: its
+    own storage or a shared prefix.
+
+    The signer asks this itself, because the key is often a value a coach or a
+    student wrote (a thumbnail_url, a block's url, an avatar_key), and a guard
+    on each of those fields is one forgotten field away from handing out
+    another tenant's files."""
+    if not isinstance(s3_key, str) or ".." in s3_key.split("/"):
+        return False
+    if s3_key.startswith(SHARED_KEY_PREFIXES) or s3_key.startswith(f"tenants/{get_tenant_slug()}/"):
+        return True
+    # The platform inbox files its attachments inside schema_context("public"),
+    # where there is no tenant row and the slug reads "unknown".
+    return connection.schema_name == get_public_schema_name() and s3_key.startswith("tenants/unknown/")
+
+
 # Content types that could execute as active content if served inline from the
 # storage origin — never legitimate coach-uploaded media.
 _BLOCKED_CONTENT_TYPES = {
@@ -81,6 +109,10 @@ def generate_presigned_upload_url(s3_key, content_type="application/octet-stream
 
 
 def generate_presigned_download_url(s3_key, expiry=3600):
+    """A presigned download link, or "" for a key this tenant may not read."""
+    if not is_signable_key(s3_key):
+        logger.warning("storage: refused to sign %r for tenant %s", s3_key, get_tenant_slug())
+        return ""
     client = get_s3_client(external=True)
     return client.generate_presigned_url(
         "get_object",
@@ -93,7 +125,8 @@ def generate_presigned_download_url(s3_key, expiry=3600):
 
 
 def sign_if_s3_key(value):
-    """Return a presigned download URL for S3 keys, or the original value if HTTP or empty."""
+    """Return a presigned download URL for S3 keys, or the original value if
+    HTTP or empty. A key this tenant may not read comes back as ""."""
     if not value:
         return value
     if isinstance(value, str) and not value.startswith("http"):

@@ -1586,7 +1586,7 @@ def test_create_blog_post_card_with_attached_photo(tenant_ctx):
     from apps.media.models import Photo
 
     tenant = Tenant.objects.get(schema_name="shared_test")
-    photo = Photo.objects.create(s3_key="uploads/blogcover.png", title="Blog cover")
+    photo = Photo.objects.create(s3_key="tenants/shared-test/photo/blogcover.png", title="Blog cover")
     action = engine.CreateBlogPostAction(
         kind="create_blog_post", title="My post", summary="s", body_html="<p>b</p>", photo_id=str(photo.pk)
     )
@@ -1603,7 +1603,7 @@ def test_set_logo_card_with_attached_photo(tenant_ctx):
     from apps.media.models import Photo
 
     tenant = Tenant.objects.get(schema_name="shared_test")
-    photo = Photo.objects.create(s3_key="uploads/my-mark.png", title="My mark")
+    photo = Photo.objects.create(s3_key="tenants/shared-test/photo/my-mark.png", title="My mark")
     action = engine.SetLogoAction(kind="set_logo", photo_id=str(photo.pk))
     card = engine._card(tenant, action)
     assert card["kind"] == "set_logo"
@@ -1647,7 +1647,7 @@ def test_note_photo_card_stashes_description(tenant_ctx):
     from apps.media.models import Photo
 
     tenant = Tenant.objects.get(schema_name="shared_test")
-    photo = Photo.objects.create(s3_key="uploads/ballet.png", title="IMG_1234")
+    photo = Photo.objects.create(s3_key="tenants/shared-test/photo/ballet.png", title="IMG_1234")
     action = engine.NotePhotoAction(
         kind="note_photo", photo_id=str(photo.pk), description="  silhouette of a  ballet dancer "
     )

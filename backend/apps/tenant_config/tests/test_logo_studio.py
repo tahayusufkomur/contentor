@@ -81,8 +81,8 @@ VALID_RECIPE = {
 
 
 def test_patch_writes_logo_and_icon_fks_and_recipe(coach_client):
-    logo_photo = Photo.objects.create(s3_key="photos/logo.png", title="logo")
-    icon_photo = Photo.objects.create(s3_key="photos/icon.png", title="icon")
+    logo_photo = Photo.objects.create(s3_key="tenants/shared-test/photo/logo.png", title="logo")
+    icon_photo = Photo.objects.create(s3_key="tenants/shared-test/photo/icon.png", title="icon")
     resp = coach_client.patch(
         "/api/v1/admin/config/",
         {
@@ -105,13 +105,13 @@ def test_patch_writes_logo_and_icon_fks_and_recipe(coach_client):
 def test_icon_url_is_signed_from_fk_on_read(coach_client):
     # _ensure_config already cleared the config cache for this test, so this
     # GET is guaranteed to hit the DB and see the icon set below.
-    icon_photo = Photo.objects.create(s3_key="photos/icon.png", title="icon")
+    icon_photo = Photo.objects.create(s3_key="tenants/shared-test/photo/icon.png", title="icon")
     config = TenantConfig.objects.first()
     config.icon = icon_photo
     config.save()
     resp = coach_client.get("/api/v1/admin/config/")
     assert resp.status_code == 200
-    assert "photos/icon.png" in resp.data["icon_url"]
+    assert "tenants/shared-test/photo/icon.png" in resp.data["icon_url"]
 
 
 def test_recipe_validation_rejects_bad_layout(coach_client):
@@ -149,7 +149,7 @@ def test_empty_recipe_clears(coach_client):
 
 
 def test_image_mark_url_is_signed_from_photo_id_on_read(coach_client):
-    mark_photo = Photo.objects.create(s3_key="photos/mark.png", title="mark")
+    mark_photo = Photo.objects.create(s3_key="tenants/shared-test/photo/mark.png", title="mark")
     recipe = dict(VALID_RECIPE, mark={"type": "image", "photo_id": str(mark_photo.id)})
     resp = coach_client.patch("/api/v1/admin/config/", {"logo_recipe": recipe}, format="json")
     assert resp.status_code == 200, resp.content
@@ -157,7 +157,7 @@ def test_image_mark_url_is_signed_from_photo_id_on_read(coach_client):
     assert resp.status_code == 200
     mark = resp.data["logo_recipe"]["mark"]
     assert mark["url"]
-    assert "photos/mark.png" in mark["url"]
+    assert "tenants/shared-test/photo/mark.png" in mark["url"]
 
 
 def test_image_mark_with_malformed_photo_id_is_clamped_not_500(coach_client):
