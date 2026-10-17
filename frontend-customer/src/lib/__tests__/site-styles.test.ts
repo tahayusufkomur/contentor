@@ -41,6 +41,17 @@ describe("modePalette", () => {
     expect(isDarkPalette(nocturne)).toBe(true);
     expect(isDarkPalette(modePalette(nocturne, "light"))).toBe(false);
   });
+  it("swaps an ink primary with the paper instead of greying it", () => {
+    const dark = modePalette(SITE_STYLES.journal.palette, "dark");
+    expect(dark.primary).toBe(dark.foreground);
+    expect(dark.primaryForeground).toBe(dark.background);
+    const noir = paletteOf(SITE_STYLES.maison, "noir");
+    const light = modePalette(noir, "light");
+    expect(light.primary).toBe(light.foreground);
+    // A primary with a hue of its own is lifted, not swapped.
+    const sprout = modePalette(SITE_STYLES.sprout.palette, "dark");
+    expect(sprout.primary).toContain(SITE_STYLES.sprout.palette.primary);
+  });
   it("starts a dark style dark, and emits both schemes", () => {
     expect(styleDefaultTheme(SITE_STYLES.nocturne)).toBe("dark");
     expect(styleDefaultTheme(SITE_STYLES.journal)).toBe("light");

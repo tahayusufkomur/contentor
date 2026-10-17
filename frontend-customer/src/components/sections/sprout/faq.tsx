@@ -5,7 +5,8 @@ import { H2, Kicker, Section, WRAP, str } from "./ui";
 
 type QA = { q?: string; a?: string };
 
-/** FAQs laid out in pill-shaped rounded accordion rows with a playful '?' bubble. */
+/** FAQs laid out in pill-shaped rounded accordion rows; a round plus turns
+ *  into a close mark on the open one. */
 export function FaqAskaway({ block, editable }: SectionProps) {
   const items = itemsOf<QA>(block, "items");
 
@@ -55,9 +56,18 @@ export function FaqAskaway({ block, editable }: SectionProps) {
                 </span>
                 <span
                   aria-hidden="true"
-                  className="sprout-faq-icon inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_oklch,var(--accent)_30%,transparent)] font-display text-[1.15rem] font-bold text-accent-foreground"
+                  className="sprout-faq-icon inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_oklch,var(--accent)_30%,transparent)] text-accent-foreground"
                 >
-                  ?
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="size-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  >
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
                 </span>
               </summary>
               <div className="px-5 pb-6 pt-1 sm:px-6">

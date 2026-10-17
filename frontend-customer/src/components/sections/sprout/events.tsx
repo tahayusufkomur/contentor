@@ -6,7 +6,6 @@ import {
   Txt,
   eventHref,
   eventPriceLabel,
-  formatEventTime,
   has,
 } from "../kit";
 import { LocalWhen } from "../local-time";
@@ -88,8 +87,6 @@ export function EventsPlaydates({ block, data, editable }: SectionProps) {
                     </span>
                     <span className="text-[0.85rem] font-semibold text-muted-foreground">
                       <LocalWhen iso={e.scheduled_at} />
-                      {formatEventTime(e.scheduled_at) &&
-                        ` · ${formatEventTime(e.scheduled_at)}`}
                     </span>
                   </div>
 

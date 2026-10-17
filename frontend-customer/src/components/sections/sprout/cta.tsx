@@ -31,12 +31,13 @@ export function CtaJoin({ block, editable }: SectionProps) {
         className="py-14 md:py-20 lg:py-24"
         label={alt || "Join us"}
       >
-        {/* Playful background doodles */}
+        {/* Playful background doodles. The sun stays inside the band's top
+            padding at every width, so it never sits on the copy. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-8 top-12 text-accent opacity-50 sprout-wiggle"
+          className="pointer-events-none absolute right-5 top-3 text-accent opacity-50 sprout-wiggle lg:left-8 lg:right-auto lg:top-6"
         >
-          <SunDoodle className="size-14" />
+          <SunDoodle className="size-9 md:size-14" />
         </div>
         <div
           aria-hidden="true"

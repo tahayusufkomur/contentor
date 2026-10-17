@@ -140,7 +140,8 @@ function Shell({
               field="kicker"
               editable={editable}
               as="p"
-              className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-primary"
+              // The band's own ink: a style's primary can be as dark as the band.
+              className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-[color:var(--rows-dim)]"
             />
           )}
           <Txt

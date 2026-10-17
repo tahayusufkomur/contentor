@@ -31,7 +31,10 @@ export function MomentsSnapshots({ block, editable }: SectionProps) {
         <ul
           className={cn(
             "grid grid-cols-1 gap-8 sm:grid-cols-2 lg:gap-10",
-            photos.length >= 3 && "lg:grid-cols-3",
+            // Four across when rows of three would leave one print alone.
+            photos.length > 3 && photos.length % 3 === 1
+              ? "lg:grid-cols-4"
+              : photos.length >= 3 && "lg:grid-cols-3",
           )}
         >
           {photos.map((p, i) => {
