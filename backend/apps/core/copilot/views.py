@@ -18,7 +18,7 @@ from rest_framework.response import Response
 
 from apps.core import ai as core_ai
 from apps.core.ai_sse import EventStreamRenderer, sse_frame, stream_response
-from apps.core.copilot import blocks, chrome, content, engine, logos, photos, team, tokens
+from apps.core.copilot import blocks, chrome, content, engine, logos, photos, runs, team, tokens
 from apps.core.copilot import context as page_context
 from apps.core.copilot.tokens import ActionTokenError
 from apps.core.onboarding import ai_compose, site_ai
@@ -59,6 +59,43 @@ def _clean_attachments(tenant, raw):
     return [{"id": str(r["id"]), "title": r["title"], "desc": r["alt_text"]} for r in rows]
 
 
+TRANSCRIPT_KEEP = 20
+
+
+def _clean_transcript(raw):
+    """The client-held transcript, bounded: the last TRANSCRIPT_KEEP entries,
+    each just its role, text and kind (all the engine reads)."""
+    if not isinstance(raw, list):
+        return []
+    kept = []
+    for item in raw[-TRANSCRIPT_KEEP:]:
+        if not isinstance(item, dict):
+            continue
+        entry = {"role": str(item.get("role") or "")[:20], "text": str(item.get("text") or "")[:MESSAGE_MAX_LEN]}
+        if isinstance(item.get("kind"), str) and item["kind"]:
+            entry["kind"] = item["kind"][:20]
+        kept.append(entry)
+    return kept
+
+
+def _turn_inputs(tenant, data):
+    """One turn's cleaned input, shared by converse and a run's start. The
+    page context stays raw (bounded) here: a run cleans it when it executes."""
+    raw_context = data.get("context")
+    return {
+        "message": str(data.get("message") or "").strip()[:MESSAGE_MAX_LEN],
+        "transcript": _clean_transcript(data.get("transcript")),
+        "selections": _clean_selections(data.get("selections") if isinstance(data.get("selections"), list) else []),
+        "attachments": _clean_attachments(tenant, data.get("attached_photos")),
+        "context_raw": (
+            {"path": str(raw_context.get("path") or "")[:200], "intent": str(raw_context.get("intent") or "")[:40]}
+            if isinstance(raw_context, dict)
+            else None
+        ),
+        "specialist": team.clean(data.get("specialist")),
+    }
+
+
 def availability(tenant):
     """Why the assistant cannot answer this coach right now, or None. It is
     open to every coach whatever her plan; a plan check or a paywall would
@@ -78,19 +115,21 @@ def copilot_converse(request):
         return JsonResponse({"kind": reason})
 
     data = request.data if isinstance(request.data, dict) else {}
-    message = str(data.get("message") or "").strip()[:MESSAGE_MAX_LEN]
-    transcript = data.get("transcript") if isinstance(data.get("transcript"), list) else []
-    selections = _clean_selections(data.get("selections") if isinstance(data.get("selections"), list) else [])
-    attachments = _clean_attachments(tenant, data.get("attached_photos"))
-    context = page_context.clean(tenant, data.get("context"))
-    specialist = team.clean(data.get("specialist"))
+    turn = _turn_inputs(tenant, data)
+    context = page_context.clean(tenant, turn["context_raw"])
 
     def frames():
         yield sse_frame({"type": "phase", "phase": "thinking"})
         cost = Decimal("0")
         try:
             payload, cost = engine.run_turn(
-                tenant, transcript, selections, message, attachments, context, specialist=specialist
+                tenant,
+                turn["transcript"],
+                turn["selections"],
+                turn["message"],
+                turn["attachments"],
+                context,
+                specialist=turn["specialist"],
             )
             yield sse_frame({"type": "done", **payload})
         except core_ai.AiError as exc:
@@ -735,6 +774,10 @@ def _clean_chat_entries(raw):
         # Who on the team wrote the reply; unknown names are dropped.
         if role == "assistant" and item.get("specialist") in team.KEYS:
             entry["specialist"] = item["specialist"]
+        # The run behind a reply, so a reply still being written can resume.
+        run = item.get("run")
+        if role == "assistant" and isinstance(run, int) and not isinstance(run, bool) and run > 0:
+            entry["run"] = run
         attached = item.get("attached")
         if isinstance(attached, list):
             kept = [
@@ -828,3 +871,94 @@ def copilot_chat_detail(request, chat_id):
             return Response({"detail": "nothing to update"}, status=400)
         chat.save(update_fields=[*fields, "updated_at"])
         return Response({**_chat_row(chat), "entries": chat.entries})
+
+
+# ── runs: the Team panel's turns, carried out by the agents worker ───────────
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+@throttle_classes([CopilotThrottle])
+def copilot_run_start(request):
+    """Start one of the team's runs (apps.core.copilot.runs): the agents
+    worker carries it out and the studio follows its events."""
+    tenant = connection.tenant
+    if reason := availability(tenant):
+        return Response({"kind": reason})
+    data = request.data if isinstance(request.data, dict) else {}
+    turn = _turn_inputs(tenant, data)
+    chat = data.get("chat")
+    with tenant_context(tenant):
+        run = runs.start(
+            request.user,
+            message=turn["message"],
+            transcript=turn["transcript"],
+            selections=turn["selections"],
+            attachments=turn["attachments"],
+            context=turn["context_raw"],
+            specialist=turn["specialist"],
+            chat_id=chat if isinstance(chat, int) and not isinstance(chat, bool) else None,
+        )
+    return Response({"id": run.id, "status": run.status, "specialist": run.specialist}, status=201)
+
+
+def _her_run(request, run_id):
+    from apps.tenant_config.models import CopilotRun
+
+    return CopilotRun.objects.filter(pk=run_id, actor=request.user).first()
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def copilot_runs_open(request):
+    """Her runs still going, and finished ones she has not seen yet."""
+    from apps.tenant_config.models import CopilotRun
+
+    with tenant_context(connection.tenant):
+        runs.sweep(CopilotRun.objects.filter(actor=request.user, status__in=runs.ACTIVE))
+        return Response({"runs": runs.open_for(request.user)})
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def copilot_run_detail(request, run_id):
+    """A run's status and its events after ``?since=`` (the last seq seen)."""
+    from apps.tenant_config.models import CopilotRun
+
+    with tenant_context(connection.tenant):
+        run = _her_run(request, run_id)
+        if run is None:
+            return Response({"detail": "not_found"}, status=404)
+        runs.sweep(CopilotRun.objects.filter(pk=run.pk))
+        run.refresh_from_db()
+        try:
+            since = max(0, int(request.query_params.get("since") or 0))
+        except ValueError:
+            since = 0
+        return Response(runs.as_dict(run, since))
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def copilot_run_stop(request, run_id):
+    with tenant_context(connection.tenant):
+        run = _her_run(request, run_id)
+        if run is None:
+            return Response({"detail": "not_found"}, status=404)
+        return Response({"status": runs.stop(run.pk)})
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def copilot_run_seen(request, run_id):
+    """She has seen what the run made: it leaves the "ready for you" list."""
+    from django.utils import timezone
+
+    with tenant_context(connection.tenant):
+        run = _her_run(request, run_id)
+        if run is None:
+            return Response({"detail": "not_found"}, status=404)
+        if run.seen_at is None:
+            run.seen_at = timezone.now()
+            run.save(update_fields=["seen_at"])
+    return Response(status=204)

@@ -67,7 +67,7 @@ from apps.notifications.models import (
     LiveReminderLog,
     PushSubscription,
 )
-from apps.tenant_config.models import AssistantConfig, AssistantKnowledgeEntry, CopilotRun
+from apps.tenant_config.models import AssistantConfig, AssistantKnowledgeEntry, CopilotChat, CopilotRun
 
 SHARED_SCHEMA = "shared_test"
 SHARED_DOMAIN = "shared-test.localhost"
@@ -372,6 +372,7 @@ TENANT_CLEANUP_MODELS = [
     AssistantKnowledgeEntry,
     AssistantConfig,
     CopilotRun,
+    CopilotChat,
     User,
 ]
 

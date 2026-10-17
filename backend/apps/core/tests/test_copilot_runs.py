@@ -215,3 +215,129 @@ def test_agents_worker_logs_are_app_logs(settings):
 
     assert "celery-agents" in parsing._APP_SERVICES
     assert settings.LOGBOOK_LEVEL_FLOORS["celery-agents"] == "INFO"
+
+
+# ── endpoints ────────────────────────────────────────────────────────────────
+
+RUNS = "/api/v1/admin/copilot/runs/"
+
+
+@pytest.fixture()
+def client(coach):
+    from rest_framework.test import APIClient
+
+    c = APIClient(HTTP_HOST="shared-test.localhost")
+    c.force_authenticate(user=coach)
+    return c
+
+
+def _ai_on():
+    return mock.patch("apps.core.copilot.views.ai_compose.compose_available", return_value=True)
+
+
+def _someone_else():
+    return User.objects.create_user(email="runs-else@x.com", name="Else", password="x", role="owner")  # noqa: S106
+
+
+def test_run_start_returns_a_queued_run(client, coach):
+    body = {
+        "message": "How are sales?",
+        "transcript": [{"role": "coach", "text": "hi", "junk": 1}],
+        "selections": [],
+        "specialist": "finance",
+        "context": {"path": "/admin/payouts"},
+    }
+    with _ai_on(), mock.patch.object(tasks.run_copilot, "delay") as delay:
+        resp = client.post(RUNS, body, format="json")
+    assert resp.status_code == 201
+    assert resp.json()["status"] == "queued"
+    assert resp.json()["specialist"] == "finance"
+    run = CopilotRun.objects.get(pk=resp.json()["id"])
+    assert run.actor == coach
+    assert run.request["message"] == "How are sales?"
+    assert run.request["transcript"] == [{"role": "coach", "text": "hi"}]
+    assert run.request["context"] == {"path": "/admin/payouts", "intent": ""}
+    delay.assert_called_once_with(SCHEMA, run.id)
+
+
+def test_run_start_says_unavailable_when_ai_is_off(client):
+    with mock.patch("apps.core.copilot.views.ai_compose.compose_available", return_value=False):
+        resp = client.post(RUNS, {"message": "hi"}, format="json")
+    assert resp.status_code == 200
+    assert resp.json() == {"kind": "unavailable"}
+    assert not CopilotRun.objects.exists()
+
+
+def test_run_start_keeps_the_chat_it_answers_in(client):
+    from apps.tenant_config.models import CopilotChat
+
+    chat = CopilotChat.objects.create(title="t", entries=[])
+    with _ai_on(), mock.patch.object(tasks.run_copilot, "delay"):
+        known = client.post(RUNS, {"message": "a", "chat": chat.id}, format="json").json()["id"]
+        unknown = client.post(RUNS, {"message": "b", "chat": 999999}, format="json").json()["id"]
+    assert CopilotRun.objects.get(pk=known).chat_id == chat.id
+    assert CopilotRun.objects.get(pk=unknown).chat_id is None
+
+
+def test_run_detail_returns_events_after_since(client, coach):
+    run = _run(coach)
+    for kind in ("thinking", "reply", "done"):
+        runs.emit(run.id, kind)
+    body = client.get(f"{RUNS}{run.id}/?since=1").json()
+    assert [e["seq"] for e in body["events"]] == [2, 3]
+    assert [e["type"] for e in body["events"]] == ["reply", "done"]
+    assert body["specialist"] == "finance"
+
+
+def test_run_detail_is_404_for_another_users_run(client):
+    run = _run(_someone_else())
+    assert client.get(f"{RUNS}{run.id}/").status_code == 404
+    assert client.post(f"{RUNS}{run.id}/stop/").status_code == 404
+    assert client.post(f"{RUNS}{run.id}/seen/").status_code == 404
+
+
+def test_run_stop_stops_and_is_idempotent(client, coach):
+    run = _run(coach, status="thinking")
+    first = client.post(f"{RUNS}{run.id}/stop/")
+    second = client.post(f"{RUNS}{run.id}/stop/")
+    assert first.status_code == second.status_code == 200
+    assert first.json() == second.json() == {"status": "stopped"}
+    assert _types(run) == ["stopped"]
+
+
+def test_run_seen_marks_it_seen(client, coach):
+    run = _run(coach, status="done", finished_at=timezone.now(), result={"kind": "answer", "text": "x"})
+    assert client.post(f"{RUNS}{run.id}/seen/").status_code == 204
+    run.refresh_from_db()
+    assert run.seen_at is not None
+    assert client.get(f"{RUNS}open/").json() == {"runs": []}
+
+
+def test_runs_open_lists_her_unseen_finished_run(client, coach):
+    run = _run(coach, status="done", finished_at=timezone.now(), result={"kind": "answer", "text": "Sales are up"})
+    rows = client.get(f"{RUNS}open/").json()["runs"]
+    assert [(r["id"], r["summary"], r["specialist"]) for r in rows] == [(run.id, "Sales are up", "finance")]
+
+
+def test_run_endpoints_reject_anonymous_callers(tenant_ctx):
+    from rest_framework.test import APIClient
+
+    anon = APIClient(HTTP_HOST="shared-test.localhost")
+    assert anon.post(RUNS, {"message": "hi"}, format="json").status_code in (401, 403)
+    assert anon.get(f"{RUNS}open/").status_code in (401, 403)
+    assert anon.get(f"{RUNS}1/").status_code in (401, 403)
+
+
+def test_chat_entries_keep_the_run_id():
+    from apps.core.copilot.views import _clean_chat_entries
+
+    cleaned = _clean_chat_entries(
+        [
+            {"role": "assistant", "text": "", "kind": "pending", "run": 5, "specialist": "finance"},
+            {"role": "assistant", "text": "x", "run": "x"},
+            {"role": "assistant", "text": "y", "run": True},
+            {"role": "coach", "text": "hi", "run": 6},
+        ]
+    )
+    assert cleaned[0] == {"role": "assistant", "text": "", "kind": "pending", "specialist": "finance", "run": 5}
+    assert all("run" not in entry for entry in cleaned[1:])

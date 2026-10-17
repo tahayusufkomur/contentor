@@ -594,6 +594,93 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/copilot/runs/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Start one of the team's runs (apps.core.copilot.runs): the agents
+     *     worker carries it out and the studio follows its events.
+     */
+    post: operations["v1_admin_copilot_runs_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/copilot/runs/{run_id}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description A run's status and its events after ``?since=`` (the last seq seen). */
+    get: operations["v1_admin_copilot_runs_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/copilot/runs/{run_id}/seen/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description She has seen what the run made: it leaves the "ready for you" list. */
+    post: operations["v1_admin_copilot_runs_seen_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/copilot/runs/{run_id}/stop/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_admin_copilot_runs_stop_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/copilot/runs/open/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Her runs still going, and finished ones she has not seen yet. */
+    get: operations["v1_admin_copilot_runs_open_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/copilot/undo/": {
     parameters: {
       query?: never;
@@ -4048,6 +4135,27 @@ export interface paths {
      *     the frontend can resume at ``/signup/verify`` exactly like the email flow.
      */
     post: operations["v1_onboarding_signup_authenticated_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/onboarding/signup/checkout/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description The card before the site: Stripe Checkout for the Starter trial of a
+     *     tenant with no plan yet, back to /signup/verify, which syncs the session.
+     *     Every new tenant gets its own trial (``trial_days_for``).
+     */
+    post: operations["v1_onboarding_signup_checkout_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -11641,6 +11749,102 @@ export interface operations {
       };
     };
   };
+  v1_admin_copilot_runs_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_runs_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        run_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_runs_seen_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        run_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_runs_stop_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        run_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_copilot_runs_open_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_admin_copilot_undo_create: {
     parameters: {
       query?: never;
@@ -16316,6 +16520,24 @@ export interface operations {
     };
   };
   v1_onboarding_signup_authenticated_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_onboarding_signup_checkout_create: {
     parameters: {
       query?: never;
       header?: never;
