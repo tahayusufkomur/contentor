@@ -267,3 +267,37 @@ class CopilotRunEvent(models.Model):
 
     def __str__(self):
         return f"{self.run_id}#{self.seq} {self.type}"
+
+
+class FocusCreation(models.Model):
+    """One thing she is making in focus mode (apps.core.focus): its kind, the
+    draft record, her answers so far and the outline run drafting it. A
+    ``mode="form"`` row is the plain form's timing stamp, for comparison."""
+
+    kind = models.CharField(max_length=20)
+    mode = models.CharField(max_length=8, default="focus")  # focus | form
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="focus_creations",
+    )
+    # The dock thread it is asked in; the normal chat once it ends.
+    chat = models.ForeignKey(CopilotChat, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    record_id = models.IntegerField(null=True, blank=True)
+    answers = models.JSONField(default=dict, blank=True)
+    status = models.CharField(max_length=8, default="active")  # active | done | left
+    outline_run = models.ForeignKey(CopilotRun, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    # Her active time on it (tab visible), the sum of the spans she reported.
+    active_ms = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        app_label = "tenant_config"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.mode} {self.kind} {self.pk}: {self.status}"

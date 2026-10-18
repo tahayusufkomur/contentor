@@ -449,6 +449,9 @@ CURATED_IMAGE_API_KEY = os.environ.get("CURATED_IMAGE_API_KEY", "")
 # Dev/e2e: serve a small committed fixture catalog instead of calling the
 # service, so the stack stays offline and deterministic. Prod refuses this.
 CURATED_IMAGE_API_FAKE = _env_bool("CURATED_IMAGE_API_FAKE", False)
+# Focus mode (apps.core.focus): "New course" asks one question at a time while
+# the course takes shape on the page. Off until its last stage ships.
+FOCUS_MODE_ENABLED = _env_bool("FOCUS_MODE_ENABLED", False)
 # Hosts allowed to serve rendition bytes. Those URLs are chosen by another
 # service, so this allowlist is the SSRF guard on the copy-on-use fetch. An entry
 # covers its subdomains (the provider signs virtual-host style, so live URLs are
