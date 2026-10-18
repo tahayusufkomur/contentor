@@ -312,9 +312,10 @@ def test_she_waits_on_the_reading_and_cannot_tap_meanwhile(owner, outline_start,
     assert flow.state(_run_pending(creation))["reading"] is None
 
 
-def test_a_tap_never_waits_on_the_analysis(owner, outline_start):
-    creation = flow.answer(_tapped(owner), "level", value="some")
+def test_a_tap_never_waits_on_the_analysis(owner, outline_start, analysed):
+    creation = flow.answer(_tapped(owner), "level", value="some")  # the model is on: a tap still skips it
     assert not creation.pending and "analysis" not in creation.runs
+    assert creation.answers == {"topic": "Desk yoga", "level": "some"}
 
 
 def test_an_unclear_count_is_asked_once(owner, outline_start, analysed):

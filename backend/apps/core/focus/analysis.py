@@ -117,22 +117,28 @@ def read(tenant, text: str, *, question: str, outline_exists: bool, currency: st
 def brief_from(found: Analysis, brief: dict) -> dict:
     """The outline's brief with what she said merged in: counts (each clamped
     to 1..12, a total to 1..144; more than that is ``capped``), the titles she
-    named, and her notes."""
+    named, and her notes. ``capped`` follows her latest counts, and a total
+    replaces lessons per module (and back), so the two never disagree."""
     out = dict(brief or {})
+    capped = None
     for key, cap in (("modules", MAX_COUNT), ("lessons", MAX_COUNT), ("total", MAX_TOTAL)):
         value = getattr(found, key)
         if value is None:
             continue
-        if value > cap:
-            out["capped"] = True
+        capped = bool(capped) or value > cap
         out[key] = min(max(value, 1), cap)
+    if found.lessons is None and found.total is not None:
+        out.pop("lessons", None)
+    if found.total is None and found.lessons is not None:
+        out.pop("total", None)
     if found.named:
-        if len(found.named) > MAX_COUNT or any(len(m.lessons) > MAX_COUNT for m in found.named):
-            out["capped"] = True
+        capped = bool(capped) or len(found.named) > MAX_COUNT or any(len(m.lessons) > MAX_COUNT for m in found.named)
         out["named"] = [
             {"title": m.title.strip(), "lessons": [t.strip() for t in m.lessons if t.strip()][:MAX_COUNT]}
             for m in found.named[:MAX_COUNT]
         ]
+    if capped is not None:  # her latest counts say whether she asked for more than 12
+        out["capped"] = capped
     # A lone untitled module holds lessons she named without a module: not a module she counted.
     titled = sum(1 for m in out.get("named") or [] if m["title"])
     if titled > (out.get("modules") or 0):

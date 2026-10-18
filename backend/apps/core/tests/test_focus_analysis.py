@@ -25,6 +25,22 @@ def test_counts_are_clamped_to_twelve_and_flagged_capped():
     assert brief["modules"] == 12 and brief["lessons"] == 1 and brief["capped"] is True
 
 
+def test_a_later_count_within_the_cap_clears_capped():
+    brief = analysis.brief_from(analysis.Analysis(modules=100), {})
+    brief = analysis.brief_from(analysis.Analysis(modules=6), brief)
+    assert brief["modules"] == 6 and brief["capped"] is False
+    brief = analysis.brief_from(analysis.Analysis(notes="short videos"), brief)  # no count: left as it was
+    assert brief["capped"] is False
+
+
+def test_a_total_replaces_lessons_per_module_and_back():
+    brief = analysis.brief_from(analysis.Analysis(modules=4, lessons=3), {})
+    brief = analysis.brief_from(analysis.Analysis(total=20), brief)
+    assert brief["total"] == 20 and "lessons" not in brief and brief["modules"] == 4
+    brief = analysis.brief_from(analysis.Analysis(lessons=5), brief)
+    assert brief["lessons"] == 5 and "total" not in brief
+
+
 def test_more_named_modules_than_the_count_raise_the_count():
     found = analysis.Analysis(modules=3, named=[analysis.NamedModule(title=f"M{i}") for i in range(5)])
     assert analysis.brief_from(found, {})["modules"] == 5
@@ -42,7 +58,7 @@ def test_brief_from_keeps_what_an_earlier_answer_settled():
     brief = analysis.brief_from(analysis.Analysis(lessons=3, notes="at the desk"), brief)
     assert (brief["modules"], brief["lessons"]) == (4, 3)
     assert brief["notes"] == "short videos at the desk"
-    assert brief["analysed"] is True and "capped" not in brief
+    assert brief["analysed"] is True and brief["capped"] is False
 
 
 def test_read_tells_the_model_the_question_on_screen_and_her_site(tenant_ctx):
