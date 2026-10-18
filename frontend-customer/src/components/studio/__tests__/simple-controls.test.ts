@@ -7,6 +7,7 @@ import {
   SimpleControls,
   type SimpleControlsProps,
 } from "@/components/studio/simple-controls";
+import { applyEdit } from "@/lib/covers/editor";
 import { defaultRecipe } from "@/lib/covers/recipe";
 import type { CoverRecipe } from "@/types/design";
 import adminMessages from "../../../../messages/en/admin.json";
@@ -169,6 +170,65 @@ describe("SimpleControls", () => {
       recipe: { ...defaultRecipe(), panel: "#1E5AA8" },
     });
     expect(hex).toContain('value="#1E5AA8"');
+  });
+
+  describe("a panel she deleted on the canvas", () => {
+    const deleted = (panel: CoverRecipe["panel"]) =>
+      applyEdit({ ...defaultRecipe(), panel }, { type: "remove", id: "panel" });
+
+    it("has no swatch pressed, so every one brings it back, the colour it had too", () => {
+      const kept = controls({
+        recipe: { ...defaultRecipe(), panel: "accent" },
+      });
+      expect(kept).toMatch(/aria-pressed="true"[^>]*aria-label="Accent"/);
+      expect(controls({ recipe: deleted("accent") })).not.toMatch(
+        /aria-pressed="true"[^>]*aria-label="(Main colour|Accent|Text|Background|Surface|Dark|Text on dark|Main colour, lighter|Main colour, darker|Accent, lighter|Accent, darker|White|Black)"/,
+      );
+    });
+
+    it("leaves the colour field empty, though its colour was a hex", () => {
+      const markup = controls({ recipe: deleted("#C0FFEE") });
+      expect(markup).not.toContain("#C0FFEE");
+      expect(markup).toMatch(/<input[^>]*placeholder="#1E5AA8"[^>]*value=""/);
+    });
+  });
+
+  describe("a badge she deleted on the canvas", () => {
+    const options = (markup: string) =>
+      markup.match(/<select[^>]*>[\s\S]*?<\/select>/)![0];
+    const withBadge = (kind: "new" | "live") =>
+      applyEdit(
+        { ...defaultRecipe(), badge: { ...defaultRecipe().badge, kind } },
+        { type: "badge", patch: { kind } },
+      );
+
+    it("shows the kind it has, while it is drawn", () => {
+      const markup = options(controls({ recipe: withBadge("live") }));
+      expect(markup).not.toContain("Deleted from the cover");
+      expect(markup).toMatch(/<option[^>]*value="live"[^>]*selected/);
+      expect(markup.match(/selected/g)).toHaveLength(1);
+    });
+
+    it("shows none of the kinds, so that choosing one, its own too, brings it back", () => {
+      const recipe = applyEdit(withBadge("live"), {
+        type: "remove",
+        id: "badge",
+      });
+      const markup = options(controls({ recipe }));
+      expect(markup).toMatch(
+        /<option(?=[^>]*value="")(?=[^>]*disabled)(?=[^>]*selected)[^>]*>Deleted from the cover<\/option>/,
+      );
+      expect(markup.match(/selected/g)).toHaveLength(1);
+      expect(markup).toContain('value="live"');
+      // choosing the kind it had is a change of the select's value, so it fires
+      const back = applyEdit(recipe, {
+        type: "badge",
+        patch: { kind: "live" },
+      });
+      expect(options(controls({ recipe: back }))).toMatch(
+        /<option[^>]*value="live"[^>]*selected/,
+      );
+    });
   });
 
   it("marks the size shown large, with the shape of each", () => {

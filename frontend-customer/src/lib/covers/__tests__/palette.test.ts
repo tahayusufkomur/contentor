@@ -3,9 +3,11 @@ import { contrastRatio, parseOklch } from "@shared/lib/contrast";
 import type { SiteStyle } from "@shared/sections/types";
 import {
   coverPalette,
+  isHex,
   paintColor,
   parseLook,
   readableOn,
+  typeColour,
 } from "@/lib/covers/palette";
 import { oklchToHex, paletteOf, SITE_STYLES } from "@/lib/site-styles";
 import { PAINT_ROLES } from "@/types/design";
@@ -218,6 +220,70 @@ describe("readableOn", () => {
           ).toBeGreaterThanOrEqual(3);
         }
       }
+    }
+  });
+});
+
+describe("isHex", () => {
+  it("is true for #rrggbb in either case, false for a role, a short or a long colour", () => {
+    expect(isHex("#1E5AA8")).toBe(true);
+    expect(isHex("#1e5aa8")).toBe(true);
+    for (const not of [
+      "accent",
+      "#1E5AA",
+      "#1E5AA88",
+      "1E5AA8",
+      "#12345g",
+      "",
+    ]) {
+      expect(isHex(not), not).toBe(false);
+    }
+  });
+});
+
+describe("typeColour", () => {
+  it("picks a whole colour once it is typed, and not before", () => {
+    expect(typeColour("#", undefined).pick).toBeNull();
+    expect(typeColour("#1E5", undefined).pick).toBeNull();
+    expect(typeColour("#1E5AA", undefined).pick).toBeNull();
+    expect(typeColour("#1E5AA8", undefined).pick).toBe("#1E5AA8");
+  });
+
+  it("keeps the text as it was typed, and picks the case it was typed in", () => {
+    expect(typeColour("#1e5aa8", "primary")).toEqual({
+      text: "#1e5aa8",
+      pick: "#1e5aa8",
+    });
+    expect(typeColour("#1E5", "primary")).toEqual({ text: "#1E5", pick: null });
+  });
+
+  it("takes six digits pasted without their #", () => {
+    expect(typeColour("1E5AA8", undefined)).toEqual({
+      text: "#1E5AA8",
+      pick: "#1E5AA8",
+    });
+    // five is not a colour, and eight is not a colour
+    expect(typeColour("1E5AA", undefined)).toEqual({
+      text: "1E5AA",
+      pick: null,
+    });
+    expect(typeColour("1E5AA8FF", undefined).pick).toBeNull();
+  });
+
+  it("does not pick what the layer already has, in either case, so that is no history step", () => {
+    expect(typeColour("#1E5AA8", "#1E5AA8").pick).toBeNull();
+    expect(typeColour("#1e5aa8", "#1E5AA8").pick).toBeNull();
+    expect(typeColour("#1E5AA9", "#1E5AA8").pick).toBe("#1E5AA9");
+  });
+
+  it("picks a colour for a layer that has none (a role, or deleted), whatever it was", () => {
+    expect(typeColour("#1E5AA8", "accent").pick).toBe("#1E5AA8");
+    expect(typeColour("#1E5AA8", undefined).pick).toBe("#1E5AA8");
+  });
+
+  it("picks nothing for text that is not a colour", () => {
+    for (const text of ["accent", "#12345g", "#1E5AA8F", "hello", ""]) {
+      expect(typeColour(text, undefined).pick, text).toBeNull();
     }
   });
 });

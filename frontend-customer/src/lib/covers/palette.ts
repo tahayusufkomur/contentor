@@ -54,9 +54,25 @@ export function coverPalette(
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
+/** Whether a paint is a custom `#rrggbb` colour, not a role of the look. */
+export const isHex = (paint: string): paint is `#${string}` => HEX.test(paint);
+
+/** What a colour field shows and does after a keystroke: the text as typed (six digits pasted without their #
+ *  get one), and the colour to apply once it is a whole `#rrggbb` other than the one the layer has (`current`;
+ *  none while the layer is deleted, which any colour then brings back). */
+export function typeColour(
+  typed: string,
+  current: Paint | undefined,
+): { text: string; pick: `#${string}` | null } {
+  const text = /^[0-9a-f]{6}$/i.test(typed) ? `#${typed}` : typed;
+  const pick =
+    isHex(text) && text.toLowerCase() !== current?.toLowerCase() ? text : null;
+  return { text, pick };
+}
+
 /** A paint as a CSS colour: a hex as it is, a role from the palette, primary for anything else. */
 export function paintColor(paint: Paint, palette: CoverPalette): string {
-  if (HEX.test(paint)) return paint;
+  if (isHex(paint)) return paint;
   return (PAINT_ROLES as readonly string[]).includes(paint)
     ? palette[paint as PaintRole]
     : palette.primary;

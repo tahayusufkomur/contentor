@@ -856,6 +856,7 @@
       },
       "badge": "Badge",
       "badgeShows": "Show",
+      "badgeDeleted": "Deleted from the cover",
       "badges": {
         "none": "None",
         "new": "New",

@@ -15,8 +15,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import type { EditorAction } from "@/lib/covers/editor";
-import { coverPalette, parseLook } from "@/lib/covers/palette";
-import { badgeKindsFor } from "@/lib/covers/recipe";
+import {
+  coverPalette,
+  isHex,
+  parseLook,
+  typeColour,
+} from "@/lib/covers/palette";
+import { badgeKindsFor, panelPaint } from "@/lib/covers/recipe";
 import { cn } from "@/lib/utils";
 import { LAYOUTS, PAINT_ROLES, SIZES, TEXT_MAX } from "@/types/design";
 import type {
@@ -24,6 +29,7 @@ import type {
   CoverRecipe,
   CoverSize,
   LayoutId,
+  Paint,
 } from "@/types/design";
 
 export interface SimpleControlsProps {
@@ -45,7 +51,6 @@ export interface SimpleControlsProps {
   photoSources: PhotoSourcesProps;
 }
 
-const HEX = /^#[0-9a-f]{6}$/i;
 const FIELD =
   "flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -246,32 +251,68 @@ export function Layout({
   );
 }
 
+/** A field for any colour as `#rrggbb`, with a chip of it: what the swatches cannot give. `current` is the colour
+ *  the layer has (none while it is deleted); a whole colour typed that is not it goes to `onPick`. */
+export function HexColour({
+  current,
+  onPick,
+}: {
+  current: Paint | undefined;
+  onPick: (hex: `#${string}`) => void;
+}) {
+  const t = useTranslations("admin.studio.controls");
+  const id = useId();
+  const own = current && isHex(current) ? current : "";
+  // What she is typing, until it is a whole colour; a swatch, undo and a set put the layer's own back.
+  const [typed, setTyped] = useState(own);
+  useEffect(() => {
+    setTyped(own);
+  }, [own]);
+
+  const type = (value: string) => {
+    const { text, pick } = typeColour(value, current);
+    setTyped(text);
+    if (pick) onPick(pick);
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={`${id}-hex`}>{t("custom")}</Label>
+      <div className="flex items-center gap-2">
+        <span
+          aria-hidden="true"
+          className="size-8 shrink-0 rounded-md border border-foreground/20"
+          style={{ background: isHex(typed) ? typed : "transparent" }}
+        />
+        <Input
+          id={`${id}-hex`}
+          value={typed}
+          maxLength={7}
+          spellCheck={false}
+          autoCapitalize="off"
+          autoComplete="off"
+          placeholder="#1E5AA8"
+          className="font-mono"
+          onChange={(e) => type(e.target.value.trim())}
+        />
+      </div>
+      <p className="text-xs text-muted-foreground">{t("colourHint")}</p>
+    </div>
+  );
+}
+
 function Colour({
   recipe,
   look,
   edit,
 }: Pick<SimpleControlsProps, "recipe" | "look" | "edit">) {
   const t = useTranslations("admin.studio.controls");
-  const id = useId();
   const palette = useMemo(() => {
     const { style, paletteId } = parseLook(look);
     return coverPalette(style, paletteId);
   }, [look]);
-  // What she is typing, until it is a whole colour; a swatch, undo and a set put the panel's own back.
-  const [typed, setTyped] = useState(
-    HEX.test(recipe.panel) ? recipe.panel : "",
-  );
-  useEffect(() => {
-    setTyped(HEX.test(recipe.panel) ? recipe.panel : "");
-  }, [recipe.panel]);
-
-  const type = (value: string) => {
-    // a colour pasted without its # is still a colour
-    const hex = /^[0-9a-f]{6}$/i.test(value) ? `#${value}` : value;
-    setTyped(hex);
-    if (HEX.test(hex) && hex !== recipe.panel)
-      edit({ type: "panel", paint: hex as `#${string}` });
-  };
+  // none while she has deleted the panel on the canvas: no swatch is on, and each one shows it again
+  const current = panelPaint(recipe);
 
   return (
     <Section title={t("colour")}>
@@ -280,43 +321,25 @@ function Colour({
           <li key={role}>
             <button
               type="button"
-              aria-pressed={recipe.panel === role}
+              aria-pressed={current === role}
               aria-label={t(`paint.${role}`)}
               title={t(`paint.${role}`)}
               onClick={() =>
-                recipe.panel !== role && edit({ type: "panel", paint: role })
+                current !== role && edit({ type: "panel", paint: role })
               }
               style={{ background: palette[role] }}
               className={cn(
                 "size-8 rounded-full border border-foreground/20 outline-none ring-offset-2 ring-offset-background focus-visible:ring-[3px] focus-visible:ring-ring",
-                recipe.panel === role && "ring-2 ring-foreground",
+                current === role && "ring-2 ring-foreground",
               )}
             />
           </li>
         ))}
       </ul>
-      <div className="space-y-1.5">
-        <Label htmlFor={`${id}-hex`}>{t("custom")}</Label>
-        <div className="flex items-center gap-2">
-          <span
-            aria-hidden="true"
-            className="size-8 shrink-0 rounded-md border border-foreground/20"
-            style={{ background: HEX.test(typed) ? typed : "transparent" }}
-          />
-          <Input
-            id={`${id}-hex`}
-            value={typed}
-            maxLength={7}
-            spellCheck={false}
-            autoCapitalize="off"
-            autoComplete="off"
-            placeholder="#1E5AA8"
-            className="font-mono"
-            onChange={(e) => type(e.target.value.trim())}
-          />
-        </div>
-        <p className="text-xs text-muted-foreground">{t("colourHint")}</p>
-      </div>
+      <HexColour
+        current={current}
+        onPick={(paint) => edit({ type: "panel", paint })}
+      />
     </Section>
   );
 }
@@ -331,6 +354,9 @@ function Badge({
   const { badge } = recipe;
   // A course has no date to show, and an event is never new: leave out what could never draw.
   const kinds = badgeKindsFor(targetKind, badge.kind);
+  // A badge she deleted on the canvas is not drawn, whatever its kind: the select then shows none of them, so
+  // that choosing one, the kind it had too, brings it back.
+  const deleted = Boolean(recipe.styles.badge?.hidden);
   return (
     <Section title={t("badge")}>
       <div className="space-y-1.5">
@@ -338,7 +364,7 @@ function Badge({
         <select
           id={`${id}-kind`}
           className={FIELD}
-          value={badge.kind}
+          value={deleted ? "" : badge.kind}
           onChange={(e) =>
             edit({
               type: "badge",
@@ -346,6 +372,11 @@ function Badge({
             })
           }
         >
+          {deleted && (
+            <option value="" disabled>
+              {t("badgeDeleted")}
+            </option>
+          )}
           {kinds.map((kind) => (
             <option key={kind} value={kind}>
               {t(`badges.${kind}`)}

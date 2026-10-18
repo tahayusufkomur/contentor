@@ -312,6 +312,27 @@ describe("paintTarget", () => {
     }
   });
 
+  it("takes a custom colour like a swatch, for every layer it can colour", () => {
+    const r = recipe();
+    const [text, shape] = r.extras;
+    const hex = "#1E5AA8" as const;
+    expect(applyEdit(r, paintTarget(r, null).apply(hex)).panel).toBe(hex);
+    expect(
+      applyEdit(r, paintTarget(r, "title").apply(hex)).styles.title?.color,
+    ).toBe(hex);
+    expect(applyEdit(r, paintTarget(r, "badge").apply(hex)).badge.fill).toBe(
+      hex,
+    );
+    const colour = (id: string, after: CoverRecipe) =>
+      after.extras.find((one) => one.id === id);
+    expect(
+      colour(text.id, applyEdit(r, paintTarget(r, text.id).apply(hex))),
+    ).toMatchObject({ style: { color: hex } });
+    expect(
+      colour(shape.id, applyEdit(r, paintTarget(r, shape.id).apply(hex))),
+    ).toMatchObject({ fill: hex });
+  });
+
   it("colours the words of a part, with the colour it has now", () => {
     const target = paintTarget(recipe(), "title");
     expect(target.what).toBe("title");
@@ -465,6 +486,61 @@ describe("BrandDrawer", () => {
   it("reads the logo switch as off while the logo is deleted", () => {
     const deleted = applyEdit(defaultRecipe(), { type: "remove", id: "logo" });
     expect(drawer(deleted)).toMatch(/role="switch" aria-checked="false"/);
+  });
+
+  describe("the field for a custom colour", () => {
+    const field = (markup: string) =>
+      markup.match(/<input[^>]*placeholder="#1E5AA8"[^>]*>/)?.[0];
+    const withText = (color: string) => {
+      const base = defaultRecipe();
+      const text = newTextExtra(base, "line", "1/1", "Hi");
+      return applyEdit(base, {
+        type: "addExtra",
+        ...text,
+        extra: { ...text.extra, style: { color: color as "accent" } },
+      });
+    };
+
+    it("sits with the swatches, labelled, and takes a #rrggbb", () => {
+      const markup = drawer();
+      expect(markup).toContain("Custom colour");
+      expect(field(markup)).toMatch(/maxLength="7"|maxlength="7"/);
+      // the colours section holds both, then says what they change
+      const colours = markup.slice(markup.indexOf("Colours"));
+      expect(colours.indexOf('placeholder="#1E5AA8"')).toBeGreaterThan(
+        colours.indexOf("Black"),
+      );
+      expect(colours.indexOf('placeholder="#1E5AA8"')).toBeLessThan(
+        colours.indexOf("These change"),
+      );
+    });
+
+    it("is empty while the layer has a colour of the look, and shows the one she typed", () => {
+      expect(field(drawer({ ...defaultRecipe(), panel: "accent" }))).toContain(
+        'value=""',
+      );
+      expect(field(drawer({ ...defaultRecipe(), panel: "#1E5AA8" }))).toContain(
+        'value="#1E5AA8"',
+      );
+    });
+
+    it("follows the layer she selected, not the panel's", () => {
+      const recipe = { ...withText("#AA5511"), panel: "#1E5AA8" as const };
+      const id = recipe.extras[0].id;
+      expect(field(drawer(recipe, id))).toContain('value="#AA5511"');
+      expect(field(drawer(recipe, null))).toContain('value="#1E5AA8"');
+      // a title she has not coloured has none of her own
+      expect(field(drawer(recipe, "title"))).toContain('value=""');
+    });
+
+    it("is empty while the panel is deleted, whatever its colour was", () => {
+      const deleted = applyEdit(
+        { ...defaultRecipe(), panel: "#C0FFEE" },
+        { type: "remove", id: "panel" },
+      );
+      expect(field(drawer(deleted))).toContain('value=""');
+      expect(drawer(deleted)).not.toContain("#C0FFEE");
+    });
   });
 
   it("says what the colours change", () => {

@@ -10,6 +10,7 @@ import type {
   CoverSize,
   Frame,
   LayoutId,
+  Paint,
   PartId,
 } from "@/types/design";
 import { layoutFrames } from "./layouts";
@@ -148,6 +149,12 @@ export function badgeKindsFor(
       targetKind === undefined ||
       (targetKind === "course" ? kind !== "date" : kind !== "new"),
   );
+}
+
+/** The colour the cover's panel is drawn in: none while she has deleted it (it is not drawn, so no swatch is
+ *  on and every one of them, the colour it has too, brings it back). */
+export function panelPaint(recipe: CoverRecipe): Paint | undefined {
+  return recipe.styles.panel?.hidden ? undefined : recipe.panel;
 }
 
 /** The recipe a new cover starts from: the contract's defaults, then her set (the layout and

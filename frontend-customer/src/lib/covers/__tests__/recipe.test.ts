@@ -13,6 +13,7 @@ import {
   layerOrder,
   nearestGenerationAspect,
   nearestSize,
+  panelPaint,
   resolveWords,
   sizeAspect,
 } from "@/lib/covers/recipe";
@@ -666,5 +667,20 @@ describe("resolveWords", () => {
     expect(date()).toBe(local);
     expect(date(null)).toBe(local);
     expect(date("")).toBe(local);
+  });
+});
+
+describe("panelPaint", () => {
+  it("is the colour the panel has, and none once she has deleted the panel", () => {
+    const recipe = recipeWith({ panel: "accent" });
+    expect(panelPaint(recipe)).toBe("accent");
+    expect(panelPaint(recipeWith({ panel: "#1E5AA8" }))).toBe("#1E5AA8");
+    expect(
+      panelPaint({ ...recipe, styles: { panel: { hidden: true } } }),
+    ).toBeUndefined();
+    // another part deleted does not matter to it
+    expect(panelPaint({ ...recipe, styles: { logo: { hidden: true } } })).toBe(
+      "accent",
+    );
   });
 });

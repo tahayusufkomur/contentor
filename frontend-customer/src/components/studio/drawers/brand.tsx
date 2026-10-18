@@ -9,12 +9,14 @@ import { useTranslations } from "next-intl";
 import { family } from "@/components/covers/cover-art";
 import { TEXT_DEFAULTS } from "@/components/studio/layer-toolbar";
 import {
+  HexColour,
   Logo,
   Section,
   type SimpleControlsProps,
 } from "@/components/studio/simple-controls";
 import type { EditorAction } from "@/lib/covers/editor";
 import { coverPalette, parseLook } from "@/lib/covers/palette";
+import { panelPaint } from "@/lib/covers/recipe";
 import { cn } from "@/lib/utils";
 import { PAINT_ROLES } from "@/types/design";
 import type { CoverRecipe, FontRole, Paint } from "@/types/design";
@@ -74,8 +76,7 @@ export function paintTarget(
   }
   return {
     what: "panel",
-    // a panel she deleted is not drawn: no swatch is on, so the click on the colour it has is not a no-op
-    current: recipe.styles.panel?.hidden ? undefined : recipe.panel,
+    current: panelPaint(recipe),
     apply: (paint) => ({ type: "panel", paint }),
   };
 }
@@ -156,6 +157,12 @@ export function BrandDrawer({
             </li>
           ))}
         </ul>
+        {/* a layer of its own colour on the canvas has its own field: the key starts it afresh */}
+        <HexColour
+          key={selected ?? "panel"}
+          current={paint.current}
+          onPick={(hex) => edit(paint.apply(hex))}
+        />
         <p className="text-xs text-muted-foreground">
           {t("changes", { target: t(`target.${paint.what}`) })}
         </p>
