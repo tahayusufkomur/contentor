@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
@@ -69,6 +70,12 @@ def kept(kind, key, picture):
     return draft
 
 
+def link(plan, obj):
+    return SubscriptionPlanAccess.objects.create(
+        plan=plan, content_type=ContentType.objects.get_for_model(type(obj)), object_id=obj.pk
+    )
+
+
 def design_reads(captured):
     """How often a request read the kept designs."""
     return sum('"media_design"' in query["sql"] for query in captured.captured_queries)
@@ -100,9 +107,7 @@ def test_plan_items_carry_the_cover_design(owner):
     download = DownloadFile.objects.create(title="Guide", pricing_type="subscription")
     plan = SubscriptionPlan.objects.create(name="Basic", price=Decimal("29.99"), currency="USD", is_active=True)
     for obj in [*(obj for obj, _kind, _key in content), download]:
-        SubscriptionPlanAccess.objects.create(
-            plan=plan, content_type=ContentType.objects.get_for_model(type(obj)), object_id=obj.pk
-        )
+        link(plan, obj)
 
     def covers():
         response = client().get(f"/api/v1/billing/plans/{plan.pk}/")
@@ -118,6 +123,37 @@ def test_plan_items_carry_the_cover_design(owner):
     assert got["Guide"] is None
 
 
+def test_items_carry_the_date_their_cover_badge_reads(owner):
+    """A cover's badge follows its item: "New" by when a course was made, the date by when an event starts."""
+    content = paid(owner)
+    download = DownloadFile.objects.create(title="Guide", pricing_type="paid", price=Decimal("5.00"))
+    Bundle.objects.create(name="Bundle", price=Decimal("50.00"), currency="USD", is_active=True)
+    plan = SubscriptionPlan.objects.create(name="Basic", price=Decimal("29.99"), currency="USD", is_active=True)
+    for obj in [*(obj for obj, _kind, _key in content), download]:
+        link(plan, obj)
+
+    def when(value):
+        return parse_datetime(value) if value else None
+
+    def dates(path, user=None):
+        response = client(user).get(path)
+        assert response.status_code == 200, response.content
+        items = response.json()
+        items = items["items"] if isinstance(items, dict) else items  # a plan's page, or a list
+        return {item["title"]: (when(item.get("created_at")), when(item.get("scheduled_at"))) for item in items}
+
+    course = content[0][0]
+    expected = {
+        obj.title: (obj.created_at, None) if obj is course else (None, obj.scheduled_at) for obj, _kind, _key in content
+    }
+    for got in (dates(STORE), dates(PRODUCTS, owner), dates(f"/api/v1/billing/plans/{plan.pk}/")):
+        assert {title: got[title] for title in expected} == expected
+        assert got["Guide"] == (None, None)  # nothing to design a cover for
+    assert dates(STORE)["Bundle"] == (None, None)
+    # The course was made today, so its cover would read "New" (the badge counts 30 days).
+    assert timezone.now() - dates(STORE)[course.title][0] < timedelta(days=1)
+
+
 def test_cover_reads_do_not_grow_with_items(owner):
     plan = SubscriptionPlan.objects.create(name="Basic", price=Decimal("29.99"), currency="USD", is_active=True)
 
@@ -125,9 +161,7 @@ def test_cover_reads_do_not_grow_with_items(owner):
         for number in range(start, start + count):
             for obj, kind, key in paid(owner, number):
                 kept(kind, key, photo(obj.title))
-                SubscriptionPlanAccess.objects.create(
-                    plan=plan, content_type=ContentType.objects.get_for_model(type(obj)), object_id=obj.pk
-                )
+                link(plan, obj)
 
     def reads(path):
         with CaptureQueriesContext(connection) as captured:

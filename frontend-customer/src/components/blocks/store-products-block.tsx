@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PriceBadge } from "@/components/billing/price-badge";
-import { CoverArt } from "@/components/covers/cover-art";
+import { ListedCover } from "@/components/covers/listed-cover";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 import { BlockPlaceholder } from "./block-placeholder";
 import type { StoreItem } from "@/types/billing";
@@ -69,10 +69,7 @@ export function StoreProductsBlock({
                   <CardContent className="flex items-center gap-4 p-3">
                     {item.cover_design ? (
                       <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md">
-                        <CoverArt
-                          design={item.cover_design}
-                          item={{ title: item.title }}
-                        />
+                        <ListedCover item={item} />
                       </div>
                     ) : item.thumbnail_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -124,9 +121,8 @@ export function StoreProductsBlock({
               <Card className="group h-full overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lg">
                 {item.cover_design ? (
                   <div className="relative h-40 w-full overflow-hidden">
-                    <CoverArt
-                      design={item.cover_design}
-                      item={{ title: item.title }}
+                    <ListedCover
+                      item={item}
                       photoClassName="transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>

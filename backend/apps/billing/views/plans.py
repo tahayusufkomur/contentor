@@ -18,6 +18,14 @@ from apps.core.permissions import IsOwner
 from apps.core.storage import sign_if_s3_key
 from apps.media import designs
 
+# The date a cover's badge reads on a course or an event: a course's creation ("New"), an event's start.
+_BADGE_DATE = {
+    "course": "created_at",
+    "liveclass": "scheduled_at",
+    "livestream": "scheduled_at",
+    "onsiteevent": "scheduled_at",
+}
+
 
 def _resolve_access_items(plan):
     """Resolve SubscriptionPlanAccess rows into human-readable dicts."""
@@ -55,8 +63,10 @@ def _resolve_access_items(plan):
         raw_url = getattr(obj, "thumbnail_url", "")
         if raw_url:
             item["thumbnail_url"] = sign_if_s3_key(raw_url)
-        if model_name != "downloadfile":  # a course or an event can have a designed cover
+        date_field = _BADGE_DATE.get(model_name)
+        if date_field:  # a course or an event: it can have a designed cover, whose badge reads its date
             item["cover_design"] = designs.cover_for(obj, ctx)
+            item[date_field] = getattr(obj, date_field)
         items.append(item)
 
     return items

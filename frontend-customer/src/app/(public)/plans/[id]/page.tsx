@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { SubscribeButton } from "@/components/billing/subscribe-button";
-import { CoverArt } from "@/components/covers/cover-art";
+import { ListedCover } from "@/components/covers/listed-cover";
 import { Button } from "@/components/ui/button";
 import {
   BookOpen,
@@ -135,10 +135,7 @@ export default async function PlanDetailPage({
                       <CardContent className="flex items-center gap-4 p-4">
                         {item.cover_design ? (
                           <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-md">
-                            <CoverArt
-                              design={item.cover_design}
-                              item={{ title: item.title }}
-                            />
+                            <ListedCover item={item} />
                           </div>
                         ) : item.thumbnail_url ? (
                           <img

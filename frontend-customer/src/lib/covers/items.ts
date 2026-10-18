@@ -19,3 +19,20 @@ export const eventItem = (
   startsAt: e.scheduled_at,
   timeZone,
 });
+
+/** An item of the store or of a plan (a course or an event): the same words and dates as `courseItem` and
+ *  `eventItem` read, so its cover looks the same here as on its own page. The payload carries a course's
+ *  `created_at` or an event's `scheduled_at`, and the date badge reads the latter in `timeZone`. */
+export const listedItem = (
+  i: {
+    title: string;
+    created_at?: string | null;
+    scheduled_at?: string | null;
+  },
+  timeZone?: string | null,
+): CoverItem => ({
+  title: i.title,
+  createdAt: i.created_at,
+  startsAt: i.scheduled_at,
+  timeZone,
+});
