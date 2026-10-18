@@ -729,6 +729,65 @@
     "strip": {
       "heading": "Your other covers"
     },
+    "rail": {
+      "label": "Studio tools",
+      "layouts": "Layouts",
+      "photos": "Photos",
+      "text": "Text",
+      "elements": "Elements",
+      "brand": "Brand",
+      "uploads": "Uploads",
+      "generate": "New photo"
+    },
+    "bar": {
+      "size": "Cover size"
+    },
+    "drawers": {
+      "full": "A cover can hold {count} added layers. Delete one to add another.",
+      "text": {
+        "heading": "Add text",
+        "add": {
+          "title": "Add a title",
+          "subtitle": "Add a subtitle",
+          "line": "Add a line of text"
+        },
+        "new": {
+          "title": "Your title",
+          "subtitle": "Your subtitle",
+          "line": "Your text"
+        }
+      },
+      "elements": {
+        "shapes": "Shapes",
+        "newBadge": "Your words"
+      },
+      "brand": {
+        "colours": "Colours",
+        "changes": "These change {target}.",
+        "target": {
+          "panel": "the colour panel",
+          "label": "the label",
+          "title": "the title",
+          "subtitle": "the subtitle",
+          "badge": "the badge",
+          "text": "the selected text",
+          "shape": "the selected shape"
+        },
+        "fonts": "Fonts",
+        "fontFor": {
+          "display": "Titles",
+          "body": "Text"
+        },
+        "fontsHint": "Select some text on the cover to change its font."
+      },
+      "uploads": {
+        "heading": "Uploads",
+        "drop": "Drop a photo here",
+        "hint": "It joins your own photos and goes on the cover.",
+        "choose": "Choose a photo",
+        "notAPhoto": "That file isn't a photo."
+      }
+    },
     "editor": {
       "courseCover": "Course cover",
       "eventCover": "{kind} cover, shared by every session with this title",
@@ -741,6 +800,7 @@
       "saving": "Saving…",
       "saved": "Saved",
       "saveFailed": "Couldn't save.",
+      "leftUnsaved": "Your last changes to this cover weren't saved.",
       "retry": "Try again",
       "undo": "Undo",
       "redo": "Redo",

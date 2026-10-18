@@ -34,11 +34,19 @@ export interface NavSection {
 interface AppSidebarProps {
   title: string;
   sections: NavSection[];
+  /** Icons only, and no way to widen it: the page in front needs the room (the photo studio's editor). */
+  compact?: boolean;
   children?: React.ReactNode;
 }
 
-export function AppSidebar({ title, sections, children }: AppSidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+export function AppSidebar({
+  title,
+  sections,
+  compact = false,
+  children,
+}: AppSidebarProps) {
+  const [collapsedByHand, setCollapsed] = useState(false);
+  const collapsed = compact || collapsedByHand;
   return (
     // No aria-label on purpose: e2e selects the sidebar as the one <aside>
     // without a label (the assistant panel is <aside aria-label="Assistant">).
@@ -59,20 +67,22 @@ export function AppSidebar({ title, sections, children }: AppSidebarProps) {
             {title}
           </NavLink>
         )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="ml-auto h-8 w-8 shrink-0 rounded-full"
-          onClick={() => setCollapsed(!collapsed)}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          <ChevronLeft
-            className={cn(
-              "h-4 w-4 motion-safe:transition-transform",
-              collapsed && "rotate-180",
-            )}
-          />
-        </Button>
+        {!compact && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="ml-auto h-8 w-8 shrink-0 rounded-full"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <ChevronLeft
+              className={cn(
+                "h-4 w-4 motion-safe:transition-transform",
+                collapsed && "rotate-180",
+              )}
+            />
+          </Button>
+        )}
       </div>
 
       {/* Navigation: the seven places, caption weight 500, 16 px icons; the

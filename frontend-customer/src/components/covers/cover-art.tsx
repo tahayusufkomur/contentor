@@ -171,8 +171,9 @@ const box = (f: Frame): CSSProperties => ({
   height: pct(f.h),
 });
 
-// The faces the site loads, named as `styleVars` in site-styles.ts names them.
-const family = (look: SiteStyle, role: FontRole) =>
+// The faces the site loads, named as `styleVars` in site-styles.ts names them. (The studio's drawers
+// preview the look's fonts in the same stacks.)
+export const family = (look: SiteStyle, role: FontRole) =>
   role === "display"
     ? `'${look.fonts.display}', Georgia, serif`
     : `'${look.fonts.body}', system-ui, sans-serif`;

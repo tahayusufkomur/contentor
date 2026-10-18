@@ -49,7 +49,13 @@ const HEX = /^#[0-9a-f]{6}$/i;
 const FIELD =
   "flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+export function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
   const id = useId();
   return (
     <section aria-labelledby={id} className="space-y-3">
@@ -121,7 +127,7 @@ function LayoutGlyph({ layout }: { layout: LayoutId }) {
   );
 }
 
-function Words({
+export function Words({
   recipe,
   itemTitle,
   targetKind,
@@ -178,11 +184,15 @@ function Words({
   );
 }
 
-function Layout({
+export function Layout({
   recipe,
   set,
   edit,
-}: Pick<SimpleControlsProps, "recipe" | "set" | "edit">) {
+  columns = 3,
+}: Pick<SimpleControlsProps, "recipe" | "set" | "edit"> & {
+  /** How many layouts sit side by side: three in the controls' column, two in the desktop drawer. */
+  columns?: 2 | 3;
+}) {
   const t = useTranslations("admin.studio.controls");
   const tile =
     "block w-full space-y-1.5 rounded-lg border p-2 text-left text-xs font-medium outline-none transition-colors hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring";
@@ -206,7 +216,12 @@ function Layout({
           </span>
         </button>
       )}
-      <ul className="grid grid-cols-3 gap-2">
+      <ul
+        className={cn(
+          "grid gap-2",
+          columns === 2 ? "grid-cols-2" : "grid-cols-3",
+        )}
+      >
         {LAYOUTS.map((layout) => (
           <li key={layout}>
             <button
@@ -356,7 +371,7 @@ function Badge({
   );
 }
 
-function Logo({
+export function Logo({
   recipe,
   logoUrl,
   edit,

@@ -18,6 +18,8 @@ import {
   AssistantDockProvider,
 } from "@/components/admin/assistant-dock";
 import { useAssistantDock } from "@/lib/assistant-dock";
+import { isStudioEditor } from "@/lib/covers/routes";
+import { cn } from "@/lib/utils";
 import { SectionTabs } from "@/components/admin/section-tabs";
 import { useNavigation } from "@shared/navigation/navigation-provider";
 import { useTenant } from "@/hooks/use-tenant";
@@ -87,6 +89,9 @@ function AdminShellContent({ children, user }: AdminShellProps) {
   const paletteItems = useMemo(() => paletteEntries(buildAdminNav(t), t), [t]);
 
   const section = activeSection(navSections, { pathname, pendingHref });
+  // The photo studio's editor fills the page: the navigation shrinks to icons, and from 1024 px the page
+  // loses its padding (the editor has bars and panels of its own that reach the edges).
+  const studio = isStudioEditor(pathname);
   const expandSection = (sectionId: string) =>
     setExpandedSections((prev) =>
       prev.includes(sectionId) ? prev : [...prev, sectionId],
@@ -94,7 +99,7 @@ function AdminShellContent({ children, user }: AdminShellProps) {
 
   return (
     <div className="flex h-screen">
-      <AppSidebar title={t("title")} sections={navSections}>
+      <AppSidebar title={t("title")} sections={navSections} compact={studio}>
         {user && <UserMenu user={user} />}
       </AppSidebar>
       <div className="flex flex-1 flex-col overflow-hidden">
@@ -152,7 +157,14 @@ function AdminShellContent({ children, user }: AdminShellProps) {
 
         <SectionTabs section={section} onExpand={expandSection} />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+        <main
+          className={cn(
+            "flex-1 overflow-y-auto p-4 md:p-6",
+            studio && "lg:p-0",
+          )}
+        >
+          {children}
+        </main>
       </div>
       <AssistantDock />
       <RunsWatcher />

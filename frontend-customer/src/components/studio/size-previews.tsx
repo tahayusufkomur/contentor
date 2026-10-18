@@ -64,15 +64,12 @@ export function SizePreviews({
   size,
   onSize,
   generating = false,
-  canvas,
 }: {
   design: CoverDesign;
   item: CoverItem;
   size: CoverSize;
   onSize: (size: CoverSize) => void;
   generating?: boolean;
-  /** Takes the place of the large preview (and pins with it): the canvas, on a computer. */
-  canvas?: ReactNode;
 }) {
   const t = useTranslations("admin.studio");
   const card = parseLook(design.look).style.coverAspect;
@@ -81,29 +78,27 @@ export function SizePreviews({
   return (
     <div className="contents">
       <div className="sticky [@media(max-height:639px)]:!static -top-4 z-10 -mx-4 -mt-4 border-b bg-background px-4 pb-3 pt-4 md:-top-6 md:-mx-6 md:-mt-6 md:px-6 md:pt-6 lg:mx-0 lg:border-0 lg:px-0 lg:pb-2 [--cover-max-h:max(34vh,16rem)] lg:[--cover-max-h:max(56vh,16rem)]">
-        {canvas ?? (
-          <CoverBox aspect={sizeAspect(size, card)}>
-            <div
-              role="img"
-              aria-label={t("previews.label", { size: t(`size.${size}`) })}
-              className="absolute inset-0"
-            >
-              <CoverArt design={design} item={item} />
-            </div>
-            {generating && (
-              <Skeleton
-                aria-hidden="true"
-                className="absolute rounded-none"
-                style={{
-                  left: `${(photoFrame?.x ?? 0) * 100}%`,
-                  top: `${(photoFrame?.y ?? 0) * 100}%`,
-                  width: `${(photoFrame?.w ?? 1) * 100}%`,
-                  height: `${(photoFrame?.h ?? 1) * 100}%`,
-                }}
-              />
-            )}
-          </CoverBox>
-        )}
+        <CoverBox aspect={sizeAspect(size, card)}>
+          <div
+            role="img"
+            aria-label={t("previews.label", { size: t(`size.${size}`) })}
+            className="absolute inset-0"
+          >
+            <CoverArt design={design} item={item} />
+          </div>
+          {generating && (
+            <Skeleton
+              aria-hidden="true"
+              className="absolute rounded-none"
+              style={{
+                left: `${(photoFrame?.x ?? 0) * 100}%`,
+                top: `${(photoFrame?.y ?? 0) * 100}%`,
+                width: `${(photoFrame?.w ?? 1) * 100}%`,
+                height: `${(photoFrame?.h ?? 1) * 100}%`,
+              }}
+            />
+          )}
+        </CoverBox>
       </div>
       <ul className="order-2 flex items-end gap-3 overflow-x-auto pb-1 lg:order-none">
         {SIZES.filter((s) => s !== size).map((s) => (
