@@ -108,6 +108,19 @@ describe("SimpleControls", () => {
     expect(typed).toContain('value="Morning flow"');
   });
 
+  it("suggests a label that suits the target: a course's is about weeks, an event's about the class", () => {
+    const label = (markup: string) =>
+      /id="[^"]*-label"[^>]*placeholder="([^"]*)"/.exec(markup)?.[1];
+    expect(label(controls({ targetKind: "course" }))).toBe(
+      "e.g. 4-week course",
+    );
+    for (const targetKind of ["live", "zoom", "in_person"]) {
+      expect(label(controls({ targetKind })), targetKind).toBe(
+        "e.g. Live class",
+      );
+    }
+  });
+
   it("limits the words to the lengths the server keeps", () => {
     const markup = controls();
     expect(markup).toContain('maxLength="40"');
@@ -172,9 +185,13 @@ describe("SimpleControls", () => {
     expect(hex).toContain('value="#1E5AA8"');
   });
 
-  describe("a panel she deleted on the canvas", () => {
-    const deleted = (panel: CoverRecipe["panel"]) =>
-      applyEdit({ ...defaultRecipe(), panel }, { type: "remove", id: "panel" });
+  describe("a panel an older draft deleted on the canvas", () => {
+    // (Delete no longer takes the panel away, but a draft saved before still has it hidden)
+    const deleted = (panel: CoverRecipe["panel"]): CoverRecipe => ({
+      ...defaultRecipe(),
+      panel,
+      styles: { panel: { hidden: true } },
+    });
 
     it("has no swatch pressed, so every one brings it back, the colour it had too", () => {
       const kept = controls({

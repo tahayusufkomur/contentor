@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
+  canRemove,
   newExtraId,
   type EditorAction,
   type ExtraPatch,
@@ -702,15 +703,17 @@ export function LayerToolbar({
             </Tool>
           </>
         )}
-        <Tool
-          label={t("delete")}
-          onClick={() => {
-            onEdit({ type: "remove", id });
-            onSelect?.(null);
-          }}
-        >
-          <Trash2 />
-        </Tool>
+        {canRemove(id) && (
+          <Tool
+            label={t("delete")}
+            onClick={() => {
+              onEdit({ type: "remove", id });
+              onSelect?.(null);
+            }}
+          >
+            <Trash2 />
+          </Tool>
+        )}
       </span>
     </div>
   );

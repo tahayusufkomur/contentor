@@ -60,7 +60,7 @@ export type EditorAction =
       frames?: Partial<Record<CoverSize, Frame>>;
     }
   | { type: "updateExtra"; id: string; patch: ExtraPatch }
-  /** A fixed part is hidden, an extra deleted. */
+  /** A fixed part is hidden, an extra deleted; the panel stays (see `canRemove`). */
   | { type: "remove"; id: string }
   /** Extras only. The copy is the last extra: on top, and offset so it shows. */
   | { type: "duplicate"; id: string }
@@ -79,6 +79,12 @@ const isPart = (id: string): id is PartId =>
 const has = (object: object, key: string) =>
   Object.prototype.hasOwnProperty.call(object, key);
 const isExtraId = (id: string) => !isPart(id);
+
+/** Whether a layer can be taken away. The panel is the cover's ground: she changes its colour and never
+ *  removes it (a removed panel leaves the same ground on the canvas, with nothing left to select). Every
+ *  Delete goes through here: the toolbar's button, the canvas's key and the reducer. An old draft that did
+ *  hide its panel still draws as it did, and picking a colour for the panel brings it back. */
+export const canRemove = (id: string) => id !== "panel";
 
 /** `base` with the fields of `patch` that are not undefined (the action types say which fields). */
 const assign = <T extends object>(base: T, patch: object): T => ({
@@ -272,6 +278,7 @@ export function applyEdit(
       };
 
     case "remove":
+      if (!canRemove(action.id)) return recipe;
       if (isPart(action.id)) {
         return {
           ...recipe,

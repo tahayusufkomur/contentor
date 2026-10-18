@@ -1,4 +1,4 @@
-import { createElement } from "react";
+import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it, vi } from "vitest";
@@ -9,7 +9,10 @@ import {
   textEdit,
   type StudioCanvasProps,
 } from "@/components/studio/studio-canvas";
+import { editHistory } from "@/lib/covers/editor";
 import { defaultRecipe, framesFor, sizeAspect } from "@/lib/covers/recipe";
+import { createHistory } from "@/lib/logo/history";
+import { TEXT_MAX } from "@/types/design";
 import type { CoverItem, CoverRecipe, Extra, Frame } from "@/types/design";
 import adminMessages from "../../../../messages/en/admin.json";
 
@@ -195,6 +198,75 @@ describe("StudioCanvas", () => {
   });
 });
 
+describe("StudioCanvas: Delete and Backspace", () => {
+  /** The canvas's key handler as the render gave it, and the callbacks it reports to. The component is
+   *  called inside a Probe so that its hooks run; React would call the handler with the key event. */
+  function keys(selected: string) {
+    const onEdit = vi.fn();
+    const onSelect = vi.fn();
+    let onKeyDown: ((e: unknown) => void) | undefined;
+    function Probe() {
+      const root = StudioCanvas({
+        recipe: withWords(),
+        design: {
+          id: "d1",
+          photos: { [PHOTO]: "https://cdn.test/photo.jpg" },
+          logo_url: null,
+          look: "journal",
+        },
+        item: ITEM,
+        size: "card",
+        cardAspect: "4/5",
+        selected,
+        onSelect,
+        onEdit,
+      }) as ReactElement<{ onKeyDown: (e: unknown) => void }>;
+      onKeyDown = root.props.onKeyDown;
+      return null;
+    }
+    renderToStaticMarkup(
+      createElement(
+        Intl,
+        { locale: "en", timeZone: "UTC", messages },
+        createElement(Probe),
+      ),
+    );
+    const press = (key: string) => {
+      const event = {
+        key,
+        metaKey: false,
+        ctrlKey: false,
+        altKey: false,
+        shiftKey: false,
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+      };
+      onKeyDown?.(event);
+      return event;
+    };
+    return { press, onEdit, onSelect };
+  }
+
+  it("takes away the selected layer and selects nothing", () => {
+    for (const key of ["Delete", "Backspace"]) {
+      const { press, onEdit, onSelect } = keys("subtitle");
+      expect(press(key).preventDefault).toHaveBeenCalled();
+      expect(onEdit).toHaveBeenCalledWith({ type: "remove", id: "subtitle" });
+      expect(onSelect).toHaveBeenCalledWith(null);
+    }
+  });
+
+  it("leaves the panel alone and selected: it is the cover's ground, and a click on the background selects it", () => {
+    for (const key of ["Delete", "Backspace"]) {
+      const { press, onEdit, onSelect } = keys("panel");
+      // (the key is still hers: the browser does not step back a page for it)
+      expect(press(key).preventDefault).toHaveBeenCalled();
+      expect(onEdit).not.toHaveBeenCalled();
+      expect(onSelect).not.toHaveBeenCalled();
+    }
+  });
+});
+
 describe("editsInPlace", () => {
   it("is for the words and her text layers, not the photo, logo, badge or shapes", () => {
     const recipe = withWords({
@@ -254,6 +326,31 @@ describe("textEdit", () => {
       textEdit(recipe, "title", "  Morning   flow ", "Morning flow"),
     ).toBeNull();
     expect(textEdit(recipe, "label", "Course", "Course")).toBeNull();
+  });
+
+  it("leaves a title longer than a cover keeps as it is when she types nothing: it is not cut, and keeps following the item", () => {
+    const long = `${"abcd ".repeat(24).slice(0, 119)}z`;
+    expect(long).toHaveLength(120);
+    expect(long.length).toBeGreaterThan(TEXT_MAX.title);
+    // the field gives back what it showed, the browser's spaces among it
+    expect(textEdit(recipe, "title", long, long)).toBeNull();
+    expect(
+      textEdit(recipe, "title", ` ${long.replace(/ /g, "  ")}\n`, long),
+    ).toBeNull();
+    // a text layer and a subtitle are cut at their own lengths, and also left alone
+    const longer = "b".repeat(TEXT_MAX.subtitle + 30);
+    expect(textEdit(recipe, "subtitle", longer, longer)).toBeNull();
+    // and it is not what she changes that decides it: a change sends the cut words
+    expect(textEdit(recipe, "title", `New ${long}`, long)).toEqual({
+      type: "words",
+      patch: { title: `New ${long}`.slice(0, TEXT_MAX.title).trimEnd() },
+    });
+    // the history has no step for it: nothing is sent, so nothing is pushed
+    const before = withWords();
+    const history = createHistory(before);
+    const sent = textEdit(before, "title", long, long);
+    expect(sent === null ? history : editHistory(history, sent)).toBe(history);
+    expect(layerWords(before, { ...ITEM, title: long }, "title")).toBe(long);
   });
 
   it("sends an emptied title, which then follows the item again, and empties a label or subtitle", () => {

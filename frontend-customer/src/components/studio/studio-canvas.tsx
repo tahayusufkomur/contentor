@@ -24,7 +24,12 @@ import {
 import { useTranslations } from "next-intl";
 import { CoverArt } from "@/components/covers/cover-art";
 import { Skeleton } from "@/components/ui/skeleton";
-import { applyEdit, newExtraId, type EditorAction } from "@/lib/covers/editor";
+import {
+  applyEdit,
+  canRemove,
+  newExtraId,
+  type EditorAction,
+} from "@/lib/covers/editor";
 import {
   hitTest,
   moveFrame,
@@ -166,8 +171,11 @@ export function textEdit(
       ? TEXT_MAX.badge
       : TEXT_MAX.extra
     : TEXT_MAX[id as WordsPart];
-  const text = plain(typed).slice(0, limit).trimEnd();
-  if (text === plain(was)) return null;
+  const cut = (words: string) => plain(words).slice(0, limit).trimEnd();
+  const text = cut(typed);
+  // `was` is cut the same way: an item's title can be longer than a cover keeps, and one she opened and
+  // left as it was must not become a copy of its first words that no longer follows the item.
+  if (text === cut(was)) return null;
   if (extra) {
     return text === ""
       ? { type: "remove", id }
@@ -668,6 +676,8 @@ export function StudioCanvas({
       });
     } else if (e.key === "Delete" || e.key === "Backspace") {
       e.preventDefault();
+      // (the panel stays, and stays selected: she changes its colour)
+      if (!canRemove(selected)) return;
       onEdit({ type: "remove", id: selected });
       onSelect(null);
     } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "d") {

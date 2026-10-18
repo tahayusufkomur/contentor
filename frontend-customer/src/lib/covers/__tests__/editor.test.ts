@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   applyEdit,
+  canRemove,
   coalesceKey,
   editHistory,
   newExtraId,
@@ -315,12 +316,36 @@ describe("remove", () => {
     expect(after.extras).toEqual(before.extras);
   });
 
-  it("hides any fixed part, the logo and badge included", () => {
+  it("hides any fixed part but the panel, the logo and badge included", () => {
     let recipe = recipeWith();
-    for (const part of PARTS) {
+    for (const part of PARTS.filter((one) => one !== "panel")) {
       recipe = applyEdit(recipe, { type: "remove", id: part });
       expect(recipe.styles[part]?.hidden).toBe(true);
     }
+    expect(recipe.styles.panel).toBeUndefined();
+  });
+
+  it("does not take the panel away: it is the cover's ground, so a Delete on it changes nothing and is no undo step", () => {
+    const before = recipeWith({
+      panel: "#1E5AA8",
+      styles: { panel: { scale: 1.1 } },
+      extras: [text("x1")],
+    });
+    // the same recipe, not a copy: nothing to save, nothing to undo
+    expect(applyEdit(before, { type: "remove", id: "panel" })).toBe(before);
+
+    const history = createHistory(before);
+    expect(editHistory(history, { type: "remove", id: "panel" })).toBe(history);
+    // the other parts still go, as one step
+    const hidden = editHistory(history, { type: "remove", id: "subtitle" });
+    expect(hidden).not.toBe(history);
+    expect(hidden.past).toHaveLength(1);
+  });
+
+  it("names the layers a Delete can take: every one but the panel", () => {
+    for (const part of PARTS)
+      expect(canRemove(part), part).toBe(part !== "panel");
+    expect(canRemove("x1")).toBe(true);
   });
 
   it("deletes an extra and every per-size frame it had, leaving the others'", () => {
@@ -700,13 +725,11 @@ describe("frame", () => {
 });
 
 describe("a part she removed comes back when she sets what it shows", () => {
+  // (built, not removed: an old draft hid its panel, which Delete no longer can)
   const gone = (part: PartId) =>
-    applyEdit(
-      recipeWith({
-        styles: { [part]: { scale: 1.2 } } as CoverRecipe["styles"],
-      }),
-      { type: "remove", id: part },
-    );
+    recipeWith({
+      styles: { [part]: { scale: 1.2, hidden: true } } as CoverRecipe["styles"],
+    });
 
   it("typing in a word brings back that word only", () => {
     let recipe = gone("label");

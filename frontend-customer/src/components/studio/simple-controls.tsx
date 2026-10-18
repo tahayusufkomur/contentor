@@ -149,7 +149,11 @@ export function Words({
           id={`${id}-label`}
           value={words.label}
           maxLength={TEXT_MAX.label}
-          placeholder={t("labelPlaceholder")}
+          placeholder={t(
+            targetKind === "course"
+              ? "labelPlaceholder"
+              : "labelPlaceholderEvent",
+          )}
           onChange={(e) =>
             edit({ type: "words", patch: { label: e.target.value } })
           }

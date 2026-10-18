@@ -50,6 +50,13 @@ function withExtras(n: number): CoverRecipe {
 const headings = (markup: string) =>
   [...markup.matchAll(/<h2[^>]*>([^<]*)<\/h2>/g)].map((m) => m[1]);
 
+/** A draft saved before the panel could no longer be deleted: its panel is hidden (Delete changes nothing
+ *  on it now, so the reducer cannot make this). */
+const panelDeleted = (recipe: CoverRecipe): CoverRecipe => ({
+  ...recipe,
+  styles: { ...recipe.styles, panel: { ...recipe.styles.panel, hidden: true } },
+});
+
 describe("LayoutsDrawer", () => {
   const drawer = (
     over: { recipe?: CoverRecipe; set?: CoverRecipe | null } = {},
@@ -296,10 +303,7 @@ describe("paintTarget", () => {
   });
 
   it("has no colour while the panel is deleted, so any swatch brings it back, the colour it had too", () => {
-    const deleted = applyEdit(
-      { ...recipe(), panel: "accent" },
-      { type: "remove", id: "panel" },
-    );
+    const deleted = panelDeleted({ ...recipe(), panel: "accent" });
     expect(framesFor(deleted, "card", "4/5").panel).toBeUndefined();
     for (const selected of [null, "panel", "photo"]) {
       const target = paintTarget(deleted, selected);
@@ -468,7 +472,7 @@ describe("BrandDrawer", () => {
 
   it("presses no swatch while the panel is deleted, and the one it has is pressed again once it is back", () => {
     const panel = { ...defaultRecipe(), panel: "accent" as const };
-    const deleted = applyEdit(panel, { type: "remove", id: "panel" });
+    const deleted = panelDeleted(panel);
     expect(drawer(deleted)).not.toContain('aria-pressed="true"');
     const back = applyEdit(deleted, paintTarget(deleted, null).apply("accent"));
     expect(drawer(back)).toMatch(/aria-pressed="true"[^>]*aria-label="Accent"/);
@@ -534,10 +538,7 @@ describe("BrandDrawer", () => {
     });
 
     it("is empty while the panel is deleted, whatever its colour was", () => {
-      const deleted = applyEdit(
-        { ...defaultRecipe(), panel: "#C0FFEE" },
-        { type: "remove", id: "panel" },
-      );
+      const deleted = panelDeleted({ ...defaultRecipe(), panel: "#C0FFEE" });
       expect(field(drawer(deleted))).toContain('value=""');
       expect(drawer(deleted)).not.toContain("#C0FFEE");
     });

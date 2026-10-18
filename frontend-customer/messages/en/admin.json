@@ -821,6 +821,7 @@
       "words": "Words",
       "label": "Label",
       "labelPlaceholder": "e.g. 4-week course",
+      "labelPlaceholderEvent": "e.g. Live class",
       "title": "Title",
       "titleHint": "Leave it empty to use the title of the {target}.",
       "subtitle": "Subtitle",

@@ -12,6 +12,7 @@ import {
 import { LEADING } from "@/lib/covers/layouts";
 import { coverPalette, parseLook } from "@/lib/covers/palette";
 import { defaultRecipe, RANGES } from "@/lib/covers/recipe";
+import { PARTS } from "@/types/design";
 import type { CoverRecipe, Extra, Frame } from "@/types/design";
 import adminMessages from "../../../../messages/en/admin.json";
 
@@ -322,11 +323,18 @@ describe("LayerToolbar: badges, shapes, the colour and the logo", () => {
     ]);
   });
 
-  it("the colour panel picks a colour, and the logo its tint", () => {
+  it("the colour panel picks a colour and has no Delete: it is the cover's ground, she only changes its colour", () => {
     const panel = toolbar({ part: "panel" });
     expect(panel).toContain('aria-label="Colour"');
     expect(sliders(panel)).toEqual([]);
-    expect(button(panel, "Delete")).not.toBeNull();
+    expect(button(panel, "Delete")).toBeNull();
+    // the other fixed parts, the logo and the badge among them, keep theirs
+    for (const part of PARTS.filter((one) => one !== "panel")) {
+      expect(
+        button(toolbar({ part, targetKind: "course" }), "Delete"),
+        part,
+      ).not.toBeNull();
+    }
 
     const none = toolbar({ part: "logo" });
     expect(none).toMatch(/aria-pressed="true"[^>]*>Automatic</);
