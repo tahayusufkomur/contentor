@@ -133,9 +133,10 @@ const SIDE = {
   right: "flex-end",
 } as const;
 
-/** The widest a badge grows, as a fraction of the cover's width. */
-const BADGE_CAP = 0.55;
-/** The clear space kept between a grown badge and the logo, in cqmin. */
+/** The widest a badge grows, as a fraction of the cover's width: room for 24 characters on a Card
+ *  of any shape (they take 41 to 77% of its width). */
+const BADGE_CAP = 0.77;
+/** The clear space kept between a grown badge and the logo or the edge of its photo, in cqmin. */
 const BADGE_GAP = 3;
 
 const SHAPE_RADIUS: Record<ShapeKind, string | undefined> = {
@@ -324,34 +325,46 @@ function wordLayer(
   );
 }
 
+/** What a badge keeps clear of: the logo's frame where one is drawn, and the photo's where the badge
+ *  sits on an inset photo and must not hang off it. */
+interface Near {
+  logo?: Frame;
+  photo?: Frame;
+}
+
 /** How wide a badge may grow, as a fraction of the cover's width. It is sized to its text and grows
  *  out of its frame from the side its alignment names (leftwards from a right-anchored frame,
  *  rightwards from a left-anchored one, both ways from the centre), so it stops at the cap, at the
- *  cover's edge, and at the logo where the two share a row. It is never less than its frame, which
- *  the layout already keeps clear of the logo. */
+ *  edge of the cover (or of its photo), and at the logo where the two share a row. The layouts give
+ *  the badge room, so these limits are the safety net for frames she moved. It is never less than
+ *  its frame. */
 function badgeCap(
   frame: Frame,
   side: keyof typeof SIDE,
-  logo: Frame | undefined,
+  near: Near,
   aspect: number,
 ): number {
+  const gap = BADGE_GAP / (100 * Math.max(1, aspect));
   const anchor =
     side === "left"
       ? frame.x
       : side === "center"
         ? frame.x + frame.w / 2
         : frame.x + frame.w;
-  const sharesRow =
-    logo !== undefined &&
+  const { logo, photo } = near;
+  // The span of the cover the badge may use, left to right.
+  let low = photo ? photo.x + gap : 0;
+  const high = photo ? photo.x + photo.w - gap : 1;
+  if (
+    logo &&
     logo.y < frame.y + frame.h &&
     frame.y < logo.y + logo.h &&
-    logo.x + logo.w <= anchor;
-  // Where the room to the left of the anchor ends: the cover's edge, or the logo.
-  const low = sharesRow
-    ? logo.x + logo.w + BADGE_GAP / (100 * Math.max(1, aspect))
-    : 0;
+    logo.x + logo.w <= anchor
+  ) {
+    low = Math.max(low, logo.x + logo.w + gap);
+  }
   const toLeft = anchor - low;
-  const toRight = 1 - anchor;
+  const toRight = high - anchor;
   const room =
     side === "right"
       ? toLeft
@@ -362,8 +375,8 @@ function badgeCap(
 }
 
 /** A badge: a box of its text on its fill, grown out of its frame as `badgeCap` says, in one line,
- *  cut with an ellipsis only where the text is longer than the cap. `logo` is the logo's frame when
- *  one is drawn, for the badge that has to keep clear of it. */
+ *  cut with an ellipsis only where the text is longer than the cap. It hangs from `home`, the side
+ *  of its frame it grows from unless her style names another. */
 function badgeLayer(
   ctx: Ctx,
   id: string,
@@ -372,10 +385,11 @@ function badgeLayer(
   style: PartStyle,
   frame: Frame,
   aspect: number,
-  logo?: Frame,
+  home: keyof typeof SIDE,
+  near: Near = {},
 ): ReactNode {
   const { size } = measure(ctx, "badge", style, aspect);
-  const side = style.align ?? "right";
+  const side = style.align ?? home;
   return (
     <div
       key={id}
@@ -398,7 +412,7 @@ function badgeLayer(
           background: paintColor(fill, ctx.palette),
           borderRadius: ctx.look.radius,
           width: "max-content",
-          maxWidth: `${round(badgeCap(frame, side, logo, aspect) * 100)}cqw`,
+          maxWidth: `${round(badgeCap(frame, side, near, aspect) * 100)}cqw`,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -525,7 +539,13 @@ function drawLayer(
             recipe.styles.badge ?? {},
             frame,
             aspect,
-            ctx.design.logo_url ? frames.logo : undefined,
+            // Centred above the words of a title-only cover, at the right of its frame elsewhere.
+            recipe.layout === "title" ? "center" : "right",
+            {
+              logo: ctx.design.logo_url ? frames.logo : undefined,
+              // On a framed cover the badge belongs to its inset photo and stays on it.
+              photo: recipe.layout === "framed" ? frames.photo : undefined,
+            },
           );
   }
   const extra = recipe.extras.find((e) => e.id === id);
@@ -548,7 +568,7 @@ function drawLayer(
   if (bare || !extra.text.trim()) return null;
   return extra.type === "text"
     ? wordLayer(ctx, id, "extra", extra.text, extra.style, frame, aspect)
-    : badgeLayer(ctx, id, extra.text, extra.fill, {}, frame, aspect);
+    : badgeLayer(ctx, id, extra.text, extra.fill, {}, frame, aspect, "right");
 }
 
 /** The layers of one size, bottom to top. */

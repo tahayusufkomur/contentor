@@ -261,6 +261,27 @@ describe("framesFor", () => {
     }
   });
 
+  it("makes room for the badge in a title-only cover only while a badge is drawn", () => {
+    const none = framesFor(recipeWith({ layout: "title" }), "card", "3/4");
+    const live = recipeWith({
+      layout: "title",
+      badge: { kind: "live", text: "", fill: "accent" },
+    });
+    const drawn = framesFor(live, "card", "3/4");
+    expect(none.badge).toBeUndefined();
+    expect(drawn.badge).toBeDefined();
+    // The badge heads the stack, so the title sits lower than it does alone.
+    expect(drawn.title.y).toBeGreaterThan(none.title.y);
+    // A badge she removed takes no room either.
+    const removed = framesFor(
+      { ...live, styles: { badge: { hidden: true } } },
+      "card",
+      "3/4",
+    );
+    expect(removed.badge).toBeUndefined();
+    expect(removed.title).toEqual(none.title);
+  });
+
   it("follows the look's shape for card", () => {
     const portrait = framesFor(defaultRecipe({}), "card", "3/4");
     const landscape = framesFor(defaultRecipe({}), "card", "3/2");

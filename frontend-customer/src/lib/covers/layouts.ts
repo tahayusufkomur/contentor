@@ -9,7 +9,11 @@
 //  - Words align left, except in `title`, where they and the logo are centred. In its frame the
 //    label sits at the bottom, the title in the middle and the subtitle at the top, so the three
 //    stay together however many lines each takes. A part's line clamp is `fitLines` of its frame.
-//  - The logo is anchored to the left of its frame (centred in `title`), the badge to the right.
+//  - The logo is anchored to the left of its frame (centred in `title`), the badge to the right
+//    (centred in `title`).
+//  - The badge shares the logo's row at the top of `panel` (beside its photo), `full`, `band` and
+//    `photo`, where there is room. In `title` it is the first line of the centred stack, above the
+//    label, and in `framed` it takes the photo's bottom corner: neither shares a row with the logo.
 //  - `full` has no panel: CoverArt darkens the bottom of the photo behind the words, so its words
 //    are white by default. In `band` the photo runs under the band, which is drawn over it.
 
@@ -29,8 +33,10 @@ export function aspectClass(aspect: number): AspectClass {
 
 type WordPart = "label" | "title" | "subtitle";
 export type TextPart = WordPart | "badge";
-/** Which words are drawn. A word left out closes its gap in the stack; the default is all of them. */
-export type ShownWords = Partial<Record<WordPart, boolean>>;
+/** Which words are drawn. A word left out closes its gap in the stack; the default is all of them.
+ *  The badge counts where it is part of the stack (a title-only cover); elsewhere its frame is
+ *  there either way. */
+export type ShownWords = Partial<Record<TextPart, boolean>>;
 
 const WORDS: WordPart[] = ["label", "title", "subtitle"];
 
@@ -161,26 +167,34 @@ export function layoutFrames(
     ) +
     gap * Math.max(0, parts.length - 1);
 
+  /** What a row of `lead` above the words takes: its height and the gap under it, if words follow. */
+  const leadRow = (lead: number, parts: WordPart[]) =>
+    lead > 0 ? lead + (parts.length > 0 ? gap : 0) : 0;
+
   // The words stacked top to bottom in a box (in cqmin). The title takes the lines the others leave
-  // it, up to its most.
-  const words = (
+  // it, up to its most. `lead` is the height of a row that heads the stack (a title-only cover's
+  // badge); the second thing returned is where that row starts.
+  const stackWords = (
     x: number,
     y: number,
     w: number,
     h: number,
     anchor: Anchor,
-  ): Pick<Frames, WordPart> => {
+    lead = 0,
+  ): [words: Pick<Frames, WordPart>, leadTop: number] => {
     const parts = WORDS.filter((part) => shown[part] !== false);
-    const room = h - stackHeight(parts, 0);
+    const above = leadRow(lead, parts);
+    const room = h - above - stackHeight(parts, 0);
     const titleLines = Math.max(
       1,
       Math.min(titleMax, Math.floor(room / lineHeight("title") + 1e-6)),
     );
     const height = (part: WordPart) =>
       (part === "title" ? titleLines : most[part]) * lineHeight(part);
-    const free = h - stackHeight(parts, titleLines);
-    let top =
+    const free = h - above - stackHeight(parts, titleLines);
+    const leadTop =
       y + (anchor === "end" ? free : anchor === "middle" ? free / 2 : 0);
+    let top = leadTop + above;
     const out: Pick<Frames, WordPart> = {
       label: null,
       title: null,
@@ -190,8 +204,15 @@ export function layoutFrames(
       out[part] = fr(x, top, w, height(part));
       top += height(part) + gap;
     }
-    return out;
+    return [out, leadTop];
   };
+  const words = (
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    anchor: Anchor,
+  ): Pick<Frames, WordPart> => stackWords(x, y, w, h, anchor)[0];
 
   const none: Frames = {
     photo: null,
@@ -250,18 +271,33 @@ export function layoutFrames(
     }
     case "title": {
       const column = sideBySide ? 0.72 * W : W - 2 * CENTRED_MARGIN;
+      const box = H - MARGIN - underLogo;
+      // The badge heads the centred stack, above the label, in a row of its own. Where even a
+      // one-line title leaves no room for that row (a frame wider than 4.2, which no cover is drawn
+      // in) it goes back to the logo's row.
+      const parts = WORDS.filter((part) => shown[part] !== false);
+      const inStack =
+        shown.badge !== false &&
+        box >= leadRow(badgeH, parts) + stackHeight(parts, 1);
+      const [text, leadTop] = stackWords(
+        (W - column) / 2,
+        underLogo,
+        column,
+        box,
+        "middle",
+        inStack ? badgeH : 0,
+      );
       return {
         ...none,
         panel: fr(0, 0, W, H),
         logo: logo((W - logoW) / 2, MARGIN),
-        badge: topRight,
-        ...words(
-          (W - column) / 2,
-          underLogo,
-          column,
-          H - MARGIN - underLogo,
-          "middle",
-        ),
+        badge:
+          shown.badge === false
+            ? null
+            : inStack
+              ? badge((W + badgeW) / 2, leadTop)
+              : topRight,
+        ...text,
       };
     }
     case "band": {
@@ -312,12 +348,16 @@ export function layoutFrames(
           panel: fr(0, 0, W, H),
           photo: fr(INSET, INSET, inner, photoH),
           logo: logo(INSET + ON_PHOTO, INSET + ON_PHOTO),
-          badge: badge(W - INSET - ON_PHOTO, INSET + ON_PHOTO),
+          // The photo's bottom corner is the badge's: a row of its own, under the logo's.
+          badge: badge(
+            W - INSET - ON_PHOTO,
+            INSET + photoH - ON_PHOTO - badgeH,
+          ),
           ...words(INSET, INSET + photoH + PHOTO_GAP, inner, stack, "start"),
         };
       }
-      // The photo inset at the left of the field, the words beside it. The logo and badge share
-      // the photo's top row, which the photo is wide enough to hold.
+      // The photo inset at the left of the field, the words beside it. The logo has the photo's top
+      // left corner and the badge its bottom right one, a row each.
       const photoW = Math.min(108, Math.max(60, 0.44 * W));
       const x = 2 * INSET + photoW;
       return {
@@ -325,7 +365,7 @@ export function layoutFrames(
         panel: fr(0, 0, W, H),
         photo: fr(INSET, INSET, photoW, H - 2 * INSET),
         logo: logo(INSET + ON_PHOTO, INSET + ON_PHOTO),
-        badge: badge(INSET + photoW - ON_PHOTO, INSET + ON_PHOTO),
+        badge: badge(INSET + photoW - ON_PHOTO, H - INSET - ON_PHOTO - badgeH),
         ...words(x, INSET, W - x - INSET, H - 2 * INSET, "middle"),
       };
     }

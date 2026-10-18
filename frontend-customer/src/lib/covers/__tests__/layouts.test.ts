@@ -263,6 +263,80 @@ describe("layoutFrames", () => {
     }
   });
 
+  it("gives the badge a row of its own in title and framed, apart from the logo, in every shape a cover is drawn in", () => {
+    // Beyond about 4.2 (wider than any cover is drawn in) a title-only stack has no room left for a
+    // badge row and the badge goes back to the logo's row; below it no shape shares one.
+    for (const { layout, aspect, shown } of CASES) {
+      if ((layout !== "title" && layout !== "framed") || aspect > 4.2) continue;
+      const { logo, badge } = layoutFrames(layout, aspect, shown);
+      expect(
+        logo!.y < badge!.y + badge!.h - EPS &&
+          badge!.y < logo!.y + logo!.h - EPS,
+        `${label(layout, aspect, shown)} shares the logo's row`,
+      ).toBe(false);
+    }
+  });
+
+  it("makes the badge of a title-only cover the first line of its centred stack, above the label", () => {
+    const centre = (f: Frame) => f.x + f.w / 2;
+    for (const aspect of REAL) {
+      const { badge, label, title, subtitle, logo } = layoutFrames(
+        "title",
+        aspect,
+      );
+      expect(centre(badge!), `${aspect}`).toBeCloseTo(0.5, 9);
+      // Under the logo, over the label, touching neither.
+      expect(badge!.y, `${aspect}`).toBeGreaterThan(logo!.y + logo!.h);
+      expect(badge!.y + badge!.h, `${aspect}`).toBeLessThan(label!.y);
+      // The stack of badge and words is centred where the words alone were.
+      const bare = layoutFrames("title", aspect, { badge: false });
+      expect(bare.badge).toBeNull();
+      const middle = (top: Frame, bottom: Frame) =>
+        (top.y + bottom.y + bottom.h) / 2;
+      expect(middle(badge!, subtitle!), `${aspect}`).toBeCloseTo(
+        middle(bare.label!, bare.subtitle!),
+        9,
+      );
+      expect(label!.y, `${aspect}`).toBeGreaterThan(bare.label!.y);
+      // Its width is the frame the badge starts from, wider than none of the cover.
+      expect(badge!.w).toBeLessThan(1);
+    }
+  });
+
+  it("puts the badge of a framed cover in the bottom corner of its photo, under the logo's corner", () => {
+    for (const aspect of REAL) {
+      const { badge, logo, photo } = layoutFrames("framed", aspect);
+      expect(within(badge!, photo!), `${aspect} on the photo`).toBe(true);
+      // The right side and the lower half of the photo, below the logo.
+      expect(badge!.x + badge!.w / 2, `${aspect}`).toBeGreaterThan(
+        photo!.x + photo!.w / 2,
+      );
+      expect(badge!.y, `${aspect}`).toBeGreaterThan(photo!.y + photo!.h / 2);
+      expect(badge!.y, `${aspect}`).toBeGreaterThan(logo!.y + logo!.h);
+    }
+  });
+
+  it("keeps the badge where it was in panel, full, band and photo", () => {
+    // The top right, a margin of 5.5 cqmin from the edges: 3:4 is 100 by 133.3 cqmin.
+    for (const layout of ["panel", "full", "band", "photo"] as const) {
+      same(layoutFrames(layout, 3 / 4).badge, {
+        x: 0.625,
+        y: 5.5 / (100 / 0.75),
+        w: 0.32,
+        h: 8 / (100 / 0.75),
+      });
+      // 16:9 is 177.8 by 100 cqmin, where the badge grows by 1.0194.
+      const grow = Math.max(9.5, 5.45 * (16 / 9)) / 9.5;
+      const w = 177.77777777777777;
+      same(layoutFrames(layout, 16 / 9).badge, {
+        x: (w - 5.5 - 32 * grow) / w,
+        y: 0.055,
+        w: (32 * grow) / w,
+        h: (8 * grow) / 100,
+      });
+    }
+  });
+
   it("draws no words in photo-only, and no photo in title-only", () => {
     for (const aspect of REAL) {
       const photoOnly = layoutFrames("photo", aspect);

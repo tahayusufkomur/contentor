@@ -85,6 +85,8 @@ export function framesFor(
     label: words.label.trim() !== "" && !hidden("label"),
     title: !hidden("title"),
     subtitle: words.subtitle.trim() !== "" && !hidden("subtitle"),
+    // A title-only cover stacks its badge with the words, so it has room for it only while it is drawn.
+    badge: recipe.badge.kind !== "none" && !hidden("badge"),
   });
   const drawn = (part: PartId) =>
     !hidden(part) &&
