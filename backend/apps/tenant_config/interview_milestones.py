@@ -233,7 +233,11 @@ def apply_currency(tenant, code) -> bool:
 
     if code not in dict(CURRENCY_CHOICES) or code == tenant.billing_currency:
         return False
-    bought = PlatformSubscription.objects.filter(tenant=tenant, provider=PlatformSubscription.PROVIDER_STRIPE)
+    bought = PlatformSubscription.objects.filter(
+        tenant=tenant,
+        provider=PlatformSubscription.PROVIDER_STRIPE,
+        status=PlatformSubscription.STATUS_ACTIVE,
+    )
     if bought.exists() or Payment.objects.exists() or Subscription.objects.exists():
         return False
     Tenant.objects.filter(pk=tenant.pk).update(billing_currency=code)

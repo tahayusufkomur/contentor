@@ -585,18 +585,40 @@ def test_the_time_zone_answer_is_the_sites_and_a_schedule_never_carries_its_own(
 
 
 def test_the_currency_answer_is_what_the_coach_charges_in_until_money_moves(tenant_ctx, config, owner):
+    from django_tenants.utils import schema_context
+
+    from apps.accounts.models import User
     from apps.billing.models import Payment, SubscriptionPlan
-    from apps.core.models import Tenant
+    from apps.core.models import PlatformPlan, PlatformSubscription, Tenant
 
     was = tenant_ctx.billing_currency
     plan = SubscriptionPlan.objects.create(name="Digital", price=Decimal("9.00"), stripe_price_id="price_usd")
+    with schema_context("public"):
+        starter, _ = PlatformPlan.objects.update_or_create(
+            name="starter", defaults={"price_monthly": 19, "transaction_fee_pct": 8, "is_active": True}
+        )
+        sub = PlatformSubscription.objects.create(
+            tenant=tenant_ctx,
+            user=User.objects.create_user(email="c@cur.test", name="C", password="x", role="owner"),  # noqa: S106
+            plan=starter,
+            status=PlatformSubscription.STATUS_TRIALING,
+            provider=PlatformSubscription.PROVIDER_STRIPE,
+        )
     try:
+        # The 14-day signup trial has charged nothing yet: her pick applies.
         ms.sync_site(tenant_ctx, {"currency": "EUR"})
         assert Tenant.objects.get(pk=tenant_ctx.pk).billing_currency == "EUR"
         plan.refresh_from_db()
         assert (plan.currency, plan.stripe_price_id) == ("EUR", "")
         assert brief.money(9) == "€9"
-        # A student has paid in euros: the currency stays.
+        # Once the plan is active, or a student has paid, the currency stays.
+        with schema_context("public"):
+            sub.status = PlatformSubscription.STATUS_ACTIVE
+            sub.save(update_fields=["status"])
+        assert ms.apply_currency(tenant_ctx, "USD") is False
+        with schema_context("public"):
+            sub.status = PlatformSubscription.STATUS_TRIALING
+            sub.save(update_fields=["status"])
         Payment.objects.create(
             student=owner,
             payment_type="one_time",

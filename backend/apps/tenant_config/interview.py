@@ -5,6 +5,7 @@ question, so the conversation never stalls or errors."""
 
 import json
 import logging
+import re
 import time
 
 from django.conf import settings
@@ -597,6 +598,7 @@ def run_turn(
     tapped = bool(text and not choice and not review and not imported and _is_tapped(picks, answering, answers, brand))
     if tapped:
         brief.apply_fact(answers, answering, picks)
+    milestones.apply_currency(tenant, answers.get("currency"))
     # A pure pick (a card, an approval, a skip, tiles with no note; "you decide"
     # only where code decides) that leads to a code-owned question needs no
     # model: it would only phrase what code already knows. The coach moves on
@@ -633,6 +635,7 @@ def run_turn(
         answers["tone_hints"] = [h.strip()[:80] for h in turn.tone_hints]
     brief.save_answers(tenant, answers, base=base)
     answers = brief.answers_of(tenant)  # merged with any concurrent tab
+    milestones.apply_currency(tenant, answers.get("currency"))
 
     nxt = _next_field(brief.missing(answers), turn, answers)
     ack = import_ack(base, answers) if imported else " ".join(x for x in (picked, turn.ack if turn else "") if x)
@@ -788,12 +791,43 @@ def apply_initial_about(tenant, text: str) -> bool:
         return False
 
 
+def _refresh_turn(turn: dict, answers: dict, brand: str) -> dict:
+    """Keep currency-sensitive options/hints/why and membership/location
+    prefills in step with the coach's latest answers, even on turns already
+    in the transcript."""
+    field = brief.FIELD_BY_ID.get(turn.get("field") or "")
+    if turn.get("role") == "coach":
+        if (
+            field is not None
+            and field.kind == "price"
+            and isinstance(answers.get(field.id), int | float)
+            and answers[field.id] > 0
+            and re.fullmatch(r"[$€]\d+(?:\.\d+)?", str(turn.get("text") or ""))
+        ):
+            return {**turn, "text": brief.money(answers[field.id])}
+        return turn
+    if turn.get("role") != "guide" or field is None:
+        return turn
+    if field.id == "location":
+        return {**turn, "prefill": prefill_for("location", answers)}
+    if field.kind not in ("price", "memberships", "access"):
+        return turn
+    fresh = guide_for(field, answers=answers, brand=brand)
+    return {
+        **turn,
+        **{k: fresh[k] for k in ("options", "icons", "hints", "why", "alone", "prefill_options")},
+        **membership_prices(field.id, answers),
+    }
+
+
 def interview_state(tenant, flow: dict) -> dict:
     from . import interview_milestones as milestones
 
     answers = brief.answers_of(tenant)
+    milestones.apply_currency(tenant, answers.get("currency"))
+    brand = brand_of(tenant)
     iv = flow.get("interview") or {}
-    turns = list(iv.get("turns") or [])
+    turns = [_refresh_turn(t, answers, brand) for t in iv.get("turns") or []]
     missing = brief.missing(answers)
     last = next((t for t in reversed(turns) if t.get("role") == "guide"), None)
     if not missing:
@@ -801,7 +835,7 @@ def interview_state(tenant, flow: dict) -> dict:
     elif last is None or not last.get("field"):
         # Nothing asked yet; or the interview had reached go-live and a
         # question added since is still open: it is asked now.
-        guide = guide_for(missing[0], "" if last else OPENING_ACK, answers=answers, brand=brand_of(tenant))
+        guide = guide_for(missing[0], "" if last else OPENING_ACK, answers=answers, brand=brand)
     else:
         guide = {k: last.get(k) for k in GUIDE_KEYS}
         # A transcript written before icons existed still renders.
@@ -819,17 +853,6 @@ def interview_state(tenant, flow: dict) -> dict:
     asked = {t.get("field") for t in turns if t.get("role") == "guide"} - {guide["field"]}
     looks = ("site_style", "site_logo", "calendar_view", "photos", *milestones.REVIEW_FIELDS)
     cards = {f: milestones.cards_for(tenant, answers, f) for f in looks if f in asked}
-    # Membership prices and the address as she set them last, also on a question gone back to.
-    priced = membership_prices("memberships", answers)
-    address = prefill_for("location", answers)
-    turns = [
-        {**t, **priced}
-        if t.get("role") == "guide" and t.get("field") == "memberships"
-        else {**t, "prefill": address}
-        if t.get("role") == "guide" and t.get("field") == "location"
-        else t
-        for t in turns
-    ]
     return {
         "turns": turns,
         "guide": guide,

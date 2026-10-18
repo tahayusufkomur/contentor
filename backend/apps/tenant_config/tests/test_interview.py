@@ -1025,3 +1025,51 @@ def test_about_items_become_ticked_tiles(tenant_ctx):
     assert credentials.get("prefill_text") is None
     # A fixed list takes only its own tiles.
     assert guide_for("tone", list(brief.FIELD_BY_ID["tone"].options))["prefill_options"] == ["Warm"]
+
+
+def test_picking_euro_in_setup_prices_events_and_courses_in_euro(client, tenant_ctx, config, quiet):
+    was = tenant_ctx.billing_currency
+    try:
+        _only_missing(
+            tenant_ctx,
+            ("currency", "event_price"),
+            offers=["live"],
+            payments=["event"],
+            live_topic="Flow",
+            live_when="Mondays at 6:00 PM",
+        )
+        # Even if a prior transcript turn had USD options, interview_state and the turn refresh it to EUR.
+        config.setup_flow = {
+            **config.setup_flow,
+            "interview": {
+                "turns": [
+                    {
+                        "role": "guide",
+                        "field": "course_price",
+                        "question": "What should the course cost?",
+                        "options": ["$19", "$29"],
+                        "why": "Prices are in USD ($), the currency you picked.",
+                    },
+                    {"role": "coach", "field": "course_price", "text": "$29"},
+                ],
+                "asked": "currency",
+                "fired": [],
+            },
+        }
+        config.save()
+        _set_answers(tenant_ctx, {**_answers(tenant_ctx), "course_price": 29.0})
+        body = client.post(URL, {"message": "Euro (€)", "field": "currency"}, format="json").json()
+        assert Tenant.objects.get(pk=tenant_ctx.pk).billing_currency == "EUR"
+        guide = body["guide"]
+        assert guide["field"] == "event_price"
+        assert guide["options"] == ["€5", "€10", "€15", "€20", "€25", "€35", "€50", "€75"]
+        assert guide["why"] == "Prices are in EUR (€), the currency you picked."
+        turns = body["state"]["interview"]["turns"]
+        course_turn = next(t for t in turns if t.get("role") == "guide" and t.get("field") == "course_price")
+        coach_turn = next(t for t in turns if t.get("role") == "coach" and t.get("field") == "course_price")
+        assert course_turn["options"][0] == "€19"
+        assert "EUR (€)" in course_turn["why"]
+        assert coach_turn["text"] == "€29"
+    finally:
+        Tenant.objects.filter(pk=tenant_ctx.pk).update(billing_currency=was)
+        tenant_ctx.billing_currency = was
