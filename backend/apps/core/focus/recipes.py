@@ -59,6 +59,16 @@ COURSE = Recipe(
             why="Say what to change, or edit it on the page yourself.",
         ),
         Field(
+            "cover",
+            "Cover",
+            "Which cover fits your course?",
+            kind="cover",
+            why=(
+                "Pick a style on the page. The photo row under it changes the photo in all four; "
+                "upload one, or tell me what you want."
+            ),
+        ),
+        Field(
             "finish",
             "Finish",
             "Ready. Publish it now?",
@@ -72,6 +82,7 @@ COURSE = Recipe(
         "level": "content",
         "size": "content",
         "outline_review": "content",
+        "cover": "designer",
         "finish": "marketing",
     },
     values={

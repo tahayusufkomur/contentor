@@ -12,7 +12,9 @@ from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import runs
 from apps.core.focus import analysis, flow, jobs
+from apps.core.focus.recipes import RECIPES
 from apps.courses.models import Course, Lesson, Module
+from apps.media.models import Design
 from apps.tenant_config.models import CopilotRun, FocusCreation
 
 SCHEMA = "shared_test"
@@ -108,12 +110,68 @@ def test_a_typed_review_answer_redrafts_with_her_words(owner, outline_start):
     assert outline_start.call_args.kwargs["instruction"] == "make module 2 about breathing"
     assert flow.current_field(creation) == "outline_review"
     creation = flow.answer(creation, "outline_review", value="ok")
-    assert flow.current_field(creation) == "finish"
+    assert flow.current_field(creation) == "cover"
+
+
+def _at_cover(owner, text="A course on desk yoga"):
+    creation = flow.answer(_started(owner, text), "level", rest=True)
+    return flow.answer(creation, "outline_review", value="ok")
 
 
 def _at_finish(owner, text="A course on desk yoga"):
-    creation = flow.answer(_started(owner, text), "level", rest=True)
-    return flow.answer(creation, "outline_review", value="ok")
+    """Past the cover step: she chose "later" (the cover endpoint's answer)."""
+    creation = _at_cover(owner, text)
+    creation.answers = {**creation.answers, "cover": "later"}
+    creation.save()
+    return creation
+
+
+def test_the_cover_comes_after_the_outline_and_before_finish():
+    recipe = RECIPES["course"]
+    assert [q.id for q in recipe.questions] == ["topic", "level", "size", "outline_review", "cover", "finish"]
+    assert recipe.specialists["cover"] == "designer"
+
+
+def test_the_cover_is_asked_after_looks_good_and_never_delegated(owner, outline_start):
+    creation = flow.answer(_started(owner), "level", rest=True)
+    assert "cover" not in creation.answers  # "Just draft it" leaves it to her
+    assert outline_start.call_count == 1  # and the outline did not wait for it
+    creation = flow.answer(creation, "outline_review", value="ok")
+    question = flow.state(creation)["question"]
+    assert (question["field"], question["kind"], question["specialist"]) == ("cover", "cover", "designer")
+
+
+def test_a_tap_never_answers_the_cover(owner, outline_start):
+    creation = _at_cover(owner)
+    for tap in ({"value": "kept"}, {"value": "later"}, {"delegate": True}):
+        creation = flow.answer(creation, "cover", **tap)
+    assert "cover" not in creation.answers
+    assert flow.current_field(creation) == "cover"
+
+
+def test_words_at_the_cover_never_become_its_answer(owner, outline_start):
+    creation = flow.answer(_at_cover(owner), "cover", text="something calmer")
+    assert "cover" not in creation.answers
+    assert flow.current_field(creation) == "cover"
+
+
+def test_a_cover_kept_in_the_studio_answers_the_question(owner, outline_start):
+    creation = _at_cover(owner)
+    assert flow.state(creation)["question"]["field"] == "cover"
+    Design.objects.create(
+        kind="cover", target_kind="course", target_key=str(creation.record_id), state="kept", recipe={}
+    )
+    assert flow.state(creation)["question"]["field"] == "finish"
+    assert FocusCreation.objects.get(pk=creation.pk).answers["cover"] == "kept"
+
+
+def test_a_design_for_another_course_or_still_a_draft_does_not(owner, outline_start):
+    creation = _at_cover(owner)
+    Design.objects.create(kind="cover", target_kind="course", target_key="999999", state="kept", recipe={})
+    Design.objects.create(
+        kind="cover", target_kind="course", target_key=str(creation.record_id), state="draft", recipe={}
+    )
+    assert flow.state(creation)["question"]["field"] == "cover"
 
 
 def _filled(creation, content_html="<p>Breathe in.</p>"):
@@ -194,7 +252,7 @@ def test_state_shapes_the_current_question(owner, outline_start):
     assert body["answered"][-1] == {"field": "level", "label": "Complete beginners"}
     assert body["record"]["title"] == "Desk yoga for office workers"
     assert body["outline"] == {"status": "idle", "run": None}
-    assert [s["done"] for s in body["steps"]] == [True, True, False, False, False]
+    assert [s["done"] for s in body["steps"]] == [True, True, False, False, False, False]
 
 
 def test_the_outline_status_follows_its_run(owner, outline_start):

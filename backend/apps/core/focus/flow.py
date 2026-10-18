@@ -110,7 +110,14 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
         _add_time(creation, active_ms)
         recipe = RECIPES[creation.kind]
         question = next((q for q in recipe.questions if q.id == field), None)
-        if not field or field != current_field(creation) or (question is not None and question.kind == "finish"):
+        if (
+            not field
+            or field != current_field(creation)
+            or (
+                question is not None
+                and (question.kind == "finish" or (question.kind == "cover" and not (text or "").strip()))
+            )
+        ):
             creation.save(update_fields=["active_ms", "updated_at"])
             return creation
         words = (text or "").strip()[:ANSWER_MAX]
@@ -164,7 +171,7 @@ def apply(creation, found) -> None:
             _clarified(creation, item["field"], text)
         elif field == "outline_review":
             _redraft(creation, text)
-        elif field:
+        elif field and field != "cover":  # the cover's answer is set by the cover endpoint, never by words
             creation.answers[field] = text
     else:
         if field == "topic":
@@ -296,8 +303,27 @@ def question(kind: str, field: str, creation=None) -> dict:
     }
 
 
+def _sync_cover(creation):
+    """A cover kept in the photo studio ("I'll edit it") answers the cover
+    question when she comes back: the kept design is the answer."""
+    from apps.media.models import Design
+
+    if creation.status != "active" or "cover" in (creation.answers or {}) or creation.record_id is None:
+        return creation
+    if not Design.objects.filter(
+        kind="cover", target_kind="course", target_key=str(creation.record_id), state="kept"
+    ).exists():
+        return creation
+    with transaction.atomic():
+        creation = _locked(creation)
+        if "cover" not in (creation.answers or {}):
+            creation.answers = {**(creation.answers or {}), "cover": "kept"}
+            creation.save(update_fields=["answers", "updated_at"])
+    return creation
+
+
 def state(creation) -> dict:
-    creation = _settle(creation)
+    creation = _settle(_sync_cover(creation))
     recipe = RECIPES[creation.kind]
     record = _record(creation)
     if record is None and creation.status == "active":  # deleted by hand, or by an Undo

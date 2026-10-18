@@ -222,12 +222,12 @@ def test_the_prompt_knows_her_site_and_her_other_courses(owner):
     assert turn["her_courses"] == ["Morning flow"]
 
 
-def test_the_outline_gives_the_course_its_cover_once_written(owner):
+def test_the_outline_gives_no_cover_any_more(owner):
     creation = _building(owner)
     with _model(), mock.patch("apps.core.copilot.content._give_cover") as cover:
         jobs.execute(SCHEMA, creation.outline_run_id)
-    cover.assert_called_once()
-    assert cover.call_args.args[0].title == "Desk yoga, gently"
+    cover.assert_not_called()
+    assert Course.objects.get(pk=creation.record_id).thumbnail_id is None
 
 
 def test_a_redraft_after_its_run_is_gone_never_doubles_the_modules(owner):

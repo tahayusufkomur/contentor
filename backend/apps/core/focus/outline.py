@@ -13,7 +13,7 @@ from django.db.models import Max
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
-from apps.core.copilot import content, runs
+from apps.core.copilot import runs
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotRun, FocusCreation
 from apps.tenant_config.setup_flow import _DRAFT_RULES, _Module
@@ -103,11 +103,6 @@ def carry_out(tenant, run_id) -> None:
         if (creation.answers or {}).get("outline_review") == "ok":
             # A redraft after she confirmed the titles: what it created has no text yet.
             descriptions.start(creation)
-    # Its cover, matched to the written title, while the page replays the outline.
-    try:
-        content._give_cover(course)
-    except Exception:
-        logger.warning("focus outline: no cover schema=%s run=%s", tenant.schema_name, run_id, exc_info=True)
     runs.emit(run_id, "step", {**STEP, "state": "done"})
     modules = course.modules.count()
     lessons = Lesson.objects.filter(module__course=course).count()

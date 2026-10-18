@@ -102,6 +102,9 @@ def test_start_answer_finish_round_trip(client):
     assert state["question"]["field"] == "outline_review"
     assert state["outline"]["status"] == "building"
     state = _answer(client, cid, field="outline_review", value="ok").json()
+    assert state["question"]["field"] == "cover"
+    FocusCreation.objects.filter(pk=cid).update(answers={**FocusCreation.objects.get(pk=cid).answers, "cover": "later"})
+    state = client.get(f"{URL}{cid}/").json()
     assert state["question"]["field"] == "finish"
     state = client.post(f"{URL}{cid}/finish/", {"publish": False}, format="json").json()
     assert state["status"] == "done"
