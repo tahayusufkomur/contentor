@@ -26,6 +26,45 @@ interface RowValue {
 
 const text = (value: unknown) => (typeof value === "string" ? value : "");
 
+/** The character budget and step bookkeeping every replay frame shares:
+ *  ``take`` reveals a text against the budget (null once the replay has not
+ *  reached it), ``step`` follows the run's start/done steps, and ``settle``
+ *  says whether it is over (``ended``: the run itself finished, with or
+ *  without a done step) and who is still working. */
+export function replayClock(elapsedMs: number, cps = 60) {
+  let budget =
+    elapsedMs === Infinity ? Infinity : Math.floor((elapsedMs * cps) / 1000);
+  let started: { specialist: SpecialistKey; label: string } | null = null;
+  let stepDone = false;
+  let complete = true;
+  return {
+    get complete() {
+      return complete;
+    },
+    take(full: string): string | null {
+      if (!complete) return null;
+      const shown = full.slice(0, Math.max(0, Math.min(full.length, budget)));
+      budget -= full.length;
+      if (shown.length < full.length) complete = false;
+      return shown;
+    },
+    step(data: RunEvent["data"]) {
+      if (data.state === "done") stepDone = true;
+      else {
+        started = {
+          specialist: asSpecialist(data.specialist),
+          label: text(data.label),
+        };
+        stepDone = false;
+      }
+    },
+    settle(ended = false) {
+      const settled = complete && (stepDone || ended);
+      return { settled, working: started && !settled ? started : null };
+    },
+  };
+}
+
 /** The frame ``elapsedMs`` into the replay: fields type in one after another
  *  at ``cps`` characters a second, then rows one by one (a row's title, then
  *  its lessons). Events for other records are left out. */
@@ -35,8 +74,7 @@ export function liveFrame(
   elapsedMs: number,
   cps = 60,
 ): LiveFrame {
-  let budget =
-    elapsedMs === Infinity ? Infinity : Math.floor((elapsedMs * cps) / 1000);
+  const clock = replayClock(elapsedMs, cps);
   const frame: LiveFrame = {
     fields: {},
     written: {},
@@ -44,35 +82,16 @@ export function liveFrame(
     working: null,
     settled: false,
   };
-  let started: LiveFrame["working"] = null;
-  let stepDone = false;
-  let complete = true;
-  /** Reveal ``full`` against the budget: the part shown, or null when the
-   *  replay has not reached it yet. */
-  const take = (full: string): string | null => {
-    if (!complete) return null;
-    const shown = full.slice(0, Math.max(0, Math.min(full.length, budget)));
-    budget -= full.length;
-    if (shown.length < full.length) complete = false;
-    return shown;
-  };
   for (const event of events) {
     const data = event.data;
     if (event.type === "step") {
-      if (data.state === "done") stepDone = true;
-      else {
-        started = {
-          specialist: asSpecialist(data.specialist),
-          label: text(data.label),
-        };
-        stepDone = false;
-      }
+      clock.step(data);
       continue;
     }
     if (data.record !== record) continue;
     if (event.type === "field") {
       frame.written[text(data.name)] = text(data.value);
-      const shown = take(text(data.value));
+      const shown = clock.take(text(data.value));
       if (shown === null) continue;
       frame.fields[text(data.name)] = {
         value: shown,
@@ -80,19 +99,18 @@ export function liveFrame(
       };
     } else if (event.type === "row") {
       const value = (data.value ?? {}) as RowValue;
-      const title = take(text(value.title));
+      const title = clock.take(text(value.title));
       if (title === null) continue;
       const lessons: string[] = [];
       for (const lesson of Array.isArray(value.lessons) ? value.lessons : []) {
-        const shown = take(text(lesson));
+        const shown = clock.take(text(lesson));
         if (shown === null) break;
         lessons.push(shown);
       }
-      frame.rows.push({ title, lessons, typing: !complete });
+      frame.rows.push({ title, lessons, typing: !clock.complete });
     }
   }
-  frame.settled = complete && stepDone;
-  frame.working = started && !frame.settled ? started : null;
+  Object.assign(frame, clock.settle());
   return frame;
 }
 
@@ -108,7 +126,7 @@ const reducedMotion = () =>
 export function useReplay<F extends { settled: boolean }>(
   runId: number | null,
   specialist: SpecialistKey,
-  frameOf: (events: RunEvent[], elapsedMs: number) => F,
+  frameOf: (events: RunEvent[], elapsedMs: number, ended: boolean) => F,
   reveals: (events: RunEvent[]) => boolean,
 ): F | null {
   const run = useRun(runId ?? undefined);
@@ -135,8 +153,11 @@ export function useReplay<F extends { settled: boolean }>(
   const instant =
     reducedMotion() ||
     (revealing && !sawActive.current && !!run && !isActive(run.status));
+  const ended = !!run && !isActive(run.status);
   const frame =
-    runId === null ? null : frameOf(events, instant ? Infinity : elapsed);
+    runId === null
+      ? null
+      : frameOf(events, instant ? Infinity : elapsed, ended);
   const settled = frame?.settled ?? false;
 
   useEffect(() => {

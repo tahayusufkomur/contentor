@@ -1,7 +1,7 @@
 "use client";
 
-import { useReplay } from "@/lib/copilot/live";
-import { asSpecialist, type SpecialistKey } from "@/lib/copilot/team";
+import { replayClock, useReplay } from "@/lib/copilot/live";
+import type { SpecialistKey } from "@/lib/copilot/team";
 import type { RunEvent } from "@/lib/copilot/types";
 
 /** The lesson descriptions of a run at a moment of its replay: each lesson's
@@ -24,14 +24,15 @@ const isDescription = (e: RunEvent) =>
   e.data.name === "content_html";
 
 /** The frame ``elapsedMs`` into the replay, against the same character budget
- *  as ``liveFrame`` (``cps`` characters a second). */
+ *  as ``liveFrame`` (``cps`` characters a second). ``ended``: the run is over,
+ *  so it settles without a done step (a stopped or failed run never sends it). */
 export function lessonsFrame(
   events: RunEvent[],
   elapsedMs: number,
   cps = 60,
+  ended = false,
 ): LessonsFrame {
-  let budget =
-    elapsedMs === Infinity ? Infinity : Math.floor((elapsedMs * cps) / 1000);
+  const clock = replayClock(elapsedMs, cps);
   const frame: LessonsFrame = {
     texts: {},
     done: 0,
@@ -39,40 +40,32 @@ export function lessonsFrame(
     working: null,
     settled: false,
   };
-  let started: LessonsFrame["working"] = null;
-  let stepDone = false;
-  let complete = true;
   for (const event of events) {
     if (event.type === "step") {
-      if (event.data.state === "done") stepDone = true;
-      else {
-        started = {
-          specialist: asSpecialist(event.data.specialist),
-          label: text(event.data.label),
-        };
+      clock.step(event.data);
+      if (event.data.state !== "done")
         frame.total = Number(event.data.total) || frame.total;
-        stepDone = false;
-      }
-    } else if (isDescription(event) && complete) {
+    } else if (isDescription(event)) {
       const full = text(event.data.value);
-      const shown = full.slice(0, Math.max(0, Math.min(full.length, budget)));
-      budget -= full.length;
-      complete = shown.length === full.length;
+      const shown = clock.take(full);
+      if (shown === null) continue;
       frame.texts[Number(text(event.data.record).slice("lesson:".length))] = {
         value: shown,
-        typing: !complete,
+        typing: shown.length < full.length,
       };
-      if (complete) frame.done += 1;
+      if (shown.length === full.length) frame.done += 1;
     }
   }
-  frame.settled = complete && stepDone;
-  frame.working = started && !frame.settled ? started : null;
+  Object.assign(frame, clock.settle(ended));
   return frame;
 }
 
 /** The live frame of the descriptions run (null without a run). */
 export function useLiveLessons(runId: number | null): LessonsFrame | null {
-  return useReplay(runId, "content", lessonsFrame, (events) =>
-    events.some(isDescription),
+  return useReplay(
+    runId,
+    "content",
+    (events, ms, ended) => lessonsFrame(events, ms, 60, ended),
+    (events) => events.some(isDescription),
   );
 }

@@ -59,4 +59,21 @@ describe("lessonsFrame", () => {
     expect(frame.texts).toEqual({});
     expect(frame.done).toBe(0);
   });
+
+  it("settles a run that ends without a done step only when ended", () => {
+    const events = EVENTS.slice(0, 3); // stopped or failed: no done step
+    const live = lessonsFrame(events, Infinity, 60, false);
+    expect(live.settled).toBe(false);
+    expect(live.working).not.toBeNull();
+    const over = lessonsFrame(events, Infinity, 60, true);
+    expect(over.settled).toBe(true);
+    expect(over.working).toBeNull();
+    expect(over.done).toBe(2);
+  });
+
+  it("keeps typing what arrived before an ended run settles", () => {
+    const mid = lessonsFrame(EVENTS.slice(0, 3), 200, 60, true);
+    expect(mid.settled).toBe(false);
+    expect(mid.texts[8].typing).toBe(true);
+  });
 });
