@@ -119,10 +119,14 @@ function courseDetail(written: boolean): Body {
 }
 
 /** A small in-memory focus backend: the creation's answers, its outline run
- *  (done at its first poll) and the course behind it. */
-async function stubFocus(page: Page) {
+ *  (done at its first poll) and the course behind it. With ``open: false``
+ *  no creation is open: the course page is the plain editor. */
+async function stubFocus(page: Page, { open = true }: { open?: boolean } = {}) {
   const answers: Record<string, string> = {};
   let created = false;
+  let published = false;
+  const saved: Body[] = [];
+  let edits: Body = {};
   let runStarted = false;
   let runPolled = false;
   let status = "active";
@@ -186,6 +190,7 @@ async function stubFocus(page: Page) {
     }
     if (path.endsWith("/finish/")) {
       answers.finish = body.publish ? "Publish now" : "Keep as a draft";
+      published = !!body.publish;
       status = "done";
       return route.fulfill({ json: state() });
     }
@@ -212,9 +217,20 @@ async function stubFocus(page: Page) {
     });
   });
 
-  await page.route(`**/api/v1/courses/${SLUG}/`, (route) =>
-    route.fulfill({ json: courseDetail(runPolled) }),
-  );
+  await page.route(`**/api/v1/courses/${SLUG}/`, (route) => {
+    const req = route.request();
+    if (req.method() === "PUT") {
+      const body = req.postDataJSON();
+      saved.push(body);
+      // What the server keeps: prices come back with two decimals.
+      edits = { ...body, price: Number(body.price).toFixed(2) };
+      if (body.is_published !== undefined) published = body.is_published;
+      return route.fulfill({ json: { ...courseDetail(runPolled || !open), ...edits } });
+    }
+    return route.fulfill({
+      json: { ...courseDetail(runPolled || !open), ...edits, is_published: published },
+    });
+  });
 
   // The chat the dock opens once focus mode ends: the whole exchange.
   await page.route(/\/api\/v1\/admin\/copilot\/chats\/.*/, (route) => {
@@ -231,7 +247,7 @@ async function stubFocus(page: Page) {
     return route.fulfill({ json: listing ? { chats: [chat] } : chat });
   });
 
-  return { sent };
+  return { sent, saved };
 }
 
 const guide = (page: Page) => page.getByRole("complementary", { name: "New course" });
@@ -307,5 +323,64 @@ test("fill it in myself is today's form", async ({ browser }) => {
   await expect(page.getByRole("heading", { name: "New Course" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Create Course" })).toBeVisible();
   await expect(guide(page)).toHaveCount(0);
+  await page.close();
+});
+
+test("publish now leaves the editor showing it published", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const { saved } = await stubFocus(page);
+
+  await answerTopic(page);
+  await guide(page).getByRole("button", { name: "Just draft it" }).click();
+  await guide(page).getByRole("button", { name: "Looks good, continue" }).click();
+  await guide(page).getByRole("button", { name: "Publish now" }).click();
+  await expect(guide(page)).toHaveCount(0);
+  await expect(page.getByRole("main").getByText("Published", { exact: true }).first()).toBeVisible();
+  await expect(page.locator("#published")).toBeChecked();
+  // Her next save keeps it published.
+  await page.getByRole("button", { name: "Save Changes" }).click();
+  await expect.poll(() => saved.length).toBe(1);
+  expect(saved[0].is_published).toBe(true);
+  await page.close();
+});
+
+test("save & leave saves what she typed on the page", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const { saved } = await stubFocus(page);
+
+  await answerTopic(page);
+  await page.locator("#title").fill("My own title");
+  await page.getByRole("button", { name: "Save & leave" }).click();
+  await expect(page).toHaveURL(/\/admin\/courses$/);
+  expect(saved.at(-1)?.title).toBe("My own title");
+  await page.close();
+});
+
+test("back to the new-course page starts afresh", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  await stubFocus(page);
+
+  await answerTopic(page);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/admin\/courses\/new$/);
+  await expect(guide(page).getByText("What will your students learn?")).toBeVisible();
+  await expect(guide(page).getByText("Who is it for?")).toHaveCount(0);
+  await page.close();
+});
+
+test("a saved setting in the plain editor leaves nothing unsaved", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  await stubFocus(page, { open: false });
+
+  await page.goto(`${TENANT}/admin/courses/${SLUG}`);
+  await page.locator("#pricing_type").selectOption("paid");
+  await page.locator("#price").fill("19");
+  await page.getByRole("button", { name: "Save Changes" }).click();
+  await expect(page.locator("#price")).toHaveValue("19.00");
+  await expect(page.getByRole("button", { name: "Design a cover" })).toBeEnabled();
   await page.close();
 });

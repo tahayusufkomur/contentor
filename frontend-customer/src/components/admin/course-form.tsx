@@ -43,6 +43,7 @@ import { MonetizeNudge } from "@/components/admin/monetize-nudge";
 import { LiveOutline } from "@/components/focus/live-outline";
 import { WorkingTag } from "@/components/focus/working-tag";
 import { useLiveRecord } from "@/lib/copilot/live";
+import { setFocusSave } from "@/lib/focus/store";
 import type { Course, CourseDetail, Module, Lesson } from "@/types/course";
 import type { Photo } from "@/types/photo";
 
@@ -243,6 +244,48 @@ export function CourseForm({
   const [allDetails, setAllDetails] = useState(false);
   const detailsShown = !focus || allDetails;
 
+  // The settings card as the server should keep it. After it, the server's
+  // copy is the new base: what it normalised ("19" -> "19.00") is not hers.
+  const saveSettings = async () => {
+    if (!course) return;
+    await clientFetch(`/api/v1/courses/${slug}/`, {
+      method: "PUT",
+      body: JSON.stringify({
+        title: course.title,
+        description: course.description,
+        thumbnail_url: course.thumbnail_url,
+        thumbnail: course.thumbnail_id || null,
+        pricing_type: course.pricing_type,
+        price: course.price,
+        is_published: course.is_published,
+        filter_option_ids: filterOptionIds,
+        tag_ids: tagIds,
+      }),
+    });
+    server.current = null;
+    await loadCourse();
+  };
+  // Focus mode: "Save & leave" saves what she typed on the page first.
+  const saveRef = useRef(saveSettings);
+  saveRef.current = saveSettings;
+  const unsavedRef = useRef(unsaved);
+  unsavedRef.current = unsaved;
+  const focusing = !!focus;
+  useEffect(() => {
+    if (!focusing) return;
+    setFocusSave(() =>
+      unsavedRef.current ? saveRef.current() : Promise.resolve(),
+    );
+    return () => setFocusSave(null);
+  }, [focusing]);
+  // When focus mode ends (published, kept), the form takes the course as
+  // the server now has it, so a later save never undoes what it did.
+  const wasFocusing = useRef(focusing);
+  useEffect(() => {
+    if (wasFocusing.current && !focusing) void loadCourse();
+    wasFocusing.current = focusing;
+  }, [focusing, loadCourse]);
+
   // --- Save all course fields ---
   const { run: handleSave, loading: saving } = useAsyncAction(
     async () => {
@@ -281,23 +324,9 @@ export function CourseForm({
         return;
       }
       if (!course) return;
-      await clientFetch(`/api/v1/courses/${slug}/`, {
-        method: "PUT",
-        body: JSON.stringify({
-          title: course.title,
-          description: course.description,
-          thumbnail_url: course.thumbnail_url,
-          thumbnail: course.thumbnail_id || null,
-          pricing_type: course.pricing_type,
-          price: course.price,
-          is_published: course.is_published,
-          filter_option_ids: filterOptionIds,
-          tag_ids: tagIds,
-        }),
-      });
+      await saveSettings();
       toast.success("Course saved");
       void refreshSetupStatus();
-      await loadCourse();
     },
     {
       errorToast: isCreate

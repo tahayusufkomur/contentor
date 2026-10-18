@@ -8,6 +8,7 @@ import { leaveCreation, type FocusState } from "@/lib/focus/api";
 import {
   focusProgress,
   refreshFocusOverview,
+  saveFocusEdits,
   setActiveCreation,
 } from "@/lib/focus/store";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ export function FocusBar({ state }: { state: FocusState }) {
   const navigate = useNavigate();
   const { done, total } = focusProgress(state);
   const { run: leave, loading } = useAsyncAction(async () => {
+    await saveFocusEdits(); // a failed save stays here, with its error
     if (state.id)
       await leaveCreation(state.id, {
         active_ms: takeActiveMs(FOCUS_TIME_KEY),

@@ -79,6 +79,17 @@ export function clearActiveCreation(id?: number) {
 
 export const activeCreation = () => active;
 
+// The open course form's save, for "Save & leave" (set while focus mode shows it).
+let focusSave: (() => Promise<void>) | null = null;
+
+export function setFocusSave(save: (() => Promise<void>) | null) {
+  focusSave = save;
+}
+
+/** Save what she typed on the page; throws when the save fails. */
+export const saveFocusEdits = (): Promise<void> =>
+  focusSave ? focusSave() : Promise.resolve();
+
 /** The creation focus mode is showing now; the dock and the shell follow it. */
 export function useActiveCreation(): FocusState | null {
   return useSyncExternalStore(

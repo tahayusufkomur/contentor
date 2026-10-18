@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 
 import {
@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { NavLink } from "@/components/ui/nav-link";
 import { startActiveTime } from "@/lib/focus/active-time";
 import type { FocusQuestion } from "@/lib/focus/api";
-import { activeCreation, setActiveCreation } from "@/lib/focus/store";
+import { setActiveCreation } from "@/lib/focus/store";
 
 import { FOCUS_TIME_KEY } from "./focus-guide";
 
@@ -29,9 +29,12 @@ export function FocusStart({
   question: FocusQuestion;
 }) {
   const t = useTranslations("admin");
+  // Once per visit to this page (Back from a course included): a fresh first
+  // question. Not again while her first answer moves her on to the course.
+  const started = useRef(false);
   useEffect(() => {
-    // Once her first answer has made the creation, it is the one showing.
-    if ((activeCreation()?.id ?? 0) !== 0) return;
+    if (started.current) return;
+    started.current = true;
     startActiveTime(FOCUS_TIME_KEY, true);
     setActiveCreation({
       id: 0,
