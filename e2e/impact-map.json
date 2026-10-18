@@ -91,6 +91,8 @@
     "src/components/covers": ["32-photo-studio"],
     "src/components/studio": ["32-photo-studio"],
     "src/lib/covers": ["32-photo-studio"],
+    "src/lib/designs-api.ts": ["32-photo-studio"],
+    "src/types/design.ts": ["32-photo-studio"],
     "src/components/setup-flow": ["01-signup-onboarding"],
     "src/lib/setup-flow.ts": ["01-signup-onboarding"],
     "src/lib/interview.ts": ["01-signup-onboarding"],
