@@ -808,7 +808,8 @@ def test_publishing_a_course_with_an_empty_lesson_is_refused(owner):
     resp = client.put(f"/api/v1/courses/{course.slug}/", {"title": "Outline", "is_published": True}, format="json")
     assert resp.status_code == 400
     assert resp.json()["is_published"] == [
-        "A course goes live once every lesson has a video or text, and 1 of its 1 lessons have none yet."
+        "A course goes live once every lesson has a video, or text you wrote or edited, "
+        "and 1 of its 1 lessons have none yet."
     ]
     lesson.content_html = "<p>In.</p>"
     lesson.save()
@@ -830,3 +831,39 @@ def test_creating_a_published_course_needs_its_lessons_filled_in(owner):
     assert client.post("/api/v1/courses/", {"title": "Bare", "is_published": True}, format="json").status_code == 400
     body["modules"][0]["lessons"][0]["content_html"] = "<p>Hi.</p>"
     assert client.post("/api/v1/courses/", body, format="json").status_code == 201
+
+
+@pytest.fixture()
+def course_with_one_lesson(owner):
+    course = Course.objects.create(title="Drafted", instructor=owner)
+    Lesson.objects.create(module=Module.objects.create(course=course, title="M", order=1), title="L", order=1)
+    return course
+
+
+@pytest.mark.django_db(transaction=True)
+def test_an_untouched_drafted_description_leaves_the_lesson_empty(course_with_one_lesson):
+    lesson = course_with_one_lesson.modules.get().lessons.get()
+    lesson.content_html = lesson.drafted_html = "<p>What this lesson covers.</p>"
+    lesson.save()
+    assert course_with_one_lesson.not_ready()  # still refused
+    assert lesson.empty()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_her_edit_of_a_drafted_description_makes_it_hers(course_with_one_lesson):
+    lesson = course_with_one_lesson.modules.get().lessons.get()
+    lesson.drafted_html = "<p>A</p>"
+    lesson.content_html = "<p>A, and B.</p>"
+    lesson.save()
+    assert course_with_one_lesson.not_ready() is None
+    assert not lesson.empty()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_a_video_makes_a_drafted_lesson_ready(course_with_one_lesson):
+    lesson = course_with_one_lesson.modules.get().lessons.get()
+    lesson.content_html = lesson.drafted_html = "<p>A</p>"
+    lesson.video_url = "x"
+    lesson.save()
+    assert course_with_one_lesson.not_ready() is None
+    assert not lesson.empty()

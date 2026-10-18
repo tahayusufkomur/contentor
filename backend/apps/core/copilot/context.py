@@ -80,7 +80,7 @@ def _course_record(slug):
     for module in modules:
         lines.append(f"    module {module.id} | {module.title[:80]}")
         for lesson in list(module.lessons.all())[:MAX_RECORD_LESSONS]:
-            empty = not (lesson.content_html or lesson.video_id or lesson.video_url)
+            empty = lesson.empty()
             lines.append(f"      lesson {lesson.id} | {lesson.title[:80]}{' (empty)' if empty else ''}")
     if not modules:
         lines.append("    (no modules yet)")

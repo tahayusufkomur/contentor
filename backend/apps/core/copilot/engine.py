@@ -663,7 +663,10 @@ def _courses_digest(tenant):
         }
     if not rows:
         return "Courses: (none yet)"
-    lines = ["Courses (id | title | cover | status | lessons with a video or text | admin link | site link):"]
+    lines = [
+        "Courses (id | title | cover | status | lessons with a video or her own text "
+        "(an untouched drafted description does not count) | admin link | site link):"
+    ]
     for r in rows:
         cover = "has cover" if (r["thumbnail_id"] or r["thumbnail_url"]) else "NO COVER"
         status = "published" if r["is_published"] else "draft"
@@ -712,7 +715,7 @@ def _events_digest(tenant):
         cover = "has cover" if (e.thumbnail_id or e.thumbnail_url) else "NO COVER"
         when = f"{e.scheduled_at.astimezone(zone):%a %Y-%m-%dT%H:%M}"
         lines.append(
-            f"  {e.id} | {kind} | {str(e.title)[:60]} | {when} | {e.price} " f"| {cover} | {admin_link} | {site_link}"
+            f"  {e.id} | {kind} | {str(e.title)[:60]} | {when} | {e.price} | {cover} | {admin_link} | {site_link}"
         )
     return "\n".join(lines)
 

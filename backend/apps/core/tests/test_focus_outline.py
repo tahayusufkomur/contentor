@@ -252,3 +252,19 @@ def test_a_redraft_keeps_a_module_she_filled_in(owner):
     assert [m.get("kept", False) for m in modules] == [True, False]
     assert Lesson.objects.filter(pk=lesson.pk).exists()
     assert course.modules.count() == 2  # hers, and the new outline's one
+
+
+def test_a_module_whose_only_text_is_drafted_is_not_kept(owner):
+    creation = _building(owner)
+    with _model():
+        jobs.execute(SCHEMA, creation.outline_run_id)
+    course = _course(creation)
+    lesson = Lesson.objects.get(module__course=course, title="Lesson 1.1")
+    lesson.content_html = lesson.drafted_html = "<p>What this covers.</p>"
+    lesson.save()
+    creation.refresh_from_db()
+    run = outline.start(creation, instruction="fewer modules")
+    with _model(draft=_draft(modules=1, lessons=1)):
+        jobs.execute(SCHEMA, run.id)
+    assert not Lesson.objects.filter(pk=lesson.pk).exists()
+    assert course.modules.count() == 1

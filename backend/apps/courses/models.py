@@ -1,10 +1,12 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import F, Q
 from django.utils.text import slugify
 
-# A lesson with nothing for a student yet: no text and no video.
-EMPTY_LESSON = models.Q(content_html="", video__isnull=True, video_url="")
-GO_LIVE_RULE = "a course goes live once every lesson has a video or text"
+# A lesson with nothing for a student yet: no video, and no text of hers. Text
+# the AI drafted (``drafted_html``) and she has not touched does not count.
+EMPTY_LESSON = Q(video__isnull=True, video_url="") & (Q(content_html="") | Q(content_html=F("drafted_html")))
+GO_LIVE_RULE = "a course goes live once every lesson has a video, or text you wrote or edited"
 
 
 def publish_gap(empty: int, total: int) -> str | None:
@@ -91,6 +93,9 @@ class Lesson(models.Model):
     video_url = models.CharField(max_length=500, blank=True, default="")
     duration_seconds = models.IntegerField(default=0)
     content_html = models.TextField(blank=True, default="")
+    # Exactly what the Content Creating Specialist wrote into content_html. The
+    # text is hers once the two differ, so an edit needs no clearing hook.
+    drafted_html = models.TextField(blank=True, default="")
     is_free_preview = models.BooleanField(default=False)
 
     class Meta:
@@ -99,6 +104,11 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.title
+
+    def empty(self) -> bool:
+        """EMPTY_LESSON, for code that holds the row."""
+        no_video = self.video_id is None and not self.video_url
+        return no_video and self.content_html in ("", self.drafted_html)
 
 
 class Video(models.Model):
