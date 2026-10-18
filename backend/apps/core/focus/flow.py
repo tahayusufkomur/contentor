@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
-from . import outline
+from . import jobs, outline
 from .recipes import RECIPES
 
 DELEGATE = "delegate"
@@ -21,14 +21,6 @@ DELEGATE = "delegate"
 MAX_SPAN_MS = 600_000
 TITLE_MAX = 80
 ANSWER_MAX = 500
-OUTLINE_STATUS = {
-    "queued": "building",
-    "thinking": "building",
-    "working": "building",
-    "done": "ready",
-    "stopped": "failed",
-    "failed": "failed",
-}
 CLOSING = {
     "publish": "Published. Students can find it on your site now.",
     "draft": "Saved as a draft. Once every lesson has its video or text, publish it from this page.",
@@ -190,15 +182,10 @@ def leave(creation, *, abandon: bool = False, active_ms=None) -> FocusCreation:
 
 
 def outline_status(creation) -> str:
-    """idle | building | ready | failed, from its outline run. A run nobody is
-    advancing is failed here, so the guide never waits forever."""
-    from apps.core.copilot import runs
-
+    """idle | building | ready | failed, from its outline run."""
     if creation.outline_run_id is None:  # never started, or its run was pruned
         return "ready" if (creation.drafted or {}).get("modules") else "idle"
-    runs.sweep(CopilotRun.objects.filter(pk=creation.outline_run_id))
-    status = CopilotRun.objects.filter(pk=creation.outline_run_id).values_list("status", flat=True).first()
-    return OUTLINE_STATUS.get(status, "idle")
+    return jobs.status(creation, "outline")
 
 
 def question(kind: str, field: str) -> dict:

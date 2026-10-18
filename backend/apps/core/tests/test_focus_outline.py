@@ -13,7 +13,7 @@ from apps.accounts.models import User
 from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import runs
-from apps.core.focus import flow, outline
+from apps.core.focus import flow, jobs, outline
 from apps.core.focus.recipes import SIZES
 from apps.courses.models import Course, Lesson, Module
 from apps.tenant_config.models import CopilotRun
@@ -37,7 +37,7 @@ def owner(tenant_ctx):
 
 @pytest.fixture(autouse=True)
 def enqueue():
-    with mock.patch.object(tasks.run_focus_outline, "delay") as delay:
+    with mock.patch.object(tasks.run_focus_job, "delay") as delay:
         yield delay
 
 
@@ -92,7 +92,7 @@ def test_start_queues_one_content_run_on_commit(owner, enqueue):
 def test_execute_writes_the_course_then_emits_title_description_and_rows_in_order(owner):
     creation = _building(owner)
     with _model():
-        outline.execute(SCHEMA, creation.outline_run_id)
+        jobs.execute(SCHEMA, creation.outline_run_id)
     assert _types(creation.outline_run_id) == ["step", "field", "field", "row", "row", "step", "done"]
     course = _course(creation)
     assert course.title == "Desk yoga, gently"
@@ -118,7 +118,7 @@ def test_her_title_and_her_modules_win(owner):
     course.save()
     Module.objects.create(course=course, title="Mine", order=1)
     with _model():
-        outline.execute(SCHEMA, creation.outline_run_id)
+        jobs.execute(SCHEMA, creation.outline_run_id)
     course.refresh_from_db()
     assert course.title == "My own title"
     assert list(course.modules.values_list("title", flat=True)) == ["Mine"]
@@ -131,7 +131,7 @@ def test_her_title_and_her_modules_win(owner):
 def test_a_model_failure_falls_back_to_an_honest_outline(owner):
     creation = _building(owner)
     with _model(side_effect=core_ai.AiError("down")):
-        outline.execute(SCHEMA, creation.outline_run_id)
+        jobs.execute(SCHEMA, creation.outline_run_id)
     course = _course(creation)
     assert course.modules.count() == SIZES["short"][0]
     assert course.title == "Desk yoga"  # the working title stays
@@ -149,12 +149,12 @@ def test_the_fallback_respects_the_size_she_picked():
 def test_a_redraft_replaces_only_the_previous_outline(owner):
     creation = _building(owner)
     with _model():
-        outline.execute(SCHEMA, creation.outline_run_id)
+        jobs.execute(SCHEMA, creation.outline_run_id)
     course = _course(creation)
     Module.objects.create(course=course, title="Mine", order=9)
     run = outline.start(creation, instruction="fewer lessons")
     with _model(draft=_draft(modules=1, lessons=1)) as model:
-        outline.execute(SCHEMA, run.id)
+        jobs.execute(SCHEMA, run.id)
     assert "fewer lessons" in model.call_args.kwargs["user"]
     assert "Module 2" in model.call_args.kwargs["user"]  # the outline she is changing
     titles = sorted(course.modules.values_list("title", flat=True))
@@ -170,7 +170,7 @@ def test_a_run_stopped_during_the_model_call_writes_nothing(owner):
         return _draft(), Decimal("0"), "x"
 
     with _model(side_effect=stop_then_draft):
-        outline.execute(SCHEMA, creation.outline_run_id)
+        jobs.execute(SCHEMA, creation.outline_run_id)
     course = _course(creation)
     assert course.modules.count() == 0
     assert course.title == "Desk yoga"
@@ -192,8 +192,8 @@ def test_finish_never_revives_a_stopped_run(owner):
     assert "done" not in _types(run_id)
 
 
-def test_run_focus_outline_goes_to_the_agents_queue():
-    assert tasks.run_focus_outline.queue == "agents"
+def test_run_focus_job_goes_to_the_agents_queue():
+    assert tasks.run_focus_job.queue == "agents"
 
 
 def test_the_prompt_knows_her_site_and_her_other_courses(owner):
@@ -206,7 +206,7 @@ def test_the_prompt_knows_her_site_and_her_other_courses(owner):
     Course.objects.create(title="Morning flow", instructor=owner)
     creation = flow.answer(flow.start(owner, "course", delegate=True), "level", rest=True)
     with _model() as model:
-        outline.execute(SCHEMA, creation.outline_run_id)
+        jobs.execute(SCHEMA, creation.outline_run_id)
     turn = json.loads(model.call_args.kwargs["user"])
     assert turn["topic"] == "delegate"
     assert turn["brand"] == "Yoga Studio"
@@ -216,7 +216,7 @@ def test_the_prompt_knows_her_site_and_her_other_courses(owner):
 def test_the_outline_gives_the_course_its_cover_once_written(owner):
     creation = _building(owner)
     with _model(), mock.patch("apps.core.copilot.content._give_cover") as cover:
-        outline.execute(SCHEMA, creation.outline_run_id)
+        jobs.execute(SCHEMA, creation.outline_run_id)
     cover.assert_called_once()
     assert cover.call_args.args[0].title == "Desk yoga, gently"
 
@@ -226,20 +226,20 @@ def test_a_redraft_after_its_run_is_gone_never_doubles_the_modules(owner):
     (runs are pruned after two weeks, and a Stop can beat the run's finish)."""
     creation = _building(owner)
     with _model():
-        outline.execute(SCHEMA, creation.outline_run_id)
+        jobs.execute(SCHEMA, creation.outline_run_id)
     CopilotRun.objects.filter(pk=creation.outline_run_id).delete()
     creation.refresh_from_db()
     assert flow.outline_status(creation) == "ready"
     run = outline.start(creation, instruction="fewer modules")
     with _model(draft=_draft(modules=1, lessons=1)):
-        outline.execute(SCHEMA, run.id)
+        jobs.execute(SCHEMA, run.id)
     assert _course(creation).modules.count() == 1
 
 
 def test_a_redraft_keeps_a_module_she_filled_in(owner):
     creation = _building(owner)
     with _model():
-        outline.execute(SCHEMA, creation.outline_run_id)
+        jobs.execute(SCHEMA, creation.outline_run_id)
     course = _course(creation)
     lesson = Lesson.objects.get(module__course=course, title="Lesson 1.1")
     lesson.content_html = "<p>My own words</p>"
@@ -247,7 +247,7 @@ def test_a_redraft_keeps_a_module_she_filled_in(owner):
     creation.refresh_from_db()
     run = outline.start(creation, instruction="fewer modules")
     with _model(draft=_draft(modules=1, lessons=1)) as model:
-        outline.execute(SCHEMA, run.id)
+        jobs.execute(SCHEMA, run.id)
     modules = json.loads(model.call_args.kwargs["user"])["current_outline"]["modules"]
     assert [m.get("kept", False) for m in modules] == [True, False]
     assert Lesson.objects.filter(pk=lesson.pk).exists()

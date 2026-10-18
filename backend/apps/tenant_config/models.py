@@ -292,6 +292,12 @@ class FocusCreation(models.Model):
     # What its outlines wrote ({titles, descriptions, modules: ids}), saved with
     # the write itself: a redraft replaces exactly these, even once runs are gone.
     drafted = models.JSONField(default=dict, blank=True)
+    # Every other job's latest run ({job: run id}); the outline keeps ``outline_run``.
+    runs = models.JSONField(default=dict, blank=True)
+    # What her typed answers settled (keys from apps.core.focus.analysis).
+    brief = models.JSONField(default=dict, blank=True)
+    # A typed answer waiting for its analysis: {field, text, rest, run}.
+    pending = models.JSONField(default=dict, blank=True)
     # Her active time on it (tab visible), the sum of the spans she reported.
     active_ms = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

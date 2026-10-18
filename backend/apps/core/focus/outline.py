@@ -8,18 +8,17 @@ import json
 import logging
 
 from django.conf import settings
-from django.db import connection, transaction
+from django.db import transaction
 from django.db.models import Max
-from django_tenants.utils import tenant_context
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
-from apps.core import tasks
 from apps.core.copilot import content, runs
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotRun, FocusCreation
 from apps.tenant_config.setup_flow import _DRAFT_RULES, _Module
 
+from . import jobs
 from .recipes import SIZES
 
 logger = logging.getLogger(__name__)
@@ -65,36 +64,10 @@ class OutlineDraft(BaseModel):
 def start(creation, instruction: str = "") -> CopilotRun:
     """A queued outline run for the creation, handed to the agents worker once
     the row is committed. Call inside her tenant's context."""
-    run = CopilotRun.objects.create(
-        actor=creation.actor,
-        chat=creation.chat,
-        specialist="content",
-        request={"focus": creation.id, "job": "outline", "instruction": instruction},
-    )
-    creation.outline_run = run
-    creation.save(update_fields=["outline_run", "updated_at"])
-    schema = connection.schema_name
-    transaction.on_commit(lambda: tasks.run_focus_outline.delay(schema, run.id))
-    return run
+    return jobs.queue(creation, "outline", specialist="content", instruction=instruction)
 
 
-def execute(schema_name, run_id) -> None:
-    from apps.core.models import Tenant
-
-    tenant = Tenant.objects.filter(schema_name=schema_name).first()
-    if tenant is None:
-        return
-    with tenant_context(tenant):
-        if not runs.claim(run_id):  # stopped, swept, or a second delivery of the task
-            return
-        try:
-            _carry_out(tenant, run_id)
-        except Exception:
-            logger.exception("focus outline failed schema=%s run=%s", schema_name, run_id)
-            runs.finish(run_id, False)
-
-
-def _carry_out(tenant, run_id) -> None:
+def carry_out(tenant, run_id) -> None:
     from apps.courses.models import Course, Lesson
 
     from .flow import DELEGATE, working_title
@@ -108,8 +81,7 @@ def _carry_out(tenant, run_id) -> None:
     draft = _draft(tenant, creation, course, instruction)
     topic = str((creation.answers or {}).get("topic") or "")
     with transaction.atomic():
-        locked = CopilotRun.objects.select_for_update().get(pk=run_id)
-        if locked.status not in runs.ACTIVE:  # Stop won while the model wrote: drop it
+        if not jobs.active(run_id):  # Stop won while the model wrote: drop it
             return
         course = Course.objects.select_for_update().get(pk=course.pk)
         creation = FocusCreation.objects.select_for_update().get(pk=creation.pk)
