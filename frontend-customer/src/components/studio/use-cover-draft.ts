@@ -231,8 +231,13 @@ export function useCoverDraft({
           : { label: ta("dock.undo"), onClick: () => void undoKeep(auditId) },
     });
     router.refresh();
-    if (back.startsWith("/admin/")) navigate(back);
-    else startReload();
+    if (back.startsWith("/admin/")) {
+      // Leaving: like a reload, nothing more is saved to or done with this editor.
+      alive.current = false;
+      autosave.cancel();
+      setReloading(true);
+      navigate(back);
+    } else startReload();
   });
 
   const { run: discard, loading: discarding } = useAsyncAction(async () => {

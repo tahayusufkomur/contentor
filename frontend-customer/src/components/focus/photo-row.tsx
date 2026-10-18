@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
@@ -15,7 +16,11 @@ import {
   fetchCoverPhotos,
   type CoverPhoto,
 } from "@/lib/focus/api";
-import { applyCreation, usePhotoPage } from "@/lib/focus/store";
+import {
+  applyCreation,
+  setCanMorePhotos,
+  usePhotoPage,
+} from "@/lib/focus/store";
 import { uploadPhoto } from "@/lib/upload";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
@@ -52,22 +57,31 @@ export function PhotoRow({
   selected: string | null;
 }) {
   const t = useTranslations("admin");
+  // Read from the generation's callbacks, so the effect never reruns for it.
+  const say = useRef(t);
+  say.current = t;
   const page = usePhotoPage();
   const [photos, setPhotos] = useState<CoverPhoto[] | null>(null);
   const [pending, setPending] = useState(false);
   const [tapped, setTapped] = useState<string | null>(null);
   const [making, setMaking] = useState(false);
+  const [hasNext, setHasNext] = useState(false);
+  // The words whose first page loaded fine and found nothing: only then is a
+  // photo made (a failed search must never spend her monthly allowance).
+  const [emptyFor, setEmptyFor] = useState<string | null>(null);
 
   // Page 1 when her words change; the next page appended on "More photos".
   useEffect(() => {
     let cancelled = false;
     setPending(true);
     fetchCoverPhotos(creationId, query, page)
-      .then(({ results }) => {
-        if (!cancelled)
-          setPhotos((shown) =>
-            page === 1 ? results : [...(shown ?? []), ...results],
-          );
+      .then(({ results, has_next }) => {
+        if (cancelled) return;
+        setPhotos((shown) =>
+          page === 1 ? results : [...(shown ?? []), ...results],
+        );
+        setHasNext(has_next);
+        if (page === 1) setEmptyFor(results.length === 0 ? query : null);
       })
       .catch(() => {
         if (!cancelled) setPhotos((shown) => shown ?? []);
@@ -80,22 +94,33 @@ export function PhotoRow({
     };
   }, [creationId, query, page]);
 
+  // The guide's "More photos" waits for this page and ends with the last.
+  useEffect(() => {
+    setCanMorePhotos(!pending && hasNext);
+  }, [pending, hasNext]);
+  useEffect(() => () => setCanMorePhotos(false), []);
+
   // Nothing fits her words: one new photo for them, if she has any left.
-  const nothing = !!query && page === 1 && !pending && photos?.length === 0;
+  const nothing = !!query && page === 1 && emptyFor === query;
   useEffect(() => {
     if (!nothing) return;
     const controller = new AbortController();
     generationAllowance()
       .then((allowance) => {
-        if (controller.signal.aborted || allowance.left <= 0) return null;
+        if (controller.signal.aborted || allowance.left <= 0) return undefined;
         setMaking(true);
         return makePhoto(query, "16:9", { signal: controller.signal });
       })
       .then((photo) => {
-        if (photo && !controller.signal.aborted)
-          setPhotos((shown) => [...hers(photo), ...(shown ?? [])]);
+        if (photo === undefined || controller.signal.aborted) return;
+        // null: the job ended without a photo
+        if (!photo) throw new Error("no photo");
+        setPhotos((shown) => [...hers(photo), ...(shown ?? [])]);
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!controller.signal.aborted)
+          toast.error(say.current("focus.photoFailed"));
+      })
       .finally(() => setMaking(false));
     return () => controller.abort();
   }, [nothing, query]);
@@ -103,10 +128,15 @@ export function PhotoRow({
   const { run: choose, loading: choosing } = useAsyncAction(
     async (assetId: string) => {
       setTapped(assetId);
-      applyCreation(
-        creationId,
-        await coverAction(creationId, { action: "photo", asset_id: assetId }),
-      );
+      try {
+        applyCreation(
+          creationId,
+          await coverAction(creationId, { action: "photo", asset_id: assetId }),
+        );
+      } catch (error) {
+        setTapped(null); // not chosen after all
+        throw error;
+      }
     },
   );
 

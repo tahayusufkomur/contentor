@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useAssistantDock } from "@/lib/assistant-dock";
 import { stopRun } from "@/lib/copilot/api";
+import type { SpecialistKey } from "@/lib/copilot/team";
 import { stopActiveTime, takeActiveMs } from "@/lib/focus/active-time";
 import {
   answerCreation,
@@ -36,6 +37,7 @@ import {
   refreshFocusOverview,
   setActiveCreation,
   useActiveCreation,
+  useCanMorePhotos,
   useCoverPick,
 } from "@/lib/focus/store";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -170,7 +172,8 @@ export function FocusGuide() {
   const question = state.question;
   const descriptions = state.descriptions?.status;
   // Another specialist takes this step: who, in one line (spec §4.1).
-  const handOver = question && `focus.handOver.${question.field}`;
+  const handOver =
+    question && HAND_OVER[question.field] === question.specialist;
 
   return (
     <div className="flex flex-col gap-5" style={SHELL_TOKENS}>
@@ -226,10 +229,10 @@ export function FocusGuide() {
           </div>
         </div>
       )}
-      {question && handOver && t.has(handOver) && (
+      {question && handOver && (
         <p className="flex items-center gap-2 text-sm text-foreground">
           <SpecialistFace k={question.specialist} size="sm" />
-          {t(handOver, {
+          {t(`focus.handOver.${question.field}`, {
             name: t(`team.specialists.${question.specialist}.name`),
           })}
         </p>
@@ -280,6 +283,14 @@ export function FocusGuide() {
     </div>
   );
 }
+
+/** The steps another specialist takes over, each with its line under
+ *  `focus.handOver`; only that specialist says it (a finish that is not
+ *  ready yet is asked by the Content Creating Specialist instead). */
+const HAND_OVER: Partial<Record<string, SpecialistKey>> = {
+  cover: "designer",
+  finish: "marketing",
+};
 
 const NONE: GuideInput = {
   picked: null,
@@ -381,6 +392,7 @@ function CoverQuestion({
   const t = useTranslations("admin");
   const navigate = useNavigate();
   const pick = useCoverPick();
+  const canMorePhotos = useCanMorePhotos();
   const [text, setText] = useState("");
   const [tapped, setTapped] = useState<CoverTap | null>(null);
   const { run: tap, loading } = useAsyncAction(async (action: CoverTap) => {
@@ -434,7 +446,12 @@ function CoverQuestion({
           "outline",
           state.cover?.status !== "building",
         )}
-        <Button size="sm" variant="outline" onClick={morePhotos}>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!canMorePhotos}
+          onClick={morePhotos}
+        >
           {t("focus.morePhotos")}
         </Button>
         {button("edit", "focus.editCover", "outline", pick !== null)}

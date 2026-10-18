@@ -205,6 +205,7 @@ async function stubFocus(
               ...QUESTIONS.finish,
               question: "Your outline is saved. Next, your lessons.",
               options: [option("draft", "Keep as a draft")],
+              specialist: "content",
             }
           : field
             ? QUESTIONS[field]
@@ -465,6 +466,8 @@ test("an outline with empty lessons cannot be published", async ({ browser }) =>
   await guide(page).getByRole("button", { name: "Just draft it" }).click();
   await guide(page).getByRole("button", { name: "Looks good, continue" }).click();
   await expect(guide(page).getByText("Next, your lessons.")).toBeVisible();
+  // Not Marketing's step yet: no hand-over line.
+  await expect(guide(page).getByText(/here: let's get it out there/)).toHaveCount(0);
   await expect(guide(page).getByRole("button", { name: "Publish now" })).toHaveCount(0);
   await guide(page).getByRole("button", { name: "Keep as a draft" }).click();
   await expect(guide(page)).toHaveCount(0);
@@ -758,12 +761,14 @@ async function openAtCover(page: Page, onFocus: (req: { path: string; method: st
     return route.fulfill({ json: { results: PHOTOS, has_next: false } });
   });
   // Never a real photo generation from a spec.
-  await page.route("**/api/v1/curated-images/generate/**", (route) =>
-    route.fulfill({ json: { limit: 0, used: 0, left: 0 } }),
-  );
+  const allowances: string[] = [];
+  await page.route("**/api/v1/curated-images/generate/**", (route) => {
+    allowances.push(route.request().method());
+    return route.fulfill({ json: { limit: 0, used: 0, left: 0 } });
+  });
   await page.goto(`${TENANT}/admin/courses/${SLUG}`);
   await expect(guide(page).getByText("Which cover fits your course?")).toBeVisible();
-  return { ...tracked, searches };
+  return { ...tracked, searches, allowances };
 }
 
 const coverStep = (page: Page) => page.getByRole("main").getByRole("group", { name: "Cover" });
@@ -787,6 +792,8 @@ test("the cover step offers four styles and the photo they share", async ({ brow
   // Her photo first, labelled; the library's after it; and Upload.
   await expect(step.getByRole("button", { name: /My studio/ })).toContainText("Yours");
   await expect(step.getByText("Upload")).toBeVisible();
+  // The row has no next page: More photos has nothing to fetch.
+  await expect(guide(page).getByRole("button", { name: "More photos" })).toBeDisabled();
 
   await step.getByRole("button", { name: /Standing desk/ }).click();
   await expect.poll(() => sent.find((s) => s.action === "photo")).toMatchObject({ action: "photo", asset_id: "lib-standing-desk" });
@@ -905,5 +912,29 @@ test("saying a photo searches the row", async ({ browser }) => {
   await expect.poll(() => searches).toContain(WORDS);
   await expect(guide(page).getByText("Which cover fits your course?")).toBeVisible();
   expect(sent.filter((s) => s.field === "cover")).toEqual([expect.objectContaining({ field: "cover", text: WORDS })]);
+  await page.close();
+});
+
+test("a failed photo search never makes a photo; an empty one asks the allowance", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  let fail = true;
+  const { searches, allowances } = await openAtCover(page, ({ path }) => {
+    if (path.endsWith(`/focus/${CREATION}/`)) return coverState({ cover: coverPayload(undefined, { query: fail ? "a red bicycle" : "a blue kite" }) });
+  });
+  await page.route(`**/api/v1/admin/focus/${CREATION}/photos/**`, (route) => {
+    searches.push(new URL(route.request().url()).searchParams.get("q") ?? "");
+    return fail ? route.fulfill({ status: 500, json: {} }) : route.fulfill({ json: { results: [], has_next: false } });
+  });
+  await page.reload();
+  await expect.poll(() => searches).toContain("a red bicycle");
+  await page.waitForTimeout(1000);
+  expect(allowances).toEqual([]);
+
+  // The search works and finds nothing: only then is a photo considered (none left here).
+  fail = false;
+  await page.reload();
+  await expect.poll(() => searches).toContain("a blue kite");
+  await expect.poll(() => allowances).toEqual(["GET"]);
   await page.close();
 });

@@ -109,6 +109,22 @@ export function morePhotos() {
   emit();
 }
 
+// Whether "More photos" has a next page to fetch: set by the row on screen.
+let canMorePhotos = false;
+
+export function setCanMorePhotos(value: boolean) {
+  if (value === canMorePhotos) return;
+  canMorePhotos = value;
+  emit();
+}
+
+export const useCanMorePhotos = (): boolean =>
+  useSyncExternalStore(
+    subscribe,
+    () => canMorePhotos,
+    () => false,
+  );
+
 export const usePhotoPage = (): number =>
   useSyncExternalStore(
     subscribe,
