@@ -424,16 +424,58 @@ function badgeLayer(
   );
 }
 
-/** Her logo, white or black when her style says so and as it is otherwise. */
-function logoLayer(ctx: Ctx, frame: Frame): ReactNode {
+const WHITE_LOGO = "brightness(0) invert(1)";
+const BLACK_LOGO = "brightness(0)";
+
+/** The logo's filter. Her colour for it is white, black, or any other (the logo as it is). With none
+ *  it takes the colour that reads on what it sits on, as text does: white on a dark panel and on a
+ *  photo, black on a light panel. What it sits on is the highest of the panel and the photo whose
+ *  frame holds its centre (in a band layout the logo at the top is on the photo, in a framed one
+ *  it is on the inset photo). A photo that is not there is drawn as the surface tint. */
+function logoTint(
+  ctx: Ctx,
+  frame: Frame,
+  frames: Record<string, Frame>,
+): string | undefined {
+  const color = ctx.recipe.styles.logo?.color;
+  if (color !== undefined) {
+    return color === "white"
+      ? WHITE_LOGO
+      : color === "black"
+        ? BLACK_LOGO
+        : undefined;
+  }
+  const [x, y] = [frame.x + frame.w / 2, frame.y + frame.h / 2];
+  let on: "panel" | "photo" | undefined;
+  for (const id of layerOrder(ctx.recipe)) {
+    const f = frames[id];
+    if (
+      (id === "panel" || id === "photo") &&
+      f &&
+      f.x <= x &&
+      x <= f.x + f.w &&
+      f.y <= y &&
+      y <= f.y + f.h
+    ) {
+      on = id;
+    }
+  }
+  if (on === "photo" && ctx.photoUrl) return WHITE_LOGO;
+  const paint = on === "photo" ? "surface" : ctx.recipe.panel;
+  return readableOn(paint, ctx.palette) === ctx.palette.white
+    ? WHITE_LOGO
+    : BLACK_LOGO;
+}
+
+/** Her logo, in a frame five times as wide as it is high (see the layouts): drawn by that height,
+ *  contained, from the left of the frame, or from its centre in a title-only cover. */
+function logoLayer(
+  ctx: Ctx,
+  frame: Frame,
+  frames: Record<string, Frame>,
+): ReactNode {
   if (!ctx.design.logo_url) return null;
   const style = ctx.recipe.styles.logo ?? {};
-  const tint =
-    style.color === "white"
-      ? "brightness(0) invert(1)"
-      : style.color === "black"
-        ? "brightness(0)"
-        : undefined;
   const side =
     style.align ?? (ctx.recipe.layout === "title" ? "center" : "left");
   return (
@@ -451,7 +493,10 @@ function logoLayer(ctx: Ctx, frame: Frame): ReactNode {
         loading="lazy"
         decoding="async"
         className={cn(styles.fill, styles.contain)}
-        style={{ objectPosition: `${side} center`, filter: tint }}
+        style={{
+          objectPosition: `${side} center`,
+          filter: logoTint(ctx, frame, frames),
+        }}
       />
     </div>
   );
@@ -527,7 +572,7 @@ function drawLayer(
             aspect,
           );
     case "logo":
-      return logoLayer(ctx, frame);
+      return logoLayer(ctx, frame, frames);
     case "badge":
       return bare || words.badge === null
         ? null

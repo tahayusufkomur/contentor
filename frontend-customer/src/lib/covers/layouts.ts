@@ -10,7 +10,8 @@
 //    label sits at the bottom, the title in the middle and the subtitle at the top, so the three
 //    stay together however many lines each takes. A part's line clamp is `fitLines` of its frame.
 //  - The logo is anchored to the left of its frame (centred in `title`), the badge to the right
-//    (centred in `title`).
+//    (centred in `title`). The logo's frame is sized by its height, which a square mark fills and a
+//    wide lockup keeps, up to LOGO_ASPECT times as wide.
 //  - The badge shares the logo's row at the top of `panel` (beside its photo), `full`, `band` and
 //    `photo`, where there is room. In `title` it is the first line of the centred stack, above the
 //    label, and in `framed` it takes the photo's bottom corner: neither shares a row with the logo.
@@ -107,6 +108,11 @@ function maxLines(
   return roomy ? [3, 2] : [2, 1];
 }
 
+/** How many times as wide as high a logo's frame is. A logo is drawn by the height of its frame
+ *  (`object-fit: contain`), so a square mark fills that height at a fraction of the width, and a wide
+ *  lockup (mark and name, 3 to 5 times as wide as high) keeps it too. */
+const LOGO_ASPECT = 5;
+
 // Distances in cqmin.
 /** From the canvas edge to what is on it. */
 const MARGIN = 5.5;
@@ -144,8 +150,8 @@ export function layoutFrames(
 
   // The logo and badge grow with a wide frame, up to 1.4 times.
   const grow = Math.min(Math.max(TITLE, FLOOR * aspect) / TITLE, 1.4);
-  const logoW = 22 * grow;
   const logoH = 6.5 * grow;
+  const logoW = LOGO_ASPECT * logoH;
   const badgeW = 32 * grow;
   const badgeH = 8 * grow;
   const logo = (x: number, y: number) => fr(x, y, logoW, logoH);

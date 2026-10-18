@@ -263,6 +263,31 @@ describe("layoutFrames", () => {
     }
   });
 
+  it("sizes the logo by its height: a frame five times as wide as it is high, so a wide lockup keeps the height of a square mark", () => {
+    for (const { layout, aspect, shown } of CASES) {
+      const { logo } = layoutFrames(layout, aspect, shown);
+      const width = 100 * Math.max(1, aspect);
+      expect(
+        (logo!.w * width) / (logo!.h * canvasHeight(aspect)),
+        label(layout, aspect, shown),
+      ).toBeCloseTo(5, 6);
+    }
+    // The height is what it was: 6.5 cqmin, up to 1.4 times that in a wide frame.
+    expect(
+      layoutFrames("panel", 3 / 4).logo!.h * canvasHeight(3 / 4),
+    ).toBeCloseTo(6.5, 9);
+  });
+
+  it("keeps the logo whole on the colour or the photo it sits on", () => {
+    for (const { layout, aspect, shown } of CASES) {
+      const { logo, panel, photo } = layoutFrames(layout, aspect, shown);
+      expect(
+        (panel && within(logo!, panel)) || (photo && within(logo!, photo)),
+        label(layout, aspect, shown),
+      ).toBe(true);
+    }
+  });
+
   it("gives the badge a row of its own in title and framed, apart from the logo, in every shape a cover is drawn in", () => {
     // Beyond about 4.2 (wider than any cover is drawn in) a title-only stack has no room left for a
     // badge row and the badge goes back to the logo's row; below it no shape shares one.

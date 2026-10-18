@@ -668,7 +668,8 @@ describe("CoverArt logo and badge", () => {
       logoOf((r) => {
         if (color) r.styles.logo = { color: color as Paint };
       }).img?.style.filter;
-    expect(filter()).toBeUndefined();
+    // With no colour of hers it takes the readable one for what it sits on (see "logo tint").
+    expect(filter()).toBe("brightness(0) invert(1)");
     expect(filter("white")).toBe("brightness(0) invert(1)");
     expect(filter("black")).toBe("brightness(0)");
     expect(filter("accent")).toBeUndefined();
@@ -757,10 +758,11 @@ describe("CoverArt logo and badge", () => {
     expect(LONGEST).toHaveLength(24);
     // The longest badge, on a 4:3 look at Card: no frame-wide chip, room for the whole text (it needs
     // 41 to 57% of the cover's width). That look's panel is beside its photo, so the logo is in the
-    // badge's row and the chip may grow up to it: 95.9% - 20.6% - 2.3% = 73%.
+    // badge's row and the chip may grow up to it: 95.9% - 28.5% (the logo's frame, five times as wide
+    // as high) - 2.3% = 65.1%.
     const { box, pill } = badgeOf(longBadge, "ledger");
     expect(pill.style.width).toBe("max-content");
-    expect(pill.style["max-width"]).toBe("73cqw");
+    expect(pill.style["max-width"]).toBe("65.125cqw");
     // A 3:4 look keeps its logo in the panel under the photo, so its badge has the whole cap.
     expect(badgeOf(longBadge).pill.style["max-width"]).toBe("77cqw");
     expect(pill.style).toMatchObject({
@@ -911,6 +913,12 @@ describe("CoverArt logo and badge", () => {
             const word = layer(els, part);
             if (word)
               expect(meets(grown, rect(word)), `${at} ${part}`).toBe(false);
+            // The logo, five times as wide as high, is clear of the words too.
+            if (word && logo) {
+              expect(meets(rect(logo), rect(word)), `${at} logo/${part}`).toBe(
+                false,
+              );
+            }
           }
           // On a framed cover the badge belongs to its photo and stays on it.
           const photo = layer(els, "photo");
@@ -963,6 +971,131 @@ describe("CoverArt logo and badge", () => {
       longBadge(r);
     }, "ledger");
     expect(num(landscape.pill.style["max-width"])).toBeLessThan(45);
+  });
+});
+
+describe("CoverArt logo tint and box", () => {
+  const WHITE = "brightness(0) invert(1)";
+  const BLACK = "brightness(0)";
+  const SIZES_ALL = ["card", "wide", "banner"] as const;
+  /** The filter on the logo's img, for a layout and size, on a panel, with her photo or without. */
+  const tint = (
+    layout: CoverRecipe["layout"],
+    size: CoverSize,
+    panel: Paint,
+    opts: { look?: string; photo?: boolean; color?: Paint } = {},
+  ) => {
+    const els = within(
+      parse(
+        draw(
+          design((r) => {
+            r.layout = layout;
+            r.panel = panel;
+            if (opts.photo === false) r.photo.id = null;
+            if (opts.color) r.styles.logo = { color: opts.color };
+          }, opts.look ?? "atelier"),
+          { size },
+        ),
+      ),
+      size,
+    );
+    return after(els, layer(els, "logo")).style.filter;
+  };
+
+  it("takes the readable colour of the panel it sits on: white on a dark one, black on a light one, as text does", () => {
+    const palette = coverPalette(SITE_STYLES.atelier, null);
+    expect(readableOn("primary", palette)).toBe("#fff");
+    expect(readableOn("paper", palette)).not.toBe("#fff");
+    for (const size of SIZES_ALL) {
+      // panel: the logo is on the panel (under the photo, or at the top of it beside the photo).
+      expect(tint("panel", size, "primary"), `panel ${size}`).toBe(WHITE);
+      expect(tint("panel", size, "paper"), `panel ${size}`).toBe(BLACK);
+      // title-only: the whole cover is the panel.
+      expect(tint("title", size, "primary"), `title ${size}`).toBe(WHITE);
+      expect(tint("title", size, "paper"), `title ${size}`).toBe(BLACK);
+    }
+  });
+
+  it("is white on a photo, and follows the colour only where the logo is on it", () => {
+    for (const size of SIZES_ALL) {
+      for (const panel of ["primary", "paper"] as const) {
+        // The whole cover is the photo; in framed the logo sits on the inset photo.
+        for (const layout of ["full", "photo", "framed"] as const) {
+          expect(tint(layout, size, panel), `${layout} ${size} ${panel}`).toBe(
+            WHITE,
+          );
+        }
+      }
+    }
+    // A band is at the bottom, so at Card and Wide the logo at the top is on the photo; at Banner the
+    // band is the left of the cover and the logo is on it.
+    for (const size of ["card", "wide"] as const) {
+      expect(tint("band", size, "paper"), `band ${size}`).toBe(WHITE);
+    }
+    expect(tint("band", "banner", "primary")).toBe(WHITE);
+    expect(tint("band", "banner", "paper")).toBe(BLACK);
+  });
+
+  it("reads the colour, not the name: a dark look's paper is dark, its ink is light", () => {
+    const palette = coverPalette(SITE_STYLES.nocturne, null);
+    expect(readableOn("paper", palette)).toBe("#fff");
+    expect(readableOn("ink", palette)).not.toBe("#fff");
+    // Text is white on the dark paper and dark on the light ink, and so is the logo.
+    expect(tint("title", "card", "paper", { look: "nocturne" })).toBe(WHITE);
+    expect(tint("title", "card", "ink", { look: "nocturne" })).toBe(BLACK);
+  });
+
+  it("reads the colour of the placeholder where the photo is not there", () => {
+    // No photo yet: the logo is on the tint the cover draws in its place, a light one on a light look.
+    const palette = coverPalette(SITE_STYLES.atelier, null);
+    expect(readableOn("surface", palette)).not.toBe("#fff");
+    for (const layout of ["full", "photo", "framed"] as const) {
+      expect(tint(layout, "card", "primary", { photo: false }), layout).toBe(
+        BLACK,
+      );
+    }
+  });
+
+  it("leaves what she set alone: white, black, or any other colour as it is", () => {
+    for (const panel of ["primary", "paper"] as const) {
+      expect(tint("panel", "card", panel, { color: "white" })).toBe(WHITE);
+      expect(tint("panel", "card", panel, { color: "black" })).toBe(BLACK);
+      expect(tint("panel", "card", panel, { color: "accent" })).toBeUndefined();
+      expect(tint("full", "card", panel, { color: "#1E5AA8" })).toBeUndefined();
+    }
+  });
+
+  it("draws the logo in a box five times as wide as it is high, from the layout's side, so a lockup keeps the height of a mark", () => {
+    const toCqmin = (value: string | undefined) => num(value) / 100;
+    for (const style of Object.values(SITE_STYLES)) {
+      for (const layout of LAYOUTS) {
+        for (const size of SIZES_ALL) {
+          const els = within(
+            parse(
+              draw(
+                design((r) => (r.layout = layout), style.id),
+                { size },
+              ),
+            ),
+            size,
+          );
+          const box = layer(els, "logo")!;
+          const img = after(els, box);
+          const aspect = sizeAspect(size, style.coverAspect);
+          const w = toCqmin(box.style.width) * 100 * Math.max(1, aspect);
+          const h = toCqmin(box.style.height) * (100 / Math.min(1, aspect));
+          const at = `${style.id} ${layout} ${size}`;
+          expect(w / h, at).toBeCloseTo(5, 3);
+          // The image fills its box by height and is contained, so a lockup of up to 5:1 is drawn
+          // at the box's height and a square mark at its own width: from the left, from the centre in
+          // a title-only cover.
+          expect(img.attrs.class, at).toContain("contain");
+          expect(img.style["object-position"], at).toBe(
+            layout === "title" ? "center center" : "left center",
+          );
+        }
+      }
+    }
   });
 });
 
