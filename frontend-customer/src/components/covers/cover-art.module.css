@@ -171,14 +171,16 @@
   text-wrap: balance;
 }
 
-/* A badge sits at the side of its frame its alignment names, in a box as wide as its text. */
+/* A badge sits at the side of its frame its alignment names, in a box as wide as its text. The box
+   does not shrink to its frame; it grows out of it, to the cap set inline (padding counted in it). */
 .badge {
   display: flex;
   align-items: center;
 }
 
 .pill {
-  max-width: 100%;
+  box-sizing: border-box;
+  flex: none;
   padding: 0.32em 0.7em;
 }
 

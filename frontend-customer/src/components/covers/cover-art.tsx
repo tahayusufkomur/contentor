@@ -133,6 +133,11 @@ const SIDE = {
   right: "flex-end",
 } as const;
 
+/** The widest a badge grows, as a fraction of the cover's width. */
+const BADGE_CAP = 0.55;
+/** The clear space kept between a grown badge and the logo, in cqmin. */
+const BADGE_GAP = 3;
+
 const SHAPE_RADIUS: Record<ShapeKind, string | undefined> = {
   rect: undefined,
   circle: "50%",
@@ -319,8 +324,46 @@ function wordLayer(
   );
 }
 
-/** A badge: a box of its text on its fill, at the side of its frame that its alignment names, in one
- *  line cut with an ellipsis where the text is longer than the frame. */
+/** How wide a badge may grow, as a fraction of the cover's width. It is sized to its text and grows
+ *  out of its frame from the side its alignment names (leftwards from a right-anchored frame,
+ *  rightwards from a left-anchored one, both ways from the centre), so it stops at the cap, at the
+ *  cover's edge, and at the logo where the two share a row. It is never less than its frame, which
+ *  the layout already keeps clear of the logo. */
+function badgeCap(
+  frame: Frame,
+  side: keyof typeof SIDE,
+  logo: Frame | undefined,
+  aspect: number,
+): number {
+  const anchor =
+    side === "left"
+      ? frame.x
+      : side === "center"
+        ? frame.x + frame.w / 2
+        : frame.x + frame.w;
+  const sharesRow =
+    logo !== undefined &&
+    logo.y < frame.y + frame.h &&
+    frame.y < logo.y + logo.h &&
+    logo.x + logo.w <= anchor;
+  // Where the room to the left of the anchor ends: the cover's edge, or the logo.
+  const low = sharesRow
+    ? logo.x + logo.w + BADGE_GAP / (100 * Math.max(1, aspect))
+    : 0;
+  const toLeft = anchor - low;
+  const toRight = 1 - anchor;
+  const room =
+    side === "right"
+      ? toLeft
+      : side === "left"
+        ? toRight
+        : 2 * Math.min(toLeft, toRight);
+  return Math.min(BADGE_CAP, Math.max(frame.w, room));
+}
+
+/** A badge: a box of its text on its fill, grown out of its frame as `badgeCap` says, in one line,
+ *  cut with an ellipsis only where the text is longer than the cap. `logo` is the logo's frame when
+ *  one is drawn, for the badge that has to keep clear of it. */
 function badgeLayer(
   ctx: Ctx,
   id: string,
@@ -329,15 +372,17 @@ function badgeLayer(
   style: PartStyle,
   frame: Frame,
   aspect: number,
+  logo?: Frame,
 ): ReactNode {
   const { size } = measure(ctx, "badge", style, aspect);
+  const side = style.align ?? "right";
   return (
     <div
       key={id}
       data-layer={id}
       data-badge=""
       className={cn(styles.layer, styles.badge)}
-      style={{ ...box(frame), justifyContent: SIDE[style.align ?? "right"] }}
+      style={{ ...box(frame), justifyContent: SIDE[side] }}
     >
       <span
         className={styles.pill}
@@ -352,6 +397,8 @@ function badgeLayer(
           ),
           background: paintColor(fill, ctx.palette),
           borderRadius: ctx.look.radius,
+          width: "max-content",
+          maxWidth: `${round(badgeCap(frame, side, logo, aspect) * 100)}cqw`,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -422,6 +469,7 @@ function drawLayer(
   id: string,
   frame: Frame,
   aspect: number,
+  frames: Record<string, Frame>,
 ): ReactNode {
   const { recipe, palette, words, bare } = ctx;
   switch (id) {
@@ -477,6 +525,7 @@ function drawLayer(
             recipe.styles.badge ?? {},
             frame,
             aspect,
+            ctx.design.logo_url ? frames.logo : undefined,
           );
   }
   const extra = recipe.extras.find((e) => e.id === id);
@@ -511,7 +560,7 @@ function layers(ctx: Ctx, size: CoverSize): ReactNode[] {
   for (const id of layerOrder(ctx.recipe)) {
     const frame = frames[id];
     if (!frame) continue;
-    out.push(drawLayer(ctx, id, frame, aspect));
+    out.push(drawLayer(ctx, id, frame, aspect, frames));
     if (id === "photo" && ctx.recipe.layout === "full" && !ctx.bare) {
       out.push(fade(frames));
     }

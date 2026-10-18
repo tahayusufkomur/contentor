@@ -102,6 +102,7 @@ function within(els: El[], size: CoverSize): El[] {
   const end = rest.findIndex((e) => "data-size" in e.attrs);
   return end < 0 ? rest : rest.slice(0, end);
 }
+const num = (value: string | undefined) => Number.parseFloat(value ?? "");
 const layer = (els: El[], id: string) =>
   els.find((e) => e.attrs["data-layer"] === id);
 /** The tag right after `el`: the clamped text inside a word, the photo inside a photo layer. */
@@ -735,6 +736,174 @@ describe("CoverArt logo and badge", () => {
     );
     expect(old).not.toContain("data-badge");
   });
+
+  /** The 24 characters a badge holds at most. */
+  const LONGEST = "Early bird registration!";
+  const badgeOf = (
+    edit: (r: CoverRecipe) => void,
+    look = "atelier",
+    size: CoverSize = "card",
+    rest: Partial<CoverDesign> = {},
+  ) => {
+    const els = within(parse(draw(design(edit, look, rest), { size })), size);
+    const box = layer(els, "badge")!;
+    return { els, box, pill: after(els, box) };
+  };
+  const longBadge = (r: CoverRecipe) => {
+    r.badge = { kind: "text", text: LONGEST, fill: "accent" };
+  };
+
+  it("sizes a badge to its text, from the corner of its frame, with the ellipsis only past a cap", () => {
+    expect(LONGEST).toHaveLength(24);
+    // The longest badge, on a 4:3 look at Card: no frame-wide chip, the whole text, one cap.
+    const { box, pill } = badgeOf(longBadge, "ledger");
+    expect(pill.style.width).toBe("max-content");
+    expect(pill.style["max-width"]).toBe("55cqw");
+    expect(pill.style).toMatchObject({
+      "white-space": "nowrap",
+      overflow: "hidden",
+      "text-overflow": "ellipsis",
+    });
+    expect(box.style["justify-content"]).toBe("flex-end");
+    // The chip must not shrink to its frame (a flex item does unless told not to), nor stop at it.
+    const rule = /\.pill\s*\{[^}]*\}/.exec(css)?.[0] ?? "";
+    expect(rule).toMatch(/flex:\s*none/);
+    expect(rule).not.toMatch(/max-width/);
+    // The cap is the whole chip, padding included, whatever the page's own box-sizing is.
+    expect(rule).toMatch(/box-sizing:\s*border-box/);
+    // A badge she aligned to the left or the centre grows the other way.
+    const side = (align: "left" | "center") =>
+      badgeOf((r) => {
+        longBadge(r);
+        r.styles.badge = { align };
+      }).box.style["justify-content"];
+    expect(side("left")).toBe("flex-start");
+    expect(side("center")).toBe("center");
+    // And stops at the cover's edge: the frame of atelier's Card badge is 62.5% to 94.5% across, so
+    // growing rightwards from 62.5% leaves 37.5%, and both ways from its centre leaves twice 21.5%.
+    const cap = (align: "left" | "center") =>
+      badgeOf((r) => {
+        longBadge(r);
+        r.styles.badge = { align };
+      }).pill.style["max-width"];
+    expect(cap("left")).toBe("37.5cqw");
+    expect(cap("center")).toBe("43cqw");
+  });
+
+  it("gives a badge the whole cap when there is no logo to keep clear of", () => {
+    const cap = (rest: Partial<CoverDesign>) =>
+      badgeOf(
+        (r) => {
+          longBadge(r);
+          r.layout = "title";
+        },
+        "atelier",
+        "card",
+        rest,
+      ).pill.style["max-width"];
+    // A title-only cover has its logo centred in the badge's row: with one the badge keeps to its
+    // frame (32 cqw), without it the badge may grow to the cap.
+    expect(cap({})).toBe("32cqw");
+    expect(cap({ logo_url: null })).toBe("55cqw");
+  });
+
+  it("follows a logo she moved: in another row it leaves the badge its cap, in the badge's row it limits it", () => {
+    const cap = (logo: Frame) =>
+      badgeOf((r) => {
+        longBadge(r);
+        r.overrides = { card: { logo } };
+      }).pill.style["max-width"];
+    // atelier's Card badge is in the top row, 62.5% to 94.5% across. A logo down the cover is no
+    // neighbour, above or below; one in the row at 30% to 50% leaves 94.5% - 53% (its right edge and
+    // 3 cqmin).
+    expect(cap({ x: 0.3, y: 0.5, w: 0.2, h: 0.06 })).toBe("55cqw");
+    expect(cap({ x: 0.3, y: 0, w: 0.2, h: 0.03 })).toBe("55cqw");
+    expect(cap({ x: 0.3, y: 0.05, w: 0.2, h: 0.06 })).toBe("41.5cqw");
+  });
+
+  it("never lets a grown badge reach the logo, the words or the cover's edge", () => {
+    const rect = (e: El) => ({
+      x: num(e.style.left) / 100,
+      y: num(e.style.top) / 100,
+      w: num(e.style.width) / 100,
+      h: num(e.style.height) / 100,
+    });
+    const meets = (
+      a: { x: number; y: number; w: number; h: number },
+      b: { x: number; y: number; w: number; h: number },
+    ) =>
+      a.x < b.x + b.w - 1e-6 &&
+      b.x < a.x + a.w - 1e-6 &&
+      a.y < b.y + b.h - 1e-6 &&
+      b.y < a.y + a.h - 1e-6;
+    let checked = 0;
+    let lowered = 0;
+    for (const look of Object.values(SITE_STYLES)) {
+      for (const layout of LAYOUTS) {
+        for (const size of ["card", "wide", "banner"] as const) {
+          const { els, box, pill } = badgeOf(
+            (r) => {
+              r.layout = layout;
+              r.words = { ...WORDS };
+              longBadge(r);
+            },
+            look.id,
+            size,
+          );
+          const at = `${look.id} ${layout} ${size}`;
+          const frame = rect(box);
+          const cap = num(pill.style["max-width"]) / 100;
+          expect(pill.style["max-width"], at).toMatch(/cqw$/);
+          // Never narrower than its frame, never wider than the cap (unless her frame already is).
+          expect(cap, at).toBeGreaterThanOrEqual(
+            Math.min(frame.w, 0.55) - 1e-6,
+          );
+          expect(cap, at).toBeLessThanOrEqual(0.55 + 1e-6);
+          if (cap < 0.55 - 1e-6) lowered++;
+          // Where the chip is at its widest: it is anchored at the right of its frame.
+          expect(box.style["justify-content"], at).toBe("flex-end");
+          const grown = {
+            x: frame.x + frame.w - cap,
+            y: frame.y,
+            w: cap,
+            h: frame.h,
+          };
+          expect(grown.x, at).toBeGreaterThanOrEqual(-1e-6);
+          const logo = layer(els, "logo");
+          if (logo) expect(meets(grown, rect(logo)), `${at} logo`).toBe(false);
+          for (const part of ["label", "title", "subtitle"]) {
+            const word = layer(els, part);
+            if (word)
+              expect(meets(grown, rect(word)), `${at} ${part}`).toBe(false);
+          }
+          checked++;
+        }
+      }
+    }
+    expect(checked).toBe(21 * 6 * 3);
+    // Some layouts really are tighter than the cap: the badge shares a row with the logo there.
+    expect(lowered).toBeGreaterThan(0);
+  });
+
+  it("keeps a grown badge on the photo beside a logo in the framed layout", () => {
+    // framed, Wide: the logo and the badge share the photo's top row, so the cap is what is left of it.
+    const framed = (size: CoverSize) =>
+      badgeOf(
+        (r) => {
+          longBadge(r);
+          r.layout = "framed";
+        },
+        "atelier",
+        size,
+      );
+    const wide = framed("wide");
+    const frame = num(wide.box.style.width) / 100;
+    const cap = num(wide.pill.style["max-width"]) / 100;
+    expect(cap).toBeGreaterThan(frame);
+    expect(cap).toBeLessThan(0.55);
+    // Card is portrait: the photo spans the cover, so the room beside the logo is the cap.
+    expect(framed("card").pill.style["max-width"]).toBe("55cqw");
+  });
 });
 
 describe("CoverArt extras", () => {
@@ -804,8 +973,35 @@ describe("CoverArt extras", () => {
       ),
     );
     expect(has(x4, "data-badge")).toBe(true);
+    // A badge extra is sized to its text like the badge, from the right of its frame, up to the cap.
+    expect(after(card, x4).style.width).toBe("max-content");
+    expect(after(card, x4).style["max-width"]).toBe("55cqw");
+    expect(x4.style["justify-content"]).toBe("flex-end");
     expect(after(card, x4).style.background).toBe(palette.ink);
     expect(after(card, x4).style.color).toBe(readableOn("ink", palette));
+  });
+
+  it("stops a badge extra at the cover's edge, however long its text", () => {
+    const cap = (frame: Frame) => {
+      const d = design((r) => {
+        r.extras = [
+          {
+            id: "b1",
+            type: "badge",
+            text: "Early bird registration!",
+            fill: "accent",
+            frame,
+          },
+        ];
+      });
+      const card = within(parse(draw(d, { size: "card" })), "card");
+      return after(card, layer(card, "b1")).style["max-width"];
+    };
+    // Grown leftwards from a right edge at 35% across it has 35% of the cover; from 90%, the cap.
+    expect(cap({ x: 0.05, y: 0.1, w: 0.3, h: 0.08 })).toBe("35cqw");
+    expect(cap({ x: 0.6, y: 0.1, w: 0.3, h: 0.08 })).toBe("55cqw");
+    // Never less than its own frame, even where the frame is wider than the room it leaves.
+    expect(cap({ x: 0, y: 0.1, w: 0.2, h: 0.08 })).toBe("20cqw");
   });
 
   it("uses the frame she set for a size, and only for that size", () => {
