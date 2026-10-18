@@ -274,9 +274,10 @@ export function Workspace({
           </fieldset>
           {/* The cover, one line about it, and her other covers, all on the first screen: the canvas takes
               what the rest leaves (a size container, so the canvas can be the biggest box of its shape that
-              fits: `100cqh` is its height), but never under 20rem. Below that the column scrolls. */}
+              fits: `100cqh` is its height), but never under 20rem. Below that the column scrolls. The padding
+              keeps the handles of a layer at the canvas's edge (they reach 8 px out) from being cut off. */}
           <div
-            className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-6 pb-4"
+            className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-6 py-2"
             onErrorCapture={draft.refreshPhotos}
           >
             <div className="flex min-h-[20rem] flex-1 items-center [--cover-max-h:100cqh] [container-type:size]">
