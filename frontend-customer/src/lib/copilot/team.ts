@@ -81,6 +81,16 @@ export const asSpecialist = (value: unknown): SpecialistKey =>
 export const ownerOf = (kind: string): SpecialistKey =>
   OWNERS[kind as ActionKind] ?? "assistant";
 
+/** Who signs a History row: the owner of its kind, except a kept cover, which is signed by whoever made it
+ *  (`by` is the maker's key, or empty for a cover she made herself, which shows as hers). */
+export const signerOf = (entry: {
+  kind: string;
+  by: string;
+}): SpecialistKey | "you" => {
+  if (entry.kind !== "keep_cover") return ownerOf(entry.kind);
+  return entry.by ? asSpecialist(entry.by) : "you";
+};
+
 const SECTION_SPECIALIST: Record<string, SpecialistKey> = {
   home: "assistant",
   teach: "content",

@@ -160,6 +160,8 @@ export interface CopilotAuditEntry {
   undone: boolean;
   /** Undo would still work on this row right now. */
   undoable: boolean;
+  /** Who made the change: a specialist's key, or "" for a change she made herself. */
+  by: string;
 }
 
 export interface CopilotChatRow {

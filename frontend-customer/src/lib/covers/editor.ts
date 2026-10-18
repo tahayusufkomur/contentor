@@ -8,6 +8,7 @@
 //
 // ponytail: fixed parts keep a fixed stacking order; extras stack above them in array order — free z-order for parts if she asks.
 
+import { push, type EditHistory } from "@/lib/logo/history";
 import { MAX_EXTRAS, PARTS } from "@/types/design";
 import type {
   CoverRecipe,
@@ -332,4 +333,23 @@ export function coalesceKey(action: EditorAction): string | null {
     default:
       return null;
   }
+}
+
+/** The history after `action`: the same one when the action changed nothing (she taps the layout she is
+ *  on), else the edit as a new step, joined to the last when its key matches (see `coalesceKey`). `now` is
+ *  for tests. */
+export function editHistory(
+  history: EditHistory<CoverRecipe>,
+  action: EditorAction,
+  now?: number,
+): EditHistory<CoverRecipe> {
+  const next = applyEdit(history.present, action);
+  // Equal by value: `layout` builds a new recipe even for the layout it is on.
+  if (
+    next === history.present ||
+    JSON.stringify(next) === JSON.stringify(history.present)
+  ) {
+    return history;
+  }
+  return push(history, next, coalesceKey(action), now);
 }

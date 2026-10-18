@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageState } from "@/components/ui/page-state";
@@ -15,8 +16,21 @@ import {
 import type { CopilotAuditEntry } from "@/lib/copilot/types";
 import { ApiError } from "@/types/api";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { ownerOf } from "@/lib/copilot/team";
+import { signerOf } from "@/lib/copilot/team";
 import { SpecialistFace } from "./specialist-face";
+
+/** The face of a change she made herself: a plain person, not a specialist's. Decorative: the row names
+ *  who made it in words for a screen reader. */
+function YourFace() {
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-grid size-5 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground"
+    >
+      <User className="size-3" />
+    </span>
+  );
+}
 
 /** One change, with Undo while the server says it can still be taken back. */
 function AuditRow({
@@ -53,11 +67,18 @@ function AuditRow({
       },
     },
   );
+  const signer = signerOf(entry);
   return (
     <li className="flex items-center gap-3 p-3">
-      <SpecialistFace k={ownerOf(entry.kind)} size="sm" />
+      {signer === "you" ? (
+        <YourFace />
+      ) : (
+        <SpecialistFace k={signer} size="sm" />
+      )}
       <span className="sr-only">
-        {t(`team.specialists.${ownerOf(entry.kind)}.name`)}
+        {signer === "you"
+          ? t("dock.you")
+          : t(`team.specialists.${signer}.name`)}
       </span>
       <span className="min-w-0 flex-1">
         <span

@@ -6,6 +6,7 @@ import {
   SPECIALIST_KEYS,
   asSpecialist,
   ownerOf,
+  signerOf,
   specialistFor,
 } from "@/lib/copilot/team";
 import { ACTION_KINDS } from "@/lib/copilot/types";
@@ -58,6 +59,28 @@ describe("ownerOf", () => {
     for (const kind of ACTION_KINDS) {
       expect(SPECIALIST_KEYS).toContain(OWNERS[kind]);
     }
+  });
+});
+
+describe("signerOf", () => {
+  it("signs a cover she kept herself as her own", () => {
+    expect(signerOf({ kind: "keep_cover", by: "" })).toBe("you");
+  });
+
+  it("signs a cover a specialist made with that specialist", () => {
+    expect(signerOf({ kind: "keep_cover", by: "designer" })).toBe("designer");
+    expect(signerOf({ kind: "keep_cover", by: "marketing" })).toBe("marketing");
+  });
+
+  it("falls back to the Assistant for a maker it does not know", () => {
+    expect(signerOf({ kind: "keep_cover", by: "ceo" })).toBe("assistant");
+  });
+
+  it("leaves every other kind with its owner, whoever the row says made it", () => {
+    expect(signerOf({ kind: "set_logo", by: "" })).toBe("designer");
+    expect(signerOf({ kind: "create_course", by: "" })).toBe("content");
+    expect(signerOf({ kind: "create_course", by: "designer" })).toBe("content");
+    expect(signerOf({ kind: "something_new", by: "" })).toBe("assistant");
   });
 });
 

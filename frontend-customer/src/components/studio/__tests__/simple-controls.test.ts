@@ -1,0 +1,215 @@
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { NextIntlClientProvider } from "next-intl";
+import { describe, expect, it, vi } from "vitest";
+import { PhotoSources } from "@/components/studio/photo-sources";
+import {
+  SimpleControls,
+  type SimpleControlsProps,
+} from "@/components/studio/simple-controls";
+import { defaultRecipe } from "@/lib/covers/recipe";
+import type { CoverRecipe } from "@/types/design";
+import adminMessages from "../../../../messages/en/admin.json";
+
+const messages = { admin: adminMessages };
+// createElement wants children among the props of this provider's own type; pass them as arguments.
+const Intl = NextIntlClientProvider as React.FC<{
+  locale: string;
+  messages: typeof messages;
+  children?: React.ReactNode;
+}>;
+const render = (node: React.ReactElement) =>
+  renderToStaticMarkup(createElement(Intl, { locale: "en", messages }, node));
+
+const photoSources = {
+  cardAspect: "4/5" as const,
+  inUse: {},
+  generationsLeft: 5,
+  onPick: vi.fn(),
+};
+
+function controls(over: Partial<SimpleControlsProps> = {}) {
+  return render(
+    createElement(SimpleControls, {
+      recipe: defaultRecipe(),
+      targetKind: "course",
+      itemTitle: "Yoga for Beginners",
+      look: "journal",
+      logoUrl: "https://x/logo.png",
+      set: null,
+      size: "card",
+      onSize: vi.fn(),
+      edit: vi.fn(),
+      photoSources,
+      ...over,
+    }),
+  );
+}
+
+const headings = (markup: string) =>
+  [...markup.matchAll(/<h2[^>]*>([^<]*)<\/h2>/g)].map((m) => m[1]);
+
+describe("SimpleControls", () => {
+  it("lists its sections in order: words, photo, layout, colour, badge, logo, size", () => {
+    expect(headings(controls())).toEqual([
+      "Words",
+      "Photo",
+      "Layout",
+      "Colour",
+      "Badge",
+      "Logo",
+      "Size",
+    ]);
+  });
+
+  it("offers the six layouts by name, and marks the one she is on", () => {
+    const markup = controls({
+      recipe: { ...defaultRecipe(), layout: "band" },
+    });
+    for (const name of [
+      "Colour panel",
+      "Full photo",
+      "Title only",
+      "Colour band",
+      "Framed photo",
+      "Photo only",
+    ]) {
+      expect(markup).toContain(name);
+    }
+    expect(
+      markup.match(
+        /aria-pressed="true"[^>]*>(?:(?!<\/button>)[\s\S])*Colour band/,
+      ),
+    ).not.toBeNull();
+  });
+
+  it("shows Your set only when she has a kept cover", () => {
+    expect(controls()).not.toContain("Your set");
+    const kept: CoverRecipe = { ...defaultRecipe(), layout: "framed" };
+    const markup = controls({ set: kept });
+    expect(markup).toContain("Your set");
+    // it comes before the six layouts
+    expect(markup.indexOf("Your set")).toBeLessThan(
+      markup.indexOf("Colour panel"),
+    );
+  });
+
+  it("follows the item's title until she types one: the title field's placeholder is the item's", () => {
+    const empty = controls();
+    expect(empty).toContain('placeholder="Yoga for Beginners"');
+    expect(empty).toMatch(/id="[^"]*-title"[^>]*value=""/);
+    const typed = controls({
+      recipe: {
+        ...defaultRecipe(),
+        words: { label: "", title: "Morning flow", subtitle: "" },
+      },
+    });
+    expect(typed).toContain('value="Morning flow"');
+  });
+
+  it("limits the words to the lengths the server keeps", () => {
+    const markup = controls();
+    expect(markup).toContain('maxLength="40"');
+    expect(markup).toContain('maxLength="90"');
+    expect(markup).toContain('maxLength="140"');
+  });
+
+  it("offers a course New and no date, and an event the date and not New", () => {
+    const course = controls({ targetKind: "course" });
+    expect(course).toContain(">New</option>");
+    expect(course).not.toContain(">Next date</option>");
+    const event = controls({ targetKind: "live" });
+    expect(event).toContain(">Next date</option>");
+    expect(event).not.toContain(">New</option>");
+    for (const markup of [course, event]) {
+      expect(markup).toContain(">None</option>");
+      expect(markup).toContain(">Live</option>");
+      expect(markup).toContain(">Your words</option>");
+    }
+  });
+
+  it("asks for badge words only when the badge is her own words", () => {
+    expect(controls()).not.toContain("Badge words");
+    const text = controls({
+      recipe: {
+        ...defaultRecipe(),
+        badge: { kind: "text", text: "Starts Monday", fill: "accent" },
+      },
+    });
+    expect(text).toContain("Badge words");
+    expect(text).toContain('maxLength="24"');
+    expect(text).toContain('value="Starts Monday"');
+  });
+
+  it("reads the logo switch from the recipe, and disables it without a logo", () => {
+    const on = controls();
+    expect(on).toMatch(/role="switch" aria-checked="true"/);
+    const hidden = controls({
+      recipe: { ...defaultRecipe(), styles: { logo: { hidden: true } } },
+    });
+    expect(hidden).toMatch(/role="switch" aria-checked="false"/);
+    const none = controls({ logoUrl: null });
+    expect(none).toMatch(/role="switch"[^>]*\sdisabled=""/);
+    expect(on).not.toMatch(/role="switch"[^>]*\sdisabled=""/);
+    expect(none).toContain("You haven&#x27;t added a logo yet.");
+  });
+
+  it("shows the palette of the look as swatches, and the colour she has set", () => {
+    const markup = controls({
+      recipe: { ...defaultRecipe(), panel: "accent" },
+    });
+    // one swatch for each of the 13 roles
+    expect(
+      markup.match(
+        /aria-label="(Main colour|Accent|Text|Background|Surface|Dark|Text on dark|Main colour, lighter|Main colour, darker|Accent, lighter|Accent, darker|White|Black)"/g,
+      ),
+    ).toHaveLength(13);
+    expect(markup).toMatch(/aria-pressed="true"[^>]*aria-label="Accent"/);
+    const hex = controls({
+      recipe: { ...defaultRecipe(), panel: "#1E5AA8" },
+    });
+    expect(hex).toContain('value="#1E5AA8"');
+  });
+
+  it("marks the size shown large, with the shape of each", () => {
+    const markup = controls({ size: "wide" });
+    expect(markup).toMatch(/aria-pressed="true"[^>]*>Wide<span[^>]*>16:9/);
+    expect(markup).toContain("Card");
+    expect(markup).toContain("4:5");
+    expect(markup).toContain("3:1");
+  });
+});
+
+describe("PhotoSources", () => {
+  it("opens on Yours, with Contentor and New beside it", () => {
+    const markup = render(createElement(PhotoSources, photoSources));
+    expect(markup).toMatch(/role="tab"[^>]*aria-selected="true"[^>]*>Yours</);
+    expect(markup).toMatch(
+      /role="tab"[^>]*aria-selected="false"[^>]*>Contentor</,
+    );
+    expect(markup).toMatch(
+      /aria-selected="false"[^>]*>(?:<svg[^>]*>[\s\S]*?<\/svg>)?New</,
+    );
+    // only the tab she is on has asked for anything yet
+    expect(markup.match(/role="tabpanel"/g)).toHaveLength(1);
+  });
+
+  it("lets her open New while photos are left", () => {
+    const markup = render(createElement(PhotoSources, photoSources));
+    expect(markup).not.toMatch(
+      /role="tab"[^>]*disabled=""[^>]*>(?:<svg[\s\S]*?<\/svg>)?New/,
+    );
+  });
+
+  it("disables New when no new photos are left this month, and says why", () => {
+    const markup = render(
+      createElement(PhotoSources, { ...photoSources, generationsLeft: 0 }),
+    );
+    const trigger =
+      markup.match(
+        /<button[^>]*role="tab"[^>]*>(?:(?!<\/button>)[\s\S])*New<\/button>/,
+      )?.[0] ?? "";
+    expect(trigger).toContain('disabled=""');
+    expect(trigger).toContain("You&#x27;ve used this month&#x27;s new photos.");
+  });
+});

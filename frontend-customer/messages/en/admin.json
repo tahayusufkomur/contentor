@@ -196,7 +196,8 @@
         "Put a new photo on my home page"
       ]
     },
-    "undoFailed": "That did not work. Please try again."
+    "undoFailed": "That did not work. Please try again.",
+    "you": "You"
   },
   "team": {
     "label": "Your team",
@@ -715,6 +716,121 @@
       "title": "Nothing to put a cover on yet",
       "description": "Add a course or a class, then come back to design its cover.",
       "action": "New course"
+    },
+    "size": {
+      "card": "Card",
+      "wide": "Wide",
+      "banner": "Banner"
+    },
+    "previews": {
+      "label": "{size} preview of the cover",
+      "show": "Show the {size} size"
+    },
+    "strip": {
+      "heading": "Your other covers"
+    },
+    "editor": {
+      "courseCover": "Course cover",
+      "eventCover": "{kind} cover, shared by every session with this title",
+      "untitled": "Untitled",
+      "waiting": "Your {target} keeps its current cover until you keep this one.",
+      "isKept": "This is the cover {title} uses now. To change it, edit a copy.",
+      "replaced": "A newer cover replaced this one. To use it again, edit a copy.",
+      "gone": "The course or event this cover was for is gone, so it can't be kept.",
+      "controls": "Cover controls",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "saveFailed": "Couldn't save.",
+      "retry": "Try again",
+      "undo": "Undo",
+      "redo": "Redo",
+      "discard": "Discard",
+      "discardTitle": "Discard this draft?",
+      "discardBody": "{title} keeps the cover it has now.",
+      "discardCancel": "Keep editing",
+      "keepCourse": "Keep on course",
+      "keepEvent": "Keep on event",
+      "kept": "Kept. {title} now uses this cover.",
+      "notFound": "This cover isn't here any more."
+    },
+    "controls": {
+      "words": "Words",
+      "label": "Label",
+      "labelPlaceholder": "e.g. 4-week course",
+      "title": "Title",
+      "titleHint": "Leave it empty to use the title of the {target}.",
+      "subtitle": "Subtitle",
+      "subtitlePlaceholder": "e.g. Morning yoga for beginners",
+      "photo": "Photo",
+      "layout": "Layout",
+      "set": "Your set",
+      "setHint": "Like the cover you kept last.",
+      "layouts": {
+        "panel": "Colour panel",
+        "full": "Full photo",
+        "title": "Title only",
+        "band": "Colour band",
+        "framed": "Framed photo",
+        "photo": "Photo only"
+      },
+      "colour": "Colour",
+      "custom": "Custom colour",
+      "colourHint": "Colours from your look change with it. A custom colour stays as it is.",
+      "paint": {
+        "primary": "Main colour",
+        "accent": "Accent",
+        "ink": "Text",
+        "paper": "Background",
+        "surface": "Surface",
+        "inverse": "Dark",
+        "inverse-ink": "Text on dark",
+        "primary-light": "Main colour, lighter",
+        "primary-dark": "Main colour, darker",
+        "accent-light": "Accent, lighter",
+        "accent-dark": "Accent, darker",
+        "white": "White",
+        "black": "Black"
+      },
+      "badge": "Badge",
+      "badgeShows": "Show",
+      "badges": {
+        "none": "None",
+        "new": "New",
+        "date": "Next date",
+        "live": "Live",
+        "text": "Your words"
+      },
+      "badgeWords": "Badge words",
+      "badgeWordsPlaceholder": "e.g. Starts Monday",
+      "logo": "Logo",
+      "showLogo": "Show your logo",
+      "noLogo": "You haven't added a logo yet.",
+      "size": "Size"
+    },
+    "photos": {
+      "yours": "Yours",
+      "contentor": "Contentor",
+      "new": "New",
+      "search": "Search photos",
+      "upload": "Upload",
+      "uploadFailed": "That photo didn't upload.",
+      "emptyYours": "You haven't uploaded a photo yet.",
+      "noMatch": "None of your photos match.",
+      "emptyLibrary": "No photos found. Try other words.",
+      "inUse": "In use on {title}",
+      "more": "More photos",
+      "failed": "The photos didn't load.",
+      "retry": "Try again",
+      "pickFailed": "That photo couldn't be used. Try another.",
+      "describe": "Describe the photo",
+      "describePlaceholder": "A woman stretching on a porch at sunrise, warm light",
+      "left": "{count, plural, one {# new photo left this month} other {# new photos left this month}}",
+      "used": "You've used this month's new photos.",
+      "make": "Make it",
+      "making": "Making your photo…",
+      "wait": "Still making your photo. It takes about a minute.",
+      "takes": "A new photo takes about a minute.",
+      "makeFailed": "That photo couldn't be made. Try other words."
     }
   },
   "messages": {
