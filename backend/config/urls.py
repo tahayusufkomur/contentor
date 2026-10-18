@@ -56,6 +56,7 @@ urlpatterns = [
     path("api/v1/admin/", include("apps.notifications.admin_urls")),
     path("api/v1/admin/", include("apps.usage.admin_urls")),
     path("api/v1/admin/copilot/", include("apps.core.copilot.urls")),
+    path("api/v1/admin/focus/", include("apps.core.focus.urls")),
     # Coach-only unified content calendar (live + blog + email) for /admin/calendar.
     path("api/v1/admin/content-calendar/", include((live_urls.content_calendar_patterns, "content_calendar"))),
     # Coach-only: the four kinds of class and event as one list, for /admin/live.
