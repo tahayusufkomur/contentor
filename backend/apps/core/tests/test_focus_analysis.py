@@ -1,0 +1,70 @@
+"""The analysis of a typed answer: what it asks the model, and the brief and
+price it settles from the model's typed fields. The model call is patched;
+the flow around it is tested in test_focus_flow.py."""
+
+import json
+from decimal import Decimal
+from unittest import mock
+
+import pytest
+
+from apps.core import ai as core_ai
+from apps.core.focus import analysis
+
+pytestmark = pytest.mark.django_db(transaction=True)
+
+
+def _model(**kwargs):
+    if "side_effect" not in kwargs:
+        kwargs["return_value"] = (kwargs.pop("found", None) or analysis.Analysis(), Decimal("0.01"), "x")
+    return mock.patch("apps.core.focus.analysis.core_ai.structured", **kwargs)
+
+
+def test_counts_are_clamped_to_twelve_and_flagged_capped():
+    brief = analysis.brief_from(analysis.Analysis(modules=100, lessons=0), {})
+    assert brief["modules"] == 12 and brief["lessons"] == 1 and brief["capped"] is True
+
+
+def test_more_named_modules_than_the_count_raise_the_count():
+    found = analysis.Analysis(modules=3, named=[analysis.NamedModule(title=f"M{i}") for i in range(5)])
+    assert analysis.brief_from(found, {})["modules"] == 5
+
+
+def test_price_value_reads_amounts_free_and_membership():
+    assert analysis.price_value("49") == "49.00"
+    assert analysis.price_value("free") == "free"
+    assert analysis.price_value("membership") == "membership"
+    assert analysis.price_value("lots") is None and analysis.price_value("-5") is None
+
+
+def test_brief_from_keeps_what_an_earlier_answer_settled():
+    brief = analysis.brief_from(analysis.Analysis(modules=4, notes="short videos"), {})
+    brief = analysis.brief_from(analysis.Analysis(lessons=3, notes="at the desk"), brief)
+    assert (brief["modules"], brief["lessons"]) == (4, 3)
+    assert brief["notes"] == "short videos at the desk"
+    assert brief["analysed"] is True and "capped" not in brief
+
+
+def test_read_tells_the_model_the_question_on_screen_and_her_site(tenant_ctx):
+    with (
+        _model(found=analysis.Analysis(topic="desk yoga")) as model,
+        mock.patch("apps.core.focus.analysis.ai_compose.record_spend") as spend,
+    ):
+        found = analysis.read(tenant_ctx, "desk yoga", question="Who is it for?", outline_exists=False, currency="usd")
+    assert found.topic == "desk yoga"
+    turn = json.loads(model.call_args.kwargs["user"])
+    assert turn["text"] == "desk yoga" and turn["question"] == "Who is it for?"
+    assert turn["outline_exists"] is False and turn["currency"] == "usd"
+    assert {"brand", "niche", "description", "her_courses"} <= set(turn)
+    assert model.call_args.kwargs["label"] == "contentor:copilot"
+    spend.assert_called_once()
+
+
+def test_read_records_the_spend_of_a_failed_call_and_raises(tenant_ctx):
+    with (
+        _model(side_effect=core_ai.AiError("down")),
+        mock.patch("apps.core.focus.analysis.ai_compose.record_spend") as spend,
+        pytest.raises(core_ai.AiError),
+    ):
+        analysis.read(tenant_ctx, "desk yoga", question="?", outline_exists=False, currency="usd")
+    spend.assert_called_once()

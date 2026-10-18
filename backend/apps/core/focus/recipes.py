@@ -27,7 +27,10 @@ COURSE = Recipe(
             ("A course on ",),
             delegable=True,
             starter=True,
-            why="One sentence is enough. I'll draft the rest for you to check.",
+            why=(
+                "Say as much as you know: who it's for, how many modules and lessons, lesson titles, "
+                "the price. I'll fill in the rest for you to check."
+            ),
         ),
         Field(
             "level",

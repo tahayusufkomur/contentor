@@ -1,6 +1,7 @@
 """Focus mode's endpoints (coach JWT + IsCoachOrOwner). Every answer is
-synchronous and makes no model call; the outline runs on the agents worker
-and is read through the copilot runs endpoints. Off (FOCUS_MODE_ENABLED) means
+synchronous and makes no model call; the outline, and the analysis of what
+she types, run on the agents worker and are read through the copilot runs
+endpoints. Off (FOCUS_MODE_ENABLED) means
 404 everywhere but the overview, which says so."""
 
 from django.conf import settings

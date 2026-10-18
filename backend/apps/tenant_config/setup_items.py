@@ -10,7 +10,7 @@ from collections import defaultdict
 from apps.core.currency import tenant_charge_currency
 from apps.core.monetization import can_monetize, is_paid_active
 
-from .models import SeededObject
+from .models import FocusCreation, SeededObject
 from .seeding import fingerprint_for
 
 CORE_PAGE_KEYS = ("home", "about", "courses", "pricing", "faq", "contact")
@@ -84,14 +84,19 @@ def _has_paid_content(seeded, held_course=None) -> bool:
     """The coach sells at least one paid (price > 0) course or download of
     their own. Demo-seeded rows are excluded so an unremoved demo (which may
     contain paid items) never spuriously demands payout onboarding, and so is
-    a course held back by "go live now, sell later" (``setup_flow["held"]``)."""
+    a course held back by "go live now, sell later" (``setup_flow["held"]``),
+    and so is a focus-mode draft not yet published (F11: it never blocks go-live)."""
     from apps.courses.models import Course
     from apps.downloads.models import DownloadFile
 
     course_demo = [row.object_id for row in seeded.get("courses.course", [])] + [held_course]
     dl_demo = [row.object_id for row in seeded.get("downloads.downloadfile", [])]
+    focus = FocusCreation.objects.filter(mode="focus", kind="course", record_id__isnull=False).values("record_id")
     return (
-        Course.objects.filter(pricing_type="paid", price__gt=0).exclude(pk__in=course_demo).exists()
+        Course.objects.filter(pricing_type="paid", price__gt=0)
+        .exclude(pk__in=course_demo)
+        .exclude(is_published=False, pk__in=focus)
+        .exists()
         or DownloadFile.objects.filter(pricing_type="paid", price__gt=0).exclude(pk__in=dl_demo).exists()
     )
 

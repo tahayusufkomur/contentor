@@ -2,14 +2,20 @@
 course recipe's questions in order, and the draft course behind them. The
 outline job is stubbed; it is tested in test_focus_outline.py."""
 
+from decimal import Decimal
 from unittest import mock
 
 import pytest
 
 from apps.accounts.models import User
-from apps.core.focus import flow
+from apps.core import ai as core_ai
+from apps.core import tasks
+from apps.core.copilot import runs
+from apps.core.focus import analysis, flow, jobs
 from apps.courses.models import Course, Lesson, Module
 from apps.tenant_config.models import CopilotRun, FocusCreation
+
+SCHEMA = "shared_test"
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -244,3 +250,168 @@ def test_abandon_drops_an_outline_still_being_written(owner, outline_start):
     creation = flow.answer(_started(owner), "level", rest=True)
     flow.leave(creation, abandon=True)
     assert CopilotRun.objects.get(pk=creation.outline_run_id).status == "stopped"
+
+
+# ── The analysis of a typed answer (§5.1) ───────────────────────────────────
+
+
+RICH = "A course on desk yoga for complete beginners, 4 modules of 3 lessons, $49"
+
+
+@pytest.fixture()
+def analysed():
+    """The model on, its answer patched: ``analysed(found)`` or
+    ``analysed(side_effect=...)``. Nothing is enqueued; ``_run_pending``
+    runs the job in the test."""
+    with (
+        mock.patch("apps.core.focus.analysis.core_ai.structured") as model,
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.onboarding.ai_compose.record_spend"),
+        mock.patch.object(tasks.run_focus_job, "delay"),
+    ):
+
+        def configure(found=None, side_effect=None):
+            model.return_value = (found or analysis.Analysis(), Decimal("0"), "x")
+            model.side_effect = side_effect
+            return model
+
+        configure()
+        yield configure
+
+
+def _run_pending(creation):
+    jobs.execute(SCHEMA, creation.runs["analysis"])
+    creation.refresh_from_db()
+    return creation
+
+
+def _tapped(owner):
+    return flow.start(owner, "course", value="Desk yoga")
+
+
+def test_a_rich_first_answer_skips_what_it_settled(owner, outline_start, analysed):
+    analysed(analysis.Analysis(topic="desk yoga", level="beginners", modules=4, lessons=3, price="49"))
+    creation = _run_pending(flow.start(owner, "course", text=RICH))
+    assert creation.answers["level"] == "beginners"
+    assert creation.answers["size"] == "4 modules · 3 lessons each"
+    course = Course.objects.get(pk=creation.record_id)
+    assert course.price == Decimal("49.00") and course.pricing_type == "paid"
+    assert course.title == "Desk yoga" and "Desk yoga" in creation.drafted["titles"]
+    assert outline_start.called  # nothing left to ask before the outline
+    assert not creation.pending
+    labels = [line["label"] for line in flow.state(creation)["answered"]]
+    assert "Complete beginners" in labels and "$49" in labels
+
+
+def test_she_waits_on_the_reading_and_cannot_tap_meanwhile(owner, outline_start, analysed):
+    creation = flow.start(owner, "course", text="desk yoga")
+    body = flow.state(creation)
+    assert body["question"] is None
+    assert body["reading"] == {"status": "building", "run": creation.runs["analysis"]}
+    assert flow.answer(creation, "level", value="beginners").answers == {}
+    assert flow.state(_run_pending(creation))["reading"] is None
+
+
+def test_a_tap_never_waits_on_the_analysis(owner, outline_start):
+    creation = flow.answer(_tapped(owner), "level", value="some")
+    assert not creation.pending and "analysis" not in creation.runs
+
+
+def test_an_unclear_count_is_asked_once(owner, outline_start, analysed):
+    analysed(
+        analysis.Analysis(
+            topic="desk yoga",
+            unclear=[
+                analysis.Unclear(
+                    field="modules",
+                    question="How many modules?",
+                    options=[analysis.ClarifyOption(label="3 modules", value="3")],
+                )
+            ],
+        )
+    )
+    creation = _run_pending(flow.start(owner, "course", text="desk yoga, a few modules"))
+    assert flow.current_field(creation) == "clarify"
+    question = flow.state(creation)["question"]
+    assert question["question"] == "How many modules?"
+    assert question["options"] == [{"value": "3", "label": "3 modules", "hint": ""}]
+    creation = flow.answer(creation, "clarify", value="3")
+    assert creation.brief["modules"] == 3 and creation.brief["asked"] == ["modules"]
+    assert flow.current_field(creation) == "level"
+
+
+def test_a_detail_still_unclear_after_its_question_gets_its_usual_question(owner, outline_start, analysed):
+    unclear = [analysis.Unclear(field="modules", question="How many modules?", options=[])]
+    analysed(analysis.Analysis(topic="desk yoga", unclear=unclear))
+    creation = _run_pending(flow.start(owner, "course", text="desk yoga, a few modules"))
+    analysed(analysis.Analysis(unclear=unclear))  # her reply is still vague
+    creation = _run_pending(flow.answer(creation, "clarify", text="not sure, some"))
+    assert creation.brief["clarify"] == [] and creation.brief["asked"] == ["modules"]
+    assert flow.current_field(creation) == "level"
+    assert "size" not in creation.answers
+
+
+def test_a_failed_analysis_falls_back_to_the_usual_questions(owner, outline_start, analysed):
+    analysed(side_effect=core_ai.AiError("down"))
+    creation = _run_pending(flow.start(owner, "course", text="desk yoga"))
+    assert creation.answers["topic"] == "desk yoga" and not creation.pending
+    assert flow.current_field(creation) == "level"
+
+
+def test_a_stopped_analysis_settles_on_the_next_read(owner, outline_start, analysed):
+    creation = flow.start(owner, "course", text="desk yoga")
+    runs.stop(creation.runs["analysis"])
+    assert flow.state(creation)["question"]["field"] == "level"
+    creation.refresh_from_db()
+    assert creation.answers["topic"] == "desk yoga" and not creation.pending
+
+
+def test_her_words_answer_the_question_on_screen_and_route_the_rest(owner, outline_start, analysed):
+    # At "level" she types "beginners, and make it 5 modules"
+    analysed(analysis.Analysis(answer="beginners", level="beginners", modules=5))
+    creation = flow.answer(_tapped(owner), "level", text="beginners, and make it 5 modules")
+    creation = _run_pending(creation)
+    assert creation.answers["level"] == "beginners" and creation.brief["modules"] == 5
+    assert creation.answers["size"] == "5 modules"
+    assert outline_start.call_count == 1
+
+
+def test_just_draft_it_with_words_delegates_only_what_they_left_open(owner, outline_start, analysed):
+    analysed(analysis.Analysis(topic="desk yoga", level="nurses on night shifts"))
+    creation = _run_pending(flow.start(owner, "course", text="desk yoga for nurses on night shifts", rest=True))
+    assert creation.answers["level"] == "nurses on night shifts"
+    assert creation.answers["size"] == "delegate"
+    assert creation.brief["rest"] is True
+    assert outline_start.call_count == 1
+
+
+def test_at_the_review_a_price_alone_sets_the_price_and_a_change_redrafts(owner, outline_start, analysed):
+    creation = flow.answer(_tapped(owner), "level", rest=True)
+    assert outline_start.call_count == 1
+    analysed(analysis.Analysis(price="free"))
+    creation = _run_pending(flow.answer(creation, "outline_review", text="it's free"))
+    assert creation.answers["price"] == "free" and outline_start.call_count == 1
+    analysed(analysis.Analysis(outline_change="module 2 about breathing"))
+    creation = _run_pending(flow.answer(creation, "outline_review", text="make module 2 about breathing"))
+    assert outline_start.call_count == 2
+    assert outline_start.call_args.kwargs["instruction"] == "make module 2 about breathing"
+    assert flow.current_field(creation) == "outline_review"
+
+
+def test_a_focus_draft_with_a_price_never_blocks_go_live(owner, outline_start, analysed):
+    from apps.tenant_config.setup_items import _has_paid_content
+
+    analysed(analysis.Analysis(topic="desk yoga", price="49"))
+    creation = _run_pending(flow.start(owner, "course", text=RICH))
+    assert Course.objects.get(pk=creation.record_id).price == Decimal("49.00")
+    assert _has_paid_content({}) is False
+
+
+def test_fill_it_in_myself_while_reading_drops_the_reading(owner, outline_start, analysed):
+    analysed(analysis.Analysis(topic="desk yoga", level="beginners", modules=2))
+    creation = flow.leave(flow.start(owner, "course", text="desk yoga"), abandon=True)
+    assert CopilotRun.objects.get(pk=creation.runs["analysis"]).status == "stopped"
+    assert not creation.pending
+    jobs.execute(SCHEMA, creation.runs["analysis"])  # a late delivery does nothing
+    creation.refresh_from_db()
+    assert creation.answers == {} and not outline_start.called

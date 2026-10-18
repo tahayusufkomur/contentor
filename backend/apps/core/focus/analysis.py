@@ -1,0 +1,204 @@
+"""The analysis of a typed answer (spec §5.1): one structured call reads what
+she typed into typed fields (topic, level, counts, titles, price, notes, an
+outline change, what is unclear), told the question on her screen. The flow
+applies them (``flow.apply``), so she skips the questions it answered. A job
+on the agents worker; when it fails, she gets the usual questions and her
+words answer the one on screen (stage 1)."""
+
+import json
+from decimal import Decimal, InvalidOperation
+from typing import Literal
+
+from django.conf import settings
+from django.db import transaction
+from pydantic import BaseModel
+
+from apps.core import ai as core_ai
+from apps.core.copilot import runs
+from apps.core.onboarding import ai_compose
+from apps.tenant_config.models import CopilotRun, FocusCreation
+
+from . import jobs, outline
+
+MAX_COUNT = 12  # modules, and lessons per module
+MAX_TOTAL = MAX_COUNT * MAX_COUNT
+MAX_PRICE = Decimal("99999999.99")  # Course.price: 10 digits, 2 decimals
+STEP = {"specialist": "content", "label": "Reading your details"}
+
+# Static, byte-identical across tenants (prompt caching); her words ride the user turn.
+SYSTEM = (
+    "A coach is creating ONE online course in a guided flow, one question at a time. Read what she "
+    "typed ('text') and return typed fields. You also get 'question' (the question on her screen), "
+    "'outline_exists' (whether the course outline is already drafted), 'currency' (the currency her "
+    "site charges in) and her site (brand, niche, description, her_courses).\n"
+    "Rules:\n"
+    "- Fill only what she said. Never guess: a field she did not mention stays empty ('', null or []).\n"
+    "- answer: her answer to 'question', in her words; '' when she said something else.\n"
+    "- topic: what her students will learn, short, in her words.\n"
+    "- level: 'beginners' (complete beginners), 'some' (some experience) or 'advanced' when it "
+    "matches; otherwise who it is for, in her words.\n"
+    "- modules: how many modules. lessons: how many lessons per module. total: how many lessons in "
+    "all, only when she gave a total instead of a number per module.\n"
+    "- named: the module and lesson titles she wrote, word for word and in her order. Lessons she "
+    "named without a module go in one module with an empty title.\n"
+    "- price: 'free'; 'membership' when students get it in her membership or subscription; or a plain "
+    "amount in 'currency' without a sign ('49', '19.50').\n"
+    "- notes: the rest she said about the course (its format, its promise, her angle), short, in her "
+    "words.\n"
+    "- outline_change: a change she asks for to the course outline, in her words; only when "
+    "outline_exists is true, else ''.\n"
+    "- unclear: a count, amount or level she gave vaguely ('a few modules', 'around 40-50'), or a price "
+    "in a currency other than 'currency', becomes one item instead of a value: its field (modules, "
+    "lessons, price or level), one short question, and 2-4 options, each a short label and its value "
+    "(a number like '3', an amount like '45', 'free', or beginners | some | advanced). Leave that field "
+    "itself empty."
+)
+
+
+class NamedModule(BaseModel):
+    title: str = ""
+    lessons: list[str] = []
+
+
+class ClarifyOption(BaseModel):
+    label: str
+    value: str  # "4" | "49.00" | "free" | "beginners"...
+
+
+class Unclear(BaseModel):
+    field: Literal["modules", "lessons", "price", "level"]
+    question: str
+    options: list[ClarifyOption]
+
+
+class Analysis(BaseModel):
+    answer: str = ""  # her answer to the question on screen, in her words; "" when she said something else
+    topic: str = ""  # what students learn, short, her words
+    level: str = ""  # beginners | some | advanced | her own words
+    modules: int | None = None
+    lessons: int | None = None  # per module
+    total: int | None = None  # lessons in all, when she gave a total instead
+    named: list[NamedModule] = []  # in her order; lessons she named without a module go in one untitled module
+    price: str = ""  # "free" | "membership" | an amount in the site's currency ("49")
+    notes: str = ""  # the rest she said about the course: format, promise, angle
+    outline_change: str = ""  # a change to the outline she asked for (only when an outline exists)
+    unclear: list[Unclear] = []
+
+
+def read(tenant, text: str, *, question: str, outline_exists: bool, currency: str, course_id=None) -> Analysis:
+    """The model's reading of her words. Raises core_ai.AiError."""
+    user = json.dumps(
+        {
+            "text": text,
+            "question": question,
+            "outline_exists": outline_exists,
+            "currency": currency,
+            **outline.site(tenant, course_id),
+        },
+        ensure_ascii=False,
+    )
+    try:
+        found, cost, _model = core_ai.structured(
+            system=SYSTEM,
+            user=user,
+            output_model=Analysis,
+            model=settings.COPILOT_MODEL,
+            max_tokens=4000,
+            label="contentor:copilot",
+            effort="medium",
+        )
+    except core_ai.AiError as exc:
+        ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)
+        raise
+    ai_compose.record_spend(tenant.schema_name, cost)
+    return found
+
+
+def brief_from(found: Analysis, brief: dict) -> dict:
+    """The outline's brief with what she said merged in: counts (each clamped
+    to 1..12, a total to 1..144; more than that is ``capped``), the titles she
+    named, and her notes."""
+    out = dict(brief or {})
+    for key, cap in (("modules", MAX_COUNT), ("lessons", MAX_COUNT), ("total", MAX_TOTAL)):
+        value = getattr(found, key)
+        if value is None:
+            continue
+        if value > cap:
+            out["capped"] = True
+        out[key] = min(max(value, 1), cap)
+    if found.named:
+        if len(found.named) > MAX_COUNT or any(len(m.lessons) > MAX_COUNT for m in found.named):
+            out["capped"] = True
+        out["named"] = [
+            {"title": m.title.strip(), "lessons": [t.strip() for t in m.lessons if t.strip()][:MAX_COUNT]}
+            for m in found.named[:MAX_COUNT]
+        ]
+    # A lone untitled module holds lessons she named without a module: not a module she counted.
+    titled = sum(1 for m in out.get("named") or [] if m["title"])
+    if titled > (out.get("modules") or 0):
+        out["modules"] = titled
+    if found.notes.strip():
+        out["notes"] = " ".join(filter(None, [out.get("notes", ""), found.notes.strip()]))
+    out["analysed"] = True
+    return out
+
+
+def price_value(raw: str) -> str | None:
+    """ "free" | "membership" | "49.00"; None when it is not a price."""
+    word = str(raw or "").strip().lower()
+    if word in ("free", "membership"):
+        return word
+    try:
+        amount = Decimal(word)
+    except InvalidOperation:
+        return None
+    if not amount.is_finite() or amount < 0 or amount > MAX_PRICE:
+        return None
+    return "free" if amount == 0 else f"{amount:.2f}"
+
+
+def carry_out(tenant, run_id) -> None:
+    """Read her words outside any lock, then apply them under the creation's
+    lock, unless Stop or a newer answer won meanwhile."""
+    from apps.core.currency import tenant_charge_currency
+
+    from . import flow
+
+    if not ai_compose.compose_available():
+        raise core_ai.AiError("ai_unavailable")
+    creation = FocusCreation.objects.get(pk=(CopilotRun.objects.get(pk=run_id).request or {}).get("focus"))
+    pending = creation.pending or {}
+    if pending.get("run") != run_id:  # settled meanwhile: nothing left to read
+        runs.finish(run_id, True)
+        return
+    runs.emit(run_id, "step", {**STEP, "state": "start"})
+    found = read(
+        tenant,
+        str(pending.get("text") or ""),
+        question=flow.question(creation.kind, pending.get("field"), creation)["question"],
+        outline_exists=bool(creation.outline_run_id or (creation.drafted or {}).get("modules")),
+        currency=tenant_charge_currency(tenant),
+        course_id=creation.record_id,
+    )
+    with transaction.atomic():
+        creation = FocusCreation.objects.select_for_update().get(pk=creation.pk)
+        current = creation.status == "active" and (creation.pending or {}).get("run") == run_id
+        if current and jobs.active(run_id):  # else Stop, "Fill it in myself" or a newer answer won
+            flow.apply(creation, found)
+            creation.save()
+            runs.emit(run_id, "step", {**STEP, "state": "done"})
+        runs.finish(run_id, True, found.model_dump(exclude_defaults=True))  # a stopped run stays stopped
+
+
+def on_failure(tenant, run_id) -> None:
+    """The model failed: stage 1's behaviour, while this run is still the
+    answer she is waiting on."""
+    from . import flow
+
+    focus = (CopilotRun.objects.get(pk=run_id).request or {}).get("focus")
+    with transaction.atomic():
+        creation = FocusCreation.objects.select_for_update().filter(pk=focus).first()
+        if creation is None or (creation.pending or {}).get("run") != run_id:
+            return
+        flow.apply(creation, None)
+        creation.save()

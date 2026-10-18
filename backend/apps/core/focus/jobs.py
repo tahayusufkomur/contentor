@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 # Job name to the module whose ``carry_out(tenant, run_id)`` does it.
 HANDLERS = {
     "outline": "apps.core.focus.outline",
+    "analysis": "apps.core.focus.analysis",
 }
 STATUS = {
     "queued": "building",

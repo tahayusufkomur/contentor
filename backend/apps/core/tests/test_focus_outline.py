@@ -68,8 +68,9 @@ def _model(**kwargs):
 
 
 def _building(owner):
-    """A creation whose outline run is queued (Just draft it after the topic)."""
-    return flow.answer(flow.start(owner, "course", text="A course on desk yoga"), "level", rest=True)
+    """A creation whose outline run is queued (Just draft it after the topic,
+    tapped: a typed topic would wait on the analysis, tested in test_focus_flow)."""
+    return flow.answer(flow.start(owner, "course", value="A course on desk yoga"), "level", rest=True)
 
 
 def _types(run_id):

@@ -137,23 +137,30 @@ def _draft(tenant, creation, course, instruction: str) -> OutlineDraft:
     return parsed.model_copy(update={"modules": parsed.modules[:limit]})
 
 
-def _user_turn(tenant, answers: dict, course, instruction: str, drafted: list) -> str:
+def site(tenant, course_id=None) -> dict:
+    """What her site is about, even when /setup left no niche (a seeded site),
+    and her other courses' titles."""
     from apps.core.onboarding.ai_curate import CoachBrief
     from apps.courses.models import Course
     from apps.tenant_config.models import TenantConfig
 
     brief = CoachBrief.from_tenant(tenant)
     config = TenantConfig.objects.first()
+    return {
+        "brand": config.brand_name if config else "",
+        "niche": brief.subject or brief.niche,
+        "description": brief.description,
+        "her_courses": list(Course.objects.exclude(pk=course_id).values_list("title", flat=True)[:10]),
+    }
+
+
+def _user_turn(tenant, answers: dict, course, instruction: str, drafted: list) -> str:
     turn = {
         "topic": answers.get("topic", ""),
         "level": answers.get("level", ""),
         "size": answers.get("size", ""),
         "instruction": instruction,
-        # What her site is about, even when /setup left no niche (a seeded site).
-        "brand": config.brand_name if config else "",
-        "niche": brief.subject or brief.niche,
-        "description": brief.description,
-        "her_courses": list(Course.objects.exclude(pk=course.pk).values_list("title", flat=True)[:10]),
+        **site(tenant, course.pk),
     }
     if instruction:
         kept = _kept(course, drafted)
