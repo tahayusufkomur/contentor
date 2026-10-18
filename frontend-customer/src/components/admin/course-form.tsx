@@ -407,7 +407,11 @@ export function CourseForm({
         method: "PUT",
         body: JSON.stringify({
           title: values.title,
-          content_html: values.content_html,
+          // Only text she changed: an AI description that arrived after this
+          // panel opened is not written over with the old copy.
+          ...(values.content_html !== lesson.content_html
+            ? { content_html: values.content_html }
+            : {}),
           is_free_preview: values.is_free_preview,
           ...(values.video ? { video: values.video } : { video: null }),
         }),

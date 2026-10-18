@@ -214,7 +214,7 @@ async function stubFocus(
       reading: null,
       descriptions:
         descriptions && "outline_review" in answers
-          ? { status: descDone() ? "ready" : "building", run: DESC_RUN }
+          ? { status: descStopped ? "failed" : descDone() ? "ready" : "building", run: DESC_RUN }
           : null,
       steps: ORDER.map((id) => ({ id, done: id in answers })),
     };
@@ -608,5 +608,50 @@ test("lesson descriptions type in after Looks good, with a count and Stop", asyn
   // The saved text takes over from the typing, and the note leaves the dock.
   await expect(main.getByText(DESCRIPTIONS[0])).toBeVisible();
   await expect(guide(page).getByText("Writing a short description for each lesson's video.")).toHaveCount(0);
+  // A stopped run reads as failed: the dock offers Try again, the text stays on the page.
+  await expect(guide(page).getByText("Some lesson descriptions didn't come through.")).toBeVisible();
+  await expect(main.getByText(DESCRIPTIONS[1])).toBeVisible();
+  await page.close();
+});
+
+test("saving a lesson without touching its text never sends the text", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  await stubFocus(page, { open: false });
+  const puts: Body[] = [];
+  await page.route(`**/api/v1/courses/${SLUG}/lessons/*/`, (route) => {
+    puts.push(route.request().postDataJSON());
+    return route.fulfill({ json: {} });
+  });
+
+  await page.goto(`${TENANT}/admin/courses/${SLUG}`);
+  const main = page.getByRole("main");
+  await main.getByRole("row", { name: /Setting up your chair/ }).getByRole("button").first().click();
+  // Her lesson panel opened before any description arrived; she only renames it.
+  await main.locator("div.border-t.bg-muted\\/30").getByRole("textbox").first().fill("Setting up your desk");
+  await main.getByRole("button", { name: "Save", exact: true }).click();
+  await expect.poll(() => puts.length).toBe(1);
+  expect(puts[0].title).toBe("Setting up your desk");
+  expect(puts[0]).not.toHaveProperty("content_html");
+  await page.close();
+});
+
+test("Stop while a description is typing still lands what was written", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const { sent } = await stubFocus(page, { descriptions: true });
+
+  await answerTopic(page);
+  await guide(page).getByRole("button", { name: "Just draft it" }).click();
+  await guide(page).getByRole("button", { name: "Looks good, continue" }).click();
+
+  const main = page.getByRole("main");
+  await expect(main.getByText("1 of 2")).toBeVisible();
+  await main.getByRole("button", { name: "Stop" }).click();
+  await expect.poll(() => sent.some((s) => s.path.endsWith(`/runs/${DESC_RUN}/stop/`))).toBe(true);
+  // The run reads as failed from the next poll, yet its text is on the page, whole.
+  await expect(guide(page).getByText("Some lesson descriptions didn't come through.")).toBeVisible();
+  await expect(main.getByText(DESCRIPTIONS[1])).toBeVisible();
+  await expect(main.getByText(DESCRIPTIONS[0])).toBeVisible();
   await page.close();
 });

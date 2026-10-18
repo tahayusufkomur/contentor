@@ -113,11 +113,9 @@ export default function AdminCourseDetailPage() {
           outline?.status === "building" || outline?.status === "ready"
             ? outline.run
             : null,
-        descriptionsRunId:
-          descriptions?.status === "building" ||
-          descriptions?.status === "ready"
-            ? descriptions.run
-            : null,
+        // Any run that exists, even a stopped or failed one: the replay must
+        // end so what it wrote is loaded onto the page.
+        descriptionsRunId: descriptions?.run ?? null,
       }
     : undefined;
 
