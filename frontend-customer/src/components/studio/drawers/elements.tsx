@@ -15,6 +15,18 @@ import type { BadgeKind, CoverRecipe, Extra, ShapeKind } from "@/types/design";
 /** The kinds of badge the cover's own can show, besides none and her own words (which is a layer). */
 const KINDS: BadgeKind[] = ["new", "date", "live"];
 
+/** What a badge pill does: nothing while the cover's badge is that kind and is drawn (so the badge she
+ *  has stays as it is), else it sets the kind. A badge she deleted on the canvas is not drawn, whatever its
+ *  kind: every pill then shows it again, the one for its own kind too (the reducer brings a part back when
+ *  it is set). */
+export function badgeKindEdit(
+  recipe: CoverRecipe,
+  kind: BadgeKind,
+): EditorAction | null {
+  const on = recipe.badge.kind === kind && !recipe.styles.badge?.hidden;
+  return on ? null : { type: "badge", patch: { kind } };
+}
+
 const PILL =
   "rounded-full border bg-background px-3 py-1.5 text-xs font-semibold outline-none transition-colors hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50";
 
@@ -66,25 +78,24 @@ export function ElementsDrawer({
     <div className="space-y-6">
       <Section title={t("badge")}>
         <ul className="flex flex-wrap gap-1.5">
-          {kinds.map((kind) => (
-            <li key={kind}>
-              <button
-                type="button"
-                aria-pressed={recipe.badge.kind === kind}
-                // the badge she has stays as it is
-                onClick={() =>
-                  recipe.badge.kind !== kind &&
-                  edit({ type: "badge", patch: { kind } })
-                }
-                className={cn(
-                  PILL,
-                  recipe.badge.kind === kind && "border-foreground bg-accent",
-                )}
-              >
-                {t(`badges.${kind}`)}
-              </button>
-            </li>
-          ))}
+          {kinds.map((kind) => {
+            const change = badgeKindEdit(recipe, kind);
+            return (
+              <li key={kind}>
+                <button
+                  type="button"
+                  aria-pressed={change === null}
+                  onClick={() => change && edit(change)}
+                  className={cn(
+                    PILL,
+                    change === null && "border-foreground bg-accent",
+                  )}
+                >
+                  {t(`badges.${kind}`)}
+                </button>
+              </li>
+            );
+          })}
           <li>
             <button
               type="button"

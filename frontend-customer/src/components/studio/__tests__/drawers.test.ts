@@ -7,14 +7,17 @@ import {
   fontTarget,
   paintTarget,
 } from "@/components/studio/drawers/brand";
-import { ElementsDrawer } from "@/components/studio/drawers/elements";
+import {
+  badgeKindEdit,
+  ElementsDrawer,
+} from "@/components/studio/drawers/elements";
 import { LayoutsDrawer } from "@/components/studio/drawers/layouts";
 import { PhotosDrawer } from "@/components/studio/drawers/photos";
 import { TextDrawer } from "@/components/studio/drawers/text";
 import { UploadsDrawer } from "@/components/studio/drawers/uploads";
 import { applyEdit } from "@/lib/covers/editor";
 import { newShapeExtra, newTextExtra } from "@/lib/covers/new-layers";
-import { defaultRecipe } from "@/lib/covers/recipe";
+import { defaultRecipe, framesFor } from "@/lib/covers/recipe";
 import { siteLook } from "@/lib/site-styles";
 import { MAX_EXTRAS } from "@/types/design";
 import type { CoverRecipe } from "@/types/design";
@@ -193,6 +196,43 @@ describe("ElementsDrawer", () => {
     expect(pills(stale)).toContain("Next date");
   });
 
+  describe("a badge she deleted on the canvas", () => {
+    const shown: CoverRecipe = {
+      ...defaultRecipe(),
+      badge: { kind: "live", text: "", fill: "accent" },
+    };
+    const deleted: CoverRecipe = applyEdit(shown, {
+      type: "remove",
+      id: "badge",
+    });
+
+    it("is not drawn, so no pill shows as pressed", () => {
+      expect(framesFor(deleted, "card", "4/5").badge).toBeUndefined();
+      expect(drawer("course", deleted)).not.toContain('aria-pressed="true"');
+      // and one that is drawn still shows its kind
+      expect(drawer("course", shown)).toMatch(/aria-pressed="true"[^>]*>Live</);
+    });
+
+    it("comes back with any pill, the kind it had too", () => {
+      for (const kind of ["new", "live"] as const) {
+        const change = badgeKindEdit(deleted, kind);
+        expect(change).toEqual({ type: "badge", patch: { kind } });
+        const after = applyEdit(deleted, change!);
+        expect(after.badge.kind).toBe(kind);
+        expect(after.styles.badge?.hidden).toBeUndefined();
+        expect(framesFor(after, "card", "4/5").badge).toBeDefined();
+      }
+    });
+
+    it("changes nothing when she taps the kind the cover shows", () => {
+      expect(badgeKindEdit(shown, "live")).toBeNull();
+      expect(badgeKindEdit(shown, "new")).toEqual({
+        type: "badge",
+        patch: { kind: "new" },
+      });
+    });
+  });
+
   it("offers the four shapes", () => {
     const markup = drawer("course");
     expect(headings(markup)).toEqual(["Badge", "Shapes"]);
@@ -253,6 +293,23 @@ describe("paintTarget", () => {
         type: "panel",
         paint: "primary",
       });
+    }
+  });
+
+  it("has no colour while the panel is deleted, so any swatch brings it back, the colour it had too", () => {
+    const deleted = applyEdit(
+      { ...recipe(), panel: "accent" },
+      { type: "remove", id: "panel" },
+    );
+    expect(framesFor(deleted, "card", "4/5").panel).toBeUndefined();
+    for (const selected of [null, "panel", "photo"]) {
+      const target = paintTarget(deleted, selected);
+      expect(target.what).toBe("panel");
+      expect(target.current).toBeUndefined();
+      const after = applyEdit(deleted, target.apply("accent"));
+      expect(after.panel).toBe("accent");
+      expect(after.styles.panel?.hidden).toBeUndefined();
+      expect(framesFor(after, "card", "4/5").panel).toBeDefined();
     }
   });
 
@@ -387,6 +444,28 @@ describe("BrandDrawer", () => {
     ).toHaveLength(13);
     expect(markup).toMatch(/aria-pressed="true"[^>]*aria-label="Accent"/);
     expect(markup.match(/aria-pressed="true"/g)).toHaveLength(1);
+  });
+
+  it("presses no swatch while the panel is deleted, and the one it has is pressed again once it is back", () => {
+    const panel = { ...defaultRecipe(), panel: "accent" as const };
+    const deleted = applyEdit(panel, { type: "remove", id: "panel" });
+    expect(drawer(deleted)).not.toContain('aria-pressed="true"');
+    const back = applyEdit(deleted, paintTarget(deleted, null).apply("accent"));
+    expect(drawer(back)).toMatch(/aria-pressed="true"[^>]*aria-label="Accent"/);
+    // a layer with a colour of its own keeps its swatch whatever happens to the panel
+    const title = applyEdit(deleted, {
+      type: "style",
+      part: "title",
+      patch: { color: "white" },
+    });
+    expect(drawer(title, "title")).toMatch(
+      /aria-pressed="true"[^>]*aria-label="White"/,
+    );
+  });
+
+  it("reads the logo switch as off while the logo is deleted", () => {
+    const deleted = applyEdit(defaultRecipe(), { type: "remove", id: "logo" });
+    expect(drawer(deleted)).toMatch(/role="switch" aria-checked="false"/);
   });
 
   it("says what the colours change", () => {

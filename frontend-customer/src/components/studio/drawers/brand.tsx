@@ -19,8 +19,9 @@ import { cn } from "@/lib/utils";
 import { PAINT_ROLES } from "@/types/design";
 import type { CoverRecipe, FontRole, Paint } from "@/types/design";
 
-/** What a colour from the swatches changes now: which layer (`what` names it for her), the colour it has,
- *  and the edit that gives it another. */
+/** What a colour from the swatches changes now: which layer (`what` names it for her), the colour it has
+ *  (none while the layer is one she deleted on the canvas, which every swatch then brings back), and the
+ *  edit that gives it another. */
 export interface PaintTarget {
   what: "panel" | "label" | "title" | "subtitle" | "badge" | "text" | "shape";
   current: Paint | undefined;
@@ -73,7 +74,8 @@ export function paintTarget(
   }
   return {
     what: "panel",
-    current: recipe.panel,
+    // a panel she deleted is not drawn: no swatch is on, so the click on the colour it has is not a no-op
+    current: recipe.styles.panel?.hidden ? undefined : recipe.panel,
     apply: (paint) => ({ type: "panel", paint }),
   };
 }
