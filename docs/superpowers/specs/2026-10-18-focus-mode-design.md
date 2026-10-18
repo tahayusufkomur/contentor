@@ -1,11 +1,14 @@
 # Focus mode: guided creation in the studio, starting with the course
 
-Date: 2026-10-18 · Status: direction agreed with the owner in conversation the same day; this
-document is the written design for approval · Mockups (git-ignored, served by the brainstorm
+Date: 2026-10-18 · Status: direction agreed with the owner in conversation the same day; stage 1
+built; revised the same evening (F14–F18: the first answer takes everything, the cover step), for
+approval · Mockups (git-ignored, served by the brainstorm
 companion): `.superpowers/brainstorm/65157-1792333207/content/focus-layout-v2.html` (D1 picked) and
-`course-steps.html` · Builds on `2026-10-17-agent-team-studio-design.md` (the team spec) and
-`2026-10-17-designer-end-to-end-design.md` (the Designer spec), whose stage 2 is built as part of
-this work.
+`course-steps.html`; the cover step (revision the same evening):
+`.superpowers/brainstorm/67803-1792352405/content/cover-step.html` (A picked) and
+`cover-step-v2.html` · Builds on `2026-10-17-agent-team-studio-design.md` (the team spec) and
+`2026-10-17-designer-end-to-end-design.md` (the Designer spec), whose stage 1 pieces the cover
+step is built on (F16–F18).
 
 ## 1. Intent
 
@@ -72,15 +75,20 @@ Anti-goals: it fails, even if it works, when
 | F1 | Start with the course; build every part so other kinds reuse it. | Owner |
 | F2 | The guide lives in the docked assistant on the right, not in a second panel. In focus mode the dock stops being an open chat and asks one thing at a time; she can still type or speak anything. It is one conversation: after focus mode the dock is the normal chat again, with the whole exchange in it. | Owner |
 | F3 | The left side is the real course page she will keep using (mockup D1), shown with only what matters now; filters, tags and the rest wait behind "All details". When focus mode ends nothing moves or reloads. | Owner (D1); "All details" my call, played back and accepted |
-| F4 | Tap-to-answer buttons as in `/setup`, with dynamic follow-up questions specific to her course, each with button options. | Owner |
+| F4 | Tap-to-answer buttons as in `/setup`, with dynamic follow-up questions specific to her course, each with button options. Revised the same evening: a follow-up comes only if necessary (§5 Follow-ups). | Owner; "only if necessary" owner, 2026-10-18 evening |
 | F5 | Never slower than the form (§6). This overrides team spec T5 ("speed is not a design limit") for focus mode. | Owner |
-| F6 | The Designer's live cover design (Designer spec stage 2) is built as part of this project and is focus mode's cover step. | Owner |
+| F6 | ~~The Designer's live cover design (Designer spec stage 2) is built as part of this project and is focus mode's cover step.~~ Superseded the same evening by F16–F18: the cover step is the Designer's drafts to pick from. | Owner |
 | F7 | Getting in: "New course" on Home, the Courses list and the search palette opens focus mode. Asking the assistant for a course ("make me a course about…") on the Courses list or the course page opens it too, with what she said as the first answer; asked from any other page, the dock answers with a **Start it** button that does the same in one tap, so her screen never moves on its own (team spec §5.2). "Describe it" is replaced by focus mode's first screen. A "Fill it in myself" link opens the plain form. | Played back, accepted; the "Start it" rule my call after the builder check |
 | F8 | The course exists as an unpublished draft from her first answer (team spec T6, build). Leaving loses nothing: work in progress carries on (team spec T7), she gets "ready for you", and reopening the course resumes the guide where she stopped. | Played back, accepted |
 | F9 | She can type into the page at any time; the guide takes her edit as her answer and does not ask that question again. Only the field or rows being written at that moment are read-only (a narrowing of team spec T8's whole-record lock). | Played back, accepted; lock narrowing my call |
 | F10 | Steps for the course (§5): topic → who and how big → outline check → cover (Designer) → price and access (Financial Strategist) → finish (Marketing). The last three are the shared steps. | Played back, accepted |
 | F11 | Price: a paid price is always her tap. What she taps is saved on the draft. If she cannot take payments yet (the trial cannot sell), the course keeps its price and stays a draft; the finish step offers "Start selling" (her plan, then payouts) or "Keep as a draft". "You decide" on the price question makes the Financial Strategist highlight its pick with its reason, for her to tap. "Just draft it" leaves the price to her: the draft stays free and the finish step shows the suggested price as a button (team spec T15 holds: a run never sets a paid price on its own). An unpublished focus-mode draft never blocks the site's go-live (`setup_items._has_paid_content` skips it); publishing a paid course still needs selling open. | Played back, accepted; delegated price, "Just draft it" and the go-live rule my calls after the builder check |
 | F12 | Phone: the guide is a bottom sheet over the page. The cover's live drawing is for computers only (Designer spec E18); on a phone the cover step shows the finished cover with the same buttons. | Played back, accepted |
+| F14 | The first question takes everything she knows. She can write her whole course in it (topic, who it is for, how many modules and lessons, module or lesson titles, the price, anything); one analysis fills every field it can, and the questions it answered are skipped. Only answered questions are skipped; the others stay as they are (not every question becomes dynamic). | Owner, 2026-10-18 evening |
+| F15 | What she said exactly is kept exactly (four modules means four; a lesson title she wrote is used word for word); the outline fills only what she left open. Nothing she did not say is guessed: an unanswered field gets its usual question. What was understood shows as the usual answered lines. She can make a follow-up request at any step ("make it 5 modules", "price it at $39"); an unclear detail ("a few modules", "around $40–50") gets one short question with buttons, once, never in circles. | Owner; played back and accepted ("exactly correct") |
+| F16 | Cover: not automatic. The Designer drafts covers in different styles and she picks one. The drafts appear big on the page, in the cover slot (mockup A), with the guide on the right holding the question and the buttons. | Owner (A picked) |
+| F17 | She chooses the photo too: by saying it, by picking one, or by uploading one. | Owner |
+| F18 | Four drafts at a time, one style each, sharing one photo; the photo row lists her own photos first, then library matches; a photo she describes is searched, and generated only when nothing fits. The live drawing with a cursor (Designer spec stage 2) is not needed for this step and goes back to the Designer spec's own track. | Played back and accepted ("looks awesome"); the generation rule and the Designer stage 2 move my calls |
 | F13 | The price's one line of reasoning uses her own numbers only: her other courses' and memberships' prices, the prices she gave in `/setup`, her sales. With none, it says so plainly ("A common place to start; change it any time"). No market ranges (the mockup's "courses like this sell for €19–39" is out): the model would have to invent them, and the team spec rules that out. | My call after the builder check |
 
 ## 4. What she sees
@@ -115,19 +123,21 @@ questions). Each must-ask question has pre-written buttons, so a slow or failing
 the screen.
 
 1. **What will your students learn?** (Content Creating Specialist.) Buttons: topic ideas from her
-   niche and existing courses, "My own idea…" (a sentence starter she finishes), "You decide".
-   Skipped when she already said it. Left: a working title types in.
+   niche and existing courses, "My own idea…" (a sentence starter she finishes), "You decide". She
+   can write as much as she knows here (F14, §5.1). Skipped when she already said it. Left: a
+   working title types in, and a price she gave fills in.
 2. **Who is it for, and how big?** Level (complete beginners / some experience / advanced) and size
    (Quick win, 1 module / Short course, ~3 modules / Full program, ~6 modules), each with "You
-   decide". Left: the description, then modules and lessons draft and appear.
+   decide". Each is skipped when her first answer settled it. Left: the description, then modules
+   and lessons draft and appear.
 3. **Here's your outline. Does it fit?** "Looks good, continue", or she says a change ("make module
    2 about breathing", a scoped redraft as in `/setup`'s `redraft_scope`), or she renames, reorders
    or deletes lessons on the page herself.
-4. **Cover** (Designer, shared step): Designer spec §5.1. It looks at her covers, asks "Which photos
-   should I use?" (My own photos / Contentor's library / Make a new one) only when it must, finds
-   or makes the photo, and builds the cover in the course page's cover slot while she watches.
-   **Keep**, **Try another photo**, **I'll edit it** (opens the photo studio on that design; Keep
-   there brings her back to focus mode).
+4. **Which cover fits your course?** (Designer, shared step; F16–F18, §5.2.) Four drafts in
+   different styles fill the cover slot, big; under them, the photo they share. **Use this cover**,
+   **Four more styles**, the photo row (her photos, library matches, **+ Upload**), the answer box
+   for saying what she wants, **I'll edit it** (opens the photo studio on the picked design; Keep
+   there brings her back to focus mode) and **Later**.
 5. **How will students get it?** (Financial Strategist, shared step.) Free / a one-time price with
    one line of reasoning / in a membership she has. Left: the price fills in. Selling not open yet:
    F11.
@@ -146,6 +156,10 @@ course: "Will lessons be videos you record, or written guides?"; "Where do your 
 at the office desk or at home?" (Office / Home / Both); "End each lesson with a small daily habit?".
 Rules:
 
+- **Only if necessary** (owner, 2026-10-18 evening): a follow-up is asked only when the next draft
+  would otherwise have to guess something that changes it, and nothing she said (her first answer
+  included, §5.1) settles it. Never to enrich, never to confirm what she already said. Most rich
+  first answers therefore get none.
 - At most four follow-ups per creation; "Just draft it" skips the rest.
 - Follow-ups that shape the outline (up to two) come after step 2 and before the outline drafts;
   they are written ahead while she answers steps 1 and 2. The outline starts drafting as soon as
@@ -159,6 +173,75 @@ Rules:
 - Where it fits, buttons allow several picks and a "My own…" tile, as in `/setup`.
 - Follow-ups use the engine's `ask` with options (Designer spec §7.4), so every specialist and
   every future kind gets them.
+
+### 5.1 The first answer (F14, F15)
+
+- **What it reads.** Her first answer goes through one analysis that returns typed fields: the
+  topic; who it is for (her words or a level); the number of modules and of lessons per module (or
+  a total); module and lesson titles she named, in order; the price (an amount, or free; "in my
+  membership" is kept for the access step); and the rest of what she said about the course (its
+  format, its promise, her angle) as notes for the outline.
+- **What it fills.** Every field it got: the creation's answers (a level or size question it
+  settled is answered and skipped), the draft course's price (her own words count as her tap, F11),
+  and the outline's brief (counts, titles and notes). The working title comes from the topic as
+  today.
+- **Exact means exact.** Counts she gave override the size presets, and the outline keeps her
+  module and lesson titles word for word and in her order, filling only the gaps. Code checks the
+  written outline against her counts and titles (as it already trims to the size she picked). A
+  module count alone settles the size question; lessons per module she did not give are the
+  outline's usual range, as with "You decide" today. The outline writes up to 12 modules of 12
+  lessons; asked for more, the guide says it drafted the first 12 and she adds the rest by hand.
+  (My calls after the builder check.)
+- **Never guessed.** A field she did not mention stays unanswered and its usual question comes up
+  with its buttons. Delegation stays hers ("You decide", "Just draft it").
+- **Unclear.** A detail the analysis cannot pin down ("a few modules", "around $40–50", a price in
+  a currency her site does not use) becomes one short question with two to four buttons and the
+  answer box, asked once. If her reply is still unclear, the field falls back to its usual question.
+- **Follow-up requests, any step.** A typed answer that only answers the question on screen is
+  stored at once, as today (no model call). One that carries more (other details, a change) goes
+  through the same analysis, which is told the question on screen and routes what she said: the
+  answer to it, other fields, a price, an outline change, or at the cover step a photo description.
+  Before the outline exists it updates the answers (and the price on the draft); once it exists, a
+  change to the outline is a redraft exactly as at step 3, wherever she typed it, and a price change
+  sets the price. (Which text counts as "more" is the builder's, §11; my call after the builder
+  check.)
+- **Late.** The guide never waits on the analysis for more than a few seconds (§6 item 5a). A
+  result that lands later fills only fields still open and not on screen (her answer on screen
+  wins) and sets the price if she has not; the outline job reads the analysis, running it first
+  when it is missing, so her counts and titles hold even on the slow path. (My call after the
+  builder check.)
+- **Shown.** What was understood appears as the usual answered lines in the guide ("Complete
+  beginners", "4 modules · 3 lessons each", "$49"), so she sees nothing was invented; she corrects
+  it at the outline step or by saying so.
+
+### 5.2 The cover step (F16–F18)
+
+- **When.** After "Looks good" on the outline, before price and finish. The outline job no longer
+  gives the course a cover on its own (`content._give_cover` in `focus/outline.py` goes).
+- **The drafts.** Four covers, one style each, drawn by `CoverArt` from design recipes (no image
+  file): for instance a photo with the title over it, a photo beside a colour panel, the title only,
+  a band across a photo (`design_recipe.LAYOUTS`). Each uses her site's fonts and colours, her
+  course title and a short line from the outline (never an invented claim). **Four more styles**
+  brings another set (other layouts, paint and type variants).
+- **Written ahead.** The Designer drafts them while she reviews the outline, so they are on the page
+  when she reaches the step (§6 item 3). Not ready yet: code builds the first four from fixed
+  layouts and the top photo, so the step never waits on the model.
+- **The photo.** One photo is shared by the photo styles; the row under the drafts offers her own
+  photos first (Media, the `/setup` photos), then library (Pix4Less) matches for the course, and
+  **+ Upload** (her device; saved to her Media through the own-photos path like any upload).
+  Tapping a photo puts it into every photo style. A library photo she taps is copied into her
+  Media then, as the photo studio and the picker do today (`/curated-images/<id>/use/`, one
+  download each), so design recipes keep pointing at her own photos (Designer stage 1's contract
+  is unchanged); the first round copies one photo. **More photos** pages on. (My call after the
+  builder check.)
+- **Saying it.** "Hands on a keyboard, no faces": the Designer searches her photos and the library
+  with her words and refreshes the row. Nothing fits: it generates one (Pix4Less generation, within
+  her monthly allowance); the row shows it arriving and she can keep choosing meanwhile.
+- **Picking.** Tapping a draft selects it; **Use this cover** keeps it on the course (the Designer
+  spec's Keep, with its Undo in History) and the other drafts fold away. **Later** leaves the course
+  without a cover. **I'll edit it** opens the photo studio on that design.
+- **Phone.** The drafts show in the page there too (they are drawn, not rendered); the guide is the
+  bottom sheet (F12).
 
 ## 6. Speed (F5)
 
@@ -179,12 +262,17 @@ Rules:
    wants.
 5. **"Just draft it"** from the first screen: one sentence, everything drafted with defaults, then
    review.
+5a. **The analysis (§5.1)** runs on a first answer, and on a later typed answer only when it carries
+   more than the answer on screen; it saves her the questions it answers. A short answer that is only a topic skips it (nothing to read). A
+   longer one shows "Reading your details" on the working tag for at most a few seconds on a fast
+   typed-extraction model; past that, the guide goes on with the usual questions, and the outline
+   still reads her whole answer.
 6. **Measured.** What is timed is her active time (the tab visible and in use; time away excluded)
    from "New course" to a **complete draft**: a title, at least one module with lessons, a cover,
    and a price decided (free counts). Both paths are stamped the same way: focus mode and the plain
    form ("Fill it in myself" and the old entry points), next to `/setup`'s funnel stamps
    (`setup_funnel`). Target: a complete course draft in two to three minutes of her time.
-   **Before the switch goes on** (stage 3), a scripted dev comparison drives both paths with the
+   **Before the switch goes on** (stage 4), a scripted dev comparison drives both paths with the
    same realistic input and focus mode must not be slower; the prod stamps then keep checking it.
 
 ## 7. How it works
@@ -224,14 +312,16 @@ through the shared hook instead (team spec §6.3), and the existing `formKey` re
 Designer's design shows the moment layers arrive (Designer spec E9, E10). The studio button works
 in create mode once the draft exists (it is hidden on create today).
 
-### 7.3 The Designer's stage 2 inside this work (F6)
+### 7.3 The cover step (F16–F18)
 
-Everything in Designer spec §7.4 and §7.5: `design_cover`, the covers digest, `ask` with up to four
-options (engine-wide; focus mode's follow-ups use it), run events, the shared live pieces, the
-studio replay and panel steps (§5.2, §5.3), and Try another photo. In focus mode the replay plays in
-the course page's cover slot instead of the studio; from the studio it plays in the studio as
-specified. Whether today's automatic stock cover on `create_course` (`content._give_cover`) stays
-for the plain form is left to the builder; in focus mode the cover step replaces it.
+Built on the Designer spec's stage 1 pieces: the `Design` model and `/api/v1/designs/`
+(`open_draft`, `keep`, `restore_cover`), `CoverArt`, the photo studio, the curated-image client
+(search, generation and its monthly cap) and the own-photos upload path. New: the Designer's
+drafting step (four recipes per round, written ahead on the `agents` worker with a code fallback),
+the photo row's search (her photos and the library, with her words), and the cover question in the
+course recipe. The live drawing with a cursor, `design_cover` in the chat, the covers digest and
+the studio replay stay in the Designer spec's own stage 2 (F18). Whether today's automatic stock
+cover on `create_course` stays for the plain form is left to the builder.
 
 ### 7.4 Endpoints and runs
 
@@ -243,14 +333,15 @@ course" and resume read.
 ## 8. Stages
 
 Each stage gets its own implementation plan and review. Focus mode stays behind a switch until stage
-3 lands, so coaches first meet it whole (cover included, F6); the plain form stays the default
+4 lands, so coaches first meet it whole (cover included, F6); the plain form stays the default
 until then.
 
 | Stage | What it adds | Main pieces |
 |---|---|---|
-| 1. The foundation, with the course | §4, §5 steps 1–3 and 6 (without the announcement), §6 items 1, 3–6 | recipe + creation store + endpoints; the guide in the dock; focus layout of the course page; live field/row events and the shared hook; draft from the first answer; resume; timing |
-| 2. The Designer, live | §5 step 4; Designer spec stage 2 in full | `design_cover`, covers digest, `ask` with options, run events, shared live pieces, slot and studio replay, Try another photo |
-| 3. Price, finish, follow-ups | §5 step 5, the announcement offer, follow-ups written ahead (§6 item 2); switch on | price and access step under F11; Marketing's draft; written-ahead follow-ups with the cap |
+| 1. The foundation, with the course (built 2026-10-18) | §4, §5 steps 1–3 and 6 (without the announcement), §6 items 1, 3–6 | recipe + creation store + endpoints; the guide in the dock; focus layout of the course page; live field/row events and the shared hook; draft from the first answer; resume; timing |
+| 2. The first answer takes everything | §5.1, §6 item 5a | the analysis (typed fields), skipping answered questions, exact counts and titles in the outline, the price on the draft, one clarifying question, follow-up requests at any step |
+| 3. The cover step | §5 step 4, §5.2, §7.3 | the cover question, four drafts written ahead with the code fallback, the photo row (hers, library, upload, said, generated), Use this cover / Four more styles / Later / I'll edit it |
+| 4. Price, finish, follow-ups | §5 step 5 (skipped when her first answer gave the price), the announcement offer, follow-ups written ahead (§6 item 2); switch on | price and access step under F11; Marketing's draft; written-ahead follow-ups with the cap |
 
 ## 9. Other kinds later
 
@@ -287,11 +378,23 @@ What each needs beyond its recipe (survey 2026-10-18):
   module built on the same rule.
 - Whether `_give_cover` stays for the plain form.
 - The exact background/interactive hub labels for each call.
+- The analysis model (a fast typed-extraction call: a Haiku-class model or Jev), its prompt, and
+  where "only a topic" ends for skipping it (§6 item 5a).
+- The four styles in the first round, what "Four more styles" varies, and the cover's short line.
+- How many photos the row shows, and how her own photos are ranked against library matches.
 
 ## 12. Open questions for the owner
 
-None. The builder check (2026-10-18) raised six questions; all were settled in this document as my
-calls, for the owner to check while reading:
+Revision (2026-10-18 evening): the builder check raised four questions, all settled above as my
+calls for the owner to check while reading: a late analysis fills only what is still open and the
+outline runs it when missing (§5.1 Late); only typed text that carries more than the answer on
+screen is analysed (§5.1 Follow-up requests); a module count settles the size, up to 12 × 12
+(§5.1 Exact); a library photo is copied into her Media when she taps it (§5.2 The photo).
+
+Asked and answered: the dynamic follow-ups (F4) stay, "only if necessary" (§5 Follow-ups).
+
+The first version's builder check (2026-10-18) raised six questions; all were settled in this
+document as my calls, for the owner to check while reading:
 
 1. Delegated price, "Just draft it" and the go-live rule (F11).
 2. The price's reasoning uses her own numbers only; no market ranges (F13).
