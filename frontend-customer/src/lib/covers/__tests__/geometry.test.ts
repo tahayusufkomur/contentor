@@ -7,6 +7,7 @@ import {
   resizeFrame,
   scaleAbout,
   snap,
+  snapDrawn,
   type Handle,
 } from "@/lib/covers/geometry";
 import type { Frame } from "@/types/design";
@@ -268,6 +269,71 @@ describe("snap", () => {
     expect(snap(frame(0.245, 0.1, 0.1, 0.1), [0.25, 0.75]).guides).toEqual({
       x: 0.25,
     });
+  });
+});
+
+describe("snapDrawn", () => {
+  // A logo's frame is 0.5 wide, and its mark (0.32 wide) is drawn at the left of it.
+  const frameAt = (x: number, y = 0.3) => frame(x, y, 0.5, 0.1);
+  const markAt = (x: number, y = 0.3) => frame(x, y, 0.32, 0.1);
+
+  it("meets a guide with the box that is drawn, and moves the frame by the same correction", () => {
+    // the mark's middle is at 0.505 (0.345 + 0.16)
+    const result = snapDrawn(frameAt(0.345), markAt(0.345));
+    expect(result.guides).toEqual({ x: 0.5 });
+    expect(result.frame.x).toBeCloseTo(0.34, 9);
+    expect(result.frame.y).toBe(0.3);
+    expect(result.frame.w).toBe(0.5);
+    // the mark is now on the guide: it is the frame that is off it
+    expect(0.34 + 0.32 / 2).toBeCloseTo(0.5, 9);
+    expect(middleX(result.frame)).not.toBeCloseTo(0.5, 2);
+  });
+
+  it("does not snap to the middle of an empty frame", () => {
+    // the frame's middle is on 0.5, the mark's (0.41) is not
+    const result = snapDrawn(frameAt(0.25), markAt(0.25));
+    expect(result.guides).toEqual({});
+    expect(result.frame).toEqual(frameAt(0.25));
+  });
+
+  it("puts the right edge of the mark, not of its frame, on the edge of the cover", () => {
+    // the mark's right edge is at 0.995 (0.675 + 0.32); the frame's reaches 1.175
+    const result = snapDrawn(frameAt(0.675), markAt(0.675));
+    expect(result.guides).toEqual({ x: 1 });
+    expect(result.frame.x).toBeCloseTo(0.68, 9);
+  });
+
+  it("snaps up and down by the box that is drawn too", () => {
+    // a chip drawn a quarter of the way down its frame: its middle is on 0.5, the frame's is not
+    const result = snapDrawn(
+      frame(0.1, 0.45, 0.2, 0.4),
+      frame(0.1, 0.45, 0.2, 0.1),
+    );
+    expect(result.guides).toEqual({ y: 0.5 });
+    expectFrame(result.frame, frame(0.1, 0.45, 0.2, 0.4));
+    const near = snapDrawn(
+      frame(0.1, 0.452, 0.2, 0.4),
+      frame(0.1, 0.452, 0.2, 0.1),
+    );
+    expect(near.guides).toEqual({ y: 0.5 });
+    expect(near.frame.y).toBeCloseTo(0.45, 9);
+    expect(near.frame.h).toBe(0.4);
+  });
+
+  it("is snap for a layer drawn as big as its frame, with its guides and tolerance", () => {
+    const f = frame(0.305, 0.1, 0.4, 0.2);
+    for (const [guides, tolerance] of [
+      [undefined, undefined],
+      [[0.25, 0.75], 0.02],
+    ] as const) {
+      const same = snapDrawn(f, f, guides, tolerance);
+      const plain = snap(f, guides, tolerance);
+      expect(same.guides).toEqual(plain.guides);
+      expectFrame(same.frame, plain.frame);
+    }
+    // and the tolerance reaches it: 0.005 off the guide is out of 0.004
+    const out = snapDrawn(frameAt(0.345), markAt(0.345), [0, 0.5, 1], 0.004);
+    expect(out.guides).toEqual({});
   });
 });
 

@@ -291,6 +291,24 @@ describe("LayerToolbar: badges, shapes, the colour and the logo", () => {
     expect(select(added, "Show")).toBeNull();
   });
 
+  it("the fixed badge has a size, from the range the server keeps, and a badge she added has none", () => {
+    const recipe = {
+      ...defaultRecipe(),
+      badge: { kind: "live" as const, text: "", fill: "accent" as const },
+    };
+    expect(sliders(toolbar({ part: "badge", recipe }))).toEqual([
+      { label: "Size", min: 0.5, max: 2, step: 0.05, value: 1 },
+    ]);
+    // her own size is what the slider shows
+    const sized = { ...recipe, styles: { badge: { scale: 1.5 } } };
+    expect(sliders(toolbar({ part: "badge", recipe: sized }))[0].value).toBe(
+      1.5,
+    );
+    // a badge layer she added has no style to hold one
+    const own = { ...defaultRecipe(), extras: [badge("x1")] };
+    expect(sliders(toolbar({ extra: own.extras[0], recipe: own }))).toEqual([]);
+  });
+
   it("a shape picks its form, fill and opacity", () => {
     const recipe = { ...defaultRecipe(), extras: [shape("x1")] };
     const markup = toolbar({ extra: recipe.extras[0], recipe });
@@ -346,9 +364,10 @@ describe("LayerToolbar: every slider stays inside the ranges the server keeps", 
       toolbar({ part: "photo", recipe }),
       toolbar({ extra: recipe.extras[0], recipe }),
       toolbar({ extra: recipe.extras[1], recipe }),
+      toolbar({ part: "badge", recipe }),
     ].join("");
     const found = sliders(markup);
-    expect(found.length).toBeGreaterThanOrEqual(13);
+    expect(found.length).toBeGreaterThanOrEqual(15);
     for (const { label, min, max } of found) {
       expect(allowed.has(`${min},${max}`), `${label}: ${min}-${max}`).toBe(
         true,

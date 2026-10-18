@@ -31,7 +31,7 @@ import {
   panFocus,
   resizeDrawn,
   resizeFrame,
-  snap,
+  snapDrawn,
   type Handle,
 } from "@/lib/covers/geometry";
 import {
@@ -100,7 +100,7 @@ const EDGES: Handle[] = ["n", "e", "s", "w"];
 const CORNERS: Handle[] = ["nw", "ne", "sw", "se"];
 
 /** The handles a layer has. A badge (the fixed one or one she added) is as big as its words, so it has
- *  none; a logo keeps its shape. */
+ *  none (the fixed one's size is a slider in the toolbar); a logo keeps its shape. */
 function handlesFor(recipe: CoverRecipe, id: string): Handle[] {
   if (
     id === "badge" ||
@@ -219,7 +219,13 @@ const useBrowserLayoutEffect =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 type Gesture =
-  | { kind: "move"; id: string; origin: Frame }
+  | {
+      kind: "move";
+      id: string;
+      origin: Frame;
+      /** The box actually drawn: the frame, unless the layer is drawn smaller than it (a logo, a badge). */
+      drawn: Frame;
+    }
   | {
       kind: "resize";
       id: string;
@@ -501,7 +507,12 @@ export function StudioCanvas({
     } else {
       begin(
         e,
-        { kind: "move", id: layer, origin: frames[layer] },
+        {
+          kind: "move",
+          id: layer,
+          origin: frames[layer],
+          drawn: boxes[layer] ?? frames[layer],
+        },
         e.currentTarget,
       );
     }
@@ -541,7 +552,13 @@ export function StudioCanvas({
     const g = d.gesture;
     let next: Live;
     if (g.kind === "move") {
-      const snapped = snap(moveFrame(g.origin, dx, dy));
+      const moved = moveFrame(g.origin, dx, dy);
+      // the guides are met by the box she sees (a logo's mark, a badge's chip), which goes as far as its frame
+      const snapped = snapDrawn(moved, {
+        ...g.drawn,
+        x: g.drawn.x + moved.x - g.origin.x,
+        y: g.drawn.y + moved.y - g.origin.y,
+      });
       next = {
         action: { type: "frame", size, id: g.id, frame: snapped.frame },
         guides: snapped.guides,

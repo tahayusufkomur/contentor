@@ -184,6 +184,26 @@ export function snap(
   };
 }
 
+/** `snap` for a layer drawn smaller than its frame (a logo in its wide frame, a badge): the guides are
+ *  met by the box that is drawn, `drawn`, which is what she sees, and the frame moves by the same
+ *  correction. Both are given where the move has put them. */
+export function snapDrawn(
+  frame: Frame,
+  drawn: Frame,
+  guides?: readonly number[],
+  tolerance?: number,
+): { frame: Frame; guides: { x?: number; y?: number } } {
+  const snapped = snap(drawn, guides, tolerance);
+  return {
+    frame: {
+      ...frame,
+      x: frame.x + snapped.frame.x - drawn.x,
+      y: frame.y + snapped.frame.y - drawn.y,
+    },
+    guides: snapped.guides,
+  };
+}
+
 /** The layer on top under a point (`x`, `y` in fractions of the canvas): the last of `order`, which
  *  runs bottom to top, whose frame holds it. A layer with no frame is not drawn. */
 export function hitTest(

@@ -447,7 +447,8 @@ function BadgeTools({
   const t = useTranslations("admin.studio.toolbar");
   const tc = useTranslations("admin.studio.controls");
   const { badge } = recipe;
-  // A badge she added has words of its own; the fixed one shows what its kind says.
+  // A badge she added has words of its own; the fixed one shows what its kind says, and has a size
+  // (a part's style): a layer she added has no style to hold one.
   const own = extra?.type === "badge" ? extra : null;
   return (
     <>
@@ -495,6 +496,17 @@ function BadgeTools({
           )
         }
       />
+      {!own && (
+        <Slider
+          label={t("size")}
+          range={RANGES.scale}
+          step={0.05}
+          value={recipe.styles.badge?.scale ?? 1}
+          onChange={(scale) =>
+            onEdit({ type: "style", part: "badge", patch: { scale } })
+          }
+        />
+      )}
     </>
   );
 }
