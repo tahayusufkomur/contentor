@@ -35,9 +35,14 @@ let photoId = "";
 const tileOf = (page: Page) =>
   page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: COURSE_TITLE, level: 3 }) });
 
+// This course's cover on a page: the one that says what she typed. Other courses may wear covers of their
+// own (a page holds as many `[data-cover]` as it has designed courses), and the stamp makes these words
+// this run's alone.
+const coverOf = (page: Page) => page.locator("[data-cover]").filter({ hasText: COVER_TITLE });
+
 // The cover a visitor sees on a page: exactly one, drawn live, with the words she typed (one size shows).
 async function expectCover(page: Page) {
-  const cover = page.locator("[data-cover]");
+  const cover = coverOf(page);
   await expect(cover).toHaveCount(1, SLOW);
   await expect(cover).toContainText(COVER_TITLE);
   await expect(cover.getByText(COVER_TITLE).filter({ visible: true })).toHaveCount(1);
@@ -49,7 +54,7 @@ async function expectCover(page: Page) {
 async function expectPlainPhoto(page: Page) {
   await page.goto(`${TENANT}/courses/${course!.slug}`);
   await expect(page.getByRole("heading", { name: COURSE_TITLE, level: 1 })).toBeVisible(SLOW);
-  await expect(page.locator("[data-cover]")).toHaveCount(0);
+  await expect(coverOf(page)).toHaveCount(0);
   await expect(page.getByRole("img", { name: COURSE_TITLE })).toHaveAttribute("src", /^https?:\/\//);
 }
 
@@ -199,7 +204,7 @@ test.describe.serial("photo studio: design a cover, keep it, take it back", () =
     await expectPlainPhoto(page);
     await page.goto(`${TENANT}/`);
     await expect(page.getByRole("link", { name: new RegExp(COURSE_TITLE) }).first()).toBeVisible(SLOW);
-    await expect(page.locator("[data-cover]")).toHaveCount(0);
+    await expect(coverOf(page)).toHaveCount(0);
 
     // The design is a draft again, waiting where she left it.
     const studio = await coach.newPage();
