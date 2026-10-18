@@ -261,3 +261,30 @@ def test_the_cover_endpoints_are_404_for_someone_elses_creation(client):
     creation = FocusCreation.objects.create(kind="course", actor=other, record_id=1)
     assert client.post(f"{URL}{creation.id}/cover/", {"action": "later"}, format="json").status_code == 404
     assert client.get(f"{URL}{creation.id}/photos/").status_code == 404
+
+
+@on
+def test_tell_my_students_then_not_now_or_try_again(client):
+    from apps.courses.models import Lesson, Module
+
+    cid = _start(client).json()["id"]
+    _answer(client, cid, field="level", rest=True)
+    _answer(client, cid, field="outline_review", value="ok")
+    creation = FocusCreation.objects.get(pk=cid)
+    FocusCreation.objects.filter(pk=cid).update(answers={**creation.answers, "cover": "later"})
+    module = Module.objects.create(course_id=creation.record_id, title="Basics", order=1)
+    Lesson.objects.create(module=module, title="Lesson 1", order=1, content_html="<p>Breathe in.</p>")
+    state = client.post(f"{URL}{cid}/finish/", {"publish": True, "announce": True}, format="json").json()
+    assert state["status"] == "active"
+    assert state["question"]["field"] == "announce"
+    run = state["announcement"]["run"]
+    assert state["announcement"]["status"] == "building"
+    # Try again while it is still writing: nothing new.
+    assert client.post(f"{URL}{cid}/announce/", {"retry": True}, format="json").json()["announcement"]["run"] == run
+    assert client.post(f"{URL}{cid}/announce/", {}, format="json").json()["status"] == "active"
+    state = client.post(f"{URL}{cid}/announce/", {"schedule": False}, format="json").json()
+    assert state["status"] == "done"
+    assert state["announcement"] is None
+    assert CopilotRun.objects.get(pk=run).status == "stopped"
+    other = _client(_user("focus-other-announce@x.com"))
+    assert other.post(f"{URL}{cid}/announce/", {"schedule": True}, format="json").status_code == 404

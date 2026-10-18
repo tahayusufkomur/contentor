@@ -107,7 +107,24 @@ def focus_finish(request, creation_id):
     if creation is None:
         return _not_found()
     data = _body(request)
-    creation = flow.finish(creation, publish=data.get("publish") is True, active_ms=_ms(data))
+    creation = flow.finish(
+        creation, publish=data.get("publish") is True, announce=data.get("announce") is True, active_ms=_ms(data)
+    )
+    return Response(flow.state(creation))
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def focus_announce(request, creation_id):
+    """Marketing's draft: ``{"schedule": bool}`` (focus mode ends) or ``{"retry": true}``."""
+    creation = _hers(request, creation_id) if settings.FOCUS_MODE_ENABLED else None
+    if creation is None:
+        return _not_found()
+    data = _body(request)
+    if data.get("retry") is True:
+        creation = flow.retry_announcement(creation)
+    elif isinstance(data.get("schedule"), bool):
+        creation = flow.decide_announcement(creation, schedule=data["schedule"], active_ms=_ms(data))
     return Response(flow.state(creation))
 
 

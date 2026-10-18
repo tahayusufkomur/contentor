@@ -1012,3 +1012,55 @@ test("a paid course she cannot sell yet: start selling keeps it a draft and open
   expect(sent.find((s) => s.path.endsWith("/finish/"))).toMatchObject({ publish: false });
   await page.close();
 });
+
+test("publish now, then schedule the announcement", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const ANNOUNCE_Q = question("announce", "announce", "Tell your students?", { specialist: "marketing" });
+  let step: "finish" | "writing" | "ready" | "done" = "finish";
+  let reads = 0;
+  const now = (): Body => {
+    if (step === "finish") return finishState();
+    if (step === "done") return { ...finishState(), status: "done", question: null };
+    return {
+      ...finishState(),
+      question: ANNOUNCE_Q,
+      announcement: {
+        status: step === "writing" ? "building" : "ready",
+        run: 7300,
+        id: step === "writing" ? null : 31,
+        title: step === "writing" ? "" : "Desk yoga, gently is live",
+        body: step === "writing" ? "" : "A short course for office workers, in five minute breaks.",
+        send_at: step === "writing" ? null : "2026-10-20T10:00:00+02:00",
+      },
+    };
+  };
+  const { sent } = await stubFocus(page, {
+    open: false,
+    script: ({ path, method }) => {
+      if (method === "GET" && path.endsWith("/admin/focus/"))
+        return { enabled: true, first: { course: QUESTIONS.topic }, open: step === "done" ? [] : [{ id: CREATION, kind: "course", record: coverState().record }] };
+      if (path.endsWith("/finish/")) step = "writing";
+      else if (path.endsWith("/announce/")) step = "done";
+      else if (step === "writing" && ++reads > 1) step = "ready"; // a poll: written on the second
+      return now();
+    },
+  });
+  await page.goto(`${TENANT}/admin/courses/${SLUG}`);
+
+  await expect(guide(page).getByText("Ready. Publish it now?")).toBeVisible();
+  const tell = guide(page).getByRole("checkbox", { name: "Tell my students" });
+  await expect(tell).toBeChecked();
+  await guide(page).getByRole("button", { name: "Publish now" }).click();
+  // Marketing writes while she waits, then shows the draft and when it would go out.
+  await expect(guide(page).getByText("Writing your announcement…")).toBeVisible();
+  await expect(guide(page).getByText("Desk yoga, gently is live")).toBeVisible();
+  await expect(guide(page).getByText("A short course for office workers, in five minute breaks.")).toBeVisible();
+  await expect(guide(page).getByText(/^Sends .*2026/)).toBeVisible();
+  await guide(page).getByRole("button", { name: "Schedule" }).click();
+  // Focus mode ends.
+  await expect(guide(page)).toHaveCount(0);
+  expect(sent.find((s) => s.path.endsWith("/finish/"))).toMatchObject({ publish: true, announce: true });
+  expect(sent.filter((s) => s.path.endsWith("/announce/"))).toEqual([expect.objectContaining({ schedule: true })]);
+  await page.close();
+});

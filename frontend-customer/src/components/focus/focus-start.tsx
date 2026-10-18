@@ -48,6 +48,7 @@ export function FocusStart({
       reading: null,
       descriptions: null,
       cover: null,
+      announcement: null,
       steps: [],
     });
   }, [kind, question]);

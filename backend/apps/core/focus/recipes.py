@@ -84,6 +84,8 @@ COURSE = Recipe(
             kind="finish",
             why="A draft stays hidden from students until you publish it.",
         ),
+        # Only after "Publish now" with "Tell my students" ticked; answered by its own taps.
+        Field("announce", "Announcement", "Tell your students?", kind="announce"),
     ),
     specialists={
         "topic": "content",
@@ -93,6 +95,7 @@ COURSE = Recipe(
         "cover": "designer",
         "access": "finance",
         "finish": "marketing",
+        "announce": "marketing",
     },
     values={
         "level": ("beginners", "some", "advanced"),

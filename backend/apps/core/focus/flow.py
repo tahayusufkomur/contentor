@@ -8,6 +8,7 @@ which answers every question it can; the outline job writes the outline
 row, so two tabs cannot both move it."""
 
 from contextlib import suppress
+from datetime import datetime
 from decimal import Decimal
 
 from django.db import connection, transaction
@@ -17,6 +18,7 @@ from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
 from . import analysis, covers, descriptions, jobs, outline, pricing
+from . import announce as announcing  # ``announce`` is finish()'s flag
 from .recipes import RECIPES
 
 DELEGATE = "delegate"
@@ -30,6 +32,10 @@ CLOSING = {
     "draft": "Saved as a draft. Once every lesson has its video or text, publish it from this page.",
 }
 WRITING_DESCRIPTIONS = "Writing a short description for each lesson's video. Edit any of them on the page."
+# Not now: what became of Marketing's draft, if it made one.
+SAVED_IN_MESSAGES = "Your announcement is saved as a draft in Messages."
+NO_ANNOUNCEMENT = "No announcement this time."
+ANNOUNCE_LABELS = {"scheduled": "Schedule", "draft": "Not now", "skip": "Not now"}
 # The finish step while a lesson is still empty: no "Publish now".
 NOT_READY = "Your outline is saved. Next, your lessons."
 # The finish step of a paid course she cannot sell yet: no "Publish now" (F11).
@@ -122,6 +128,8 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
                     (question.kind == "finish" and (delegate or (text or "").strip() or not _sell_for(creation, value)))
                     # Only typed words are read at the cover; a tap or "You decide" never answers it.
                     or (question.kind == "cover" and (delegate or not (text or "").strip()))
+                    # Only its own taps answer the announcement (decide_announcement).
+                    or question.kind == "announce"
                 )
             )
         ):
@@ -232,8 +240,10 @@ def apply(creation, found) -> None:
     _maybe_outline(creation)
 
 
-def finish(creation, *, publish: bool, active_ms=None) -> FocusCreation:
-    """Her last tap: publish the course or keep it as a draft. Focus mode ends."""
+def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -> FocusCreation:
+    """Her last tap: publish the course or keep it as a draft. Focus mode ends,
+    unless it went live with "Tell my students" (``announce``): then Marketing
+    drafts the announcement while she waits, and her Schedule or Not now ends it."""
     from apps.core.copilot import content
 
     with transaction.atomic():
@@ -257,10 +267,64 @@ def finish(creation, *, publish: bool, active_ms=None) -> FocusCreation:
         creation.answers["finish"] = choice
         _say(creation, question, _label(recipe, question, choice))
         _chat_append(creation, [{"role": "assistant", "text": CLOSING[choice]}])
-        creation.status = "done"
-        creation.finished_at = timezone.now()
+        if choice == "publish" and announce:
+            announcing.start(creation)
+        else:
+            _end(creation, "skip")
         creation.save()
     return creation
+
+
+def decide_announcement(creation, *, schedule: bool, active_ms=None) -> FocusCreation:
+    """Her tap on Marketing's draft: Schedule (at the send time she was shown)
+    or Not now (the draft stays in Messages, or there is none). Focus mode
+    ends. Refused unless the announcement is the question, so a double tap
+    changes nothing; Schedule needs a draft."""
+    from apps.core.copilot import runs
+
+    with transaction.atomic():
+        creation = _locked(creation)
+        _add_time(creation, active_ms)
+        if current_field(creation) != "announce":
+            creation.save(update_fields=["active_ms", "updated_at"])
+            return creation
+        if not schedule and (pk := jobs.run_id(creation, "announce")) is not None:
+            runs.stop(pk)  # still writing: no draft after all; a finished one is left as it is
+        row, send_at = announcing.draft(creation)
+        if schedule and row is None:
+            creation.save(update_fields=["active_ms", "updated_at"])
+            return creation
+        if schedule:
+            when = datetime.fromisoformat(send_at)
+            row.status, row.scheduled_at = "scheduled", when
+            row.save(update_fields=["status", "scheduled_at"])
+            closing = f"Your announcement is scheduled for {when:%A} {when.day} {when:%B} at {when:%H:%M}."
+        else:
+            closing = SAVED_IN_MESSAGES if row else NO_ANNOUNCEMENT
+        value = "scheduled" if schedule else "draft" if row else "skip"
+        question = next(q for q in RECIPES[creation.kind].questions if q.id == "announce")
+        _say(creation, question, ANNOUNCE_LABELS[value])
+        _chat_append(creation, [{"role": "assistant", "text": closing}])
+        _end(creation, value)
+        creation.save()
+    return creation
+
+
+def retry_announcement(creation) -> FocusCreation:
+    """Try again after Marketing's draft failed; never while one is being written."""
+    with transaction.atomic():
+        creation = _locked(creation)
+        shown = announcing.payload(creation)
+        if current_field(creation) == "announce" and (shown is None or shown["status"] == "failed"):
+            announcing.start(creation)
+    return creation
+
+
+def _end(creation, announced: str) -> None:
+    """Focus mode ends; the caller saves."""
+    creation.answers["announce"] = announced
+    creation.status = "done"
+    creation.finished_at = timezone.now()
 
 
 def leave(creation, *, abandon: bool = False, active_ms=None) -> FocusCreation:
@@ -274,7 +338,7 @@ def leave(creation, *, abandon: bool = False, active_ms=None) -> FocusCreation:
         if abandon and creation.status == "active":
             creation.status = "left"
             creation.pending = {}
-            for pk in (creation.outline_run_id, jobs.run_id(creation, "analysis")):
+            for pk in (creation.outline_run_id, jobs.run_id(creation, "analysis"), jobs.run_id(creation, "announce")):
                 if pk is not None:
                     runs.stop(pk)  # a finished one is left as it is
         creation.save(update_fields=["active_ms", "status", "pending", "updated_at"])
@@ -392,6 +456,7 @@ def state(creation) -> dict:
             else None
         ),
         "cover": covers.payload(creation),
+        "announcement": announcing.payload(creation) if field == "announce" else None,
         "reading": (
             {"status": jobs.status(creation, "analysis"), "run": jobs.run_id(creation, "analysis")}
             if creation.pending
@@ -738,6 +803,8 @@ def _label(recipe, q, answer) -> str:
         return "Cover chosen" if answer == "kept" else "Later"
     if q.kind == "price":
         return _access_label(answer)
+    if q.kind == "announce":
+        return ANNOUNCE_LABELS.get(answer, str(answer))
     values = recipe.values.get(q.id, ())
     return q.options[values.index(answer)] if answer in values else str(answer)
 

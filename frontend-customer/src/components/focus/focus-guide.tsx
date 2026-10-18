@@ -12,12 +12,14 @@ import {
 } from "@/components/copilot/specialist-face";
 import { AnswerBox } from "@/components/setup-flow/answer-box";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Spinner } from "@/components/ui/spinner";
 import { useAssistantDock } from "@/lib/assistant-dock";
 import { stopRun } from "@/lib/copilot/api";
 import type { SpecialistKey } from "@/lib/copilot/team";
 import { stopActiveTime, takeActiveMs } from "@/lib/focus/active-time";
 import {
+  announceCreation,
   answerCreation,
   coverAction,
   fetchCreation,
@@ -25,6 +27,7 @@ import {
   leaveCreation,
   retryDescriptions,
   startCreation,
+  type FocusAnnouncement,
   type FocusQuestion,
   type FocusState,
 } from "@/lib/focus/api";
@@ -99,12 +102,19 @@ export function FocusGuide() {
   );
 
   const { run: finish, loading: finishing } = useAsyncAction(
-    async (publish: boolean, startSelling = false) => {
+    async (publish: boolean, startSelling: boolean, announce: boolean) => {
       if (!state) return;
       const next = await finishCreation(state.id, {
         publish,
+        announce,
         active_ms: takeActiveMs(FOCUS_TIME_KEY),
       });
+      // Live, with "Tell my students": Marketing's draft is the last step.
+      if (next.status === "active" && next.question?.kind === "announce") {
+        apply(state.id, next);
+        toast.success(t("focus.published"));
+        return;
+      }
       stopActiveTime(FOCUS_TIME_KEY);
       apply(state.id, null);
       void refreshFocusOverview();
@@ -120,6 +130,32 @@ export function FocusGuide() {
       toast.success(t(publish ? "focus.published" : "focus.kept"));
     },
   );
+
+  // Schedule or Not now on Marketing's draft: focus mode ends, as on finish.
+  const { run: decide, loading: deciding } = useAsyncAction(
+    async (schedule: boolean) => {
+      if (!state) return;
+      const next = await announceCreation(state.id, {
+        schedule,
+        active_ms: takeActiveMs(FOCUS_TIME_KEY),
+      });
+      if (next.status === "active") {
+        apply(state.id, next); // a stale screen: the step as it is now
+        return;
+      }
+      stopActiveTime(FOCUS_TIME_KEY);
+      apply(state.id, null);
+      void refreshFocusOverview();
+      if (next.status === "done" && next.chat !== null)
+        openRunChat(next.chat, () => dock.open("assistant"));
+    },
+  );
+
+  const { run: retryAnnouncement, loading: retryingAnnouncement } =
+    useAsyncAction(async () => {
+      if (!state) return;
+      apply(state.id, await announceCreation(state.id, { retry: true }));
+    });
 
   const { run: stop, loading: stopping } = useAsyncAction(async () => {
     if (!state?.outline.run) return;
@@ -159,6 +195,7 @@ export function FocusGuide() {
     state?.reading,
     state?.descriptions,
     state?.cover,
+    state?.announcement,
   ].some((job) => job?.status === "building");
   useEffect(() => {
     if (!id || !building) return;
@@ -267,6 +304,15 @@ export function FocusGuide() {
             sending={sending}
             onFinish={finish}
             onSend={send}
+          />
+        ) : question.kind === "announce" ? (
+          <AnnounceStep
+            question={question}
+            announcement={state.announcement}
+            deciding={deciding}
+            retrying={retryingAnnouncement}
+            onDecide={decide}
+            onRetry={retryAnnouncement}
           />
         ) : question.kind === "price" ? (
           <PriceQuestion
@@ -498,15 +544,24 @@ function FinishStep({
   question: FocusQuestion;
   finishing: boolean;
   sending: boolean;
-  onFinish: (publish: boolean, startSelling?: boolean) => void;
+  onFinish: (
+    publish: boolean,
+    startSelling: boolean,
+    announce: boolean,
+  ) => void;
   /** "Sell it for": the price "Just draft it" left to her, set by her tap. */
   onSend: (input: GuideInput) => void;
 }) {
   const t = useTranslations("admin");
   const [choice, setChoice] = useState<string | null>(null);
+  const [tell, setTell] = useState(true);
   const pick = (value: string) => {
     setChoice(value);
-    onFinish(value === "publish", value === "start_selling");
+    onFinish(
+      value === "publish",
+      value === "start_selling",
+      value === "publish" && tell,
+    );
   };
   const has = (value: string) =>
     question.options.some((o) => o.value === value);
@@ -526,13 +581,24 @@ function FinishStep({
       <div className="flex flex-wrap gap-2">
         {/* Offered only once every lesson has a video or text. */}
         {has("publish") && (
-          <Button
-            loading={finishing && choice === "publish"}
-            disabled={busy}
-            onClick={() => pick("publish")}
-          >
-            {t("focus.publishNow")}
-          </Button>
+          <>
+            <Button
+              loading={finishing && choice === "publish"}
+              disabled={busy}
+              onClick={() => pick("publish")}
+            >
+              {t("focus.publishNow")}
+            </Button>
+            {/* Marketing drafts an announcement once it is live. */}
+            <label className="flex items-center gap-2 text-sm text-foreground">
+              <Checkbox
+                checked={tell}
+                disabled={busy}
+                onCheckedChange={(value) => setTell(value === true)}
+              />
+              {t("focus.tellStudents")}
+            </label>
+          </>
         )}
         {/* A paid course she cannot sell yet: her plan, then payouts. */}
         {has("start_selling") && (
@@ -568,6 +634,100 @@ function FinishStep({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/** Marketing's announcement, once the course is live: the draft and when it
+ *  would go out, with Schedule and Not now. Both end focus mode. */
+function AnnounceStep({
+  question,
+  announcement,
+  deciding,
+  retrying,
+  onDecide,
+  onRetry,
+}: {
+  question: FocusQuestion;
+  announcement: FocusAnnouncement | null;
+  deciding: boolean;
+  retrying: boolean;
+  onDecide: (schedule: boolean) => void;
+  onRetry: () => void;
+}) {
+  const t = useTranslations("admin");
+  const [choice, setChoice] = useState<boolean | null>(null);
+  const decide = (schedule: boolean) => {
+    setChoice(schedule);
+    onDecide(schedule);
+  };
+  const status = announcement?.status ?? "building";
+  const busy = deciding || retrying;
+  const notNow = (
+    <Button
+      variant="outline"
+      loading={deciding && choice === false}
+      disabled={busy}
+      onClick={() => decide(false)}
+    >
+      {t("focus.notNow")}
+    </Button>
+  );
+  return (
+    <div className="flex flex-col gap-4">
+      <SpecialistByline k={question.specialist} />
+      <h2 className="text-lg font-semibold leading-snug text-foreground">
+        {question.question}
+      </h2>
+      {status === "building" || status === "idle" ? (
+        <p className="flex items-center gap-2 text-sm text-foreground">
+          <Spinner size="sm" />
+          {t("focus.writingAnnouncement")}
+        </p>
+      ) : status === "failed" || !announcement ? (
+        <p className="text-sm text-muted-foreground">
+          {t("focus.announcementFailed")}
+        </p>
+      ) : (
+        <div className="flex flex-col gap-1.5 rounded-md border border-border p-3">
+          <p className="font-medium text-foreground">{announcement.title}</p>
+          <p className="whitespace-pre-line text-sm text-foreground">
+            {announcement.body}
+          </p>
+          {announcement.send_at && (
+            <p className="text-xs text-muted-foreground">
+              {t("focus.sendsAt", {
+                when: new Date(announcement.send_at).toLocaleString(undefined, {
+                  dateStyle: "full",
+                  timeStyle: "short",
+                }),
+              })}
+            </p>
+          )}
+        </div>
+      )}
+      <div className="flex flex-wrap gap-2">
+        {status === "ready" && (
+          <Button
+            loading={deciding && choice === true}
+            disabled={busy}
+            onClick={() => decide(true)}
+          >
+            {t("focus.schedule")}
+          </Button>
+        )}
+        {status === "failed" && (
+          <Button
+            variant="outline"
+            loading={retrying}
+            disabled={busy}
+            onClick={onRetry}
+          >
+            {t("focus.tryAgain")}
+          </Button>
+        )}
+        {notNow}
+      </div>
     </div>
   );
 }

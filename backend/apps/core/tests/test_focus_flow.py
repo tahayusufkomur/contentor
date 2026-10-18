@@ -131,7 +131,16 @@ def _at_finish(owner, text="A course on desk yoga"):
 
 def test_the_cover_and_the_price_come_after_the_outline_and_before_finish():
     recipe = RECIPES["course"]
-    assert [q.id for q in recipe.questions] == ["topic", "level", "size", "outline_review", "cover", "access", "finish"]
+    assert [q.id for q in recipe.questions] == [
+        "topic",
+        "level",
+        "size",
+        "outline_review",
+        "cover",
+        "access",
+        "finish",
+        "announce",
+    ]
     assert recipe.specialists["cover"] == "designer"
     assert recipe.specialists["access"] == "finance"
 
@@ -271,7 +280,7 @@ def test_state_shapes_the_current_question(owner, outline_start):
     assert body["answered"][-1] == {"field": "level", "label": "Complete beginners"}
     assert body["record"]["title"] == "Desk yoga for office workers"
     assert body["outline"] == {"status": "idle", "run": None}
-    assert [s["done"] for s in body["steps"]] == [True, True, False, False, False, False, False]
+    assert [s["done"] for s in body["steps"]] == [True, True, False, False, False, False, False, False]
 
 
 def test_the_outline_status_follows_its_run(owner, outline_start):

@@ -1186,6 +1186,12 @@
     "editCover": "I'll edit it",
     "later": "Later",
     "coverPlaceholder": "Or say it: brighter, a man at a standing desk…",
+    "tellStudents": "Tell my students",
+    "schedule": "Schedule",
+    "notNow": "Not now",
+    "sendsAt": "Sends {when}",
+    "writingAnnouncement": "Writing your announcement…",
+    "announcementFailed": "I couldn't write the announcement.",
     "handOver": {
       "cover": "{name} here: let's make your cover.",
       "access": "{name} here: let's decide how students get it.",

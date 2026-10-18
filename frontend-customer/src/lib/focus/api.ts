@@ -12,7 +12,14 @@ export interface FocusOption {
 
 export interface FocusQuestion {
   field: string;
-  kind: "text" | "choice" | "review" | "cover" | "price" | "finish";
+  kind:
+    | "text"
+    | "choice"
+    | "review"
+    | "cover"
+    | "price"
+    | "finish"
+    | "announce";
   question: string;
   why: string;
   options: FocusOption[];
@@ -53,6 +60,18 @@ export interface CoverPhoto {
   mine: boolean;
 }
 
+/** Marketing's announcement draft (backend focus/announce.py ``payload``),
+ *  while "Tell your students?" is the question. */
+export interface FocusAnnouncement {
+  status: OutlineStatus;
+  run: number;
+  id: number | null;
+  title: string;
+  body: string;
+  /** ISO with her site's offset. */
+  send_at: string | null;
+}
+
 export interface FocusState {
   /** 0 = provisional: the first question, before her first answer creates it. */
   id: number;
@@ -68,6 +87,7 @@ export interface FocusState {
   descriptions: { status: OutlineStatus; run: number | null } | null;
   /** null until the Designer was first asked for covers. */
   cover: FocusCover | null;
+  announcement: FocusAnnouncement | null;
   steps: { id: string; done: boolean }[];
 }
 
@@ -122,8 +142,15 @@ export const coverAction = (
     | { action: "more" | "later" },
 ) => post<FocusState & { design_id?: string | null }>(`${id}/cover/`, body);
 
-export const finishCreation = (id: number, body: Timed<{ publish: boolean }>) =>
-  post<FocusState>(`${id}/finish/`, body);
+export const finishCreation = (
+  id: number,
+  body: Timed<{ publish: boolean; announce: boolean }>,
+) => post<FocusState>(`${id}/finish/`, body);
+
+export const announceCreation = (
+  id: number,
+  body: Timed<{ schedule: boolean }> | { retry: true },
+) => post<FocusState>(`${id}/announce/`, body);
 
 export const leaveCreation = (id: number, body: Timed<{ abandon?: boolean }>) =>
   post<FocusState>(`${id}/leave/`, body);
