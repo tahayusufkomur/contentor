@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { NavLink } from "@/components/ui/nav-link";
 import { SETUP_CATALOG } from "@/components/setup/catalog";
 import { useAssistantDock } from "@/lib/assistant-dock";
 import { patchSetup, useSetupStatus } from "@/lib/setup-assistant";
@@ -31,6 +32,8 @@ export function SetupGuideCard() {
   const next = status.items.filter((i) => !i.optional && !i.done).slice(0, 3);
   const allDone = done === total;
   const live = status.items.some((i) => i.key === "publish" && i.done);
+  // Live with "sell later" items held: the one thing left is selling them.
+  const held = live && !allDone ? (status.held ?? []) : [];
 
   return (
     <Card>
@@ -40,15 +43,26 @@ export function SetupGuideCard() {
             <h2 className="text-lg font-semibold">
               {allDone
                 ? t("setup.celebrateTitle")
-                : live
-                  ? t("setup.titleLive")
-                  : t("setup.title")}
+                : held.length
+                  ? t("setup.titleSelling")
+                  : live
+                    ? t("setup.titleLive")
+                    : t("setup.title")}
             </h2>
             <p className="text-sm text-muted-foreground">
               {allDone
                 ? t("setup.celebrateBody")
-                : t("setup.progressLabel", { done, total })}
+                : held.length
+                  ? t("setup.heldIntro")
+                  : t("setup.progressLabel", { done, total })}
             </p>
+            {held.length > 0 && (
+              <ul className="mt-1 text-sm">
+                {held.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            )}
           </div>
           <button
             type="button"
@@ -66,15 +80,41 @@ export function SetupGuideCard() {
           />
         </div>
         {!allDone && (
-          <ul className="space-y-1">
+          <ul className="-mx-2 space-y-0.5">
             {next.map((item) => {
-              const Icon = SETUP_CATALOG[item.key]?.icon;
-              return (
-                <li key={item.key} className="flex items-center gap-2 text-sm">
+              const entry = SETUP_CATALOG[item.key];
+              const Icon = entry?.icon;
+              const label = (
+                <>
                   {Icon ? (
                     <Icon className="h-4 w-4 text-muted-foreground" />
                   ) : null}
                   {t(`setup.items.${item.key}.title`)}
+                  <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
+                </>
+              );
+              const rowClass =
+                "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent";
+              return (
+                <li key={item.key}>
+                  {!entry?.href ? (
+                    // Rows with an in-panel action (erase demo, copy link) run there.
+                    <button
+                      type="button"
+                      onClick={() => dock.open("setup")}
+                      className={rowClass}
+                    >
+                      {label}
+                    </button>
+                  ) : entry.hardNav ? (
+                    <a href={entry.href} className={rowClass}>
+                      {label}
+                    </a>
+                  ) : (
+                    <NavLink href={entry.href} className={rowClass}>
+                      {label}
+                    </NavLink>
+                  )}
                 </li>
               );
             })}

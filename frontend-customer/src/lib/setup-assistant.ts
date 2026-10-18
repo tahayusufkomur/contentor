@@ -22,6 +22,8 @@ export interface SetupStatus {
   publish_blockers: string[];
   /** The tenant's charge currency (USD/EUR). */
   currency?: string;
+  /** What "go live now, sell later" holds, named ("Your course “…”"). */
+  held?: string[];
 }
 
 export interface DemoContent {

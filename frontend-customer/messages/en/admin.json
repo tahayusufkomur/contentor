@@ -506,8 +506,8 @@
         "description": "Connect payouts so students can buy from you."
       },
       "start_selling": {
-        "title": "Start selling",
-        "description": "Your prices are saved. Choose a plan and set up payouts, and what you held back goes on sale on its own."
+        "title": "Start your plan",
+        "description": "Your prices are saved. With a plan and payouts, what you held back goes on sale on its own."
       },
       "publish": {
         "title": "Publish your site",
@@ -585,7 +585,9 @@
       "assistantResumed": "The assistant is back",
       "humanModeNotice": "You're chatting with {name}"
     },
-    "titleLive": "Finish setting up"
+    "titleLive": "Finish setting up",
+    "titleSelling": "Start selling",
+    "heldIntro": "Waiting to go on sale, with your prices kept:"
   },
   "settings": {
     "title": "Settings",

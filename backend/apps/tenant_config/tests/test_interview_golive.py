@@ -327,3 +327,50 @@ def test_a_trial_that_sells_starts_the_plan_or_takes_a_way_out(client, tenant_ct
     # No going free (decision 2026-10-17): start the plan now, or sell later.
     assert "free_effects" not in body
     assert client.post(URL, {"action": "make_free"}, format="json").status_code == 400
+
+
+# ── what the admin's setup checklist leaves her after the interview ──────────
+
+STATUS_URL = "/api/v1/admin/setup-status/"
+
+
+def _checklist(client):
+    with (
+        mock.patch("apps.tenant_config.interview_golive.can_monetize", return_value=False),
+        mock.patch("apps.tenant_config.setup_items.can_monetize", return_value=False),
+    ):
+        return {i["key"]: i for i in client.get(STATUS_URL).json()["items"]}
+
+
+def test_pages_the_interview_built_are_done_and_the_rest_are_not_listed(client, config):
+    """Every interview coach landed in the admin at "2 of 11" with "Make the first
+    thing visitors see yours" for the home page the interview had just built."""
+    config.setup_flow = {**config.setup_flow, "page_builds": {"home": {"status": "ready"}, "faq": {"status": "failed"}}}
+    config.save()
+    items = _checklist(client)
+    assert items["page_home"]["done"] is True
+    assert items["page_faq"]["done"] is False  # a failed build is still hers to fix
+    assert "page_courses" not in items and "page_pricing" not in items
+
+
+def test_free_content_makes_payouts_a_nice_to_have(client):
+    _course(paid=False, published=True)
+    items = _checklist(client)
+    assert items["payouts"]["optional"] is True
+    assert items["first_course"]["done"] is True
+
+
+def test_sell_later_leaves_one_thing_start_selling_with_what_waits(client, tenant_ctx, config):
+    _sell_later(client, tenant_ctx, config)
+    with mock.patch("apps.tenant_config.interview_golive.fire"):
+        client.post(URL, {"action": "publish"}, format="json")
+    with (
+        mock.patch("apps.tenant_config.interview_golive.can_monetize", return_value=False),
+        mock.patch("apps.tenant_config.setup_items.can_monetize", return_value=False),
+    ):
+        body = client.get(STATUS_URL).json()
+    items = {i["key"]: i for i in body["items"]}
+    assert "first_course" not in items  # held, not missing: start_selling covers it
+    assert items["start_selling"]["done"] is False and items["payouts"]["optional"] is False
+    assert [k for k, i in items.items() if not i["optional"] and not i["done"]] == ["start_selling", "payouts"]
+    assert "Desk Yoga" in " ".join(body["held"])

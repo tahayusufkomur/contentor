@@ -95,6 +95,21 @@ def _has_paid_content(seeded, held_course=None) -> bool:
     )
 
 
+def _held_course_id(flow):
+    """The course draft "go live now, sell later" holds back, if any."""
+    return (flow.get("drafts") or {}).get("course") if (flow.get("held") or {}).get("course") else None
+
+
+def _course_expected(tenant, flow) -> bool:
+    """Whether she is asked for a course of her own: not when /setup skipped
+    the step or held her course for "sell later" (start_selling covers it),
+    nor when her brief offers no courses (audit 2026-10-09; a brief without
+    offers, from older signups, still asks)."""
+    skipped = [*(flow.get("skipped") or []), *(["course"] if _held_course_id(flow) else [])]
+    offers = ((getattr(tenant, "wizard_state", None) or {}).get("answers") or {}).get("offers")
+    return "course" not in skipped and (not offers or "course" in offers)
+
+
 def publish_blockers(config, tenant) -> list[str]:
     """Requirements a coach must satisfy before going live (decision 2026-07-05).
 
@@ -143,13 +158,9 @@ def publish_blockers(config, tenant) -> list[str]:
         Course, seeded.get("courses.course", []), queryset=Course.objects.filter(is_published=True)
     ) or _has_own(DownloadFile, seeded.get("downloads.downloadfile", []))
     flow = config.setup_flow or {}
-    # A course held by "sell later" waits for payouts like a skipped one.
-    held_course = (flow.get("drafts") or {}).get("course") if (flow.get("held") or {}).get("course") else None
-    skipped = [*(flow.get("skipped") or []), *(["course"] if held_course else [])]
-    # A coach whose brief offers no courses is never asked for one (audit
-    # 2026-10-09); a brief without offers (older signups) still is.
-    offers = ((getattr(tenant, "wizard_state", None) or {}).get("answers") or {}).get("offers")
-    if not has_own_product and "course" not in skipped and (not offers or "course" in offers):
+    held_course = _held_course_id(flow)
+    skipped = flow.get("skipped") or []
+    if not has_own_product and _course_expected(tenant, flow):
         blockers.append("first_course")
 
     goals = _wizard_goals(tenant)
@@ -196,6 +207,8 @@ def compute_setup_state(config, tenant) -> dict:
     from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
     from apps.notifications.models import Announcement
 
+    from .interview_golive import _held_lines
+
     progress = config.setup_progress or {}
     pages_edited = set(progress.get("pages_edited", []))
     manual = progress.get("manual", {})
@@ -212,8 +225,15 @@ def compute_setup_state(config, tenant) -> dict:
         source = "auto" if auto else ("manual" if manual.get(key) is True else None)
         items.append({"key": key, "group": group, "done": done, "source": source, "optional": optional})
 
+    flow = config.setup_flow or {}
+    # The /setup interview builds her pages and she reviews each one there: a
+    # page it built is done, and one it never built is not hers to set up.
+    builds = (flow.get("page_builds") or {}) if "interview" in flow else None
     for page in CORE_PAGE_KEYS:
-        add(f"page_{page}", "site", page in pages_edited)
+        if builds is None:
+            add(f"page_{page}", "site", page in pages_edited)
+        elif page in builds:
+            add(f"page_{page}", "site", page in pages_edited or builds[page].get("status") == "ready")
     add(
         "look",
         "site",
@@ -221,17 +241,19 @@ def compute_setup_state(config, tenant) -> dict:
     )
     # Same rule as the publish gate (publish_blockers): a draft course never
     # ticks this, or the checklist says done while Publish stays blocked.
-    add(
-        "first_course",
-        "content",
-        _has_own(Course, seeded.get("courses.course", []), queryset=Course.objects.filter(is_published=True))
-        or _has_own(DownloadFile, seeded.get("downloads.downloadfile", [])),
-    )
+    has_product = _has_own(
+        Course, seeded.get("courses.course", []), queryset=Course.objects.filter(is_published=True)
+    ) or _has_own(DownloadFile, seeded.get("downloads.downloadfile", []))
+    if has_product or _course_expected(tenant, flow):
+        add("first_course", "content", has_product)
     if was_seeded:
         add("demo_cleanup", "content", not seeded_rows_exist)
-    add("payouts", "business", can_monetize(tenant))
-    if (config.setup_flow or {}).get("held"):
-        add("start_selling", "business", False)  # until release_held() puts them on sale
+    held = flow.get("held")
+    if held:
+        # Her own plan, then payouts: what she held goes on sale once she has both (release_held).
+        add("start_selling", "business", is_paid_active(tenant))
+    # Payouts are setup only for a coach who sells; for one who doesn't they are a nice-to-have.
+    add("payouts", "business", can_monetize(tenant), optional=not (held or _has_paid_content(seeded)))
     add("publish", "live", published)
 
     if "downloads" in modules:
@@ -296,4 +318,6 @@ def compute_setup_state(config, tenant) -> dict:
         # The tenant's charge currency: admin price fields/labels must not hardcode "$".
         "currency": tenant_charge_currency(tenant),
         "publish_blockers": publish_blockers(config, tenant),
+        # What "sell later" holds, named, for the start-selling card.
+        "held": _held_lines(held, flow) if held else [],
     }
