@@ -4,7 +4,9 @@ import { describe, expect, it } from "vitest";
 import type { CoverAspect } from "@shared/sections/types";
 import { layoutFrames } from "@/lib/covers/layouts";
 import {
+  RANGES,
   SIZES,
+  badgeKindsFor,
   defaultRecipe,
   fromSet,
   framesFor,
@@ -73,6 +75,55 @@ describe("the recipe matches the backend validator", () => {
       ].map((m) => [m[1], Number(m[2])]),
     );
     expect(limits).toEqual(TEXT_MAX);
+  });
+
+  it.skipIf(!existsSync(source))("has the same clamp ranges", () => {
+    const pair = (lo: string, hi: string) => [Number(lo), Number(hi)];
+    // `_STYLE_RANGES = {"scale": (0.5, 2), ...}`
+    const table = (name: string) =>
+      Object.fromEntries(
+        [
+          ...(
+            new RegExp(`^${name} = \\{([^}]*)\\}`, "m").exec(python)?.[1] ?? ""
+          ).matchAll(/"(\w+)": \((-?[\d.]+), (-?[\d.]+)\)/g),
+        ].map((m) => [m[1], pair(m[2], m[3])]),
+      );
+    // `_clamp(photo.get("zoom"), 1, 3, 1)`: the two numbers after the value
+    const clamp = (value: string) => {
+      const m = new RegExp(
+        `_clamp\\(${value}, (-?[\\d.]+), (-?[\\d.]+), `,
+      ).exec(python);
+      return m ? pair(m[1], m[2]) : null;
+    };
+    expect({
+      ...table("_STYLE_RANGES"),
+      frame: table("_FRAME_RANGES"),
+      focus: clamp("axis"),
+      zoom: clamp('photo\\.get\\("zoom"\\)'),
+      brightness: clamp('photo\\.get\\("brightness"\\)'),
+      contrast: clamp('photo\\.get\\("contrast"\\)'),
+      saturation: clamp('photo\\.get\\("saturation"\\)'),
+      darken: clamp('photo\\.get\\("darken"\\)'),
+      opacity: clamp('raw\\.get\\("opacity"\\)'),
+    }).toEqual(RANGES);
+  });
+
+  it("keeps every range ordered, and the defaults inside them", () => {
+    const flat = Object.values({ ...RANGES, ...RANGES.frame });
+    for (const range of flat) {
+      if (Array.isArray(range)) expect(range[0]).toBeLessThan(range[1]);
+    }
+    const { photo } = defaultRecipe();
+    for (const key of [
+      "zoom",
+      "brightness",
+      "contrast",
+      "saturation",
+      "darken",
+    ] as const) {
+      expect(photo[key]).toBeGreaterThanOrEqual(RANGES[key][0]);
+      expect(photo[key]).toBeLessThanOrEqual(RANGES[key][1]);
+    }
   });
 });
 
@@ -458,6 +509,31 @@ describe("layerOrder", () => {
         "photo",
       ]);
     }
+  });
+});
+
+describe("badgeKindsFor", () => {
+  it("leaves out the date for a course and New for an event", () => {
+    expect(badgeKindsFor("course", "none")).toEqual([
+      "none",
+      "new",
+      "live",
+      "text",
+    ]);
+    for (const kind of ["live", "stream", "zoom", "onsite"]) {
+      expect(badgeKindsFor(kind, "none")).toEqual([
+        "none",
+        "date",
+        "live",
+        "text",
+      ]);
+    }
+  });
+
+  it("keeps the kind a badge has, and offers every kind where the target is not known", () => {
+    expect(badgeKindsFor("course", "date")).toContain("date");
+    expect(badgeKindsFor("zoom", "new")).toContain("new");
+    expect(badgeKindsFor(undefined, "none")).toEqual([...BADGE_KINDS]);
   });
 });
 

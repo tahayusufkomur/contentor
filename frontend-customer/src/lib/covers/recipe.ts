@@ -2,8 +2,9 @@
 // the defaults and the constants are the same (see types/design.ts).
 
 import type { CoverAspect } from "@shared/sections/types";
-import { PARTS, SIZES } from "@/types/design";
+import { BADGE_KINDS, PARTS, SIZES } from "@/types/design";
 import type {
+  BadgeKind,
   CoverItem,
   CoverRecipe,
   CoverSize,
@@ -14,6 +15,23 @@ import type {
 import { layoutFrames } from "./layouts";
 
 export { SIZES };
+
+/** The ranges the server clamps numbers to (backend/apps/media/design_recipe.py; recipe.test.ts pins
+ *  them). Every slider and drag in the studio stays inside them, so what she sees is what is saved. */
+export const RANGES = {
+  focus: [0, 1],
+  zoom: [1, 3],
+  brightness: [0.5, 1.5],
+  contrast: [0.5, 1.5],
+  saturation: [0.5, 1.5],
+  darken: [0, 0.7],
+  scale: [0.5, 2],
+  tracking: [-0.05, 0.3],
+  leading: [0.9, 1.6],
+  opacity: [0.1, 1],
+  /** A frame, in fractions of its canvas. */
+  frame: { x: [-0.5, 1.5], y: [-0.5, 1.5], w: [0.02, 2], h: [0.02, 2] },
+} as const;
 
 const WIDE = 16 / 9;
 const BANNER = 3;
@@ -116,6 +134,20 @@ export function layerOrder(recipe: CoverRecipe): string[] {
     "badge",
     ...recipe.extras.map((extra) => extra.id),
   ];
+}
+
+/** The badge kinds worth offering for a target ("course", or an event's kind): a course has no date to
+ *  show and an event is never new. The kind it has now stays in the list. Without a target, all of them. */
+export function badgeKindsFor(
+  targetKind: string | undefined,
+  current: BadgeKind,
+): BadgeKind[] {
+  return BADGE_KINDS.filter(
+    (kind) =>
+      kind === current ||
+      targetKind === undefined ||
+      (targetKind === "course" ? kind !== "date" : kind !== "new"),
+  );
 }
 
 /** The recipe a new cover starts from: the contract's defaults, then her set (the layout and

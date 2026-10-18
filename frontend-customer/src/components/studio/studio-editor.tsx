@@ -8,14 +8,23 @@
 // save is never written back into it: the server trims text, and adopting that would eat the space she
 // has just typed.
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Redo2, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { CoversStrip } from "@/components/studio/covers-strip";
+import { LayerToolbar } from "@/components/studio/layer-toolbar";
 import { SimpleControls } from "@/components/studio/simple-controls";
 import { SizePreviews } from "@/components/studio/size-previews";
+import { StudioCanvas } from "@/components/studio/studio-canvas";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { NavLink } from "@/components/ui/nav-link";
@@ -27,7 +36,8 @@ import { undoCopilotAction } from "@/lib/copilot/api";
 import { createAutosave } from "@/lib/covers/autosave";
 import { editHistory, type EditorAction } from "@/lib/covers/editor";
 import { openCoverStudio } from "@/lib/covers/open-studio";
-import { parseLook } from "@/lib/covers/palette";
+import { coverPalette, parseLook } from "@/lib/covers/palette";
+import { framesFor } from "@/lib/covers/recipe";
 import { targetItem } from "@/lib/covers/targets";
 import {
   deleteDesign,
@@ -50,19 +60,49 @@ import {
   announceSiteUpdated,
 } from "@/lib/site-events";
 import { ApiError } from "@/types/api";
+import { PARTS } from "@/types/design";
 import type {
   CoverDesign,
+  CoverItem,
   CoverRecipe,
   CoverSize,
   DesignRecord,
   DesignTargets,
+  PartId,
 } from "@/types/design";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import type { CoverAspect } from "@shared/sections/types";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 
 /** Signed photo links last an hour: a link that fails is replaced from the server, but not more often
  *  than this, so a photo that is really gone does not make the page ask for ever. */
 const PHOTO_REFRESH_MS = 60_000;
+
+/** The width from which the canvas is the editor (Tailwind's `lg`); under it the simple controls are. */
+const DESKTOP = "(min-width: 1024px)";
+const watchDesktop = (notify: () => void) => {
+  const query = window.matchMedia(DESKTOP);
+  query.addEventListener("change", notify);
+  return () => query.removeEventListener("change", notify);
+};
+function useDesktop(): boolean {
+  return useSyncExternalStore(
+    watchDesktop,
+    () => window.matchMedia(DESKTOP).matches,
+    () => false,
+  );
+}
+
+const TEXT_INPUT = /^(text|search|url|tel|email|password|number)$/;
+/** Whether a key went to a field she types in, which has an undo of its own. */
+function typingIn(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable ||
+      target instanceof HTMLTextAreaElement ||
+      (target instanceof HTMLInputElement && TEXT_INPUT.test(target.type)))
+  );
+}
 
 /** What the editor shows while the design and her covers load: the shape of the page. */
 export function EditorSkeleton() {
@@ -182,6 +222,88 @@ interface Loaded {
   stamp: number;
 }
 
+/** The canvas with the toolbar of the layer on it, or a hint where nothing is selected. The toolbar's
+ *  place is kept either way, so the canvas does not move under her pointer when she selects. */
+function CanvasPane({
+  recipe,
+  design,
+  item,
+  size,
+  cardAspect,
+  targetKind,
+  selected,
+  onSelect,
+  edit,
+  generating,
+  busy,
+}: {
+  recipe: CoverRecipe;
+  design: CoverDesign;
+  item: CoverItem;
+  size: CoverSize;
+  cardAspect: CoverAspect;
+  targetKind: string;
+  selected: string | null;
+  onSelect: (id: string | null) => void;
+  edit: (action: EditorAction) => void;
+  generating: boolean;
+  busy: boolean;
+}) {
+  const t = useTranslations("admin.studio");
+  const palette = useMemo(() => {
+    const { style, paletteId } = parseLook(design.look);
+    return coverPalette(style, paletteId);
+  }, [design.look]);
+  // A layer that is no longer on the canvas (removed, or not in this layout or size) is not selected.
+  const present = useMemo(
+    () => framesFor(recipe, size, cardAspect),
+    [recipe, size, cardAspect],
+  );
+  const layer = selected && present[selected] ? selected : null;
+  const extra = recipe.extras.find((one) => one.id === layer);
+  const part =
+    layer && (PARTS as readonly string[]).includes(layer)
+      ? (layer as PartId)
+      : undefined;
+  return (
+    <>
+      {/* Two rows of tools from 1280 px; in the narrower column of 1024 to 1279 they wrap to four. */}
+      <fieldset
+        disabled={busy}
+        className="mb-2 min-h-[8.5rem] min-w-0 xl:min-h-[5.5rem]"
+      >
+        {extra || part ? (
+          <LayerToolbar
+            part={part}
+            extra={extra}
+            recipe={recipe}
+            palette={palette}
+            targetKind={targetKind}
+            onEdit={edit}
+            onSelect={onSelect}
+          />
+        ) : (
+          <p className="pt-1 text-xs text-muted-foreground">
+            {t("canvas.hint")}
+          </p>
+        )}
+      </fieldset>
+      <StudioCanvas
+        recipe={recipe}
+        design={design}
+        item={item}
+        size={size}
+        cardAspect={cardAspect}
+        selected={layer}
+        onSelect={onSelect}
+        onEdit={edit}
+        generating={generating}
+        disabled={busy}
+      />
+    </>
+  );
+}
+
 function EditorBody({
   design,
   targets,
@@ -222,6 +344,10 @@ function EditorBody({
   const [confirming, setConfirming] = useState(false);
   // From a Keep or an Undo until the reload has replaced this editor: nothing more can be done to it.
   const [reloading, setReloading] = useState(false);
+  // From 1024 px the canvas is the editor; under it, the simple controls.
+  const desktop = useDesktop();
+  // The layer selected on the canvas: a part's id or an extra's.
+  const [selected, setSelected] = useState<string | null>(null);
 
   const autosave = useMemo(
     () =>
@@ -345,6 +471,23 @@ function EditorBody({
   );
 
   const busy = keeping || discarding || copying || reloading;
+  // Cmd-Z and Shift-Cmd-Z (Ctrl-Z, Ctrl-Shift-Z and Ctrl-Y elsewhere) step the history, unless she is typing
+  // in a field, which has an undo of its own. The canvas handles its own keys (arrows, Delete, Cmd-D).
+  useEffect(() => {
+    if (!editable) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
+      if (busy || confirming || typingIn(e.target)) return;
+      const key = e.key.toLowerCase();
+      const redoing =
+        (key === "z" && e.shiftKey) || (key === "y" && !e.metaKey);
+      if (!redoing && !(key === "z" && !e.shiftKey)) return;
+      e.preventDefault();
+      apply(redoing ? redo(historyRef.current) : undo(historyRef.current));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
   const cover: CoverDesign = {
     id: design.id,
     recipe,
@@ -466,6 +609,23 @@ function EditorBody({
             size={size}
             onSize={setSize}
             generating={generating}
+            canvas={
+              desktop && editable ? (
+                <CanvasPane
+                  recipe={recipe}
+                  design={cover}
+                  item={item}
+                  size={size}
+                  cardAspect={cardAspect}
+                  targetKind={design.target_kind}
+                  selected={selected}
+                  onSelect={setSelected}
+                  edit={edit}
+                  generating={generating}
+                  busy={busy}
+                />
+              ) : undefined
+            }
           />
           <CoversStrip
             targets={others}

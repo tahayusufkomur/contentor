@@ -831,6 +831,78 @@
       "wait": "Still making your photo. It takes about a minute.",
       "takes": "A new photo takes about a minute.",
       "makeFailed": "That photo couldn't be made. Try other words."
+    },
+    "canvas": {
+      "label": "Cover canvas",
+      "hint": "Click a layer to edit it. Drag to move it, use the handles to resize it, and double-click words to type.",
+      "editWords": "Words on the cover"
+    },
+    "toolbar": {
+      "label": "Layer tools",
+      "layer": {
+        "photo": "Photo",
+        "panel": "Colour",
+        "label": "Label",
+        "title": "Title",
+        "subtitle": "Subtitle",
+        "logo": "Logo",
+        "badge": "Badge",
+        "text": "Text",
+        "shape": "Shape"
+      },
+      "font": "Font",
+      "fonts": {
+        "display": "Heading",
+        "body": "Body"
+      },
+      "weight": "Weight",
+      "weights": {
+        "400": "Regular",
+        "500": "Medium",
+        "600": "Semibold",
+        "700": "Bold",
+        "800": "Extra bold"
+      },
+      "upper": "Capitals",
+      "align": "Align",
+      "aligns": {
+        "left": "Left",
+        "center": "Centre",
+        "right": "Right"
+      },
+      "size": "Size",
+      "tracking": "Letter spacing",
+      "leading": "Line spacing",
+      "colour": "Colour",
+      "automatic": "Automatic",
+      "focusX": "Focus across",
+      "focusY": "Focus down",
+      "zoom": "Zoom",
+      "brightness": "Brightness",
+      "contrast": "Contrast",
+      "saturation": "Saturation",
+      "darken": "Darken",
+      "badgeWords": "Badge words",
+      "fill": "Fill",
+      "shape": "Shape",
+      "shapes": {
+        "rect": "Rectangle",
+        "circle": "Circle",
+        "arch": "Arch",
+        "line": "Line"
+      },
+      "opacity": "Opacity",
+      "logoColour": "Logo colour",
+      "logoColours": {
+        "auto": "Automatic",
+        "white": "White",
+        "black": "Black",
+        "original": "Original"
+      },
+      "forward": "Bring forward",
+      "back": "Send back",
+      "duplicate": "Duplicate",
+      "delete": "Delete"
     }
   },
   "messages": {

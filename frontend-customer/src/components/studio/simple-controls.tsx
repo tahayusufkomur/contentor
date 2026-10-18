@@ -16,14 +16,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import type { EditorAction } from "@/lib/covers/editor";
 import { coverPalette, parseLook } from "@/lib/covers/palette";
+import { badgeKindsFor } from "@/lib/covers/recipe";
 import { cn } from "@/lib/utils";
-import {
-  BADGE_KINDS,
-  LAYOUTS,
-  PAINT_ROLES,
-  SIZES,
-  TEXT_MAX,
-} from "@/types/design";
+import { LAYOUTS, PAINT_ROLES, SIZES, TEXT_MAX } from "@/types/design";
 import type {
   BadgeKind,
   CoverRecipe,
@@ -320,11 +315,7 @@ function Badge({
   const id = useId();
   const { badge } = recipe;
   // A course has no date to show, and an event is never new: leave out what could never draw.
-  const kinds = BADGE_KINDS.filter(
-    (kind) =>
-      kind === badge.kind ||
-      (targetKind === "course" ? kind !== "date" : kind !== "new"),
-  );
+  const kinds = badgeKindsFor(targetKind, badge.kind);
   return (
     <Section title={t("badge")}>
       <div className="space-y-1.5">
