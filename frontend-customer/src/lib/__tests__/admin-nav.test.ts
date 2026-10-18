@@ -48,6 +48,7 @@ describe("buildAdminNav", () => {
       "/?edit=1",
       "/?edit=1&section=brand",
       "/admin/media",
+      "/admin/studio",
       "/admin/assistant",
     ]);
     expect(hrefs("settings")).toEqual(["/admin/settings", "/admin/billing"]);

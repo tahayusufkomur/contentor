@@ -6,12 +6,16 @@ import { toast } from "sonner";
 
 import { FilterPicker } from "@/components/admin/filter-picker";
 import { TagInput } from "@/components/admin/tag-input";
+import { CoverThumb } from "@/components/studio/cover-thumb";
+import { OpenStudioButton } from "@/components/studio/open-studio-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useTenant } from "@/hooks/use-tenant";
 import { clientFetch } from "@/lib/api-client";
+import { listedItem } from "@/lib/covers/items";
 import { useTenantCurrency } from "@/lib/setup-assistant";
 import { ApiError } from "@/types/api";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -53,6 +57,7 @@ export function EventForm({
 }) {
   const t = useTranslations("admin.events");
   const currency = useTenantCurrency();
+  const timeZone = useTenant()?.timezone || "UTC";
   const [kind, setKind] = useState<EventKind>(event?.kind ?? "live");
   const [form, setForm] = useState({
     title: event?.title ?? "",
@@ -166,6 +171,37 @@ export function EventForm({
               rows={2}
             />
           </div>
+
+          {/* The series is every session of this kind with this title as last saved, so the door
+              uses the saved title, not an edit still in the field above. */}
+          {event && (
+            <div className="space-y-2">
+              <Label>{t("cover")}</Label>
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Zoom and in-person rows carry no photo link: until they have a design, what they
+                    wear is unknown, and an empty tile would say "nothing". */}
+                {(event.cover_design ||
+                  event.thumbnail_signed_url !== undefined) && (
+                  <CoverThumb
+                    design={event.cover_design}
+                    photoUrl={event.thumbnail_signed_url}
+                    item={listedItem(
+                      { title: event.title, scheduled_at: event.scheduled_at },
+                      timeZone,
+                    )}
+                    className="w-48"
+                  />
+                )}
+                <OpenStudioButton
+                  target={{ target_kind: event.kind, target_key: event.title }}
+                  from={event.cover_design?.id}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t("coverHint", { title: event.title })}
+              </p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="event-when">{t("when")}</Label>

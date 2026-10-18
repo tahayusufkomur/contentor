@@ -28,6 +28,7 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { ChevronUp, Pencil, Plus, Trash2 } from "lucide-react";
 import { PhotoPicker } from "@/components/admin/photo-picker";
+import { OpenStudioButton } from "@/components/studio/open-studio-button";
 import { VideoPicker } from "@/components/admin/video-picker";
 import { FilterPicker } from "@/components/admin/filter-picker";
 import { TagInput } from "@/components/admin/tag-input";
@@ -380,55 +381,66 @@ export function CourseForm({
             </div>
             <div className="space-y-2">
               <Label>Thumbnail</Label>
-              <PhotoPicker
-                value={
-                  isCreate
-                    ? createForm.thumbnail_url
-                    : (course?.thumbnail_url ?? null)
-                }
-                previewUrl={
-                  isCreate
-                    ? createForm.thumbnail_signed_url
-                    : course?.thumbnail_signed_url ||
-                      course?.thumbnail_url ||
-                      null
-                }
-                onSelect={(photo: Photo) => {
-                  if (isCreate) {
-                    setCreateForm({
-                      ...createForm,
-                      thumbnail_url: photo.s3_key,
-                      thumbnail_id: photo.id,
-                      thumbnail_signed_url: photo.signed_url,
-                    });
-                  } else if (course) {
-                    setCourse({
-                      ...course,
-                      thumbnail_url: photo.s3_key,
-                      thumbnail_id: photo.id,
-                      thumbnail_signed_url: photo.signed_url ?? undefined,
-                    });
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <PhotoPicker
+                  value={
+                    isCreate
+                      ? createForm.thumbnail_url
+                      : (course?.thumbnail_url ?? null)
                   }
-                }}
-                onClear={() => {
-                  if (isCreate) {
-                    setCreateForm({
-                      ...createForm,
-                      thumbnail_url: "",
-                      thumbnail_id: null,
-                      thumbnail_signed_url: null,
-                    });
-                  } else if (course) {
-                    setCourse({
-                      ...course,
-                      thumbnail_url: "",
-                      thumbnail_id: null,
-                      thumbnail_signed_url: undefined,
-                    });
+                  previewUrl={
+                    isCreate
+                      ? createForm.thumbnail_signed_url
+                      : course?.thumbnail_signed_url ||
+                        course?.thumbnail_url ||
+                        null
                   }
-                }}
-                label="Choose thumbnail"
-              />
+                  onSelect={(photo: Photo) => {
+                    if (isCreate) {
+                      setCreateForm({
+                        ...createForm,
+                        thumbnail_url: photo.s3_key,
+                        thumbnail_id: photo.id,
+                        thumbnail_signed_url: photo.signed_url,
+                      });
+                    } else if (course) {
+                      setCourse({
+                        ...course,
+                        thumbnail_url: photo.s3_key,
+                        thumbnail_id: photo.id,
+                        thumbnail_signed_url: photo.signed_url ?? undefined,
+                      });
+                    }
+                  }}
+                  onClear={() => {
+                    if (isCreate) {
+                      setCreateForm({
+                        ...createForm,
+                        thumbnail_url: "",
+                        thumbnail_id: null,
+                        thumbnail_signed_url: null,
+                      });
+                    } else if (course) {
+                      setCourse({
+                        ...course,
+                        thumbnail_url: "",
+                        thumbnail_id: null,
+                        thumbnail_signed_url: undefined,
+                      });
+                    }
+                  }}
+                  label="Choose thumbnail"
+                />
+                {!isCreate && course && (
+                  <OpenStudioButton
+                    target={{
+                      target_kind: "course",
+                      target_key: String(course.id),
+                    }}
+                    from={course.cover_design?.id}
+                  />
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">

@@ -1,5 +1,6 @@
 import { MapPin, Radio, Video, type LucideIcon } from "lucide-react";
 import type { FilterOption, Tag } from "@/types/course";
+import type { CoverDesign } from "@/types/design";
 
 /** Where a class or event happens. The four kinds are four tables on the
  *  server; here they are one list and one form, and this table holds every
@@ -21,6 +22,10 @@ export interface EventRow {
   price: string;
   scheduled_at: string | null;
   created_at: string;
+  /** The kept cover its series wears; null or absent when it has none. */
+  cover_design?: CoverDesign | null;
+  /** Its plain photo, signed (live classes and streams only). */
+  thumbnail_signed_url?: string | null;
   filter_options?: FilterOption[];
   tags?: Tag[];
   auto_recording?: boolean;

@@ -41,6 +41,7 @@
       "settings": "General",
       "plan": "Your plan",
       "media": "Media",
+      "studio": "Photo studio",
       "messages": "Messages"
     },
     "more": "+ {count} more"
@@ -696,6 +697,25 @@
       "cancel": "Cancel the upload of {name}"
     }
   },
+  "studio": {
+    "subtitle": "Design the cover your students see for each course, class and event.",
+    "design": "Design a cover",
+    "continue": "Continue",
+    "editCopy": "Edit a copy",
+    "state": {
+      "designed": "Designed",
+      "photo": "Photo",
+      "none": "No cover",
+      "draft": "Draft waiting"
+    },
+    "sessions": "{count, plural, one {# session} other {# sessions}}",
+    "notPublished": "Not published",
+    "empty": {
+      "title": "Nothing to put a cover on yet",
+      "description": "Add a course or a class, then come back to design its cover.",
+      "action": "New course"
+    }
+  },
   "messages": {
     "subtitle": "What you tell your students, in the app and by email.",
     "new": "New message",
@@ -824,6 +844,8 @@
     "description": "Description",
     "when": "When",
     "whenHint": "Leave empty to keep it as a draft your students do not see.",
+    "cover": "Cover",
+    "coverHint": "Every session called “{title}” wears this cover.",
     "zoomLink": "Zoom link",
     "location": "Place",
     "locationPlaceholder": "e.g. Studio A, Downtown",
