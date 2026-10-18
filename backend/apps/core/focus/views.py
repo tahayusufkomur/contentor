@@ -5,6 +5,7 @@ endpoints. Off (FOCUS_MODE_ENABLED) means
 404 everywhere but the overview, which says so."""
 
 from django.conf import settings
+from django.db import connection
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -12,7 +13,7 @@ from rest_framework.response import Response
 from apps.core.permissions import IsCoachOrOwner
 from apps.tenant_config.models import FocusCreation
 
-from . import flow
+from . import covers, flow
 from .recipes import RECIPES
 
 
@@ -117,6 +118,46 @@ def focus_descriptions(request, creation_id):
     if creation is None:
         return _not_found()
     return Response(flow.state(flow.retry_descriptions(creation)))
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def focus_cover(request, creation_id):
+    """One of the cover step's taps (photo, keep, more, later, edit). Each is
+    refused, with the state unchanged, unless the cover is the question."""
+    creation = _hers(request, creation_id) if settings.FOCUS_MODE_ENABLED else None
+    if creation is None:
+        return _not_found()
+    data = _body(request)
+    action, index, extra = data.get("action"), data.get("index"), {}
+    if action == "photo":
+        if flow.current_field(creation) == "cover":  # no download for a stale screen
+            photo = covers.photo_for(data.get("asset_id"))
+            if photo is not None:
+                covers.set_photo(creation, photo)
+    elif action == "keep":
+        covers.keep(creation, index, request.user)
+    elif action == "more":
+        covers.more(creation)
+    elif action == "later":
+        covers.later(creation)
+    elif action == "edit":
+        extra["design_id"] = covers.open_for_edit(creation, index)
+    creation.refresh_from_db()
+    return Response({**flow.state(creation), **extra})
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def focus_photos(request, creation_id):
+    creation = _hers(request, creation_id) if settings.FOCUS_MODE_ENABLED else None
+    if creation is None:
+        return _not_found()
+    try:
+        page = max(1, int(request.query_params.get("page", "1")))
+    except ValueError:
+        page = 1
+    return Response(covers.photo_row(creation, connection.tenant, request.query_params.get("q", ""), page))
 
 
 @api_view(["POST"])

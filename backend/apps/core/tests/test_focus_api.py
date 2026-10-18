@@ -244,3 +244,18 @@ def test_descriptions_are_hers_and_switched(client):
     assert other.post(f"{URL}{cid}/descriptions/").status_code == 404
     with override_settings(FOCUS_MODE_ENABLED=False):
         assert client.post(f"{URL}{cid}/descriptions/").status_code == 404
+
+
+@off
+def test_the_cover_endpoints_are_404_when_off(client, owner):
+    creation = FocusCreation.objects.create(kind="course", actor=owner, record_id=1)
+    assert client.post(f"{URL}{creation.id}/cover/", {"action": "later"}, format="json").status_code == 404
+    assert client.get(f"{URL}{creation.id}/photos/").status_code == 404
+
+
+@on
+def test_the_cover_endpoints_are_404_for_someone_elses_creation(client):
+    other = _user("focus-other@x.com")
+    creation = FocusCreation.objects.create(kind="course", actor=other, record_id=1)
+    assert client.post(f"{URL}{creation.id}/cover/", {"action": "later"}, format="json").status_code == 404
+    assert client.get(f"{URL}{creation.id}/photos/").status_code == 404

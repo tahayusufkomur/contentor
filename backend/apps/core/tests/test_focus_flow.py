@@ -155,6 +155,21 @@ def test_words_at_the_cover_never_become_its_answer(owner, outline_start):
     assert flow.current_field(creation) == "cover"
 
 
+def test_delegate_or_a_tap_with_words_at_the_cover_never_becomes_its_answer(owner, outline_start):
+    creation = _at_cover(owner)
+    for body in (
+        {"delegate": True, "text": "you pick"},
+        {"value": "kept", "text": "kept"},
+        {"value": "later", "delegate": True},
+        {"value": "kept", "delegate": True, "text": "x"},
+        {"value": "later", "rest": True, "delegate": True, "text": "x"},
+        {"rest": True, "delegate": True, "text": "anything"},
+    ):
+        creation = flow.answer(creation, "cover", **body)
+        assert "cover" not in creation.answers
+        assert flow.current_field(creation) == "cover"
+
+
 def test_a_cover_kept_in_the_studio_answers_the_question(owner, outline_start):
     creation = _at_cover(owner)
     assert flow.state(creation)["question"]["field"] == "cover"

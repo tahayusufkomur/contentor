@@ -115,7 +115,11 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
             or field != current_field(creation)
             or (
                 question is not None
-                and (question.kind == "finish" or (question.kind == "cover" and not (text or "").strip()))
+                and (
+                    question.kind == "finish"
+                    # Only typed words are read at the cover; a tap or "You decide" never answers it.
+                    or (question.kind == "cover" and (delegate or not (text or "").strip()))
+                )
             )
         ):
             creation.save(update_fields=["active_ms", "updated_at"])
@@ -600,6 +604,8 @@ def _label(recipe, q, answer) -> str:
         return "You decide"
     if q.kind == "review":
         return "Looks good" if answer == "ok" else str(answer)
+    if q.kind == "cover":
+        return "Cover chosen" if answer == "kept" else "Later"
     values = recipe.values.get(q.id, ())
     return q.options[values.index(answer)] if answer in values else str(answer)
 
