@@ -229,6 +229,17 @@ def test_a_title_with_a_nul_or_a_lone_surrogate_is_saved_without_it(coach, clien
         assert saved.json()["recipe"]["words"]["title"] == "Spring"
 
 
+@pytest.mark.parametrize("key", [r"Sp\u0000ring", r"Sp\ud800ring"], ids=["nul", "lone-surrogate"])
+def test_create_refuses_a_target_key_no_title_can_hold(coach, client, key):
+    """No title holds a NUL or a lone surrogate and a query for one raises, so it is a 400 like any other key
+    with nothing behind it. Sent as JSON text: the test client cannot send a lone surrogate itself."""
+    for kind in ("live", "stream", "zoom", "onsite"):
+        body = f'{{"target_kind": "{kind}", "target_key": "{key}"}}'
+        refused = client.generic("POST", DESIGNS, body, content_type="application/json")
+        assert refused.status_code == 400 and refused.json()["detail"], kind
+    assert not Design.objects.exists()
+
+
 def test_create_refuses_what_it_cannot_open(coach, client):
     item = course(coach)
     post = lambda body: client.post(DESIGNS, body, format="json")  # noqa: E731

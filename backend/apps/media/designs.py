@@ -19,7 +19,7 @@ from django.utils import timezone
 
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 
-from .design_recipe import validate_recipe
+from .design_recipe import clean_text, validate_recipe
 from .models import Design, Photo
 
 
@@ -77,7 +77,8 @@ def target_rows(target_kind: str, target_key: str) -> list:
     """The course, or every event of that kind with exactly that title (a series)."""
     model = _model(target_kind)
     if target_kind != "course":
-        return list(model.objects.filter(title=target_key))
+        # No title holds a NUL or a lone surrogate (clean_text), and a query for one raises: it matches nothing.
+        return list(model.objects.filter(title=target_key)) if clean_text(target_key) == target_key else []
     try:
         return list(model.objects.filter(pk=int(target_key)))
     except (TypeError, ValueError):  # not an id

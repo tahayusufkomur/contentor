@@ -66,13 +66,15 @@ def _clamp(value, lo, hi, default):
         return default
 
 
+def clean_text(value: str) -> str:
+    """`value` without a NUL and without lone surrogates: valid JSON, but Postgres refuses the first (in a
+    jsonb column or a query) and UTF-8 the second."""
+    return value.replace("\x00", "").encode("utf-8", "ignore").decode()
+
+
 def _text(value, limit):
-    """Free text as typed: trimmed, and cut to its limit (trimmed again, so cleaning twice is a no-op).
-    A NUL and a lone surrogate are dropped: valid JSON, but Postgres refuses the one in a jsonb column
-    and UTF-8 the other."""
-    if not isinstance(value, str):
-        return ""
-    return value.replace("\x00", "").encode("utf-8", "ignore").decode().strip()[:limit].rstrip()
+    """Free text as typed: trimmed, and cut to its limit (trimmed again, so cleaning twice is a no-op)."""
+    return clean_text(value).strip()[:limit].rstrip() if isinstance(value, str) else ""
 
 
 def _paint(value, field):
