@@ -9,7 +9,7 @@
 // has just typed.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { undoCopilotAction } from "@/lib/copilot/api";
@@ -83,6 +83,8 @@ export function useCoverDraft({
   const ta = useTranslations("admin");
   const navigate = useNavigate();
   const router = useRouter();
+  // Where Keep returns her to: the page that opened the studio (focus mode's cover step).
+  const back = useSearchParams()?.get("back") ?? "";
 
   const [history, setHistory] = useState<EditHistory<CoverRecipe>>(() =>
     createHistory(design.recipe),
@@ -229,7 +231,8 @@ export function useCoverDraft({
           : { label: ta("dock.undo"), onClick: () => void undoKeep(auditId) },
     });
     router.refresh();
-    startReload();
+    if (back.startsWith("/admin/")) navigate(back);
+    else startReload();
   });
 
   const { run: discard, loading: discarding } = useAsyncAction(async () => {

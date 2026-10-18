@@ -47,6 +47,7 @@ export function FocusStart({
       outline: { status: "idle", run: null },
       reading: null,
       descriptions: null,
+      cover: null,
       steps: [],
     });
   }, [kind, question]);

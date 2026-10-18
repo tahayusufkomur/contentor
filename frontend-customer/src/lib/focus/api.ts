@@ -1,5 +1,6 @@
 import { clientFetch } from "@/lib/api-client";
 import type { SpecialistKey } from "@/lib/copilot/team";
+import type { CoverDesign } from "@/types/design";
 
 // Mirrors backend/apps/core/focus/flow.py (state, question) and views.py.
 
@@ -11,7 +12,7 @@ export interface FocusOption {
 
 export interface FocusQuestion {
   field: string;
-  kind: "text" | "choice" | "review" | "finish";
+  kind: "text" | "choice" | "review" | "cover" | "finish";
   question: string;
   why: string;
   options: FocusOption[];
@@ -29,6 +30,25 @@ export interface FocusRecord {
 
 export type OutlineStatus = "idle" | "building" | "ready" | "failed";
 
+/** The cover step (backend focus/covers.py ``payload``): the round on screen
+ *  as drawable designs ("d0".."d3"), the photo they share and her words for it. */
+export interface FocusCover {
+  status: OutlineStatus;
+  run: number | null;
+  round: number;
+  drafts: CoverDesign[];
+  photo: { id: string; url: string } | null;
+  query: string;
+}
+
+export interface CoverPhoto {
+  /** Hers are "own:<uuid>"; the rest are library images. */
+  asset_id: string;
+  url: string;
+  title: string;
+  mine: boolean;
+}
+
 export interface FocusState {
   /** 0 = provisional: the first question, before her first answer creates it. */
   id: number;
@@ -42,6 +62,8 @@ export interface FocusState {
   /** An analysis of her typed answer is pending; `question` is null meanwhile. */
   reading: { status: OutlineStatus; run: number | null } | null;
   descriptions: { status: OutlineStatus; run: number | null } | null;
+  /** null until the Designer was first asked for covers. */
+  cover: FocusCover | null;
   steps: { id: string; done: boolean }[];
 }
 
@@ -82,6 +104,19 @@ export const answerCreation = (id: number, body: Timed<AnswerBody>) =>
 
 export const retryDescriptions = (id: number) =>
   post<FocusState>(`${id}/descriptions/`, {});
+
+export const fetchCoverPhotos = (id: number, q: string, page: number) =>
+  clientFetch<{ results: CoverPhoto[]; has_next: boolean }>(
+    `${BASE}/${id}/photos/?${new URLSearchParams({ q, page: String(page) })}`,
+  );
+
+export const coverAction = (
+  id: number,
+  body:
+    | { action: "photo"; asset_id: string }
+    | { action: "keep" | "edit"; index: number }
+    | { action: "more" | "later" },
+) => post<FocusState & { design_id?: string | null }>(`${id}/cover/`, body);
 
 export const finishCreation = (id: number, body: Timed<{ publish: boolean }>) =>
   post<FocusState>(`${id}/finish/`, body);

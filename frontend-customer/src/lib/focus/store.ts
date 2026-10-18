@@ -65,10 +65,56 @@ export function openCreationFor(
   );
 }
 
+// Bumped by every state set, so a poll that set out before a newer state
+// (her tap, on the page or in the guide) cannot put the older one back.
+let version = 0;
+export const creationVersion = () => version;
+
+// The cover step's pick and the photo row's page, shared by the page and the
+// guide: a new round clears the pick, new words for the photo start the row over.
+let coverPick: number | null = null;
+let photoPage = 1;
+
 export function setActiveCreation(state: FocusState | null) {
+  const same = active?.id === state?.id;
+  if (!same || active?.cover?.round !== state?.cover?.round) coverPick = null;
+  if (!same || active?.cover?.query !== state?.cover?.query) photoPage = 1;
   active = state;
+  version += 1;
   emit();
 }
+
+/** A reply lands only on the creation it was for: once she has left it
+ *  (Save & leave, another page), it stays left. */
+export function applyCreation(from: number, next: FocusState | null) {
+  if (active?.id !== from) return false;
+  setActiveCreation(next);
+  return true;
+}
+
+export function setCoverPick(index: number | null) {
+  coverPick = index;
+  emit();
+}
+
+export const useCoverPick = (): number | null =>
+  useSyncExternalStore(
+    subscribe,
+    () => coverPick,
+    () => null,
+  );
+
+export function morePhotos() {
+  photoPage += 1;
+  emit();
+}
+
+export const usePhotoPage = (): number =>
+  useSyncExternalStore(
+    subscribe,
+    () => photoPage,
+    () => 1,
+  );
 
 /** Leave focus mode on the way out of a page; with ``id``, only when that is
  *  still the creation showing (0: the first question, before it exists). */

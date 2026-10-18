@@ -1164,6 +1164,29 @@
     "writingDescriptions": "writing lesson descriptions",
     "descriptionCount": "{done} of {total}",
     "descriptionsNote": "Writing a short description for each lesson's video. Edit any of them on the page.",
-    "descriptionsFailed": "Some lesson descriptions didn't come through."
+    "descriptionsFailed": "Some lesson descriptions didn't come through.",
+    "cover": "Cover",
+    "drafting": "drafting covers",
+    "coverStyle": {
+      "full": "Photo, title over it",
+      "panel": "Photo and colour panel",
+      "title": "Title only",
+      "band": "Photo, band across it",
+      "framed": "Framed photo",
+      "photo": "Photo only"
+    },
+    "yours": "Yours",
+    "upload": "Upload",
+    "makingPhoto": "Making your photo…",
+    "useCover": "Use this cover",
+    "moreStyles": "Four more styles",
+    "morePhotos": "More photos",
+    "editCover": "I'll edit it",
+    "later": "Later",
+    "coverPlaceholder": "Or say it: brighter, a man at a standing desk…",
+    "handOver": {
+      "cover": "{name} here: let's make your cover.",
+      "finish": "{name} here: let's get it out there."
+    }
   }
 }

@@ -669,3 +669,241 @@ test("Stop while a description is typing still lands what was written", async ({
   await expect(main.getByText(DESCRIPTIONS[0])).toBeVisible();
   await page.close();
 });
+
+// ---- The cover step: the Designer's four drafts on the page, the guide asks.
+
+const COVER_Q = question("cover", "cover", "Which cover fits your course?", {
+  specialist: "designer",
+  can_delegate: false,
+});
+const DESIGN = "33333333-3333-4333-8333-333333333333";
+const PHOTO_A = "11111111-1111-4111-8111-111111111111";
+const PHOTO_B = "22222222-2222-4222-8222-222222222222";
+// Tiny images, distinct per photo: the drafts redraw with the photo she tapped.
+const pixel = (rgb: string) =>
+  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="9"><rect width="16" height="9" fill="#${rgb}"/></svg>`)}`;
+const URL_A = pixel("aa7744");
+const URL_B = pixel("3366aa");
+const LAYOUTS = ["full", "panel", "title", "band"];
+const coverRecipe = (layout: string, photo: string | null) => ({
+  version: 1,
+  layout,
+  photo: { id: layout === "title" ? null : photo, focus: [0.5, 0.5], zoom: 1, brightness: 1, contrast: 1, saturation: 1, darken: 0 },
+  words: { label: "", title: null, subtitle: "Five minutes at your desk" },
+  badge: { kind: "none", text: "", fill: "accent" },
+  logo: false,
+  panel: "primary",
+  styles: {},
+  extras: [],
+  overrides: {},
+});
+const coverPayload = (photo: { id: string; url: string } = { id: PHOTO_A, url: URL_A }, over: Body = {}) => ({
+  status: "ready",
+  run: 7100,
+  round: 1,
+  drafts: LAYOUTS.map((layout, i) => ({
+    id: `d${i}`,
+    recipe: coverRecipe(layout, photo.id),
+    photos: { [photo.id]: photo.url },
+    logo_url: null,
+    look: "journal",
+  })),
+  photo,
+  query: "",
+  ...over,
+});
+const COVER_ORDER = ["topic", "level", "size", "outline_review", "cover", "finish"];
+const coverState = (over: Body = {}): Body =>
+  reviewState({
+    question: COVER_Q,
+    answered: [
+      { field: "topic", label: "A course on desk yoga" },
+      { field: "outline_review", label: "Looks good, continue" },
+    ],
+    cover: coverPayload(),
+    steps: COVER_ORDER.map((id) => ({ id, done: COVER_ORDER.indexOf(id) < 4 })),
+    ...over,
+  });
+const finishState = () =>
+  coverState({
+    question: QUESTIONS.finish,
+    answered: [
+      { field: "topic", label: "A course on desk yoga" },
+      { field: "outline_review", label: "Looks good, continue" },
+      { field: "cover", label: "Cover chosen" },
+    ],
+    steps: COVER_ORDER.map((id) => ({ id, done: id !== "finish" })),
+  });
+const PHOTOS = [
+  { asset_id: `own:${PHOTO_A}`, url: URL_A, title: "My studio", mine: true },
+  { asset_id: "lib-standing-desk", url: URL_B, title: "Standing desk", mine: false },
+];
+
+/** The course page at the cover step. ``onFocus`` answers the creation's
+ *  requests (the state, the cover taps); ``photos`` collects the row's searches. */
+async function openAtCover(page: Page, onFocus: (req: { path: string; method: string; body: Body }) => Body | undefined) {
+  const tracked = await stubFocus(page, {
+    open: false, // the course as written
+    script: (req) => {
+      if (req.method === "GET" && req.path.endsWith("/admin/focus/"))
+        return { enabled: true, first: { course: QUESTIONS.topic }, open: [{ id: CREATION, kind: "course", record: coverState().record }] };
+      if (req.path.includes("/photos/")) return undefined;
+      return onFocus(req);
+    },
+  });
+  const searches: string[] = [];
+  await page.route(`**/api/v1/admin/focus/${CREATION}/photos/**`, (route) => {
+    const url = new URL(route.request().url());
+    searches.push(url.searchParams.get("q") ?? "");
+    return route.fulfill({ json: { results: PHOTOS, has_next: false } });
+  });
+  // Never a real photo generation from a spec.
+  await page.route("**/api/v1/curated-images/generate/**", (route) =>
+    route.fulfill({ json: { limit: 0, used: 0, left: 0 } }),
+  );
+  await page.goto(`${TENANT}/admin/courses/${SLUG}`);
+  await expect(guide(page).getByText("Which cover fits your course?")).toBeVisible();
+  return { ...tracked, searches };
+}
+
+const coverStep = (page: Page) => page.getByRole("main").getByRole("group", { name: "Cover" });
+
+test("the cover step offers four styles and the photo they share", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  let photo = { id: PHOTO_A, url: URL_A };
+  const { sent } = await openAtCover(page, ({ path, method, body }) => {
+    if (method === "POST" && path.endsWith("/cover/") && body.action === "photo") photo = { id: PHOTO_B, url: URL_B };
+    if (path.endsWith(`/focus/${CREATION}/`) || path.endsWith("/cover/")) return coverState({ cover: coverPayload(photo) });
+  });
+
+  // The Designer takes over, in one line.
+  await expect(guide(page).getByText("Designer here: let's make your cover.")).toBeVisible();
+  const step = coverStep(page);
+  await expect(step.locator("[data-cover]")).toHaveCount(4);
+  for (const caption of ["Photo, title over it", "Photo and colour panel", "Title only", "Photo, band across it"])
+    await expect(step.getByText(caption, { exact: true })).toBeVisible();
+  await expect(step.locator(`[data-cover] img[src="${URL_A}"]`)).toHaveCount(3);
+  // Her photo first, labelled; the library's after it; and Upload.
+  await expect(step.getByRole("button", { name: /My studio/ })).toContainText("Yours");
+  await expect(step.getByText("Upload")).toBeVisible();
+
+  await step.getByRole("button", { name: /Standing desk/ }).click();
+  await expect.poll(() => sent.find((s) => s.action === "photo")).toMatchObject({ action: "photo", asset_id: "lib-standing-desk" });
+  // Every photo style wears it now.
+  await expect(step.locator(`[data-cover] img[src="${URL_B}"]`)).toHaveCount(3);
+  await page.close();
+});
+
+test("use this cover keeps it and moves on to finish", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  let kept = false;
+  const { sent } = await openAtCover(page, ({ path, method, body }) => {
+    if (method === "POST" && path.endsWith("/cover/") && body.action === "keep") kept = true;
+    if (path.endsWith(`/focus/${CREATION}/`) || path.endsWith("/cover/")) return kept ? finishState() : coverState();
+  });
+
+  const use = guide(page).getByRole("button", { name: "Use this cover" });
+  await expect(use).toBeDisabled();
+  await expect(guide(page).getByRole("button", { name: "I'll edit it" })).toBeDisabled();
+  await coverStep(page).getByRole("button", { name: /Photo and colour panel/ }).click();
+  await expect(coverStep(page).getByRole("button", { name: /Photo and colour panel/ })).toHaveAttribute("aria-pressed", "true");
+  await use.click();
+
+  await expect(guide(page).getByText("Ready. Publish it now?")).toBeVisible();
+  await expect(guide(page).getByText("Cover chosen")).toBeVisible();
+  await expect(coverStep(page)).toHaveCount(0);
+  expect(sent.filter((s) => s.action === "keep")).toEqual([expect.objectContaining({ action: "keep", index: 1 })]);
+  await page.close();
+});
+
+test("I'll edit it opens the photo studio and Keep brings her back", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  let kept = false;
+  await openAtCover(page, ({ path, method, body }) => {
+    if (method === "POST" && path.endsWith("/cover/") && body.action === "edit") return { ...coverState(), design_id: DESIGN };
+    if (path.endsWith(`/focus/${CREATION}/`) || path.endsWith("/cover/")) return kept ? finishState() : coverState();
+  });
+  // The photo studio on that draft: the design, her covers, and Keep.
+  const record = {
+    ...coverPayload().drafts[0],
+    id: DESIGN,
+    kind: "cover",
+    target_kind: "course",
+    target_key: String(COURSE_ID),
+    state: "draft",
+    made_by: "designer",
+    run_id: "",
+    created_at: at(),
+    updated_at: at(),
+    kept_at: null,
+    title: "Desk yoga, gently",
+  };
+  await page.route(`**/api/v1/designs/**`, (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname.endsWith("/targets/"))
+      return route.fulfill({
+        json: {
+          targets: [
+            { target_kind: "course", target_key: String(COURSE_ID), title: "Desk yoga, gently", sessions: null, next_at: null, status: "draft", created_at: at(), photo_url: null, cover: null, draft_id: DESIGN },
+          ],
+          in_use: {},
+          look: "journal",
+          logo_url: null,
+          generations_left: 0,
+        },
+      });
+    if (url.pathname.endsWith("/keep/")) {
+      kept = true;
+      return route.fulfill({
+        json: { result: { id: COURSE_ID, design_id: DESIGN, title: "Desk yoga, gently", target_kind: "course", target_key: String(COURSE_ID) }, audit_id: null },
+      });
+    }
+    if (url.pathname.endsWith(`/designs/${DESIGN}/`)) return route.fulfill({ json: record });
+    return route.fulfill({ json: [] }); // her kept designs
+  });
+
+  await coverStep(page).getByRole("button", { name: /Photo, title over it/ }).click();
+  await guide(page).getByRole("button", { name: "I'll edit it" }).click();
+  await expect(page).toHaveURL(new RegExp(`/admin/studio/${DESIGN}\\?back=/admin/courses/${SLUG}$`), { timeout: 30_000 });
+  await page.getByRole("button", { name: "Keep on course" }).first().click({ timeout: 30_000 });
+  // Back on the course, at the next step.
+  await expect(page).toHaveURL(new RegExp(`/admin/courses/${SLUG}$`));
+  await expect(guide(page).getByText("Ready. Publish it now?")).toBeVisible();
+  await page.close();
+});
+
+test("saying a photo searches the row", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const WORDS = "a man at a standing desk";
+  let said = false;
+  let reads = 0;
+  const { sent, searches } = await openAtCover(page, ({ path, method }) => {
+    if (method === "POST" && path.endsWith("/answer/")) {
+      said = true;
+      return coverState({ question: null, reading: { status: "building", run: 6001 } });
+    }
+    if (path.endsWith(`/focus/${CREATION}/`)) {
+      if (!said) return coverState();
+      // One read while the analysis runs, then her words are the photo's.
+      reads += 1;
+      return reads < 2
+        ? coverState({ question: null, reading: { status: "building", run: 6001 } })
+        : coverState({ cover: coverPayload(undefined, { query: WORDS }) });
+    }
+  });
+
+  await expect.poll(() => searches.length).toBeGreaterThan(0);
+  await guide(page).getByRole("textbox", { name: "Your answer" }).fill(WORDS);
+  await guide(page).getByRole("button", { name: "Send", exact: true }).click();
+  await expect(guide(page).getByText("Reading your details…")).toBeVisible();
+  // The drafts stay on the page while she waits.
+  await expect(coverStep(page).locator("[data-cover]")).toHaveCount(4);
+  await expect.poll(() => searches).toContain(WORDS);
+  await expect(guide(page).getByText("Which cover fits your course?")).toBeVisible();
+  expect(sent.filter((s) => s.field === "cover")).toEqual([expect.objectContaining({ field: "cover", text: WORDS })]);
+  await page.close();
+});

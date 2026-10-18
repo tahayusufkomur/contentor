@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { openRunChat } from "@/components/copilot/runs-watcher";
-import { SpecialistByline } from "@/components/copilot/specialist-face";
+import {
+  SpecialistByline,
+  SpecialistFace,
+} from "@/components/copilot/specialist-face";
 import { AnswerBox } from "@/components/setup-flow/answer-box";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -15,6 +18,7 @@ import { stopRun } from "@/lib/copilot/api";
 import { stopActiveTime, takeActiveMs } from "@/lib/focus/active-time";
 import {
   answerCreation,
+  coverAction,
   fetchCreation,
   finishCreation,
   leaveCreation,
@@ -26,9 +30,13 @@ import {
 import { guideBody, type GuideInput } from "@/lib/focus/guide";
 import {
   activeCreation,
+  applyCreation as apply,
+  creationVersion,
+  morePhotos,
   refreshFocusOverview,
   setActiveCreation,
   useActiveCreation,
+  useCoverPick,
 } from "@/lib/focus/store";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
@@ -55,18 +63,6 @@ export function FocusGuide() {
   const state = useActiveCreation();
   const navigate = useNavigate();
   const dock = useAssistantDock();
-  // Every state she causes bumps this, so a poll that set out before it
-  // cannot put an older state back.
-  const version = useRef(0);
-
-  /** A reply lands only on the creation it was for: once she has left it
-   *  (Save & leave, another page), it stays left. */
-  const apply = (from: number, next: FocusState | null) => {
-    if (activeCreation()?.id !== from) return false;
-    version.current += 1;
-    setActiveCreation(next);
-    return true;
-  };
 
   const { run: send, loading: sending } = useAsyncAction(
     async (input: GuideInput) => {
@@ -150,16 +146,19 @@ export function FocusGuide() {
   });
 
   const id = state?.id ?? 0;
-  const building = [state?.outline, state?.reading, state?.descriptions].some(
-    (job) => job?.status === "building",
-  );
+  const building = [
+    state?.outline,
+    state?.reading,
+    state?.descriptions,
+    state?.cover,
+  ].some((job) => job?.status === "building");
   useEffect(() => {
     if (!id || !building) return;
     const timer = setInterval(() => {
-      const at = version.current;
+      const at = creationVersion();
       fetchCreation(id)
         .then((next) => {
-          if (version.current === at && activeCreation()?.id === id)
+          if (creationVersion() === at && activeCreation()?.id === id)
             setActiveCreation(next);
         })
         .catch(() => {});
@@ -170,6 +169,8 @@ export function FocusGuide() {
   if (!state) return null;
   const question = state.question;
   const descriptions = state.descriptions?.status;
+  // Another specialist takes this step: who, in one line (spec §4.1).
+  const handOver = question && `focus.handOver.${question.field}`;
 
   return (
     <div className="flex flex-col gap-5" style={SHELL_TOKENS}>
@@ -225,6 +226,14 @@ export function FocusGuide() {
           </div>
         </div>
       )}
+      {question && handOver && t.has(handOver) && (
+        <p className="flex items-center gap-2 text-sm text-foreground">
+          <SpecialistFace k={question.specialist} size="sm" />
+          {t(handOver, {
+            name: t(`team.specialists.${question.specialist}.name`),
+          })}
+        </p>
+      )}
       {question &&
         (question.kind === "review" ? (
           <OutlineReview
@@ -234,6 +243,13 @@ export function FocusGuide() {
             stopping={stopping}
             onSend={send}
             onStop={stop}
+          />
+        ) : question.kind === "cover" ? (
+          <CoverQuestion
+            question={question}
+            state={state}
+            sending={sending}
+            onSend={send}
           />
         ) : question.kind === "finish" ? (
           <FinishStep
@@ -340,6 +356,99 @@ function OutlineReview({
           setText("");
         }}
         placeholder={t("focus.changePlaceholder")}
+        className="bg-background"
+      />
+    </div>
+  );
+}
+
+type CoverTap = "keep" | "edit" | "more" | "later";
+
+/** The cover step's question: the four drafts are on the page (CoverStep),
+ *  and here she keeps the one she picked there, asks for four more, edits it
+ *  in the photo studio, leaves it for later, or says what photo she wants. */
+function CoverQuestion({
+  question,
+  state,
+  sending,
+  onSend,
+}: {
+  question: FocusQuestion;
+  state: FocusState;
+  sending: boolean;
+  onSend: (input: GuideInput) => void;
+}) {
+  const t = useTranslations("admin");
+  const navigate = useNavigate();
+  const pick = useCoverPick();
+  const [text, setText] = useState("");
+  const [tapped, setTapped] = useState<CoverTap | null>(null);
+  const { run: tap, loading } = useAsyncAction(async (action: CoverTap) => {
+    setTapped(action);
+    const next = await coverAction(
+      state.id,
+      action === "keep" || action === "edit"
+        ? { action, index: pick ?? 0 }
+        : { action },
+    );
+    if (!apply(state.id, next) || action !== "edit" || !next.design_id) return;
+    navigate(
+      `/admin/studio/${next.design_id}?back=/admin/courses/${state.record?.slug}`,
+    );
+  });
+  const busy = loading || sending;
+  const button = (
+    action: CoverTap,
+    label: string,
+    variant: "default" | "outline" | "ghost" = "outline",
+    enabled = true,
+  ) => (
+    <Button
+      size="sm"
+      variant={variant}
+      loading={loading && tapped === action}
+      disabled={busy || !enabled}
+      onClick={() => tap(action)}
+    >
+      {t(label)}
+    </Button>
+  );
+
+  return (
+    <div className="flex flex-col gap-4">
+      <SpecialistByline k={question.specialist} />
+      <div>
+        <h2 className="text-lg font-semibold leading-snug text-foreground">
+          {question.question}
+        </h2>
+        {question.why && (
+          <p className="mt-1 text-sm text-muted-foreground">{question.why}</p>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {button("keep", "focus.useCover", "default", pick !== null)}
+        {/* Also the way forward when no drafts came: it starts a round. */}
+        {button(
+          "more",
+          "focus.moreStyles",
+          "outline",
+          state.cover?.status !== "building",
+        )}
+        <Button size="sm" variant="outline" onClick={morePhotos}>
+          {t("focus.morePhotos")}
+        </Button>
+        {button("edit", "focus.editCover", "outline", pick !== null)}
+        {button("later", "focus.later", "ghost")}
+      </div>
+      <AnswerBox
+        value={text}
+        onChange={(update) => setText(update)}
+        sending={sending}
+        onSubmit={(value) => {
+          onSend({ ...NONE, text: value });
+          setText("");
+        }}
+        placeholder={t("focus.coverPlaceholder")}
         className="bg-background"
       />
     </div>

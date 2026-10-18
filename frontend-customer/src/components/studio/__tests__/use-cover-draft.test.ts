@@ -21,6 +21,7 @@ vi.mock("@/lib/designs-api", () => ({
 }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: api.refresh }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock("@shared/navigation/navigation-provider", () => ({
   useNavigate: () => api.navigate,

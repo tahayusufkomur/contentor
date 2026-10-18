@@ -42,12 +42,13 @@ import { RichHtml } from "@/components/blocks/rich-html";
 import { refreshSetupStatus, useTenantCurrency } from "@/lib/setup-assistant";
 import { currencySymbol, formatDuration } from "@/lib/format";
 import { MonetizeNudge } from "@/components/admin/monetize-nudge";
+import { CoverStep } from "@/components/focus/cover-step";
 import { LiveOutline } from "@/components/focus/live-outline";
 import { WorkingTag } from "@/components/focus/working-tag";
 import { stopRun } from "@/lib/copilot/api";
 import { useLiveRecord } from "@/lib/copilot/live";
 import { plainText, useLiveLessons } from "@/lib/focus/descriptions";
-import { setFocusSave } from "@/lib/focus/store";
+import { setFocusSave, useActiveCreation } from "@/lib/focus/store";
 import type { Course, CourseDetail, Module, Lesson } from "@/types/course";
 import type { Photo } from "@/types/photo";
 
@@ -288,6 +289,15 @@ export function CourseForm({
     !!live && !live.settled && (live.working !== null || live.rows.length > 0);
   const [allDetails, setAllDetails] = useState(false);
   const detailsShown = !focus || allDetails;
+  // The cover step: the Designer's drafts take the thumbnail's place, and
+  // stay while her words for the photo are read (no question meanwhile).
+  const creation = useActiveCreation();
+  const atCover =
+    !!focus &&
+    !!creation &&
+    (creation.question
+      ? creation.question.field === "cover"
+      : creation.steps.find((step) => !step.done)?.id === "cover");
 
   // The settings card as the server should keep it. After it, the server's
   // copy is the new base: what it normalised ("19" -> "19.00") is not hers.
@@ -590,70 +600,78 @@ export function CourseForm({
                 className="min-h-[120px]"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Thumbnail</Label>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                <PhotoPicker
-                  value={
-                    isCreate
-                      ? createForm.thumbnail_url
-                      : (course?.thumbnail_url ?? null)
-                  }
-                  previewUrl={
-                    isCreate
-                      ? createForm.thumbnail_signed_url
-                      : course?.thumbnail_signed_url ||
-                        course?.thumbnail_url ||
-                        null
-                  }
-                  onSelect={(photo: Photo) => {
-                    if (isCreate) {
-                      setCreateForm({
-                        ...createForm,
-                        thumbnail_url: photo.s3_key,
-                        thumbnail_id: photo.id,
-                        thumbnail_signed_url: photo.signed_url,
-                      });
-                    } else if (course) {
-                      setCourse({
-                        ...course,
-                        thumbnail_url: photo.s3_key,
-                        thumbnail_id: photo.id,
-                        thumbnail_signed_url: photo.signed_url ?? undefined,
-                      });
+            {atCover && creation && course ? (
+              <CoverStep
+                creationId={creation.id}
+                cover={creation.cover}
+                course={course}
+              />
+            ) : (
+              <div className="space-y-2">
+                <Label>Thumbnail</Label>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <PhotoPicker
+                    value={
+                      isCreate
+                        ? createForm.thumbnail_url
+                        : (course?.thumbnail_url ?? null)
                     }
-                  }}
-                  onClear={() => {
-                    if (isCreate) {
-                      setCreateForm({
-                        ...createForm,
-                        thumbnail_url: "",
-                        thumbnail_id: null,
-                        thumbnail_signed_url: null,
-                      });
-                    } else if (course) {
-                      setCourse({
-                        ...course,
-                        thumbnail_url: "",
-                        thumbnail_id: null,
-                        thumbnail_signed_url: undefined,
-                      });
+                    previewUrl={
+                      isCreate
+                        ? createForm.thumbnail_signed_url
+                        : course?.thumbnail_signed_url ||
+                          course?.thumbnail_url ||
+                          null
                     }
-                  }}
-                  label="Choose thumbnail"
-                />
-                {!isCreate && course && (
-                  <OpenStudioButton
-                    target={{
-                      target_kind: "course",
-                      target_key: String(course.id),
+                    onSelect={(photo: Photo) => {
+                      if (isCreate) {
+                        setCreateForm({
+                          ...createForm,
+                          thumbnail_url: photo.s3_key,
+                          thumbnail_id: photo.id,
+                          thumbnail_signed_url: photo.signed_url,
+                        });
+                      } else if (course) {
+                        setCourse({
+                          ...course,
+                          thumbnail_url: photo.s3_key,
+                          thumbnail_id: photo.id,
+                          thumbnail_signed_url: photo.signed_url ?? undefined,
+                        });
+                      }
                     }}
-                    from={course.cover_design?.id}
-                    unsaved={unsaved}
+                    onClear={() => {
+                      if (isCreate) {
+                        setCreateForm({
+                          ...createForm,
+                          thumbnail_url: "",
+                          thumbnail_id: null,
+                          thumbnail_signed_url: null,
+                        });
+                      } else if (course) {
+                        setCourse({
+                          ...course,
+                          thumbnail_url: "",
+                          thumbnail_id: null,
+                          thumbnail_signed_url: undefined,
+                        });
+                      }
+                    }}
+                    label="Choose thumbnail"
                   />
-                )}
+                  {!isCreate && course && (
+                    <OpenStudioButton
+                      target={{
+                        target_kind: "course",
+                        target_key: String(course.id),
+                      }}
+                      from={course.cover_design?.id}
+                      unsaved={unsaved}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
+            )}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="pricing_type">Pricing Type</Label>
