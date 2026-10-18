@@ -4,7 +4,7 @@ import { useMemo, useSyncExternalStore } from "react";
 
 import { fetchRun } from "./api";
 import type { SpecialistKey } from "./team";
-import type { CopilotDone, RunDetail, RunStatus } from "./types";
+import type { CopilotDone, RunDetail, RunEvent, RunStatus } from "./types";
 
 /** What the studio knows of one of the team's runs. */
 export interface RunState {
@@ -15,7 +15,12 @@ export interface RunState {
   /** The last event folded in; the next poll asks for the ones after it. */
   lastSeq: number;
   reply?: CopilotDone;
+  /** The steps, fields and rows it wrote, in order: a page replays them live
+   *  (lib/copilot/live.ts). */
+  events?: RunEvent[];
 }
+
+const LIVE_EVENTS = new Set(["step", "field", "row"]);
 
 const ACTIVE = new Set<RunStatus>(["queued", "thinking", "working"]);
 
@@ -37,6 +42,8 @@ export function applyRun(
     if (event.seq <= next.lastSeq) continue;
     next.lastSeq = event.seq;
     if (event.type === "reply") next.reply = event.data.payload as CopilotDone;
+    if (LIVE_EVENTS.has(event.type))
+      next.events = [...(next.events ?? []), event];
   }
   return next;
 }
