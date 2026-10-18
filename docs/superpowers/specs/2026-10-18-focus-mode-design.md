@@ -11,7 +11,7 @@ this work.
 
 The owner loves the `/setup` interview: one question at a time, tap-to-answer buttons, the AI
 drafts and she approves, and she watches her site take shape. Once onboarding ends, the studio
-loses all of that. In his words: the forms are too wide and too long, it is hard to know what to
+loses all of that. In the owner's words: the forms are too wide and too long, it is hard to know what to
 fill in and how; making a cover is hard; the assistant "does things and you click a link to see"
 instead of working on the page; "overall it's not like you are in good hands".
 
@@ -58,7 +58,7 @@ Non-goals (this project)
 
 Anti-goals: it fails, even if it works, when
 
-- **it is slower than the usual way.** (The owner's words: what would make him wince is if it were
+- **it is slower than the usual way.** (The owner's words: what would make the owner wince is if it were
   "somehow slower than the usual way".)
 - a tap waits on the AI, or anything waits without a way forward (no fallback, no "Try again");
 - it feels like an interrogation;
