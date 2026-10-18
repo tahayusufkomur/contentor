@@ -9,10 +9,11 @@ from unittest import mock
 import pytest
 
 from apps.accounts.models import User
+from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
 from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import runs
-from apps.core.focus import analysis, flow, jobs
+from apps.core.focus import analysis, flow, jobs, pricing
 from apps.core.focus.recipes import RECIPES
 from apps.courses.models import Course, Lesson, Module
 from apps.media.models import Design
@@ -120,17 +121,19 @@ def _at_cover(owner, text="A course on desk yoga"):
 
 
 def _at_finish(owner, text="A course on desk yoga"):
-    """Past the cover step: she chose "later" (the cover endpoint's answer)."""
+    """Past the cover and price steps: she chose "later" (the cover
+    endpoint's answer), then Free."""
     creation = _at_cover(owner, text)
-    creation.answers = {**creation.answers, "cover": "later"}
+    creation.answers = {**creation.answers, "cover": "later", "access": "free"}
     creation.save()
     return creation
 
 
-def test_the_cover_comes_after_the_outline_and_before_finish():
+def test_the_cover_and_the_price_come_after_the_outline_and_before_finish():
     recipe = RECIPES["course"]
-    assert [q.id for q in recipe.questions] == ["topic", "level", "size", "outline_review", "cover", "finish"]
+    assert [q.id for q in recipe.questions] == ["topic", "level", "size", "outline_review", "cover", "access", "finish"]
     assert recipe.specialists["cover"] == "designer"
+    assert recipe.specialists["access"] == "finance"
 
 
 def test_the_cover_is_asked_after_looks_good_and_never_delegated(owner, outline_start):
@@ -268,7 +271,7 @@ def test_state_shapes_the_current_question(owner, outline_start):
     assert body["answered"][-1] == {"field": "level", "label": "Complete beginners"}
     assert body["record"]["title"] == "Desk yoga for office workers"
     assert body["outline"] == {"status": "idle", "run": None}
-    assert [s["done"] for s in body["steps"]] == [True, True, False, False, False, False]
+    assert [s["done"] for s in body["steps"]] == [True, True, False, False, False, False, False]
 
 
 def test_the_outline_status_follows_its_run(owner, outline_start):
@@ -311,7 +314,7 @@ def test_just_draft_it_keeps_what_she_typed_first(owner, outline_start):
 
 def test_just_draft_it_on_the_first_answer_is_one_step(owner, outline_start):
     creation = flow.start(owner, "course", rest=True)
-    assert creation.answers == {"topic": "delegate", "level": "delegate", "size": "delegate"}
+    assert creation.answers == {"topic": "delegate", "level": "delegate", "size": "delegate", "access": "delegate"}
     assert outline_start.call_count == 1
     assert Course.objects.count() == 1
     typed = flow.start(owner, "course", text="A course on breathing", rest=True)
@@ -584,3 +587,174 @@ def test_fill_it_in_myself_while_reading_drops_the_reading(owner, outline_start,
     jobs.execute(SCHEMA, creation.runs["analysis"])  # a late delivery does nothing
     creation.refresh_from_db()
     assert creation.answers == {} and not outline_start.called
+
+
+# ── How students get it: the price step (F11, F13) ─────────────────────────
+
+
+@pytest.fixture()
+def plans(tenant_ctx):
+    gold = SubscriptionPlan.objects.create(name="Gold", price=Decimal("20"), currency="USD")
+    SubscriptionPlan.objects.create(name="Old", price=Decimal("10"), currency="USD", is_active=False)
+    return gold
+
+
+def _at_access(owner, creation=None):
+    """Past the cover without "Just draft it", so the price is hers to choose."""
+    creation = creation or flow.answer(flow.answer(_started(owner), "level", value="beginners"), "size", value="short")
+    creation = flow.answer(creation, "outline_review", value="ok")
+    creation.answers = {**creation.answers, "cover": "later"}
+    creation.save()
+    return creation
+
+
+def test_the_access_question_offers_free_a_price_with_its_reason_and_her_memberships(owner, outline_start, plans):
+    question = flow.state(_at_access(owner))["question"]
+    assert (question["field"], question["kind"], question["specialist"]) == ("access", "price", "finance")
+    assert question["options"] == [
+        {"value": "free", "label": "Free", "hint": ""},
+        {"value": "paid:19", "label": "One-time price: $19", "hint": "A common place to start; change it any time"},
+        {"value": f"plan:{plans.pk}", "label": "In Gold", "hint": ""},
+    ]
+    assert question["suggested"] == "paid:19"
+
+
+def test_tapping_a_price_sets_it_and_moves_on(owner, outline_start):
+    creation = _at_access(owner)
+    for bad in (
+        "paid:-5",
+        "paid:abc",
+        "paid:0",
+        "paid:NaN",
+        "plan:abc",
+        "plan:99999999999999999999",
+        "plan:²",
+        "membership",
+        "nonsense",
+    ):
+        creation = flow.answer(creation, "access", value=bad)
+        assert "access" not in creation.answers
+    creation = flow.answer(creation, "access", value="paid:39")
+    course = Course.objects.get(pk=creation.record_id)
+    assert (course.pricing_type, course.price) == ("paid", Decimal("39.00"))
+    assert creation.answers["access"] == "paid:39.00" and creation.answers["price"] == "39.00"
+    assert flow.current_field(creation) == "finish"
+    assert {"field": "access", "label": "$39"} in flow.state(creation)["answered"]
+
+
+def test_tapping_free_keeps_it_free(owner, outline_start):
+    creation = flow.answer(_at_access(owner), "access", value="free")
+    assert Course.objects.get(pk=creation.record_id).pricing_type == "free"
+    assert creation.answers["access"] == "free" and flow.current_field(creation) == "finish"
+
+
+def test_tapping_a_membership_puts_the_course_in_it(owner, outline_start, plans):
+    creation = flow.answer(_at_access(owner), "access", value=f"plan:{plans.pk}")
+    assert Course.objects.get(pk=creation.record_id).pricing_type == "subscription"
+    assert SubscriptionPlanAccess.objects.filter(plan=plans, object_id=creation.record_id).count() == 1
+    assert creation.answers["access"] == f"plan:{plans.pk}" and creation.answers["price"] == "membership"
+    answered = flow.state(creation)["answered"]
+    assert {"field": "access", "label": "In Gold"} in answered
+    assert not any(line["field"] == "price" for line in answered)  # one line for it, not two
+
+
+def test_an_inactive_or_unknown_plan_is_ignored(owner, outline_start, plans):
+    creation = _at_access(owner)
+    old = SubscriptionPlan.objects.get(name="Old")
+    for tap in (f"plan:{old.pk}", "plan:999999"):
+        creation = flow.answer(creation, "access", value=tap)
+    assert "access" not in creation.answers and not SubscriptionPlanAccess.objects.exists()
+
+
+def test_a_price_from_her_first_answer_skips_the_access_question(owner, outline_start, analysed):
+    analysed(analysis.Analysis(topic="desk yoga", level="beginners", modules=4, lessons=3, price="49"))
+    creation = _run_pending(flow.start(owner, "course", text=RICH))
+    assert creation.answers["access"] == "paid:49.00"
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
+        creation = _at_access(owner, creation)
+    assert flow.current_field(creation) == "finish"
+
+
+def test_a_membership_in_her_first_answer_keeps_the_question_with_her_memberships(
+    owner, outline_start, analysed, plans
+):
+    analysed(analysis.Analysis(topic="desk yoga", level="beginners", modules=4, lessons=3, price="membership"))
+    creation = _run_pending(flow.start(owner, "course", text="desk yoga, in my membership"))
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
+        creation = _at_access(owner, creation)
+    question = flow.state(creation)["question"]
+    assert question["field"] == "access"
+    assert [o["value"] for o in question["options"]] == [f"plan:{plans.pk}"]
+
+
+def test_her_words_at_the_access_step_are_read_for_a_price(owner, outline_start, analysed):
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
+        creation = _at_access(owner)
+    analysed(analysis.Analysis(price="25"))
+    creation = _run_pending(flow.answer(creation, "access", text="25 dollars"))
+    assert Course.objects.get(pk=creation.record_id).price == Decimal("25.00")
+    assert creation.answers["access"] == "paid:25.00" and flow.current_field(creation) == "finish"
+
+
+def test_words_with_no_price_leave_the_access_question_open(owner, outline_start):
+    creation = flow.answer(_at_access(owner), "access", text="not sure yet")  # no model: read as stage 1
+    assert "access" not in creation.answers and flow.current_field(creation) == "access"
+    creation = flow.answer(creation, "access", text="45")
+    assert creation.answers["access"] == "paid:45.00"
+
+
+def test_just_draft_it_keeps_it_free_and_finish_offers_the_suggested_price(owner, outline_start):
+    creation = _at_cover(owner)  # "Just draft it" at the level question
+    assert creation.answers["access"] == "delegate"
+    creation.answers = {**creation.answers, "cover": "later"}
+    creation.save()
+    assert Course.objects.get(pk=creation.record_id).pricing_type == "free"
+    question = flow.state(creation)["question"]
+    assert question["field"] == "finish"
+    assert {"value": "price:19", "label": "Sell it for $19", "hint": pricing.FALLBACK} in question["options"]
+    creation = flow.answer(creation, "finish", value="publish")  # no other answer on finish
+    assert "finish" not in creation.answers
+    creation = flow.answer(creation, "finish", value="price:19")
+    course = Course.objects.get(pk=creation.record_id)
+    assert (course.pricing_type, course.price) == ("paid", Decimal("19.00"))
+    assert flow.current_field(creation) == "finish"
+    assert not any(o["value"].startswith("price:") for o in flow.state(creation)["question"]["options"])
+
+
+def test_a_price_tap_on_finish_needs_a_delegated_price(owner, outline_start):
+    creation = flow.answer(_at_finish(owner), "finish", value="price:19")  # she chose Free herself
+    assert Course.objects.get(pk=creation.record_id).pricing_type == "free"
+
+
+def test_a_paid_course_she_cannot_sell_yet_offers_start_selling_not_publish(owner, outline_start):
+    creation = flow.answer(_at_access(owner), "access", value="paid:39")
+    _filled(creation)
+    question = flow.state(creation)["question"]
+    assert [o["value"] for o in question["options"]] == ["start_selling", "draft"]
+    assert question["options"][0] == {
+        "value": "start_selling",
+        "label": "Start selling",
+        "hint": "your plan, then payouts",
+    }
+    assert question["paid_active"] is False
+    creation = flow.finish(creation, publish=True)  # a stale screen still asking
+    assert Course.objects.get(pk=creation.record_id).is_published is False
+    assert creation.answers["finish"] == "draft"
+
+
+def test_a_paid_course_she_can_sell_is_offered_publish(owner, outline_start):
+    creation = flow.answer(_at_access(owner), "access", value="paid:39")
+    _filled(creation)
+    with mock.patch("apps.core.monetization.can_monetize", return_value=True):
+        assert [o["value"] for o in flow.state(creation)["question"]["options"]] == ["publish", "draft"]
+
+
+def test_no_job_ever_sets_a_paid_price(owner, outline_start):
+    creation = flow.start(owner, "course", value="Desk yoga", rest=True)
+    creation = flow.answer(creation, "outline_review", value="ok")
+    creation.answers = {**creation.answers, "cover": "later"}
+    creation.save()
+    flow.state(creation)
+    course = Course.objects.get(pk=creation.record_id)
+    assert (course.pricing_type, course.price) == ("free", Decimal("0"))
+    assert creation.answers["access"] == "delegate"

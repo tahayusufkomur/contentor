@@ -329,7 +329,7 @@ def test_use_this_cover_keeps_it_with_an_undo(at_cover, hers):
     assert audit.payload["made_by"] == "designer"
     assert audit.inverse["kind"] == "restore_cover_design"
     at_cover.refresh_from_db()
-    assert flow.state(at_cover)["answered"][-1] == {"field": "cover", "label": "Cover chosen"}
+    assert {"field": "cover", "label": "Cover chosen"} in flow.state(at_cover)["answered"]
 
 
 @on
@@ -369,7 +369,7 @@ def test_later_leaves_it_without_a_cover(at_cover, hers):
     assert response.json()["question"]["field"] == "finish"
     assert FocusCreation.objects.get(pk=at_cover.pk).answers["cover"] == "later"
     at_cover.refresh_from_db()
-    assert flow.state(at_cover)["answered"][-1] == {"field": "cover", "label": "Later"}
+    assert {"field": "cover", "label": "Later"} in flow.state(at_cover)["answered"]
     assert not Design.objects.filter(kind="cover").exists()
 
 

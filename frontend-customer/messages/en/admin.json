@@ -1152,6 +1152,7 @@
     "stop": "Stop",
     "publishNow": "Publish now",
     "keepDraft": "Keep as a draft",
+    "startSelling": "Start selling",
     "published": "Published. Students can find it on your site now.",
     "kept": "Saved as a draft.",
     "saveLeave": "Save & leave",
@@ -1187,6 +1188,7 @@
     "coverPlaceholder": "Or say it: brighter, a man at a standing desk…",
     "handOver": {
       "cover": "{name} here: let's make your cover.",
+      "access": "{name} here: let's decide how students get it.",
       "finish": "{name} here: let's get it out there."
     }
   }

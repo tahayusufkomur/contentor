@@ -938,3 +938,77 @@ test("a failed photo search never makes a photo; an empty one asks the allowance
   await expect.poll(() => allowances).toEqual(["GET"]);
   await page.close();
 });
+
+const ACCESS_Q = question("access", "price", "How will students get it?", {
+  specialist: "finance",
+  why: "You can change it any time.",
+  options: [
+    option("free", "Free"),
+    option("paid:39", "One-time price: $39", "Your other courses sell for $29–$49"),
+    option("plan:3", "In Gold"),
+  ],
+  suggested: "paid:39",
+});
+
+/** The course page with the creation at ``at()``'s step; ``onFocus`` sees each request first. */
+async function openAt(page: Page, at: () => Body, onFocus: (req: { path: string; method: string; body: Body }) => void = () => {}) {
+  const tracked = await stubFocus(page, {
+    open: false,
+    script: (req) => {
+      if (req.method === "GET" && req.path.endsWith("/admin/focus/"))
+        return { enabled: true, first: { course: QUESTIONS.topic }, open: [{ id: CREATION, kind: "course", record: coverState().record }] };
+      onFocus(req);
+      if (req.path.endsWith(`/focus/${CREATION}/`) || req.path.endsWith("/answer/")) return at();
+    },
+  });
+  await page.goto(`${TENANT}/admin/courses/${SLUG}`);
+  return tracked;
+}
+
+test("the price step: you decide highlights the suggestion for her to tap", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  let priced = false;
+  const { sent } = await openAt(
+    page,
+    () => (priced ? finishState() : coverState({ question: ACCESS_Q, cover: null })),
+    ({ path, body }) => {
+      if (path.endsWith("/answer/") && body.field === "access" && body.value) priced = true;
+    },
+  );
+
+  await expect(guide(page).getByText("How will students get it?")).toBeVisible();
+  await expect(guide(page).getByText("Financial Strategist here: let's decide how students get it.")).toBeVisible();
+  const paid = guide(page).getByRole("button", { name: /One-time price: \$39/ });
+  await expect(paid).toContainText("Your other courses sell for $29–$49");
+  await expect(paid).not.toHaveAttribute("data-highlighted");
+
+  // "You decide" picks out the suggestion; the price is still hers to tap.
+  await guide(page).getByRole("button", { name: "You decide" }).click();
+  await expect(paid).toHaveAttribute("data-highlighted", "true");
+  expect(sent.filter((s) => s.field === "access")).toEqual([]);
+
+  await paid.click();
+  await expect(guide(page).getByText("Ready. Publish it now?")).toBeVisible();
+  expect(sent.filter((s) => s.field === "access")).toEqual([expect.objectContaining({ field: "access", value: "paid:39" })]);
+  await page.close();
+});
+
+test("a paid course she cannot sell yet: start selling keeps it a draft and opens her plan", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const { sent } = await openAt(page, () => ({
+    ...finishState(),
+    question: {
+      ...QUESTIONS.finish,
+      options: [option("start_selling", "Start selling", "your plan, then payouts"), option("draft", "Keep as a draft")],
+      paid_active: false,
+    },
+  }));
+
+  await expect(guide(page).getByRole("button", { name: "Publish now" })).toHaveCount(0);
+  await guide(page).getByRole("button", { name: "Start selling" }).click();
+  await expect(page).toHaveURL(new RegExp("/admin/billing"));
+  expect(sent.find((s) => s.path.endsWith("/finish/"))).toMatchObject({ publish: false });
+  await page.close();
+});

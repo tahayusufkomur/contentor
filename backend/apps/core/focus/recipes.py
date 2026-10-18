@@ -69,6 +69,14 @@ COURSE = Recipe(
             ),
         ),
         Field(
+            "access",
+            "Access",
+            "How will students get it?",
+            kind="price",
+            delegable=True,
+            why="You can change it any time.",
+        ),
+        Field(
             "finish",
             "Finish",
             "Ready. Publish it now?",
@@ -83,6 +91,7 @@ COURSE = Recipe(
         "size": "content",
         "outline_review": "content",
         "cover": "designer",
+        "access": "finance",
         "finish": "marketing",
     },
     values={

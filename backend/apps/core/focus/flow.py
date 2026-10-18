@@ -16,7 +16,7 @@ from django.utils import timezone
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
-from . import analysis, covers, descriptions, jobs, outline
+from . import analysis, covers, descriptions, jobs, outline, pricing
 from .recipes import RECIPES
 
 DELEGATE = "delegate"
@@ -32,6 +32,8 @@ CLOSING = {
 WRITING_DESCRIPTIONS = "Writing a short description for each lesson's video. Edit any of them on the page."
 # The finish step while a lesson is still empty: no "Publish now".
 NOT_READY = "Your outline is saved. Next, your lessons."
+# The finish step of a paid course she cannot sell yet: no "Publish now" (F11).
+START_SELLING = {"value": "start_selling", "label": "Start selling", "hint": "your plan, then payouts"}
 
 
 class FlowError(Exception):
@@ -116,7 +118,8 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
             or (
                 question is not None
                 and (
-                    question.kind == "finish"
+                    # The one answer on finish: "Sell it for", after "Just draft it" left the price to her.
+                    (question.kind == "finish" and (delegate or (text or "").strip() or not _sell_for(creation, value)))
                     # Only typed words are read at the cover; a tap or "You decide" never answers it.
                     or (question.kind == "cover" and (delegate or not (text or "").strip()))
                 )
@@ -145,6 +148,16 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
                 # Again what failed: her change, when it was a redraft.
                 failed = CopilotRun.objects.filter(pk=creation.outline_run_id).first()
                 outline.start(creation, instruction=str(((failed and failed.request) or {}).get("instruction") or ""))
+        elif question.kind == "finish":
+            price = _sell_for(creation, value)
+            _set_price(creation, price)
+            _say(creation, question, f"Sell it for {_price_label(price)}")
+        elif question.kind == "price":
+            if not _access(creation, question, value, delegate) and not rest:
+                creation.save(update_fields=["active_ms", "updated_at"])
+                return creation
+            if rest:
+                _delegate_rest(creation)
         else:
             picked = _pick(recipe, question, value, None, delegate)
             if picked is None and not rest:
@@ -177,6 +190,9 @@ def apply(creation, found) -> None:
             _redraft(creation, text)
         elif field == "cover":  # never her answer (the cover endpoint sets it); her words describe the photo
             creation.covers = {**(creation.covers or {}), "query": text}
+        elif field == "access":  # a paid price only from words that are one (F11); else she taps
+            if price := analysis.price_value(text):
+                _set_price(creation, price)
         elif field:
             creation.answers[field] = text
     else:
@@ -230,8 +246,9 @@ def finish(creation, *, publish: bool, active_ms=None) -> FocusCreation:
             creation.status = "left"
             creation.save(update_fields=["active_ms", "status", "updated_at"])
             return creation
-        # Never an empty lesson in front of students: not ready, it stays a draft.
-        choice = "publish" if publish and not _record(creation).not_ready() else "draft"
+        # Never an empty lesson in front of students, nor a paid course she cannot sell yet: a draft.
+        record = _record(creation)
+        choice = "publish" if publish and not record.not_ready() and not _cannot_sell(record) else "draft"
         if choice == "publish":
             with suppress(content.ContentOpError):  # already published by hand, or gone
                 content.publish_course(creation.record_id)
@@ -299,7 +316,7 @@ def question(kind: str, field: str, creation=None) -> dict:
         }
     recipe = RECIPES[kind]
     q = next(q for q in recipe.questions if q.id == field)
-    return {
+    asked = {
         "field": q.id,
         "kind": q.kind,
         "question": q.question,
@@ -309,6 +326,7 @@ def question(kind: str, field: str, creation=None) -> dict:
         "can_delegate": q.delegable,
         "specialist": recipe.specialists[q.id],
     }
+    return {**asked, **_price_tiles(creation)} if q.kind == "price" else asked
 
 
 def _sync_cover(creation):
@@ -349,6 +367,8 @@ def state(creation) -> dict:
             "options": [o for o in asked["options"] if o["value"] != "publish"],
             "specialist": "content",
         }
+    if record and field == "finish":
+        asked = _finish_options(creation, asked, record)
     return {
         "id": creation.id,
         "kind": creation.kind,
@@ -359,7 +379,12 @@ def state(creation) -> dict:
         "answered": [
             {"field": q.id, "label": _label(recipe, q, answers[q.id])} for q in recipe.questions if q.id in answers
         ]
-        + ([{"field": "price", "label": _price_label(answers["price"])}] if "price" in answers else []),
+        # Her price said before its own step; once the step is answered, its line says it.
+        + (
+            [{"field": "price", "label": _price_label(answers["price"])}]
+            if "price" in answers and "access" not in answers
+            else []
+        ),
         "outline": {"status": outline_status(creation), "run": creation.outline_run_id},
         "descriptions": (
             {"status": jobs.status(creation, "descriptions"), "run": jobs.run_id(creation, "descriptions")}
@@ -485,12 +510,111 @@ def _set_price(creation, value: str) -> None:
     elif value != "membership":
         course.update(pricing_type="paid", price=Decimal(value))
     creation.answers["price"] = value
+    if value != "membership":  # the access step is answered too; "membership" asks which one
+        creation.answers["access"] = value if value == "free" else f"paid:{value}"
+
+
+def _amount(value, prefix: str) -> str | None:
+    """A tapped amount ("paid:39", "price:39"), checked as her typed price is:
+    a positive amount in the course's range, two decimals; None otherwise."""
+    value = str(value or "")
+    price = analysis.price_value(value.removeprefix(prefix)) if value.startswith(prefix) else None
+    return price if price not in (None, "free", "membership") else None
+
+
+def _sell_for(creation, value) -> str | None:
+    """ "Sell it for" on finish: only after "Just draft it" left the price to her."""
+    return _amount(value, "price:") if (creation.answers or {}).get("access") == DELEGATE else None
+
+
+def _access(creation, q, value, delegate) -> bool:
+    """A tap at "How will students get it?": Free, a one-time price (any valid
+    amount she taps is hers, F11) or one of her active memberships. "You
+    decide" leaves the course as it is. False when the tap carried no answer."""
+    from django.contrib.contenttypes.models import ContentType
+
+    from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
+    from apps.courses.models import Course
+
+    value = str(value or "")
+    plan_id = value.removeprefix("plan:")
+    if delegate:
+        creation.answers["access"] = DELEGATE
+    elif value == "free" or (price := _amount(value, "paid:")):
+        _set_price(creation, "free" if value == "free" else price)
+    elif value.startswith("plan:") and plan_id.isascii() and plan_id.isdigit() and len(plan_id) < 10:
+        plan = SubscriptionPlan.objects.filter(pk=int(plan_id), is_active=True).first()
+        if plan is None:
+            return False
+        Course.objects.filter(pk=creation.record_id).update(pricing_type="subscription")
+        SubscriptionPlanAccess.objects.get_or_create(
+            plan=plan, content_type=ContentType.objects.get_for_model(Course), object_id=creation.record_id
+        )
+        creation.answers["price"] = "membership"
+        creation.answers["access"] = f"plan:{plan.pk}"
+    else:
+        return False
+    _say(creation, q, _label(RECIPES[creation.kind], q, creation.answers["access"]))
+    return True
+
+
+def _price_tiles(creation) -> dict:
+    """The access step's tiles: Free, the suggested one-time price with its
+    reason, and each active membership; after "membership" in her words, only
+    those (when she has any)."""
+    from apps.billing.models import SubscriptionPlan
+
+    plans = [
+        {"value": f"plan:{p.pk}", "label": f"In {p.name}", "hint": ""}
+        for p in SubscriptionPlan.objects.filter(is_active=True)
+    ]
+    if plans and (creation.answers or {}).get("price") == "membership":
+        return {"options": plans, "suggested": None}
+    s = pricing.suggest(_record(creation))
+    paid = {"value": f"paid:{s.amount}", "label": f"One-time price: {_price_label(str(s.amount))}", "hint": s.reason}
+    return {"options": [{"value": "free", "label": "Free", "hint": ""}, paid, *plans], "suggested": paid["value"]}
+
+
+def _cannot_sell(record) -> bool:
+    """A paid course while selling is not open yet (her plan, then payouts)."""
+    from apps.core import monetization
+
+    return record.pricing_type == "paid" and not monetization.can_monetize(connection.tenant)
+
+
+def _finish_options(creation, asked: dict, record) -> dict:
+    """The finish step's buttons: "Start selling" in place of "Publish now"
+    while she cannot sell a paid course, and "Sell it for" the suggested
+    price when "Just draft it" left the price to her (F11)."""
+    from apps.core import monetization
+
+    options = asked["options"]
+    if _cannot_sell(record):
+        options = [START_SELLING, *(o for o in options if o["value"] != "publish")]
+        asked = {**asked, "paid_active": monetization.is_paid_active(connection.tenant)}
+    if (creation.answers or {}).get("access") == DELEGATE:
+        s = pricing.suggest(record)
+        options = [
+            *options,
+            {"value": f"price:{s.amount}", "label": f"Sell it for {_price_label(str(s.amount))}", "hint": s.reason},
+        ]
+    return {**asked, "options": options}
 
 
 def _price_label(value: str) -> str:
     from apps.tenant_config.interview_brief import money
 
     return {"free": "Free", "membership": "In your membership"}.get(value) or money(value)
+
+
+def _access_label(value: str) -> str:
+    """ "free", "paid:39.00" or "plan:<id>", as her answered line."""
+    from apps.billing.models import SubscriptionPlan
+
+    if value.startswith("plan:"):
+        plan = SubscriptionPlan.objects.filter(pk=int(value[5:])).first()
+        return f"In {plan.name}" if plan else "In your membership"
+    return _price_label(value.removeprefix("paid:"))
 
 
 def _retitle(creation, provisional: str, title: str) -> None:
@@ -529,9 +653,11 @@ def _before_outline(recipe):
 
 def _delegate_rest(creation) -> None:
     """ "Just draft it": every question the outline waits for that is still
-    open is hers to delegate, and nothing more is clarified."""
+    open is hers to delegate, and the price step; nothing more is clarified."""
     creation.brief = {**(creation.brief or {}), "rest": True, "clarify": []}
-    for q in _before_outline(RECIPES[creation.kind]):
+    recipe = RECIPES[creation.kind]
+    # The price too, which keeps the course free: a paid price is only ever her tap (F11, R2).
+    for q in (*_before_outline(recipe), *(q for q in recipe.questions if q.id == "access")):
         if q.id not in creation.answers:
             creation.answers[q.id] = DELEGATE
             _say(creation, q, "You decide")
@@ -610,6 +736,8 @@ def _label(recipe, q, answer) -> str:
         return "Looks good" if answer == "ok" else str(answer)
     if q.kind == "cover":
         return "Cover chosen" if answer == "kept" else "Later"
+    if q.kind == "price":
+        return _access_label(answer)
     values = recipe.values.get(q.id, ())
     return q.options[values.index(answer)] if answer in values else str(answer)
 

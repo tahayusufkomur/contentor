@@ -44,6 +44,7 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 
 import { GuideQuestion } from "./guide-question";
+import { PriceQuestion } from "./price-question";
 
 export const FOCUS_TIME_KEY = "focus:course";
 const POLL_MS = 1500;
@@ -98,7 +99,7 @@ export function FocusGuide() {
   );
 
   const { run: finish, loading: finishing } = useAsyncAction(
-    async (publish: boolean) => {
+    async (publish: boolean, startSelling = false) => {
       if (!state) return;
       const next = await finishCreation(state.id, {
         publish,
@@ -108,6 +109,11 @@ export function FocusGuide() {
       apply(state.id, null);
       void refreshFocusOverview();
       if (next.status !== "done") return; // its course was deleted meanwhile
+      // "Start selling": it stays a draft, and she goes on to her plan, then payouts.
+      if (startSelling)
+        navigate(
+          state.question?.paid_active ? "/admin/payouts" : "/admin/billing",
+        );
       // Focus mode ends: the dock is the normal chat, with the whole exchange.
       if (next.chat !== null)
         openRunChat(next.chat, () => dock.open("assistant"));
@@ -258,7 +264,16 @@ export function FocusGuide() {
           <FinishStep
             question={question}
             finishing={finishing}
+            sending={sending}
             onFinish={finish}
+            onSend={send}
+          />
+        ) : question.kind === "price" ? (
+          <PriceQuestion
+            key={question.field}
+            question={question}
+            sending={sending}
+            onSend={send}
           />
         ) : (
           <GuideQuestion
@@ -289,6 +304,7 @@ export function FocusGuide() {
  *  ready yet is asked by the Content Creating Specialist instead). */
 const HAND_OVER: Partial<Record<string, SpecialistKey>> = {
   cover: "designer",
+  access: "finance",
   finish: "marketing",
 };
 
@@ -475,18 +491,27 @@ function CoverQuestion({
 function FinishStep({
   question,
   finishing,
+  sending,
   onFinish,
+  onSend,
 }: {
   question: FocusQuestion;
   finishing: boolean;
-  onFinish: (publish: boolean) => void;
+  sending: boolean;
+  onFinish: (publish: boolean, startSelling?: boolean) => void;
+  /** "Sell it for": the price "Just draft it" left to her, set by her tap. */
+  onSend: (input: GuideInput) => void;
 }) {
   const t = useTranslations("admin");
-  const [choice, setChoice] = useState<boolean | null>(null);
-  const pick = (publish: boolean) => {
-    setChoice(publish);
-    onFinish(publish);
+  const [choice, setChoice] = useState<string | null>(null);
+  const pick = (value: string) => {
+    setChoice(value);
+    onFinish(value === "publish", value === "start_selling");
   };
+  const has = (value: string) =>
+    question.options.some((o) => o.value === value);
+  const sell = question.options.find((o) => o.value.startsWith("price:"));
+  const busy = finishing || sending;
   return (
     <div className="flex flex-col gap-4">
       <SpecialistByline k={question.specialist} />
@@ -500,24 +525,49 @@ function FinishStep({
       </div>
       <div className="flex flex-wrap gap-2">
         {/* Offered only once every lesson has a video or text. */}
-        {question.options.some((o) => o.value === "publish") && (
+        {has("publish") && (
           <Button
-            loading={finishing && choice === true}
-            disabled={finishing}
-            onClick={() => pick(true)}
+            loading={finishing && choice === "publish"}
+            disabled={busy}
+            onClick={() => pick("publish")}
           >
             {t("focus.publishNow")}
           </Button>
         )}
+        {/* A paid course she cannot sell yet: her plan, then payouts. */}
+        {has("start_selling") && (
+          <Button
+            loading={finishing && choice === "start_selling"}
+            disabled={busy}
+            onClick={() => pick("start_selling")}
+          >
+            {t("focus.startSelling")}
+          </Button>
+        )}
         <Button
           variant="outline"
-          loading={finishing && choice === false}
-          disabled={finishing}
-          onClick={() => pick(false)}
+          loading={finishing && choice === "draft"}
+          disabled={busy}
+          onClick={() => pick("draft")}
         >
           {t("focus.keepDraft")}
         </Button>
       </div>
+      {sell && (
+        <div className="flex flex-col items-start gap-1">
+          <Button
+            variant="outline"
+            loading={sending}
+            disabled={busy}
+            onClick={() => onSend({ ...NONE, picked: sell.value })}
+          >
+            {sell.label}
+          </Button>
+          {sell.hint && (
+            <p className="text-xs text-muted-foreground">{sell.hint}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

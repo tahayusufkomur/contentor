@@ -25,12 +25,18 @@ export function GuideQuestion({
   sending,
   showRest,
   onSend,
+  highlighted = null,
+  onDelegate,
 }: {
   question: FocusQuestion;
   sending: boolean;
   /** "Just draft it" (the questions before the outline). */
   showRest: boolean;
   onSend: (input: GuideInput) => void;
+  /** The tile picked out for her to tap (the price step's "You decide"). */
+  highlighted?: string | null;
+  /** "You decide" handled here instead of sent. */
+  onDelegate?: () => void;
 }) {
   const t = useTranslations("admin");
   const [text, setText] = useState("");
@@ -54,7 +60,8 @@ export function GuideQuestion({
               type="button"
               disabled={sending}
               onClick={() => onSend({ ...NONE, picked: option.value })}
-              className="rounded-xl border border-border bg-background px-4 py-3 text-left transition-colors hover:border-foreground/30 hover:bg-accent disabled:opacity-60"
+              data-highlighted={option.value === highlighted || undefined}
+              className="rounded-xl border border-border bg-background px-4 py-3 text-left transition-colors hover:border-foreground/30 hover:bg-accent disabled:opacity-60 data-[highlighted]:border-primary data-[highlighted]:ring-2 data-[highlighted]:ring-primary/30"
             >
               <span className="block text-sm font-medium text-foreground">
                 {option.label}
@@ -95,7 +102,9 @@ export function GuideQuestion({
               size="sm"
               variant="outline"
               disabled={sending}
-              onClick={() => onSend({ ...NONE, delegate: true })}
+              onClick={() =>
+                onDelegate ? onDelegate() : onSend({ ...NONE, delegate: true })
+              }
             >
               {t("focus.youDecide")}
             </Button>

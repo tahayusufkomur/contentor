@@ -12,7 +12,7 @@ export interface FocusOption {
 
 export interface FocusQuestion {
   field: string;
-  kind: "text" | "choice" | "review" | "cover" | "finish";
+  kind: "text" | "choice" | "review" | "cover" | "price" | "finish";
   question: string;
   why: string;
   options: FocusOption[];
@@ -20,6 +20,10 @@ export interface FocusQuestion {
   starter: string | null;
   can_delegate: boolean;
   specialist: SpecialistKey;
+  /** The price step: the tile "You decide" highlights for her to tap. */
+  suggested?: string | null;
+  /** Finish with "Start selling": her plan is on, so payouts come next. */
+  paid_active?: boolean;
 }
 
 export interface FocusRecord {

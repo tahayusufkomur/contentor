@@ -340,6 +340,14 @@ export function CourseForm({
     if (wasFocusing.current && !focusing) void loadCourse();
     wasFocusing.current = focusing;
   }, [focusing, loadCourse]);
+  // The price step set the course's price: the form takes it in, so a later
+  // save (Save & leave with her typed edits) never puts the old one back.
+  const priced = creation?.answered.find(
+    (line) => line.field === "access",
+  )?.label;
+  useEffect(() => {
+    if (focusing && priced) void loadCourse();
+  }, [priced, focusing, loadCourse]);
 
   // --- Save all course fields ---
   const { run: handleSave, loading: saving } = useAsyncAction(
