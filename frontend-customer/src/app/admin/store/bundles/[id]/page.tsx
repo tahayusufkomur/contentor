@@ -24,6 +24,8 @@ import {
   type SelectedItem,
 } from "@/components/billing/content-picker";
 import type { Bundle } from "@/types/billing";
+import { formatMoney } from "@/lib/format";
+import { useTenantCurrency } from "@/lib/setup-assistant";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 
@@ -77,6 +79,7 @@ function FormSkeleton() {
 
 export default function EditBundlePage() {
   const navigate = useNavigate();
+  const currency = useTenantCurrency();
   const params = useParams();
   const id = params.id as string;
 
@@ -278,7 +281,7 @@ export default function EditBundlePage() {
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="price">Bundle Price</Label>
+                    <Label htmlFor="price">Bundle Price ({currency})</Label>
                     <Input
                       id="price"
                       type="number"
@@ -295,7 +298,7 @@ export default function EditBundlePage() {
                   <div className="space-y-2">
                     <Label>Original Price (sum of items)</Label>
                     <div className="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
-                      ${originalPrice}
+                      {formatMoney(originalPrice, currency)}
                     </div>
                   </div>
                 </div>

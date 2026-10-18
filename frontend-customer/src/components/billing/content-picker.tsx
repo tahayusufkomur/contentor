@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
+import { formatMoney } from "@/lib/format";
+import { useTenantCurrency } from "@/lib/setup-assistant";
 
 export interface SelectedItem {
   content_type: string;
@@ -67,6 +69,7 @@ export function ContentPicker({
   onChange,
   products: given,
 }: ContentPickerProps) {
+  const currency = useTenantCurrency();
   const [fetched, setFetched] = useState<Product[]>([]);
   const [loading, setLoading] = useState(!given);
   const [search, setSearch] = useState("");
@@ -232,7 +235,7 @@ export function ContentPicker({
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
                   {product.pricing_type === "subscription"
                     ? "Members only"
-                    : `$${product.price}`}
+                    : formatMoney(product.price, currency)}
                 </span>
               </label>
             );
