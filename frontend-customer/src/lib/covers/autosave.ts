@@ -67,3 +67,20 @@ export function createAutosave(
     },
   };
 }
+
+/** Flushes when the page becomes hidden, and returns the cleanup. A phone's browser hides the page when she
+ *  switches app or closes the tab, and sends no `beforeunload` then, so the edits of the last `delay` ms
+ *  would be lost. (`flush` is the caller's: a failure is theirs to report.) */
+export function flushWhenHidden(
+  page: Pick<
+    Document,
+    "addEventListener" | "removeEventListener" | "visibilityState"
+  >,
+  flush: () => void,
+): () => void {
+  const onChange = () => {
+    if (page.visibilityState === "hidden") flush();
+  };
+  page.addEventListener("visibilitychange", onChange);
+  return () => page.removeEventListener("visibilitychange", onChange);
+}

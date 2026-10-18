@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createAutosave } from "@/lib/covers/autosave";
+import { createAutosave, flushWhenHidden } from "@/lib/covers/autosave";
 import { defaultRecipe } from "@/lib/covers/recipe";
 import type { CoverRecipe } from "@/types/design";
 
@@ -174,5 +174,77 @@ describe("createAutosave", () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(landed).toBe(true);
     expect(save).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("flushWhenHidden", () => {
+  /** A page that can be hidden and shown, as the browser does with a phone's tab. */
+  function page() {
+    const target = new EventTarget();
+    const doc = Object.assign(target, {
+      visibilityState: "visible" as DocumentVisibilityState,
+    });
+    const set = (state: DocumentVisibilityState) => {
+      doc.visibilityState = state;
+      doc.dispatchEvent(new Event("visibilitychange"));
+    };
+    return { doc, set };
+  }
+
+  it("saves the edit of the last moment when the page is hidden, before the 800 ms are up", async () => {
+    const save = vi.fn().mockResolvedValue(undefined);
+    const autosave = createAutosave(save);
+    const { doc, set } = page();
+    flushWhenHidden(doc, () => void autosave.flush().catch(() => {}));
+
+    autosave.schedule(recipe("typed just now"));
+    await vi.advanceTimersByTimeAsync(100);
+    expect(save).not.toHaveBeenCalled();
+    set("hidden");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(save).toHaveBeenCalledWith(recipe("typed just now"));
+    // the timer does not save it a second time
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(save).toHaveBeenCalledTimes(1);
+  });
+
+  it("flushes on hiding only, not when the page is shown again", () => {
+    const flush = vi.fn();
+    const { doc, set } = page();
+    flushWhenHidden(doc, flush);
+    set("visible");
+    expect(flush).not.toHaveBeenCalled();
+    set("hidden");
+    set("visible");
+    set("hidden");
+    expect(flush).toHaveBeenCalledTimes(2);
+  });
+
+  it("stops listening once cleaned up", () => {
+    const flush = vi.fn();
+    const { doc, set } = page();
+    const stop = flushWhenHidden(doc, flush);
+    stop();
+    set("hidden");
+    expect(flush).not.toHaveBeenCalled();
+  });
+
+  it("with nothing waiting saves nothing, and a failed save is not an uncaught error", async () => {
+    const save = vi.fn().mockRejectedValue(new Error("offline"));
+    const autosave = createAutosave(save);
+    const { doc, set } = page();
+    flushWhenHidden(doc, () => void autosave.flush().catch(() => {}));
+    set("hidden");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(save).not.toHaveBeenCalled();
+    autosave.schedule(recipe("a"));
+    set("hidden");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(save).toHaveBeenCalledTimes(1);
+    // the recipe is still pending for the next flush
+    set("hidden");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(save).toHaveBeenCalledTimes(2);
   });
 });

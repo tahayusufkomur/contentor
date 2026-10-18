@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { undoCopilotAction } from "@/lib/copilot/api";
-import { createAutosave } from "@/lib/covers/autosave";
+import { createAutosave, flushWhenHidden } from "@/lib/covers/autosave";
 import { editHistory, type EditorAction } from "@/lib/covers/editor";
 import { openCoverStudio } from "@/lib/covers/open-studio";
 import {
@@ -139,6 +139,14 @@ export function useCoverDraft({
         .catch(() => toast.error(say.current("editor.leftUnsaved")));
     };
   }, [autosave]);
+  // A phone's browser hides the page when she switches app or closes the tab, and sends no beforeunload:
+  // what is waiting is saved then. (A failure shows in the saving state, which is what she finds on
+  // coming back.)
+  useEffect(
+    () =>
+      flushWhenHidden(document, () => void autosave.flush().catch(() => {})),
+    [autosave],
+  );
   // Closing the tab with edits not yet saved asks first.
   useEffect(() => {
     if (saveState === "saved") return;
