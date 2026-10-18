@@ -95,8 +95,7 @@ def carry_out(tenant, run_id) -> None:
             runs.finish(run_id, True, {"text": "Drew no covers."})
             return
         current = locked.covers or {}
-        if current.get("rounds"):  # later rounds keep the query as it is now
-            query = current.get("query", query)
+        query = current.get("query") or query  # hers, said while the model drew, beats the model's
         photo_id = current.get("photo")  # the one she chose, if she did, even while the first round drew
         photo_id = photo_id if photo_id and designs._photo_exists(photo_id) else None
         if photo_id is None and not current.get("rounds"):

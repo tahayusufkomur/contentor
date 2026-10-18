@@ -206,6 +206,24 @@ def test_a_course_deleted_meanwhile_ends_the_drafting_quietly(outlined, plan, li
     assert plan.calls == []
 
 
+def test_a_photo_query_she_said_while_the_first_round_drew_survives(outlined, plan, library):
+    drawn = plan.side_effect
+
+    def she_speaks_meanwhile(**kwargs):  # her analysis lands between the job's start and its locked write
+        result = drawn(**kwargs)
+        found = flow.analysis.Analysis(photo="hands on a keyboard, no faces")
+        creation = FocusCreation.objects.get(pk=outlined.pk)
+        creation.pending = {"field": "cover", "text": "hands on a keyboard, no faces"}
+        flow.apply(creation, found)
+        creation.save()
+        return result
+
+    plan.side_effect = she_speaks_meanwhile
+    creation = _draw(outlined)
+    assert creation.covers["query"] == "hands on a keyboard, no faces"
+    assert len(creation.covers["rounds"]) == 1
+
+
 def test_a_redraft_does_not_start_the_covers_again(outlined):
     first = outlined.runs["covers"]
     CopilotRun.objects.filter(pk=first).update(status="done")  # drawn: only a first write starts one

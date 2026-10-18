@@ -483,6 +483,15 @@ def test_a_price_said_at_the_cover_still_applies_with_the_photo(owner, outline_s
     assert Course.objects.get(pk=creation.record_id).price == Decimal("49.00")
 
 
+def test_a_photo_read_at_another_step_is_ignored(owner, outline_start, analysed):
+    analysed(analysis.Analysis(topic="desk yoga", level="beginners", photo="a quiet desk"))
+    creation = _run_pending(flow.start(owner, "course", text="desk yoga for beginners"))
+    assert not (creation.covers or {}).get("query")
+    creation = flow.answer(creation, "level", text="beginners")
+    creation = _run_pending(creation) if creation.pending else creation
+    assert not (creation.covers or {}).get("query")
+
+
 def test_a_stopped_analysis_settles_on_the_next_read(owner, outline_start, analysed):
     creation = flow.start(owner, "course", text="desk yoga")
     runs.stop(creation.runs["analysis"])
