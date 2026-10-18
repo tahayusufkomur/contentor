@@ -623,12 +623,26 @@ test("saving a lesson without touching its text never sends the text", async ({ 
     puts.push(route.request().postDataJSON());
     return route.fulfill({ json: {} });
   });
+  // The course as loaded again once the descriptions were written.
+  let delivered = false;
+  await page.route(`**/api/v1/courses/${SLUG}/`, (route) =>
+    route.request().method() === "GET" ? route.fulfill({ json: courseDetail(true, delivered) }) : route.fallback(),
+  );
+  await page.route(`**/api/v1/courses/${SLUG}/modules/`, (route) => route.fulfill({ json: {} }));
 
   await page.goto(`${TENANT}/admin/courses/${SLUG}`);
   const main = page.getByRole("main");
+  // Her lesson panel opens while the lesson has no text...
   await main.getByRole("row", { name: /Setting up your chair/ }).getByRole("button").first().click();
-  // Her lesson panel opened before any description arrived; she only renames it.
-  await main.locator("div.border-t.bg-muted\\/30").getByRole("textbox").first().fill("Setting up your desk");
+  const panel = main.locator("div.border-t.bg-muted\\/30");
+  await expect(panel).toBeVisible();
+  // ...then the description arrives and the course reloads (any save does that).
+  delivered = true;
+  await main.getByPlaceholder("New module title").fill("Closing");
+  await main.getByRole("button", { name: "Add Module" }).click();
+  await expect(main.getByText(DESCRIPTIONS[0].slice(0, 20))).toBeVisible();
+  // She only renames the lesson: the description she never saw is not written over.
+  await panel.getByRole("textbox").first().fill("Setting up your desk");
   await main.getByRole("button", { name: "Save", exact: true }).click();
   await expect.poll(() => puts.length).toBe(1);
   expect(puts[0].title).toBe("Setting up your desk");

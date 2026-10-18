@@ -407,9 +407,8 @@ export function CourseForm({
         method: "PUT",
         body: JSON.stringify({
           title: values.title,
-          // Only text she changed: an AI description that arrived after this
-          // panel opened is not written over with the old copy.
-          ...(values.content_html !== lesson.content_html
+          // The panel leaves the text out unless she changed it.
+          ...("content_html" in values
             ? { content_html: values.content_html }
             : {}),
           is_free_preview: values.is_free_preview,
@@ -1337,6 +1336,7 @@ function LessonEditPanel({
     video: lesson.video_id,
     videoPreviewUrl: lesson.video_signed_url,
   });
+  const opened = useRef(lesson.content_html);
 
   return (
     <div className="border-t bg-muted/30 px-4 py-4 space-y-4">
@@ -1383,7 +1383,12 @@ function LessonEditPanel({
         </Button>
         <Button
           size="sm"
-          onClick={() => onSave(values)}
+          onClick={() => {
+            // Only text she changed: an AI description that arrived after
+            // this panel opened is not written over with the copy it opened with.
+            const { content_html, ...rest } = values;
+            onSave(content_html === opened.current ? rest : values);
+          }}
           loading={saving}
           loadingText="Saving…"
           disabled={!values.title.trim()}
