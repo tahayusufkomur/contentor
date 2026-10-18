@@ -86,12 +86,25 @@ export function CoursesPaths({ block, data, editable }: SectionProps) {
                   )}
                 </div>
 
-                {/* Card Photo Window (Arch) */}
-                <figure className="my-5 overflow-hidden rounded-t-full border border-[color-mix(in_oklch,var(--primary)_40%,transparent)] p-1">
+                {/* Card Photo Window (Arch). A cover she designed draws whole in a plain rounded frame: the
+                    arch would cut off its logo and its badge in the top corners. */}
+                <figure
+                  className={cn(
+                    "my-5 overflow-hidden border border-[color-mix(in_oklch,var(--primary)_40%,transparent)] p-1",
+                    course.cover_design
+                      ? "rounded-[var(--radius)]"
+                      : "rounded-t-full",
+                  )}
+                >
                   <Img
                     value={courseCover(course)}
                     alt={course.title}
-                    className="sanctum-arch aspect-[4/3] w-full transition-transform duration-700 motion-safe:group-hover:scale-105"
+                    className={cn(
+                      "aspect-[4/3] w-full transition-transform duration-700 motion-safe:group-hover:scale-105",
+                      course.cover_design
+                        ? "rounded-[calc(var(--radius)-4px)]"
+                        : "sanctum-arch",
+                    )}
                   />
                 </figure>
 

@@ -296,14 +296,20 @@ describe("CoverArt photo", () => {
     for (const img of imgs(PHOTO_URL, {})) {
       expect(img.attrs.loading).toBe("lazy");
       expect(img.attrs).not.toHaveProperty("fetchpriority");
+      expect(img.attrs).not.toHaveProperty("data-site-img");
     }
     for (const img of imgs(PHOTO_URL, { priority: true })) {
       expect(img.attrs.loading).toBe("eager");
       expect(img.attrs.fetchpriority).toBe("high");
+      // SiteMotion holds every other image at opacity 0 until it loads; this one shows at once
+      expect(img.attrs["data-site-img"]).toBe("priority");
     }
     const logos = imgs(LOGO_URL, { priority: true });
     expect(logos.length).toBeGreaterThan(0);
-    for (const logo of logos) expect(logo.attrs.loading).toBe("lazy");
+    for (const logo of logos) {
+      expect(logo.attrs.loading).toBe("lazy");
+      expect(logo.attrs).not.toHaveProperty("data-site-img");
+    }
   });
 
   it("shows the photo alone in a frame under 180 px, and the panel colour with no photo", () => {
@@ -1260,6 +1266,60 @@ describe("CoverArt extras", () => {
       height: "25%",
     });
     expect(layer(within(els, "card"), "photo")?.style.left).not.toBe("50%");
+  });
+});
+
+describe("CoverArt with hostile text", () => {
+  // Words are hers, a course's title is hers and a badge's text is hers: all of it reaches the page as text,
+  // never as markup.
+  const HOSTILE: [raw: string, escaped: string][] = [
+    ["<script>x</script>", "&lt;script&gt;x&lt;/script&gt;"],
+    [
+      '"><img src=x onerror=alert(1)>',
+      "&quot;&gt;&lt;img src=x onerror=alert(1)&gt;",
+    ],
+  ];
+  const expectOnlyText = (markup: string, raw: string, escaped: string) => {
+    expect(markup, raw).not.toContain(raw);
+    const els = parse(markup);
+    expect(els.filter((e) => e.tag === "script")).toHaveLength(0);
+    expect(els.filter((e) => e.tag === "img" && e.attrs.src === "x")).toEqual(
+      [],
+    );
+    // no element of the cover has an event handler
+    expect(
+      els.filter((e) => Object.keys(e.attrs).some((k) => k.startsWith("on"))),
+    ).toEqual([]);
+    return markup.split(escaped).length - 1;
+  };
+
+  it("escapes a title, a label, a subtitle, a badge, and her text and badge layers", () => {
+    for (const [raw, escaped] of HOSTILE) {
+      const d = design((r) => {
+        r.words = { label: raw, title: raw, subtitle: raw };
+        r.badge = { kind: "text", text: raw, fill: "accent" };
+        r.extras = [
+          { id: "x1", type: "text", text: raw, style: {}, frame: FRAME },
+          { id: "x2", type: "badge", text: raw, fill: "ink", frame: FRAME },
+        ];
+      });
+      // each of the six, at least once
+      expect(expectOnlyText(draw(d), raw, escaped), raw).toBeGreaterThanOrEqual(
+        6,
+      );
+    }
+  });
+
+  it("escapes the course's own title, which a cover with no title of its own follows", () => {
+    for (const [raw, escaped] of HOSTILE) {
+      const markup = draw(
+        design((r) => {
+          r.words = { ...WORDS };
+        }),
+        { item: { ...ITEM, title: raw } },
+      );
+      expect(expectOnlyText(markup, raw, escaped), raw).toBeGreaterThan(0);
+    }
   });
 });
 

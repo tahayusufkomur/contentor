@@ -265,8 +265,11 @@ function photo(ctx: Ctx, placeholder: boolean): ReactNode {
             src={ctx.photoUrl}
             alt=""
             loading={ctx.priority ? "eager" : "lazy"}
-            // React 18 knows only the lowercase attribute (Next's own Image does the same).
-            {...(ctx.priority ? { fetchpriority: "high" } : {})}
+            // React 18 knows only the lowercase attribute (Next's own Image does the same). The site's
+            // motion holds an image at opacity 0 until it has loaded, except one marked priority.
+            {...(ctx.priority
+              ? { fetchpriority: "high", "data-site-img": "priority" }
+              : {})}
             decoding="async"
             className={cn(styles.fill, styles.cover, ctx.photoClassName)}
             style={{ objectPosition: at }}

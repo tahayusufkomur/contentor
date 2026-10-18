@@ -44,6 +44,7 @@ import type { Block } from "@/types/tenant";
 import { Img, courseCover, eventCover } from "../kit";
 import { CoursesPosters } from "../kinetic/courses";
 import { CoursesRows, EventsRows } from "../rows";
+import { CoursesPaths } from "../sanctum/courses";
 
 const PHOTO = "11111111-1111-4111-8111-111111111111";
 const PHOTO_URL = "https://cdn.test/photo.jpg";
@@ -353,6 +354,48 @@ describe("kinetic's course posters", () => {
     const feature = posters([course({ cover_design: design() })]);
     expect(count(feature, "data-cover")).toBe(1);
     expect(feature).toContain("data-words");
+  });
+});
+
+describe("sanctum's course paths", () => {
+  const paths = (data: Course[]) =>
+    html(createElement(CoursesPaths, { block: BLOCK, data }));
+  /** The class of the photo window's figure and of the frame inside it. */
+  const window = (markup: string) => ({
+    figure: /<figure class="([^"]*)"/.exec(markup)?.[1] ?? "",
+    frame:
+      /<div data-site-img-frame="" class="([^"]*)"/.exec(markup)?.[1] ?? "",
+  });
+
+  it("draws a designed cover in a plain rounded frame: the arch would cut off its logo and badge", () => {
+    const out = paths([course({ cover_design: design() })]);
+    expect(out).toContain("data-cover");
+    const { figure, frame } = window(out);
+    for (const classes of [figure, frame]) {
+      expect(classes).not.toContain("sanctum-arch");
+      expect(classes).not.toContain("rounded-t-full");
+    }
+    expect(figure).toContain("rounded-[var(--radius)]");
+    expect(frame).toContain("rounded-[calc(var(--radius)-4px)]");
+  });
+
+  it("keeps the arch for a plain photo", () => {
+    const out = paths([course()]);
+    expect(out).not.toContain("data-cover");
+    const { figure, frame } = window(out);
+    expect(figure).toContain("rounded-t-full");
+    expect(frame).toContain("sanctum-arch");
+    expect(imgOf(out, LEGACY_URL)).toContain("object-cover");
+  });
+
+  it("decides course by course", () => {
+    const out = paths([
+      course({ cover_design: design() }),
+      course({ id: 2, title: "Second" }),
+    ]);
+    expect(count(out, "data-cover")).toBe(1);
+    expect(count(out, "rounded-t-full")).toBe(1);
+    expect(count(out, "sanctum-arch")).toBe(1);
   });
 });
 
