@@ -183,7 +183,11 @@ def test_existing_tenant_without_flow_reads_done(client, config):
 
 
 def test_complete_course_publishes_the_draft_and_advances(client, coach, config, builds):
+    from apps.courses.models import Lesson, Module
+
     course = Course.objects.create(title="C", slug="c-flow", description="d", price=0, instructor=coach)
+    module = Module.objects.create(course=course, title="Start", order=1)
+    Lesson.objects.create(module=module, title="Breath", order=1, content_html="<p>In.</p>")
     config.setup_flow = {**config.setup_flow, "drafts": {"course": course.id}}
     config.save()
     cache.set("tenant:shared_test:config", "stale")

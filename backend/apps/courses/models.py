@@ -2,6 +2,20 @@ from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 
+# A lesson with nothing for a student yet: no text and no video.
+EMPTY_LESSON = models.Q(content_html="", video__isnull=True, video_url="")
+GO_LIVE_RULE = "a course goes live once every lesson has a video or text"
+
+
+def publish_gap(empty: int, total: int) -> str | None:
+    """Why a course with ``total`` lessons, ``empty`` of them empty, cannot go
+    live yet; None when it can."""
+    if not total:
+        return f"{GO_LIVE_RULE}, and it has no lessons yet"
+    if empty:
+        return f"{GO_LIVE_RULE}, and {empty} of its {total} lessons have none yet"
+    return None
+
 
 class Course(models.Model):
     title = models.CharField(max_length=200)
@@ -35,6 +49,14 @@ class Course(models.Model):
 
     def __str__(self):
         return self.title
+
+    def not_ready(self) -> str | None:
+        """Why it cannot go live yet, or None. Asked wherever a course goes
+        live (owner, 2026-10-18): the course API, copilot.content.publish_course
+        (the assistant, focus mode, /setup) and the studio's Publish action.
+        Courses already live are left as they are."""
+        lessons = Lesson.objects.filter(module__course=self)
+        return publish_gap(lessons.filter(EMPTY_LESSON).count(), lessons.count())
 
     def save(self, *args, **kwargs):
         if not self.slug:

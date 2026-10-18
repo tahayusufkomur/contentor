@@ -13,7 +13,7 @@ from apps.filters.serializers import FilterOptionSerializer
 from apps.media import designs
 from apps.tags.serializers import TagSerializer, tag_ids_field
 
-from .models import Course, Enrollment, Lesson, Module, Progress, Video
+from .models import Course, Enrollment, Lesson, Module, Progress, Video, publish_gap
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -323,6 +323,17 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
         pricing_type = attrs.get("pricing_type", getattr(self.instance, "pricing_type", "free"))
         if pricing_type != "paid":
             attrs["price"] = 0
+        # Going live needs every lesson filled in (Course.not_ready); a course
+        # already live is left as it is.
+        if attrs.get("is_published") and not getattr(self.instance, "is_published", False):
+            if self.instance is not None:
+                gap = self.instance.not_ready()
+            else:
+                lessons = [lesson for m in attrs.get("modules") or [] for lesson in m.get("lessons") or []]
+                empty = sum(not (x.get("content_html") or x.get("video") or x.get("video_url")) for x in lessons)
+                gap = publish_gap(empty, len(lessons))
+            if gap:
+                raise serializers.ValidationError({"is_published": f"{gap.capitalize()}."})
         return attrs
 
     def validate_modules(self, value):

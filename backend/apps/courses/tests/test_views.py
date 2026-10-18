@@ -792,3 +792,41 @@ class TestCourseNestedCreate:
         )
         assert resp.status_code == 400, resp.content
         assert not Module.objects.filter(title="Sneaky").exists()
+
+
+# ---------------------------------------------------------------------------
+# Going live needs every lesson filled in (Course.not_ready)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db(transaction=True)
+def test_publishing_a_course_with_an_empty_lesson_is_refused(owner):
+    course = Course.objects.create(title="Outline", instructor=owner)
+    module = Module.objects.create(course=course, title="Start", order=1)
+    lesson = Lesson.objects.create(module=module, title="Breath", order=1)
+    client = make_client(owner)
+    resp = client.put(f"/api/v1/courses/{course.slug}/", {"title": "Outline", "is_published": True}, format="json")
+    assert resp.status_code == 400
+    assert resp.json()["is_published"] == [
+        "A course goes live once every lesson has a video or text, and 1 of its 1 lessons have none yet."
+    ]
+    lesson.content_html = "<p>In.</p>"
+    lesson.save()
+    resp = client.put(f"/api/v1/courses/{course.slug}/", {"title": "Outline", "is_published": True}, format="json")
+    assert resp.status_code == 200
+    # A course already live keeps saving as it is.
+    Lesson.objects.create(module=module, title="Hold", order=2)
+    resp = client.put(f"/api/v1/courses/{course.slug}/", {"title": "Renamed", "is_published": True}, format="json")
+    assert resp.status_code == 200
+
+
+@pytest.mark.django_db(transaction=True)
+def test_creating_a_published_course_needs_its_lessons_filled_in(owner):
+    client = make_client(owner)
+    body = {"title": "New", "is_published": True, "modules": [{"title": "M", "lessons": [{"title": "L"}]}]}
+    resp = client.post("/api/v1/courses/", body, format="json")
+    assert resp.status_code == 400
+    assert "1 of its 1 lessons" in resp.json()["is_published"][0]
+    assert client.post("/api/v1/courses/", {"title": "Bare", "is_published": True}, format="json").status_code == 400
+    body["modules"][0]["lessons"][0]["content_html"] = "<p>Hi.</p>"
+    assert client.post("/api/v1/courses/", body, format="json").status_code == 201

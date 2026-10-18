@@ -57,7 +57,8 @@ test("seven sidebar rows; Teach is lit on a course page and its pages are tabs",
 }) => {
   const coach = await coachContext(browser);
   const page = await coach.newPage();
-  await page.goto(`${TENANT}/admin/courses/new`);
+  // The plain form: focus mode, when switched on, tucks the side menu away.
+  await page.goto(`${TENANT}/admin/courses/new?form=1`);
 
   await expect(sidebar(page).getByRole("link")).toHaveCount(7);
   await expect(

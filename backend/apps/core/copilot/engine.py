@@ -647,7 +647,7 @@ def _courses_digest(tenant):
     unpublished is noted so the model doesn't hand the coach a page nobody can see."""
     from django.db.models import Count
 
-    from apps.courses.models import Course, Lesson
+    from apps.courses.models import EMPTY_LESSON, Course, Lesson
 
     with tenant_context(tenant):
         rows = list(
@@ -659,7 +659,7 @@ def _courses_digest(tenant):
             r["module__course_id"]: f"{r['filled']}/{r['total']}"
             for r in Lesson.objects.filter(module__course_id__in=[r["id"] for r in rows])
             .values("module__course_id")
-            .annotate(total=Count("id"), filled=Count("id", filter=~content.EMPTY_LESSON))
+            .annotate(total=Count("id"), filled=Count("id", filter=~EMPTY_LESSON))
         }
     if not rows:
         return "Courses: (none yet)"
@@ -1327,12 +1327,12 @@ def _card(tenant, action):
         with tenant_context(tenant):
             from apps.courses.models import Course
 
-            is_published = Course.objects.filter(pk=action.course_id).values_list("is_published", flat=True).first()
-            gap = content.not_ready(action.course_id)
-        if is_published:
+            course = Course.objects.get(pk=action.course_id)
+            gap = course.not_ready()
+        if course.is_published:
             raise content.ContentOpError("that course is already published")
         if gap:
-            raise content.ContentOpError(f"a course goes live once every lesson has a video or text, and {gap}")
+            raise content.ContentOpError(gap)
         return {
             "kind": "publish_course",
             "title": f"Publish course: {course_title[:100]}",

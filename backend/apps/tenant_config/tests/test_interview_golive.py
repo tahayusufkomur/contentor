@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.core.models import Tenant
-from apps.courses.models import Course
+from apps.courses.models import Course, Lesson, Module
 from apps.tenant_config import interview_brief as brief
 from apps.tenant_config.models import TenantConfig
 
@@ -43,14 +43,18 @@ def client(tenant_ctx, config):
     return c
 
 
-def _course(paid=True, published=False):
-    return Course.objects.create(
+def _course(paid=True, published=False, filled=True):
+    """Her course; ``filled``: its one lesson has text, so it can go live."""
+    course = Course.objects.create(
         title="Desk Yoga",
         instructor=User.objects.filter(role="owner").first(),
         pricing_type="paid" if paid else "free",
         price=Decimal("49") if paid else 0,
         is_published=published,
     )
+    module = Module.objects.create(course=course, title="Basics", order=1)
+    Lesson.objects.create(module=module, title="Welcome", order=1, content_html="<p>Hi.</p>" if filled else "")
+    return course
 
 
 def test_free_content_needs_neither_plan_nor_payouts(client):
@@ -127,6 +131,23 @@ def test_publish_publishes_the_draft_and_the_site(client, tenant_ctx, config):
     assert Course.objects.get().is_published is True
     assert Tenant.objects.get(pk=tenant_ctx.pk).is_published is True
     assert TenantConfig.objects.first().setup_flow["status"] == "done"
+
+
+def test_go_live_keeps_a_course_with_empty_lessons_as_a_draft(client, tenant_ctx, config):
+    """Her site goes live; the course waits for its lessons, and the checklist
+    sends her to it (not to a new course)."""
+    course = _course(paid=False, filled=False)
+    config.setup_flow = {**config.setup_flow, "drafts": {"course": course.id}}
+    config.save()
+    with mock.patch("apps.tenant_config.interview_golive.fire"):
+        resp = client.post(URL, {"action": "publish"}, format="json")
+    assert resp.status_code == 200
+    assert Course.objects.get().is_published is False
+    assert Tenant.objects.get(pk=tenant_ctx.pk).is_published is True
+    items = {i["key"]: i for i in client.get(STATUS_URL).json()["items"]}
+    assert "first_course" not in items
+    assert items["course_lessons"]["done"] is False
+    assert items["course_lessons"]["href"] == f"/admin/courses/{course.slug}"
 
 
 def test_publish_blocked_returns_blockers(client):

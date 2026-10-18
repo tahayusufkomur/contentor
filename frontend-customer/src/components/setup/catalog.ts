@@ -49,6 +49,8 @@ export const SETUP_CATALOG: Record<string, CatalogEntry> = {
   page_contact: { icon: Phone, href: "/contact?edit=1", hardNav: true },
   look: { icon: Paintbrush, href: "/?edit=1&studio=1", hardNav: true },
   first_course: { icon: BookOpen, href: "/admin/courses/new" },
+  // The course /setup drafted; the row carries its own link.
+  course_lessons: { icon: BookOpen, href: "/admin/courses" },
   demo_cleanup: { icon: Trash2, href: null, action: "erase" },
   payouts: { icon: Wallet, href: "/admin/payouts" },
   // "Choose a plan": her own Contentor plan. What she held back goes on sale

@@ -136,7 +136,9 @@ the screen.
    dock with Schedule / Not now. Focus mode then ends (§4.2). **Publish now** is offered only once
    every lesson has a video or text (owner, 2026-10-18: students never open an empty lesson); until
    then the step says how many lessons are still empty and offers **Keep as a draft** alone. The
-   assistant follows the same rule (`content.not_ready`): it never proposes publishing such a course.
+   rule holds wherever a course goes live (`Course.not_ready`: the course API, the assistant, the
+   studio's Publish action, /setup); /setup's go-live keeps its course a draft until then, and that
+   draft still counts for the site's go-live (owner's call). A course already live is left as it is.
 
 **Follow-ups (F4).** Between the must-ask questions the specialist may ask a question specific to
 this course, with two to four buttons, "You decide" and the answer box. Examples for a desk-yoga

@@ -267,7 +267,8 @@ def _on_complete(config, flow, step):
 
     drafts = flow.get("drafts") or {}
     # Completing a content step means "this is good" — it goes live, which is
-    # what the first_course / first_blog_post publish requirements check.
+    # what the first_course / first_blog_post publish requirements check. A
+    # course with an empty lesson stays a draft (Course.not_ready).
     publishers = {"course": content.publish_course, "post": content.publish_blog_post}
     if step["id"] in publishers and drafts.get(step["id"]):
         with suppress(content.ContentOpError):  # already published, or the draft is gone

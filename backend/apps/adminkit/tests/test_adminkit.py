@@ -188,16 +188,27 @@ def test_billing_admins_require_owner_role(coach, plans):
 
 
 def test_course_admin_capabilities(owner, coach):
+    from apps.courses.models import Lesson, Module
+
     course = Course.objects.create(title="Yoga Basics", slug="yoga-basics", instructor=owner)
+    module = Module.objects.create(course=course, title="Start", order=1)
+    Lesson.objects.create(module=module, title="Breath", order=1, content_html="<p>In.</p>")
+    empty = Course.objects.create(title="Outline only", slug="outline-only", instructor=owner)
     client = make_client(coach)  # courses allow coaches too
 
     assert client.post("/api/v1/studio-admin/courses/", {"title": "X"}, format="json").status_code == 405
     assert client.delete(f"/api/v1/studio-admin/courses/{course.pk}/").status_code == 405
 
-    resp = client.post("/api/v1/studio-admin/courses/actions/publish/", {"ids": [course.pk]}, format="json")
+    resp = client.post("/api/v1/studio-admin/courses/actions/publish/", {"ids": [course.pk, empty.pk]}, format="json")
     assert resp.status_code == 200
     course.refresh_from_db()
     assert course.is_published is True
+    empty.refresh_from_db()
+    assert empty.is_published is False  # no lesson with a video or text yet
+    # Only the Publish action publishes: the edit form cannot.
+    client.patch(f"/api/v1/studio-admin/courses/{empty.pk}/", {"is_published": True}, format="json")
+    empty.refresh_from_db()
+    assert empty.is_published is False
 
     resp = client.patch(f"/api/v1/studio-admin/courses/{course.pk}/", {"title": "Yoga Fundamentals"}, format="json")
     assert resp.status_code == 200

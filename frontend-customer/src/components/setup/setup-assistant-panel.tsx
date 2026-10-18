@@ -77,7 +77,9 @@ export function SetupAssistantPanel({
   };
 
   const renderRow = (item: SetupItem) => {
-    const entry = SETUP_CATALOG[item.key];
+    const entry = item.href
+      ? { ...SETUP_CATALOG[item.key], href: item.href }
+      : SETUP_CATALOG[item.key];
     if (!entry) return null;
     const title = t(`setup.items.${item.key}.title`);
     const description = t(`setup.items.${item.key}.description`);

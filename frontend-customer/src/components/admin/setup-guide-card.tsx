@@ -82,7 +82,9 @@ export function SetupGuideCard() {
         {!allDone && (
           <ul className="-mx-2 space-y-0.5">
             {next.map((item) => {
-              const entry = SETUP_CATALOG[item.key];
+              const entry = item.href
+                ? { ...SETUP_CATALOG[item.key], href: item.href }
+                : SETUP_CATALOG[item.key];
               const Icon = entry?.icon;
               const label = (
                 <>

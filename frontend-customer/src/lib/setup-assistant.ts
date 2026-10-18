@@ -10,6 +10,8 @@ export interface SetupItem {
   done: boolean;
   source: "auto" | "manual" | null;
   optional: boolean;
+  /** Where this row leads, when it is one record of hers (the catalog's otherwise). */
+  href?: string;
 }
 
 export interface SetupStatus {

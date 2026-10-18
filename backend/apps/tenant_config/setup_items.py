@@ -20,6 +20,7 @@ ALL_ITEM_KEYS = frozenset(
     + [
         "look",
         "first_course",
+        "course_lessons",
         "first_event",
         "demo_cleanup",
         "payouts",
@@ -100,6 +101,13 @@ def _held_course_id(flow):
     return (flow.get("drafts") or {}).get("course") if (flow.get("held") or {}).get("course") else None
 
 
+def _setup_course(flow):
+    """The course /setup drafted, if it still exists."""
+    from apps.courses.models import Course
+
+    return Course.objects.filter(pk=(flow.get("drafts") or {}).get("course")).first()
+
+
 def _course_expected(tenant, flow) -> bool:
     """Whether she is asked for a course of her own: not when /setup skipped
     the step or held her course for "sell later" (start_selling covers it),
@@ -160,7 +168,9 @@ def publish_blockers(config, tenant) -> list[str]:
     flow = config.setup_flow or {}
     held_course = _held_course_id(flow)
     skipped = flow.get("skipped") or []
-    if not has_own_product and _course_expected(tenant, flow):
+    # The course /setup drafted counts as hers while it waits for its lessons:
+    # it goes live only once each has a video or text (Course.not_ready).
+    if not has_own_product and _setup_course(flow) is None and _course_expected(tenant, flow):
         blockers.append("first_course")
 
     goals = _wizard_goals(tenant)
@@ -220,10 +230,10 @@ def compute_setup_state(config, tenant) -> dict:
 
     items = []
 
-    def add(key, group, auto, optional=False):
+    def add(key, group, auto, optional=False, **extra):
         done = bool(auto) or manual.get(key) is True
         source = "auto" if auto else ("manual" if manual.get(key) is True else None)
-        items.append({"key": key, "group": group, "done": done, "source": source, "optional": optional})
+        items.append({"key": key, "group": group, "done": done, "source": source, "optional": optional, **extra})
 
     flow = config.setup_flow or {}
     # The /setup interview builds her pages and she reviews each one there: a
@@ -244,7 +254,12 @@ def compute_setup_state(config, tenant) -> dict:
     has_product = _has_own(
         Course, seeded.get("courses.course", []), queryset=Course.objects.filter(is_published=True)
     ) or _has_own(DownloadFile, seeded.get("downloads.downloadfile", []))
-    if has_product or _course_expected(tenant, flow):
+    if (draft := _setup_course(flow)) is not None:
+        # The course /setup drafted: done once it is live, which needs every
+        # lesson filled in; held for "sell later", once it is ready to go on sale.
+        ready = draft.is_published or (_held_course_id(flow) == draft.id and not draft.not_ready())
+        add("course_lessons", "content", has_product or ready, href=f"/admin/courses/{draft.slug}")
+    elif has_product or _course_expected(tenant, flow):
         add("first_course", "content", has_product)
     if was_seeded:
         add("demo_cleanup", "content", not seeded_rows_exist)

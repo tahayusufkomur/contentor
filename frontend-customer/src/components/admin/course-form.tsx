@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { clientFetch } from "@/lib/api-client";
+import { ApiError } from "@/types/api";
 import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
@@ -116,6 +117,13 @@ const settingsKey = (
     [...filterIds].sort(),
     [...tagIds].sort(),
   ]);
+
+/** Why a save failed when the server refused to publish (a lesson with no
+ *  video or text yet), or ``fallback``. */
+export function saveError(err: unknown, fallback: string) {
+  const why = err instanceof ApiError ? err.data.is_published : undefined;
+  return Array.isArray(why) && typeof why[0] === "string" ? why[0] : fallback;
+}
 
 /** The same, as the server holds it. */
 const savedKey = (c: CourseDetail | null) =>
@@ -340,9 +348,13 @@ export function CourseForm({
       void refreshSetupStatus();
     },
     {
-      errorToast: isCreate
-        ? "Failed to create course"
-        : "Failed to save course",
+      onError: (err) =>
+        toast.error(
+          saveError(
+            err,
+            isCreate ? "Failed to create course" : "Failed to save course",
+          ),
+        ),
     },
   );
 

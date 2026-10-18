@@ -51,6 +51,8 @@ test("coach creates a free published course; admin list shows it; student opens 
       pricing_type: "free",
       price: 0,
       is_published: true,
+      // A course goes live only once every lesson has a video or text.
+      modules: [{ title: "Start", lessons: [{ title: "Welcome", content_html: "<p>Welcome.</p>" }] }],
     },
     headers: { "Content-Type": "application/json" },
   });
@@ -156,7 +158,8 @@ test("coach composes thumbnail + module + lesson and creates the course in ONE s
 }) => {
   const coach = await coachContext(browser);
   const page = await coach.newPage();
-  await page.goto(`${TENANT}/admin/courses/new`);
+  // The plain form, whether or not focus mode is switched on.
+  await page.goto(`${TENANT}/admin/courses/new?form=1`);
 
   const title = `E2E OneStep ${Date.now()}`;
   await page.getByLabel("Title").fill(title);

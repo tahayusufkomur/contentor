@@ -161,6 +161,7 @@ def system_prompt(audience="coach") -> str:
 _ITEM_LABELS = {
     "look": "customize the site's look/branding",
     "first_course": "create a first course",
+    "course_lessons": "add a video or text to each lesson of the course drafted in setup, then publish it",
     "demo_cleanup": "remove the demo content",
     "payouts": "connect payouts (Stripe)",
     "publish": "publish the site",

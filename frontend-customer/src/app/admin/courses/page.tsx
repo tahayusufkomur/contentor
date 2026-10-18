@@ -29,6 +29,7 @@ import { DemoBadge } from "@/components/setup/demo-badge";
 import { CoverArt } from "@/components/covers/cover-art";
 import { LookFonts } from "@/components/covers/look-fonts";
 import { courseItem } from "@/lib/covers/items";
+import { saveError } from "@/components/admin/course-form";
 import { formatMoney } from "@/lib/format";
 import { useTenantCurrency } from "@/lib/setup-assistant";
 import type { Course } from "@/types/course";
@@ -139,7 +140,9 @@ export default function AdminCoursesPage() {
       setEditingSlug(null);
       browserRef.current?.refresh();
     },
-    { errorToast: "Failed to update course" },
+    {
+      onError: (err) => toast.error(saveError(err, "Failed to update course")),
+    },
   );
 
   return (

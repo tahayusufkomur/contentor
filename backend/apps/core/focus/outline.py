@@ -203,9 +203,9 @@ def _user_turn(tenant, answers: dict, course, instruction: str, drafted: list) -
 def _kept(course, drafted: list) -> set:
     """The modules a redraft keeps: those she added, and those she has filled
     a lesson of (its text or a video)."""
-    from apps.courses.models import Lesson
+    from apps.courses.models import EMPTY_LESSON, Lesson
 
-    filled = Lesson.objects.filter(module__course=course).exclude(content.EMPTY_LESSON)
+    filled = Lesson.objects.filter(module__course=course).exclude(EMPTY_LESSON)
     return {
         *course.modules.exclude(pk__in=drafted).values_list("id", flat=True),
         *filled.values_list("module_id", flat=True),

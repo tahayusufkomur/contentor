@@ -158,7 +158,7 @@ def finish(creation, *, publish: bool, active_ms=None) -> FocusCreation:
             creation.save(update_fields=["active_ms", "status", "updated_at"])
             return creation
         # Never an empty lesson in front of students: not ready, it stays a draft.
-        choice = "publish" if publish and not content.not_ready(creation.record_id) else "draft"
+        choice = "publish" if publish and not _record(creation).not_ready() else "draft"
         if choice == "publish":
             with suppress(content.ContentOpError):  # already published by hand, or gone
                 content.publish_course(creation.record_id)
@@ -217,8 +217,6 @@ def question(kind: str, field: str) -> dict:
 
 
 def state(creation) -> dict:
-    from apps.core.copilot import content
-
     recipe = RECIPES[creation.kind]
     record = _record(creation)
     if record is None and creation.status == "active":  # deleted by hand, or by an Undo
@@ -227,13 +225,12 @@ def state(creation) -> dict:
     field = current_field(creation)
     answers = creation.answers or {}
     asked = question(creation.kind, field) if field else None
-    gap = record and field == "finish" and content.not_ready(record.id)
+    gap = record and field == "finish" and record.not_ready()
     if gap:
         asked = {
             **asked,
             "question": NOT_READY,
-            "why": f"A course goes live once every lesson has a video or text, and {gap}. "
-            "Until then it stays a hidden draft.",
+            "why": f"{gap.capitalize()}. Until then it stays a hidden draft.",
             "options": [o for o in asked["options"] if o["value"] != "publish"],
             "specialist": "content",
         }

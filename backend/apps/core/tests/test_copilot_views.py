@@ -933,9 +933,11 @@ def test_undo_unknown_id_returns_404(client, coach):
 
 
 def test_undo_not_undoable_kind_returns_400(client, coach):
-    from apps.courses.models import Course
+    from apps.courses.models import Course, Lesson, Module
 
     course = Course.objects.create(title="Yoga 101", instructor=coach)
+    module = Module.objects.create(course=course, title="Start", order=1)
+    Lesson.objects.create(module=module, title="Breath", order=1, content_html="<p>In.</p>")
     res = _execute_token(
         client, copilot_tokens.stash_action("shared_test", {"kind": "publish_course", "course_id": course.id})
     )

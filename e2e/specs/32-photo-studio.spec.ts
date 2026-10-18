@@ -161,7 +161,16 @@ test.describe.serial("photo studio: design a cover, keep it, take it back", () =
 
     // A public course page 404s for an unpublished course, so publish it.
     const created = await api.post(`${TENANT}/api/v1/courses/`, {
-      data: { title: COURSE_TITLE, description: "", pricing_type: "free", price: 0, is_published: true, thumbnail: photoId },
+      data: {
+        title: COURSE_TITLE,
+        description: "",
+        pricing_type: "free",
+        price: 0,
+        is_published: true,
+        thumbnail: photoId,
+        // A course goes live only once every lesson has a video or text.
+        modules: [{ title: "Start", lessons: [{ title: "Welcome", content_html: "<p>Welcome.</p>" }] }],
+      },
     });
     expect(created.status(), `course create failed: ${await created.text()}`).toBe(201);
     course = await created.json();

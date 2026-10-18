@@ -371,15 +371,29 @@ def test_edit_event_price_updates_pricing_type(coach):
 
 
 def test_publish_course_flips_flag(coach):
-    from apps.courses.models import Course
+    from apps.courses.models import Course, Lesson, Module
 
     course = Course.objects.create(title="C", instructor=coach, price=0, pricing_type="free", is_published=False)
+    module = Module.objects.create(course=course, title="M", order=1)
+    Lesson.objects.create(module=module, title="L", order=1, video_url="https://example.com/v.mp4")
     result = content.publish_course(course.pk)
     course.refresh_from_db()
     assert course.is_published is True
     assert result["kind"] == "publish_course"
     assert result["id"] == course.id
     assert result["url"] == f"/admin/courses/{course.slug}"
+
+
+def test_publish_course_with_an_empty_lesson_raises(coach):
+    from apps.courses.models import Course, Lesson, Module
+
+    course = Course.objects.create(title="C", instructor=coach)
+    module = Module.objects.create(course=course, title="M", order=1)
+    Lesson.objects.create(module=module, title="L", order=1)
+    with pytest.raises(content.ContentOpError, match="1 of its 1 lessons have none yet"):
+        content.publish_course(course.pk)
+    course.refresh_from_db()
+    assert course.is_published is False
 
 
 def test_publish_course_already_published_raises(coach):
