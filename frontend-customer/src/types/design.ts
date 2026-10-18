@@ -139,3 +139,68 @@ export interface CoverItem {
   /** The zone the date badge reads `startsAt` in (the tenant's); none is the viewer's own. */
   timeZone?: string | null;
 }
+
+// The studio's API (backend/apps/media/design_views.py, design_serializers.py).
+
+/** A course or event series the studio can put a cover on (`GET /designs/targets/`). */
+export interface DesignTarget {
+  /** "course", or an event kind: "live", "stream", "zoom" or "onsite". */
+  target_kind: string;
+  /** A course's id, or an event series' exact title. */
+  target_key: string;
+  title: string;
+  /** Sessions in an event series; null for a course. */
+  sessions: number | null;
+  /** The next session still to come (ISO); null for a course, or a series with none. */
+  next_at: string | null;
+  /** A course's state; null for an event series. */
+  status: "published" | "draft" | null;
+  /** The picture it wears now, a signed link; null for none. */
+  photo_url: string | null;
+  /** The kept cover it wears; null when it shows a plain photo, or none. */
+  cover: CoverDesign | null;
+  /** Its open draft, if she has one. */
+  draft_id: string | null;
+}
+
+export interface DesignTargets {
+  /** Her courses in her order, then her event series. */
+  targets: DesignTarget[];
+  /** Catalog photos already on a course or series: asset id to the title wearing it. */
+  in_use: Record<string, string>;
+  /** `<style id>` or `<style id>:<palette id>`. */
+  look: string;
+  logo_url: string | null;
+  /** New photos she can still make this month. */
+  generations_left: number;
+}
+
+/** A design as the API sends it: a draft or kept cover, with what the renderer needs to draw it. */
+export interface DesignRecord extends CoverDesign {
+  kind: string;
+  target_kind: string;
+  target_key: string;
+  state: "draft" | "kept" | "retired";
+  /** "" when she made it herself, else the key of the specialist who did. */
+  made_by: string;
+  run_id: string;
+  created_at: string;
+  updated_at: string;
+  kept_at: string | null;
+  /** The title of its target. */
+  title: string;
+}
+
+/** `POST /designs/<id>/keep/`: what Keep did, and the History row that undoes it. */
+export interface KeepResponse {
+  result: {
+    /** The course, or the first session of the series. */
+    id: number | string;
+    design_id: string;
+    title: string;
+    target_kind: string;
+    target_key: string;
+  };
+  /** Null when the History row could not be written (the cover is kept all the same). */
+  audit_id: number | null;
+}

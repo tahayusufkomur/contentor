@@ -18,7 +18,7 @@ export { SIZES };
 const WIDE = 16 / 9;
 const BANNER = 3;
 const DAY = 86_400_000;
-type GenerationAspect = "16:9" | "1:1" | "4:3" | "9:16" | "4:5";
+export type GenerationAspect = "16:9" | "1:1" | "4:3" | "9:16" | "4:5";
 /** The shapes the photo generation endpoint can draw. */
 const GENERATION: [ratio: GenerationAspect, aspect: number][] = [
   ["16:9", 16 / 9],
