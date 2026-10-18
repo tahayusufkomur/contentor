@@ -1134,5 +1134,27 @@
     "openZoom": "Open Zoom",
     "deleted": "{count, plural, one {# deleted} other {# deleted}}.",
     "deleteRefused": "{count, plural, one {# could not be deleted} other {# could not be deleted}}. Only the site owner can delete a class or event."
+  },
+  "focus": {
+    "newCourse": "New course",
+    "youDecide": "You decide",
+    "justDraft": "Just draft it",
+    "answerPlaceholder": "Or say it your way…",
+    "changePlaceholder": "Or say what to change…",
+    "writingOutline": "Writing your outline…",
+    "outlineFailed": "The outline didn't come through.",
+    "looksGood": "Looks good, continue",
+    "tryAgain": "Try again",
+    "stop": "Stop",
+    "publishNow": "Publish now",
+    "keepDraft": "Keep as a draft",
+    "published": "Published. Students can find it on your site now.",
+    "kept": "Saved as a draft.",
+    "saveLeave": "Save & leave",
+    "fillMyself": "Fill it in myself",
+    "allDetails": "All details",
+    "writing": "writing",
+    "progress": "Step {done} of {total}",
+    "outlineSoon": "Your modules and lessons appear here as they're written."
   }
 }

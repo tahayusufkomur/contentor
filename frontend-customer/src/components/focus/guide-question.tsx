@@ -1,0 +1,125 @@
+"use client";
+
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+
+import { SpecialistByline } from "@/components/copilot/specialist-face";
+import { AnswerBox } from "@/components/setup-flow/answer-box";
+import { Button } from "@/components/ui/button";
+import type { FocusQuestion } from "@/lib/focus/api";
+import type { GuideInput } from "@/lib/focus/guide";
+
+const NONE: GuideInput = {
+  picked: null,
+  text: "",
+  delegate: false,
+  rest: false,
+};
+
+/** One of the recipe's questions in the dock: the specialist asking, the
+ *  question and why it matters, tap answers, "You decide", "Just draft it"
+ *  and the answer box. A tap sends at once. Key it by field: her typing
+ *  belongs to the question it was typed for. */
+export function GuideQuestion({
+  question,
+  sending,
+  showRest,
+  onSend,
+}: {
+  question: FocusQuestion;
+  sending: boolean;
+  /** "Just draft it" (the questions before the outline). */
+  showRest: boolean;
+  onSend: (input: GuideInput) => void;
+}) {
+  const t = useTranslations("admin");
+  const [text, setText] = useState("");
+
+  return (
+    <div className="flex flex-col gap-4">
+      <SpecialistByline k={question.specialist} />
+      <div>
+        <h2 className="text-lg font-semibold leading-snug text-foreground">
+          {question.question}
+        </h2>
+        {question.why && (
+          <p className="mt-1 text-sm text-muted-foreground">{question.why}</p>
+        )}
+      </div>
+      {question.options.length > 0 && (
+        <div className="grid gap-2">
+          {question.options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              disabled={sending}
+              onClick={() => onSend({ ...NONE, picked: option.value })}
+              className="rounded-xl border border-border bg-background px-4 py-3 text-left transition-colors hover:border-foreground/30 hover:bg-accent disabled:opacity-60"
+            >
+              <span className="block text-sm font-medium text-foreground">
+                {option.label}
+              </span>
+              {option.hint && (
+                <span className="mt-0.5 block text-xs text-muted-foreground">
+                  {option.hint}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+      {question.starter && !text && (
+        <button
+          type="button"
+          disabled={sending}
+          onClick={() => {
+            setText(question.starter ?? "");
+            // Her sentence goes on from the starter, in the answer box.
+            requestAnimationFrame(() => {
+              const box = document.getElementById(
+                "setup-answer",
+              ) as HTMLTextAreaElement | null;
+              box?.focus();
+              box?.setSelectionRange(box.value.length, box.value.length);
+            });
+          }}
+          className="rounded-xl border border-dashed border-border px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:border-foreground/30 hover:bg-accent"
+        >
+          {question.starter.trim()}…
+        </button>
+      )}
+      {(question.can_delegate || showRest) && (
+        <div className="flex flex-wrap gap-2">
+          {question.can_delegate && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={sending}
+              onClick={() => onSend({ ...NONE, delegate: true })}
+            >
+              {t("focus.youDecide")}
+            </Button>
+          )}
+          {showRest && (
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={sending}
+              onClick={() => onSend({ ...NONE, rest: true, text })}
+            >
+              {t("focus.justDraft")}
+            </Button>
+          )}
+        </div>
+      )}
+      <AnswerBox
+        value={text}
+        onChange={(update) => setText(update)}
+        sending={sending}
+        onSubmit={(value) => onSend({ ...NONE, text: value })}
+        placeholder={t("focus.answerPlaceholder")}
+        className="bg-background"
+      />
+    </div>
+  );
+}

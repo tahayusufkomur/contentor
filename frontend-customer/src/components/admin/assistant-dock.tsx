@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { CopilotAuditList } from "@/components/copilot/audit-list";
 import { CopilotBubble } from "@/components/copilot/copilot-bubble";
+import { FocusGuide } from "@/components/focus/focus-guide";
 import { SetupAssistantPanel } from "@/components/setup/setup-assistant-panel";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import {
   type DockTab,
 } from "@/lib/assistant-dock";
 import { loadUiState, saveUiState } from "@/lib/copilot/storage";
+import { useActiveCreation } from "@/lib/focus/store";
 import { useHelpBotStatus } from "@/lib/help-bot";
 import { useSetupStatus } from "@/lib/setup-assistant";
 import { cn } from "@/lib/utils";
@@ -91,8 +93,12 @@ export function AssistantDock() {
   const t = useTranslations("admin");
   const dock = useAssistantDock();
   const asideRef = useRef<HTMLElement>(null);
-  const sheet = useNarrow() && dock.isOpen;
+  const creation = useActiveCreation();
+  // In focus mode the phone's panel is a bottom sheet she reads the page
+  // behind, so it never makes the page inert.
+  const sheet = useNarrow() && dock.isOpen && !creation;
   const closeDock = dock.close;
+  const openDock = dock.open;
   const setup = useSetupStatus();
   const help = useHelpBotStatus();
   // The chat stays mounted once opened, so a turn in flight survives a look
@@ -110,6 +116,12 @@ export function AssistantDock() {
   useEffect(() => {
     if (dock.isOpen && tab === "assistant") setChatSeen(true);
   }, [dock.isOpen, tab]);
+
+  // Focus mode: the dock is the guide, and it is open while she makes it.
+  const focusing = creation !== null;
+  useEffect(() => {
+    if (focusing) openDock();
+  }, [focusing, openDock]);
 
   // As a sheet it covers the page, so it behaves as a dialog: the page behind
   // is inert (keyboard and screen reader stay inside), Escape closes it, and
@@ -136,6 +148,21 @@ export function AssistantDock() {
   }, [sheet, closeDock]);
 
   if (!dock.isOpen) return null;
+
+  if (creation)
+    return (
+      <aside
+        aria-label={t("focus.newCourse")}
+        className="fixed inset-x-0 bottom-0 z-[60] flex max-h-[60vh] flex-col rounded-t-xl border-t bg-background shadow-lg lg:static lg:z-auto lg:max-h-none lg:w-[26rem] lg:shrink-0 lg:rounded-none lg:border-l lg:border-t-0 lg:shadow-none"
+      >
+        <div className="border-b px-4 py-2.5 text-sm font-semibold text-foreground">
+          {t("focus.newCourse")}
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          <FocusGuide />
+        </div>
+      </aside>
+    );
 
   const onTabKey = (e: React.KeyboardEvent) => {
     const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
