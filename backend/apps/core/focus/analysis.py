@@ -29,8 +29,9 @@ STEP = {"specialist": "content", "label": "Reading your details"}
 SYSTEM = (
     "A coach is creating ONE online course in a guided flow, one question at a time. Read what she "
     "typed ('text') and return typed fields. You also get 'question' (the question on her screen), "
-    "'outline_exists' (whether the course outline is already drafted), 'currency' (the currency her "
-    "site charges in) and her site (brand, niche, description, her_courses).\n"
+    "'outline_exists' (whether the course outline is already drafted), 'cover_step' (whether she is "
+    "choosing her cover), 'currency' (the currency her site charges in) and her site (brand, niche, "
+    "description, her_courses).\n"
     "Rules:\n"
     "- Fill only what she said. Never guess: a field she did not mention stays empty ('', null or []).\n"
     "- answer: her answer to 'question', in her words; '' when she said something else.\n"
@@ -45,6 +46,9 @@ SYSTEM = (
     "amount in 'currency' without a sign ('49', '19.50').\n"
     "- notes: the rest she said about the course (its format, its promise, her angle), short, in her "
     "words.\n"
+    "- photo: only when cover_step is true (she is choosing her course cover): a plain description of "
+    "the photo she wants, in her words ('hands on a keyboard, no faces'); '' when she did not describe "
+    "one.\n"
     "- outline_change: a change she asks for to the course outline, in her words; only when "
     "outline_exists is true, else ''.\n"
     "- unclear: a count, amount or level she gave vaguely ('a few modules', 'around 40-50'), or a price "
@@ -82,16 +86,20 @@ class Analysis(BaseModel):
     price: str = ""  # "free" | "membership" | an amount in the site's currency ("49")
     notes: str = ""  # the rest she said about the course: format, promise, angle
     outline_change: str = ""  # a change to the outline she asked for (only when an outline exists)
+    photo: str = ""  # at the cover question: a plain description of the photo she wants
     unclear: list[Unclear] = []
 
 
-def read(tenant, text: str, *, question: str, outline_exists: bool, currency: str, course_id=None) -> Analysis:
+def read(
+    tenant, text: str, *, question: str, outline_exists: bool, currency: str, course_id=None, cover_step: bool = False
+) -> Analysis:
     """The model's reading of her words. Raises core_ai.AiError."""
     user = json.dumps(
         {
             "text": text,
             "question": question,
             "outline_exists": outline_exists,
+            "cover_step": cover_step,
             "currency": currency,
             **outline.site(tenant, course_id),
         },
@@ -185,6 +193,7 @@ def carry_out(tenant, run_id) -> None:
         outline_exists=bool(creation.outline_run_id or (creation.drafted or {}).get("modules")),
         currency=tenant_charge_currency(tenant),
         course_id=creation.record_id,
+        cover_step=pending.get("field") == "cover",
     )
     with transaction.atomic():
         creation = FocusCreation.objects.select_for_update().get(pk=creation.pk)

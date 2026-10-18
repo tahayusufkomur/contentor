@@ -2,6 +2,7 @@
 course recipe's questions in order, and the draft course behind them. The
 outline job is stubbed; it is tested in test_focus_outline.py."""
 
+import json
 from decimal import Decimal
 from unittest import mock
 
@@ -437,6 +438,49 @@ def test_a_failed_analysis_falls_back_to_the_usual_questions(owner, outline_star
     creation = _run_pending(flow.start(owner, "course", text="desk yoga"))
     assert creation.answers["topic"] == "desk yoga" and not creation.pending
     assert flow.current_field(creation) == "level"
+
+
+def _at_cover_unanalysed(owner):
+    """The cover step reached without a model, so no reading is pending on the way."""
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
+        return _at_cover(owner)
+
+
+def test_at_the_cover_step_her_words_search_the_photo_row(owner, outline_start, analysed):
+    model = analysed(analysis.Analysis(photo="hands on a keyboard, no faces"))
+    creation = _at_cover_unanalysed(owner)
+    creation.covers = {"rounds": [], "query": "old"}
+    creation.runs = {**creation.runs, "covers": CopilotRun.objects.create(status="done", request={}).pk}
+    creation.save()
+    creation = _run_pending(flow.answer(creation, "cover", text="hands on a keyboard, no faces"))
+    assert creation.covers["query"] == "hands on a keyboard, no faces"
+    assert creation.covers["rounds"] == []  # its other keys stay
+    assert "cover" not in creation.answers and flow.current_field(creation) == "cover"
+    assert json.loads(model.call_args.kwargs["user"])["cover_step"] is True
+    assert flow.state(creation)["cover"]["query"] == "hands on a keyboard, no faces"
+
+
+def test_a_failed_analysis_at_the_cover_uses_her_words_as_the_photo_query(owner, outline_start, analysed):
+    analysed(side_effect=core_ai.AiError("down"))
+    creation = _run_pending(flow.answer(_at_cover_unanalysed(owner), "cover", text="hands on a keyboard"))
+    assert creation.covers["query"] == "hands on a keyboard" and not creation.pending
+    assert "cover" not in creation.answers and flow.current_field(creation) == "cover"
+
+
+def test_words_at_the_cover_without_a_photo_leave_the_query_alone(owner, outline_start, analysed):
+    analysed(analysis.Analysis(answer="something calmer"))
+    creation = _at_cover_unanalysed(owner)
+    creation.covers = {"query": "old"}
+    creation.save()
+    creation = _run_pending(flow.answer(creation, "cover", text="something calmer"))
+    assert creation.covers["query"] == "old"
+
+
+def test_a_price_said_at_the_cover_still_applies_with_the_photo(owner, outline_start, analysed):
+    analysed(analysis.Analysis(photo="a quiet desk", price="49"))
+    creation = _run_pending(flow.answer(_at_cover_unanalysed(owner), "cover", text="a quiet desk, $49"))
+    assert creation.covers["query"] == "a quiet desk"
+    assert Course.objects.get(pk=creation.record_id).price == Decimal("49.00")
 
 
 def test_a_stopped_analysis_settles_on_the_next_read(owner, outline_start, analysed):

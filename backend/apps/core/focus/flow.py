@@ -175,7 +175,9 @@ def apply(creation, found) -> None:
             _clarified(creation, item["field"], text)
         elif field == "outline_review":
             _redraft(creation, text)
-        elif field and field != "cover":  # the cover's answer is set by the cover endpoint, never by words
+        elif field == "cover":  # never her answer (the cover endpoint sets it); her words describe the photo
+            creation.covers = {**(creation.covers or {}), "query": text}
+        elif field:
             creation.answers[field] = text
     else:
         if field == "topic":
@@ -187,6 +189,8 @@ def apply(creation, found) -> None:
         counted = any(n is not None for n in (found.modules, found.lessons, found.total)) or bool(found.named)
         if counted and (label := size_label(creation.brief)):
             creation.answers["size"] = label
+        if field == "cover" and found.photo.strip():
+            creation.covers = {**(creation.covers or {}), "query": found.photo.strip()}
         price = analysis.price_value(found.price)
         if price:
             _set_price(creation, price)
