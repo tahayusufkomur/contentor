@@ -103,6 +103,7 @@ export default function AdminCourseDetailPage() {
   const focusing =
     !!course && !!active && active.id !== 0 && active.record?.id === course.id;
   const outline = active?.outline;
+  const descriptions = active?.descriptions;
   const focus = focusing
     ? {
         record: `course:${course.id}`,
@@ -111,6 +112,11 @@ export default function AdminCourseDetailPage() {
         runId:
           outline?.status === "building" || outline?.status === "ready"
             ? outline.run
+            : null,
+        descriptionsRunId:
+          descriptions?.status === "building" ||
+          descriptions?.status === "ready"
+            ? descriptions.run
             : null,
       }
     : undefined;

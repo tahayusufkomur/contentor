@@ -18,6 +18,7 @@ import {
   fetchCreation,
   finishCreation,
   leaveCreation,
+  retryDescriptions,
   startCreation,
   type FocusQuestion,
   type FocusState,
@@ -47,8 +48,8 @@ const SHELL_TOKENS = {
 
 /** The guide in the dock while she makes something in focus mode: what she
  *  answered so far, then the current question. A tap never waits on a model;
- *  only the outline is written in the background, and the guide waits for it
- *  with Stop at hand. */
+ *  only her typed words are read and the outline is written in the
+ *  background, and the guide waits for them with Stop at hand. */
 export function FocusGuide() {
   const t = useTranslations("admin");
   const state = useActiveCreation();
@@ -122,6 +123,19 @@ export function FocusGuide() {
     apply(state.id, await fetchCreation(state.id));
   });
 
+  const { run: stopReading, loading: stoppingReading } = useAsyncAction(
+    async () => {
+      if (!state?.reading?.run) return;
+      await stopRun(state.reading.run);
+      apply(state.id, await fetchCreation(state.id));
+    },
+  );
+
+  const { run: retryWriting, loading: retrying } = useAsyncAction(async () => {
+    if (!state) return;
+    apply(state.id, await retryDescriptions(state.id));
+  });
+
   // "Fill it in myself": focus mode ends for good and she stays on the page,
   // which is the plain editor from here; an outline being written is dropped.
   const { run: fillMyself, loading: leaving } = useAsyncAction(async () => {
@@ -136,7 +150,9 @@ export function FocusGuide() {
   });
 
   const id = state?.id ?? 0;
-  const building = state?.outline.status === "building";
+  const building = [state?.outline, state?.reading, state?.descriptions].some(
+    (job) => job?.status === "building",
+  );
   useEffect(() => {
     if (!id || !building) return;
     const timer = setInterval(() => {
@@ -153,6 +169,7 @@ export function FocusGuide() {
 
   if (!state) return null;
   const question = state.question;
+  const descriptions = state.descriptions?.status;
 
   return (
     <div className="flex flex-col gap-5" style={SHELL_TOKENS}>
@@ -168,6 +185,45 @@ export function FocusGuide() {
             </li>
           ))}
         </ul>
+      )}
+      {descriptions === "building" && (
+        <p className="text-sm text-muted-foreground">
+          {t("focus.descriptionsNote")}
+        </p>
+      )}
+      {descriptions === "failed" && (
+        <div className="flex flex-col items-start gap-2">
+          <p className="text-sm text-muted-foreground">
+            {t("focus.descriptionsFailed")}
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            loading={retrying}
+            onClick={retryWriting}
+          >
+            {t("focus.tryAgain")}
+          </Button>
+        </div>
+      )}
+      {state.reading?.status === "building" && (
+        <div className="flex flex-col gap-3">
+          <SpecialistByline k="content" />
+          <p className="flex items-center gap-2 text-sm text-foreground">
+            <Spinner size="sm" />
+            {t("focus.readingDetails")}
+          </p>
+          <div>
+            <Button
+              size="sm"
+              variant="outline"
+              loading={stoppingReading}
+              onClick={stopReading}
+            >
+              {t("focus.stop")}
+            </Button>
+          </div>
+        </div>
       )}
       {question &&
         (question.kind === "review" ? (
@@ -190,7 +246,7 @@ export function FocusGuide() {
             key={question.field}
             question={question}
             sending={sending}
-            showRest
+            showRest={question.field !== "clarify"}
             onSend={send}
           />
         ))}

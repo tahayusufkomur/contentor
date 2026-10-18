@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, Fragment } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -43,7 +44,9 @@ import { currencySymbol, formatDuration } from "@/lib/format";
 import { MonetizeNudge } from "@/components/admin/monetize-nudge";
 import { LiveOutline } from "@/components/focus/live-outline";
 import { WorkingTag } from "@/components/focus/working-tag";
+import { stopRun } from "@/lib/copilot/api";
 import { useLiveRecord } from "@/lib/copilot/live";
+import { plainText, useLiveLessons } from "@/lib/focus/descriptions";
 import { setFocusSave } from "@/lib/focus/store";
 import type { Course, CourseDetail, Module, Lesson } from "@/types/course";
 import type { Photo } from "@/types/photo";
@@ -69,7 +72,12 @@ interface CourseFormProps {
   onCourseLoaded?: () => void;
   /** Focus mode: the record the outline run writes ("course:<id>") and that
    *  run, replayed live on this form. */
-  focus?: { record: string; runId: number | null };
+  focus?: {
+    record: string;
+    runId: number | null;
+    /** The run typing each lesson's description (after "Looks good"). */
+    descriptionsRunId: number | null;
+  };
   /** Create mode: the course was created (before the page moves on). */
   onCreated?: (course: Course) => void;
 }
@@ -140,6 +148,7 @@ export function CourseForm({
   onCreated,
 }: CourseFormProps) {
   const navigate = useNavigate();
+  const t = useTranslations("admin");
   const currency = useTenantCurrency();
   const isCreate = !initialCourse;
   const [course, setCourse] = useState<CourseDetail | null>(
@@ -239,6 +248,23 @@ export function CourseForm({
       void loadCourse();
     }
   }, [live, focus?.runId, loadCourse]);
+  // The lesson descriptions typing in under each title, and a count with Stop
+  // above the modules; the saved text takes over once it has all been shown.
+  const lessons = useLiveLessons(focus?.descriptionsRunId ?? null);
+  const [described, setDescribed] = useState<number | null>(null);
+  const settledFor = useRef<number | null>(null);
+  useEffect(() => {
+    const run = focus?.descriptionsRunId;
+    if (!lessons?.settled || !run || settledFor.current === run) return;
+    settledFor.current = run;
+    void loadCourse().then(() => setDescribed(run));
+  }, [lessons?.settled, focus?.descriptionsRunId, loadCourse]);
+  const typedLessons =
+    lessons && described !== focus?.descriptionsRunId ? lessons.texts : {};
+  const { run: stopDescriptions, loading: stoppingDescriptions } =
+    useAsyncAction(async () => {
+      if (focus?.descriptionsRunId) await stopRun(focus.descriptionsRunId);
+    });
   const writing = (name: "title" | "description") =>
     live?.fields[name]?.typing ?? false;
   const shown = (name: "title" | "description") => {
@@ -965,6 +991,26 @@ export function CourseForm({
               </CardHeader>
             </Card>
 
+            {lessons?.working && (
+              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                <WorkingTag
+                  specialist="content"
+                  label={t("focus.writingDescriptions")}
+                />
+                {t("focus.descriptionCount", {
+                  done: lessons.done,
+                  total: lessons.total,
+                })}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  loading={stoppingDescriptions}
+                  onClick={stopDescriptions}
+                >
+                  {t("focus.stop")}
+                </Button>
+              </div>
+            )}
             {showLive && live && <LiveOutline frame={live} />}
             {(showLive ? [] : course.modules).map((mod: Module) => (
               <Card key={mod.id}>
@@ -1004,6 +1050,10 @@ export function CourseForm({
                             <TableRow>
                               <TableCell className="font-medium">
                                 {lesson.title}
+                                <LessonDescription
+                                  typed={typedLessons[lesson.id]}
+                                  html={lesson.content_html}
+                                />
                               </TableCell>
                               <TableCell>
                                 {formatDuration(lesson.duration_seconds)}
@@ -1028,6 +1078,7 @@ export function CourseForm({
                                     variant="ghost"
                                     size="icon"
                                     className="h-7 w-7"
+                                    disabled={typedLessons[lesson.id]?.typing}
                                     onClick={() =>
                                       setEditingLessonId(
                                         editingLessonId === lesson.id
@@ -1237,6 +1288,30 @@ function LessonContentField({
 }
 
 // ── Lesson Edit Panel (inline) ─────────────────────────────────
+
+/** A lesson's description under its title: the text being typed (tagged),
+ *  else the saved text as plain words. */
+function LessonDescription({
+  typed,
+  html,
+}: {
+  typed: { value: string; typing: boolean } | undefined;
+  html: string;
+}) {
+  const t = useTranslations("admin");
+  const line = typed ? typed.value : plainText(html);
+  if (!line) return null;
+  return (
+    <div className="mt-1 flex flex-wrap items-start gap-2">
+      <p className="line-clamp-2 max-w-xs break-words text-xs font-normal text-muted-foreground">
+        {line}
+      </p>
+      {typed?.typing && (
+        <WorkingTag specialist="content" label={t("focus.writing")} />
+      )}
+    </div>
+  );
+}
 
 interface LessonEditPanelProps {
   lesson: Lesson;

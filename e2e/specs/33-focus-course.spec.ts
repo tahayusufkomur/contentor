@@ -19,6 +19,14 @@ const CREATION = 77;
 const RUN = 5150;
 const CHAT = 4242;
 const RECORD = `course:${COURSE_ID}`;
+const DESC_RUN = 5151;
+const LESSON_IDS = [9100, 9101];
+// Long enough to type for about two seconds each at the replay's 60 characters
+// a second, so the count passes "1 of 2" on screen.
+const DESCRIPTIONS = [
+  "A five minute routine you can do in your chair: sit tall, roll your shoulders back and let your neck soften.",
+  "Wrap up by standing, reaching overhead and taking three slow breaths before you head back to your work.",
+];
 
 const option = (value: string, label: string, hint = "") => ({ value, label, hint });
 const question = (field: string, kind: string, text: string, extra: Body = {}) => ({
@@ -70,7 +78,34 @@ const EVENTS = [
   { type: "done", data: { text: "Your outline is ready: 2 modules, 3 lessons." } },
 ].map((event, i) => ({ seq: i + 1, at: at(), ...event }));
 
-function courseDetail(written: boolean): Body {
+/** A creation at the outline review, the way the backend reports it after her
+ *  details were read: her answers as lines, the outline ready on the page. */
+const reviewState = (over: Body = {}): Body => ({
+  id: CREATION,
+  kind: "course",
+  status: "active",
+  chat: CHAT,
+  record: { id: COURSE_ID, slug: SLUG, title: "Desk yoga, gently" },
+  question: QUESTIONS.outline_review,
+  answered: [
+    { field: "topic", label: "A course on desk yoga" },
+    { field: "size", label: "4 modules · 3 lessons each" },
+    { field: "access", label: "$49" },
+  ],
+  outline: { status: "ready", run: RUN },
+  reading: null,
+  descriptions: null,
+  steps: ORDER.map((id) => ({ id, done: id === "topic" })),
+  ...over,
+});
+const READING = reviewState({
+  question: null,
+  answered: [],
+  outline: { status: "idle", run: null },
+  reading: { status: "building", run: 6000 },
+});
+
+function courseDetail(written: boolean, described = false): Body {
   return {
     id: COURSE_ID,
     title: written ? "Desk yoga, gently" : "Desk yoga",
@@ -100,7 +135,7 @@ function courseDetail(written: boolean): Body {
             video_id: null,
             video_url: "",
             duration_seconds: 0,
-            content_html: "",
+            content_html: described && i === 0 ? `<p>${DESCRIPTIONS[j]}</p>` : "",
             is_free_preview: false,
             video_signed_url: null,
           })),
@@ -124,7 +159,19 @@ function courseDetail(written: boolean): Body {
  *  false`` a lesson is still empty, so the last step offers no publishing. */
 async function stubFocus(
   page: Page,
-  { open = true, ready = true }: { open?: boolean; ready?: boolean } = {},
+  {
+    open = true,
+    ready = true,
+    descriptions = false,
+    script,
+  }: {
+    open?: boolean;
+    ready?: boolean;
+    /** After "Looks good", the lesson descriptions run (DESC_RUN) writes. */
+    descriptions?: boolean;
+    /** Answers a focus request itself (a state), or leaves it to the stub. */
+    script?: (req: { path: string; method: string; body: Body }) => Body | undefined;
+  } = {},
 ) {
   const answers: Record<string, string> = {};
   let created = false;
@@ -135,6 +182,9 @@ async function stubFocus(
   let runPolled = false;
   let status = "active";
   const sent: Body[] = [];
+  let descStart: number | null = null;
+  let descStopped = false;
+  const descDone = () => descStopped || (descStart !== null && Date.now() - descStart > 8000);
 
   const current = () => (status === "active" ? ORDER.find((f) => !(f in answers)) : undefined);
   const outline = () => ({
@@ -161,6 +211,11 @@ async function stubFocus(
             : null,
       answered: ORDER.filter((f) => f in answers).map((f) => ({ field: f, label: answers[f] })),
       outline: outline(),
+      reading: null,
+      descriptions:
+        descriptions && "outline_review" in answers
+          ? { status: descDone() ? "ready" : "building", run: DESC_RUN }
+          : null,
       steps: ORDER.map((id) => ({ id, done: id in answers })),
     };
   };
@@ -173,6 +228,8 @@ async function stubFocus(
     const path = new URL(req.url()).pathname;
     const body: Body = req.method() === "POST" ? (req.postDataJSON() ?? {}) : {};
     if (req.method() === "POST") sent.push({ path, ...body });
+    const scripted = script?.({ path, method: req.method(), body });
+    if (scripted) return route.fulfill({ status: req.method() === "POST" && path.endsWith("/admin/focus/") ? 201 : 200, json: scripted });
     if (path.endsWith("/admin/focus/") && req.method() === "GET")
       return route.fulfill({
         json: {
@@ -220,6 +277,36 @@ async function stubFocus(
     const url = new URL(route.request().url());
     if (url.pathname.endsWith("/runs/open/")) return route.fulfill({ json: { runs: [] } });
     if (url.pathname.endsWith("/seen/")) return route.fulfill({ status: 204, body: "" });
+    if (url.pathname.includes(`/runs/${DESC_RUN}/`)) {
+      if (url.pathname.endsWith("/stop/")) {
+        sent.push({ path: url.pathname });
+        descStopped = true;
+        return route.fulfill({ json: { status: "stopped" } });
+      }
+      // Working until it has typed both descriptions, then done.
+      descStart ??= Date.now();
+      const done = descDone();
+      const label = "Writing lesson descriptions";
+      const events = [
+        { type: "step", data: { specialist: "content", label, state: "start", total: 2 } },
+        ...LESSON_IDS.map((id, i) => ({
+          type: "field",
+          data: { record: `lesson:${id}`, name: "content_html", value: DESCRIPTIONS[i] },
+        })),
+        ...(done ? [{ type: "step", data: { specialist: "content", label, state: "done" } }] : []),
+      ].map((event, i) => ({ seq: i + 1, at: at(), ...event }));
+      const since = Number(url.searchParams.get("since") ?? 0);
+      return route.fulfill({
+        json: {
+          id: DESC_RUN,
+          status: descStopped ? "stopped" : done ? "done" : "working",
+          specialist: "content",
+          chat: CHAT,
+          seen: false,
+          events: events.filter((e) => e.seq > since),
+        },
+      });
+    }
     if (!url.pathname.includes(`/runs/${RUN}/`)) return route.fallback();
     runPolled = true;
     const since = Number(url.searchParams.get("since") ?? 0);
@@ -243,10 +330,10 @@ async function stubFocus(
       // What the server keeps: prices come back with two decimals.
       edits = { ...body, price: Number(body.price).toFixed(2) };
       if (body.is_published !== undefined) published = body.is_published;
-      return route.fulfill({ json: { ...courseDetail(runPolled || !open), ...edits } });
+      return route.fulfill({ json: { ...courseDetail(runPolled || !open, descDone()), ...edits } });
     }
     return route.fulfill({
-      json: { ...courseDetail(runPolled || !open), ...edits, is_published: published },
+      json: { ...courseDetail(runPolled || !open, descDone()), ...edits, is_published: published },
     });
   });
 
@@ -276,6 +363,14 @@ async function answerTopic(page: Page) {
   await guide(page).getByRole("textbox", { name: "Your answer" }).fill("A course on desk yoga");
   await guide(page).getByRole("button", { name: "Send", exact: true }).click();
   await expect(guide(page).getByText("Who is it for?")).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`/admin/courses/${SLUG}$`));
+}
+
+/** Her first answer on the new-course page; the guide then reads it. */
+async function answerReadingTopic(page: Page) {
+  await page.goto(`${TENANT}/admin/courses/new`);
+  await guide(page).getByRole("textbox", { name: "Your answer" }).fill("A course on desk yoga, 4 modules of 3 lessons, $49");
+  await guide(page).getByRole("button", { name: "Send", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/admin/courses/${SLUG}$`));
 }
 
@@ -432,5 +527,86 @@ test("a saved setting in the plain editor leaves nothing unsaved", async ({ brow
   await page.getByRole("button", { name: "Save Changes" }).click();
   await expect(page.locator("#price")).toHaveValue("19.00");
   await expect(page.getByRole("button", { name: "Design a cover" })).toBeEnabled();
+  await page.close();
+});
+
+test("a rich first answer goes straight to the outline", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  await stubFocus(page, {
+    script: ({ path, method }) => {
+      if (method === "POST" && path.endsWith("/admin/focus/")) return READING;
+      if (method === "GET" && path.endsWith(`/focus/${CREATION}/`)) return reviewState();
+    },
+  });
+
+  await answerReadingTopic(page);
+  await expect(guide(page).getByText("Reading your details…")).toBeVisible();
+  await expect(guide(page).getByRole("button", { name: "Stop" })).toBeVisible();
+  // The next read: her details are lines, then the outline is on the page.
+  await expect(guide(page).getByText("4 modules · 3 lessons each")).toBeVisible();
+  await expect(guide(page).getByText("$49")).toBeVisible();
+  await expect(guide(page).getByText("Reading your details…")).toHaveCount(0);
+  await expect(guide(page).getByRole("button", { name: "Looks good, continue" })).toBeVisible();
+  await expect(page.getByRole("main").getByText("Module 1: Getting started at your desk")).toBeVisible();
+  await page.close();
+});
+
+test("an unclear detail gets one short question", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const clarify = reviewState({
+    question: question("clarify", "choice", "Did you mean 3 lessons in each module?", {
+      options: [option("3", "3 lessons each", "12 in all"), option("4", "4 lessons each", "16 in all")],
+    }),
+    outline: { status: "idle", run: null },
+    answered: [{ field: "topic", label: "A course on desk yoga" }],
+  });
+  const { sent } = await stubFocus(page, {
+    script: ({ path, method }) => {
+      if (method === "POST" && path.endsWith("/admin/focus/")) return READING;
+      if (method === "GET" && path.endsWith(`/focus/${CREATION}/`)) return clarify;
+      if (method === "POST" && path.endsWith("/answer/")) return reviewState();
+    },
+  });
+
+  await answerReadingTopic(page);
+  await expect(guide(page).getByText("Did you mean 3 lessons in each module?")).toBeVisible();
+  await expect(guide(page).getByRole("button", { name: "You decide" })).toBeVisible();
+  await expect(guide(page).getByRole("button", { name: "Just draft it" })).toHaveCount(0);
+  await guide(page).getByRole("button", { name: /3 lessons each/ }).click();
+  await expect(guide(page).getByRole("button", { name: "Looks good, continue" })).toBeVisible();
+  expect(sent.filter((s) => s.field === "clarify")).toEqual([
+    expect.objectContaining({ field: "clarify", value: "3" }),
+  ]);
+  await page.close();
+});
+
+test("lesson descriptions type in after Looks good, with a count and Stop", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const { sent } = await stubFocus(page, { descriptions: true });
+
+  await answerTopic(page);
+  await guide(page).getByRole("button", { name: "Just draft it" }).click();
+  await guide(page).getByRole("button", { name: "Looks good, continue" }).click();
+
+  const main = page.getByRole("main");
+  await expect(guide(page).getByText("Writing a short description for each lesson's video.")).toBeVisible();
+  await expect(main.getByText("writing lesson descriptions")).toBeVisible();
+  await expect(main.getByText("1 of 2")).toBeVisible();
+  // The second lesson is typing now: its pencil waits, the first one is hers.
+  await expect(main.getByRole("row", { name: /A first stretch/ }).getByRole("button").first()).toBeDisabled();
+  await expect(main.getByRole("row", { name: /Setting up your chair/ }).getByRole("button").first()).toBeEnabled();
+  await expect(main.getByText(DESCRIPTIONS[0].slice(0, 20))).toBeVisible();
+  await expect(main.getByText("2 of 2")).toBeVisible();
+  await expect(main.getByText(DESCRIPTIONS[1].slice(0, 20))).toBeVisible();
+
+  await main.getByRole("button", { name: "Stop" }).click();
+  await expect.poll(() => sent.some((s) => s.path.endsWith(`/runs/${DESC_RUN}/stop/`))).toBe(true);
+  await expect(main.getByText("2 of 2")).toHaveCount(0);
+  // The saved text takes over from the typing, and the note leaves the dock.
+  await expect(main.getByText(DESCRIPTIONS[0])).toBeVisible();
+  await expect(guide(page).getByText("Writing a short description for each lesson's video.")).toHaveCount(0);
   await page.close();
 });

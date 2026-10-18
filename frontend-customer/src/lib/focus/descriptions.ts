@@ -69,3 +69,11 @@ export function useLiveLessons(runId: number | null): LessonsFrame | null {
     (events) => events.some(isDescription),
   );
 }
+
+/** A lesson's saved text as plain words, for the one-line preview on the page. */
+export function plainText(html: string): string {
+  if (!html || typeof DOMParser === "undefined") return "";
+  return (
+    new DOMParser().parseFromString(html, "text/html").body.textContent ?? ""
+  ).trim();
+}

@@ -1159,6 +1159,11 @@
     "allDetails": "All details",
     "writing": "writing",
     "progress": "Step {done} of {total}",
-    "outlineSoon": "Your modules and lessons appear here as they're written."
+    "outlineSoon": "Your modules and lessons appear here as they're written.",
+    "readingDetails": "Reading your details…",
+    "writingDescriptions": "writing lesson descriptions",
+    "descriptionCount": "{done} of {total}",
+    "descriptionsNote": "Writing a short description for each lesson's video. Edit any of them on the page.",
+    "descriptionsFailed": "Some lesson descriptions didn't come through."
   }
 }
