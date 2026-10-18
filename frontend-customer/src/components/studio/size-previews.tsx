@@ -51,6 +51,9 @@ export const shapeLabel = (size: CoverSize, card: CoverAspect) =>
  *  page's padding and the gap above it (`space-y` of the editor), and its own padding gives that back, so
  *  what scrolls under it cannot show above it and nothing moves when it is not pinned.
  *
+ *  On a screen under 640 px tall (a phone on its side) it does not pin: it would leave the controls
+ *  almost no room.
+ *
  *  This renders no box of its own (`contents`): its two pieces are items of the editor's layout, which
  *  puts the small sizes after the controls on a phone (`order`) and beside them on a computer. */
 export function SizePreviews({
@@ -72,7 +75,7 @@ export function SizePreviews({
 
   return (
     <div className="contents">
-      <div className="sticky -top-4 z-10 -mx-4 -mt-4 border-b bg-background px-4 pb-3 pt-4 md:-top-6 md:-mx-6 md:-mt-6 md:px-6 md:pt-6 lg:mx-0 lg:border-0 lg:px-0 lg:pb-2 [--cover-max-h:34vh] lg:[--cover-max-h:56vh]">
+      <div className="sticky [@media(max-height:639px)]:!static -top-4 z-10 -mx-4 -mt-4 border-b bg-background px-4 pb-3 pt-4 md:-top-6 md:-mx-6 md:-mt-6 md:px-6 md:pt-6 lg:mx-0 lg:border-0 lg:px-0 lg:pb-2 [--cover-max-h:max(34vh,16rem)] lg:[--cover-max-h:56vh]">
         <CoverBox aspect={sizeAspect(size, card)}>
           <div
             role="img"
