@@ -46,7 +46,7 @@ export const CoversStrip = memo(function CoversStrip({
             key={`${target.target_kind}:${target.target_key}`}
             className="w-48 shrink-0 space-y-1.5"
           >
-            <CoverBox aspect={aspect} className="[--cover-max-h:30vh]">
+            <CoverBox aspect={aspect}>
               <div aria-hidden="true" className="absolute inset-0">
                 {target.cover && (
                   <CoverArt

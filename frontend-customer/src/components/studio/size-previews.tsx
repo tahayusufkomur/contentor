@@ -13,7 +13,9 @@ import type { CoverDesign, CoverItem, CoverSize } from "@/types/design";
 
 /** A positioned box in the shape of one size, which is what CoverArt fills. CoverArt is not told the
  *  size: it takes the nearest one to its frame, as it does on the site. The box is as wide as its parent
- *  allows and no taller than `--cover-max-h` (the width follows, so the shape is kept). */
+ *  allows and no taller than `--cover-max-h` (the width follows, so the shape is kept): 60vh unless a
+ *  parent sets it, and never under 16rem. A frame under 180 px wide shows its photo alone, and 16rem is
+ *  192 px of width for the narrowest Card (3:4), so a box a parent gives room to always shows its words. */
 export function CoverBox({
   aspect,
   className,
@@ -31,7 +33,7 @@ export function CoverBox({
       )}
       style={{
         aspectRatio: String(aspect),
-        maxWidth: `calc(var(--cover-max-h, 60vh) * ${aspect})`,
+        maxWidth: `calc(var(--cover-max-h, max(60vh, 16rem)) * ${aspect})`,
       }}
     >
       {children}
@@ -75,7 +77,7 @@ export function SizePreviews({
 
   return (
     <div className="contents">
-      <div className="sticky [@media(max-height:639px)]:!static -top-4 z-10 -mx-4 -mt-4 border-b bg-background px-4 pb-3 pt-4 md:-top-6 md:-mx-6 md:-mt-6 md:px-6 md:pt-6 lg:mx-0 lg:border-0 lg:px-0 lg:pb-2 [--cover-max-h:max(34vh,16rem)] lg:[--cover-max-h:56vh]">
+      <div className="sticky [@media(max-height:639px)]:!static -top-4 z-10 -mx-4 -mt-4 border-b bg-background px-4 pb-3 pt-4 md:-top-6 md:-mx-6 md:-mt-6 md:px-6 md:pt-6 lg:mx-0 lg:border-0 lg:px-0 lg:pb-2 [--cover-max-h:max(34vh,16rem)] lg:[--cover-max-h:max(56vh,16rem)]">
         <CoverBox aspect={sizeAspect(size, card)}>
           <div
             role="img"
@@ -98,7 +100,7 @@ export function SizePreviews({
           )}
         </CoverBox>
       </div>
-      <ul className="order-2 flex gap-3 overflow-x-auto pb-1 lg:order-none">
+      <ul className="order-2 flex items-end gap-3 overflow-x-auto pb-1 lg:order-none">
         {SIZES.filter((s) => s !== size).map((s) => (
           <li key={s} className="w-52 shrink-0">
             <button
@@ -108,10 +110,7 @@ export function SizePreviews({
               className="group block w-full space-y-1.5 text-left outline-none"
             >
               <span className="block rounded-lg ring-ring ring-offset-2 ring-offset-background group-hover:ring-2 group-focus-visible:ring-[3px]">
-                <CoverBox
-                  aspect={sizeAspect(s, card)}
-                  className="[--cover-max-h:20vh]"
-                >
+                <CoverBox aspect={sizeAspect(s, card)}>
                   <div aria-hidden="true" className="absolute inset-0">
                     <CoverArt design={design} item={item} />
                   </div>
