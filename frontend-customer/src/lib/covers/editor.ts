@@ -52,7 +52,13 @@ export type EditorAction =
   | { type: "applySet"; set: CoverRecipe }
   /** One layer's frame at one size; the other sizes keep theirs. */
   | { type: "frame"; size: CoverSize; id: string; frame: Frame }
-  | { type: "addExtra"; extra: Extra }
+  /** `extra.frame` is its frame at every size; `frames` gives it its own at the sizes named, in the same
+   *  edit, so one Undo takes it from all of them. */
+  | {
+      type: "addExtra";
+      extra: Extra;
+      frames?: Partial<Record<CoverSize, Frame>>;
+    }
   | { type: "updateExtra"; id: string; patch: ExtraPatch }
   /** A fixed part is hidden, an extra deleted. */
   | { type: "remove"; id: string }
@@ -247,7 +253,13 @@ export function applyEdit(
       const extra = usable
         ? action.extra
         : { ...action.extra, id: newExtraId(recipe) };
-      return { ...recipe, extras: [...recipe.extras, extra] };
+      // the frames follow the id the extra ends up with
+      const overrides: Overrides = { ...recipe.overrides };
+      const sized = Object.entries(action.frames ?? {}) as [CoverSize, Frame][];
+      for (const [size, frame] of sized) {
+        overrides[size] = { ...overrides[size], [extra.id]: frame };
+      }
+      return { ...recipe, extras: [...recipe.extras, extra], overrides };
     }
 
     case "updateExtra":

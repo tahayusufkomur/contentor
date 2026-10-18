@@ -6,11 +6,16 @@
 import { useTranslations } from "next-intl";
 import { Section } from "@/components/studio/simple-controls";
 import type { EditorAction } from "@/lib/covers/editor";
-import { newBadgeExtra, newShapeExtra } from "@/lib/covers/new-layers";
+import {
+  newBadgeExtra,
+  newShapeExtra,
+  type NewLayer,
+} from "@/lib/covers/new-layers";
 import { badgeKindsFor } from "@/lib/covers/recipe";
 import { cn } from "@/lib/utils";
 import { MAX_EXTRAS, SHAPES } from "@/types/design";
-import type { BadgeKind, CoverRecipe, Extra, ShapeKind } from "@/types/design";
+import type { BadgeKind, CoverRecipe, ShapeKind } from "@/types/design";
+import type { CoverAspect } from "@shared/sections/types";
 
 /** The kinds of badge the cover's own can show, besides none and her own words (which is a layer). */
 const KINDS: BadgeKind[] = ["new", "date", "live"];
@@ -50,15 +55,15 @@ function ShapeGlyph({ shape }: { shape: ShapeKind }) {
 export function ElementsDrawer({
   recipe,
   targetKind,
-  aspect,
+  cardAspect,
   edit,
   onSelect,
 }: {
   recipe: CoverRecipe;
   /** "course", or the kind of event: leaves out the badges that could never draw. */
   targetKind: string;
-  /** Width over height of the size on the canvas: where a new layer goes depends on it. */
-  aspect: number;
+  /** The look's Card shape: a new layer gets a frame for each of the three sizes, which follow from it. */
+  cardAspect: CoverAspect;
   edit: (action: EditorAction) => void;
   /** The new layer is selected. */
   onSelect: (id: string) => void;
@@ -70,9 +75,9 @@ export function ElementsDrawer({
   const kinds = badgeKindsFor(targetKind, recipe.badge.kind).filter((kind) =>
     KINDS.includes(kind),
   );
-  const add = (extra: Extra) => {
-    edit({ type: "addExtra", extra });
-    onSelect(extra.id);
+  const add = (layer: NewLayer) => {
+    edit({ type: "addExtra", ...layer });
+    onSelect(layer.extra.id);
   };
   return (
     <div className="space-y-6">
@@ -101,7 +106,7 @@ export function ElementsDrawer({
               type="button"
               disabled={full}
               onClick={() =>
-                add(newBadgeExtra(recipe, aspect, td("elements.newBadge")))
+                add(newBadgeExtra(recipe, cardAspect, td("elements.newBadge")))
               }
               className={PILL}
             >
@@ -117,7 +122,7 @@ export function ElementsDrawer({
               <button
                 type="button"
                 disabled={full}
-                onClick={() => add(newShapeExtra(recipe, shape, aspect))}
+                onClick={() => add(newShapeExtra(recipe, shape, cardAspect))}
                 className="flex w-full flex-col items-center gap-1 rounded-lg border py-2 bg-background text-xs font-medium outline-none transition-colors hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
               >
                 <ShapeGlyph shape={shape} />

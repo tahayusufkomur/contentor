@@ -29,7 +29,7 @@ import { StudioCanvas } from "@/components/studio/studio-canvas";
 import type { CoverDraft } from "@/components/studio/use-cover-draft";
 import { NavLink } from "@/components/ui/nav-link";
 import { coverPalette, parseLook } from "@/lib/covers/palette";
-import { framesFor, sizeAspect } from "@/lib/covers/recipe";
+import { framesFor } from "@/lib/covers/recipe";
 import { cn } from "@/lib/utils";
 import { PARTS, SIZES } from "@/types/design";
 import type {
@@ -133,7 +133,6 @@ export function Workspace({
   // she looks at meanwhile: closing it would stop the request, and a new photo is paid for either way.
   const photosBusy = draft.isWorking("photos");
 
-  const aspect = sizeAspect(size, cardAspect);
   const palette = useMemo(() => {
     const { style, paletteId } = parseLook(design.look);
     return coverPalette(style, paletteId);
@@ -211,7 +210,7 @@ export function Workspace({
                 itemTitle={title}
                 targetKind={design.target_kind}
                 look={design.look}
-                aspect={aspect}
+                cardAspect={cardAspect}
                 edit={draft.edit}
                 onSelect={onSelect}
               />
@@ -220,7 +219,7 @@ export function Workspace({
               <ElementsDrawer
                 recipe={recipe}
                 targetKind={design.target_kind}
-                aspect={aspect}
+                cardAspect={cardAspect}
                 edit={draft.edit}
                 onSelect={onSelect}
               />

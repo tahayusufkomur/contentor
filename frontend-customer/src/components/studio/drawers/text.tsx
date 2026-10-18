@@ -17,6 +17,7 @@ import { parseLook } from "@/lib/covers/palette";
 import { cn } from "@/lib/utils";
 import { MAX_EXTRAS } from "@/types/design";
 import type { CoverRecipe } from "@/types/design";
+import type { CoverAspect } from "@shared/sections/types";
 
 /** Each button is the size its text will be: a title, a subtitle, a line. */
 const KINDS: { kind: TextKind; size: string }[] = [
@@ -30,13 +31,13 @@ export function TextDrawer({
   itemTitle,
   targetKind,
   look,
-  aspect,
+  cardAspect,
   edit,
   onSelect,
 }: Pick<SimpleControlsProps, "itemTitle" | "targetKind" | "look" | "edit"> & {
   recipe: CoverRecipe;
-  /** Width over height of the size on the canvas: where the new layer goes depends on it. */
-  aspect: number;
+  /** The look's Card shape: a new layer gets a frame for each of the three sizes, which follow from it. */
+  cardAspect: CoverAspect;
   /** The new layer is selected. */
   onSelect: (id: string) => void;
 }) {
@@ -45,9 +46,9 @@ export function TextDrawer({
   const style = parseLook(look).style;
   const full = recipe.extras.length >= MAX_EXTRAS;
   const add = (kind: TextKind) => {
-    const extra = newTextExtra(recipe, kind, aspect, t(`new.${kind}`));
-    edit({ type: "addExtra", extra });
-    onSelect(extra.id);
+    const layer = newTextExtra(recipe, kind, cardAspect, t(`new.${kind}`));
+    edit({ type: "addExtra", ...layer });
+    onSelect(layer.extra.id);
   };
   return (
     <div className="space-y-6">

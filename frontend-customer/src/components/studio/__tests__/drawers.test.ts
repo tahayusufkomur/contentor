@@ -41,7 +41,7 @@ function withExtras(n: number): CoverRecipe {
   for (let i = 0; i < n; i++) {
     recipe = applyEdit(recipe, {
       type: "addExtra",
-      extra: newTextExtra(recipe, "line", 1, `Line ${i}`),
+      ...newTextExtra(recipe, "line", "1/1", `Line ${i}`),
     });
   }
   return recipe;
@@ -114,7 +114,7 @@ describe("TextDrawer", () => {
         itemTitle: "Yoga for Beginners",
         targetKind: "course",
         look,
-        aspect: 4 / 5,
+        cardAspect: "4/5",
         edit,
         onSelect: vi.fn(),
       }),
@@ -163,7 +163,7 @@ describe("ElementsDrawer", () => {
       createElement(ElementsDrawer, {
         recipe,
         targetKind,
-        aspect: 16 / 9,
+        cardAspect: "4/5",
         edit,
         onSelect: vi.fn(),
       }),
@@ -255,16 +255,15 @@ describe("ElementsDrawer", () => {
 describe("paintTarget", () => {
   const recipe = (): CoverRecipe => {
     let r = defaultRecipe();
+    const title = newTextExtra(r, "title", "1/1", "Hi");
     r = applyEdit(r, {
       type: "addExtra",
-      extra: {
-        ...newTextExtra(r, "title", 1, "Hi"),
-        style: { color: "accent" },
-      },
+      ...title,
+      extra: { ...title.extra, style: { color: "accent" } },
     });
     r = applyEdit(r, {
       type: "addExtra",
-      extra: newShapeExtra(r, "circle", 1),
+      ...newShapeExtra(r, "circle", "1/1"),
     });
     r = applyEdit(r, {
       type: "addExtra",
@@ -366,11 +365,11 @@ describe("fontTarget", () => {
     let recipe = defaultRecipe();
     recipe = applyEdit(recipe, {
       type: "addExtra",
-      extra: newTextExtra(recipe, "line", 1, "Hi"),
+      ...newTextExtra(recipe, "line", "1/1", "Hi"),
     });
     recipe = applyEdit(recipe, {
       type: "addExtra",
-      extra: newShapeExtra(recipe, "rect", 1),
+      ...newShapeExtra(recipe, "rect", "1/1"),
     });
     for (const selected of [
       null,
@@ -472,7 +471,7 @@ describe("BrandDrawer", () => {
     const base = defaultRecipe();
     const text = applyEdit(base, {
       type: "addExtra",
-      extra: newTextExtra(base, "line", 1, "Hi"),
+      ...newTextExtra(base, "line", "1/1", "Hi"),
     });
     for (const [selected, recipe, said] of [
       [null, base, "These change the colour panel."],

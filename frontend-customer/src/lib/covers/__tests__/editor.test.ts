@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyEdit,
   coalesceKey,
+  editHistory,
   newExtraId,
   type EditorAction,
   type ExtraPatch,
@@ -385,6 +386,74 @@ describe("addExtra", () => {
       // the rest of the extra is untouched
       expect(added).toEqual({ ...text(bad), id: added.id });
     }
+  });
+});
+
+describe("addExtra with a frame for each size", () => {
+  it("writes the frames it carries as the extra's own at those sizes, in the one edit, and keeps the others'", () => {
+    const before = recipeWith({
+      extras: [text("x1")],
+      overrides: { wide: { x1: frame(0.3, 0.3) } },
+    });
+    const after = applyEdit(before, {
+      type: "addExtra",
+      extra: shape("x2"),
+      frames: { wide: frame(0.1, 0.2), banner: frame(0.3, 0.4) },
+    });
+    expect(ids(after)).toEqual(["x1", "x2"]);
+    expect(after.overrides).toEqual({
+      wide: { x1: frame(0.3, 0.3), x2: frame(0.1, 0.2) },
+      banner: { x2: frame(0.3, 0.4) },
+    });
+    // the extra's own frame is the base the sizes without one reuse
+    expect(after.extras[1]).toEqual(shape("x2"));
+  });
+
+  it("follows the id it gives an extra whose own it refused", () => {
+    const before = recipeWith({ extras: [text("x1")] });
+    const after = applyEdit(before, {
+      type: "addExtra",
+      extra: text("x1"),
+      frames: { banner: frame(0.3, 0.4) },
+    });
+    expect(ids(after)).toEqual(["x1", "x2"]);
+    expect(after.overrides).toEqual({ banner: { x2: frame(0.3, 0.4) } });
+  });
+
+  it("is one history step, and one Undo takes the extra and its frames", () => {
+    const start = recipeWith();
+    const history = editHistory(createHistory(start), {
+      type: "addExtra",
+      extra: shape("x1"),
+      frames: { wide: frame(0.1, 0.1), banner: frame(0.2, 0.2) },
+    });
+    expect(history.past).toHaveLength(1);
+    expect(undo(history).present).toBe(start);
+  });
+
+  it("adds nothing, frames included, when the cover has all the layers it can hold", () => {
+    let recipe = recipeWith();
+    for (let i = 0; i < MAX_EXTRAS; i++) {
+      recipe = applyEdit(recipe, {
+        type: "addExtra",
+        extra: text(newExtraId(recipe)),
+      });
+    }
+    expect(
+      applyEdit(recipe, {
+        type: "addExtra",
+        extra: text("one-more"),
+        frames: { wide: frame(0.1, 0.1) },
+      }),
+    ).toBe(recipe);
+  });
+
+  it("without frames, writes none (an add that has the one frame for every size)", () => {
+    const after = applyEdit(recipeWith(), {
+      type: "addExtra",
+      extra: shape("x1"),
+    });
+    expect(after.overrides).toEqual({});
   });
 });
 

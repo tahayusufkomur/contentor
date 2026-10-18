@@ -2,18 +2,30 @@
 // a place and a size that read on any cover, and the id the reducer will keep (lib/covers/editor.ts).
 //
 // The sizes are in cqmin, the unit the layouts are written in (1% of the canvas's smaller side), so a layer
-// has the same weight on a tall Card and on a Banner; they become fractions of the canvas for `aspect`
-// (width over height), the shape of the size she is editing.
+// has the same weight on a tall Card and on a Banner. A frame is a share of its size's canvas, and a layer
+// has one base frame that Wide and Banner reuse unless they have their own: so a new layer gets a frame for
+// each size, built the same way for the shape of each, and the same box in cqmin stays the same shape on
+// all three (a circle round, a line thin) at the same share of the canvas.
 
 import { newExtraId } from "@/lib/covers/editor";
-import { RANGES } from "@/lib/covers/recipe";
+import { RANGES, sizeAspect } from "@/lib/covers/recipe";
+import { SIZES } from "@/types/design";
 import type {
   CoverRecipe,
+  CoverSize,
   Extra,
   Frame,
   PartStyle,
   ShapeKind,
 } from "@/types/design";
+import type { CoverAspect } from "@shared/sections/types";
+
+/** What an `addExtra` edit takes: the extra, whose own `frame` is the Card's, and its frame at the other
+ *  sizes. One edit, so one Undo takes the layer from all three. */
+export interface NewLayer<E extends Extra = Extra> {
+  extra: E;
+  frames: Partial<Record<CoverSize, Frame>>;
+}
 
 /** From the edge of the canvas to what the layouts put on it. */
 const MARGIN = 5.5;
@@ -22,31 +34,55 @@ const MARGIN = 5.5;
 const STEP = [2.5, 3.5] as const;
 const STEPS = 5;
 
-/** A box in cqmin as a frame, kept inside the ranges the server clamps to. */
-function frameOf(
-  aspect: number,
-  [x, y, w, h]: readonly [number, number, number, number],
-): Frame {
-  const width = 100 * Math.max(1, aspect);
-  const height = 100 / Math.min(1, aspect);
-  const side = (value: number, [low, high]: readonly [number, number]) =>
-    Math.round(Math.min(high, Math.max(low, value)) * 1e4) / 1e4;
-  return {
-    x: side(x / width, RANGES.frame.x),
-    y: side(y / height, RANGES.frame.y),
-    w: side(w / width, RANGES.frame.w),
-    h: side(h / height, RANGES.frame.h),
-  };
+/** A canvas in cqmin, and how far the next layer is moved from where the first goes. */
+interface Canvas {
+  width: number;
+  height: number;
+  across: number;
+  down: number;
 }
 
-/** The canvas in cqmin, and how far the next layer is moved from where the first goes. */
-function canvas(recipe: CoverRecipe, aspect: number) {
+function canvas(recipe: CoverRecipe, aspect: number): Canvas {
   const n = recipe.extras.length % STEPS;
   return {
     width: 100 * Math.max(1, aspect),
     height: 100 / Math.min(1, aspect),
     across: STEP[0] * n,
     down: STEP[1] * n,
+  };
+}
+
+/** A box in cqmin as a frame of canvas `c`, kept inside the ranges the server clamps to. */
+function frameOf(
+  c: Canvas,
+  [x, y, w, h]: readonly [number, number, number, number],
+): Frame {
+  const side = (value: number, [low, high]: readonly [number, number]) =>
+    Math.round(Math.min(high, Math.max(low, value)) * 1e4) / 1e4;
+  return {
+    x: side(x / c.width, RANGES.frame.x),
+    y: side(y / c.height, RANGES.frame.y),
+    w: side(w / c.width, RANGES.frame.w),
+    h: side(h / c.height, RANGES.frame.h),
+  };
+}
+
+/** The layer's frame at each size, from `box`, which says where it goes on a canvas (in cqmin) of the shape
+ *  of that size. */
+function framed(
+  recipe: CoverRecipe,
+  cardAspect: CoverAspect,
+  box: (c: Canvas) => readonly [number, number, number, number],
+) {
+  const at = (size: CoverSize) => {
+    const c = canvas(recipe, sizeAspect(size, cardAspect));
+    return frameOf(c, box(c));
+  };
+  return {
+    frame: at("card"),
+    frames: Object.fromEntries(
+      SIZES.filter((size) => size !== "card").map((size) => [size, at(size)]),
+    ) as NewLayer["frames"],
   };
 }
 
@@ -75,54 +111,61 @@ const TEXT: Record<TextKind, { style: PartStyle; at: number; h: number }> = {
 export function newTextExtra(
   recipe: CoverRecipe,
   kind: TextKind,
-  aspect: number,
+  cardAspect: CoverAspect,
   text: string,
-): Extract<Extra, { type: "text" }> {
-  const c = canvas(recipe, aspect);
+): NewLayer<Extract<Extra, { type: "text" }>> {
   const { style, at, h } = TEXT[kind];
+  const { frame, frames } = framed(recipe, cardAspect, (c) => [
+    MARGIN + c.across,
+    at * c.height + c.down,
+    Math.min(c.width - 2 * MARGIN, 76),
+    h,
+  ]);
   return {
-    id: newExtraId(recipe),
-    type: "text",
-    text,
-    style: { ...style },
-    frame: frameOf(aspect, [
-      MARGIN + c.across,
-      at * c.height + c.down,
-      Math.min(c.width - 2 * MARGIN, 76),
-      h,
-    ]),
+    extra: {
+      id: newExtraId(recipe),
+      type: "text",
+      text,
+      style: { ...style },
+      frame,
+    },
+    frames,
   };
 }
 
-/** Each shape's size in cqmin. A circle is as wide as it is high on the screen; a line is as thin as the
- *  server lets a frame be on a canvas that is tall for its width. */
+/** Each shape's size in cqmin. A circle is as wide as it is high on the screen. A line is the thinnest the
+ *  server lets a frame be on the tallest Card (3/4: a frame is 0.02 high at least, 2.67 cqmin of 133), so
+ *  that it is as thick on every size and the frame is not clamped on any. */
 const SHAPE: Record<ShapeKind, [w: number, h: number]> = {
   rect: [36, 24],
   circle: [28, 28],
   arch: [24, 34],
-  line: [40, 2],
+  line: [40, 2.7],
 };
 
 export function newShapeExtra(
   recipe: CoverRecipe,
   shape: ShapeKind,
-  aspect: number,
-): Extract<Extra, { type: "shape" }> {
-  const c = canvas(recipe, aspect);
+  cardAspect: CoverAspect,
+): NewLayer<Extract<Extra, { type: "shape" }>> {
   const [w, h] = SHAPE[shape];
+  // right of the middle and above it, where the layouts leave room: the words sit low and at the left
+  const { frame, frames } = framed(recipe, cardAspect, (c) => [
+    0.62 * c.width - w / 2 + c.across,
+    0.38 * c.height - h / 2 + c.down,
+    w,
+    h,
+  ]);
   return {
-    id: newExtraId(recipe),
-    type: "shape",
-    shape,
-    fill: "accent",
-    opacity: 1,
-    // right of the middle and above it, where the layouts leave room: the words sit low and at the left
-    frame: frameOf(aspect, [
-      0.62 * c.width - w / 2 + c.across,
-      0.38 * c.height - h / 2 + c.down,
-      w,
-      h,
-    ]),
+    extra: {
+      id: newExtraId(recipe),
+      type: "shape",
+      shape,
+      fill: "accent",
+      opacity: 1,
+      frame,
+    },
+    frames,
   };
 }
 
@@ -131,21 +174,24 @@ const BADGE = [32, 8] as const;
 
 export function newBadgeExtra(
   recipe: CoverRecipe,
-  aspect: number,
+  cardAspect: CoverAspect,
   text: string,
-): Extract<Extra, { type: "badge" }> {
-  const c = canvas(recipe, aspect);
+): NewLayer<Extract<Extra, { type: "badge" }>> {
+  // at the top right, where the fixed badge sits, a little left and down for each layer already added
+  const { frame, frames } = framed(recipe, cardAspect, (c) => [
+    c.width - MARGIN - BADGE[0] - c.across,
+    MARGIN + c.down,
+    BADGE[0],
+    BADGE[1],
+  ]);
   return {
-    id: newExtraId(recipe),
-    type: "badge",
-    text,
-    fill: "accent",
-    // at the top right, where the fixed badge sits, a little left and down for each layer already added
-    frame: frameOf(aspect, [
-      c.width - MARGIN - BADGE[0] - c.across,
-      MARGIN + c.down,
-      BADGE[0],
-      BADGE[1],
-    ]),
+    extra: {
+      id: newExtraId(recipe),
+      type: "badge",
+      text,
+      fill: "accent",
+      frame,
+    },
+    frames,
   };
 }
