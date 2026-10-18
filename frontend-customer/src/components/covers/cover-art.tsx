@@ -8,6 +8,8 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { CoverAspect, SiteStyle } from "@shared/sections/types";
 import { cn } from "@/lib/utils";
+import { CLAMP_PAD, clampClip } from "@/lib/covers/clamp";
+import type { ClampWord } from "@/lib/covers/clamp";
 import { BADGE_GAP, fitLines, LEADING, textSize } from "@/lib/covers/layouts";
 import type { TextPart } from "@/lib/covers/layouts";
 import {
@@ -218,12 +220,17 @@ function type(
 const colorOf = (ctx: Ctx, style: PartStyle, fallback: string) =>
   style.color ? paintColor(style.color, ctx.palette) : fallback;
 
-/** The browser's own line clamp, in the style of the element holding the text. */
-const clamp = (lines: number): CSSProperties => ({
+/** The browser's own line clamp, in the style of the element holding the text. Its box reaches past the
+ *  lines by CLAMP_PAD em above and below (and is pulled back by the same, so it lays out as the lines);
+ *  the clip under the last line is drawn where that line's descenders end and the next one's ink begins. */
+const clamp = (lines: number, word: ClampWord): CSSProperties => ({
   display: "-webkit-box",
   WebkitBoxOrient: "vertical",
   WebkitLineClamp: lines,
   overflow: "hidden",
+  paddingBlock: `${CLAMP_PAD}em`,
+  marginBlock: `-${CLAMP_PAD}em`,
+  clipPath: clampClip(word),
 });
 
 /** What a photo that is not there looks like: the tint `Img` draws, in the look's own colours. */
@@ -294,6 +301,7 @@ function wordLayer(
 ): ReactNode {
   const { size, leading } = measure(ctx, kind, style, aspect);
   const fits = fitLines(frame, aspect, size, leading);
+  const d = TYPE[kind];
   return (
     <div
       key={id}
@@ -316,6 +324,12 @@ function wordLayer(
         className={styles.clamp}
         style={clamp(
           kind === "extra" ? fits : Math.min(MOST_LINES[kind], fits),
+          {
+            family: ctx.look.fonts[style.font ?? d.font],
+            text,
+            upper: style.upper ?? d.upper,
+            leading,
+          },
         )}
       >
         {text}

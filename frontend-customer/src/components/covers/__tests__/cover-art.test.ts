@@ -393,6 +393,55 @@ describe("CoverArt words", () => {
     expect(clamp(card, "subtitle")).toBe(3);
   });
 
+  it("gives each clamp room for the ink outside its lines, and a clip under the last one", () => {
+    const d = design((r) => {
+      r.words = { ...WORDS };
+    });
+    for (const size of ["card", "wide", "banner"] as const) {
+      const els = within(parse(draw(d, { size })), size);
+      for (const part of ["label", "title", "subtitle"] as const) {
+        const { style } = after(els, layer(els, part));
+        // The room is given back by the margins, so the word is laid out as its lines alone.
+        expect(style["padding-block"], `${size} ${part}`).toBe("0.3em");
+        expect(style["margin-block"], `${size} ${part}`).toBe("-0.3em");
+        expect(style["clip-path"], `${size} ${part}`).toMatch(
+          /^inset\(0 0 calc\(0\.3em - -?\d+(\.\d+)?em\) 0\)$/,
+        );
+      }
+    }
+  });
+
+  it("draws the clip for the word's own font and line height", () => {
+    const clip = (look: string, edit: (r: CoverRecipe) => void = () => {}) => {
+      const els = within(
+        parse(
+          draw(
+            design((r) => {
+              r.words = { ...WORDS };
+              edit(r);
+            }, look),
+          ),
+        ),
+        "card",
+      );
+      return after(els, layer(els, "title")).style["clip-path"];
+    };
+    // Another look sets its title in another font. A looser line height moves the two lines' ink apart
+    // by the same amount each way, so the clip half way between them stays where it was.
+    expect(clip("journal")).not.toBe(clip("atelier"));
+    expect(
+      clip("journal", (r) => {
+        r.styles.title = { leading: 1.6 };
+      }),
+    ).toBe(clip("journal"));
+    // Her font for the title is the font of its clip: journal's body font for its display one.
+    expect(
+      clip("journal", (r) => {
+        r.styles.title = { font: "body" };
+      }),
+    ).not.toBe(clip("journal"));
+  });
+
   it("never sets a word taller than its frame, in any frame its size is the nearest for", () => {
     // The frame of a word, as its layout made it, is a fraction of the frame it is drawn in; text is
     // set in container units, so in a frame of another shape than the layout's the text must follow

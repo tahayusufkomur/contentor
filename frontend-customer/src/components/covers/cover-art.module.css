@@ -155,9 +155,10 @@
 }
 
 /* A word sits in a box sized for the lines it may take; its text is the one child, and the child never
-   shrinks, so a frame a little off its size lets the text spill rather than lose a line. The padding
-   and the matching negative margin give the clipped text room for the ascenders and descenders that a
-   tight line height puts outside the lines. */
+   shrinks, so a frame a little off its size lets the text spill rather than lose a line. The child's
+   padding, margin and clip are set with its clamp (cover-art.tsx, lib/covers/clamp.ts): they give the
+   text room for the ascenders and descenders that a tight line height puts outside the lines, and cut
+   the hidden lines off where the last shown one ends, a place that depends on the font. */
 .words {
   display: flex;
   flex-direction: column;
@@ -165,8 +166,6 @@
 
 .clamp {
   flex: none;
-  padding-block: 0.1em;
-  margin-block: -0.1em;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
