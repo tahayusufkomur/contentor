@@ -24,8 +24,9 @@ from .recipes import SIZES
 logger = logging.getLogger(__name__)
 
 TITLE_MAX = 200
-MAX_MODULES = 8
-MAX_LESSONS = 8
+MAX_MODULES = 12
+MAX_LESSONS = 12
+CAPPED = " I drafted the first 12 modules; add the rest on the page."
 STEP = {"specialist": "content", "label": "Writing your outline"}
 # Honest and generic when the model is down: no invented facts, she renames them.
 FALLBACK_MODULES = (
@@ -49,6 +50,9 @@ SYSTEM = _DRAFT_RULES + (
     "- size: "
     + "; ".join(f"'{key}' is {m} module{'s' if m > 1 else ''} of {n} lessons" for key, (m, n) in SIZES.items())
     + "; 'delegate' or anything else means 3-5 modules of 2-4 lessons.\n"
+    "- exact: counts and titles the coach gave: use her titles word for word, in her order, and write "
+    "only what she left open.\n"
+    "- notes: what else she said about the course; follow it.\n"
     "- When 'instruction' is given, it is the coach's change to 'current_outline': apply it and keep "
     "everything she did not ask to change. Modules marked 'kept' are hers and stay on the page as they "
     "are: leave them out of your modules."
@@ -85,6 +89,7 @@ def carry_out(tenant, run_id) -> None:
             return
         course = Course.objects.select_for_update().get(pk=course.pk)
         creation = FocusCreation.objects.select_for_update().get(pk=creation.pk)
+        capped = bool((creation.brief or {}).get("capped"))
         events, creation.drafted = write(
             course,
             draft,
@@ -104,21 +109,28 @@ def carry_out(tenant, run_id) -> None:
     modules = course.modules.count()
     lessons = Lesson.objects.filter(module__course=course).count()
     summary = f"{modules} module{'s' if modules != 1 else ''}, {lessons} lesson{'s' if lessons != 1 else ''}"
-    runs.finish(run_id, True, {"text": f"Your outline is ready: {summary}.", "summary": summary})
+    text = f"Your outline is ready: {summary}." + (CAPPED if capped else "")
+    runs.finish(run_id, True, {"text": text, "summary": summary})
 
 
 def _draft(tenant, creation, course, instruction: str) -> OutlineDraft:
     """The model's outline, or the honest fallback when it is unavailable. A
-    redraft never falls back: her outline is not replaced by a generic one."""
+    redraft never falls back: her outline is not replaced by a generic one.
+    Either way her counts and titles are enforced by ``conform``."""
     answers = creation.answers or {}
+    drafted = (creation.drafted or {}).get("modules") or []
+    kept = len(_kept(course, drafted)) if instruction else 0
+    brief = creation.brief or {}
+    if not instruction and not brief.get("analysed"):
+        brief = _read_first_answer(tenant, creation, course)
     if not ai_compose.compose_available():
         if instruction:
             raise core_ai.AiError("ai_unavailable")
-        return fallback(answers, course.title)
+        return fallback(answers, course.title, brief)
     try:
         parsed, cost, _model = core_ai.structured(
             system=SYSTEM,
-            user=_user_turn(tenant, answers, course, instruction, (creation.drafted or {}).get("modules") or []),
+            user=_user_turn(tenant, answers, course, instruction, drafted, brief),
             output_model=OutlineDraft,
             model=settings.COPILOT_MODEL,
             max_tokens=12000,
@@ -130,11 +142,107 @@ def _draft(tenant, creation, course, instruction: str) -> OutlineDraft:
         if instruction:
             raise
         logger.warning("focus outline: model failed, using the fallback schema=%s", tenant.schema_name)
-        return fallback(answers, course.title)
+        return fallback(answers, course.title, brief)
     ai_compose.record_spend(tenant.schema_name, cost)
-    # The size she picked holds even when the model writes more.
-    limit = SIZES[answers["size"]][0] if answers.get("size") in SIZES and not instruction else MAX_MODULES
-    return parsed.model_copy(update={"modules": parsed.modules[:limit]})
+    if not any(brief.get(key) for key in ("modules", "lessons", "total")):
+        # No count of hers: the size she tapped holds even when the model writes more.
+        size = SIZES.get(answers.get("size"))
+        if size and not instruction:
+            parsed = parsed.model_copy(update={"modules": parsed.modules[: size[0]]})
+    return conform(parsed, brief, first=not instruction, kept=kept)
+
+
+def _read_first_answer(tenant, creation, course) -> dict:
+    """Her brief, after reading her typed first answer here when the analysis
+    job never settled it (it failed or was stopped): her counts and titles hold
+    either way. Without a reading the brief stays as it was (spec §5.1 Waiting)."""
+    from apps.core.currency import tenant_charge_currency
+
+    from . import analysis
+    from .flow import DELEGATE, question
+
+    topic = str((creation.answers or {}).get("topic") or "")
+    if not topic or topic == DELEGATE or not ai_compose.compose_available():
+        return creation.brief or {}
+    try:
+        found = analysis.read(
+            tenant,
+            topic,
+            question=question(creation.kind, "topic")["question"],
+            outline_exists=False,
+            currency=tenant_charge_currency(tenant),
+            course_id=course.pk,
+        )
+    except core_ai.AiError:
+        logger.warning("focus outline: no reading of her answer, going on without schema=%s", tenant.schema_name)
+        return creation.brief or {}
+    with transaction.atomic():  # flow writes the brief too: change only that field, under the lock
+        locked = FocusCreation.objects.select_for_update().get(pk=creation.pk)
+        locked.brief = analysis.brief_from(found, locked.brief)
+        locked.save(update_fields=["brief", "updated_at"])
+    creation.brief = locked.brief
+    return locked.brief
+
+
+def conform(draft: OutlineDraft, brief: dict, *, first: bool, kept: int = 0) -> OutlineDraft:
+    """The draft, made to match what she asked for exactly (spec §5.1): her
+    module count (less the modules a redraft keeps), her lessons per module or
+    her lessons in all, and, on the first draft only, her module and lesson
+    titles word for word. Padding is honest and generic ("Module 3",
+    "Lesson 3"); nothing exceeds MAX_MODULES x MAX_LESSONS."""
+    brief = brief or {}
+    modules = [(m.title, list(m.lessons)) for m in draft.modules]
+    count, per, total = brief.get("modules"), brief.get("lessons"), brief.get("total")
+
+    if count:
+        modules = modules[: max(count - kept, 0)][:MAX_MODULES]
+        while len(modules) < min(max(count - kept, 0), MAX_MODULES):
+            n = len(modules) + 1
+            modules.append(
+                (f"Module {n}", [f"Lesson {k}" for k in range(1, (len(modules[-1][1]) if modules else 3) + 1)])
+            )
+    modules = modules[:MAX_MODULES]
+    for _title, lessons in modules:
+        if per:
+            del lessons[per:]
+            lessons.extend(f"Lesson {k}" for k in range(len(lessons) + 1, min(per, MAX_LESSONS) + 1))
+        del lessons[MAX_LESSONS:]
+
+    named = brief.get("named") or []
+    if first:
+        for index, item in enumerate(named[:MAX_MODULES]):
+            if index == len(modules):
+                modules.append((f"Module {index + 1}", [f"Lesson {k}" for k in range(1, (per or 2) + 1)]))
+            title, lessons = modules[index]
+            theirs = [t for t in item.get("lessons") or [] if t][:MAX_LESSONS]
+            modules[index] = (item.get("title") or title, [*theirs, *lessons[len(theirs) :]])
+
+    if total:
+        _fit_total(modules, total, resize=not count)
+    return draft.model_copy(update={"modules": [_Module(title=t, lessons=ls) for t, ls in modules]})
+
+
+def _fit_total(modules: list, total: int, *, resize: bool) -> None:
+    """Trim or pad lessons from the last module back until they add up to
+    ``total``. ``resize``: a module count of hers is not given, so modules may
+    be added (room ran out) or dropped (fewer lessons than modules)."""
+    while (have := sum(len(ls) for _t, ls in modules)) != total:
+        if have > total:
+            room = next((m for m in reversed(modules) if len(m[1]) > 1), None)
+            if room is not None:
+                room[1].pop()
+            elif resize and len(modules) > 1:
+                modules.pop()
+            else:
+                return  # a module holds at least one lesson
+        else:
+            room = next((m for m in reversed(modules) if len(m[1]) < MAX_LESSONS), None)
+            if room is None and resize and len(modules) < MAX_MODULES:
+                room = (f"Module {len(modules) + 1}", [])
+                modules.append(room)
+            if room is None:
+                return
+            room[1].append(f"Lesson {len(room[1]) + 1}")
 
 
 def site(tenant, course_id=None) -> dict:
@@ -154,11 +262,15 @@ def site(tenant, course_id=None) -> dict:
     }
 
 
-def _user_turn(tenant, answers: dict, course, instruction: str, drafted: list) -> str:
+def _user_turn(tenant, answers: dict, course, instruction: str, drafted: list, brief: dict) -> str:
     turn = {
         "topic": answers.get("topic", ""),
         "level": answers.get("level", ""),
         "size": answers.get("size", ""),
+        "exact": {
+            key: brief.get(key) or ([] if key == "named" else None) for key in ("modules", "lessons", "total", "named")
+        },
+        "notes": brief.get("notes", ""),
         "instruction": instruction,
         **site(tenant, course.pk),
     }
@@ -191,16 +303,24 @@ def _kept(course, drafted: list) -> set:
     }
 
 
-def fallback(answers: dict, title: str) -> OutlineDraft:
+def fallback(answers: dict, title: str, brief: dict | None = None) -> OutlineDraft:
+    """Honest and generic when the model is down: her counts and titles, then
+    the size's usual shape, with the module names above."""
+    brief = brief or {}
     modules, lessons = SIZES.get(answers.get("size"), SIZES["short"])
-    return OutlineDraft(
+    modules, lessons = brief.get("modules") or modules, brief.get("lessons") or lessons
+    draft = OutlineDraft(
         title=title,
         description="",
         modules=[
-            _Module(title=FALLBACK_MODULES[i], lessons=[f"Lesson {n}" for n in range(1, lessons + 1)])
-            for i in range(modules)
+            _Module(
+                title=FALLBACK_MODULES[i] if i < len(FALLBACK_MODULES) else f"Module {i + 1}",
+                lessons=[f"Lesson {n}" for n in range(1, lessons + 1)],
+            )
+            for i in range(min(modules, MAX_MODULES))
         ],
     )
+    return conform(draft, brief, first=True)
 
 
 def write(course, draft: OutlineDraft, working_title: str, *, drafted: dict, redraft: bool = False):

@@ -50,6 +50,14 @@ def ai_on():
         yield
 
 
+@pytest.fixture(autouse=True)
+def no_reading():
+    """The outline reads a typed first answer itself when the analysis never ran
+    (tests that tap their topic would otherwise reach the model)."""
+    with mock.patch("apps.core.focus.analysis.read", side_effect=core_ai.AiError("off")):
+        yield
+
+
 def _draft(modules=2, lessons=2):
     return outline.OutlineDraft(
         title="Desk yoga, gently",
@@ -269,3 +277,164 @@ def test_a_module_whose_only_text_is_drafted_is_not_kept(owner):
         jobs.execute(SCHEMA, run.id)
     assert not Lesson.objects.filter(pk=lesson.pk).exists()
     assert course.modules.count() == 1
+
+
+def test_conform_keeps_her_counts():
+    out = outline.conform(_draft(modules=6, lessons=5), {"modules": 4, "lessons": 3}, first=True)
+    assert len(out.modules) == 4 and all(len(m.lessons) == 3 for m in out.modules)
+
+
+def test_conform_pads_honestly_when_the_model_wrote_too_few():
+    out = outline.conform(_draft(modules=2, lessons=2), {"modules": 3, "lessons": 3}, first=True)
+    assert out.modules[2].title == "Module 3" and out.modules[0].lessons[2] == "Lesson 3"
+    assert [len(m.lessons) for m in out.modules] == [3, 3, 3]
+
+
+def test_conform_uses_her_titles_word_for_word_in_her_order():
+    brief = {"named": [{"title": "Wake up your neck", "lessons": ["Chin tucks"]}, {"title": "", "lessons": []}]}
+    out = outline.conform(_draft(), brief, first=True)
+    assert out.modules[0].title == "Wake up your neck" and out.modules[0].lessons == ["Chin tucks", "Lesson 1.2"]
+    assert out.modules[1].title == "Module 2"  # an untitled one keeps the model's
+
+
+def test_her_titles_are_only_for_the_first_draft():
+    brief = {"named": [{"title": "Wake up your neck", "lessons": []}]}
+    assert outline.conform(_draft(), brief, first=False).modules[0].title == "Module 1"
+
+
+def test_named_modules_beyond_what_the_model_wrote_are_added():
+    brief = {"named": [{"title": f"Mine {n}", "lessons": []} for n in (1, 2, 3)]}
+    out = outline.conform(_draft(modules=2), brief, first=True)
+    assert [m.title for m in out.modules] == ["Mine 1", "Mine 2", "Mine 3"]
+    assert len(out.modules[2].lessons) == 2
+
+
+def test_a_total_alone_is_kept_exactly():
+    out = outline.conform(_draft(modules=3, lessons=4), {"total": 10}, first=True)
+    assert sum(len(m.lessons) for m in out.modules) == 10
+    assert len(out.modules) == 3 and all(m.lessons for m in out.modules)
+
+
+def test_a_total_pads_from_the_last_module():
+    out = outline.conform(_draft(modules=2, lessons=2), {"total": 7}, first=True)
+    assert [len(m.lessons) for m in out.modules] == [2, 5]
+    assert out.modules[1].lessons[-1] == "Lesson 5"
+
+
+def test_a_total_beyond_the_modules_room_adds_modules_never_over_twelve_lessons():
+    out = outline.conform(_draft(modules=2, lessons=2), {"total": 30}, first=True)
+    assert sum(len(m.lessons) for m in out.modules) == 30
+    assert max(len(m.lessons) for m in out.modules) <= outline.MAX_LESSONS
+
+
+def test_a_total_smaller_than_the_modules_drops_the_last_ones():
+    out = outline.conform(_draft(modules=4, lessons=3), {"total": 2}, first=True)
+    assert [len(m.lessons) for m in out.modules] == [1, 1]
+
+
+def test_a_total_with_her_module_count_keeps_both():
+    out = outline.conform(_draft(modules=2, lessons=2), {"modules": 4, "total": 10}, first=True)
+    assert len(out.modules) == 4 and sum(len(m.lessons) for m in out.modules) == 10
+
+
+def test_a_redraft_counts_the_modules_she_keeps():
+    out = outline.conform(_draft(modules=5), {"modules": 5}, first=False, kept=1)
+    assert len(out.modules) == 4
+    assert len(outline.conform(_draft(modules=5), {"modules": 1}, first=False, kept=3).modules) == 0
+
+
+def test_without_counts_the_model_is_only_clamped():
+    out = outline.conform(_draft(modules=15, lessons=15), {}, first=True)
+    assert len(out.modules) == outline.MAX_MODULES == 12
+    assert all(len(m.lessons) == outline.MAX_LESSONS == 12 for m in out.modules)
+
+
+def test_the_fallback_honours_her_counts_and_titles():
+    brief = {"modules": 8, "lessons": 2, "named": [{"title": "Wake up your neck", "lessons": ["Chin tucks"]}]}
+    draft = outline.fallback({"size": "4 modules"}, "Breathing", brief)
+    assert [m.title for m in draft.modules][:2] == ["Wake up your neck", "Building the basics"]
+    assert draft.modules[6].title == "Module 7"
+    assert len(draft.modules) == 8 and draft.modules[0].lessons == ["Chin tucks", "Lesson 2"]
+    assert draft.modules[1].lessons == ["Lesson 1", "Lesson 2"]
+
+
+def _typed(owner, brief=None):
+    """A creation with a typed topic whose analysis never ran (the analysis failed)."""
+    creation = flow.start(owner, "course", value="A course on desk yoga", text="A course on desk yoga")
+    creation.brief = brief or {}
+    creation.answers = {**creation.answers, "topic": "A course on desk yoga. 2 modules", "level": "x", "size": "x"}
+    creation.pending = {}
+    creation.save()
+    return outline.start(creation).id, creation
+
+
+def test_the_outline_reads_her_first_answer_itself_when_the_analysis_failed(owner):
+    from apps.core.focus import analysis
+
+    run_id, creation = _typed(owner)
+    found = analysis.Analysis(modules=2, lessons=3, notes="Ten minute lessons")
+    with (
+        mock.patch("apps.core.focus.analysis.read", return_value=found) as read,
+        _model(draft=_draft(modules=5, lessons=5)) as model,
+    ):
+        jobs.execute(SCHEMA, run_id)
+    assert read.call_args.args[1] == "A course on desk yoga. 2 modules"
+    assert read.call_args.kwargs["outline_exists"] is False
+    assert _course(creation).modules.count() == 2
+    assert Lesson.objects.filter(module__course=_course(creation)).count() == 6
+    creation.refresh_from_db()
+    assert creation.brief["analysed"] is True and creation.brief["modules"] == 2
+    turn = json.loads(model.call_args.kwargs["user"])
+    assert turn["exact"] == {"modules": 2, "lessons": 3, "total": None, "named": []}
+    assert turn["notes"] == "Ten minute lessons"
+
+
+def test_an_analysed_brief_is_not_read_again(owner):
+    run_id, _creation = _typed(owner, {"analysed": True, "modules": 1})
+    with mock.patch("apps.core.focus.analysis.read") as read, _model():
+        jobs.execute(SCHEMA, run_id)
+    read.assert_not_called()
+
+
+def test_a_delegated_topic_is_not_read(owner):
+    creation = flow.answer(flow.start(owner, "course", delegate=True), "level", rest=True)
+    with mock.patch("apps.core.focus.analysis.read") as read, _model():
+        jobs.execute(SCHEMA, creation.outline_run_id)
+    read.assert_not_called()
+
+
+def test_a_failed_reading_goes_on_without_it(owner):
+    run_id, creation = _typed(owner)
+    with mock.patch("apps.core.focus.analysis.read", side_effect=core_ai.AiError("down")), _model():
+        jobs.execute(SCHEMA, run_id)
+    assert CopilotRun.objects.get(pk=run_id).status == "done"
+    assert _course(creation).modules.count() == 2
+    creation.refresh_from_db()
+    assert not creation.brief.get("analysed")
+
+
+def test_a_redraft_never_reads_the_topic_again(owner):
+    run_id, creation = _typed(owner, {"modules": 2})
+    with _model():
+        jobs.execute(SCHEMA, run_id)
+    run = outline.start(creation, instruction="shorter")
+    with mock.patch("apps.core.focus.analysis.read") as read, _model(draft=_draft(modules=1)):
+        jobs.execute(SCHEMA, run.id)
+    read.assert_not_called()
+
+
+def test_a_capped_brief_says_so_in_the_finish_text(owner):
+    run_id, _creation = _typed(owner, {"analysed": True, "modules": 12, "capped": True})
+    with _model(draft=_draft(modules=12, lessons=1)):
+        jobs.execute(SCHEMA, run_id)
+    text = CopilotRun.objects.get(pk=run_id).result["text"]
+    assert text.endswith(" I drafted the first 12 modules; add the rest on the page.")
+    assert "12 modules" in text
+
+
+def test_a_preset_size_still_trims_the_model(owner):
+    creation = flow.start(owner, "course", value="A course on desk yoga")
+    creation = flow.answer(flow.answer(creation, "level", value="beginners"), "size", value="quick")
+    with _model(draft=_draft(modules=5)):
+        jobs.execute(SCHEMA, creation.outline_run_id)
+    assert _course(creation).modules.count() == SIZES["quick"][0]
