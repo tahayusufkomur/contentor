@@ -13,7 +13,7 @@ from apps.accounts.models import User
 from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import runs
-from apps.core.focus import flow, jobs, outline
+from apps.core.focus import analysis, flow, jobs, outline
 from apps.core.focus.recipes import SIZES
 from apps.courses.models import Course, Lesson, Module
 from apps.tenant_config.models import CopilotRun
@@ -438,3 +438,40 @@ def test_a_preset_size_still_trims_the_model(owner):
     with _model(draft=_draft(modules=5)):
         jobs.execute(SCHEMA, creation.outline_run_id)
     assert _course(creation).modules.count() == SIZES["quick"][0]
+
+
+def _redrafted(owner, found, model_draft):
+    """A 4x3 outline written from her first answer's counts, then her change
+    (analysed as ``found``) at the review, written by the real outline job."""
+    creation = _building(owner)
+    creation.brief = {"modules": 4, "lessons": 3, "analysed": True}
+    creation.save()
+    with _model(draft=_draft(modules=4, lessons=3)):
+        jobs.execute(SCHEMA, creation.outline_run_id)
+    creation.refresh_from_db()
+    creation.pending = {"field": "outline_review", "text": found.outline_change}
+    flow.apply(creation, found)
+    creation.save()
+    with _model(draft=model_draft):
+        jobs.execute(SCHEMA, creation.outline_run_id)
+    creation.refresh_from_db()
+    return creation
+
+
+def test_a_redraft_without_a_count_is_not_cut_back_to_the_first_answers_counts(owner):
+    found = analysis.Analysis(outline_change="add a module on stretching")
+    creation = _redrafted(owner, found, _draft(modules=5, lessons=3))
+    assert _course(creation).modules.count() == 5
+
+
+def test_removing_a_module_pads_nothing_back(owner):
+    found = analysis.Analysis(outline_change="remove module 3")
+    creation = _redrafted(owner, found, _draft(modules=3, lessons=3))
+    assert list(_course(creation).modules.values_list("title", flat=True)) == ["Module 1", "Module 2", "Module 3"]
+    assert "capped" not in creation.brief
+
+
+def test_a_redraft_that_names_new_counts_still_gets_them_exactly(owner):
+    found = analysis.Analysis(outline_change="make it 6 modules", modules=6)
+    creation = _redrafted(owner, found, _draft(modules=4, lessons=3))
+    assert _course(creation).modules.count() == 6

@@ -183,7 +183,9 @@ def apply(creation, found) -> None:
         drafted = creation.outline_run_id is not None or bool((creation.drafted or {}).get("modules"))
         at_review = field == "outline_review" and (found.answer.strip() or not price)  # a price alone is no change
         if drafted and (found.outline_change.strip() or counted or at_review):
-            _redraft(creation, text)
+            _redraft(
+                creation, text, keep_counts=any(n is not None for n in (found.modules, found.lessons, found.total))
+            )
         brief = creation.brief
         clarify = list(brief.get("clarify") or [])
         for unclear in found.unclear:  # each asked once
@@ -445,10 +447,17 @@ def _retitle(creation, provisional: str, title: str) -> None:
     creation.drafted = {**drafted, "titles": [*(drafted.get("titles") or []), title]}
 
 
-def _redraft(creation, words: str) -> None:
+def _redraft(creation, words: str, *, keep_counts: bool = False) -> None:
     """Her change, written as a new outline; an outline or descriptions still
-    being written is dropped."""
+    being written is dropped. The counts of her first answer no longer apply
+    unless this change gave new ones (``keep_counts``): her request decides the
+    size, so "add a module" is not cut back to the first answer's count."""
     from apps.core.copilot import runs
+
+    if not keep_counts:
+        creation.brief = {
+            k: v for k, v in (creation.brief or {}).items() if k not in ("modules", "lessons", "total", "capped")
+        }
 
     for pk in (creation.outline_run_id, jobs.run_id(creation, "descriptions")):
         if pk is not None:

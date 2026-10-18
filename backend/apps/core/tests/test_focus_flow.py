@@ -399,6 +399,41 @@ def test_at_the_review_a_price_alone_sets_the_price_and_a_change_redrafts(owner,
     assert flow.current_field(creation) == "outline_review"
 
 
+COUNTED = {"modules": 4, "lessons": 3, "capped": True, "named": [{"title": "Mine", "lessons": []}], "analysed": True}
+
+
+def _reviewing(owner):
+    creation = flow.answer(_tapped(owner), "level", rest=True)
+    creation.brief = {**creation.brief, **COUNTED}
+    creation.save()
+    return creation
+
+
+def test_a_redraft_without_a_count_drops_the_first_answers_counts(owner, outline_start, analysed):
+    creation = _reviewing(owner)
+    analysed(analysis.Analysis(outline_change="add a module on stretching"))
+    creation = _run_pending(flow.answer(creation, "outline_review", text="add a module on stretching"))
+    assert outline_start.call_count == 2
+    assert not {"modules", "lessons", "total", "capped"} & creation.brief.keys()
+    assert creation.brief["named"] == COUNTED["named"]
+
+
+def test_a_redraft_that_names_a_count_keeps_it(owner, outline_start, analysed):
+    creation = _reviewing(owner)
+    analysed(analysis.Analysis(outline_change="make it 6 modules", modules=6))
+    creation = _run_pending(flow.answer(creation, "outline_review", text="make it 6 modules"))
+    assert creation.brief["modules"] == 6 and creation.brief["lessons"] == 3
+    assert outline_start.call_count == 2
+
+
+def test_a_failed_reading_at_the_review_also_drops_the_counts(owner, outline_start, analysed):
+    creation = _reviewing(owner)
+    analysed(side_effect=core_ai.AiError("down"))
+    creation = _run_pending(flow.answer(creation, "outline_review", text="add a module"))
+    assert outline_start.call_count == 2
+    assert "modules" not in creation.brief
+
+
 def test_a_focus_draft_with_a_price_never_blocks_go_live(owner, outline_start, analysed):
     from apps.tenant_config.setup_items import _has_paid_content
 
