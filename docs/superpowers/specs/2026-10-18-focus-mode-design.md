@@ -53,9 +53,9 @@ Non-goals (this project)
 
 - Focus mode for kinds other than the course. The design names what each will need (§9); each is
   its own project afterwards.
-- Writing lesson bodies or recording videos. Focus mode stops at the outline: module and lesson
-  titles (the fields `Module` and `Lesson` have today; no migration). Lesson content is her work
-  afterwards.
+- Recording videos, and full lesson bodies. Focus mode writes the outline (module and lesson
+  titles) and, once she confirms the titles, a brief description to go with each lesson's video
+  (F19, revised the same evening). The videos, and anything longer, are her work.
 - A chat-first studio. The pages stay (team spec T2; coach-admin spec D3): the form still works by
   hand.
 
@@ -90,6 +90,9 @@ Anti-goals: it fails, even if it works, when
 | F16 | Cover: not automatic. The Designer drafts covers in different styles and she picks one. The drafts appear big on the page, in the cover slot (mockup A), with the guide on the right holding the question and the buttons. | Owner (A picked) |
 | F17 | She chooses the photo too: by saying it, by picking one, or by uploading one. | Owner |
 | F18 | Four drafts at a time, one style each, sharing one photo; the photo row lists her own photos first, then library matches; a photo she describes is searched, and generated only when nothing fits. The live drawing with a cursor (Designer spec stage 2) is not needed for this step and goes back to the Designer spec's own track. | Played back and accepted ("looks awesome"); the generation rule and the Designer stage 2 move my calls |
+| F19 | Once she confirms the lesson titles ("Looks good" on the outline), the Content Creating Specialist writes each lesson's content: the brief description that goes with its video, the way creators describe their videos. Two to four sentences for students: what the lesson covers and what they can do after it, from the lesson title, her course and her first answer; never an invented claim, result or number. | Owner ("the content part of the video… a brief description"); length and sources played back, not corrected |
+| F20 | She is aware it is happening: when she confirms the titles the guide says it is now writing a short description for each lesson's video; on the page each one types in with the working tag and a count ("3 of 12"), with Stop at hand. Nothing is written silently. Told, not asked. | Owner ("should be aware"); how she is told my call |
+| F21 | The publish rule (§5 step 6) counts a lesson as ready with a video, or with text she wrote or edited herself. A description the AI wrote that she has not touched does not count, or an outline could go live with no videos. | Played back, not corrected |
 | F13 | The price's one line of reasoning uses her own numbers only: her other courses' and memberships' prices, the prices she gave in `/setup`, her sales. With none, it says so plainly ("A common place to start; change it any time"). No market ranges (the mockup's "courses like this sell for €19–39" is out): the model would have to invent them, and the team spec rules that out. | My call after the builder check |
 
 ## 4. What she sees
@@ -133,7 +136,8 @@ the screen.
    and lessons draft and appear.
 3. **Here's your outline. Does it fit?** "Looks good, continue", or she says a change ("make module
    2 about breathing", a scoped redraft as in `/setup`'s `redraft_scope`), or she renames, reorders
-   or deletes lessons on the page herself.
+   or deletes lessons on the page herself. "Looks good" confirms the titles, and the lesson
+   descriptions start (§5.3) while she goes on to the cover.
 4. **Which cover fits your course?** (Designer, shared step; F16–F18, §5.2.) Four drafts in
    different styles fill the cover slot, big; under them, the photo they share. **Use this cover**,
    **Four more styles**, the photo row (her photos, library matches, **+ Upload**), the answer box
@@ -241,6 +245,30 @@ Rules:
 - **Phone.** The drafts show in the page there too (they are drawn, not rendered); the guide is the
   bottom sheet (F12).
 
+### 5.3 Lesson descriptions (F19–F21)
+
+- **Where it lives.** In the lesson's text (`Lesson.content_html`, the course form's "Content"),
+  behind the paywall like the rest of the lesson: enrolled students (and free-preview lessons)
+  read it next to the video; visitors to the sales page do not (owner: "let it behind the gate").
+  No new field beyond what F21 needs.
+- **When.** As soon as she confirms the titles. The guide says so in one line ("Writing a short
+  description for each lesson's video; edit any of them on the page") and moves on to the cover;
+  the writing runs on the `agents` worker and survives her leaving.
+- **On the page.** Each lesson's description types in under its title, one lesson after another,
+  with the Content Creating Specialist's working tag and a count ("3 of 12"). Stop ends the run;
+  what is written stays, the rest stays empty.
+- **Hers to change.** Any description is editable on the page at once; one being typed in is the
+  only read-only one (F9). A later outline change rewrites descriptions only for lessons that are
+  new or renamed and whose description she has not touched.
+- **Publishing (F21).** `Course.not_ready` treats a lesson whose only content is an untouched AI
+  description as empty: it needs its video, or text she wrote or edited. So the course knows which
+  descriptions are the AI's and still untouched (stored on the lesson, cleared when she saves its
+  text). The same rule replaces every "filled lesson" check: the outline's redraft keeps a module
+  only for lessons she filled herself (`_kept` in `focus/outline.py`), and the assistant's
+  course-page context marks an untouched description as empty (`core/copilot/context.py`).
+- **Failure.** A failed run leaves the lessons it did not reach empty and the guide offers "Try
+  again" for them; nothing else waits on it.
+
 ## 6. Waiting and speed (F5, revised)
 
 The owner relaxed the speed rule the same evening: the AI takes the time it needs. What stays is
@@ -332,7 +360,7 @@ until then.
 | Stage | What it adds | Main pieces |
 |---|---|---|
 | 1. The foundation, with the course (built 2026-10-18) | §4, §5 steps 1–3 and 6 (without the announcement), §6 items 1, 3–6 | recipe + creation store + endpoints; the guide in the dock; focus layout of the course page; live field/row events and the shared hook; draft from the first answer; resume; timing |
-| 2. The first answer takes everything | §5.1, §6 item 5a | the analysis (typed fields), skipping answered questions, exact counts and titles in the outline, the price on the draft, one clarifying question, follow-up requests at any step |
+| 2. The first answer takes everything | §5.1, §5.3, §6 item 5a | the analysis (typed fields), skipping answered questions, exact counts and titles in the outline, the price on the draft, one clarifying question, follow-up requests at any step; lesson descriptions after "Looks good" and the publish rule for untouched ones (F19–F21) |
 | 3. The cover step | §5 step 4, §5.2, §7.3 | the cover question, four drafts (started once the outline is written; code fallback on failure), the photo row (hers, library, upload, said, generated), Use this cover / Four more styles / Later / I'll edit it |
 | 4. Price, finish, follow-ups | §5 step 5 (skipped when her first answer gave the price), the announcement offer, follow-ups only if necessary; switch on | price and access step under F11; Marketing's draft; follow-ups only if necessary, with the cap |
 
@@ -360,6 +388,7 @@ What each needs beyond its recipe (survey 2026-10-18):
   few real runs on the dev hub checked by eye.
 - The timing stamps (§6.6) read back for a handful of dev runs against the plain form.
 - A browser pass on desktop and phone widths, light and dark.
+- The publish rule with untouched AI descriptions (F21): refused until a video, or her own edit.
 
 ## 11. Left to the builder
 
@@ -373,6 +402,8 @@ What each needs beyond its recipe (survey 2026-10-18):
 - The analysis model and its prompt (a typed-extraction call; speed is not a constraint, F5).
 - The four styles in the first round, what "Four more styles" varies, and the cover's short line.
 - How many photos the row shows, and how her own photos are ranked against library matches.
+- The descriptions' prompt, whether they are written in one call or per module, and how "the AI's
+  and untouched" is stored on the lesson (a flag or a hash of what was written).
 
 ## 12. Open questions for the owner
 
@@ -382,7 +413,8 @@ speed rule ("slowness is all ok"), which settled two of them: the guide waits fo
 calls for the owner to check while reading: a module count settles the size, up to 12 × 12 (§5.1
 Exact); a library photo is copied into her Media when she taps it (§5.2 The photo).
 
-Asked and answered: the dynamic follow-ups (F4) stay, "only if necessary" (§5 Follow-ups).
+Asked and answered: the dynamic follow-ups (F4) stay, "only if necessary" (§5 Follow-ups); the
+lesson descriptions live in the lesson's text, behind the paywall (§5.3, "let it behind the gate").
 
 The first version's builder check (2026-10-18) raised six questions; all were settled in this
 document as my calls, for the owner to check while reading:
