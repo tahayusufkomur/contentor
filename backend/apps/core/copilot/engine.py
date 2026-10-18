@@ -65,7 +65,9 @@ SYSTEM_PROMPT = (
     "(post_id from the blog list)\n"
     "- publish_course / publish_blog_post: make a draft live (id from the "
     "lists); ONLY propose this when the coach asks to publish or confirms "
-    "the draft is ready\n"
+    "the draft is ready. A course goes live only once EVERY lesson has a "
+    "video or text (the course list shows how many do): until then never "
+    "propose publish_course, tell her which lessons still need one\n"
     "- create_event: schedule a live class (event_kind=live), a one-way "
     "live stream (event_kind=stream), a Zoom class (event_kind=zoom, with "
     "zoom_link when the coach gave one) or an in-person event "
@@ -638,11 +640,14 @@ MAX_DIGEST_COURSES = 30
 
 def _courses_digest(tenant):
     """Bounded course inventory for the user turn: id, title, cover state,
-    published state, admin link, site link — what set_course_cover proposals
-    key off, and what the model quotes back verbatim when asked for a direct
-    link. The site link only actually resolves once published — unpublished
-    is noted so the model doesn't hand the coach a page nobody can see."""
-    from apps.courses.models import Course
+    published state, lessons with a video or text (a course goes live only
+    once all of them have one), admin link, site link — what set_course_cover
+    proposals key off, and what the model quotes back verbatim when asked for
+    a direct link. The site link only actually resolves once published —
+    unpublished is noted so the model doesn't hand the coach a page nobody can see."""
+    from django.db.models import Count
+
+    from apps.courses.models import Course, Lesson
 
     with tenant_context(tenant):
         rows = list(
@@ -650,15 +655,23 @@ def _courses_digest(tenant):
                 "id", "title", "is_published", "thumbnail_id", "thumbnail_url", "slug"
             )[:MAX_DIGEST_COURSES]
         )
+        filled = {
+            r["module__course_id"]: f"{r['filled']}/{r['total']}"
+            for r in Lesson.objects.filter(module__course_id__in=[r["id"] for r in rows])
+            .values("module__course_id")
+            .annotate(total=Count("id"), filled=Count("id", filter=~content.EMPTY_LESSON))
+        }
     if not rows:
         return "Courses: (none yet)"
-    lines = ["Courses (id | title | cover | status | admin link | site link):"]
+    lines = ["Courses (id | title | cover | status | lessons with a video or text | admin link | site link):"]
     for r in rows:
         cover = "has cover" if (r["thumbnail_id"] or r["thumbnail_url"]) else "NO COVER"
         status = "published" if r["is_published"] else "draft"
         site_link = f"/courses/{r['slug']}" if r["is_published"] else "(not published yet)"
+        lessons = filled.get(r["id"], "0/0")
         lines.append(
-            f"  {r['id']} | {str(r['title'])[:60]} | {cover} | {status} | /admin/courses/{r['slug']} | {site_link}"
+            f"  {r['id']} | {str(r['title'])[:60]} | {cover} | {status} | {lessons} | "
+            f"/admin/courses/{r['slug']} | {site_link}"
         )
     return "\n".join(lines)
 
@@ -1315,8 +1328,11 @@ def _card(tenant, action):
             from apps.courses.models import Course
 
             is_published = Course.objects.filter(pk=action.course_id).values_list("is_published", flat=True).first()
+            gap = content.not_ready(action.course_id)
         if is_published:
             raise content.ContentOpError("that course is already published")
+        if gap:
+            raise content.ContentOpError(f"a course goes live once every lesson has a video or text, and {gap}")
         return {
             "kind": "publish_course",
             "title": f"Publish course: {course_title[:100]}",

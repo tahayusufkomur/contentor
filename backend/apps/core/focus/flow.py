@@ -31,8 +31,10 @@ OUTLINE_STATUS = {
 }
 CLOSING = {
     "publish": "Published. Students can find it on your site now.",
-    "draft": "Saved as a draft. Publish it from this page whenever you're ready.",
+    "draft": "Saved as a draft. Once every lesson has its video or text, publish it from this page.",
 }
+# The finish step while a lesson is still empty: no "Publish now".
+NOT_READY = "Your outline is saved. Next, your lessons."
 
 
 class FlowError(Exception):
@@ -155,8 +157,9 @@ def finish(creation, *, publish: bool, active_ms=None) -> FocusCreation:
             creation.status = "left"
             creation.save(update_fields=["active_ms", "status", "updated_at"])
             return creation
-        choice = "publish" if publish else "draft"
-        if publish:
+        # Never an empty lesson in front of students: not ready, it stays a draft.
+        choice = "publish" if publish and not content.not_ready(creation.record_id) else "draft"
+        if choice == "publish":
             with suppress(content.ContentOpError):  # already published by hand, or gone
                 content.publish_course(creation.record_id)
         recipe = RECIPES[creation.kind]
@@ -214,6 +217,8 @@ def question(kind: str, field: str) -> dict:
 
 
 def state(creation) -> dict:
+    from apps.core.copilot import content
+
     recipe = RECIPES[creation.kind]
     record = _record(creation)
     if record is None and creation.status == "active":  # deleted by hand, or by an Undo
@@ -221,13 +226,24 @@ def state(creation) -> dict:
         creation.status = "left"
     field = current_field(creation)
     answers = creation.answers or {}
+    asked = question(creation.kind, field) if field else None
+    gap = record and field == "finish" and content.not_ready(record.id)
+    if gap:
+        asked = {
+            **asked,
+            "question": NOT_READY,
+            "why": f"A course goes live once every lesson has a video or text, and {gap}. "
+            "Until then it stays a hidden draft.",
+            "options": [o for o in asked["options"] if o["value"] != "publish"],
+            "specialist": "content",
+        }
     return {
         "id": creation.id,
         "kind": creation.kind,
         "status": creation.status,
         "chat": creation.chat_id,
         "record": {"id": record.id, "slug": record.slug, "title": record.title} if record else None,
-        "question": question(creation.kind, field) if field else None,
+        "question": asked,
         "answered": [
             {"field": q.id, "label": _label(recipe, q, answers[q.id])} for q in recipe.questions if q.id in answers
         ],

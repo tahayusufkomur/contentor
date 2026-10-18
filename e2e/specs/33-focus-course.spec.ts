@@ -120,8 +120,12 @@ function courseDetail(written: boolean): Body {
 
 /** A small in-memory focus backend: the creation's answers, its outline run
  *  (done at its first poll) and the course behind it. With ``open: false``
- *  no creation is open: the course page is the plain editor. */
-async function stubFocus(page: Page, { open = true }: { open?: boolean } = {}) {
+ *  no creation is open: the course page is the plain editor. With ``ready:
+ *  false`` a lesson is still empty, so the last step offers no publishing. */
+async function stubFocus(
+  page: Page,
+  { open = true, ready = true }: { open?: boolean; ready?: boolean } = {},
+) {
   const answers: Record<string, string> = {};
   let created = false;
   let published = false;
@@ -145,7 +149,16 @@ async function stubFocus(page: Page, { open = true }: { open?: boolean } = {}) {
       status,
       chat: CHAT,
       record: { id: COURSE_ID, slug: SLUG, title: runPolled ? "Desk yoga, gently" : "Desk yoga" },
-      question: field ? QUESTIONS[field] : null,
+      question:
+        field === "finish" && !ready
+          ? {
+              ...QUESTIONS.finish,
+              question: "Your outline is saved. Next, your lessons.",
+              options: [option("draft", "Keep as a draft")],
+            }
+          : field
+            ? QUESTIONS[field]
+            : null,
       answered: ORDER.filter((f) => f in answers).map((f) => ({ field: f, label: answers[f] })),
       outline: outline(),
       steps: ORDER.map((id) => ({ id, done: id in answers })),
@@ -344,6 +357,21 @@ test("fill it in myself on the course page ends focus mode for good", async ({ b
   // Reopening the course is the plain editor now.
   await page.reload();
   await expect(page.getByText("Edit Course")).toBeVisible();
+  await expect(guide(page)).toHaveCount(0);
+  await page.close();
+});
+
+test("an outline with empty lessons cannot be published", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  await stubFocus(page, { ready: false });
+
+  await answerTopic(page);
+  await guide(page).getByRole("button", { name: "Just draft it" }).click();
+  await guide(page).getByRole("button", { name: "Looks good, continue" }).click();
+  await expect(guide(page).getByText("Next, your lessons.")).toBeVisible();
+  await expect(guide(page).getByRole("button", { name: "Publish now" })).toHaveCount(0);
+  await guide(page).getByRole("button", { name: "Keep as a draft" }).click();
   await expect(guide(page)).toHaveCount(0);
   await page.close();
 });

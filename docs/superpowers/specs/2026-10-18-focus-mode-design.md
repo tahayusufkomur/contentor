@@ -133,7 +133,10 @@ the screen.
    F11.
 6. **Ready. Publish it now?** (Marketing Specialist, shared step.) **Publish now** / **Keep as a
    draft**, plus "Tell my students": Marketing drafts an announcement (team spec T12) shown in the
-   dock with Schedule / Not now. Focus mode then ends (§4.2).
+   dock with Schedule / Not now. Focus mode then ends (§4.2). **Publish now** is offered only once
+   every lesson has a video or text (owner, 2026-10-18: students never open an empty lesson); until
+   then the step says how many lessons are still empty and offers **Keep as a draft** alone. The
+   assistant follows the same rule (`content.not_ready`): it never proposes publishing such a course.
 
 **Follow-ups (F4).** Between the must-ask questions the specialist may ask a question specific to
 this course, with two to four buttons, "You decide" and the answer box. Examples for a desk-yoga

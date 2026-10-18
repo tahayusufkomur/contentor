@@ -205,7 +205,7 @@ def _kept(course, drafted: list) -> set:
     a lesson of (its text or a video)."""
     from apps.courses.models import Lesson
 
-    filled = Lesson.objects.filter(module__course=course).exclude(content_html="", video__isnull=True, video_url="")
+    filled = Lesson.objects.filter(module__course=course).exclude(content.EMPTY_LESSON)
     return {
         *course.modules.exclude(pk__in=drafted).values_list("id", flat=True),
         *filled.values_list("module_id", flat=True),

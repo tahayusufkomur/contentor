@@ -8,7 +8,7 @@ import pytest
 
 from apps.accounts.models import User
 from apps.core.focus import flow
-from apps.courses.models import Course
+from apps.courses.models import Course, Lesson, Module
 from apps.tenant_config.models import CopilotRun, FocusCreation
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -103,13 +103,39 @@ def _at_finish(owner, text="A course on desk yoga"):
     return flow.answer(creation, "outline_review", value="ok")
 
 
+def _filled(creation, content_html="<p>Breathe in.</p>"):
+    """One module with one lesson, its text as given."""
+    module = Module.objects.create(course_id=creation.record_id, title="Basics", order=1)
+    return Lesson.objects.create(module=module, title="Lesson 1", order=1, content_html=content_html)
+
+
 def test_finish_publishes_only_when_asked(owner, outline_start):
     kept = flow.finish(_at_finish(owner), publish=False)
     assert Course.objects.get(pk=kept.record_id).is_published is False
     assert kept.status == "done"
     assert kept.finished_at is not None
-    published = flow.finish(_at_finish(owner, "A course on breathing"), publish=True)
+    ready = _at_finish(owner, "A course on breathing")
+    _filled(ready)
+    published = flow.finish(ready, publish=True)
     assert Course.objects.get(pk=published.record_id).is_published is True
+
+
+def test_a_course_with_an_empty_lesson_is_never_published(owner, outline_start):
+    creation = _at_finish(owner)
+    _filled(creation, content_html="")
+    question = flow.state(creation)["question"]
+    assert question["question"] == flow.NOT_READY
+    assert "1 of its 1 lessons have none yet" in question["why"]
+    assert [o["value"] for o in question["options"]] == ["draft"]
+    creation = flow.finish(creation, publish=True)  # a stale screen still asking
+    assert Course.objects.get(pk=creation.record_id).is_published is False
+    assert creation.answers["finish"] == "draft"
+
+
+def test_publish_is_offered_once_every_lesson_has_content(owner, outline_start):
+    creation = _at_finish(owner)
+    _filled(creation)
+    assert [o["value"] for o in flow.state(creation)["question"]["options"]] == ["publish", "draft"]
 
 
 def test_abandon_leaves_the_draft(owner, outline_start):

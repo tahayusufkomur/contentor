@@ -73,13 +73,15 @@ def _course_record(slug):
         f"Open on this page: course {course.id} '{course.title[:120]}' "
         f"({'published' if course.is_published else 'draft'}, price {course.price})",
         f"  description: {course.description[:RECORD_TEXT_MAX] or '(none)'}",
-        "  curriculum (module id | title, then its lessons as lesson id | title):",
+        "  curriculum (module id | title, then its lessons as lesson id | title; "
+        "(empty) = no video or text yet, and it cannot go live until none is):",
     ]
     modules = list(course.modules.all())[:MAX_RECORD_MODULES]
     for module in modules:
         lines.append(f"    module {module.id} | {module.title[:80]}")
         for lesson in list(module.lessons.all())[:MAX_RECORD_LESSONS]:
-            lines.append(f"      lesson {lesson.id} | {lesson.title[:80]}")
+            empty = not (lesson.content_html or lesson.video_id or lesson.video_url)
+            lines.append(f"      lesson {lesson.id} | {lesson.title[:80]}{' (empty)' if empty else ''}")
     if not modules:
         lines.append("    (no modules yet)")
     return "\n".join(lines)

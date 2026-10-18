@@ -1378,7 +1378,7 @@ def test_system_prompt_lists_edit_blog_post():
 def test_publish_course_card_resolves_title_and_stashes_id(tenant_with_pages):
     from apps.accounts.models import User
     from apps.core.copilot import tokens as copilot_tokens
-    from apps.courses.models import Course
+    from apps.courses.models import Course, Lesson, Module
 
     instructor = User.objects.create_user(
         email="publish-course@x.com",
@@ -1390,6 +1390,8 @@ def test_publish_course_card_resolves_title_and_stashes_id(tenant_with_pages):
     course = Course.objects.create(
         title="Yoga Basics", instructor=instructor, price=0, pricing_type="free", is_published=False
     )
+    module = Module.objects.create(course=course, title="Start", order=1)
+    Lesson.objects.create(module=module, title="Breath", order=1, video_url="https://example.com/v.mp4")
     action = engine.PublishCourseAction(kind="publish_course", course_id=course.pk)
     card = engine._card(tenant_with_pages, action)
     assert card["kind"] == "publish_course"
@@ -1417,6 +1419,31 @@ def test_publish_course_already_published_dropped_with_reason(tenant_with_pages)
     action = engine.PublishCourseAction(kind="publish_course", course_id=course.pk)
     with pytest.raises(copilot_content.ContentOpError, match="already published"):
         engine._card(tenant_with_pages, action)
+
+
+def test_publish_course_with_an_empty_lesson_is_dropped_with_reason(tenant_with_pages):
+    from apps.accounts.models import User
+    from apps.core.copilot import content as copilot_content
+    from apps.courses.models import Course, Lesson, Module
+
+    instructor = User.objects.create_user(
+        email="publish-course-3@x.com",
+        name="Coach",
+        password="x",  # noqa: S106
+        role="owner",
+        is_staff=True,
+    )
+    course = Course.objects.create(title="Yoga Basics", instructor=instructor)
+    action = engine.PublishCourseAction(kind="publish_course", course_id=course.pk)
+    with pytest.raises(copilot_content.ContentOpError, match="no lessons yet"):
+        engine._card(tenant_with_pages, action)
+    module = Module.objects.create(course=course, title="Start", order=1)
+    Lesson.objects.create(module=module, title="Breath", order=1, content_html="<p>In.</p>")
+    Lesson.objects.create(module=module, title="Hold", order=2)
+    with pytest.raises(copilot_content.ContentOpError, match="1 of its 2 lessons have none yet"):
+        engine._card(tenant_with_pages, action)
+    digest = engine._courses_digest(tenant_with_pages)
+    assert "| draft | 1/2 |" in digest
 
 
 def test_publish_blog_post_card_resolves_title_and_stashes_id(tenant_with_pages):

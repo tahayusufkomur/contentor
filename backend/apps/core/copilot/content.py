@@ -10,6 +10,7 @@ Callers wrap these in tenant_context; imports are function-local to match
 apps/core's cycle-dodging convention."""
 
 from django.conf import settings
+from django.db.models import Q
 
 
 class ContentOpError(Exception):
@@ -417,6 +418,24 @@ def edit_blog_post(post_id, params):
         "url": f"/admin/blog/{post.id}",
         "changes": changes,
     }
+
+
+# A lesson with nothing for a student yet: no text and no video.
+EMPTY_LESSON = Q(content_html="", video__isnull=True, video_url="")
+
+
+def not_ready(course_id) -> str | None:
+    """Why the course cannot go live yet, or None: every lesson needs a video
+    or text first. Focus mode and the assistant ask this before publishing;
+    the plain editor and /setup's go-live do not."""
+    from apps.courses.models import Lesson
+
+    lessons = Lesson.objects.filter(module__course_id=course_id)
+    total = lessons.count()
+    if not total:
+        return "it has no lessons yet"
+    empty = lessons.filter(EMPTY_LESSON).count()
+    return f"{empty} of its {total} lessons have none yet" if empty else None
 
 
 def publish_course(course_id):

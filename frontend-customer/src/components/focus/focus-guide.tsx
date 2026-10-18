@@ -317,13 +317,16 @@ function FinishStep({
         )}
       </div>
       <div className="flex flex-wrap gap-2">
-        <Button
-          loading={finishing && choice === true}
-          disabled={finishing}
-          onClick={() => pick(true)}
-        >
-          {t("focus.publishNow")}
-        </Button>
+        {/* Offered only once every lesson has a video or text. */}
+        {question.options.some((o) => o.value === "publish") && (
+          <Button
+            loading={finishing && choice === true}
+            disabled={finishing}
+            onClick={() => pick(true)}
+          >
+            {t("focus.publishNow")}
+          </Button>
+        )}
         <Button
           variant="outline"
           loading={finishing && choice === false}
