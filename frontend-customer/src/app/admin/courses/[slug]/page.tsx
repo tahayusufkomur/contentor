@@ -12,6 +12,16 @@ import { PageState } from "@/components/ui/page-state";
 import { clientFetch } from "@/lib/api-client";
 import { ArrowLeft } from "lucide-react";
 import { CourseForm } from "@/components/admin/course-form";
+import { FOCUS_TIME_KEY } from "@/components/focus/focus-guide";
+import { startActiveTime } from "@/lib/focus/active-time";
+import { fetchCreation } from "@/lib/focus/api";
+import {
+  activeCreation,
+  openCreationFor,
+  setActiveCreation,
+  useActiveCreation,
+  useFocusOverview,
+} from "@/lib/focus/store";
 import { useAssistantApplied } from "@/lib/site-events";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import type { CourseDetail } from "@/types/course";
@@ -65,6 +75,46 @@ export default function AdminCourseDetailPage() {
       .catch(console.error);
   }, [params.slug]);
 
+  // Focus mode: a course she is still making in it reopens there, where she
+  // stopped; the guide and this form follow the creation from here.
+  const overview = useFocusOverview();
+  const active = useActiveCreation();
+  const courseId = course?.id;
+  const creationId =
+    courseId === undefined
+      ? null
+      : (openCreationFor(overview, "course", courseId) ??
+        (active?.record?.id === courseId ? active.id : null));
+  useEffect(() => {
+    if (!creationId) return;
+    startActiveTime(FOCUS_TIME_KEY);
+    // Just made from the new-course page: the guide already holds it.
+    if (activeCreation()?.id === creationId) return;
+    let cancelled = false;
+    fetchCreation(creationId)
+      .then((state) => {
+        if (!cancelled && state.status === "active") setActiveCreation(state);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [creationId]);
+  const focusing =
+    !!course && !!active && active.id !== 0 && active.record?.id === course.id;
+  const outline = active?.outline;
+  const focus = focusing
+    ? {
+        record: `course:${course.id}`,
+        // A run that failed or was stopped is not replayed: the guide offers
+        // Try again and the form shows what is saved.
+        runId:
+          outline?.status === "building" || outline?.status === "ready"
+            ? outline.run
+            : null,
+      }
+    : undefined;
+
   // The assistant changed this course (its curriculum, text, price or cover):
   // load it again and hand the form the new copy. The form keeps its own
   // state, so it is remounted — only for a change to the course on screen.
@@ -102,25 +152,30 @@ export default function AdminCourseDetailPage() {
     >
       {course && (
         <>
-          <div className="flex items-center gap-4">
-            <Button asChild variant="ghost" size="icon">
-              <Link href="/admin/courses">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold tracking-tight">Edit Course</h1>
-              <p className="text-sm text-muted-foreground">{course.title}</p>
+          {!focusing && (
+            <div className="flex items-center gap-4">
+              <Button asChild variant="ghost" size="icon">
+                <Link href="/admin/courses">
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
+              </Button>
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold tracking-tight">
+                  Edit Course
+                </h1>
+                <p className="text-sm text-muted-foreground">{course.title}</p>
+              </div>
+              <Badge variant={course.is_published ? "success" : "secondary"}>
+                {course.is_published ? "Published" : "Draft"}
+              </Badge>
             </div>
-            <Badge variant={course.is_published ? "success" : "secondary"}>
-              {course.is_published ? "Published" : "Draft"}
-            </Badge>
-          </div>
+          )}
 
           <CourseForm
             key={formKey}
             course={course}
             onCourseLoaded={refreshCourse}
+            focus={focus}
           />
         </>
       )}

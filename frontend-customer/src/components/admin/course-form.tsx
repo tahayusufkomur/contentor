@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, Fragment } from "react";
+import { useState, useCallback, useEffect, useRef, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,7 +26,7 @@ import { clientFetch } from "@/lib/api-client";
 import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
-import { ChevronUp, Pencil, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from "lucide-react";
 import { PhotoPicker } from "@/components/admin/photo-picker";
 import { OpenStudioButton } from "@/components/studio/open-studio-button";
 import { VideoPicker } from "@/components/admin/video-picker";
@@ -40,6 +40,9 @@ import { RichHtml } from "@/components/blocks/rich-html";
 import { refreshSetupStatus, useTenantCurrency } from "@/lib/setup-assistant";
 import { currencySymbol, formatDuration } from "@/lib/format";
 import { MonetizeNudge } from "@/components/admin/monetize-nudge";
+import { LiveOutline } from "@/components/focus/live-outline";
+import { WorkingTag } from "@/components/focus/working-tag";
+import { useLiveRecord } from "@/lib/copilot/live";
 import type { Course, CourseDetail, Module, Lesson } from "@/types/course";
 import type { Photo } from "@/types/photo";
 
@@ -62,6 +65,37 @@ const EMPTY_LESSON: NewLessonState = {
 interface CourseFormProps {
   course?: CourseDetail | null;
   onCourseLoaded?: () => void;
+  /** Focus mode: the record the outline run writes ("course:<id>") and that
+   *  run, replayed live on this form. */
+  focus?: { record: string; runId: number | null };
+  /** Create mode: the course was created (before the page moves on). */
+  onCreated?: (course: Course) => void;
+}
+
+/** The settings fields she edits by hand; a reload keeps her unsaved edits. */
+const SETTINGS_FIELDS = [
+  "title",
+  "description",
+  "thumbnail_url",
+  "thumbnail_id",
+  "thumbnail_signed_url",
+  "pricing_type",
+  "price",
+  "is_published",
+] as const;
+
+/** The server's fresh copy, keeping every field she changed since the last
+ *  one (``server``) and has not saved. */
+function keepEdits(
+  fresh: CourseDetail,
+  mine: CourseDetail | null,
+  server: CourseDetail | null,
+): CourseDetail {
+  if (!mine || !server) return fresh;
+  const next = { ...fresh } as Record<string, unknown>;
+  for (const key of SETTINGS_FIELDS)
+    if (mine[key] !== server[key]) next[key] = mine[key];
+  return next as unknown as CourseDetail;
 }
 
 /** What "Save" sends for the settings card, as one value, ids in any order. */
@@ -93,6 +127,8 @@ const savedKey = (c: CourseDetail | null) =>
 export function CourseForm({
   course: initialCourse,
   onCourseLoaded,
+  focus,
+  onCreated,
 }: CourseFormProps) {
   const navigate = useNavigate();
   const currency = useTenantCurrency();
@@ -146,18 +182,66 @@ export function CourseForm({
   const [newLesson, setNewLesson] = useState<NewLessonState>(EMPTY_LESSON);
 
   const slug = course?.slug;
+  // The server's copy as the form last took it in: what she has changed
+  // since is hers, and a reload keeps it.
+  const server = useRef<CourseDetail | null>(initialCourse ?? null);
 
   const loadCourse = useCallback(async () => {
     if (!slug) return;
     try {
       const data = await clientFetch<CourseDetail>(`/api/v1/courses/${slug}/`);
-      setCourse(data);
+      const base = server.current;
+      server.current = data;
+      setCourse((mine) => keepEdits(data, mine, base));
       setSaved(savedKey(data));
       onCourseLoaded?.();
     } catch (err) {
       console.error(err);
     }
   }, [slug, onCourseLoaded]);
+
+  // Focus mode: the outline run's title, description and modules appear on
+  // the form as they are written. Only a field being written is read-only;
+  // a written value lands in the form unless she changed that field herself.
+  const live = useLiveRecord(focus?.record ?? "", focus?.runId ?? null);
+  const taken = useRef<Record<string, string>>({});
+  const loadedFor = useRef<number | null>(null);
+  useEffect(() => {
+    taken.current = {};
+  }, [focus?.runId]);
+  useEffect(() => {
+    if (!live) return;
+    for (const name of ["title", "description"] as const) {
+      const field = live.fields[name];
+      if (!field || field.typing || taken.current[name] === field.value)
+        continue;
+      taken.current[name] = field.value;
+      const base = server.current?.[name];
+      if (server.current)
+        server.current = { ...server.current, [name]: field.value };
+      setCourse((mine) =>
+        mine && mine[name] === base ? { ...mine, [name]: field.value } : mine,
+      );
+    }
+    if (server.current) setSaved(savedKey(server.current));
+    // Once it has all been shown, the saved modules take over the replay.
+    if (live.settled && focus?.runId && loadedFor.current !== focus.runId) {
+      loadedFor.current = focus.runId;
+      void loadCourse();
+    }
+  }, [live, focus?.runId, loadCourse]);
+  const writing = (name: "title" | "description") =>
+    live?.fields[name]?.typing ?? false;
+  const shown = (name: "title" | "description") => {
+    const field = live?.fields[name];
+    return field && taken.current[name] !== field.value
+      ? field.value
+      : (course?.[name] ?? "");
+  };
+  const showLive =
+    !!live && !live.settled && (live.working !== null || live.rows.length > 0);
+  const [allDetails, setAllDetails] = useState(false);
+  const detailsShown = !focus || allDetails;
 
   // --- Save all course fields ---
   const { run: handleSave, loading: saving } = useAsyncAction(
@@ -192,6 +276,7 @@ export function CourseForm({
             : "Course saved as a draft — add lessons, then publish",
         );
         void refreshSetupStatus();
+        onCreated?.(created);
         navigate(`/admin/courses/${created.slug}`);
         return;
       }
@@ -370,11 +455,20 @@ export function CourseForm({
           )}
           <CardContent className={isCreate ? "space-y-6 pt-6" : "space-y-6"}>
             <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Label htmlFor="title">Title</Label>
+                {writing("title") && live?.working && (
+                  <WorkingTag
+                    specialist={live.working.specialist}
+                    label="writing"
+                  />
+                )}
+              </div>
               <Input
                 id="title"
                 placeholder="e.g. Introduction to Photography"
-                value={isCreate ? createForm.title : (course?.title ?? "")}
+                readOnly={writing("title")}
+                value={isCreate ? createForm.title : shown("title")}
                 onChange={(e) =>
                   isCreate
                     ? setCreateForm({ ...createForm, title: e.target.value })
@@ -386,15 +480,20 @@ export function CourseForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Label htmlFor="description">Description</Label>
+                {writing("description") && live?.working && (
+                  <WorkingTag
+                    specialist={live.working.specialist}
+                    label="writing"
+                  />
+                )}
+              </div>
               <Textarea
                 id="description"
                 placeholder="Describe what students will learn..."
-                value={
-                  isCreate
-                    ? createForm.description
-                    : (course?.description ?? "")
-                }
+                readOnly={writing("description")}
+                value={isCreate ? createForm.description : shown("description")}
                 onChange={(e) =>
                   isCreate
                     ? setCreateForm({
@@ -534,42 +633,67 @@ export function CourseForm({
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-3">
-              <Switch
-                id="published"
-                checked={
-                  isCreate
-                    ? createForm.is_published
-                    : (course?.is_published ?? false)
-                }
-                onCheckedChange={(checked) =>
-                  isCreate
-                    ? setCreateForm({ ...createForm, is_published: checked })
-                    : setCourse(
-                        course ? { ...course, is_published: checked } : course,
-                      )
-                }
-              />
-              <Label htmlFor="published">
-                {isCreate ? "Publish immediately" : "Published"}
-              </Label>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Filters</Label>
-              <p className="text-xs text-muted-foreground">
-                Optional categories (level, style…) students can filter your
-                courses by.
-              </p>
-              <FilterPicker
-                value={filterOptionIds}
-                onChange={setFilterOptionIds}
-                scope="course"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Tags</Label>
-              <TagInput value={tagIds} onChange={setTagIds} scope="course" />
-            </div>
+            {focus && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="-ml-2 gap-1.5"
+                aria-expanded={allDetails}
+                onClick={() => setAllDetails((open) => !open)}
+              >
+                {allDetails ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+                All details
+              </Button>
+            )}
+            {detailsShown && (
+              <div className="flex items-center gap-3">
+                <Switch
+                  id="published"
+                  checked={
+                    isCreate
+                      ? createForm.is_published
+                      : (course?.is_published ?? false)
+                  }
+                  onCheckedChange={(checked) =>
+                    isCreate
+                      ? setCreateForm({ ...createForm, is_published: checked })
+                      : setCourse(
+                          course
+                            ? { ...course, is_published: checked }
+                            : course,
+                        )
+                  }
+                />
+                <Label htmlFor="published">
+                  {isCreate ? "Publish immediately" : "Published"}
+                </Label>
+              </div>
+            )}
+            {detailsShown && (
+              <div className="space-y-1.5">
+                <Label>Filters</Label>
+                <p className="text-xs text-muted-foreground">
+                  Optional categories (level, style…) students can filter your
+                  courses by.
+                </p>
+                <FilterPicker
+                  value={filterOptionIds}
+                  onChange={setFilterOptionIds}
+                  scope="course"
+                />
+              </div>
+            )}
+            {detailsShown && (
+              <div className="space-y-1.5">
+                <Label>Tags</Label>
+                <TagInput value={tagIds} onChange={setTagIds} scope="course" />
+              </div>
+            )}
             {!isCreate && (
               <Button
                 onClick={handleSave}
@@ -789,7 +913,8 @@ export function CourseForm({
               </CardHeader>
             </Card>
 
-            {course.modules.map((mod: Module) => (
+            {showLive && live && <LiveOutline frame={live} />}
+            {(showLive ? [] : course.modules).map((mod: Module) => (
               <Card key={mod.id}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">

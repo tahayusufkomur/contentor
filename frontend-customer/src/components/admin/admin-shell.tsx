@@ -12,6 +12,7 @@ import { MobileHeader } from "@/components/shared/mobile-header";
 import { UserMenu } from "@/components/shared/user-menu";
 import { CommandPalette } from "@/components/admin/command-palette";
 import { RunsWatcher } from "@/components/copilot/runs-watcher";
+import { FocusBar } from "@/components/focus/focus-bar";
 import { EntitlementsProvider } from "@/components/admin/entitlements-provider";
 import {
   AssistantDock,
@@ -28,6 +29,10 @@ import { activeSection, buildAdminNav } from "@/lib/admin-nav";
 import { paletteEntries } from "@/lib/admin-palette";
 import { gateAdminNav } from "@/lib/admin-nav-gate";
 import { useSetupStatus } from "@/lib/setup-assistant";
+import { FOCUS_TIME_KEY } from "@/components/focus/focus-guide";
+import { stopActiveTime, takeActiveMs } from "@/lib/focus/active-time";
+import { leaveCreation } from "@/lib/focus/api";
+import { clearActiveCreation, useActiveCreation } from "@/lib/focus/store";
 import type { User } from "@/types/auth";
 import { AdminUserContext } from "@/hooks/use-admin-user";
 
@@ -92,6 +97,23 @@ function AdminShellContent({ children, user }: AdminShellProps) {
   // The photo studio's editor fills the page: the navigation shrinks to icons, and from 1024 px the page
   // loses its padding (the editor has bars and panels of its own that reach the edges).
   const studio = isStudioEditor(pathname);
+  // Focus mode: the side menu is tucked away and the top bar is the creation's.
+  const creation = useActiveCreation();
+  // Gone to another page (not Save & leave): it stays open to resume, and
+  // the studio is itself again.
+  const creationPage = creation?.record
+    ? `/admin/courses/${creation.record.slug}`
+    : null;
+  useEffect(() => {
+    if (!creation) return;
+    if (pathname === "/admin/courses/new" || pathname === creationPage) return;
+    if (creation.id)
+      void leaveCreation(creation.id, {
+        active_ms: takeActiveMs(FOCUS_TIME_KEY),
+      }).catch(() => {});
+    stopActiveTime(FOCUS_TIME_KEY);
+    clearActiveCreation();
+  }, [pathname, creation, creationPage]);
   const expandSection = (sectionId: string) =>
     setExpandedSections((prev) =>
       prev.includes(sectionId) ? prev : [...prev, sectionId],
@@ -99,7 +121,11 @@ function AdminShellContent({ children, user }: AdminShellProps) {
 
   return (
     <div className="flex h-screen">
-      <AppSidebar title={t("title")} sections={navSections} compact={studio}>
+      <AppSidebar
+        title={t("title")}
+        sections={navSections}
+        compact={studio || creation !== null}
+      >
         {user && <UserMenu user={user} />}
       </AppSidebar>
       <div className="flex flex-1 flex-col overflow-hidden">
@@ -113,34 +139,40 @@ function AdminShellContent({ children, user }: AdminShellProps) {
           ref={topbarRef}
           className="flex h-[52px] items-center justify-between gap-3 border-b bg-background px-4"
         >
-          <button
-            type="button"
-            onClick={() => setCmdOpen(true)}
-            className="flex h-9 w-full min-w-0 max-w-sm items-center gap-2.5 rounded-full border bg-background px-3 text-caption text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            <Search className="h-4 w-4 shrink-0" />
-            <span className="truncate">{t("palette.placeholder")}</span>
-            <kbd className="ml-auto hidden items-center gap-0.5 rounded-md border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
-              ⌘K
-            </kbd>
-          </button>
+          {creation ? (
+            <FocusBar state={creation} />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setCmdOpen(true)}
+              className="flex h-9 w-full min-w-0 max-w-sm items-center gap-2.5 rounded-full border bg-background px-3 text-caption text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              <Search className="h-4 w-4 shrink-0" />
+              <span className="truncate">{t("palette.placeholder")}</span>
+              <kbd className="ml-auto hidden items-center gap-0.5 rounded-md border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline-flex">
+                ⌘K
+              </kbd>
+            </button>
+          )}
 
-          <Button
-            variant="outline"
-            className="ml-auto shrink-0 gap-1.5 rounded-full px-3"
-            onClick={dock.toggle}
-            aria-pressed={dock.isOpen}
-          >
-            <Sparkles className="h-4 w-4" />
-            <span>{t("dock.title")}</span>
-            {setup &&
-              !setup.dismissed &&
-              setup.progress.done < setup.progress.total && (
-                <span className="rounded-full bg-muted px-1.5 text-[10px] tabular-nums">
-                  {setup.progress.done}/{setup.progress.total}
-                </span>
-              )}
-          </Button>
+          {!creation && (
+            <Button
+              variant="outline"
+              className="ml-auto shrink-0 gap-1.5 rounded-full px-3"
+              onClick={dock.toggle}
+              aria-pressed={dock.isOpen}
+            >
+              <Sparkles className="h-4 w-4" />
+              <span>{t("dock.title")}</span>
+              {setup &&
+                !setup.dismissed &&
+                setup.progress.done < setup.progress.total && (
+                  <span className="rounded-full bg-muted px-1.5 text-[10px] tabular-nums">
+                    {setup.progress.done}/{setup.progress.total}
+                  </span>
+                )}
+            </Button>
+          )}
 
           <Button
             asChild
@@ -155,12 +187,16 @@ function AdminShellContent({ children, user }: AdminShellProps) {
           </Button>
         </div>
 
-        <SectionTabs section={section} onExpand={expandSection} />
+        {!creation && (
+          <SectionTabs section={section} onExpand={expandSection} />
+        )}
 
         <main
           className={cn(
             "flex-1 overflow-y-auto p-4 md:p-6",
             studio && "lg:p-0",
+            // Room under the page for the guide's bottom sheet on a phone.
+            creation && "pb-[62vh] md:pb-[62vh] lg:pb-6",
           )}
         >
           {children}

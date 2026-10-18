@@ -70,6 +70,15 @@ export function setActiveCreation(state: FocusState | null) {
   emit();
 }
 
+/** Leave focus mode on the way out of a page; with ``id``, only when that is
+ *  still the creation showing (0: the first question, before it exists). */
+export function clearActiveCreation(id?: number) {
+  if (active !== null && (id === undefined || active.id === id))
+    setActiveCreation(null);
+}
+
+export const activeCreation = () => active;
+
 /** The creation focus mode is showing now; the dock and the shell follow it. */
 export function useActiveCreation(): FocusState | null {
   return useSyncExternalStore(
