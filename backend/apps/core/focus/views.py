@@ -112,6 +112,15 @@ def focus_finish(request, creation_id):
 
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
+def focus_descriptions(request, creation_id):
+    creation = _hers(request, creation_id) if settings.FOCUS_MODE_ENABLED else None
+    if creation is None:
+        return _not_found()
+    return Response(flow.state(flow.retry_descriptions(creation)))
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
 def focus_leave(request, creation_id):
     creation = _hers(request, creation_id) if settings.FOCUS_MODE_ENABLED else None
     if creation is None:

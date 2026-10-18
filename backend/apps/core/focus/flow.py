@@ -16,7 +16,7 @@ from django.utils import timezone
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
-from . import analysis, jobs, outline
+from . import analysis, descriptions, jobs, outline
 from .recipes import RECIPES
 
 DELEGATE = "delegate"
@@ -29,6 +29,7 @@ CLOSING = {
     "publish": "Published. Students can find it on your site now.",
     "draft": "Saved as a draft. Once every lesson has its video or text, publish it from this page.",
 }
+WRITING_DESCRIPTIONS = "Writing a short description for each lesson's video. Edit any of them on the page."
 # The finish step while a lesson is still empty: no "Publish now".
 NOT_READY = "Your outline is saved. Next, your lessons."
 
@@ -126,6 +127,9 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
             if value == "ok":
                 creation.answers[field] = "ok"
                 _say(creation, question, "Looks good, continue")
+                if status == "ready":  # otherwise the outline job starts them once it has written
+                    descriptions.start(creation)
+                _chat_append(creation, [{"role": "assistant", "text": WRITING_DESCRIPTIONS}])
             elif value == "retry" and status in ("failed", "idle"):
                 # Again what failed: her change, when it was a redraft.
                 failed = CopilotRun.objects.filter(pk=creation.outline_run_id).first()
@@ -245,6 +249,19 @@ def leave(creation, *, abandon: bool = False, active_ms=None) -> FocusCreation:
     return creation
 
 
+def retry_descriptions(creation) -> FocusCreation:
+    """Try again after the descriptions failed (or never started): only once
+    the titles are confirmed, and never while a run is going."""
+    with transaction.atomic():
+        creation = _locked(creation)
+        if (creation.answers or {}).get("outline_review") == "ok" and jobs.status(creation, "descriptions") in (
+            "failed",
+            "idle",
+        ):
+            descriptions.start(creation)
+    return creation
+
+
 def outline_status(creation) -> str:
     """idle | building | ready | failed, from its outline run."""
     if creation.outline_run_id is None:  # never started, or its run was pruned
@@ -310,6 +327,11 @@ def state(creation) -> dict:
         ]
         + ([{"field": "price", "label": _price_label(answers["price"])}] if "price" in answers else []),
         "outline": {"status": outline_status(creation), "run": creation.outline_run_id},
+        "descriptions": (
+            {"status": jobs.status(creation, "descriptions"), "run": jobs.run_id(creation, "descriptions")}
+            if jobs.run_id(creation, "descriptions") is not None
+            else None
+        ),
         "reading": (
             {"status": jobs.status(creation, "analysis"), "run": jobs.run_id(creation, "analysis")}
             if creation.pending

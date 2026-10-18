@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 HANDLERS = {
     "outline": "apps.core.focus.outline",
     "analysis": "apps.core.focus.analysis",
+    "descriptions": "apps.core.focus.descriptions",
 }
 STATUS = {
     "queued": "building",

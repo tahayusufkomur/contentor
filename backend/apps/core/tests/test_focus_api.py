@@ -8,6 +8,7 @@ from django.test import override_settings
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.core import tasks
 from apps.courses.models import Course
 from apps.tenant_config.models import CopilotRun, FocusCreation
 
@@ -43,6 +44,12 @@ def owner(tenant_ctx):
 @pytest.fixture()
 def client(owner):
     return _client(owner)
+
+
+@pytest.fixture(autouse=True)
+def no_celery():
+    with mock.patch.object(tasks.run_focus_job, "delay"):
+        yield
 
 
 @pytest.fixture(autouse=True)
@@ -212,3 +219,25 @@ def test_just_draft_it_on_the_first_screen_is_one_request(client, outline_start)
     assert state["question"]["field"] == "outline_review"
     assert state["outline"]["status"] == "building"
     assert outline_start.call_count == 1
+
+
+@on
+def test_descriptions_try_again_starts_one_run_once_the_titles_are_confirmed(client):
+    cid = _start(client).json()["id"]
+    state = _answer(client, cid, field="level", rest=True).json()
+    assert state["descriptions"] is None
+    assert client.post(f"{URL}{cid}/descriptions/").json()["descriptions"] is None  # not confirmed yet
+    _answer(client, cid, field="outline_review", value="ok")
+    state = client.post(f"{URL}{cid}/descriptions/").json()
+    assert state["descriptions"]["status"] == "building"
+    run = state["descriptions"]["run"]
+    assert client.post(f"{URL}{cid}/descriptions/").json()["descriptions"]["run"] == run  # a double tap
+
+
+@on
+def test_descriptions_are_hers_and_switched(client):
+    cid = _start(client).json()["id"]
+    other = _client(_user("focus-other-desc@x.com"))
+    assert other.post(f"{URL}{cid}/descriptions/").status_code == 404
+    with override_settings(FOCUS_MODE_ENABLED=False):
+        assert client.post(f"{URL}{cid}/descriptions/").status_code == 404

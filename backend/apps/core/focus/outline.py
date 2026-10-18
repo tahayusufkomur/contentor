@@ -18,7 +18,7 @@ from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotRun, FocusCreation
 from apps.tenant_config.setup_flow import _DRAFT_RULES, _Module
 
-from . import jobs
+from . import descriptions, jobs
 from .recipes import SIZES
 
 logger = logging.getLogger(__name__)
@@ -100,6 +100,9 @@ def carry_out(tenant, run_id) -> None:
         creation.save(update_fields=["drafted", "updated_at"])
         for event in events:
             runs.emit(run_id, event["type"], event["data"])
+        if (creation.answers or {}).get("outline_review") == "ok":
+            # A redraft after she confirmed the titles: what it created has no text yet.
+            descriptions.start(creation)
     # Its cover, matched to the written title, while the page replays the outline.
     try:
         content._give_cover(course)

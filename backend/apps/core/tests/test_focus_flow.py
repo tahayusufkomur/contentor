@@ -43,6 +43,13 @@ def owner(tenant_ctx):
     )
 
 
+@pytest.fixture(autouse=True)
+def no_celery():
+    """Looks good queues the descriptions job: nothing reaches a worker."""
+    with mock.patch.object(tasks.run_focus_job, "delay"):
+        yield
+
+
 @pytest.fixture()
 def outline_start():
     """The outline job, stubbed: a queued run per call, nothing enqueued."""
