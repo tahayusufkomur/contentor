@@ -16,7 +16,7 @@ from django.utils import timezone
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
-from . import analysis, descriptions, jobs, outline
+from . import analysis, covers, descriptions, jobs, outline
 from .recipes import RECIPES
 
 DELEGATE = "delegate"
@@ -358,6 +358,7 @@ def state(creation) -> dict:
             if jobs.run_id(creation, "descriptions") is not None
             else None
         ),
+        "cover": covers.payload(creation),
         "reading": (
             {"status": jobs.status(creation, "analysis"), "run": jobs.run_id(creation, "analysis")}
             if creation.pending

@@ -298,6 +298,8 @@ class FocusCreation(models.Model):
     brief = models.JSONField(default=dict, blank=True)
     # A typed answer waiting for its analysis: {field, text, rest, run}.
     pending = models.JSONField(default=dict, blank=True)
+    # The Designer's drafts (apps.core.focus.covers): {photo, rounds: [[recipe x4], ...], query}.
+    covers = models.JSONField(default=dict, blank=True)
     # Her active time on it (tab visible), the sum of the spans she reported.
     active_ms = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

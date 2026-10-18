@@ -20,6 +20,7 @@ HANDLERS = {
     "outline": "apps.core.focus.outline",
     "analysis": "apps.core.focus.analysis",
     "descriptions": "apps.core.focus.descriptions",
+    "covers": "apps.core.focus.covers",
 }
 STATUS = {
     "queued": "building",

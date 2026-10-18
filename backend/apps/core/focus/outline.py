@@ -18,7 +18,7 @@ from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotRun, FocusCreation
 from apps.tenant_config.setup_flow import _DRAFT_RULES, _Module
 
-from . import descriptions, jobs
+from . import covers, descriptions, jobs
 from .recipes import SIZES
 
 logger = logging.getLogger(__name__)
@@ -103,6 +103,12 @@ def carry_out(tenant, run_id) -> None:
         if (creation.answers or {}).get("outline_review") == "ok":
             # A redraft after she confirmed the titles: what it created has no text yet.
             descriptions.start(creation)
+        if (
+            not instruction
+            and not (course.thumbnail_id or course.thumbnail_url)
+            and jobs.run_id(creation, "covers") is None
+        ):
+            covers.start(creation, ahead=True)  # the first outline: the Designer drafts ahead of the cover step
     runs.emit(run_id, "step", {**STEP, "state": "done"})
     modules = course.modules.count()
     lessons = Lesson.objects.filter(module__course=course).count()
