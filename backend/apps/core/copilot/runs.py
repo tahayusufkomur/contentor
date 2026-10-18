@@ -118,6 +118,26 @@ def execute(schema_name, run_id):
         _settle(run_id, payload)
 
 
+def claim(run_id):
+    """Take a queued run for the worker; False when it was already taken,
+    stopped or swept (a second delivery of the task does nothing)."""
+    return bool(
+        CopilotRun.objects.filter(pk=run_id, status="queued").update(status="working", updated_at=timezone.now())
+    )
+
+
+def finish(run_id, ok, data=None):
+    """End a run another job carried out (not a copilot turn): done with
+    ``data`` as its result, or failed. A stopped or swept run stays as it is."""
+    with transaction.atomic():
+        run = CopilotRun.objects.select_for_update().get(pk=run_id)
+        if run.status not in ACTIVE:
+            return
+        run.result = data or {}
+        _finish(run, "done" if ok else "failed")
+        _append(run, "done" if ok else "failed", data)
+
+
 def sweep(qs):
     """Fail the runs in ``qs`` that nobody is advancing any more."""
     now = timezone.now()

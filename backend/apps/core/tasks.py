@@ -719,3 +719,12 @@ def run_copilot(schema_name, run_id):
     from apps.core.copilot import runs
 
     runs.execute(schema_name, run_id)
+
+
+@shared_task(queue="agents", ignore_result=True)
+def run_focus_outline(schema_name, run_id):
+    """Focus mode's outline for a course (apps.core.focus.outline), on the
+    agents worker: she watches it fill in, so it never waits behind a site build."""
+    from apps.core.focus import outline
+
+    outline.execute(schema_name, run_id)
