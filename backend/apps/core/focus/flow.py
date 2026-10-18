@@ -66,7 +66,7 @@ def start(user, kind: str, *, value=None, text=None, delegate=False, active_ms=0
     title = working_title("" if picked == DELEGATE else picked)
     actor = user if getattr(user, "pk", None) else None
     with transaction.atomic():
-        record_id = content.create_course(actor, {"title": title})["id"]
+        record_id = content.create_course(actor, {"title": title}, cover=False)["id"]
         chat = CopilotChat.objects.create(
             actor=actor,
             title=f"New course: {title}"[:120],
@@ -115,7 +115,9 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
                 _say(creation, question, words)
                 outline.start(creation, instruction=words)
             elif value == "retry" and status in ("failed", "idle"):
-                outline.start(creation)
+                # Again what failed: her change, when it was a redraft.
+                failed = CopilotRun.objects.filter(pk=creation.outline_run_id).first()
+                outline.start(creation, instruction=str(((failed and failed.request) or {}).get("instruction") or ""))
         else:
             asked = [q for q in recipe.questions if q.kind not in ("review", "finish")]
             if rest:  # "Just draft it": every question still open is hers to delegate
@@ -178,8 +180,8 @@ def outline_status(creation) -> str:
     advancing is failed here, so the guide never waits forever."""
     from apps.core.copilot import runs
 
-    if creation.outline_run_id is None:
-        return "idle"
+    if creation.outline_run_id is None:  # never started, or its run was pruned
+        return "ready" if (creation.drafted or {}).get("modules") else "idle"
     runs.sweep(CopilotRun.objects.filter(pk=creation.outline_run_id))
     status = CopilotRun.objects.filter(pk=creation.outline_run_id).values_list("status", flat=True).first()
     return OUTLINE_STATUS.get(status, "idle")

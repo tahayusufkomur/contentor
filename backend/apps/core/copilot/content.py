@@ -59,14 +59,17 @@ def _give_cover(item, field="thumbnail"):
         item.save(update_fields=[field])
 
 
-def create_course(user, params):
+def create_course(user, params, *, cover=True):
+    """``cover=False``: the caller gives the cover later (focus mode, once the
+    outline has written the real title; its first tap never waits on a search)."""
     from apps.courses.serializers import CourseCreateUpdateSerializer
 
     serializer = CourseCreateUpdateSerializer(data=params)
     if not serializer.is_valid():
         _fail(serializer.errors)
     course = serializer.save(instructor=user, is_published=False)
-    _give_cover(course)
+    if cover:
+        _give_cover(course)
     return {
         "kind": "create_course",
         "id": course.id,

@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from apps.core import ai as core_ai
 from apps.core import tasks
-from apps.core.copilot import runs
+from apps.core.copilot import content, runs
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotRun, FocusCreation
 from apps.tenant_config.setup_flow import _DRAFT_RULES, _Module
@@ -102,12 +102,6 @@ def _carry_out(tenant, run_id) -> None:
     request = run.request or {}
     creation = FocusCreation.objects.get(pk=request.get("focus"))
     instruction = str(request.get("instruction") or "")
-    prior = [
-        r.result or {}
-        for r in CopilotRun.objects.filter(request__focus=creation.id, request__job="outline", status="done").exclude(
-            pk=run_id
-        )
-    ]
     runs.emit(run_id, "step", {**STEP, "state": "start"})
     course = Course.objects.get(pk=creation.record_id)
     draft = _draft(tenant, creation, course, instruction)
@@ -117,16 +111,27 @@ def _carry_out(tenant, run_id) -> None:
         if locked.status not in runs.ACTIVE:  # Stop won while the model wrote: drop it
             return
         course = Course.objects.select_for_update().get(pk=course.pk)
-        events, written = write(
-            course, draft, working_title("" if topic == DELEGATE else topic), prior=prior, redraft=bool(instruction)
+        creation = FocusCreation.objects.select_for_update().get(pk=creation.pk)
+        events, creation.drafted = write(
+            course,
+            draft,
+            working_title("" if topic == DELEGATE else topic),
+            drafted=creation.drafted or {},
+            redraft=bool(instruction),
         )
+        creation.save(update_fields=["drafted", "updated_at"])
         for event in events:
             runs.emit(run_id, event["type"], event["data"])
+    # Its cover, matched to the written title, while the page replays the outline.
+    try:
+        content._give_cover(course)
+    except Exception:
+        logger.warning("focus outline: no cover schema=%s run=%s", tenant.schema_name, run_id, exc_info=True)
     runs.emit(run_id, "step", {**STEP, "state": "done"})
     modules = course.modules.count()
     lessons = Lesson.objects.filter(module__course=course).count()
     summary = f"{modules} module{'s' if modules != 1 else ''}, {lessons} lesson{'s' if lessons != 1 else ''}"
-    runs.finish(run_id, True, {"text": f"Your outline is ready: {summary}.", "summary": summary, **written})
+    runs.finish(run_id, True, {"text": f"Your outline is ready: {summary}.", "summary": summary})
 
 
 def _draft(tenant, creation, course, instruction: str) -> OutlineDraft:
@@ -201,34 +206,32 @@ def fallback(answers: dict, title: str) -> OutlineDraft:
     )
 
 
-def write(course, draft: OutlineDraft, working_title: str, *, prior=(), redraft: bool = False):
+def write(course, draft: OutlineDraft, working_title: str, *, drafted: dict, redraft: bool = False):
     """Save the draft over the course in one step; what she wrote herself wins.
     The title and description are written only while they are still ours (the
     working title, or what an earlier outline wrote); modules only when the
     course has none, except a redraft, which replaces the modules the earlier
-    outlines made and keeps hers. Returns (events to emit in order, what was
-    written: the run's result, read by the next redraft)."""
+    outlines made (``drafted``) and keeps hers. Returns (events to emit in
+    order, the creation's next ``drafted``)."""
     from apps.courses.models import Lesson, Module
 
     record = f"course:{course.id}"
-    events, written = [], {"title": None, "description": None, "modules": []}
-    changed = []
-    ours = {
-        "title": {working_title} | {p["title"] for p in prior if p.get("title")},
-        "description": {""} | {p["description"] for p in prior if p.get("description")},
-    }
+    events, changed = [], []
+    titles, descriptions = list(drafted.get("titles") or []), list(drafted.get("descriptions") or [])
+    modules = list(drafted.get("modules") or [])
+    ours = {"title": {working_title, *titles}, "description": {"", *descriptions}}
     for name, value in (("title", draft.title.strip()[:TITLE_MAX]), ("description", draft.description.strip())):
-        if getattr(course, name) not in ours[name]:
+        if not value or getattr(course, name) not in ours[name]:
             continue
-        if value:
-            setattr(course, name, value)
-            changed.append(name)
-            events.append({"type": "field", "data": {"record": record, "name": name, "value": value}})
-        written[name] = getattr(course, name)
+        setattr(course, name, value)
+        changed.append(name)
+        (titles if name == "title" else descriptions).append(value)
+        events.append({"type": "field", "data": {"record": record, "name": name, "value": value}})
     if changed:
         course.save(update_fields=[*changed, "updated_at"])
     if redraft:
-        Module.objects.filter(course=course, pk__in=[i for p in prior for i in p.get("modules") or []]).delete()
+        Module.objects.filter(course=course, pk__in=modules).delete()
+        modules = []
     if redraft or not course.modules.exists():
         top = course.modules.aggregate(top=Max("order"))["top"] or 0
         for index, module_draft in enumerate(draft.modules, start=1):
@@ -238,11 +241,11 @@ def write(course, draft: OutlineDraft, working_title: str, *, prior=(), redraft:
             Lesson.objects.bulk_create(
                 [Lesson(module=module, title=lesson, order=n) for n, lesson in enumerate(lessons, start=1)]
             )
-            written["modules"].append(module.id)
+            modules.append(module.id)
             events.append(
                 {
                     "type": "row",
                     "data": {"record": record, "kind": "module", "value": {"title": title, "lessons": lessons}},
                 }
             )
-    return events, written
+    return events, {"titles": titles, "descriptions": descriptions, "modules": modules}

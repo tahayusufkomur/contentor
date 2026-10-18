@@ -211,3 +211,26 @@ def test_the_prompt_knows_her_site_and_her_other_courses(owner):
     assert turn["topic"] == "delegate"
     assert turn["brand"] == "Yoga Studio"
     assert turn["her_courses"] == ["Morning flow"]
+
+
+def test_the_outline_gives_the_course_its_cover_once_written(owner):
+    creation = _building(owner)
+    with _model(), mock.patch("apps.core.copilot.content._give_cover") as cover:
+        outline.execute(SCHEMA, creation.outline_run_id)
+    cover.assert_called_once()
+    assert cover.call_args.args[0].title == "Desk yoga, gently"
+
+
+def test_a_redraft_after_its_run_is_gone_never_doubles_the_modules(owner):
+    """What an outline wrote is kept on the creation, not only on its run
+    (runs are pruned after two weeks, and a Stop can beat the run's finish)."""
+    creation = _building(owner)
+    with _model():
+        outline.execute(SCHEMA, creation.outline_run_id)
+    CopilotRun.objects.filter(pk=creation.outline_run_id).delete()
+    creation.refresh_from_db()
+    assert flow.outline_status(creation) == "ready"
+    run = outline.start(creation, instruction="fewer modules")
+    with _model(draft=_draft(modules=1, lessons=1)):
+        outline.execute(SCHEMA, run.id)
+    assert _course(creation).modules.count() == 1

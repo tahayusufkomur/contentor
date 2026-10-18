@@ -42,7 +42,9 @@ def outline_start():
     """The outline job, stubbed: a queued run per call, nothing enqueued."""
 
     def fake(creation, instruction=""):
-        run = CopilotRun.objects.create(actor=creation.actor, chat=creation.chat, specialist="content")
+        run = CopilotRun.objects.create(
+            actor=creation.actor, chat=creation.chat, specialist="content", request={"instruction": instruction}
+        )
         creation.outline_run = run
         creation.save(update_fields=["outline_run"])
         return run
@@ -170,3 +172,18 @@ def test_working_title():
     assert flow.working_title("A course on desk yoga.") == "Desk yoga"
     assert flow.working_title("  ") == "New course"
     assert len(flow.working_title("x" * 300)) == 80
+
+
+def test_try_again_after_a_failed_redraft_keeps_her_change(owner, outline_start):
+    creation = flow.answer(_started(owner), "level", rest=True)
+    CopilotRun.objects.filter(pk=creation.outline_run_id).update(status="done")
+    creation = flow.answer(creation, "outline_review", text="make module 2 about breathing")
+    CopilotRun.objects.filter(pk=creation.outline_run_id).update(status="failed")
+    flow.answer(creation, "outline_review", value="retry")
+    assert outline_start.call_args.kwargs["instruction"] == "make module 2 about breathing"
+
+
+def test_her_first_answer_does_not_wait_for_a_cover(owner, outline_start):
+    with mock.patch("apps.core.copilot.content._give_cover") as cover:
+        _started(owner)
+    cover.assert_not_called()

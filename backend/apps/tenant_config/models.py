@@ -289,6 +289,9 @@ class FocusCreation(models.Model):
     answers = models.JSONField(default=dict, blank=True)
     status = models.CharField(max_length=8, default="active")  # active | done | left
     outline_run = models.ForeignKey(CopilotRun, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    # What its outlines wrote ({titles, descriptions, modules: ids}), saved with
+    # the write itself: a redraft replaces exactly these, even once runs are gone.
+    drafted = models.JSONField(default=dict, blank=True)
     # Her active time on it (tab visible), the sum of the spans she reported.
     active_ms = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
