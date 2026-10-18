@@ -436,6 +436,9 @@ function NewPanel({
           nearestGenerationAspect(cardAspect),
           { signal: controller.signal, onStart },
         );
+        // makePhoto rejects once she has left; this is the second lock on the same door, so whatever it
+        // returns, a photo that arrives after she left is not put on a cover nobody is editing.
+        if (controller.signal.aborted) return;
         if (!photo?.signed_url) throw new Error("The job made no photo");
         onPick({ id: photo.id, url: photo.signed_url });
       } finally {

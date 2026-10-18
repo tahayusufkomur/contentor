@@ -239,6 +239,15 @@ function EditorBody({
       }),
     [design.id],
   );
+  // False from the moment this editor is gone, whether she left or a reload replaced it.
+  const alive = useRef(true);
+  useEffect(() => {
+    // set here as well: in development React runs an effect, its cleanup and the effect again
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
   // Leaving the page (or Keep reloading it) saves what is still waiting.
   useEffect(() => {
     return () => {
@@ -268,6 +277,10 @@ function EditorBody({
 
   // A photo she picks draws at once, before the next save tells the server about it.
   const pick = (photo: { id: string; url: string }) => {
+    // A photo can arrive late: an upload, a library copy or a new photo that finishes after she left, or
+    // after Keep. Taking it then would start a save nobody cancels: refused (400) once the design is kept,
+    // a 404 once it is discarded, and a quiet edit of a draft she is no longer looking at otherwise.
+    if (!alive.current || reloading) return;
     setPhotos((now) => ({ ...now, [photo.id]: photo.url }));
     edit({ type: "photo", id: photo.id });
   };
