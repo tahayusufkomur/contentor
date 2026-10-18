@@ -16,6 +16,7 @@ pytestmark = pytest.mark.django_db(transaction=True)
 HOST = "shared-test.localhost"
 URL = "/api/v1/admin/focus/"
 on = override_settings(FOCUS_MODE_ENABLED=True)
+off = override_settings(FOCUS_MODE_ENABLED=False)
 
 
 def _user(email, role="owner"):
@@ -64,6 +65,7 @@ def _answer(client, creation_id, **body):
     return client.post(f"{URL}{creation_id}/answer/", body, format="json")
 
 
+@off
 def test_overview_says_off_when_the_switch_is_off(client):
     body = client.get(URL).json()
     assert body == {"enabled": False, "first": {}, "open": []}
@@ -144,9 +146,10 @@ def test_a_deleted_course_closes_its_creation(client):
 def test_switching_off_hides_an_open_creation(client):
     with on:
         cid = _start(client).json()["id"]
-    assert client.get(f"{URL}{cid}/").status_code == 404
-    assert _answer(client, cid, field="level", value="beginners").status_code == 404
-    assert client.get(URL).json()["open"] == []
+    with off:
+        assert client.get(f"{URL}{cid}/").status_code == 404
+        assert _answer(client, cid, field="level", value="beginners").status_code == 404
+        assert client.get(URL).json()["open"] == []
 
 
 @on

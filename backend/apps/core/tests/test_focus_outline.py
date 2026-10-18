@@ -3,6 +3,7 @@ modules and lessons in one step, then its run emits the reveal the course
 page replays. The model call is patched; what is under test is what gets
 written (her own edits win), the events and their order, and the fallback."""
 
+import json
 from decimal import Decimal
 from unittest import mock
 
@@ -193,3 +194,20 @@ def test_finish_never_revives_a_stopped_run(owner):
 
 def test_run_focus_outline_goes_to_the_agents_queue():
     assert tasks.run_focus_outline.queue == "agents"
+
+
+def test_the_prompt_knows_her_site_and_her_other_courses(owner):
+    """A delegated topic must fit her site even when /setup left no niche."""
+    from apps.tenant_config.models import TenantConfig
+
+    config = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="x")
+    config.brand_name = "Yoga Studio"
+    config.save()
+    Course.objects.create(title="Morning flow", instructor=owner)
+    creation = flow.answer(flow.start(owner, "course", delegate=True), "level", rest=True)
+    with _model() as model:
+        outline.execute(SCHEMA, creation.outline_run_id)
+    turn = json.loads(model.call_args.kwargs["user"])
+    assert turn["topic"] == "delegate"
+    assert turn["brand"] == "Yoga Studio"
+    assert turn["her_courses"] == ["Morning flow"]

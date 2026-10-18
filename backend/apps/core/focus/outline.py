@@ -43,8 +43,8 @@ SYSTEM = _DRAFT_RULES + (
     "Draft the outline of ONE course: a concrete title (max 80 chars); a 2-3 sentence description of "
     "who it is for and what they will be able to do; modules in a sensible learning order, each with "
     "lesson titles. Titles only: no lesson text.\n"
-    "- topic: what the students will learn, in the coach's words; 'delegate' means pick a first "
-    "course that fits the niche.\n"
+    "- topic: what the students will learn, in the coach's words; 'delegate' means pick a course "
+    "that fits her site (brand, niche, description) and is not one of her_courses.\n"
     "- level: 'beginners' (complete beginners), 'some' (some experience), 'advanced', or the coach's "
     "own words; 'delegate' means pick what suits the topic.\n"
     "- size: "
@@ -161,14 +161,21 @@ def _draft(tenant, creation, course, instruction: str) -> OutlineDraft:
 
 def _user_turn(tenant, answers: dict, course, instruction: str) -> str:
     from apps.core.onboarding.ai_curate import CoachBrief
+    from apps.courses.models import Course
+    from apps.tenant_config.models import TenantConfig
 
     brief = CoachBrief.from_tenant(tenant)
+    config = TenantConfig.objects.first()
     turn = {
         "topic": answers.get("topic", ""),
         "level": answers.get("level", ""),
         "size": answers.get("size", ""),
         "instruction": instruction,
+        # What her site is about, even when /setup left no niche (a seeded site).
+        "brand": config.brand_name if config else "",
         "niche": brief.subject or brief.niche,
+        "description": brief.description,
+        "her_courses": list(Course.objects.exclude(pk=course.pk).values_list("title", flat=True)[:10]),
     }
     if instruction:
         turn["current_outline"] = {
