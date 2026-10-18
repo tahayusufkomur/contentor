@@ -283,9 +283,10 @@ describe("layoutFrames", () => {
       for (const aspect of REAL) {
         let expected = 10 * grow(aspect);
         // Beside the badge in a row 89 cqmin wide the logo leaves the chip room for "Free preview"
-        // only up to 9: full, band and photo at a Card as narrow as 3:4, 4:5 and 1:1.
+        // (10.3 em, headroom for the looks' real fonts included) only up to 8.6: full, band and photo
+        // at a Card as narrow as 3:4, 4:5 and 1:1.
         if (["full", "band", "photo"].includes(layout) && aspect <= 1) {
-          expected = 9;
+          expected = 8.6;
         }
         // At Banner, 100 cqmin high, it is 9.5 in every layout so that it does not compete with the title
         // (the mockup's is 7.9). A title-only cover could take 9.9 there before its title lost a line.
@@ -318,7 +319,9 @@ describe("layoutFrames", () => {
   });
 
   it("leaves the badge room for a short label beside the logo wherever they share a row, in every shape", () => {
-    // "Free preview": twelve capitals at 0.7 em each, and the chip's 1.4 em of padding.
+    // "Free preview": twelve capitals at 0.7 em each and the chip's 1.4 em of padding make 9.8 em, but
+    // the looks' real fonts are wider (measured in Chrome: manuscript's Literata 9.92 em, kinetic's
+    // 9.77, encore's 9.76), and a test here cannot see a font. The layouts leave 10.3 em.
     let checked = 0;
     for (const { layout, aspect, shown } of CASES) {
       if (layout === "title" || layout === "framed") continue;
@@ -330,7 +333,7 @@ describe("layoutFrames", () => {
       const width = 100 * Math.max(1, aspect);
       const room = (badge!.x + badge!.w - (logo!.x + logo!.w)) * width - 3;
       expect(room, label(layout, aspect, shown)).toBeGreaterThanOrEqual(
-        9.8 * textSize(layout, "badge", aspect) - 1e-6,
+        10.3 * textSize(layout, "badge", aspect) - 1e-6,
       );
       checked++;
     }

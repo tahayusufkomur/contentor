@@ -121,9 +121,11 @@ const LOGO_H = 10;
  *  7.9 and the Card's 10, so that it does not compete with the title. */
 const LOGO_BANNER_H = 9.5;
 const LOGO_MIN_H = 6.5;
-/** A short badge ("Free preview": twelve capitals at 0.7 em, and the chip's 1.4 em of padding), in
- *  em of the badge's size. A logo that shares the badge's row leaves the chip this much room. */
-const SHORT_BADGE_EM = 9.8;
+/** A short badge ("Free preview"), in em of the badge's size: the room a logo that shares the badge's
+ *  row leaves the chip. Twelve capitals at 0.7 em and the chip's 1.4 em of padding make 9.8 em, but a
+ *  layout cannot measure a font and the looks' own are wider: the widest measured in Chrome is
+ *  manuscript's Literata at 9.92 em (kinetic 9.77, encore 9.76). This carries headroom for them. */
+const SHORT_BADGE_EM = 10.3;
 /** The clear space between the logo and a badge that grows towards it, or between a badge and the
  *  edge of the photo it sits on, in cqmin. */
 export const BADGE_GAP = 3;
