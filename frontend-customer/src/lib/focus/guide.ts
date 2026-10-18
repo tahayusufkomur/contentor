@@ -18,9 +18,11 @@ export function guideBody(
   input: GuideInput,
 ): AnswerBody | null {
   const field = question.field;
-  if (input.rest) return { field, rest: true };
+  const text = input.text.trim();
+  // "Just draft it" with words in the box: they answer this question first.
+  if (input.rest)
+    return text ? { field, rest: true, text } : { field, rest: true };
   if (input.delegate) return { field, delegate: true };
   if (input.picked !== null) return { field, value: input.picked };
-  const text = input.text.trim();
   return text ? { field, text } : null;
 }

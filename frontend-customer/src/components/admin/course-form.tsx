@@ -239,6 +239,17 @@ export function CourseForm({
       ? field.value
       : (course?.[name] ?? "");
   };
+  // What a save sends: a field the outline wrote counts as written even
+  // while it is still typing in (the server has it; the old value would
+  // undo it), unless she changed that field herself.
+  const landed = (name: "title" | "description") => {
+    const written = live?.written[name];
+    return written !== undefined &&
+      taken.current[name] !== written &&
+      course?.[name] === server.current?.[name]
+      ? written
+      : (course?.[name] ?? "");
+  };
   const showLive =
     !!live && !live.settled && (live.working !== null || live.rows.length > 0);
   const [allDetails, setAllDetails] = useState(false);
@@ -251,8 +262,8 @@ export function CourseForm({
     await clientFetch(`/api/v1/courses/${slug}/`, {
       method: "PUT",
       body: JSON.stringify({
-        title: course.title,
-        description: course.description,
+        title: landed("title"),
+        description: landed("description"),
         thumbnail_url: course.thumbnail_url,
         thumbnail: course.thumbnail_id || null,
         pricing_type: course.pricing_type,

@@ -40,6 +40,12 @@ describe("guideBody", () => {
     });
   });
 
+  it("sends Just draft it with what she typed in the box", () => {
+    expect(
+      guideBody(q("level"), { ...none, rest: true, text: " nurses " }),
+    ).toEqual({ field: "level", rest: true, text: "nurses" });
+  });
+
   it("sends nothing when nothing is picked or typed", () => {
     expect(guideBody(q("level"), none)).toBeNull();
     expect(guideBody(q("level"), { ...none, text: "   " })).toBeNull();

@@ -51,16 +51,17 @@ def working_title(topic: str) -> str:
     return (text[0].upper() + text[1:])[:TITLE_MAX]
 
 
-def start(user, kind: str, *, value=None, text=None, delegate=False, active_ms=0) -> FocusCreation:
+def start(user, kind: str, *, value=None, text=None, delegate=False, rest=False, active_ms=0) -> FocusCreation:
     """Her first answer (the topic): the draft course, the dock thread and the
-    creation, all at once."""
+    creation, all at once. With ``rest`` ("Just draft it"), the questions after
+    it are delegated in the same step, so a failure cannot leave a second draft."""
     from apps.core.copilot import content
 
     recipe = RECIPES.get(kind)
     if recipe is None:
         raise FlowError("unknown_kind")
     first = recipe.questions[0]
-    picked = _pick(recipe, first, value, text, delegate)
+    picked = _pick(recipe, first, value, text, delegate) or (DELEGATE if rest else None)
     if picked is None:
         raise FlowError("no_answer")
     title = working_title("" if picked == DELEGATE else picked)
@@ -78,6 +79,8 @@ def start(user, kind: str, *, value=None, text=None, delegate=False, active_ms=0
         creation = FocusCreation(kind=kind, actor=actor, chat=chat, record_id=record_id, answers={first.id: picked})
         _add_time(creation, active_ms)
         creation.save()
+        if rest:
+            creation = answer(creation, current_field(creation), rest=True)
     return creation
 
 
@@ -120,18 +123,18 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
                 outline.start(creation, instruction=str(((failed and failed.request) or {}).get("instruction") or ""))
         else:
             asked = [q for q in recipe.questions if q.kind not in ("review", "finish")]
+            picked = _pick(recipe, question, value, text, delegate)
+            if picked is None and not rest:
+                creation.save(update_fields=["active_ms", "updated_at"])
+                return creation
+            if picked is not None:  # with "Just draft it" too: what she typed first
+                creation.answers[field] = picked
+                _say(creation, question, _label(recipe, question, picked))
             if rest:  # "Just draft it": every question still open is hers to delegate
                 for q in asked:
                     if q.id not in creation.answers:
                         creation.answers[q.id] = DELEGATE
                         _say(creation, q, "You decide")
-            else:
-                picked = _pick(recipe, question, value, text, delegate)
-                if picked is None:
-                    creation.save(update_fields=["active_ms", "updated_at"])
-                    return creation
-                creation.answers[field] = picked
-                _say(creation, question, _label(recipe, question, picked))
             if creation.outline_run_id is None and all(q.id in creation.answers for q in asked):
                 outline.start(creation)
         creation.save()
@@ -147,6 +150,10 @@ def finish(creation, *, publish: bool, active_ms=None) -> FocusCreation:
         _add_time(creation, active_ms)
         if current_field(creation) != "finish":
             creation.save(update_fields=["active_ms", "updated_at"])
+            return creation
+        if _record(creation) is None:  # deleted by hand, or by an Undo: nothing was made
+            creation.status = "left"
+            creation.save(update_fields=["active_ms", "status", "updated_at"])
             return creation
         choice = "publish" if publish else "draft"
         if publish:
@@ -165,12 +172,16 @@ def finish(creation, *, publish: bool, active_ms=None) -> FocusCreation:
 
 def leave(creation, *, abandon: bool = False, active_ms=None) -> FocusCreation:
     """Save & leave (it stays open to resume), or "Fill it in myself" (it ends;
-    the draft stays as it is)."""
+    the draft stays as it is, and an outline still being written is dropped)."""
+    from apps.core.copilot import runs
+
     with transaction.atomic():
         creation = _locked(creation)
         _add_time(creation, active_ms)
         if abandon and creation.status == "active":
             creation.status = "left"
+            if creation.outline_run_id is not None:
+                runs.stop(creation.outline_run_id)  # a finished one is left as it is
         creation.save(update_fields=["active_ms", "status", "updated_at"])
     return creation
 

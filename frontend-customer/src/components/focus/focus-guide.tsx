@@ -17,12 +17,14 @@ import {
   answerCreation,
   fetchCreation,
   finishCreation,
+  leaveCreation,
   startCreation,
   type FocusQuestion,
   type FocusState,
 } from "@/lib/focus/api";
 import { guideBody, type GuideInput } from "@/lib/focus/guide";
 import {
+  activeCreation,
   refreshFocusOverview,
   setActiveCreation,
   useActiveCreation,
@@ -56,9 +58,13 @@ export function FocusGuide() {
   // cannot put an older state back.
   const version = useRef(0);
 
-  const apply = (next: FocusState | null) => {
+  /** A reply lands only on the creation it was for: once she has left it
+   *  (Save & leave, another page), it stays left. */
+  const apply = (from: number, next: FocusState | null) => {
+    if (activeCreation()?.id !== from) return false;
     version.current += 1;
     setActiveCreation(next);
+    return true;
   };
 
   const { run: send, loading: sending } = useAsyncAction(
@@ -66,29 +72,24 @@ export function FocusGuide() {
       const current = state;
       const question = current?.question;
       if (!current || !question) return;
-      if (current.id === 0) {
-        // Her first answer creates the draft course; "Just draft it" here
-        // sends her sentence (or leaves the topic to us) and skips the rest.
-        const first = guideBody(question, { ...input, rest: false });
-        if (!first && !input.rest) return;
-        let next = await startCreation({
-          kind: current.kind,
-          ...(first ?? { delegate: true }),
-          active_ms: takeActiveMs(FOCUS_TIME_KEY),
-        });
-        if (input.rest && next.question)
-          next = await answerCreation(next.id, {
-            field: next.question.field,
-            rest: true,
-          });
-        apply(next);
-        void refreshFocusOverview();
-        if (next.record) navigate(`/admin/courses/${next.record.slug}`);
-        return;
-      }
       const body = guideBody(question, input);
       if (!body) return;
+      if (current.id === 0) {
+        // Her first answer creates the draft course; "Just draft it" here
+        // drafts the rest in the same request (the topic too, when the box
+        // is empty).
+        const next = await startCreation({
+          kind: current.kind,
+          ...body,
+          active_ms: takeActiveMs(FOCUS_TIME_KEY),
+        });
+        void refreshFocusOverview();
+        if (apply(0, next) && next.record)
+          navigate(`/admin/courses/${next.record.slug}`);
+        return;
+      }
       apply(
+        current.id,
         await answerCreation(current.id, {
           ...body,
           active_ms: takeActiveMs(FOCUS_TIME_KEY),
@@ -105,8 +106,9 @@ export function FocusGuide() {
         active_ms: takeActiveMs(FOCUS_TIME_KEY),
       });
       stopActiveTime(FOCUS_TIME_KEY);
-      apply(null);
+      apply(state.id, null);
       void refreshFocusOverview();
+      if (next.status !== "done") return; // its course was deleted meanwhile
       // Focus mode ends: the dock is the normal chat, with the whole exchange.
       if (next.chat !== null)
         openRunChat(next.chat, () => dock.open("assistant"));
@@ -117,7 +119,20 @@ export function FocusGuide() {
   const { run: stop, loading: stopping } = useAsyncAction(async () => {
     if (!state?.outline.run) return;
     await stopRun(state.outline.run);
-    apply(await fetchCreation(state.id));
+    apply(state.id, await fetchCreation(state.id));
+  });
+
+  // "Fill it in myself": focus mode ends for good and she stays on the page,
+  // which is the plain editor from here; an outline being written is dropped.
+  const { run: fillMyself, loading: leaving } = useAsyncAction(async () => {
+    if (!state?.id) return;
+    await leaveCreation(state.id, {
+      abandon: true,
+      active_ms: takeActiveMs(FOCUS_TIME_KEY),
+    });
+    stopActiveTime(FOCUS_TIME_KEY);
+    apply(state.id, null);
+    void refreshFocusOverview();
   });
 
   const id = state?.id ?? 0;
@@ -128,7 +143,8 @@ export function FocusGuide() {
       const at = version.current;
       fetchCreation(id)
         .then((next) => {
-          if (version.current === at) setActiveCreation(next);
+          if (version.current === at && activeCreation()?.id === id)
+            setActiveCreation(next);
         })
         .catch(() => {});
     }, POLL_MS);
@@ -178,6 +194,17 @@ export function FocusGuide() {
             onSend={send}
           />
         ))}
+      {state.id !== 0 && (
+        <Button
+          size="sm"
+          variant="ghost"
+          className="self-start text-muted-foreground"
+          loading={leaving}
+          onClick={fillMyself}
+        >
+          {t("focus.fillMyself")}
+        </Button>
+      )}
     </div>
   );
 }

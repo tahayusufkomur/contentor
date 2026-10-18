@@ -12,6 +12,8 @@ import type { RunEvent } from "./types";
  *  is working. The data is already saved; this only paces its appearance. */
 export interface LiveFrame {
   fields: Record<string, { value: string; typing: boolean }>;
+  /** Each field's whole written value, shown yet or not (it is saved already). */
+  written: Record<string, string>;
   rows: { title: string; lessons: string[]; typing: boolean }[];
   working: { specialist: SpecialistKey; label: string } | null;
   settled: boolean;
@@ -37,6 +39,7 @@ export function liveFrame(
     elapsedMs === Infinity ? Infinity : Math.floor((elapsedMs * cps) / 1000);
   const frame: LiveFrame = {
     fields: {},
+    written: {},
     rows: [],
     working: null,
     settled: false,
@@ -68,6 +71,7 @@ export function liveFrame(
     }
     if (data.record !== record) continue;
     if (event.type === "field") {
+      frame.written[text(data.name)] = text(data.value);
       const shown = take(text(data.value));
       if (shown === null) continue;
       frame.fields[text(data.name)] = {

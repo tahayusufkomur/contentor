@@ -62,6 +62,7 @@ def focus_root(request):
             value=_text(data, "value"),
             text=_text(data, "text"),
             delegate=data.get("delegate") is True,
+            rest=data.get("rest") is True,
             active_ms=_ms(data),
         )
     except flow.FlowError as exc:

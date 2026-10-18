@@ -68,7 +68,7 @@ const post = <T>(path: string, body: unknown) =>
 export const fetchOverview = () => clientFetch<FocusOverview>(`${BASE}/`);
 
 export const startCreation = (
-  body: Timed<Omit<AnswerBody, "field" | "rest"> & { kind: string }>,
+  body: Timed<Omit<AnswerBody, "field"> & { kind: string }>,
 ) => post<FocusState>("", body);
 
 export const fetchCreation = (id: number) =>

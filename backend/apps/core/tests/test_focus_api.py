@@ -204,3 +204,11 @@ def test_form_timing_needs_a_course_of_hers(client):
     course = Course.objects.create(title="Not hers", instructor=someone)
     res = client.post(f"{URL}form-timing/", {"course_id": course.id, "active_ms": 1}, format="json")
     assert res.status_code == 404
+
+
+@on
+def test_just_draft_it_on_the_first_screen_is_one_request(client, outline_start):
+    state = client.post(URL, {"kind": "course", "rest": True}, format="json").json()
+    assert state["question"]["field"] == "outline_review"
+    assert state["outline"]["status"] == "building"
+    assert outline_start.call_count == 1

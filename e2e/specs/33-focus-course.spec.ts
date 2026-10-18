@@ -171,6 +171,8 @@ async function stubFocus(page: Page, { open = true }: { open?: boolean } = {}) {
     if (path.endsWith("/admin/focus/")) {
       created = true;
       answers.topic = body.text ?? "You decide";
+      if (body.rest) for (const f of ["level", "size"]) answers[f] = "You decide";
+      settle();
       return route.fulfill({ status: 201, json: state() });
     }
     if (path.endsWith("/answer/")) {
@@ -194,7 +196,10 @@ async function stubFocus(page: Page, { open = true }: { open?: boolean } = {}) {
       status = "done";
       return route.fulfill({ json: state() });
     }
-    if (path.endsWith("/leave/")) return route.fulfill({ json: state() });
+    if (path.endsWith("/leave/")) {
+      if (body.abandon) status = "left";
+      return route.fulfill({ json: state() });
+    }
     return route.fulfill({ json: state() }); // GET /focus/<id>/
   });
 
@@ -322,6 +327,23 @@ test("fill it in myself is today's form", async ({ browser }) => {
   await expect(page).toHaveURL(/\/admin\/courses\/new\?form=1$/);
   await expect(page.getByRole("heading", { name: "New Course" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Create Course" })).toBeVisible();
+  await expect(guide(page)).toHaveCount(0);
+  await page.close();
+});
+
+test("fill it in myself on the course page ends focus mode for good", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const { sent } = await stubFocus(page);
+
+  await answerTopic(page);
+  await guide(page).getByRole("button", { name: "Fill it in myself" }).click();
+  await expect(guide(page)).toHaveCount(0);
+  await expect(page.getByText("Edit Course")).toBeVisible();
+  expect(sent.at(-1)).toMatchObject({ abandon: true });
+  // Reopening the course is the plain editor now.
+  await page.reload();
+  await expect(page.getByText("Edit Course")).toBeVisible();
   await expect(guide(page)).toHaveCount(0);
   await page.close();
 });

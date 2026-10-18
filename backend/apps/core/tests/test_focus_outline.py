@@ -234,3 +234,21 @@ def test_a_redraft_after_its_run_is_gone_never_doubles_the_modules(owner):
     with _model(draft=_draft(modules=1, lessons=1)):
         outline.execute(SCHEMA, run.id)
     assert _course(creation).modules.count() == 1
+
+
+def test_a_redraft_keeps_a_module_she_filled_in(owner):
+    creation = _building(owner)
+    with _model():
+        outline.execute(SCHEMA, creation.outline_run_id)
+    course = _course(creation)
+    lesson = Lesson.objects.get(module__course=course, title="Lesson 1.1")
+    lesson.content_html = "<p>My own words</p>"
+    lesson.save()
+    creation.refresh_from_db()
+    run = outline.start(creation, instruction="fewer modules")
+    with _model(draft=_draft(modules=1, lessons=1)) as model:
+        outline.execute(SCHEMA, run.id)
+    modules = json.loads(model.call_args.kwargs["user"])["current_outline"]["modules"]
+    assert [m.get("kept", False) for m in modules] == [True, False]
+    assert Lesson.objects.filter(pk=lesson.pk).exists()
+    assert course.modules.count() == 2  # hers, and the new outline's one

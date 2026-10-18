@@ -187,3 +187,34 @@ def test_her_first_answer_does_not_wait_for_a_cover(owner, outline_start):
     with mock.patch("apps.core.copilot.content._give_cover") as cover:
         _started(owner)
     cover.assert_not_called()
+
+
+def test_just_draft_it_keeps_what_she_typed_first(owner, outline_start):
+    creation = flow.answer(_started(owner), "level", text="nurses on night shifts", rest=True)
+    assert creation.answers["level"] == "nurses on night shifts"
+    assert creation.answers["size"] == "delegate"
+    assert outline_start.call_count == 1
+
+
+def test_just_draft_it_on_the_first_answer_is_one_step(owner, outline_start):
+    creation = flow.start(owner, "course", rest=True)
+    assert creation.answers == {"topic": "delegate", "level": "delegate", "size": "delegate"}
+    assert outline_start.call_count == 1
+    assert Course.objects.count() == 1
+    typed = flow.start(owner, "course", text="A course on breathing", rest=True)
+    assert typed.answers["topic"] == "A course on breathing"
+    assert typed.answers["size"] == "delegate"
+
+
+def test_finishing_a_course_deleted_meanwhile_leaves_it(owner, outline_start):
+    creation = _at_finish(owner)
+    Course.objects.filter(pk=creation.record_id).delete()
+    creation = flow.finish(creation, publish=True)
+    assert creation.status == "left"
+    assert creation.finished_at is None
+
+
+def test_abandon_drops_an_outline_still_being_written(owner, outline_start):
+    creation = flow.answer(_started(owner), "level", rest=True)
+    flow.leave(creation, abandon=True)
+    assert CopilotRun.objects.get(pk=creation.outline_run_id).status == "stopped"

@@ -51,7 +51,8 @@ SYSTEM = _DRAFT_RULES + (
     + "; ".join(f"'{key}' is {m} module{'s' if m > 1 else ''} of {n} lessons" for key, (m, n) in SIZES.items())
     + "; 'delegate' or anything else means 3-5 modules of 2-4 lessons.\n"
     "- When 'instruction' is given, it is the coach's change to 'current_outline': apply it and keep "
-    "everything she did not ask to change."
+    "everything she did not ask to change. Modules marked 'kept' are hers and stay on the page as they "
+    "are: leave them out of your modules."
 )
 
 
@@ -145,7 +146,7 @@ def _draft(tenant, creation, course, instruction: str) -> OutlineDraft:
     try:
         parsed, cost, _model = core_ai.structured(
             system=SYSTEM,
-            user=_user_turn(tenant, answers, course, instruction),
+            user=_user_turn(tenant, answers, course, instruction, (creation.drafted or {}).get("modules") or []),
             output_model=OutlineDraft,
             model=settings.COPILOT_MODEL,
             max_tokens=12000,
@@ -164,7 +165,7 @@ def _draft(tenant, creation, course, instruction: str) -> OutlineDraft:
     return parsed.model_copy(update={"modules": parsed.modules[:limit]})
 
 
-def _user_turn(tenant, answers: dict, course, instruction: str) -> str:
+def _user_turn(tenant, answers: dict, course, instruction: str, drafted: list) -> str:
     from apps.core.onboarding.ai_curate import CoachBrief
     from apps.courses.models import Course
     from apps.tenant_config.models import TenantConfig
@@ -183,15 +184,32 @@ def _user_turn(tenant, answers: dict, course, instruction: str) -> str:
         "her_courses": list(Course.objects.exclude(pk=course.pk).values_list("title", flat=True)[:10]),
     }
     if instruction:
+        kept = _kept(course, drafted)
         turn["current_outline"] = {
             "title": course.title,
             "description": course.description,
             "modules": [
-                {"title": m.title, "lessons": [lesson.title for lesson in m.lessons.order_by("order", "id")]}
+                {
+                    "title": m.title,
+                    "lessons": [lesson.title for lesson in m.lessons.order_by("order", "id")],
+                    **({"kept": True} if m.id in kept else {}),
+                }
                 for m in course.modules.order_by("order", "id")
             ],
         }
     return json.dumps(turn, ensure_ascii=False)
+
+
+def _kept(course, drafted: list) -> set:
+    """The modules a redraft keeps: those she added, and those she has filled
+    a lesson of (its text or a video)."""
+    from apps.courses.models import Lesson
+
+    filled = Lesson.objects.filter(module__course=course).exclude(content_html="", video__isnull=True, video_url="")
+    return {
+        *course.modules.exclude(pk__in=drafted).values_list("id", flat=True),
+        *filled.values_list("module_id", flat=True),
+    }
 
 
 def fallback(answers: dict, title: str) -> OutlineDraft:
@@ -211,8 +229,8 @@ def write(course, draft: OutlineDraft, working_title: str, *, drafted: dict, red
     The title and description are written only while they are still ours (the
     working title, or what an earlier outline wrote); modules only when the
     course has none, except a redraft, which replaces the modules the earlier
-    outlines made (``drafted``) and keeps hers. Returns (events to emit in
-    order, the creation's next ``drafted``)."""
+    outlines made (``drafted``) and keeps hers, and any she has filled in.
+    Returns (events to emit in order, the creation's next ``drafted``)."""
     from apps.courses.models import Lesson, Module
 
     record = f"course:{course.id}"
@@ -230,7 +248,7 @@ def write(course, draft: OutlineDraft, working_title: str, *, drafted: dict, red
     if changed:
         course.save(update_fields=[*changed, "updated_at"])
     if redraft:
-        Module.objects.filter(course=course, pk__in=modules).delete()
+        Module.objects.filter(course=course, pk__in=modules).exclude(pk__in=_kept(course, modules)).delete()
         modules = []
     if redraft or not course.modules.exists():
         top = course.modules.aggregate(top=Max("order"))["top"] or 0

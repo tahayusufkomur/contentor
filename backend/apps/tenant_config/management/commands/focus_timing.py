@@ -41,7 +41,8 @@ def _rows() -> list[dict]:
     from apps.courses.models import Course
 
     rows = []
-    for tenant in Tenant.objects.exclude(schema_name="public"):
+    # A tenant still being set up has no tables yet.
+    for tenant in Tenant.objects.exclude(schema_name="public").filter(provisioning_status__in=("provisioned", "ready")):
         with tenant_context(tenant):
             for creation in FocusCreation.objects.filter(kind="course", status="done"):
                 course = Course.objects.filter(pk=creation.record_id).first()

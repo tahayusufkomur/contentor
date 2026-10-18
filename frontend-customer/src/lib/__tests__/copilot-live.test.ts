@@ -72,6 +72,11 @@ describe("liveFrame", () => {
     expect(frame.rows).toEqual([]);
     expect(frame.working).toEqual({ specialist: "content", label: "Writing" });
     expect(frame.settled).toBe(false);
+    // What a save sends: every written field whole, before it shows.
+    expect(frame.written).toEqual({
+      title: "Desk yoga",
+      description: "Ten minutes.",
+    });
   });
 
   it("types the title in at the given speed", () => {
