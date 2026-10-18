@@ -45,7 +45,7 @@ Goals
   sets the price with one line of reasoning; Marketing offers the launch message.
 - The guide asks a few must-ask questions and, between them, follow-up questions specific to her
   course, each with button options.
-- Focus mode is never slower than the form it replaces, and we measure that.
+- Her time is measured against the plain form, as information (no longer a gate: F5, revised).
 - The machinery is reusable: a new kind is a new recipe (its questions and its drafting step) plus
   the shared steps (cover, price and access, finish).
 
@@ -61,9 +61,10 @@ Non-goals (this project)
 
 Anti-goals: it fails, even if it works, when
 
-- **it is slower than the usual way.** (The owner's words: what would make the owner wince is if it were
-  "somehow slower than the usual way".)
-- a tap waits on the AI, or anything waits without a way forward (no fallback, no "Try again");
+- ~~**it is slower than the usual way.**~~ Relaxed by the owner the same evening: "slowness is all
+  ok", there is no strict rule for it being fast. Waiting while the AI does real work for her is
+  fine; a dead end is not (next line).
+- anything waits without a way forward (no fallback, no "Try again");
 - it feels like an interrogation;
 - her screen is pulled somewhere else, or she has to follow a link to see the result;
 - anything she typed is lost.
@@ -76,7 +77,7 @@ Anti-goals: it fails, even if it works, when
 | F2 | The guide lives in the docked assistant on the right, not in a second panel. In focus mode the dock stops being an open chat and asks one thing at a time; she can still type or speak anything. It is one conversation: after focus mode the dock is the normal chat again, with the whole exchange in it. | Owner |
 | F3 | The left side is the real course page she will keep using (mockup D1), shown with only what matters now; filters, tags and the rest wait behind "All details". When focus mode ends nothing moves or reloads. | Owner (D1); "All details" my call, played back and accepted |
 | F4 | Tap-to-answer buttons as in `/setup`, with dynamic follow-up questions specific to her course, each with button options. Revised the same evening: a follow-up comes only if necessary (§5 Follow-ups). | Owner; "only if necessary" owner, 2026-10-18 evening |
-| F5 | Never slower than the form (§6). This overrides team spec T5 ("speed is not a design limit") for focus mode. | Owner |
+| F5 | ~~Never slower than the form (§6). This overrides team spec T5 ("speed is not a design limit") for focus mode.~~ Revised the same evening: "slowness is all ok", no strict speed rule. The AI takes the time it needs (the analysis, the drafts, a follow-up); every failure still has a way forward. Team spec T5 applies again. | Owner; revised by the owner, 2026-10-18 evening |
 | F6 | ~~The Designer's live cover design (Designer spec stage 2) is built as part of this project and is focus mode's cover step.~~ Superseded the same evening by F16–F18: the cover step is the Designer's drafts to pick from. | Owner |
 | F7 | Getting in: "New course" on Home, the Courses list and the search palette opens focus mode. Asking the assistant for a course ("make me a course about…") on the Courses list or the course page opens it too, with what she said as the first answer; asked from any other page, the dock answers with a **Start it** button that does the same in one tap, so her screen never moves on its own (team spec §5.2). "Describe it" is replaced by focus mode's first screen. A "Fill it in myself" link opens the plain form. | Played back, accepted; the "Start it" rule my call after the builder check |
 | F8 | The course exists as an unpublished draft from her first answer (team spec T6, build). Leaving loses nothing: work in progress carries on (team spec T7), she gets "ready for you", and reopening the course resumes the guide where she stopped. | Played back, accepted |
@@ -161,13 +162,12 @@ Rules:
   included, §5.1) settles it. Never to enrich, never to confirm what she already said. Most rich
   first answers therefore get none.
 - At most four follow-ups per creation; "Just draft it" skips the rest.
-- Follow-ups that shape the outline (up to two) come after step 2 and before the outline drafts;
-  they are written ahead while she answers steps 1 and 2. The outline starts drafting as soon as
-  they are answered or dropped, and she watches it fill in at step 3. Later follow-ups shape only
+- Follow-ups that shape the outline (up to two) come after step 2 and before the outline drafts.
+  The outline starts drafting as soon as they are answered, and she watches it fill in at step 3. Later follow-ups shape only
   what comes after (cover, announcement); they never redraft an outline under her eyes. A change to
   the outline is always her request (step 3).
-- A follow-up is shown only if it is already written when she finishes the current question (§6);
-  otherwise it is dropped, never waited for.
+- A follow-up is written when it is needed; she waits for it with the specialist's working tag.
+  If writing it fails, it is dropped and the flow goes on.
 - Every answer feeds the draft, so its effect shows on the page (her "office desk" appears in the
   description and lesson titles).
 - Where it fits, buttons allow several picks and a "My own…" tile, as in `/setup`.
@@ -197,19 +197,16 @@ Rules:
 - **Unclear.** A detail the analysis cannot pin down ("a few modules", "around $40–50", a price in
   a currency her site does not use) becomes one short question with two to four buttons and the
   answer box, asked once. If her reply is still unclear, the field falls back to its usual question.
-- **Follow-up requests, any step.** A typed answer that only answers the question on screen is
-  stored at once, as today (no model call). One that carries more (other details, a change) goes
-  through the same analysis, which is told the question on screen and routes what she said: the
+- **Follow-up requests, any step.** Every typed answer goes through the same analysis (a tap on a
+  button does not need it), which is told the question on screen and routes what she said: the
   answer to it, other fields, a price, an outline change, or at the cover step a photo description.
   Before the outline exists it updates the answers (and the price on the draft); once it exists, a
   change to the outline is a redraft exactly as at step 3, wherever she typed it, and a price change
-  sets the price. (Which text counts as "more" is the builder's, §11; my call after the builder
-  check.)
-- **Late.** The guide never waits on the analysis for more than a few seconds (§6 item 5a). A
-  result that lands later fills only fields still open and not on screen (her answer on screen
-  wins) and sets the price if she has not; the outline job reads the analysis, running it first
-  when it is missing, so her counts and titles hold even on the slow path. (My call after the
-  builder check.)
+  sets the price.
+- **Waiting.** The guide waits for the analysis, showing the specialist's working tag ("Reading
+  your details"), however long it takes. If it fails, the usual questions come and the outline
+  still reads her whole answer (and runs the analysis itself before writing, so her counts and
+  titles hold).
 - **Shown.** What was understood appears as the usual answered lines in the guide ("Complete
   beginners", "4 modules · 3 lessons each", "$49"), so she sees nothing was invented; she corrects
   it at the outline step or by saying so.
@@ -223,9 +220,10 @@ Rules:
   a band across a photo (`design_recipe.LAYOUTS`). Each uses her site's fonts and colours, her
   course title and a short line from the outline (never an invented claim). **Four more styles**
   brings another set (other layouts, paint and type variants).
-- **Written ahead.** The Designer drafts them while she reviews the outline, so they are on the page
-  when she reaches the step (§6 item 3). Not ready yet: code builds the first four from fixed
-  layouts and the top photo, so the step never waits on the model.
+- **Drafting.** The Designer starts drafting as soon as the outline is written, so the drafts are
+  often there when she reaches the step; otherwise she watches them arrive with the Designer's
+  working tag. If drafting fails, code draws four from fixed layouts and the top photo, so she
+  always has covers to pick from.
 - **The photo.** One photo is shared by the photo styles; the row under the drafts offers her own
   photos first (Media, the `/setup` photos), then library (Pix4Less) matches for the course, and
   **+ Upload** (her device; saved to her Media through the own-photos path like any upload).
@@ -243,16 +241,15 @@ Rules:
 - **Phone.** The drafts show in the page there too (they are drawn, not rendered); the guide is the
   bottom sheet (F12).
 
-## 6. Speed (F5)
+## 6. Waiting and speed (F5, revised)
 
-1. **A tap never waits on the model.** The next question appears in under a second: must-ask
-   questions are code-owned with pre-written buttons, and a tap that leads to a code-owned question
-   makes no model call (`/setup`'s instant path, `interview._code_owned`).
-2. **Follow-ups are written ahead.** While she reads the current question, the specialist writes
-   the next follow-up in the background (the approach measured on branch `claude/setup-fast-tiles`:
-   model turns written ahead, shown only while still "fresh", i.e. written knowing every answer it
-   depends on; hub label `contentor:interview-ahead`, background priority). Not ready or stale:
-   dropped.
+The owner relaxed the speed rule the same evening: the AI takes the time it needs. What stays is
+that she always sees who is working, and a failure always has a way forward.
+
+1. **Taps on code-owned questions are instant** because they need no model: must-ask questions are
+   code-owned with pre-written buttons (`/setup`'s instant path, `interview._code_owned`).
+2. **Follow-ups are written when needed** (§5 Follow-ups), with the working tag while they are
+   written. No written-ahead machinery.
 3. **Drafting runs alongside her answers.** The outline drafts on the `agents` worker as soon as
    step 2 is answered, while she continues; the cover search starts once the topic is known. She
    only watches something build when she is reviewing that very thing, and then it is filling in,
@@ -262,18 +259,13 @@ Rules:
    wants.
 5. **"Just draft it"** from the first screen: one sentence, everything drafted with defaults, then
    review.
-5a. **The analysis (§5.1)** runs on a first answer, and on a later typed answer only when it carries
-   more than the answer on screen; it saves her the questions it answers. A short answer that is only a topic skips it (nothing to read). A
-   longer one shows "Reading your details" on the working tag for at most a few seconds on a fast
-   typed-extraction model; past that, the guide goes on with the usual questions, and the outline
-   still reads her whole answer.
+5a. **The analysis (§5.1)** runs on every typed answer and is waited for (working tag "Reading your
+   details"); it saves her the questions it answers. On failure the usual questions come.
 6. **Measured.** What is timed is her active time (the tab visible and in use; time away excluded)
    from "New course" to a **complete draft**: a title, at least one module with lessons, a cover,
    and a price decided (free counts). Both paths are stamped the same way: focus mode and the plain
    form ("Fill it in myself" and the old entry points), next to `/setup`'s funnel stamps
-   (`setup_funnel`). Target: a complete course draft in two to three minutes of her time.
-   **Before the switch goes on** (stage 4), a scripted dev comparison drives both paths with the
-   same realistic input and focus mode must not be slower; the prod stamps then keep checking it.
+   (`setup_funnel`). Information only, no gate (F5, revised): the stamps stay as built in stage 1.
 
 ## 7. How it works
 
@@ -317,7 +309,8 @@ in create mode once the draft exists (it is hidden on create today).
 Built on the Designer spec's stage 1 pieces: the `Design` model and `/api/v1/designs/`
 (`open_draft`, `keep`, `restore_cover`), `CoverArt`, the photo studio, the curated-image client
 (search, generation and its monthly cap) and the own-photos upload path. New: the Designer's
-drafting step (four recipes per round, written ahead on the `agents` worker with a code fallback),
+drafting step (four recipes per round, on the `agents` worker once the outline is written, with a
+code fallback on failure),
 the photo row's search (her photos and the library, with her words), and the cover question in the
 course recipe. The live drawing with a cursor, `design_cover` in the chat, the covers digest and
 the studio replay stay in the Designer spec's own stage 2 (F18). Whether today's automatic stock
@@ -340,8 +333,8 @@ until then.
 |---|---|---|
 | 1. The foundation, with the course (built 2026-10-18) | §4, §5 steps 1–3 and 6 (without the announcement), §6 items 1, 3–6 | recipe + creation store + endpoints; the guide in the dock; focus layout of the course page; live field/row events and the shared hook; draft from the first answer; resume; timing |
 | 2. The first answer takes everything | §5.1, §6 item 5a | the analysis (typed fields), skipping answered questions, exact counts and titles in the outline, the price on the draft, one clarifying question, follow-up requests at any step |
-| 3. The cover step | §5 step 4, §5.2, §7.3 | the cover question, four drafts written ahead with the code fallback, the photo row (hers, library, upload, said, generated), Use this cover / Four more styles / Later / I'll edit it |
-| 4. Price, finish, follow-ups | §5 step 5 (skipped when her first answer gave the price), the announcement offer, follow-ups written ahead (§6 item 2); switch on | price and access step under F11; Marketing's draft; written-ahead follow-ups with the cap |
+| 3. The cover step | §5 step 4, §5.2, §7.3 | the cover question, four drafts (started once the outline is written; code fallback on failure), the photo row (hers, library, upload, said, generated), Use this cover / Four more styles / Later / I'll edit it |
+| 4. Price, finish, follow-ups | §5 step 5 (skipped when her first answer gave the price), the announcement offer, follow-ups only if necessary; switch on | price and access step under F11; Marketing's draft; follow-ups only if necessary, with the cap |
 
 ## 9. Other kinds later
 
@@ -362,7 +355,7 @@ What each needs beyond its recipe (survey 2026-10-18):
 ## 10. Verification
 
 - Backend tests for the recipe engine: must-ask completeness, fallbacks with the model down, the
-  follow-up cap and freshness rule, resume, and the price rule (F11).
+  follow-up cap and the only-if-necessary rule, resume, and the price rule (F11).
 - An e2e spec for the course in focus mode with the model stubbed (as `29-copilot` does), plus a
   few real runs on the dev hub checked by eye.
 - The timing stamps (§6.6) read back for a handful of dev runs against the plain form.
@@ -374,22 +367,20 @@ What each needs beyond its recipe (survey 2026-10-18):
   specs).
 - The wording of questions, buttons, hand-over lines and the follow-up prompt.
 - How "All details" shows the rest of the form.
-- Whether the follow-up writer reuses `interview_tiles.py` from `claude/setup-fast-tiles` or a new
-  module built on the same rule.
+- The follow-up prompt and how it judges "necessary".
 - Whether `_give_cover` stays for the plain form.
 - The exact background/interactive hub labels for each call.
-- The analysis model (a fast typed-extraction call: a Haiku-class model or Jev), its prompt, and
-  where "only a topic" ends for skipping it (§6 item 5a).
+- The analysis model and its prompt (a typed-extraction call; speed is not a constraint, F5).
 - The four styles in the first round, what "Four more styles" varies, and the cover's short line.
 - How many photos the row shows, and how her own photos are ranked against library matches.
 
 ## 12. Open questions for the owner
 
-Revision (2026-10-18 evening): the builder check raised four questions, all settled above as my
-calls for the owner to check while reading: a late analysis fills only what is still open and the
-outline runs it when missing (§5.1 Late); only typed text that carries more than the answer on
-screen is analysed (§5.1 Follow-up requests); a module count settles the size, up to 12 × 12
-(§5.1 Exact); a library photo is copied into her Media when she taps it (§5.2 The photo).
+Revision (2026-10-18 evening): the builder check raised four questions. The owner then relaxed the
+speed rule ("slowness is all ok"), which settled two of them: the guide waits for the analysis
+(§5.1 Waiting) and every typed answer is analysed (§5.1 Follow-up requests). The other two are my
+calls for the owner to check while reading: a module count settles the size, up to 12 × 12 (§5.1
+Exact); a library photo is copied into her Media when she taps it (§5.2 The photo).
 
 Asked and answered: the dynamic follow-ups (F4) stay, "only if necessary" (§5 Follow-ups).
 
