@@ -813,6 +813,7 @@
       "keepCourse": "Keep on course",
       "keepEvent": "Keep on event",
       "kept": "Kept. {title} now uses this cover.",
+      "waitForPhoto": "Wait for the photo to finish",
       "notFound": "This cover isn't here any more."
     },
     "controls": {

@@ -46,6 +46,23 @@ describe("PhotoSources tab", () => {
   });
 });
 
+describe("PhotoSources month count", () => {
+  const onNew = (generationsLeft: number) =>
+    render(
+      createElement(PhotoSources, { ...props, generationsLeft, tab: "new" }),
+    );
+
+  it("shows the count the caller keeps, and holds the New tab once it is used up", () => {
+    expect(onNew(2)).toContain("2 new photos left this month");
+    expect(onNew(1)).toContain("1 new photo left this month");
+    const used = onNew(0);
+    expect(used).toContain("You&#x27;ve used this month&#x27;s new photos.");
+    expect(used).toMatch(
+      /role="tab"[^>]*disabled=""[^>]*>(?:<svg[\s\S]*?<\/svg>)?New</,
+    );
+  });
+});
+
 describe("no photo is listed twice", () => {
   const a = { id: "a" };
   const b = { id: "b" };

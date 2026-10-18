@@ -33,6 +33,10 @@ export function DraftActions({
 }) {
   const t = useTranslations("admin.studio");
   const grow = inBar ? undefined : "flex-1 sm:flex-none";
+  // Keep and Discard go grey while a photo is on its way, and say why. A disabled Button takes no pointer, so
+  // the group around them carries the words as well: that is where the hover lands.
+  const why =
+    !draft.busy && draft.locked ? t("editor.waitForPhoto") : undefined;
   return (
     // On a phone the saving state and Undo sit above the buttons, which share the row below.
     <div
@@ -65,12 +69,16 @@ export function DraftActions({
           </Button>
         </div>
       )}
-      <div className={inBar ? "flex gap-2" : "flex w-full gap-2 sm:w-auto"}>
+      <div
+        className={inBar ? "flex gap-2" : "flex w-full gap-2 sm:w-auto"}
+        title={why}
+      >
         {design.state === "draft" && (
           <Button
             variant="outline"
             className={grow}
             disabled={draft.locked}
+            title={why}
             onClick={onDiscard}
           >
             {t("editor.discard")}
@@ -82,6 +90,7 @@ export function DraftActions({
             onClick={() => void draft.keep()}
             loading={draft.keeping}
             disabled={draft.locked}
+            title={why}
           >
             {isCourse ? t("editor.keepCourse") : t("editor.keepEvent")}
           </Button>

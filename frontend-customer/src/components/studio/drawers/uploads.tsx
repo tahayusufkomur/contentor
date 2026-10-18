@@ -3,13 +3,14 @@
 // The Uploads drawer: a photo dropped here (or chosen from her device) joins her own photos and goes on the
 // cover, the same way an upload does from the Photos drawer.
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Upload } from "lucide-react";
 import { toast } from "sonner";
 import type { PickedPhoto } from "@/components/studio/photo-sources";
 import { Section } from "@/components/studio/simple-controls";
 import { Button } from "@/components/ui/button";
+import { whileBusy } from "@/lib/covers/work";
 import { mediaKind, uploadPhoto } from "@/lib/upload";
 import { cn } from "@/lib/utils";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -20,7 +21,8 @@ export function UploadsDrawer({
   disabled = false,
 }: {
   onPick: (photo: PickedPhoto) => void;
-  /** True while a photo is uploading: the editor holds Keep and Discard meanwhile. */
+  /** Told by the upload itself: true when it starts, false once it has ended, wherever she is by then
+   *  (the editor holds Keep and Discard meanwhile). */
   onBusy?: (busy: boolean) => void;
   /** Nothing can be dropped (the draft is being kept, discarded or replaced). */
   disabled?: boolean;
@@ -32,22 +34,18 @@ export function UploadsDrawer({
   const [progress, setProgress] = useState(0);
 
   const { run: upload, loading } = useAsyncAction(
-    async (file: File) => {
-      setProgress(0);
-      const photo = await uploadPhoto(file, {
-        onProgress: setProgress,
-        signal: new AbortController().signal,
-      });
-      if (!photo.signed_url) throw new Error("No link for the new photo");
-      onPick({ id: photo.id, url: photo.signed_url });
-    },
+    (file: File) =>
+      whileBusy(onBusy, async () => {
+        setProgress(0);
+        const photo = await uploadPhoto(file, {
+          onProgress: setProgress,
+          signal: new AbortController().signal,
+        });
+        if (!photo.signed_url) throw new Error("No link for the new photo");
+        onPick({ id: photo.id, url: photo.signed_url });
+      }),
     { errorToast: tp("uploadFailed") },
   );
-  useEffect(() => {
-    if (!loading || !onBusy) return;
-    onBusy(true);
-    return () => onBusy(false);
-  }, [loading, onBusy]);
 
   /** The first photo of what was dropped or chosen goes on the cover. */
   const take = (files: FileList | null) => {

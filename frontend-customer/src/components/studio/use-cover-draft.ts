@@ -17,6 +17,12 @@ import { createAutosave } from "@/lib/covers/autosave";
 import { editHistory, type EditorAction } from "@/lib/covers/editor";
 import { openCoverStudio } from "@/lib/covers/open-studio";
 import {
+  countWork,
+  isWorking,
+  type WorkKind,
+  type Working,
+} from "@/lib/covers/work";
+import {
   deleteDesign,
   getDesign,
   keepDesign,
@@ -59,12 +65,15 @@ function typingIn(target: EventTarget | null): boolean {
 export function useCoverDraft({
   design,
   editable,
+  generationsLeft,
   paused = false,
   reload,
 }: {
   design: DesignRecord;
   /** A draft whose course or event is still there: the only one that can be edited or kept. */
   editable: boolean;
+  /** New photos she can still make this month, as of the page load; the draft keeps the count from there. */
+  generationsLeft: number;
   /** Something modal is open (the discard question): Cmd-Z waits. */
   paused?: boolean;
   /** Loads the design again, which replaces this editor (after Keep, and after Undo from its toast). */
@@ -87,8 +96,12 @@ export function useCoverDraft({
   const [reloading, setReloading] = useState(false);
   // From a Discard that went through until the page has left: the draft is gone, so nothing more can be done.
   const [discarded, setDiscarded] = useState(false);
-  // Photos on their way, by where they come from: a photo being made, uploaded or copied.
-  const [working, setWorking] = useState<Record<string, boolean>>({});
+  // Photos on their way, by where they come from: a photo being made, uploaded or copied. The work reports
+  // them itself (lib/covers/work.ts), so leaving the drawer it started from does not lift the hold.
+  const [working, setWorking] = useState<Working>({});
+  // The month's new photos left. It lives here, not in the Photos drawer, which is gone while she is
+  // elsewhere: opening it again would show the count of the page load.
+  const [left, setLeft] = useState(generationsLeft);
 
   const autosave = useMemo(
     () =>
@@ -227,14 +240,14 @@ export function useCoverDraft({
   /** Nothing can be changed while the draft is being kept, discarded, copied or replaced. */
   const busy = keeping || discarding || copying || reloading || discarded;
   /** Keep and Discard also wait for a photo on its way: it would land on a cover that is gone or kept. */
-  const locked = busy || Object.values(working).some(Boolean);
+  const locked = busy || isWorking(working);
   const setWork = useCallback(
-    (source: string, on: boolean) =>
-      setWorking((now) =>
-        now[source] === on ? now : { ...now, [source]: on },
-      ),
+    (kind: WorkKind, on: boolean) =>
+      setWorking((now) => countWork(now, kind, on)),
     [],
   );
+  const countPhoto = useCallback(() => setLeft((n) => Math.max(0, n - 1)), []);
+  const photosUsedUp = useCallback(() => setLeft(0), []);
 
   // Cmd-Z and Shift-Cmd-Z (Ctrl-Z, Ctrl-Shift-Z and Ctrl-Y elsewhere) step the history, unless she is typing
   // in a field, which has an undo of its own. The canvas handles its own keys (arrows, Delete, Cmd-D).
@@ -272,6 +285,14 @@ export function useCoverDraft({
     setGenerating,
     /** A photo source reports that it is making, uploading or copying a photo (or has finished). */
     setWork,
+    /** Whether a photo from that source is on its way. */
+    isWorking: (kind: WorkKind) => isWorking(working, kind),
+    /** New photos she can still make this month. */
+    left,
+    /** A new photo has started: it counts against the month. */
+    countPhoto,
+    /** The server says the month's new photos are all used. */
+    photosUsedUp,
     keep,
     keeping,
     discard,

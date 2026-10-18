@@ -28,6 +28,7 @@ import { useTenant } from "@/hooks/use-tenant";
 import { clientFetch } from "@/lib/api-client";
 import { makePhoto } from "@/lib/covers/generate";
 import { nearestGenerationAspect } from "@/lib/covers/recipe";
+import { whileBusy } from "@/lib/covers/work";
 import {
   materializeCuratedImage,
   searchCuratedImages,
@@ -53,12 +54,18 @@ export interface PhotoSourcesProps {
   cardAspect: CoverAspect;
   /** Library photos already on a cover: asset id to the title of what wears it. */
   inUse: Record<string, string>;
-  /** New photos she can still make this month. */
+  /** New photos she can still make this month. The caller keeps the count, so it is right whenever she
+   *  comes back to the New tab. */
   generationsLeft: number;
+  /** A new photo's job is on its way: it counts against this month. */
+  onGenerationStart?: () => void;
+  /** The server says this month's new photos are all used. */
+  onUsedUp?: () => void;
   onPick: (photo: PickedPhoto) => void;
   /** True while a new photo is being made, so the cover can hold the place of its photo. */
   onGenerating?: (generating: boolean) => void;
-  /** True while a photo is being made, uploaded or copied: the editor holds Keep and Discard meanwhile. */
+  /** Told by the work itself: true when a photo starts to be made, uploaded or copied, false once that
+   *  has ended, wherever she is by then. The editor holds Keep and Discard meanwhile. */
   onBusy?: (busy: boolean) => void;
   /** The tab shown, when the caller sets it (the desktop rail's "New photo" opens the New tab); left out,
    *  the tabs are hers to switch. `onTab` hears of her switching either way. */
@@ -67,7 +74,6 @@ export interface PhotoSourcesProps {
 }
 
 type Tab = PhotoTab;
-type Mark = (source: Tab, on: boolean) => void;
 const PAGE_SIZE = 24;
 
 function useDebounced<T>(value: T, ms = 350): T {
@@ -90,15 +96,6 @@ export function appendUnique<T extends { id: string }>(
 /** `row` first, and not a second time where `now` lists it. */
 export function prependUnique<T extends { id: string }>(now: T[], row: T): T[] {
   return [row, ...now.filter((x) => x.id !== row.id)];
-}
-
-/** Tells `mark` that `source` is at work while `on`, and that it is not once it stops or goes away. */
-function useReportWork(on: boolean, source: Tab, mark?: Mark) {
-  useEffect(() => {
-    if (!on || !mark) return;
-    mark(source, true);
-    return () => mark(source, false);
-  }, [on, source, mark]);
 }
 
 /** A searchable, paged list. A new query keeps the rows on screen until its first page arrives (the
@@ -283,10 +280,10 @@ async function fetchYours(query: string, page: number) {
 
 function YoursPanel({
   onPick,
-  mark,
+  onBusy,
 }: {
   onPick: (photo: PickedPhoto) => void;
-  mark?: Mark;
+  onBusy?: (busy: boolean) => void;
 }) {
   const t = useTranslations("admin.studio.photos");
   const [query, setQuery] = useState("");
@@ -296,19 +293,19 @@ function YoursPanel({
 
   // Straight from her device: it joins Yours and is picked at once.
   const { run: upload, loading: uploading } = useAsyncAction(
-    async (file: File) => {
-      setProgress(0);
-      const photo = await uploadPhoto(file, {
-        onProgress: setProgress,
-        signal: new AbortController().signal,
-      });
-      if (!photo.signed_url) throw new Error("No link for the new photo");
-      list.prepend(photo);
-      onPick({ id: photo.id, url: photo.signed_url });
-    },
+    (file: File) =>
+      whileBusy(onBusy, async () => {
+        setProgress(0);
+        const photo = await uploadPhoto(file, {
+          onProgress: setProgress,
+          signal: new AbortController().signal,
+        });
+        if (!photo.signed_url) throw new Error("No link for the new photo");
+        list.prepend(photo);
+        onPick({ id: photo.id, url: photo.signed_url });
+      }),
     { errorToast: t("uploadFailed") },
   );
-  useReportWork(uploading, "yours", mark);
 
   return (
     <div className="space-y-3">
@@ -376,11 +373,11 @@ async function fetchLibrary(query: string, page: number) {
 function ContentorPanel({
   inUse,
   onPick,
-  mark,
+  onBusy,
 }: {
   inUse: Record<string, string>;
   onPick: (photo: PickedPhoto) => void;
-  mark?: Mark;
+  onBusy?: (busy: boolean) => void;
 }) {
   const t = useTranslations("admin.studio.photos");
   const niche = useTenant()?.niche;
@@ -392,19 +389,19 @@ function ContentorPanel({
   const [picking, setPicking] = useState<string | null>(null);
 
   const { run: pick, loading: busy } = useAsyncAction(
-    async (image: CuratedImage) => {
-      setPicking(image.id);
-      try {
-        const photo = await materializeCuratedImage(image.id);
-        if (!photo.signed_url) throw new Error("No link for the photo");
-        onPick({ id: photo.id, url: photo.signed_url });
-      } finally {
-        setPicking(null);
-      }
-    },
+    (image: CuratedImage) =>
+      whileBusy(onBusy, async () => {
+        setPicking(image.id);
+        try {
+          const photo = await materializeCuratedImage(image.id);
+          if (!photo.signed_url) throw new Error("No link for the photo");
+          onPick({ id: photo.id, url: photo.signed_url });
+        } finally {
+          setPicking(null);
+        }
+      }),
     { errorToast: t("pickFailed") },
   );
-  useReportWork(busy, "contentor", mark);
 
   return (
     <div className="space-y-3">
@@ -451,17 +448,17 @@ function NewPanel({
   onUsedUp,
   onPick,
   onGenerating,
-  mark,
+  onBusy,
 }: {
   cardAspect: CoverAspect;
   left: number;
   /** The job is on its way: it counts against this month. */
-  onStart: () => void;
+  onStart?: () => void;
   /** The server says this month's photos are all used. */
-  onUsedUp: () => void;
+  onUsedUp?: () => void;
   onPick: (photo: PickedPhoto) => void;
   onGenerating?: (generating: boolean) => void;
-  mark?: Mark;
+  onBusy?: (busy: boolean) => void;
 }) {
   const t = useTranslations("admin.studio.photos");
   const field = useId();
@@ -471,35 +468,34 @@ function NewPanel({
   useEffect(() => () => asking.current?.abort(), []);
 
   const { run: make, loading } = useAsyncAction(
-    async () => {
-      const controller = (asking.current = new AbortController());
-      onGenerating?.(true);
-      try {
-        const photo = await makePhoto(
-          prompt.trim(),
-          nearestGenerationAspect(cardAspect),
-          { signal: controller.signal, onStart },
-        );
-        // makePhoto rejects once she has left; this is the second lock on the same door, so whatever it
-        // returns, a photo that arrives after she left is not put on a cover nobody is editing.
-        if (controller.signal.aborted) return;
-        if (!photo?.signed_url) throw new Error("The job made no photo");
-        onPick({ id: photo.id, url: photo.signed_url });
-      } finally {
-        onGenerating?.(false);
-      }
-    },
+    () =>
+      whileBusy(onBusy, async () => {
+        const controller = (asking.current = new AbortController());
+        onGenerating?.(true);
+        try {
+          const photo = await makePhoto(
+            prompt.trim(),
+            nearestGenerationAspect(cardAspect),
+            { signal: controller.signal, onStart },
+          );
+          // makePhoto rejects once she has left; this is the second lock on the same door, so whatever it
+          // returns, a photo that arrives after she left is not put on a cover nobody is editing.
+          if (controller.signal.aborted) return;
+          if (!photo?.signed_url) throw new Error("The job made no photo");
+          onPick({ id: photo.id, url: photo.signed_url });
+        } finally {
+          onGenerating?.(false);
+        }
+      }),
     {
       onError: (error) => {
         if (asking.current?.signal.aborted) return;
         const usedUp = error instanceof ApiError && error.status === 429;
-        if (usedUp) onUsedUp();
+        if (usedUp) onUsedUp?.();
         toast.error(usedUp ? t("used") : t("makeFailed"));
       },
     },
   );
-
-  useReportWork(loading, "new", mark);
 
   return (
     <div className="space-y-3">
@@ -546,6 +542,8 @@ export function PhotoSources({
   cardAspect,
   inUse,
   generationsLeft,
+  onGenerationStart,
+  onUsedUp,
   onPick,
   onGenerating,
   onBusy,
@@ -559,27 +557,10 @@ export function PhotoSources({
   // The library is only asked once she opens it; a tab she has left stays as she left it.
   const [seen, setSeen] = useState<Tab[]>([tab]);
   if (!seen.includes(tab)) setSeen([...seen, tab]);
-  const [left, setLeft] = useState(generationsLeft);
   const show = (next: string) => {
     setOwn(next as Tab);
     onTab?.(next as Tab);
   };
-
-  // Which tabs have a photo on its way: the editor holds Keep and Discard while any does.
-  const [working, setWorking] = useState<Partial<Record<Tab, boolean>>>({});
-  const mark = useCallback<Mark>(
-    (source, on) =>
-      setWorking((now) =>
-        Boolean(now[source]) === on ? now : { ...now, [source]: on },
-      ),
-    [],
-  );
-  const busy = Object.values(working).some(Boolean);
-  useEffect(() => {
-    if (!busy || !onBusy) return;
-    onBusy(true);
-    return () => onBusy(false);
-  }, [busy, onBusy]);
 
   const panel = (name: Tab, content: ReactNode) =>
     seen.includes(name) && (
@@ -618,25 +599,25 @@ export function PhotoSources({
             <Sparkles className="size-3.5" aria-hidden="true" />
             {t("new")}
           </>,
-          left <= 0,
+          generationsLeft <= 0,
         )}
       </TabsList>
-      {panel("yours", <YoursPanel onPick={onPick} mark={mark} />)}
+      {panel("yours", <YoursPanel onPick={onPick} onBusy={onBusy} />)}
       {panel(
         "contentor",
-        <ContentorPanel inUse={inUse} onPick={onPick} mark={mark} />,
+        <ContentorPanel inUse={inUse} onPick={onPick} onBusy={onBusy} />,
       )}
       {/* Always there once opened: a photo being made is not lost by looking at another tab. */}
       {panel(
         "new",
         <NewPanel
           cardAspect={cardAspect}
-          left={left}
-          onStart={() => setLeft((n) => Math.max(0, n - 1))}
-          onUsedUp={() => setLeft(0)}
+          left={generationsLeft}
+          onStart={onGenerationStart}
+          onUsedUp={onUsedUp}
           onPick={onPick}
           onGenerating={onGenerating}
-          mark={mark}
+          onBusy={onBusy}
         />,
       )}
     </Tabs>

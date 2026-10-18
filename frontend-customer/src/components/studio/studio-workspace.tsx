@@ -4,7 +4,7 @@
 // toolbar of the selected layer above it and her other covers under it. (Under 1024 px the simple controls are
 // the editor: see studio-editor.tsx.)
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { CoversStrip } from "@/components/studio/covers-strip";
@@ -16,6 +16,7 @@ import { PhotosDrawer } from "@/components/studio/drawers/photos";
 import { TextDrawer } from "@/components/studio/drawers/text";
 import { UploadsDrawer } from "@/components/studio/drawers/uploads";
 import { LayerToolbar } from "@/components/studio/layer-toolbar";
+import type { PhotoSourcesProps } from "@/components/studio/photo-sources";
 import { shapeLabel } from "@/components/studio/size-previews";
 import {
   activeTool,
@@ -38,7 +39,6 @@ import type {
   CoverSize,
   DesignRecord,
   DesignTarget,
-  DesignTargets,
   PartId,
 } from "@/types/design";
 import type { CoverAspect } from "@shared/sections/types";
@@ -98,7 +98,7 @@ export function Workspace({
   selected,
   onSelect,
   set,
-  targets,
+  photoSources,
   others,
   timeZone,
   notice,
@@ -116,7 +116,8 @@ export function Workspace({
   selected: string | null;
   onSelect: (id: string | null) => void;
   set: CoverRecipe | null;
-  targets: DesignTargets;
+  /** What the Photos drawer is given, but for its tab (the rail sets that). */
+  photoSources: Omit<PhotoSourcesProps, "tab" | "onTab">;
   others: DesignTarget[];
   timeZone: string;
   notice: string;
@@ -130,19 +131,7 @@ export function Workspace({
     setTools((now) => openTool(now, tool));
   // A photo on its way (being made, uploaded or copied) keeps the Photos drawer open under whatever tool
   // she looks at meanwhile: closing it would stop the request, and a new photo is paid for either way.
-  const [photosBusy, setPhotosBusy] = useState(false);
-  const { setWork } = draft;
-  const photosWork = useCallback(
-    (on: boolean) => {
-      setPhotosBusy(on);
-      setWork("photos", on);
-    },
-    [setWork],
-  );
-  const uploadsWork = useCallback(
-    (on: boolean) => setWork("uploads", on),
-    [setWork],
-  );
+  const photosBusy = draft.isWorking("photos");
 
   const aspect = sizeAspect(size, cardAspect);
   const palette = useMemo(() => {
@@ -162,12 +151,7 @@ export function Workspace({
       : undefined;
 
   const photoTools = {
-    cardAspect,
-    inUse: targets.in_use,
-    generationsLeft: targets.generations_left,
-    onPick: draft.pick,
-    onGenerating: draft.setGenerating,
-    onBusy: photosWork,
+    ...photoSources,
     tab: tools.photosTab,
     onTab: (photosTab: ToolState["photosTab"]) =>
       setTools((now) => ({ ...now, photosTab })),
@@ -253,7 +237,7 @@ export function Workspace({
             {drawer === "uploads" && (
               <UploadsDrawer
                 onPick={draft.pick}
-                onBusy={uploadsWork}
+                onBusy={(on) => draft.setWork("uploads", on)}
                 disabled={draft.busy}
               />
             )}

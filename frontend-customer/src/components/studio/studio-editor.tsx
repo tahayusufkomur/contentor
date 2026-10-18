@@ -9,7 +9,6 @@
 // previews, which are the whole editor there (spec E18).
 
 import {
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -132,6 +131,7 @@ function EditorBody({
   const draft = useCoverDraft({
     design,
     editable,
+    generationsLeft: targets.generations_left,
     paused: confirming,
     reload,
   });
@@ -166,11 +166,17 @@ function EditorBody({
       : design.state === "retired"
         ? t("editor.replaced")
         : t("editor.waiting", { target: noun });
-  const { setWork } = draft;
-  const photosWork = useCallback(
-    (on: boolean) => setWork("photos", on),
-    [setWork],
-  );
+  // What both views give the photo sources: the Photos drawer and the phone's controls.
+  const photoSources = {
+    cardAspect,
+    inUse: targets.in_use,
+    generationsLeft: draft.left,
+    onGenerationStart: draft.countPhoto,
+    onUsedUp: draft.photosUsedUp,
+    onPick: draft.pick,
+    onGenerating: draft.setGenerating,
+    onBusy: (on: boolean) => draft.setWork("photos", on),
+  };
 
   return (
     <>
@@ -188,7 +194,7 @@ function EditorBody({
           selected={selected}
           onSelect={setSelected}
           set={set ?? null}
-          targets={targets}
+          photoSources={photoSources}
           others={others}
           timeZone={timeZone}
           notice={notice}
@@ -260,14 +266,7 @@ function EditorBody({
                   size={size}
                   onSize={setSize}
                   edit={draft.edit}
-                  photoSources={{
-                    cardAspect,
-                    inUse: targets.in_use,
-                    generationsLeft: targets.generations_left,
-                    onPick: draft.pick,
-                    onGenerating: draft.setGenerating,
-                    onBusy: photosWork,
-                  }}
+                  photoSources={photoSources}
                 />
               </fieldset>
             )}
