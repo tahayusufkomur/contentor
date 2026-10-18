@@ -116,7 +116,9 @@ def design_list_create(request):
         rows = Design.objects.exclude(state="retired")  # a retired design is history, not hers any more
         if state:
             rows = rows.filter(state=state)
-        return Response(DesignSerializer(rows, many=True).data)
+        rows, ctx = list(rows), {}  # what is read for one design is kept in ctx for the rest
+        designs.read_photos(rows, ctx)
+        return Response(DesignSerializer(rows, many=True, context=ctx).data)
 
     data = request.data if isinstance(request.data, dict) else {}
     started = timezone.now()
@@ -150,9 +152,12 @@ def design_detail(request, pk):
             design.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         recipe = request.data.get("recipe") if isinstance(request.data, dict) else None
-        # The recipe sent replaces the stored one: the editor always sends the whole of it.
+        # The recipe sent replaces the stored one: the editor always sends the whole of it. The photo
+        # already on the draft stays valid after she deletes it in Media, so her words still save (Keep
+        # says the photo is gone); any other id has to be one of her photos.
+        stored = designs._recipe_photo(design.recipe)
         design.recipe = validate_recipe(
-            recipe, photo_exists=lambda photo_id: Photo.objects.filter(pk=photo_id).exists()
+            recipe, photo_exists=lambda photo_id: photo_id == stored or Photo.objects.filter(pk=photo_id).exists()
         )
         design.save(update_fields=["recipe", "updated_at"])
         return Response(DesignSerializer(design).data)

@@ -81,6 +81,22 @@ def test_title_capped_at_90_and_turkish_kept():
     assert clean({"words": {"title": " \n "}})["words"]["title"] is None
 
 
+def test_text_loses_a_nul_and_a_lone_surrogate():
+    """Both are valid JSON, but Postgres refuses the first in a jsonb column and UTF-8 the second."""
+    dirty = "Sp\x00ring \ud800sale\udfff 😀"
+    out = clean(
+        {
+            "words": {"label": dirty, "title": dirty, "subtitle": dirty},
+            "badge": {"kind": "text", "text": dirty},
+            "extras": [text_extra("t1", text=dirty), {"id": "b1", "type": "badge", "text": dirty, "frame": FRAME}],
+        }
+    )
+    texts = [*out["words"].values(), out["badge"]["text"], *(extra["text"] for extra in out["extras"])]
+    assert texts == ["Spring sale 😀"] * 6  # the emoji is one character, and stays
+    assert clean(out) == out
+    assert clean({"words": {"title": "\x00 \ud800"}})["words"]["title"] is None  # nothing left of it
+
+
 def test_every_text_is_cut_to_its_limit():
     long = "ç" * 200
     out = clean(

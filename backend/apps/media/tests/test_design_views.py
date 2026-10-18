@@ -196,6 +196,39 @@ def test_create_then_patch_draft(coach, client):
     assert client.get(path).status_code == 404
 
 
+def test_a_draft_whose_photo_was_deleted_can_still_be_saved(coach, client):
+    gone, other = photo("gone"), photo("other")
+    gone_id = str(gone.pk)  # delete() clears the instance's pk
+    draft = designs.open_draft("course", str(course(coach).pk), recipe=on(gone))
+    gone.delete()  # in Media, while the studio was open
+    path = url(draft)
+
+    # the editor sends the whole recipe back, the deleted photo's id included: her words still save
+    saved = client.patch(path, {"recipe": {"photo": {"id": gone_id}, "words": {"title": "Start here"}}}, format="json")
+    assert saved.status_code == 200, saved.content
+    assert saved.json()["recipe"]["words"]["title"] == "Start here"
+    assert saved.json()["recipe"]["photo"]["id"] == gone_id  # as it was: the renderer draws its placeholder
+    assert saved.json()["photos"] == {}
+
+    # that one id only: a different one still has to be one of her photos
+    assert client.patch(path, {"recipe": {"photo": {"id": str(uuid.uuid4())}}}, format="json").status_code == 400
+    assert Design.objects.get(pk=draft.pk).recipe["photo"]["id"] == gone_id
+    swapped = client.patch(path, {"recipe": {"photo": {"id": str(other.pk)}}}, format="json")
+    assert swapped.status_code == 200 and swapped.json()["recipe"]["photo"]["id"] == str(other.pk)
+
+
+def test_a_title_with_a_nul_or_a_lone_surrogate_is_saved_without_it(coach, client):
+    draft = designs.open_draft("course", str(course(coach).pk))
+    # As a client writes them in JSON: the test client cannot send a lone surrogate itself.
+    for body in (
+        r'{"recipe": {"words": {"title": "Sp\u0000ring"}}}',
+        r'{"recipe": {"words": {"title": "Sp\ud800ring"}}}',
+    ):
+        saved = client.generic("PATCH", url(draft), body, content_type="application/json")
+        assert saved.status_code == 200, saved.content
+        assert saved.json()["recipe"]["words"]["title"] == "Spring"
+
+
 def test_create_refuses_what_it_cannot_open(coach, client):
     item = course(coach)
     post = lambda body: client.post(DESIGNS, body, format="json")  # noqa: E731
@@ -252,6 +285,26 @@ def test_list_filters_by_state(coach, client):
     assert everything[str(newest.pk)]["title"] == "B"
     assert everything[str(series_draft.pk)]["title"] == "Morning Flow"  # a series is its title
     assert client.get(DESIGNS, {"state": "retired"}).status_code == 400
+
+
+def test_list_query_count_does_not_grow_with_designs(coach, client):
+    def add(count, start):
+        for number in range(start, start + count):
+            item = course(coach, title=f"Course {number}")
+            kept("course", str(item.pk), photo(f"kept{number}"))
+            other = course(coach, title=f"Other {number}")
+            designs.open_draft("course", str(other.pk), recipe=on(photo(f"draft{number}")))
+
+    def queries(expected):
+        with CaptureQueriesContext(connection) as captured:
+            listed = client.get(DESIGNS).json()
+        assert len(listed) == expected and all(row["photos"] for row in listed)
+        return len(captured)
+
+    add(2, 0)
+    few = queries(4)
+    add(3, 2)
+    assert queries(10) == few
 
 
 def test_patch_kept_refused(coach, client):

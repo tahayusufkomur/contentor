@@ -11,8 +11,10 @@ Keep is a History row in the copilot (apps.core.copilot.views): this module buil
 as apps/core does, because the course and live serializers import this module.
 """
 
+from contextlib import contextmanager
+
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
@@ -142,13 +144,24 @@ def open_draft(
 # --- keep and undo ---------------------------------------------------------
 
 
+@contextmanager
+def _atomic(refusal):
+    """`transaction.atomic()` where losing a race for the one kept design a target may have (the
+    database refuses the second) is a refusal she can read, not a server error."""
+    try:
+        with transaction.atomic():
+            yield
+    except IntegrityError:
+        raise DesignError(refusal) from None
+
+
 def keep(design: Design) -> tuple[dict, dict]:
     """Make a draft the cover of its course or event series: its photo (none included) goes onto every
     row of the target, and the design kept before it is retired. Returns `(result, inverse)` for the
     History row; `restore_cover(inverse)` is Undo. As for the other cover changes, `result["id"]` is
     the record that was touched (the course, or the first row of the series), which is what the page
     showing it reloads on when History undoes this; the design's own id is `result["design_id"]`."""
-    with transaction.atomic():
+    with _atomic("that cover was changed since"):
         try:
             # Locked and current: a double submit waits here and then finds it kept.
             design.refresh_from_db(from_queryset=Design.objects.select_for_update())
@@ -222,12 +235,14 @@ def restore_cover(inverse: dict) -> None:
     photo_ids = {thumbnails[str(row.pk)] for row in rows} - {None}
     if photo_ids and Photo.objects.filter(pk__in=photo_ids).count() != len(photo_ids):
         raise DesignError("that photo no longer exists")
-    with transaction.atomic():
+    with _atomic(_STALE):
         design = Design.objects.select_for_update().filter(pk=inverse["design_id"], state="kept").first()
         if design is None:
             raise DesignError(_STALE)
         design.state, design.kept_at = "draft", None
-        design.save(update_fields=["state", "kept_at", "updated_at"])
+        # Not "updated_at": the copy she may have opened since is newer than this one, and the newest
+        # draft is the one the studio resumes.
+        design.save(update_fields=["state", "kept_at"])
         if inverse["previous_id"]:
             Design.objects.filter(pk=inverse["previous_id"], state="retired").update(
                 state="kept", updated_at=timezone.now()
@@ -268,6 +283,12 @@ def _photos(context, photo_ids):
     return photos
 
 
+def read_photos(rows, context):
+    """The photos of these designs, all in one read, so that drawing each of them (design_payload) finds its
+    photo in `context` instead of reading it."""
+    _photos(context, [photo_id for design in rows if (photo_id := _recipe_photo(design.recipe))])
+
+
 def _kept(context):
     """Every kept cover design by (target kind, target key), read once per context together with
     their photos. ponytail: all of them, not just the rows being shown; a tenant has tens of courses
@@ -275,7 +296,7 @@ def _kept(context):
     memo = _memo(context)
     if "kept" not in memo:
         kept = {(d.target_kind, d.target_key): d for d in Design.objects.filter(kind="cover", state="kept")}
-        _photos(context, [photo_id for d in kept.values() if (photo_id := _recipe_photo(d.recipe))])
+        read_photos(kept.values(), context)
         memo["kept"] = kept
     return memo["kept"]
 

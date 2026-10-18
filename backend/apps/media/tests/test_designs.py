@@ -399,6 +399,71 @@ def test_a_session_added_later_does_not_stale_the_undo(coach, client):
     assert later.thumbnail_id == new.pk
 
 
+def test_undo_leaves_the_copy_she_opened_the_newest_draft(coach, client):
+    """Keep, then "Edit a copy", then Undo: the design taken back is a draft again, but her copy is the one
+    the studio and the targets list go on with."""
+    item = course(coach)
+    key = str(item.pk)
+    done = designs.open_draft("course", key, recipe=on(photo("chosen")))
+    _, _, audit_id = keep_with_history(coach, done)
+    copy = designs.open_draft("course", key, from_id=str(done.pk))
+    assert copy.pk != done.pk
+
+    assert undo(client, audit_id).status_code == 200
+
+    done.refresh_from_db()
+    assert done.state == "draft"
+    assert designs.open_draft("course", key).pk == copy.pk
+    targets = {t["target_key"]: t for t in client.get("/api/v1/designs/targets/").json()["targets"]}
+    assert targets[key]["draft_id"] == str(copy.pk)
+
+
+def test_a_keep_that_loses_a_race_is_refused_cleanly(coach, monkeypatch):
+    """Two keeps of one target at once: the database allows one kept design, and the second hears why
+    instead of a server error."""
+    item = course(coach)
+    key = str(item.pk)
+    mine = designs.open_draft("course", key, recipe=on(photo("mine")))
+    rival = Design(kind="cover", target_kind="course", target_key=key, recipe={}, state="kept")
+    save = Design.save
+
+    def racing_save(self, *args, **kwargs):
+        if self.pk == mine.pk and self.state == "kept":
+            save(rival, force_insert=True)  # the other keep gets in just before this one writes
+        return save(self, *args, **kwargs)
+
+    monkeypatch.setattr(Design, "save", racing_save)
+    with pytest.raises(designs.DesignError, match="changed since"):
+        designs.keep(mine)
+
+    mine.refresh_from_db()
+    item.refresh_from_db()
+    assert (mine.state, item.thumbnail_id) == ("draft", None)  # nothing of it was written
+    assert not Design.objects.filter(state="kept").exists()
+
+
+def test_an_undo_that_loses_a_race_is_refused_cleanly(coach, monkeypatch):
+    item = course(coach)
+    key = str(item.pk)
+    first = kept("course", key, photo("a"))
+    second = designs.open_draft("course", key, recipe=on(photo("b")))
+    _, inverse = designs.keep(second)
+    rival = Design(kind="cover", target_kind="course", target_key=key, recipe={}, state="kept")
+    save = Design.save
+
+    def racing_save(self, *args, **kwargs):
+        result = save(self, *args, **kwargs)
+        if self.pk == second.pk and self.state == "draft":
+            save(rival, force_insert=True)  # another keep lands as the undone design steps down
+        return result
+
+    monkeypatch.setattr(Design, "save", racing_save)
+    with pytest.raises(designs.DesignError, match="changed since"):
+        designs.restore_cover(inverse)
+
+    assert dict(Design.objects.values_list("pk", "state")) == {first.pk: "retired", second.pk: "kept"}
+
+
 # --- what a row shows ------------------------------------------------------
 
 

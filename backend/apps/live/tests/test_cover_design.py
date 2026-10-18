@@ -144,6 +144,25 @@ def test_photo_links_do_not_cost_a_query_an_event(owner):
     assert reads() == few  # and once for a kind, however many of its events wear one
 
 
+@EACH_KIND
+def test_a_kinds_own_list_reads_the_photos_with_its_events(owner, kind, model, event_type, path):
+    def add(count, start):
+        for number in range(start, start + count):
+            session(owner, model, f"{kind} {number}", days=number + 1, thumbnail=photo(f"{kind}{number}"))
+
+    def reads():
+        with CaptureQueriesContext(connection) as captured:
+            assert client(owner).get(path).status_code == 200
+        return photo_reads(captured)
+
+    add(2, 0)
+    few = reads()
+    add(3, 2)
+
+    assert few  # the photos are read at all,
+    assert reads() == few  # and with the events, not in a query of their own
+
+
 def test_a_series_shares_its_cover_and_another_title_does_not(owner):
     first, second = session(owner, LiveClass, "Morning Flow", days=1), session(owner, LiveClass, "Morning Flow", days=2)
     other = session(owner, LiveClass, "Evening Flow", days=3)

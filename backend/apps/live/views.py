@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 def _search_and_order_live_queryset(request, qs):
+    qs = qs.select_related("thumbnail")  # every row's link to its photo reads it
     search = request.query_params.get("search", "").strip()
     if search:
         qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search))
