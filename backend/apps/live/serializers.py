@@ -329,6 +329,7 @@ class LiveStreamCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSeria
 class ZoomClassSerializer(serializers.ModelSerializer):
     filter_options = FilterOptionSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    thumbnail_signed_url = serializers.SerializerMethodField()
     cover_design = serializers.SerializerMethodField()
 
     class Meta:
@@ -347,6 +348,7 @@ class ZoomClassSerializer(serializers.ModelSerializer):
             "started_at",
             "ended_at",
             "created_at",
+            "thumbnail_signed_url",
             "cover_design",
             "filter_options",
             "tags",
@@ -360,6 +362,9 @@ class ZoomClassSerializer(serializers.ModelSerializer):
             data["zoom_link"] = ""
             data["zoom_meeting_id"] = ""
         return data
+
+    def get_thumbnail_signed_url(self, obj):
+        return get_thumbnail_signed_url(obj)
 
     def get_cover_design(self, obj):
         return designs.cover_for(obj, self.context)
@@ -387,6 +392,7 @@ class ZoomClassCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerial
 class OnsiteEventSerializer(serializers.ModelSerializer):
     filter_options = FilterOptionSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    thumbnail_signed_url = serializers.SerializerMethodField()
     cover_design = serializers.SerializerMethodField()
 
     class Meta:
@@ -406,6 +412,7 @@ class OnsiteEventSerializer(serializers.ModelSerializer):
             "started_at",
             "ended_at",
             "created_at",
+            "thumbnail_signed_url",
             "cover_design",
             "filter_options",
             "tags",
@@ -419,6 +426,9 @@ class OnsiteEventSerializer(serializers.ModelSerializer):
         if not _viewer_has_access(self.context, instance):
             data["address"] = ""
         return data
+
+    def get_thumbnail_signed_url(self, obj):
+        return get_thumbnail_signed_url(obj)
 
     def get_cover_design(self, obj):
         return designs.cover_for(obj, self.context)

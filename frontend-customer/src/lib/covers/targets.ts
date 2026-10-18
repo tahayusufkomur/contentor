@@ -1,6 +1,6 @@
 // What the photo studio's list says about a course or event series, and what its button does.
 
-import type { DesignTarget } from "@/types/design";
+import type { CoverItem, DesignTarget } from "@/types/design";
 
 /** What a target wears now: a kept design, a plain photo, nothing, or a draft that waits for her. */
 export type TargetState = "designed" | "photo" | "none" | "draft";
@@ -27,4 +27,18 @@ export function targetAction(
     default:
       return { key: "design" };
   }
+}
+
+/** What a target's cover is drawn for, so its badges read as they do on the site: a course's "New" reads
+ *  when it was made, a series' date reads its next session. Dates are read in `timeZone`, the tenant's. */
+export function targetItem(
+  target: Pick<DesignTarget, "title" | "created_at" | "next_at">,
+  timeZone?: string | null,
+): CoverItem {
+  return {
+    title: target.title,
+    createdAt: target.created_at,
+    startsAt: target.next_at,
+    timeZone,
+  };
 }

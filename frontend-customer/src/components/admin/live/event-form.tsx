@@ -79,6 +79,14 @@ export function EventForm({
   );
   const set = (change: Partial<typeof form>) =>
     setForm((current) => ({ ...current, ...change }));
+  // The form as it was opened: she has unsaved edits when it differs (ids in any order).
+  const key = JSON.stringify([
+    form,
+    [...filterOptionIds].sort(),
+    [...tagIds].sort(),
+  ]);
+  const [opened] = useState(key);
+  const unsaved = key !== opened;
 
   const config = EVENT_KINDS[kind];
   const has = (field: (typeof config.fields)[number]) =>
@@ -178,23 +186,19 @@ export function EventForm({
             <div className="space-y-2">
               <Label>{t("cover")}</Label>
               <div className="flex flex-wrap items-center gap-3">
-                {/* Zoom and in-person rows carry no photo link: until they have a design, what they
-                    wear is unknown, and an empty tile would say "nothing". */}
-                {(event.cover_design ||
-                  event.thumbnail_signed_url !== undefined) && (
-                  <CoverThumb
-                    design={event.cover_design}
-                    photoUrl={event.thumbnail_signed_url}
-                    item={listedItem(
-                      { title: event.title, scheduled_at: event.scheduled_at },
-                      timeZone,
-                    )}
-                    className="w-48"
-                  />
-                )}
+                <CoverThumb
+                  design={event.cover_design}
+                  photoUrl={event.thumbnail_signed_url}
+                  item={listedItem(
+                    { title: event.title, scheduled_at: event.scheduled_at },
+                    timeZone,
+                  )}
+                  className="w-48"
+                />
                 <OpenStudioButton
                   target={{ target_kind: event.kind, target_key: event.title }}
                   from={event.cover_design?.id}
+                  unsaved={unsaved}
                 />
               </div>
               <p className="text-xs text-muted-foreground">

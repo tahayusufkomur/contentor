@@ -62,6 +62,7 @@ def design_targets(request):
             "sessions": None,
             "next_at": None,
             "status": None,
+            "created_at": None,  # a course's, for the "New" badge its cover may carry
             **fields,
             "photo_url": _photo_url(row),
             "cover": designs.cover_for(row, ctx),
@@ -69,7 +70,14 @@ def design_targets(request):
         }
 
     courses = [
-        target("course", str(course.pk), course.title, course, status="published" if course.is_published else "draft")
+        target(
+            "course",
+            str(course.pk),
+            course.title,
+            course,
+            status="published" if course.is_published else "draft",
+            created_at=course.created_at,
+        )
         for course in Course.objects.select_related("thumbnail").order_by("order", "title")
     ]
     series = []

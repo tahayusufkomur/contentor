@@ -384,6 +384,7 @@ def test_targets_groups_series_and_marks_in_use(coach, client, site, generated):
         "sessions",
         "next_at",
         "status",
+        "created_at",
         "photo_url",
         "cover",
         "draft_id",
@@ -411,6 +412,24 @@ def test_targets_groups_series_and_marks_in_use(coach, client, site, generated):
     assert by_title["morning flow"]["sessions"] == 1
     assert parse_datetime(by_title["morning flow"]["next_at"]) == lower.scheduled_at
     assert (by_title["Retreat"]["sessions"], by_title["Retreat"]["next_at"]) == (1, None)
+
+
+def test_a_course_target_says_when_it_was_made_and_a_series_does_not(coach, client):
+    """A course's cover can carry a "New" badge, which reads the course's creation date; a series' date
+    badge reads its next session (`next_at`), so a series has no creation date to give."""
+    fresh = course(coach, "Fresh course")
+    old = course(coach, "Old course")
+    Course.objects.filter(pk=old.pk).update(created_at=timezone.now() - timedelta(days=90))
+    session(coach, "Morning Flow")
+
+    response = client.get(TARGETS)
+
+    assert response.status_code == 200, response.content
+    targets = {target["title"]: target for target in response.json()["targets"]}
+    assert parse_datetime(targets["Fresh course"]["created_at"]) == Course.objects.get(pk=fresh.pk).created_at
+    assert parse_datetime(targets["Old course"]["created_at"]) == Course.objects.get(pk=old.pk).created_at
+    assert Course.objects.get(pk=old.pk).created_at < timezone.now() - timedelta(days=60)  # the update took
+    assert targets["Morning Flow"]["created_at"] is None
 
 
 def test_targets_of_a_site_with_nothing_to_design(client, generated):

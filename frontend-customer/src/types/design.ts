@@ -155,6 +155,8 @@ export interface DesignTarget {
   next_at: string | null;
   /** A course's state; null for an event series. */
   status: "published" | "draft" | null;
+  /** When a course was made (ISO), which its "New" badge reads; null for an event series. */
+  created_at: string | null;
   /** The picture it wears now, a signed link; null for none. */
   photo_url: string | null;
   /** The kept cover it wears; null when it shows a plain photo, or none. */

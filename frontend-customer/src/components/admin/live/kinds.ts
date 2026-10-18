@@ -24,7 +24,7 @@ export interface EventRow {
   created_at: string;
   /** The kept cover its series wears; null or absent when it has none. */
   cover_design?: CoverDesign | null;
-  /** Its plain photo, signed (live classes and streams only). */
+  /** The plain photo it wears, signed; null or empty for none. */
   thumbnail_signed_url?: string | null;
   filter_options?: FilterOption[];
   tags?: Tag[];

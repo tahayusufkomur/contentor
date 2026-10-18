@@ -80,7 +80,9 @@ def admin_events(request):
     ctx = {"request": request}  # one for every row, so the covers' designs are read once
     for kind, pks in pks_by_kind.items():
         model, serializer = KINDS[kind]
-        for event in model.objects.filter(pk__in=pks).prefetch_related("tags", "filter_options"):
+        # The photo is joined in: every kind's serializer signs a link to it, which would be a query a row.
+        events = model.objects.filter(pk__in=pks).select_related("thumbnail").prefetch_related("tags", "filter_options")
+        for event in events:
             rows[kind, event.pk] = {
                 **serializer(event, context=ctx).data,
                 "kind": kind,

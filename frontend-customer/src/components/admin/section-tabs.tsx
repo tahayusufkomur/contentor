@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import type { NavSection } from "@/components/shared/app-sidebar";
 import { NavLink } from "@/components/ui/nav-link";
 import { cn } from "@/lib/utils";
+import { useNavigation } from "@shared/navigation/navigation-provider";
 
 /** The pages of the section the coach is in, as tabs under the top bar.
  *  Renders nothing for a single-page section with nothing hidden. */
@@ -17,6 +19,15 @@ export function SectionTabs({
   onExpand: (sectionId: string) => void;
 }) {
   const t = useTranslations("admin");
+  const strip = useRef<HTMLElement>(null);
+  const { pathname, pendingHref } = useNavigation();
+  // On a phone the strip scrolls sideways, so the page she is on can sit past its edge: bring it into
+  // view when the strip appears and whenever she goes to another tab.
+  useEffect(() => {
+    strip.current
+      ?.querySelector('[aria-current="page"]')
+      ?.scrollIntoView({ inline: "nearest", block: "nearest" });
+  }, [pathname, pendingHref]);
   if (!section) return null;
   const hidden = section.hiddenCount ?? 0;
   if (section.items.length < 2 && hidden === 0) return null;
@@ -25,6 +36,7 @@ export function SectionTabs({
     // The <nav> keeps the section's name: e2e finds the strip as
     // getByRole("navigation", { name: section.label }).
     <nav
+      ref={strip}
       aria-label={section.label}
       className="flex items-center overflow-x-auto border-b bg-background px-4 py-2"
     >
@@ -38,7 +50,7 @@ export function SectionTabs({
             rel={item.external ? "noopener noreferrer" : undefined}
             className={({ active }) =>
               cn(
-                "flex h-7 shrink-0 items-center gap-1.5 rounded-full px-3 text-caption font-medium transition-colors",
+                "flex h-7 shrink-0 scroll-mx-4 items-center gap-1.5 rounded-full px-3 text-caption font-medium transition-colors",
                 active
                   ? "bg-foreground text-background"
                   : "text-muted-foreground hover:text-foreground",

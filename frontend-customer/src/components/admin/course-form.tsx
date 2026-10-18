@@ -64,6 +64,32 @@ interface CourseFormProps {
   onCourseLoaded?: () => void;
 }
 
+/** What "Save" sends for the settings card, as one value, ids in any order. */
+const settingsKey = (
+  c: CourseDetail | null,
+  filterIds: number[],
+  tagIds: number[],
+) =>
+  JSON.stringify([
+    c?.title,
+    c?.description,
+    c?.thumbnail_url,
+    c?.thumbnail_id ?? null,
+    c?.pricing_type,
+    c?.price,
+    c?.is_published,
+    [...filterIds].sort(),
+    [...tagIds].sort(),
+  ]);
+
+/** The same, as the server holds it. */
+const savedKey = (c: CourseDetail | null) =>
+  settingsKey(
+    c,
+    c?.filter_options?.map((o) => o.id) ?? [],
+    c?.tags?.map((t) => t.id) ?? [],
+  );
+
 export function CourseForm({
   course: initialCourse,
   onCourseLoaded,
@@ -80,6 +106,10 @@ export function CourseForm({
   const [tagIds, setTagIds] = useState<number[]>(
     initialCourse?.tags?.map((t) => t.id) ?? [],
   );
+  // What the server last gave for the settings card: she has unsaved edits when the card differs.
+  const [saved, setSaved] = useState(() => savedKey(initialCourse ?? null));
+  const unsaved =
+    !isCreate && settingsKey(course, filterOptionIds, tagIds) !== saved;
 
   // Create-mode form state
   const [createForm, setCreateForm] = useState({
@@ -122,6 +152,7 @@ export function CourseForm({
     try {
       const data = await clientFetch<CourseDetail>(`/api/v1/courses/${slug}/`);
       setCourse(data);
+      setSaved(savedKey(data));
       onCourseLoaded?.();
     } catch (err) {
       console.error(err);
@@ -438,6 +469,7 @@ export function CourseForm({
                       target_key: String(course.id),
                     }}
                     from={course.cover_design?.id}
+                    unsaved={unsaved}
                   />
                 )}
               </div>

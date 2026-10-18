@@ -63,6 +63,7 @@ export interface ZoomClass {
   zoom_meeting_id: string;
   pricing_type: "free" | "paid";
   price: string;
+  thumbnail_signed_url: string | null;
   scheduled_at: string | null;
   started_at: string | null;
   ended_at: string | null;
@@ -85,6 +86,7 @@ export interface OnsiteEvent {
   max_capacity: number | null;
   pricing_type: "free" | "paid" | "subscription";
   price: string;
+  thumbnail_signed_url: string | null;
   scheduled_at: string | null;
   started_at: string | null;
   ended_at: string | null;

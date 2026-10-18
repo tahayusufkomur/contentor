@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { defaultRecipe } from "@/lib/covers/recipe";
-import { targetAction, targetState } from "@/lib/covers/targets";
+import { targetAction, targetItem, targetState } from "@/lib/covers/targets";
 import type { CoverDesign, DesignTarget } from "@/types/design";
 
 const target = (over: Partial<DesignTarget> = {}): DesignTarget => ({
@@ -10,6 +10,7 @@ const target = (over: Partial<DesignTarget> = {}): DesignTarget => ({
   sessions: null,
   next_at: null,
   status: "published",
+  created_at: null,
   photo_url: null,
   cover: null,
   draft_id: null,
@@ -68,6 +69,36 @@ describe("targetAction", () => {
   it("goes back to a draft that waits, and copies nothing", () => {
     expect(targetAction(target({ draft_id: "d-1", cover: kept }))).toEqual({
       key: "continue",
+    });
+  });
+});
+
+describe("targetItem", () => {
+  it("is what a course's cover is drawn for: its title and when it was made", () => {
+    expect(
+      targetItem(
+        target({ created_at: "2026-10-14T21:30:15Z" }),
+        "Europe/Istanbul",
+      ),
+    ).toEqual({
+      title: "Yoga for Beginners",
+      createdAt: "2026-10-14T21:30:15Z",
+      startsAt: null,
+      timeZone: "Europe/Istanbul",
+    });
+  });
+
+  it("is a series' title and its next session, which its date badge reads", () => {
+    const series = target({
+      target_kind: "live",
+      next_at: "2026-11-11T19:00:00Z",
+      sessions: 3,
+    });
+    expect(targetItem(series, "UTC")).toEqual({
+      title: "Yoga for Beginners",
+      createdAt: null,
+      startsAt: "2026-11-11T19:00:00Z",
+      timeZone: "UTC",
     });
   });
 });

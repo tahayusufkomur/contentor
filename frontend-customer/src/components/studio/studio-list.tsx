@@ -11,6 +11,7 @@ import { SkeletonCardGrid, SkeletonList } from "@/components/ui/skeletons";
 import { useTenant } from "@/hooks/use-tenant";
 import {
   targetAction,
+  targetItem,
   targetState,
   type TargetState,
 } from "@/lib/covers/targets";
@@ -122,8 +123,7 @@ function TargetCard({
       <CoverThumb
         design={target.cover}
         photoUrl={target.photo_url}
-        // A series' date badge reads its next session.
-        item={{ title: target.title, startsAt: target.next_at, timeZone }}
+        item={targetItem(target, timeZone)}
         // A thumbnail beside the words on a phone (under 180 px the cover shows its photo alone);
         // from `sm` up it tops the card at 16:9.
         className="aspect-auto w-28 shrink-0 self-stretch rounded-none border-0 border-r sm:aspect-video sm:w-auto sm:self-auto sm:border-b sm:border-r-0"

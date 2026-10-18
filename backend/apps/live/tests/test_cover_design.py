@@ -1,5 +1,6 @@
 """An event carries its kept cover design: `cover_design` on the calendar (the feed and an event's page),
-on each kind's own list and detail, and on the coach's one list of every class and event."""
+on each kind's own list and detail, and on the coach's one list of every class and event. Those lists and
+details also carry the link to the plain photo it wears (`thumbnail_signed_url`), for every kind."""
 
 from datetime import timedelta
 
@@ -50,8 +51,10 @@ def photo(name):
     return Photo.objects.create(s3_key=f"demo/{name}.jpg", title=name)
 
 
-def session(owner, model, title, days=3):
-    return model.objects.create(title=title, instructor=owner, scheduled_at=timezone.now() + timedelta(days=days))
+def session(owner, model, title, days=3, **fields):
+    return model.objects.create(
+        title=title, instructor=owner, scheduled_at=timezone.now() + timedelta(days=days), **fields
+    )
 
 
 def kept(kind, title, picture):
@@ -63,6 +66,11 @@ def kept(kind, title, picture):
 def design_reads(captured):
     """How often a request read the kept designs."""
     return sum('"media_design"' in query["sql"] for query in captured.captured_queries)
+
+
+def photo_reads(captured):
+    """How often a request read the photos, on their own or joined in."""
+    return sum('"media_photo"' in query["sql"] for query in captured.captured_queries)
 
 
 @EACH_KIND
@@ -99,6 +107,41 @@ def test_event_payloads_carry_the_cover_design(owner, kind, model, event_type, p
     [row] = coach.get(ADMIN_EVENTS).json()["results"]
     detail = coach.get(f"{path}{event.pk}/").json()
     assert [payload["cover_design"]["id"] for payload in (listed, row, detail)] == [str(design.pk)] * 3
+
+
+@EACH_KIND
+def test_event_payloads_carry_the_link_to_the_photo_they_wear(owner, kind, model, event_type, path):
+    """Every kind says what photo it wears, so the event form can show it: a signed link, or none."""
+    bare = session(owner, model, "Bare", days=1)
+    worn = session(owner, model, "Worn", days=2, thumbnail=photo("chosen"))
+
+    coach = client(owner)
+    rows = {row["title"]: row for row in coach.get(ADMIN_EVENTS).json()["results"]}
+    listed = {row["title"]: row for row in coach.get(path).json()}
+    details = {title: coach.get(f"{path}{event.pk}/").json() for title, event in (("Bare", bare), ("Worn", worn))}
+
+    for payloads in (rows, listed, details):
+        assert not payloads["Bare"]["thumbnail_signed_url"]
+        assert "demo/chosen.jpg" in payloads["Worn"]["thumbnail_signed_url"]
+
+
+def test_photo_links_do_not_cost_a_query_an_event(owner):
+    def add(count, start):
+        for number in range(start, start + count):
+            for kind, model, _event_type, _path in KINDS:
+                session(owner, model, f"{kind} {number}", days=number + 1, thumbnail=photo(f"{kind}{number}"))
+
+    def reads():
+        with CaptureQueriesContext(connection) as captured:
+            assert client(owner).get(ADMIN_EVENTS).status_code == 200
+        return photo_reads(captured)
+
+    add(2, 0)  # 8 rows
+    few = reads()
+    add(3, 2)  # 20 rows, the whole first page
+
+    assert few  # the photos are read at all,
+    assert reads() == few  # and once for a kind, however many of its events wear one
 
 
 def test_a_series_shares_its_cover_and_another_title_does_not(owner):

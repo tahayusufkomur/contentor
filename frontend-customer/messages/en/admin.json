@@ -700,6 +700,7 @@
   "studio": {
     "subtitle": "Design the cover your students see for each course, class and event.",
     "design": "Design a cover",
+    "saveFirst": "Save your changes first.",
     "continue": "Continue",
     "editCopy": "Edit a copy",
     "state": {
