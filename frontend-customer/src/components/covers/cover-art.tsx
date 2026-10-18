@@ -8,7 +8,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { CoverAspect, SiteStyle } from "@shared/sections/types";
 import { cn } from "@/lib/utils";
-import { fitLines, LEADING, textSize } from "@/lib/covers/layouts";
+import { BADGE_GAP, fitLines, LEADING, textSize } from "@/lib/covers/layouts";
 import type { TextPart } from "@/lib/covers/layouts";
 import {
   coverPalette,
@@ -136,8 +136,6 @@ const SIDE = {
 /** The widest a badge grows, as a fraction of the cover's width: room for 24 characters on a Card
  *  of any shape (they take 41 to 77% of its width). */
 const BADGE_CAP = 0.77;
-/** The clear space kept between a grown badge and the logo or the edge of its photo, in cqmin. */
-const BADGE_GAP = 3;
 
 const SHAPE_RADIUS: Record<ShapeKind, string | undefined> = {
   rect: undefined,

@@ -10,8 +10,9 @@
 //    label sits at the bottom, the title in the middle and the subtitle at the top, so the three
 //    stay together however many lines each takes. A part's line clamp is `fitLines` of its frame.
 //  - The logo is anchored to the left of its frame (centred in `title`), the badge to the right
-//    (centred in `title`). The logo's frame is sized by its height, which a square mark fills and a
-//    wide lockup keeps, up to LOGO_ASPECT times as wide.
+//    (centred in `title`). The logo's frame is sized by its height (10 cqmin, as in the mockup,
+//    lowered where the words or the badge need the room), which a square mark fills and a wide
+//    lockup keeps, up to LOGO_ASPECT times as wide.
 //  - The badge shares the logo's row at the top of `panel` (beside its photo), `full`, `band` and
 //    `photo`, where there is room. In `title` it is the first line of the centred stack, above the
 //    label, and in `framed` it takes the photo's bottom corner: neither shares a row with the logo.
@@ -112,6 +113,17 @@ function maxLines(
  *  (`object-fit: contain`), so a square mark fills that height at a fraction of the width, and a wide
  *  lockup (mark and name, 3 to 5 times as wide as high) keeps it too. */
 const LOGO_ASPECT = 5;
+/** The height of a logo's frame, in cqmin, before `grow`: what the approved mockup draws (9.5 to
+ *  10.7). It is lowered where the layout has no room for it, never below LOGO_MIN_H, the size a
+ *  logo was drawn at before the mockup's. */
+const LOGO_H = 10;
+const LOGO_MIN_H = 6.5;
+/** A short badge ("Free preview": twelve capitals at 0.7 em, and the chip's 1.4 em of padding), in
+ *  em of the badge's size. A logo that shares the badge's row leaves the chip this much room. */
+const SHORT_BADGE_EM = 9.8;
+/** The clear space between the logo and a badge that grows towards it, or between a badge and the
+ *  edge of the photo it sits on, in cqmin. */
+export const BADGE_GAP = 3;
 
 // Distances in cqmin.
 /** From the canvas edge to what is on it. */
@@ -150,14 +162,10 @@ export function layoutFrames(
 
   // The logo and badge grow with a wide frame, up to 1.4 times.
   const grow = Math.min(Math.max(TITLE, FLOOR * aspect) / TITLE, 1.4);
-  const logoH = 6.5 * grow;
-  const logoW = LOGO_ASPECT * logoH;
   const badgeW = 32 * grow;
   const badgeH = 8 * grow;
-  const logo = (x: number, y: number) => fr(x, y, logoW, logoH);
   const badge = (right: number, y: number) =>
     fr(right - badgeW, y, badgeW, badgeH);
-  const underLogo = MARGIN + logoH + BELOW_LOGO;
 
   const lineHeight = (part: WordPart) =>
     textSize(layout, part, aspect) * LEADING[part];
@@ -176,6 +184,46 @@ export function layoutFrames(
   /** What a row of `lead` above the words takes: its height and the gap under it, if words follow. */
   const leadRow = (lead: number, parts: WordPart[]) =>
     lead > 0 ? lead + (parts.length > 0 ? gap : 0) : 0;
+
+  // The logo's height: the mockup's, lowered where the layout has no room for it and never below
+  // what it was. Under the logo the words keep two lines of title with every word shown (a
+  // title-only cover also has its badge's row to fit); in the badge's row the logo leaves the
+  // chip room for a short label.
+  const wordsBelow =
+    layout === "title" ||
+    layout === "full" ||
+    (layout === "panel" && sideBySide) ||
+    (layout === "band" && cls === "banner");
+  const sharesRow =
+    layout === "full" ||
+    layout === "band" ||
+    layout === "photo" ||
+    (layout === "panel" && sideBySide);
+  const roomBelow =
+    H -
+    2 * MARGIN -
+    BELOW_LOGO -
+    leadRow(layout === "title" ? badgeH : 0, WORDS) -
+    stackHeight(WORDS, 2);
+  const roomBeside =
+    (W -
+      2 * MARGIN -
+      BADGE_GAP -
+      SHORT_BADGE_EM * textSize(layout, "badge", aspect)) /
+    LOGO_ASPECT;
+  const logoH = Math.min(
+    LOGO_H * grow,
+    Math.max(
+      LOGO_MIN_H * grow,
+      Math.min(
+        wordsBelow ? roomBelow : Infinity,
+        sharesRow ? roomBeside : Infinity,
+      ),
+    ),
+  );
+  const logoW = LOGO_ASPECT * logoH;
+  const logo = (x: number, y: number) => fr(x, y, logoW, logoH);
+  const underLogo = MARGIN + logoH + BELOW_LOGO;
 
   // The words stacked top to bottom in a box (in cqmin). The title takes the lines the others leave
   // it, up to its most. `lead` is the height of a row that heads the stack (a title-only cover's

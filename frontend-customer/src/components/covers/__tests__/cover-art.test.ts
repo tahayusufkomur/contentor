@@ -758,11 +758,11 @@ describe("CoverArt logo and badge", () => {
     expect(LONGEST).toHaveLength(24);
     // The longest badge, on a 4:3 look at Card: no frame-wide chip, room for the whole text (it needs
     // 41 to 57% of the cover's width). That look's panel is beside its photo, so the logo is in the
-    // badge's row and the chip may grow up to it: 95.9% - 28.5% (the logo's frame, five times as wide
-    // as high) - 2.3% = 65.1%.
+    // badge's row and the chip may grow up to it: 95.9% - 41.6% (the logo's frame, 10 cqmin high and
+    // five times as wide) - 2.3% = 52%.
     const { box, pill } = badgeOf(longBadge, "ledger");
     expect(pill.style.width).toBe("max-content");
-    expect(pill.style["max-width"]).toBe("65.125cqw");
+    expect(pill.style["max-width"]).toBe("52cqw");
     // A 3:4 look keeps its logo in the panel under the photo, so its badge has the whole cap.
     expect(badgeOf(longBadge).pill.style["max-width"]).toBe("77cqw");
     expect(pill.style).toMatchObject({

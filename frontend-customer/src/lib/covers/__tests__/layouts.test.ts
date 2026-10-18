@@ -272,10 +272,80 @@ describe("layoutFrames", () => {
         label(layout, aspect, shown),
       ).toBeCloseTo(5, 6);
     }
-    // The height is what it was: 6.5 cqmin, up to 1.4 times that in a wide frame.
-    expect(
-      layoutFrames("panel", 3 / 4).logo!.h * canvasHeight(3 / 4),
-    ).toBeCloseTo(6.5, 9);
+  });
+
+  it("draws the logo as tall as the mockup does: 10 cqmin at Card and Wide (1.4 times that at Banner), lowered only where there is no room", () => {
+    const height = (layout: LayoutId, aspect: number) =>
+      layoutFrames(layout, aspect).logo!.h * canvasHeight(aspect);
+    const grow = (aspect: number) =>
+      Math.min(Math.max(9.5, 5.45 * aspect) / 9.5, 1.4);
+    for (const layout of LAYOUTS) {
+      for (const aspect of REAL) {
+        let expected = 10 * grow(aspect);
+        // Beside the badge in a row 89 cqmin wide the logo leaves the chip room for "Free preview"
+        // only up to 9: full, band and photo at a Card as narrow as 3:4, 4:5 and 1:1.
+        if (["full", "band", "photo"].includes(layout) && aspect <= 1) {
+          expected = 9;
+        }
+        // At Banner a title-only cover has the logo, the badge, label, title and subtitle to fit in
+        // 100 cqmin: the logo gets what leaves the title two lines.
+        if (layout === "title" && aspect === 3) expected = 9.9;
+        expect(
+          height(layout, aspect),
+          `${layout} ${aspect.toFixed(3)}`,
+        ).toBeCloseTo(expected, 1);
+      }
+    }
+    // The height is 10 where nothing limits it, as in the approved mockup (9.5 to 10.7 cqmin).
+    expect(height("panel", 3 / 4)).toBeCloseTo(10, 9);
+    expect(height("panel", 4 / 3)).toBeCloseTo(10, 9);
+  });
+
+  it("leaves the badge room for a short label beside the logo wherever they share a row, in every shape", () => {
+    // "Free preview": twelve capitals at 0.7 em each, and the chip's 1.4 em of padding.
+    let checked = 0;
+    for (const { layout, aspect, shown } of CASES) {
+      if (layout === "title" || layout === "framed") continue;
+      const cls = aspectClass(aspect);
+      if (layout === "panel" && (cls === "portrait" || cls === "square")) {
+        continue;
+      }
+      const { logo, badge } = layoutFrames(layout, aspect, shown);
+      const width = 100 * Math.max(1, aspect);
+      const room = (badge!.x + badge!.w - (logo!.x + logo!.w)) * width - 3;
+      expect(room, label(layout, aspect, shown)).toBeGreaterThanOrEqual(
+        9.8 * textSize(layout, "badge", aspect) - 1e-6,
+      );
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(1000);
+  });
+
+  it("keeps the title the lines it had before the logo grew, at every shape a cover is drawn in", () => {
+    // Shapes: 3:4, 4:5, 1:1, 4:3, 3:2, 16:10, Wide, Banner. A cover with every word (and a badge,
+    // which a title-only cover stacks above them).
+    const SHAPES_NOMINAL = [3 / 4, 4 / 5, 1, 4 / 3, 3 / 2, 16 / 10, 16 / 9, 3];
+    const LINES: Record<string, number[]> = {
+      panel: [2, 2, 2, 3, 3, 3, 3, 2],
+      full: [3, 3, 3, 3, 3, 3, 3, 2],
+      title: [3, 3, 3, 3, 3, 3, 3, 2],
+      band: [2, 2, 1, 1, 1, 1, 1, 2],
+      framed: [2, 2, 2, 3, 3, 3, 3, 3],
+    };
+    for (const [layout, lines] of Object.entries(LINES)) {
+      SHAPES_NOMINAL.forEach((aspect, i) => {
+        const { title } = layoutFrames(layout as LayoutId, aspect);
+        expect(
+          fitLines(
+            title!,
+            aspect,
+            textSize(layout as LayoutId, "title", aspect),
+            LEADING.title,
+          ),
+          `${layout} ${aspect.toFixed(3)}`,
+        ).toBe(lines[i]);
+      });
+    }
   });
 
   it("keeps the logo whole on the colour or the photo it sits on", () => {
@@ -414,10 +484,19 @@ describe("layoutFrames", () => {
       subtitle: false,
     });
     for (const word of WORDS) expect(bare[word]).toBeNull();
-    // Centred stacks stay centred.
+    // Centred stacks stay centred: a lone title, and the badge and title together (the badge heads
+    // a title-only cover's stack, so the title alone sits a little lower under a tall logo).
+    const alone = layoutFrames("title", 1, {
+      label: false,
+      subtitle: false,
+      badge: false,
+    });
+    expect(alone.title!.y + alone.title!.h / 2).toBeGreaterThan(0.4);
+    expect(alone.title!.y + alone.title!.h / 2).toBeLessThan(0.6);
     const mid = layoutFrames("title", 1, { label: false, subtitle: false });
-    expect(mid.title!.y + mid.title!.h / 2).toBeGreaterThan(0.4);
-    expect(mid.title!.y + mid.title!.h / 2).toBeLessThan(0.6);
+    const stackMiddle = (mid.badge!.y + mid.title!.y + mid.title!.h) / 2;
+    expect(stackMiddle).toBeGreaterThan(0.4);
+    expect(stackMiddle).toBeLessThan(0.6);
   });
 });
 
