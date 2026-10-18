@@ -30,6 +30,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PriceBadge } from "@/components/billing/price-badge";
+import { CoverArt } from "@/components/covers/cover-art";
 import { clientFetch } from "@/lib/api-client";
 import { ApiError } from "@/types/api";
 import { addToCart } from "@/lib/cart";
@@ -257,8 +258,16 @@ function StoreItemCard({ item, adding, onAddToCart }: StoreItemCardProps) {
 
   return (
     <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5 flex flex-col">
-      {/* Thumbnail */}
-      {item.thumbnail_url ? (
+      {/* Thumbnail: a kept cover design is drawn live, in place of the photo */}
+      {item.cover_design ? (
+        <div className="relative h-44 w-full overflow-hidden">
+          <CoverArt
+            design={item.cover_design}
+            item={{ title: item.title }}
+            photoClassName="transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+      ) : item.thumbnail_url ? (
         <div className="relative overflow-hidden">
           <img
             src={item.thumbnail_url}

@@ -11,6 +11,7 @@ class StoreItemSerializer(serializers.Serializer):
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     currency = serializers.CharField(default=tenant_charge_currency)
     thumbnail_url = serializers.CharField(allow_blank=True, default="")
+    cover_design = serializers.DictField(allow_null=True, default=None)
     is_active = serializers.BooleanField(default=True)
     item_count = serializers.IntegerField(default=0)
     original_price = serializers.DecimalField(max_digits=10, decimal_places=2, default=None, allow_null=True)

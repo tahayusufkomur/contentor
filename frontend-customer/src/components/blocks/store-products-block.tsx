@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PriceBadge } from "@/components/billing/price-badge";
+import { CoverArt } from "@/components/covers/cover-art";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 import { BlockPlaceholder } from "./block-placeholder";
 import type { StoreItem } from "@/types/billing";
@@ -66,7 +67,14 @@ export function StoreProductsBlock({
               >
                 <Card className="overflow-hidden transition-all hover:shadow-md">
                   <CardContent className="flex items-center gap-4 p-3">
-                    {item.thumbnail_url ? (
+                    {item.cover_design ? (
+                      <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md">
+                        <CoverArt
+                          design={item.cover_design}
+                          item={{ title: item.title }}
+                        />
+                      </div>
+                    ) : item.thumbnail_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={item.thumbnail_url}
@@ -114,7 +122,15 @@ export function StoreProductsBlock({
           {items.map((item) => (
             <Link key={`${item.type}-${item.id}`} href="/store">
               <Card className="group h-full overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lg">
-                {item.thumbnail_url ? (
+                {item.cover_design ? (
+                  <div className="relative h-40 w-full overflow-hidden">
+                    <CoverArt
+                      design={item.cover_design}
+                      item={{ title: item.title }}
+                      photoClassName="transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                ) : item.thumbnail_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={item.thumbnail_url}

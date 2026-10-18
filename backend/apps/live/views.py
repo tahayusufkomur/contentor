@@ -13,6 +13,7 @@ from apps.core.access import ContentAccessService
 from apps.core.currency import tenant_charge_currency
 from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
 from apps.core.permissions import IsCoachOrOwner, is_coach_or_owner
+from apps.media import designs
 
 from . import livecraft
 from .models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
@@ -397,7 +398,9 @@ def _apply_date_range(qs, date_from, date_to):
     return qs
 
 
-def _to_calendar_event(obj, event_type, thumbnail_url=None):
+def _to_calendar_event(obj, event_type, ctx, thumbnail_url=None):
+    """One event as the calendar's dict. `ctx` is the request's: what is read for one event's cover is kept
+    there for the rest."""
     from apps.filters.serializers import FilterOptionSerializer
 
     return {
@@ -413,6 +416,7 @@ def _to_calendar_event(obj, event_type, thumbnail_url=None):
         "ended_at": obj.computed_ended_at,
         "location": getattr(obj, "location", ""),
         "thumbnail_signed_url": thumbnail_url,
+        "cover_design": designs.cover_for(obj, ctx),
         "filter_options": FilterOptionSerializer(obj.filter_options.all(), many=True).data,
     }
 
@@ -428,6 +432,7 @@ def calendar_events(request):
     # Status is now computed from scheduled_at + duration_minutes.
     # scheduled_at__isnull=False excludes drafts.
     events = []
+    ctx = {}
 
     want_live_class = not type_filter or "live_class" in type_filter
     want_live_stream = not type_filter or "live_stream" in type_filter
@@ -443,7 +448,7 @@ def calendar_events(request):
         )
         for obj in qs:
             thumb = get_thumbnail_signed_url(obj)
-            events.append(_to_calendar_event(obj, "live_class", thumb))
+            events.append(_to_calendar_event(obj, "live_class", ctx, thumb))
 
         qs = _apply_date_range(
             ZoomClass.objects.filter(scheduled_at__isnull=False)
@@ -454,7 +459,7 @@ def calendar_events(request):
         )
         for obj in qs:
             thumb = get_thumbnail_signed_url(obj)
-            events.append(_to_calendar_event(obj, "zoom_class", thumb))
+            events.append(_to_calendar_event(obj, "zoom_class", ctx, thumb))
 
     if want_live_stream:
         qs = _apply_date_range(
@@ -466,7 +471,7 @@ def calendar_events(request):
         )
         for obj in qs:
             thumb = get_thumbnail_signed_url(obj)
-            events.append(_to_calendar_event(obj, "live_stream", thumb))
+            events.append(_to_calendar_event(obj, "live_stream", ctx, thumb))
 
     if want_onsite:
         qs = _apply_date_range(
@@ -478,7 +483,7 @@ def calendar_events(request):
         )
         for obj in qs:
             thumb = get_thumbnail_signed_url(obj)
-            events.append(_to_calendar_event(obj, "onsite_event", thumb))
+            events.append(_to_calendar_event(obj, "onsite_event", ctx, thumb))
 
     events.sort(key=lambda e: e["scheduled_at"])
     serializer = CalendarEventSerializer(events, many=True)
@@ -510,7 +515,7 @@ def calendar_event_detail(request, event_type, pk):
 
     thumb = get_thumbnail_signed_url(obj)
 
-    event = _to_calendar_event(obj, cal_type, thumb)
+    event = _to_calendar_event(obj, cal_type, {}, thumb)
 
     # Add access_info
     if request.user.is_authenticated:

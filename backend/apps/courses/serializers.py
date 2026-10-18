@@ -10,6 +10,7 @@ from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.core.uploads.serializers import check_tenant_key
 from apps.filters.models import FilterOption
 from apps.filters.serializers import FilterOptionSerializer
+from apps.media import designs
 from apps.tags.serializers import TagSerializer, tag_ids_field
 
 from .models import Course, Enrollment, Lesson, Module, Progress, Video
@@ -93,6 +94,7 @@ class CourseListSerializer(serializers.ModelSerializer):
     lesson_count = serializers.SerializerMethodField()
     enrolled_count = serializers.SerializerMethodField()
     thumbnail_signed_url = serializers.SerializerMethodField()
+    cover_design = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
     filter_options = FilterOptionSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
@@ -118,6 +120,7 @@ class CourseListSerializer(serializers.ModelSerializer):
             "lesson_count",
             "enrolled_count",
             "thumbnail_signed_url",
+            "cover_design",
             "access_info",
             "filter_options",
             "tags",
@@ -134,6 +137,9 @@ class CourseListSerializer(serializers.ModelSerializer):
         if obj.thumbnail_id and obj.thumbnail and obj.thumbnail.s3_key:
             return generate_presigned_download_url(obj.thumbnail.s3_key)
         return sign_if_s3_key(obj.thumbnail_url)
+
+    def get_cover_design(self, obj):
+        return designs.cover_for(obj, self.context)
 
     def get_access_info(self, obj):
         access_map = self.context.get("access_map")
@@ -163,6 +169,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     lesson_count = serializers.SerializerMethodField()
     enrolled_count = serializers.SerializerMethodField()
     thumbnail_signed_url = serializers.SerializerMethodField()
+    cover_design = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
     unlock_options = serializers.SerializerMethodField()
     filter_options = FilterOptionSerializer(many=True, read_only=True)
@@ -191,6 +198,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "lesson_count",
             "enrolled_count",
             "thumbnail_signed_url",
+            "cover_design",
             "access_info",
             "unlock_options",
             "filter_options",
@@ -252,6 +260,9 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         if obj.thumbnail_id and obj.thumbnail and obj.thumbnail.s3_key:
             return generate_presigned_download_url(obj.thumbnail.s3_key)
         return sign_if_s3_key(obj.thumbnail_url)
+
+    def get_cover_design(self, obj):
+        return designs.cover_for(obj, self.context)
 
 
 class _NestedLessonSerializer(serializers.ModelSerializer):

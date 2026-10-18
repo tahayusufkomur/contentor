@@ -1,3 +1,5 @@
+import type { CoverDesign } from "./design";
+
 export interface AccessInfo {
   has_access: boolean;
   pricing_type: string;
@@ -44,6 +46,8 @@ export interface StoreItem {
   price: string;
   currency: string;
   thumbnail_url: string;
+  /** The kept cover design of a course or event, drawn live in place of the photo. */
+  cover_design?: CoverDesign | null;
   is_active: boolean;
   item_count: number;
   original_price: string | null;
@@ -76,6 +80,8 @@ export interface PlanAccessItem {
   title: string;
   slug?: string;
   thumbnail_url?: string;
+  /** The kept cover design of a course or event, drawn live in place of the photo. */
+  cover_design?: CoverDesign | null;
 }
 
 export interface SubscriptionPlanDetail extends SubscriptionPlan {

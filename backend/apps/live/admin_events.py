@@ -77,11 +77,12 @@ def admin_events(request):
     for _value, pk, kind in page:
         pks_by_kind[kind].append(pk)
     rows = {}
+    ctx = {"request": request}  # one for every row, so the covers' designs are read once
     for kind, pks in pks_by_kind.items():
         model, serializer = KINDS[kind]
         for event in model.objects.filter(pk__in=pks).prefetch_related("tags", "filter_options"):
             rows[kind, event.pk] = {
-                **serializer(event, context={"request": request}).data,
+                **serializer(event, context=ctx).data,
                 "kind": kind,
                 # The stored status only moves when she presses Go live or End;
                 # this one follows the clock.

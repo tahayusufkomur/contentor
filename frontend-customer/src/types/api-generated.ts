@@ -2858,11 +2858,17 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * @description GET: how many new images are left this month. POST: queue a brand-new
+     *     image for when search finds nothing that fits. Unlike search this costs
+     *     credits per image, so each tenant gets a monthly cap.
+     */
+    get: operations["v1_curated_images_generate_retrieve"];
     put?: never;
     /**
-     * @description Queue a brand-new image for when search finds nothing that fits. Unlike
-     *     search this costs credits per image, so each tenant gets a monthly cap.
+     * @description GET: how many new images are left this month. POST: queue a brand-new
+     *     image for when search finds nothing that fits. Unlike search this costs
+     *     credits per image, so each tenant gets a monthly cap.
      */
     post: operations["v1_curated_images_generate_create"];
     delete?: never;
@@ -2878,7 +2884,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["v1_curated_images_generate_retrieve"];
+    get: operations["v1_curated_images_generate_retrieve_2"];
     put?: never;
     post?: never;
     delete?: never;
@@ -2913,6 +2919,90 @@ export interface paths {
     get?: never;
     put?: never;
     post: operations["v1_curated_photos_use_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/designs/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description GET: her drafts and kept designs (`?state=draft|kept` for one of them). POST: open the draft of a
+     *     course or event series: 201 when this made it, 200 when she already had one.
+     */
+    get: operations["v1_designs_retrieve"];
+    put?: never;
+    /**
+     * @description GET: her drafts and kept designs (`?state=draft|kept` for one of them). POST: open the draft of a
+     *     course or event series: 201 when this made it, 200 when she already had one.
+     */
+    post: operations["v1_designs_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/designs/{id}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description A design to read; a draft to save (PATCH, the whole recipe) or throw away (DELETE). */
+    get: operations["v1_designs_retrieve_2"];
+    put?: never;
+    post?: never;
+    /** @description A design to read; a draft to save (PATCH, the whole recipe) or throw away (DELETE). */
+    delete: operations["v1_designs_destroy"];
+    options?: never;
+    head?: never;
+    /** @description A design to read; a draft to save (PATCH, the whole recipe) or throw away (DELETE). */
+    patch: operations["v1_designs_partial_update"];
+    trace?: never;
+  };
+  "/api/v1/designs/{id}/keep/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description Make a draft the cover of its course or event series, and write the History row that undoes it. */
+    post: operations["v1_designs_keep_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/designs/targets/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description Everything she can put a cover on, each with the cover it wears and its draft: her courses in her
+     *     order, then her event series (an event kind and an exact title), the ones with a session still to come
+     *     first, soonest first.
+     *
+     *     ponytail: this reads every session of every kind to group them into series (hundreds, not thousands).
+     *     Aggregate in SQL (`values("title").annotate(...)`) if a calendar ever outgrows that.
+     */
+    get: operations["v1_designs_targets_retrieve"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -14739,6 +14829,24 @@ export interface operations {
       };
     };
   };
+  v1_curated_images_generate_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_curated_images_generate_create: {
     parameters: {
       query?: never;
@@ -14757,7 +14865,7 @@ export interface operations {
       };
     };
   };
-  v1_curated_images_generate_retrieve: {
+  v1_curated_images_generate_retrieve_2: {
     parameters: {
       query?: never;
       header?: never;
@@ -14802,6 +14910,140 @@ export interface operations {
       path: {
         id: number;
       };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_designs_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_designs_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_designs_retrieve_2: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_designs_destroy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_designs_partial_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_designs_keep_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_designs_targets_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
       cookie?: never;
     };
     requestBody?: never;

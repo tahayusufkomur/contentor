@@ -16,6 +16,7 @@ from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.courses.models import Course
 from apps.downloads.models import DownloadFile
 from apps.live.models import LiveClass, LiveStream, OnsiteEvent
+from apps.media import designs
 
 
 def _thumbnail_url(obj):
@@ -55,6 +56,7 @@ def _collect_store_items():
     """Collect all paid/active content as raw dicts (no access_info yet)."""
     items = []
     currency = tenant_charge_currency()
+    ctx = {}  # one for every item, so the covers' designs are read once
 
     # Courses: paid + published
     for course in Course.objects.filter(pricing_type="paid", is_published=True).select_related("thumbnail"):
@@ -67,6 +69,7 @@ def _collect_store_items():
                 "price": course.price,
                 "currency": currency,
                 "thumbnail_url": _thumbnail_url(course),
+                "cover_design": designs.cover_for(course, ctx),
                 "is_active": course.is_published,
                 "item_count": 0,
                 "original_price": None,
@@ -103,6 +106,7 @@ def _collect_store_items():
                 "price": lc.price,
                 "currency": currency,
                 "thumbnail_url": _thumbnail_url(lc),
+                "cover_design": designs.cover_for(lc, ctx),
                 "is_active": True,
                 "item_count": 0,
                 "original_price": None,
@@ -121,6 +125,7 @@ def _collect_store_items():
                 "price": ls.price,
                 "currency": currency,
                 "thumbnail_url": _thumbnail_url(ls),
+                "cover_design": designs.cover_for(ls, ctx),
                 "is_active": True,
                 "item_count": 0,
                 "original_price": None,
@@ -139,6 +144,7 @@ def _collect_store_items():
                 "price": event.price,
                 "currency": currency,
                 "thumbnail_url": _thumbnail_url(event),
+                "cover_design": designs.cover_for(event, ctx),
                 "is_active": True,
                 "item_count": 0,
                 "original_price": None,

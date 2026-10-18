@@ -16,6 +16,7 @@ from apps.billing.serializers.plans import (
 from apps.core.currency import tenant_charge_currency
 from apps.core.permissions import IsOwner
 from apps.core.storage import sign_if_s3_key
+from apps.media import designs
 
 
 def _resolve_access_items(plan):
@@ -31,6 +32,7 @@ def _resolve_access_items(plan):
     }
 
     items = []
+    ctx = {}  # one for every item, so the covers' designs are read once
     for access in access_qs:
         model_name = access.content_type.model
         cfg = model_map.get(model_name)
@@ -53,6 +55,8 @@ def _resolve_access_items(plan):
         raw_url = getattr(obj, "thumbnail_url", "")
         if raw_url:
             item["thumbnail_url"] = sign_if_s3_key(raw_url)
+        if model_name != "downloadfile":  # a course or an event can have a designed cover
+            item["cover_design"] = designs.cover_for(obj, ctx)
         items.append(item)
 
     return items

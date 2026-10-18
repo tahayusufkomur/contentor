@@ -82,6 +82,7 @@ def get_thumbnail_signed_url(obj):
 
 class LiveClassSerializer(serializers.ModelSerializer):
     thumbnail_signed_url = serializers.SerializerMethodField()
+    cover_design = serializers.SerializerMethodField()
     recording_signed_url = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
     filter_options = FilterOptionSerializer(many=True, read_only=True)
@@ -100,6 +101,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
             "thumbnail_url",
             "thumbnail_id",
             "thumbnail_signed_url",
+            "cover_design",
             "recording_id",
             "recording_url",
             "recording_signed_url",
@@ -128,6 +130,9 @@ class LiveClassSerializer(serializers.ModelSerializer):
 
     def get_thumbnail_signed_url(self, obj):
         return get_thumbnail_signed_url(obj)
+
+    def get_cover_design(self, obj):
+        return designs.cover_for(obj, self.context)
 
     def get_recording_signed_url(self, obj):
         s3_key = None
@@ -200,6 +205,7 @@ class LiveClassCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerial
 
 class LiveStreamSerializer(serializers.ModelSerializer):
     thumbnail_signed_url = serializers.SerializerMethodField()
+    cover_design = serializers.SerializerMethodField()
     recording_signed_url = serializers.SerializerMethodField()
     access_info = serializers.SerializerMethodField()
     filter_options = FilterOptionSerializer(many=True, read_only=True)
@@ -218,6 +224,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
             "thumbnail_url",
             "thumbnail_id",
             "thumbnail_signed_url",
+            "cover_design",
             "recording_id",
             "recording_url",
             "recording_signed_url",
@@ -246,6 +253,9 @@ class LiveStreamSerializer(serializers.ModelSerializer):
 
     def get_thumbnail_signed_url(self, obj):
         return get_thumbnail_signed_url(obj)
+
+    def get_cover_design(self, obj):
+        return designs.cover_for(obj, self.context)
 
     def get_recording_signed_url(self, obj):
         s3_key = None
@@ -319,6 +329,7 @@ class LiveStreamCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSeria
 class ZoomClassSerializer(serializers.ModelSerializer):
     filter_options = FilterOptionSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    cover_design = serializers.SerializerMethodField()
 
     class Meta:
         model = ZoomClass
@@ -336,6 +347,7 @@ class ZoomClassSerializer(serializers.ModelSerializer):
             "started_at",
             "ended_at",
             "created_at",
+            "cover_design",
             "filter_options",
             "tags",
         ]
@@ -348,6 +360,9 @@ class ZoomClassSerializer(serializers.ModelSerializer):
             data["zoom_link"] = ""
             data["zoom_meeting_id"] = ""
         return data
+
+    def get_cover_design(self, obj):
+        return designs.cover_for(obj, self.context)
 
 
 class ZoomClassCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerializer):
@@ -372,6 +387,7 @@ class ZoomClassCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerial
 class OnsiteEventSerializer(serializers.ModelSerializer):
     filter_options = FilterOptionSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    cover_design = serializers.SerializerMethodField()
 
     class Meta:
         model = OnsiteEvent
@@ -390,6 +406,7 @@ class OnsiteEventSerializer(serializers.ModelSerializer):
             "started_at",
             "ended_at",
             "created_at",
+            "cover_design",
             "filter_options",
             "tags",
         ]
@@ -402,6 +419,9 @@ class OnsiteEventSerializer(serializers.ModelSerializer):
         if not _viewer_has_access(self.context, instance):
             data["address"] = ""
         return data
+
+    def get_cover_design(self, obj):
+        return designs.cover_for(obj, self.context)
 
 
 class OnsiteEventCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerializer):
@@ -437,6 +457,8 @@ class CalendarEventSerializer(serializers.Serializer):
     ended_at = serializers.DateTimeField(allow_null=True)
     location = serializers.CharField(allow_blank=True, default="")
     thumbnail_signed_url = serializers.CharField(allow_null=True, default=None)
+    # The series' kept cover (apps.media.designs.cover_for), null for the plain photo.
+    cover_design = serializers.DictField(allow_null=True, default=None)
     filter_options = serializers.ListField(child=serializers.DictField(), required=False, default=list)
     # Tenant charge currency, so public listings can format prices.
     currency = serializers.SerializerMethodField()

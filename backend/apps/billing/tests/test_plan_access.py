@@ -265,7 +265,9 @@ class TestPlanAccess:
         _link(plan, onsite_event)
         response = APIClient(HTTP_HOST=SHARED_DOMAIN).get(f"/api/v1/billing/plans/{plan.pk}/")
         assert response.status_code == 200, response.content
-        assert response.json()["items"] == [{"type": "onsiteevent", "id": onsite_event.pk, "title": "Studio Workshop"}]
+        assert response.json()["items"] == [
+            {"type": "onsiteevent", "id": onsite_event.pk, "title": "Studio Workshop", "cover_design": None}
+        ]
 
     def test_student_forbidden(self, plan, course, student):
         """Student cannot access the plan access endpoint (GET or PUT)."""

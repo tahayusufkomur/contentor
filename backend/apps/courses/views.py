@@ -228,6 +228,8 @@ def enrolled_courses(request):
     """List the student's courses: enrollments plus courses unlocked by an
     active subscription plan (which create no Enrollment row), each with a
     progress percentage."""
+    # One context for every course: the covers' designs are read once, not per course.
+    ctx = {"request": request}
 
     def course_entry(course):
         total_lessons = Lesson.objects.filter(module__course=course).count()
@@ -235,7 +237,7 @@ def enrolled_courses(request):
             user=request.user, lesson__module__course=course, completed=True
         ).count()
         progress_percent = round((completed_lessons / total_lessons) * 100) if total_lessons > 0 else 0
-        course_data = CourseListSerializer(course, context={"request": request}).data
+        course_data = CourseListSerializer(course, context=ctx).data
         course_data["progress_percent"] = progress_percent
         return course_data
 
