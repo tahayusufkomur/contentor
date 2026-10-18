@@ -83,9 +83,10 @@ export function EditorSkeleton() {
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-24 w-full" />
           </div>
-          <div className="min-w-0 flex-1 space-y-4 bg-muted/40 p-6">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="mx-auto aspect-video w-full max-w-3xl" />
+          <div className="flex min-w-0 flex-1 flex-col gap-3 bg-muted/40 p-6">
+            <Skeleton className="h-12 w-full shrink-0" />
+            <Skeleton className="mx-auto min-h-[20rem] w-full max-w-3xl flex-1" />
+            <Skeleton className="h-36 w-full shrink-0" />
           </div>
         </div>
       </div>

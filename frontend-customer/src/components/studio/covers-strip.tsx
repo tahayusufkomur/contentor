@@ -9,8 +9,10 @@ import { targetItem } from "@/lib/covers/targets";
 import type { CoverAspect } from "@shared/sections/types";
 import type { CoverSize, DesignTarget } from "@/types/design";
 
-/** Her other covers, in the size being edited, so she can see whether this one belongs with them. A row
- *  of tiles 192 px wide: any narrower and a cover would show its photo alone (CoverArt does under 180).
+/** Her other covers in one row, so she can see whether this one belongs with them. Each tile is 192 px wide:
+ *  any narrower and a cover would show its photo alone (CoverArt does under 180), and it is as tall as it
+ *  needs for the cover's shape. Beside the desktop canvas it is given no `size`, so every tile is Wide
+ *  (16:9), a row a screen holds whole; the page of a phone shows them in the size being edited.
  *  Memoised: it does not change while she types, and a site can have dozens of covers. */
 export const CoversStrip = memo(function CoversStrip({
   targets,
@@ -20,7 +22,8 @@ export const CoversStrip = memo(function CoversStrip({
 }: {
   /** The targets whose covers to show; those without a cover are left out. */
   targets: DesignTarget[];
-  size: CoverSize;
+  /** The size the tiles take the shape of; none makes them Wide. */
+  size?: CoverSize;
   cardAspect: CoverAspect;
   timeZone: string;
 }) {
@@ -28,11 +31,11 @@ export const CoversStrip = memo(function CoversStrip({
   const headingId = useId();
   const covered = targets.filter((target) => target.cover);
   if (covered.length === 0) return null;
-  const aspect = sizeAspect(size, cardAspect);
+  const aspect = sizeAspect(size ?? "wide", cardAspect);
   return (
     <section
       aria-labelledby={headingId}
-      className="order-3 space-y-2 lg:order-none"
+      className="order-3 shrink-0 space-y-2 lg:order-none"
     >
       <h2
         id={headingId}
@@ -56,7 +59,9 @@ export const CoversStrip = memo(function CoversStrip({
                 )}
               </div>
             </CoverBox>
-            <p className="line-clamp-2 text-xs font-medium">{target.title}</p>
+            <p className="truncate text-xs font-medium" title={target.title}>
+              {target.title}
+            </p>
           </li>
         ))}
       </ul>

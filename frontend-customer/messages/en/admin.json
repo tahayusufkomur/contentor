@@ -792,6 +792,7 @@
     },
     "editor": {
       "courseCover": "Course cover",
+      "coverLine": "{cover} · {notice}",
       "eventCover": "{kind} cover, shared by every session with this title",
       "untitled": "Untitled",
       "waiting": "Your {target} keeps its current cover until you keep this one.",

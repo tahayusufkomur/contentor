@@ -160,8 +160,10 @@ export function Workspace({
 
   return (
     <div className="flex h-full min-h-[30rem] flex-col">
-      <header className="flex h-[3.25rem] shrink-0 items-center gap-4 border-b bg-background px-4">
-        <div className="min-w-0 flex-1 leading-tight">
+      {/* One row where the three parts fit (about 900 px). With the Team panel beside the page they do not, and
+          the buttons take a second row: nothing is cut off, and the page never scrolls sideways. */}
+      <header className="flex min-h-[3.25rem] shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b bg-background px-4 py-1.5">
+        <div className="min-w-[10rem] flex-1 leading-tight">
           <NavLink
             href="/admin/studio"
             className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
@@ -169,7 +171,10 @@ export function Workspace({
             <ArrowLeft className="size-3" aria-hidden="true" />
             {ta("nav.items.studio")}
           </NavLink>
-          <h1 className="truncate text-sm font-semibold">
+          <h1
+            className="truncate text-sm font-semibold"
+            title={title || undefined}
+          >
             {title || t("editor.untitled")}
           </h1>
         </div>
@@ -249,7 +254,7 @@ export function Workspace({
               move under her pointer. */}
           <fieldset
             disabled={draft.busy}
-            className="min-h-[6.5rem] min-w-0 px-6 pt-4 [@media(min-width:1440px)]:min-h-[4.5rem]"
+            className="min-h-[6.5rem] min-w-0 px-6 pb-2 pt-4 [@media(min-width:1440px)]:min-h-[4.5rem]"
           >
             {extra || part ? (
               <LayerToolbar
@@ -267,35 +272,39 @@ export function Workspace({
               </p>
             )}
           </fieldset>
+          {/* The cover, one line about it, and her other covers, all on the first screen: the canvas takes
+              what the rest leaves (a size container, so the canvas can be the biggest box of its shape that
+              fits: `100cqh` is its height), but never under 20rem. Below that the column scrolls. */}
           <div
-            className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 pb-6 [--cover-max-h:max(46vh,16rem)]"
+            className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-6 pb-4"
             onErrorCapture={draft.refreshPhotos}
           >
-            <StudioCanvas
-              recipe={recipe}
-              design={cover}
-              item={item}
-              size={size}
-              cardAspect={cardAspect}
-              selected={layer}
-              onSelect={onSelect}
-              onEdit={draft.edit}
-              generating={draft.generating}
-              disabled={draft.busy}
-            />
-            <div className="space-y-1 text-center text-xs text-muted-foreground">
-              <p>
-                {isCourse
+            <div className="flex min-h-[20rem] flex-1 items-center [--cover-max-h:100cqh] [container-type:size]">
+              <StudioCanvas
+                recipe={recipe}
+                design={cover}
+                item={item}
+                size={size}
+                cardAspect={cardAspect}
+                selected={layer}
+                onSelect={onSelect}
+                onEdit={draft.edit}
+                generating={draft.generating}
+                disabled={draft.busy}
+              />
+            </div>
+            <p className="shrink-0 text-center text-xs text-muted-foreground">
+              {t("editor.coverLine", {
+                cover: isCourse
                   ? t("editor.courseCover")
                   : t("editor.eventCover", {
                       kind: ta(`events.kinds.${design.target_kind}.label`),
-                    })}
-              </p>
-              <p>{notice}</p>
-            </div>
+                    }),
+                notice,
+              })}
+            </p>
             <CoversStrip
               targets={others}
-              size={size}
               cardAspect={cardAspect}
               timeZone={timeZone}
             />
