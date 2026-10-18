@@ -274,7 +274,7 @@ describe("layoutFrames", () => {
     }
   });
 
-  it("draws the logo as tall as the mockup does: 10 cqmin at Card and Wide (1.4 times that at Banner), lowered only where there is no room", () => {
+  it("draws the logo as tall as the mockup does: 10 cqmin at Card and Wide, 9.5 at Banner, lowered only where there is no room", () => {
     const height = (layout: LayoutId, aspect: number) =>
       layoutFrames(layout, aspect).logo!.h * canvasHeight(aspect);
     const grow = (aspect: number) =>
@@ -287,9 +287,9 @@ describe("layoutFrames", () => {
         if (["full", "band", "photo"].includes(layout) && aspect <= 1) {
           expected = 9;
         }
-        // At Banner a title-only cover has the logo, the badge, label, title and subtitle to fit in
-        // 100 cqmin: the logo gets what leaves the title two lines.
-        if (layout === "title" && aspect === 3) expected = 9.9;
+        // At Banner, 100 cqmin high, it is 9.5 in every layout so that it does not compete with the title
+        // (the mockup's is 7.9). A title-only cover could take 9.9 there before its title lost a line.
+        if (aspect === 3) expected = 9.5;
         expect(
           height(layout, aspect),
           `${layout} ${aspect.toFixed(3)}`,
@@ -299,6 +299,22 @@ describe("layoutFrames", () => {
     // The height is 10 where nothing limits it, as in the approved mockup (9.5 to 10.7 cqmin).
     expect(height("panel", 3 / 4)).toBeCloseTo(10, 9);
     expect(height("panel", 4 / 3)).toBeCloseTo(10, 9);
+  });
+
+  it("still lowers the logo of a title-only cover where its title would lose a line, just past Banner", () => {
+    // 9.5 is the Banner's cap; at 3.02 the badge, label, title (two lines) and subtitle leave the
+    // logo 9.48, and the title keeps its two lines.
+    const frames = layoutFrames("title", 3.02);
+    expect(frames.logo!.h * canvasHeight(3.02)).toBeCloseTo(9.48, 1);
+    expect(frames.logo!.h * canvasHeight(3.02)).toBeLessThan(9.5);
+    expect(
+      fitLines(
+        frames.title!,
+        3.02,
+        textSize("title", "title", 3.02),
+        LEADING.title,
+      ),
+    ).toBe(2);
   });
 
   it("leaves the badge room for a short label beside the logo wherever they share a row, in every shape", () => {

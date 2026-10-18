@@ -10,9 +10,9 @@
 //    label sits at the bottom, the title in the middle and the subtitle at the top, so the three
 //    stay together however many lines each takes. A part's line clamp is `fitLines` of its frame.
 //  - The logo is anchored to the left of its frame (centred in `title`), the badge to the right
-//    (centred in `title`). The logo's frame is sized by its height (10 cqmin, as in the mockup,
-//    lowered where the words or the badge need the room), which a square mark fills and a wide
-//    lockup keeps, up to LOGO_ASPECT times as wide.
+//    (centred in `title`). The logo's frame is sized by its height (10 cqmin, as in the mockup, 9.5
+//    at Banner, lowered where the words or the badge need the room), which a square mark fills and a
+//    wide lockup keeps, up to LOGO_ASPECT times as wide.
 //  - The badge shares the logo's row at the top of `panel` (beside its photo), `full`, `band` and
 //    `photo`, where there is room. In `title` it is the first line of the centred stack, above the
 //    label, and in `framed` it takes the photo's bottom corner: neither shares a row with the logo.
@@ -117,6 +117,9 @@ const LOGO_ASPECT = 5;
  *  10.7). It is lowered where the layout has no room for it, never below LOGO_MIN_H, the size a
  *  logo was drawn at before the mockup's. */
 const LOGO_H = 10;
+/** At Banner (100 cqmin high, a title and a badge to fit) the logo is this tall, near the mockup's
+ *  7.9 and the Card's 10, so that it does not compete with the title. */
+const LOGO_BANNER_H = 9.5;
 const LOGO_MIN_H = 6.5;
 /** A short badge ("Free preview": twelve capitals at 0.7 em, and the chip's 1.4 em of padding), in
  *  em of the badge's size. A logo that shares the badge's row leaves the chip this much room. */
@@ -212,7 +215,7 @@ export function layoutFrames(
       SHORT_BADGE_EM * textSize(layout, "badge", aspect)) /
     LOGO_ASPECT;
   const logoH = Math.min(
-    LOGO_H * grow,
+    cls === "banner" ? LOGO_BANNER_H : LOGO_H * grow,
     Math.max(
       LOGO_MIN_H * grow,
       Math.min(
