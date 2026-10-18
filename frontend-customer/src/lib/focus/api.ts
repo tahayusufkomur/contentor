@@ -39,6 +39,9 @@ export interface FocusState {
   question: FocusQuestion | null;
   answered: { field: string; label: string }[];
   outline: { status: OutlineStatus; run: number | null };
+  /** An analysis of her typed answer is pending; `question` is null meanwhile. */
+  reading: { status: OutlineStatus; run: number | null } | null;
+  descriptions: { status: OutlineStatus; run: number | null } | null;
   steps: { id: string; done: boolean }[];
 }
 
@@ -76,6 +79,9 @@ export const fetchCreation = (id: number) =>
 
 export const answerCreation = (id: number, body: Timed<AnswerBody>) =>
   post<FocusState>(`${id}/answer/`, body);
+
+export const retryDescriptions = (id: number) =>
+  post<FocusState>(`${id}/descriptions/`, {});
 
 export const finishCreation = (id: number, body: Timed<{ publish: boolean }>) =>
   post<FocusState>(`${id}/finish/`, body);

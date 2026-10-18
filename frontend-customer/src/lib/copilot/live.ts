@@ -100,15 +100,17 @@ const reducedMotion = () =>
   typeof window !== "undefined" &&
   window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-/** The live frame of ``runId``'s work on ``record`` (null without a run). The
- *  replay clock starts when the first field or row arrives; a run that was
- *  already over before this page saw it working shows at once, as does
- *  everything under reduced motion. While it plays, the run is the page's:
- *  no "ready for you" for it. */
-export function useLiveRecord(
-  record: string,
+/** The replay of ``runId``'s events as ``frameOf`` frames (null without a
+ *  run). The clock starts when ``reveals`` first holds (the first field or row
+ *  to type); a run that was already over before this page saw it working shows
+ *  at once, as does everything under reduced motion. While it plays, the run
+ *  is the page's: no "ready for you" for it. */
+export function useReplay<F extends { settled: boolean }>(
   runId: number | null,
-): LiveFrame | null {
+  specialist: SpecialistKey,
+  frameOf: (events: RunEvent[], elapsedMs: number) => F,
+  reveals: (events: RunEvent[]) => boolean,
+): F | null {
   const run = useRun(runId ?? undefined);
   const [elapsed, setElapsed] = useState(0);
   const clock = useRef<{ run: number | null; start: number | null }>({
@@ -119,26 +121,22 @@ export function useLiveRecord(
 
   useEffect(() => {
     if (runId === null) return;
-    trackRun(runId, "content");
+    trackRun(runId, specialist);
     watchRun(runId);
     clock.current = { run: runId, start: null };
     sawActive.current = false;
     setElapsed(0);
     return () => unwatchRun(runId);
-  }, [runId]);
+  }, [runId, specialist]);
 
   if (run && run.lastSeq > 0 && isActive(run.status)) sawActive.current = true;
   const events = run?.events ?? [];
-  const revealing = events.some(
-    (e) => (e.type === "field" || e.type === "row") && e.data.record === record,
-  );
+  const revealing = reveals(events);
   const instant =
     reducedMotion() ||
     (revealing && !sawActive.current && !!run && !isActive(run.status));
   const frame =
-    runId === null
-      ? null
-      : liveFrame(events, record, instant ? Infinity : elapsed);
+    runId === null ? null : frameOf(events, instant ? Infinity : elapsed);
   const settled = frame?.settled ?? false;
 
   useEffect(() => {
@@ -158,4 +156,21 @@ export function useLiveRecord(
   }, [settled, runId]);
 
   return frame;
+}
+
+/** The live frame of ``runId``'s work on ``record``. */
+export function useLiveRecord(
+  record: string,
+  runId: number | null,
+): LiveFrame | null {
+  return useReplay(
+    runId,
+    "content",
+    (events, ms) => liveFrame(events, record, ms),
+    (events) =>
+      events.some(
+        (e) =>
+          (e.type === "field" || e.type === "row") && e.data.record === record,
+      ),
+  );
 }
