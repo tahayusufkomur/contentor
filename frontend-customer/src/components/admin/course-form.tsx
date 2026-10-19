@@ -332,7 +332,7 @@ export function CourseForm({
         tag_ids: tagIds,
       }),
     });
-    await access.save(course.id);
+    if (accessDirty) await access.save(course.id);
     server.current = null;
     await loadCourse();
   };
@@ -404,8 +404,9 @@ export function CourseForm({
         });
         // The course exists now: a refused access setting must not make a
         // retry create it twice, so say so and let her fix it on its page.
+        // Untouched ways are the new course's default: nothing to save.
         try {
-          await access.save(created.id);
+          if (accessDirty) await access.save(created.id);
         } catch (err) {
           toast.error(
             `Course created, but how students get it was not saved. ${accessSentence(err)}`,

@@ -329,13 +329,32 @@ async function stubFocus(
     if (req.method() === "PUT") {
       const body = req.postDataJSON();
       saved.push(body);
-      // What the server keeps: prices come back with two decimals.
-      edits = { ...body, price: Number(body.price).toFixed(2) };
+      edits = { ...body };
       if (body.is_published !== undefined) published = body.is_published;
       return route.fulfill({ json: { ...courseDetail(runPolled || !open, descDone()), ...edits } });
     }
     return route.fulfill({
       json: { ...courseDetail(runPolled || !open, descDone()), ...edits, is_published: published },
+    });
+  });
+
+  // How students get the course: free for everyone until she sets otherwise.
+  let ways: Body = { free: { window: null }, buy: null, plans: [] };
+  await page.route(`**/api/v1/admin/access/course/${COURSE_ID}/`, (route) => {
+    const req = route.request();
+    if (req.method() === "PUT") ways = req.postDataJSON().ways;
+    return route.fulfill({
+      json: {
+        kind: "course",
+        id: COURSE_ID,
+        ways,
+        describe: ways.buy ? `Sold once for ${ways.buy.price}.` : "Free for everyone.",
+        currency: "USD",
+        allowed: ["free", "buy", "plans"],
+        can_edit_plans: true,
+        plans: [],
+        bundles: [],
+      },
     });
   });
 
