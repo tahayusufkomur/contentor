@@ -104,34 +104,26 @@ const Err = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
+type Problems = ReturnType<typeof problems>;
+
 /**
  * How students get an item: the ways in, each with its timing. Controlled,
  * with no fetch and no save of its own; the form that owns the page loads it
  * with `useAccess` and saves it. `payload` null is still loading.
+ * `onProblems` hears what stops a save (empty while there is none), including
+ * the subscriptions box ticked with no plan chosen, which only this section knows.
  */
 export function AccessSection({
-  kind,
-  value,
-  onChange,
   payload,
+  value,
+  ...rest
 }: {
   kind: string;
   value: Ways | null;
   onChange: (next: Ways) => void;
   payload: AccessPayload | null;
+  onProblems?: (problems: Problems) => void;
 }) {
-  // The In subscriptions box can be ticked before any plan is: a draft.
-  const [plansDraft, setPlansDraft] = useState(false);
-  const [refused, setRefused] = useState(false);
-  // What a way held when it was unticked, so ticking it again brings it back.
-  const kept = useRef<{ buy?: Ways["buy"]; free?: Ways["free"] }>({});
-
-  useEffect(() => {
-    setPlansDraft(false);
-    setRefused(false);
-    kept.current = {};
-  }, [payload]);
-
   if (!payload || !value) {
     return (
       <Card>
@@ -144,6 +136,33 @@ export function AccessSection({
       </Card>
     );
   }
+  return <Loaded payload={payload} value={value} {...rest} />;
+}
+
+function Loaded({
+  kind,
+  value,
+  onChange,
+  payload,
+  onProblems,
+}: {
+  kind: string;
+  value: Ways;
+  onChange: (next: Ways) => void;
+  payload: AccessPayload;
+  onProblems?: (problems: Problems) => void;
+}) {
+  // The In subscriptions box can be ticked before any plan is: a draft.
+  const [plansDraft, setPlansDraft] = useState(false);
+  const [refused, setRefused] = useState(false);
+  // What a way held when it was unticked, so ticking it again brings it back.
+  const kept = useRef<{ buy?: Ways["buy"]; free?: Ways["free"] }>({});
+
+  useEffect(() => {
+    setPlansDraft(false);
+    setRefused(false);
+    kept.current = {};
+  }, [payload]);
 
   const has = (way: string) => payload.allowed.includes(way);
   const onlyBuy = payload.allowed.length === 1 && has("buy");
@@ -161,6 +180,18 @@ export function AccessSection({
   const buyError = found.find((p) => p.way === "buy");
   const plansError = found.find((p) => p.way === "plans");
   const allError = !refused && found.find((p) => p.way === "all");
+
+  // Tell the form, only when the list changes; nothing once this goes away.
+  const tell = useRef(onProblems);
+  tell.current = onProblems;
+  const reported = useRef("");
+  const foundKey = JSON.stringify(found);
+  useEffect(() => {
+    if (reported.current === foundKey) return;
+    reported.current = foundKey;
+    tell.current?.(found);
+  }, [foundKey, found]);
+  useEffect(() => () => tell.current?.([]), []);
 
   const change = (next: Partial<Ways>) => {
     setRefused(false);
