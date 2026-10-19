@@ -136,7 +136,7 @@ async function stubDraft(page: Page, over: Body = {}) {
   await page.route(`**/api/v1/downloads/${DRAFT}/`, (route) => {
     const req = route.request();
     if (req.method() === "PATCH") current = { ...current, ...req.postDataJSON() };
-    return route.fulfill({ json: current });
+    return route.fulfill({ json: { ...current, not_ready: current.file_url ? "" : "Add the file first" } });
   });
   return { set: (next: Body) => (current = { ...current, ...next }) };
 }
@@ -261,7 +261,7 @@ test("a download from one sentence and a file", async ({ browser }) => {
 
 test("add it later keeps it a draft", async ({ browser }) => {
   const page = await (await coachContext(browser)).newPage();
-  await stubDraft(page);
+  const { set } = await stubDraft(page);
   const atFile = state({ record: RECORD, question: Q.file, answered: [TOPIC] });
   const later: [string, string][] = [TOPIC, ["file", "Add it later"], ["review", "Looks good"], ["access", "Free"]];
   const sent = await stubFocus(
@@ -287,6 +287,18 @@ test("add it later keeps it a draft", async ({ browser }) => {
   expect(sent.at(-1)).toMatchObject({ publish: false });
   await expect(page.getByText("Saved as a draft.", { exact: false })).toBeVisible();
   await expect(page.getByRole("main").getByText("Draft", { exact: true })).toBeVisible();
+
+  // Outside focus mode, its page says what it still needs where Publish would be.
+  const publish = page.getByRole("main").getByRole("button", { name: "Publish", exact: true });
+  await expect(page.getByRole("main").getByText("Add the file first.")).toBeVisible();
+  await expect(publish).toHaveCount(0);
+  // With its file, Publish puts it on the site.
+  set({ file_url: `tenants/demo/downloads/${FILE.name}`, file_size: 2_400_000 });
+  await page.reload();
+  await publish.click();
+  await expect(page.getByText("Published. Students can find it on your site now.")).toBeVisible();
+  await expect(page.getByRole("main").getByText("Draft", { exact: true })).toHaveCount(0);
+  await expect(publish).toHaveCount(0);
   await page.close();
 });
 

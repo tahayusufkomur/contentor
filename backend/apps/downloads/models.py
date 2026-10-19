@@ -27,3 +27,9 @@ class DownloadFile(models.Model):
 
     def __str__(self):
         return self.title
+
+    NO_FILE = "Add the file first"  # why a draft cannot be published yet (focus mode's finish, the page's Publish)
+
+    def not_ready(self) -> str:
+        """Why it cannot be published yet ("" when it can): students get it only with its file."""
+        return "" if self.file_url else self.NO_FILE

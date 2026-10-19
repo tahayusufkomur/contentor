@@ -389,6 +389,20 @@ class TestUnpublishedDownload:
         bought = make_client(student).post("/api/v1/billing/payments/initialize/", data=buy, format="json")
         assert bought.status_code == 201, bought.content
 
+    def test_a_kept_draft_is_published_from_its_page_only_with_its_file(self, owner):
+        # The page's Publish keeps the finish's rule (focus mode's download): its file first.
+        draft = DownloadFile.objects.create(title="No File Yet", is_published=False)
+        client, path = make_client(owner), f"/api/v1/downloads/{draft.pk}/"
+        assert client.get(path).json()["not_ready"] == "Add the file first"
+        resp = client.patch(path, {"is_published": True, "title": "Renamed"}, format="json")
+        assert resp.status_code == 400 and resp.json() == {"is_published": ["Add the file first."]}, resp.content
+        draft.refresh_from_db()
+        assert (draft.is_published, draft.title) == (False, "No File Yet")  # the whole change rolled back
+        DownloadFile.objects.filter(pk=draft.pk).update(file_url="downloads/guide.pdf", file_size=10)
+        assert client.get(path).json()["not_ready"] == ""
+        resp = client.patch(path, {"is_published": True}, format="json")
+        assert resp.status_code == 200 and resp.json()["is_published"] is True, resp.content
+
     def test_a_download_with_no_file_is_not_in_the_store(self, owner, student):
         DownloadFile.objects.create(title="No File", pricing_type="paid", price=Decimal("5.00"))
         assert make_client(student).get("/api/v1/billing/store/?type=download").json() == []

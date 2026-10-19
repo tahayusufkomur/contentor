@@ -450,6 +450,34 @@ export function DownloadForm({
     };
   }, [focusId]);
 
+  // A kept draft, published from here once it has its file (else the line says
+  // so); the server refuses it as the finish would.
+  const { run: publish, loading: publishing } = useAsyncAction(
+    async () => {
+      if (!record) return;
+      receive(
+        await clientFetch<DownloadFile>(`/api/v1/downloads/${record.id}/`, {
+          method: "PATCH",
+          body: JSON.stringify({ is_published: true }),
+        }),
+      );
+      toast.success(t("published"));
+    },
+    {
+      onError: (err) => {
+        const why =
+          err instanceof ApiError
+            ? (err.data as { is_published?: unknown }).is_published
+            : null;
+        toast.error(
+          Array.isArray(why) && typeof why[0] === "string"
+            ? why[0]
+            : t("publishError"),
+        );
+      },
+    },
+  );
+
   // The stored name is a random key, not hers: say its type instead.
   const fileName = record?.file_url
     ? (/\.([a-z0-9]+)$/i.exec(record.file_url)?.[1].toUpperCase() ?? t("file"))
@@ -459,13 +487,28 @@ export function DownloadForm({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 space-y-0">
         <CardTitle className="flex flex-wrap items-center gap-2 text-base">
           {record ? record.title : t("new")}
           {record && !record.is_published && (
             <Badge variant="outline">{t("draft")}</Badge>
           )}
         </CardTitle>
+        {!focus &&
+          record &&
+          !record.is_published &&
+          (record.not_ready ? (
+            <p className="text-sm text-muted-foreground">{`${record.not_ready}.`}</p>
+          ) : (
+            <Button
+              size="sm"
+              loading={publishing}
+              loadingText={t("publishing")}
+              onClick={publish}
+            >
+              {t("publish")}
+            </Button>
+          ))}
       </CardHeader>
       <CardContent>
         {/* Not a <form>: the tag picker takes Enter for itself. */}

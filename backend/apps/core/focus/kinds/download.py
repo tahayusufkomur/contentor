@@ -36,7 +36,6 @@ DRAFT_SLOT = "copy"
 DRAFT_WHAT = "title and description"
 REVIEWED_LINE = None
 UPLOADED, LATER = "uploaded", "later"
-NO_FILE = "Add the file first"
 FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
 CLOSING = {
     "publish": "Published. Students can find it on your site now.",
@@ -319,7 +318,8 @@ def suggest_price(row) -> pricing.Suggestion:
 
 
 def not_ready(row) -> str:
-    return "" if row.file_url else NO_FILE
+    """Its file first: the download's own rule, which the page's Publish keeps too."""
+    return row.not_ready()
 
 
 def cannot_sell(row) -> bool:

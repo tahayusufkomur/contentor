@@ -1312,6 +1312,10 @@
     "saved": "Download saved",
     "saveError": "Failed to save the download",
     "accessNotSaved": "Saved, but how students get it was not saved.",
-    "draft": "Draft"
+    "draft": "Draft",
+    "publish": "Publish",
+    "publishing": "Publishing…",
+    "published": "Published. Students can find it on your site now.",
+    "publishError": "Could not publish the download."
   }
 }

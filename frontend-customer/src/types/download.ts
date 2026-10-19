@@ -22,4 +22,6 @@ export interface DownloadFile {
   tag_ids?: number[];
   created_at: string;
   access_info?: AccessInfo;
+  /** Why a draft cannot be published yet ("Add the file first"), "" when it can. */
+  not_ready?: string;
 }
