@@ -340,6 +340,13 @@ def test_publish_is_refused_without_a_price(owner):
     assert not _bundle(creation).is_published
 
 
+def test_a_kept_draft_says_what_it_still_needs(owner):
+    creation = flow.finish(_at_finish(owner, price=None), publish=False)
+    assert flow.closing_line(creation) == "Saved as a draft. Set its price first, then publish it from this page."
+    Bundle.objects.filter(pk=creation.record_id).update(price=75)  # ready: only her Publish is left
+    assert flow.closing_line(creation) == "Saved as a draft. Publish it from this page when you're ready."
+
+
 def test_start_selling_only_once_it_has_a_price(owner):
     creation = _at_finish(owner, price=None)
     with (

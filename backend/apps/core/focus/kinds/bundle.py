@@ -34,7 +34,12 @@ REVIEWED_LINE = None
 FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
 CLOSING = {
     "publish": "Published. Students can buy it in your store now.",
-    "draft": "Saved as a draft. Publish it from this page when you're ready.",
+    # Says what it still needs while it cannot be published yet (the page's Publish waits for the same).
+    "draft": lambda row: (
+        f"Saved as a draft. {gap}, then publish it from this page."
+        if row is not None and (gap := row.not_ready())
+        else "Saved as a draft. Publish it from this page when you're ready."
+    ),
 }
 NOT_READY_LINE = "Your bundle is saved as a draft."
 FINISH_SPECIALIST = "finance"  # what it still needs is Finance's (G16): its items and its price
