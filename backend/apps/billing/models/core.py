@@ -38,7 +38,35 @@ class SubscriptionPlan(models.Model):
         return self.name
 
 
-class SubscriptionPlanAccess(models.Model):
+class AccessWindowFields(models.Model):
+    """When an item is open: a span after the person gets in, a calendar date, or both ends."""
+
+    opens_after_days = models.PositiveIntegerField(null=True, blank=True)
+    opens_on = models.DateField(null=True, blank=True)
+    closes_after_days = models.PositiveIntegerField(null=True, blank=True)
+    closes_on = models.DateField(null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+
+class AccessWindow(AccessWindowFields):
+    """The window of one way in (free or buy) on one item; plan links carry their own."""
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+    way = models.CharField(max_length=10, choices=[("free", "Free"), ("buy", "Sell it once")])
+
+    class Meta:
+        app_label = "billing"
+        unique_together = ("content_type", "object_id", "way")
+
+    def __str__(self):
+        return f"{self.way} window on {self.content_type} #{self.object_id}"
+
+
+class SubscriptionPlanAccess(AccessWindowFields):
     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.CASCADE, related_name="access_items")
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
@@ -153,6 +181,9 @@ class PaymentItem(models.Model):
     item_price = models.DecimalField(max_digits=10, decimal_places=2)
     submerchant_payout = models.DecimalField(max_digits=10, decimal_places=2)
     is_refunded = models.BooleanField(default=False)
+    # Stamped when the payment completes, so a purchase keeps the terms it was bought on.
+    access_starts_at = models.DateTimeField(null=True, blank=True)
+    access_ends_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         app_label = "billing"

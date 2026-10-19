@@ -148,6 +148,9 @@ class Enrollment(models.Model):
     # The coach's "Give access" on a student: the paywall opens the course for
     # these rows only, as a member's own enrollment outlives the membership.
     granted = models.BooleanField(default=False)
+    # The terms this enrollment was bought or given on, stamped when it is created.
+    access_starts_at = models.DateTimeField(null=True, blank=True)
+    access_ends_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         app_label = "courses"
