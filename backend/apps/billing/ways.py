@@ -126,6 +126,13 @@ def _clean_window(window, what: str) -> dict | None:
         out[key] = value
     if ("opens_after_days" in out and "opens_on" in out) or ("closes_after_days" in out and "closes_on" in out):
         raise WaysError("window", f"Give {what} a span or a calendar date for each end, not both.")
+    for opens, closes in (("opens_after_days", "closes_after_days"), ("opens_on", "closes_on")):
+        if (
+            opens in out
+            and closes in out
+            and (out[closes] <= out[opens] if opens.endswith("_days") else out[closes] < out[opens])
+        ):
+            raise WaysError("window", f"The dates for {what} close before they open.")
     return out or None
 
 
@@ -184,7 +191,8 @@ def _clean(item, ways: dict, actor) -> dict:
             raise WaysError("owner_only", "Only the owner can change a bundle's terms.")
         ctype = ContentType.objects.get_for_model(item)
         linked = SubscriptionPlanAccess.objects.filter(content_type=ctype, object_id=item.pk)
-        if set(linked.values_list("plan_id", flat=True)) != set(ids):
+        # A plan's window is live for every member, so it is the owner's too (Ruling 18).
+        if {link.plan_id: _window_of(link) for link in linked} != {p["plan_id"]: p["window"] for p in out["plans"]}:
             raise WaysError("owner_only", "Only the owner can change which subscriptions include this.")
     return out
 
@@ -322,8 +330,9 @@ def span_text(days: int) -> str:
             return f"{n} {unit}{'' if n == 1 else 's'}"
 
 
-def _clauses(window: dict | None, opens_after: str, closes_after: str) -> list[str]:
-    """The window as phrases; the two templates take a span such as "1 month"."""
+def _clauses(window: dict | None, opens_after: str, closes_after: str, closes_until: str) -> list[str]:
+    """The window as phrases; the templates take a span such as "1 month". A span to the close still
+    counts from when they got in, so once an opening is set it reads ``closes_until``, not a length."""
     w = window or {}
     day = lambda key: date.fromisoformat(w[key]).strftime("%-d %b %Y")  # noqa: E731
     out = []
@@ -332,7 +341,8 @@ def _clauses(window: dict | None, opens_after: str, closes_after: str) -> list[s
     if "opens_on" in w:
         out.append(f"from {day('opens_on')}")
     if "closes_after_days" in w:
-        out.append(closes_after.format(span_text(w["closes_after_days"])))
+        opens = "opens_after_days" in w or "opens_on" in w
+        out.append((closes_until if opens else closes_after).format(span_text(w["closes_after_days"])))
     if "closes_on" in w:
         out.append(f"until {day('closes_on')}")
     return out
@@ -362,11 +372,15 @@ def describe(ways: dict) -> str:
 
     parts = []
     if ways.get("free"):
-        clauses = _clauses(ways["free"].get("window"), "after {} of joining", "for {} after joining")
+        clauses = _clauses(
+            ways["free"].get("window"), "after {} of joining", "for {} after joining", "until {} after joining"
+        )
         parts.append(" ".join(["Free", *clauses]) if clauses else "Free for everyone")
     if ways.get("buy"):
         buy = ways["buy"]
-        clauses = _clauses(buy.get("window"), "opening {} after purchase", "with {} of access")
+        clauses = _clauses(
+            buy.get("window"), "opening {} after purchase", "with {} of access", "until {} after purchase"
+        )
         parts.append(f"{money(buy['price'])} once" + (" " + ", ".join(clauses) if clauses else ", theirs to keep"))
     if ways.get("plans"):
         ids = [p["plan_id"] for p in ways["plans"]]
@@ -375,7 +389,9 @@ def describe(ways: dict) -> str:
         for p in ways["plans"]:
             if p["plan_id"] not in names:
                 raise WaysError("plan", "One of those subscriptions no longer exists.")
-            clauses = tuple(_clauses(p.get("window"), "after {} of membership", "for {} of membership"))
+            clauses = tuple(
+                _clauses(p.get("window"), "after {} of membership", "for {} of membership", "until {} into membership")
+            )
             groups.setdefault(clauses, []).append(names[p["plan_id"]])
         parts.append(
             ", ".join(
@@ -398,6 +414,14 @@ class ShorthandMixin:
         from rest_framework import serializers
 
         sent = {key: self.validated_data[key] for key in ("pricing_type", "price") if key in self.validated_data}
+        # A form that echoes the stored values back changes nothing: re-applying "free" or "paid" would drop a window.
+        if self.instance is not None and all(
+            Decimal(str(value or 0)) == Decimal(self.instance.price or 0)
+            if key == "price"
+            else value == getattr(self.instance, key)
+            for key, value in sent.items()
+        ):
+            sent = {}
         with transaction.atomic():
             instance = super().save(**kwargs)
             if sent:

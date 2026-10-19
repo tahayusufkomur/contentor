@@ -170,10 +170,15 @@ def test_a_coach_cannot_change_which_plans_include_it(course, gold, silver, owne
         set_ways(course, {**buy_only(), "plans": [{"plan_id": gold.pk, "window": None}]}, actor=coach)
     assert e.value.code == "owner_only"
     set_ways(course, {**buy_only(), "plans": [{"plan_id": gold.pk, "window": None}]}, actor=owner)
-    # The same plans with a new window is a coach's to change; adding or dropping one is not.
-    set_ways(course, {**buy_only(), "plans": [{"plan_id": gold.pk, "window": {"opens_after_days": 7}}]}, actor=coach)
-    assert ways_of(course)["plans"][0]["window"] == {"opens_after_days": 7}
-    for plans in ([], [{"plan_id": gold.pk, "window": None}, {"plan_id": silver.pk, "window": None}]):
+    # The same plans as they are is a coach's to save (her other edits go through); adding or dropping
+    # one, or moving a plan's window (live for every member, Ruling 18), is not.
+    set_ways(course, {**buy_only("59"), "plans": [{"plan_id": gold.pk, "window": None}]}, actor=coach)
+    assert ways_of(course)["buy"]["price"] == "59.00"
+    for plans in (
+        [],
+        [{"plan_id": gold.pk, "window": None}, {"plan_id": silver.pk, "window": None}],
+        [{"plan_id": gold.pk, "window": {"opens_after_days": 7}}],
+    ):
         with pytest.raises(WaysError) as e:
             set_ways(course, {**buy_only(), "plans": plans}, actor=coach)
         assert e.value.code == "owner_only"
@@ -214,6 +219,8 @@ def test_windows_outside_the_rules_are_refused(course, owner):
         {"closes_on": "2026-02-30"},
         {"closes_after_days": 30, "closes_on": "2026-12-31"},
         {"opens_after_days": 30, "opens_on": "2026-12-31"},
+        {"opens_after_days": 30, "closes_after_days": 30},
+        {"opens_on": "2026-12-31", "closes_on": "2026-12-30"},
         {"nonsense": 5},
     ):
         with pytest.raises(WaysError) as e:
@@ -332,3 +339,15 @@ def test_describe_says_it_in_plain_words(gold, silver):
         == "Free until 26 Oct 2026; €29 once, theirs to keep."
     )
     assert describe({"free": None, "buy": None, "plans": [{"plan_id": gold.pk, "window": None}]}) == "In Gold."
+    # With an opening, the close (counted from when they got in) is a point, not a length.
+    both = {"opens_after_days": 30, "closes_after_days": 90}
+    assert (
+        describe(
+            {"free": None, "buy": {"price": "49", "window": both}, "plans": [{"plan_id": gold.pk, "window": both}]}
+        )
+        == "€49 once opening 1 month after purchase, until 3 months after purchase;"
+        " in Gold after 1 month of membership until 3 months into membership."
+    )
+    assert describe({"free": {"window": both}, "buy": None, "plans": []}) == (
+        "Free after 1 month of joining until 3 months after joining."
+    )

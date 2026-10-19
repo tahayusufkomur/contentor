@@ -165,7 +165,7 @@ class ContentAccessService:
     def get_unlock_options(self, content) -> dict:
         """Return all ways a piece of content can be unlocked (free window, purchase, bundles, plans)."""
         from apps.billing.models import AccessWindow, Bundle, BundleItem, SubscriptionPlanAccess
-        from apps.billing.ways import _window_of
+        from apps.billing.ways import _window_of, window_bounds
 
         ct = ContentType.objects.get_for_model(type(content))
         options = {}
@@ -173,7 +173,10 @@ class ContentAccessService:
 
         # 1. A free window (free for everyone with no window has nothing to unlock)
         if windows.get("free"):
-            options["free"] = {"window": windows["free"]}
+            now = timezone.now()
+            end = window_bounds(windows["free"], now)[1]
+            if end is None or end > now:  # a calendar free window that is over offers nothing
+                options["free"] = {"window": windows["free"]}
 
         # 2. Direct purchase (if priced)
         pricing_type = getattr(content, "pricing_type", "free")

@@ -14,9 +14,12 @@ export function purchaseTerms(w: Window | null | undefined): string {
     : w?.opens_after_days !== undefined
       ? `Opens ${spanText(w.opens_after_days)} after purchase · `
       : "";
+  // The close counts from the purchase, so with an opening it is a point, not a length.
   const lasts =
     w?.closes_after_days !== undefined
-      ? `${spanText(w.closes_after_days)} of access`
+      ? opens
+        ? `Access until ${spanText(w.closes_after_days)} after purchase`
+        : `${spanText(w.closes_after_days)} of access`
       : w?.closes_on
         ? `Access until ${formatDay(w.closes_on)}`
         : "Lifetime access";
@@ -31,9 +34,12 @@ export function planTerms(w: Window | null | undefined): string {
       : w?.opens_on
         ? `Opens ${formatDay(w.opens_on)}`
         : "Included right away";
+  const opensLater = w?.opens_after_days !== undefined || !!w?.opens_on;
   const closes =
     w?.closes_after_days !== undefined
-      ? `, for ${spanText(w.closes_after_days)}`
+      ? opensLater
+        ? `, until ${spanText(w.closes_after_days)} into membership`
+        : `, for ${spanText(w.closes_after_days)}`
       : w?.closes_on
         ? `, until ${formatDay(w.closes_on)}`
         : "";
@@ -42,8 +48,13 @@ export function planTerms(w: Window | null | undefined): string {
 
 /** What free covers. */
 export function freeTerms(w: Window | null | undefined): string {
-  if (w?.closes_after_days !== undefined)
+  if (w?.closes_after_days !== undefined) {
+    const until = `until ${spanText(w.closes_after_days)} after joining`;
+    if (w.opens_after_days !== undefined)
+      return `Free after ${spanText(w.opens_after_days)} of joining, ${until}`;
+    if (w.opens_on) return `Free from ${formatDay(w.opens_on)}, ${until}`;
     return `Free for your first ${spanText(w.closes_after_days)}`;
+  }
   if (w?.opens_on && w.closes_on)
     return `Free ${formatDay(w.opens_on)} – ${formatDay(w.closes_on)}`;
   if (w?.closes_on) return `Free until ${formatDay(w.closes_on)}`;

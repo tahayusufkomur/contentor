@@ -200,7 +200,7 @@ test("a buyer whose year has run out is told their access ended, and may buy aga
       "from django.utils import timezone\n" +
       "from apps.accounts.models import User\n" +
       "from apps.billing.models import Payment, PaymentItem\n" +
-      "from apps.courses.models import Course\n" +
+      "from apps.courses.models import Course, Enrollment\n" +
       "student = User.objects.filter(role='student').order_by('id').first()\n" +
       `course = Course.objects.get(pk=${courseId})\n` +
       "now = timezone.now()\n" +
@@ -209,7 +209,10 @@ test("a buyer whose year has run out is told their access ended, and may buy aga
       `currency='EUR', provider='bypass', provider_payment_id='${ENDED_MARK}')\n` +
       "PaymentItem.objects.create(payment=payment, content_type=ContentType.objects.get_for_model(Course), " +
       "object_id=course.pk, item_price=Decimal('49.00'), submerchant_payout=Decimal('49.00'), " +
-      "access_starts_at=now - timedelta(days=400), access_ends_at=now - timedelta(days=35), is_refunded=False)",
+      "access_starts_at=now - timedelta(days=400), access_ends_at=now - timedelta(days=35), is_refunded=False)\n" +
+      // Checkout enrolls the buyer too, and the enrollment outlives the window.
+      "Enrollment.objects.update_or_create(user=student, course=course, defaults={'is_active': True}, " +
+      "create_defaults={'payment_id': payment.pk})",
   );
   const student = await studentContext(browser);
   const page = await student.newPage();
@@ -219,6 +222,7 @@ test("a buyer whose year has run out is told their access ended, and may buy aga
     page.getByText(/Your access ended on \d{1,2} \w{3} \d{4}/),
   ).toBeVisible();
   await expect(page.getByText("Buy for", { exact: false })).toBeVisible();
+  await expect(page.getByText("Continue Learning")).toHaveCount(0);
   await student.close();
 });
 

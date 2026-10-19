@@ -59,8 +59,8 @@ export function EnrollButton({ course }: EnrollButtonProps) {
     navigate("/checkout");
   }
 
-  // Already enrolled
-  if (course.is_enrolled) {
+  // Already enrolled, and still in: once their window closes they are back at the paywall
+  if (course.is_enrolled && course.access_info?.has_access !== false) {
     return (
       <div className="flex flex-col gap-2">
         <Button

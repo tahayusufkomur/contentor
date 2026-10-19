@@ -779,6 +779,18 @@ def copilot_undo(request):
         return Response({"detail": "not_undoable"}, status=400)
     if not _order_free(entry.inverse) and (latest is None or latest.pk != entry.pk):
         return Response({"detail": "only the latest change can be undone"}, status=400)
+    if entry.inverse.get("kind") == "restore_ways":
+        # The undo writes as the system, so the owner-only rule is checked for the one asking. A refusal
+        # here is theirs, not for good: the inverse stays for the owner.
+        from apps.billing import ways
+
+        with tenant_context(tenant):
+            try:
+                item = ways.item_for(entry.inverse.get("item_kind"), entry.inverse.get("item_id"))
+                ways.validate(item, entry.inverse.get("ways"), actor=request.user)
+            except ways.WaysError as exc:
+                if exc.code == "owner_only":
+                    return Response({"detail": str(exc)}, status=403)
     try:
         if not _still_stands(tenant, entry.inverse):
             raise content.ContentOpError(SNAPSHOT_STALE)

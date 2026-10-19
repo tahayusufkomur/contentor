@@ -1038,7 +1038,12 @@ def _offers() -> dict:
             events.append({"title": row.title, "date": row.scheduled_at.date().isoformat(), "kind": model.__name__})
     return {
         "courses": [
-            {"title": c.title, "pricing": c.pricing_type, "price": str(c.price), "published": c.is_published}
+            {
+                "title": c.title,
+                "pricing": c.pricing_type,
+                "price": str(c.price if c.pricing_type == "paid" else 0),
+                "published": c.is_published,
+            }
             for c in Course.objects.order_by("order", "-created_at")[:6]
         ],
         "events": sorted(events, key=lambda e: e["date"])[:6],

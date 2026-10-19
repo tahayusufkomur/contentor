@@ -32,7 +32,11 @@ describe("purchaseTerms", () => {
   it("says when a sale opens", () => {
     expect(
       purchaseTerms({ opens_on: "2026-11-01", closes_after_days: 365 }),
-    ).toBe("Opens 1 Nov 2026 · 1 year of access");
+    ).toBe("Opens 1 Nov 2026 · Access until 1 year after purchase");
+    // The close counts from the purchase: opens after 1 month, closes at 3 is 2 months, not 3.
+    expect(purchaseTerms({ opens_after_days: 30, closes_after_days: 90 })).toBe(
+      "Opens 1 month after purchase · Access until 3 months after purchase",
+    );
     expect(purchaseTerms({ opens_after_days: 7 })).toBe(
       "Opens 1 week after purchase · Lifetime access",
     );
@@ -55,6 +59,9 @@ describe("planTerms", () => {
     expect(planTerms({ opens_after_days: 30, closes_on: "2026-12-31" })).toBe(
       "Opens after 1 month of membership, until 31 Dec 2026",
     );
+    expect(planTerms({ opens_after_days: 30, closes_after_days: 90 })).toBe(
+      "Opens after 1 month of membership, until 3 months into membership",
+    );
   });
 });
 
@@ -71,6 +78,9 @@ describe("freeTerms", () => {
       "Free for your first 1 week",
     );
     expect(freeTerms({ opens_on: "2026-11-01" })).toBe("Free from 1 Nov 2026");
+    expect(freeTerms({ opens_after_days: 30, closes_after_days: 90 })).toBe(
+      "Free after 1 month of joining, until 3 months after joining",
+    );
   });
 });
 

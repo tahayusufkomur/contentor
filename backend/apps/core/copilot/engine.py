@@ -878,7 +878,9 @@ def _money_line(now):
                 sellers.append(f"{str(title)[:60]} ({row['n']})")
         if sellers:
             parts.append("best sellers (90 days): " + ", ".join(sellers))
-    prices = Course.objects.filter(is_published=True, price__gt=0).aggregate(low=Min("price"), high=Max("price"))
+    prices = Course.objects.filter(is_published=True, pricing_type="paid", price__gt=0).aggregate(
+        low=Min("price"), high=Max("price")
+    )
     if prices["low"] is not None:
         parts.append(f"course prices: {prices['low']:.2f}–{prices['high']:.2f}")
     parts.append(f"active memberships: {Subscription.objects.filter(status='active').count()}")

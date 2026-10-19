@@ -75,18 +75,27 @@ function money(amount: string, currency: string): string {
   );
 }
 
-/** The window as phrases; the two templates take a span such as "1 month". */
+/**
+ * The window as phrases; the templates take a span such as "1 month". A span to
+ * the close counts from when they got in, so once an opening is set it reads
+ * `closesUntil`, not a length (as the backend's `_clauses`).
+ */
 function clauses(
   w: Window | null,
   opensAfter: (span: string) => string,
   closesAfter: (span: string) => string,
+  closesUntil: (span: string) => string,
 ): string[] {
   const out: string[] = [];
   if (w?.opens_after_days !== undefined)
     out.push(opensAfter(spanText(w.opens_after_days)));
   if (w?.opens_on) out.push(`from ${formatDay(w.opens_on)}`);
-  if (w?.closes_after_days !== undefined)
-    out.push(closesAfter(spanText(w.closes_after_days)));
+  if (w?.closes_after_days !== undefined) {
+    const opens = w.opens_after_days !== undefined || !!w.opens_on;
+    out.push(
+      (opens ? closesUntil : closesAfter)(spanText(w.closes_after_days)),
+    );
+  }
   if (w?.closes_on) out.push(`until ${formatDay(w.closes_on)}`);
   return out;
 }
@@ -109,6 +118,7 @@ export function describe(
       ways.free.window,
       (s) => `after ${s} of joining`,
       (s) => `for ${s} after joining`,
+      (s) => `until ${s} after joining`,
     );
     parts.push(c.length ? ["Free", ...c].join(" ") : "Free for everyone");
   }
@@ -117,6 +127,7 @@ export function describe(
       ways.buy.window,
       (s) => `opening ${s} after purchase`,
       (s) => `with ${s} of access`,
+      (s) => `until ${s} after purchase`,
     );
     parts.push(
       `${money(ways.buy.price, currency)} once` +
@@ -133,6 +144,7 @@ export function describe(
         p.window,
         (s) => `after ${s} of membership`,
         (s) => `for ${s} of membership`,
+        (s) => `until ${s} into membership`,
       );
       const key = JSON.stringify(c);
       const group = groups.get(key) ?? { c, names: [] };

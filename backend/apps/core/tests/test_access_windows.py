@@ -307,10 +307,14 @@ def test_unlock_options_carry_each_ways_window(service, student, course, gold):
             "plans": [{"plan_id": gold.pk, "window": {"opens_after_days": 30}}],
         },
     )
-    options = service.get_unlock_options(course)
+    with at(NOW):
+        options = service.get_unlock_options(course)
     assert options["purchase"]["window"] == {"closes_after_days": 365}
     assert options["plans"][0]["window"] == {"opens_after_days": 30}
     assert options["free"] == {"window": {"closes_on": "2026-12-01"}}
+    # once the calendar free window is over it offers nothing
+    with at(datetime(2026, 12, 3, tzinfo=UTC)):
+        assert "free" not in service.get_unlock_options(course)
 
 
 # --- bulk answers exactly what the single check does, for every setup -------------------

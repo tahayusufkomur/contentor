@@ -90,6 +90,13 @@ suite("describe", () => {
         "EUR",
       ),
     ).toBe("€9 once opening 2 weeks after purchase.");
+    // The same sentence as the backend once both ends are spans.
+    const both = { opens_after_days: 30, closes_after_days: 90 };
+    expect(
+      describe({ ...none, buy: { price: "49", window: both } }, plans, "EUR"),
+    ).toBe(
+      "€49 once opening 1 month after purchase, until 3 months after purchase.",
+    );
   });
 });
 

@@ -72,7 +72,7 @@ def _line(kind, title, price_txt, url, desc=""):
 def _price(price, pricing_type, currency):
     if pricing_type == "subscription":
         return "included in membership"
-    if not price or Decimal(str(price)) == 0:
+    if pricing_type == "free" or not price or Decimal(str(price)) == 0:
         return "free"
     return f"{price} {currency}"
 

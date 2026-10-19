@@ -169,6 +169,20 @@ class TestBundleDetail:
         assert len(data["items"]) == 1
         assert "original_price" in data
 
+    def test_original_price_leaves_out_a_covered_price(self, bundle, owner, student):
+        # Free with no window keeps its price on the item, covered: the bundle saves nothing on it.
+        covered = Course.objects.create(
+            title="Free", slug="free-covered", instructor=owner, pricing_type="free", price=Decimal("49.00")
+        )
+        BundleItem.objects.create(
+            bundle=bundle, content_type=ContentType.objects.get_for_model(Course), object_id=covered.pk
+        )
+        data = make_client(student).get(f"/api/v1/billing/bundles/{bundle.pk}/").json()
+        assert Decimal(str(data["original_price"])) == Decimal("99.00")
+        from apps.billing.views.store import _bundle_original_price
+
+        assert _bundle_original_price(bundle) == Decimal("99.00")
+
     def test_owner_updates_bundle(self, bundle, owner):
         client = make_client(owner)
         response = client.patch(

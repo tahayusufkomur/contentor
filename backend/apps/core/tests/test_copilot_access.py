@@ -150,6 +150,21 @@ def test_undo_puts_the_old_ways_back(tenant_ctx, euro_sign, owner, course, gold)
     assert ways_of(Course.objects.get(pk=course.pk)) == before
 
 
+def test_a_coach_cannot_undo_the_owners_plan_change_and_the_undo_stays(tenant_ctx, euro_sign, owner, course, gold):
+    from apps.tenant_config.models import CopilotAudit
+
+    coach = User.objects.create_user(email="coach3@copilot-access.test", name="Coach", password="x", role="coach")
+    card = engine._card(tenant_ctx, _action(course, _ways_with(gold)))
+    audit_id = (
+        _api(owner).post("/api/v1/admin/copilot/execute/", {"token": card["token"]}, format="json").json()["audit_id"]
+    )
+    undo = _api(coach).post("/api/v1/admin/copilot/undo/", {"audit_id": audit_id}, format="json")
+    assert undo.status_code == 403, undo.content
+    assert [p["plan_id"] for p in ways_of(Course.objects.get(pk=course.pk))["plans"]] == [gold.pk]
+    assert CopilotAudit.objects.get(pk=audit_id).inverse["kind"] == "restore_ways"
+    assert _api(owner).post("/api/v1/admin/copilot/undo/", {"audit_id": audit_id}, format="json").status_code == 200
+
+
 def test_a_coach_cannot_change_plans_through_the_assistant(tenant_ctx, course, gold):
     coach = User.objects.create_user(
         email="coach@copilot-access.test", name="Coach", password="secret123", role="coach"

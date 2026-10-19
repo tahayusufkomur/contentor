@@ -44,23 +44,8 @@ const SORT_OPTIONS = [
 ];
 
 const courseFields: FieldConfig<Course>[] = [
+  // Price and access live in the course's Access section: an echoed pricing type here would drop its windows.
   { key: "title", label: "Title", type: "text", required: true },
-  {
-    key: "pricing_type",
-    label: "Pricing",
-    type: "select",
-    options: [
-      { label: "Free", value: "free" },
-      { label: "Paid", value: "paid" },
-    ],
-  },
-  {
-    key: "price",
-    label: "Price",
-    type: "number",
-    placeholder: "0.00",
-    showWhen: (v) => v.pricing_type === "paid",
-  },
   { key: "is_published", label: "Published", type: "toggle" },
   {
     key: "thumbnail_id",
@@ -128,11 +113,7 @@ export default function AdminCoursesPage() {
         method: "PUT",
         body: JSON.stringify({
           title: values.title,
-          pricing_type: values.pricing_type,
           is_published: values.is_published,
-          ...(values.pricing_type === "paid" && values.price
-            ? { price: parseFloat(values.price as string) }
-            : {}),
           ...(values.thumbnail_id ? { thumbnail: values.thumbnail_id } : {}),
         }),
       });

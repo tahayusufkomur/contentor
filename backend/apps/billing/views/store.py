@@ -35,7 +35,8 @@ def _bundle_original_price(bundle):
         content_obj = item.content_object
         if content_obj is not None:
             price = getattr(content_obj, "price", None)
-            if price is not None:
+            # Free keeps a covered price on the item; it is not part of what the bundle saves.
+            if price is not None and getattr(content_obj, "pricing_type", "paid") == "paid":
                 total += Decimal(str(price))
     return total
 

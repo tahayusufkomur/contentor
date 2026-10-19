@@ -9,7 +9,7 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
-from apps.billing.ways import link_unlinked_members_only, ways_of
+from apps.billing.ways import link_unlinked_members_only, set_ways, ways_of
 from apps.courses.models import Course
 from apps.downloads.models import DownloadFile
 
@@ -50,6 +50,16 @@ def test_a_price_put_on_a_members_only_course_keeps_its_plans(owner, gold):
     ways = ways_of(Course.objects.get(pk=course.pk))
     assert ways["buy"]["price"] == "25.00"
     assert [p["plan_id"] for p in ways["plans"]] == [gold.pk]
+
+
+def test_a_form_echoing_the_stored_pricing_back_keeps_the_free_window(owner):
+    course = Course.objects.create(title="Windowed", slug="windowed", instructor=owner, pricing_type="paid", price=29)
+    set_ways(course, {"free": {"window": {"closes_on": "2030-11-30"}}, "buy": {"price": "29", "window": None}})
+    resp = make_client(owner).put(
+        f"/api/v1/courses/{course.slug}/", {"title": "Renamed", "pricing_type": "paid", "price": "29.00"}, format="json"
+    )
+    assert resp.status_code == 200, resp.content
+    assert ways_of(Course.objects.get(pk=course.pk))["free"] == {"window": {"closes_on": "2030-11-30"}}
 
 
 def test_a_members_only_download_without_a_plan_is_refused_and_not_created(owner):

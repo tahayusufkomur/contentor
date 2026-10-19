@@ -346,3 +346,11 @@ class TestAnswerCacheViewerScoping:
                 )
         assert len(calls) == 1
         assert AiTranscript.objects.filter(provider="cache").count() == 1
+
+
+def test_price_reads_a_covered_price_as_free():
+    from apps.tenant_config.student_bot import _price
+
+    # Free with no window keeps a covered price on the item; students are told it is free.
+    assert _price(Decimal("49"), "free", "EUR") == "free"
+    assert _price(Decimal("49"), "paid", "EUR") == "49 EUR"
