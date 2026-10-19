@@ -17,6 +17,8 @@ const DRAFT = 9701;
 const COPY_RUN = 6370;
 const PATH = `/admin/downloads/${DRAFT}`;
 const FILE = { name: "runner-workbook.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.4 e2e") };
+// The file row says its type and size: the stored name is a random key, not hers.
+const FILE_ROW = "PDF · 2.3 MB";
 
 const option = (value: string, label: string, hint = "") => ({ value, label, hint });
 const question = (field: string, kind: string, text: string, extra: Body = {}) => ({
@@ -243,7 +245,7 @@ test("a download from one sentence and a file", async ({ browser }) => {
   expect(answered).toMatchObject({ value: "uploaded" });
   expect(answered?.text).toBeUndefined();
   // The file row fills in and the copy types in.
-  await expect(page.getByRole("main").getByText(FILE.name, { exact: false })).toBeVisible();
+  await expect(page.getByRole("main").getByText(FILE_ROW)).toBeVisible();
   await expect(titleBox(page)).toHaveValue(COPY_TITLE);
   await expect(page.getByRole("main").locator("#download-description")).toHaveValue(COPY_DESCRIPTION);
 
@@ -308,6 +310,6 @@ test("a file dropped on the page answers the file question", async ({ browser })
   expect(sent.filter((s) => s.field === "file")).toEqual([
     expect.objectContaining({ field: "file", value: "uploaded" }),
   ]);
-  await expect(page.getByRole("main").getByText(FILE.name, { exact: false })).toBeVisible();
+  await expect(page.getByRole("main").getByText(FILE_ROW)).toBeVisible();
   await page.close();
 });
