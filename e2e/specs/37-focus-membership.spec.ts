@@ -345,6 +345,38 @@ test("select all ticks every item", async ({ browser }) => {
   await page.close();
 });
 
+test("the price her first answer gives shows on the page once her words are read", async ({ browser }) => {
+  const page = await (await coachContext(browser)).newPage();
+  const plan = await stubPlan(page);
+  const words = "Members get Yoga basics for 15 a month";
+  await stubFocus(page, () =>
+    state({ record: RECORD, thinking: { status: "building", run: 6381, specialist: "finance" } }),
+  );
+  // Reading her words (backend analysis) lands after the page has loaded the
+  // plan: its price is set, and what's included comes next.
+  let polls = 0;
+  await page.route(`**/api/v1/admin/focus/${CREATION}/`, (route) => {
+    if (route.request().method() !== "GET" || polls++ === 0) return route.fallback();
+    plan.set({ price: "15.00" });
+    return route.fulfill({
+      json: state({
+        record: RECORD,
+        question: { ...Q.included, ticked: ["course:11"] },
+        answered: [["topic", words], ["access", "$15 a month"]],
+      }),
+    });
+  });
+
+  await page.goto(`${TENANT}/admin/store/plans/new`);
+  const box = guide(page).getByRole("textbox", { name: "Your answer" });
+  await box.fill(words);
+  await box.press("Enter");
+  await expect(page).toHaveURL(new RegExp(`/admin/store/plans/${DRAFT}$`));
+  await expect(guide(page).getByText("What's included?")).toBeVisible();
+  await expect(main(page).locator("#plan-price")).toHaveValue("15.00");
+  await page.close();
+});
+
 test("a price she types on the page is saved before her finish tap, and stands", async ({ browser }) => {
   const page = await (await coachContext(browser)).newPage();
   const log: string[] = [];

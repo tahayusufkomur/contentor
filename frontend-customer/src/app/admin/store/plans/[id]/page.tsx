@@ -318,8 +318,10 @@ function PlanForm({ id }: { id: string }) {
 
   // Each answer writes the plan on the server (what's included, its price and
   // cycle, on sale): the page loads it again, and once more when focus mode ends.
+  // Set while her first answer is still read, so its price landing loads it too.
   const answeredKey = focusing
     ? [
+        "focus",
         creation.question?.field,
         ...creation.answered.map((line) => `${line.field}:${line.label}`),
       ].join("|")
