@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-18-focus-mode-design.md` (the course spec: F1–F21, §4–§7, and §9, which names what each other kind needs). Part 1 below is the design for the other kinds. It follows the course spec's direction, as the owner asked ("it will be same direction"). Decisions marked *my call* are listed at the end for the owner to check while reading. They were not asked. Read the course spec §3, §5 and §7, and Part 1, before any task.
 
+**Status:** the owner approved Part 1, the gaps it names and every call in "The owner's check" on 2026-10-19 ("all your plan and gaps analysis is correct"). Not started.
+
 **Starting point:** the course's Tasks 4.4 (assistant entry, "Continue your course") and 4.5 (switch on) in `docs/superpowers/plans/2026-10-18-focus-mode-stages-2-4.md` have landed. Stage A rewrites `flow.py`, so do not start it while another session is still committing to `apps/core/focus` (check `git log -5 -- backend/apps/core/focus` and `git status`).
 
 ---
