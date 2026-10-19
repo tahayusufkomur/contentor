@@ -45,6 +45,7 @@ IGNORED_PREFIXES = (
     "docs/",
     ".claude/",
     ".playwright-mcp/",
+    ".impeccable/",
     "scripts/",
     ".github/",
 )
@@ -54,11 +55,14 @@ IGNORED_FILES = (
     ".secrets.baseline",
     ".gitleaks.toml",
     "Makefile",
+    ".env.example",  # key docs; nothing reads them at runtime
+    ".env.prod.example",
 )
 IGNORED_SUFFIXES = (".md",)
 ROOT_IGNORED_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif")  # stray screenshots
 
 FC_PREFIX = "frontend-customer/"
+UNIT_TEST_RE = re.compile(r"/__tests__/|\.test\.tsx?$")  # vitest's, never on a page
 FM_PREFIX = "frontend-main/"
 SHARED_PREFIX = "packages/shared/"
 
@@ -134,7 +138,17 @@ def build_plan(changed_files, importers, backend_apps, impact_map):
                     say(f"{path}: management command -> apps/{local['app']} tests + smoke")
                 continue
             if path.startswith(WIDE_PREFIXES) or path in WIDE_FILES:
-                widen(path, "shared backend infra")
+                # A leaf feature package inside apps/core (mapped as "core/<pkg>")
+                # keeps the full backend suite but only its own e2e specs.
+                entry = (_longest_prefix(path[len("backend/apps/"):], be_map)
+                         if path.startswith("backend/apps/core/") else None)
+                if isinstance(entry, list):
+                    backend_full = True
+                    e2e_specs.update(entry)
+                    e2e_touched = True
+                    say(f"{path}: core feature package -> full backend suite + e2e {', '.join(entry)}")
+                else:
+                    widen(path, "shared backend infra")
                 continue
             if path.startswith("backend/apps/"):
                 app = path.split("/")[2]
@@ -145,7 +159,9 @@ def build_plan(changed_files, importers, backend_apps, impact_map):
             continue
 
         if path.startswith("e2e/"):
-            if path.startswith("e2e/specs/") and path.endswith(".spec.ts"):
+            if path == "e2e/impact-map.json":
+                say(f"{path}: selection data only (self-test validates it) -> no e2e")
+            elif path.startswith("e2e/specs/") and path.endswith(".spec.ts"):
                 stem = path.rsplit("/", 1)[1].removesuffix(".spec.ts")
                 e2e_specs.add(stem)
                 e2e_touched = True
@@ -164,6 +180,9 @@ def build_plan(changed_files, importers, backend_apps, impact_map):
         if path.startswith(FC_PREFIX):
             if plan.vitest_kind == "none":
                 plan.vitest_kind = "changed"
+            if UNIT_TEST_RE.search(path):
+                say(f"{path}: unit test -> vitest only")
+                continue
             entry = _longest_prefix(path[len(FC_PREFIX):], fc_map)
             if entry is None:
                 e2e_all = True
@@ -358,6 +377,7 @@ _FIX_MAP = {
         "billing": ["20-stripe-platform"],
         "community": ["15-community"],
         "usage": "none",
+        "core/focus": ["33-focus-course"],
         # "courses" deliberately unmapped -> all specs (fail-closed case)
     },
     "frontend-customer": {
@@ -385,6 +405,11 @@ _CASES = [
         "wide trigger -> full backend + all e2e",
         ["backend/apps/core/signals.py"],
         dict(backend_kind="full", e2e_kind="all"),
+    ),
+    (
+        "mapped core feature package -> full backend + its specs only",
+        ["backend/apps/core/focus/flow.py"],
+        dict(backend_kind="full", e2e_kind="specs", e2e_specs=["00-smoke", "33-focus-course"]),
     ),
     (
         "test module in a wide app -> that app's tests only",
@@ -431,6 +456,11 @@ _CASES = [
         dict(backend_kind="none", e2e_kind="specs", e2e_specs=["00-smoke", "15-community"]),
     ),
     (
+        "impact map edit -> no e2e",
+        ["e2e/impact-map.json"],
+        dict(e2e_kind="none"),
+    ),
+    (
         "e2e infra -> all specs",
         ["e2e/helpers/auth.ts"],
         dict(e2e_kind="all"),
@@ -446,6 +476,12 @@ _CASES = [
         dict(vitest_kind="changed", e2e_kind="all"),
     ),
     (
+        "frontend-customer unit test -> vitest only",
+        ["frontend-customer/src/lib/__tests__/focus-store.test.ts",
+         "frontend-customer/src/components/studio/strip.test.tsx"],
+        dict(vitest_kind="changed", e2e_kind="none"),
+    ),
+    (
         "packages/shared -> full vitest + all e2e",
         ["packages/shared/tokens.ts"],
         dict(vitest_kind="full", e2e_kind="all"),
@@ -457,7 +493,8 @@ _CASES = [
     ),
     (
         "ignored paths -> nothing",
-        ["docs/PRODUCT.md", "community-429-error-state.png", "Makefile", ".claude/skills/po/SKILL.md"],
+        ["docs/PRODUCT.md", "community-429-error-state.png", "Makefile", ".claude/skills/po/SKILL.md",
+         ".env.example"],
         dict(backend_kind="none", vitest_kind="none", e2e_kind="none"),
     ),
     (

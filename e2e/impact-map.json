@@ -3,6 +3,7 @@
     "billing": ["20-stripe-platform", "21-stripe-marketplace"],
     "blog": "none",
     "community": ["15-community"],
+    "core/focus": ["33-focus-course"],
     "courses": ["02-courses"],
     "domains": ["01-signup-onboarding"],
     "downloads": ["12-downloads"],
@@ -29,6 +30,7 @@
     "usage": "none"
   },
   "frontend-customer": {
+    "messages": "none",
     "src/app/(student)/community": ["15-community"],
     "src/app/(student)/learn": ["02-courses"],
     "src/app/live": ["04-live-class"],
@@ -88,6 +90,7 @@
     "src/app/admin/site-ai": ["29-copilot"],
     "src/app/admin/studio": ["32-photo-studio"],
     "src/app/admin/courses": ["02-courses", "33-focus-course"],
+    "src/components/admin/course-form.tsx": ["02-courses", "33-focus-course"],
     "src/components/focus": ["33-focus-course"],
     "src/lib/focus": ["33-focus-course"],
     "src/app/setup": ["01-signup-onboarding"],
