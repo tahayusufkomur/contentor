@@ -81,8 +81,14 @@ export function EventForm({
   /** Create mode: the new row's id and kind (before onSaved). */
   onCreated?: (id: number, kind: EventKind) => void;
   /** Focus mode: the record the copy run writes ("<kind>:<id>"), that run,
-   *  replayed live here, and her schedule as one line. */
-  focus?: { record: string; runId: number | null; schedule: string | null };
+   *  replayed live here, her schedule as one line, and how to load the event
+   *  again (once the replay has shown it all, the saved copy takes over). */
+  focus?: {
+    record: string;
+    runId: number | null;
+    schedule: string | null;
+    reload: () => void;
+  };
 }) {
   const t = useTranslations("admin.events");
   const tf = useTranslations("admin.focus");
@@ -123,6 +129,10 @@ export function EventForm({
   // being written is read-only, and a written value lands unless she changed it.
   const live = useLiveRecord(focus?.record ?? "", focus?.runId ?? null);
   const taken = useRef<Record<string, string>>({});
+  const loadedFor = useRef<number | null>(null);
+  useEffect(() => {
+    taken.current = {};
+  }, [focus?.runId]);
   useEffect(() => {
     if (!live) return;
     for (const name of ["title", "description"] as const) {
@@ -136,7 +146,25 @@ export function EventForm({
         mine[name] === was ? { ...mine, [name]: field.value } : mine,
       );
     }
-  }, [live]);
+    // Once it has all been shown, the saved event takes over: a run replayed
+    // at once on a later visit never stands in for what she saved since.
+    const run = focus?.runId;
+    if (live.settled && run && loadedFor.current !== run) {
+      loadedFor.current = run;
+      focus?.reload();
+    }
+  }, [live, focus]);
+  // What a save sends: a field the run wrote counts as written even while it
+  // is still typing in (the server has it; the old value would undo it),
+  // unless she changed that field herself.
+  const landed = (name: "title" | "description") => {
+    const written = live?.written[name];
+    return written !== undefined &&
+      taken.current[name] !== written &&
+      form[name] === base.current[name]
+      ? written
+      : form[name];
+  };
   const writing = (name: "title" | "description") =>
     live?.fields[name]?.typing ?? false;
   const shown = (name: "title" | "description") =>
@@ -169,8 +197,8 @@ export function EventForm({
 
   const submit = async (publish: boolean) => {
     const body = {
-      title: form.title.trim(),
-      description: form.description,
+      title: landed("title").trim(),
+      description: landed("description"),
       // null clears the date: the event is a draft again.
       scheduled_at: form.scheduled_at
         ? new Date(form.scheduled_at).toISOString()

@@ -97,11 +97,31 @@
     "src/components/admin/live": [
       "03-calendar",
       "13-events-page",
+      "27-nav-stage-gating",
+      "29-copilot",
       "34-focus-event"
     ],
-    "src/app/admin/live": ["03-calendar", "13-events-page", "34-focus-event"],
-    "src/app/admin/page.tsx": ["00-smoke", "33-focus-course", "34-focus-event"],
-    "src/lib/admin-palette.ts": ["00-smoke", "33-focus-course", "34-focus-event"],
+    "src/app/admin/live": [
+      "03-calendar",
+      "13-events-page",
+      "27-nav-stage-gating",
+      "29-copilot",
+      "34-focus-event"
+    ],
+    "src/app/admin/page.tsx": [
+      "00-smoke",
+      "10-impersonation",
+      "29-copilot",
+      "33-focus-course",
+      "34-focus-event"
+    ],
+    "src/lib/admin-palette.ts": [
+      "00-smoke",
+      "27-nav-stage-gating",
+      "29-copilot",
+      "33-focus-course",
+      "34-focus-event"
+    ],
     "src/app/setup": ["01-signup-onboarding"],
     "src/components/covers": ["32-photo-studio"],
     "src/components/studio": ["32-photo-studio"],

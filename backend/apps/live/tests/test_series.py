@@ -190,11 +190,16 @@ def test_publish_series_carries_the_first_sessions_place_to_the_held_copies(owne
         title="Retreat", instructor=owner, scheduled_at=when, location="Studio A", address="1 Main St"
     )
     held = OnsiteEvent.objects.create(title="Retreat", instructor=owner, scheduled_at=when + timedelta(days=7))
+    # A session she moved elsewhere by hand keeps its own address.
+    moved = OnsiteEvent.objects.create(
+        title="Retreat", instructor=owner, scheduled_at=when + timedelta(days=14), address="2 Side St"
+    )
     past = OnsiteEvent.objects.create(title="Retreat", instructor=owner, scheduled_at=when - timedelta(days=9))
-    assert series.publish_series(first) == 2
-    held.refresh_from_db()
-    past.refresh_from_db()
+    assert series.publish_series(first) == 3
+    for row in (held, moved, past):
+        row.refresh_from_db()
     assert (held.status, held.location, held.address) == ("scheduled", "Studio A", "1 Main St")
+    assert (moved.status, moved.location, moved.address) == ("scheduled", "Studio A", "2 Side St")
     assert (past.location, past.address) == ("", "")  # only what it publishes
 
     zoom = ZoomClass.objects.create(

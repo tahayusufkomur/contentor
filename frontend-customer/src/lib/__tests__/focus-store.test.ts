@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { FocusOverview, FocusState } from "@/lib/focus/api";
 import {
   claimLiveCard,
+  claimStart,
   focusProgress,
   markLiveCards,
   onKindPage,
@@ -68,6 +69,20 @@ describe("an event's open creation", () => {
     expect(pendingCreation(o, "event")).toBe(7);
     expect(pendingCreation(o, "course")).toBeNull();
     expect(pendingCreation(null, "event")).toBeNull();
+  });
+});
+
+describe("claimStart", () => {
+  it("her words from the assistant start a fresh creation, never one left open", () => {
+    setFirstAnswer("a class on morning breath");
+    expect(claimStart(7)).toEqual({
+      words: "a class on morning breath",
+      resume: null,
+    });
+    // Taken once: the next new page of any kind never sends them again.
+    expect(takeFirstAnswer()).toBeNull();
+    expect(claimStart(7)).toEqual({ words: null, resume: 7 });
+    expect(claimStart(null)).toEqual({ words: null, resume: null });
   });
 });
 

@@ -25,14 +25,19 @@ import { NavLink } from "@/components/ui/nav-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { clientFetch } from "@/lib/api-client";
-import { startActiveTime, takeActiveMs } from "@/lib/focus/active-time";
-import { fetchCreation, postFormTiming } from "@/lib/focus/api";
+import {
+  startActiveTime,
+  stopActiveTime,
+  takeActiveMs,
+} from "@/lib/focus/active-time";
+import { fetchCreation, leaveCreation, postFormTiming } from "@/lib/focus/api";
 import { focusTimeKey, KIND_ROUTES } from "@/lib/focus/kinds";
 import {
   activeCreation,
   clearActiveCreation,
   openCreationAt,
   pendingCreation,
+  refreshFocusOverview,
   setActiveCreation,
   useActiveCreation,
   useFocusOverview,
@@ -78,9 +83,24 @@ export default function EventsPage() {
   const deciding = overview === null && asNew;
   // With focus mode on, today's create form is only "Fill it in myself".
   const plainOpen = creating && !deciding && (!focusOn || plain);
+  // From the focus screen's "Fill it in myself": focus mode ends here, for
+  // the first question and for a class she answered without saying where (it
+  // has no draft yet, G10), as the guide's own "Fill it in myself" ends it.
   useEffect(() => {
     if (!plainOpen || !focusOn) return;
-    clearActiveCreation(0); // from the focus screen's "Fill it in myself"
+    const left = activeCreation();
+    if (left?.kind === "event") {
+      const timeKey = focusTimeKey("event");
+      if (left.id)
+        void leaveCreation(left.id, {
+          abandon: !left.record,
+          active_ms: takeActiveMs(timeKey),
+        })
+          .catch(() => {})
+          .finally(() => void refreshFocusOverview());
+      stopActiveTime(timeKey);
+      clearActiveCreation(left.id);
+    }
     startActiveTime(FORM_TIME_KEY, true);
   }, [plainOpen, focusOn]);
 
@@ -171,6 +191,7 @@ export default function EventsPage() {
           schedule:
             active.answered.find((line) => line.field === "when")?.label ??
             null,
+          reload: refreshLinked,
         }
       : undefined;
   const pendingTitle = overview?.open.find((c) => c.id === active?.id)?.title;

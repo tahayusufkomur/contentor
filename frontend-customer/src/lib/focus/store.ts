@@ -165,6 +165,14 @@ export function takeFirstAnswer(): string | null {
   return text;
 }
 
+/** What a kind's new page starts with: her words from the assistant (taken,
+ *  so they are sent once) start a fresh creation; without them, the one she
+ *  left there (`resume`) is picked up. */
+export function claimStart(resume: number | null) {
+  const words = takeFirstAnswer();
+  return { words, resume: words ? null : resume };
+}
+
 // Create cards (a focus kind's `card`) that arrived in this session while she
 // was on that kind's pages: the only ones that open focus mode by themselves,
 // once each. A card from history, or one that arrived elsewhere, is never in here.

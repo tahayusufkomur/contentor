@@ -544,10 +544,9 @@ function CoverQuestion({
         : { action },
     );
     if (!apply(state.id, next) || action !== "edit" || !next.design_id) return;
-    // Encoded: an event's page has a query of its own.
-    navigate(
-      `/admin/studio/${next.design_id}?back=${encodeURIComponent(state.record?.path ?? "")}`,
-    );
+    // An event's page has a query of its own: its "&" must stay inside back=.
+    const back = (state.record?.path ?? "").replaceAll("&", "%26");
+    navigate(`/admin/studio/${next.design_id}?back=${back}`);
   });
   const busy = loading || sending;
   const button = (

@@ -183,7 +183,14 @@ async function sendFirst(page: Page, text: string) {
 
 test("a weekly in-person class from one rich first answer", async ({ browser }) => {
   const page = await (await coachContext(browser)).newPage();
-  const onsite = row("onsite", 555, { title: "Yoga in the park", scheduled_at: future(2), address: "Moda Park", max_capacity: 12 });
+  // As the server has it: the copy job saves its title and description before the page replays them.
+  const onsite = row("onsite", 555, {
+    title: "Yoga in the park",
+    description: "Slow flow under the trees, for every level.",
+    scheduled_at: future(2),
+    address: "Moda Park",
+    max_capacity: 12,
+  });
   await stubRow(page, onsite);
   await stubCopyRun(page, "onsite:555", "Yoga in the park", "Slow flow under the trees, for every level.");
   const answered: [string, string][] = [
@@ -331,17 +338,27 @@ test("keep as a draft holds the series and the form publishes it later", async (
 
 test("fill it in myself opens today's form", async ({ browser }) => {
   const page = await (await coachContext(browser)).newPage();
-  const sent = await stubFocus(page, () => state({ question: Q.where }));
+  const sent = await stubFocus(page, (path) =>
+    path.endsWith("/leave/")
+      ? state({ status: "left" })
+      : state({ question: Q.where, answered: [["topic", "A class on morning breath"]] }),
+  );
   const created = row("zoom", 9001, { title: "Hand made", status: "scheduled" });
   await page.route(`**${API.zoom}`, (route) =>
     route.request().method() === "POST" ? route.fulfill({ status: 201, json: created }) : route.fallback(),
   );
 
-  await page.goto(`${TENANT}/admin/live?new=1`);
-  await expect(guide(page).getByText("What's your class or event about?")).toBeVisible();
+  // Her first answer did not say where, so there is no draft yet; then she fills it in herself.
+  await sendFirst(page, "A class on morning breath");
+  await expect(guide(page).getByText("Where will it happen?")).toBeVisible();
   await page.getByRole("main").getByRole("link", { name: "Fill it in myself" }).click();
   await expect(page).toHaveURL(/\/admin\/live\?new=1&form=1$/);
+  // Focus mode ends: no guide, the menu and the chat are back, and no hidden draft is made.
   await expect(guide(page)).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Save & leave" })).toHaveCount(0);
+  await expect(page.getByTestId("copilot-input")).toBeVisible();
+  await expect.poll(() => sent.find((s) => s.path.endsWith("/leave/"))).toMatchObject({ abandon: true });
+  expect(sent.filter((s) => s.path.endsWith("/answer/"))).toEqual([]);
   await expect(page.getByText("Describe a class or a series and the assistant schedules it")).toHaveCount(0); // focus mode replaces it
 
   await page.locator("#event-kind").selectOption("zoom");
@@ -354,5 +371,26 @@ test("fill it in myself opens today's form", async ({ browser }) => {
     event_kind: "zoom",
     record_id: 9001,
   });
+  await page.close();
+});
+
+test("her saved title survives a finished copy run on a later visit", async ({ browser }) => {
+  const page = await (await coachContext(browser)).newPage();
+  // She changed the copy and saved it; the run that wrote the first one is long done.
+  const onsite = row("onsite", 559, { title: "Breath at dawn", description: "Her own words.", scheduled_at: future(2) });
+  await stubRow(page, onsite);
+  await stubCopyRun(page, "onsite:559", "Yoga in the park", "Slow flow under the trees, for every level.");
+  const atReview = state({
+    record: record(onsite),
+    question: Q.review,
+    answered: [["topic", "Breath at dawn"], ["where", "In person"], ["when", "Saturdays at 9 AM"]],
+    copy: { status: "ready", run: COPY_RUN },
+  });
+  await stubFocus(page, () => atReview, atReview);
+
+  await page.goto(`${TENANT}/admin/live?event=559&kind=onsite`);
+  await expect(guide(page).getByText("Here's your class. Does it fit?")).toBeVisible();
+  await expect(page.locator("#event-title")).toHaveValue("Breath at dawn");
+  await expect(page.locator("#event-description")).toHaveValue("Her own words.");
   await page.close();
 });

@@ -15,6 +15,7 @@ import { NavLink } from "@/components/ui/nav-link";
 import { startActiveTime, takeActiveMs } from "@/lib/focus/active-time";
 import {
   fetchCreation,
+  leaveCreation,
   startCreation,
   type FocusQuestion,
   type FocusState,
@@ -22,9 +23,9 @@ import {
 import { focusTimeKey, KIND_ROUTES, type FocusKind } from "@/lib/focus/kinds";
 import {
   applyCreation,
+  claimStart,
   refreshFocusOverview,
   setActiveCreation,
-  takeFirstAnswer,
   useActiveCreation,
 } from "@/lib/focus/store";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -68,8 +69,9 @@ export function FocusStart({
     if (started.current) return;
     started.current = true;
     startActiveTime(timeKey, true);
-    if (resume) {
-      void fetchCreation(resume)
+    const start = claimStart(resume);
+    if (start.resume) {
+      void fetchCreation(start.resume)
         .then((state) => {
           if (state.status !== "active") return fresh();
           setActiveCreation(state);
@@ -78,9 +80,12 @@ export function FocusStart({
         .catch(fresh);
       return;
     }
+    // New words from the assistant: the one she left here ends (it has no
+    // record yet, so nothing is lost but its answers) and they start afresh.
+    if (resume && start.words)
+      void leaveCreation(resume, { abandon: true }).catch(() => {});
     fresh();
-    const words = takeFirstAnswer();
-    if (words) void sendFirst(words);
+    if (start.words) void sendFirst(start.words);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind, question]);
   // A later answer made the draft (she said where): on to its page.

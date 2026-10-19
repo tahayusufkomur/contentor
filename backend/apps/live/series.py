@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.db.models import Case, F, Value, When
 from django.utils import timezone
 
 from apps.billing.models import SubscriptionPlanAccess
@@ -50,8 +51,13 @@ PLACE = ("location", "address", "zoom_link", "zoom_meeting_id")
 
 
 def publish_series(row) -> int:
-    """Every held (draft) session still to come becomes scheduled, with
-    ``row``'s place (address, Zoom link) where it has one; sessions already
-    scheduled, live, ended or past are left alone. Returns the count."""
-    place = {f: getattr(row, f) for f in PLACE if getattr(row, f, "")}
+    """Every held (draft) session still to come becomes scheduled, and takes
+    ``row``'s place (address, Zoom link) where its own is blank; sessions
+    already scheduled, live, ended or past are left alone. Returns the count."""
+    model = type(row)
+    place = {
+        f: Case(When(**{f: ""}, then=Value(value)), default=F(f), output_field=model._meta.get_field(f))
+        for f in PLACE
+        if (value := getattr(row, f, ""))
+    }
     return rows(row).filter(status="draft", scheduled_at__gt=timezone.now()).update(status="scheduled", **place)
