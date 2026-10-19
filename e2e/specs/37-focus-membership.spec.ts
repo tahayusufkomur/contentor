@@ -304,10 +304,11 @@ test("a membership of all her courses at the suggested price, kept off sale", as
   await page.close();
 });
 
-test("select all ticks every item", async ({ browser }) => {
+test("select all ticks every item, and what could not be added is named", async ({ browser }) => {
   const page = await (await coachContext(browser)).newPage();
   const plan = await stubPlan(page);
-  // Her first answer named the pilates course: it comes ticked.
+  const refused = "Morning workbook could not be added: Add a price above 0.";
+  // Her first answer named the pilates course: it comes ticked, and first.
   const atIncluded = state({
     record: RECORD,
     question: { ...Q.included, ticked: ["course:12"] },
@@ -316,8 +317,13 @@ test("select all ticks every item", async ({ browser }) => {
   const sent = await stubFocus(
     page,
     () => {
-      plan.link(ITEMS.map((i) => i.value));
-      return state({ record: RECORD, question: Q.review, answered: [TOPIC, ["included", "3 items"]] });
+      // The ways refuse the workbook (backend membership.sync): the review leads with it.
+      plan.link(["course:11", "course:12"]);
+      return state({
+        record: RECORD,
+        question: { ...Q.review, why: `${refused} Say what to change, or edit it on the page yourself.` },
+        answered: [TOPIC, ["included", "Yoga basics, Pilates for runners"]],
+      });
     },
     atIncluded,
   );
@@ -327,6 +333,7 @@ test("select all ticks every item", async ({ browser }) => {
   await expect(guide(page).getByText("What's included?")).toBeVisible();
   await expect(tile(page, "Pilates for runners")).toHaveAttribute("aria-pressed", "true");
   await expect(tile(page, "Yoga basics")).toHaveAttribute("aria-pressed", "false");
+  await expect(guide(page).locator("button[aria-pressed]").first()).toContainText("Pilates for runners");
 
   await guide(page).getByRole("button", { name: "Select all" }).click();
   for (const item of ITEMS) await expect(tile(page, item.title)).toHaveAttribute("aria-pressed", "true");
@@ -336,12 +343,13 @@ test("select all ticks every item", async ({ browser }) => {
 
   await guide(page).getByRole("button", { name: "Select all" }).click();
   await guide(page).getByRole("button", { name: "Continue with 3" }).click();
-  await expect(guide(page).getByText("3 items")).toBeVisible();
+  await expect(guide(page).getByText(refused)).toBeVisible();
   expect(sent.filter((s) => s.field === "included")).toEqual([
     expect.objectContaining({ field: "included", value: "all" }),
   ]);
-  for (const item of ITEMS)
+  for (const item of ITEMS.slice(0, 2))
     await expect(main(page).getByRole("button", { name: `Remove ${item.title}` })).toBeVisible();
+  await expect(main(page).getByRole("button", { name: "Remove Morning workbook" })).toHaveCount(0);
   await page.close();
 });
 

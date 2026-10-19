@@ -6,12 +6,13 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import type { FocusOption } from "@/lib/focus/api";
-import { pickAnswer } from "@/lib/focus/guide";
+import { pickAllAbove, pickAnswer, pickOrder } from "@/lib/focus/guide";
 import { cn } from "@/lib/utils";
 
 /** Several tiles to tick (what a membership includes), with Select all and
- *  Deselect all as /setup has them. Her ticks go as ONE answer, a tap: the
- *  ticked values joined by commas, or `selectAll` once every tile is ticked. */
+ *  Deselect all as /setup has them (above a long list). Her ticks go as ONE
+ *  answer, a tap: the ticked values joined by commas, or `selectAll` once
+ *  every tile is ticked. The tiles she opened with ticked come first. */
 export function PickQuestion({
   options,
   ticked: initial = [],
@@ -37,11 +38,23 @@ export function PickQuestion({
     setTicked((now) =>
       now.includes(value) ? now.filter((v) => v !== value) : [...now, value],
     );
+  const all = values.length > 1 && (
+    <Button
+      size="sm"
+      variant="ghost"
+      disabled={sending}
+      onClick={() => setTicked(every ? [] : values)}
+    >
+      {t(every ? "deselectAll" : "selectAll")}
+    </Button>
+  );
+  const above = pickAllAbove(values.length);
 
   return (
     <div className="flex flex-col gap-3">
+      {above && <div className="flex">{all}</div>}
       <div className="grid gap-2">
-        {options.map((option) => {
+        {pickOrder(options, initial).map((option) => {
           const on = ticked.includes(option.value);
           return (
             <button
@@ -93,16 +106,7 @@ export function PickQuestion({
             ? t("pickSome")
             : t("continueWith", { count: ticked.length })}
         </Button>
-        {values.length > 1 && (
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={sending}
-            onClick={() => setTicked(every ? [] : values)}
-          >
-            {t(every ? "deselectAll" : "selectAll")}
-          </Button>
-        )}
+        {!above && all}
       </div>
     </div>
   );

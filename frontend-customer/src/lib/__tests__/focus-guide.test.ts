@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { FocusQuestion } from "@/lib/focus/api";
-import { guideBody, pickAnswer } from "@/lib/focus/guide";
+import {
+  guideBody,
+  pickAllAbove,
+  pickAnswer,
+  pickOrder,
+} from "@/lib/focus/guide";
 
 const q = (field: string): FocusQuestion => ({
   field,
@@ -68,5 +73,35 @@ describe("pickAnswer", () => {
   it("drops a tick that is no longer a tile, and sends nothing for none", () => {
     expect(pickAnswer(tiles, ["course:2", "course:9"], "all")).toBe("course:2");
     expect(pickAnswer(tiles, [], "all")).toBe("");
+  });
+});
+
+describe("pickOrder", () => {
+  const tile = (value: string) => ({ value, label: value, hint: "" });
+  const tiles = ["a", "b", "c", "d"].map(tile);
+
+  it("puts the tiles her words named first, the rest in their order", () => {
+    expect(pickOrder(tiles, ["d", "b"]).map((t) => t.value)).toEqual([
+      "b",
+      "d",
+      "a",
+      "c",
+    ]);
+  });
+
+  it("keeps the order with nothing named", () => {
+    expect(pickOrder(tiles, []).map((t) => t.value)).toEqual([
+      "a",
+      "b",
+      "c",
+      "d",
+    ]);
+  });
+});
+
+describe("pickAllAbove", () => {
+  it("puts Select all above a long list only", () => {
+    expect(pickAllAbove(8)).toBe(false);
+    expect(pickAllAbove(9)).toBe(true);
   });
 });

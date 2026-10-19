@@ -27,6 +27,27 @@ export function guideBody(
   return text ? { field, text } : null;
 }
 
+/** Past this many tiles, "Select all" sits above them, where she sees it. */
+export const PICK_ALL_ABOVE = 8;
+
+/** A pick question's tiles as she sees them: those ticked when it opened (the
+ *  items her words named) first, the rest in their order. It depends only on
+ *  what it opened with, so a tap never moves a tile. */
+export function pickOrder<T extends { value: string }>(
+  options: T[],
+  ticked: string[],
+): T[] {
+  return [
+    ...options.filter((option) => ticked.includes(option.value)),
+    ...options.filter((option) => !ticked.includes(option.value)),
+  ];
+}
+
+/** Whether "Select all" / "Deselect all" goes above the tiles. */
+export function pickAllAbove(count: number): boolean {
+  return count > PICK_ALL_ABOVE;
+}
+
 /** A pick question's one answer: the ticked values in tile order, joined by
  *  commas; `all` (the server's "every tile") once every tile is ticked. */
 export function pickAnswer(
