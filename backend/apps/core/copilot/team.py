@@ -44,6 +44,7 @@ OWNERS = {
     "publish_blog_post": "marketing",
     "edit_seo": "marketing",
     "draft_announcement": "community",
+    "set_access": "finance",
 }
 
 # Kinds two specialists share: signed by whichever of them wrote it.

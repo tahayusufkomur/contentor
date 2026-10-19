@@ -215,7 +215,7 @@ def _execute(tenant, user, action):
                 "kind": kind,
                 "id": item.pk,
                 "item_kind": action["item_kind"],
-                "title": item.title,
+                "title": ways.title_of(item),
                 "describe": ways.describe(after),
             }
         return result, {"kind": "restore_ways", "item_kind": action["item_kind"], "item_id": item.pk, "ways": before}

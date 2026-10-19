@@ -60,6 +60,11 @@ def item_for(kind: str, pk: int):
         raise missing from None
 
 
+def title_of(item) -> str:
+    """What the creator calls it: a bundle has a name, everything else a title."""
+    return getattr(item, "title", None) or getattr(item, "name", "")
+
+
 def kind_of(item) -> str:
     for kind, label in KINDS.items():
         if label == item._meta.label_lower:

@@ -1023,7 +1023,7 @@ def _card(tenant, action, actor=None):
                 raise content.ContentOpError(str(exc)) from exc
         return {
             "kind": "set_access",
-            "title": f"Set access for {item.title}"[:120],
+            "title": f"Set access for {ways.title_of(item)}"[:120],
             "detail": detail,
             "why": action.reason,
             "token": tokens.stash_action(

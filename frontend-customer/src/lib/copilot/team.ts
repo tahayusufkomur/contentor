@@ -69,6 +69,7 @@ export const OWNERS: Record<ActionKind, SpecialistKey> = {
   publish_blog_post: "marketing",
   edit_seo: "marketing",
   draft_announcement: "community",
+  set_access: "finance",
 };
 
 /** A known specialist, else the Assistant (chats saved before the team

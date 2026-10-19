@@ -105,6 +105,24 @@ def test_a_set_access_card_says_the_setup_and_why(tenant_ctx, course, gold):
     assert ways_of(course)["plans"] == []  # the card writes nothing
 
 
+def test_a_bundle_card_names_the_bundle(tenant_ctx, owner):
+    from apps.billing.models import Bundle
+
+    bundle = Bundle.objects.create(name="Starter Pack", price=Decimal("30.00"))
+    action = engine.SetAccessAction(
+        kind="set_access",
+        item_kind="bundle",
+        item_id=bundle.pk,
+        ways={"buy": {"price": "59.00", "window": {"closes_after_days": 90}}},
+    )
+    card = engine._card(tenant_ctx, action)
+    assert card["title"] == "Set access for Starter Pack"
+    assert card["detail"] == "€59 once with 3 months of access."
+    coach = User.objects.create_user(email="coach@copilot-access.test", name="Coach", password="secret123", role="coach")
+    with pytest.raises(content.ContentOpError, match="owner"):
+        engine._card(tenant_ctx, action, actor=coach)
+
+
 def test_applying_it_sets_the_ways(tenant_ctx, euro_sign, owner, course, gold):
     card = engine._card(tenant_ctx, _action(course, _ways_with(gold)))
     resp = _api(owner).post("/api/v1/admin/copilot/execute/", {"token": card["token"]}, format="json")

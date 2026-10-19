@@ -44,6 +44,7 @@ export const ACTION_KINDS = [
   "edit_blog_post",
   "publish_course",
   "publish_blog_post",
+  "set_access",
 ] as const;
 export type ActionKind = (typeof ACTION_KINDS)[number];
 
