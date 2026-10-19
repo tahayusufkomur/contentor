@@ -37,6 +37,7 @@ import {
   draftFields,
   getAnnouncement,
   isHers,
+  isWriting,
   layOver,
   listTemplates,
   previewAudience,
@@ -175,8 +176,10 @@ export default function AnnouncementCompose({
   };
   const saveRef = useRef(save);
   saveRef.current = save;
-  const saveQuietly = (flush = saveRef.current) =>
-    flush().catch(() => toast.error(tr("saveError"), { id: "message-save" }));
+  const saveQuietly = () =>
+    saveRef
+      .current()
+      .catch(() => toast.error(tr("saveError"), { id: "message-save" }));
 
   // The draft as it is now (and again once the run has written it, below).
   useEffect(() => {
@@ -194,11 +197,19 @@ export default function AnnouncementCompose({
     if (!focusId) return;
     setFocusSave(() => saveRef.current()); // "Save & leave" waits for it
     const flush = saveRef.current; // this draft's, even if the page moves on
+    // Closing the tab: the request has to outlive the page, so it is sent at
+    // once and does not wait for a save in flight.
+    const closing = () =>
+      void saveDraftChanges(focusId, mine.current, base.current, {
+        keepalive: true,
+      }).catch(() => {});
+    window.addEventListener("pagehide", closing);
     return () => {
+      window.removeEventListener("pagehide", closing);
       setFocusSave(null);
-      void saveQuietly(flush);
+      // Leaving the page: nobody is left to read a failure, so it is silent.
+      void flush().catch(() => {});
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `saveQuietly` only reads refs
   }, [focusId]);
 
   // The run's title and body type in; the field being written is read-only.
@@ -235,7 +246,12 @@ export default function AnnouncementCompose({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs on every frame; guarded by `taken` and `loadedFor`
   }, [live]);
   const writing = (name: "title" | "body") =>
-    live?.fields[name]?.typing ?? false;
+    isWriting(
+      name,
+      live?.fields[name]?.typing ?? false,
+      mine.current[name],
+      placed.current[name],
+    );
   // Written already (the form has it) but not yet reached by the replay: it
   // appears when its turn comes, not all at once.
   const waiting = (name: "title" | "body") =>
@@ -427,7 +443,7 @@ export default function AnnouncementCompose({
 
       <button
         type="button"
-        disabled={writing("body") || waiting("body")}
+        disabled={writing("body")}
         onClick={() =>
           editor?.openRichEditor({
             value: body,

@@ -10,6 +10,7 @@ import { clientFetch } from "@/lib/api-client";
 import {
   draftChanges,
   isHers,
+  isWriting,
   layOver,
   saveDraftChanges,
   type DraftFields,
@@ -104,6 +105,19 @@ describe("a newer copy of the draft", () => {
   });
 });
 
+describe("the field the run is writing", () => {
+  it("is read-only only while it is not hers", () => {
+    // The run is typing the title and she has not touched it: locked.
+    expect(isWriting("title", true, "", "")).toBe(true);
+    // She typed in it first (or her save failed): the run does not take it
+    // over, her keys are not dropped and her text is not shown over.
+    expect(isWriting("title", true, "Mine", "")).toBe(false);
+    expect(isWriting("body", true, "<p>Mine</p>", "")).toBe(false);
+    // Nothing is being typed: never locked.
+    expect(isWriting("title", false, "", "")).toBe(false);
+  });
+});
+
 describe("saveDraftChanges", () => {
   beforeEach(() => {
     vi.mocked(clientFetch).mockReset();
@@ -122,6 +136,17 @@ describe("saveDraftChanges", () => {
     expect(url).toBe("/api/v1/admin/notifications/announcements/7/");
     expect(init?.method).toBe("PATCH");
     expect(JSON.parse(String(init?.body))).toEqual({ body: "<p>New</p>" });
+  });
+
+  it("can ask for the request to outlive the page (closing the tab)", async () => {
+    vi.mocked(clientFetch).mockResolvedValue({});
+    await saveDraftChanges(7, { ...base, title: "Bye" }, base, {
+      keepalive: true,
+    });
+    const [, init] = vi.mocked(clientFetch).mock.calls[0];
+    expect(init?.keepalive).toBe(true);
+    expect(init?.method).toBe("PATCH");
+    expect(JSON.parse(String(init?.body))).toEqual({ title: "Bye" });
   });
 
   it("makes no request when nothing changed", async () => {

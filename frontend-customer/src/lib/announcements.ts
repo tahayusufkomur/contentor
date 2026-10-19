@@ -123,6 +123,16 @@ export const draftFields = (draft: Partial<DraftFields>): DraftFields => ({
 export const isHers = (field: keyof DraftFields, mine: string, was: string) =>
   tidyField(field, mine) !== was;
 
+/** The run is typing this field in and it is not hers: read-only until it is
+ *  done. A field she changed first is never taken over (her keys land, the
+ *  run's typing is not shown over it). */
+export const isWriting = (
+  field: keyof DraftFields,
+  typing: boolean,
+  mine: string,
+  was: string,
+) => typing && !isHers(field, mine, was);
+
 /** A newer copy of the draft (`next`) laid over the form: each field takes the
  *  copy's value unless she changed it since `was`, or the copy has nothing new
  *  for it (what she is typing is left as typed). Returns the form after, and
@@ -160,14 +170,16 @@ export function draftChanges(
 }
 
 /** Save what she changed on a draft in place. Resolves to the fields sent
- *  (none: no request); a failure is thrown, her text stays where it is. */
+ *  (none: no request); a failure is thrown, her text stays where it is.
+ *  `init` passes through to the request (`keepalive`: it outlives the page). */
 export async function saveDraftChanges(
   id: number,
   mine: DraftFields,
   base: DraftFields,
+  init?: RequestInit,
 ): Promise<Partial<DraftFields>> {
   const changes = draftChanges(mine, base);
-  if (Object.keys(changes).length) await patchAnnouncement(id, changes);
+  if (Object.keys(changes).length) await patchAnnouncement(id, changes, init);
   return changes;
 }
 
@@ -208,11 +220,13 @@ export const patchAnnouncement = (
     filters: AnnouncementFilters;
     scheduled_at: string | null;
   }>,
+  init?: RequestInit,
 ) =>
   clientFetch<AnnouncementDetail>(`${BASE}/${id}/`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
+    ...init,
   });
 export const deleteAnnouncement = (id: number) =>
   clientFetch<void>(`${BASE}/${id}/`, { method: "DELETE" });
