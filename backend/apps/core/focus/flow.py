@@ -16,7 +16,7 @@ from django.utils import timezone
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
-from . import analysis, covers, descriptions, followup, jobs, kinds
+from . import analysis, copywriter, covers, descriptions, followup, jobs, kinds
 from . import announce as announcing  # ``announce`` is finish()'s flag
 
 DELEGATE = "delegate"
@@ -25,7 +25,6 @@ DELEGATE = "delegate"
 MAX_SPAN_MS = 600_000
 TITLE_MAX = 80
 ANSWER_MAX = 500
-WRITING_DESCRIPTIONS = "Writing a short description for each lesson's video. Edit any of them on the page."
 # Not now: what became of Marketing's draft, if it made one.
 SAVED_IN_MESSAGES = "Your announcement is saved as a draft in Messages."
 NO_ANNOUNCEMENT = "No announcement this time."
@@ -159,23 +158,20 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
                 creation.save(update_fields=["active_ms", "updated_at"])
                 return creation
         elif question.kind == "review":
-            status = outline_status(creation)
             if value == "ok":
+                status = outline_status(creation)
                 creation.answers[field] = "ok"
                 _say(creation, question, "Looks good, continue")
                 # The outline on the page: ready, or an earlier one a stopped or failed redraft left.
                 # While one is being written, the outline job starts them once it has written.
                 if status == "ready" or (status in ("failed", "idle") and _has_outline(creation)):
                     descriptions.start(creation)
-                _chat_append(creation, [{"role": "assistant", "text": WRITING_DESCRIPTIONS}])
+                if line := kinds.get(creation.kind).REVIEWED_LINE:
+                    _chat_append(creation, [{"role": "assistant", "text": line}])
                 if followup_allowed(creation, "later"):  # before the cover; it never redrafts the outline
                     _ask_followup(creation, "later")
-            elif value == "retry" and status in ("failed", "idle"):
-                # Again what failed: her change, when it was a redraft.
-                failed = CopilotRun.objects.filter(pk=creation.outline_run_id).first()
-                kinds.get(creation.kind).start_draft(
-                    creation, instruction=str(((failed and failed.request) or {}).get("instruction") or "")
-                )
+            elif value == "retry":
+                _retry_draft(creation)
         elif question.kind == "finish":
             price = _sell_for(creation, value)
             _set_price(creation, price)
@@ -218,7 +214,7 @@ def apply(creation, found) -> None:
             if not clarified and (waiting := _waiting(creation, item)):  # more than a count: never lost
                 waiting["redraft"] = f"{waiting['redraft']}; {text}"
             _redraft_waiting(creation, item, clarified)
-        elif field == "outline_review":
+        elif field == _review_id(recipe):
             _redraft(creation, text)
         elif field == "cover":  # never her answer (the cover endpoint sets it); her words describe the photo
             creation.covers = {**(creation.covers or {}), "query": text}
@@ -406,7 +402,7 @@ def leave(creation, *, abandon: bool = False, active_ms=None) -> FocusCreation:
             creation.pending = {}
             for pk in (
                 creation.outline_run_id,
-                *(jobs.run_id(creation, job) for job in ("analysis", "announce", "followup")),
+                *(jobs.run_id(creation, job) for job in ("analysis", "announce", "followup", "copy")),
             ):
                 if pk is not None:
                     runs.stop(pk)  # a finished one is left as it is
@@ -425,6 +421,38 @@ def retry_descriptions(creation) -> FocusCreation:
         ):
             descriptions.start(creation)
     return creation
+
+
+def retry_copy(creation) -> FocusCreation:
+    """Try again after the copy failed (or was stopped); never while it is
+    being written, nor before it ever started."""
+    with transaction.atomic():
+        creation = _locked(creation)
+        if creation.status == "active" and jobs.run_id(creation, "copy") is not None:
+            _retry_draft(creation)
+    return creation
+
+
+def _retry_draft(creation) -> None:
+    """Again the review's drafting that failed (the copy, for a kind it
+    drafts, else the outline), with her change when it was a redraft; never
+    while it is being written. Call under the creation's lock."""
+    job = "copy" if copywriter.drafts(creation.kind) else "outline"
+    status = jobs.status(creation, job) if job == "copy" else outline_status(creation)
+    if status in ("failed", "idle"):
+        failed = CopilotRun.objects.filter(pk=jobs.run_id(creation, job)).first()
+        kinds.get(creation.kind).start_draft(
+            creation, instruction=str(((failed and failed.request) or {}).get("instruction") or "")
+        )
+
+
+def draft_started(creation) -> bool:
+    """Whether the kind's drafting for the review has started: its job was
+    queued, or what it wrote is on the record (its run pruned)."""
+    drafted = creation.drafted or {}
+    if copywriter.drafts(creation.kind):
+        return jobs.run_id(creation, "copy") is not None or "copy" in drafted
+    return creation.outline_run_id is not None or bool(drafted.get("modules"))
 
 
 def _has_outline(creation) -> bool:
@@ -449,7 +477,7 @@ def question(kind: str, field: str, creation=None) -> dict:
             "options": [{"value": o, "label": o, "hint": ""} for o in asked["options"]],
             "starter": None,
             "can_delegate": True,
-            "specialist": followup.SPECIALIST[asked["slot"]],
+            "specialist": followup.specialist(kind, asked["slot"]),
         }
     if field == "clarify":  # one short question about a detail she gave, its options written by the analysis
         unclear = creation.brief["clarify"][0]
@@ -557,6 +585,12 @@ def state(creation) -> dict:
             if jobs.run_id(creation, "descriptions") is not None
             else None
         ),
+        # The copy job's run, for a kind it drafts: its status, and a failed one's "Try again".
+        "copy": (
+            {"status": jobs.status(creation, "copy"), "run": jobs.run_id(creation, "copy")}
+            if jobs.run_id(creation, "copy") is not None
+            else None
+        ),
         "cover": covers.payload(creation),
         "announcement": announcing.payload(creation) if field == "announce" else None,
         "reading": (
@@ -568,7 +602,7 @@ def state(creation) -> dict:
             {
                 "status": jobs.status(creation, "followup"),
                 "run": thinking["run"],
-                "specialist": followup.SPECIALIST[thinking["slot"]],
+                "specialist": followup.specialist(creation.kind, thinking["slot"]),
             }
             if (thinking := (creation.brief or {}).get("thinking"))
             else None
@@ -648,7 +682,7 @@ def after_followup(creation) -> None:
     if not brief.get("followup"):
         brief["settled"] = [*(brief.get("settled") or []), thinking["slot"]]
     creation.brief = brief
-    if not brief.get("followup") and thinking["slot"] == "outline":  # a later one never touches the outline
+    if not brief.get("followup") and thinking["slot"] == kinds.get(creation.kind).DRAFT_SLOT:  # never "later"
         _next_draft(creation)
 
 
@@ -675,8 +709,8 @@ def _followup_answered(creation, value, words, delegate, rest) -> bool:
     _chat_append(creation, [{"role": "assistant", "text": asked["question"]}, {"role": "coach", "text": label}])
     if rest:
         _delegate_rest(creation)
-    if asked["slot"] == "outline":
-        _next_draft(creation)  # a second follow-up when allowed, else the outline
+    if asked["slot"] == kinds.get(creation.kind).DRAFT_SLOT:
+        _next_draft(creation)  # a second follow-up when allowed, else the drafting
     elif label != "You decide":
         _redraw_covers(creation)
     return True
@@ -937,6 +971,11 @@ def _redraft(creation, words: str, *, keep_counts: bool = False) -> None:
     kinds.get(creation.kind).start_draft(creation, instruction=words)
 
 
+def _review_id(recipe) -> str:
+    """Its review question's id (the course's "outline_review")."""
+    return next(q.id for q in recipe.questions if q.kind == "review")
+
+
 def _before_draft(creation):
     """The questions the kind's drafting waits for: those before its review,
     but those it skips for this creation."""
@@ -950,13 +989,14 @@ def _before_draft(creation):
 def _delegate_rest(creation) -> None:
     """ "Just draft it": every question the drafting waits for that is still
     open is hers to delegate, and the price step (unless the kind skips it);
-    nothing more is clarified."""
+    nothing more is clarified. A choice the guide may not make (not
+    delegable: an event's kind) is left for her to tap."""
     creation.brief = {**(creation.brief or {}), "rest": True, "clarify": []}
     adapter = kinds.get(creation.kind)
     access = [q for q in adapter.RECIPE.questions if q.id == "access" and q.id not in adapter.skips(creation)]
     # The price too, which keeps the course free: a paid price is only ever her tap (F11, R2).
     for q in (*_before_draft(creation), *access):
-        if q.id not in creation.answers:
+        if q.id not in creation.answers and (q.delegable or q.kind != "choice"):
             creation.answers[q.id] = DELEGATE
             _say(creation, q, "You decide")
 
@@ -979,20 +1019,21 @@ def _ensure_record(creation) -> None:
 def _next_draft(creation) -> None:
     """The draft record first, once it can be made. Then, once every question
     the drafting waits for is answered and nothing is being clarified or
-    followed up: a follow-up when one is allowed, else the kind's drafting."""
+    followed up: a follow-up when one is allowed, else the kind's drafting.
+    Once only: a redraft is her change (``_redraft``), never a later answer."""
     _ensure_record(creation)
     brief = creation.brief or {}
     questions = _before_draft(creation)
+    adapter = kinds.get(creation.kind)
     if (
-        creation.outline_run_id is None
-        and not (creation.drafted or {}).get("modules")  # its run pruned: still written
+        not draft_started(creation)
         and not any(brief.get(key) for key in ("clarify", "followup", "thinking"))
         and all(q.id in creation.answers for q in questions)
     ):
-        if followup_allowed(creation, "outline"):
-            _ask_followup(creation, "outline")
+        if followup_allowed(creation, adapter.DRAFT_SLOT):
+            _ask_followup(creation, adapter.DRAFT_SLOT)
         else:
-            kinds.get(creation.kind).start_draft(creation)
+            adapter.start_draft(creation)
 
 
 def _choice(recipe, field: str, words: str) -> str:

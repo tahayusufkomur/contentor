@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from apps.core.permissions import IsCoachOrOwner
 from apps.tenant_config.models import FocusCreation
 
-from . import covers, flow, kinds
+from . import copywriter, covers, flow, kinds
 
 
 def _not_found():
@@ -139,6 +139,16 @@ def focus_descriptions(request, creation_id):
     if creation is None:
         return _not_found()
     return Response(flow.state(flow.retry_descriptions(creation)))
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def focus_copy(request, creation_id):
+    """Try again after the copy job failed; 404 for a kind it does not draft."""
+    creation = _hers(request, creation_id) if settings.FOCUS_MODE_ENABLED else None
+    if creation is None or not copywriter.drafts(creation.kind):
+        return _not_found()
+    return Response(flow.state(flow.retry_copy(creation)))
 
 
 @api_view(["POST"])

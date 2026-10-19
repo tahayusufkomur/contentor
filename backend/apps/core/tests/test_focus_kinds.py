@@ -16,7 +16,7 @@ from rest_framework.test import APIClient
 from apps.accounts.models import User
 from apps.core import ai as core_ai
 from apps.core import tasks
-from apps.core.focus import analysis, announce, covers, flow, followup, jobs, kinds, outline
+from apps.core.focus import analysis, announce, copywriter, covers, flow, followup, jobs, kinds, outline
 from apps.courses.models import Course, Lesson, Module
 from apps.media.models import Design
 from apps.tenant_config.models import CopilotRun
@@ -55,13 +55,17 @@ ADAPTER = (
     "ANNOUNCER",
     "announce_facts",
     "DRAFT_SLOT",
+    "DRAFT_WHAT",
+    "REVIEWED_LINE",
     "SETUP_TOPIC",
     "start_draft",
 )
+# A kind the copy job drafts (its ``start_draft`` is copywriter.start) has all of these; the course none.
+COPY = ("COPY_RULES", "COPY_FIELDS", "copy_facts", "write_copy")
 STUB = "apps.core.tests.focus_stub_kind"
 SCHEMA = "shared_test"
 # Each builds its kind's prompt once (``system_for``): a stub's must never outlive its test.
-PROMPTED = (analysis, covers, followup, announce)
+PROMPTED = (analysis, covers, followup, announce, copywriter)
 
 
 @pytest.fixture()
@@ -126,6 +130,10 @@ def test_every_kind_module_has_the_whole_adapter():
         assert callable(module.apply_change) and callable(module.apply_clarified)
         assert issubclass(module.FOUND, analysis.Found) and module.UNCLEAR_FIELDS
         assert module.put_in_plan is None or callable(module.put_in_plan)
+        copy = [name for name in COPY if hasattr(module, name)]
+        assert copy in ([], list(COPY)), f"{kind}: {copy}"
+        assert copywriter.drafts(kind) is bool(copy)
+    assert copywriter.drafts("event") and not copywriter.drafts("course")
 
 
 def test_a_kind_reads_only_its_own_fields(monkeypatch):

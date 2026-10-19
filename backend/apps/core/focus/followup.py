@@ -6,7 +6,6 @@ it. A job on the agents worker decides whether one is needed and writes it
 
 import json
 from functools import cache
-from typing import Literal
 
 from django.conf import settings
 from django.db import transaction
@@ -19,19 +18,20 @@ from apps.tenant_config.models import CopilotRun, FocusCreation
 
 from . import jobs, kinds, outline
 
-# "outline": before the outline drafts. "later": after its review, before the cover.
-SPECIALIST = {"outline": "content", "later": "designer"}
-LABEL = "Thinking about your course"
+# The kind's DRAFT_SLOT: before its drafting, asked by the specialist at its review.
+# "later": after its review, before the cover.
+SPECIALIST = {"later": "designer"}
 QUESTION_MAX = 200
 OPTION_MAX = 60
 
 # Static per kind, byte-identical across tenants (prompt caching); her answers ride the user turn.
-# ``{noun}`` is the kind's word, ``{slot}`` its follow-up slot before the drafting (``DRAFT_SLOT``).
+# ``{noun}`` is the kind's word, ``{slot}`` its follow-up slot before the drafting (``DRAFT_SLOT``),
+# ``{what}`` what that drafting writes (``DRAFT_WHAT``).
 SYSTEM = (
     "A coach is creating ONE online {noun} in a guided flow. Decide whether to ask her ONE more short "
-    "question before the next draft. 'slot' says what comes next: '{slot}' (the {noun} {slot}: title, "
-    "description, modules and lessons) or 'later' (the {noun} cover and the announcement to her "
-    "students). You get her answers so far (topic, level, size, notes, earlier follow-ups) and her site.\n"
+    "question before the next draft. 'slot' says what comes next: '{slot}' (the {noun} {slot}: {what}) "
+    "or 'later' (the {noun} cover and the announcement to her students). You get her answers so far "
+    "(topic, level, size, notes, earlier follow-ups) and her site.\n"
     "Rules:\n"
     "- Ask only when the next draft would otherwise have to guess something that changes it, and nothing "
     "she said settles it. Never to enrich, never to confirm what she already said. Most of the time the "
@@ -44,7 +44,21 @@ SYSTEM = (
 @cache
 def system_for(kind: str) -> str:
     adapter = kinds.get(kind)
-    return SYSTEM.replace("{noun}", adapter.NOUN).replace("{slot}", adapter.DRAFT_SLOT)
+    return (
+        SYSTEM.replace("{noun}", adapter.NOUN)
+        .replace("{slot}", adapter.DRAFT_SLOT)
+        .replace("{what}", adapter.DRAFT_WHAT)
+    )
+
+
+def specialist(kind: str, slot: str) -> str:
+    """Who asks a follow-up in ``slot``: before the drafting, the specialist at the kind's review."""
+    recipe = kinds.get(kind).RECIPE
+    return SPECIALIST.get(slot) or recipe.specialists[next(q.id for q in recipe.questions if q.kind == "review")]
+
+
+def label(kind: str) -> str:
+    return f"Thinking about your {kinds.get(kind).NOUN}"
 
 
 class FollowUp(BaseModel):
@@ -53,9 +67,9 @@ class FollowUp(BaseModel):
     options: list[str] = []
 
 
-def start(creation, slot: Literal["outline", "later"]) -> CopilotRun:
-    """Call on the locked creation, inside the writing transaction."""
-    return jobs.queue(creation, "followup", specialist=SPECIALIST[slot], slot=slot)
+def start(creation, slot: str) -> CopilotRun:
+    """``slot``: the kind's DRAFT_SLOT or "later". Call on the locked creation, inside the writing transaction."""
+    return jobs.queue(creation, "followup", specialist=specialist(creation.kind, slot), slot=slot)
 
 
 def carry_out(tenant, run_id) -> None:
@@ -68,7 +82,7 @@ def carry_out(tenant, run_id) -> None:
     creation = FocusCreation.objects.get(pk=(run.request or {}).get("focus"))
     if not ai_compose.compose_available():
         raise core_ai.AiError("ai_unavailable")
-    step = {"specialist": run.specialist, "label": LABEL}
+    step = {"specialist": run.specialist, "label": label(creation.kind)}
     runs.emit(run_id, "step", {**step, "state": "start"})
     found = _decide(tenant, creation, kinds.get(creation.kind).record(creation.record_id), slot)
     question = found.question.strip()[:QUESTION_MAX]
@@ -114,7 +128,7 @@ def _decide(tenant, creation, record, slot) -> FollowUp:
         "size": answers.get("size", ""),
         "notes": brief.get("notes", ""),
         "followups": brief.get("followups", []),
-        **outline.site(tenant, creation.record_id),
+        **outline.site(tenant, creation.record_id if creation.kind == "course" else None),
     }
     if slot == "later" and record is not None:
         adapter = kinds.get(creation.kind)

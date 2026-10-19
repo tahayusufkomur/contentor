@@ -10,6 +10,7 @@ urlpatterns = [
     path("<int:creation_id>/finish/", views.focus_finish, name="focus-finish"),
     path("<int:creation_id>/announce/", views.focus_announce, name="focus-announce"),
     path("<int:creation_id>/descriptions/", views.focus_descriptions, name="focus-descriptions"),
+    path("<int:creation_id>/copy/", views.focus_copy, name="focus-copy"),
     path("<int:creation_id>/cover/", views.focus_cover, name="focus-cover"),
     path("<int:creation_id>/photos/", views.focus_photos, name="focus-photos"),
     path("<int:creation_id>/leave/", views.focus_leave, name="focus-leave"),

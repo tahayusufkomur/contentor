@@ -23,6 +23,7 @@ HANDLERS = {
     "covers": "apps.core.focus.covers",
     "announce": "apps.core.focus.announce",
     "followup": "apps.core.focus.followup",
+    "copy": "apps.core.focus.copywriter",
 }
 STATUS = {
     "queued": "building",

@@ -1,7 +1,7 @@
 """A class or event in focus mode (apps.core.focus.kinds.event): its draft
 waits for the kind (G10), holds her date as a draft (G12), and on finish a
 weekly schedule becomes its series, published or held (G11). The copy job
-(the review step's drafting) is not here yet; nothing in these tests reaches it."""
+itself (the review step's drafting) is tested in test_focus_copy.py."""
 
 from datetime import datetime, timedelta
 from unittest import mock
@@ -13,10 +13,10 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.core import tasks
-from apps.core.focus import flow, jobs, kinds
+from apps.core.focus import flow, followup, jobs, kinds
 from apps.core.focus.kinds import event
 from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
-from apps.tenant_config.models import TenantConfig
+from apps.tenant_config.models import CopilotRun, TenantConfig
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -335,3 +335,134 @@ def test_the_record_is_found_by_its_ref(owner):
     assert event.record(row.pk * 10 + 3) is None  # no Zoom class with that pk
     assert event.payload(row)["kind"] == "live"
     assert "event" in kinds.KINDS
+
+
+# ── Carry-forward (task B4): drafting once, where is hers, her words exactly ──
+
+
+def _copies():
+    return CopilotRun.objects.filter(request__job="copy").count()
+
+
+def _off():
+    return mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False)
+
+
+def test_the_copy_starts_once_and_a_later_answer_never_restarts_it(owner):
+    creation = flow.answer(flow.answer(_started(owner), "where", value="live"), "when", value=_once(3))
+    assert _copies() == 1 and creation.runs["copy"]
+    creation = flow.answer(creation, "review", value="ok")
+    creation.answers = {**creation.answers, "cover": "later"}
+    creation.save()
+    with _off(), mock.patch("apps.core.focus.flow.followup_allowed", return_value=True):
+        creation = flow.answer(creation, "access", text="free")  # typed: read, then the flow goes on
+    assert creation.answers["access"] == "free" and flow.current_field(creation) == "finish"
+    assert _copies() == 1 and not creation.brief.get("thinking")  # nor the draft's follow-up after its review
+
+
+def test_looks_good_answers_the_review_without_the_courses_line(owner):
+    creation = flow.answer(flow.answer(_started(owner), "where", value="live"), "when", value=_once(3))
+    creation = flow.answer(creation, "review", value="ok")
+    assert creation.answers["review"] == "ok" and flow.current_field(creation) == "cover"
+    assert "descriptions" not in creation.runs and event.REVIEWED_LINE is None
+    creation.chat.refresh_from_db()
+    assert creation.chat.entries[-1]["text"] == "Looks good, continue"
+    course = flow.answer(flow.start(owner, "course", value="A course on desk yoga"), "level", rest=True)
+    course = flow.answer(course, "outline_review", value="ok")
+    course.chat.refresh_from_db()
+    assert course.chat.entries[-1]["text"] == kinds.get("course").REVIEWED_LINE
+
+
+def test_her_words_at_the_review_redraft_the_copy_when_the_reading_fails(owner):
+    creation = flow.answer(flow.answer(_started(owner), "where", value="live"), "when", value=_once(3))
+    first = creation.runs["copy"]
+    with _off():
+        creation = flow.answer(creation, "review", text="make it warmer")
+    assert "review" not in creation.answers and flow.current_field(creation) == "review"
+    run = CopilotRun.objects.get(pk=creation.runs["copy"])
+    assert run.pk != first and run.request["instruction"] == "make it warmer"
+
+
+def test_a_typed_answer_after_the_draft_is_read_as_a_change_without_a_course_id(owner):
+    creation = flow.answer(flow.answer(_started(owner), "where", value="live"), "when", value=_once(3))
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True):
+        creation = flow.answer(creation, "review", text="warmer")
+    found = event.EventFound(answer="warmer", change="warmer")
+    with (
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.focus.analysis.read", return_value=found) as read,
+    ):
+        jobs.execute(SCHEMA, creation.pending["run"])
+    assert read.call_args.kwargs["course_id"] is None and read.call_args.kwargs["outline_exists"] is True
+    creation.refresh_from_db()
+    assert CopilotRun.objects.get(pk=creation.runs["copy"]).request["instruction"] == "warmer"
+
+
+def test_the_follow_up_before_the_copy_is_the_events_own(owner, tenant_ctx):
+    for kind, line in (
+        ("course", "'outline' (the course outline: title, description, modules and lessons)"),
+        ("event", "'copy' (the class copy: title and description)"),
+    ):
+        assert line in followup.system_for(kind)
+    assert "modules" not in followup.system_for("event")
+    assert (followup.label("course"), followup.label("event")) == (
+        "Thinking about your course",
+        "Thinking about your class",
+    )
+    creation = flow.answer(_started(owner), "where", value="live")
+    with mock.patch("apps.core.focus.flow.followup_allowed", return_value=True):
+        creation = flow.answer(creation, "when", value=_once(3))
+    thinking = creation.brief["thinking"]
+    run = CopilotRun.objects.get(pk=thinking["run"])
+    assert (thinking["slot"], run.request["slot"], run.specialist) == ("copy", "copy", "content")
+    assert flow.state(creation)["thinking"]["specialist"] == "content" and "copy" not in (creation.runs or {})
+    with (
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.focus.followup.ai_compose.record_spend"),
+        mock.patch("apps.core.focus.outline.site", return_value={}) as site,
+        mock.patch(
+            "apps.core.focus.followup.core_ai.structured",
+            return_value=(followup.FollowUp(needed=False), 0, "x"),
+        ),
+    ):
+        jobs.execute(SCHEMA, run.id)
+    site.assert_called_once_with(tenant_ctx, None)
+    assert run.events.first().data["label"] == "Thinking about your class"
+    creation.refresh_from_db()
+    assert creation.runs["copy"] and creation.brief["settled"] == ["copy"]
+
+
+def test_just_draft_it_before_the_kind_is_known_stops_at_where(owner):
+    creation = flow.start(owner, "event", value="A class on morning breath", rest=True)
+    assert creation.record_id is None and "where" not in creation.answers
+    asked = flow.state(creation)["question"]
+    assert (asked["field"], asked["question"], asked["can_delegate"]) == ("where", "Where will it happen?", False)
+    assert "where" not in flow.answer(creation, "where", delegate=True).answers  # "You decide" is refused
+    assert "where" not in flow.answer(creation, "where", rest=True).answers  # and "Just draft it" again
+    assert event._where(flow.DELEGATE) is None
+    creation = flow.answer(creation, "where", value="stream")
+    assert creation.answers["when"] == flow.DELEGATE and "place" not in creation.answers
+    assert flow.current_field(creation) == "review" and creation.runs["copy"]
+
+
+def test_a_zoom_place_that_is_no_link_is_asked_again_when_the_model_is_off(owner):
+    creation = flow.answer(flow.answer(_started(owner), "where", value="zoom"), "when", value=_once(3))
+    with _off():
+        creation = flow.answer(creation, "place", text="zoom.us/j/123")
+    assert "place" not in creation.answers and flow.current_field(creation) == "place"
+    assert "place" not in creation.drafted["event"] and _row(creation).zoom_link == ""
+
+
+def test_a_live_class_never_records_a_place(owner):
+    creation = _typed(owner, "breath, at Moda Cd. 12", event.EventFound(topic="breath", address="Moda Cd. 12"))
+    assert creation.answers["place"] == "Moda Cd. 12" and creation.record_id is None
+    creation = flow.answer(creation, "where", value="live")
+    assert "place" not in creation.answers and "place" not in (creation.drafted or {}).get("event", {})
+
+
+def test_a_capacity_past_the_cap_is_dropped(owner):
+    creation = _started(owner)
+    event.apply_found(creation, event.EventFound(capacity=10**12))  # max_capacity would overflow
+    assert "capacity" not in creation.brief
+    event.apply_found(creation, event.EventFound(capacity=event.MAX_CAPACITY))
+    assert creation.brief["capacity"] == 10_000

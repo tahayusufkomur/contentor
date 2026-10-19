@@ -32,8 +32,10 @@ NEW_TITLE = "New class"
 SETUP_TOPIC = "live_topic"
 COVER = "styles"
 ANNOUNCER = "community"
-# The flow's one follow-up slot before the drafting (apps.core.focus.followup).
-DRAFT_SLOT = "outline"
+# The follow-up slot before the copy job drafts, and what it writes (apps.core.focus.followup).
+DRAFT_SLOT = "copy"
+DRAFT_WHAT = "title and description"
+REVIEWED_LINE = None  # "Looks good" starts nothing more: no line after it
 FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
 CLOSING = {
     "publish": "Published. Students can find it on your site now.",
@@ -49,6 +51,7 @@ BAD_LINK = "That doesn't look like a whole link. Paste your Zoom link?"
 # Her other classes on sale, in the price step's reason.
 PLURAL = {"live": "live classes", "stream": "live streams", "zoom": "Zoom classes", "onsite": "events"}
 MAX_MINUTES = 24 * 60
+MAX_CAPACITY = 10_000  # far under OnsiteEvent.max_capacity's PositiveIntegerField
 
 RECIPE = Recipe(
     kind="event",
@@ -70,8 +73,7 @@ RECIPE = Recipe(
             "Where",
             "Where will it happen?",
             ("Live online", "Live stream", "On Zoom", "In person"),
-            kind="choice",
-            delegable=True,
+            kind="choice",  # hers: never "You decide", and "Just draft it" leaves it to her (flow._delegate_rest)
             why="It can't change once the class is made.",
         ),
         Field("when", "When", "When is it?", kind="schedule", why="Times are in your site's time zone."),
@@ -214,11 +216,9 @@ def _rows(ref):
 
 def _where(value) -> str | None:
     """Her kind of class from a tile's value or label (or her words naming
-    one); "You decide" is a live class. None for anything else."""
+    one). None for anything else, "You decide" too: only she says which."""
     from .. import flow
 
-    if value == flow.DELEGATE:
-        return "live"
     picked = flow._choice(RECIPE, "where", str(value or ""))
     return picked if picked in WHERE else None
 
@@ -250,8 +250,11 @@ def retitle(ref, provisional: str, title: str) -> bool:
     return rows is not None and bool(rows.filter(title=provisional).update(title=title))
 
 
-def start_draft(creation, instruction: str = "") -> None:
-    """The review step's title and description (the copy job, task B4); nothing yet."""
+def start_draft(creation, instruction: str = ""):
+    """The copy job: the review step's title and description (apps.core.focus.copywriter)."""
+    from .. import copywriter
+
+    return copywriter.start(creation, instruction=instruction)
 
 
 def skips(creation) -> set[str]:
@@ -342,7 +345,7 @@ def apply_found(creation, found) -> None:
     brief = dict(creation.brief or {})
     if found.duration_minutes and 0 < found.duration_minutes <= MAX_MINUTES:
         brief["duration_minutes"] = found.duration_minutes
-    if found.capacity and found.capacity > 0:
+    if found.capacity and 0 < found.capacity <= MAX_CAPACITY:
         brief["capacity"] = found.capacity
     if found.notes.strip():
         brief["notes"] = " ".join(filter(None, [brief.get("notes", ""), found.notes.strip()]))
@@ -350,7 +353,15 @@ def apply_found(creation, found) -> None:
 
 
 def apply_change(creation, found, *, field, text, item, clarified, fresh) -> None:
-    """A change she asks for redrafts the copy (task B4); nothing yet."""
+    """Once the copy is drafted, a change she asks for redrafts it with her
+    words; at the review, any words but a price alone are one. Nothing waits
+    on a clarify answer: the copy holds no count. Call under the creation's
+    lock; the caller saves."""
+    from .. import flow
+
+    at_review = field == "review" and (found.answer.strip() or not analysis.price_value(found.price))
+    if flow.draft_started(creation) and (found.change.strip() or at_review):
+        flow._redraft(creation, text)
 
 
 def apply_clarified(creation, field, value) -> bool:
@@ -367,12 +378,13 @@ def apply_clarified(creation, field, value) -> bool:
 
 
 def sync(creation) -> None:
-    """After every answer: her words where a tile or the picker was expected
-    (no model read them) are asked again, never guessed; a Zoom class answers
-    its price step, free (G9); and every answer she changed since it was last
-    written goes on the draft. Written to the model, never through the
-    serializer, so a dated draft stays a draft (G12). Call under the
-    creation's lock; the caller saves."""
+    """After every answer: her words where a tile, the picker or a Zoom link
+    was expected (no model read them) are asked again, never guessed; a live
+    class or stream keeps no place; a Zoom class answers its price step, free
+    (G9); and every answer she changed since it was last written goes on the
+    draft. Written to the model, never through the serializer, so a dated
+    draft stays a draft (G12). Call under the creation's lock; the caller
+    saves."""
     from .. import flow
 
     answers = creation.answers
@@ -389,6 +401,11 @@ def sync(creation) -> None:
     kind = _kind(row)
     if kind == "zoom":
         answers["price"] = answers["access"] = "free"
+    place = answers.get("place")
+    if kind in ("live", "stream"):  # no place: never asked, never kept
+        answers.pop("place", None)
+    elif kind == "zoom" and isinstance(place, str) and place not in (LATER, flow.DELEGATE) and not _is_link(place):
+        answers.pop("place")  # her words where the link was expected (no model read them): asked again
     place = answers.get("place")
     brief = creation.brief or {}
     facts = {
@@ -421,6 +438,51 @@ def sync(creation) -> None:
     if fields:
         row.save(update_fields=fields)
     creation.drafted = {**(creation.drafted or {}), "event": {**wrote, **changed}}
+
+
+# ── The copy: the review step's title and description (G5) ──────────────────
+
+COPY_FIELDS = ("title", "description")
+# Appended to the copy job's shared prompt (apps.core.focus.copywriter.system_for).
+COPY_RULES = (
+    "Write a class title under 60 characters and a 2–4 sentence description for students: what happens, "
+    "who it is for, what to bring.\n"
+    "- topic: what the class or event is about, in her words; '' means pick one that fits her site.\n"
+    "- where: how students join. schedule, duration_minutes and capacity: hers, as she gave them; empty "
+    "when she did not say.\n"
+    "- notes and followups: what else she said about it; follow it.\n"
+    "- Never write a date, a time, a price, an address or a link into the copy: the page shows them."
+)
+
+
+def copy_facts(creation, row) -> dict:
+    """What the copy job writes from: her words, how and when it happens, and
+    her site. Never her address or Zoom link: only students who join see
+    those, and the description is public."""
+    from .. import flow, outline
+
+    answers, brief = creation.answers or {}, creation.brief or {}
+    topic, when = str(answers.get("topic") or ""), answers.get("when")
+    where = next(q for q in RECIPE.questions if q.id == "where").options[WHERE.index(_kind(row))]
+    site = outline.site(connection.tenant)
+    return {
+        "topic": "" if topic == flow.DELEGATE else topic,
+        "where": where,
+        "schedule": interview_schedule.summary(when) if isinstance(when, dict) else "",
+        "duration_minutes": brief.get("duration_minutes"),
+        "capacity": brief.get("capacity"),
+        "notes": brief.get("notes", ""),
+        "followups": brief.get("followups", []),
+        **{key: site[key] for key in ("brand", "niche", "description")},
+    }
+
+
+def write_copy(ref, fields: dict) -> None:
+    """The copy job's fields onto the draft, written to the model, never
+    through the serializer: it stays a draft (G12)."""
+    rows = _rows(ref)
+    if rows is not None:
+        rows.update(**fields)
 
 
 # ── Price, checks and going live ────────────────────────────────────────────

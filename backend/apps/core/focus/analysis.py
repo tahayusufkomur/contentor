@@ -201,9 +201,9 @@ def carry_out(tenant, run_id) -> None:
         str(pending.get("text") or ""),
         question=flow.question(creation.kind, pending.get("field"), creation)["question"],
         kind=creation.kind,
-        outline_exists=bool(creation.outline_run_id or (creation.drafted or {}).get("modules")),
+        outline_exists=flow.draft_started(creation),
         currency=tenant_charge_currency(tenant),
-        course_id=creation.record_id,
+        course_id=creation.record_id if creation.kind == "course" else None,
         cover_step=pending.get("field") == "cover",
     )
     with transaction.atomic():

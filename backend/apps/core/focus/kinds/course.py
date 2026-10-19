@@ -21,8 +21,11 @@ NEW_TITLE = "New course"
 SETUP_TOPIC = "course_topic"
 COVER = "styles"
 ANNOUNCER = "marketing"
-# The follow-up slot before the outline drafts (apps.core.focus.followup).
+# The follow-up slot before the outline drafts, and what it writes (apps.core.focus.followup).
 DRAFT_SLOT = "outline"
+DRAFT_WHAT = "title, description, modules and lessons"
+# The dock's line after her "Looks good": the descriptions job starts.
+REVIEWED_LINE = "Writing a short description for each lesson's video. Edit any of them on the page."
 FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
 CLOSING = {
     "publish": "Published. Students can find it on your site now.",

@@ -28,9 +28,11 @@ The adapter (the course's in kinds/course.py):
 - COVER: "styles" (four drafted styles), "photo" (a photo only) or None (no cover question).
 - cover_target(record): the (target_kind, target_key) its cover Design files under.
 - cover_facts(record): {"title", "description"} for the Designer.
-- DRAFT_SLOT: the follow-up slot before its drafting.
-- start_draft(creation, instruction=""): its drafting for the review step (the course's outline), and
-  each redraft with her words; called once every question before the review is answered or skipped.
+- DRAFT_SLOT: the follow-up slot before its drafting. DRAFT_WHAT: what that drafting writes, in the
+  follow-up's prompt ("title, description, modules and lessons").
+- start_draft(creation, instruction=""): its drafting for the review step (the course's outline, the
+  copy job for the others), and each redraft with her words; called once, when every question before
+  the review is answered or skipped. REVIEWED_LINE: the dock's line after her "Looks good", or None.
 - sync(creation): optional, after every answer: her answers it keeps on the record, written there.
 - ask(creation, asked): optional, a question in its own words for this creation (``flow.question``).
 - skips(creation): the questions it skips for this creation.
@@ -39,7 +41,14 @@ The adapter (the course's in kinds/course.py):
 - apply_found(creation, found): its own fields of a read answer, onto the creation.
 - apply_change(creation, found, *, field, text, item, clarified, fresh): its redraft after a read answer.
 - apply_clarified(creation, field, value): a clarify answer stored onto its own field; True only when
-  the answer gave a count (it reshaped the size)."""
+  the answer gave a count (it reshaped the size).
+
+A kind the copy job drafts (its start_draft is copywriter.start) also has, all four or none (the course
+has none; ``copywriter.drafts`` checks for them):
+- COPY_FIELDS: the record's fields it writes, in order (("title", "description")).
+- COPY_RULES: what to write, appended to the copy job's shared prompt.
+- copy_facts(creation, record): what it writes from: her answers, brief and notes, her site, and its own.
+- write_copy(record_id, fields): those fields onto the record (the job checked each is still its own)."""
 
 from importlib import import_module
 from types import ModuleType
