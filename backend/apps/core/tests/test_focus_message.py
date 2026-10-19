@@ -403,3 +403,17 @@ def test_no_designer_follow_up_after_the_review(owner, students):
         creation = flow.answer(creation, "review", value="ok")
     start.assert_not_called()  # no cover to ask about
     assert flow.current_field(creation) == "when"
+
+
+def test_the_finish_response_says_when_it_goes_out(owner, students, fanout):
+    """The guide's toast after Send: "Sent." or when it is scheduled for, never "Published"."""
+    client = APIClient(HTTP_HOST="shared-test.localhost")
+    client.force_authenticate(user=owner)
+
+    def send(creation):
+        return client.post(f"/api/v1/admin/focus/{creation.pk}/finish/", {"publish": True}, format="json").json()
+
+    assert send(_at_finish(owner))["closing"] == "Sent."
+    later = _at_finish(owner, when="next")
+    at = next_send_time(timezone.now(), ZoneInfo(ZONE))
+    assert send(later)["closing"] == f"Scheduled for {_said(at)}."

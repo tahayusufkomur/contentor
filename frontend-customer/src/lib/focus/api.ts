@@ -177,7 +177,9 @@ export const coverAction = (
 export const finishCreation = (
   id: number,
   body: Timed<{ publish: boolean; announce: boolean }>,
-) => post<FocusState>(`${id}/finish/`, body);
+) =>
+  // `closing`: what her tap did, as the chat says it ("Sent.", "Scheduled for …").
+  post<FocusState & { closing?: string }>(`${id}/finish/`, body);
 
 export const announceCreation = (
   id: number,

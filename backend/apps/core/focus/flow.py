@@ -290,15 +290,23 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
         question = next(q for q in recipe.questions if q.id == "finish")
         creation.answers["finish"] = choice
         _say(creation, question, _label(recipe, question, choice))
-        closing = adapter.CLOSING[choice]  # or a function of the record, for a line that says when
-        line = closing(_record(creation)) if callable(closing) else closing
-        _chat_append(creation, [{"role": "assistant", "text": line}])
+        _chat_append(creation, [{"role": "assistant", "text": closing_line(creation)}])
         if live and announce and adapter.ANNOUNCER:
             announcing.start(creation)
         else:
             _end(creation, "skip")
         creation.save()
     return creation
+
+
+def closing_line(creation) -> str:
+    """Her finish's closing line (a message's "Sent." or "Scheduled for …",
+    a kind's published or kept line); "" before she finished."""
+    choice = (creation.answers or {}).get("finish")
+    if choice is None:
+        return ""
+    closing = kinds.get(creation.kind).CLOSING[choice]  # or a function of the record, for a line that says when
+    return closing(_record(creation)) if callable(closing) else closing
 
 
 def decide_announcement(creation, *, schedule: bool, active_ms=None) -> FocusCreation:

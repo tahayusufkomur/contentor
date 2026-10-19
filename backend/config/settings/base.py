@@ -454,7 +454,9 @@ CURATED_IMAGE_API_FAKE = _env_bool("CURATED_IMAGE_API_FAKE", False)
 # plain form.
 FOCUS_MODE_ENABLED = _env_bool("FOCUS_MODE_ENABLED", True)
 # The kinds focus mode makes (apps.core.focus.kinds), as CSV; each joins once it is finished.
-FOCUS_KINDS = [kind.strip() for kind in os.environ.get("FOCUS_KINDS", "course,event").split(",") if kind.strip()]
+FOCUS_KINDS = [
+    kind.strip() for kind in os.environ.get("FOCUS_KINDS", "course,event,message").split(",") if kind.strip()
+]
 # Hosts allowed to serve rendition bytes. Those URLs are chosen by another
 # service, so this allowlist is the SSRF guard on the copy-on-use fetch. An entry
 # covers its subdomains (the provider signs virtual-host style, so live URLs are

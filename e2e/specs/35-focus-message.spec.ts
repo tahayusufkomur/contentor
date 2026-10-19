@@ -177,6 +177,8 @@ const titleBox = (page: Page) => page.getByRole("main").getByPlaceholder("Title"
 async function sendFirst(page: Page, words: string) {
   await page.goto(`${TENANT}/admin/messages/new`);
   await expect(guide(page).getByText("What do you want to tell your students?")).toBeVisible();
+  // What she tells them is hers: nothing drafts it for her.
+  await expect(guide(page).getByRole("button", { name: "Just draft it" })).toHaveCount(0);
   // Her sentence goes on from the starter.
   await guide(page).getByRole("button", { name: "Tell them…" }).click();
   const box = guide(page).getByRole("textbox", { name: "Your answer" });
@@ -198,7 +200,7 @@ test("a message from one sentence, scheduled for tomorrow 10:00", async ({ brows
   const sent = await stubFocus(page, (path, body) => {
     if (path.endsWith("/finish/")) {
       set({ status: "scheduled", scheduled_at: "2026-10-20T08:00:00Z" });
-      return state({ status: "done", record: RECORD, answered });
+      return { ...state({ status: "done", record: RECORD, answered }), closing: "Scheduled for Tuesday 20 October at 10:00." };
     }
     if (body.field === "review")
       return state({ record: RECORD, question: Q.finish, answered: [...answered, ["review", "Looks good"]], copy: { status: "ready", run: COPY_RUN } });
@@ -224,6 +226,9 @@ test("a message from one sentence, scheduled for tomorrow 10:00", async ({ brows
   await guide(page).getByRole("button", { name: "Send", exact: true }).click();
   await expect(guide(page)).toHaveCount(0);
   expect(sent.at(-1)).toMatchObject({ publish: true, announce: false });
+  // The toast says when it goes out, not "Published".
+  await expect(page.getByText("Scheduled for Tuesday 20 October at 10:00.")).toBeVisible();
+  await expect(page.getByText("Published.", { exact: false })).toHaveCount(0);
   expect(sent[0]).toMatchObject({ kind: "message", text: "Tell them the studio is closed on Friday, all my students, tomorrow at 10:00" });
   // Sent: its own page.
   await expect(page).toHaveURL(new RegExp(`/admin/messages/${DRAFT}$`));
@@ -361,6 +366,7 @@ test("her title is kept when the copy types after she changed it", async ({ brow
   await stubFocus(page, () => atReview, atReview);
 
   await page.goto(`${TENANT}${PATH}`);
+  await expect(guide(page).getByText("Writing your message…")).toBeVisible();
   await expect(titleBox(page)).toHaveValue("Closed on Friday");
   await titleBox(page).fill("No yoga this Friday");
   await expect.poll(() => patches.at(-1)?.title).toBe("No yoga this Friday");

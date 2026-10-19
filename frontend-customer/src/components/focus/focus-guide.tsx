@@ -131,7 +131,12 @@ export function FocusGuide() {
       // Focus mode ends: the dock is the normal chat, with the whole exchange.
       if (next.chat !== null)
         openRunChat(next.chat, () => dock.open("assistant"));
-      toast.success(t(publish ? "focus.published" : "focus.kept"));
+      toast.success(
+        // A message's own line: "Sent.", or when it is scheduled for.
+        publish && state.kind === "message" && next.closing
+          ? next.closing
+          : t(publish ? "focus.published" : "focus.kept"),
+      );
     },
   );
 
@@ -320,6 +325,7 @@ export function FocusGuide() {
       {question &&
         (question.kind === "review" ? (
           <OutlineReview
+            kind={state.kind}
             question={question}
             status={
               copy ? (state.copy?.status ?? "ready") : state.outline.status
@@ -340,6 +346,7 @@ export function FocusGuide() {
           />
         ) : question.kind === "finish" ? (
           <FinishStep
+            key={state.id}
             kind={state.kind}
             question={question}
             finishing={finishing}
@@ -382,7 +389,11 @@ export function FocusGuide() {
             key={question.field}
             question={question}
             sending={sending}
-            showRest={question.field !== "clarify"}
+            showRest={
+              // Not on a first question only she can answer (a message's topic).
+              question.field !== "clarify" &&
+              (state.id !== 0 || question.can_delegate)
+            }
             onSend={send}
           />
         ))}
@@ -418,6 +429,7 @@ const NONE: GuideInput = {
 };
 
 function OutlineReview({
+  kind,
   question,
   status,
   drafted,
@@ -427,6 +439,7 @@ function OutlineReview({
   onSend,
   onStop,
 }: {
+  kind: FocusKind;
   question: FocusQuestion;
   status: FocusState["outline"]["status"];
   drafted: boolean;
@@ -451,7 +464,13 @@ function OutlineReview({
         <SpecialistByline k={question.specialist} />
         <p className="flex items-center gap-2 text-sm text-foreground">
           <Spinner size="sm" />
-          {t(copy ? "focus.writingCopy" : "focus.writingOutline")}
+          {t(
+            kind === "message"
+              ? "focus.kinds.message.writing"
+              : copy
+                ? "focus.writingCopy"
+                : "focus.writingOutline",
+          )}
         </p>
         <div>
           <Button

@@ -114,7 +114,8 @@ def focus_finish(request, creation_id):
     creation = flow.finish(
         creation, publish=data.get("publish") is True, announce=data.get("announce") is True, active_ms=_ms(data)
     )
-    return Response(flow.state(creation))
+    # The guide's toast says what happened ("Sent.", "Scheduled for …").
+    return Response({**flow.state(creation), "closing": flow.closing_line(creation)})
 
 
 @api_view(["POST"])
