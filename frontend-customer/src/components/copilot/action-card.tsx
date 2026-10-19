@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import type { ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -179,6 +179,7 @@ export function ActionCard({
   // "Start it" opens it with her words as the first answer, and on its own
   // when the card arrived live on a courses page. The create token stays unused.
   const overview = useFocusOverview();
+  const pathname = usePathname();
   const focusCard = overview?.enabled === true && card.kind === "create_course";
   // Until we know which it is, no button: a Confirm that turns into Start it
   // under her finger would apply the wrong one.
@@ -188,7 +189,7 @@ export function ActionCard({
     navigate("/admin/courses/new");
   };
   useEffect(() => {
-    if (focusCard && claimLiveCard(card.token)) startIt();
+    if (focusCard && claimLiveCard(card.token, pathname)) startIt();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusCard]);
 

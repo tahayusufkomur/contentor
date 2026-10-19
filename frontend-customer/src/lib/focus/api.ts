@@ -83,7 +83,8 @@ export interface FocusState {
   record: FocusRecord | null;
   question: FocusQuestion | null;
   answered: { field: string; label: string }[];
-  outline: { status: OutlineStatus; run: number | null };
+  /** `drafted`: an outline is on the page (a failed redraft leaves the earlier one). */
+  outline: { status: OutlineStatus; run: number | null; drafted: boolean };
   /** An analysis of her typed answer is pending; `question` is null meanwhile. */
   reading: { status: OutlineStatus; run: number | null } | null;
   /** A follow-up question is being written; `question` is null meanwhile. */

@@ -63,14 +63,21 @@ describe("the assistant opening focus mode", () => {
 
   it("lets a live card on a courses page open it once, never again", () => {
     markLiveCards("/admin/courses", reply("a"));
-    expect(claimLiveCard("a")).toBe(true);
-    expect(claimLiveCard("a")).toBe(false);
+    expect(claimLiveCard("a", "/admin/courses")).toBe(true);
+    expect(claimLiveCard("a", "/admin/courses")).toBe(false);
   });
 
   it("never lets a card that arrived elsewhere, or an old one, open it", () => {
     markLiveCards("/admin/blog", reply("b"));
-    expect(claimLiveCard("b")).toBe(false);
-    expect(claimLiveCard("old")).toBe(false);
+    expect(claimLiveCard("b", "/admin/courses")).toBe(false);
+    expect(claimLiveCard("old", "/admin/courses")).toBe(false);
+  });
+
+  it("never lets a live card open it once she is off the courses pages", () => {
+    markLiveCards("/admin/courses", reply("c"));
+    expect(claimLiveCard("c", "/admin/blog")).toBe(false);
+    // Claimed all the same: back on a courses page, it never moves her screen either.
+    expect(claimLiveCard("c", "/admin/courses")).toBe(false);
   });
 
   it("hands her words over once", () => {

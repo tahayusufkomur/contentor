@@ -1184,6 +1184,7 @@
     "upload": "Upload",
     "makingPhoto": "Making your photo…",
     "photoFailed": "Your photo couldn't be made. Pick one here or upload yours.",
+    "photoUnavailable": "That photo couldn't be used. Pick another one.",
     "useCover": "Use this cover",
     "moreStyles": "Four more styles",
     "morePhotos": "More photos",

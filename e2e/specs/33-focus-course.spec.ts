@@ -623,6 +623,38 @@ test("a follow-up is written while she waits, then one tap answers it", async ({
   await page.close();
 });
 
+test("Stop while a follow-up is written goes on without it", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const answered = [{ field: "topic", label: "A course on desk yoga" }];
+  const thinking = reviewState({
+    question: null,
+    answered,
+    outline: { status: "idle", run: null },
+    thinking: { status: "building", run: 6002, specialist: "content" },
+  });
+  let stopped = false;
+  await stubFocus(page, {
+    script: ({ path, method }) => {
+      if (method === "POST" && path.endsWith("/admin/focus/")) return thinking;
+      if (method === "GET" && path.endsWith(`/focus/${CREATION}/`))
+        return stopped ? reviewState({ question: QUESTIONS.level, answered, outline: { status: "idle", run: null } }) : thinking;
+    },
+  });
+  await page.route("**/api/v1/admin/copilot/runs/6002/stop/", (route) => {
+    stopped = true;
+    return route.fulfill({ json: { status: "stopped" } });
+  });
+
+  await answerReadingTopic(page);
+  await expect(guide(page).getByText("Thinking about your course…")).toBeVisible();
+  await guide(page).getByRole("button", { name: "Stop" }).click();
+  await expect(guide(page).getByText("Who is it for?")).toBeVisible();
+  await expect(guide(page).getByText("Thinking about your course…")).toHaveCount(0);
+  expect(stopped).toBe(true);
+  await page.close();
+});
+
 test("lesson descriptions type in after Looks good, with a count and Stop", async ({ browser }) => {
   const coach = await coachContext(browser);
   const page = await coach.newPage();
@@ -1029,6 +1061,28 @@ test("the price step: you decide highlights the suggestion for her to tap", asyn
   await paid.click();
   await expect(guide(page).getByText("Ready. Publish it now?")).toBeVisible();
   expect(sent.filter((s) => s.field === "access")).toEqual([expect.objectContaining({ field: "access", value: "paid:39" })]);
+  await page.close();
+});
+
+test("after a change that didn't come through, Looks good goes on with the outline on the page", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  let confirmed = false;
+  const { sent } = await openAt(
+    page,
+    () => (confirmed ? finishState() : reviewState({ outline: { status: "failed", run: RUN, drafted: true } })),
+    ({ path, body }) => {
+      if (path.endsWith("/answer/") && body.value === "ok") confirmed = true;
+    },
+  );
+
+  await expect(guide(page).getByText("The outline didn't come through.")).toBeVisible();
+  await expect(guide(page).getByRole("button", { name: "Try again" })).toBeVisible();
+  await guide(page).getByRole("button", { name: "Looks good, continue" }).click();
+  await expect(guide(page).getByText("Ready. Publish it now?")).toBeVisible();
+  expect(sent.filter((s) => s.field === "outline_review")).toEqual([
+    expect.objectContaining({ field: "outline_review", value: "ok" }),
+  ]);
   await page.close();
 });
 

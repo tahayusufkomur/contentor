@@ -174,8 +174,11 @@ export function markLiveCards(
     for (const card of reply.cards ?? []) liveCards.add(card.token);
 }
 
-/** True once for a live card; a remount or a poll never claims it again. */
-export const claimLiveCard = (token: string) => liveCards.delete(token);
+/** True once for a live card, and only while she is on a courses page (`path`)
+ *  as it mounts: a card opened later elsewhere shows Start it instead (F7).
+ *  A remount or a poll never claims it again. */
+export const claimLiveCard = (token: string, path: string | null) =>
+  liveCards.delete(token) && onCoursesPage(path);
 
 // The open course form's save, for "Save & leave" (set while focus mode shows it).
 let focusSave: (() => Promise<void>) | null = null;

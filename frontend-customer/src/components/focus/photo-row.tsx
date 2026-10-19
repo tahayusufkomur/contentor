@@ -138,6 +138,7 @@ export function PhotoRow({
         throw error;
       }
     },
+    { errorToast: t("focus.photoUnavailable") },
   );
 
   const { run: upload, loading: uploading } = useAsyncAction(

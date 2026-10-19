@@ -171,6 +171,15 @@ export function FocusGuide() {
     },
   );
 
+  // A stopped follow-up: the flow goes on without it.
+  const { run: stopThinking, loading: stoppingThinking } = useAsyncAction(
+    async () => {
+      if (!state?.thinking?.run) return;
+      await stopRun(state.thinking.run);
+      apply(state.id, await fetchCreation(state.id));
+    },
+  );
+
   const { run: retryWriting, loading: retrying } = useAsyncAction(async () => {
     if (!state) return;
     apply(state.id, await retryDescriptions(state.id));
@@ -280,6 +289,16 @@ export function FocusGuide() {
             <Spinner size="sm" />
             {t("focus.thinking")}
           </p>
+          <div>
+            <Button
+              size="sm"
+              variant="outline"
+              loading={stoppingThinking}
+              onClick={stopThinking}
+            >
+              {t("focus.stop")}
+            </Button>
+          </div>
         </div>
       )}
       {question && handOver && (
@@ -295,6 +314,7 @@ export function FocusGuide() {
           <OutlineReview
             question={question}
             status={state.outline.status}
+            drafted={state.outline.drafted}
             sending={sending}
             stopping={stopping}
             onSend={send}
@@ -374,6 +394,7 @@ const NONE: GuideInput = {
 function OutlineReview({
   question,
   status,
+  drafted,
   sending,
   stopping,
   onSend,
@@ -381,6 +402,7 @@ function OutlineReview({
 }: {
   question: FocusQuestion;
   status: FocusState["outline"]["status"];
+  drafted: boolean;
   sending: boolean;
   stopping: boolean;
   onSend: (input: GuideInput) => void;
@@ -388,6 +410,11 @@ function OutlineReview({
 }) {
   const t = useTranslations("admin");
   const [text, setText] = useState("");
+  const [choice, setChoice] = useState<"ok" | "retry" | null>(null);
+  const pick = (value: "ok" | "retry") => {
+    setChoice(value);
+    onSend({ ...NONE, picked: value });
+  };
 
   if (status === "building")
     return (
@@ -422,13 +449,27 @@ function OutlineReview({
           <p className="mt-1 text-sm text-muted-foreground">{question.why}</p>
         )}
       </div>
-      <div>
-        <Button
-          loading={sending}
-          onClick={() => onSend({ ...NONE, picked: failed ? "retry" : "ok" })}
-        >
-          {t(failed ? "focus.tryAgain" : "focus.looksGood")}
-        </Button>
+      <div className="flex flex-wrap gap-2">
+        {/* Her earlier outline is still on the page after a failed redraft: she can go on with it. */}
+        {(!failed || drafted) && (
+          <Button
+            loading={sending && choice === "ok"}
+            disabled={sending}
+            onClick={() => pick("ok")}
+          >
+            {t("focus.looksGood")}
+          </Button>
+        )}
+        {failed && (
+          <Button
+            variant={drafted ? "outline" : "default"}
+            loading={sending && choice === "retry"}
+            disabled={sending}
+            onClick={() => pick("retry")}
+          >
+            {t("focus.tryAgain")}
+          </Button>
+        )}
       </div>
       <AnswerBox
         value={text}

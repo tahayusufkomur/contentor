@@ -63,7 +63,7 @@ export function FocusStart({
       record: null,
       question,
       answered: [],
-      outline: { status: "idle", run: null },
+      outline: { status: "idle", run: null, drafted: false },
       reading: null,
       thinking: null,
       descriptions: null,
