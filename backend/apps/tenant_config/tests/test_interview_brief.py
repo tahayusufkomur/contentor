@@ -606,14 +606,36 @@ def test_a_membership_of_her_own_is_its_name():
     }
 
 
-def test_the_ways_in_are_asked_only_of_a_coach_with_memberships():
+def _required(answers):
+    return {f.id for f in brief.required(answers)}
+
+
+def test_the_ways_in_are_asked_of_every_coach_who_takes_payments_before_any_price():
     asked = {"course_access", "event_access"}
-    assert asked <= {f.id for f in brief.required(FACE_AND_VINYASA)}
-    assert not asked & {f.id for f in brief.required({**FACE_AND_VINYASA, "payments": ["course"]})}
-    assert "onsite_access" not in {f.id for f in brief.required(FACE_AND_VINYASA)}  # no in-person events
+    assert asked <= _required(FACE_AND_VINYASA)
+    # Selling courses alone is still a choice: bought, or free.
+    assert "course_access" in _required({**FACE_AND_VINYASA, "payments": ["course"]})
+    assert not asked & _required({**FACE_AND_VINYASA, "payments": ["free"]})
+    assert "onsite_access" not in _required(FACE_AND_VINYASA)  # no in-person events
     order = [f.id for f in brief.FIELDS]
-    assert order.index("course_price") < order.index("course_access") < order.index("course_review")
-    assert order.index("event_price") < order.index("event_access") < order.index("event_review")
+    for section in ("course", "event", "onsite"):
+        assert order.index(f"{section}_access") < order.index(f"{section}_price") < order.index(f"{section}_review")
+
+
+def test_a_price_is_asked_only_for_what_is_sold_on_its_own():
+    from apps.tenant_config.setup_flow import brief_price
+
+    # Before she answers, it is sold the way a "pick for me" sets it: its price is still to come.
+    assert "course_price" in _required(FACE_AND_VINYASA)
+    members_only = {**FACE_AND_VINYASA, "memberships": ["digital"], "course_access": ["digital"], "course_price": 49}
+    assert "course_price" not in _required(members_only)
+    assert brief_price(members_only, "course") == 0.0
+    free = {**FACE_AND_VINYASA, "payments": ["course"], "course_access": ["free"]}
+    assert "course_price" not in _required(free) and brief_price(free, "course") == 0.0
+    both = {**members_only, "course_access": ["buy", "digital"]}
+    assert "course_price" in _required(both) and brief_price(both, "course") == 49.0
+    # An interview from before the payments question keeps its price.
+    assert brief_price({"sells": "paid", "course_price": 49}, "course") == 49.0
 
 
 def test_the_ways_in_are_buying_it_each_membership_or_free():
@@ -627,6 +649,12 @@ def test_the_ways_in_are_buying_it_each_membership_or_free():
         "Free for everyone",
     )
     assert course[2][0] == "$49 paid once" and course[2][1] == "Included for members, $19 a month"
+    # Asked before the price: buying it says the price comes next.
+    assert brief.options_for(brief.FIELD_BY_ID["course_access"], FACE_AND_VINYASA)[2][0] == "You set the price next"
+    # Each way in says what it means: the access settings, taught on the tiles.
+    details = brief.details_for(brief.FIELD_BY_ID["course_access"], answers)
+    assert details["Anyone who buys the course"] == brief.BUY_DETAIL
+    assert details["Online membership"] == brief.MEMBER_DETAIL and details["Free for everyone"] == brief.FREE_DETAIL
     # She does not sell single classes: no way to buy one.
     assert brief.options_for(brief.FIELD_BY_ID["event_access"], answers)[0][0] == "Weekly face yoga classes"
 

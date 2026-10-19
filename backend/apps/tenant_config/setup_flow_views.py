@@ -94,6 +94,7 @@ def setup_flow_turn(request):
             spoken=bool(data.get("spoken")),
             choice=choice,
             field=str(data.get("field") or "") or None,
+            page=str(data.get("page") or "") or None,
         )
     except interview_milestones.ChoiceError as exc:
         return Response({"detail": str(exc)}, status=400)

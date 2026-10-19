@@ -18,9 +18,11 @@ import {
   formatPrice,
   joinSpeech,
   landedPage,
+  nextToReview,
   noteOf,
   pickedOptions,
   questionSteps,
+  reviewPages,
   SECTIONS,
   sectionOf,
   socialLink,
@@ -467,4 +469,39 @@ describe("who can open it: the badge follows the ways in ticked", () => {
       "Digital membership",
       "All-access",
     ]));
+});
+
+describe("reviewPages / nextToReview", () => {
+  const steps = [
+    { kind: "content", preview_path: "/courses/x" },
+    { kind: "page", page_key: "home", preview_path: "/" },
+    { kind: "page", page_key: "about", preview_path: "/about" },
+    { kind: "page", page_key: "courses", preview_path: "/courses" },
+    { kind: "page", page_key: "faq", preview_path: "/faq" },
+  ];
+  const builds = {
+    home: { status: "ready" },
+    about: { status: "building" },
+    courses: { status: "idle" },
+    faq: { status: "failed" },
+  };
+
+  it("lists the built pages in order, never one that was not built", () => {
+    const pages = reviewPages(steps, builds, ["home"]);
+    expect(pages.map((p) => [p.key, p.ok, p.building])).toEqual([
+      ["home", true, false],
+      ["about", false, true],
+      ["faq", false, false],
+    ]);
+  });
+
+  it("goes on to the next page still to approve, wrapping round", () => {
+    const pages = reviewPages(steps, builds, ["home"]);
+    expect(nextToReview(pages)?.key).toBe("about");
+    expect(nextToReview(pages, "about")?.key).toBe("faq");
+    expect(nextToReview(pages, "faq")?.key).toBe("about");
+    expect(
+      nextToReview(reviewPages(steps, builds, ["home", "about", "faq"])),
+    ).toBeUndefined();
+  });
 });

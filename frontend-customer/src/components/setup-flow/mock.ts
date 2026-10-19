@@ -44,6 +44,8 @@ const s = {
    * was actually sent this time. */
   turns: [] as InterviewEntry[],
   published: false,
+  /** Pages approved before going live, in this replay. */
+  pagesOk: [] as string[],
   /** A typed "different version": the draft is "building" until this time. */
   redraftUntil: {} as Partial<Record<ReviewKind, number>>,
   version: {} as Partial<Record<ReviewKind, number>>,
@@ -146,6 +148,7 @@ function snapshot(): SetupFlowState {
       remaining,
       phase: !remaining ? "golive" : building ? "building" : "interview",
       fired: [],
+      pages_ok: s.pagesOk,
       draft_status: Object.fromEntries(
         Object.entries(s.redraftUntil)
           .filter(([, t]) => (t ?? 0) > now)
@@ -167,7 +170,11 @@ export const mockSetupFlowApi: SetupFlowApi = {
     await init();
     return snapshot();
   },
-  act: async () => snapshot(),
+  act: async (body) => {
+    if (body.action === "approve")
+      s.pagesOk = [...s.pagesOk, body.step.replace(/^page:/, "")];
+    return snapshot();
+  },
   buildPage: async () => ({}),
   draft: async () => ({ id: 1, title: "Draft", preview_path: "/courses" }),
   turn: async (req) => {

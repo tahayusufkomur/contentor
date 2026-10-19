@@ -323,7 +323,8 @@ def draft_prompt(answers: dict, kind: str) -> str:
     if kind == "course":
         price = brief_price(answers, "course")
         if price == 0:
-            price_text = "free" if "membership" not in (answers.get("payments") or []) else "free (in my membership)"
+            members = set(brief.access_of(answers, "course")) - {brief.BUY, brief.FREE}
+            price_text = "free (in my membership)" if members else "free"
         elif price is None:
             price_text = "a fair price for this niche"
         else:
@@ -584,8 +585,9 @@ def apply_access(tenant, answers: dict | None = None) -> None:
     """Each drafted course or class takes the ways in the coach chose for it
     (brief.access_of: her answer, else what a "pick for me" gets): a place in
     every membership that includes it, and its price. Sold on its own it is
-    paid; open to members only it is "subscription"; else it is free. Only for
-    a coach with memberships: without them a draft's price is all there is."""
+    paid; open to members only it is "subscription"; else it is free. Only
+    where she was asked who can open it (she takes payments): otherwise a
+    draft's price is all there is."""
     from decimal import Decimal
 
     from apps.billing import ways
@@ -596,11 +598,10 @@ def apply_access(tenant, answers: dict | None = None) -> None:
     flow = TenantConfig.objects.first().setup_flow or {}
     drafts = flow.get("drafts") or {}
     plans = drafts.get("plans") or ({DEFAULT_TIER: drafts["plan"]} if drafts.get("plan") else {})
-    if not plans or not brief.memberships_of(answers):
-        return
+    asked = {f.id for f in brief.required(answers) if f.kind == "access"}
     for kind, (_, _, way, price_key, _) in brief.ACCESS.items():
         row = _draft_row(flow, kind)
-        if row is None:
+        if row is None or f"{kind}_access" not in asked:
             continue
         chosen = brief.access_of(answers, kind)
         want = list(dict.fromkeys(plans[w] for w in chosen if w in plans))
@@ -1042,9 +1043,7 @@ def chrome_cards(tenant, answers: dict, field_id: str) -> dict:
             else (nav.get("show_social") or socials)
         ),
         "transparent_over_hero": bool(
-            answers.get("navbar_transparent")
-            if "navbar_transparent" in answers
-            else nav.get("transparent_over_hero")
+            answers.get("navbar_transparent") if "navbar_transparent" in answers else nav.get("transparent_over_hero")
         ),
         "custom_links": bool(answers.get("navbar_links") or nav.get("custom_links")),
         "headline": str(answers.get("pitch") or answers.get("teaches") or "")[:120],

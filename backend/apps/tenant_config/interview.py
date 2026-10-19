@@ -561,6 +561,7 @@ def run_turn(
     choice: dict | None = None,
     field: str | None = None,
     imported: bool = False,
+    page: str | None = None,
 ) -> dict:
     """One coach message (typed, spoken or a tapped answer/card) → the guide's
     reply. ``field`` names the question the message answers when the coach
@@ -568,7 +569,9 @@ def run_turn(
     interview_milestones.ChoiceError for an invalid pick. ``imported`` marks
     ``message`` as a document the coach shared: read once for facts that fill
     only unsettled questions, never an edit or a redraft, and ImportUnavailableError
-    (nothing applied) when the AI cannot read it."""
+    (nothing applied) when the AI cannot read it. ``page`` is the site page the
+    coach is looking over before going live: her words are a change to that
+    page, sent straight to the copilot."""
     from . import interview_milestones as milestones
     from . import setup_flow
 
@@ -580,6 +583,7 @@ def run_turn(
     answers = brief.answers_of(tenant)
     base = dict(answers)
     pending = brief.missing(answers)
+    page = page if page in setup_flow.PAGE_PATHS and not pending and not choice and not imported else None
     asked = (flow.get("interview") or {}).get("asked") or (pending[0].id if pending else None)
     answering = (choice or {}).get("field") or (field if field in brief.FIELD_BY_ID else asked)
     # interview_state serves the opening question without storing it; keep it
@@ -617,7 +621,7 @@ def run_turn(
     instant = bool(pure and _code_owned(_next_field(brief.missing(answers), None, answers)))
     turn = (
         _ask_ai(tenant, answers, turns, text, spoken, None if imported else answering, imported)
-        if text and not review and not instant
+        if text and not review and not instant and not page
         else None
     )
     if imported:
@@ -654,6 +658,8 @@ def run_turn(
         guide = guide_for(nxt, redraft_ack(text) if review else ack, answers=answers, brand=brand)
     # A tapped chip/card is applied by code; it is never also a site edit.
     edit = _run_edit(tenant, turn.edit_request) if turn and turn.edit_request and not choice and not imported else None
+    if page and text:
+        edit = _run_edit(tenant, f'On the "{page}" page ({setup_flow.PAGE_PATHS[page]}) only: {text}')
     fired = milestones.fire(tenant, answers)
     milestones.apply_access(tenant, answers)  # a draft already made follows who she opened it to
     # Kept in the transcript; interview_state never re-serves it as the live
@@ -823,7 +829,7 @@ def _refresh_turn(turn: dict, answers: dict, brand: str) -> dict:
     fresh = guide_for(field, answers=answers, brand=brand)
     return {
         **turn,
-        **{k: fresh[k] for k in ("options", "icons", "hints", "why", "alone", "prefill_options")},
+        **{k: fresh[k] for k in ("options", "icons", "hints", "details", "why", "alone", "prefill_options")},
         **membership_prices(field.id, answers),
     }
 
@@ -869,4 +875,9 @@ def interview_state(tenant, flow: dict) -> dict:
         "phase": "golive" if not missing else "building" if "page:home" in fired else "interview",
         "fired": fired,
         "draft_status": flow.get("draft_status") or {},
+        # A bio read already (at signup, or shared here): no asking for one again.
+        "bio_read": bool((tenant.wizard_state or {}).get("about_prefills"))
+        or any(t.get("how") == "import" for t in turns),
+        # The pages she looked over and approved before going live.
+        "pages_ok": [s.removeprefix("page:") for s in flow.get("done") or [] if s.startswith("page:")],
     }

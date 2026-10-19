@@ -342,12 +342,19 @@ def default_tier(answers: dict) -> str:
 
 
 # Who can open what a coach makes: anyone who buys it on its own, the members
-# of each membership that includes it, or everyone. A coach with memberships is
-# asked once per thing she makes (the "<section>_access" fields); the answer is
-# a list of BUY, membership keys and FREE.
+# of each membership that includes it, or everyone. A coach who takes payments
+# is asked once per thing she makes (the "<section>_access" fields), before its
+# price: the price is asked only when it is sold on its own. The answer is a
+# list of BUY, membership keys and FREE.
 BUY, FREE = "buy", "free"
 FREE_ACCESS = "Free for everyone"
-ACCESS_WHY = "Tick every way in. Everything you add later gets this same choice."
+ACCESS_WHY = (
+    "Tick every way in: on its own, in a membership, or both. Everything you make later has this same Access section."
+)
+# What each way in means, under its tile: the access settings, taught once.
+BUY_DETAIL = "Sold on its own. Later you can add a time limit, like 90 days."
+MEMBER_DETAIL = "Members get it while their membership runs, and lose it if they cancel."
+FREE_DETAIL = "Anyone with a free account. A good first taste of your work."
 # section: (the answer that sells it on its own, how its price reads, the
 # payment way that sells it, the answer holding its price, the topic answer)
 ACCESS = {
@@ -359,13 +366,13 @@ ACCESS = {
 
 def access_options(answers: dict, kind: str) -> list[tuple[str, str, str, str]]:
     """(id, label, icon, hint) for every way into this coach's first course or
-    class: buying it when she sells that way, each of her memberships, free."""
-    from .setup_flow import brief_price
-
+    class: buying it when she sells that way, each of her memberships, free.
+    Asked before the price, so buying it reads as one once she has set it."""
     label, per, way, price_key, _ = ACCESS[kind]
     rows = []
     if way in (answers.get("payments") or []):
-        rows.append((BUY, label, "ticket", f"{money(brief_price(answers, way, price_key))} {per}"))
+        price = answers.get(price_key)
+        rows.append((BUY, label, "ticket", f"{money(price)} {per}" if price else "You set the price next"))
     rows += [
         (m["id"], m["label"], m["icon"], f"Included for members, {money(tier_price(answers, m['id']))} a month")
         for m in memberships_of(answers)
@@ -931,6 +938,19 @@ FIELDS: tuple[Field, ...] = (
         delegable=True,
     ),
     Field(
+        "course_access",
+        "Who can take the first course",
+        "Who can take this course?",
+        kind="access",  # options come from access_options(): buying it, each membership, or free
+        needs=("course",),
+        pays=("course", "membership"),
+        group="course",
+        multi=True,
+        alone=FREE_ACCESS,
+        delegable=True,
+        why=ACCESS_WHY,
+    ),
+    Field(
         "course_price",
         "First course price",
         "What should the course cost?",
@@ -940,19 +960,6 @@ FIELDS: tuple[Field, ...] = (
         needs=("course",),
         group="course",
         delegable=True,
-    ),
-    Field(
-        "course_access",
-        "Who can take the first course",
-        "Who can take this course?",
-        kind="access",  # options come from access_options(): buying it, each membership, or free
-        needs=("course",),
-        pays=("membership",),
-        group="course",
-        multi=True,
-        alone=FREE_ACCESS,
-        delegable=True,
-        why=ACCESS_WHY,
     ),
     Field(
         "course_review",
@@ -983,6 +990,19 @@ FIELDS: tuple[Field, ...] = (
         delegable=True,
     ),
     Field(
+        "event_access",
+        "Who can join the online class",
+        "Who can join this online class?",
+        kind="access",  # options come from access_options(): buying it, each membership, or free
+        needs=("live",),
+        pays=("event", "membership"),
+        group="event",
+        multi=True,
+        alone=FREE_ACCESS,
+        delegable=True,
+        why=ACCESS_WHY,
+    ),
+    Field(
         "event_price",
         "Price per online class",
         "What should one online class cost?",
@@ -992,19 +1012,6 @@ FIELDS: tuple[Field, ...] = (
         pays=("event",),
         group="event",
         delegable=True,
-    ),
-    Field(
-        "event_access",
-        "Who can join the online class",
-        "Who can join this online class?",
-        kind="access",  # options come from access_options(): buying it, each membership, or free
-        needs=("live",),
-        pays=("membership",),
-        group="event",
-        multi=True,
-        alone=FREE_ACCESS,
-        delegable=True,
-        why=ACCESS_WHY,
     ),
     Field(
         "event_review",
@@ -1045,6 +1052,19 @@ FIELDS: tuple[Field, ...] = (
         why="The place shows on your site. The street address goes only to students who can attend.",
     ),
     Field(
+        "onsite_access",
+        "Who can come to the in-person event",
+        "Who can come to this in-person event?",
+        kind="access",  # options come from access_options(): buying it, each membership, or free
+        needs=("onsite",),
+        pays=("event", "membership"),
+        group="onsite",
+        multi=True,
+        alone=FREE_ACCESS,
+        delegable=True,
+        why=ACCESS_WHY,
+    ),
+    Field(
         "onsite_price",
         "Price per in-person event",
         "What should one in-person event cost?",
@@ -1054,19 +1074,6 @@ FIELDS: tuple[Field, ...] = (
         pays=("event",),
         group="onsite",
         delegable=True,
-    ),
-    Field(
-        "onsite_access",
-        "Who can come to the in-person event",
-        "Who can come to this in-person event?",
-        kind="access",  # options come from access_options(): buying it, each membership, or free
-        needs=("onsite",),
-        pays=("membership",),
-        group="onsite",
-        multi=True,
-        alone=FREE_ACCESS,
-        delegable=True,
-        why=ACCESS_WHY,
     ),
     Field(
         "onsite_review",
@@ -1451,6 +1458,8 @@ def required(answers: dict) -> list[Field]:
         if (not f.needs or offers.intersection(f.needs))
         and (not f.pays or pays.intersection(f.pays))
         and f.group not in skipped
+        # A price only for what is sold on its own: members-only or free needs none.
+        and (f.kind != "price" or f.group not in ACCESS or BUY in access_of(answers, f.group))
         and (f.kind != "specialty" or specialties_for(answers))
         # The calendar shows whichever kind she did not skip.
         and (
@@ -1534,6 +1543,9 @@ def details_for(field: Field, answers: dict) -> dict[str, str]:
     """One description per option, shown once it is picked."""
     if field.kind == "memberships":
         return {t["label"]: t["blurb"] for t in membership_tiles(answers)}
+    if field.kind == "access":
+        detail = {BUY: BUY_DETAIL, FREE: FREE_DETAIL}
+        return {label: detail.get(i, MEMBER_DETAIL) for i, label, *_ in access_options(answers, field.group)}
     return dict(zip(field.options, field.details, strict=False)) if field.details else {}
 
 

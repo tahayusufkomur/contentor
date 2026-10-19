@@ -221,6 +221,15 @@ def test_complete_home_clears_the_look_blocker(client, config, builds):
     assert "look" not in body["publish_blockers"]
 
 
+def test_approving_a_page_before_going_live_stays_put_and_builds_nothing(client, config, builds):
+    body = client.post(URL, {"action": "approve", "step": "page:about"}, format="json").json()
+    assert "page:about" in _flow()["done"] and body["interview"]["pages_ok"] == ["about"]
+    assert body["step"] == "course"
+    builds.assert_not_called()
+    assert "about" in TenantConfig.objects.first().setup_progress["pages_edited"]
+    assert client.post(URL, {"action": "approve", "step": "course"}, format="json").status_code == 400
+
+
 def test_goto_skips_builds_already_running(client, config, builds):
     config.setup_flow = {**config.setup_flow, "page_builds": {"home": {"status": "building"}}}
     config.save()

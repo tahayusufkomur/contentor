@@ -1,14 +1,29 @@
 "use client";
 
-import { ArrowRight, Eye } from "lucide-react";
+import { ArrowRight, Check, Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { pageLabel, type ReviewPage } from "@/lib/interview";
 import type { GuideTurn, SetupFlowApi, TurnRequest } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
 import { AnswerBox } from "./answer-box";
 import { GoLiveCard } from "./go-live-card";
 
-/** The last stretch, beside the finished site: going live, and a box for
- * any change the coach still wants first. */
+/** The pages looked over one by one before going live. */
+export interface PageReviewProps {
+  pages: ReviewPage[];
+  /** The page on screen, or the next one to approve. */
+  focus: ReviewPage;
+  /** The preview shows ``focus`` (not some other page she browsed to). */
+  shown: boolean;
+  approving: boolean;
+  onApprove: () => void;
+  /** Show another page in the preview. */
+  onShow: (page: ReviewPage) => void;
+}
+
+/** The last stretch, beside the finished site: each page looked over and
+ * approved (with a box for changes to it), then going live. */
 export function GoLivePanel({
   guide,
   api,
@@ -21,6 +36,7 @@ export function GoLivePanel({
   menu,
   onSeeSite,
   host,
+  review,
   className,
 }: {
   guide: GuideTurn;
@@ -37,6 +53,8 @@ export function GoLivePanel({
   /** On a phone the site is a tab away: a card opens it. */
   onSeeSite?: () => void;
   host?: string;
+  /** Set while a page is still to approve: the panel walks through them. */
+  review?: PageReviewProps;
   className?: string;
 }) {
   // While pages still build the site is not ready yet: say what is left
@@ -57,9 +75,13 @@ export function GoLivePanel({
             {guide.ack}
           </p>
         )}
-        <h1 className="mt-1 text-[26px] font-semibold leading-tight tracking-[-0.02em]">
-          {activity ? "Almost ready" : guide.question}
-        </h1>
+        {review ? (
+          <PageReview {...review} sending={sending} />
+        ) : (
+          <h1 className="mt-1 text-[26px] font-semibold leading-tight tracking-[-0.02em]">
+            {activity ? "Almost ready" : guide.question}
+          </h1>
+        )}
         {activity && (
           <p
             role="status"
@@ -91,11 +113,14 @@ export function GoLivePanel({
             <ArrowRight className="size-4 shrink-0" aria-hidden />
           </button>
         )}
-        <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--sf-graphite)]">
-          Want something changed first? Tell me below, like “make the headline
-          warmer” or “use a calmer photo”.
-        </p>
-        <div className="mt-6">
+        {!review && (
+          <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--sf-graphite)]">
+            Want something changed first? Tell me below, like “make the headline
+            warmer” or “use a calmer photo”.
+          </p>
+        )}
+        {/* Mounted while she reviews, so the last visual check starts then. */}
+        <div className={review ? "hidden" : "mt-6"}>
           <GoLiveCard api={api} onPublished={onPublished} />
         </div>
       </div>
@@ -113,10 +138,114 @@ export function GoLivePanel({
           value={text}
           onChange={onText}
           sending={sending}
-          placeholder="Ask for a change…"
-          onSubmit={(t, spoken) => onSend({ message: t, spoken })}
+          placeholder={
+            review
+              ? `Change something on your ${pageLabel(review.focus.key)}…`
+              : "Ask for a change…"
+          }
+          onSubmit={(t, spoken) =>
+            onSend({ message: t, spoken, page: review?.focus.key })
+          }
         />
       </div>
     </section>
+  );
+}
+
+const pageName = (key: string) => {
+  const name = pageLabel(key).replace(/ page$/, "");
+  return name.charAt(0).toUpperCase() + name.slice(1);
+};
+
+/** One page at a time: is she happy with it? Approved, the next one opens. */
+function PageReview({
+  pages,
+  focus,
+  shown,
+  approving,
+  onApprove,
+  onShow,
+  sending,
+}: PageReviewProps & { sending: boolean }) {
+  const index = pages.findIndex((p) => p.key === focus.key);
+  const left = pages.filter((p) => !p.ok).length;
+  return (
+    <>
+      <p className="text-[12.5px] font-medium text-[var(--sf-faint)]">
+        Before you go live · page {index + 1} of {pages.length}
+      </p>
+      <h1 className="mt-1 text-[26px] font-semibold leading-tight tracking-[-0.02em]">
+        Happy with your {pageLabel(focus.key)}?
+      </h1>
+      <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--sf-graphite)]">
+        Look it over. Tell me below anything to change on this page, or approve
+        it and we&rsquo;ll go to the next one.
+      </p>
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        {!shown ? (
+          <Button onClick={() => onShow(focus)} className="rounded-full px-5">
+            Show your {pageLabel(focus.key)}
+          </Button>
+        ) : focus.ok ? (
+          <p className="flex items-center gap-1.5 text-[14px] font-medium">
+            <Check className="size-4 text-[var(--sf-brass)]" aria-hidden />
+            Approved. {left} {left === 1 ? "page" : "pages"} to go.
+          </p>
+        ) : (
+          <Button
+            onClick={onApprove}
+            loading={approving}
+            loadingText="Saving…"
+            disabled={focus.building || sending}
+            className="rounded-full px-5"
+          >
+            This page looks good
+          </Button>
+        )}
+        {focus.building && (
+          <span className="text-[13.5px] text-[var(--sf-graphite)]">
+            Still building this page…
+          </span>
+        )}
+      </div>
+      <ol aria-label="Your pages" className="mt-6 space-y-1">
+        {pages.map((p) => (
+          <li key={p.key}>
+            <button
+              type="button"
+              onClick={() => onShow(p)}
+              aria-current={p.key === focus.key ? "page" : undefined}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-[14.5px] transition-colors hover:bg-[var(--sf-tint-strong)]",
+                p.key === focus.key && "bg-white ring-1 ring-[var(--sf-line)]",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex size-6 shrink-0 items-center justify-center rounded-full border text-[11.5px]",
+                  p.ok
+                    ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-white"
+                    : "border-[var(--sf-line-strong)] text-[var(--sf-graphite)]",
+                )}
+              >
+                {p.ok ? (
+                  <Check className="size-3.5" strokeWidth={3} aria-hidden />
+                ) : p.building ? (
+                  <Spinner size="sm" />
+                ) : (
+                  pages.indexOf(p) + 1
+                )}
+              </span>
+              <span className="min-w-0 flex-1 truncate font-medium">
+                {pageName(p.key)}
+              </span>
+              <span className="text-[12.5px] text-[var(--sf-faint)]">
+                {p.ok ? "Approved" : p.building ? "Building" : "To review"}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </>
   );
 }

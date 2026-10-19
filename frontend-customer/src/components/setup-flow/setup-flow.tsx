@@ -16,8 +16,10 @@ import {
   activityLine,
   finishedNotes,
   landedPage,
+  nextToReview,
   pageLabel,
   questionSteps,
+  reviewPages,
   scheduleSummary,
   SECTIONS,
   sectionOf,
@@ -408,6 +410,30 @@ function Flow({
     return () => window.removeEventListener("keydown", onKey);
   }, [golive, sending, index, lastIndex, goBack, goNext]);
 
+  // Before going live, every built page is looked over and approved: the
+  // one on screen, else the next one still to approve.
+  const pages = reviewPages(flow.steps, flow.page_builds, iv.pages_ok ?? []);
+  const focus = pages.find((p) => p.path === path) ?? nextToReview(pages);
+  const reviewing = golive && !!focus && pages.some((p) => !p.ok);
+  const { run: approve, loading: approving } = useAsyncAction(
+    async (key: string) => {
+      const fresh = await holdPolls(() =>
+        api.act({ action: "approve", step: `page:${key}` }),
+      );
+      setFlow(fresh);
+      const next = nextToReview(
+        reviewPages(
+          fresh.steps,
+          fresh.page_builds,
+          fresh.interview.pages_ok ?? [],
+        ),
+        key,
+      );
+      if (next) setPath(next.path);
+    },
+    { errorToast: "Couldn’t save that. Try again." },
+  );
+
   const currentPage = flow.steps.find((s) => s.preview_path === path)?.page_key;
   const build = currentPage ? flow.page_builds[currentPage] : undefined;
   // A failed build shows its first version instead of composing forever.
@@ -663,7 +689,7 @@ function Flow({
               builder={builder}
               onDraft={editDraft(step.field ?? GOLIVE)}
               onSend={(req) => void send(req)}
-              onShare={shareDoc}
+              onShare={iv.bio_read ? undefined : shareDoc}
               onMoreLogos={api.logos}
               onCover={async (kind, asset) => {
                 await api.cover(kind, asset);
@@ -726,6 +752,18 @@ function Flow({
         }
         onSend={(req) => void send(req)}
         onPublished={() => setCelebrate(true)}
+        review={
+          reviewing && focus
+            ? {
+                pages,
+                focus,
+                shown: focus.path === path,
+                approving,
+                onApprove: () => void approve(focus.key),
+                onShow: (p) => setPath(p.path),
+              }
+            : undefined
+        }
         className={cn(
           "lg:w-[440px] lg:shrink-0 lg:border-l lg:border-[var(--sf-line)]",
           narrow && tab !== "guide" ? "hidden" : "flex flex-1 lg:flex-none",

@@ -195,6 +195,28 @@ def test_edit_request_reaches_the_copilot(client, quiet):
     assert body["edit"] == payload
 
 
+def test_a_change_asked_on_a_page_under_review_goes_to_that_page(client, tenant_ctx, quiet):
+    _only_missing(tenant_ctx, ())
+    payload = {"kind": "answer", "text": "Done"}
+    with mock.patch("apps.core.copilot.engine.run_turn", return_value=(payload, Decimal("0"))) as run:
+        body = client.post(URL, {"message": "a calmer photo", "page": "about"}, format="json").json()
+    assert quiet.calls == []  # straight to the copilot: no interview turn first
+    assert run.call_args.args[3] == 'On the "about" page (/about) only: a calmer photo'
+    assert body["edit"] == payload
+
+
+def test_a_bio_read_once_is_not_asked_for_again(client, tenant_ctx, quiet):
+    flow = {}
+    assert interview.interview_state(tenant_ctx, flow)["bio_read"] is False
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"about_prefills": {"teaches": "Yoga"}})
+    tenant_ctx.refresh_from_db()
+    assert interview.interview_state(tenant_ctx, flow)["bio_read"] is True
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={})
+    tenant_ctx.refresh_from_db()
+    shared = {"interview": {"turns": [{"role": "coach", "text": interview.IMPORT_TURN_TEXT, "how": "import"}]}}
+    assert interview.interview_state(tenant_ctx, shared)["bio_read"] is True
+
+
 def test_a_turn_that_starts_work_says_so(client, tenant_ctx, quiet):
     quiet.reply = interview.InterviewTurn(ack="Got it.", next_field="audience", question="Who?")
     fired = ["style:auto", "page:home", "rank:logos", "draft:course"]
@@ -461,7 +483,8 @@ def test_a_section_is_asked_in_order_whatever_the_ai_prefers(client, tenant_ctx,
 
 
 def test_words_on_a_review_screen_redraft_without_an_ai_turn(client, tenant_ctx, quiet):
-    _set_answers(tenant_ctx, {**BEFORE_COURSE, "course_topic": "Footwork", "course_price": 49.0})
+    answers = {**BEFORE_COURSE, "course_topic": "Footwork", "course_access": ["buy"], "course_price": 49.0}
+    _set_answers(tenant_ctx, answers)
     with mock.patch("apps.tenant_config.interview_milestones.redraft") as redraft:
         body = client.post(URL, {"message": "Make it six weeks", "field": "course_review"}, format="json").json()
     assert quiet.calls == []
@@ -472,20 +495,20 @@ def test_words_on_a_review_screen_redraft_without_an_ai_turn(client, tenant_ctx,
 
 
 def test_a_started_section_finishes_before_other_questions(client, tenant_ctx, quiet):
-    answers = {**BEFORE_COURSE, "payments": ["course", "membership"], "course_topic": "Footwork"}
-    _set_answers(tenant_ctx, answers)
+    _set_answers(tenant_ctx, {**BEFORE_COURSE, "payments": ["course", "membership"]})
     quiet.reply = interview.InterviewTurn(
-        facts=[{"field": "course_price", "value": "49"}],
+        facts=[{"field": "course_topic", "value": "Footwork"}],
         ack="Ok.",
         next_field="memberships",
         question="Which memberships?",
     )
-    guide = client.post(URL, {"message": "49", "field": "course_price"}, format="json").json()["guide"]
-    # A coach with memberships is asked who can open it before she reviews it.
+    guide = client.post(URL, {"message": "Footwork", "field": "course_topic"}, format="json").json()["guide"]
+    # Who can open it is asked before any price: members only needs none.
     assert guide["field"] == "course_access"
     assert guide["options"] == ["Anyone who buys the course", "Digital membership", "Free for everyone"]
-    assert guide["hints"]["Anyone who buys the course"] == "$49 paid once"
+    assert guide["hints"]["Anyone who buys the course"] == "You set the price next"
     assert guide["hints"]["Digital membership"] == "Included for members, $9 a month"
+    assert guide["details"]["Digital membership"].startswith("Members get it")
     assert guide["multi"] is True and guide["alone"] == "Free for everyone" and guide["can_delegate"] is True
     # What a "pick for me" would set starts ticked: one tap to agree.
     assert guide["prefill_options"] == ["Anyone who buys the course", "Digital membership"]
@@ -495,11 +518,18 @@ def test_a_started_section_finishes_before_other_questions(client, tenant_ctx, q
     assert guide["field"] == "course_review"
 
 
-def test_a_coach_without_memberships_is_never_asked_who_can_open_it(client, tenant_ctx, quiet):
-    """One way in is no choice: the price already says it."""
-    _set_answers(tenant_ctx, {**BEFORE_COURSE, "payments": ["course"], "course_topic": "Footwork"})
-    quiet.reply = interview.InterviewTurn(facts=[{"field": "course_price", "value": "49"}], ack="Ok.")
-    guide = client.post(URL, {"message": "49", "field": "course_price"}, format="json").json()["guide"]
+def test_selling_it_on_its_own_asks_its_price_next(client, tenant_ctx, quiet):
+    _set_answers(tenant_ctx, {**BEFORE_COURSE, "course_topic": "Footwork"})
+    guide = client.post(URL, {"message": "Anyone who buys the course", "field": "course_access"}, format="json")
+    assert guide.json()["guide"]["field"] == "course_price"
+    assert _answers(tenant_ctx)["course_access"] == ["buy"]
+
+
+def test_a_course_given_free_is_never_priced(client, tenant_ctx, quiet):
+    """A coach who sells courses can still give this one away: no price asked."""
+    _set_answers(tenant_ctx, {**BEFORE_COURSE, "course_topic": "Footwork"})
+    guide = client.post(URL, {"message": "Free for everyone", "field": "course_access"}, format="json").json()["guide"]
+    assert quiet.calls == []
     assert guide["field"] == "course_review"
 
 

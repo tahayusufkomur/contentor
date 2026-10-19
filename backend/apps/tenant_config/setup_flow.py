@@ -284,11 +284,13 @@ def _on_complete(config, flow, step):
 
 
 def act(tenant, action: str, step_id: str | None = None, publish: bool = False) -> None:
-    """Apply one POST action (goto / complete / skip / finish). Raises
-    FlowError or PublishBlockedError on a refused action, leaving state untouched."""
+    """Apply one POST action (goto / complete / skip / finish / approve).
+    ``approve`` is a page the coach looked over before going live: marked done
+    where it is, without moving on or building anything. Raises FlowError or
+    PublishBlockedError on a refused action, leaving state untouched."""
     steps = applicable_steps(tenant)
     ids = [s["id"] for s in steps]
-    if action not in ("goto", "complete", "skip", "finish"):
+    if action not in ("goto", "complete", "skip", "finish", "approve"):
         raise FlowError("unknown_action")
 
     def mutate(config, flow):
@@ -312,6 +314,12 @@ def act(tenant, action: str, step_id: str | None = None, publish: bool = False) 
         step = steps[ids.index(target)]
         if action == "skip" and not step["optional"]:
             raise FlowError("step_not_optional")
+        if action == "approve":
+            if step["kind"] != "page":
+                raise FlowError("not_a_page")
+            _on_complete(config, flow, step)
+            flow["done"] = list(dict.fromkeys([*(flow.get("done") or []), target]))
+            return
         if action == "complete":
             _on_complete(config, flow, step)
         mark, other = ("done", "skipped") if action == "complete" else ("skipped", "done")
@@ -320,7 +328,7 @@ def act(tenant, action: str, step_id: str | None = None, publish: bool = False) 
         flow["step"] = ids[min(ids.index(target) + 1, len(ids) - 1)]
 
     flow = _update_flow(tenant, mutate)
-    if action != "finish":
+    if action not in ("finish", "approve"):
         _queue_page_builds(tenant, steps, flow["step"])
 
 
@@ -450,6 +458,8 @@ def brief_price(answers: dict, kind: str, price_key: str | None = None) -> float
     when the brief says nothing about selling (the model's draft stands).
     ``kind`` is the way it is paid for; ``price_key`` the answer holding the
     price when that is not ``<kind>_price`` (the in-person event's)."""
+    from .interview_brief import ACCESS, BUY, access_of
+
     ways = answers.get("payments")
     if ways is None:  # an interview from before the payments question
         if kind != "course" or answers.get("sells") != "paid":
@@ -457,7 +467,12 @@ def brief_price(answers: dict, kind: str, price_key: str | None = None) -> float
         ways = ["course"]
     if kind not in ways:
         return 0.0
-    price = answers.get(price_key or f"{kind}_price")
+    price_key = price_key or f"{kind}_price"
+    # Opened to members only, or free: not sold on its own (asked since the payments question).
+    section = price_key.removesuffix("_price")
+    if answers.get("payments") is not None and section in ACCESS and BUY not in access_of(answers, section):
+        return 0.0
+    price = answers.get(price_key)
     return float(price) if price else DEFAULT_COURSE_PRICE if kind == "course" else DEFAULT_EVENT_PRICE
 
 

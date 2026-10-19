@@ -105,6 +105,8 @@ test("signup lands in /setup and the interview ends in a published site", async 
   const looksGood = guide.getByRole("button", { name: "Looks good, continue" });
   const draftFailed = guide.getByText(/I couldn’t draft your/);
   const goLive = guide.getByRole("button", { name: "Go live", exact: true });
+  // Before going live each built page is looked over and approved, one by one.
+  const pageOk = guide.getByRole("button", { name: "This page looks good" });
   // The first payments tile is a paid one, and a trial cannot sell; the spec
   // goes live now and sells later instead of starting the plan. There is no
   // going free (decision 2026-10-17).
@@ -126,13 +128,14 @@ test("signup lands in /setup and the interview ends in a published site", async 
   };
   const action = decide
     .or(looksGood)
+    .or(pageOk)
     .or(goLive)
     .or(sellLater)
     .or(tile)
     .or(zone)
     .or(place)
     .or(stockPhotos);
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 50; i++) {
     // Wait for the work in flight to finish, then for the next screen's controls.
     await busy.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
     // Every busy line gone (a change and a page build can show at once).
@@ -140,6 +143,12 @@ test("signup lands in /setup and the interview ends in a published site", async 
     await action.first().waitFor({ state: "visible", timeout: 20_000 }).catch(() => {});
     await keepLook.waitFor({ state: "visible", timeout: 2_000 }).catch(() => {});
     if (await keepLook.isVisible()) await keepLook.click();
+    if (await pageOk.isVisible()) {
+      // Enabled once that page is built.
+      await expect(pageOk).toBeEnabled({ timeout: 300_000 });
+      await pageOk.click();
+      continue;
+    }
     if (await goLive.isVisible()) break;
     if (await sellLater.isVisible()) {
       await expect(guide.getByRole("button", { name: /make it free/i })).toHaveCount(0);

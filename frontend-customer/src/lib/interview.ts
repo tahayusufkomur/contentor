@@ -38,6 +38,47 @@ const PAGE_LABELS: Record<string, string> = {
 };
 export const pageLabel = (key: string) => PAGE_LABELS[key] ?? `${key} page`;
 
+/** A built page of the site, looked over with the coach before going live. */
+export interface ReviewPage {
+  key: string;
+  path: string;
+  /** She approved it. */
+  ok: boolean;
+  /** Still being built: nothing to approve yet. */
+  building: boolean;
+}
+
+/** The pages built for the site, in menu order (a page never built is not
+ * part of it), each marked once she approved it. */
+export function reviewPages(
+  steps: { kind: string; page_key?: string; preview_path: string | null }[],
+  builds: Builds,
+  approved: string[],
+): ReviewPage[] {
+  return steps.flatMap((s) => {
+    const status = s.page_key ? builds[s.page_key]?.status : undefined;
+    if (s.kind !== "page" || !s.page_key || !s.preview_path) return [];
+    if (!status || status === "idle") return [];
+    return [
+      {
+        key: s.page_key,
+        path: s.preview_path,
+        ok: approved.includes(s.page_key),
+        building: status === "building",
+      },
+    ];
+  });
+}
+
+/** The next page still to approve after ``from``, wrapping round. */
+export function nextToReview(
+  pages: ReviewPage[],
+  from?: string,
+): ReviewPage | undefined {
+  const at = pages.findIndex((p) => p.key === from);
+  return [...pages.slice(at + 1), ...pages.slice(0, at + 1)].find((p) => !p.ok);
+}
+
 const DRAFT_LABELS: Record<string, string> = {
   course: "your first course",
   event: "your first online class",
@@ -319,19 +360,19 @@ export const SECTIONS: { label: string; fields: string[] }[] = [
       "payments",
       "memberships",
       "course_topic",
-      "course_price",
       "course_access",
+      "course_price",
       "course_review",
       "live_topic",
       "live_when",
-      "event_price",
       "event_access",
+      "event_price",
       "event_review",
       "onsite_topic",
       "onsite_when",
       "location",
-      "onsite_price",
       "onsite_access",
+      "onsite_price",
       "onsite_review",
       "calendar_view",
       "article_topic",

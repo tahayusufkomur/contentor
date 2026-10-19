@@ -53,7 +53,7 @@ export interface SetupFlowState {
 }
 
 export type SetupAction =
-  | { action: "goto" | "skip"; step: string }
+  | { action: "goto" | "skip" | "approve"; step: string }
   | { action: "complete"; step?: string }
   | { action: "finish"; publish: boolean };
 
@@ -437,6 +437,10 @@ export interface InterviewState {
   draft_status: Partial<Record<ContentKind, "building" | "ready" | "failed">>;
   /** Fresh cards for look and review questions already behind the coach. */
   cards?: Partial<Record<string, GuideCards>>;
+  /** Her bio was read already (at signup, or shared here): never asked for again. */
+  bio_read?: boolean;
+  /** The pages she looked over and approved before going live. */
+  pages_ok?: string[];
 }
 
 export interface TurnRequest {
@@ -445,6 +449,8 @@ export interface TurnRequest {
   choice?: { field: string; value: string };
   /** An earlier question the coach went back to (default: the live one). */
   field?: string;
+  /** The page she is looking over before going live: the words change it. */
+  page?: string;
 }
 
 export interface TurnResponse {

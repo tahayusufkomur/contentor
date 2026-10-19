@@ -93,8 +93,9 @@ export function QuestionScreen({
   builder?: BuilderData;
   onDraft: (update: (d: StepDraft) => StepDraft) => void;
   onSend: (req: TurnRequest) => void;
-  /** Hand over a bio, CV or old About page; throws when it can't be read. */
-  onShare: (doc: ShareDoc) => Promise<void>;
+  /** Hand over a bio, CV or old About page; throws when it can't be read.
+   * Absent once one was read: it is never asked for again. */
+  onShare?: (doc: ShareDoc) => Promise<void>;
   /** Which way the slide came from: forward, or back to an earlier question. */
   dir: "next" | "back";
   onMoreLogos: (page: number) => Promise<LookCards>;
@@ -872,7 +873,8 @@ export function QuestionScreen({
                   }
                 />
               </div>
-              {live &&
+              {onShare &&
+                live &&
                 !review &&
                 step.field &&
                 SHARE_FIELDS.includes(step.field) && (
