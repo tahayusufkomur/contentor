@@ -81,7 +81,6 @@ describe("stateLine", () => {
     expect(
       stateLine(
         info({ has_access: true, access_ends_at: "2027-07-19T12:00:00Z" }),
-        undefined,
         NOW,
       ),
     ).toBe("Your access ends on 19 Jul 2027");
@@ -89,26 +88,20 @@ describe("stateLine", () => {
 
   it("tells a waiting member when it opens", () => {
     const waiting = info({ opens_at: "2026-11-08T12:00:00Z" });
-    expect(stateLine(waiting, "Gold", NOW)).toBe(
-      "Opens for you on 8 Nov 2026 with your Gold membership",
-    );
-    expect(stateLine(waiting, undefined, NOW)).toBe(
-      "Opens for you on 8 Nov 2026",
-    );
+    expect(stateLine(waiting, NOW)).toBe("Opens for you on 8 Nov 2026");
   });
 
   it("tells a student whose window closed", () => {
     expect(
       stateLine(
         info({ access_ends_at: "2027-07-19T12:00:00Z" }),
-        undefined,
         Date.parse("2027-08-01T00:00:00Z"),
       ),
     ).toBe("Your access ended on 19 Jul 2027");
   });
 
   it("is empty when there is nothing to say", () => {
-    expect(stateLine(info({}), undefined, NOW)).toBe("");
-    expect(stateLine(info({ has_access: true }), undefined, NOW)).toBe("");
+    expect(stateLine(info({}), NOW)).toBe("");
+    expect(stateLine(info({ has_access: true }), NOW)).toBe("");
   });
 });

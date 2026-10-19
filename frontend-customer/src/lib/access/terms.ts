@@ -54,20 +54,12 @@ export function freeTerms(w: Window | null | undefined): string {
 }
 
 /** The viewer's own dates, or "" when there is nothing to say. */
-export function stateLine(
-  info: AccessInfo,
-  viewerPlanName?: string,
-  now = Date.now(),
-): string {
+export function stateLine(info: AccessInfo, now = Date.now()): string {
   if (info.has_access)
     return info.access_ends_at
       ? `Your access ends on ${localDay(info.access_ends_at)}`
       : "";
-  if (info.opens_at)
-    return (
-      `Opens for you on ${localDay(info.opens_at)}` +
-      (viewerPlanName ? ` with your ${viewerPlanName} membership` : "")
-    );
+  if (info.opens_at) return `Opens for you on ${localDay(info.opens_at)}`;
   if (info.access_ends_at && Date.parse(info.access_ends_at) < now)
     return `Your access ended on ${localDay(info.access_ends_at)}`;
   return "";
