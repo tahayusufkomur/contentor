@@ -583,8 +583,9 @@ def state(creation) -> dict:
             # Upper-first, never capitalize(): that lowercases the rest ("Zoom", "Messages").
             "why": f"{gap[0].upper()}{gap[1:]}. Until then it stays a hidden draft.",
             "options": [o for o in asked["options"] if o["value"] != adapter.FINISH[0][0]],
-            # Whoever drafts it says what it still needs (the course's and the event's: content).
-            "specialist": recipe.specialists[_review_id(recipe)],
+            # Whoever drafts it says what it still needs (the course's and the event's: content),
+            # unless the kind names who asks its finish (a membership's: Finance, whose step its price is).
+            "specialist": getattr(adapter, "FINISH_SPECIALIST", None) or recipe.specialists[_review_id(recipe)],
         }
     if record and field == "finish":
         asked = _finish_options(creation, asked, record)

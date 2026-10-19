@@ -29,6 +29,7 @@ The adapter (the course's in kinds/course.py):
 - FINISH: the finish step's (value, label) options: the go-live one first, the keep one second.
 - CLOSING: the dock's closing line for each FINISH value, or a function of the record giving it (after
   go_live: "Scheduled for ..."). NOT_READY_LINE: the finish question while not ready.
+- FINISH_SPECIALIST: optional, who asks that not-ready finish; else its review's specialist (who drafts it).
 - ANNOUNCER: the specialist who drafts the announcement after it goes live, or None (no offer).
 - announce_facts(record): {"what", "title", "description", "link", "when"} for that announcement; None without
   an ANNOUNCER.

@@ -36,6 +36,7 @@ CLOSING = {
     "off_sale": "Kept off sale. Put it on sale from this page when you're ready.",
 }
 NOT_READY_LINE = "Your membership is kept off sale."
+FINISH_SPECIALIST = "finance"  # what it still needs is Finance's (G16): its items and its price
 NO_ITEMS, NO_PRICE = "Add what members get first", "Set its price first"
 NOTHING = "Nothing ticked"  # a tap none of whose values is one of her tiles
 REFUSED_NAMES = 3  # the items a refusal line names; past that, "and N more"
