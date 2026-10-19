@@ -599,6 +599,61 @@ class TestSubscriptionCourseAccess:
         resp = client.get(f"/api/v1/courses/{published_course.slug}/progress/")
         assert resp.status_code == 403, resp.content
 
+    def test_a_members_own_enrollment_ends_with_the_membership(self, paid_course_in_plan, student):
+        """Enrolling through a membership is not the coach's grant: the
+        course locks again once the membership ends."""
+        from apps.billing.models import Subscription
+
+        client = make_client(student)
+        assert client.post(f"/api/v1/courses/{paid_course_in_plan.slug}/enroll/").status_code == 201
+        Subscription.objects.filter(student=student).update(status="expired")
+        detail = client.get(f"/api/v1/courses/{paid_course_in_plan.slug}/").json()
+        assert detail["access_info"]["has_access"] is False
+
+
+# ---------------------------------------------------------------------------
+# Tests: the coach's "Give access" on a student
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def paid_course_with_lesson(tenant_ctx, owner):
+    course = Course.objects.create(
+        title="Granted Course",
+        slug="granted-course",
+        instructor=owner,
+        pricing_type="paid",
+        price=Decimal("59.00"),
+        is_published=True,
+    )
+    module = Module.objects.create(course=course, title="M1", order=1)
+    Lesson.objects.create(module=module, title="L1", order=1, content_html="<p>The lesson</p>")
+    return course
+
+
+def _give_access(owner, student, course):
+    resp = make_client(owner).post(
+        f"/api/v1/auth/students/{student.pk}/grant-access/", {"course_id": course.pk}, format="json"
+    )
+    assert resp.status_code == 200, resp.content
+
+
+@pytest.mark.django_db(transaction=True)
+class TestGiveAccess:
+    def test_give_access_opens_a_paid_courses_lessons(self, owner, student, paid_course_with_lesson):
+        _give_access(owner, student, paid_course_with_lesson)
+        detail = make_client(student).get(f"/api/v1/courses/{paid_course_with_lesson.slug}/").json()
+        assert detail["access_info"]["has_access"] is True
+        assert detail["access_info"]["access_reason"] == "granted"
+        assert detail["modules"][0]["lessons"][0]["content_html"] == "<p>The lesson</p>"
+
+    def test_the_course_list_shows_a_granted_course_open(self, owner, student, paid_course_with_lesson):
+        _give_access(owner, student, paid_course_with_lesson)
+        rows = make_client(student).get("/api/v1/courses/").json()
+        row = next(r for r in rows if r["slug"] == paid_course_with_lesson.slug)
+        assert row["access_info"]["has_access"] is True
+        assert row["access_info"]["access_reason"] == "granted"
+
 
 # ---------------------------------------------------------------------------
 # Tests: pricing_type="subscription" (included in subscription)

@@ -443,6 +443,7 @@ def student_grant_access(request, pk):
 
     enrollment, _ = Enrollment.objects.get_or_create(user=student, course=course)
     enrollment.is_active = True
+    enrollment.granted = True
     enrollment.save()
 
     return Response(

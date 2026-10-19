@@ -145,6 +145,9 @@ class Enrollment(models.Model):
     enrolled_at = models.DateTimeField(auto_now_add=True)
     payment_id = models.IntegerField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    # The coach's "Give access" on a student: the paywall opens the course for
+    # these rows only, as a member's own enrollment outlives the membership.
+    granted = models.BooleanField(default=False)
 
     class Meta:
         app_label = "courses"

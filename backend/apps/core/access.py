@@ -70,6 +70,16 @@ class ContentAccessService:
                 access_reason="bundle",
             )
 
+        # 4b. The coach gave it to this student ("Give access", courses only)
+        if self._has_grant(user, content):
+            return AccessInfo(
+                has_access=True,
+                pricing_type=pricing_type,
+                price=price,
+                currency=currency,
+                access_reason="granted",
+            )
+
         # 5. Active subscription: a plan that includes this content, or, for
         # subscription-priced content no plan names, any active subscription
         # (the same rule get_unlock_options offers plans by).
@@ -157,6 +167,7 @@ class ContentAccessService:
         target_ct = ContentType.objects.get_for_model(type(items[0]))
         purchased_ids = self._batch_direct_purchases(user, target_ct)
         bundle_ids = self._batch_bundle_purchases(user, target_ct)
+        granted_ids = self._batch_grants(user, target_ct)
         subscription_ids = self._batch_subscription_access(user, target_ct)
         plan_linked_ids = self._batch_plan_linked_by_ct(target_ct)
         has_any_subscription = (
@@ -187,6 +198,14 @@ class ContentAccessService:
                     price=price,
                     currency=currency,
                     access_reason="bundle",
+                )
+            elif item.pk in granted_ids:
+                result[item.pk] = AccessInfo(
+                    has_access=True,
+                    pricing_type=pricing_type,
+                    price=price,
+                    currency=currency,
+                    access_reason="granted",
                 )
             elif item.pk in subscription_ids or (
                 pricing_type == "subscription" and item.pk not in plan_linked_ids and has_any_subscription
@@ -348,6 +367,22 @@ class ContentAccessService:
             ).exists()
         except ImportError:
             return False
+
+    def _has_grant(self, user, content) -> bool:
+        if content._meta.label_lower != "courses.course":
+            return False
+        from apps.courses.models import Enrollment
+
+        return Enrollment.objects.filter(user=user, course_id=content.pk, is_active=True, granted=True).exists()
+
+    def _batch_grants(self, user, target_ct) -> set[int]:
+        if (target_ct.app_label, target_ct.model) != ("courses", "course"):
+            return set()
+        from apps.courses.models import Enrollment
+
+        return set(
+            Enrollment.objects.filter(user=user, is_active=True, granted=True).values_list("course_id", flat=True)
+        )
 
     def _has_any_active_subscription(self, user) -> bool:
         try:
