@@ -93,6 +93,84 @@ export const draftToComposePrefill = (
   link: draft.link || "",
 });
 
+/** The fields of a draft that she and the copy run both write (focus mode). */
+export interface DraftFields {
+  title: string;
+  body: string;
+  link: string;
+}
+
+// A field as the server keeps it: it trims a title and a link.
+const TIDY: Record<keyof DraftFields, (value: string) => string> = {
+  title: (value) => value.trim(),
+  body: (value) => value,
+  link: (value) => value.trim(),
+};
+
+/** One field as the server holds it. */
+export const tidyField = (field: keyof DraftFields, value: string) =>
+  TIDY[field](value);
+
+/** The draft's fields as the server holds them, from any record that has them. */
+export const draftFields = (draft: Partial<DraftFields>): DraftFields => ({
+  title: TIDY.title(draft.title ?? ""),
+  body: draft.body ?? "",
+  link: TIDY.link(draft.link ?? ""),
+});
+
+/** She changed this field since `was`, the copy it was last given from the
+ *  server or the copy run (the form holds it as typed, the server trims). */
+export const isHers = (field: keyof DraftFields, mine: string, was: string) =>
+  tidyField(field, mine) !== was;
+
+/** A newer copy of the draft (`next`) laid over the form: each field takes the
+ *  copy's value unless she changed it since `was`, or the copy has nothing new
+ *  for it (what she is typing is left as typed). Returns the form after, and
+ *  the copy the form now stands on (`was` for the fields it did not take). */
+export function layOver(
+  mine: DraftFields,
+  was: DraftFields,
+  next: DraftFields,
+) {
+  const form = { ...mine };
+  const placed = { ...was };
+  for (const field of Object.keys(TIDY) as (keyof DraftFields)[])
+    if (next[field] !== was[field] && !isHers(field, mine[field], was[field])) {
+      form[field] = next[field];
+      placed[field] = next[field];
+    }
+  return { form, placed };
+}
+
+/** The fields she changed since `base` (the server's copy), as a PATCH body.
+ *  Only those: a field she left alone may have been written by the copy run
+ *  since, and must not be reverted. A cleared title is not saved: the server
+ *  needs one, and she is most likely about to type another. */
+export function draftChanges(
+  mine: DraftFields,
+  base: DraftFields,
+): Partial<DraftFields> {
+  const changes: Partial<DraftFields> = {};
+  for (const field of Object.keys(TIDY) as (keyof DraftFields)[]) {
+    const value = TIDY[field](mine[field]);
+    if (value !== base[field] && (field !== "title" || value))
+      changes[field] = value;
+  }
+  return changes;
+}
+
+/** Save what she changed on a draft in place. Resolves to the fields sent
+ *  (none: no request); a failure is thrown, her text stays where it is. */
+export async function saveDraftChanges(
+  id: number,
+  mine: DraftFields,
+  base: DraftFields,
+): Promise<Partial<DraftFields>> {
+  const changes = draftChanges(mine, base);
+  if (Object.keys(changes).length) await patchAnnouncement(id, changes);
+  return changes;
+}
+
 export const previewAudience = (filters: AnnouncementFilters) =>
   clientFetch<{ audience: number; push_reachable: number }>(
     `${BASE}/preview/`,

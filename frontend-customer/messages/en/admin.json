@@ -1028,6 +1028,8 @@
     },
     "compose": {
       "alsoEmail": "Also send it as an email, in your brand",
+      "saveError": "Your message could not be saved just now. What you typed is still here.",
+      "loadError": "That message could not be loaded.",
       "audience": {
         "title": "Who gets it",
         "narrow": "Only some students",
