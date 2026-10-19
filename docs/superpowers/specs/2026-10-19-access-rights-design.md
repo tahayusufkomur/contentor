@@ -1,7 +1,10 @@
 # Access: every way a student gets in, each with its own window
 
-Status: design, written 2026-10-19 from the owner's request and answers in chat. Not built.
+Status: design **approved by the owner on 2026-10-19**, after a clickable mockup. Not built.
 Build order: **after focus mode for every kind is finished** (owner's call; see §8).
+Mockup (git-ignored, local only): `.superpowers/brainstorm/82250-1792409654/content/access-section.html`.
+It covers the Access section, the student's view with a movable "today", the coach's read-only
+view, the assistant's card and "Give access". The owner's reaction was "amazing".
 
 ## 1. Intent
 
