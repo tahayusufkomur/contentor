@@ -51,6 +51,7 @@ import { useNavigate } from "@shared/navigation/navigation-provider";
 import { GuideQuestion } from "./guide-question";
 import { PriceQuestion } from "./price-question";
 import { ScheduleQuestion } from "./schedule-question";
+import { UploadQuestion } from "./upload-question";
 
 const POLL_MS = 1500;
 
@@ -380,6 +381,21 @@ export function FocusGuide() {
               sending={sending}
               onAnswer={(json) => send({ ...NONE, picked: json })}
             />
+          </GuideQuestion>
+        ) : question.kind === "upload" ? (
+          <GuideQuestion
+            key={question.field}
+            question={question}
+            sending={sending}
+            showRest={false}
+            onSend={send}
+          >
+            {state.record && (
+              <UploadQuestion
+                downloadId={state.record.id}
+                onDone={() => send({ ...NONE, picked: "uploaded" })}
+              />
+            )}
           </GuideQuestion>
         ) : question.kind === "price" ? (
           <PriceQuestion

@@ -29,6 +29,11 @@ describe("focus kinds", () => {
       listHref: "/admin/messages",
       card: "draft_announcement",
     });
+    expect(KIND_ROUTES.download).toEqual({
+      newHref: "/admin/downloads/new",
+      plainHref: "/admin/downloads/new?form=1",
+      listHref: "/admin/downloads",
+    });
     expect(focusTimeKey("course")).toBe("focus:course");
   });
 

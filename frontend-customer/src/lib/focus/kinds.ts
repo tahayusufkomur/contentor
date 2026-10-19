@@ -42,6 +42,12 @@ export const KIND_ROUTES: Partial<Record<FocusKind, KindRoutes>> = {
     listHref: "/admin/messages",
     card: "draft_announcement",
   },
+  // No card: the assistant has no action that makes a download.
+  download: {
+    newHref: "/admin/downloads/new",
+    plainHref: "/admin/downloads/new?form=1",
+    listHref: "/admin/downloads",
+  },
 };
 
 /** Her active time in focus mode on this kind (lib/focus/active-time). */

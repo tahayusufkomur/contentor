@@ -21,6 +21,7 @@ import {
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
 import { CoverThumb } from "@/components/studio/cover-thumb";
 import { listedItem } from "@/lib/covers/items";
+import { KIND_ROUTES } from "@/lib/focus/kinds";
 import { DemoBadge } from "@/components/setup/demo-badge";
 import type { DownloadFile } from "@/types/download";
 
@@ -77,7 +78,9 @@ export default function AdminDownloadsPage() {
           </p>
         </div>
         <Button asChild className="gap-2">
-          <NavLink href="/admin/downloads/new">
+          <NavLink
+            href={KIND_ROUTES.download?.newHref ?? "/admin/downloads/new"}
+          >
             <Plus className="h-4 w-4" />
             {t("downloads.upload")}
           </NavLink>

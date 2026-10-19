@@ -1177,6 +1177,12 @@
         "tick": "Also by email",
         "writing": "Writing your message…",
         "thinking": "Thinking about your message…"
+      },
+      "download": {
+        "new": "New download",
+        "continue": "Continue your download: {title}",
+        "fillMyself": "Fill it in myself",
+        "drop": "Drop your file here, or choose one"
       }
     },
     "youDecide": "You decide",

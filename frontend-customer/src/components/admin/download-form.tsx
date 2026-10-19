@@ -29,7 +29,12 @@ import { listedItem } from "@/lib/covers/items";
 import { uploadDownloadFile } from "@/lib/downloads/upload";
 import { formatFileSize } from "@/lib/format";
 import { EVENT_TIDY, eventOwn } from "@/lib/focus/own-fields";
-import { setFocusSave, useActiveCreation } from "@/lib/focus/store";
+import { answerCreation } from "@/lib/focus/api";
+import {
+  applyCreation,
+  setFocusSave,
+  useActiveCreation,
+} from "@/lib/focus/store";
 import { ApiError } from "@/types/api";
 import type { DownloadFile } from "@/types/download";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -211,6 +216,28 @@ export function DownloadForm({
     if (!accessDirtyRef.current) void reloadAccess();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once per settled answer
   }, [accessAnswered, reloadAccess]);
+  // The guide's file question: a file on the page answers it (dropped on the
+  // file row, or there already when she comes back), and a file the guide
+  // uploaded is loaded onto the page.
+  const fileAsked =
+    !!focus &&
+    !!creation &&
+    creation.id !== 0 &&
+    creation.question?.field === "file" &&
+    !!record?.file_url
+      ? creation.id
+      : null;
+  useEffect(() => {
+    if (!fileAsked) return;
+    void answerCreation(fileAsked, { field: "file", value: "uploaded" })
+      .then((next) => applyCreation(fileAsked, next))
+      .catch(() => {});
+  }, [fileAsked]);
+  const fileAnswered = creation?.answered.some((line) => line.field === "file");
+  useEffect(() => {
+    if (focus && fileAnswered && !recordRef.current?.file_url) focus.reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once she has answered it
+  }, [fileAnswered]);
   const atCover =
     !!focus &&
     !!creation &&

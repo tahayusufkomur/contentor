@@ -22,7 +22,8 @@ export interface FocusQuestion {
     | "price"
     | "finish"
     | "announce"
-    | "schedule";
+    | "schedule"
+    | "upload";
   question: string;
   why: string;
   options: FocusOption[];
