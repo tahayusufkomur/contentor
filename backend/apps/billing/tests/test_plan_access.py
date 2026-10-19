@@ -17,8 +17,9 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
-from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
+from apps.billing.models import Bundle, BundleItem, SubscriptionPlan, SubscriptionPlanAccess
 from apps.courses.models import Course
+from apps.downloads.models import DownloadFile
 from apps.live.models import LiveClass, OnsiteEvent, ZoomClass
 
 SHARED_DOMAIN = "shared-test.localhost"
@@ -94,7 +95,11 @@ def members_class(tenant_ctx, owner):
 @pytest.fixture()
 def onsite_event(tenant_ctx, owner):
     return OnsiteEvent.objects.create(
-        title="Studio Workshop", instructor=owner, pricing_type="subscription", scheduled_at=timezone.now()
+        title="Studio Workshop",
+        instructor=owner,
+        pricing_type="subscription",
+        scheduled_at=timezone.now(),
+        status="scheduled",  # published: a held draft is not listed (G4)
     )
 
 
@@ -271,6 +276,32 @@ class TestPlanAccess:
         # It can have a designed cover (none yet), whose badge reads the event's start.
         assert item["cover_design"] is None
         assert item["scheduled_at"]
+
+    def test_a_draft_is_not_listed_in_a_plan_or_bundle_for_students(self, plan, course, owner, student, owner_client):
+        """A focus draft (G4) a plan or bundle already holds stays out of its listings until she publishes it."""
+        drafts = [
+            Course.objects.create(title="Draft course", slug="draft-course", instructor=owner, is_published=False),
+            DownloadFile.objects.create(title="Draft download", file_url="k", is_published=False),
+            LiveClass.objects.create(title="Held class", instructor=owner, status="draft", scheduled_at=timezone.now()),
+        ]
+        bundle = Bundle.objects.create(name="Starter", price=Decimal("40"), currency="USD", is_active=True)
+        for obj in [course, *drafts]:
+            _link(plan, obj)
+            BundleItem.objects.create(
+                bundle=bundle, content_type=ContentType.objects.get_for_model(type(obj)), object_id=obj.pk
+            )
+        viewer = APIClient(HTTP_HOST=SHARED_DOMAIN)
+        viewer.force_authenticate(user=student)
+        for client in (viewer, APIClient(HTTP_HOST=SHARED_DOMAIN)):
+            assert [i["title"] for i in client.get(f"/api/v1/billing/plans/{plan.pk}/").json()["items"]] == [
+                "Plan Test Course"
+            ]
+            assert [i["object_id"] for i in client.get(f"/api/v1/billing/bundles/{bundle.pk}/").json()["items"]] == [
+                course.pk
+            ]
+        # She sees what she put in them.
+        assert len(owner_client.get(f"/api/v1/billing/plans/{plan.pk}/").json()["items"]) == 4
+        assert len(owner_client.get(f"/api/v1/billing/bundles/{bundle.pk}/").json()["items"]) == 4
 
     def test_student_forbidden(self, plan, course, student):
         """Student cannot access the plan access endpoint (GET or PUT)."""

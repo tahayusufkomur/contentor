@@ -64,8 +64,10 @@ def start(creation, instruction: str = "") -> CopilotRun:
 def _gone(creation, record) -> bool:
     """Nothing to write on: the record deleted, focus mode over, or the record
     put live (by her finish tap, or by hand on the page)."""
-    # ponytail: a kind the copy job drafts keeps its draft state in ``status``; ask the adapter once one does not.
-    return record is None or creation.status != "active" or getattr(record, "status", "draft") != "draft"
+    # ponytail: a kind the copy job drafts keeps its draft state in ``status`` or ``is_published`` (a download);
+    # ask the adapter once one keeps it elsewhere.
+    live = getattr(record, "status", "draft") != "draft" or getattr(record, "is_published", False)
+    return record is None or creation.status != "active" or live
 
 
 def carry_out(tenant, run_id) -> None:

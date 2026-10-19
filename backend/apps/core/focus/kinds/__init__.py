@@ -66,6 +66,7 @@ KINDS: dict[str, str] = {
     "course": "apps.core.focus.kinds.course",
     "event": "apps.core.focus.kinds.event",
     "message": "apps.core.focus.kinds.message",
+    "download": "apps.core.focus.kinds.download",
 }
 
 

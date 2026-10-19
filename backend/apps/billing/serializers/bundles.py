@@ -7,6 +7,12 @@ from rest_framework import serializers
 from apps.billing.models import Bundle, BundleItem
 from apps.billing.ways import ShorthandMixin
 from apps.core.access import AccessInfo, ContentAccessService
+from apps.core.permissions import is_coach_or_owner
+
+
+def is_draft(obj) -> bool:
+    """A course or download not published yet, or a class held in draft (G4): students never see it listed."""
+    return getattr(obj, "is_published", True) is False or getattr(obj, "status", "") == "draft"
 
 
 class BundleItemSerializer(serializers.ModelSerializer):
@@ -86,6 +92,14 @@ class BundleDetailSerializer(BundleListSerializer):
 
     class Meta(BundleListSerializer.Meta):
         fields = BundleListSerializer.Meta.fields + ["items", "original_price"]
+
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        request = self.context.get("request")
+        if not (request and is_coach_or_owner(request.user)):
+            drafts = {(i.content_type_id, i.object_id) for i in obj.items.all() if is_draft(i.content_object)}
+            data["items"] = [i for i in data["items"] if (i["content_type"], i["object_id"]) not in drafts]
+        return data
 
     def get_original_price(self, obj):
         total = Decimal("0.00")

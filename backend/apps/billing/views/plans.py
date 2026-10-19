@@ -9,13 +9,14 @@ from rest_framework.response import Response
 
 from apps.billing import ways
 from apps.billing.models import Subscription, SubscriptionPlan, SubscriptionPlanAccess
+from apps.billing.serializers.bundles import is_draft
 from apps.billing.serializers.plans import (
     PlanAccessWriteItemSerializer,
     PlanAccessWriteSerializer,
     PlanWriteSerializer,
 )
 from apps.core.currency import tenant_charge_currency
-from apps.core.permissions import IsOwner
+from apps.core.permissions import IsOwner, is_coach_or_owner
 from apps.core.storage import sign_if_s3_key
 from apps.media import designs
 
@@ -28,8 +29,8 @@ _BADGE_DATE = {
 }
 
 
-def _resolve_access_items(plan):
-    """Resolve SubscriptionPlanAccess rows into human-readable dicts."""
+def _resolve_access_items(plan, *, drafts: bool):
+    """Resolve SubscriptionPlanAccess rows into human-readable dicts; a draft only with ``drafts`` (her own view)."""
     access_qs = SubscriptionPlanAccess.objects.filter(plan=plan).select_related("content_type")
 
     model_map = {
@@ -51,7 +52,7 @@ def _resolve_access_items(plan):
         _app, _model, title_field, slug_field = cfg
         model_cls = access.content_type.model_class()
         obj = model_cls.objects.filter(pk=access.object_id).first()
-        if not obj:
+        if not obj or (is_draft(obj) and not drafts):
             continue
 
         item = {
@@ -185,7 +186,7 @@ def plan_detail(request, pk):
 
     visible = SubscriptionPlan.objects.all() if _is_owner(request) else SubscriptionPlan.objects.filter(is_active=True)
     plan = get_object_or_404(visible, pk=pk)
-    items = _resolve_access_items(plan)
+    items = _resolve_access_items(plan, drafts=is_coach_or_owner(request.user))
 
     is_subscribed = False
     if request.user.is_authenticated:
