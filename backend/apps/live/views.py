@@ -2,6 +2,7 @@ import logging
 from dataclasses import asdict
 
 from django.db.models import Q
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -58,6 +59,11 @@ def _is_host(user, event):
     return user.id == event.instructor_id or user.role == "owner"
 
 
+def _hidden(request, event):
+    """A draft (undated, or held until she publishes it) is there only for the coach."""
+    return event.status == "draft" and not is_coach_or_owner(request.user)
+
+
 def _join_response(request, event, *, guest_role):
     """Join link for this user: hosts moderate; everyone else joins as `guest_role`."""
     host = _is_host(request.user, event)
@@ -100,6 +106,8 @@ def live_class_detail(request, pk):
     live_class = get_object_or_404(LiveClass, pk=pk)
 
     if request.method == "GET":
+        if _hidden(request, live_class):
+            raise Http404
         return Response(LiveClassSerializer(live_class).data)
 
     if request.method == "PUT":
@@ -210,6 +218,8 @@ def live_stream_detail(request, pk):
     live_stream = get_object_or_404(LiveStream, pk=pk)
 
     if request.method == "GET":
+        if _hidden(request, live_stream):
+            raise Http404
         return Response(LiveStreamSerializer(live_stream).data)
 
     if request.method == "PUT":
@@ -323,6 +333,8 @@ def zoom_class_detail(request, pk):
     zoom_class = get_object_or_404(ZoomClass, pk=pk)
 
     if request.method == "GET":
+        if _hidden(request, zoom_class):
+            raise Http404
         return Response(ZoomClassSerializer(zoom_class, context={"request": request}).data)
 
     if request.method == "PUT":
@@ -371,6 +383,8 @@ def onsite_event_detail(request, pk):
     event = get_object_or_404(OnsiteEvent, pk=pk)
 
     if request.method == "GET":
+        if _hidden(request, event):
+            raise Http404
         return Response(OnsiteEventSerializer(event, context={"request": request}).data)
 
     if request.method == "PUT":
@@ -512,8 +526,8 @@ def calendar_event_detail(request, event_type, pk):
         return Response({"detail": "Invalid event type."}, status=status.HTTP_404_NOT_FOUND)
 
     obj = get_object_or_404(model, pk=pk)
-    if obj.status == "draft" and not is_coach_or_owner(request.user):
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    if _hidden(request, obj):
+        raise Http404
 
     # Determine the student-facing type
     cal_type = event_type

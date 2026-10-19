@@ -222,12 +222,12 @@ class TestLiveClassListCreate:
 
 @pytest.mark.django_db(transaction=True)
 class TestLiveClassDetail:
-    def test_anyone_can_get_detail(self, draft_live_class, student):
-        """Any user can get live class detail."""
+    def test_anyone_can_get_detail(self, scheduled_live_class, student):
+        """Any user can get a published live class (a draft is a 404: test_held_drafts)."""
         client = make_client(student)
-        response = client.get(f"/api/v1/live/{draft_live_class.pk}/")
+        response = client.get(f"/api/v1/live/{scheduled_live_class.pk}/")
         assert response.status_code == 200, response.content
-        assert response.json()["title"] == "Draft Class"
+        assert response.json()["title"] == "Scheduled Class"
 
     def test_owner_updates_live_class(self, draft_live_class, owner):
         """Owner can update a live class."""
@@ -416,12 +416,12 @@ class TestLiveStreamListCreate:
 
 @pytest.mark.django_db(transaction=True)
 class TestLiveStreamDetail:
-    def test_anyone_can_get_detail(self, draft_live_stream, student):
-        """Any user can get live stream detail."""
+    def test_anyone_can_get_detail(self, scheduled_live_stream, student):
+        """Any user can get a published live stream (a draft is a 404: test_held_drafts)."""
         client = make_client(student)
-        response = client.get(f"/api/v1/live-streams/{draft_live_stream.pk}/")
+        response = client.get(f"/api/v1/live-streams/{scheduled_live_stream.pk}/")
         assert response.status_code == 200, response.content
-        assert response.json()["title"] == "Draft Stream"
+        assert response.json()["title"] == "Scheduled Stream"
 
     def test_owner_updates_live_stream(self, draft_live_stream, owner):
         """Owner can update a live stream."""

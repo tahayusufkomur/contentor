@@ -19,7 +19,7 @@ from apps.core.monetization import can_monetize
 from apps.core.pagination import StandardPagination
 from apps.core.permissions import IsOwner
 from apps.courses.models import Course, Enrollment
-from apps.live.models import OnsiteEvent
+from apps.live.models import LiveClass, LiveStream, OnsiteEvent
 
 from ..models import Bundle, BundleItem, Payment, PaymentItem, Subscription, SubscriptionPlan
 from ..serializers.payments import PaymentInitializeSerializer, PaymentItemInputSerializer
@@ -72,7 +72,10 @@ def _get_fee_pct() -> Decimal:
 
 
 def _seat_unavailable(obj) -> str | None:
-    """Why an in-person class can't be bought right now (no date, over, or full)."""
+    """Why a class can't be bought right now: held (a draft she has not published), or an
+    in-person class with no date, over, or full."""
+    if isinstance(obj, LiveClass | LiveStream | OnsiteEvent) and obj.status == "draft":
+        return "is not on sale"
     if not isinstance(obj, OnsiteEvent):
         return None
     if obj.computed_status in ("draft", "ended"):

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
@@ -10,8 +11,9 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.billing.models import Payment
 from apps.core.copilot import content
-from apps.live.models import LiveClass
+from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 from apps.notifications import tasks
 from apps.notifications.models import LiveReminderLog
 
@@ -125,3 +127,47 @@ def test_the_assistant_dating_an_undated_draft_publishes_it(owner):
     undated.refresh_from_db()
     assert undated.status == "scheduled"
     assert {"field": "status", "old": "draft", "new": "scheduled"} in result["changes"]
+
+
+def test_a_held_class_is_not_on_the_store_and_cannot_be_bought(owner, student, settings):
+    settings.BILLING_BYPASS_ENABLED = True
+    paid = {"pricing_type": "paid", "price": Decimal("20.00")}
+    held = _class(owner, title="Held", **paid)
+    _class(owner, title="Shown", status="scheduled", **paid)
+    onsite = OnsiteEvent.objects.create(
+        title="Held retreat", instructor=owner, status="draft", scheduled_at=held.scheduled_at, **paid
+    )
+
+    store = [(i["type"], i["title"]) for i in _client(student).get("/api/v1/billing/store/").json()]
+    assert store == [("live_class", "Shown")]
+
+    for kind, row in (("live_class", held), ("onsite_event", onsite)):
+        body = {"items": [{"content_type": kind, "object_id": row.pk}]}
+        refused = _client(student).post("/api/v1/billing/payments/initialize/", body, format="json")
+        assert refused.status_code == 400, refused.content
+        assert "not on sale" in refused.json()["detail"]
+    assert not Payment.objects.exists()
+
+    # Her products list (the bundle picker) still has her held classes.
+    products = {i["title"] for i in _client(owner).get("/api/v1/billing/products/").json()}
+    assert {"Held", "Shown", "Held retreat"} <= products
+
+
+KINDS = [
+    (LiveClass, "/api/v1/live/", {}),
+    (LiveStream, "/api/v1/live-streams/", {}),
+    (ZoomClass, "/api/v1/zoom-classes/", {"zoom_link": "https://zoom.us/j/1"}),
+    (OnsiteEvent, "/api/v1/onsite-events/", {}),
+]
+
+
+@pytest.mark.parametrize(("model", "path", "extra"), KINDS, ids=lambda v: getattr(v, "__name__", None))
+def test_a_held_class_detail_is_404_for_students_and_visible_to_the_coach(owner, student, model, path, extra):
+    when = timezone.now() + timedelta(days=3)
+    held = model.objects.create(title="Held", instructor=owner, status="draft", scheduled_at=when, **extra)
+    shown = model.objects.create(title="Shown", instructor=owner, status="scheduled", scheduled_at=when, **extra)
+    for viewer in (None, student):
+        assert _client(viewer).get(f"{path}{held.pk}/").status_code == 404
+        assert _client(viewer).get(f"{path}{shown.pk}/").status_code == 200
+    resp = _client(owner).get(f"{path}{held.pk}/")
+    assert (resp.status_code, resp.json()["status"]) == (200, "draft")

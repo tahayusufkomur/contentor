@@ -48,7 +48,9 @@ def photo(name):
 def paid(owner, number=0):
     """One paid course and one paid event of each kind, numbered; returns each with its design kind and key."""
     soon = timezone.now() + timedelta(days=3 + number)
+    # Scheduled: a draft is not on the store.
     event = {"instructor": owner, "pricing_type": "paid", "price": Decimal("20.00"), "scheduled_at": soon}
+    event["status"] = "scheduled"
     course = Course.objects.create(
         title=f"Course {number}", instructor=owner, pricing_type="paid", price=Decimal("99.00"), is_published=True
     )
@@ -57,7 +59,7 @@ def paid(owner, number=0):
         (LiveClass.objects.create(title=f"Class {number}", **event), "live", f"Class {number}"),
         (LiveStream.objects.create(title=f"Stream {number}", **event), "stream", f"Stream {number}"),
         (
-            OnsiteEvent.objects.create(title=f"Retreat {number}", status="scheduled", **event),
+            OnsiteEvent.objects.create(title=f"Retreat {number}", **event),
             "onsite",
             f"Retreat {number}",
         ),

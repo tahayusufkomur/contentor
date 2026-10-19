@@ -57,6 +57,7 @@ class TestZoomLinkGating:
             zoom_link="https://zoom.us/j/secret",
             zoom_meeting_id="999",
             scheduled_at=timezone.now() + timedelta(days=1),
+            status="scheduled",  # a draft is a 404 for students
         )
 
     def test_anonymous_cannot_see_paid_zoom_link(self, tenant_ctx, owner):
@@ -83,6 +84,7 @@ class TestZoomLinkGating:
             pricing_type="free",
             zoom_link="https://zoom.us/j/open",
             scheduled_at=timezone.now() + timedelta(days=1),
+            status="scheduled",  # a draft is a 404 for students
         )
         data = make_client().get(f"/api/v1/zoom-classes/{zoom.pk}/").json()
         assert data["zoom_link"] == "https://zoom.us/j/open"
@@ -99,6 +101,7 @@ class TestOnsiteAddressGating:
             location="Berlin",
             address="Exactstrasse 1, 10115 Berlin",
             scheduled_at=timezone.now() + timedelta(days=2),
+            status="scheduled",
         )
         data = make_client().get(f"/api/v1/onsite-events/{ev.pk}/").json()
         assert data["address"] == ""
@@ -113,6 +116,7 @@ class TestOnsiteAddressGating:
             location="Berlin",
             address="Exactstrasse 1, 10115 Berlin",
             scheduled_at=timezone.now() + timedelta(days=2),
+            status="scheduled",
         )
         data = make_client(owner).get(f"/api/v1/onsite-events/{ev.pk}/").json()
         assert data["address"] == "Exactstrasse 1, 10115 Berlin"

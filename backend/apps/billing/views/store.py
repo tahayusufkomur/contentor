@@ -180,11 +180,13 @@ def _collect_store_items():
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def store_list(request):
-    # An in-person class with no date yet, or one that is over, is not for sale.
+    # An in-person class with no date yet, or one that is over, is not for sale; nor is a held
+    # class (a draft with a date) until she publishes it. Her products list still shows it.
     items = [
         i
         for i in _collect_store_items()
         if not (i["type"] == "onsite_event" and i["_obj"].computed_status in ("draft", "ended"))
+        and not (i["type"] in ("live_class", "live_stream", "onsite_event") and i["_obj"].status == "draft")
     ]
 
     # Filter by type
