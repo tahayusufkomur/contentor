@@ -431,7 +431,7 @@ def test_an_unclear_count_is_asked_once(owner, outline_start, analysed):
         course_kind.CourseFound(
             topic="desk yoga",
             unclear=[
-                analysis.Unclear(
+                course_kind.CourseUnclear(
                     field="modules",
                     question="How many modules?",
                     options=[analysis.ClarifyOption(label="3 modules", value="3")],
@@ -450,7 +450,7 @@ def test_an_unclear_count_is_asked_once(owner, outline_start, analysed):
 
 
 def test_a_detail_still_unclear_after_its_question_gets_its_usual_question(owner, outline_start, analysed):
-    unclear = [analysis.Unclear(field="modules", question="How many modules?", options=[])]
+    unclear = [course_kind.CourseUnclear(field="modules", question="How many modules?", options=[])]
     analysed(course_kind.CourseFound(topic="desk yoga", unclear=unclear))
     creation = _run_pending(flow.start(owner, "course", text="desk yoga, a few modules"))
     analysed(course_kind.CourseFound(unclear=unclear))  # her reply is still vague
@@ -458,6 +458,26 @@ def test_a_detail_still_unclear_after_its_question_gets_its_usual_question(owner
     assert creation.brief["clarify"] == [] and creation.brief["asked"] == ["modules"]
     assert flow.current_field(creation) == "level"
     assert "size" not in creation.answers
+
+
+def test_her_words_win_on_a_typed_answer_to_a_level_question(owner, outline_start, analysed):
+    unclear = [course_kind.CourseUnclear(field="level", question="Who is it for?", options=[])]
+    analysed(course_kind.CourseFound(topic="desk yoga", unclear=unclear))
+    creation = _run_pending(flow.start(owner, "course", text="desk yoga for some people"))
+    words = "people who've done a little yoga"
+    analysed(course_kind.CourseFound(answer=words, level="some"))  # the reading also names an option
+    creation = _run_pending(flow.answer(creation, "clarify", text=words))
+    assert creation.answers["level"] == words  # her clarify answer lands last, as before
+
+
+def test_a_total_typed_for_a_lessons_question_is_a_count_of_lessons_each(owner, outline_start, analysed):
+    unclear = [course_kind.CourseUnclear(field="lessons", question="How many lessons in each?", options=[])]
+    analysed(course_kind.CourseFound(topic="desk yoga", modules=4, unclear=unclear))
+    creation = _run_pending(flow.start(owner, "course", text="desk yoga, 4 modules, a few lessons each"))
+    analysed(course_kind.CourseFound(answer="20", total=20))  # the reading calls her 20 a total
+    creation = _run_pending(flow.answer(creation, "clarify", text="20"))
+    assert (creation.brief["modules"], creation.brief["lessons"]) == (4, 12)  # her answer, clamped
+    assert creation.brief["capped"] is True and "total" not in creation.brief
 
 
 def test_a_failed_analysis_falls_back_to_the_usual_questions(owner, outline_start, analysed):
@@ -587,7 +607,7 @@ def test_a_redraft_that_names_a_count_keeps_it(owner, outline_start, analysed):
 
 
 def _more_lessons(analysed):
-    unclear = analysis.Unclear(
+    unclear = course_kind.CourseUnclear(
         field="lessons",
         question="How many lessons in each module?",
         options=[analysis.ClarifyOption(label="4 lessons each", value="4")],
@@ -644,8 +664,8 @@ def test_two_counts_for_one_change_redraft_once(owner, outline_start, analysed):
         course_kind.CourseFound(
             change="make it bigger",
             unclear=[
-                analysis.Unclear(field="modules", question="How many modules?", options=[]),
-                analysis.Unclear(field="lessons", question="How many lessons in each?", options=[]),
+                course_kind.CourseUnclear(field="modules", question="How many modules?", options=[]),
+                course_kind.CourseUnclear(field="lessons", question="How many lessons in each?", options=[]),
             ],
         )
     )

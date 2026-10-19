@@ -37,6 +37,8 @@ ADAPTER = (
     "RULES",
     "apply_found",
     "UNCLEAR_FIELDS",
+    "apply_change",
+    "apply_clarified",
 )
 STUB = "apps.core.tests.focus_stub_kind"
 
@@ -69,7 +71,9 @@ def _stub(monkeypatch, skips=frozenset()):
     stub.record = lambda record_id: None
     stub.skips = lambda creation: set(skips)
     stub.FOUND, stub.RULES, stub.UNCLEAR_FIELDS = analysis.Found, "", ("price",)
-    stub.apply_found = lambda creation, found, **step: None
+    stub.apply_found = lambda creation, found: None
+    stub.apply_change = lambda creation, found, **step: None
+    stub.apply_clarified = lambda creation, field, value: False
     monkeypatch.setitem(sys.modules, STUB, stub)
     monkeypatch.setitem(kinds.KINDS, "stub", STUB)
     return stub
@@ -86,6 +90,7 @@ def test_every_kind_module_has_the_whole_adapter():
         for name in ("create_draft", "record", "payload", "retitle", "set_price", "not_ready", "cannot_sell"):
             assert callable(getattr(module, name)), f"{kind}.{name}"
         assert callable(module.go_live) and callable(module.skips) and callable(module.apply_found)
+        assert callable(module.apply_change) and callable(module.apply_clarified)
         assert issubclass(module.FOUND, analysis.Found) and module.UNCLEAR_FIELDS
         assert module.put_in_plan is None or callable(module.put_in_plan)
 
@@ -94,7 +99,10 @@ def test_a_kind_reads_only_its_own_fields(monkeypatch):
     stub = _stub(monkeypatch)
     assert stub.FOUND is analysis.Found
     assert "modules" not in stub.FOUND.model_json_schema()["properties"]
-    assert "modules" in kinds.get("course").FOUND.model_json_schema()["properties"]
+    course = kinds.get("course").FOUND.model_json_schema()
+    assert "modules" in course["properties"]
+    # The model may only be unclear about the course's own fields: the schema says so, not just the prompt.
+    assert course["$defs"]["CourseUnclear"]["properties"]["field"]["enum"] == list(kinds.get("course").UNCLEAR_FIELDS)
 
 
 def test_an_unclear_field_outside_the_kind_is_dropped(tenant_ctx, monkeypatch):
@@ -109,6 +117,20 @@ def test_an_unclear_field_outside_the_kind_is_dropped(tenant_ctx, monkeypatch):
         read = analysis.read(tenant_ctx, "x", kind="stub", question="?", outline_exists=False, currency="usd")
     assert [u.field for u in read.unclear] == ["price"]
     assert model.call_args.kwargs["output_model"] is analysis.Found
+
+
+@pytest.mark.parametrize("words", ["zoom", "7"])
+@pytest.mark.parametrize("typed", [False, True])
+def test_a_clarify_answer_for_a_field_the_kind_lacks_is_kept(owner, monkeypatch, settings, words, typed):
+    _stub(monkeypatch)
+    settings.FOCUS_KINDS = ["course", "stub"]
+    creation = flow.start(owner, "stub", value="x")
+    ask = {"field": "where", "question": "Where?", "options": []}
+    creation.brief = {**creation.brief, "clarify": [ask]}
+    creation.pending = {"field": "clarify", "text": words}
+    flow.apply(creation, analysis.Found(answer=words) if typed else None)
+    assert creation.answers["where"] == words
+    assert creation.brief["clarify"] == [] and creation.brief["asked"] == ["where"]
 
 
 def test_an_unknown_kind_is_refused():

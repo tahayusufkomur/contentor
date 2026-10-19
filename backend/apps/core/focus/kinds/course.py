@@ -3,6 +3,7 @@ docs/superpowers/specs/2026-10-18-focus-mode-design.md): its questions, its
 draft Course, and how that course is priced, checked and published."""
 
 from decimal import Decimal
+from typing import Literal
 
 from django.db import connection
 from pydantic import BaseModel
@@ -117,6 +118,12 @@ class NamedModule(BaseModel):
     lessons: list[str] = []
 
 
+class CourseUnclear(analysis.Unclear):
+    """Her words leave a course detail vague: only these fields, so the model's output schema says so."""
+
+    field: Literal["modules", "lessons", "price", "level"]
+
+
 class CourseFound(analysis.Found):
     """What the analysis reads from her words about a course, besides what every kind shares."""
 
@@ -125,6 +132,7 @@ class CourseFound(analysis.Found):
     lessons: int | None = None  # per module
     total: int | None = None  # lessons in all, when she gave a total instead
     named: list[NamedModule] = []  # in her order; lessons she named without a module go in one untitled module
+    unclear: list[CourseUnclear] = []
 
 
 FOUND = CourseFound
@@ -209,22 +217,33 @@ def skips(creation) -> set[str]:
     return set()
 
 
-def apply_found(creation, found, *, field, text, item, clarified, fresh) -> None:
+def _gave_counts(found) -> bool:
+    return any(n is not None for n in (found.modules, found.lessons, found.total))
+
+
+def apply_found(creation, found) -> None:
     """Her typed answer, read, onto the course: its level, counts and size
-    label, and the outline redrafted when she changed it (or waited on a
-    count). ``flow.apply`` has done the shared half: ``item`` is the clarify
-    question she just answered (None if she did not), ``clarified`` whether
-    that gave a count, ``fresh`` the clarify questions this reading adds.
-    Call under the creation's lock; the caller saves."""
+    label. ``flow.apply`` calls it before the shared answer step. Call under
+    the creation's lock; the caller saves."""
     from .. import flow
 
     if found.level.strip():
         creation.answers["level"] = flow._choice(RECIPE, "level", found.level)
     creation.brief = analysis.brief_from(found, creation.brief)
-    keep = any(n is not None for n in (found.modules, found.lessons, found.total))
-    counted = keep or bool(found.named)
-    if counted and (label := flow.size_label(creation.brief)):
+    if (_gave_counts(found) or found.named) and (label := flow.size_label(creation.brief)):
         creation.answers["size"] = label
+
+
+def apply_change(creation, found, *, field, text, item, clarified, fresh) -> None:
+    """The outline redrafted when she changed it or gave counts (or waits on
+    one). ``flow.apply`` calls it after the shared answer step: ``item`` is
+    the clarify question she just answered (None if she did not),
+    ``clarified`` whether that gave a count, ``fresh`` the clarify questions
+    this reading adds. Call under the creation's lock; the caller saves."""
+    from .. import flow
+
+    keep = _gave_counts(found)
+    counted = keep or bool(found.named)
     counts = [c for c in fresh if c["field"] in ("modules", "lessons")]
     drafted = creation.outline_run_id is not None or bool((creation.drafted or {}).get("modules"))
     # A level is a change to the outline; a price alone is not.
@@ -242,3 +261,22 @@ def apply_found(creation, found, *, field, text, item, clarified, fresh) -> None
             counts[-1].update(redraft=text, keep_counts=keep)
         else:
             flow._redraft(creation, text, keep_counts=keep)
+
+
+def apply_clarified(creation, field, value) -> bool:
+    """Her answer to a clarify question about the course's level or a count,
+    onto the field it asked about. One that is still no count leaves that
+    field to its usual question. True when it gave a count."""
+    from .. import flow
+
+    if field == "level":
+        creation.answers["level"] = flow._choice(RECIPE, "level", value)
+    elif field in ("modules", "lessons"):
+        try:
+            count = int(value)
+        except ValueError:
+            return False
+        creation.brief = analysis.brief_from(CourseFound(**{field: count}), creation.brief)
+        creation.answers["size"] = flow.size_label(creation.brief)
+        return True
+    return False

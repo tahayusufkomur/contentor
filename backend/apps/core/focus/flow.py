@@ -198,7 +198,8 @@ def apply(creation, found) -> None:
     skipped. Call under the creation's lock; the caller saves."""
     pending, creation.pending = creation.pending or {}, {}
     field, text = pending.get("field"), str(pending.get("text") or "")
-    recipe = kinds.get(creation.kind).RECIPE
+    adapter = kinds.get(creation.kind)
+    recipe = adapter.RECIPE
     creation.answers = dict(creation.answers or {})
     item = _pop_clarify(creation) if field == "clarify" else None
     if found is None:
@@ -220,6 +221,7 @@ def apply(creation, found) -> None:
         if field == "topic":
             creation.answers["topic"] = text  # her whole words: the outline reads them
             _retitle(creation, working_title(text, creation.kind), working_title(found.topic or text, creation.kind))
+        adapter.apply_found(creation, found)
         if field == "cover" and found.photo.strip():
             creation.covers = {**(creation.covers or {}), "query": found.photo.strip()}
         price = analysis.price_value(found.price)
@@ -237,9 +239,7 @@ def apply(creation, found) -> None:
             if unclear.field not in {*(brief.get("asked") or []), *(c["field"] for c in clarify)}:
                 clarify.append(unclear.model_dump())
         fresh = clarify[len(brief.get("clarify") or []) :]
-        kinds.get(creation.kind).apply_found(
-            creation, found, field=field, text=text, item=item, clarified=clarified, fresh=fresh
-        )
+        adapter.apply_change(creation, found, field=field, text=text, item=item, clarified=clarified, fresh=fresh)
         creation.brief = {**creation.brief, "clarify": clarify}
     if pending.get("rest"):
         _delegate_rest(creation)
@@ -719,26 +719,21 @@ def _pop_clarify(creation) -> dict:
 
 
 def _clarified(creation, field, value) -> bool:
-    """Her answer to a clarify question, onto the field it asked about. One
-    that is still no count or price leaves that field to its usual question.
-    True when it gave a count."""
+    """Her answer to a clarify question, onto the field it asked about. A
+    price is set here; a field the kind does not own keeps her words as the
+    answer; the kind reads the rest. True when it gave a count."""
     words = str(value).strip()
     if not words:
         return False
     if field == "price":
         if price := analysis.price_value(words):
             _set_price(creation, price)
-    elif field == "level":
-        creation.answers["level"] = _choice(kinds.get(creation.kind).RECIPE, "level", words)
-    else:
-        try:
-            count = int(words)
-        except ValueError:
-            return False
-        creation.brief = analysis.brief_from(kinds.get(creation.kind).FOUND(**{field: count}), creation.brief)
-        creation.answers["size"] = size_label(creation.brief)
-        return True
-    return False
+        return False
+    adapter = kinds.get(creation.kind)
+    if field not in adapter.UNCLEAR_FIELDS:
+        creation.answers[field] = words[:ANSWER_MAX]
+        return False
+    return adapter.apply_clarified(creation, field, words)
 
 
 def _waiting(creation, item) -> dict | None:
