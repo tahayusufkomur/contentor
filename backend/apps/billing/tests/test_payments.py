@@ -237,6 +237,13 @@ class TestPaymentInitialize:
         assert resp.status_code == 404, resp.content
         assert not Payment.objects.exists()
 
+    def test_an_unpublished_bundle_cannot_be_bought(self, student, paid_bundle):
+        Bundle.objects.filter(pk=paid_bundle.pk).update(is_published=False)
+        payload = {"items": [{"content_type": "bundle", "object_id": paid_bundle.pk}]}
+        resp = make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        assert resp.status_code == 404, resp.content
+        assert not Payment.objects.exists()
+
     def test_buying_again_after_a_refund_puts_the_course_back_in_her_courses(self, owner, student, paid_course):
         payload = {"items": [{"content_type": "course", "object_id": paid_course.pk}]}
         first = make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")

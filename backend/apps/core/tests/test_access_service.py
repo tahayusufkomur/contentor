@@ -214,6 +214,15 @@ class TestCheckAccessBundlePurchase:
         assert info.has_access is True
         assert info.access_reason == "bundle"
 
+    def test_a_draft_bundle_is_not_offered_as_a_way_in(self, service, paid_course):
+        """A course's page offers the bundles it is in, but never one she is still drafting."""
+        ct = ContentType.objects.get_for_model(Course)
+        for name, published in (("Live Bundle", True), ("Draft Bundle", False)):
+            bundle = Bundle.objects.create(name=name, price=Decimal("149.90"), currency="USD", is_published=published)
+            BundleItem.objects.create(bundle=bundle, content_type=ct, object_id=paid_course.pk)
+        offered = service.get_unlock_options(paid_course)["bundles"]
+        assert [b["name"] for b in offered] == ["Live Bundle"]
+
     def test_a_bundle_is_closed_until_the_student_buys_it(self, service, student):
         bundle = Bundle.objects.create(name="Test Bundle", price=Decimal("149.90"), currency="USD")
         info = service.get_access_info(student, bundle)

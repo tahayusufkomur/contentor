@@ -206,6 +206,8 @@ class Bundle(models.Model):
     currency = models.CharField(max_length=3, default=tenant_charge_currency)
     thumbnail_url = models.CharField(max_length=2000, blank=True, default="")
     is_active = models.BooleanField(default=True)
+    # False = a draft (focus mode makes these): hidden from students, the store and checkout until she publishes.
+    is_published = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -36,6 +36,7 @@ interface BundleListItem {
   currency: string;
   item_count: number;
   is_active: boolean;
+  is_published: boolean;
 }
 
 interface Plan {
@@ -188,6 +189,7 @@ function ProductsTab() {
 }
 
 function BundlesTab() {
+  const t = useTranslations("admin.store.bundles");
   const [bundles, setBundles] = useState<BundleListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -278,9 +280,13 @@ function BundlesTab() {
                       {b.item_count}
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant={b.is_active ? "success" : "secondary"}>
-                        {b.is_active ? "Active" : "Inactive"}
-                      </Badge>
+                      {b.is_published ? (
+                        <Badge variant={b.is_active ? "success" : "secondary"}>
+                          {b.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">{t("draft")}</Badge>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <Button asChild variant="ghost" size="sm">

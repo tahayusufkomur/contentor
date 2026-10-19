@@ -54,6 +54,9 @@
       "plans": "Memberships",
       "payments": "Payments"
     },
+    "bundles": {
+      "draft": "Draft"
+    },
     "plans": {
       "new": "New membership",
       "edit": "Edit membership",

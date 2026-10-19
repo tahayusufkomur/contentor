@@ -14,8 +14,8 @@ class PaymentItemInputSerializer(serializers.Serializer):
         "onsite_event": "live.onsiteevent",
         "bundle": "billing.bundle",
     }
-    # Only what is on sale can be bought: a draft course or a withdrawn bundle reads as not found.
-    ON_SALE = {"course": {"is_published": True}, "bundle": {"is_active": True}}
+    # Only what is on sale can be bought: a draft course or a withdrawn or draft bundle reads as not found.
+    ON_SALE = {"course": {"is_published": True}, "bundle": {"is_active": True, "is_published": True}}
 
     def validate_content_type(self, value):
         if value not in self.CONTENT_TYPE_MAP:

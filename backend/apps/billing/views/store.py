@@ -139,7 +139,7 @@ def _collect_store_items(drafts: bool = True):
             }
         )
 
-    # Bundles: active
+    # Bundles: active (a draft only in her products list; store_list leaves it out)
     for bundle in Bundle.objects.filter(is_active=True).prefetch_related("items"):
         items.append(
             {
@@ -165,13 +165,14 @@ def _collect_store_items(drafts: bool = True):
 def store_list(request):
     # An in-person class with no date yet, or one that is over, is not for sale; nor is a held
     # class (a draft with a date) until she publishes it; nor is a download that is a draft or has
-    # no file yet. Her products list still shows them.
+    # no file yet; nor is a bundle she is still drafting. Her products list still shows them.
     items = [
         i
         for i in _collect_store_items(drafts=False)
         if not (i["type"] == "onsite_event" and i["_obj"].computed_status in ("draft", "ended"))
         and not (i["type"] in ("live_class", "live_stream", "onsite_event") and i["_obj"].status == "draft")
         and not (i["type"] == "download" and not (i["_obj"].is_published and i["_obj"].file_url))
+        and not (i["type"] == "bundle" and not i["_obj"].is_published)
     ]
 
     # Filter by type

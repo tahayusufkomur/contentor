@@ -77,6 +77,7 @@ class BundleListSerializer(serializers.ModelSerializer):
             "currency",
             "thumbnail_url",
             "is_active",
+            "is_published",
             "item_count",
             "access_info",
             "created_at",
@@ -137,6 +138,7 @@ class BundleCreateSerializer(ShorthandMixin, serializers.ModelSerializer):
             "currency",
             "thumbnail_url",
             "is_active",
+            "is_published",
             "items",
         ]
         # Always the tenant's charge currency (the model default) — never client-chosen.

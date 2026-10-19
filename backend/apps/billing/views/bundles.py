@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from apps.billing.models import Bundle
 from apps.billing.serializers import BundleCreateSerializer, BundleDetailSerializer, BundleListSerializer
+from apps.core.permissions import is_coach_or_owner
 
 
 @api_view(["GET", "POST"])
@@ -21,6 +22,9 @@ def bundle_list_create(request):
 
 def _bundle_list(request):
     qs = Bundle.objects.filter(is_active=True)
+    # A draft is hers alone: students and visitors see only what is on sale.
+    if not is_coach_or_owner(request.user):
+        qs = qs.filter(is_published=True)
     serializer = BundleListSerializer(qs, many=True, context={"request": request})
     return Response(serializer.data)
 
@@ -41,6 +45,9 @@ def bundle_detail(request, pk):
     bundle = get_object_or_404(Bundle, pk=pk)
 
     if request.method == "GET":
+        # A draft is the coach's alone: to a student or visitor it does not exist.
+        if not bundle.is_published and not is_coach_or_owner(request.user):
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         serializer = BundleDetailSerializer(bundle, context={"request": request})
         return Response(serializer.data)
 

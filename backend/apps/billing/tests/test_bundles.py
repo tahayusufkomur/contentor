@@ -200,3 +200,37 @@ class TestBundleDetail:
         assert response.status_code == 204, response.content
         bundle.refresh_from_db()
         assert bundle.is_active is False
+
+
+# ---------------------------------------------------------------------------
+# Tests: an unpublished (draft) bundle
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db(transaction=True)
+class TestUnpublishedBundle:
+    def test_an_unpublished_bundle_is_not_in_the_store(self, bundle, owner, student):
+        draft = Bundle.objects.create(name="Draft Bundle", price=Decimal("59.00"), currency="USD", is_published=False)
+        for viewer in (None, student):
+            client = make_client(viewer)
+            assert [i["title"] for i in client.get("/api/v1/billing/store/?type=bundle").json()] == ["Test Bundle"]
+            assert [b["name"] for b in client.get("/api/v1/billing/bundles/").json()] == ["Test Bundle"]
+            assert client.get(f"/api/v1/billing/bundles/{draft.pk}/").status_code == 404
+        # The coach still sees her draft: in her bundles list, its page and her products.
+        coach = make_client(owner)
+        listed = {b["name"]: b["is_published"] for b in coach.get("/api/v1/billing/bundles/").json()}
+        assert listed == {"Test Bundle": True, "Draft Bundle": False}
+        assert coach.get(f"/api/v1/billing/bundles/{draft.pk}/").status_code == 200
+        products = {i["title"] for i in coach.get("/api/v1/billing/products/").json()}
+        assert products == {"Test Course", "Test Bundle", "Draft Bundle"}
+        # Publishing puts it on sale.
+        resp = coach.patch(f"/api/v1/billing/bundles/{draft.pk}/", {"is_published": True}, format="json")
+        assert resp.status_code == 200 and resp.json()["is_published"] is True, resp.content
+        store = make_client(student).get("/api/v1/billing/store/?type=bundle").json()
+        assert {i["title"] for i in store} == {"Test Bundle", "Draft Bundle"}
+
+    def test_existing_bundles_stay_published(self, bundle):
+        # The migration adds the flag as published: nothing she sells today goes dark.
+        assert bundle.is_published is True
+        assert Bundle._meta.get_field("is_published").default is True
+        assert Bundle.objects.filter(is_published=False).count() == 0

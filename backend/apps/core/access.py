@@ -192,7 +192,7 @@ class ContentAccessService:
         bundle_ids = BundleItem.objects.filter(content_type=ct, object_id=content.pk).values_list(
             "bundle_id", flat=True
         )
-        bundles = Bundle.objects.filter(pk__in=bundle_ids, is_active=True)
+        bundles = Bundle.objects.filter(pk__in=bundle_ids, is_active=True, is_published=True)
         if bundles.exists():
             options["bundles"] = [
                 {"id": b.pk, "name": b.name, "price": str(b.price), "currency": b.currency} for b in bundles
