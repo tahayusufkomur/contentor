@@ -130,6 +130,7 @@ def copilot_converse(request):
                 turn["attachments"],
                 context,
                 specialist=turn["specialist"],
+                actor=request.user,
             )
             yield sse_frame({"type": "done", **payload})
         except core_ai.AiError as exc:
@@ -200,6 +201,24 @@ def _execute(tenant, user, action):
         site_ai.apply_edit(tenant, action["pages"], extras=action.get("extras"))
         result = {"kind": kind, "changes_count": action.get("changes_count", 0)}
         return result, {"kind": "restore_pages", "pages": pages_before}
+    if kind == "set_access":
+        from apps.billing import ways
+
+        with tenant_context(tenant):
+            try:
+                item = ways.item_for(action.get("item_kind"), action.get("item_id"))
+                before = ways.ways_of(item)
+                after = ways.set_ways(item, action.get("ways"), actor=user)
+            except ways.WaysError as exc:
+                raise content.ContentOpError(str(exc)) from exc
+            result = {
+                "kind": kind,
+                "id": item.pk,
+                "item_kind": action["item_kind"],
+                "title": item.title,
+                "describe": ways.describe(after),
+            }
+        return result, {"kind": "restore_ways", "item_kind": action["item_kind"], "item_id": item.pk, "ways": before}
     creator = _CREATORS.get(kind)
     if creator is not None:
         with tenant_context(tenant):
@@ -440,6 +459,8 @@ def _audit_summary(action, result):
         return f"Switched site style to {action.get('style')}"
     if kind == "edit_navbar":
         return "Updated the navbar"
+    if kind == "set_access":
+        return f"Set access for {title}: {result['describe']}"
     if kind == "edit_seo":
         return "Updated the search description"
     if kind == "set_block_image":
@@ -571,6 +592,13 @@ def _restored_state(inverse):
         from apps.media import designs
 
         return designs.cover_state(inverse)
+    if kind == "restore_ways":
+        from apps.billing import ways
+
+        try:
+            return ways.ways_of(ways.item_for(inverse.get("item_kind"), inverse.get("item_id")))
+        except ways.WaysError:
+            return None
     cfg = TenantConfig.objects.first()
     if cfg is None:
         return None
@@ -689,6 +717,14 @@ def _apply_inverse(tenant, inverse):
             from apps.media import designs
 
             designs.restore_cover(inverse)
+            return
+        if kind == "restore_ways":
+            from apps.billing import ways
+
+            try:
+                ways.set_ways(ways.item_for(inverse.get("item_kind"), inverse.get("item_id")), inverse.get("ways"))
+            except ways.WaysError as exc:
+                raise content.ContentOpError(str(exc)) from exc
             return
         cfg = TenantConfig.objects.first()
         if cfg is None:

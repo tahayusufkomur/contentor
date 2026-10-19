@@ -107,6 +107,7 @@ def execute(schema_name, run_id):
                     req.get("attachments") or [],
                     page_context.clean(tenant, req.get("context")),
                     specialist=run.specialist,
+                    actor=run.actor,
                 )
         except core_ai.AiError as exc:
             cost = getattr(exc, "cost_usd", None) or Decimal("0")

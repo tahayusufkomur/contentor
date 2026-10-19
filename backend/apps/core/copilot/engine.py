@@ -67,6 +67,21 @@ SYSTEM_PROMPT = (
     "from the events list); date must be in the future\n"
     "- edit_blog_post: update an existing post's title, summary, or body "
     "(post_id from the blog list)\n"
+    "- set_access: change how people get into a course or event (item_kind "
+    "course, download, live_class, live_stream, onsite_event, zoom_class or "
+    "bundle, and item_id from the lists), as ways = {free, buy, plans}: "
+    "free = {window} or null, buy = {price, window} or null, plans = a list "
+    "of {plan_id, window} from the Subscriptions list; a window is "
+    "{opens_after_days, opens_on, closes_after_days, closes_on} with only "
+    "what applies; plus a one-line reason the creator would agree with. "
+    "Match the setup to her goal: steady monthly income, a subscription; "
+    "sell to everyone and reward members, both a price and a subscription; "
+    "a programme with an end, sell once with 3 to 12 months of access; "
+    "keep members subscribed, a subscription that opens after N days; grow "
+    "the list, free; a launch push, a free or calendar window. Use only "
+    "her own prices and her own subscriptions; never invent either. If the "
+    "right setup needs a subscription she does not have, offer to start "
+    "one in focus mode\n"
     "- publish_course / publish_blog_post: make a draft live (id from the "
     "lists); ONLY propose this when the coach asks to publish or confirms "
     "the draft is ready. A course goes live only once EVERY lesson has a "
@@ -407,6 +422,14 @@ class EditBlogPostAction(BaseModel):
     photo_id: str | None = None  # attached photo → the post's cover image
 
 
+class SetAccessAction(BaseModel):
+    kind: Literal["set_access"]
+    item_kind: str
+    item_id: int
+    ways: dict
+    reason: str = ""
+
+
 class PublishCourseAction(BaseModel):
     kind: Literal["publish_course"]
     course_id: int
@@ -440,6 +463,7 @@ CopilotAction = Annotated[
     | EditBlogPostAction
     | PublishCourseAction
     | PublishBlogPostAction
+    | SetAccessAction
     | EditBlockFieldsAction
     | ToggleBlockAction
     | DuplicateBlockAction,
@@ -981,10 +1005,32 @@ def _label_of(tenant, page, block_id):
     return _block_label(found.get("type", ""))
 
 
-def _card(tenant, action):
+def _card(tenant, action, actor=None):
     """Validate one proposed action and turn it into a confirmable card.
-    Raises blocks.BlockOpError (or site_ai's ComposeError) when unusable."""
+    Raises blocks.BlockOpError (or site_ai's ComposeError) when unusable.
+    ``actor`` is who asked (None = the system); it decides what access
+    changes she may make."""
     schema = tenant.schema_name
+    if isinstance(action, SetAccessAction):
+        from apps.billing import ways
+
+        with tenant_context(tenant):
+            try:
+                item = ways.item_for(action.item_kind, action.item_id)
+                ways.validate(item, action.ways, actor=actor)
+                detail = ways.describe(action.ways)
+            except ways.WaysError as exc:
+                raise content.ContentOpError(str(exc)) from exc
+        return {
+            "kind": "set_access",
+            "title": f"Set access for {item.title}"[:120],
+            "detail": detail,
+            "why": action.reason,
+            "token": tokens.stash_action(
+                schema,
+                {"kind": "set_access", "item_kind": action.item_kind, "item_id": action.item_id, "ways": action.ways},
+            ),
+        }
     if isinstance(action, EditPagesAction):
         pages, extras, _cost = site_ai.preview_edit(tenant, action.instruction)
         changes = site_ai.diff_current(tenant, pages)
@@ -1572,6 +1618,7 @@ def run_turn(
     *,
     specialist=team.DEFAULT,
     timeout_seconds=None,
+    actor=None,
 ):
     # Bound the transcript once, up front, to the same trailing window
     # _user_turn applies — the ask-cap count and the model's actual visible
@@ -1606,7 +1653,7 @@ def run_turn(
     drop_reason = None
     for action in parsed.actions:
         try:
-            card = _card(tenant, action)
+            card = _card(tenant, action, actor)
             card["owner"] = team.owner_of(card["kind"], action.model_dump(mode="json"), writer=specialist)
             cards.append(card)
         except (

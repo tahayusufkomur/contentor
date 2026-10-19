@@ -7,7 +7,8 @@ import pytest
 
 from apps.accounts.models import User
 from apps.billing.models import SubscriptionPlan
-from apps.billing.ways import set_ways
+from apps.billing.ways import set_ways, ways_of
+from apps.core.copilot import content
 from apps.core.copilot import context as page_context
 from apps.core.copilot import engine
 from apps.courses.models import Course
@@ -69,3 +70,76 @@ def test_an_open_course_shows_its_ways_in_plain_words(tenant_ctx, course, gold):
     context = page_context.clean(tenant_ctx, {"path": f"/admin/courses/{course.slug}"})
     assert f"(draft, access: {expected})" in context["record"]
     assert f"| {expected} |" in engine._courses_digest(tenant_ctx)
+
+
+def _action(course, ways, reason="Members should get it too."):
+    return engine.SetAccessAction(kind="set_access", item_kind="course", item_id=course.pk, ways=ways, reason=reason)
+
+
+def _ways_with(gold):
+    buy = {"price": "49.00", "window": {"closes_after_days": 365}}
+    return {"buy": buy, "plans": [{"plan_id": gold.pk, "window": {"opens_after_days": 30}}]}
+
+
+@pytest.fixture()
+def euro_sign():
+    """An API request loads the tenant afresh (currency is immutable once set), so pin the sign it prints."""
+    with mock.patch("apps.tenant_config.interview_brief.currency_sign", return_value="€"):
+        yield
+
+
+def _api(user):
+    from rest_framework.test import APIClient
+
+    client = APIClient(HTTP_HOST="shared-test.localhost")
+    client.force_authenticate(user=user)
+    return client
+
+
+def test_a_set_access_card_says_the_setup_and_why(tenant_ctx, course, gold):
+    card = engine._card(tenant_ctx, _action(course, _ways_with(gold)))
+    assert card["kind"] == "set_access"
+    assert card["title"] == "Set access for Open Course"
+    assert card["detail"] == "€49 once with 1 year of access; in Gold after 1 month of membership."
+    assert card["why"] == "Members should get it too."
+    assert ways_of(course)["plans"] == []  # the card writes nothing
+
+
+def test_applying_it_sets_the_ways(tenant_ctx, euro_sign, owner, course, gold):
+    card = engine._card(tenant_ctx, _action(course, _ways_with(gold)))
+    resp = _api(owner).post("/api/v1/admin/copilot/execute/", {"token": card["token"]}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["result"]["title"] == "Open Course"
+    assert resp.json()["result"]["describe"] == card["detail"]
+    assert ways_of(Course.objects.get(pk=course.pk))["plans"] == [
+        {"plan_id": gold.pk, "window": {"opens_after_days": 30}}
+    ]
+
+
+def test_undo_puts_the_old_ways_back(tenant_ctx, euro_sign, owner, course, gold):
+    from apps.tenant_config.models import CopilotAudit
+
+    before = ways_of(course)
+    card = engine._card(tenant_ctx, _action(course, _ways_with(gold)))
+    client = _api(owner)
+    audit_id = client.post("/api/v1/admin/copilot/execute/", {"token": card["token"]}, format="json").json()["audit_id"]
+    row = CopilotAudit.objects.get(pk=audit_id)
+    assert row.summary == f"Set access for Open Course: {card['detail']}"
+    assert row.inverse["kind"] == "restore_ways"
+    undo = client.post("/api/v1/admin/copilot/undo/", {"audit_id": audit_id}, format="json")
+    assert undo.status_code == 200, undo.content
+    assert ways_of(Course.objects.get(pk=course.pk)) == before
+
+
+def test_a_coach_cannot_change_plans_through_the_assistant(tenant_ctx, course, gold):
+    coach = User.objects.create_user(email="coach@copilot-access.test", name="Coach", password="secret123", role="coach")
+    with pytest.raises(content.ContentOpError, match="owner"):
+        engine._card(tenant_ctx, _action(course, _ways_with(gold)), actor=coach)
+    # the system (no actor) may
+    assert engine._card(tenant_ctx, _action(course, _ways_with(gold)))["kind"] == "set_access"
+    # and the turn hands the asker to the card, so she is told why instead
+    turn = engine.CopilotTurn(kind="actions", text="Done", actions=[_action(course, _ways_with(gold))])
+    with mock.patch.object(engine.core_ai, "structured", return_value=(turn, Decimal("0"), "m")):
+        payload, _ = engine.run_turn(tenant_ctx, [], [], "hi", actor=coach)
+    assert payload["kind"] == "answer"
+    assert "owner" in payload["text"]
