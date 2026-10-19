@@ -87,7 +87,7 @@ export interface ComposePrefill {
   link: string;
   /** Who, when and by email as the draft holds them (a focus-mode Keep writes them). */
   filters: AnnouncementFilters;
-  /** A `datetime-local` value on her browser's clock, or "" (send now). */
+  /** A `datetime-local` value on her browser's clock, or "" (send now; a time already passed too). */
   scheduledAt: string;
   alsoEmail: boolean;
 }
@@ -107,7 +107,11 @@ export const draftToComposePrefill = (
   body: draft.body,
   link: draft.link || "",
   filters: draft.filters,
-  scheduledAt: draft.scheduled_at ? localInput(draft.scheduled_at) : "",
+  // A kept time that has passed is not offered: she picks a new one (as keep() on the server).
+  scheduledAt:
+    draft.scheduled_at && Date.parse(draft.scheduled_at) > Date.now()
+      ? localInput(draft.scheduled_at)
+      : "",
   alsoEmail: draft.also_email ?? false,
 });
 

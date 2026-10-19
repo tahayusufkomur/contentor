@@ -39,8 +39,9 @@ describe("draftToComposePrefill", () => {
   });
 
   it("carries who, when and by email that a focus-mode Keep wrote onto the draft", () => {
-    // 20 October 10:00 on this browser's clock, whatever its zone.
-    const at = new Date(2026, 9, 20, 10, 0);
+    // 20 October 10:00 next year on this browser's clock, whatever its zone.
+    const year = new Date().getFullYear() + 1;
+    const at = new Date(year, 9, 20, 10, 0);
     const draft: AnnouncementDetail = {
       ...BASE_DRAFT,
       filters: { content_type: "course", content_id: 1 },
@@ -49,9 +50,17 @@ describe("draftToComposePrefill", () => {
     };
     expect(draftToComposePrefill(draft)).toMatchObject({
       filters: { content_type: "course", content_id: 1 },
-      scheduledAt: "2026-10-20T10:00",
+      scheduledAt: `${year}-10-20T10:00`,
       alsoEmail: true,
     });
+  });
+
+  it("does not offer a kept time that has since passed", () => {
+    const draft = {
+      ...BASE_DRAFT,
+      scheduled_at: new Date(Date.now() - 60_000).toISOString(),
+    };
+    expect(draftToComposePrefill(draft).scheduledAt).toBe("");
   });
 
   it("normalizes a missing link to an empty string", () => {

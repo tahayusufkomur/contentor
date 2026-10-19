@@ -260,13 +260,24 @@ test("students of one course: the tile shows how many", async ({ browser }) => {
 
 test("send is not offered with nobody to receive it", async ({ browser }) => {
   const page = await (await coachContext(browser)).newPage();
-  await stubDraft(page, { body: "<p>Closed.</p>" });
+  const { set } = await stubDraft(page, { body: "<p>Closed.</p>" });
   const atFinish = state({
     record: RECORD,
     question: Q.nobody,
     answered: [["topic", "Tell them the studio is closed"], ["audience", "Students of Desk Yoga"], ["review", "Looks good"], ["when", "Now"]],
   });
-  const sent = await stubFocus(page, () => ({ ...atFinish, status: "done", question: null }), atFinish);
+  // Keep writes who, when and the email tick onto the draft (backend message.keep): a time still to come.
+  const at = new Date(Date.now() + 3 * 86_400_000);
+  at.setSeconds(0, 0);
+  const sent = await stubFocus(
+    page,
+    (path) => {
+      if (path.endsWith("/finish/"))
+        set({ also_email: true, scheduled_at: at.toISOString(), filters: { content_type: "course", content_id: 3 } });
+      return { ...atFinish, status: "done", question: null };
+    },
+    atFinish,
+  );
 
   // She comes back to its page: focus mode resumes where she stopped.
   await page.goto(`${TENANT}${PATH}`);
@@ -276,6 +287,15 @@ test("send is not offered with nobody to receive it", async ({ browser }) => {
   await guide(page).getByRole("button", { name: "Keep as a draft" }).click();
   await expect(guide(page)).toHaveCount(0);
   expect(sent.at(-1)).toMatchObject({ publish: false, announce: true });
+  // The plain composer opens with what Keep wrote: by email, and her time on this browser's clock.
+  const main = page.getByRole("main");
+  await expect(main.getByText("Reviewing draft", { exact: false })).toBeVisible();
+  await expect(main.getByRole("checkbox", { name: /also send it as an email/i })).toBeChecked();
+  const local = await page.evaluate((iso) => {
+    const d = new Date(iso);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+  }, at.toISOString());
+  await expect(main.locator('input[type="datetime-local"]')).toHaveValue(local);
   await page.close();
 });
 
