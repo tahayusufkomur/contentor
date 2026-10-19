@@ -37,6 +37,7 @@ CLOSING = {
 }
 NOT_READY_LINE = "Your membership is kept off sale."
 NO_ITEMS, NO_PRICE = "Add what members get first", "Set its price first"
+NOTHING = "Nothing ticked"  # a tap none of whose values is one of her tiles
 SAY = "Say an amount"  # the price step's typing box: her words set the price only when they give one
 CYCLES = {"month": 1, "year": 12}  # a price tile's cycle -> billing_interval_months
 YEAR_HINT = "Two months free"  # the year's tile is ten months' price
@@ -145,9 +146,12 @@ UNCLEAR_FIELDS = ("price",)
 
 
 def _choices() -> list[dict]:
-    """One tile per published course, class series (rows of one kind with one
-    title, apps.live.series; never a held draft, never Zoom) and published
-    download: ``course:<id>``, ``event:<kind>:<id of its first row>``, ``download:<id>``."""
+    """One tile per published course, class series with a session to come
+    (rows of one kind with one title, apps.live.series; never a held draft,
+    never Zoom) and published download: ``course:<id>``, ``event:<kind>:<id of
+    its first row>``, ``download:<id>``."""
+    from django.utils import timezone
+
     from apps.core.copilot import content
     from apps.courses.models import Course
     from apps.downloads.models import DownloadFile
@@ -156,13 +160,16 @@ def _choices() -> list[dict]:
         return [{"value": f"{prefix}:{pk}", "label": title, "hint": hint} for pk, title in rows]
 
     out = tiles("course", HINTS["course"], Course.objects.filter(is_published=True).values_list("pk", "title"))
+    now = timezone.now()
     for kind in SERIES:
         firsts: dict[str, int] = {}
-        for pk, title in (
-            content.event_model(kind).objects.exclude(status="draft").order_by("pk").values_list("pk", "title")
-        ):
+        to_come = set()
+        published = content.event_model(kind).objects.exclude(status="draft").order_by("pk")
+        for pk, title, at in published.values_list("pk", "title", "scheduled_at"):
             firsts.setdefault(title, pk)
-        out += tiles(f"event:{kind}", HINTS[kind], sorted((pk, title) for title, pk in firsts.items()))
+            if at and at > now:
+                to_come.add(title)
+        out += tiles(f"event:{kind}", HINTS[kind], sorted((pk, t) for t, pk in firsts.items() if t in to_come))
     published = DownloadFile.objects.filter(is_published=True).values_list("pk", "title")
     return out + tiles("download", HINTS["download"], published)
 
@@ -216,15 +223,15 @@ def _named(titles) -> list[str]:
     return [c["value"] for c in choices if c["value"] in named]
 
 
-def _link(value: str, plan_id: int, on: bool) -> None:
+def _link(value: str, plan_id: int, on: bool) -> bool:
     """The plan added to (or taken from) each row's ways in, so a ticked item
-    keeps its own price and every other way in (Ruling 1). A row already in it
-    keeps its window. One the ways cannot take is left as it is."""
-    from django.contrib.contenttypes.models import ContentType
-
+    keeps its own price and every other way in (Ruling 1); a row already in it
+    keeps its window. True once every row is in it (or out of it). The ways
+    refuse some (a paid item at 0, or taking the last way in from a
+    members-only one): those rows are left as they are, and it is False."""
     from apps.billing import ways
-    from apps.billing.models import SubscriptionPlanAccess
 
+    done = True
     for row in _rows_of(value):
         current = ways.ways_of(row)
         if on == any(p["plan_id"] == plan_id for p in current["plans"]):
@@ -233,9 +240,8 @@ def _link(value: str, plan_id: int, on: bool) -> None:
         try:
             ways.set_ways(row, {**current, "plans": [*plans, {"plan_id": plan_id, "window": None}] if on else plans})
         except ways.WaysError:
-            if not on:  # members-only with no other way in, as before it was ticked: just the link goes
-                ct = ContentType.objects.get_for_model(row)
-                SubscriptionPlanAccess.objects.filter(plan_id=plan_id, content_type=ct, object_id=row.pk).delete()
+            done = False
+    return done
 
 
 # ── The draft ───────────────────────────────────────────────────────────────
@@ -311,11 +317,13 @@ def ask(creation, asked: dict) -> dict:
 
 def label(field, answer) -> str | None:
     """Her answered line: what's included by title ("4 items" past three), and a price tile's cycle."""
-    if field == "included" and answer:
+    if field == "included":
         values = answer if isinstance(answer, list) else _ticked(answer)
+        if not values:
+            return NOTHING
         if len(values) > 3:
             return f"{len(values)} items"
-        return ", ".join(rows[0].title for v in values if (rows := _rows_of(v))) or None
+        return ", ".join(rows[0].title for v in values if (rows := _rows_of(v))) or f"{len(values)} items"
     if field == "access" and isinstance(answer, str):
         cycle, _, amount = answer.partition(":")
         price = analysis.price_value(amount) if cycle in CYCLES else None
@@ -340,8 +348,16 @@ def apply_found(creation, found) -> None:
         if isinstance(answered, list):
             creation.answers["included"] = [*answered, *(v for v in named if v not in answered)]
     creation.brief = brief
-    if found.cycle in CYCLES:
-        _rows(creation.record_id).update(billing_interval_months=CYCLES[found.cycle])
+    plan = record(creation.record_id)
+    if found.cycle in CYCLES and plan is not None and plan.billing_interval_months != CYCLES[found.cycle]:
+        fields = {"billing_interval_months": CYCLES[found.cycle]}
+        # A new cycle with no price in her words: the price she set was for the other one, so it is asked
+        # again, never rescaled into one she did not give (F11, F15). With one, the flow sets it after this.
+        if plan.price > 0 and analysis.price_value(found.price) in (None, "free", "membership"):
+            fields["price"] = 0
+            creation.answers.pop("price", None)
+            creation.answers.pop("access", None)
+        _rows(plan.pk).update(**fields)
 
 
 def apply_change(creation, found, *, field, text, item, clarified, fresh) -> None:
@@ -365,27 +381,28 @@ def apply_clarified(creation, field, value) -> bool:
 
 
 def sync(creation) -> None:
-    """After every answer: a tap's ticks, checked against her tiles (none left
-    asks again), are linked into the plan, and anything she unticked is taken
-    out, only where this flow linked it (her links on the page stay). A free
-    price is no membership's: her price is asked again. Call under the
-    creation's lock; the caller saves."""
+    """After every answer: a tap's ticks, checked against her tiles, are
+    linked into the plan, and anything she unticked is taken out, only where
+    this flow linked it (her links on the page stay). Only what is linked stays
+    ticked; with nothing, the question is asked again. A free price is no
+    membership's: her price is asked again. Call under the creation's lock;
+    the caller saves."""
     answers = creation.answers
     if isinstance(answers.get("included"), str):
-        if ticked := _ticked(answers["included"]):
-            answers["included"] = ticked
-        else:
-            answers.pop("included")
+        answers["included"] = _ticked(answers["included"])
     wanted = answers.get("included")
-    done = (creation.drafted or {}).get("included") or []
-    if isinstance(wanted, list) and wanted != done and creation.record_id is not None:
-        for value in wanted:
-            if value not in done:
-                _link(value, creation.record_id, on=True)
-        for value in done:
-            if value not in wanted:
-                _link(value, creation.record_id, on=False)
-        creation.drafted = {**(creation.drafted or {}), "included": wanted}
+    if isinstance(wanted, list) and creation.record_id is not None:
+        done = (creation.drafted or {}).get("included") or []
+        if wanted != done:
+            # Kept: what is linked. A tick the ways refuse is dropped; an untick they refuse stays ticked.
+            kept = [v for v in wanted if v in done or _link(v, creation.record_id, on=True)]
+            kept += [v for v in done if v not in wanted and not _link(v, creation.record_id, on=False)]
+            creation.drafted = {**(creation.drafted or {}), "included": kept}
+            wanted = kept
+        if wanted:
+            answers["included"] = wanted
+        else:  # nothing in it: asked again
+            answers.pop("included")
     if answers.get("price") in ("free", "membership"):
         answers.pop("price")
         if answers.get("access") == "free":
@@ -491,10 +508,21 @@ def _tier(row) -> dict:
 
 
 def suggest_price(row) -> pricing.Suggestion:
-    """Its price for its cycle ("Sell it for" after "Just draft it" keeps the
-    cycle her words gave): a year is ten months."""
+    """Its price for its cycle, with a reason for that cycle ("Sell it for"
+    after "Just draft it" keeps the cycle her words gave): a year is ten months."""
     s = _monthly(row)
-    return pricing.Suggestion(s.amount * 10, s.reason) if row.billing_interval_months == 12 else s
+    months = row.billing_interval_months
+    if months == 1:
+        return s
+    if months == 12:
+        return pricing.Suggestion(s.amount * 10, f"Two months free on {money(s.amount)} a month")
+    return pricing.Suggestion(s.amount * months, f"{months} months at {money(s.amount)} a month")
+
+
+def amount_label(row, amount: str) -> str:
+    """An amount with its cycle, as her finish step says it: "$9 a month", "$90 a year"."""
+    months = row.billing_interval_months if row is not None else 1
+    return f"{money(amount)} " + {1: "a month", 12: "a year"}.get(months, f"every {months} months")
 
 
 def _monthly(row) -> pricing.Suggestion:

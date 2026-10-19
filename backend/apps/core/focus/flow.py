@@ -25,6 +25,8 @@ DELEGATE = "delegate"
 MAX_SPAN_MS = 600_000
 TITLE_MAX = 80
 ANSWER_MAX = 500
+# A multi-pick tap's values, comma-separated: cut at a whole value past this (hundreds of tiles).
+MULTI_MAX = 4000
 # Not now: what became of Marketing's draft, if it made one.
 SAVED_IN_MESSAGES = "Your announcement is saved as a draft in Messages."
 NO_ANNOUNCEMENT = "No announcement this time."
@@ -188,7 +190,7 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
         elif question.kind == "finish":
             price = _sell_for(creation, value)
             _set_price(creation, price)
-            _say(creation, question, f"Sell it for {_price_label(price)}")
+            _say(creation, question, f"Sell it for {_amount_label(creation, price)}")
         elif question.kind == "price":
             if not _access(creation, question, value, delegate) and not rest:
                 creation.save(update_fields=["active_ms", "updated_at"])
@@ -950,9 +952,19 @@ def _finish_options(creation, asked: dict, record) -> dict:
     if (creation.answers or {}).get("access") == DELEGATE and (s := adapter.suggest_price(record)):
         options = [
             *options,
-            {"value": f"price:{s.amount}", "label": f"Sell it for {_price_label(str(s.amount))}", "hint": s.reason},
+            {
+                "value": f"price:{s.amount}",
+                "label": f"Sell it for {_amount_label(creation, str(s.amount))}",
+                "hint": s.reason,
+            },
         ]
     return {**asked, "options": options}
+
+
+def _amount_label(creation, amount: str) -> str:
+    """An amount on her finish step: the kind's own words for it (a membership's "$9 a month"), else "$9"."""
+    own = getattr(kinds.get(creation.kind), "amount_label", None)  # optional
+    return own(_record(creation), amount) if own else _price_label(amount)
 
 
 def _price_label(value: str) -> str:
@@ -1121,7 +1133,8 @@ def _pick(recipe, q, value, text, delegate):
     if value is None:
         return None
     if q.multi:  # the values of the tiles she ticked, comma-separated: the kind's ``sync`` checks them
-        return str(value).strip() or None
+        words = str(value).strip()
+        return (words[:MULTI_MAX].rsplit(",", 1)[0] if len(words) > MULTI_MAX else words) or None
     if q.kind == "schedule":  # the /setup picker's JSON, or nothing it would not send
         from apps.tenant_config import interview_schedule
 

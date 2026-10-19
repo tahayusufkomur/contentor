@@ -23,7 +23,7 @@ from apps.core.focus.kinds import membership
 from apps.courses.models import Course
 from apps.downloads.models import DownloadFile
 from apps.live.models import LiveClass, ZoomClass
-from apps.tenant_config.models import FocusCreation, TenantConfig
+from apps.tenant_config.models import CopilotChat, FocusCreation, TenantConfig
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -151,8 +151,10 @@ def test_just_draft_it_leaves_the_price_to_her_finish_tap(owner):
     assert asked["why"].startswith("Set its price first.")
     assert "on_sale" not in [o["value"] for o in asked["options"]]
     sell = next(o for o in asked["options"] if o["value"].startswith("price:"))
-    assert sell == {"value": "price:9", "label": "Sell it for $9", "hint": pricing.FALLBACK}
+    assert sell == {"value": "price:9", "label": "Sell it for $9 a month", "hint": pricing.FALLBACK}
     creation = flow.answer(creation, "finish", value="price:9")
+    assert flow.state(creation)["answered"][-1]["label"] == "$9"  # her access line: the price she tapped
+    assert CopilotChat.objects.get(pk=creation.chat_id).entries[-1]["text"] == "Sell it for $9 a month"
     assert (_plan(creation).price, _plan(creation).billing_interval_months) == (Decimal("9.00"), 1)
     with mock.patch("apps.core.monetization.can_monetize", return_value=True):
         assert _values(creation) == ["on_sale", "off_sale"]
@@ -251,7 +253,7 @@ def test_a_ticked_paid_course_keeps_its_one_time_price(owner):
     assert (paid.pricing_type, paid.price) == ("paid", Decimal("49.00"))
     assert free.pricing_type == "free"
     assert _linked(_plan(creation)) == {("course", paid.pk), ("course", free.pk)}
-    # Unticked (her words at the review now name only the free one): its link goes the same way.
+    # Unticked (E2's page sends the new ticks; here the answer is set as it would): out the same way.
     creation.answers = {**creation.answers, "included": [f"course:{free.pk}"]}
     membership.sync(creation)
     paid.refresh_from_db()
@@ -292,6 +294,8 @@ def test_the_tiles_list_only_what_students_can_see(owner):
         for i in range(3)
     ]
     LiveClass.objects.create(title="Held class", instructor=owner, scheduled_at=soon, status="draft")
+    past = timezone.now() - timedelta(days=3)
+    LiveClass.objects.create(title="Last spring", instructor=owner, scheduled_at=past, status="ended")
     ZoomClass.objects.create(title="Zoom chat", instructor=owner, scheduled_at=soon, status="scheduled")
     creation = flow.start(owner, "membership", value=TIER)
     asked = flow.state(creation)["question"]
@@ -317,6 +321,40 @@ def test_her_words_at_the_question_answer_it(owner):
     assert creation.answers["included"] == [f"course:{basics.pk}"]
     assert _linked(_plan(creation)) == {("course", basics.pk)}
     assert flow.current_field(creation) == "review"
+
+
+def test_a_tick_the_ways_cannot_take_is_asked_again(owner):
+    broken = _course(owner, "Broken", pricing_type="paid", price=Decimal("0"))  # the ways refuse a paid 0
+    creation = flow.start(owner, "membership", value=TIER)
+    creation = flow.answer(creation, "included", value=f"course:{broken.pk}")
+    assert flow.current_field(creation) == "included"
+    assert _linked(_plan(creation)) == set()
+    good = _course(owner, "Good")
+    creation = flow.answer(creation, "included", value=f"course:{broken.pk},course:{good.pk}")
+    assert creation.answers["included"] == [f"course:{good.pk}"]  # only what was linked
+    assert _linked(_plan(creation)) == {("course", good.pk)}
+    assert flow.state(creation)["answered"][-1] == {"field": "included", "label": "Good"}
+
+
+def test_an_untick_that_would_leave_no_way_in_keeps_the_link(owner):
+    members_only = _course(owner, "Members only", pricing_type="subscription")
+    creation = flow.start(owner, "membership", value=TIER)
+    creation = flow.answer(creation, "included", value=f"course:{members_only.pk}")
+    creation.answers = {**creation.answers, "included": []}  # unticked: her only way in would go
+    membership.sync(creation)
+    assert _linked(_plan(creation)) == {("course", members_only.pk)}
+    assert creation.answers["included"] == [f"course:{members_only.pk}"]  # still ticked
+    members_only.refresh_from_db()
+    assert members_only.pricing_type == "subscription"
+
+
+def test_a_tap_with_nothing_valid_has_a_plain_line(owner):
+    assert membership.label("included", "course:99999," + "x" * 3000) == "Nothing ticked"
+    recipe = membership.RECIPE
+    question = next(q for q in recipe.questions if q.id == "included")
+    long = ",".join(f"course:{n}" for n in range(1000, 2000))
+    picked = flow._pick(recipe, question, long, None, False)
+    assert len(picked) <= flow.MULTI_MAX and long.startswith(picked) and long[len(picked)] == ","
 
 
 def test_nothing_ticked_is_asked_again(owner):
@@ -357,6 +395,24 @@ def test_her_typed_amount_is_kept_exactly(owner):
     assert flow.current_field(creation) == "finish"
 
 
+def test_a_new_cycle_in_her_words_asks_the_price_again(owner):
+    creation = _at_finish(owner, price="year:90")
+    creation.pending = {"field": "review", "text": "make it monthly"}
+    flow.apply(creation, membership.FOUND(cycle="month", change="make it monthly"))
+    creation.save()
+    plan = _plan(creation)
+    assert (plan.price, plan.billing_interval_months) == (0, 1)  # never $90 a month
+    assert "access" not in creation.answers and flow.current_field(creation) == "access"
+    # With a price, her words set both.
+    creation.pending = {"field": "access", "text": "monthly, 12"}
+    flow.apply(creation, membership.FOUND(cycle="month", price="12"))
+    creation.save()
+    assert (_plan(creation).price, _plan(creation).billing_interval_months) == (Decimal("12.00"), 1)
+    # The same cycle again changes nothing.
+    flow.apply(creation, membership.FOUND(cycle="month"))
+    assert _plan(creation).price == Decimal("12.00")
+
+
 def test_her_words_set_the_cycle(owner):
     creation = flow.start(owner, "membership", value=TIER)
     creation.pending = {"field": "topic", "text": "a yearly membership for 120"}
@@ -382,7 +438,9 @@ def test_suggest_price_reads_her_plans_then_setup_then_the_tier(owner):
     s = membership.suggest_price(draft)
     assert s.amount == 10 and s.reason.startswith("Basic costs $10 a month")
     draft.billing_interval_months = 12  # her words made it yearly: "Sell it for" is the year's price
-    assert membership.suggest_price(draft).amount == 100
+    yearly = membership.suggest_price(draft)
+    assert (yearly.amount, yearly.reason) == (100, "Two months free on $10 a month")
+    assert membership.amount_label(draft, "100.00") == "$100 a year"
 
 
 def test_the_copy_job_writes_the_plan_name_over_its_working_title(owner):
