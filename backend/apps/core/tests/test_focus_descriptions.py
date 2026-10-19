@@ -4,6 +4,7 @@ patched; what is under test is what gets written (her text always wins), the
 events, Stop, a redraft under it, and Try again."""
 
 import json
+from contextlib import contextmanager
 from decimal import Decimal
 from unittest import mock
 
@@ -16,7 +17,7 @@ from apps.core.copilot import runs
 from apps.core.focus import analysis, descriptions, flow, jobs, outline
 from apps.core.sanitize import clean_rich_html
 from apps.courses.models import Course, Lesson
-from apps.tenant_config.models import CopilotRun
+from apps.tenant_config.models import CopilotRun, FocusCreation
 from apps.tenant_config.setup_flow import _Module
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -116,6 +117,57 @@ def test_looks_good_starts_the_descriptions_and_says_so(owner, at_review):
     creation.chat.refresh_from_db()
     assert creation.chat.entries[-1]["text"].startswith("Writing a short description")
     assert flow.state(creation)["descriptions"] == {"status": "building", "run": creation.runs["descriptions"]}
+
+
+def test_a_delegated_level_reaches_the_model_as_nothing(owner, at_review, texts):
+    creation, run_id = _confirm(at_review)
+    jobs.execute(SCHEMA, run_id)
+    assert creation.answers["level"] == flow.DELEGATE
+    assert texts.calls[0]["level"] == "" and texts.calls[0]["topic"] == "A course on desk yoga"
+
+
+@contextmanager
+def lock_order():
+    """The order a job locks the creation and its run in, as a list."""
+    order, lock, active = [], FocusCreation.objects.select_for_update, jobs.active
+
+    def creation(*args, **kwargs):
+        order.append("creation")
+        return lock(*args, **kwargs)
+
+    def run(pk):
+        order.append("run")
+        return active(pk)
+
+    with (
+        mock.patch.object(FocusCreation.objects, "select_for_update", side_effect=creation),
+        mock.patch("apps.core.focus.jobs.active", side_effect=run),
+    ):
+        yield order
+
+
+def _creation_first(order):
+    """Each run lock right after a creation lock: the order her requests take (creation, then run)."""
+    return "run" in order and all(i > 0 and order[i - 1] == "creation" for i, o in enumerate(order) if o == "run")
+
+
+def test_the_jobs_lock_the_creation_before_their_run(owner, texts):
+    creation = flow.answer(flow.start(owner, "course", value="A course on desk yoga"), "level", rest=True)
+    with lock_order() as order:
+        creation = _write_outline(creation)
+    assert _creation_first(order), order
+    with (
+        lock_order() as order,
+        mock.patch("apps.core.focus.covers._plan", side_effect=core_ai.AiError("off")),
+        mock.patch("apps.core.focus.covers.pick_photo", return_value=None),
+    ):
+        jobs.execute(SCHEMA, creation.runs["covers"])
+    assert _creation_first(order), order
+    assert len(FocusCreation.objects.get(pk=creation.pk).covers["rounds"]) == 1  # it reached its write
+    creation, run_id = _confirm(creation)
+    with lock_order() as order:
+        jobs.execute(SCHEMA, run_id)
+    assert _creation_first(order), order
 
 
 def test_nothing_runs_before_she_confirms(owner, at_review):

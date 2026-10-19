@@ -86,10 +86,11 @@ def carry_out(tenant, run_id) -> None:
     draft = _draft(tenant, creation, course, instruction)
     topic = str((creation.answers or {}).get("topic") or "")
     with transaction.atomic():
+        # The creation first, then the run, then the course: the order her requests lock them in.
+        creation = FocusCreation.objects.select_for_update().get(pk=creation.pk)
         if not jobs.active(run_id):  # Stop won while the model wrote: drop it
             return
         course = Course.objects.select_for_update().get(pk=course.pk)
-        creation = FocusCreation.objects.select_for_update().get(pk=creation.pk)
         capped = bool((creation.brief or {}).get("capped"))
         events, creation.drafted = write(
             course,

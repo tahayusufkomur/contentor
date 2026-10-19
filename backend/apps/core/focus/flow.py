@@ -35,7 +35,8 @@ WRITING_DESCRIPTIONS = "Writing a short description for each lesson's video. Edi
 # Not now: what became of Marketing's draft, if it made one.
 SAVED_IN_MESSAGES = "Your announcement is saved as a draft in Messages."
 NO_ANNOUNCEMENT = "No announcement this time."
-ANNOUNCE_LABELS = {"scheduled": "Schedule", "draft": "Not now", "skip": "Not now"}
+ANNOUNCE_LABELS = {"scheduled": "Schedule", "draft": "Not now", "skip": "Not now", "sent": "Sent"}
+SENT = "Your announcement has gone out."
 # The finish step while a lesson is still empty: no "Publish now".
 NOT_READY = "Your outline is saved. Next, your lessons."
 # The finish step of a paid course she cannot sell yet: no "Publish now" (F11).
@@ -160,7 +161,9 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
             if value == "ok":
                 creation.answers[field] = "ok"
                 _say(creation, question, "Looks good, continue")
-                if status == "ready":  # otherwise the outline job starts them once it has written
+                # The outline on the page: ready, or an earlier one a stopped or failed redraft left.
+                # While one is being written, the outline job starts them once it has written.
+                if status == "ready" or (status in ("failed", "idle") and _has_outline(creation)):
                     descriptions.start(creation)
                 _chat_append(creation, [{"role": "assistant", "text": WRITING_DESCRIPTIONS}])
                 if followup_allowed(creation, "later"):  # before the cover; it never redrafts the outline
@@ -206,7 +209,7 @@ def apply(creation, found) -> None:
     item = _pop_clarify(creation) if field == "clarify" else None
     if found is None:
         if item:
-            _clarified(creation, item["field"], text)
+            _redraft_waiting(creation, item, _clarified(creation, item["field"], text))
         elif field == "outline_review":
             _redraft(creation, text)
         elif field == "cover":  # never her answer (the cover endpoint sets it); her words describe the photo
@@ -231,23 +234,30 @@ def apply(creation, found) -> None:
         price = analysis.price_value(found.price)
         if price:
             _set_price(creation, price)
+        clarified = False
         if found.answer.strip():
             if item:
-                _clarified(creation, item["field"], found.answer)
+                clarified = _clarified(creation, item["field"], found.answer)
             elif field in recipe.values and field not in creation.answers:
                 creation.answers[field] = _choice(recipe, field, found.answer)
-        drafted = creation.outline_run_id is not None or bool((creation.drafted or {}).get("modules"))
-        at_review = field == "outline_review" and (found.answer.strip() or not price)  # a price alone is no change
-        if drafted and (found.outline_change.strip() or counted or at_review):
-            _redraft(
-                creation, text, keep_counts=any(n is not None for n in (found.modules, found.lessons, found.total))
-            )
         brief = creation.brief
         clarify = list(brief.get("clarify") or [])
         for unclear in found.unclear:  # each asked once
             if unclear.field not in {*(brief.get("asked") or []), *(c["field"] for c in clarify)}:
                 clarify.append(unclear.model_dump())
-        creation.brief = {**brief, "clarify": clarify}
+        counts = [c for c in clarify[len(brief.get("clarify") or []) :] if c["field"] in ("modules", "lessons")]
+        drafted = creation.outline_run_id is not None or bool((creation.drafted or {}).get("modules"))
+        # A level is a change to the outline; a price alone is not.
+        at_review = field == "outline_review" and (found.answer.strip() or found.level.strip() or not price)
+        keep = any(n is not None for n in (found.modules, found.lessons, found.total))
+        if item and item.get("redraft"):
+            _redraft_waiting(creation, item, clarified or counted)
+        elif drafted and (found.outline_change.strip() or counted or at_review):
+            if counts:  # her count first: one redraft, once she has said it (or left it to us)
+                counts[-1].update(redraft=text, keep_counts=keep)
+            else:
+                _redraft(creation, text, keep_counts=keep)
+        creation.brief = {**creation.brief, "clarify": clarify}
     if pending.get("rest"):
         _delegate_rest(creation)
     _next_draft(creation)
@@ -301,6 +311,9 @@ def decide_announcement(creation, *, schedule: bool, active_ms=None) -> FocusCre
         if current_field(creation) != "announce":
             creation.save(update_fields=["active_ms", "updated_at"])
             return creation
+        if _decided_meanwhile(creation):
+            creation.save()
+            return creation
         if not schedule and (pk := jobs.run_id(creation, "announce")) is not None:
             runs.stop(pk)  # still writing: no draft after all; a finished one is left as it is
         row, send_at = announcing.draft(creation)
@@ -311,7 +324,7 @@ def decide_announcement(creation, *, schedule: bool, active_ms=None) -> FocusCre
             when = datetime.fromisoformat(send_at)
             row.status, row.scheduled_at = "scheduled", when
             row.save(update_fields=["status", "scheduled_at"])
-            closing = f"Your announcement is scheduled for {when:%A} {when.day} {when:%B} at {when:%H:%M}."
+            closing = _scheduled_line(when)
         else:
             closing = SAVED_IN_MESSAGES if row else NO_ANNOUNCEMENT
         value = "scheduled" if schedule else "draft" if row else "skip"
@@ -327,9 +340,46 @@ def retry_announcement(creation) -> FocusCreation:
     """Try again after Marketing's draft failed; never while one is being written."""
     with transaction.atomic():
         creation = _locked(creation)
+        if _decided_meanwhile(creation):  # never a second announcement
+            creation.save()
+            return creation
         shown = announcing.payload(creation)
         if current_field(creation) == "announce" and (shown is None or shown["status"] == "failed"):
             announcing.start(creation)
+    return creation
+
+
+def _scheduled_line(when) -> str:
+    return f"Your announcement is scheduled for {when:%A} {when.day} {when:%B} at {when:%H:%M}."
+
+
+def _decided_meanwhile(creation) -> bool:
+    """Her draft scheduled or sent from Messages while the announce step was
+    open: the step is decided, and focus mode ends with the line that says
+    so. Call under the creation's lock; the caller saves."""
+    from apps.core.copilot.engine import _tenant_zone
+
+    row = announcing.decided(creation) if current_field(creation) == "announce" else None
+    if row is None:
+        return False
+    if row.status == "scheduled" and row.scheduled_at:
+        closing = _scheduled_line(row.scheduled_at.astimezone(_tenant_zone(connection.tenant)))
+    else:
+        closing = SENT if row.status == "sent" else "Your announcement is scheduled."
+    _chat_append(creation, [{"role": "assistant", "text": closing}])
+    _end(creation, row.status)
+    return True
+
+
+def _settle_announcement(creation):
+    """Her return to the announce step after she scheduled or sent the draft
+    from Messages: decided, never "failed" with Try again."""
+    if creation.status != "active" or current_field(creation) != "announce" or announcing.decided(creation) is None:
+        return creation
+    with transaction.atomic():
+        creation = _locked(creation)
+        if _decided_meanwhile(creation):
+            creation.save()
     return creation
 
 
@@ -374,6 +424,10 @@ def retry_descriptions(creation) -> FocusCreation:
         ):
             descriptions.start(creation)
     return creation
+
+
+def _has_outline(creation) -> bool:
+    return bool((creation.drafted or {}).get("modules"))
 
 
 def outline_status(creation) -> str:
@@ -443,7 +497,7 @@ def _sync_cover(creation):
 
 
 def state(creation) -> dict:
-    creation = _settle_followup(_settle(_sync_cover(creation)))
+    creation = _settle_announcement(_settle_followup(_settle(_sync_cover(creation))))
     recipe = RECIPES[creation.kind]
     record = _record(creation)
     if record is None and creation.status == "active":  # deleted by hand, or by an Undo
@@ -479,7 +533,12 @@ def state(creation) -> dict:
             if "price" in answers and "access" not in answers
             else []
         ),
-        "outline": {"status": outline_status(creation), "run": creation.outline_run_id},
+        "outline": {
+            "status": outline_status(creation),
+            "run": creation.outline_run_id,
+            # An outline is on the page: after a failed redraft, "Looks good" still goes on with it.
+            "drafted": _has_outline(creation),
+        },
         "descriptions": (
             {"status": jobs.status(creation, "descriptions"), "run": jobs.run_id(creation, "descriptions")}
             if jobs.run_id(creation, "descriptions") is not None
@@ -642,7 +701,7 @@ def _clarify(creation, value, delegate, rest) -> bool:
     level is delegated; a price is left to its own step) or "Just draft it".
     False when the tap carried no answer."""
     unclear = creation.brief["clarify"][0]
-    label = None
+    label, clarified = None, False
     if delegate:
         if unclear["field"] in ("modules", "lessons"):
             creation.answers.setdefault("size", DELEGATE)
@@ -650,11 +709,12 @@ def _clarify(creation, value, delegate, rest) -> bool:
             creation.answers.setdefault("level", DELEGATE)
         label = "You decide"
     elif value is not None and str(value).strip():
-        _clarified(creation, unclear["field"], value)
+        clarified = _clarified(creation, unclear["field"], value)
         label = next((o["label"] for o in unclear["options"] if o["value"] == value), str(value)[:ANSWER_MAX])
     elif not rest:
         return False
     _pop_clarify(creation)
+    _redraft_waiting(creation, unclear, clarified)
     if label:
         _chat_append(creation, [{"role": "assistant", "text": unclear["question"]}, {"role": "coach", "text": label}])
     if rest:
@@ -672,12 +732,13 @@ def _pop_clarify(creation) -> dict:
     return unclear
 
 
-def _clarified(creation, field, value) -> None:
+def _clarified(creation, field, value) -> bool:
     """Her answer to a clarify question, onto the field it asked about. One
-    that is still no count or price leaves that field to its usual question."""
+    that is still no count or price leaves that field to its usual question.
+    True when it gave a count."""
     words = str(value).strip()
     if not words:
-        return
+        return False
     if field == "price":
         if price := analysis.price_value(words):
             _set_price(creation, price)
@@ -687,9 +748,19 @@ def _clarified(creation, field, value) -> None:
         try:
             count = int(words)
         except ValueError:
-            return
+            return False
         creation.brief = analysis.brief_from(analysis.Analysis(**{field: count}), creation.brief)
         creation.answers["size"] = size_label(creation.brief)
+        return True
+    return False
+
+
+def _redraft_waiting(creation, item, clarified: bool) -> None:
+    """The change she asked for at the review that waited on this count: drafted
+    now, once, with the count she gave (without one when she left it to us)."""
+    if words := item.get("redraft"):
+        label = size_label(creation.brief) if clarified else ""
+        _redraft(creation, f"{words} ({label})" if label else words, keep_counts=clarified or item["keep_counts"])
 
 
 def _set_price(creation, value: str) -> None:

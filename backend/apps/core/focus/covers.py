@@ -7,6 +7,7 @@ so she always has covers to pick from. A copilot run on the agents worker."""
 
 import json
 import logging
+import re
 from typing import Literal
 
 from django.conf import settings
@@ -33,6 +34,8 @@ STEP = {"specialist": "designer", "label": "Drafting covers"}
 COUNT = 4
 SUBTITLE_MAX = 60
 NO_PHOTO = ("title",)  # layouts that draw no photo
+# A tapped photo's id ("own:<uuid>" or a library id): nothing that could reach a path or a URL.
+ASSET_ID = re.compile(r"[A-Za-z0-9._:-]{1,128}")
 # Round n falls back to FALLBACK[n % 2] (n from 0), in the primary panel, the display font, no subtitle.
 FALLBACK = (("full", "panel", "title", "band"), ("framed", "photo", "panel", "full"))
 SYSTEM = (
@@ -88,9 +91,10 @@ def carry_out(tenant, run_id) -> None:
     styles = _four(styles, len(rounds))
     picked = None if rounds else pick_photo(query)  # the first round only: one copy into her Media
     with transaction.atomic():
+        # The creation first, then the run: the order her requests lock them in.
+        locked = FocusCreation.objects.select_for_update().get(pk=creation.pk)
         if not jobs.active(run_id):  # Stop won while the model drew
             return
-        locked = FocusCreation.objects.select_for_update().get(pk=creation.pk)
         if not Course.objects.filter(pk=locked.record_id).exists():  # deleted while the model drew
             runs.finish(run_id, True, {"text": "Drew no covers."})
             return
@@ -188,15 +192,15 @@ def pick_photo(query: str):
 def photo_for(asset_id: str):
     """The Photo a tapped asset id stands for: hers as it is, a library photo
     copied into her Media (§5.2, one download). None when it cannot be had."""
-    if not isinstance(asset_id, str) or not asset_id or "/" in asset_id:
+    if not isinstance(asset_id, str) or not ASSET_ID.fullmatch(asset_id):
         return None
     try:
         if asset_id.startswith(own_photos.OWN):
             return own_photos.photo_of(asset_id)
         image = client.get(asset_id)
         return cache.cache_remote_image(image) if image else None
-    except client.CuratedImageError:
-        logger.warning("focus covers: photo %r not available", asset_id)
+    except Exception:  # the library, storage or the network: never a 500 for her tap
+        logger.warning("focus covers: photo %r not available", asset_id, exc_info=True)
         return None
 
 
@@ -274,7 +278,8 @@ def keep(creation, index, user) -> None:
             logger.warning("focus covers: keep refused creation=%s", locked.pk, exc_info=True)
             return
         action = {"kind": "keep_cover", "design_id": str(draft.pk), "title": result["title"], "made_by": "designer"}
-        _record_audit(connection.tenant, user, action, result, inverse)
+        with transaction.atomic():  # a savepoint: a failed audit write never undoes the keep
+            _record_audit(connection.tenant, user, action, result, inverse)
         _answered(locked, "kept")
 
 

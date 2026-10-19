@@ -150,8 +150,9 @@ def focus_cover(request, creation_id):
     if action == "photo":
         if flow.current_field(creation) == "cover":  # no download for a stale screen
             photo = covers.photo_for(data.get("asset_id"))
-            if photo is not None:
-                covers.set_photo(creation, photo)
+            if photo is None:  # she is told, and the shared photo stays as it was
+                return Response({"detail": "photo_unavailable"}, status=409)
+            covers.set_photo(creation, photo)
     elif action == "keep":
         covers.keep(creation, index, request.user)
     elif action == "more":

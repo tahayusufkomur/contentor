@@ -308,11 +308,25 @@ def test_a_library_photo_is_copied_into_her_media_when_tapped(at_cover, hers, li
 def test_a_photo_that_cannot_be_had_changes_nothing(at_cover, hers):
     before = _round(at_cover)
     with mock.patch.object(client, "get", side_effect=client.CuratedImageError("down")):
-        assert _act(hers, at_cover, action="photo", asset_id="lib-2").status_code == 200
+        assert _act(hers, at_cover, action="photo", asset_id="lib-2").status_code == 409
     with mock.patch.object(client, "get", return_value=None):
-        assert _act(hers, at_cover, action="photo", asset_id="lib-3").status_code == 200
-    assert _act(hers, at_cover, action="photo", asset_id="own:not-a-uuid").status_code == 200
+        assert _act(hers, at_cover, action="photo", asset_id="lib-3").status_code == 409
+    assert _act(hers, at_cover, action="photo", asset_id="own:not-a-uuid").status_code == 409
+    # Storage or the network failing on the copy: she is told, never a 500.
+    other = client.RemoteImage("lib-4", "Lake", "A lake", [], 1600, 900, "", "")
+    with (
+        mock.patch.object(client, "get", return_value=other),
+        mock.patch("apps.core.focus.covers.cache.cache_remote_image", side_effect=OSError("storage down")),
+    ):
+        assert _act(hers, at_cover, action="photo", asset_id="lib-4").status_code == 409
     assert _round(at_cover) == before
+
+
+def test_only_a_plain_asset_id_is_ever_fetched():
+    with mock.patch.object(client, "get") as get:
+        for bad in ("lib-2?size=full", "lib 2", "../lib", "%2e%2e", "x" * 129, "", None, 7):
+            assert covers.photo_for(bad) is None
+    get.assert_not_called()
 
 
 @on
@@ -330,6 +344,21 @@ def test_use_this_cover_keeps_it_with_an_undo(at_cover, hers):
     assert audit.inverse["kind"] == "restore_cover_design"
     at_cover.refresh_from_db()
     assert {"field": "cover", "label": "Cover chosen"} in flow.state(at_cover)["answered"]
+
+
+@on
+def test_a_failed_audit_write_never_undoes_use_this_cover(at_cover, hers):
+    from django.db import connection, transaction
+
+    def broken(**_kwargs):  # a database error inside the write, as Model.save meets one
+        with transaction.mark_for_rollback_on_error(), connection.cursor() as cursor:
+            cursor.execute("SELECT 1 / 0")
+
+    with mock.patch.object(CopilotAudit.objects, "create", side_effect=broken):
+        response = _act(hers, at_cover, action="keep", index=0)
+    assert response.status_code == 200
+    assert response.json()["question"]["field"] == "finish"
+    assert Design.objects.filter(kind="cover", target_key=str(at_cover.record_id), state="kept").exists()
 
 
 @on

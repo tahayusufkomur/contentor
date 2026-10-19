@@ -279,7 +279,7 @@ def test_state_shapes_the_current_question(owner, outline_start):
     assert question["specialist"] == "content"
     assert body["answered"][-1] == {"field": "level", "label": "Complete beginners"}
     assert body["record"]["title"] == "Desk yoga for office workers"
-    assert body["outline"] == {"status": "idle", "run": None}
+    assert body["outline"] == {"status": "idle", "run": None, "drafted": False}
     assert [s["done"] for s in body["steps"]] == [True, True, False, False, False, False, False, False]
 
 
@@ -288,7 +288,7 @@ def test_the_outline_status_follows_its_run(owner, outline_start):
     assert flow.state(creation)["outline"]["status"] == "building"
     CopilotRun.objects.filter(pk=creation.outline_run_id).update(status="done")
     creation.refresh_from_db()
-    assert flow.state(creation)["outline"] == {"status": "ready", "run": creation.outline_run_id}
+    assert flow.state(creation)["outline"] == {"status": "ready", "run": creation.outline_run_id, "drafted": False}
     CopilotRun.objects.filter(pk=creation.outline_run_id).update(status="failed")
     assert flow.state(creation)["outline"]["status"] == "failed"
 
@@ -306,6 +306,20 @@ def test_try_again_after_a_failed_redraft_keeps_her_change(owner, outline_start)
     CopilotRun.objects.filter(pk=creation.outline_run_id).update(status="failed")
     flow.answer(creation, "outline_review", value="retry")
     assert outline_start.call_args.kwargs["instruction"] == "make module 2 about breathing"
+
+
+def test_looks_good_after_a_stopped_redraft_goes_on_with_the_outline_on_the_page(owner, outline_start):
+    creation = flow.answer(_started(owner), "level", rest=True)
+    CopilotRun.objects.filter(pk=creation.outline_run_id).update(status="done")
+    creation.drafted = {"modules": [1]}
+    creation.save()
+    creation = flow.answer(creation, "outline_review", text="make module 2 about breathing")
+    runs.stop(creation.outline_run_id)
+    creation.refresh_from_db()
+    assert flow.state(creation)["outline"] == {"status": "failed", "run": creation.outline_run_id, "drafted": True}
+    creation = flow.answer(creation, "outline_review", value="ok")
+    assert creation.answers["outline_review"] == "ok"
+    assert jobs.status(creation, "descriptions") == "building"
 
 
 def test_her_first_answer_does_not_wait_for_a_cover(owner, outline_start):
@@ -570,6 +584,48 @@ def test_a_redraft_that_names_a_count_keeps_it(owner, outline_start, analysed):
     creation = _run_pending(flow.answer(creation, "outline_review", text="make it 6 modules"))
     assert creation.brief["modules"] == 6 and creation.brief["lessons"] == 3
     assert outline_start.call_count == 2
+
+
+def _more_lessons(analysed):
+    unclear = analysis.Unclear(
+        field="lessons",
+        question="How many lessons in each module?",
+        options=[analysis.ClarifyOption(label="4 lessons each", value="4")],
+    )
+    analysed(analysis.Analysis(outline_change="add a few more lessons", unclear=[unclear]))
+
+
+def test_a_change_with_an_unclear_count_redrafts_once_with_her_count(owner, outline_start, analysed):
+    creation = _reviewing(owner)
+    _more_lessons(analysed)
+    creation = _run_pending(flow.answer(creation, "outline_review", text="add a few more lessons"))
+    assert outline_start.call_count == 1  # not yet: her count first
+    assert flow.current_field(creation) == "clarify"
+    creation = flow.answer(creation, "clarify", value="4")
+    assert outline_start.call_count == 2
+    # Her new count holds, and the rest of her first answer's with it, as when she says the count outright.
+    assert outline_start.call_args.kwargs["instruction"] == "add a few more lessons (4 modules · 4 lessons each)"
+    assert (creation.brief["modules"], creation.brief["lessons"]) == (4, 4)
+    assert flow.current_field(creation) == "outline_review"
+
+
+def test_a_change_whose_count_she_leaves_to_us_redrafts_without_one(owner, outline_start, analysed):
+    creation = _reviewing(owner)
+    _more_lessons(analysed)
+    creation = _run_pending(flow.answer(creation, "outline_review", text="add a few more lessons"))
+    creation = flow.answer(creation, "clarify", delegate=True)
+    assert outline_start.call_count == 2
+    assert outline_start.call_args.kwargs["instruction"] == "add a few more lessons"
+    assert not {"modules", "lessons", "total"} & creation.brief.keys()
+
+
+def test_a_level_with_a_price_at_the_review_redrafts(owner, outline_start, analysed):
+    creation = _reviewing(owner)
+    analysed(analysis.Analysis(level="advanced", price="49"))
+    creation = _run_pending(flow.answer(creation, "outline_review", text="make it advanced and $49"))
+    assert creation.answers["level"] == "advanced" and creation.answers["price"] == "49.00"
+    assert outline_start.call_count == 2
+    assert outline_start.call_args.kwargs["instruction"] == "make it advanced and $49"
 
 
 def test_a_failed_reading_at_the_review_also_drops_the_counts(owner, outline_start, analysed):

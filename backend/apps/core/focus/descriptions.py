@@ -66,8 +66,11 @@ def carry_out(tenant, run_id) -> None:
     if course is None:  # deleted meanwhile: nothing to write on
         runs.finish(run_id, True, {"text": "Wrote 0 lesson descriptions."})
         return
+    from .flow import DELEGATE
+
     brief = creation.brief or {}
-    answers = creation.answers or {}
+    # "delegate" is no word of hers: the model gets nothing for it.
+    answers = {k: "" if v == DELEGATE else v for k, v in (creation.answers or {}).items()}
     written = 0
     for module_id in dict.fromkeys(row["module_id"] for row in todo):
         lessons = [{"id": r["id"], "title": r["title"]} for r in todo if r["module_id"] == module_id]
@@ -96,6 +99,8 @@ def carry_out(tenant, run_id) -> None:
         ai_compose.record_spend(tenant.schema_name, cost)
         texts = {item.id: item.text.strip() for item in parsed.lessons}
         with transaction.atomic():
+            # The creation first, then the run: the order her requests lock them in.
+            FocusCreation.objects.select_for_update().filter(pk=creation.pk).first()
             if not jobs.active(run_id):  # Stop won while the model wrote: keep what is written
                 return
             for lesson in lessons:

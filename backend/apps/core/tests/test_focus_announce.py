@@ -19,7 +19,7 @@ from apps.core.focus import announce, flow, jobs
 from apps.core.focus.recipes import RECIPES
 from apps.courses.models import Course, Lesson, Module
 from apps.notifications.models import Announcement
-from apps.tenant_config.models import CopilotRun, TenantConfig
+from apps.tenant_config.models import CopilotRun, FocusCreation, TenantConfig
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -282,3 +282,49 @@ def test_a_run_stopped_by_not_now_never_drafts(owner, model):
     jobs.execute(SCHEMA, creation.runs["announce"])
     assert not Announcement.objects.exists()
     assert CopilotRun.objects.get(pk=creation.runs["announce"]).status == "stopped"
+
+
+@pytest.mark.parametrize("sent", [False, True])
+def test_a_draft_she_scheduled_or_sent_from_messages_ends_it_as_decided(owner, berlin, model, sent):
+    creation = _drafted(owner)
+    row = Announcement.objects.get()
+    when = datetime(2026, 11, 3, 9, 30, tzinfo=UTC)  # 10:30 in Berlin
+    row.status, row.scheduled_at = ("sent", None) if sent else ("scheduled", when)
+    row.save(update_fields=["status", "scheduled_at"])
+    first = creation.runs["announce"]
+    creation = flow.retry_announcement(creation)  # a stale screen's Try again: never a second one
+    assert creation.runs["announce"] == first
+    assert creation.status == "done" and creation.answers["announce"] == row.status
+    assert _chat(creation)[-1] == (
+        flow.SENT if sent else "Your announcement is scheduled for Tuesday 3 November at 10:30."
+    )
+    assert Announcement.objects.count() == 1
+
+
+def test_coming_back_after_scheduling_it_in_messages_never_offers_try_again(owner, model):
+    creation = _drafted(owner)
+    Announcement.objects.update(status="sent")
+    state = flow.state(creation)
+    assert state["status"] == "done" and state["question"] is None and state["announcement"] is None
+    assert FocusCreation.objects.get(pk=creation.pk).finished_at is not None
+
+
+def test_the_announcement_job_locks_the_creation_before_its_run(owner, model):
+    creation = flow.finish(_ready(owner), publish=True, announce=True)
+    order, lock, active = [], FocusCreation.objects.select_for_update, jobs.active
+
+    def locks_creation(*args, **kwargs):
+        order.append("creation")
+        return lock(*args, **kwargs)
+
+    def locks_run(pk):
+        order.append("run")
+        return active(pk)
+
+    with (
+        mock.patch.object(FocusCreation.objects, "select_for_update", side_effect=locks_creation),
+        mock.patch("apps.core.focus.jobs.active", side_effect=locks_run),
+    ):
+        jobs.execute(SCHEMA, creation.runs["announce"])
+    assert order == ["creation", "run"]
+    assert Announcement.objects.exists()

@@ -53,6 +53,14 @@ def test_price_value_reads_amounts_free_and_membership():
     assert analysis.price_value("lots") is None and analysis.price_value("-5") is None
 
 
+def test_a_sub_cent_price_is_free_never_paid_at_zero():
+    from apps.core.focus import flow
+
+    assert analysis.price_value("0.004") == "free"
+    assert analysis.price_value("0.006") == "0.01"
+    assert flow._amount("paid:0.004", "paid:") is None  # a tap never sets a paid price of 0.00
+
+
 def test_brief_from_keeps_what_an_earlier_answer_settled():
     brief = analysis.brief_from(analysis.Analysis(modules=4, notes="short videos"), {})
     brief = analysis.brief_from(analysis.Analysis(lessons=3, notes="at the desk"), brief)

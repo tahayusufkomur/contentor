@@ -84,6 +84,8 @@ def carry_out(tenant, run_id) -> None:
     ai_compose.record_spend(tenant.schema_name, cost)
     send_at = send_time(timezone.now(), _tenant_zone(tenant))
     with transaction.atomic():
+        # The creation first, then the run: the order her requests lock them in.
+        FocusCreation.objects.select_for_update().filter(pk=creation.pk).first()
         if not jobs.active(run_id):  # Stop won while the model wrote: no draft
             return
         made = content.create_announcement_draft(
@@ -117,6 +119,18 @@ def draft(creation):
     if not send_at or datetime.fromisoformat(send_at) < now + timedelta(hours=1):
         send_at = send_time(now, _tenant_zone(connection.tenant)).isoformat()
     return row, send_at
+
+
+def decided(creation):
+    """Her draft, once she scheduled or sent it from Messages herself; None
+    while it is still a draft, or there is none."""
+    from apps.notifications.models import Announcement
+
+    pk = jobs.run_id(creation, "announce")
+    result = (CopilotRun.objects.filter(pk=pk).values_list("result", flat=True).first() or {}) if pk else {}
+    if not result.get("announcement"):
+        return None
+    return Announcement.objects.filter(pk=result["announcement"]).exclude(status="draft").first()
 
 
 def payload(creation) -> dict | None:

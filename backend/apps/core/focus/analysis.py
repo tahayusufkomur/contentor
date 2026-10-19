@@ -168,6 +168,7 @@ def price_value(raw: str) -> str | None:
         return None
     if not amount.is_finite() or amount < 0 or amount > MAX_PRICE:
         return None
+    amount = amount.quantize(Decimal("0.01"))  # cents first: "0.004" is free, never paid at 0.00
     return "free" if amount == 0 else f"{amount:.2f}"
 
 
