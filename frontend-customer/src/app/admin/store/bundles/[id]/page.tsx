@@ -150,12 +150,9 @@ export default function EditBundlePage() {
   const [initialOriginalPrice, setInitialOriginalPrice] = useState<
     number | null
   >(null);
-  // As saved: a draft (focus mode's, or kept) is published by Publish below.
-  const [saved, setSaved] = useState({
-    published: true,
-    price: "0",
-    items: 0,
-  });
+  // As saved: a draft (focus mode's, or kept) is published by Publish below,
+  // once the server says it is ready (its own count: a series once, no held sessions).
+  const [saved, setSaved] = useState({ published: true, notReady: "" });
 
   const originalPrice = useMemo(() => {
     const total = selectedItems.reduce(
@@ -217,8 +214,7 @@ export default function EditBundlePage() {
     );
     setSaved({
       published: bundle.is_published !== false,
-      price: bundle.price,
-      items: items.length,
+      notReady: bundle.not_ready ?? "",
     });
   };
   const receiveRef = useRef(receive);
@@ -415,16 +411,16 @@ export default function EditBundlePage() {
     },
   );
 
-  // A kept draft, published from here once it has two items and a price; the
-  // server refuses it as the finish would (not ready, or selling not open yet).
-  const ready = saved.items >= 2 && Number(saved.price) > 0;
+  // A kept draft, published from here once it has two items and a price (else
+  // the line says what it still needs); the server refuses it as the finish
+  // would (not ready, or selling not open yet).
   const { run: publish, loading: publishing } = useAsyncAction(
     async () => {
       await clientFetch<Bundle>(`/api/v1/billing/bundles/${id}/`, {
         method: "PATCH",
         body: JSON.stringify({ is_published: true }),
       });
-      setSaved((now) => ({ ...now, published: true }));
+      setSaved({ published: true, notReady: "" });
       toast.success(t("published"));
     },
     {
@@ -465,15 +461,19 @@ export default function EditBundlePage() {
                 : "Update the details and items for this bundle."}
             </p>
           </div>
-          {!loading && !saved.published && ready && (
-            <Button
-              loading={publishing}
-              loadingText={t("publishing")}
-              onClick={publish}
-            >
-              {t("publish")}
-            </Button>
-          )}
+          {!loading &&
+            !saved.published &&
+            (saved.notReady ? (
+              <p className="text-sm text-muted-foreground">{`${saved.notReady}.`}</p>
+            ) : (
+              <Button
+                loading={publishing}
+                loadingText={t("publishing")}
+                onClick={publish}
+              >
+                {t("publish")}
+              </Button>
+            ))}
         </div>
       )}
 

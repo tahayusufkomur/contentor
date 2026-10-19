@@ -1211,6 +1211,7 @@
       "bundle": {
         "new": "New bundle",
         "continue": "Continue your bundle: {title}",
+        "tooFew": "A bundle needs at least two items you sell. Give two of them a price first.",
         "fillMyself": "Fill it in myself",
         "thinking": "Thinking about your bundle…",
         "writing": "Writing the name and description…",

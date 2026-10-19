@@ -82,7 +82,12 @@ const state = (over: Body & { answered?: [string, string][] }): Body => {
 
 /** The focus endpoints: `reply` answers every POST (and the creation's GET
  *  returns the last state); `open` is the creation the overview lists. */
-async function stubFocus(page: Page, reply: (path: string, body: Body) => Body, open: Body | null = null) {
+async function stubFocus(
+  page: Page,
+  reply: (path: string, body: Body) => Body,
+  open: Body | null = null,
+  first: Body = Q.items,
+) {
   const sent: Body[] = [];
   let current: Body | null = open;
   await page.route(/\/api\/v1\/admin\/focus\/.*/, async (route) => {
@@ -100,7 +105,7 @@ async function stubFocus(page: Page, reply: (path: string, body: Body) => Body, 
         json: {
           enabled: true,
           kinds: ["course", "event", "message", "download", "membership", "bundle"],
-          first: { bundle: Q.items },
+          first: { bundle: first },
           open:
             current && current.status === "active" && current.id
               ? [{ id: CREATION, kind: "bundle", record: current.record }]
@@ -139,6 +144,8 @@ async function stubBundle(page: Page, log: string[] = [], refuse = "") {
     original_price: items()
       .reduce((sum, i) => sum + Number(i.price), 0)
       .toFixed(2),
+    // The server's own count (backend Bundle.not_ready): her page shows it where Publish would be.
+    not_ready: linked.length < 2 ? "Add at least two items" : Number(bundle.price) > 0 ? "" : "Set its price first",
   });
   await page.route(`**/api/v1/billing/bundles/${DRAFT}/`, (route) => {
     const req = route.request();
@@ -310,13 +317,18 @@ test("a kept draft is published from its page once selling is open", async ({ br
   const log: string[] = [];
   const line = "Start selling first: your plan, then payouts.";
   const bundle = await stubBundle(page, log, line);
-  bundle.link(["course:11", "course:12"]);
+  bundle.link(["course:11"]);
   bundle.set({ name: COPY_NAME, price: "75.00" });
   await stubFocus(page, () => state({}));
 
+  // Not ready: what it still needs, where Publish would be.
   await page.goto(`${TENANT}${PATH}`);
-  await expect(main(page).getByText("Draft", { exact: true })).toBeVisible();
+  await expect(main(page).getByText("Add at least two items.")).toBeVisible();
   const publish = main(page).getByRole("button", { name: "Publish", exact: true });
+  await expect(publish).toHaveCount(0);
+  bundle.link(["course:11", "course:12"]);
+  await page.reload();
+  await expect(main(page).getByText("Draft", { exact: true })).toBeVisible();
   await publish.click();
   // The server refuses it as the finish would: she is told why, and it stays a draft.
   await expect(page.getByText(line)).toBeVisible();
@@ -325,5 +337,24 @@ test("a kept draft is published from its page once selling is open", async ({ br
   await expect(page.getByText(CLOSING)).toBeVisible();
   await expect(main(page).getByText("Draft", { exact: true })).toHaveCount(0);
   expect(log).toEqual(['patch:{"is_published":true}', 'patch:{"is_published":true}']);
+  await page.close();
+});
+
+test("with fewer than two items to sell, the guide says so and offers the plain form", async ({ browser }) => {
+  const page = await (await coachContext(browser)).newPage();
+  const one = { ...Q.items, options: Q.items.options.slice(0, 1) };
+  const sent = await stubFocus(page, () => state({}), null, one);
+
+  await page.goto(`${TENANT}/admin/store/bundles/new`);
+  await expect(
+    guide(page).getByText("A bundle needs at least two items you sell. Give two of them a price first."),
+  ).toBeVisible();
+  // Nothing to tick and no box to type in: no draft that could never be published.
+  await expect(guide(page).getByRole("textbox", { name: "Your answer" })).toHaveCount(0);
+  await expect(guide(page).locator("button[aria-pressed]", { hasText: "Morning workbook" })).toHaveCount(0);
+  await guide(page).getByRole("link", { name: "Fill it in myself" }).click();
+  await expect(page).toHaveURL(/\/admin\/store\/bundles\/new\?form=1$/);
+  await expect(main(page).getByRole("heading", { name: "Create Bundle" })).toBeVisible();
+  expect(sent).toEqual([]);
   await page.close();
 });

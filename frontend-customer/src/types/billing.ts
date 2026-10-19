@@ -30,6 +30,8 @@ export interface Bundle {
   is_active: boolean;
   /** False: a draft (focus mode makes these), hidden from students until published. */
   is_published?: boolean;
+  /** Her own view: why it cannot be published yet ("Add at least two items"), "" when it can. */
+  not_ready?: string;
   item_count: number;
   access_info: AccessInfo;
   items?: BundleItem[];

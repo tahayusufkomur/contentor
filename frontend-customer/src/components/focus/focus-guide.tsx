@@ -13,6 +13,7 @@ import {
 import { AnswerBox } from "@/components/setup-flow/answer-box";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { NavLink } from "@/components/ui/nav-link";
 import { Spinner } from "@/components/ui/spinner";
 import { useAssistantDock } from "@/lib/assistant-dock";
 import { stopRun } from "@/lib/copilot/api";
@@ -32,7 +33,7 @@ import {
   type FocusState,
 } from "@/lib/focus/api";
 import { guideBody, type GuideInput } from "@/lib/focus/guide";
-import { focusTimeKey, type FocusKind } from "@/lib/focus/kinds";
+import { focusTimeKey, KIND_ROUTES, type FocusKind } from "@/lib/focus/kinds";
 import {
   activeCreation,
   applyCreation as apply,
@@ -413,6 +414,24 @@ export function FocusGuide() {
               />
             )}
           </GuideQuestion>
+        ) : question.kind === "pick" &&
+          question.options.length < 2 &&
+          t.has(`focus.kinds.${state.kind}.tooFew`) ? (
+          // Too little to pick from for this kind (a bundle needs two items she
+          // sells): one plain line and the way forward, never an empty pick.
+          <div className="flex flex-col items-start gap-3">
+            <p className="text-sm text-foreground">
+              {t(`focus.kinds.${state.kind}.tooFew`)}
+            </p>
+            {state.id === 0 && (
+              <NavLink
+                href={KIND_ROUTES[state.kind]?.plainHref ?? "/admin"}
+                className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                {t(`focus.kinds.${state.kind}.fillMyself`)}
+              </NavLink>
+            )}
+          </div>
         ) : question.kind === "pick" ? (
           // Her ticks are the answer: the tiles live in PickQuestion, not as taps.
           <GuideQuestion
