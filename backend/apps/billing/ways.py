@@ -6,8 +6,9 @@ The one place that reads and writes them. The item keeps ``pricing_type`` and
 """
 
 import re
-from datetime import date
+from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal, InvalidOperation
+from zoneinfo import ZoneInfo
 
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
@@ -260,6 +261,39 @@ def apply_shorthand(item, *, pricing_type: str | None = None, price=None, actor=
     else:
         return current
     return set_ways(item, ways, actor=actor)
+
+
+# ---- stamping ----------------------------------------------------------------
+
+
+def _tenant_zone() -> ZoneInfo:
+    from apps.tenant_config.models import TenantConfig
+
+    config = TenantConfig.objects.first()
+    return ZoneInfo((config.timezone if config else None) or "UTC")
+
+
+def window_bounds(window: dict | None, anchor: datetime) -> tuple[datetime, datetime | None]:
+    """When a window opens and closes for someone who joined at ``anchor``; calendar dates are the creator's days."""
+    w = window or {}
+    zone = _tenant_zone()
+    start, end = anchor, None
+    if "opens_after_days" in w:
+        start = anchor + timedelta(days=w["opens_after_days"])
+    elif "opens_on" in w:
+        midnight = datetime.combine(date.fromisoformat(w["opens_on"]), time.min, tzinfo=zone)
+        start = max(anchor, midnight.astimezone(UTC))
+    if "closes_after_days" in w:
+        end = anchor + timedelta(days=w["closes_after_days"])
+    elif "closes_on" in w:
+        end = datetime.combine(date.fromisoformat(w["closes_on"]), time(23, 59, 59), tzinfo=zone).astimezone(UTC)
+    return start, end
+
+
+def stamp(item, paid_at: datetime) -> tuple[datetime, datetime | None]:
+    """The window a purchase of ``item`` made at ``paid_at`` keeps: the item's buy window as it is now."""
+    buy = ways_of(item)["buy"]
+    return window_bounds(buy["window"] if buy else None, paid_at)
 
 
 # ---- plain words -------------------------------------------------------------

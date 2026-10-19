@@ -11,6 +11,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.billing import ways
 from apps.billing.providers import connect
 from apps.billing.providers.types import ProviderError
 from apps.core.access import ContentAccessService
@@ -564,6 +565,12 @@ def grant_access_for_payment(payment):
         Enrollment.objects.update_or_create(
             user_id=user_id, course=course, defaults={"is_active": True}, create_defaults={"payment_id": payment.pk}
         )
+    # A purchase keeps the window it was bought with; a replay finds it stamped and leaves it.
+    paid_at = timezone.now()
+    for row in payment.items.filter(access_starts_at__isnull=True):
+        if row.content_object is not None:
+            row.access_starts_at, row.access_ends_at = ways.stamp(row.content_object, paid_at)
+            row.save(update_fields=["access_starts_at", "access_ends_at"])
 
 
 def _ensure_subscription_price(plan, account_id, currency):
