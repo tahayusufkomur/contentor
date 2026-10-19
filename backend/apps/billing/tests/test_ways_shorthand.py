@@ -3,6 +3,8 @@
 from decimal import Decimal
 
 import pytest
+from django.db import connection
+from django.db.migrations.executor import MigrationExecutor
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
@@ -59,6 +61,21 @@ def test_a_members_only_download_without_a_plan_is_refused_and_not_created(owner
     assert not DownloadFile.objects.filter(title="Guide").exists()
 
 
+def test_the_request_user_reaches_the_writer_as_the_actor(owner, monkeypatch):
+    from apps.billing import ways
+
+    coach = User.objects.create_user(email="coach@shorthand.test", name="Coach", password="secret123", role="coach")
+    course = Course.objects.create(title="Mine", slug="mine", instructor=owner)
+    actors = []
+    real = ways.apply_shorthand
+    monkeypatch.setattr(ways, "apply_shorthand", lambda item, **kw: actors.append(kw["actor"]) or real(item, **kw))
+
+    resp = make_client(coach).put(f"/api/v1/courses/{course.slug}/", {"price": "25"}, format="json")
+
+    assert resp.status_code == 200, resp.content
+    assert actors == [coach]
+
+
 def test_an_unlinked_members_only_item_gets_every_active_plan(owner, gold):
     silver = SubscriptionPlan.objects.create(name="Silver", price=Decimal("19.00"), currency="EUR")
     SubscriptionPlan.objects.create(name="Old", price=Decimal("9.00"), currency="EUR", is_active=False)
@@ -66,7 +83,8 @@ def test_an_unlinked_members_only_item_gets_every_active_plan(owner, gold):
     named = Course.objects.create(title="Named", slug="named", instructor=owner, pricing_type="subscription")
     SubscriptionPlanAccess.objects.create(plan=gold, content_object=named)
 
-    assert link_unlinked_members_only() == 1
+    state = MigrationExecutor(connection).loader.project_state(("billing", "0010_link_unlinked_members_only"))
+    assert link_unlinked_members_only(state.apps.get_model) == 1  # the migration's historical models
 
     assert {p["plan_id"] for p in ways_of(loose)["plans"]} == {gold.pk, silver.pk}
     assert [p["plan_id"] for p in ways_of(named)["plans"]] == [gold.pk]

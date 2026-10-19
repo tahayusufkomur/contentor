@@ -77,7 +77,7 @@ def _course_list(request):
 
 
 def _course_create(request):
-    serializer = CourseCreateUpdateSerializer(data=request.data)
+    serializer = CourseCreateUpdateSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
     course = serializer.save(instructor=request.user)
     return Response(
@@ -106,7 +106,7 @@ def course_detail(request, slug):
     if request.method == "PUT":
         if not is_coach_or_owner(request.user):
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
-        serializer = CourseCreateUpdateSerializer(course, data=request.data, partial=True)
+        serializer = CourseCreateUpdateSerializer(course, data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(CourseDetailSerializer(course, context={"request": request}).data)

@@ -93,7 +93,7 @@ def live_class_list_create(request):
     if not is_coach_or_owner(request.user):
         return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
-    serializer = LiveClassCreateSerializer(data=request.data)
+    serializer = LiveClassCreateSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
     live_class = serializer.save(instructor=request.user)
     return Response(LiveClassSerializer(live_class).data, status=status.HTTP_201_CREATED)
@@ -112,7 +112,9 @@ def live_class_detail(request, pk):
     if request.method == "PUT":
         if not is_coach_or_owner(request.user):
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
-        serializer = LiveClassCreateSerializer(live_class, data=request.data, partial=True)
+        serializer = LiveClassCreateSerializer(
+            live_class, data=request.data, partial=True, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(LiveClassSerializer(live_class).data)
@@ -205,7 +207,7 @@ def live_stream_list_create(request):
     if not is_coach_or_owner(request.user):
         return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
-    serializer = LiveStreamCreateSerializer(data=request.data)
+    serializer = LiveStreamCreateSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
     live_stream = serializer.save(instructor=request.user)
     return Response(LiveStreamSerializer(live_stream).data, status=status.HTTP_201_CREATED)
@@ -224,7 +226,9 @@ def live_stream_detail(request, pk):
     if request.method == "PUT":
         if not is_coach_or_owner(request.user):
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
-        serializer = LiveStreamCreateSerializer(live_stream, data=request.data, partial=True)
+        serializer = LiveStreamCreateSerializer(
+            live_stream, data=request.data, partial=True, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(LiveStreamSerializer(live_stream).data)
@@ -317,7 +321,7 @@ def zoom_class_list_create(request):
     if not is_coach_or_owner(request.user):
         return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
-    serializer = ZoomClassCreateSerializer(data=request.data)
+    serializer = ZoomClassCreateSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
     zoom_class = serializer.save(instructor=request.user)
     return Response(
@@ -339,7 +343,9 @@ def zoom_class_detail(request, pk):
     if request.method == "PUT":
         if not is_coach_or_owner(request.user):
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
-        serializer = ZoomClassCreateSerializer(zoom_class, data=request.data, partial=True)
+        serializer = ZoomClassCreateSerializer(
+            zoom_class, data=request.data, partial=True, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(ZoomClassSerializer(zoom_class, context={"request": request}).data)
@@ -367,7 +373,7 @@ def onsite_event_list_create(request):
     if not is_coach_or_owner(request.user):
         return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
-    serializer = OnsiteEventCreateSerializer(data=request.data)
+    serializer = OnsiteEventCreateSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
     event = serializer.save(instructor=request.user)
     return Response(
@@ -389,7 +395,7 @@ def onsite_event_detail(request, pk):
     if request.method == "PUT":
         if not is_coach_or_owner(request.user):
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
-        serializer = OnsiteEventCreateSerializer(event, data=request.data, partial=True)
+        serializer = OnsiteEventCreateSerializer(event, data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(OnsiteEventSerializer(event, context={"request": request}).data)

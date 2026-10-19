@@ -26,7 +26,7 @@ def _bundle_list(request):
 
 
 def _bundle_create(request):
-    serializer = BundleCreateSerializer(data=request.data)
+    serializer = BundleCreateSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
     bundle = serializer.save()
     return Response(
@@ -47,7 +47,7 @@ def bundle_detail(request, pk):
     if request.method == "PATCH":
         if not request.user.is_authenticated or request.user.role != "owner":
             return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
-        serializer = BundleCreateSerializer(bundle, data=request.data, partial=True)
+        serializer = BundleCreateSerializer(bundle, data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         bundle = serializer.save()
         return Response(BundleDetailSerializer(bundle, context={"request": request}).data)

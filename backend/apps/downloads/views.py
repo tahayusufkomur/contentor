@@ -40,7 +40,7 @@ def download_list_create(request):
     if not is_coach_or_owner(request.user):
         return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
-    serializer = DownloadFileCreateSerializer(data=request.data)
+    serializer = DownloadFileCreateSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(
@@ -55,7 +55,9 @@ def download_detail(request, pk):
     download_file = get_object_or_404(DownloadFile, pk=pk)
 
     if request.method == "PATCH":
-        serializer = DownloadFileCreateSerializer(download_file, data=request.data, partial=True)
+        serializer = DownloadFileCreateSerializer(
+            download_file, data=request.data, partial=True, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(DownloadFileSerializer(download_file).data)

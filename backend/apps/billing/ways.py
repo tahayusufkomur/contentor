@@ -383,22 +383,27 @@ class ShorthandMixin:
 # ---- migration ---------------------------------------------------------------
 
 
-def link_unlinked_members_only() -> int:
+def link_unlinked_members_only(get_model=None) -> int:
     """Link every members-only item that names no plan to every active plan, so closing the
-    "any active subscription" rule changes nobody's access. Returns how many items were linked."""
-    plans = list(SubscriptionPlan.objects.filter(is_active=True))
+    "any active subscription" rule changes nobody's access. Returns how many items were linked.
+
+    ``get_model`` is where the models come from: ``apps.get_model`` inside a migration (the historical
+    models, so a later column never breaks it); the live models by default.
+    """
+    get_model = get_model or apps.get_model
+    plans = list(get_model("billing", "SubscriptionPlan").objects.filter(is_active=True))
     if not plans:
         return 0
+    access, content_type = get_model("billing", "SubscriptionPlanAccess"), get_model("contenttypes", "ContentType")
     linked = 0
     for kind, label in KINDS.items():
         if kind == "bundle":
             continue
-        model = apps.get_model(label)
-        ctype = ContentType.objects.get_for_model(model)
-        has_link = SubscriptionPlanAccess.objects.filter(content_type=ctype).values("object_id")
+        app_label, model_name = label.split(".")
+        model = get_model(app_label, model_name)
+        ctype, _ = content_type.objects.get_or_create(app_label=app_label, model=model_name)
+        has_link = access.objects.filter(content_type=ctype).values("object_id")
         for item in model.objects.filter(pricing_type="subscription").exclude(pk__in=has_link):
-            SubscriptionPlanAccess.objects.bulk_create(
-                [SubscriptionPlanAccess(plan=plan, content_type=ctype, object_id=item.pk) for plan in plans]
-            )
+            access.objects.bulk_create([access(plan=plan, content_type=ctype, object_id=item.pk) for plan in plans])
             linked += 1
     return linked
