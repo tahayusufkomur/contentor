@@ -480,3 +480,14 @@ def test_a_redraft_that_names_new_counts_still_gets_them_exactly(owner):
     found = CourseFound(change="make it 6 modules", modules=6)
     creation = _redrafted(owner, found, _draft(modules=4, lessons=3))
     assert _course(creation).modules.count() == 6
+
+
+def test_a_redraft_does_not_re_emit_unchanged_title_or_description(owner):
+    creation = _building(owner)
+    with _model():
+        jobs.execute(SCHEMA, creation.outline_run_id)
+    creation.refresh_from_db()
+    run = outline.start(creation, instruction="add a third lesson to module 2")
+    with _model(draft=_draft(modules=2, lessons=3)):
+        jobs.execute(SCHEMA, run.id)
+    assert _types(run.id) == ["step", "row", "row", "step", "done"]

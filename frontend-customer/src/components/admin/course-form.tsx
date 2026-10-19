@@ -53,7 +53,12 @@ import { courseItem } from "@/lib/covers/items";
 import { LiveOutline } from "@/components/focus/live-outline";
 import { WorkingTag } from "@/components/focus/working-tag";
 import { stopRun } from "@/lib/copilot/api";
-import { useLiveRecord } from "@/lib/copilot/live";
+import {
+  useLiveRecord,
+  type LiveBaseline,
+  type LiveRow,
+} from "@/lib/copilot/live";
+import { SPECIALIST_LOOK } from "@/lib/copilot/team";
 import { plainText, useLiveLessons } from "@/lib/focus/descriptions";
 import { setFocusSave, useActiveCreation } from "@/lib/focus/store";
 import type { Course, CourseDetail, Module, Lesson } from "@/types/course";
@@ -235,10 +240,48 @@ export function CourseForm({
     }
   }, [slug, onCourseLoaded]);
 
+  const creation = useActiveCreation();
+  const baseRef = useRef<{
+    runId: number | null;
+    course: CourseDetail | null;
+    baseline?: LiveBaseline;
+  }>({ runId: null, course: null, baseline: undefined });
+
+  const currentRunId = focus?.runId ?? null;
+  if (currentRunId !== null && currentRunId !== baseRef.current.runId) {
+    const isSubsequentRun =
+      baseRef.current.runId !== null ||
+      creation?.outline?.status === "building";
+    const snap = course ?? server.current;
+    const hasModules = (snap?.modules?.length ?? 0) > 0;
+    baseRef.current = {
+      runId: currentRunId,
+      course: isSubsequentRun && hasModules && snap ? snap : null,
+      baseline:
+        isSubsequentRun && hasModules && snap
+          ? {
+              fields: {
+                title: snap.title,
+                description: snap.description,
+              },
+              modules: snap.modules.map((m) => ({
+                title: m.title,
+                lessons: m.lessons.map((l) => l.title),
+              })),
+            }
+          : undefined,
+    };
+  }
+
   // Focus mode: the outline run's title, description and modules appear on
   // the form as they are written. Only a field being written is read-only;
   // a written value lands in the form unless she changed that field herself.
-  const live = useLiveRecord(focus?.record ?? "", focus?.runId ?? null);
+  const live = useLiveRecord(
+    focus?.record ?? "",
+    focus?.runId ?? null,
+    baseRef.current.baseline,
+  );
+  const [loadedRun, setLoadedRun] = useState<number | null>(null);
   const taken = useRef<Record<string, string>>({});
   const loadedFor = useRef<number | null>(null);
   useEffect(() => {
@@ -260,9 +303,10 @@ export function CourseForm({
     }
     if (server.current) setSaved(savedKey(server.current));
     // Once it has all been shown, the saved modules take over the replay.
-    if (live.settled && focus?.runId && loadedFor.current !== focus.runId) {
-      loadedFor.current = focus.runId;
-      void loadCourse();
+    const run = focus?.runId;
+    if (live.settled && run && loadedFor.current !== run) {
+      loadedFor.current = run;
+      void loadCourse().then(() => setLoadedRun(run));
     }
   }, [live, focus?.runId, loadCourse]);
   // The lesson descriptions typing in under each title, and a count with Stop
@@ -301,13 +345,68 @@ export function CourseForm({
       ? written
       : (course?.[name] ?? "");
   };
+  const redraft =
+    baseRef.current.course !== null &&
+    baseRef.current.runId === (focus?.runId ?? null);
+  const fieldChanged = (name: "title" | "description") =>
+    redraft && !!live?.fields[name];
   const showLive =
-    !!live && !live.settled && (live.working !== null || live.rows.length > 0);
+    !redraft &&
+    !!live &&
+    (!live.settled || (course?.modules.length ?? 0) === 0) &&
+    (live.working !== null || live.rows.length > 0);
+  const inlineRedraft =
+    redraft &&
+    !!live &&
+    live.rows.length > 0 &&
+    (!live.settled || loadedRun !== focus?.runId);
+  const displayedModules: Module[] =
+    inlineRedraft && live
+      ? live.rows.map((row, rIdx) => {
+          const baseMod =
+            row.baseIndex !== undefined &&
+            row.baseIndex !== null &&
+            baseRef.current.course
+              ? baseRef.current.course.modules[row.baseIndex]
+              : undefined;
+          return {
+            id: baseMod ? baseMod.id : -(rIdx + 1),
+            title: row.title,
+            order: rIdx + 1,
+            lessons: row.lessons.map((lessonTitle, lIdx) => {
+              const blIdx = row.lessonBaseIndices?.[lIdx] ?? null;
+              const baseLesson =
+                blIdx !== null && baseMod ? baseMod.lessons[blIdx] : undefined;
+              return {
+                id: baseLesson ? baseLesson.id : -(rIdx * 1000 + lIdx + 1),
+                title: lessonTitle,
+                order: lIdx + 1,
+                video_id: baseLesson?.video_id ?? null,
+                video_url: baseLesson?.video_url ?? "",
+                video_signed_url: baseLesson?.video_signed_url ?? null,
+                duration_seconds: baseLesson?.duration_seconds ?? 0,
+                content_html: baseLesson?.content_html ?? "",
+                is_free_preview: baseLesson?.is_free_preview ?? false,
+              };
+            }),
+          };
+        })
+      : showLive
+        ? []
+        : (course?.modules ?? []);
+  const rowMeta = (mod: Module, modIdx: number): LiveRow | undefined => {
+    if (!redraft || !live || live.rows.length === 0) return undefined;
+    if (inlineRedraft || (course?.modules.length ?? 0) === live.rows.length) {
+      return live.rows[modIdx];
+    }
+    return live.rows.find(
+      (r) => r.title.trim().toLowerCase() === mod.title.trim().toLowerCase(),
+    );
+  };
   const [allDetails, setAllDetails] = useState(false);
   const detailsShown = !focus || allDetails;
   // The cover step: the Designer's drafts take the thumbnail's place, and
   // stay while her words for the photo are read (no question meanwhile).
-  const creation = useActiveCreation();
   const atCover =
     !!focus &&
     !!creation &&
@@ -607,6 +706,12 @@ export function CourseForm({
                 id="title"
                 placeholder="e.g. Introduction to Photography"
                 readOnly={writing("title")}
+                data-changed={fieldChanged("title") ? "true" : undefined}
+                className={
+                  fieldChanged("title")
+                    ? "ring-1 ring-primary/40 bg-primary/5 transition-colors"
+                    : undefined
+                }
                 value={isCreate ? createForm.title : shown("title")}
                 onChange={(e) =>
                   isCreate
@@ -632,6 +737,7 @@ export function CourseForm({
                 id="description"
                 placeholder="Describe what students will learn..."
                 readOnly={writing("description")}
+                data-changed={fieldChanged("description") ? "true" : undefined}
                 value={isCreate ? createForm.description : shown("description")}
                 onChange={(e) =>
                   isCreate
@@ -645,7 +751,11 @@ export function CourseForm({
                           : course,
                       )
                 }
-                className="min-h-[120px]"
+                className={
+                  fieldChanged("description")
+                    ? "min-h-[120px] ring-1 ring-primary/40 bg-primary/5 transition-colors"
+                    : "min-h-[120px]"
+                }
               />
             </div>
             {atCover && creation && course ? (
@@ -1036,144 +1146,197 @@ export function CourseForm({
               </div>
             )}
             {showLive && live && <LiveOutline frame={live} />}
-            {(showLive ? [] : course.modules).map((mod: Module) => (
-              <Card key={mod.id}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">
-                      Module {mod.order}: {mod.title}
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">
-                        {mod.lessons.length} lesson
-                        {mod.lessons.length !== 1 ? "s" : ""}
-                      </Badge>
-                      <DeleteModuleButton
-                        slug={slug}
-                        moduleId={mod.id}
-                        onDeleted={loadCourse}
-                      />
+            {displayedModules.map(
+              (
+                mod: Module,
+                modIdx: number,
+                _mods,
+                meta = rowMeta(mod, modIdx),
+              ) => (
+                <Card
+                  key={mod.id}
+                  data-changed={meta?.changed ? "true" : undefined}
+                  className={
+                    meta?.changed
+                      ? "ring-1 ring-primary/30 transition-colors"
+                      : undefined
+                  }
+                  style={
+                    inlineRedraft && meta?.typing
+                      ? {
+                          outline: `2px solid ${SPECIALIST_LOOK.content.color}`,
+                        }
+                      : undefined
+                  }
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+                        <span>
+                          Module {mod.order}: {mod.title}
+                        </span>
+                        {inlineRedraft && meta?.titleTyping && (
+                          <WorkingTag
+                            specialist={live?.working?.specialist ?? "content"}
+                            label={t("focus.writing")}
+                          />
+                        )}
+                      </CardTitle>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">
+                          {mod.lessons.length} lesson
+                          {mod.lessons.length !== 1 ? "s" : ""}
+                        </Badge>
+                        <DeleteModuleButton
+                          slug={slug}
+                          moduleId={mod.id}
+                          onDeleted={loadCourse}
+                        />
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {mod.lessons.length > 0 && (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Title</TableHead>
-                          <TableHead>Duration</TableHead>
-                          <TableHead>Video</TableHead>
-                          <TableHead>Preview</TableHead>
-                          <TableHead className="w-24">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {mod.lessons.map((lesson) => (
-                          <Fragment key={lesson.id}>
-                            <TableRow>
-                              <TableCell className="font-medium">
-                                {lesson.title}
-                                <LessonDescription
-                                  typed={typedLessons[lesson.id]}
-                                  html={lesson.content_html}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                {formatDuration(lesson.duration_seconds)}
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant={
-                                    lesson.video_url ? "success" : "secondary"
-                                  }
-                                >
-                                  {lesson.video_url ? "Uploaded" : "No video"}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                {lesson.is_free_preview && (
-                                  <Badge variant="outline">Free</Badge>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-1">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    disabled={typedLessons[lesson.id]?.typing}
-                                    onClick={() =>
-                                      setEditingLessonId(
-                                        editingLessonId === lesson.id
-                                          ? null
-                                          : lesson.id,
-                                      )
-                                    }
-                                  >
-                                    {editingLessonId === lesson.id ? (
-                                      <ChevronUp className="h-4 w-4" />
-                                    ) : (
-                                      <Pencil className="h-4 w-4" />
-                                    )}
-                                  </Button>
-                                  <DeleteLessonButton
-                                    slug={slug}
-                                    lessonId={lesson.id}
-                                    onDeleted={loadCourse}
-                                  />
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                            {editingLessonId === lesson.id && (
-                              <TableRow>
-                                <TableCell colSpan={5} className="p-0">
-                                  <LessonEditPanel
-                                    lesson={lesson}
-                                    onSave={(values) =>
-                                      handleSaveLesson(lesson, values)
-                                    }
-                                    onCancel={() => setEditingLessonId(null)}
-                                    saving={savingLessonEdit}
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {mod.lessons.length > 0 && (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Duration</TableHead>
+                            <TableHead>Video</TableHead>
+                            <TableHead>Preview</TableHead>
+                            <TableHead className="w-24">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {mod.lessons.map((lesson, lessonIdx) => (
+                            <Fragment key={lesson.id}>
+                              <TableRow
+                                data-changed={
+                                  meta?.changedLessons?.[lessonIdx]
+                                    ? "true"
+                                    : undefined
+                                }
+                                className={
+                                  meta?.changedLessons?.[lessonIdx]
+                                    ? "bg-primary/5 transition-colors"
+                                    : undefined
+                                }
+                              >
+                                <TableCell className="font-medium">
+                                  <span className="inline-flex flex-wrap items-center gap-2">
+                                    <span>{lesson.title}</span>
+                                    {inlineRedraft &&
+                                      meta?.lessonTyping?.[lessonIdx] && (
+                                        <WorkingTag
+                                          specialist={
+                                            live?.working?.specialist ??
+                                            "content"
+                                          }
+                                          label={t("focus.writing")}
+                                        />
+                                      )}
+                                  </span>
+                                  <LessonDescription
+                                    typed={typedLessons[lesson.id]}
+                                    html={lesson.content_html}
                                   />
                                 </TableCell>
+                                <TableCell>
+                                  {formatDuration(lesson.duration_seconds)}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant={
+                                      lesson.video_url ? "success" : "secondary"
+                                    }
+                                  >
+                                    {lesson.video_url ? "Uploaded" : "No video"}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  {lesson.is_free_preview && (
+                                    <Badge variant="outline">Free</Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7"
+                                      disabled={typedLessons[lesson.id]?.typing}
+                                      onClick={() =>
+                                        setEditingLessonId(
+                                          editingLessonId === lesson.id
+                                            ? null
+                                            : lesson.id,
+                                        )
+                                      }
+                                    >
+                                      {editingLessonId === lesson.id ? (
+                                        <ChevronUp className="h-4 w-4" />
+                                      ) : (
+                                        <Pencil className="h-4 w-4" />
+                                      )}
+                                    </Button>
+                                    <DeleteLessonButton
+                                      slug={slug}
+                                      lessonId={lesson.id}
+                                      onDeleted={loadCourse}
+                                    />
+                                  </div>
+                                </TableCell>
                               </TableRow>
-                            )}
-                          </Fragment>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
+                              {editingLessonId === lesson.id && (
+                                <TableRow>
+                                  <TableCell colSpan={5} className="p-0">
+                                    <LessonEditPanel
+                                      lesson={lesson}
+                                      onSave={(values) =>
+                                        handleSaveLesson(lesson, values)
+                                      }
+                                      onCancel={() => setEditingLessonId(null)}
+                                      saving={savingLessonEdit}
+                                    />
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </Fragment>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
 
-                  {addingLessonForModule === mod.id ? (
-                    <LessonCreatePanel
-                      newLesson={newLesson}
-                      setNewLesson={setNewLesson}
-                      onSave={() => handleCreateLesson(mod.id)}
-                      onCancel={() => {
-                        setAddingLessonForModule(null);
-                        setNewLesson({
-                          title: "",
-                          content_html: "",
-                          is_free_preview: false,
-                          video: null,
-                          videoPreviewUrl: null,
-                        });
-                      }}
-                      saving={savingLessonCreate}
-                    />
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="gap-2"
-                      onClick={() => setAddingLessonForModule(mod.id)}
-                    >
-                      <Plus className="h-4 w-4" /> Add Lesson
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                    {addingLessonForModule === mod.id ? (
+                      <LessonCreatePanel
+                        newLesson={newLesson}
+                        setNewLesson={setNewLesson}
+                        onSave={() => handleCreateLesson(mod.id)}
+                        onCancel={() => {
+                          setAddingLessonForModule(null);
+                          setNewLesson({
+                            title: "",
+                            content_html: "",
+                            is_free_preview: false,
+                            video: null,
+                            videoPreviewUrl: null,
+                          });
+                        }}
+                        saving={savingLessonCreate}
+                      />
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => setAddingLessonForModule(mod.id)}
+                      >
+                        <Plus className="h-4 w-4" /> Add Lesson
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ),
+            )}
 
             <Card className="border-dashed">
               <CardContent className="p-4">

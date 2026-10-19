@@ -118,4 +118,83 @@ describe("liveFrame", () => {
     expect(frame.fields).toEqual({});
     expect(frame.rows).toEqual([]);
   });
+
+  it("keeps unchanged fields, modules and lessons in place on a redraft and only types the added lesson", () => {
+    const baseline = {
+      fields: { title: "Desk yoga", description: "Ten minutes." },
+      modules: [{ title: "Basics", lessons: ["Neck", "Back"] }],
+    };
+    const redraftEvents: RunEvent[] = [
+      ev(1, "step", {
+        specialist: "content",
+        label: "Writing",
+        state: "start",
+      }),
+      ev(2, "field", { record: R, name: "title", value: "Desk yoga" }),
+      ev(3, "field", { record: R, name: "description", value: "Ten minutes." }),
+      ev(4, "row", {
+        record: R,
+        kind: "module",
+        value: { title: "Basics", lessons: ["Neck", "Back", "Day 21"] },
+      }),
+      ev(5, "step", { specialist: "content", label: "Writing", state: "done" }),
+      ev(6, "done"),
+    ];
+
+    // At 70ms (4 chars at 60 cps), unchanged fields and lessons consumed 0ms,
+    // so "Day 21" is already 4 characters in ("Day "), while "Neck" and "Back" stay untouched.
+    const mid = liveFrame(redraftEvents, R, 70, 60, baseline);
+    expect(mid.fields).toEqual({});
+    expect(mid.rows).toHaveLength(1);
+    expect(mid.rows[0].title).toBe("Basics");
+    expect(mid.rows[0].titleTyping).toBe(false);
+    expect(mid.rows[0].lessons).toEqual(["Neck", "Back", "Day "]);
+    expect(mid.rows[0].changed).toBe(true);
+    expect(mid.rows[0].changedLessons).toEqual([false, false, true]);
+    expect(mid.rows[0].lessonTyping).toEqual([false, false, true]);
+    expect(mid.settled).toBe(false);
+
+    const end = liveFrame(redraftEvents, R, Infinity, 60, baseline);
+    expect(end.rows[0].lessons).toEqual(["Neck", "Back", "Day 21"]);
+    expect(end.rows[0].changed).toBe(true);
+    expect(end.rows[0].changedLessons).toEqual([false, false, true]);
+    expect(end.rows[0].lessonTyping).toEqual([false, false, false]);
+    expect(end.settled).toBe(true);
+  });
+
+  it("types only a renamed lesson in place while keeping later lessons visible", () => {
+    const baseline = {
+      fields: { title: "Desk yoga", description: "Ten minutes." },
+      modules: [
+        { title: "Basics", lessons: ["Neck", "Back"] },
+        { title: "Flow", lessons: ["Breath"] },
+      ],
+    };
+    const redraftEvents: RunEvent[] = [
+      ev(1, "step", {
+        specialist: "content",
+        label: "Writing",
+        state: "start",
+      }),
+      ev(2, "row", {
+        record: R,
+        kind: "module",
+        value: { title: "Basics", lessons: ["Chin tucks", "Back"] },
+      }),
+      ev(3, "row", {
+        record: R,
+        kind: "module",
+        value: { title: "Flow", lessons: ["Breath"] },
+      }),
+      ev(4, "step", { specialist: "content", label: "Writing", state: "done" }),
+    ];
+
+    const mid = liveFrame(redraftEvents, R, 70, 60, baseline);
+    expect(mid.rows[0].lessons).toEqual(["Chin", "Back"]);
+    expect(mid.rows[0].changed).toBe(true);
+    expect(mid.rows[0].changedLessons).toEqual([true, false]);
+    expect(mid.rows[1].title).toBe("Flow");
+    expect(mid.rows[1].lessons).toEqual(["Breath"]);
+    expect(mid.rows[1].changed).toBe(false);
+  });
 });

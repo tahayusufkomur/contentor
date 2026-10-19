@@ -1354,3 +1354,162 @@ test("home shows Continue your course for one in progress", async ({
   await expect(page).toHaveURL(new RegExp(`/admin/courses/${SLUG}$`));
   await page.close();
 });
+
+test("asking for a small change at outline review keeps unchanged parts in place and only highlights the change", async ({
+  browser,
+}) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const REDRAFT_RUN = 5160;
+  let redraftPhase: "idle" | "working" | "done" = "idle";
+  const REDRAFT_MODULES = [
+    MODULES[0],
+    {
+      title: MODULES[1].title,
+      lessons: [...MODULES[1].lessons, "Day 21: Closing flow"],
+    },
+  ];
+  const REDRAFT_EVENTS = [
+    {
+      type: "step",
+      data: {
+        specialist: "content",
+        label: "Writing your outline",
+        state: "start",
+      },
+    },
+    ...REDRAFT_MODULES.map((value) => ({
+      type: "row",
+      data: { record: RECORD, kind: "module", value },
+    })),
+    {
+      type: "step",
+      data: {
+        specialist: "content",
+        label: "Writing your outline",
+        state: "done",
+      },
+    },
+    {
+      type: "done",
+      data: { text: "Your outline is ready: 2 modules, 4 lessons." },
+    },
+  ].map((event, i) => ({ seq: i + 1, at: at(), ...event }));
+
+  await stubFocus(page, {
+    open: false,
+    script: ({ path, method, body }) => {
+      if (method === "GET" && path.endsWith("/admin/focus/"))
+        return {
+          enabled: true,
+          kinds: ["course"],
+          first: { course: QUESTIONS.topic },
+          open: [
+            {
+              id: CREATION,
+              kind: "course",
+              record: reviewState().record,
+            },
+          ],
+        };
+      if (method === "POST" && path.endsWith("/answer/") && body.field === "outline_review") {
+        redraftPhase = "working";
+        return reviewState({
+          outline: { status: "building", run: REDRAFT_RUN, drafted: true },
+        });
+      }
+      if (method === "GET" && path.endsWith(`/focus/${CREATION}/`)) {
+        if (redraftPhase === "working")
+          return reviewState({
+            outline: { status: "building", run: REDRAFT_RUN, drafted: true },
+          });
+        if (redraftPhase === "done")
+          return reviewState({
+            outline: { status: "ready", run: REDRAFT_RUN, drafted: true },
+          });
+        return reviewState();
+      }
+    },
+  });
+
+  await page.route(`**/api/v1/admin/copilot/runs/${REDRAFT_RUN}/**`, (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname.endsWith("/seen/"))
+      return route.fulfill({ status: 204, body: "" });
+    const since = Number(url.searchParams.get("since") ?? 0);
+    const events =
+      redraftPhase === "working" ? REDRAFT_EVENTS.slice(0, 1) : REDRAFT_EVENTS;
+    return route.fulfill({
+      json: {
+        id: REDRAFT_RUN,
+        status: redraftPhase === "done" ? "done" : "working",
+        specialist: "content",
+        chat: CHAT,
+        seen: false,
+        events: events.filter((e) => e.seq > since),
+      },
+    });
+  });
+
+  await page.route(`**/api/v1/courses/${SLUG}/`, (route) => {
+    const base = courseDetail(true);
+    if (redraftPhase === "done") {
+      base.modules = REDRAFT_MODULES.map((m, i) => ({
+        id: 9000 + i,
+        course: COURSE_ID,
+        title: m.title,
+        order: i + 1,
+        lessons: m.lessons.map((title, j) => ({
+          id: 9100 + i * 10 + j,
+          module: 9000 + i,
+          title,
+          order: j + 1,
+          video_id: null,
+          video_url: "",
+          duration_seconds: 0,
+          content_html: "",
+          is_free_preview: false,
+          video_signed_url: null,
+        })),
+      }));
+      base.lesson_count = 4;
+    }
+    return route.fulfill({ json: base });
+  });
+
+  await page.goto(`${TENANT}/admin/courses/${SLUG}`);
+  const main = page.getByRole("main");
+  await expect(guide(page).getByText("Here's your outline. Does it fit?")).toBeVisible();
+  await expect(main.getByText("Module 1: Getting started at your desk")).toBeVisible();
+  await expect(main.getByText("Module 2: Breathing breaks")).toBeVisible();
+
+  await guide(page).getByRole("textbox", { name: "Your answer" }).fill("You forgot the 21st day");
+  await guide(page).getByRole("button", { name: "Send", exact: true }).click();
+
+  // 1. While the redraft runs, existing title, description, modules, and lessons stay visible in place.
+  await expect(guide(page).getByText("Writing your outline…")).toBeVisible();
+  await expect(page.locator("#title")).toHaveValue("Desk yoga, gently");
+  await expect(page.locator("#description")).toHaveValue("For office workers.");
+  await expect(main.getByText("Module 1: Getting started at your desk")).toBeVisible();
+  await expect(main.getByText("Setting up your chair")).toBeVisible();
+  await expect(main.getByText("A first stretch")).toBeVisible();
+  await expect(main.getByText("Module 2: Breathing breaks")).toBeVisible();
+  await expect(main.getByText("Box breathing")).toBeVisible();
+
+  // 2. When the redraft finishes, only the added lesson and its module are highlighted as changed.
+  redraftPhase = "done";
+  await expect(main.getByText("Day 21: Closing flow")).toBeVisible();
+  await expect(
+    main.getByRole("row", { name: /Day 21: Closing flow/ }),
+  ).toHaveAttribute("data-changed", "true");
+  await expect(
+    main.getByRole("row", { name: /Setting up your chair/ }),
+  ).not.toHaveAttribute("data-changed", "true");
+  await expect(
+    main.getByRole("row", { name: /Box breathing/ }),
+  ).not.toHaveAttribute("data-changed", "true");
+  await expect(page.locator("#title")).not.toHaveAttribute("data-changed", "true");
+  await expect(page.locator("#description")).not.toHaveAttribute("data-changed", "true");
+
+  await page.close();
+});

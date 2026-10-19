@@ -346,7 +346,7 @@ def write(course, draft: OutlineDraft, working_title: str, *, drafted: dict, red
     modules = list(drafted.get("modules") or [])
     ours = {"title": {working_title, *titles}, "description": {"", *descriptions}}
     for name, value in (("title", draft.title.strip()[:TITLE_MAX]), ("description", draft.description.strip())):
-        if not value or getattr(course, name) not in ours[name]:
+        if not value or getattr(course, name) not in ours[name] or (redraft and value == getattr(course, name)):
             continue
         setattr(course, name, value)
         changed.append(name)
