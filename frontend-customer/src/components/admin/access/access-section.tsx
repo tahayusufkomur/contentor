@@ -104,7 +104,12 @@ const Err = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
-type Problems = ReturnType<typeof problems>;
+/** What stops a save: the helpers' problems, plus a box with a bad day count or date. */
+export type AccessProblem = {
+  way: "buy" | "plans" | "free" | "all";
+  text: string;
+};
+type Problems = AccessProblem[];
 
 /**
  * How students get an item: the ways in, each with its timing. Controlled,
@@ -170,32 +175,69 @@ function Loaded({
   const currency = payload.currency;
   const symbol = currencySymbol(currency);
 
-  // A kind with a single way always has it, even before the first save.
-  const buy = value.buy ?? (onlyBuy ? { price: "", window: null } : null);
-  const free = value.free ?? (onlyFree ? { window: null } : null);
-  const plansTicked = value.plans.length > 0 || plansDraft;
+  // Only the ways this kind allows (the payload for a new item carries Free
+  // for every kind). A kind with a single way always has it.
+  const buy = has("buy")
+    ? (value.buy ?? (onlyBuy ? { price: "", window: null } : null))
+    : null;
+  const free = has("free")
+    ? (value.free ?? (onlyFree ? { window: null } : null))
+    : null;
+  const plans = has("plans") ? value.plans : [];
+  const ways: Ways = { free, buy, plans };
+  const plansTicked = plans.length > 0 || plansDraft;
   const count = (free ? 1 : 0) + (buy ? 1 : 0) + (plansTicked ? 1 : 0);
   const covering = !!free && !hasWindow(free.window) && !onlyFree;
-  const found = problems({ ...value, buy, free }, payload.allowed, plansTicked);
+  const found = problems(ways, payload.allowed, plansTicked);
   const buyError = found.find((p) => p.way === "buy");
   const plansError = found.find((p) => p.way === "plans");
   const allError = !refused && found.find((p) => p.way === "all");
+
+  // Boxes holding a bad day count or date, by the way they belong to.
+  const [badWindows, setBadWindows] = useState<Record<string, boolean>>({});
+  const windowBad = (key: string) => (b: boolean) =>
+    setBadWindows((prev) => (!!prev[key] === b ? prev : { ...prev, [key]: b }));
+  const planName = (id: number) =>
+    payload.plans.find((p) => p.id === id)?.name ?? "this subscription";
+  const reportable: Problems = [
+    ...found,
+    ...Object.entries(badWindows)
+      .filter(([, b]) => b)
+      .map(([key]): AccessProblem => {
+        const plan = key.startsWith("plan:") ? Number(key.slice(5)) : null;
+        return {
+          way: plan !== null ? "plans" : (key as "buy" | "free"),
+          text: `Check the days or dates for ${
+            plan !== null ? planName(plan) : key === "buy" ? "buyers" : "Free"
+          }.`,
+        };
+      }),
+  ];
 
   // Tell the form, only when the list changes; nothing once this goes away.
   const tell = useRef(onProblems);
   tell.current = onProblems;
   const reported = useRef("");
-  const foundKey = JSON.stringify(found);
+  const latest = useRef(reportable);
+  latest.current = reportable;
+  const reportKey = JSON.stringify(reportable);
   useEffect(() => {
-    if (reported.current === foundKey) return;
-    reported.current = foundKey;
-    tell.current?.(found);
-  }, [foundKey, found]);
-  useEffect(() => () => tell.current?.([]), []);
+    if (reported.current === reportKey) return;
+    reported.current = reportKey;
+    tell.current?.(latest.current);
+  }, [reportKey]);
+  useEffect(
+    () => () => {
+      // Forget what was told, so StrictMode's second mount tells it again.
+      reported.current = "";
+      tell.current?.([]);
+    },
+    [],
+  );
 
   const change = (next: Partial<Ways>) => {
     setRefused(false);
-    onChange({ ...value, ...next });
+    onChange({ ...ways, ...next });
   };
   /** Unticking the last way is refused. */
   const last = (on: boolean) => {
@@ -208,14 +250,14 @@ function Loaded({
 
   const toggleBuy = (on: boolean) => {
     if (last(on)) return;
-    if (!on) kept.current.buy = value.buy;
+    if (!on) kept.current.buy = buy;
     change({
       buy: on ? (kept.current.buy ?? { price: "", window: null }) : null,
     });
   };
   const toggleFree = (on: boolean) => {
     if (last(on)) return;
-    if (!on) kept.current.free = value.free;
+    if (!on) kept.current.free = free;
     change({ free: on ? (kept.current.free ?? { window: null }) : null });
   };
   const togglePlans = (on: boolean) => {
@@ -227,22 +269,20 @@ function Loaded({
     setPlansDraft(true);
     change({
       plans: on
-        ? [...value.plans, { plan_id: planId, window: null }]
-        : value.plans.filter((p) => p.plan_id !== planId),
+        ? [...plans, { plan_id: planId, window: null }]
+        : plans.filter((p) => p.plan_id !== planId),
     });
   };
   const setPlanWindow = (planId: number, window: Window | null) =>
     change({
-      plans: value.plans.map((p) =>
-        p.plan_id === planId ? { ...p, window } : p,
-      ),
+      plans: plans.map((p) => (p.plan_id === planId ? { ...p, window } : p)),
     });
 
   const canEditPlans = payload.can_edit_plans;
   const newPlanHref = KIND_ROUTES.membership?.newHref ?? NEW_PLAN_HREF;
   const shown = buy
-    ? { ...value, buy: { ...buy, price: parsePrice(buy.price) ?? "0" }, free }
-    : { ...value, free };
+    ? { ...ways, buy: { ...buy, price: parsePrice(buy.price) ?? "0" } }
+    : ways;
 
   return (
     <Card>
@@ -313,6 +353,7 @@ function Loaded({
                   label="Buyers keep it"
                   value={buy.window}
                   onChange={(window) => change({ buy: { ...buy, window } })}
+                  onInvalid={windowBad("buy")}
                   note="A purchase keeps these terms. Changing them later only affects new buyers."
                 />
               </>
@@ -339,7 +380,7 @@ function Loaded({
                   </div>
                 )}
                 {payload.plans.map((plan) => {
-                  const link = value.plans.find((p) => p.plan_id === plan.id);
+                  const link = plans.find((p) => p.plan_id === plan.id);
                   if (!canEditPlans && !link) return null;
                   const id = `access-${kind}-plan-${plan.id}`;
                   return (
@@ -376,6 +417,7 @@ function Loaded({
                                 label="Members get it"
                                 value={link.window}
                                 onChange={(w) => setPlanWindow(plan.id, w)}
+                                onInvalid={windowBad(`plan:${plan.id}`)}
                                 note={`This applies to current ${plan.name} members too, including those who already have it.`}
                               />
                             ) : (
@@ -421,6 +463,7 @@ function Loaded({
                   label="When"
                   value={free.window}
                   onChange={(window) => change({ free: { window } })}
+                  onInvalid={windowBad("free")}
                 />
                 <div className="mt-2.5 text-xs text-muted-foreground">
                   {covering && (buy || plansTicked) ? (

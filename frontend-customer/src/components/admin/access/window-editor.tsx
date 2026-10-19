@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -61,13 +61,22 @@ function Opt({
 function DaysInput({
   days,
   onChange,
+  onBad,
 }: {
   days: number;
   onChange: (days: number) => void;
+  /** Whether the box holds something that is not a day count (until it goes away). */
+  onBad?: (bad: boolean) => void;
 }) {
   const [text, setText] = useState(String(days));
   const n = Number(text);
   const bad = !Number.isInteger(n) || n < 1 || n > 3650;
+  const tell = useRef(onBad);
+  tell.current = onBad;
+  useEffect(() => {
+    tell.current?.(bad);
+    return () => tell.current?.(false);
+  }, [bad]);
   return (
     <span className="inline-flex items-center gap-1.5">
       <Input
@@ -105,6 +114,7 @@ function Bound({
   days,
   date,
   onChange,
+  onBad,
 }: {
   label: string;
   none?: string;
@@ -115,6 +125,7 @@ function Bound({
   days?: number;
   date?: string;
   onChange: (next: { days?: number; date?: string }) => void;
+  onBad?: (bad: boolean) => void;
 }) {
   const [custom, setCustom] = useState(false);
   const key =
@@ -163,7 +174,11 @@ function Bound({
         </Opt>
         {key === "custom" && days !== undefined && (
           <span className="inline-flex items-center gap-1.5">
-            <DaysInput days={days} onChange={(d) => onChange({ days: d })} />
+            <DaysInput
+              days={days}
+              onChange={(d) => onChange({ days: d })}
+              onBad={onBad}
+            />
             <span className="text-xs text-muted-foreground">{daysSuffix}</span>
           </span>
         )}
@@ -185,9 +200,11 @@ function Bound({
 function FreePanel({
   value,
   onChange,
+  onBad,
 }: {
   value: Window | null;
   onChange: (w: Window | null) => void;
+  onBad: (bad: boolean) => void;
 }) {
   const w = value ?? {};
   const mode =
@@ -273,6 +290,7 @@ function FreePanel({
           <DaysInput
             days={w.closes_after_days ?? 7}
             onChange={(d) => onChange({ closes_after_days: d })}
+            onBad={onBad}
           />
           days after someone joins the site
         </div>
@@ -291,6 +309,7 @@ export function WindowEditor({
   value,
   onChange,
   note,
+  onInvalid,
 }: {
   mode: WindowMode;
   /** The word beside the pill, such as "Members get it". */
@@ -299,9 +318,23 @@ export function WindowEditor({
   onChange: (next: Window | null) => void;
   /** A line under the panel. */
   note?: string;
+  /** Whether a box holds a day count or date that is not a valid one. */
+  onInvalid?: (invalid: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [badBoxes, setBadBoxes] = useState<Record<string, boolean>>({});
+  const bad = (box: string) => (b: boolean) =>
+    setBadBoxes((prev) => (!!prev[box] === b ? prev : { ...prev, [box]: b }));
   const w = value ?? {};
+  // A cleared date field leaves "" in the window, which no one can save.
+  const emptyDate = [w.opens_on, w.closes_on].some((d) => d === "");
+  const invalid = emptyDate || Object.values(badBoxes).some(Boolean);
+  const tell = useRef(onInvalid);
+  tell.current = onInvalid;
+  useEffect(() => {
+    tell.current?.(invalid);
+    return () => tell.current?.(false);
+  }, [invalid]);
   const set = (patch: Window) => onChange(clean({ ...w, ...patch }));
   const opens = (n: { days?: number; date?: string }) =>
     set({ opens_after_days: n.days, opens_on: n.date });
@@ -342,6 +375,7 @@ export function WindowEditor({
                 days={w.closes_after_days}
                 date={w.closes_on}
                 onChange={closes}
+                onBad={bad("closes")}
               />
               {presale ? (
                 <div className="grid gap-1.5">
@@ -353,6 +387,7 @@ export function WindowEditor({
                     days={w.opens_after_days}
                     date={w.opens_on}
                     onChange={opens}
+                    onBad={bad("opens")}
                   />
                   <button
                     type="button"
@@ -384,6 +419,7 @@ export function WindowEditor({
                 days={w.opens_after_days}
                 date={w.opens_on}
                 onChange={opens}
+                onBad={bad("opens")}
               />
               <Bound
                 label="Closes"
@@ -394,10 +430,18 @@ export function WindowEditor({
                 days={w.closes_after_days}
                 date={w.closes_on}
                 onChange={closes}
+                onBad={bad("closes")}
               />
             </>
           )}
-          {mode === "free" && <FreePanel value={value} onChange={onChange} />}
+          {mode === "free" && (
+            <FreePanel value={value} onChange={onChange} onBad={bad("free")} />
+          )}
+          {emptyDate && (
+            <div role="alert" className="text-xs text-destructive">
+              Pick a date.
+            </div>
+          )}
           {note && <div className="text-xs text-muted-foreground">{note}</div>}
         </div>
       )}
