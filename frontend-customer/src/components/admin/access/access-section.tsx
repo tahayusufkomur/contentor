@@ -248,11 +248,21 @@ function Loaded({
     return false;
   };
 
+  /** Free with no window and nothing else: a new item's default, which the
+   *  first paid tick replaces ("sell it for 29" is one tick and a price). */
+  const freeAlone = !!free && !hasWindow(free.window) && !buy && !plans.length;
+  const dropFreeAlone = (): Partial<Ways> => {
+    if (!freeAlone || onlyFree) return {};
+    kept.current.free = free;
+    return { free: null };
+  };
+
   const toggleBuy = (on: boolean) => {
     if (last(on)) return;
     if (!on) kept.current.buy = buy;
     change({
       buy: on ? (kept.current.buy ?? { price: "", window: null }) : null,
+      ...(on && dropFreeAlone()),
     });
   };
   const toggleFree = (on: boolean) => {
@@ -271,6 +281,7 @@ function Loaded({
       plans: on
         ? [...plans, { plan_id: planId, window: null }]
         : plans.filter((p) => p.plan_id !== planId),
+      ...(on && dropFreeAlone()),
     });
   };
   const setPlanWindow = (planId: number, window: Window | null) =>
