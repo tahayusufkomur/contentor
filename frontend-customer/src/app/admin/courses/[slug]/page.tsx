@@ -12,9 +12,9 @@ import { PageState } from "@/components/ui/page-state";
 import { clientFetch } from "@/lib/api-client";
 import { ArrowLeft } from "lucide-react";
 import { CourseForm } from "@/components/admin/course-form";
-import { FOCUS_TIME_KEY } from "@/components/focus/focus-guide";
 import { startActiveTime } from "@/lib/focus/active-time";
 import { fetchCreation } from "@/lib/focus/api";
+import { focusTimeKey } from "@/lib/focus/kinds";
 import {
   activeCreation,
   openCreationFor,
@@ -87,7 +87,7 @@ export default function AdminCourseDetailPage() {
         (active?.record?.id === courseId ? active.id : null));
   useEffect(() => {
     if (!creationId) return;
-    startActiveTime(FOCUS_TIME_KEY);
+    startActiveTime(focusTimeKey("course"));
     // Just made from the new-course page: the guide already holds it.
     if (activeCreation()?.id === creationId) return;
     let cancelled = false;

@@ -29,10 +29,14 @@ import { activeSection, buildAdminNav } from "@/lib/admin-nav";
 import { paletteEntries } from "@/lib/admin-palette";
 import { gateAdminNav } from "@/lib/admin-nav-gate";
 import { useSetupStatus } from "@/lib/setup-assistant";
-import { FOCUS_TIME_KEY } from "@/components/focus/focus-guide";
 import { stopActiveTime, takeActiveMs } from "@/lib/focus/active-time";
 import { leaveCreation } from "@/lib/focus/api";
-import { clearActiveCreation, useActiveCreation } from "@/lib/focus/store";
+import { focusTimeKey, KIND_ROUTES } from "@/lib/focus/kinds";
+import {
+  clearActiveCreation,
+  useActiveCreation,
+  useFocusOverview,
+} from "@/lib/focus/store";
 import type { User } from "@/types/auth";
 import { AdminUserContext } from "@/hooks/use-admin-user";
 
@@ -91,7 +95,11 @@ function AdminShellContent({ children, user }: AdminShellProps) {
 
   // From the UNGATED nav on purpose: search still finds the pages of a module
   // the coach has not turned on.
-  const paletteItems = useMemo(() => paletteEntries(buildAdminNav(t), t), [t]);
+  const focusKinds = useFocusOverview()?.kinds;
+  const paletteItems = useMemo(
+    () => paletteEntries(buildAdminNav(t), t, focusKinds),
+    [t, focusKinds],
+  );
 
   const section = activeSection(navSections, { pathname, pendingHref });
   // The photo studio's editor fills the page: the navigation shrinks to icons, and from 1024 px the page
@@ -101,17 +109,20 @@ function AdminShellContent({ children, user }: AdminShellProps) {
   const creation = useActiveCreation();
   // Gone to another page (not Save & leave): it stays open to resume, and
   // the studio is itself again.
-  const creationPage = creation?.record
-    ? `/admin/courses/${creation.record.slug}`
-    : null;
+  const creationPage = creation?.record?.path ?? null;
   useEffect(() => {
     if (!creation) return;
-    if (pathname === "/admin/courses/new" || pathname === creationPage) return;
+    if (
+      pathname === KIND_ROUTES[creation.kind]?.newHref ||
+      pathname === creationPage
+    )
+      return;
+    const timeKey = focusTimeKey(creation.kind);
     if (creation.id)
       void leaveCreation(creation.id, {
-        active_ms: takeActiveMs(FOCUS_TIME_KEY),
+        active_ms: takeActiveMs(timeKey),
       }).catch(() => {});
-    stopActiveTime(FOCUS_TIME_KEY);
+    stopActiveTime(timeKey);
     clearActiveCreation();
   }, [pathname, creation, creationPage]);
   const expandSection = (sectionId: string) =>

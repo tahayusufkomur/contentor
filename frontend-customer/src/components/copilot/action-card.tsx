@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { executeCopilotAction, undoCopilotAction } from "@/lib/copilot/api";
+import { KIND_ROUTES, kindForCard } from "@/lib/focus/kinds";
 import {
   claimLiveCard,
   setFirstAnswer,
@@ -175,21 +176,27 @@ export function ActionCard({
   const [result, setResult] = useState<ExecuteResult | null>(null);
   const [auditId, setAuditId] = useState<number | null>(null);
 
-  // With focus mode on, a course is made with her, not applied from the card:
-  // "Start it" opens it with her words as the first answer, and on its own
-  // when the card arrived live on a courses page. The create token stays unused.
+  // With focus mode on for its kind (a course, ...), it is made with her, not
+  // applied from the card: "Start it" opens it with her words as the first
+  // answer, and on its own when the card arrived live on that kind's pages.
+  // The create token stays unused.
   const overview = useFocusOverview();
   const pathname = usePathname();
-  const focusCard = overview?.enabled === true && card.kind === "create_course";
+  const focusKind = kindForCard(card.kind);
+  const focusCard =
+    focusKind !== null &&
+    overview?.enabled === true &&
+    overview.kinds.includes(focusKind);
   // Until we know which it is, no button: a Confirm that turns into Start it
   // under her finger would apply the wrong one.
-  const choosing = overview === null && card.kind === "create_course";
+  const choosing = overview === null && focusKind !== null;
   const startIt = () => {
+    if (!focusKind) return;
     setFirstAnswer(askedWith?.trim() || null);
-    navigate("/admin/courses/new");
+    navigate(KIND_ROUTES[focusKind]?.newHref ?? "/admin");
   };
   useEffect(() => {
-    if (focusCard && claimLiveCard(card.token, pathname)) startIt();
+    if (focusCard && claimLiveCard(card.token, focusKind, pathname)) startIt();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusCard]);
 

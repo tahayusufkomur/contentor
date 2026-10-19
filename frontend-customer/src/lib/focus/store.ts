@@ -3,11 +3,12 @@
 import { useEffect, useSyncExternalStore } from "react";
 
 import { fetchOverview, type FocusOverview, type FocusState } from "./api";
+import { KIND_ROUTES, kindForCard, type FocusKind } from "./kinds";
 
 // Module-level, like lib/copilot/runs.ts: the new-course page, the course
 // page, the dock and the shell share one overview and one active creation.
 
-const OFF: FocusOverview = { enabled: false, first: {}, open: [] };
+const OFF: FocusOverview = { enabled: false, kinds: [], first: {}, open: [] };
 
 let overview: FocusOverview | null = null;
 let inflight: Promise<void> | null = null;
@@ -31,7 +32,7 @@ export function refreshFocusOverview(): Promise<void> {
   inflight ??= fetchOverview()
     .catch(() => overview ?? OFF)
     .then((next) => {
-      overview = next;
+      overview = { ...next, kinds: next.kinds ?? [] };
       emit();
     })
     .finally(() => {
@@ -155,30 +156,45 @@ export function takeFirstAnswer(): string | null {
   return text;
 }
 
-// Create-course cards that arrived in this session while she was on a courses
-// page: the only ones that open focus mode by themselves, once each. A card
-// from history, or one that arrived elsewhere, is never in here.
+// Create cards (a focus kind's `card`) that arrived in this session while she
+// was on that kind's pages: the only ones that open focus mode by themselves,
+// once each. A card from history, or one that arrived elsewhere, is never in here.
 const liveCards = new Set<string>();
 
-/** Courses list or a course page (not the new-course page itself). */
-export const onCoursesPage = (path: string | null) =>
-  /^\/admin\/courses(\/(?!new\/?$)[^/]+)?\/?$/.test(path ?? "");
-
-/** Note the cards of replies that just arrived, if she is on a courses page. */
-export function markLiveCards(
-  path: string | null,
-  replies: { cards?: { token: string }[] }[],
-) {
-  if (!onCoursesPage(path)) return;
-  for (const reply of replies)
-    for (const card of reply.cards ?? []) liveCards.add(card.token);
+/** The kind's list or one of its pages (not its new page itself). */
+export function onKindPage(kind: FocusKind, path: string | null) {
+  const routes = KIND_ROUTES[kind];
+  if (!routes) return false;
+  const page = (path ?? "").replace(/\/$/, "");
+  const rest = page.startsWith(`${routes.listHref}/`)
+    ? page.slice(routes.listHref.length + 1)
+    : null;
+  return (
+    page === routes.listHref ||
+    (!!rest && !rest.includes("/") && page !== routes.newHref)
+  );
 }
 
-/** True once for a live card, and only while she is on a courses page (`path`)
- *  as it mounts: a card opened later elsewhere shows Start it instead (F7).
- *  A remount or a poll never claims it again. */
-export const claimLiveCard = (token: string, path: string | null) =>
-  liveCards.delete(token) && onCoursesPage(path);
+/** Note the create cards of replies that just arrived on their kind's pages. */
+export function markLiveCards(
+  path: string | null,
+  replies: { cards?: { token: string; kind: string }[] }[],
+) {
+  for (const reply of replies)
+    for (const card of reply.cards ?? []) {
+      const kind = kindForCard(card.kind);
+      if (kind && onKindPage(kind, path)) liveCards.add(card.token);
+    }
+}
+
+/** True once for a live card, and only while she is on its kind's pages
+ *  (`path`) as it mounts: a card opened later elsewhere shows Start it instead
+ *  (F7). A remount or a poll never claims it again. */
+export const claimLiveCard = (
+  token: string,
+  kind: FocusKind,
+  path: string | null,
+) => liveCards.delete(token) && onKindPage(kind, path);
 
 // The open course form's save, for "Save & leave" (set while focus mode shows it).
 let focusSave: (() => Promise<void>) | null = null;

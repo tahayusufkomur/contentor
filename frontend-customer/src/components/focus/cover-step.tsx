@@ -5,11 +5,10 @@ import { useTranslations } from "next-intl";
 import { CoverArt } from "@/components/covers/cover-art";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { courseItem } from "@/lib/covers/items";
 import { SPECIALIST_LOOK } from "@/lib/copilot/team";
 import type { FocusCover } from "@/lib/focus/api";
 import { setCoverPick, useCoverPick } from "@/lib/focus/store";
-import type { Course } from "@/types/course";
+import type { CoverItem } from "@/types/design";
 
 import { PhotoRow } from "./photo-row";
 import { WorkingTag } from "./working-tag";
@@ -20,17 +19,17 @@ import { WorkingTag } from "./working-tag";
 export function CoverStep({
   creationId,
   cover,
-  course,
+  item,
 }: {
   creationId: number;
   cover: FocusCover | null;
-  course: Course;
+  /** What the covers are drawn for (lib/covers/items). */
+  item: CoverItem;
 }) {
   const t = useTranslations("admin");
   const pick = useCoverPick();
   const building = cover?.status === "building";
   const drafts = cover?.drafts ?? [];
-  const item = courseItem(course);
 
   return (
     <div role="group" aria-label={t("focus.cover")} className="space-y-3">

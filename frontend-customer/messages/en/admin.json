@@ -1142,8 +1142,13 @@
   "focus": {
     "startIt": "Start it",
     "makeWithMe": "Let's make it together, one question at a time.",
-    "continueCourse": "Continue your course: {title}",
-    "newCourse": "New course",
+    "kinds": {
+      "course": {
+        "new": "New course",
+        "continue": "Continue your course: {title}",
+        "fillMyself": "Fill it in myself"
+      }
+    },
     "youDecide": "You decide",
     "justDraft": "Just draft it",
     "answerPlaceholder": "Or say it your way…",
@@ -1153,13 +1158,10 @@
     "looksGood": "Looks good, continue",
     "tryAgain": "Try again",
     "stop": "Stop",
-    "publishNow": "Publish now",
-    "keepDraft": "Keep as a draft",
     "startSelling": "Start selling",
     "published": "Published. Students can find it on your site now.",
     "kept": "Saved as a draft.",
     "saveLeave": "Save & leave",
-    "fillMyself": "Fill it in myself",
     "allDetails": "All details",
     "writing": "writing",
     "progress": "Step {done} of {total}",

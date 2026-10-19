@@ -152,11 +152,11 @@ export function AssistantDock() {
   if (creation)
     return (
       <aside
-        aria-label={t("focus.newCourse")}
+        aria-label={t(`focus.kinds.${creation.kind}.new`)}
         className="fixed inset-x-0 bottom-0 z-[60] flex max-h-[60vh] flex-col rounded-t-xl border-t bg-background shadow-lg lg:static lg:z-auto lg:max-h-none lg:w-[26rem] lg:shrink-0 lg:rounded-none lg:border-l lg:border-t-0 lg:shadow-none"
       >
         <div className="border-b px-4 py-2.5 text-sm font-semibold text-foreground">
-          {t("focus.newCourse")}
+          {t(`focus.kinds.${creation.kind}.new`)}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
           <FocusGuide />

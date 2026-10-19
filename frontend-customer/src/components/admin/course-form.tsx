@@ -43,6 +43,7 @@ import { refreshSetupStatus, useTenantCurrency } from "@/lib/setup-assistant";
 import { currencySymbol, formatDuration } from "@/lib/format";
 import { MonetizeNudge } from "@/components/admin/monetize-nudge";
 import { CoverStep } from "@/components/focus/cover-step";
+import { courseItem } from "@/lib/covers/items";
 import { LiveOutline } from "@/components/focus/live-outline";
 import { WorkingTag } from "@/components/focus/working-tag";
 import { stopRun } from "@/lib/copilot/api";
@@ -614,7 +615,7 @@ export function CourseForm({
               <CoverStep
                 creationId={creation.id}
                 cover={creation.cover}
-                course={course}
+                item={courseItem(course)}
               />
             ) : (
               <div className="space-y-2">

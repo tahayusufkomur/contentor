@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { stopActiveTime, takeActiveMs } from "@/lib/focus/active-time";
 import { leaveCreation, type FocusState } from "@/lib/focus/api";
+import { focusTimeKey, KIND_ROUTES } from "@/lib/focus/kinds";
 import {
   focusProgress,
   refreshFocusOverview,
@@ -15,29 +16,26 @@ import { cn } from "@/lib/utils";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 
-import { FOCUS_TIME_KEY } from "./focus-guide";
-
 /** The top bar while she makes something in focus mode: what it is, how far
- *  along, and Save & leave (it stays open; reopening the course resumes it). */
+ *  along, and Save & leave (it stays open; reopening its page resumes it). */
 export function FocusBar({ state }: { state: FocusState }) {
   const t = useTranslations("admin");
   const navigate = useNavigate();
   const { done, total } = focusProgress(state);
+  const timeKey = focusTimeKey(state.kind);
   const { run: leave, loading } = useAsyncAction(async () => {
     await saveFocusEdits(); // a failed save stays here, with its error
     if (state.id)
-      await leaveCreation(state.id, {
-        active_ms: takeActiveMs(FOCUS_TIME_KEY),
-      });
-    stopActiveTime(FOCUS_TIME_KEY);
+      await leaveCreation(state.id, { active_ms: takeActiveMs(timeKey) });
+    stopActiveTime(timeKey);
     setActiveCreation(null);
     void refreshFocusOverview();
-    navigate("/admin/courses");
+    navigate(KIND_ROUTES[state.kind]?.listHref ?? "/admin");
   });
   return (
     <div className="flex min-w-0 items-center gap-3">
       <span className="truncate text-sm font-semibold text-foreground">
-        {t("focus.newCourse")}
+        {t(`focus.kinds.${state.kind}.new`)}
       </span>
       {total > 0 && (
         <span

@@ -393,3 +393,17 @@ def test_overview_lists_only_switched_on_kinds(client, monkeypatch, settings):
     assert body["kinds"] == ["course"]
     assert set(body["first"]) == {"course"}
     assert kinds.enabled() == ["course"]
+
+
+def test_form_timing_takes_the_kind(client, owner, monkeypatch):
+    from apps.tenant_config.models import FocusCreation
+
+    _stub(monkeypatch, record=lambda record_id: Course.objects.filter(pk=record_id).first())
+    course = Course.objects.create(title="By hand", instructor=owner)
+    res = client.post(f"{URL}form-timing/", {"kind": "stub", "record_id": course.id, "active_ms": 7}, format="json")
+    assert res.status_code == 201
+    assert FocusCreation.objects.get(mode="form").kind == "stub"
+    # Checked through that kind's adapter: none of its records, or an unknown kind, stamps nothing.
+    _stub(monkeypatch)
+    assert client.post(f"{URL}form-timing/", {"kind": "stub", "record_id": course.id}, format="json").status_code == 404
+    assert client.post(f"{URL}form-timing/", {"kind": "nope", "record_id": course.id}, format="json").status_code == 404

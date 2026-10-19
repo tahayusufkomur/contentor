@@ -4,7 +4,7 @@ import {
   claimLiveCard,
   focusProgress,
   markLiveCards,
-  onCoursesPage,
+  onKindPage,
   openCreationFor,
   setFirstAnswer,
   takeFirstAnswer,
@@ -14,11 +14,17 @@ vi.mock("@/lib/api-client", () => ({ clientFetch: vi.fn() }));
 
 const overview = (open: FocusOverview["open"]): FocusOverview => ({
   enabled: true,
+  kinds: ["course"],
   first: {},
   open,
 });
 
-const record = (id: number) => ({ id, slug: `c-${id}`, title: "C" });
+const record = (id: number) => ({
+  id,
+  slug: `c-${id}`,
+  title: "C",
+  path: `/admin/courses/c-${id}`,
+});
 
 describe("openCreationFor", () => {
   it("finds her open creation for this record", () => {
@@ -50,34 +56,42 @@ describe("focusProgress", () => {
   });
 });
 
-const reply = (token: string) => [{ cards: [{ token }] }];
+const reply = (token: string, kind = "create_course") => [
+  { cards: [{ token, kind }] },
+];
 
 describe("the assistant opening focus mode", () => {
   it("knows the courses pages, and not the new-course page", () => {
-    expect(onCoursesPage("/admin/courses")).toBe(true);
-    expect(onCoursesPage("/admin/courses/desk-yoga")).toBe(true);
-    expect(onCoursesPage("/admin/courses/new")).toBe(false);
-    expect(onCoursesPage("/admin/blog")).toBe(false);
-    expect(onCoursesPage(null)).toBe(false);
+    expect(onKindPage("course", "/admin/courses")).toBe(true);
+    expect(onKindPage("course", "/admin/courses/")).toBe(true);
+    expect(onKindPage("course", "/admin/courses/desk-yoga")).toBe(true);
+    expect(onKindPage("course", "/admin/courses/new")).toBe(false);
+    expect(onKindPage("course", "/admin/courses/desk-yoga/edit")).toBe(false);
+    expect(onKindPage("course", "/admin/coursesx")).toBe(false);
+    expect(onKindPage("course", "/admin/blog")).toBe(false);
+    expect(onKindPage("course", null)).toBe(false);
   });
 
   it("lets a live card on a courses page open it once, never again", () => {
     markLiveCards("/admin/courses", reply("a"));
-    expect(claimLiveCard("a", "/admin/courses")).toBe(true);
-    expect(claimLiveCard("a", "/admin/courses")).toBe(false);
+    expect(claimLiveCard("a", "course", "/admin/courses")).toBe(true);
+    expect(claimLiveCard("a", "course", "/admin/courses")).toBe(false);
   });
 
   it("never lets a card that arrived elsewhere, or an old one, open it", () => {
     markLiveCards("/admin/blog", reply("b"));
-    expect(claimLiveCard("b", "/admin/courses")).toBe(false);
-    expect(claimLiveCard("old", "/admin/courses")).toBe(false);
+    expect(claimLiveCard("b", "course", "/admin/courses")).toBe(false);
+    expect(claimLiveCard("old", "course", "/admin/courses")).toBe(false);
+    // Only a focus kind's own create card.
+    markLiveCards("/admin/courses", reply("d", "edit_course"));
+    expect(claimLiveCard("d", "course", "/admin/courses")).toBe(false);
   });
 
   it("never lets a live card open it once she is off the courses pages", () => {
     markLiveCards("/admin/courses", reply("c"));
-    expect(claimLiveCard("c", "/admin/blog")).toBe(false);
+    expect(claimLiveCard("c", "course", "/admin/blog")).toBe(false);
     // Claimed all the same: back on a courses page, it never moves her screen either.
-    expect(claimLiveCard("c", "/admin/courses")).toBe(false);
+    expect(claimLiveCard("c", "course", "/admin/courses")).toBe(false);
   });
 
   it("hands her words over once", () => {

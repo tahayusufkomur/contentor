@@ -32,6 +32,7 @@ import {
   type FocusState,
 } from "@/lib/focus/api";
 import { guideBody, type GuideInput } from "@/lib/focus/guide";
+import { focusTimeKey } from "@/lib/focus/kinds";
 import {
   activeCreation,
   applyCreation as apply,
@@ -49,7 +50,6 @@ import { useNavigate } from "@shared/navigation/navigation-provider";
 import { GuideQuestion } from "./guide-question";
 import { PriceQuestion } from "./price-question";
 
-export const FOCUS_TIME_KEY = "focus:course";
 const POLL_MS = 1500;
 
 // The /setup answer box reads the setup shell's tokens; here they are the
@@ -69,6 +69,7 @@ export function FocusGuide() {
   const state = useActiveCreation();
   const navigate = useNavigate();
   const dock = useAssistantDock();
+  const timeKey = focusTimeKey(state?.kind ?? "course");
 
   const { run: send, loading: sending } = useAsyncAction(
     async (input: GuideInput) => {
@@ -78,24 +79,23 @@ export function FocusGuide() {
       const body = guideBody(question, input);
       if (!body) return;
       if (current.id === 0) {
-        // Her first answer creates the draft course; "Just draft it" here
+        // Her first answer creates the draft; "Just draft it" here
         // drafts the rest in the same request (the topic too, when the box
         // is empty).
         const next = await startCreation({
           kind: current.kind,
           ...body,
-          active_ms: takeActiveMs(FOCUS_TIME_KEY),
+          active_ms: takeActiveMs(timeKey),
         });
         void refreshFocusOverview();
-        if (apply(0, next) && next.record)
-          navigate(`/admin/courses/${next.record.slug}`);
+        if (apply(0, next) && next.record) navigate(next.record.path);
         return;
       }
       apply(
         current.id,
         await answerCreation(current.id, {
           ...body,
-          active_ms: takeActiveMs(FOCUS_TIME_KEY),
+          active_ms: takeActiveMs(timeKey),
         }),
       );
     },
@@ -107,7 +107,7 @@ export function FocusGuide() {
       const next = await finishCreation(state.id, {
         publish,
         announce,
-        active_ms: takeActiveMs(FOCUS_TIME_KEY),
+        active_ms: takeActiveMs(timeKey),
       });
       // Live, with "Tell my students": Marketing's draft is the last step.
       if (next.status === "active" && next.question?.kind === "announce") {
@@ -115,7 +115,7 @@ export function FocusGuide() {
         toast.success(t("focus.published"));
         return;
       }
-      stopActiveTime(FOCUS_TIME_KEY);
+      stopActiveTime(timeKey);
       apply(state.id, null);
       void refreshFocusOverview();
       if (next.status !== "done") return; // its course was deleted meanwhile
@@ -137,13 +137,13 @@ export function FocusGuide() {
       if (!state) return;
       const next = await announceCreation(state.id, {
         schedule,
-        active_ms: takeActiveMs(FOCUS_TIME_KEY),
+        active_ms: takeActiveMs(timeKey),
       });
       if (next.status === "active") {
         apply(state.id, next); // a stale screen: the step as it is now
         return;
       }
-      stopActiveTime(FOCUS_TIME_KEY);
+      stopActiveTime(timeKey);
       apply(state.id, null);
       void refreshFocusOverview();
       if (next.status === "done" && next.chat !== null)
@@ -191,9 +191,9 @@ export function FocusGuide() {
     if (!state?.id) return;
     await leaveCreation(state.id, {
       abandon: true,
-      active_ms: takeActiveMs(FOCUS_TIME_KEY),
+      active_ms: takeActiveMs(timeKey),
     });
-    stopActiveTime(FOCUS_TIME_KEY);
+    stopActiveTime(timeKey);
     apply(state.id, null);
     void refreshFocusOverview();
   });
@@ -368,7 +368,7 @@ export function FocusGuide() {
           loading={leaving}
           onClick={fillMyself}
         >
-          {t("focus.fillMyself")}
+          {t(`focus.kinds.${state.kind}.fillMyself`)}
         </Button>
       )}
     </div>
@@ -517,9 +517,7 @@ function CoverQuestion({
         : { action },
     );
     if (!apply(state.id, next) || action !== "edit" || !next.design_id) return;
-    navigate(
-      `/admin/studio/${next.design_id}?back=/admin/courses/${state.record?.slug}`,
-    );
+    navigate(`/admin/studio/${next.design_id}?back=${state.record?.path}`);
   });
   const busy = loading || sending;
   const button = (
@@ -606,13 +604,17 @@ function FinishStep({
   const t = useTranslations("admin");
   const [choice, setChoice] = useState<string | null>(null);
   const [tell, setTell] = useState(true);
+  // The kind's own two (backend FINISH): go live first, keep last. Go live is
+  // left out while it is not ready, or while "Start selling" stands in for it.
+  const own = question.options.filter(
+    (o) => o.value !== "start_selling" && !o.value.startsWith("price:"),
+  );
+  const live = own.length > 1 ? own[0] : undefined;
+  const keep = own[own.length - 1];
   const pick = (value: string) => {
     setChoice(value);
-    onFinish(
-      value === "publish",
-      value === "start_selling",
-      value === "publish" && tell,
-    );
+    const publish = value === live?.value;
+    onFinish(publish, value === "start_selling", publish && tell);
   };
   const has = (value: string) =>
     question.options.some((o) => o.value === value);
@@ -630,15 +632,15 @@ function FinishStep({
         )}
       </div>
       <div className="flex flex-wrap gap-2">
-        {/* Offered only once every lesson has a video or text. */}
-        {has("publish") && (
+        {/* Offered only once it is ready (every lesson has a video or text). */}
+        {live && (
           <>
             <Button
-              loading={finishing && choice === "publish"}
+              loading={finishing && choice === live.value}
               disabled={busy}
-              onClick={() => pick("publish")}
+              onClick={() => pick(live.value)}
             >
-              {t("focus.publishNow")}
+              {live.label}
             </Button>
             {/* Marketing drafts an announcement once it is live. */}
             <label className="flex items-center gap-2 text-sm text-foreground">
@@ -661,14 +663,16 @@ function FinishStep({
             {t("focus.startSelling")}
           </Button>
         )}
-        <Button
-          variant="outline"
-          loading={finishing && choice === "draft"}
-          disabled={busy}
-          onClick={() => pick("draft")}
-        >
-          {t("focus.keepDraft")}
-        </Button>
+        {keep && (
+          <Button
+            variant="outline"
+            loading={finishing && choice === keep.value}
+            disabled={busy}
+            onClick={() => pick(keep.value)}
+          >
+            {keep.label}
+          </Button>
+        )}
       </div>
       {sell && (
         <div className="flex flex-col items-start gap-1">

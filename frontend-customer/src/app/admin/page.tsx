@@ -154,8 +154,8 @@ export default function AdminDashboard() {
               variant="outline"
               className="gap-1.5"
             >
-              <NavLink href={`/admin/courses/${c.record.slug}`}>
-                {t("focus.continueCourse", { title: c.record.title })}
+              <NavLink href={c.record.path}>
+                {t(`focus.kinds.${c.kind}.continue`, { title: c.record.title })}
               </NavLink>
             </Button>
           ))}

@@ -1,6 +1,7 @@
 import { Mail, PlusCircle } from "lucide-react";
 
 import type { NavSection } from "@/components/shared/app-sidebar";
+import { KIND_ROUTES, type FocusKind } from "@/lib/focus/kinds";
 
 export interface PaletteEntry {
   id: string;
@@ -55,12 +56,14 @@ const OLD_NAMES: Record<string, string[]> = {
   plan: ["billing", "subscription", "upgrade", "pricing"],
 };
 
-/** Search entries: two real creates, then every page of the nav under the
- *  nav's own names. Built from the UNGATED nav on purpose — search still
- *  finds the pages of a module the coach has not turned on. */
+/** Search entries: two real creates (and one per other kind focus mode makes),
+ *  then every page of the nav under the nav's own names. Built from the
+ *  UNGATED nav on purpose — search still finds the pages of a module the
+ *  coach has not turned on. */
 export function paletteEntries(
   sections: NavSection[],
   t: (key: string) => string,
+  focusKinds: FocusKind[] = [],
 ): PaletteEntry[] {
   const create = t("palette.create");
   return [
@@ -78,6 +81,20 @@ export function paletteEntries(
       href: "/admin/messages/new",
       icon: Mail,
     },
+    ...focusKinds.flatMap((kind) => {
+      const routes = KIND_ROUTES[kind];
+      return routes && kind !== "course" && kind !== "message"
+        ? [
+            {
+              id: `create-${kind}`,
+              label: t(`focus.kinds.${kind}.new`),
+              group: create,
+              href: routes.newHref,
+              icon: PlusCircle,
+            },
+          ]
+        : [];
+    }),
     ...sections.flatMap((section) =>
       section.items.map((item) => ({
         id: item.key,

@@ -65,9 +65,11 @@ function PlainNewCourse({ focusOn }: { focusOn: boolean }) {
       <CourseForm
         onCreated={(course) => {
           if (focusOn)
-            void postFormTiming(course.id, takeActiveMs(FORM_TIME_KEY)).catch(
-              () => {},
-            );
+            void postFormTiming(
+              "course",
+              course.id,
+              takeActiveMs(FORM_TIME_KEY),
+            ).catch(() => {});
         }}
       />
     </div>

@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { NavLink } from "@/components/ui/nav-link";
 import { startActiveTime, takeActiveMs } from "@/lib/focus/active-time";
 import { startCreation, type FocusQuestion } from "@/lib/focus/api";
+import { focusTimeKey, KIND_ROUTES, type FocusKind } from "@/lib/focus/kinds";
 import {
   applyCreation,
   refreshFocusOverview,
@@ -23,8 +24,6 @@ import {
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 
-import { FOCUS_TIME_KEY } from "./focus-guide";
-
 /** "New course" in focus mode: the course page, still empty, while the guide
  *  asks the first question. Her first answer creates the draft and brings her
  *  to its page, where it takes shape. */
@@ -32,21 +31,21 @@ export function FocusStart({
   kind,
   question,
 }: {
-  kind: string;
+  kind: FocusKind;
   question: FocusQuestion;
 }) {
   const t = useTranslations("admin");
   const navigate = useNavigate();
+  const timeKey = focusTimeKey(kind);
   // Her words from the assistant are her first answer, as if typed here.
   const { run: sendFirst } = useAsyncAction(async (text: string) => {
     const next = await startCreation({
       kind,
       text,
-      active_ms: takeActiveMs(FOCUS_TIME_KEY),
+      active_ms: takeActiveMs(timeKey),
     });
     void refreshFocusOverview();
-    if (applyCreation(0, next) && next.record)
-      navigate(`/admin/courses/${next.record.slug}`);
+    if (applyCreation(0, next) && next.record) navigate(next.record.path);
   });
   // Once per visit to this page (Back from a course included): a fresh first
   // question. Not again while her first answer moves her on to the course.
@@ -54,7 +53,7 @@ export function FocusStart({
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    startActiveTime(FOCUS_TIME_KEY, true);
+    startActiveTime(timeKey, true);
     setActiveCreation({
       id: 0,
       kind,
@@ -102,10 +101,10 @@ export function FocusStart({
         </CardHeader>
       </Card>
       <NavLink
-        href="/admin/courses/new?form=1"
+        href={KIND_ROUTES[kind]?.plainHref ?? "/admin"}
         className="inline-block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
       >
-        {t("focus.fillMyself")}
+        {t(`focus.kinds.${kind}.fillMyself`)}
       </NavLink>
     </div>
   );

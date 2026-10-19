@@ -75,7 +75,7 @@ def _answer(client, creation_id, **body):
 @off
 def test_overview_says_off_when_the_switch_is_off(client):
     body = client.get(URL).json()
-    assert body == {"enabled": False, "first": {}, "open": []}
+    assert body == {"enabled": False, "kinds": [], "first": {}, "open": []}
     assert _start(client).status_code == 404
 
 

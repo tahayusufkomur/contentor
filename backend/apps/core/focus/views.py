@@ -45,7 +45,7 @@ def _hers(request, creation_id):
 def focus_root(request):
     if request.method == "GET":
         if not settings.FOCUS_MODE_ENABLED:
-            return Response({"enabled": False, "first": {}, "open": []})
+            return Response({"enabled": False, "kinds": [], "first": {}, "open": []})
         open_ = []
         for creation in FocusCreation.objects.filter(actor=request.user, mode="focus", status="active"):
             record = flow.state(creation)["record"]  # closes one whose record is gone
@@ -192,24 +192,24 @@ def focus_leave(request, creation_id):
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
 def focus_form_timing(request):
-    """The plain form's stamp: her active time from "New course" to its create
-    click, for the comparison in focus_timing. One stamp per course."""
-    from apps.courses.models import Course
-
+    """The plain form's stamp: her active time from "New <kind>" to its create
+    click, for the comparison in focus_timing. One stamp per record."""
     if not settings.FOCUS_MODE_ENABLED:
         return _not_found()
     data = _body(request)
+    kind = str(data.get("kind") or "course")
     try:
-        course_id = int(data.get("course_id"))
-    except (TypeError, ValueError):
+        record_id = int(data.get("record_id", data.get("course_id")))  # course_id: a tab from before the kinds
+        record = kinds.get(kind).record(record_id)
+    except (TypeError, ValueError, flow.FlowError):
         return _not_found()
-    if not Course.objects.filter(pk=course_id, instructor=request.user).exists():
+    if record is None or getattr(record, "instructor_id", None) != request.user.id:
         return _not_found()
     ms = _ms(data)
     FocusCreation.objects.get_or_create(
         mode="form",
-        kind="course",
-        record_id=course_id,
+        kind=kind,
+        record_id=record_id,
         defaults={
             "actor": request.user,
             "status": "done",

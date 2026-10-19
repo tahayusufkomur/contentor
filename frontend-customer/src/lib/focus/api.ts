@@ -2,6 +2,8 @@ import { clientFetch } from "@/lib/api-client";
 import type { SpecialistKey } from "@/lib/copilot/team";
 import type { CoverDesign } from "@/types/design";
 
+import type { FocusKind } from "./kinds";
+
 // Mirrors backend/apps/core/focus/flow.py (state, question) and views.py.
 
 export interface FocusOption {
@@ -37,6 +39,8 @@ export interface FocusRecord {
   id: number;
   slug: string;
   title: string;
+  /** Its page in the studio. */
+  path: string;
 }
 
 export type OutlineStatus = "idle" | "building" | "ready" | "failed";
@@ -77,7 +81,7 @@ export interface FocusAnnouncement {
 export interface FocusState {
   /** 0 = provisional: the first question, before her first answer creates it. */
   id: number;
-  kind: string;
+  kind: FocusKind;
   status: "active" | "done" | "left";
   chat: number | null;
   record: FocusRecord | null;
@@ -102,8 +106,10 @@ export interface FocusState {
 
 export interface FocusOverview {
   enabled: boolean;
+  /** The kinds switched on; the store reads a missing list as none. */
+  kinds: FocusKind[];
   first: Partial<Record<string, FocusQuestion>>;
-  open: { id: number; kind: string; record: FocusRecord }[];
+  open: { id: number; kind: FocusKind; record: FocusRecord }[];
 }
 
 export interface AnswerBody {
@@ -126,7 +132,7 @@ const post = <T>(path: string, body: unknown) =>
 export const fetchOverview = () => clientFetch<FocusOverview>(`${BASE}/`);
 
 export const startCreation = (
-  body: Timed<Omit<AnswerBody, "field"> & { kind: string }>,
+  body: Timed<Omit<AnswerBody, "field"> & { kind: FocusKind }>,
 ) => post<FocusState>("", body);
 
 export const fetchCreation = (id: number) =>
@@ -164,5 +170,13 @@ export const announceCreation = (
 export const leaveCreation = (id: number, body: Timed<{ abandon?: boolean }>) =>
   post<FocusState>(`${id}/leave/`, body);
 
-export const postFormTiming = (courseId: number, activeMs: number) =>
-  post<void>("form-timing/", { course_id: courseId, active_ms: activeMs });
+export const postFormTiming = (
+  kind: FocusKind,
+  recordId: number,
+  activeMs: number,
+) =>
+  post<void>("form-timing/", {
+    kind,
+    record_id: recordId,
+    active_ms: activeMs,
+  });

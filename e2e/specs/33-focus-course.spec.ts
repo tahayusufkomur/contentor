@@ -85,7 +85,7 @@ const reviewState = (over: Body = {}): Body => ({
   kind: "course",
   status: "active",
   chat: CHAT,
-  record: { id: COURSE_ID, slug: SLUG, title: "Desk yoga, gently" },
+  record: { id: COURSE_ID, slug: SLUG, path: `/admin/courses/${SLUG}`, title: "Desk yoga, gently" },
   question: QUESTIONS.outline_review,
   answered: [
     { field: "topic", label: "A course on desk yoga" },
@@ -198,7 +198,7 @@ async function stubFocus(
       kind: "course",
       status,
       chat: CHAT,
-      record: { id: COURSE_ID, slug: SLUG, title: runPolled ? "Desk yoga, gently" : "Desk yoga" },
+      record: { id: COURSE_ID, slug: SLUG, path: `/admin/courses/${SLUG}`, title: runPolled ? "Desk yoga, gently" : "Desk yoga" },
       question:
         field === "finish" && !ready
           ? {
@@ -235,6 +235,7 @@ async function stubFocus(
       return route.fulfill({
         json: {
           enabled: true,
+          kinds: ["course"],
           first: { course: QUESTIONS.topic },
           open: created && status === "active" ? [{ id: CREATION, kind: "course", record: state().record }] : [],
         },
@@ -819,7 +820,7 @@ async function openAtCover(page: Page, onFocus: (req: { path: string; method: st
     open: false, // the course as written
     script: (req) => {
       if (req.method === "GET" && req.path.endsWith("/admin/focus/"))
-        return { enabled: true, first: { course: QUESTIONS.topic }, open: [{ id: CREATION, kind: "course", record: coverState().record }] };
+        return { enabled: true, kinds: ["course"], first: { course: QUESTIONS.topic }, open: [{ id: CREATION, kind: "course", record: coverState().record }] };
       if (req.path.includes("/photos/")) return undefined;
       return onFocus(req);
     },
@@ -1026,7 +1027,7 @@ async function openAt(page: Page, at: () => Body, onFocus: (req: { path: string;
     open: false,
     script: (req) => {
       if (req.method === "GET" && req.path.endsWith("/admin/focus/"))
-        return { enabled: true, first: { course: QUESTIONS.topic }, open: [{ id: CREATION, kind: "course", record: coverState().record }] };
+        return { enabled: true, kinds: ["course"], first: { course: QUESTIONS.topic }, open: [{ id: CREATION, kind: "course", record: coverState().record }] };
       onFocus(req);
       if (req.path.endsWith(`/focus/${CREATION}/`) || req.path.endsWith("/answer/")) return at();
     },
@@ -1132,7 +1133,7 @@ test("publish now, then schedule the announcement", async ({ browser }) => {
     open: false,
     script: ({ path, method }) => {
       if (method === "GET" && path.endsWith("/admin/focus/"))
-        return { enabled: true, first: { course: QUESTIONS.topic }, open: step === "done" ? [] : [{ id: CREATION, kind: "course", record: coverState().record }] };
+        return { enabled: true, kinds: ["course"], first: { course: QUESTIONS.topic }, open: step === "done" ? [] : [{ id: CREATION, kind: "course", record: coverState().record }] };
       if (path.endsWith("/finish/")) step = "writing";
       else if (path.endsWith("/announce/")) step = "done";
       else if (step === "writing" && ++reads > 1) step = "ready"; // a poll: written on the second
@@ -1312,12 +1313,13 @@ test("home shows Continue your course for one in progress", async ({
       if (method === "GET" && path.endsWith("/admin/focus/"))
         return {
           enabled: true,
+          kinds: ["course"],
           first: { course: QUESTIONS.topic },
           open: [
             {
               id: CREATION,
               kind: "course",
-              record: { id: COURSE_ID, slug: SLUG, title: "Desk yoga, gently" },
+              record: { id: COURSE_ID, slug: SLUG, path: `/admin/courses/${SLUG}`, title: "Desk yoga, gently" },
             },
           ],
         };
