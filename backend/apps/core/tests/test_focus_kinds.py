@@ -351,6 +351,9 @@ def test_a_kinds_own_price_tiles_are_shown_and_a_tap_goes_to_its_set_price(owner
     assert creation.answers["access"] == "month:29"
     creation.chat.refresh_from_db()
     assert creation.chat.entries[-1]["text"] == "$29 a month"
+    assert {"field": "access", "label": "$29 a month"} in flow.state(creation)["answered"]
+    tiles["options"] = []  # its tiles changed since: her line still reads, never a 500
+    assert {"field": "access", "label": "month:29"} in flow.state(creation)["answered"]
 
 
 def test_the_starter_tile_reads_the_kinds_setup_answer(owner, tenant_ctx, monkeypatch, settings):

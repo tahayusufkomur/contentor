@@ -511,6 +511,8 @@ def state(creation) -> dict:
         }
     if record and field == "finish":
         asked = _finish_options(creation, asked, record)
+    # A kind's own price tiles label her access line with the tile she tapped.
+    tiles = {o["value"]: o["label"] for o in (adapter.price_tiles(creation, record) or {}).get("options", [])}
     return {
         "id": creation.id,
         "kind": creation.kind,
@@ -519,7 +521,9 @@ def state(creation) -> dict:
         "record": adapter.payload(record) if record else None,
         "question": asked,
         "answered": [
-            {"field": q.id, "label": _label(recipe, q, answers[q.id])} for q in recipe.questions if q.id in answers
+            {"field": q.id, "label": _label(recipe, q, answers[q.id], tiles)}
+            for q in recipe.questions
+            if q.id in answers
         ]
         # Her price said before its own step; once the step is answered, its line says it.
         + (
@@ -876,7 +880,10 @@ def _access_label(value: str) -> str:
     if value.startswith("plan:"):
         plan = SubscriptionPlan.objects.filter(pk=int(value[5:])).first()
         return f"In {plan.name}" if plan else "In your membership"
-    return _price_label(value.removeprefix("paid:"))
+    try:
+        return _price_label(value.removeprefix("paid:"))
+    except ValueError:  # a kind's own tile value no longer among its tiles: never a 500
+        return value
 
 
 def _retitle(creation, provisional: str, title: str) -> None:
@@ -996,7 +1003,8 @@ def _pick(recipe, q, value, text, delegate):
     return str(value).strip()[:ANSWER_MAX] or None
 
 
-def _label(recipe, q, answer) -> str:
+def _label(recipe, q, answer, tiles=None) -> str:
+    """Her answer as its answered line; ``tiles``: a kind's own price tiles, value to label."""
     if answer == DELEGATE:
         return "You decide"
     if q.kind == "review":
@@ -1004,7 +1012,7 @@ def _label(recipe, q, answer) -> str:
     if q.kind == "cover":
         return "Cover chosen" if answer == "kept" else "Later"
     if q.kind == "price":
-        return _access_label(answer)
+        return (tiles or {}).get(answer) or _access_label(answer)
     if q.kind == "announce":
         return ANNOUNCE_LABELS.get(answer, str(answer))
     if q.kind == "finish":
