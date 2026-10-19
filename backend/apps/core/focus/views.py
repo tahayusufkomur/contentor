@@ -219,7 +219,10 @@ def focus_form_timing(request):
         record = kinds.get(kind).record(record_id)
     except (TypeError, ValueError, flow.FlowError):
         return _not_found()
-    if record is None or getattr(record, "instructor_id", None) != request.user.id:
+    if record is None:
+        return _not_found()
+    owned_by = getattr(kinds.get(kind), "owned_by", None)  # optional: who made it, when not its instructor
+    if not (owned_by(record, request.user) if owned_by else getattr(record, "instructor_id", None) == request.user.id):
         return _not_found()
     ms = _ms(data)
     FocusCreation.objects.get_or_create(

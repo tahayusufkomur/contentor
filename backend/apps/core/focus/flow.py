@@ -73,7 +73,8 @@ def start(user, kind: str, *, value=None, text=None, delegate=False, rest=False,
     adapter = kinds.get(kind)
     recipe = adapter.RECIPE
     first = recipe.questions[0]
-    picked = _pick(recipe, first, value, text, delegate) or (DELEGATE if rest else None)
+    # "Just draft it" with no words leaves her topic to us only where it is ours to decide (not a message's).
+    picked = _pick(recipe, first, value, text, delegate) or (DELEGATE if rest and first.delegable else None)
     if picked is None:
         raise FlowError("no_answer")
     typed = picked != DELEGATE and bool((text or "").strip())
@@ -168,7 +169,8 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
                     descriptions.start(creation)
                 if line := kinds.get(creation.kind).REVIEWED_LINE:
                     _chat_append(creation, [{"role": "assistant", "text": line}])
-                if followup_allowed(creation, "later"):  # before the cover; it never redrafts the outline
+                # The Designer's, before the cover (none for a kind without one); it never redrafts the outline.
+                if kinds.get(creation.kind).COVER and followup_allowed(creation, "later"):
                     _ask_followup(creation, "later")
             elif value == "retry":
                 _retry_draft(creation)
@@ -288,7 +290,9 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
         question = next(q for q in recipe.questions if q.id == "finish")
         creation.answers["finish"] = choice
         _say(creation, question, _label(recipe, question, choice))
-        _chat_append(creation, [{"role": "assistant", "text": adapter.CLOSING[choice]}])
+        closing = adapter.CLOSING[choice]  # or a function of the record, for a line that says when
+        line = closing(_record(creation)) if callable(closing) else closing
+        _chat_append(creation, [{"role": "assistant", "text": line}])
         if live and announce and adapter.ANNOUNCER:
             announcing.start(creation)
         else:
@@ -821,13 +825,14 @@ def _set_price(creation, value: str) -> None:
     A kind that skips the access step for this creation answers it itself (a
     Zoom class is free); without a record yet, ``_ensure_record`` sets it later."""
     adapter = kinds.get(creation.kind)
-    if "access" in adapter.skips(creation):
+    # A kind with no price (a message, no access step) keeps none: nothing her words could set.
+    if "access" in adapter.skips(creation) or not any(q.id == "access" for q in adapter.RECIPE.questions):
         return
     if value != "membership" and creation.record_id is not None:
         adapter.set_price(creation.record_id, value)
     creation.answers["price"] = value
-    # The access step is answered too, when the kind asks it; "membership" asks which one.
-    if value != "membership" and any(q.id == "access" for q in adapter.RECIPE.questions):
+    # The access step is answered too; "membership" asks which one.
+    if value != "membership":
         creation.answers["access"] = value if value == "free" else f"paid:{value}"
 
 
@@ -1101,6 +1106,9 @@ def _label(recipe, q, answer, tiles=None) -> str:
     """Her answer as its answered line; ``tiles``: a kind's own price tiles, value to label."""
     if answer == DELEGATE:
         return "You decide"
+    own = getattr(kinds.get(recipe.kind), "label", None)  # optional: its words for an answer (a tile it drew)
+    if own and (text := own(q.id, answer)):
+        return text
     if q.kind == "review":
         return "Looks good" if answer == "ok" else str(answer)
     if q.kind == "cover":
