@@ -230,6 +230,21 @@ export function EventForm({
   const shown = (name: OwnName) =>
     writing(name) ? (live?.fields[name]?.value ?? "") : form[name];
   const creation = useActiveCreation();
+  // Focus mode's access step writes the event's ways on the server: the section
+  // takes them in, so a later tick never saves from the old ways (as the course
+  // form). Ways she changed herself and has not saved stay hers.
+  const accessDirtyRef = useRef(accessDirty);
+  accessDirtyRef.current = accessDirty;
+  const reloadAccess = access.reload;
+  const accessAnswered = creation?.answered
+    .filter((line) => line.field === "access")
+    .map((line) => line.label)
+    .join("|");
+  useEffect(() => {
+    if (!focus || !accessAnswered) return;
+    if (!accessDirtyRef.current) void reloadAccess();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per settled answer
+  }, [accessAnswered, reloadAccess]);
   // The cover step: the Designer's drafts take the cover's place.
   const atCover =
     !!focus &&
