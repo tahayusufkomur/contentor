@@ -23,8 +23,21 @@ import {
 import type { Bundle } from "@/types/billing";
 import { formatMoney } from "@/lib/format";
 import { useTenantCurrency } from "@/lib/setup-assistant";
+import {
+  AccessSection,
+  type AccessProblem,
+} from "@/components/admin/access/access-section";
+import { useAccess } from "@/lib/access/use-access";
+import { parsePrice } from "@/lib/access/ways";
+import { ApiError } from "@/types/api";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
+
+/** The creator's sentence from a refused access save, or "". */
+const accessSentence = (err: unknown) =>
+  err instanceof ApiError && typeof err.data.detail === "string"
+    ? err.data.detail
+    : "";
 
 export default function NewBundlePage() {
   const navigate = useNavigate();
@@ -32,8 +45,14 @@ export default function NewBundlePage() {
   const [form, setForm] = useState({
     name: "",
     description: "",
-    price: "",
   });
+  // How people buy it: the Access section's price and window.
+  const access = useAccess("bundle", null);
+  const [accessProblems, setAccessProblems] = useState<AccessProblem[]>([]);
+  const accessDirty =
+    !!access.ways &&
+    !!access.payload &&
+    JSON.stringify(access.ways) !== JSON.stringify(access.payload.ways);
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
 
   const originalPrice = useMemo(() => {
@@ -46,18 +65,34 @@ export default function NewBundlePage() {
 
   const { run: createBundle, loading: saving } = useAsyncAction(
     async () => {
-      await clientFetch<Bundle>("/api/v1/billing/bundles/", {
+      const price = parsePrice(access.ways?.buy?.price ?? "");
+      if (accessProblems.length || !price) {
+        toast.error(accessProblems[0]?.text ?? "Add a price above 0.");
+        return;
+      }
+      const created = await clientFetch<Bundle>("/api/v1/billing/bundles/", {
         method: "POST",
         body: JSON.stringify({
           name: form.name,
           description: form.description,
-          price: form.price,
+          price,
           items: selectedItems.map((i) => ({
             content_type: i.content_type,
             object_id: i.object_id,
           })),
         }),
       });
+      // The bundle exists now: a refused window must not make a retry create
+      // it twice, so say so and let her fix it on the bundle's page.
+      try {
+        if (accessDirty) await access.save(created.id);
+      } catch (err) {
+        toast.error(
+          `Bundle created, but its terms were not saved. ${accessSentence(err)}`,
+        );
+        navigate(`/admin/store/bundles/${created.id}`);
+        return;
+      }
       toast.success("Bundle created successfully.");
       navigate("/admin/store?tab=bundles");
     },
@@ -120,29 +155,27 @@ export default function NewBundlePage() {
                 }
               />
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="price">Bundle Price ({currency})</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  value={form.price}
-                  onChange={(e) => setForm({ ...form, price: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Original Price (sum of items)</Label>
-                <div className="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
-                  {formatMoney(originalPrice, currency)}
-                </div>
+            <div className="space-y-2 sm:max-w-xs">
+              <Label>Original Price (sum of items)</Label>
+              <div className="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
+                {formatMoney(originalPrice, currency)}
               </div>
             </div>
           </CardContent>
         </Card>
+
+        <AccessSection
+          kind="bundle"
+          value={access.ways}
+          onChange={access.setWays}
+          payload={access.payload}
+          onProblems={setAccessProblems}
+        />
+        {access.error && (
+          <p role="alert" className="text-xs text-destructive">
+            {access.error}
+          </p>
+        )}
 
         <Card>
           <CardHeader>

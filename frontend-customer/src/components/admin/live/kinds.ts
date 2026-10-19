@@ -48,8 +48,6 @@ interface KindConfig {
   icon: LucideIcon;
   /** The fields only this kind has. */
   fields: KindField[];
-  /** Whether "Members only" is an access choice. */
-  membersOnly: boolean;
   /** Runs in the built-in video room: the page a "Go live" opens. */
   room?: (id: number) => string;
   /** `?tab=` in links made before the four tabs became one list. */
@@ -63,7 +61,6 @@ export const EVENT_KINDS: Record<EventKind, KindConfig> = {
     api: "/api/v1/live/",
     icon: Video,
     fields: ["auto_recording"],
-    membersOnly: true,
     room: (id) => `/live/${id}`,
     legacyTab: "classes",
     demo: "live_classes",
@@ -72,7 +69,6 @@ export const EVENT_KINDS: Record<EventKind, KindConfig> = {
     api: "/api/v1/live-streams/",
     icon: Radio,
     fields: ["auto_recording"],
-    membersOnly: false,
     room: (id) => `/live-stream/${id}`,
     legacyTab: "streams",
     demo: "live_streams",
@@ -81,7 +77,6 @@ export const EVENT_KINDS: Record<EventKind, KindConfig> = {
     api: "/api/v1/zoom-classes/",
     icon: Video,
     fields: ["zoom_link"],
-    membersOnly: false,
     legacyTab: "zoom",
     demo: "zoom_classes",
   },
@@ -89,7 +84,6 @@ export const EVENT_KINDS: Record<EventKind, KindConfig> = {
     api: "/api/v1/onsite-events/",
     icon: MapPin,
     fields: ["location", "address", "max_capacity"],
-    membersOnly: true,
     legacyTab: "onsite",
     demo: "onsite_events",
   },

@@ -18,8 +18,10 @@ test("coach creates a paid download with price and tag in one submit", async ({ 
 
   await page.getByRole("button", { name: "Upload File" }).click();
   await page.getByLabel("Title").fill(title);
-  await page.getByLabel("Access Type").selectOption("paid");
-  await page.getByLabel("Price").fill("9.99");
+  // Sell it once, no longer free: the Access section's ways
+  await page.locator("#access-download-buy").click();
+  await page.locator("#access-download-price").fill("9.99");
+  await page.locator("#access-download-free").click();
 
   // Tag created in-place via the TagInput "Create …" row
   await page.getByPlaceholder("Add a tag…").fill(tagName);

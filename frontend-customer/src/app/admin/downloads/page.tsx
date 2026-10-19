@@ -42,6 +42,13 @@ import { TagFilterBar } from "@/components/admin/tag-filter-bar";
 import { TagInput } from "@/components/admin/tag-input";
 import { MonetizeNudge } from "@/components/admin/monetize-nudge";
 import { DemoBadge } from "@/components/setup/demo-badge";
+import {
+  AccessSection,
+  type AccessProblem,
+} from "@/components/admin/access/access-section";
+import { useAccess } from "@/lib/access/use-access";
+import { parsePrice } from "@/lib/access/ways";
+import { ApiError } from "@/types/api";
 import type { DownloadFile } from "@/types/download";
 
 export const dynamic = "force-dynamic";
@@ -67,17 +74,26 @@ const ACCESS_BADGE_VARIANT: Record<string, "success" | "default" | "warning"> =
     subscription: "warning",
   };
 
+/** The creator's sentence from a refused access save, or "". */
+const accessSentence = (err: unknown) =>
+  err instanceof ApiError && typeof err.data.detail === "string"
+    ? err.data.detail
+    : "";
+
 export default function AdminDownloadsPage() {
   const t = useTranslations("admin");
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [showForm, setShowForm] = useState(false);
   const [progress, setProgress] = useState(0);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState({
-    title: "",
-    pricing_type: "free" as "free" | "paid" | "subscription",
-    price: "",
-  });
+  const [form, setForm] = useState({ title: "" });
+  // How students get a new file: the Access section's ways, saved once the file exists.
+  const access = useAccess("download", null);
+  const [accessProblems, setAccessProblems] = useState<AccessProblem[]>([]);
+  const accessDirty =
+    !!access.ways &&
+    !!access.payload &&
+    JSON.stringify(access.ways) !== JSON.stringify(access.payload.ways);
   const [createTagIds, setCreateTagIds] = useState<number[]>([]);
 
   const [tagFilter, setTagFilter] = useState<number[]>([]);
@@ -104,6 +120,12 @@ export default function AdminDownloadsPage() {
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file || !form.title.trim()) return;
+      if (accessProblems.length) {
+        // Cleared so picking the same file again, once fixed, counts.
+        e.target.value = "";
+        toast.error(accessProblems[0].text);
+        return;
+      }
 
       setProgress(0);
 
@@ -111,10 +133,6 @@ export default function AdminDownloadsPage() {
         method: "POST",
         body: JSON.stringify({
           title: form.title,
-          pricing_type: form.pricing_type,
-          ...(form.pricing_type === "paid" && form.price
-            ? { price: parseFloat(form.price) }
-            : {}),
           tag_ids: createTagIds,
         }),
       });
@@ -158,8 +176,18 @@ export default function AdminDownloadsPage() {
         }),
       });
 
-      toast.success("File uploaded");
-      setForm({ title: "", pricing_type: "free", price: "" });
+      // The file is complete: a refused access setting must say so, not undo it.
+      // Untouched ways are the new file's default: nothing to save.
+      try {
+        if (accessDirty) await access.save(created.id);
+        toast.success("File uploaded");
+      } catch (err) {
+        toast.error(
+          `File uploaded, but how students get it was not saved. ${accessSentence(err)}`,
+        );
+      }
+      void access.reload();
+      setForm({ title: "" });
       setCreateTagIds([]);
       setShowForm(false);
       browserRef.current?.refresh();
@@ -169,23 +197,6 @@ export default function AdminDownloadsPage() {
 
   const downloadFields: FieldConfig<DownloadFile>[] = [
     { key: "title", label: "Title", type: "text", required: true },
-    {
-      key: "pricing_type",
-      label: "Access",
-      type: "select",
-      options: [
-        { label: "Free", value: "free" },
-        { label: "Paid", value: "paid" },
-        { label: "Included in subscription", value: "subscription" },
-      ],
-    },
-    {
-      key: "price",
-      label: "Price",
-      type: "number",
-      placeholder: "0.00",
-      showWhen: (v) => v.pricing_type === "paid",
-    },
     { key: "tag_ids", label: "Tags", type: "tags", tagScope: "download" },
   ];
 
@@ -195,11 +206,7 @@ export default function AdminDownloadsPage() {
         method: "PATCH",
         body: JSON.stringify({
           title: values.title,
-          pricing_type: values.pricing_type,
           tag_ids: values.tag_ids ?? [],
-          ...(values.pricing_type === "paid" && values.price
-            ? { price: parseFloat(values.price as string) }
-            : {}),
         }),
       });
       toast.success("Download updated");
@@ -243,58 +250,35 @@ export default function AdminDownloadsPage() {
               Upload New File
             </CardTitle>
             <CardDescription>
-              Enter a title and select the access type, then choose a file.
+              Enter a title, choose how students get it, then choose a file.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="dl_title">Title</Label>
-                <Input
-                  id="dl_title"
-                  placeholder="e.g. Course Workbook"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dl_access">Access Type</Label>
-                <select
-                  id="dl_access"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  value={form.pricing_type}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      pricing_type: e.target.value as
-                        | "free"
-                        | "paid"
-                        | "subscription",
-                    })
-                  }
-                >
-                  <option value="free">Free</option>
-                  <option value="paid">Paid</option>
-                  <option value="subscription">Included in subscription</option>
-                </select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="dl_title">Title</Label>
+              <Input
+                id="dl_title"
+                placeholder="e.g. Course Workbook"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                required
+              />
             </div>
-            {form.pricing_type === "paid" && (
-              <div className="space-y-2">
-                <Label htmlFor="dl_price">Price</Label>
-                <Input
-                  id="dl_price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  value={form.price}
-                  onChange={(e) => setForm({ ...form, price: e.target.value })}
-                />
-                <MonetizeNudge price={form.price} />
-              </div>
+            <AccessSection
+              kind="download"
+              value={access.ways}
+              onChange={access.setWays}
+              payload={access.payload}
+              onProblems={setAccessProblems}
+            />
+            {access.error && (
+              <p role="alert" className="text-xs text-destructive">
+                {access.error}
+              </p>
             )}
+            <MonetizeNudge
+              price={parsePrice(access.ways?.buy?.price ?? "") ?? undefined}
+            />
             <div className="space-y-2">
               <Label>Tags</Label>
               <TagInput
@@ -448,6 +432,10 @@ export default function AdminDownloadsPage() {
                   onCancel={() => setEditingId(null)}
                   saving={saving}
                 />
+                <DownloadAccess
+                  id={dl.id}
+                  onSaved={() => browserRef.current?.refresh()}
+                />
               </TableCell>
             </TableRow>
           ) : null
@@ -525,6 +513,57 @@ function DownloadRowActions({
         onClick={handleDelete}
       >
         <Trash2 className="h-3.5 w-3.5" />
+      </Button>
+    </div>
+  );
+}
+
+/** An existing file's Access section, with its own Save. */
+function DownloadAccess({ id, onSaved }: { id: number; onSaved: () => void }) {
+  const access = useAccess("download", id);
+  const [problems, setProblems] = useState<AccessProblem[]>([]);
+  const dirty =
+    !!access.ways &&
+    !!access.payload &&
+    JSON.stringify(access.ways) !== JSON.stringify(access.payload.ways);
+  const { run: save, loading: saving } = useAsyncAction(
+    async () => {
+      if (problems.length) {
+        toast.error(problems[0].text);
+        return;
+      }
+      await access.save(id);
+      toast.success("Access saved");
+      onSaved();
+    },
+    {
+      onError: (err) =>
+        toast.error(accessSentence(err) || "Failed to save access"),
+    },
+  );
+
+  return (
+    <div className="space-y-3 border-t p-4">
+      <AccessSection
+        kind="download"
+        value={access.ways}
+        onChange={access.setWays}
+        payload={access.payload}
+        onProblems={setProblems}
+      />
+      {access.error && (
+        <p role="alert" className="text-xs text-destructive">
+          {access.error}
+        </p>
+      )}
+      <Button
+        size="sm"
+        onClick={save}
+        loading={saving}
+        loadingText="Saving…"
+        disabled={!dirty}
+      >
+        Save access
       </Button>
     </div>
   );

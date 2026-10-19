@@ -16,12 +16,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AccessSection,
+  type AccessProblem,
+} from "@/components/admin/access/access-section";
 import { useTenant } from "@/hooks/use-tenant";
 import { clientFetch } from "@/lib/api-client";
 import { useLiveRecord } from "@/lib/copilot/live";
 import { listedItem } from "@/lib/covers/items";
 import { setFocusSave, useActiveCreation } from "@/lib/focus/store";
-import { useTenantCurrency } from "@/lib/setup-assistant";
+import { useAccess } from "@/lib/access/use-access";
 import { ApiError } from "@/types/api";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
@@ -32,6 +36,20 @@ import {
   type EventKind,
   type EventRow,
 } from "./kinds";
+
+/** The kind's name in the access endpoint. */
+const ACCESS_KIND: Record<EventKind, string> = {
+  live: "live_class",
+  stream: "live_stream",
+  zoom: "zoom_class",
+  onsite: "onsite_event",
+};
+
+/** The creator's sentence from a refused access save, or "". */
+const accessSentence = (err: unknown) =>
+  err instanceof ApiError && typeof err.data.detail === "string"
+    ? err.data.detail
+    : "";
 
 const selectClasses =
   "flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm disabled:opacity-60";
@@ -52,8 +70,6 @@ const fieldsOf = (event?: EventRow) => ({
   title: event?.title ?? "",
   description: event?.description ?? "",
   scheduled_at: toLocalDatetimeValue(event?.scheduled_at ?? null),
-  pricing_type: event?.pricing_type ?? "free",
-  price: event && Number(event.price) > 0 ? event.price : "",
   auto_recording: event?.auto_recording ?? false,
   zoom_link: event?.zoom_link ?? "",
   location: event?.location ?? "",
@@ -92,7 +108,6 @@ export function EventForm({
 }) {
   const t = useTranslations("admin.events");
   const tf = useTranslations("admin.focus");
-  const currency = useTenantCurrency();
   const timeZone = useTenant()?.timezone || "UTC";
   const [kind, setKind] = useState<EventKind>(event?.kind ?? "live");
   const [form, setForm] = useState(() => fieldsOf(event));
@@ -118,8 +133,17 @@ export function EventForm({
   );
   const set = (change: Partial<typeof form>) =>
     setForm((current) => ({ ...current, ...change }));
+  // How people get it: the Access section's ways, saved with the event. The
+  // kind is fixed once the event exists; before that the choices follow it.
+  const access = useAccess(ACCESS_KIND[kind], event?.id ?? null);
+  const [accessProblems, setAccessProblems] = useState<AccessProblem[]>([]);
+  const accessDirty =
+    !!access.ways &&
+    !!access.payload &&
+    JSON.stringify(access.ways) !== JSON.stringify(access.payload.ways);
   // She has unsaved edits when the form differs from the server's copy (ids in any order).
   const unsaved =
+    accessDirty ||
     JSON.stringify(form) !== JSON.stringify(base.current) ||
     JSON.stringify([...filterOptionIds].sort()) !==
       ids(event?.filter_options) ||
@@ -183,19 +207,17 @@ export function EventForm({
   const config = EVENT_KINDS[kind];
   const has = (field: (typeof config.fields)[number]) =>
     config.fields.includes(field);
-  // "Members only" is not a choice everywhere: fall back when the kind changes.
-  const pricingType =
-    form.pricing_type === "subscription" && !config.membersOnly
-      ? "free"
-      : form.pricing_type;
-
   // Held: a draft with a date (sell later, focus mode). Saving keeps it a draft;
   // Publish saves and puts every upcoming session of its series on the schedule.
   const held = event?.status === "draft" && !!event.scheduled_at;
   const ahead = !!form.scheduled_at && new Date(form.scheduled_at) > new Date();
-  const invalid = !form.title.trim() || (pricingType === "paid" && !form.price);
+  const invalid = !form.title.trim();
 
   const submit = async (publish: boolean) => {
+    if (accessProblems.length) {
+      toast.error(accessProblems[0].text);
+      return;
+    }
     const body = {
       title: landed("title").trim(),
       description: landed("description"),
@@ -203,8 +225,6 @@ export function EventForm({
       scheduled_at: form.scheduled_at
         ? new Date(form.scheduled_at).toISOString()
         : null,
-      pricing_type: pricingType,
-      price: pricingType === "paid" ? form.price || "0" : "0",
       filter_option_ids: filterOptionIds,
       tag_ids: tagIds,
       ...(has("auto_recording") && { auto_recording: form.auto_recording }),
@@ -224,6 +244,22 @@ export function EventForm({
         ),
       },
     );
+    // The event exists now: a refused access setting must not make a retry
+    // create it twice, so say so and let her fix it on the event's page.
+    // Untouched ways are the new event's default: nothing to save.
+    if (accessDirty) {
+      try {
+        await access.save(saved.id);
+      } catch (err) {
+        toast.error(`${t("accessNotSaved")} ${accessSentence(err)}`);
+        // Created: leaving create mode keeps a retry from creating it twice.
+        if (!event) {
+          onCreated?.(saved.id, kind);
+          onSaved();
+        }
+        return;
+      }
+    }
     // Publish is the server's call: its date may have passed, so it stays a draft.
     if (publish && saved.status !== "scheduled") {
       const past =
@@ -427,50 +463,33 @@ export function EventForm({
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="event-access">{t("access")}</Label>
-              <select
-                id="event-access"
-                value={pricingType}
-                onChange={(e) => set({ pricing_type: e.target.value })}
-                className={selectClasses}
-              >
-                <option value="free">{t("free")}</option>
-                <option value="paid">{t("paid")}</option>
-                {config.membersOnly && (
-                  <option value="subscription">{t("membersOnly")}</option>
-                )}
-              </select>
+          <AccessSection
+            kind={ACCESS_KIND[kind]}
+            value={access.ways}
+            onChange={access.setWays}
+            payload={access.payload}
+            onProblems={setAccessProblems}
+          />
+          {access.error && (
+            <p role="alert" className="text-xs text-destructive">
+              {access.error}
+            </p>
+          )}
+
+          {has("max_capacity") && detailsShown && (
+            <div className="space-y-2 sm:max-w-xs">
+              <Label htmlFor="event-capacity">{t("capacity")}</Label>
+              <Input
+                id="event-capacity"
+                type="number"
+                min="1"
+                step="1"
+                value={form.max_capacity}
+                onChange={(e) => set({ max_capacity: e.target.value })}
+                placeholder={t("capacityPlaceholder")}
+              />
             </div>
-            {pricingType === "paid" && (
-              <div className="space-y-2">
-                <Label htmlFor="event-price">{t("price", { currency })}</Label>
-                <Input
-                  id="event-price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={form.price}
-                  onChange={(e) => set({ price: e.target.value })}
-                />
-              </div>
-            )}
-            {has("max_capacity") && detailsShown && (
-              <div className="space-y-2">
-                <Label htmlFor="event-capacity">{t("capacity")}</Label>
-                <Input
-                  id="event-capacity"
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={form.max_capacity}
-                  onChange={(e) => set({ max_capacity: e.target.value })}
-                  placeholder={t("capacityPlaceholder")}
-                />
-              </div>
-            )}
-          </div>
+          )}
 
           {focus && (
             <Button
