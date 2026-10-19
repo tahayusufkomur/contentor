@@ -113,6 +113,12 @@ class TestContentCalendarFeed:
         for item in by_cat.values():
             assert item["scheduled_at"]  # every item is placed on a date
 
+    def test_a_held_draft_shows_as_a_draft(self, tenant_ctx, owner, content):
+        # A draft with a date (kept for later in focus mode) is not on the schedule yet.
+        LiveClass.objects.filter(pk=content["live"].pk).update(status="draft")
+        resp = make_client(owner).get("/api/v1/admin/content-calendar/", _window(content["now"]))
+        assert {i["category"]: i for i in resp.json()}["live"]["status"] == "draft"
+
     def test_types_filter_narrows_to_one_category(self, tenant_ctx, owner, content):
         params = {**_window(content["now"]), "types": "blog"}
         resp = make_client(owner).get("/api/v1/admin/content-calendar/", params)

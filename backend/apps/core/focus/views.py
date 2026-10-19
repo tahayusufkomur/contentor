@@ -214,6 +214,8 @@ def focus_form_timing(request):
     kind = str(data.get("kind") or "course")
     try:
         record_id = int(data.get("record_id", data.get("course_id")))  # course_id: a tab from before the kinds
+        if kind == "event":  # the form sends the row's pk and its kind; the stamp holds the event's ref
+            record_id = kinds.get(kind).ref_for(data.get("event_kind"), record_id)
         record = kinds.get(kind).record(record_id)
     except (TypeError, ValueError, flow.FlowError):
         return _not_found()

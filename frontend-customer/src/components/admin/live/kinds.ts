@@ -106,10 +106,12 @@ export function kindFromParams(params: URLSearchParams): EventKind | null {
   return KIND_ORDER.find((k) => EVENT_KINDS[k].legacyTab === tab) ?? null;
 }
 
-/** What the list shows as an event's state. A built-in class or stream is
- *  live only while she runs it; anything else follows the clock, because
- *  nothing ever ends a Zoom class or an in-person event in the database. */
+/** What the list shows as an event's state. A draft is a draft, a held one
+ *  (kept with its date) too, until she publishes it. A built-in class or
+ *  stream is live only while she runs it; anything else follows the clock,
+ *  because nothing ever ends a Zoom class or an in-person event in the database. */
 export function displayStatus(event: EventRow): string {
+  if (event.status === "draft") return "draft";
   const clock = event.computed_status ?? event.status;
   if (EVENT_KINDS[event.kind].room) {
     if (event.status === "live" || event.status === "ended")

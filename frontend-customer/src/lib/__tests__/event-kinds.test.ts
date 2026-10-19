@@ -67,4 +67,20 @@ describe("displayStatus", () => {
       ),
     ).toBe("draft");
   });
+
+  it("shows a held draft (a draft with its date) as a draft", () => {
+    expect(
+      displayStatus(
+        row({
+          kind: "zoom",
+          status: "draft",
+          computed_status: "scheduled",
+          scheduled_at: "2030-01-01T18:00:00Z",
+        }),
+      ),
+    ).toBe("draft");
+    expect(
+      displayStatus(row({ status: "draft", computed_status: "ended" })),
+    ).toBe("draft");
+  });
 });

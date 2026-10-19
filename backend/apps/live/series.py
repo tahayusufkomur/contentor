@@ -45,7 +45,13 @@ def rows(row):
     return type(row).objects.filter(title=row.title).order_by("scheduled_at")
 
 
+# The series shares one place: Keep as a draft may have copied it blank.
+PLACE = ("location", "address", "zoom_link", "zoom_meeting_id")
+
+
 def publish_series(row) -> int:
-    """Every held (draft) session still to come becomes scheduled; sessions
-    already scheduled, live, ended or past are left alone. Returns the count."""
-    return rows(row).filter(status="draft", scheduled_at__gt=timezone.now()).update(status="scheduled")
+    """Every held (draft) session still to come becomes scheduled, with
+    ``row``'s place (address, Zoom link) where it has one; sessions already
+    scheduled, live, ended or past are left alone. Returns the count."""
+    place = {f: getattr(row, f) for f in PLACE if getattr(row, f, "")}
+    return rows(row).filter(status="draft", scheduled_at__gt=timezone.now()).update(status="scheduled", **place)

@@ -198,7 +198,12 @@ def _split(ref) -> tuple[str | None, int | None]:
 
 
 def _ref(row) -> int:
-    return row.pk * 10 + WHERE.index(_kind(row)) + 1
+    return ref_for(_kind(row), row.pk)
+
+
+def ref_for(kind, pk: int) -> int | None:
+    """The ref of row ``pk`` of that kind (the plain form's timing stamp); None for no kind."""
+    return int(pk) * 10 + WHERE.index(kind) + 1 if kind in WHERE else None
 
 
 def _kind(row) -> str:
@@ -232,7 +237,7 @@ def create_draft(actor, title: str, answers: dict) -> int | None:
     if kind is None:
         return None
     made = content.create_event(actor, kind, {"title": title}, cover=False)
-    return made["id"] * 10 + WHERE.index(kind) + 1
+    return ref_for(kind, made["id"])
 
 
 def record(ref):

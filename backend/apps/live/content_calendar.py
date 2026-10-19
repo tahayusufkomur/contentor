@@ -92,7 +92,8 @@ def coach_content_calendar(request):
                         "source": source,
                         "title": obj.title,
                         "scheduled_at": obj.scheduled_at,
-                        "status": obj.computed_status,
+                        # A held draft (kept for later, with its date) is not on the schedule yet.
+                        "status": "draft" if obj.status == "draft" else obj.computed_status,
                         "subtitle": f"{obj.duration_minutes} min • {label}",
                         # Opens this event's own form.
                         "href": f"/admin/live?event={obj.id}&kind={kind}",

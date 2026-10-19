@@ -482,3 +482,20 @@ def test_a_capacity_past_the_cap_is_dropped(owner):
     assert "capacity" not in creation.brief
     event.apply_found(creation, event.EventFound(capacity=event.MAX_CAPACITY))
     assert creation.brief["capacity"] == 10_000
+
+
+def test_the_plain_forms_timing_stamp_is_the_events_own_ref(owner):
+    """The plain event form sends the row's pk and its kind; the stamp holds the ref."""
+    from apps.tenant_config.models import FocusCreation
+
+    client = APIClient(HTTP_HOST="shared-test.localhost")
+    client.force_authenticate(user=owner)
+    LiveStream.objects.create(title="Someone's stream", instructor=owner)  # what pk 12 read as a ref would be
+    row = OnsiteEvent.objects.create(title="By hand", instructor=owner)
+    body = {"kind": "event", "event_kind": "onsite", "record_id": row.pk, "active_ms": 9}
+    assert client.post("/api/v1/admin/focus/form-timing/", body, format="json").status_code == 201
+    stamp = FocusCreation.objects.get(mode="form")
+    assert (stamp.kind, stamp.record_id) == ("event", event.ref_for("onsite", row.pk))
+    assert event.record(stamp.record_id) == row
+    for bad in ({**body, "event_kind": "live"}, {**body, "event_kind": "nope"}, {**body, "event_kind": None}):
+        assert client.post("/api/v1/admin/focus/form-timing/", bad, format="json").status_code == 404

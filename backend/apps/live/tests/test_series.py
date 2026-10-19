@@ -181,3 +181,26 @@ def test_publish_series_moves_an_in_person_series_too(owner):
     assert series.publish_series(row) == 1
     row.refresh_from_db()
     assert row.status == "scheduled"
+
+
+def test_publish_series_carries_the_first_sessions_place_to_the_held_copies(owner):
+    # Keep as a draft copied a blank place; she added it on the first session, then pressed Publish.
+    when = timezone.now() + timedelta(days=2)
+    first = OnsiteEvent.objects.create(
+        title="Retreat", instructor=owner, scheduled_at=when, location="Studio A", address="1 Main St"
+    )
+    held = OnsiteEvent.objects.create(title="Retreat", instructor=owner, scheduled_at=when + timedelta(days=7))
+    past = OnsiteEvent.objects.create(title="Retreat", instructor=owner, scheduled_at=when - timedelta(days=9))
+    assert series.publish_series(first) == 2
+    held.refresh_from_db()
+    past.refresh_from_db()
+    assert (held.status, held.location, held.address) == ("scheduled", "Studio A", "1 Main St")
+    assert (past.location, past.address) == ("", "")  # only what it publishes
+
+    zoom = ZoomClass.objects.create(
+        title="Q&A", instructor=owner, scheduled_at=when, zoom_link="https://zoom.us/j/1", zoom_meeting_id="1"
+    )
+    copy = ZoomClass.objects.create(title="Q&A", instructor=owner, scheduled_at=when + timedelta(days=7))
+    series.publish_series(zoom)
+    copy.refresh_from_db()
+    assert (copy.status, copy.zoom_link, copy.zoom_meeting_id) == ("scheduled", "https://zoom.us/j/1", "1")
