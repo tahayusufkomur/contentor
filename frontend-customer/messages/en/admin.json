@@ -55,7 +55,16 @@
       "payments": "Payments"
     },
     "bundles": {
-      "draft": "Draft"
+      "draft": "Draft",
+      "new": "New bundle",
+      "name": "Name",
+      "description": "Description",
+      "items": "Bundle items",
+      "itemsHint": "What students get together for one price.",
+      "publish": "Publish",
+      "publishing": "Publishing…",
+      "published": "Published. Students can buy it in your store now.",
+      "draftHint": "A draft is hidden from students until you publish it."
     },
     "plans": {
       "new": "New membership",
@@ -1194,6 +1203,16 @@
         "continue": "Continue your membership: {title}",
         "fillMyself": "Fill it in myself",
         "thinking": "Thinking about your membership…",
+        "writing": "Writing the name and description…",
+        "handOver": {
+          "access": "{name} here: let's set its price."
+        }
+      },
+      "bundle": {
+        "new": "New bundle",
+        "continue": "Continue your bundle: {title}",
+        "fillMyself": "Fill it in myself",
+        "thinking": "Thinking about your bundle…",
         "writing": "Writing the name and description…",
         "handOver": {
           "access": "{name} here: let's set its price."

@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { FocusStart } from "@/components/focus/focus-start";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,8 +17,11 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageState } from "@/components/ui/page-state";
 import { Separator } from "@/components/ui/separator";
+import { SkeletonForm } from "@/components/ui/skeletons";
 import { clientFetch } from "@/lib/api-client";
+import { clearActiveCreation, useFocusOverview } from "@/lib/focus/store";
 import {
   ContentPicker,
   type SelectedItem,
@@ -39,7 +45,61 @@ const accessSentence = (err: unknown) =>
     ? err.data.detail
     : "";
 
+/** With focus mode on for bundles (the owner's: the overview lists it only
+ *  for her), New asks one question at a time; her first answer makes the
+ *  hidden draft and moves to its page. `?form=1` is the plain form. */
 export default function NewBundlePage() {
+  const overview = useFocusOverview();
+  const plain = useSearchParams().get("form") === "1";
+  const first = overview?.first.bundle;
+  return (
+    <PageState
+      loading={overview === null}
+      skeleton={<SkeletonForm fields={4} />}
+    >
+      {overview?.enabled && first && !plain ? (
+        <FocusStart kind="bundle" question={first}>
+          <BundleSlots />
+        </FocusStart>
+      ) : (
+        <PlainNewBundle />
+      )}
+    </PageState>
+  );
+}
+
+/** The bundle page, still empty, before her first answer makes the draft. */
+function BundleSlots() {
+  const t = useTranslations("admin.store.bundles");
+  const slot = "rounded-md border border-dashed border-border bg-muted/30";
+  return (
+    <>
+      <Card aria-hidden>
+        <CardContent className="space-y-4 pt-6">
+          <div className="space-y-2">
+            <Label>{t("name")}</Label>
+            <div className={`h-10 ${slot}`} />
+          </div>
+          <div className="space-y-2">
+            <Label>{t("description")}</Label>
+            <div className={`h-20 ${slot}`} />
+          </div>
+        </CardContent>
+      </Card>
+      <Card aria-hidden>
+        <CardHeader>
+          <CardTitle>{t("items")}</CardTitle>
+          <CardDescription>{t("itemsHint")}</CardDescription>
+        </CardHeader>
+      </Card>
+    </>
+  );
+}
+
+function PlainNewBundle() {
+  useEffect(() => {
+    clearActiveCreation(0); // from the focus screen's "Fill it in myself"
+  }, []);
   const navigate = useNavigate();
   const currency = useTenantCurrency();
   const [form, setForm] = useState({

@@ -56,7 +56,7 @@ import { UploadQuestion } from "./upload-question";
 
 const POLL_MS = 1500;
 // The kinds whose page edits are saved before her finish taps go out.
-const SAVE_FIRST: FocusKind[] = ["message", "membership"];
+const SAVE_FIRST: FocusKind[] = ["message", "membership", "bundle"];
 
 // The /setup answer box reads the setup shell's tokens; here they are the
 // studio's own, so it follows the studio's light and dark.
@@ -121,8 +121,11 @@ export function FocusGuide() {
         announce,
         active_ms: takeActiveMs(timeKey),
       });
-      // A membership says what its tap did ("On sale. …", "Kept off sale. …").
-      const own = state.kind === "membership" ? next.closing : undefined;
+      // A membership or bundle says what its tap did ("On sale. …", "Saved as a draft. …").
+      const own =
+        state.kind === "membership" || state.kind === "bundle"
+          ? next.closing
+          : undefined;
       // Live, with "Tell my students": Marketing's draft is the last step.
       if (next.status === "active" && next.question?.kind === "announce") {
         apply(state.id, next);

@@ -39,6 +39,11 @@ describe("focus kinds", () => {
       plainHref: "/admin/store/plans/new?form=1",
       listHref: "/admin/store?tab=plans",
     });
+    expect(KIND_ROUTES.bundle).toEqual({
+      newHref: "/admin/store/bundles/new",
+      plainHref: "/admin/store/bundles/new?form=1",
+      listHref: "/admin/store?tab=bundles",
+    });
     expect(focusTimeKey("course")).toBe("focus:course");
   });
 

@@ -28,6 +28,8 @@ export interface Bundle {
   currency: string;
   thumbnail_url: string;
   is_active: boolean;
+  /** False: a draft (focus mode makes these), hidden from students until published. */
+  is_published?: boolean;
   item_count: number;
   access_info: AccessInfo;
   items?: BundleItem[];

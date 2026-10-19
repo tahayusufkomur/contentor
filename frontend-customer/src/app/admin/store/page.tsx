@@ -188,6 +188,9 @@ function ProductsTab() {
   );
 }
 
+// Focus mode where the overview lists bundles (the owner's), else the plain form.
+const NEW_BUNDLE = KIND_ROUTES.bundle?.newHref ?? "/admin/store/bundles/new";
+
 function BundlesTab() {
   const t = useTranslations("admin.store.bundles");
   const [bundles, setBundles] = useState<BundleListItem[]>([]);
@@ -230,10 +233,10 @@ function BundlesTab() {
     <div className="space-y-4">
       <div className="flex justify-end">
         <Button asChild className="gap-2">
-          <Link href="/admin/store/bundles/new">
+          <NavLink href={NEW_BUNDLE}>
             <Plus className="h-4 w-4" />
-            Create Bundle
-          </Link>
+            {t("new")}
+          </NavLink>
         </Button>
       </div>
       <PageState
@@ -263,8 +266,8 @@ function BundlesTab() {
                       title="No bundles yet"
                       description="Create a bundle to group products at a discounted price."
                       action={{
-                        label: "Create Bundle",
-                        href: "/admin/store/bundles/new",
+                        label: t("new"),
+                        href: NEW_BUNDLE,
                       }}
                     />
                   </td>
