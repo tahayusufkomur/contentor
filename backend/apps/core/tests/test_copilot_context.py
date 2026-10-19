@@ -61,7 +61,7 @@ def test_a_course_page_carries_its_curriculum_with_ids(tenant_ctx, course):
     module = course.modules.get()
     lesson = module.lessons.get()
     assert cleaned["page"] == "Courses"
-    assert f"course {course.id} 'Morning Flow' (draft, price 0.00)" in cleaned["record"]
+    assert f"course {course.id} 'Morning Flow' (draft, access: Free for everyone.)" in cleaned["record"]
     assert "Wake up gently." in cleaned["record"]
     assert f"module {module.id} | Basics" in cleaned["record"]
     assert f"lesson {lesson.id} | Breath" in cleaned["record"]

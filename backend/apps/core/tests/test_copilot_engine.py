@@ -50,6 +50,7 @@ def _run(parsed, style="", **kw):
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -121,6 +122,7 @@ def test_edit_pages_action_becomes_card_with_changes_and_token():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -150,6 +152,7 @@ def test_add_block_card_carries_the_built_block():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -173,6 +176,7 @@ def test_invalid_actions_are_dropped_and_fallback_answer_returned():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -192,6 +196,7 @@ def test_failed_model_call_still_reports_cost():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -224,6 +229,7 @@ def test_create_course_action_becomes_card_with_stashed_params():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -260,6 +266,7 @@ def test_create_event_card_requires_future_date():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -292,6 +299,7 @@ def test_create_event_onsite_card_stashes_location_and_kind():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -327,6 +335,7 @@ def test_create_blog_post_card_maps_summary_to_excerpt():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -367,6 +376,7 @@ def test_draft_announcement_card_maps_params_and_states_inert_detail():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -422,6 +432,7 @@ def test_user_turn_includes_chrome_digest():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -450,6 +461,7 @@ def test_system_prompt_carries_platform_knowledge_and_addenda():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -486,6 +498,7 @@ def test_ask_over_cap_is_steered_and_coerced_to_answer():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -513,6 +526,7 @@ def test_cap_zero_leaves_asks_uncapped():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -553,6 +567,7 @@ def test_ask_outside_transcript_window_does_not_trip_cap():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -584,6 +599,7 @@ def test_under_cap_ask_passes_through():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -954,6 +970,7 @@ def test_user_turn_includes_courses_digest():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -1174,6 +1191,7 @@ def test_user_turn_includes_events_and_posts_digests():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
@@ -1685,6 +1703,7 @@ def test_user_turn_includes_stats_and_setup():
             engine, "_chrome_digest", return_value="Style: journal (Quiet Journal); Navbar: layout=classic, cta=none"
         ),
         mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
         mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
         mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
         mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 3 (1 new this week)"),

@@ -66,12 +66,14 @@ def _page_of(path):
 def _course_record(slug):
     from apps.courses.models import Course
 
+    from apps.billing.ways import describe, ways_of
+
     course = Course.objects.filter(slug=slug).prefetch_related("modules__lessons").first()
     if course is None:
         return None
     lines = [
         f"Open on this page: course {course.id} '{course.title[:120]}' "
-        f"({'published' if course.is_published else 'draft'}, price {course.price})",
+        f"({'published' if course.is_published else 'draft'}, access: {describe(ways_of(course))})",
         f"  description: {course.description[:RECORD_TEXT_MAX] or '(none)'}",
         "  curriculum (module id | title, then its lessons as lesson id | title; "
         "(empty) = no video or text yet, and it cannot go live until none is):",

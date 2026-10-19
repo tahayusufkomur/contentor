@@ -37,6 +37,10 @@ SYSTEM_PROMPT = (
     "you can choose sensibly yourself.\n"
     "In your replies, call her a creator and her admin the Creator "
     "studio; never say coach, teacher or admin.\n"
+    "The course and event lists carry an access column: the ways in to that item in plain "
+    "words (free, a price once, a subscription), each with its window. The Subscriptions "
+    "list shows her subscription plans (price, cycle, on or off sale, how many items each "
+    "includes); never invent a plan or a price.\n"
     "Available actions:\n"
     "- edit_pages: rewrite existing page copy from an instruction\n"
     "- add_block: add a new section (types: hero, richText, imageText, "
@@ -647,34 +651,54 @@ def _courses_digest(tenant):
     unpublished is noted so the model doesn't hand the coach a page nobody can see."""
     from django.db.models import Count
 
+    from apps.billing.ways import describe, ways_of
     from apps.courses.models import EMPTY_LESSON, Course, Lesson
 
     with tenant_context(tenant):
-        rows = list(
-            Course.objects.order_by("order", "-created_at").values(
-                "id", "title", "is_published", "thumbnail_id", "thumbnail_url", "slug"
-            )[:MAX_DIGEST_COURSES]
-        )
+        courses = list(Course.objects.order_by("order", "-created_at")[:MAX_DIGEST_COURSES])
         filled = {
             r["module__course_id"]: f"{r['filled']}/{r['total']}"
-            for r in Lesson.objects.filter(module__course_id__in=[r["id"] for r in rows])
+            for r in Lesson.objects.filter(module__course_id__in=[c.id for c in courses])
             .values("module__course_id")
             .annotate(total=Count("id"), filled=Count("id", filter=~EMPTY_LESSON))
         }
-    if not rows:
+        # ponytail: ways_of is a few queries per item; the digest caps the list at MAX_DIGEST_COURSES.
+        access = {c.id: describe(ways_of(c)) for c in courses}
+    if not courses:
         return "Courses: (none yet)"
     lines = [
         "Courses (id | title | cover | status | lessons with a video or her own text "
-        "(an untouched drafted description does not count) | admin link | site link):"
+        "(an untouched drafted description does not count) | access | admin link | site link):"
     ]
-    for r in rows:
-        cover = "has cover" if (r["thumbnail_id"] or r["thumbnail_url"]) else "NO COVER"
-        status = "published" if r["is_published"] else "draft"
-        site_link = f"/courses/{r['slug']}" if r["is_published"] else "(not published yet)"
-        lessons = filled.get(r["id"], "0/0")
+    for c in courses:
+        cover = "has cover" if (c.thumbnail_id or c.thumbnail_url) else "NO COVER"
+        status = "published" if c.is_published else "draft"
+        site_link = f"/courses/{c.slug}" if c.is_published else "(not published yet)"
+        lessons = filled.get(c.id, "0/0")
         lines.append(
-            f"  {r['id']} | {str(r['title'])[:60]} | {cover} | {status} | {lessons} | "
-            f"/admin/courses/{r['slug']} | {site_link}"
+            f"  {c.id} | {str(c.title)[:60]} | {cover} | {status} | {lessons} | {access[c.id]} | "
+            f"/admin/courses/{c.slug} | {site_link}"
+        )
+    return "\n".join(lines)
+
+
+def _subscriptions_digest(tenant):
+    """Her subscription plans for the user turn: the id a plan is named by, and
+    how many items it includes."""
+    from django.db.models import Count
+
+    from apps.billing.models import SubscriptionPlan
+
+    with tenant_context(tenant):
+        plans = list(SubscriptionPlan.objects.annotate(items=Count("access_items")).order_by("sort_order", "pk"))
+    if not plans:
+        return "Subscriptions: (none yet)"
+    lines = ["Subscriptions (id | name | price | cycle | on sale | items):"]
+    for p in plans:
+        n = p.billing_interval_months
+        cycle = {1: "monthly", 12: "yearly"}.get(n, f"every {n} months")
+        lines.append(
+            f"  {p.id} | {str(p.name)[:60]} | {p.price} | {cycle} | {'on sale' if p.is_active else 'off sale'} | {p.items}"
         )
     return "\n".join(lines)
 
@@ -692,9 +716,11 @@ def _event_site_link(kind, event_id):
 
 
 def _events_digest(tenant):
-    """Upcoming events for the user turn: what edit_event and set_event_cover
+    """Upcoming events (with their access, in plain words) for the user turn: what edit_event and set_event_cover
     proposals key off, and what the model quotes back verbatim when asked
     for a direct link."""
+    from apps.billing.ways import describe, ways_of
+
     with tenant_context(tenant):
         now = timezone.now()
         rows = [
@@ -704,18 +730,20 @@ def _events_digest(tenant):
             .objects.filter(scheduled_at__gte=now)
             .order_by("scheduled_at")[:MAX_DIGEST_EVENTS]
         ]
+        rows.sort(key=lambda r: r[1].scheduled_at)
+        # ponytail: ways_of is a few queries per item; only the soonest MAX_DIGEST_EVENTS are described.
+        access = {(kind, e.id): describe(ways_of(e)) for kind, e in rows[:MAX_DIGEST_EVENTS]}
     if not rows:
         return "Upcoming events: (none scheduled)"
-    rows.sort(key=lambda r: r[1].scheduled_at)
     zone = _tenant_zone(tenant)
-    lines = ["Upcoming events (id | kind | title | when, her local time | price | cover | admin link | site link):"]
+    lines = ["Upcoming events (id | kind | title | when, her local time | access | cover | admin link | site link):"]
     for kind, e in rows[:MAX_DIGEST_EVENTS]:
         admin_link = content.event_admin_url(kind, e.id)
         site_link = _event_site_link(kind, e.id)
         cover = "has cover" if (e.thumbnail_id or e.thumbnail_url) else "NO COVER"
         when = f"{e.scheduled_at.astimezone(zone):%a %Y-%m-%dT%H:%M}"
         lines.append(
-            f"  {e.id} | {kind} | {str(e.title)[:60]} | {when} | {e.price} | {cover} | {admin_link} | {site_link}"
+            f"  {e.id} | {kind} | {str(e.title)[:60]} | {when} | {access[(kind, e.id)]} | {cover} | {admin_link} | {site_link}"
         )
     return "\n".join(lines)
 
@@ -901,6 +929,7 @@ def _user_turn(tenant, transcript, selections, message, attachments=None, contex
         _chrome_digest(tenant),
         _clock_digest(tenant),
         _courses_digest(tenant),
+        _subscriptions_digest(tenant),
         _events_digest(tenant),
         _posts_digest(tenant),
         _stats_digest(tenant),
