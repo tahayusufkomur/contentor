@@ -8,6 +8,7 @@ from django.conf import settings
 from django.db import connection
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from apps.core.permissions import IsCoachOrOwner
@@ -36,8 +37,20 @@ def _text(data, key):
     return value if isinstance(value, str) else None
 
 
+def _owner_only(user, kind):
+    """A membership or bundle is the owner's alone (flow.check_owner): 403 for anyone else."""
+    try:
+        flow.check_owner(user, kind)
+    except flow.FlowError as exc:
+        raise PermissionDenied(str(exc)) from exc
+
+
 def _hers(request, creation_id):
-    return FocusCreation.objects.filter(pk=creation_id, actor=request.user, mode="focus").first()
+    """Her creation, or None; every endpoint for one passes here (and so the owner check)."""
+    creation = FocusCreation.objects.filter(pk=creation_id, actor=request.user, mode="focus").first()
+    if creation is not None:
+        _owner_only(request.user, creation.kind)
+    return creation
 
 
 @api_view(["GET", "POST"])
@@ -47,7 +60,10 @@ def focus_root(request):
         if not settings.FOCUS_MODE_ENABLED:
             return Response({"enabled": False, "kinds": [], "first": {}, "open": []})
         open_ = []
-        for creation in FocusCreation.objects.filter(actor=request.user, mode="focus", status="active"):
+        mine = FocusCreation.objects.filter(actor=request.user, mode="focus", status="active")
+        if request.user.role != "owner":  # a membership or bundle is the owner's alone
+            mine = mine.exclude(kind__in=flow.OWNER_ONLY)
+        for creation in mine:
             body = flow.state(creation)  # closes one whose record is gone
             if body["record"] is not None:
                 open_.append({"id": creation.id, "kind": creation.kind, "record": body["record"]})
@@ -55,7 +71,7 @@ def focus_root(request):
                 open_.append(
                     {"id": creation.id, "kind": creation.kind, "record": None, "title": flow.draft_title(creation)}
                 )
-        on = kinds.enabled()
+        on = [kind for kind in kinds.enabled() if request.user.role == "owner" or kind not in flow.OWNER_ONLY]
         first = {kind: flow.question(kind, kinds.get(kind).RECIPE.questions[0].id) for kind in on}
         return Response({"enabled": True, "kinds": on, "first": first, "open": open_})
     if not settings.FOCUS_MODE_ENABLED:
@@ -72,7 +88,7 @@ def focus_root(request):
             active_ms=_ms(data),
         )
     except flow.FlowError as exc:
-        return Response({"detail": str(exc)}, status=400)
+        return Response({"detail": str(exc)}, status=403 if str(exc) == "owner_only" else 400)
     return Response(flow.state(creation), status=201)
 
 
@@ -213,6 +229,7 @@ def focus_form_timing(request):
         return _not_found()
     data = _body(request)
     kind = str(data.get("kind") or "course")
+    _owner_only(request.user, kind)
     try:
         record_id = int(data.get("record_id", data.get("course_id")))  # course_id: a tab from before the kinds
         if kind == "event":  # the form sends the row's pk and its kind; the stamp holds the event's ref

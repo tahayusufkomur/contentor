@@ -41,6 +41,16 @@ class FlowError(Exception):
     pass
 
 
+# Kinds only the site owner may make (G18): their endpoints are hers alone today.
+OWNER_ONLY = ("membership", "bundle")
+
+
+def check_owner(user, kind: str) -> None:
+    """FlowError("owner_only") for a membership or bundle made or driven by anyone but the owner."""
+    if kind in OWNER_ONLY and getattr(user, "role", None) != "owner":
+        raise FlowError("owner_only")
+
+
 def working_title(topic: str, kind: str = "course") -> str:
     """Her topic as the record's title until the outline writes a better one."""
     adapter = kinds.get(kind)
@@ -70,6 +80,7 @@ def start(user, kind: str, *, value=None, text=None, delegate=False, rest=False,
     by the analysis first; the title is provisional until then."""
     if kind not in kinds.enabled():
         raise FlowError("unknown_kind")
+    check_owner(user, kind)
     adapter = kinds.get(kind)
     recipe = adapter.RECIPE
     first = recipe.questions[0]
@@ -1084,6 +1095,8 @@ def _add_time(creation, active_ms) -> None:
 def _tiles(recipe, q) -> list[dict]:
     adapter = kinds.get(recipe.kind)
     if q.starter:
+        if own := getattr(adapter, "topic_tiles", None):  # optional: its own first tiles (a membership's tiers)
+            return own()
         # Her own words from /setup, when she gave a topic for this kind there.
         from apps.tenant_config.interview_brief import answers_of
 
@@ -1107,6 +1120,8 @@ def _pick(recipe, q, value, text, delegate):
         return words
     if value is None:
         return None
+    if q.multi:  # the values of the tiles she ticked, comma-separated: the kind's ``sync`` checks them
+        return str(value).strip() or None
     if q.kind == "schedule":  # the /setup picker's JSON, or nothing it would not send
         from apps.tenant_config import interview_schedule
 

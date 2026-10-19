@@ -8,6 +8,7 @@ The adapter (the course's in kinds/course.py):
 - NOUN: its word in prompts ("course"). NEW_TITLE: a draft's title before she names it.
 - SETUP_TOPIC: the /setup answer that seeds the topic's starter tile, or None.
 - STARTERS: optional, (label, starter) tiles on its first question, each filling her answer box to finish.
+- topic_tiles(): optional, its first question's tiles (a membership's tiers), in place of SETUP_TOPIC's.
 - create_draft(actor, title, answers): the hidden draft's id, or None until a later answer makes it.
 - record(record_id): the draft, or None when there is none (yet, or any more). ``record_id`` is the
   kind's own int: the event's packs the row's pk and which of its four models (kinds/event.py).
@@ -38,7 +39,8 @@ The adapter (the course's in kinds/course.py):
 - start_draft(creation, instruction=""): its drafting for the review step (the course's outline, the
   copy job for the others), and each redraft with her words; called once, when every question before
   the review is answered or skipped. REVIEWED_LINE: the dock's line after her "Looks good", or None.
-- sync(creation): optional, after every answer: her answers it keeps on the record, written there.
+- sync(creation): optional, after every answer: her answers it keeps on the record, written there (a
+  ``multi`` question's tap arrives as its tiles' values, comma-separated, for ``sync`` to check).
 - ask(creation, asked): optional, a question in its own words for this creation (``flow.question``).
 - label(field, answer): optional, her answered line in its own words (a tile ``ask`` drew), or None.
 - skips(creation): the questions it skips for this creation.
@@ -51,7 +53,8 @@ The adapter (the course's in kinds/course.py):
 
 A kind the copy job drafts (its start_draft is copywriter.start) also has, all four or none (the course
 has none; ``copywriter.drafts`` checks for them):
-- COPY_FIELDS: the record's fields it writes, in order (("title", "description")).
+- COPY_FIELDS: the record's fields it writes, in order, its title first (("title", "description"); a plan's
+  ("name", "description")).
 - COPY_RULES: what to write, appended to the copy job's shared prompt.
 - copy_facts(creation, record): what it writes from: her answers, brief and notes, her site, and its own.
 - write_copy(record_id, fields): those fields onto the record (the job checked each is still its own).
@@ -68,6 +71,7 @@ KINDS: dict[str, str] = {
     "event": "apps.core.focus.kinds.event",
     "message": "apps.core.focus.kinds.message",
     "download": "apps.core.focus.kinds.download",
+    "membership": "apps.core.focus.kinds.membership",
 }
 
 
