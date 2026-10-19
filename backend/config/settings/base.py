@@ -456,7 +456,7 @@ FOCUS_MODE_ENABLED = _env_bool("FOCUS_MODE_ENABLED", True)
 # The kinds focus mode makes (apps.core.focus.kinds), as CSV; each joins once it is finished.
 FOCUS_KINDS = [
     kind.strip()
-    for kind in os.environ.get("FOCUS_KINDS", "course,event,message,download,membership").split(",")
+    for kind in os.environ.get("FOCUS_KINDS", "course,event,message,download,membership,bundle").split(",")
     if kind.strip()
 ]
 # Hosts allowed to serve rendition bytes. Those URLs are chosen by another
