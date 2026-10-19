@@ -17,7 +17,13 @@ import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/ui/nav-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 import { executeCopilotAction, undoCopilotAction } from "@/lib/copilot/api";
+import {
+  claimLiveCard,
+  setFirstAnswer,
+  useFocusOverview,
+} from "@/lib/focus/store";
 import { isCreateKind, isUndoableKind, runBundle } from "@/lib/copilot/state";
 import {
   announceAssistantApplied,
@@ -148,14 +154,19 @@ const FIELD_NAME_KEYS = new Set([
 
 export function ActionCard({
   card,
+  askedWith,
   onApplied,
 }: {
   card: ActionCardData;
+  /** The coach message this turn answered: focus mode's first answer. */
+  askedWith?: string;
   /** Called once the action is applied, with what the server returned. */
   onApplied?: (result: ExecuteResult) => void;
 }) {
   const t = useTranslations("student.copilot");
+  const tAdmin = useTranslations("admin");
   const router = useRouter();
+  const navigate = useNavigate();
   const bundle = useContext(CardBundleContext);
   const token = useId();
   const [state, setState] = useState<"proposed" | "done" | "dismissed">(
@@ -163,6 +174,23 @@ export function ActionCard({
   );
   const [result, setResult] = useState<ExecuteResult | null>(null);
   const [auditId, setAuditId] = useState<number | null>(null);
+
+  // With focus mode on, a course is made with her, not applied from the card:
+  // "Start it" opens it with her words as the first answer, and on its own
+  // when the card arrived live on a courses page. The create token stays unused.
+  const overview = useFocusOverview();
+  const focusCard = overview?.enabled === true && card.kind === "create_course";
+  // Until we know which it is, no button: a Confirm that turns into Start it
+  // under her finger would apply the wrong one.
+  const choosing = overview === null && card.kind === "create_course";
+  const startIt = () => {
+    setFirstAnswer(askedWith?.trim() || null);
+    navigate("/admin/courses/new");
+  };
+  useEffect(() => {
+    if (focusCard && claimLiveCard(card.token)) startIt();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusCard]);
 
   // Raw body — THROWS on failure (no swallowing wrapper). This is what gets
   // registered into the bundle: runBundle's stop-on-failure semantics only
@@ -222,7 +250,7 @@ export function ActionCard({
 
   useEffect(() => {
     if (!bundle) return;
-    if (state === "proposed") {
+    if (state === "proposed" && !focusCard) {
       bundle.cards.set(token, confirmRaw);
     } else {
       bundle.cards.delete(token);
@@ -233,7 +261,7 @@ export function ActionCard({
       bundle.notify();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bundle, token, state]);
+  }, [bundle, token, state, focusCard]);
 
   if (state === "dismissed") return null;
   return (
@@ -244,8 +272,14 @@ export function ActionCard({
       {card.owner && <SpecialistByline k={card.owner} />}
       <p className="font-medium">{card.title}</p>
       {card.image_url && <CardPhoto card={card} />}
-      {card.detail && (
-        <p className="mt-1 text-muted-foreground">{card.detail}</p>
+      {focusCard ? (
+        <p className="mt-1 text-muted-foreground">
+          {tAdmin("focus.makeWithMe")}
+        </p>
+      ) : (
+        card.detail && (
+          <p className="mt-1 text-muted-foreground">{card.detail}</p>
+        )
       )}
       {card.changes && card.changes.length > 0 && (
         <ul className="mt-2 max-h-48 space-y-2 overflow-y-auto pr-1">
@@ -294,17 +328,23 @@ export function ActionCard({
             </Button>
           )}
         </div>
-      ) : (
+      ) : choosing ? null : (
         <div className="mt-3 flex gap-2">
-          <Button
-            size="sm"
-            variant="brand"
-            onClick={confirm}
-            loading={loading}
-            loadingText={t("applying")}
-          >
-            {t("confirm")}
-          </Button>
+          {focusCard ? (
+            <Button size="sm" variant="brand" onClick={startIt}>
+              {tAdmin("focus.startIt")}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="brand"
+              onClick={confirm}
+              loading={loading}
+              loadingText={t("applying")}
+            >
+              {t("confirm")}
+            </Button>
+          )}
           <Button
             size="sm"
             variant="ghost"

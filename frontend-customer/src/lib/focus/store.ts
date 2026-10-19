@@ -141,6 +141,42 @@ export function clearActiveCreation(id?: number) {
 
 export const activeCreation = () => active;
 
+// Her words from the assistant, kept for the new-course page's first screen.
+// Read once: a reload of that page must not send them again.
+let firstAnswer: string | null = null;
+
+export function setFirstAnswer(text: string | null) {
+  firstAnswer = text;
+}
+
+export function takeFirstAnswer(): string | null {
+  const text = firstAnswer;
+  firstAnswer = null;
+  return text;
+}
+
+// Create-course cards that arrived in this session while she was on a courses
+// page: the only ones that open focus mode by themselves, once each. A card
+// from history, or one that arrived elsewhere, is never in here.
+const liveCards = new Set<string>();
+
+/** Courses list or a course page (not the new-course page itself). */
+export const onCoursesPage = (path: string | null) =>
+  /^\/admin\/courses(\/(?!new\/?$)[^/]+)?\/?$/.test(path ?? "");
+
+/** Note the cards of replies that just arrived, if she is on a courses page. */
+export function markLiveCards(
+  path: string | null,
+  replies: { cards?: { token: string }[] }[],
+) {
+  if (!onCoursesPage(path)) return;
+  for (const reply of replies)
+    for (const card of reply.cards ?? []) liveCards.add(card.token);
+}
+
+/** True once for a live card; a remount or a poll never claims it again. */
+export const claimLiveCard = (token: string) => liveCards.delete(token);
+
 // The open course form's save, for "Save & leave" (set while focus mode shows it).
 let focusSave: (() => Promise<void>) | null = null;
 

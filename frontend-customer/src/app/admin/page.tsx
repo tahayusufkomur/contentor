@@ -24,6 +24,7 @@ import { formatMoney } from "@/lib/format";
 import { useSetupStatus, useTenantCurrency } from "@/lib/setup-assistant";
 import { PublishCard } from "@/components/admin/publish-card";
 import { SetupGuideCard } from "@/components/admin/setup-guide-card";
+import { useFocusOverview } from "@/lib/focus/store";
 import { useAdminUser } from "@/hooks/use-admin-user";
 import { useTenant } from "@/hooks/use-tenant";
 import { firstName, greetingKey, lookSummary } from "@/lib/admin-welcome";
@@ -43,6 +44,7 @@ export default function AdminDashboard() {
   const config = useTenant();
   const currency = useTenantCurrency();
   const setup = useSetupStatus();
+  const inProgress = useFocusOverview()?.open ?? [];
   // Until the status loads, show the overview line rather than flash "what's left".
   const published =
     !setup || Boolean(setup.items.find((i) => i.key === "publish")?.done);
@@ -144,6 +146,19 @@ export default function AdminDashboard() {
               New Course
             </NavLink>
           </Button>
+          {inProgress.map((c) => (
+            <Button
+              key={c.id}
+              asChild
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+            >
+              <NavLink href={`/admin/courses/${c.record.slug}`}>
+                {t("focus.continueCourse", { title: c.record.title })}
+              </NavLink>
+            </Button>
+          ))}
           <Button asChild size="sm" variant="outline" className="gap-1.5">
             <NavLink href="/admin/live">
               <Video className="h-4 w-4" />

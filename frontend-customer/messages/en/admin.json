@@ -1140,6 +1140,9 @@
     "deleteRefused": "{count, plural, one {# could not be deleted} other {# could not be deleted}}. Only the site owner can delete a class or event."
   },
   "focus": {
+    "startIt": "Start it",
+    "makeWithMe": "Let's make it together, one question at a time.",
+    "continueCourse": "Continue your course: {title}",
     "newCourse": "New course",
     "youDecide": "You decide",
     "justDraft": "Just draft it",

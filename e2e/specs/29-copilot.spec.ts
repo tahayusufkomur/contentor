@@ -185,6 +185,10 @@ test("a create-course card confirms and links to the new draft", async ({ browse
       },
     ],
   }));
+  // With focus mode off (the dev stack runs it on) the card confirms as it always did.
+  await page.route("**/api/v1/admin/focus/", (route) =>
+    route.fulfill({ json: { enabled: false, first: {}, open: [] } }),
+  );
   let executed = false;
   await page.route("**/api/v1/admin/copilot/execute/", async (route) => {
     executed = true;

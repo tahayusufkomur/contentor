@@ -1,6 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import type { FocusOverview, FocusState } from "@/lib/focus/api";
-import { focusProgress, openCreationFor } from "@/lib/focus/store";
+import {
+  claimLiveCard,
+  focusProgress,
+  markLiveCards,
+  onCoursesPage,
+  openCreationFor,
+  setFirstAnswer,
+  takeFirstAnswer,
+} from "@/lib/focus/store";
 
 vi.mock("@/lib/api-client", () => ({ clientFetch: vi.fn() }));
 
@@ -39,5 +47,35 @@ describe("focusProgress", () => {
       ],
     } as FocusState;
     expect(focusProgress(state)).toEqual({ done: 2, total: 3 });
+  });
+});
+
+const reply = (token: string) => [{ cards: [{ token }] }];
+
+describe("the assistant opening focus mode", () => {
+  it("knows the courses pages, and not the new-course page", () => {
+    expect(onCoursesPage("/admin/courses")).toBe(true);
+    expect(onCoursesPage("/admin/courses/desk-yoga")).toBe(true);
+    expect(onCoursesPage("/admin/courses/new")).toBe(false);
+    expect(onCoursesPage("/admin/blog")).toBe(false);
+    expect(onCoursesPage(null)).toBe(false);
+  });
+
+  it("lets a live card on a courses page open it once, never again", () => {
+    markLiveCards("/admin/courses", reply("a"));
+    expect(claimLiveCard("a")).toBe(true);
+    expect(claimLiveCard("a")).toBe(false);
+  });
+
+  it("never lets a card that arrived elsewhere, or an old one, open it", () => {
+    markLiveCards("/admin/blog", reply("b"));
+    expect(claimLiveCard("b")).toBe(false);
+    expect(claimLiveCard("old")).toBe(false);
+  });
+
+  it("hands her words over once", () => {
+    setFirstAnswer("a course on desk yoga");
+    expect(takeFirstAnswer()).toBe("a course on desk yoga");
+    expect(takeFirstAnswer()).toBeNull();
   });
 });

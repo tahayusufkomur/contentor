@@ -1104,3 +1104,178 @@ test("publish now, then schedule the announcement", async ({ browser }) => {
   expect(sent.filter((s) => s.path.endsWith("/announce/"))).toEqual([expect.objectContaining({ schedule: true })]);
   await page.close();
 });
+
+// --- Getting in from the assistant (F7), and "Continue your course" ---
+
+const ASKED = "make me a course about desk yoga";
+const COURSE_CARD = {
+  kind: "create_course",
+  title: "Create draft course: Desk yoga",
+  detail: "2 module(s), 3 lesson(s) — free",
+  token: "e2e-focus-card",
+};
+
+/** The assistant answers every message with a create_course card. Registered
+ *  after stubFocus, so its chat and run routes win; anything else falls back. */
+async function stubAssistantCard(page: Page) {
+  let chat: Body | null = null;
+  const executed: Body[] = [];
+  await page.route(/\/api\/v1\/admin\/copilot\/chats\//, async (route) => {
+    const req = route.request();
+    const listing = new URL(req.url()).pathname.endsWith("/chats/");
+    const stamp = { id: 999, title: "e2e", updated_at: at() };
+    if (req.method() === "POST") {
+      chat = { ...stamp, entries: req.postDataJSON().entries ?? [] };
+      return route.fulfill({ status: 201, json: chat });
+    }
+    if (req.method() === "PATCH" && chat) {
+      chat = { ...chat, entries: req.postDataJSON().entries ?? chat.entries };
+      return route.fulfill({ json: chat });
+    }
+    if (listing) return route.fulfill({ json: { chats: chat ? [chat] : [] } });
+    return route.fulfill({ json: chat ?? { ...stamp, entries: [] } });
+  });
+  await page.route("**/api/v1/admin/copilot/runs/**", async (route) => {
+    const req = route.request();
+    const path = new URL(req.url()).pathname;
+    if (path.endsWith("/runs/") && req.method() === "POST")
+      return route.fulfill({
+        status: 201,
+        json: { id: 4241, status: "queued", specialist: "content" },
+      });
+    if (path.endsWith("/runs/open/"))
+      return route.fulfill({ json: { runs: [] } });
+    if (path.endsWith("/runs/4241/seen/"))
+      return route.fulfill({ status: 204, body: "" });
+    if (!path.endsWith("/runs/4241/")) return route.fallback();
+    const events = [
+      { seq: 1, type: "thinking", data: {}, at: at() },
+      {
+        seq: 2,
+        type: "reply",
+        data: {
+          payload: {
+            kind: "actions",
+            text: "Lovely, let's make it.",
+            actions: [COURSE_CARD],
+          },
+        },
+        at: at(),
+      },
+      { seq: 3, type: "done", data: {}, at: at() },
+    ];
+    return route.fulfill({
+      json: {
+        id: 4241,
+        status: "done",
+        specialist: "content",
+        chat: 999,
+        seen: false,
+        events,
+      },
+    });
+  });
+  await page.route("**/api/v1/admin/copilot/execute/", async (route) => {
+    executed.push(route.request().postDataJSON());
+    await route.fulfill({
+      json: {
+        result: {
+          kind: "create_course",
+          id: 1,
+          title: "x",
+          url: "/admin/courses/x",
+        },
+      },
+    });
+  });
+  return { executed };
+}
+
+const askAssistant = async (page: Page, words = ASKED) => {
+  await page.getByTestId("copilot-input").fill(words);
+  await page.getByTestId("copilot-send").click();
+};
+
+test("asking the assistant for a course on the courses list opens focus mode with her words", async ({
+  browser,
+}) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const { sent } = await stubFocus(page);
+  const { executed } = await stubAssistantCard(page);
+
+  await page.goto(`${TENANT}/admin/courses?assistant=assistant`);
+  await askAssistant(page);
+
+  // Her words are the first answer, and focus mode is on without another tap.
+  await expect(page).toHaveURL(new RegExp(`/admin/courses/${SLUG}$`));
+  await expect(guide(page).getByText("Who is it for?")).toBeVisible();
+  expect(sent.filter((s) => s.path.endsWith("/admin/focus/"))).toEqual([
+    expect.objectContaining({ kind: "course", text: ASKED }),
+  ]);
+  // The assistant's own create token stays unused.
+  expect(executed).toEqual([]);
+  await page.close();
+});
+
+test("asked elsewhere, the assistant offers Start it", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const { sent } = await stubFocus(page);
+  const { executed } = await stubAssistantCard(page);
+
+  await page.goto(`${TENANT}/admin/blog?assistant=assistant`);
+  await askAssistant(page);
+
+  await expect(
+    page.getByText("Let's make it together, one question at a time."),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Apply", exact: true }),
+  ).toHaveCount(0);
+  // Her screen does not move on its own.
+  await page.waitForTimeout(800);
+  await expect(page).toHaveURL(/\/admin\/blog\?assistant=assistant$/);
+  expect(sent).toEqual([]);
+
+  await page.getByRole("button", { name: "Start it" }).click();
+  await expect(page).toHaveURL(new RegExp(`/admin/courses/${SLUG}$`));
+  await expect(guide(page).getByText("Who is it for?")).toBeVisible();
+  expect(sent.filter((s) => s.path.endsWith("/admin/focus/"))).toEqual([
+    expect.objectContaining({ kind: "course", text: ASKED }),
+  ]);
+  expect(executed).toEqual([]);
+  await page.close();
+});
+
+test("home shows Continue your course for one in progress", async ({
+  browser,
+}) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  await stubFocus(page, {
+    script: ({ path, method }) => {
+      if (method === "GET" && path.endsWith("/admin/focus/"))
+        return {
+          enabled: true,
+          first: { course: QUESTIONS.topic },
+          open: [
+            {
+              id: CREATION,
+              kind: "course",
+              record: { id: COURSE_ID, slug: SLUG, title: "Desk yoga, gently" },
+            },
+          ],
+        };
+    },
+  });
+
+  await page.goto(`${TENANT}/admin`);
+  const link = page.getByRole("link", {
+    name: "Continue your course: Desk yoga, gently",
+  });
+  await expect(link).toHaveAttribute("href", `/admin/courses/${SLUG}`);
+  await link.click();
+  await expect(page).toHaveURL(new RegExp(`/admin/courses/${SLUG}$`));
+  await page.close();
+});

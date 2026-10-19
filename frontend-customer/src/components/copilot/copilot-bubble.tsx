@@ -44,6 +44,7 @@ import {
   specialistFor,
   type SpecialistKey,
 } from "@/lib/copilot/team";
+import { markLiveCards } from "@/lib/focus/store";
 import {
   pendingEntry,
   reduceChat,
@@ -459,6 +460,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
           ? reduceChat(withCoach, { kind: started.kind })
           : [...withCoach, pendingEntry(started.id, specialist)];
       if (!("kind" in started)) trackRun(started.id, specialist, chat);
+      else markLiveCards(pathname, next.slice(-1));
       if (threadRef.current === thread) {
         setEntries(next);
         persist(next);
@@ -512,11 +514,15 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
       ended.push(run.id);
     }
     if (next === entries) return;
+    markLiveCards(
+      pathname,
+      next.filter((e) => e.run && ended.includes(e.run)),
+    );
     setEntries(next);
     persist(next);
     ended.forEach((id) => void markRunSeen(id).catch(() => {}));
     setReady((prev) => prev.filter((r) => !ended.includes(r.id)));
-  }, [allRuns, entries, pendingRuns, persist, t]);
+  }, [allRuns, entries, pendingRuns, persist, t, pathname]);
 
   const { run: stop, loading: stopping } = useAsyncAction(
     async (id: number) => {
@@ -835,7 +841,15 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
                   {e.cards && e.cards.length > 0 && (
                     <CardBundleProvider>
                       {e.cards.map((card, j) => (
-                        <ActionCard key={`${i}-${j}`} card={card} />
+                        <ActionCard
+                          key={`${i}-${j}`}
+                          card={card}
+                          askedWith={
+                            entries[i - 1]?.role === "coach"
+                              ? entries[i - 1].text
+                              : undefined
+                          }
+                        />
                       ))}
                       {e.cards.length > 1 && (
                         <div className="mt-2">
