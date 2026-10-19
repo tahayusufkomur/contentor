@@ -87,6 +87,14 @@ export function DownloadForm({
   const t = useTranslations("admin.downloads");
   const tf = useTranslations("admin.focus");
   const navigate = useNavigate();
+  // A create or upload she left behind finishes, but never pulls her back.
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   // The server's latest copy (the page's, then each save's and upload's).
   const [record, setRecord] = useState<DownloadFile | null>(download ?? null);
   const recordRef = useRef(record);
@@ -237,16 +245,13 @@ export function DownloadForm({
       throw err;
     }));
 
-  /** The new download exists: what she changed while it was being made is
-   *  saved too, then the page moves to it. A failed save keeps her here (the
-   *  form edits the new download now, so a retry does not create it again). */
-  const openCreated = async (created: DownloadFile) => {
-    if (
-      Object.keys(ownChanges(mine.current, ownOf(created))).length ||
-      !sameIds(tagIdsRef.current, tagIdsOf(created))
-    )
-      await submitRef.current();
-    navigate(`/admin/downloads/${created.id}`);
+  /** The new download exists: what she changed while it was being made
+   *  (`changed`) is saved too, then the page moves to it if she is still
+   *  here. A failed save keeps her here (the form edits the new download now,
+   *  so a retry does not create it again). */
+  const openCreated = async (created: DownloadFile, changed: boolean) => {
+    if (changed) await submitRef.current();
+    if (mounted.current) navigate(`/admin/downloads/${created.id}`);
   };
 
   const submit = async () => {
@@ -259,7 +264,13 @@ export function DownloadForm({
       const created = await create();
       receive(created);
       toast.success(t("created"));
-      await openCreated(created);
+      // Only the title, description and tags can change during the POST: the
+      // Access section is locked while a new download is being made.
+      await openCreated(
+        created,
+        Object.keys(ownChanges(mine.current, ownOf(created))).length > 0 ||
+          !sameIds(tagIdsRef.current, tagIdsOf(created)),
+      );
       return;
     }
     const saved = await clientFetch<DownloadFile>(
@@ -308,13 +319,16 @@ export function DownloadForm({
       } catch (err) {
         // Created already: her retry belongs on its own page, not a 2nd create.
         if (isNew)
-          await openCreated(target).catch(() => toast.error(t("saveError")));
+          await openCreated(target, unsavedRef.current).catch(() =>
+            toast.error(t("saveError")),
+          );
         throw err;
       } finally {
         setProgress(null);
       }
       toast.success(t("uploaded"));
-      if (isNew) await openCreated(target);
+      // Rendered since: `unsaved` holds everything she changed meanwhile.
+      if (isNew) await openCreated(target, unsavedRef.current);
       else
         receive(
           await clientFetch<DownloadFile>(`/api/v1/downloads/${target.id}/`),
@@ -484,7 +498,7 @@ export function DownloadForm({
               onDrop={(e) => {
                 e.preventDefault();
                 setDragging(false);
-                if (!uploading) void upload(e.dataTransfer.files[0]);
+                if (!busy) void upload(e.dataTransfer.files[0]);
               }}
               className={`block cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
                 dragging ? "border-primary bg-primary/5" : "bg-muted/30"
@@ -503,7 +517,7 @@ export function DownloadForm({
                 id="download-file"
                 type="file"
                 className="sr-only"
-                disabled={uploading || titleMissing}
+                disabled={busy || titleMissing}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   e.target.value = ""; // the same file again, once fixed, counts
@@ -526,13 +540,17 @@ export function DownloadForm({
             )}
           </div>
 
-          <AccessSection
-            kind="download"
-            value={access.ways}
-            onChange={access.setWays}
-            payload={access.payload}
-            onProblems={setAccessProblems}
-          />
+          {/* Locked while a new download is being made: the ways it is created
+              with are saved with it, then reloaded for its id. */}
+          <fieldset disabled={busy && !download} className="min-w-0">
+            <AccessSection
+              kind="download"
+              value={access.ways}
+              onChange={access.setWays}
+              payload={access.payload}
+              onProblems={setAccessProblems}
+            />
+          </fieldset>
           {access.error && (
             <p role="alert" className="text-xs text-destructive">
               {access.error}

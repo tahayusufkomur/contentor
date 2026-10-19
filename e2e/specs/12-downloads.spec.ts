@@ -33,7 +33,23 @@ test("coach creates, uploads and edits a paid download on its own page", async (
   await expect(page.getByText(tagName, { exact: true })).toBeVisible({ timeout: 10_000 });
 
   // Picking the file creates the record and uploads it: she lands on its page.
+  // The PUT to storage is held so the upload can be seen in flight: the price
+  // is locked then (a change made now would not be saved with the new record).
+  let release!: () => void;
+  const held = new Promise<void>((r) => (release = r));
+  await page.route(
+    (url) => !url.pathname.startsWith("/api/"),
+    async (route) => {
+      if (route.request().method() !== "PUT") return route.fallback();
+      await held;
+      return route.continue();
+    }
+  );
   await page.locator('input[type="file"]').setInputFiles("fixtures/pixel.png");
+  await expect(page.getByRole("status")).toContainText("uploaded");
+  await expect(page.locator("#access-download-price")).toBeDisabled();
+  await expect(page.locator('input[type="file"]')).toBeDisabled();
+  release();
   await expect(page.getByText("File uploaded")).toBeVisible({ timeout: 20_000 });
   await expect(page).toHaveURL(/\/admin\/downloads\/\d+$/, { timeout: 10_000 });
   const id = Number(page.url().split("/").pop());
