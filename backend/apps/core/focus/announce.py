@@ -7,6 +7,7 @@ A copilot run on the agents worker, which she waits on."""
 import html
 import json
 from datetime import datetime, timedelta
+from functools import cache
 
 from django.conf import settings
 from django.db import connection, transaction
@@ -19,17 +20,23 @@ from apps.core.copilot import runs
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotRun, FocusCreation
 
-from . import jobs
+from . import jobs, kinds
 
-STEP = {"specialist": "marketing", "label": "Writing your announcement"}
+LABEL = "Writing your announcement"
 MAX_TOKENS = 2000
 SEND_HOUR = 10
+# Static per kind, byte-identical across tenants (prompt caching); ``{noun}`` is the kind's word.
 SYSTEM = (
-    "Write the announcement that tells a coach's students her new course is live: a short title and "
-    "2–4 plain sentences on what the course is and who it is for. Use only the course title, its "
+    "Write the announcement that tells a coach's students her new {noun} is live: a short title and "
+    "2–4 plain sentences on what the {noun} is and who it is for. Use only the {noun} title, its "
     "description and the coach's own words. Never invent a claim, a result or a number. Plain text, "
     "no markdown."
 )
+
+
+@cache
+def system_for(kind: str) -> str:
+    return SYSTEM.replace("{noun}", kinds.get(kind).NOUN)
 
 
 class AnnouncementDraft(BaseModel):
@@ -46,31 +53,37 @@ def send_time(now: datetime, zone) -> datetime:
 
 
 def start(creation) -> CopilotRun:
-    """Call on the locked creation, inside the writing transaction."""
-    return jobs.queue(creation, "announce", specialist="marketing")
+    """Its kind's ANNOUNCER drafts it. Call on the locked creation, inside the
+    writing transaction."""
+    return jobs.queue(creation, "announce", specialist=kinds.get(creation.kind).ANNOUNCER)
 
 
 def carry_out(tenant, run_id) -> None:
     from apps.core.copilot import content
     from apps.core.copilot.engine import _tenant_zone
-    from apps.courses.models import Course
 
-    request = CopilotRun.objects.get(pk=run_id).request or {}
-    creation = FocusCreation.objects.get(pk=request.get("focus"))
+    run = CopilotRun.objects.get(pk=run_id)
+    creation = FocusCreation.objects.get(pk=(run.request or {}).get("focus"))
     if not ai_compose.compose_available():
         raise core_ai.AiError("ai_unavailable")
-    course = Course.objects.get(pk=creation.record_id)
-    runs.emit(run_id, "step", {**STEP, "state": "start"})
+    adapter = kinds.get(creation.kind)
+    record = adapter.record(creation.record_id)
+    if record is None:  # deleted since it went live: the run fails, she can skip it
+        raise LookupError("focus announce: the record is gone")
+    facts = adapter.announce_facts(record)
+    step = {"specialist": run.specialist, "label": LABEL}
+    runs.emit(run_id, "step", {**step, "state": "start"})
     brief = creation.brief or {}
     turn = {
-        "course": course.title,
-        "description": course.description,
+        facts["what"]: facts["title"],  # "course": its title, as the course's turn has always said it
+        "description": facts["description"],
+        **({"when": facts["when"]} if facts["when"] else {}),
         "notes": brief.get("notes", ""),
         "followups": brief.get("followups", []),
     }
     try:
         parsed, cost, _model = core_ai.structured(
-            system=SYSTEM,
+            system=system_for(creation.kind),
             user=json.dumps(turn, ensure_ascii=False),
             output_model=AnnouncementDraft,
             model=settings.COPILOT_MODEL,
@@ -93,10 +106,10 @@ def carry_out(tenant, run_id) -> None:
             {
                 "title": parsed.title,
                 "body_html": f"<p>{escape(parsed.body.strip())}</p>",
-                "link": f"/courses/{course.slug}",
+                "link": facts["link"],
             },
         )
-        runs.emit(run_id, "step", {**STEP, "state": "done"})
+        runs.emit(run_id, "step", {**step, "state": "done"})
         runs.finish(run_id, True, {"announcement": made["id"], "send_at": send_at.isoformat()})
 
 

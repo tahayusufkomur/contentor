@@ -5,6 +5,7 @@ it. A job on the agents worker decides whether one is needed and writes it
 (flow.followup_allowed). A failed job is dropped and the flow goes on."""
 
 import json
+from functools import cache
 from typing import Literal
 
 from django.conf import settings
@@ -16,7 +17,7 @@ from apps.core.copilot import runs
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotRun, FocusCreation
 
-from . import jobs, outline
+from . import jobs, kinds, outline
 
 # "outline": before the outline drafts. "later": after its review, before the cover.
 SPECIALIST = {"outline": "content", "later": "designer"}
@@ -24,11 +25,12 @@ LABEL = "Thinking about your course"
 QUESTION_MAX = 200
 OPTION_MAX = 60
 
-# Static, byte-identical across tenants (prompt caching); her answers ride the user turn.
+# Static per kind, byte-identical across tenants (prompt caching); her answers ride the user turn.
+# ``{noun}`` is the kind's word, ``{slot}`` its follow-up slot before the drafting (``DRAFT_SLOT``).
 SYSTEM = (
-    "A coach is creating ONE online course in a guided flow. Decide whether to ask her ONE more short "
-    "question before the next draft. 'slot' says what comes next: 'outline' (the course outline: title, "
-    "description, modules and lessons) or 'later' (the course cover and the announcement to her "
+    "A coach is creating ONE online {noun} in a guided flow. Decide whether to ask her ONE more short "
+    "question before the next draft. 'slot' says what comes next: '{slot}' (the {noun} {slot}: title, "
+    "description, modules and lessons) or 'later' (the {noun} cover and the announcement to her "
     "students). You get her answers so far (topic, level, size, notes, earlier follow-ups) and her site.\n"
     "Rules:\n"
     "- Ask only when the next draft would otherwise have to guess something that changes it, and nothing "
@@ -37,6 +39,12 @@ SYSTEM = (
     "- Never ask again what an earlier follow-up asked.\n"
     "- When needed: one short plain question, and 2-4 short options she can tap (a few words each)."
 )
+
+
+@cache
+def system_for(kind: str) -> str:
+    adapter = kinds.get(kind)
+    return SYSTEM.replace("{noun}", adapter.NOUN).replace("{slot}", adapter.DRAFT_SLOT)
 
 
 class FollowUp(BaseModel):
@@ -53,8 +61,6 @@ def start(creation, slot: Literal["outline", "later"]) -> CopilotRun:
 def carry_out(tenant, run_id) -> None:
     """Decide outside any lock, then write the question under the creation's
     lock, unless Stop or "Fill it in myself" won meanwhile."""
-    from apps.courses.models import Course
-
     from . import flow
 
     run = CopilotRun.objects.get(pk=run_id)
@@ -64,8 +70,7 @@ def carry_out(tenant, run_id) -> None:
         raise core_ai.AiError("ai_unavailable")
     step = {"specialist": run.specialist, "label": LABEL}
     runs.emit(run_id, "step", {**step, "state": "start"})
-    course = Course.objects.filter(pk=creation.record_id).first()
-    found = _decide(tenant, creation, course, slot)
+    found = _decide(tenant, creation, kinds.get(creation.kind).record(creation.record_id), slot)
     question = found.question.strip()[:QUESTION_MAX]
     options = list(dict.fromkeys(o.strip()[:OPTION_MAX] for o in found.options if o.strip()))[:4]
     with transaction.atomic():
@@ -100,7 +105,7 @@ def _thinking(creation, run_id) -> bool:
     return creation.status == "active" and ((creation.brief or {}).get("thinking") or {}).get("run") == run_id
 
 
-def _decide(tenant, creation, course, slot) -> FollowUp:
+def _decide(tenant, creation, record, slot) -> FollowUp:
     answers, brief = creation.answers or {}, creation.brief or {}
     turn = {
         "slot": slot,
@@ -111,11 +116,12 @@ def _decide(tenant, creation, course, slot) -> FollowUp:
         "followups": brief.get("followups", []),
         **outline.site(tenant, creation.record_id),
     }
-    if slot == "later" and course is not None:
-        turn["course"] = {"title": course.title, "description": course.description}
+    if slot == "later" and record is not None:
+        adapter = kinds.get(creation.kind)
+        turn[adapter.NOUN] = adapter.cover_facts(record)  # {"title", "description"}
     try:
         found, cost, _model = core_ai.structured(
-            system=SYSTEM,
+            system=system_for(creation.kind),
             user=json.dumps(turn, ensure_ascii=False),
             output_model=FollowUp,
             model=settings.COPILOT_MODEL,

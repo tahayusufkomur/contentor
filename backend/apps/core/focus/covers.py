@@ -5,6 +5,7 @@ round is appended to ``FocusCreation.covers``; "Four more styles" is another
 round on the same photo. When the model fails, code draws four fixed styles,
 so she always has covers to pick from. A copilot run on the agents worker."""
 
+import functools
 import json
 import logging
 import re
@@ -26,7 +27,7 @@ from apps.media.design_recipe import LAYOUTS, validate_recipe
 from apps.media.models import Design
 from apps.tenant_config.models import CopilotRun, FocusCreation
 
-from . import jobs
+from . import jobs, kinds
 
 logger = logging.getLogger(__name__)
 
@@ -38,17 +39,23 @@ NO_PHOTO = ("title",)  # layouts that draw no photo
 ASSET_ID = re.compile(r"[A-Za-z0-9._:-]{1,128}")
 # Round n falls back to FALLBACK[n % 2] (n from 0), in the primary panel, the display font, no subtitle.
 FALLBACK = (("full", "panel", "title", "band"), ("framed", "photo", "panel", "full"))
+# Static per kind, byte-identical across tenants (prompt caching); ``{noun}`` is the kind's word.
 SYSTEM = (
-    "You are the designer drafting four covers for an online course, each in its own layout. Layouts: "
+    "You are the designer drafting four covers for an online {noun}, each in its own layout. Layouts: "
     "'full' (the photo fills the cover, the title over it), 'panel' (the photo beside a colour panel with "
     "the title), 'title' (the title alone on colour, no photo), 'band' (a colour band across the photo), "
     "'framed' (the photo in a frame on colour), 'photo' (the photo above, the title below). Give four "
     "styles with four different layouts, and vary the panel colour and the type (display or body font, "
     "upper case or not) so each one looks distinct. Avoid the 'earlier_layouts' where you can. The "
-    f"subtitle is at most {SUBTITLE_MAX} characters, taken from the course description or outline "
+    f"subtitle is at most {SUBTITLE_MAX} characters, taken from the {{noun}} description or outline "
     "word for word or shortened, or empty; never invent a claim, a result or a number. photo_query: "
     "two to five plain words for what the shared photo should show."
 )
+
+
+@functools.cache  # ``cache`` is the curated-images module here
+def system_for(kind: str) -> str:
+    return SYSTEM.replace("{noun}", kinds.get(kind).NOUN)
 
 
 class CoverStyle(BaseModel):
@@ -64,19 +71,21 @@ class CoverPlan(BaseModel):
     styles: list[CoverStyle]
 
 
-def start(creation, *, ahead: bool) -> CopilotRun:
+def start(creation, *, ahead: bool) -> CopilotRun | None:
     """A queued covers run (a new round). ``ahead``: she is not waiting on it
-    yet. Call on the locked creation, inside the writing transaction."""
+    yet. None for a kind whose cover is not drafted styles. Call on the locked
+    creation, inside the writing transaction."""
+    if kinds.get(creation.kind).COVER != "styles":
+        return None
     return jobs.queue(creation, "covers", specialist="designer", ahead=ahead)
 
 
 def carry_out(tenant, run_id) -> None:
-    from apps.courses.models import Course
-
     request = CopilotRun.objects.get(pk=run_id).request or {}
     creation = FocusCreation.objects.get(pk=request.get("focus"))
-    course = Course.objects.filter(pk=creation.record_id).first()
-    if course is None:  # deleted meanwhile: nothing to draw for
+    adapter = kinds.get(creation.kind)
+    record = adapter.record(creation.record_id)
+    if record is None:  # deleted meanwhile: nothing to draw for
         runs.finish(run_id, True, {"text": "Drew no covers."})
         return
     runs.emit(run_id, "step", {**STEP, "state": "start"})
@@ -84,10 +93,10 @@ def carry_out(tenant, run_id) -> None:
     shown = [recipe["layout"] for round_ in rounds for recipe in round_]
     label = "contentor:focus-ahead" if request.get("ahead") else "contentor:copilot"
     try:
-        styles, query = _plan(tenant, creation, course, shown, label)
+        styles, query = _plan(tenant, creation, record, shown, label)
     except core_ai.AiError:
         logger.warning("focus covers: model failed, using the fixed styles schema=%s", tenant.schema_name)
-        styles, query = [], photo_query(CoachBrief.from_tenant(tenant), course.title)
+        styles, query = [], photo_query(CoachBrief.from_tenant(tenant), adapter.cover_facts(record)["title"])
     styles = _four(styles, len(rounds))
     picked = None if rounds else pick_photo(query)  # the first round only: one copy into her Media
     with transaction.atomic():
@@ -95,7 +104,7 @@ def carry_out(tenant, run_id) -> None:
         locked = FocusCreation.objects.select_for_update().get(pk=creation.pk)
         if not jobs.active(run_id):  # Stop won while the model drew
             return
-        if not Course.objects.filter(pk=locked.record_id).exists():  # deleted while the model drew
+        if adapter.record(locked.record_id) is None:  # deleted while the model drew
             runs.finish(run_id, True, {"text": "Drew no covers."})
             return
         current = locked.covers or {}
@@ -116,13 +125,15 @@ def carry_out(tenant, run_id) -> None:
     runs.finish(run_id, True, {"text": "Drew four covers."})
 
 
-def _plan(tenant, creation, course, shown: list, label: str) -> tuple[list, str]:
+def _plan(tenant, creation, record, shown: list, label: str) -> tuple[list, str]:
     if not ai_compose.compose_available():
         raise core_ai.AiError("ai_unavailable")
+    adapter = kinds.get(creation.kind)
+    facts = adapter.cover_facts(record)
     look, _logo = designs.site_look({})
     turn = {
-        "course": course.title,
-        "description": course.description,
+        adapter.NOUN: facts["title"],  # "course": its title, as the course's turn has always said it
+        "description": facts["description"],
         "level": (creation.answers or {}).get("level", ""),
         "look": look,
         "notes": (creation.brief or {}).get("notes", ""),
@@ -131,7 +142,7 @@ def _plan(tenant, creation, course, shown: list, label: str) -> tuple[list, str]
     }
     try:
         parsed, cost, _model = core_ai.structured(
-            system=SYSTEM,
+            system=system_for(creation.kind),
             user=json.dumps(turn, ensure_ascii=False),
             output_model=CoverPlan,
             model=settings.COPILOT_MODEL,
@@ -143,7 +154,7 @@ def _plan(tenant, creation, course, shown: list, label: str) -> tuple[list, str]
         ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)
         raise
     ai_compose.record_spend(tenant.schema_name, cost)
-    query = parsed.photo_query.strip() or photo_query(CoachBrief.from_tenant(tenant), course.title)
+    query = parsed.photo_query.strip() or photo_query(CoachBrief.from_tenant(tenant), facts["title"])
     return parsed.styles, query
 
 
@@ -214,7 +225,7 @@ def _acting(creation):
 
 
 def _answered(locked, value: str) -> None:
-    from . import flow, kinds
+    from . import flow
 
     recipe = kinds.get(locked.kind).RECIPE
     question = next(q for q in recipe.questions if q.id == "cover")
@@ -245,14 +256,18 @@ def _with_photo(recipe: dict, photo_id: str) -> dict:
 
 
 def _draft(locked, index):
-    """The course's cover draft holding the style at ``index`` of the round on
+    """The record's cover draft holding the style at ``index`` of the round on
     screen (started if it has none; an older one takes this style). None for an
-    index outside the round."""
+    index outside the round, or a record deleted meanwhile."""
     rounds = (locked.covers or {}).get("rounds") or []
     if not isinstance(index, int) or isinstance(index, bool) or not rounds or not 0 <= index < len(rounds[-1]):
         return None
+    adapter = kinds.get(locked.kind)
+    record = adapter.record(locked.record_id)
+    if record is None:
+        return None
     recipe = validate_recipe(rounds[-1][index], photo_exists=designs._photo_exists)
-    draft = designs.open_draft("course", str(locked.record_id), recipe=recipe, made_by="designer")
+    draft = designs.open_draft(*adapter.cover_target(record), recipe=recipe, made_by="designer")
     if draft.recipe != recipe:
         draft.recipe, draft.made_by = recipe, "designer"
         draft.save(update_fields=["recipe", "made_by", "updated_at"])
@@ -260,7 +275,7 @@ def _draft(locked, index):
 
 
 def keep(creation, index, user) -> None:
-    """ "Use this cover": the style becomes the course's cover, with its Undo in
+    """ "Use this cover": the style becomes the record's cover, with its Undo in
     History, and the cover question is answered. Once only."""
     from apps.core.copilot.views import _record_audit
 
@@ -273,7 +288,7 @@ def keep(creation, index, user) -> None:
             if draft is None:
                 return
             result, inverse = designs.keep(draft)
-        except (designs.DesignError, serializers.ValidationError):  # the course or the photo is gone
+        except (designs.DesignError, serializers.ValidationError):  # the record or the photo is gone
             logger.warning("focus covers: keep refused creation=%s", locked.pk, exc_info=True)
             return
         action = {"kind": "keep_cover", "design_id": str(draft.pk), "title": result["title"], "made_by": "designer"}
@@ -313,12 +328,11 @@ def open_for_edit(creation, index) -> str | None:
 def photo_row(creation, tenant, query: str, page: int) -> dict:
     """The row under the drafts: her photos first (page 1), then library
     matches. The library being down leaves hers; never an error."""
-    from apps.courses.models import Course
-
     query = query.strip() or (creation.covers or {}).get("query") or ""
     if not query:
-        course = Course.objects.filter(pk=creation.record_id).first()
-        query = photo_query(CoachBrief.from_tenant(tenant), course.title if course else "")
+        adapter = kinds.get(creation.kind)
+        record = adapter.record(creation.record_id)
+        query = photo_query(CoachBrief.from_tenant(tenant), adapter.cover_facts(record)["title"] if record else "")
     images = [(i, True) for i in own_photos.search(query, aspect="16:9", limit=8)] if page == 1 else []
     has_next = False
     try:

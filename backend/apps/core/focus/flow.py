@@ -16,7 +16,7 @@ from django.utils import timezone
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
-from . import analysis, covers, descriptions, followup, jobs, kinds, outline, pricing
+from . import analysis, covers, descriptions, followup, jobs, kinds, outline
 from . import announce as announcing  # ``announce`` is finish()'s flag
 
 DELEGATE = "delegate"
@@ -247,9 +247,11 @@ def apply(creation, found) -> None:
 
 
 def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -> FocusCreation:
-    """Her last tap: put it live or keep it as a draft. Focus mode ends,
-    unless it went live with "Tell my students" (``announce``): then Marketing
-    drafts the announcement while she waits, and her Schedule or Not now ends it."""
+    """Her last tap: put it live (the kind's first FINISH option) or keep it
+    as a draft (its second). Focus mode ends, unless it went live with "Tell
+    my students" (``announce``) and the kind has an ANNOUNCER: then it drafts
+    the announcement while she waits, and her Schedule or Not now ends it. A
+    kind without one may take the tick itself (``apply_tick``)."""
     from apps.core.copilot import content
 
     with transaction.atomic():
@@ -265,8 +267,11 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
         # Never an empty lesson in front of students, nor a paid course she cannot sell yet: a draft.
         adapter = kinds.get(creation.kind)
         record = _record(creation)
-        choice = "publish" if publish and not adapter.not_ready(record) and not adapter.cannot_sell(record) else "draft"
-        if choice == "publish":
+        live = publish and not adapter.not_ready(record) and not adapter.cannot_sell(record)
+        choice = adapter.FINISH[0 if live else 1][0]
+        if live:
+            if tick := getattr(adapter, "apply_tick", None):  # optional: the tick is the kind's own
+                tick(creation.record_id, announce)
             with suppress(content.ContentOpError):  # already published by hand, or gone
                 adapter.go_live(creation.record_id)
         recipe = adapter.RECIPE
@@ -274,7 +279,7 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
         creation.answers["finish"] = choice
         _say(creation, question, _label(recipe, question, choice))
         _chat_append(creation, [{"role": "assistant", "text": adapter.CLOSING[choice]}])
-        if choice == "publish" and announce:
+        if live and announce and adapter.ANNOUNCER:
             announcing.start(creation)
         else:
             _end(creation, "skip")
@@ -466,11 +471,14 @@ def _sync_cover(creation):
     question when she comes back: the kept design is the answer."""
     from apps.media.models import Design
 
-    if creation.status != "active" or "cover" in (creation.answers or {}) or creation.record_id is None:
+    adapter = kinds.get(creation.kind)
+    if creation.status != "active" or "cover" in (creation.answers or {}) or adapter.COVER is None:
         return creation
-    if not Design.objects.filter(
-        kind="cover", target_kind="course", target_key=str(creation.record_id), state="kept"
-    ).exists():
+    record = _record(creation)
+    if record is None:
+        return creation
+    target_kind, target_key = adapter.cover_target(record)
+    if not Design.objects.filter(kind="cover", target_kind=target_kind, target_key=target_key, state="kept").exists():
         return creation
     with transaction.atomic():
         creation = _locked(creation)
@@ -498,7 +506,7 @@ def state(creation) -> dict:
             **asked,
             "question": adapter.NOT_READY_LINE,
             "why": f"{gap.capitalize()}. Until then it stays a hidden draft.",
-            "options": [o for o in asked["options"] if o["value"] != "publish"],
+            "options": [o for o in asked["options"] if o["value"] != adapter.FINISH[0][0]],
             "specialist": "content",
         }
     if record and field == "finish":
@@ -777,15 +785,26 @@ def _sell_for(creation, value) -> str | None:
 
 def _access(creation, q, value, delegate) -> bool:
     """A tap at "How will students get it?": Free, a one-time price (any valid
-    amount she taps is hers, F11) or one of her active memberships. "You
-    decide" leaves the course as it is. False when the tap carried no answer."""
+    amount she taps is hers, F11) or one of her active memberships; for a kind
+    with its own price tiles, one of those, passed to its ``set_price`` as it
+    is. "You decide" leaves the record as it is. False when the tap carried no
+    answer."""
     from apps.billing.models import SubscriptionPlan
 
     adapter = kinds.get(creation.kind)
     value = str(value or "")
     plan_id = value.removeprefix("plan:")
+    own = adapter.price_tiles(creation, _record(creation))
     if delegate:
         creation.answers["access"] = DELEGATE
+    elif own is not None:
+        tile = next((o for o in own["options"] if o["value"] == value), None)
+        if tile is None:
+            return False
+        adapter.set_price(creation.record_id, value)
+        creation.answers["access"] = value
+        _say(creation, q, tile["label"])
+        return True
     elif value == "free" or (price := _amount(value, "paid:")):
         _set_price(creation, "free" if value == "free" else price)
     elif value.startswith("plan:") and plan_id.isascii() and plan_id.isdigit() and len(plan_id) < 10:
@@ -802,20 +821,27 @@ def _access(creation, q, value, delegate) -> bool:
 
 
 def _price_tiles(creation) -> dict:
-    """The access step's tiles: Free, the suggested one-time price with its
-    reason, and each active membership; after "membership" in her words, only
+    """The access step's tiles: the kind's own, or Free, the suggested
+    one-time price with its reason (when the kind has one), and each active
+    membership (when it can be in one); after "membership" in her words, only
     those (when she has any)."""
     from apps.billing.models import SubscriptionPlan
 
+    adapter = kinds.get(creation.kind)
+    record = _record(creation)
+    if (own := adapter.price_tiles(creation, record)) is not None:
+        return own
     plans = [
         {"value": f"plan:{p.pk}", "label": f"In {p.name}", "hint": ""}
-        for p in SubscriptionPlan.objects.filter(is_active=True)
+        for p in (SubscriptionPlan.objects.filter(is_active=True) if adapter.put_in_plan is not None else ())
     ]
     if plans and (creation.answers or {}).get("price") == "membership":
         return {"options": plans, "suggested": None}
-    s = pricing.suggest(_record(creation))
+    free = {"value": "free", "label": "Free", "hint": ""}
+    if (s := adapter.suggest_price(record)) is None:
+        return {"options": [free, *plans], "suggested": None}
     paid = {"value": f"paid:{s.amount}", "label": f"One-time price: {_price_label(str(s.amount))}", "hint": s.reason}
-    return {"options": [{"value": "free", "label": "Free", "hint": ""}, paid, *plans], "suggested": paid["value"]}
+    return {"options": [free, paid, *plans], "suggested": paid["value"]}
 
 
 def _finish_options(creation, asked: dict, record) -> dict:
@@ -824,12 +850,12 @@ def _finish_options(creation, asked: dict, record) -> dict:
     price when "Just draft it" left the price to her (F11)."""
     from apps.core import monetization
 
+    adapter = kinds.get(creation.kind)
     options = asked["options"]
-    if kinds.get(creation.kind).cannot_sell(record):
-        options = [START_SELLING, *(o for o in options if o["value"] != "publish")]
+    if adapter.cannot_sell(record):
+        options = [START_SELLING, *(o for o in options if o["value"] != adapter.FINISH[0][0])]
         asked = {**asked, "paid_active": monetization.is_paid_active(connection.tenant)}
-    if (creation.answers or {}).get("access") == DELEGATE:
-        s = pricing.suggest(record)
+    if (creation.answers or {}).get("access") == DELEGATE and (s := adapter.suggest_price(record)):
         options = [
             *options,
             {"value": f"price:{s.amount}", "label": f"Sell it for {_price_label(str(s.amount))}", "hint": s.reason},
@@ -939,12 +965,15 @@ def _add_time(creation, active_ms) -> None:
 
 
 def _tiles(recipe, q) -> list[dict]:
+    adapter = kinds.get(recipe.kind)
     if q.starter:
-        # Her own words from /setup, when she gave a course topic there.
+        # Her own words from /setup, when she gave a topic for this kind there.
         from apps.tenant_config.interview_brief import answers_of
 
-        topic = str(answers_of(connection.tenant).get("course_topic") or "").strip()[:ANSWER_MAX]
+        topic = str(answers_of(connection.tenant).get(adapter.SETUP_TOPIC) or "").strip()[:ANSWER_MAX]
         return [{"value": topic, "label": topic, "hint": ""}] if topic else []
+    if q.kind == "finish":
+        return [{"value": v, "label": label, "hint": ""} for v, label in adapter.FINISH]
     values = recipe.values.get(q.id, ())
     return [
         {"value": v, "label": label, "hint": q.hints[i] if i < len(q.hints) else ""}
@@ -978,6 +1007,8 @@ def _label(recipe, q, answer) -> str:
         return _access_label(answer)
     if q.kind == "announce":
         return ANNOUNCE_LABELS.get(answer, str(answer))
+    if q.kind == "finish":
+        return dict(kinds.get(recipe.kind).FINISH).get(answer, str(answer))
     values = recipe.values.get(q.id, ())
     return q.options[values.index(answer)] if answer in values else str(answer)
 

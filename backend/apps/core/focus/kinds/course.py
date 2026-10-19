@@ -3,18 +3,27 @@ docs/superpowers/specs/2026-10-18-focus-mode-design.md): its questions, its
 draft Course, and how that course is priced, checked and published."""
 
 from decimal import Decimal
+from statistics import median
 from typing import Literal
 
 from django.db import connection
+from django.db.models import Count, Q
 from pydantic import BaseModel
 
 from apps.tenant_config.interview_brief import Field
 
-from .. import analysis
+from .. import analysis, pricing
 from ..recipes import Recipe
 
 NOUN = "course"
 NEW_TITLE = "New course"
+# The /setup answer that seeds the topic's starter tile.
+SETUP_TOPIC = "course_topic"
+COVER = "styles"
+ANNOUNCER = "marketing"
+# The follow-up slot before the outline drafts (apps.core.focus.followup).
+DRAFT_SLOT = "outline"
+FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
 CLOSING = {
     "publish": "Published. Students can find it on your site now.",
     "draft": "Saved as a draft. Once every lesson has its video or text, publish it from this page.",
@@ -85,7 +94,6 @@ RECIPE = Recipe(
             "finish",
             "Finish",
             "Ready. Publish it now?",
-            ("Publish now", "Keep as a draft"),
             kind="finish",
             why="A draft stays hidden from students until you publish it.",
         ),
@@ -105,7 +113,6 @@ RECIPE = Recipe(
     values={
         "level": ("beginners", "some", "advanced"),
         "size": ("quick", "short", "full"),
-        "finish": ("publish", "draft"),
     },
 )
 
@@ -193,6 +200,59 @@ def put_in_plan(record_id: int, plan) -> None:
     SubscriptionPlanAccess.objects.get_or_create(
         plan=plan, content_type=ContentType.objects.get_for_model(Course), object_id=record_id
     )
+
+
+def suggest_price(course) -> pricing.Suggestion:
+    """The first rule that has her numbers: her other courses on sale, the
+    price she gave in /setup, else a starting point by the course's size."""
+    from apps.courses.models import Course
+    from apps.tenant_config.interview_brief import DELEGATE, answers_of, money, parse_price
+
+    # Published only: "sells for" is a claim, and a draft sells nothing.
+    others = list(
+        Course.objects.filter(pricing_type="paid", price__gt=0, is_published=True)
+        .exclude(pk=course.pk)
+        .annotate(students=Count("enrollments", filter=Q(enrollments__is_active=True)))
+        .order_by("price")
+    )
+    if others:
+        low, high = others[0].price, others[-1].price
+        if len(others) == 1:
+            reason = f"{others[0].title} sells for {money(low)}"
+        else:
+            reason = f"Your other courses sell for {money(low)}" + (f"–{money(high)}" if high != low else "")
+        best = max(others, key=lambda c: c.students)
+        if best.students:
+            reason += f"; {best.title} has {best.students} student{'' if best.students == 1 else 's'}"
+        return pricing.Suggestion(pricing.whole(median(c.price for c in others)), reason)
+    given = answers_of(connection.tenant).get("course_price")
+    if given != DELEGATE and (price := parse_price(given)):
+        return pricing.Suggestion(pricing.whole(Decimal(str(price))), pricing.SETUP)
+    modules = course.modules.count()
+    return pricing.Suggestion(Decimal(19 if modules <= 1 else 39 if modules <= 3 else 69), pricing.FALLBACK)
+
+
+def price_tiles(creation, course) -> None:
+    """The shared tiles: Free, the suggestion and her memberships."""
+    return None
+
+
+def cover_target(course) -> tuple[str, str]:
+    return ("course", str(course.pk))
+
+
+def cover_facts(course) -> dict:
+    return {"title": course.title, "description": course.description}
+
+
+def announce_facts(course) -> dict:
+    return {
+        "what": NOUN,
+        "title": course.title,
+        "description": course.description,
+        "link": f"/courses/{course.slug}",
+        "when": "",
+    }
 
 
 def not_ready(course) -> str:
