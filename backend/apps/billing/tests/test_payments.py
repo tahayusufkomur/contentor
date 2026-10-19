@@ -9,8 +9,9 @@ Tests for:
 Uses shared tenant fixtures from conftest.py.
 """
 
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
+from unittest import mock
 
 import pytest
 from django.utils import timezone
@@ -25,6 +26,8 @@ from apps.billing.models import (
     Subscription,
     SubscriptionPlan,
 )
+from apps.billing.ways import set_ways
+from apps.core.access import ContentAccessService
 from apps.courses.models import Course, Enrollment
 from apps.live.models import OnsiteEvent
 
@@ -245,6 +248,40 @@ class TestPaymentInitialize:
         again = make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")
         assert again.status_code == 201, again.content
         assert Enrollment.objects.get(user=student, course=paid_course).is_active is True
+
+    def test_buying_again_after_the_window_closed_opens_it_again(self, student, paid_course):
+        set_ways(paid_course, {"free": None, "buy": {"price": "99", "window": {"closes_after_days": 30}}, "plans": []})
+        payload = {"items": [{"content_type": "course", "object_id": paid_course.pk}]}
+        bought = datetime(2026, 10, 19, 12, 0, tzinfo=UTC)
+
+        def buy():
+            return make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+
+        with mock.patch("django.utils.timezone.now", return_value=bought):
+            assert buy().status_code == 201
+        with mock.patch("django.utils.timezone.now", return_value=bought + timedelta(days=10)):
+            assert buy().status_code == 400  # still open: no second copy
+        with mock.patch("django.utils.timezone.now", return_value=bought + timedelta(days=31)):
+            assert not ContentAccessService().check_access(student, paid_course)
+            again = buy()
+            assert again.status_code == 201, again.content
+            assert ContentAccessService().check_access(student, paid_course)
+            mine = make_client(student).get("/api/v1/courses/enrolled/").json()
+        assert [row["slug"] for row in mine] == [paid_course.slug]  # listed once
+        assert Enrollment.objects.filter(user=student, course=paid_course, is_active=True).count() == 1
+
+    def test_a_presale_purchase_cannot_be_bought_twice(self, student, paid_course):
+        set_ways(paid_course, {"free": None, "buy": {"price": "99", "window": {"opens_after_days": 14}}, "plans": []})
+        payload = {"items": [{"content_type": "course", "object_id": paid_course.pk}]}
+        bought = datetime(2026, 10, 19, 12, 0, tzinfo=UTC)
+        with mock.patch("django.utils.timezone.now", return_value=bought):
+            first = make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+            assert first.status_code == 201, first.content
+        with mock.patch("django.utils.timezone.now", return_value=bought + timedelta(days=1)):
+            assert not ContentAccessService().check_access(student, paid_course)  # not open yet
+            again = make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        assert again.status_code == 400, again.content
+        assert Payment.objects.filter(student=student).count() == 1
 
     def test_buying_an_in_person_class_reveals_its_address(self, student, paid_onsite_event):
         """The street address is hidden until the student has paid for the class."""
@@ -516,3 +553,19 @@ class TestSubscribe:
         payload = {"plan_id": inactive_plan.pk}
         response = client.post("/api/v1/billing/subscribe/", data=payload, format="json")
         assert response.status_code == 404, response.content
+
+    def test_an_expired_subscription_does_not_block_subscribing_again(self, student, active_plan):
+        began = timezone.now() - timedelta(days=60)
+        Subscription.objects.create(
+            student=student,
+            plan=active_plan,
+            billing_amount=active_plan.price,
+            billing_currency="USD",
+            status="active",
+            current_period_start=began,
+            current_period_end=began + timedelta(days=30),
+        )
+        response = make_client(student).post(
+            "/api/v1/billing/subscribe/", data={"plan_id": active_plan.pk}, format="json"
+        )
+        assert response.status_code == 201, response.content

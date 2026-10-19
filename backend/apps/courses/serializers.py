@@ -4,7 +4,7 @@ from django.db import transaction
 from django.db.models import Prefetch
 from rest_framework import serializers
 
-from apps.core.access import AccessInfo, ContentAccessService, content_currency
+from apps.core.access import ContentAccessService
 from apps.core.sanitize import clean_rich_html
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.core.uploads.serializers import check_tenant_key
@@ -146,21 +146,7 @@ class CourseListSerializer(serializers.ModelSerializer):
         if access_map and obj.pk in access_map:
             return asdict(access_map[obj.pk])
         request = self.context.get("request")
-        if not request or not request.user.is_authenticated:
-            pricing_type = obj.pricing_type
-            if pricing_type == "free":
-                return asdict(AccessInfo(has_access=True, pricing_type=pricing_type, access_reason="free"))
-            return asdict(
-                AccessInfo(
-                    has_access=False,
-                    pricing_type=pricing_type,
-                    price=obj.price,
-                    currency=content_currency(obj),
-                    unlock_methods=["purchase"],
-                )
-            )
-        service = ContentAccessService()
-        return asdict(service.get_access_info(request.user, obj))
+        return asdict(ContentAccessService().get_access_info(request.user if request else None, obj))
 
 
 class CourseDetailSerializer(serializers.ModelSerializer):
@@ -224,21 +210,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         if access_map and obj.pk in access_map:
             return asdict(access_map[obj.pk])
         request = self.context.get("request")
-        if not request or not request.user.is_authenticated:
-            pricing_type = obj.pricing_type
-            if pricing_type == "free":
-                return asdict(AccessInfo(has_access=True, pricing_type=pricing_type, access_reason="free"))
-            return asdict(
-                AccessInfo(
-                    has_access=False,
-                    pricing_type=pricing_type,
-                    price=obj.price,
-                    currency=content_currency(obj),
-                    unlock_methods=["purchase"],
-                )
-            )
-        service = ContentAccessService()
-        return asdict(service.get_access_info(request.user, obj))
+        return asdict(ContentAccessService().get_access_info(request.user if request else None, obj))
 
     def get_unlock_options(self, obj):
         service = ContentAccessService()

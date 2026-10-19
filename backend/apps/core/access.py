@@ -144,6 +144,17 @@ class ContentAccessService:
                 )
         return result
 
+    def holds_purchase(self, user, content) -> bool:
+        """Whether ``user`` has bought ``content`` (itself, or a bundle with it) and that purchase has not
+        closed: it is open now or its window has not started yet. Checkout refuses a second one."""
+        ct = ContentType.objects.get_for_model(type(content))
+        now = timezone.now()
+        stamps = [
+            *self._purchases(user, ct, [content.pk]).get(content.pk, []),
+            *self._bundle_purchases(user, ct, [content.pk]).get(content.pk, []),
+        ]
+        return any(end is None or end >= now for _, end in stamps)
+
     def get_unlock_options(self, content) -> dict:
         """Return all ways a piece of content can be unlocked (free window, purchase, bundles, plans)."""
         from apps.billing.models import AccessWindow, Bundle, BundleItem, SubscriptionPlanAccess

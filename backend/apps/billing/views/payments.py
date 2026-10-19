@@ -140,9 +140,9 @@ def payment_initialize(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Validate not already owned
-        access_info = access_service.get_access_info(request.user, obj)
-        if access_info.has_access and access_info.access_reason in ("purchased", "bundle"):
+        # Validate not already owned: a purchase that is open, or has not opened yet, blocks a second one;
+        # once its window has closed the student may buy again.
+        if access_service.holds_purchase(request.user, obj):
             return Response(
                 {"detail": f"Item '{obj}' is already owned by this user."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -622,7 +622,11 @@ def subscribe(request):
 
     # Check if user already has an active subscription to this plan
     existing = Subscription.objects.filter(
-        student=request.user, plan=plan, status="active", cancelled_at__isnull=True
+        student=request.user,
+        plan=plan,
+        status="active",
+        cancelled_at__isnull=True,
+        current_period_end__gt=timezone.now(),
     ).first()
     if existing:
         return Response(

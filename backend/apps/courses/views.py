@@ -61,17 +61,17 @@ def _course_list(request):
     qs = apply_ordering(qs, request, ["title", "created_at"])
     paginate = "limit" in request.query_params or "offset" in request.query_params
 
-    service = ContentAccessService() if request.user.is_authenticated else None
+    service = ContentAccessService()
 
     if paginate:
         paginator = StandardPagination()
         page = paginator.paginate_queryset(qs, request)
         page_items = list(page)
-        access_map = service.bulk_check_access(request.user, page_items) if service else {}
+        access_map = service.bulk_check_access(request.user, page_items)
         serializer = CourseListSerializer(page_items, many=True, context={"request": request, "access_map": access_map})
         return paginator.get_paginated_response(serializer.data)
 
-    access_map = service.bulk_check_access(request.user, qs) if service else {}
+    access_map = service.bulk_check_access(request.user, qs)
     serializer = CourseListSerializer(qs, many=True, context={"request": request, "access_map": access_map})
     return Response(serializer.data)
 

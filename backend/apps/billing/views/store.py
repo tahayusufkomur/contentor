@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from apps.billing.models import Bundle, PaymentItem
 from apps.billing.serializers.store import StoreItemSerializer
-from apps.core.access import AccessInfo, ContentAccessService
+from apps.core.access import ContentAccessService
 from apps.core.currency import tenant_charge_currency
 from apps.core.permissions import IsCoachOrOwner
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
@@ -27,18 +27,6 @@ def _thumbnail_url(obj):
     if thumbnail is not None and thumbnail.s3_key:
         return generate_presigned_download_url(thumbnail.s3_key)
     return sign_if_s3_key(getattr(obj, "thumbnail_url", "") or "") or ""
-
-
-def _unauthenticated_access_info(price, currency=""):
-    return asdict(
-        AccessInfo(
-            has_access=False,
-            pricing_type="paid",
-            price=price,
-            currency=currency,
-            unlock_methods=["purchase"],
-        )
-    )
 
 
 def _bundle_original_price(bundle):
@@ -206,11 +194,7 @@ def store_list(request):
 
     for item in items:
         obj = item.pop("_obj")
-        if user.is_authenticated:
-            info = service.get_access_info(user, obj)
-            item["access_info"] = asdict(info)
-        else:
-            item["access_info"] = _unauthenticated_access_info(item["price"], item["currency"])
+        item["access_info"] = asdict(service.get_access_info(user, obj))
 
     serializer = StoreItemSerializer(items, many=True)
     return Response(serializer.data)

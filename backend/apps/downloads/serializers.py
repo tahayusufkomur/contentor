@@ -2,7 +2,7 @@ from dataclasses import asdict
 
 from rest_framework import serializers
 
-from apps.core.access import AccessInfo, ContentAccessService, content_currency
+from apps.core.access import ContentAccessService
 from apps.core.uploads.serializers import check_tenant_key
 from apps.tags.serializers import TagSerializer, tag_ids_field
 
@@ -34,21 +34,7 @@ class DownloadFileSerializer(serializers.ModelSerializer):
         if access_map and obj.pk in access_map:
             return asdict(access_map[obj.pk])
         request = self.context.get("request")
-        if not request or not request.user.is_authenticated:
-            pricing_type = obj.pricing_type
-            if pricing_type == "free":
-                return asdict(AccessInfo(has_access=True, pricing_type=pricing_type, access_reason="free"))
-            return asdict(
-                AccessInfo(
-                    has_access=False,
-                    pricing_type=pricing_type,
-                    price=obj.price,
-                    currency=content_currency(obj),
-                    unlock_methods=["purchase"],
-                )
-            )
-        service = ContentAccessService()
-        return asdict(service.get_access_info(request.user, obj))
+        return asdict(ContentAccessService().get_access_info(request.user if request else None, obj))
 
 
 class DownloadFileCreateSerializer(serializers.ModelSerializer):

@@ -45,7 +45,7 @@ def test_reminder_sent_once_for_upcoming_class(tenant_ctx):
 
 
 def test_free_event_targets_all_subscribers(tenant_ctx):
-    """A free class is reachable by everyone — no per-user access check."""
+    """A free class with no window is reachable by everyone."""
     coach = _coach()
     _student(1)
     _student(2)

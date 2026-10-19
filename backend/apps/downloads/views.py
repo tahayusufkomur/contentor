@@ -31,10 +31,7 @@ def download_list_create(request):
         qs = apply_ordering(qs, request, ["title", "created_at", "file_size"])
         paginator = StandardPagination()
         page = paginator.paginate_queryset(qs, request)
-        access_map = {}
-        if request.user.is_authenticated:
-            service = ContentAccessService()
-            access_map = service.bulk_check_access(request.user, page)
+        access_map = ContentAccessService().bulk_check_access(request.user, page)
         return paginator.get_paginated_response(
             DownloadFileSerializer(page, many=True, context={"request": request, "access_map": access_map}).data
         )

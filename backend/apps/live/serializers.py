@@ -13,20 +13,12 @@ from .models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
 
 def _viewer_has_access(context, instance):
-    """True if the serializer's viewer may see the join/location secrets.
-
-    Reuses ContentAccessService (owner/coach, free content, or a purchase all
-    grant access). Missing request/user -> no access, so anonymous callers only
-    ever see the secrets of free content."""
+    """True if the serializer's viewer may see the join/location secrets: whatever the paywall says
+    for them (a visitor included)."""
     from apps.core.access import ContentAccessService
 
     request = context.get("request")
-    user = getattr(request, "user", None)
-    # Anonymous users only see the secrets of free content (check_access itself
-    # assumes an authenticated user for the purchase lookup).
-    if user is None or not getattr(user, "is_authenticated", False):
-        return getattr(instance, "pricing_type", "free") == "free"
-    return ContentAccessService().check_access(user, instance)
+    return ContentAccessService().check_access(getattr(request, "user", None), instance)
 
 
 def _filter_option_ids_field():
@@ -173,26 +165,10 @@ class LiveClassSerializer(serializers.ModelSerializer):
         access_map = self.context.get("access_map")
         if access_map and obj.pk in access_map:
             return asdict(access_map[obj.pk])
-        request = self.context.get("request")
-        if not request or not request.user.is_authenticated:
-            from apps.core.access import AccessInfo, content_currency
-
-            pricing_type = obj.pricing_type
-            if pricing_type == "free":
-                return asdict(AccessInfo(has_access=True, pricing_type=pricing_type, access_reason="free"))
-            return asdict(
-                AccessInfo(
-                    has_access=False,
-                    pricing_type=pricing_type,
-                    price=obj.price,
-                    currency=content_currency(obj),
-                    unlock_methods=["purchase"],
-                )
-            )
         from apps.core.access import ContentAccessService
 
-        service = ContentAccessService()
-        return asdict(service.get_access_info(request.user, obj))
+        request = self.context.get("request")
+        return asdict(ContentAccessService().get_access_info(request.user if request else None, obj))
 
 
 class LiveClassCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerializer):
@@ -296,26 +272,10 @@ class LiveStreamSerializer(serializers.ModelSerializer):
         access_map = self.context.get("access_map")
         if access_map and obj.pk in access_map:
             return asdict(access_map[obj.pk])
-        request = self.context.get("request")
-        if not request or not request.user.is_authenticated:
-            from apps.core.access import AccessInfo, content_currency
-
-            pricing_type = obj.pricing_type
-            if pricing_type == "free":
-                return asdict(AccessInfo(has_access=True, pricing_type=pricing_type, access_reason="free"))
-            return asdict(
-                AccessInfo(
-                    has_access=False,
-                    pricing_type=pricing_type,
-                    price=obj.price,
-                    currency=content_currency(obj),
-                    unlock_methods=["purchase"],
-                )
-            )
         from apps.core.access import ContentAccessService
 
-        service = ContentAccessService()
-        return asdict(service.get_access_info(request.user, obj))
+        request = self.context.get("request")
+        return asdict(ContentAccessService().get_access_info(request.user if request else None, obj))
 
 
 class LiveStreamCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerializer):
