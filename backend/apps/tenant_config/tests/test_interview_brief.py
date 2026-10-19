@@ -288,6 +288,8 @@ def test_only_the_guides_own_calls_can_be_left_to_it():
         "site_style",
         "site_logo",
         "calendar_view",
+        "navbar_layout",
+        "footer_layout",
         "tone",
         "memberships",
         "course_topic",
@@ -390,6 +392,15 @@ def test_the_calendar_layout_is_asked_only_of_a_coach_who_runs_classes_after_the
     assert "calendar_view" not in ids(answers)
     # The Calendar link is on by default; that one is never asked.
     assert "calendar_nav" not in brief.FIELD_BY_ID
+
+
+def test_the_header_and_footer_layouts_close_the_interview_once_every_page_is_known():
+    for answers in ({"offers": ["course"]}, {"offers": ["live", "onsite", "articles"], "payments": ["membership"]}):
+        order = [f.id for f in brief.required(answers)]
+        assert order[-2:] == ["navbar_layout", "footer_layout"]
+    # Cards: the model never fills them from the coach's words.
+    assert brief.coerce("navbar_layout", "the pill one") is None
+    assert brief.FIELD_BY_ID["navbar_layout"].kind in brief.CARD_KINDS
 
 
 def test_tone_hints_follow_the_niche_and_the_model_when_it_wrote_them():

@@ -231,7 +231,7 @@ export interface LookOption {
 }
 
 export interface LookCards {
-  kind: "style" | "logo" | "calendar";
+  kind: "style" | "logo" | "calendar" | "navbar" | "footer";
   options: LookOption[];
   page?: number;
   more?: boolean;
@@ -244,6 +244,11 @@ export interface LookCards {
   brand?: string;
   style?: string;
   palette?: string;
+  /** Header and footer: the coach's own menu, header button and social
+   * accounts, drawn into each preset's sketch. */
+  links?: { label: string; href: string }[];
+  cta?: string;
+  socials?: string[];
   /** Looks: picking one opens it as a whole page, its sample copy about
    * ``subject`` ("boxing") and the hero's line in the coach's words. */
   preview?: { subject?: string; body?: string; copy?: LookCopy | null };

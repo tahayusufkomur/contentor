@@ -12,6 +12,9 @@ export type NavbarLayout =
 
 export type NavbarLogoSize = "sm" | "md" | "lg" | "xl";
 
+/** Public footer arrangement preset. Missing/unknown renders as "simple". */
+export type FooterLayout = "simple" | "columns" | "centered" | "minimal";
+
 export interface NavbarConfig {
   links: NavLink[];
   cta: { text: string; href: string } | null;
@@ -34,6 +37,8 @@ export interface NavbarConfig {
   show_social?: boolean;
   /** How /calendar opens: the month grid or the agenda list (default month). */
   calendar_view?: "month" | "agenda";
+  /** Footer arrangement preset, picked in /setup. Missing renders as "simple". */
+  footer_layout?: FooterLayout;
 }
 
 export interface LandingHero {

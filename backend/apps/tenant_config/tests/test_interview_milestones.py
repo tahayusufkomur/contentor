@@ -801,6 +801,60 @@ def test_calendar_and_social_choices_are_validated(tenant_ctx, config):
     assert ms.calendar_cards()["options"][0]["value"] == "month"
 
 
+def test_the_header_and_footer_are_picked_as_cards_drawn_with_her_own_menu(tenant_ctx, config):
+    from apps.tenant_config.serializers import _FOOTER_LAYOUTS, _NAVBAR_LAYOUTS
+
+    assert {v for v, *_ in ms.NAVBAR_LAYOUTS} == _NAVBAR_LAYOUTS
+    assert {v for v, *_ in ms.FOOTER_LAYOUTS} == _FOOTER_LAYOUTS
+    cfg = TenantConfig.objects.first()
+    cfg.navbar_config = {
+        "links": [{"label": "Courses", "href": "/courses"}],
+        "cta": {"text": "Get Started", "href": "/courses"},
+    }
+    cfg.save()
+    answers = {"offers": ["course", "live", "articles"], "tone": "Energetic, Warm"}
+    ms.sync_site(tenant_ctx, answers)
+    cards = ms.cards_for(tenant_ctx, answers, "navbar_layout")
+    assert cards["kind"] == "navbar" and [o["value"] for o in cards["options"]] == [v for v, *_ in ms.NAVBAR_LAYOUTS]
+    # The first preset that suits a tone she asked for is the pick, and says why.
+    pick = next(o for o in cards["options"] if o.get("recommended"))
+    assert pick["value"] == "classic" and pick["reason"] == "It suits a site that sounds warm."
+    assert [link["label"] for link in cards["links"]] == ["Courses", "Events", "Calendar", "Blog"]
+    assert cards["brand"] == TenantConfig.objects.first().brand_name and cards["cta"] == "Get Started"
+    footer = ms.cards_for(tenant_ctx, answers, "footer_layout")
+    assert footer["kind"] == "footer"
+    assert next(o["value"] for o in footer["options"] if o.get("recommended")) == "columns"
+    # No tone matched: the first preset, with no reason to give.
+    plain = ms.cards_for(tenant_ctx, {}, "footer_layout")
+    assert next(o for o in plain["options"] if o.get("recommended")) == {
+        **plain["options"][0],
+        "recommended": True,
+        "reason": "",
+    }
+
+
+def test_the_header_and_footer_picks_reach_the_navbar_config(tenant_ctx, config):
+    answers = {"offers": ["course"], "tone": "Playful"}
+    ms.choose(tenant_ctx, answers, "navbar_layout", "split")
+    ms.choose(tenant_ctx, answers, "footer_layout", brief.DELEGATE)
+    assert answers["navbar_layout"] == "split" and answers["footer_layout"] == "centered"
+    assert "footer_layout" in answers["delegated"]
+    ms.sync_site(tenant_ctx, answers)
+    nav = TenantConfig.objects.first().navbar_config
+    assert nav["layout"] == "split" and nav["footer_layout"] == "centered"
+    # A later turn with nothing new writes nothing; a new pick is applied.
+    ms.sync_site(tenant_ctx, answers)
+    ms.choose(tenant_ctx, answers, "navbar_layout", "pill")
+    ms.sync_site(tenant_ctx, answers)
+    assert TenantConfig.objects.first().navbar_config["layout"] == "pill"
+    with pytest.raises(ms.ChoiceError, match="invalid_value"):
+        ms.choose(tenant_ctx, answers, "navbar_layout", "sidebar")
+    with pytest.raises(ms.ChoiceError, match="invalid_value"):
+        ms.choose(tenant_ctx, answers, "footer_layout", "classic")
+    # The chrome is not a fact about her: the composer never hears of it.
+    assert {f["q"] for f in brief.composer_facts(answers)} == {"How they work", "How the site should sound"}
+
+
 def test_a_crash_while_drafting_marks_the_draft_failed(tenant_ctx, config, owner):
     """Audit R1: any error, not only AI and content ones, ends the spinner."""
     with (

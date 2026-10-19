@@ -338,6 +338,7 @@ export const SECTIONS: { label: string; fields: string[] }[] = [
     ],
   },
   { label: "Contact", fields: ["socials", "contact"] },
+  { label: "Header & footer", fields: ["navbar_layout", "footer_layout"] },
 ];
 
 /** A question's section (SECTIONS.length once nothing is left to ask). */

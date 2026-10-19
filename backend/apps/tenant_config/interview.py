@@ -418,6 +418,8 @@ NOTED_NAMES = {
     "socials": "your social accounts",
     "contact": "how students reach you",
     "location": "where you work",
+    "navbar_layout": "your header",
+    "footer_layout": "your footer",
 }
 
 
@@ -468,6 +470,7 @@ def picked_note(tenant, field_id) -> str:
     me"): the reply says it, so nothing is decided out of sight."""
     from apps.core.currency import tenant_charge_currency
 
+    from . import interview_milestones as milestones
     from . import sections
     from . import setup_flow as flow
 
@@ -481,6 +484,11 @@ def picked_note(tenant, field_id) -> str:
         return "I put your name in as the logo for now. You can pick a mark any time."
     if field_id == "calendar_view":
         return "I picked the month grid for your calendar. You can change it any time."
+    if field_id in milestones.CHROME:
+        picked = milestones.chrome_pick(field_id, brief.answers_of(tenant))[0]
+        label = next(label for value, label, *_ in milestones.CHROME[field_id] if value == picked)
+        part = "header" if field_id == "navbar_layout" else "footer"
+        return f"I picked the {label} {part} for you. You can change it any time."
     if field_id == "memberships":
         tier = brief.TIER_BY_ID[brief.default_tier(brief.answers_of(tenant))]
         return f"I set up the {tier['label']} for you. You can change it any time."
@@ -851,7 +859,7 @@ def interview_state(tenant, flow: dict) -> dict:
     # Fresh cards for look questions already behind the coach, so going back
     # shows them again (logo previews are presigned: never stored).
     asked = {t.get("field") for t in turns if t.get("role") == "guide"} - {guide["field"]}
-    looks = ("site_style", "site_logo", "calendar_view", "photos", *milestones.REVIEW_FIELDS)
+    looks = ("site_style", "site_logo", "calendar_view", "photos", *milestones.CHROME, *milestones.REVIEW_FIELDS)
     cards = {f: milestones.cards_for(tenant, answers, f) for f in looks if f in asked}
     return {
         "turns": turns,

@@ -19,6 +19,7 @@ import { uploadImage } from "@/components/owner/logo-uploader";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { BrowserFrame } from "./browser-frame";
+import { FooterSketch, NavbarSketch } from "./chrome-sketch";
 import { LookTile } from "./look-tile";
 import { SHELL_TOKENS } from "./tokens";
 
@@ -138,14 +139,19 @@ export function LookCardsView({
   const paletteFor = (o: LookOption) =>
     palettes[o.value] ?? pickedPalette(o, chosen, selected) ?? "";
   // The guide's pick is selected the first time the coach lands on the
-  // question; tapping any look opens it as a page.
+  // question (a look, the header, the footer); tapping any look opens it as
+  // a page.
   const picked = useRef(false);
   useEffect(() => {
     const pick = shown.options.find((o) => o.recommended);
-    if (picked.current || shown.kind !== "style" || !pick) return;
+    if (picked.current || !pick) return;
+    if (!["style", "navbar", "footer"].includes(shown.kind)) return;
     if (selected || chosen) return;
     picked.current = true;
-    onPick(pick.value, lookLabel(pick, ""));
+    onPick(
+      pick.value,
+      shown.kind === "style" ? lookLabel(pick, "") : pick.label,
+    );
   }, [shown, selected, chosen, onPick]);
   const { run: more, loading } = useAsyncAction(
     async () => setShown(await onMore((shown.page ?? 0) + 1)),
@@ -334,6 +340,71 @@ export function LookCardsView({
             onKeep={onKeep}
           />
         )}
+      </div>
+    );
+  }
+
+  if (shown.kind === "navbar" || shown.kind === "footer") {
+    const suggested = shown.options.find((o) => o.recommended);
+    const look = getSiteStyle(shown.style ?? "");
+    const colors = look ? paletteOf(look, shown.palette) : undefined;
+    const brand = brandName || shown.brand || "";
+    return (
+      <div className="mt-8">
+        {suggested?.reason && (
+          <p className="mb-4 text-[14px] text-[var(--sf-graphite)]">
+            <span className="font-semibold text-[var(--sf-ink)]">
+              {suggested.label}
+            </span>{" "}
+            is our pick. {suggested.reason}
+          </p>
+        )}
+        <div className="grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+          {shown.options.map((o, i) => (
+            <CardButton
+              key={o.value}
+              picked={isPicked(o.value, o.label)}
+              disabled={disabled}
+              onClick={() => onPick(o.value, o.label)}
+              style={enter(i)}
+              className="overflow-hidden p-0"
+              checkClassName="bottom-3 right-3"
+            >
+              {shown.kind === "navbar" ? (
+                <NavbarSketch
+                  layout={o.value}
+                  brand={brand}
+                  links={shown.links ?? []}
+                  cta={shown.cta}
+                  colors={colors}
+                />
+              ) : (
+                <FooterSketch
+                  layout={o.value}
+                  brand={brand}
+                  links={shown.links ?? []}
+                  socials={shown.socials ?? []}
+                  colors={colors}
+                />
+              )}
+              <span className="block border-t border-[var(--sf-line)] py-2.5 pl-3.5 pr-10">
+                <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                  <span className="text-[14px] font-semibold">{o.label}</span>
+                  {o.recommended && (
+                    <span className="shrink-0 rounded-full bg-[var(--sf-brass-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--sf-brass)]">
+                      Suggested
+                    </span>
+                  )}
+                </span>
+                {o.detail && (
+                  <span className="block text-[12px] text-[var(--sf-graphite)]">
+                    {o.detail}
+                  </span>
+                )}
+              </span>
+            </CardButton>
+          ))}
+        </div>
       </div>
     );
   }
@@ -693,6 +764,7 @@ function CardButton({
   onClick,
   style,
   className,
+  checkClassName = "right-3 top-3",
   children,
 }: {
   picked: boolean;
@@ -700,6 +772,8 @@ function CardButton({
   onClick: () => void;
   style?: React.CSSProperties;
   className?: string;
+  /** Where the picked tick sits (top-right unless the picture is busy there). */
+  checkClassName?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -721,7 +795,10 @@ function CardButton({
       {picked && (
         <span
           aria-hidden
-          className="absolute right-3 top-3 flex size-5 items-center justify-center rounded-full bg-[var(--sf-ink)] text-[var(--sf-paper)]"
+          className={cn(
+            "absolute flex size-5 items-center justify-center rounded-full bg-[var(--sf-ink)] text-[var(--sf-paper)]",
+            checkClassName,
+          )}
         >
           <Check className="size-3" strokeWidth={3} />
         </span>

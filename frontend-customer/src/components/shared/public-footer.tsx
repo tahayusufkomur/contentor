@@ -6,9 +6,29 @@ import { ContentorBadge } from "@shared/ui/contentor-brand";
 
 import { useTenant } from "@/hooks/use-tenant";
 import { visibleNavLinks, type SiteMenu } from "@/lib/navbar";
+import type { FooterLayout } from "@/types/tenant";
+import { cn } from "@/lib/utils";
 
-/** Brand, © year, the site's own nav links and any social links the coach set.
- * A public site that ends at the last block reads as unfinished. */
+const VALID_LAYOUTS: ReadonlySet<string> = new Set([
+  "simple",
+  "columns",
+  "centered",
+  "minimal",
+]);
+
+/** The footer preset to render: unknown or missing is "simple" (the one
+ * every tenant had before the setup interview asked). */
+export function footerLayout(raw: string | undefined | null): FooterLayout {
+  return raw && VALID_LAYOUTS.has(raw) ? (raw as FooterLayout) : "simple";
+}
+
+const WRAP =
+  "mx-auto max-w-[var(--site-wrap,80rem)] px-[var(--site-gutter,1rem)] md:px-[var(--site-gutter-md,1.5rem)]";
+const LINK = "transition-colors hover:text-foreground";
+
+/** Brand, © year, the site's own nav links and any social links the coach
+ * set, in the arrangement picked in /setup (navbar_config.footer_layout). A
+ * public site that ends at the last block reads as unfinished. */
 export function PublicFooter({
   plansEnabled = true,
   menu,
@@ -18,6 +38,7 @@ export function PublicFooter({
 } = {}) {
   const config = useTenant();
   if (!config) return null;
+  const layout = footerLayout(config.navbar_config?.footer_layout);
   const links = visibleNavLinks(
     config.navbar_config?.links ?? [],
     plansEnabled,
@@ -26,44 +47,125 @@ export function PublicFooter({
   const social = Object.entries(config.social_links ?? {}).filter(
     ([, url]) => url,
   );
+  const column = layout === "columns";
+
+  const copyright = (
+    <p>
+      © {new Date().getFullYear()} {config.brand_name}
+    </p>
+  );
+  const nav = links.length > 0 && (
+    <nav
+      aria-label="Footer"
+      className={cn(
+        "flex gap-x-5 gap-y-2",
+        column ? "flex-col" : "flex-wrap",
+        layout === "centered" && "justify-center",
+      )}
+    >
+      {links.map((link) => (
+        <Link key={link.href} href={link.href} className={LINK}>
+          {link.label}
+        </Link>
+      ))}
+    </nav>
+  );
+  const socials = social.length > 0 && (
+    <ul
+      className={cn(
+        "flex gap-x-4 gap-y-2",
+        column ? "flex-col" : "flex-wrap",
+        layout === "centered" && "justify-center",
+      )}
+    >
+      {social.map(([name, url]) => (
+        <li key={name}>
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn("capitalize", LINK)}
+          >
+            {name}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+  const badge = config.show_badge && <ContentorBadge />;
 
   return (
-    <footer className="border-t">
-      <div className="mx-auto flex max-w-[var(--site-wrap,80rem)] flex-col gap-4 px-[var(--site-gutter,1rem)] py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:px-[var(--site-gutter-md,1.5rem)]">
-        <p>
-          © {new Date().getFullYear()} {config.brand_name}
-        </p>
-        {links.length > 0 && (
-          <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="transition-colors hover:text-foreground"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-        )}
-        {social.length > 0 && (
-          <ul className="flex flex-wrap gap-x-4 gap-y-2">
-            {social.map(([name, url]) => (
-              <li key={name}>
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="capitalize transition-colors hover:text-foreground"
-                >
-                  {name}
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
-        {config.show_badge && <ContentorBadge />}
-      </div>
+    <footer
+      data-footer-layout={layout}
+      className="border-t text-sm text-muted-foreground"
+    >
+      {layout === "columns" ? (
+        <>
+          <div
+            className={`${WRAP} grid gap-8 py-12 md:grid-cols-[1.5fr_1fr_1fr]`}
+          >
+            <div>
+              <p className="font-display text-lg font-bold text-foreground">
+                {config.brand_name}
+              </p>
+              {config.meta_description && (
+                <p className="mt-2 max-w-xs">{config.meta_description}</p>
+              )}
+            </div>
+            {nav && (
+              <div>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-foreground">
+                  Pages
+                </p>
+                {nav}
+              </div>
+            )}
+            {socials && (
+              <div>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-foreground">
+                  Follow
+                </p>
+                {socials}
+              </div>
+            )}
+          </div>
+          <div
+            className={`${WRAP} flex flex-col gap-3 border-t py-4 text-xs md:flex-row md:items-center md:justify-between`}
+          >
+            {copyright}
+            {badge}
+          </div>
+        </>
+      ) : layout === "centered" ? (
+        <div
+          className={`${WRAP} flex flex-col items-center gap-4 py-10 text-center`}
+        >
+          <p className="font-display text-lg font-bold text-foreground">
+            {config.brand_name}
+          </p>
+          {nav}
+          {socials}
+          {copyright}
+          {badge}
+        </div>
+      ) : layout === "minimal" ? (
+        <div
+          className={`${WRAP} flex flex-col gap-3 py-6 md:flex-row md:items-center md:justify-between`}
+        >
+          {copyright}
+          {badge}
+        </div>
+      ) : (
+        /* simple — one row: ©, the menu, the social links, the badge */
+        <div
+          className={`${WRAP} flex flex-col gap-4 py-8 md:flex-row md:items-center md:justify-between`}
+        >
+          {copyright}
+          {nav}
+          {socials}
+          {badge}
+        </div>
+      )}
     </footer>
   );
 }

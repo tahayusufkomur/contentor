@@ -22,10 +22,11 @@ DELEGATE = "__delegate__"
 SKIP = "__skip__"
 TEXT_MAX = 500
 # Answered by tapping a card (applied by code, asked in order): the look,
-# the logo, the calendar layout, and the review screens of the first course and class.
+# the logo, the calendar, header and footer layouts, and the review screens of
+# the first course and class.
 # "address" is asked like a card: by code, in order, and never filled by the
 # model (a place she mentioned in passing is not the address of her class).
-CARD_KINDS = ("style", "logo", "calendar", "course", "event", "address", "photos")
+CARD_KINDS = ("style", "logo", "calendar", "navbar", "footer", "course", "event", "address", "photos")
 # Fixed answer lists the coach's words are parsed against; the model phrases
 # the question to fit them and never rewrites them.
 FIXED_KINDS = (
@@ -1113,6 +1114,16 @@ FIELDS: tuple[Field, ...] = (
         multi=True,
         icons=("mail", "instagram", "message-circle", "phone", "pen-line"),
     ),
+    # The site's chrome comes last: by now every page and link it carries is known.
+    Field(
+        "navbar_layout",
+        "Header layout",
+        "How should the top of every page look?",
+        kind="navbar",
+        delegable=True,
+        why="Your pages are set, so each card shows your own menu.",
+    ),
+    Field("footer_layout", "Footer layout", "And the bottom of every page?", kind="footer", delegable=True),
 )
 FIELD_BY_ID = {f.id: f for f in FIELDS}
 # Fields that ride in `description`, or are applied as config, not as copy facts.
@@ -1127,6 +1138,8 @@ _NOT_FACTS = {
     "onsite_review",
     "timezone",
     "currency",
+    "navbar_layout",
+    "footer_layout",
 }
 
 

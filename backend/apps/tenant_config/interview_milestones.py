@@ -174,6 +174,11 @@ def sync_site(tenant, answers: dict) -> None:
     order = [href for href, _ in NAV]
     socials = brief.parse_socials(answers.get("socials"))
     view = answers.get("calendar_view") if answers.get("calendar_view") in CALENDAR_IDS else None
+    chrome = {
+        key: answers[f]
+        for f, key in (("navbar_layout", "layout"), ("footer_layout", "footer_layout"))
+        if answers.get(f)
+    }
     zone = answers.get("timezone")
     apply_currency(tenant, answers.get("currency"))
     with transaction.atomic():
@@ -192,6 +197,7 @@ def sync_site(tenant, answers: dict) -> None:
         offers = set(answers.get("offers") or [])
         retarget = cta.get("href") == "/courses" and offers and "course" not in offers
         extra = {
+            **chrome,
             **({"calendar_view": view} if view else {}),
             **({"show_social": True} if socials else {}),
             **({"cta": {**cta, "href": "/events" if runs_classes else "/about"}} if retarget else {}),
@@ -913,6 +919,71 @@ def calendar_cards() -> dict:
     }
 
 
+# The header and footer presets, each with the tones it suits. Ids match
+# tenant_config.serializers (_NAVBAR_LAYOUTS, _FOOTER_LAYOUTS) and the
+# public header / footer components.
+NAVBAR_LAYOUTS = (
+    ("classic", "Classic", "Your name on the left, the menu in the middle, sign-in on the right.", ("warm", "expert")),
+    ("centered", "Centered", "Your name above the menu, both in the middle.", ("calm", "sensual")),
+    ("split", "Split", "The menu on both sides of your name.", ("confident", "expert")),
+    ("minimal", "Minimal", "Just your name and a menu button.", ("calm", "sexy")),
+    ("pill", "Floating pill", "A rounded bar that floats over the page as you scroll.", ("energetic", "playful")),
+)
+FOOTER_LAYOUTS = (
+    ("simple", "One line", "Your name, the menu and your social links in a single row.", ("calm", "expert", "sexy")),
+    (
+        "columns",
+        "Columns",
+        "Your name and a line about you, the menu and your socials side by side.",
+        ("warm", "confident"),
+    ),
+    ("centered", "Centered", "Everything stacked in the middle of the page.", ("sensual", "playful")),
+    ("minimal", "Minimal", "Just your name and the year.", ("energetic",)),
+)
+CHROME = {"navbar_layout": NAVBAR_LAYOUTS, "footer_layout": FOOTER_LAYOUTS}
+
+
+def chrome_pick(field_id: str, answers: dict) -> tuple[str, str]:
+    """The guide's header or footer: the first preset that suits a tone the
+    coach asked for (the reason says which), else the first preset."""
+    from . import sections
+
+    tones = sections.tones_of(answers.get("tone"))
+    for value, _label, _detail, suits in CHROME[field_id]:
+        if matched := [t for t in tones if t in suits]:
+            return value, f"It suits a site that sounds {matched[0]}."
+    return CHROME[field_id][0][0], ""
+
+
+def chrome_cards(tenant, answers: dict, field_id: str) -> dict:
+    """The header or footer presets as cards, drawn with the coach's own menu,
+    name and social accounts in the look she picked."""
+    cfg = TenantConfig.objects.first()
+    nav = (cfg.navbar_config if cfg else None) or {}
+    pick, reason = chrome_pick(field_id, answers)
+    links = [link for link in nav.get("links") or [] if link.get("label") and link.get("href")]
+    if "articles" in (answers.get("offers") or []):
+        links.append({"label": "Blog", "href": "/blog"})
+    return {
+        "kind": field_id.removesuffix("_layout"),
+        "options": [
+            {
+                "value": value,
+                "label": label,
+                "detail": detail,
+                **({"recommended": True, "reason": reason} if value == pick else {}),
+            }
+            for value, label, detail, _ in CHROME[field_id]
+        ],
+        "brand": cfg.brand_name if cfg else "",
+        "links": links,
+        "cta": (nav.get("cta") or {}).get("text") or "",
+        "socials": [n for n, u in ((cfg.social_links if cfg else None) or {}).items() if u],
+        "style": cfg.style if cfg else "",
+        "palette": cfg.palette if cfg else "",
+    }
+
+
 # What the photos question asks for, in the shapes the site's sections crop to.
 PHOTO_SHOTS = {
     "portrait": (
@@ -992,6 +1063,8 @@ def cards_for(tenant, answers: dict, field_id: str | None) -> dict | None:
         return style_cards(answers, tenant)
     if field_id == "calendar_view":
         return calendar_cards()
+    if field_id in CHROME:
+        return chrome_cards(tenant, answers, field_id)
     if field_id == "site_logo":
         return logo_cards(tenant, answers)
     if field_id in REVIEW_FIELDS:
@@ -1069,6 +1142,8 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
             apply_logo(tenant, answers)
         elif field_id == "calendar_view":
             answers["calendar_view"] = "month"
+        elif field_id in CHROME:
+            answers[field_id] = chrome_pick(field_id, answers)[0]
         return
     if field is not None and field.kind == "schedule":
         picked = schedule.parse(value)
@@ -1157,6 +1232,11 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         if value not in CALENDAR_IDS:
             raise ChoiceError("invalid_value")
         answers["calendar_view"] = value
+        return
+    if field_id in CHROME:
+        if value not in {v for v, *_ in CHROME[field_id]}:
+            raise ChoiceError("invalid_value")
+        answers[field_id] = value  # written to the site by sync_site, on this turn's fire()
         return
     if field_id == "site_style":
         look = sections.parse_look(value)

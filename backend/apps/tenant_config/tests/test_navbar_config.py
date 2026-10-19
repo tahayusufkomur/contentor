@@ -163,6 +163,13 @@ class TestNavbarLogoControls:
         assert _validate({})["show_brand_name"] is False
         assert _validate({"show_brand_name": 1})["show_brand_name"] is True
 
+    def test_footer_layout_defaults_to_simple_and_rejects_unknown(self):
+        assert _validate({})["footer_layout"] == "simple"
+        for layout in ("simple", "columns", "centered", "minimal"):
+            assert _validate({"footer_layout": layout})["footer_layout"] == layout
+        with pytest.raises(serializers.ValidationError):
+            _validate({"footer_layout": "sidebar"})
+
     def test_logo_layout_defaults_to_horizontal(self):
         # Every tenant provisioned before the wizard's lockup step has no
         # logo_layout — they must keep rendering the original side-by-side.

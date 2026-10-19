@@ -389,11 +389,13 @@ describe("sectionOf", () => {
       "article_topic",
       "socials",
       "contact",
+      "navbar_layout",
+      "footer_layout",
     ];
     const order = asked.map(sectionOf);
     expect(order.every((s, i) => i === 0 || s >= order[i - 1])).toBe(true);
     expect(order[0]).toBe(0);
-    expect(sectionOf("contact")).toBe(SECTIONS.length - 1);
+    expect(sectionOf("footer_layout")).toBe(SECTIONS.length - 1);
   });
   it("puts go-live after every section", () => {
     expect(sectionOf(null)).toBe(SECTIONS.length);

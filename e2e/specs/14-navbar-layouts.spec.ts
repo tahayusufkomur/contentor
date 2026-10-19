@@ -217,3 +217,35 @@ test("saved logo: brand name hidden by default, toggle reveals it, size XL sizes
     await coach.close();
   }
 });
+
+// The footer preset is picked in /setup (navbar_config.footer_layout, no
+// builder control yet), so this test sets it by API and checks the public
+// footer carries it — same restore-by-PATCH pattern as the layout test.
+test("footer layout preset: the public footer reflects it", async ({ browser, page }) => {
+  const coach = await coachContext(browser);
+  const before = await coach.request.get(`${TENANT}/api/v1/admin/config/`);
+  expect(before.ok(), `config GET failed: ${before.status()}`).toBeTruthy();
+  const originalNavbar = (await before.json()).navbar_config;
+
+  try {
+    const set = await coach.request.patch(`${TENANT}/api/v1/admin/config/`, {
+      data: { navbar_config: { ...originalNavbar, footer_layout: "columns" } },
+    });
+    expect(set.ok(), `footer_layout PATCH failed: ${set.status()} — ${await set.text()}`).toBeTruthy();
+    await page.goto(`${TENANT}/`);
+    const footer = page.locator('footer[data-footer-layout="columns"]');
+    await expect(footer).toBeVisible({ timeout: 10_000 });
+    await expect(footer.getByText("Pages")).toBeVisible();
+    // An unknown preset is refused, not stored.
+    const bad = await coach.request.patch(`${TENANT}/api/v1/admin/config/`, {
+      data: { navbar_config: { ...originalNavbar, footer_layout: "sidebar" } },
+    });
+    expect(bad.status()).toBe(400);
+  } finally {
+    const restoreResp = await coach.request.patch(`${TENANT}/api/v1/admin/config/`, {
+      data: { navbar_config: originalNavbar },
+    });
+    expect(restoreResp.ok(), `navbar_config restore PATCH failed: ${restoreResp.status()}`).toBeTruthy();
+    await coach.close();
+  }
+});

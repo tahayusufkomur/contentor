@@ -32,6 +32,7 @@ _NAVBAR_LAYOUTS = {"classic", "centered", "split", "minimal", "pill"}
 # curated-logo step (core.onboarding.wizard_catalog.CURATED_LOGO_LAYOUTS) and
 # editable afterwards in the navbar admin tab.
 _LOGO_LAYOUTS = {"horizontal", "stacked"}
+_FOOTER_LAYOUTS = {"simple", "columns", "centered", "minimal"}  # == public-footer.tsx presets
 
 # Logo Studio recipe validation (schema v2 with v1 upgrade) lives in
 # logo_recipe.py; validate_logo_recipe below delegates to it.
@@ -121,6 +122,12 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("logo_layout must be one of: " + ", ".join(sorted(_LOGO_LAYOUTS)) + ".")
         cleaned["logo_layout"] = logo_layout
         cleaned["show_social"] = bool(cleaned.get("show_social", False))
+        footer_layout = cleaned.get("footer_layout") or "simple"
+        if footer_layout not in _FOOTER_LAYOUTS:
+            raise serializers.ValidationError(
+                "footer_layout must be one of: " + ", ".join(sorted(_FOOTER_LAYOUTS)) + "."
+            )
+        cleaned["footer_layout"] = footer_layout
         if cleaned.get("calendar_view") not in {"month", "agenda"}:
             cleaned.pop("calendar_view", None)
         return cleaned
