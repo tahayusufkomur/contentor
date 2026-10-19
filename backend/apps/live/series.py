@@ -5,6 +5,7 @@ into its sessions here, and the event form and focus mode publish them together.
 from __future__ import annotations
 
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 from django.utils import timezone
 
 from apps.billing.models import SubscriptionPlanAccess
@@ -19,7 +20,8 @@ COPIED_WHEN_PRESENT = ("location", "address", "max_capacity", "zoom_link", "zoom
 def expand(first, schedule: dict, tz: str) -> int:
     """Copy ``first`` to every later future slot of ``schedule`` (in the coach's
     timezone, at her local time on every date), each in the memberships ``first``
-    is in. Capped by interview_schedule.MAX_CLASSES. Returns how many were added."""
+    is in. Capped by interview_schedule.MAX_CLASSES. Returns how many were added.
+    The caller owns ``first``: expand never moves it, so a past ``first`` stays past."""
     after = max(filter(None, (first.scheduled_at, timezone.now())))
     later = [d for d in interview_schedule.occurrences(schedule, tz) if d > after]
     model = type(first)
@@ -28,12 +30,13 @@ def expand(first, schedule: dict, tz: str) -> int:
     plan_ids = list(
         SubscriptionPlanAccess.objects.filter(content_type=ct, object_id=first.pk).values_list("plan_id", flat=True)
     )
-    for when in later:
-        row = model(**{f: getattr(first, f) for f in fields}, scheduled_at=when)
-        row.save()
-        SubscriptionPlanAccess.objects.bulk_create(
-            SubscriptionPlanAccess(plan_id=pk, content_type=ct, object_id=row.pk) for pk in plan_ids
-        )
+    with transaction.atomic():
+        for when in later:
+            row = model(**{f: getattr(first, f) for f in fields}, scheduled_at=when)
+            row.save()
+            SubscriptionPlanAccess.objects.bulk_create(
+                SubscriptionPlanAccess(plan_id=pk, content_type=ct, object_id=row.pk) for pk in plan_ids
+            )
     return len(later)
 
 

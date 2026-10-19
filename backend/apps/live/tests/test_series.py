@@ -12,7 +12,7 @@ from django.utils import timezone
 from apps.accounts.models import User
 from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
 from apps.live import series
-from apps.live.models import LiveClass, OnsiteEvent
+from apps.live.models import LiveClass, OnsiteEvent, ZoomClass
 from apps.tenant_config import interview_schedule as schedule
 
 pytestmark = pytest.mark.django_db
@@ -27,9 +27,9 @@ def _weekly(start, end, days, times, tz="UTC"):
     return {"mode": "recurring", "start": start, "end": end, "days": days, "times": times, "tz": tz}
 
 
-def _first(owner, schedule_, model=LiveClass, **extra):
-    """The coach's first session, at the schedule's first slot."""
-    at = schedule.occurrences(schedule_, "UTC")[0]
+def _first(owner, schedule_, model=LiveClass, zone="UTC", **extra):
+    """The coach's first session, at the schedule's first slot (``zone`` is her timezone)."""
+    at = schedule.occurrences(schedule_, zone)[0]
     return model.objects.create(
         title="Pads", description="Slow flow", instructor=owner, scheduled_at=at, status="draft", **extra
     )
@@ -38,7 +38,7 @@ def _first(owner, schedule_, model=LiveClass, **extra):
 def test_expand_copies_the_first_session_to_every_later_slot(owner):
     # 7 Jan 2030 is a Monday: Tue 8, Thu 10, Tue 15, Thu 17.
     sched = _weekly("2030-01-07", "2030-01-21", [2, 4], ["18:30"])
-    first = _first(owner, sched, pricing_type="paid", price=15, duration_minutes=45)
+    first = _first(owner, sched, pricing_type="paid", price=15, duration_minutes=45, auto_recording=True)
     assert series.expand(first, sched, "UTC") == 3
     rows = list(LiveClass.objects.order_by("scheduled_at"))
     assert [r.scheduled_at.isoformat()[:16] for r in rows] == [
@@ -49,15 +49,23 @@ def test_expand_copies_the_first_session_to_every_later_slot(owner):
     ]
     for row in rows:
         assert (row.title, row.description, row.instructor, row.status) == ("Pads", "Slow flow", owner, "draft")
-        assert (row.pricing_type, row.price, row.duration_minutes) == ("paid", 15, 45)
+        assert (row.pricing_type, row.price, row.duration_minutes, row.auto_recording) == ("paid", 15, 45, True)
     assert len({r.room_name for r in rows}) == 4
 
 
 def test_expand_copies_the_in_person_place(owner):
     sched = _weekly("2030-01-07", "2030-01-21", [2], ["10:00"])  # Tue 8, Tue 15
-    first = _first(owner, sched, model=OnsiteEvent, location="Studio A", address="1 Main St")
+    first = _first(owner, sched, model=OnsiteEvent, location="Studio A", address="1 Main St", max_capacity=12)
     assert series.expand(first, sched, "UTC") == 1
-    assert set(OnsiteEvent.objects.values_list("location", "address")) == {("Studio A", "1 Main St")}
+    got = OnsiteEvent.objects.values_list("location", "address", "max_capacity")
+    assert set(got) == {("Studio A", "1 Main St", 12)}
+
+
+def test_expand_copies_the_zoom_link(owner):
+    sched = _weekly("2030-01-07", "2030-01-21", [2], ["10:00"])  # Tue 8, Tue 15
+    first = _first(owner, sched, model=ZoomClass, zoom_link="https://zoom.us/j/123", zoom_meeting_id="123")
+    assert series.expand(first, sched, "UTC") == 1
+    assert set(ZoomClass.objects.values_list("zoom_link", "zoom_meeting_id")) == {("https://zoom.us/j/123", "123")}
 
 
 def test_a_series_starts_at_the_first_future_slot_in_her_timezone(owner):
@@ -99,6 +107,19 @@ def test_a_series_keeps_her_local_time_across_a_clock_change(owner, tz, start, e
     assert len(local) == 8
     assert {(d.hour, d.minute) for d in local} == {(18, 0)}
     # The clock really changed inside the span, so the UTC offset moved.
+    assert len({d.utcoffset() for d in local}) == 2
+
+
+def test_the_coachs_timezone_argument_sets_the_local_time_when_the_schedule_has_none(owner):
+    # In production the stored schedule carries no "tz": the coach's timezone comes in as the argument.
+    sched = _weekly("2030-10-14", "2030-12-08", [1], ["18:00"])
+    del sched["tz"]
+    first = _first(owner, sched, zone="Europe/Berlin")  # Mondays, eight of them, across 27 Oct 2030
+    assert series.expand(first, sched, "Europe/Berlin") == 7
+    zone = ZoneInfo("Europe/Berlin")
+    local = [r.scheduled_at.astimezone(zone) for r in LiveClass.objects.order_by("scheduled_at")]
+    assert len(local) == 8
+    assert {(d.hour, d.minute) for d in local} == {(18, 0)}
     assert len({d.utcoffset() for d in local}) == 2
 
 
