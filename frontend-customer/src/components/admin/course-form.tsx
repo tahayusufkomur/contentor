@@ -39,9 +39,15 @@ import {
   useRichEditor,
 } from "@/components/owner/rich-editor";
 import { RichHtml } from "@/components/blocks/rich-html";
-import { refreshSetupStatus, useTenantCurrency } from "@/lib/setup-assistant";
-import { currencySymbol, formatDuration } from "@/lib/format";
+import { refreshSetupStatus } from "@/lib/setup-assistant";
+import { formatDuration } from "@/lib/format";
 import { MonetizeNudge } from "@/components/admin/monetize-nudge";
+import {
+  AccessSection,
+  type AccessProblem,
+} from "@/components/admin/access/access-section";
+import { useAccess } from "@/lib/access/use-access";
+import { parsePrice } from "@/lib/access/ways";
 import { CoverStep } from "@/components/focus/cover-step";
 import { courseItem } from "@/lib/covers/items";
 import { LiveOutline } from "@/components/focus/live-outline";
@@ -91,8 +97,6 @@ const SETTINGS_FIELDS = [
   "thumbnail_url",
   "thumbnail_id",
   "thumbnail_signed_url",
-  "pricing_type",
-  "price",
   "is_published",
 ] as const;
 
@@ -121,8 +125,6 @@ const settingsKey = (
     c?.description,
     c?.thumbnail_url,
     c?.thumbnail_id ?? null,
-    c?.pricing_type,
-    c?.price,
     c?.is_published,
     [...filterIds].sort(),
     [...tagIds].sort(),
@@ -134,6 +136,12 @@ export function saveError(err: unknown, fallback: string) {
   const why = err instanceof ApiError ? err.data.is_published : undefined;
   return Array.isArray(why) && typeof why[0] === "string" ? why[0] : fallback;
 }
+
+/** The creator's sentence from a refused access save, or "". */
+const accessSentence = (err: unknown) =>
+  err instanceof ApiError && typeof err.data.detail === "string"
+    ? err.data.detail
+    : "";
 
 /** The same, as the server holds it. */
 const savedKey = (c: CourseDetail | null) =>
@@ -151,7 +159,6 @@ export function CourseForm({
 }: CourseFormProps) {
   const navigate = useNavigate();
   const t = useTranslations("admin");
-  const currency = useTenantCurrency();
   const isCreate = !initialCourse;
   const [course, setCourse] = useState<CourseDetail | null>(
     initialCourse ?? null,
@@ -164,15 +171,23 @@ export function CourseForm({
   );
   // What the server last gave for the settings card: she has unsaved edits when the card differs.
   const [saved, setSaved] = useState(() => savedKey(initialCourse ?? null));
+  // How students get it: the Access section's ways, saved with the course.
+  const access = useAccess("course", course?.id ?? null);
+  const [accessProblems, setAccessProblems] = useState<AccessProblem[]>([]);
+  const accessDirty =
+    !!access.ways &&
+    !!access.payload &&
+    JSON.stringify(access.ways) !== JSON.stringify(access.payload.ways);
+  const accessDirtyRef = useRef(accessDirty);
+  accessDirtyRef.current = accessDirty;
   const unsaved =
-    !isCreate && settingsKey(course, filterOptionIds, tagIds) !== saved;
+    !isCreate &&
+    (settingsKey(course, filterOptionIds, tagIds) !== saved || accessDirty);
 
   // Create-mode form state
   const [createForm, setCreateForm] = useState({
     title: "",
     description: "",
-    pricing_type: "free" as "free" | "paid" | "subscription",
-    price: "0.00",
     is_published: false,
     thumbnail_url: "",
     thumbnail_id: null as string | null,
@@ -302,6 +317,7 @@ export function CourseForm({
 
   // The settings card as the server should keep it. After it, the server's
   // copy is the new base: what it normalised ("19" -> "19.00") is not hers.
+  const reloadAccess = access.reload;
   const saveSettings = async () => {
     if (!course) return;
     await clientFetch(`/api/v1/courses/${slug}/`, {
@@ -311,13 +327,12 @@ export function CourseForm({
         description: landed("description"),
         thumbnail_url: course.thumbnail_url,
         thumbnail: course.thumbnail_id || null,
-        pricing_type: course.pricing_type,
-        price: course.price,
         is_published: course.is_published,
         filter_option_ids: filterOptionIds,
         tag_ids: tagIds,
       }),
     });
+    await access.save(course.id);
     server.current = null;
     await loadCourse();
   };
@@ -338,31 +353,39 @@ export function CourseForm({
   // the server now has it, so a later save never undoes what it did.
   const wasFocusing = useRef(focusing);
   useEffect(() => {
-    if (wasFocusing.current && !focusing) void loadCourse();
+    if (wasFocusing.current && !focusing) {
+      void loadCourse();
+      if (!accessDirtyRef.current) void reloadAccess();
+    }
     wasFocusing.current = focusing;
-  }, [focusing, loadCourse]);
-  // The cover and price steps change the course on the server: the form takes
+  }, [focusing, loadCourse, reloadAccess]);
+  // The cover and access steps change the course on the server: the form takes
   // that in (the kept cover shows at once), and a later save (Save & leave
-  // with her typed edits) never puts the old price back.
+  // with her typed edits) never puts the old ways back. Ways she changed
+  // herself and has not saved stay hers.
   const settled = creation?.answered
     .filter((line) => line.field === "access" || line.field === "cover")
     .map((line) => `${line.field}:${line.label}`)
     .join("|");
   useEffect(() => {
-    if (focusing && settled) void loadCourse();
-  }, [settled, focusing, loadCourse]);
+    if (!focusing || !settled) return;
+    void loadCourse();
+    if (!accessDirtyRef.current) void reloadAccess();
+  }, [settled, focusing, loadCourse, reloadAccess]);
 
   // --- Save all course fields ---
   const { run: handleSave, loading: saving } = useAsyncAction(
     async () => {
+      if (accessProblems.length) {
+        toast.error(accessProblems[0].text);
+        return;
+      }
       if (isCreate) {
         const created = await clientFetch<Course>("/api/v1/courses/", {
           method: "POST",
           body: JSON.stringify({
             title: createForm.title,
             description: createForm.description,
-            pricing_type: createForm.pricing_type,
-            price: createForm.price,
             is_published: createForm.is_published,
             thumbnail_url: createForm.thumbnail_url,
             thumbnail: createForm.thumbnail_id || null,
@@ -379,6 +402,18 @@ export function CourseForm({
             })),
           }),
         });
+        // The course exists now: a refused access setting must not make a
+        // retry create it twice, so say so and let her fix it on its page.
+        try {
+          await access.save(created.id);
+        } catch (err) {
+          toast.error(
+            `Course created, but how students get it was not saved. ${accessSentence(err)}`,
+          );
+          onCreated?.(created);
+          navigate(`/admin/courses/${created.slug}`);
+          return;
+        }
         toast.success(
           createForm.is_published
             ? "Course published"
@@ -397,10 +432,11 @@ export function CourseForm({
     {
       onError: (err) =>
         toast.error(
-          saveError(
-            err,
-            isCreate ? "Failed to create course" : "Failed to save course",
-          ),
+          accessSentence(err) ||
+            saveError(
+              err,
+              isCreate ? "Failed to create course" : "Failed to save course",
+            ),
         ),
     },
   );
@@ -683,66 +719,21 @@ export function CourseForm({
                 </div>
               </div>
             )}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="pricing_type">Pricing Type</Label>
-                <select
-                  id="pricing_type"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  value={
-                    isCreate
-                      ? createForm.pricing_type
-                      : (course?.pricing_type ?? "free")
-                  }
-                  onChange={(e) => {
-                    const v = e.target.value as
-                      | "free"
-                      | "paid"
-                      | "subscription";
-                    isCreate
-                      ? setCreateForm({ ...createForm, pricing_type: v })
-                      : setCourse(
-                          course ? { ...course, pricing_type: v } : course,
-                        );
-                  }}
-                >
-                  <option value="free">Free</option>
-                  <option value="paid">Paid</option>
-                  <option value="subscription">Included in subscription</option>
-                </select>
-              </div>
-              {(isCreate ? createForm.pricing_type : course?.pricing_type) ===
-                "paid" && (
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price ({currency})</Label>
-                  <Input
-                    id="price"
-                    placeholder={currencySymbol(currency)}
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={
-                      isCreate ? createForm.price : (course?.price ?? "0.00")
-                    }
-                    onChange={(e) =>
-                      isCreate
-                        ? setCreateForm({
-                            ...createForm,
-                            price: e.target.value,
-                          })
-                        : setCourse(
-                            course
-                              ? { ...course, price: e.target.value }
-                              : course,
-                          )
-                    }
-                  />
-                  <MonetizeNudge
-                    price={isCreate ? createForm.price : (course?.price ?? 0)}
-                  />
-                </div>
-              )}
-            </div>
+            <AccessSection
+              kind="course"
+              value={access.ways}
+              onChange={access.setWays}
+              payload={access.payload}
+              onProblems={setAccessProblems}
+            />
+            {access.error && (
+              <p role="alert" className="text-xs text-destructive">
+                {access.error}
+              </p>
+            )}
+            <MonetizeNudge
+              price={parsePrice(access.ways?.buy?.price ?? "") ?? undefined}
+            />
             {focus && (
               <Button
                 type="button"

@@ -526,10 +526,10 @@ test("a saved setting in the plain editor leaves nothing unsaved", async ({ brow
   await stubFocus(page, { open: false });
 
   await page.goto(`${TENANT}/admin/courses/${SLUG}`);
-  await page.locator("#pricing_type").selectOption("paid");
-  await page.locator("#price").fill("19");
+  await page.locator("#access-course-buy").click();
+  await page.locator("#access-course-price").fill("19");
   await page.getByRole("button", { name: "Save Changes" }).click();
-  await expect(page.locator("#price")).toHaveValue("19.00");
+  await expect(page.locator("#access-course-price")).toHaveValue("19.00");
   await expect(page.getByRole("button", { name: "Design a cover" })).toBeEnabled();
   await page.close();
 });
