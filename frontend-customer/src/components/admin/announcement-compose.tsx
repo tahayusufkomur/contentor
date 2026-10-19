@@ -119,10 +119,15 @@ export default function AnnouncementCompose({
     };
   }, [filters, focusId]);
 
+  // The draft focus mode had open here: once focus mode ends, the form
+  // already holds it as she left it, so it is not prefilled over again.
+  const held = useRef<number | null>(null);
+  if (focus) held.current = focus.record;
+
   // "Review & send" a draft: seed the form as a one-off template, keyed on
   // the draft id so switching to a different draft re-prefills.
   useEffect(() => {
-    if (!reviewDraft) return;
+    if (!reviewDraft || reviewDraft.id === held.current) return;
     setTitle(reviewDraft.prefill.title);
     setBody(reviewDraft.prefill.body);
     setLink(reviewDraft.prefill.link);

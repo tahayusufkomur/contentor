@@ -1161,6 +1161,12 @@
         "new": "New class or event",
         "continue": "Continue your class: {title}",
         "fillMyself": "Fill it in myself"
+      },
+      "message": {
+        "new": "New message",
+        "continue": "Continue your message: {title}",
+        "fillMyself": "Write it myself",
+        "tick": "Also by email"
       }
     },
     "youDecide": "You decide",

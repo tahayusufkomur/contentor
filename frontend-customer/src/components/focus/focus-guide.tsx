@@ -32,13 +32,14 @@ import {
   type FocusState,
 } from "@/lib/focus/api";
 import { guideBody, type GuideInput } from "@/lib/focus/guide";
-import { focusTimeKey } from "@/lib/focus/kinds";
+import { focusTimeKey, type FocusKind } from "@/lib/focus/kinds";
 import {
   activeCreation,
   applyCreation as apply,
   creationVersion,
   morePhotos,
   refreshFocusOverview,
+  saveFocusEdits,
   setActiveCreation,
   useActiveCreation,
   useCanMorePhotos,
@@ -105,6 +106,8 @@ export function FocusGuide() {
   const { run: finish, loading: finishing } = useAsyncAction(
     async (publish: boolean, startSelling: boolean, announce: boolean) => {
       if (!state) return;
+      // What she typed a moment ago is what goes out (the composer saves a beat later).
+      if (state.kind === "message") await saveFocusEdits();
       const next = await finishCreation(state.id, {
         publish,
         announce,
@@ -337,6 +340,7 @@ export function FocusGuide() {
           />
         ) : question.kind === "finish" ? (
           <FinishStep
+            kind={state.kind}
             question={question}
             finishing={finishing}
             sending={sending}
@@ -614,12 +618,14 @@ function CoverQuestion({
 }
 
 function FinishStep({
+  kind,
   question,
   finishing,
   sending,
   onFinish,
   onSend,
 }: {
+  kind: FocusKind;
   question: FocusQuestion;
   finishing: boolean;
   sending: boolean;
@@ -633,7 +639,10 @@ function FinishStep({
 }) {
   const t = useTranslations("admin");
   const [choice, setChoice] = useState<string | null>(null);
-  const [tell, setTell] = useState(true);
+  // A message's tick is "Also by email", off unless she asked for it (never
+  // email she did not ask for); the course's and the event's is "Tell my
+  // students", on.
+  const [tell, setTell] = useState(question.tick ?? kind !== "message");
   // The kind's own two (backend FINISH): go live first, keep last. Go live is
   // left out while it is not ready, or while "Start selling" stands in for it.
   const own = question.options.filter(
@@ -672,14 +681,18 @@ function FinishStep({
             >
               {live.label}
             </Button>
-            {/* Marketing drafts an announcement once it is live. */}
+            {/* Marketing drafts an announcement once it is live; a message also goes by email. */}
             <label className="flex items-center gap-2 text-sm text-foreground">
               <Checkbox
                 checked={tell}
                 disabled={busy}
                 onCheckedChange={(value) => setTell(value === true)}
               />
-              {t("focus.tellStudents")}
+              {t(
+                kind === "message"
+                  ? "focus.kinds.message.tick"
+                  : "focus.tellStudents",
+              )}
             </label>
           </>
         )}

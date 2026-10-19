@@ -3,8 +3,9 @@
     "billing": ["20-stripe-platform", "21-stripe-marketplace"],
     "blog": "none",
     "community": ["15-community"],
-    "core/focus": ["33-focus-course", "34-focus-event"],
+    "core/focus": ["33-focus-course", "34-focus-event", "35-focus-message"],
     "core/focus/kinds/event.py": ["34-focus-event"],
+    "core/focus/kinds/message.py": ["35-focus-message"],
     "courses": ["02-courses"],
     "domains": ["01-signup-onboarding"],
     "downloads": ["12-downloads"],
@@ -92,8 +93,17 @@
     "src/app/admin/studio": ["32-photo-studio"],
     "src/app/admin/courses": ["02-courses", "33-focus-course"],
     "src/components/admin/course-form.tsx": ["02-courses", "33-focus-course"],
-    "src/components/focus": ["33-focus-course", "34-focus-event"],
-    "src/lib/focus": ["33-focus-course", "34-focus-event"],
+    "src/components/focus": [
+      "33-focus-course",
+      "34-focus-event",
+      "35-focus-message"
+    ],
+    "src/lib/focus": ["33-focus-course", "34-focus-event", "35-focus-message"],
+    "src/app/admin/messages": ["06-announcements", "35-focus-message"],
+    "src/components/admin/announcement-compose.tsx": [
+      "06-announcements",
+      "35-focus-message"
+    ],
     "src/components/admin/live": [
       "03-calendar",
       "13-events-page",

@@ -36,6 +36,8 @@ export interface FocusQuestion {
   paid_active?: boolean;
   /** A schedule question: her site's time zone, the one its times are in (G13). */
   timezone?: string;
+  /** A message's finish: "Also by email" as her words left it. */
+  tick?: boolean;
 }
 
 export interface FocusRecord {
