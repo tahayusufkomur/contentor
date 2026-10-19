@@ -64,3 +64,6 @@ docs/screenshot-map/
 .tokensave/
 .playwright-mcp/
 graphify-out/
+
+# impeccable design-checker local config/cache (absolute paths)
+.impeccable/
