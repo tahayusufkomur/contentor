@@ -47,14 +47,25 @@ export function spanText(days: number): string {
   return `${days} days`;
 }
 
-/** An ISO date as a local calendar date ("26 Oct 2026"); never via UTC midnight. */
+const MON = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+/** An ISO date as "26 Oct 2026", like the backend's `%-d %b %Y` (ICU says "Sept"). */
 function day(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return `${d} ${MON[m - 1]} ${y}`;
 }
 
 function money(amount: string, currency: string): string {
@@ -204,6 +215,6 @@ export function problems(
 export function parsePrice(input: string): string | null {
   const text = input.trim().replace(",", ".");
   if (!/^\d+(\.\d+)?$/.test(text)) return null;
-  const n = Number(text);
-  return n > 0 ? n.toFixed(2) : null;
+  const out = Number(text).toFixed(2);
+  return Number(out) > 0 ? out : null;
 }

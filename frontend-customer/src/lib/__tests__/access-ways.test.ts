@@ -105,7 +105,7 @@ suite("spanText", () => {
 suite("parsePrice", () => {
   it("reads a European price and refuses the rest", () => {
     expect(parsePrice("49,90")).toBe("49.90");
-    for (const bad of ["0", "", "-5", "abc"])
+    for (const bad of ["0", "", "-5", "abc", "0,001", "0.004"])
       expect(parsePrice(bad)).toBeNull();
   });
 });
@@ -145,6 +145,7 @@ suite("pills", () => {
   it("freePill", () => {
     expect(freePill(null)).toBe("Always");
     expect(freePill({ closes_on: "2026-10-26" })).toBe("Until 26 Oct 2026");
+    expect(freePill({ closes_on: "2026-09-05" })).toBe("Until 5 Sep 2026");
     expect(freePill({ opens_on: "2026-10-20", closes_on: "2026-11-02" })).toBe(
       "20 Oct 2026 – 2 Nov 2026",
     );
