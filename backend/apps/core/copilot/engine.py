@@ -50,8 +50,9 @@ SYSTEM_PROMPT = (
     "types from the field guide — their layout follows that style\n"
     "- remove_block / move_block: by block id from the page digest\n"
     "- create_course: create a DRAFT course (title, description, price, "
-    "modules each with lesson titles); the coach reviews and publishes it "
-    "from their admin\n"
+    "modules each with lesson titles); price is the shorthand for selling it "
+    "once, and it may carry access (the same ways shape as set_access) for "
+    "anything more; the coach reviews and publishes it from their admin\n"
     "- edit_course: update an existing course's title, description, or "
     "price (course_id from the course list); modules and lessons change "
     "through edit_curriculum\n"
@@ -92,7 +93,8 @@ SYSTEM_PROMPT = (
     "zoom_link when the coach gave one) or an in-person event "
     "(event_kind=onsite, include location), with a future "
     "ISO 8601 scheduled_at — it becomes visible to students once the coach "
-    "confirms the card\n"
+    "confirms the card; price sells it once and it may carry access (the "
+    "same ways shape as set_access)\n"
     "- create_blog_post: create a DRAFT blog post (title, one-sentence "
     "summary, full body_html using simple tags: h2, h3, p, ul, li, strong)\n"
     "- draft_announcement: write an announcement to students as a DRAFT the "
@@ -294,6 +296,7 @@ class CreateCourseAction(BaseModel):
     title: str
     description: str = ""
     price: float = 0
+    access: dict | None = None
     modules: list[CourseModuleOutline] = Field(default_factory=list)
 
 
@@ -306,6 +309,7 @@ class CreateEventAction(BaseModel):
     location: str = ""
     zoom_link: str = ""
     price: float = 0
+    access: dict | None = None
 
 
 class CreateBlogPostAction(BaseModel):
@@ -722,7 +726,8 @@ def _subscriptions_digest(tenant):
         n = p.billing_interval_months
         cycle = {1: "monthly", 12: "yearly"}.get(n, f"every {n} months")
         lines.append(
-            f"  {p.id} | {str(p.name)[:60]} | {p.price} | {cycle} | {'on sale' if p.is_active else 'off sale'} | {p.items}"
+            f"  {p.id} | {str(p.name)[:60]} | {p.price} | {cycle} | "
+            f"{'on sale' if p.is_active else 'off sale'} | {p.items}"
         )
     return "\n".join(lines)
 
@@ -767,7 +772,8 @@ def _events_digest(tenant):
         cover = "has cover" if (e.thumbnail_id or e.thumbnail_url) else "NO COVER"
         when = f"{e.scheduled_at.astimezone(zone):%a %Y-%m-%dT%H:%M}"
         lines.append(
-            f"  {e.id} | {kind} | {str(e.title)[:60]} | {when} | {access[(kind, e.id)]} | {cover} | {admin_link} | {site_link}"
+            f"  {e.id} | {kind} | {str(e.title)[:60]} | {when} | {access[(kind, e.id)]} | "
+            f"{cover} | {admin_link} | {site_link}"
         )
     return "\n".join(lines)
 
@@ -1003,6 +1009,18 @@ def _label_of(tenant, page, block_id):
         {},
     )
     return _block_label(found.get("type", ""))
+
+
+def _access_detail(tenant, item, access, actor):
+    """The ways a create card carries, checked as they will be applied to a new ``item`` -> plain words."""
+    from apps.billing import ways
+
+    with tenant_context(tenant):
+        try:
+            ways.validate(item, access, actor=actor)
+            return ways.describe(access)
+        except ways.WaysError as exc:
+            raise content.ContentOpError(str(exc)) from exc
 
 
 def _card(tenant, action, actor=None):
@@ -1505,10 +1523,16 @@ def _card(tenant, action, actor=None):
         }
         lesson_count = sum(len(m.lessons) for m in action.modules)
         price_label = "free" if price == 0 else params["price"]
+        detail = f"{len(action.modules)} module(s), {lesson_count} lesson(s) — {price_label}"
+        if action.access:
+            from apps.courses.models import Course
+
+            params["access"] = action.access
+            detail = _access_detail(tenant, Course(), action.access, actor)
         return {
             "kind": "create_course",
             "title": f"Create draft course: {action.title[:120]}",
-            "detail": f"{len(action.modules)} module(s), {lesson_count} lesson(s) — {price_label}",
+            "detail": detail,
             "token": tokens.stash_action(schema, {"kind": "create_course", "params": params}),
         }
     if isinstance(action, CreateEventAction):
@@ -1528,10 +1552,16 @@ def _card(tenant, action, actor=None):
         if action.event_kind == "zoom" and action.zoom_link:
             params["zoom_link"] = action.zoom_link[:500]
         label = content.EVENT_KINDS[action.event_kind][4]
+        detail = f"{when:%a %b %d, %Y %H:%M %Z} — visible to students once confirmed"
+        if action.access:
+            params["access"] = action.access
+            detail = (
+                f"{detail}. {_access_detail(tenant, content.event_model(action.event_kind)(), action.access, actor)}"
+            )
         return {
             "kind": "create_event",
             "title": f"Schedule {label}: {action.title[:120]}",
-            "detail": f"{when:%a %b %d, %Y %H:%M %Z} — visible to students once confirmed",
+            "detail": detail,
             "token": tokens.stash_action(
                 schema, {"kind": "create_event", "event_kind": action.event_kind, "params": params}
             ),

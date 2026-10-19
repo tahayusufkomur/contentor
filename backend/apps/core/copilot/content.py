@@ -9,7 +9,10 @@ copilot's confirmation card is the review step and states the date.
 Callers wrap these in tenant_context; imports are function-local to match
 apps/core's cycle-dodging convention."""
 
+from decimal import Decimal
+
 from django.conf import settings
+from django.db import transaction
 
 
 class ContentOpError(Exception):
@@ -59,15 +62,45 @@ def _give_cover(item, field="thumbnail"):
         item.save(update_fields=[field])
 
 
+def _set_access(item, access, user):
+    """The ways a create card carried, written once the item exists (a refusal rolls the create back)."""
+    if not access:
+        return
+    from apps.billing import ways
+
+    try:
+        ways.set_ways(item, access, actor=user)
+    except ways.WaysError as error:
+        raise ContentOpError(str(error)) from error
+
+
+def _set_price(item, price, user):
+    """A price edit changes only the sell-once way; subscriptions and the rest stay."""
+    from apps.billing import ways
+
+    # Selling something free for everyone is a switch to paid; a price beside a windowed free way, or beside
+    # plans, only adds the sell-once way.
+    free = ways.ways_of(item)["free"]
+    pricing_type = "paid" if free and not free["window"] and Decimal(price) > 0 else None
+    try:
+        ways.apply_shorthand(item, pricing_type=pricing_type, price=price, actor=user)
+    except ways.WaysError as error:
+        raise ContentOpError(str(error)) from error
+
+
 def create_course(user, params, *, cover=True):
     """``cover=False``: the caller gives the cover later (focus mode, once the
     outline has written the real title; its first tap never waits on a search)."""
     from apps.courses.serializers import CourseCreateUpdateSerializer
 
+    params = dict(params)
+    access = params.pop("access", None)
     serializer = CourseCreateUpdateSerializer(data=params)
     if not serializer.is_valid():
         _fail(serializer.errors)
-    course = serializer.save(instructor=user, is_published=False)
+    with transaction.atomic():
+        course = serializer.save(instructor=user, is_published=False)
+        _set_access(course, access, user)
     if cover:
         _give_cover(course)
     return {
@@ -111,10 +144,14 @@ def create_event(user, kind, params, *, cover=True):
     from apps.live import serializers
 
     kind = event_kind(kind)
+    params = dict(params)
+    access = params.pop("access", None)
     serializer = getattr(serializers, EVENT_KINDS[kind][1])(data=params)
     if not serializer.is_valid():
         _fail(serializer.errors)
-    event = serializer.save(instructor=user)
+    with transaction.atomic():
+        event = serializer.save(instructor=user)
+        _set_access(event, access, user)
     if cover:
         _give_cover(event)
     return {
@@ -128,7 +165,7 @@ def create_event(user, kind, params, *, cover=True):
 _COURSE_EDIT_FIELDS = ("title", "description", "price")
 
 
-def edit_course(course_id, params):
+def edit_course(course_id, params, *, user=None):
     from apps.courses.models import Course
     from apps.courses.serializers import CourseCreateUpdateSerializer
 
@@ -136,20 +173,24 @@ def edit_course(course_id, params):
     if course is None:
         raise ContentOpError(f"no course with id {course_id}")
     data = {k: v for k, v in params.items() if k in _COURSE_EDIT_FIELDS and v is not None}
-    if "price" in data:
-        price = max(float(data["price"]), 0)
-        data["price"] = f"{price:.2f}"
-        data["pricing_type"] = "paid" if price > 0 else "free"
-    if not data:
+    price = data.pop("price", None)
+    if price is not None:
+        price = f"{max(float(price), 0):.2f}"
+    fields = [*data, *(["price"] if price is not None else [])]
+    if not fields:
         raise ContentOpError("nothing to change on the course")
-    old = {k: str(getattr(course, k)) for k in data}
+    old = {k: str(getattr(course, k)) for k in fields}
     serializer = CourseCreateUpdateSerializer(instance=course, data=data, partial=True)
     if not serializer.is_valid():
         _fail(serializer.errors)
-    course = serializer.save()
+    with transaction.atomic():
+        course = serializer.save()
+        if price is not None:
+            _set_price(course, price, user)
+    course.refresh_from_db()
     changes = [
         {"field": k, "old": old[k][:200], "new": str(getattr(course, k))[:200]}
-        for k in data
+        for k in fields
         if old[k] != str(getattr(course, k))
     ]
     if not changes:
@@ -163,7 +204,7 @@ def edit_course(course_id, params):
     }
 
 
-def edit_event(event_id, kind, params):
+def edit_event(event_id, kind, params, *, user=None):
     from django.utils import timezone
     from django.utils.dateparse import parse_datetime
 
@@ -194,10 +235,11 @@ def edit_event(event_id, kind, params):
         if when <= timezone.now():
             raise ContentOpError("event date must be in the future")
         _set("scheduled_at", when)
+    price = None
     if params.get("price") is not None:
-        price = max(float(params["price"]), 0)
-        _set("price", f"{price:.2f}")
-        _set("pricing_type", "paid" if price > 0 else "free")
+        price = f"{max(float(params['price']), 0):.2f}"
+        if Decimal(price) == event.price:
+            price = None
     if kind == "onsite" and params.get("location"):
         _set("location", str(params["location"])[:500])
     if kind == "zoom" and params.get("zoom_link"):
@@ -210,13 +252,18 @@ def edit_event(event_id, kind, params):
         except ValidationError as exc:
             raise ContentOpError("that Zoom link is not a full web address (https://…)") from exc
         _set("zoom_link", link)
-    if not changes:
+    if not changes and price is None:
         raise ContentOpError("nothing to change on the event")
     # The event form's rule (_ScheduledOnCreateMixin): an undated draft that gets a
     # date goes on the schedule; a held draft (one that had a date) stays a draft.
     if event.status == "draft" and not was_dated and event.scheduled_at:
         _set("status", "scheduled")
-    event.save(update_fields=[c["field"] for c in changes])
+    with transaction.atomic():
+        event.save(update_fields=[c["field"] for c in changes])
+        if price is not None:
+            was = f"{event.price:.2f}"
+            _set_price(event, price, user)
+            changes.append({"field": "price", "old": was, "new": f"{event.price:.2f}"})
     return {
         "kind": "edit_event",
         "id": event.id,

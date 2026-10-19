@@ -179,9 +179,11 @@ _CREATORS = {
     "create_event": lambda user, action: content.create_event(user, action["event_kind"], action["params"]),
     "create_blog_post": lambda user, action: content.create_blog_post(user, action["params"]),
     "draft_announcement": lambda user, action: content.create_announcement_draft(user, action["params"]),
-    "edit_course": lambda user, action: content.edit_course(action["course_id"], action["params"]),
+    "edit_course": lambda user, action: content.edit_course(action["course_id"], action["params"], user=user),
     "edit_curriculum": lambda user, action: content.edit_curriculum(action["course_id"], action["ops"]),
-    "edit_event": lambda user, action: content.edit_event(action["event_id"], action["event_kind"], action["params"]),
+    "edit_event": lambda user, action: content.edit_event(
+        action["event_id"], action["event_kind"], action["params"], user=user
+    ),
     "edit_blog_post": lambda user, action: content.edit_blog_post(action["post_id"], action["params"]),
     "publish_course": lambda user, action: content.publish_course(action["course_id"]),
     "publish_blog_post": lambda user, action: content.publish_blog_post(action["post_id"]),

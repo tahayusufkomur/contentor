@@ -8,9 +8,8 @@ import pytest
 from apps.accounts.models import User
 from apps.billing.models import SubscriptionPlan
 from apps.billing.ways import set_ways, ways_of
-from apps.core.copilot import content
+from apps.core.copilot import content, engine
 from apps.core.copilot import context as page_context
-from apps.core.copilot import engine
 from apps.courses.models import Course
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -118,7 +117,9 @@ def test_a_bundle_card_names_the_bundle(tenant_ctx, owner):
     card = engine._card(tenant_ctx, action)
     assert card["title"] == "Set access for Starter Pack"
     assert card["detail"] == "€59 once with 3 months of access."
-    coach = User.objects.create_user(email="coach@copilot-access.test", name="Coach", password="secret123", role="coach")
+    coach = User.objects.create_user(
+        email="coach@copilot-access.test", name="Coach", password="secret123", role="coach"
+    )
     with pytest.raises(content.ContentOpError, match="owner"):
         engine._card(tenant_ctx, action, actor=coach)
 
@@ -150,7 +151,9 @@ def test_undo_puts_the_old_ways_back(tenant_ctx, euro_sign, owner, course, gold)
 
 
 def test_a_coach_cannot_change_plans_through_the_assistant(tenant_ctx, course, gold):
-    coach = User.objects.create_user(email="coach@copilot-access.test", name="Coach", password="secret123", role="coach")
+    coach = User.objects.create_user(
+        email="coach@copilot-access.test", name="Coach", password="secret123", role="coach"
+    )
     with pytest.raises(content.ContentOpError, match="owner"):
         engine._card(tenant_ctx, _action(course, _ways_with(gold)), actor=coach)
     # the system (no actor) may
@@ -161,3 +164,45 @@ def test_a_coach_cannot_change_plans_through_the_assistant(tenant_ctx, course, g
         payload, _ = engine.run_turn(tenant_ctx, [], [], "hi", actor=coach)
     assert payload["kind"] == "answer"
     assert "owner" in payload["text"]
+
+
+def test_a_price_edit_on_a_members_only_course_keeps_its_plans(tenant_ctx, owner, gold):
+    members_only = Course.objects.create(
+        title="Members Course", slug="members-course", instructor=owner, pricing_type="subscription"
+    )
+    set_ways(members_only, {"plans": [{"plan_id": gold.pk}]})
+    result = content.edit_course(members_only.pk, {"price": 39}, user=owner)
+    assert ways_of(Course.objects.get(pk=members_only.pk)) == {
+        "free": None,
+        "buy": {"price": "39.00", "window": None},
+        "plans": [{"plan_id": gold.pk, "window": None}],
+    }
+    assert result["changes"] == [{"field": "price", "old": "0.00", "new": "39.00"}]
+    content.edit_course(members_only.pk, {"price": 0}, user=owner)
+    ways = ways_of(Course.objects.get(pk=members_only.pk))
+    assert ways["buy"] is None
+    assert [p["plan_id"] for p in ways["plans"]] == [gold.pk]
+
+
+def test_create_course_with_access_sets_the_ways(tenant_ctx, owner, gold):
+    access = {"buy": {"price": "49.00", "window": {"closes_after_days": 365}}, "plans": [{"plan_id": gold.pk}]}
+    result = content.create_course(owner, {"title": "Fresh Course", "access": access}, cover=False)
+    assert ways_of(Course.objects.get(pk=result["id"])) == {
+        "free": None,
+        "buy": {"price": "49.00", "window": {"closes_after_days": 365}},
+        "plans": [{"plan_id": gold.pk, "window": None}],
+    }
+
+
+def test_a_create_card_with_access_says_it_and_carries_it(tenant_ctx, gold):
+    from apps.core.copilot import tokens
+
+    access = {"plans": [{"plan_id": gold.pk}]}
+    card = engine._card(tenant_ctx, engine.CreateCourseAction(kind="create_course", title="Members", access=access))
+    assert card["detail"] == "In Gold."
+    assert tokens.take_action(card["token"], tenant_ctx.schema_name)["params"]["access"] == access
+    coach = User.objects.create_user(
+        email="coach2@copilot-access.test", name="Coach", password="secret123", role="coach"
+    )
+    with pytest.raises(content.ContentOpError, match="owner"):
+        engine._card(tenant_ctx, engine.CreateCourseAction(kind="create_course", title="M", access=access), actor=coach)

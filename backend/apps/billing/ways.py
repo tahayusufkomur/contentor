@@ -356,11 +356,11 @@ def describe(ways: dict) -> str:
 
     parts = []
     if ways.get("free"):
-        clauses = _clauses(ways["free"]["window"], "after {} of joining", "for {} after joining")
+        clauses = _clauses(ways["free"].get("window"), "after {} of joining", "for {} after joining")
         parts.append(" ".join(["Free", *clauses]) if clauses else "Free for everyone")
     if ways.get("buy"):
         buy = ways["buy"]
-        clauses = _clauses(buy["window"], "opening {} after purchase", "with {} of access")
+        clauses = _clauses(buy.get("window"), "opening {} after purchase", "with {} of access")
         parts.append(f"{money(buy['price'])} once" + (" " + ", ".join(clauses) if clauses else ", theirs to keep"))
     if ways.get("plans"):
         ids = [p["plan_id"] for p in ways["plans"]]
@@ -369,7 +369,7 @@ def describe(ways: dict) -> str:
         for p in ways["plans"]:
             if p["plan_id"] not in names:
                 raise WaysError("plan", "One of those subscriptions no longer exists.")
-            clauses = tuple(_clauses(p["window"], "after {} of membership", "for {} of membership"))
+            clauses = tuple(_clauses(p.get("window"), "after {} of membership", "for {} of membership"))
             groups.setdefault(clauses, []).append(names[p["plan_id"]])
         parts.append(
             ", ".join(
