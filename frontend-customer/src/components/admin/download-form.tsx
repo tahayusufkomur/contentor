@@ -254,6 +254,14 @@ export function DownloadForm({
     if (focus && fileAnswered && !recordRef.current?.file_url) focus.reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once she has answered it
   }, [fileAnswered]);
+  // The cover step keeps the cover on the server: the page shows it at once.
+  const coverAnswered = creation?.answered.find(
+    (line) => line.field === "cover",
+  )?.label;
+  useEffect(() => {
+    if (focus && coverAnswered) focus.reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per cover answer
+  }, [coverAnswered]);
   const atCover =
     !!focus &&
     !!creation &&
@@ -442,7 +450,10 @@ export function DownloadForm({
     };
   }, [focusId]);
 
-  const fileName = record?.file_url ? record.file_url.split("/").pop() : "";
+  // The stored name is a random key, not hers: say its type instead.
+  const fileName = record?.file_url
+    ? (/\.([a-z0-9]+)$/i.exec(record.file_url)?.[1].toUpperCase() ?? t("file"))
+    : "";
   const titleMissing = !own.title.trim();
   const busy = saving || uploading;
 

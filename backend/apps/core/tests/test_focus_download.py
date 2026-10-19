@@ -116,6 +116,15 @@ def test_publish_is_refused_without_a_file(owner):
     assert creation.answers["finish"] == "draft"
 
 
+def test_the_kept_line_asks_for_the_file_only_when_it_is_missing(owner):
+    with_file = flow.finish(_at_finish(owner), publish=False)
+    assert flow.closing_line(with_file) == "Saved as a draft. Publish it from this page when you're ready."
+    without = flow.finish(_at_finish(owner, file=False), publish=False)
+    assert (
+        flow.closing_line(without) == "Saved as a draft. Add the file and publish it from this page when you're ready."
+    )
+
+
 def test_add_it_later_moves_on_and_finish_offers_only_keep(owner):
     creation = flow.start(owner, "download", value=TOPIC)
     creation = flow.answer(creation, "file", value="later")

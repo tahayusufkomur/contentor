@@ -40,7 +40,12 @@ NO_FILE = "Add the file first"
 FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
 CLOSING = {
     "publish": "Published. Students can find it on your site now.",
-    "draft": "Saved as a draft. Add the file and publish it from this page when you're ready.",
+    # Asks for the file only while it is missing.
+    "draft": lambda row: (
+        "Saved as a draft. Publish it from this page when you're ready."
+        if row is not None and row.file_url
+        else "Saved as a draft. Add the file and publish it from this page when you're ready."
+    ),
 }
 NOT_READY_LINE = "Your download is saved as a draft."
 

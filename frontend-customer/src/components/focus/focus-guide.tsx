@@ -304,7 +304,9 @@ export function FocusGuide() {
             {t(
               state.kind === "message"
                 ? "focus.kinds.message.thinking"
-                : "focus.thinking",
+                : state.kind === "download"
+                  ? "focus.kinds.download.thinking"
+                  : "focus.thinking",
             )}
           </p>
           <div>
