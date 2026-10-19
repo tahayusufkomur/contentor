@@ -13,8 +13,8 @@ from apps.accounts.models import User
 from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import runs
-from apps.core.focus import analysis, flow, jobs, outline
-from apps.core.focus.kinds.course import SIZES
+from apps.core.focus import flow, jobs, outline
+from apps.core.focus.kinds.course import SIZES, CourseFound
 from apps.courses.models import Course, Lesson, Module
 from apps.tenant_config.models import CopilotRun
 from apps.tenant_config.setup_flow import _Module
@@ -376,10 +376,8 @@ def _typed(owner, brief=None):
 
 
 def test_the_outline_reads_her_first_answer_itself_when_the_analysis_failed(owner):
-    from apps.core.focus import analysis
-
     run_id, creation = _typed(owner)
-    found = analysis.Analysis(modules=2, lessons=3, notes="Ten minute lessons")
+    found = CourseFound(modules=2, lessons=3, notes="Ten minute lessons")
     with (
         mock.patch("apps.core.focus.analysis.read", return_value=found) as read,
         _model(draft=_draft(modules=5, lessons=5)) as model,
@@ -456,7 +454,7 @@ def _redrafted(owner, found, model_draft):
     with _model(draft=_draft(modules=4, lessons=3)):
         jobs.execute(SCHEMA, creation.outline_run_id)
     creation.refresh_from_db()
-    creation.pending = {"field": "outline_review", "text": found.outline_change}
+    creation.pending = {"field": "outline_review", "text": found.change}
     flow.apply(creation, found)
     creation.save()
     with _model(draft=model_draft):
@@ -466,19 +464,19 @@ def _redrafted(owner, found, model_draft):
 
 
 def test_a_redraft_without_a_count_is_not_cut_back_to_the_first_answers_counts(owner):
-    found = analysis.Analysis(outline_change="add a module on stretching")
+    found = CourseFound(change="add a module on stretching")
     creation = _redrafted(owner, found, _draft(modules=5, lessons=3))
     assert _course(creation).modules.count() == 5
 
 
 def test_removing_a_module_pads_nothing_back(owner):
-    found = analysis.Analysis(outline_change="remove module 3")
+    found = CourseFound(change="remove module 3")
     creation = _redrafted(owner, found, _draft(modules=3, lessons=3))
     assert list(_course(creation).modules.values_list("title", flat=True)) == ["Module 1", "Module 2", "Module 3"]
     assert "capped" not in creation.brief
 
 
 def test_a_redraft_that_names_new_counts_still_gets_them_exactly(owner):
-    found = analysis.Analysis(outline_change="make it 6 modules", modules=6)
+    found = CourseFound(change="make it 6 modules", modules=6)
     creation = _redrafted(owner, found, _draft(modules=4, lessons=3))
     assert _course(creation).modules.count() == 6

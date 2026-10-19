@@ -174,6 +174,7 @@ def _read_first_answer(tenant, creation, course) -> dict:
         found = analysis.read(
             tenant,
             topic,
+            kind=creation.kind,
             question=question(creation.kind, "topic")["question"],
             outline_exists=False,
             currency=tenant_charge_currency(tenant),

@@ -17,6 +17,7 @@ from apps.core import tasks
 from apps.core.curated_images import client
 from apps.core.curated_images.cache import tenant_key_for
 from apps.core.focus import covers, flow, jobs, outline
+from apps.core.focus.kinds.course import CourseFound
 from apps.courses.models import Course
 from apps.media.models import Design, Photo
 from apps.tenant_config.models import CopilotAudit, CopilotRun, FocusCreation
@@ -211,7 +212,7 @@ def test_a_photo_query_she_said_while_the_first_round_drew_survives(outlined, pl
 
     def she_speaks_meanwhile(**kwargs):  # her analysis lands between the job's start and its locked write
         result = drawn(**kwargs)
-        found = flow.analysis.Analysis(photo="hands on a keyboard, no faces")
+        found = CourseFound(photo="hands on a keyboard, no faces")
         creation = FocusCreation.objects.get(pk=outlined.pk)
         creation.pending = {"field": "cover", "text": "hands on a keyboard, no faces"}
         flow.apply(creation, found)

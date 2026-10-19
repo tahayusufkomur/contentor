@@ -14,7 +14,8 @@ from apps.accounts.models import User
 from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import runs
-from apps.core.focus import analysis, descriptions, flow, jobs, outline
+from apps.core.focus import descriptions, flow, jobs, outline
+from apps.core.focus.kinds.course import CourseFound
 from apps.core.sanitize import clean_rich_html
 from apps.courses.models import Course, Lesson
 from apps.tenant_config.models import CopilotRun, FocusCreation
@@ -277,8 +278,8 @@ def test_lessons_deleted_meanwhile_are_skipped(owner, at_review, texts):
 
 def test_a_redraft_stops_the_descriptions_and_rewrites_the_new_lessons(owner, at_review, texts):
     creation, old_run = _confirm(at_review)
-    found = analysis.Analysis(outline_change="make it one module")
-    creation.pending = {"field": "outline_review", "text": found.outline_change}
+    found = CourseFound(change="make it one module")
+    creation.pending = {"field": "outline_review", "text": found.change}
     flow.apply(creation, found)
     creation.save()
     assert CopilotRun.objects.get(pk=old_run).status == "stopped"
@@ -295,8 +296,8 @@ def test_a_redraft_stops_the_descriptions_and_rewrites_the_new_lessons(owner, at
 
 
 def test_a_redraft_before_she_confirmed_starts_no_descriptions(owner, at_review):
-    found = analysis.Analysis(outline_change="make it one module")
-    at_review.pending = {"field": "outline_review", "text": found.outline_change}
+    found = CourseFound(change="make it one module")
+    at_review.pending = {"field": "outline_review", "text": found.change}
     flow.apply(at_review, found)
     at_review.save()
     creation = _write_outline(at_review, _draft(modules=1))

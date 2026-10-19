@@ -5,6 +5,7 @@ import dataclasses
 import importlib
 import sys
 import types
+from decimal import Decimal
 from unittest import mock
 
 import pytest
@@ -12,7 +13,7 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.core import tasks
-from apps.core.focus import flow, kinds
+from apps.core.focus import analysis, flow, kinds
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -32,6 +33,10 @@ ADAPTER = (
     "CLOSING",
     "NOT_READY_LINE",
     "skips",
+    "FOUND",
+    "RULES",
+    "apply_found",
+    "UNCLEAR_FIELDS",
 )
 STUB = "apps.core.tests.focus_stub_kind"
 
@@ -63,6 +68,8 @@ def _stub(monkeypatch, skips=frozenset()):
     stub.create_draft = lambda actor, title, answers: None
     stub.record = lambda record_id: None
     stub.skips = lambda creation: set(skips)
+    stub.FOUND, stub.RULES, stub.UNCLEAR_FIELDS = analysis.Found, "", ("price",)
+    stub.apply_found = lambda creation, found, **step: None
     monkeypatch.setitem(sys.modules, STUB, stub)
     monkeypatch.setitem(kinds.KINDS, "stub", STUB)
     return stub
@@ -78,8 +85,30 @@ def test_every_kind_module_has_the_whole_adapter():
         assert set(module.CLOSING) == {"publish", "draft"}
         for name in ("create_draft", "record", "payload", "retitle", "set_price", "not_ready", "cannot_sell"):
             assert callable(getattr(module, name)), f"{kind}.{name}"
-        assert callable(module.go_live) and callable(module.skips)
+        assert callable(module.go_live) and callable(module.skips) and callable(module.apply_found)
+        assert issubclass(module.FOUND, analysis.Found) and module.UNCLEAR_FIELDS
         assert module.put_in_plan is None or callable(module.put_in_plan)
+
+
+def test_a_kind_reads_only_its_own_fields(monkeypatch):
+    stub = _stub(monkeypatch)
+    assert stub.FOUND is analysis.Found
+    assert "modules" not in stub.FOUND.model_json_schema()["properties"]
+    assert "modules" in kinds.get("course").FOUND.model_json_schema()["properties"]
+
+
+def test_an_unclear_field_outside_the_kind_is_dropped(tenant_ctx, monkeypatch):
+    _stub(monkeypatch)  # asks about "price" only
+    found = analysis.Found(
+        unclear=[analysis.Unclear(field=field, question="?", options=[]) for field in ("modules", "price")]
+    )
+    with (
+        mock.patch("apps.core.focus.analysis.core_ai.structured", return_value=(found, Decimal("0"), "x")) as model,
+        mock.patch("apps.core.focus.analysis.ai_compose.record_spend"),
+    ):
+        read = analysis.read(tenant_ctx, "x", kind="stub", question="?", outline_exists=False, currency="usd")
+    assert [u.field for u in read.unclear] == ["price"]
+    assert model.call_args.kwargs["output_model"] is analysis.Found
 
 
 def test_an_unknown_kind_is_refused():

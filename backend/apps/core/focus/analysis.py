@@ -1,13 +1,14 @@
 """The analysis of a typed answer (spec §5.1): one structured call reads what
-she typed into typed fields (topic, level, counts, titles, price, notes, an
-outline change, what is unclear), told the question on her screen. The flow
-applies them (``flow.apply``), so she skips the questions it answered. A job
-on the agents worker; when it fails, she gets the usual questions and her
-words answer the one on screen (stage 1)."""
+she typed into typed fields (the topic, price, notes, a change and what is
+unclear that every kind shares, and the kind's own, such as a course's level
+and counts), told the question on her screen. The flow applies them
+(``flow.apply``), so she skips the questions it answered. A job on the
+agents worker; when it fails, she gets the usual questions and her words
+answer the one on screen (stage 1)."""
 
 import json
 from decimal import Decimal, InvalidOperation
-from typing import Literal
+from functools import cache
 
 from django.conf import settings
 from django.db import transaction
@@ -18,50 +19,51 @@ from apps.core.copilot import runs
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotRun, FocusCreation
 
-from . import jobs, outline
+from . import jobs, kinds
 
 MAX_COUNT = 12  # modules, and lessons per module
 MAX_TOTAL = MAX_COUNT * MAX_COUNT
 MAX_PRICE = Decimal("99999999.99")  # Course.price: 10 digits, 2 decimals
 STEP = {"specialist": "content", "label": "Reading your details"}
 
-# Static, byte-identical across tenants (prompt caching); her words ride the user turn.
-SYSTEM = (
-    "A coach is creating ONE online course in a guided flow, one question at a time. Read what she "
-    "typed ('text') and return typed fields. You also get 'question' (the question on her screen), "
-    "'outline_exists' (whether the course outline is already drafted), 'cover_step' (whether she is "
-    "choosing her cover), 'currency' (the currency her site charges in) and her site (brand, niche, "
-    "description, her_courses).\n"
+# Static per kind, byte-identical across tenants (prompt caching); her words ride the user turn.
+# ``{noun}`` is the kind's word ("course"), ``{unclear}`` the fields the kind may be unclear about.
+SHARED_RULES = (
+    "A coach is creating ONE {noun} in a guided flow, one question at a time. Read what she typed ('text') "
+    "and return typed fields. You also get 'question' (the question on her screen), 'outline_exists' "
+    "(whether a draft of the {noun} already exists), 'cover_step' (whether she is choosing her cover), "
+    "'currency' (the currency her site charges in) and her site (brand, niche, description, her_courses).\n"
     "Rules:\n"
     "- Fill only what she said. Never guess: a field she did not mention stays empty ('', null or []).\n"
     "- answer: her answer to 'question', in her words; '' when she said something else.\n"
     "- topic: what her students will learn, short, in her words.\n"
-    "- level: 'beginners' (complete beginners), 'some' (some experience) or 'advanced' when it "
-    "matches; otherwise who it is for, in her words.\n"
-    "- modules: how many modules. lessons: how many lessons per module. total: how many lessons in "
-    "all, only when she gave a total instead of a number per module.\n"
-    "- named: the module and lesson titles she wrote, word for word and in her order. Lessons she "
-    "named without a module go in one module with an empty title.\n"
     "- price: 'free'; 'membership' when students get it in her membership or subscription; or a plain "
     "amount in 'currency' without a sign ('49', '19.50').\n"
-    "- notes: the rest she said about the course (its format, its promise, her angle), short, in her "
+    "- notes: the rest she said about the {noun} (its format, its promise, her angle), short, in her "
     "words.\n"
-    "- photo: only when cover_step is true (she is choosing her course cover): a plain description of "
+    "- photo: only when cover_step is true (she is choosing her {noun} cover): a plain description of "
     "the photo she wants, in her words ('hands on a keyboard, no faces'); '' when she did not describe "
     "one.\n"
-    "- outline_change: a change she asks for to the course outline, in her words; only when "
-    "outline_exists is true, else ''.\n"
+    "- change: a change she asks for to what is drafted, in her words; only when outline_exists is true, "
+    "else ''.\n"
     "- unclear: a count, amount or level she gave vaguely ('a few modules', 'around 40-50'), or a price "
-    "in a currency other than 'currency', becomes one item instead of a value: its field (modules, "
-    "lessons, price or level), one short question, and 2-4 options, each a short label and its value "
+    "in a currency other than 'currency', becomes one item instead of a value: its field ({unclear}), "
+    "one short question, and 2-4 options, each a short label and its value "
     "(a number like '3', an amount like '45', 'free', or beginners | some | advanced). Leave that field "
     "itself empty."
 )
 
 
-class NamedModule(BaseModel):
-    title: str = ""
-    lessons: list[str] = []
+@cache
+def system_for(kind: str) -> str:
+    """The kind's system prompt: the shared rules for its noun and unclear
+    fields, then its own field rules. Built once per kind."""
+    adapter = kinds.get(kind)
+    *head, last = adapter.UNCLEAR_FIELDS
+    shared = SHARED_RULES.replace("{noun}", adapter.NOUN).replace(
+        "{unclear}", f"{', '.join(head)} or {last}" if head else last
+    )
+    return f"{shared}\n{adapter.RULES}" if adapter.RULES else shared
 
 
 class ClarifyOption(BaseModel):
@@ -70,30 +72,38 @@ class ClarifyOption(BaseModel):
 
 
 class Unclear(BaseModel):
-    field: Literal["modules", "lessons", "price", "level"]
+    field: str  # one of the kind's ``UNCLEAR_FIELDS``; ``read`` drops any other
     question: str
     options: list[ClarifyOption]
 
 
-class Analysis(BaseModel):
+class Found(BaseModel):
+    """What every kind reads from her words; a kind adds its own fields (``adapter.FOUND``)."""
+
     answer: str = ""  # her answer to the question on screen, in her words; "" when she said something else
     topic: str = ""  # what students learn, short, her words
-    level: str = ""  # beginners | some | advanced | her own words
-    modules: int | None = None
-    lessons: int | None = None  # per module
-    total: int | None = None  # lessons in all, when she gave a total instead
-    named: list[NamedModule] = []  # in her order; lessons she named without a module go in one untitled module
     price: str = ""  # "free" | "membership" | an amount in the site's currency ("49")
-    notes: str = ""  # the rest she said about the course: format, promise, angle
-    outline_change: str = ""  # a change to the outline she asked for (only when an outline exists)
+    notes: str = ""  # the rest she said about it: format, promise, angle
+    change: str = ""  # a change to what is drafted she asked for (only when something is drafted)
     photo: str = ""  # at the cover question: a plain description of the photo she wants
     unclear: list[Unclear] = []
 
 
 def read(
-    tenant, text: str, *, question: str, outline_exists: bool, currency: str, course_id=None, cover_step: bool = False
-) -> Analysis:
-    """The model's reading of her words. Raises core_ai.AiError."""
+    tenant,
+    text: str,
+    *,
+    kind: str,
+    question: str,
+    outline_exists: bool,
+    currency: str,
+    course_id=None,
+    cover_step: bool = False,
+) -> Found:
+    """The model's reading of her words, into the kind's own fields. Raises core_ai.AiError."""
+    from . import outline
+
+    adapter = kinds.get(kind)
     user = json.dumps(
         {
             "text": text,
@@ -107,9 +117,9 @@ def read(
     )
     try:
         found, cost, _model = core_ai.structured(
-            system=SYSTEM,
+            system=system_for(kind),
             user=user,
-            output_model=Analysis,
+            output_model=adapter.FOUND,
             model=settings.COPILOT_MODEL,
             max_tokens=4000,
             label="contentor:copilot",
@@ -119,10 +129,11 @@ def read(
         ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)
         raise
     ai_compose.record_spend(tenant.schema_name, cost)
+    found.unclear = [u for u in found.unclear if u.field in adapter.UNCLEAR_FIELDS]
     return found
 
 
-def brief_from(found: Analysis, brief: dict) -> dict:
+def brief_from(found, brief: dict) -> dict:
     """The outline's brief with what she said merged in: counts (each clamped
     to 1..12, a total to 1..144; more than that is ``capped``), the titles she
     named, and her notes. ``capped`` follows her latest counts, and a total
@@ -191,6 +202,7 @@ def carry_out(tenant, run_id) -> None:
         tenant,
         str(pending.get("text") or ""),
         question=flow.question(creation.kind, pending.get("field"), creation)["question"],
+        kind=creation.kind,
         outline_exists=bool(creation.outline_run_id or (creation.drafted or {}).get("modules")),
         currency=tenant_charge_currency(tenant),
         course_id=creation.record_id,

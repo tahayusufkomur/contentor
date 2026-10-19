@@ -220,12 +220,6 @@ def apply(creation, found) -> None:
         if field == "topic":
             creation.answers["topic"] = text  # her whole words: the outline reads them
             _retitle(creation, working_title(text, creation.kind), working_title(found.topic or text, creation.kind))
-        if found.level.strip():
-            creation.answers["level"] = _choice(recipe, "level", found.level)
-        creation.brief = analysis.brief_from(found, creation.brief)
-        counted = any(n is not None for n in (found.modules, found.lessons, found.total)) or bool(found.named)
-        if counted and (label := size_label(creation.brief)):
-            creation.answers["size"] = label
         if field == "cover" and found.photo.strip():
             creation.covers = {**(creation.covers or {}), "query": found.photo.strip()}
         price = analysis.price_value(found.price)
@@ -242,23 +236,10 @@ def apply(creation, found) -> None:
         for unclear in found.unclear:  # each asked once
             if unclear.field not in {*(brief.get("asked") or []), *(c["field"] for c in clarify)}:
                 clarify.append(unclear.model_dump())
-        counts = [c for c in clarify[len(brief.get("clarify") or []) :] if c["field"] in ("modules", "lessons")]
-        drafted = creation.outline_run_id is not None or bool((creation.drafted or {}).get("modules"))
-        # A level is a change to the outline; a price alone is not.
-        at_review = field == "outline_review" and (found.answer.strip() or found.level.strip() or not price)
-        keep = any(n is not None for n in (found.modules, found.lessons, found.total))
-        if item and (waiting := _waiting(creation, item)):
-            # A change waits on her count: what she says meanwhile goes with it, one redraft in all.
-            if found.outline_change.strip():
-                waiting["redraft"] = f"{waiting['redraft']}; {text}"
-            waiting["keep_counts"] = waiting["keep_counts"] or keep
-            if waiting is item:
-                _redraft_waiting(creation, item, clarified or counted)
-        elif drafted and (found.outline_change.strip() or counted or at_review):
-            if counts:  # her count first: one redraft, once she has said it (or left it to us)
-                counts[-1].update(redraft=text, keep_counts=keep)
-            else:
-                _redraft(creation, text, keep_counts=keep)
+        fresh = clarify[len(brief.get("clarify") or []) :]
+        kinds.get(creation.kind).apply_found(
+            creation, found, field=field, text=text, item=item, clarified=clarified, fresh=fresh
+        )
         creation.brief = {**creation.brief, "clarify": clarify}
     if pending.get("rest"):
         _delegate_rest(creation)
@@ -754,7 +735,7 @@ def _clarified(creation, field, value) -> bool:
             count = int(words)
         except ValueError:
             return False
-        creation.brief = analysis.brief_from(analysis.Analysis(**{field: count}), creation.brief)
+        creation.brief = analysis.brief_from(kinds.get(creation.kind).FOUND(**{field: count}), creation.brief)
         creation.answers["size"] = size_label(creation.brief)
         return True
     return False

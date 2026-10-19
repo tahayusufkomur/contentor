@@ -15,7 +15,8 @@ from apps.accounts.models import User
 from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import runs
-from apps.core.focus import analysis, covers, flow, followup, jobs, outline
+from apps.core.focus import covers, flow, followup, jobs, outline
+from apps.core.focus.kinds.course import CourseFound
 from apps.courses.models import Course
 from apps.tenant_config.models import CopilotRun
 
@@ -186,7 +187,7 @@ LATER = followup.FollowUp(needed=True, question="Calm or energetic?", options=["
 
 
 def test_a_typed_answer_that_settles_the_rest_gets_its_follow_up_after_the_reading(owner, outline_start):
-    found = analysis.Analysis(topic="desk yoga", level="beginners", modules=4, lessons=3)
+    found = CourseFound(topic="desk yoga", level="beginners", modules=4, lessons=3)
     with _model(found, WHERE):
         creation = flow.start(owner, "course", text="Desk yoga for complete beginners, 4 modules of 3 lessons")
         jobs.execute(SCHEMA, creation.runs["analysis"])

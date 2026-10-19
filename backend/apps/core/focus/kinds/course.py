@@ -5,9 +5,11 @@ draft Course, and how that course is priced, checked and published."""
 from decimal import Decimal
 
 from django.db import connection
+from pydantic import BaseModel
 
 from apps.tenant_config.interview_brief import Field
 
+from .. import analysis
 from ..recipes import Recipe
 
 NOUN = "course"
@@ -110,6 +112,34 @@ RECIPE = Recipe(
 SIZES: dict[str, tuple[int, int]] = {"quick": (1, 4), "short": (3, 4), "full": (6, 4)}
 
 
+class NamedModule(BaseModel):
+    title: str = ""
+    lessons: list[str] = []
+
+
+class CourseFound(analysis.Found):
+    """What the analysis reads from her words about a course, besides what every kind shares."""
+
+    level: str = ""  # beginners | some | advanced | her own words
+    modules: int | None = None
+    lessons: int | None = None  # per module
+    total: int | None = None  # lessons in all, when she gave a total instead
+    named: list[NamedModule] = []  # in her order; lessons she named without a module go in one untitled module
+
+
+FOUND = CourseFound
+# Appended to the shared rules in the analysis prompt (apps.core.focus.analysis.system_for).
+RULES = (
+    "- level: 'beginners' (complete beginners), 'some' (some experience) or 'advanced' when it "
+    "matches; otherwise who it is for, in her words.\n"
+    "- modules: how many modules. lessons: how many lessons per module. total: how many lessons in "
+    "all, only when she gave a total instead of a number per module.\n"
+    "- named: the module and lesson titles she wrote, word for word and in her order. Lessons she "
+    "named without a module go in one module with an empty title."
+)
+UNCLEAR_FIELDS = ("modules", "lessons", "price", "level")
+
+
 def create_draft(actor, title: str, answers: dict) -> int | None:
     """The unpublished draft course, from her first answer."""
     from apps.core.copilot import content
@@ -177,3 +207,38 @@ def go_live(record_id: int) -> None:
 
 def skips(creation) -> set[str]:
     return set()
+
+
+def apply_found(creation, found, *, field, text, item, clarified, fresh) -> None:
+    """Her typed answer, read, onto the course: its level, counts and size
+    label, and the outline redrafted when she changed it (or waited on a
+    count). ``flow.apply`` has done the shared half: ``item`` is the clarify
+    question she just answered (None if she did not), ``clarified`` whether
+    that gave a count, ``fresh`` the clarify questions this reading adds.
+    Call under the creation's lock; the caller saves."""
+    from .. import flow
+
+    if found.level.strip():
+        creation.answers["level"] = flow._choice(RECIPE, "level", found.level)
+    creation.brief = analysis.brief_from(found, creation.brief)
+    keep = any(n is not None for n in (found.modules, found.lessons, found.total))
+    counted = keep or bool(found.named)
+    if counted and (label := flow.size_label(creation.brief)):
+        creation.answers["size"] = label
+    counts = [c for c in fresh if c["field"] in ("modules", "lessons")]
+    drafted = creation.outline_run_id is not None or bool((creation.drafted or {}).get("modules"))
+    # A level is a change to the outline; a price alone is not.
+    price = analysis.price_value(found.price)
+    at_review = field == "outline_review" and (found.answer.strip() or found.level.strip() or not price)
+    if item and (waiting := flow._waiting(creation, item)):
+        # A change waits on her count: what she says meanwhile goes with it, one redraft in all.
+        if found.change.strip():
+            waiting["redraft"] = f"{waiting['redraft']}; {text}"
+        waiting["keep_counts"] = waiting["keep_counts"] or keep
+        if waiting is item:
+            flow._redraft_waiting(creation, item, clarified or counted)
+    elif drafted and (found.change.strip() or counted or at_review):
+        if counts:  # her count first: one redraft, once she has said it (or left it to us)
+            counts[-1].update(redraft=text, keep_counts=keep)
+        else:
+            flow._redraft(creation, text, keep_counts=keep)

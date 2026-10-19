@@ -379,7 +379,7 @@ def analysed():
     ):
 
         def configure(found=None, side_effect=None):
-            model.return_value = (found or analysis.Analysis(), Decimal("0"), "x")
+            model.return_value = (found or course_kind.CourseFound(), Decimal("0"), "x")
             model.side_effect = side_effect
             return model
 
@@ -398,7 +398,7 @@ def _tapped(owner):
 
 
 def test_a_rich_first_answer_skips_what_it_settled(owner, outline_start, analysed):
-    analysed(analysis.Analysis(topic="desk yoga", level="beginners", modules=4, lessons=3, price="49"))
+    analysed(course_kind.CourseFound(topic="desk yoga", level="beginners", modules=4, lessons=3, price="49"))
     creation = _run_pending(flow.start(owner, "course", text=RICH))
     assert creation.answers["level"] == "beginners"
     assert creation.answers["size"] == "4 modules · 3 lessons each"
@@ -428,7 +428,7 @@ def test_a_tap_never_waits_on_the_analysis(owner, outline_start, analysed):
 
 def test_an_unclear_count_is_asked_once(owner, outline_start, analysed):
     analysed(
-        analysis.Analysis(
+        course_kind.CourseFound(
             topic="desk yoga",
             unclear=[
                 analysis.Unclear(
@@ -451,9 +451,9 @@ def test_an_unclear_count_is_asked_once(owner, outline_start, analysed):
 
 def test_a_detail_still_unclear_after_its_question_gets_its_usual_question(owner, outline_start, analysed):
     unclear = [analysis.Unclear(field="modules", question="How many modules?", options=[])]
-    analysed(analysis.Analysis(topic="desk yoga", unclear=unclear))
+    analysed(course_kind.CourseFound(topic="desk yoga", unclear=unclear))
     creation = _run_pending(flow.start(owner, "course", text="desk yoga, a few modules"))
-    analysed(analysis.Analysis(unclear=unclear))  # her reply is still vague
+    analysed(course_kind.CourseFound(unclear=unclear))  # her reply is still vague
     creation = _run_pending(flow.answer(creation, "clarify", text="not sure, some"))
     assert creation.brief["clarify"] == [] and creation.brief["asked"] == ["modules"]
     assert flow.current_field(creation) == "level"
@@ -474,7 +474,7 @@ def _at_cover_unanalysed(owner):
 
 
 def test_at_the_cover_step_her_words_search_the_photo_row(owner, outline_start, analysed):
-    model = analysed(analysis.Analysis(photo="hands on a keyboard, no faces"))
+    model = analysed(course_kind.CourseFound(photo="hands on a keyboard, no faces"))
     creation = _at_cover_unanalysed(owner)
     creation.covers = {"rounds": [], "query": "old"}
     creation.runs = {**creation.runs, "covers": CopilotRun.objects.create(status="done", request={}).pk}
@@ -495,7 +495,7 @@ def test_a_failed_analysis_at_the_cover_uses_her_words_as_the_photo_query(owner,
 
 
 def test_words_at_the_cover_without_a_photo_leave_the_query_alone(owner, outline_start, analysed):
-    analysed(analysis.Analysis(answer="something calmer"))
+    analysed(course_kind.CourseFound(answer="something calmer"))
     creation = _at_cover_unanalysed(owner)
     creation.covers = {"query": "old"}
     creation.save()
@@ -504,14 +504,14 @@ def test_words_at_the_cover_without_a_photo_leave_the_query_alone(owner, outline
 
 
 def test_a_price_said_at_the_cover_still_applies_with_the_photo(owner, outline_start, analysed):
-    analysed(analysis.Analysis(photo="a quiet desk", price="49"))
+    analysed(course_kind.CourseFound(photo="a quiet desk", price="49"))
     creation = _run_pending(flow.answer(_at_cover_unanalysed(owner), "cover", text="a quiet desk, $49"))
     assert creation.covers["query"] == "a quiet desk"
     assert Course.objects.get(pk=creation.record_id).price == Decimal("49.00")
 
 
 def test_a_photo_read_at_another_step_is_ignored(owner, outline_start, analysed):
-    analysed(analysis.Analysis(topic="desk yoga", level="beginners", photo="a quiet desk"))
+    analysed(course_kind.CourseFound(topic="desk yoga", level="beginners", photo="a quiet desk"))
     creation = _run_pending(flow.start(owner, "course", text="desk yoga for beginners"))
     assert not (creation.covers or {}).get("query")
     creation = flow.answer(creation, "level", text="beginners")
@@ -529,7 +529,7 @@ def test_a_stopped_analysis_settles_on_the_next_read(owner, outline_start, analy
 
 def test_her_words_answer_the_question_on_screen_and_route_the_rest(owner, outline_start, analysed):
     # At "level" she types "beginners, and make it 5 modules"
-    analysed(analysis.Analysis(answer="beginners", level="beginners", modules=5))
+    analysed(course_kind.CourseFound(answer="beginners", level="beginners", modules=5))
     creation = flow.answer(_tapped(owner), "level", text="beginners, and make it 5 modules")
     creation = _run_pending(creation)
     assert creation.answers["level"] == "beginners" and creation.brief["modules"] == 5
@@ -538,7 +538,7 @@ def test_her_words_answer_the_question_on_screen_and_route_the_rest(owner, outli
 
 
 def test_just_draft_it_with_words_delegates_only_what_they_left_open(owner, outline_start, analysed):
-    analysed(analysis.Analysis(topic="desk yoga", level="nurses on night shifts"))
+    analysed(course_kind.CourseFound(topic="desk yoga", level="nurses on night shifts"))
     creation = _run_pending(flow.start(owner, "course", text="desk yoga for nurses on night shifts", rest=True))
     assert creation.answers["level"] == "nurses on night shifts"
     assert creation.answers["size"] == "delegate"
@@ -549,10 +549,10 @@ def test_just_draft_it_with_words_delegates_only_what_they_left_open(owner, outl
 def test_at_the_review_a_price_alone_sets_the_price_and_a_change_redrafts(owner, outline_start, analysed):
     creation = flow.answer(_tapped(owner), "level", rest=True)
     assert outline_start.call_count == 1
-    analysed(analysis.Analysis(price="free"))
+    analysed(course_kind.CourseFound(price="free"))
     creation = _run_pending(flow.answer(creation, "outline_review", text="it's free"))
     assert creation.answers["price"] == "free" and outline_start.call_count == 1
-    analysed(analysis.Analysis(outline_change="module 2 about breathing"))
+    analysed(course_kind.CourseFound(change="module 2 about breathing"))
     creation = _run_pending(flow.answer(creation, "outline_review", text="make module 2 about breathing"))
     assert outline_start.call_count == 2
     assert outline_start.call_args.kwargs["instruction"] == "make module 2 about breathing"
@@ -571,7 +571,7 @@ def _reviewing(owner):
 
 def test_a_redraft_without_a_count_drops_the_first_answers_counts(owner, outline_start, analysed):
     creation = _reviewing(owner)
-    analysed(analysis.Analysis(outline_change="add a module on stretching"))
+    analysed(course_kind.CourseFound(change="add a module on stretching"))
     creation = _run_pending(flow.answer(creation, "outline_review", text="add a module on stretching"))
     assert outline_start.call_count == 2
     assert not {"modules", "lessons", "total", "capped"} & creation.brief.keys()
@@ -580,7 +580,7 @@ def test_a_redraft_without_a_count_drops_the_first_answers_counts(owner, outline
 
 def test_a_redraft_that_names_a_count_keeps_it(owner, outline_start, analysed):
     creation = _reviewing(owner)
-    analysed(analysis.Analysis(outline_change="make it 6 modules", modules=6))
+    analysed(course_kind.CourseFound(change="make it 6 modules", modules=6))
     creation = _run_pending(flow.answer(creation, "outline_review", text="make it 6 modules"))
     assert creation.brief["modules"] == 6 and creation.brief["lessons"] == 3
     assert outline_start.call_count == 2
@@ -592,7 +592,7 @@ def _more_lessons(analysed):
         question="How many lessons in each module?",
         options=[analysis.ClarifyOption(label="4 lessons each", value="4")],
     )
-    analysed(analysis.Analysis(outline_change="add a few more lessons", unclear=[unclear]))
+    analysed(course_kind.CourseFound(change="add a few more lessons", unclear=[unclear]))
 
 
 def test_a_change_with_an_unclear_count_redrafts_once_with_her_count(owner, outline_start, analysed):
@@ -623,7 +623,7 @@ def test_her_words_beyond_the_count_go_with_the_waiting_change(owner, outline_st
     creation = _reviewing(owner)
     _more_lessons(analysed)
     creation = _run_pending(flow.answer(creation, "outline_review", text="add a few more lessons"))
-    analysed(analysis.Analysis(lessons=4, outline_change="module 2 about breathing"))
+    analysed(course_kind.CourseFound(lessons=4, change="module 2 about breathing"))
     words = "4, and make module 2 about breathing"
     creation = _run_pending(flow.answer(creation, "clarify", text=words))
     assert outline_start.call_count == 2
@@ -641,8 +641,8 @@ def test_her_words_beyond_the_count_go_with_the_waiting_change(owner, outline_st
 def test_two_counts_for_one_change_redraft_once(owner, outline_start, analysed):
     creation = _reviewing(owner)
     analysed(
-        analysis.Analysis(
-            outline_change="make it bigger",
+        course_kind.CourseFound(
+            change="make it bigger",
             unclear=[
                 analysis.Unclear(field="modules", question="How many modules?", options=[]),
                 analysis.Unclear(field="lessons", question="How many lessons in each?", options=[]),
@@ -650,7 +650,7 @@ def test_two_counts_for_one_change_redraft_once(owner, outline_start, analysed):
         )
     )
     creation = _run_pending(flow.answer(creation, "outline_review", text="make it bigger"))
-    analysed(analysis.Analysis(modules=5))
+    analysed(course_kind.CourseFound(modules=5))
     creation = _run_pending(flow.answer(creation, "clarify", text="5 modules"))
     assert outline_start.call_count == 1  # still waiting on the lessons
     creation = flow.answer(creation, "clarify", value="4")
@@ -661,7 +661,7 @@ def test_two_counts_for_one_change_redraft_once(owner, outline_start, analysed):
 
 def test_a_level_with_a_price_at_the_review_redrafts(owner, outline_start, analysed):
     creation = _reviewing(owner)
-    analysed(analysis.Analysis(level="advanced", price="49"))
+    analysed(course_kind.CourseFound(level="advanced", price="49"))
     creation = _run_pending(flow.answer(creation, "outline_review", text="make it advanced and $49"))
     assert creation.answers["level"] == "advanced" and creation.answers["price"] == "49.00"
     assert outline_start.call_count == 2
@@ -679,14 +679,14 @@ def test_a_failed_reading_at_the_review_also_drops_the_counts(owner, outline_sta
 def test_a_focus_draft_with_a_price_never_blocks_go_live(owner, outline_start, analysed):
     from apps.tenant_config.setup_items import _has_paid_content
 
-    analysed(analysis.Analysis(topic="desk yoga", price="49"))
+    analysed(course_kind.CourseFound(topic="desk yoga", price="49"))
     creation = _run_pending(flow.start(owner, "course", text=RICH))
     assert Course.objects.get(pk=creation.record_id).price == Decimal("49.00")
     assert _has_paid_content({}) is False
 
 
 def test_fill_it_in_myself_while_reading_drops_the_reading(owner, outline_start, analysed):
-    analysed(analysis.Analysis(topic="desk yoga", level="beginners", modules=2))
+    analysed(course_kind.CourseFound(topic="desk yoga", level="beginners", modules=2))
     creation = flow.leave(flow.start(owner, "course", text="desk yoga"), abandon=True)
     assert CopilotRun.objects.get(pk=creation.runs["analysis"]).status == "stopped"
     assert not creation.pending
@@ -773,7 +773,7 @@ def test_an_inactive_or_unknown_plan_is_ignored(owner, outline_start, plans):
 
 
 def test_a_price_from_her_first_answer_skips_the_access_question(owner, outline_start, analysed):
-    analysed(analysis.Analysis(topic="desk yoga", level="beginners", modules=4, lessons=3, price="49"))
+    analysed(course_kind.CourseFound(topic="desk yoga", level="beginners", modules=4, lessons=3, price="49"))
     creation = _run_pending(flow.start(owner, "course", text=RICH))
     assert creation.answers["access"] == "paid:49.00"
     with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
@@ -784,7 +784,7 @@ def test_a_price_from_her_first_answer_skips_the_access_question(owner, outline_
 def test_a_membership_in_her_first_answer_keeps_the_question_with_her_memberships(
     owner, outline_start, analysed, plans
 ):
-    analysed(analysis.Analysis(topic="desk yoga", level="beginners", modules=4, lessons=3, price="membership"))
+    analysed(course_kind.CourseFound(topic="desk yoga", level="beginners", modules=4, lessons=3, price="membership"))
     creation = _run_pending(flow.start(owner, "course", text="desk yoga, in my membership"))
     with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
         creation = _at_access(owner, creation)
@@ -796,7 +796,7 @@ def test_a_membership_in_her_first_answer_keeps_the_question_with_her_membership
 def test_her_words_at_the_access_step_are_read_for_a_price(owner, outline_start, analysed):
     with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
         creation = _at_access(owner)
-    analysed(analysis.Analysis(price="25"))
+    analysed(course_kind.CourseFound(price="25"))
     creation = _run_pending(flow.answer(creation, "access", text="25 dollars"))
     assert Course.objects.get(pk=creation.record_id).price == Decimal("25.00")
     assert creation.answers["access"] == "paid:25.00" and flow.current_field(creation) == "finish"
