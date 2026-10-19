@@ -210,6 +210,14 @@ class TestPaymentInitialize:
         resp2 = client.post("/api/v1/billing/payments/initialize/", data=payload, format="json")
         assert resp2.status_code == 400, resp2.content
 
+    def test_a_bought_bundle_cannot_be_bought_again(self, student, paid_bundle):
+        payload = {"items": [{"content_type": "bundle", "object_id": paid_bundle.pk}]}
+        client = make_client(student)
+        first = client.post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        assert first.status_code == 201, first.content
+        again = client.post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        assert again.status_code == 400, again.content
+
     def test_buying_an_in_person_class_reveals_its_address(self, student, paid_onsite_event):
         """The street address is hidden until the student has paid for the class."""
         client = make_client(student)

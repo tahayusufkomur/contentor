@@ -214,6 +214,12 @@ class TestCheckAccessBundlePurchase:
         assert info.has_access is True
         assert info.access_reason == "bundle"
 
+    def test_a_bundle_is_closed_until_the_student_buys_it(self, service, student):
+        bundle = Bundle.objects.create(name="Test Bundle", price=Decimal("149.90"), currency="USD")
+        info = service.get_access_info(student, bundle)
+        assert info.has_access is False
+        assert info.unlock_methods == ["purchase"]
+
 
 # ---------------------------------------------------------------------------
 # Subscription access

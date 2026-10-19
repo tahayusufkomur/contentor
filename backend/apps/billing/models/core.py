@@ -165,6 +165,10 @@ class PaymentItem(models.Model):
 class Bundle(models.Model):
     """Coach-defined product grouping multiple content items at a discount."""
 
+    # Not a column: a bundle is always sold. The paywall (apps.core.access)
+    # reads pricing_type and takes a missing one as free.
+    pricing_type = "paid"
+
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, default="")
     price = models.DecimalField(max_digits=10, decimal_places=2)
