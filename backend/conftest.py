@@ -28,6 +28,7 @@ from django_tenants.utils import tenant_context
 
 from apps.accounts.models import User
 from apps.billing.models import (
+    AccessWindow,
     Bundle,
     BundleItem,
     Payment,
@@ -350,6 +351,7 @@ TENANT_CLEANUP_MODELS = [
     Video,
     PaymentItem,
     Payment,
+    AccessWindow,
     SubscriptionPlanAccess,
     Subscription,
     SubscriptionPlan,
