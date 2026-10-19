@@ -19,9 +19,11 @@ from apps.accounts.models import User
 from apps.core.copilot import views as copilot_views
 from apps.core.storage import build_s3_path
 from apps.courses.models import Course
+from apps.downloads.models import DownloadFile
 from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 from apps.live.serializers import LiveClassCreateSerializer, OnsiteEventCreateSerializer
 from apps.media import designs
+from apps.media.design_serializers import DesignSerializer
 from apps.media.models import Design, Photo
 from apps.tenant_config.models import CopilotAudit, TenantConfig
 
@@ -164,7 +166,7 @@ def test_open_draft_stores_a_course_by_its_id(coach):
 
 
 def test_kind_of_names_every_row_kind():
-    models = (Course, LiveClass, LiveStream, ZoomClass, OnsiteEvent)
+    models = (Course, DownloadFile, LiveClass, LiveStream, ZoomClass, OnsiteEvent)
     assert [designs.kind_of(model()) for model in models] == list(designs.TARGET_KINDS)
 
 
@@ -273,6 +275,35 @@ def test_keep_refuses_what_it_cannot_do(coach):
     Design.objects.filter(pk=lost.pk).delete()  # deleted in another tab
     with pytest.raises(designs.DesignError, match="design no longer exists"):
         designs.keep(lost)
+
+
+def test_a_download_cover_is_kept_and_undone(coach):
+    old, new = photo("old"), photo("new")
+    item = DownloadFile.objects.create(title="Guide", thumbnail=old)
+    draft = designs.open_draft("download", f"0{item.pk}", recipe=on(new))
+    assert draft.target_key == str(item.pk)  # filed under the id, as a course is
+
+    result, inverse = designs.keep(draft)
+    item.refresh_from_db()
+    assert item.thumbnail_id == new.pk
+    assert (result["id"], result["title"], result["target_kind"]) == (item.pk, "Guide", "download")
+    assert designs.cover_for(item, {})["id"] == str(draft.pk)
+    assert designs.kind_of(item) == "download"
+    assert DesignSerializer(draft).data["title"] == "Guide"  # not the id it is filed under
+
+    designs.restore_cover(inverse)
+    item.refresh_from_db()
+    draft.refresh_from_db()
+    assert item.thumbnail_id == old.pk
+    assert draft.state == "draft"
+
+
+def test_a_deleted_download_refuses_a_draft(coach):
+    item = DownloadFile.objects.create(title="Gone")
+    key = str(item.pk)
+    item.delete()
+    with pytest.raises(designs.DesignError, match="download no longer exists"):
+        designs.open_draft("download", key)
 
 
 # --- undo ------------------------------------------------------------------

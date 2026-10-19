@@ -42,6 +42,7 @@ class Design(models.Model):
 
     TARGET_KINDS = [
         ("course", "Course"),
+        ("download", "Download"),
         ("live", "Live class"),
         ("stream", "Live stream"),
         ("zoom", "Zoom class"),

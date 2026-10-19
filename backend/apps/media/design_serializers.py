@@ -1,7 +1,5 @@
 from rest_framework import serializers
 
-from apps.courses.models import Course
-
 from . import designs
 from .models import Design
 
@@ -37,15 +35,14 @@ class DesignSerializer(serializers.ModelSerializer):
         ]
 
     def get_title(self, design):
-        """A series is its title; a course is looked up (all of them in one read: a site has tens)."""
-        if design.target_kind != "course":
+        """A series is its title; a course or download is looked up (all of its kind in one read: a site has tens)."""
+        kind = design.target_kind
+        if kind not in designs.BY_ID:
             return design.target_key
-        titles = self.context.get("course_titles")
-        if titles is None:
-            titles = self.context["course_titles"] = {
-                str(pk): title for pk, title in Course.objects.values_list("pk", "title")
-            }
-        return titles.get(design.target_key, "")
+        titles = self.context.setdefault("id_titles", {})
+        if kind not in titles:
+            titles[kind] = {str(pk): title for pk, title in designs._model(kind).objects.values_list("pk", "title")}
+        return titles[kind].get(design.target_key, "")
 
     def get_photos(self, design):
         return designs.design_payload(design, self.context)["photos"]

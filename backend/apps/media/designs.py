@@ -1,7 +1,7 @@
-"""Covers she designed, from a draft to the cover of a course or an event series.
+"""Covers she designed, from a draft to the cover of a course, a download or an event series.
 
 `open_draft` starts (or resumes) a draft, `keep` makes it the cover, and `cover_for` is what a course
-or event row then shows. A design belongs to a course (its id) or to an event series (the event kind
+or event row then shows. A design belongs to a course or a download (its id) or to an event series (the event kind
 and the exact title). Keep writes the design's photo to every row of the target, and a row shows the
 design only while it still wears that photo: a cover she changes by hand wins, and a photo she deletes
 takes the design down with it (thumbnails are SET_NULL).
@@ -27,7 +27,9 @@ class DesignError(Exception):
     """Why a design could not be opened, kept or undone, in words safe to show her."""
 
 
-TARGET_KINDS = ("course", "live", "stream", "zoom", "onsite")
+TARGET_KINDS = ("course", "download", "live", "stream", "zoom", "onsite")
+# Targets that are one row, keyed by its id; an event series is keyed by its title.
+BY_ID = ("course", "download")
 
 _MEMO = "_cover_designs"
 # The words of copilot.views.SNAPSHOT_STALE, which History shows for every other snapshot it refuses.
@@ -44,6 +46,10 @@ def _model(target_kind):
         from apps.courses.models import Course
 
         return Course
+    if target_kind == "download":
+        from apps.downloads.models import DownloadFile
+
+        return DownloadFile
     if target_kind not in TARGET_KINDS:
         raise DesignError("that is not something you can design a cover for")
     from apps.core.copilot import content
@@ -54,29 +60,32 @@ def _model(target_kind):
 def _gone(target_kind):
     from apps.core.copilot.content import EVENT_KINDS
 
-    noun = "course" if target_kind == "course" else EVENT_KINDS[target_kind][4]
+    noun = target_kind if target_kind in BY_ID else EVENT_KINDS[target_kind][4]
     return DesignError(f"that {noun} no longer exists")
 
 
 def kind_of(obj) -> str:
-    """`course` for a course, otherwise the event kind of its model (live, stream, zoom, onsite)."""
+    """`course` or `download` for those rows, otherwise the event kind of its model (live, stream, zoom, onsite)."""
     from apps.core.copilot.content import EVENT_KINDS
     from apps.courses.models import Course
+    from apps.downloads.models import DownloadFile
 
     if isinstance(obj, Course):
         return "course"
+    if isinstance(obj, DownloadFile):
+        return "download"
     return {spec[0]: kind for kind, spec in EVENT_KINDS.items()}[type(obj).__name__]
 
 
 def _target_of(obj):
     kind = kind_of(obj)
-    return kind, (str(obj.pk) if kind == "course" else obj.title)
+    return kind, (str(obj.pk) if kind in BY_ID else obj.title)
 
 
 def target_rows(target_kind: str, target_key: str) -> list:
-    """The course, or every event of that kind with exactly that title (a series)."""
+    """The course or download, or every event of that kind with exactly that title (a series)."""
     model = _model(target_kind)
-    if target_kind != "course":
+    if target_kind not in BY_ID:
         # No title holds a NUL or a lone surrogate (clean_text), and a query for one raises: it matches nothing.
         return list(model.objects.filter(title=target_key)) if clean_text(target_key) == target_key else []
     try:
@@ -86,7 +95,7 @@ def target_rows(target_kind: str, target_key: str) -> list:
 
 
 def target_title(target_kind: str, target_key: str) -> str:
-    if target_kind != "course":
+    if target_kind not in BY_ID:
         return target_key
     rows = target_rows(target_kind, target_key)
     return rows[0].title if rows else ""
@@ -126,7 +135,7 @@ def open_draft(
     rows = target_rows(target_kind, target_key)
     if not rows:
         raise _gone(target_kind)
-    target_key = str(rows[0].pk) if target_kind == "course" else target_key  # "07" files under "7"
+    target_key = str(rows[0].pk) if target_kind in BY_ID else target_key  # "07" files under "7"
     draft = Design.objects.filter(kind="cover", target_kind=target_kind, target_key=target_key, state="draft").first()
     if draft is not None:
         return draft
@@ -354,9 +363,10 @@ def in_use_assets() -> dict[str, str]:
     from apps.core.copilot import content
     from apps.core.curated_images.cache import asset_id_from_key
     from apps.courses.models import Course
+    from apps.downloads.models import DownloadFile
 
     in_use = {}
-    for model in (Course, *(content.event_model(kind) for kind in content.EVENT_KINDS)):
+    for model in (Course, DownloadFile, *(content.event_model(kind) for kind in content.EVENT_KINDS)):
         covers = model.objects.filter(thumbnail__isnull=False).values_list(
             "title", "thumbnail__s3_key", "thumbnail__catalog_id"
         )

@@ -281,6 +281,17 @@ def test_search_leaves_out_what_is_placed_and_what_cannot_be_shown(upload, tenan
 
 
 @pytest.mark.django_db(transaction=True)
+def test_a_photo_that_covers_a_download_is_not_offered_as_a_cover_again(upload, tenant_ctx, monkeypatch):
+    from apps.downloads.models import DownloadFile
+
+    monkeypatch.setattr(own_photos, "preferred", lambda: True)
+    used, free = upload("one.jpg"), upload("two.jpg")
+    DownloadFile.objects.create(title="Guide", thumbnail=used)
+
+    assert own_photos.cover("") == free
+
+
+@pytest.mark.django_db(transaction=True)
 def test_a_slot_takes_a_photo_it_crops_a_little_after_the_ones_of_its_own_shape(upload, tenant_ctx):
     upload("square.jpg", width=2000, height=2000)
     upload("nearly square.jpg", width=2400, height=1920)  # 5:4

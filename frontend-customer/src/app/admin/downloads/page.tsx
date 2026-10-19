@@ -40,6 +40,8 @@ import {
 } from "@/components/admin/inline-edit-panel";
 import { TagFilterBar } from "@/components/admin/tag-filter-bar";
 import { TagInput } from "@/components/admin/tag-input";
+import { CoverThumb } from "@/components/studio/cover-thumb";
+import { listedItem } from "@/lib/covers/items";
 import { MonetizeNudge } from "@/components/admin/monetize-nudge";
 import { DemoBadge } from "@/components/setup/demo-badge";
 import {
@@ -361,14 +363,23 @@ export default function AdminDownloadsPage() {
           const ext = getExtension(dl.file_url || dl.title);
           return (
             <div className="group overflow-hidden rounded-lg border bg-card">
-              <div className="flex aspect-video flex-col items-center justify-center bg-muted gap-1">
-                <FileIcon className={`h-10 w-10 ${color}`} />
-                {ext && (
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {ext}
-                  </span>
-                )}
-              </div>
+              {dl.cover_design || dl.thumbnail_signed_url ? (
+                <CoverThumb
+                  design={dl.cover_design}
+                  photoUrl={dl.thumbnail_signed_url}
+                  item={listedItem(dl)}
+                  className="rounded-none border-0"
+                />
+              ) : (
+                <div className="flex aspect-video flex-col items-center justify-center bg-muted gap-1">
+                  <FileIcon className={`h-10 w-10 ${color}`} />
+                  {ext && (
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {ext}
+                    </span>
+                  )}
+                </div>
+              )}
               <div className="p-3 space-y-2">
                 <div className="font-medium truncate">
                   {dl.title}
@@ -397,8 +408,20 @@ export default function AdminDownloadsPage() {
         renderListRow={(dl) => (
           <>
             <TableCell className="font-medium">
-              {dl.title}
-              <DemoBadge type="downloads" id={dl.id} />
+              <div className="flex items-center gap-3">
+                {(dl.cover_design || dl.thumbnail_signed_url) && (
+                  <CoverThumb
+                    design={dl.cover_design}
+                    photoUrl={dl.thumbnail_signed_url}
+                    item={listedItem(dl)}
+                    className="w-16 shrink-0"
+                  />
+                )}
+                <span>
+                  {dl.title}
+                  <DemoBadge type="downloads" id={dl.id} />
+                </span>
+              </div>
             </TableCell>
             <TableCell>{formatFileSize(dl.file_size)}</TableCell>
             <TableCell>{dl.download_count}</TableCell>

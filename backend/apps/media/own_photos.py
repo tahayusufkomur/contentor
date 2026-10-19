@@ -234,6 +234,7 @@ def cover(*queries: str):
         | Q(live_classes__isnull=False)
         | Q(live_streams__isnull=False)
         | Q(onsite_events__isnull=False)
+        | Q(downloads__isnull=False)
     ).values_list("pk", flat=True)
     taken = placed | {f"{OWN}{pk}" for pk in covers}
     found = search(next((q for q in queries if q), ""), aspect="16:9", exclude=taken, limit=1)
