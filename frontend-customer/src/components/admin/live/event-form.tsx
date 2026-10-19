@@ -24,6 +24,7 @@ import { useTenant } from "@/hooks/use-tenant";
 import { clientFetch } from "@/lib/api-client";
 import { useLiveRecord } from "@/lib/copilot/live";
 import { listedItem } from "@/lib/covers/items";
+import { EVENT_TIDY, eventOwn } from "@/lib/focus/own-fields";
 import { setFocusSave, useActiveCreation } from "@/lib/focus/store";
 import { useAccess } from "@/lib/access/use-access";
 import { ApiError } from "@/types/api";
@@ -77,6 +78,15 @@ const fieldsOf = (event?: EventRow) => ({
   max_capacity: event?.max_capacity ? String(event.max_capacity) : "",
 });
 type Fields = ReturnType<typeof fieldsOf>;
+/** The two fields she and the copy run both write (focus mode). */
+const OWN = ["title", "description"] as const;
+type OwnName = (typeof OWN)[number];
+type Own = Record<OwnName, string>;
+const ownOf = (fields: Fields): Own => ({
+  title: fields.title,
+  description: fields.description,
+});
+const { isHers, isWriting, layOver } = eventOwn;
 const ids = (items?: { id: number }[]) =>
   JSON.stringify((items ?? []).map((item) => item.id).sort());
 
@@ -114,16 +124,35 @@ export function EventForm({
   // The fields as the server last had them. A newer copy of the event (focus
   // mode's answers write it) takes every field she has not changed.
   const base = useRef<Fields>(form);
+  // The title and description are also written by the copy run, so each
+  // remembers the copy it was last GIVEN (`placed`); one that differs from the
+  // form (`mine`) is hers, saved or not, and no copy ever replaces it.
+  const placed = useRef<Own>(ownOf(form));
+  const mine = useRef<Own>(ownOf(form));
+  mine.current = ownOf(form);
+  const lay = (next: Own) => {
+    const laid = layOver(mine.current, placed.current, next);
+    placed.current = laid.placed;
+    const changed: Partial<Own> = {};
+    for (const name of OWN)
+      if (laid.form[name] !== mine.current[name])
+        changed[name] = laid.form[name];
+    if (Object.keys(changed).length)
+      setForm((current) => ({ ...current, ...changed }));
+  };
   useEffect(() => {
     const next = fieldsOf(event);
     const was = base.current;
     base.current = next;
-    setForm((mine) => {
-      const merged: Record<string, unknown> = { ...mine };
+    lay(ownOf(next));
+    setForm((now) => {
+      const merged: Record<string, unknown> = { ...now };
       for (const key of Object.keys(next) as (keyof Fields)[])
-        if (mine[key] === was[key]) merged[key] = next[key];
+        if (!(OWN as readonly string[]).includes(key) && now[key] === was[key])
+          merged[key] = next[key];
       return merged as Fields;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `lay` only reads refs
   }, [event]);
   const [filterOptionIds, setFilterOptionIds] = useState<number[]>(
     (event?.filter_options ?? []).map((o) => o.id),
@@ -150,7 +179,8 @@ export function EventForm({
     JSON.stringify([...tagIds].sort()) !== ids(event?.tags);
 
   // Focus mode: the copy run's title and description type in; only the field
-  // being written is read-only, and a written value lands unless she changed it.
+  // being written is read-only, and a written value lands unless the field is
+  // hers (changed since it was last given, saved or not).
   const live = useLiveRecord(focus?.record ?? "", focus?.runId ?? null);
   const taken = useRef<Record<string, string>>({});
   const loadedFor = useRef<number | null>(null);
@@ -159,16 +189,15 @@ export function EventForm({
   }, [focus?.runId]);
   useEffect(() => {
     if (!live) return;
-    for (const name of ["title", "description"] as const) {
+    for (const name of OWN) {
       const field = live.fields[name];
       if (!field || field.typing || taken.current[name] === field.value)
         continue;
       taken.current[name] = field.value;
-      const was = base.current[name];
-      base.current = { ...base.current, [name]: field.value };
-      setForm((mine) =>
-        mine[name] === was ? { ...mine, [name]: field.value } : mine,
-      );
+      if (isHers(name, mine.current[name], placed.current[name])) continue;
+      const value = EVENT_TIDY[name](field.value);
+      base.current = { ...base.current, [name]: value };
+      lay({ ...placed.current, [name]: value });
     }
     // Once it has all been shown, the saved event takes over: a run replayed
     // at once on a later visit never stands in for what she saved since.
@@ -177,21 +206,28 @@ export function EventForm({
       loadedFor.current = run;
       focus?.reload();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `lay` only reads refs
   }, [live, focus]);
   // What a save sends: a field the run wrote counts as written even while it
   // is still typing in (the server has it; the old value would undo it),
-  // unless she changed that field herself.
-  const landed = (name: "title" | "description") => {
+  // unless that field is hers.
+  const landed = (name: OwnName) => {
     const written = live?.written[name];
     return written !== undefined &&
       taken.current[name] !== written &&
-      form[name] === base.current[name]
+      !isHers(name, mine.current[name], placed.current[name])
       ? written
       : form[name];
   };
-  const writing = (name: "title" | "description") =>
-    live?.fields[name]?.typing ?? false;
-  const shown = (name: "title" | "description") =>
+  // Read-only while the run types it in, and only if it is not hers.
+  const writing = (name: OwnName) =>
+    isWriting(
+      name,
+      live?.fields[name]?.typing ?? false,
+      mine.current[name],
+      placed.current[name],
+    );
+  const shown = (name: OwnName) =>
     writing(name) ? (live?.fields[name]?.value ?? "") : form[name];
   const creation = useActiveCreation();
   // The cover step: the Designer's drafts take the cover's place.

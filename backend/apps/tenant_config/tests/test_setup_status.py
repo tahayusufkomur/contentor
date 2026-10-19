@@ -446,3 +446,26 @@ def test_a_student_cannot_change_the_site(config):
     assert c.post("/api/v1/admin/config/look/", {"look": "grid"}, format="json").status_code == 403
     config.refresh_from_db()
     assert config.brand_name != "Hacked"
+
+
+def test_a_focus_draft_download_never_blocks_go_live(coach, config):
+    """A paid download she is still drafting in focus mode is not on sale, so it never demands payouts (F11)."""
+    from apps.downloads.models import DownloadFile
+    from apps.tenant_config.models import FocusCreation
+    from apps.tenant_config.setup_items import _has_paid_content
+
+    draft = DownloadFile.objects.create(
+        title="Draft", file_url="downloads/d.pdf", pricing_type="paid", price=25, is_published=False
+    )
+    FocusCreation.objects.create(kind="download", mode="focus", record_id=draft.pk)
+    assert _has_paid_content({}) is False
+
+    # A course draft with the same id is a different thing: it does not hide a live paid download.
+    live = DownloadFile.objects.create(title="Live", file_url="downloads/l.pdf", pricing_type="paid", price=25)
+    FocusCreation.objects.create(kind="course", mode="focus", record_id=live.pk)
+    assert _has_paid_content({}) is True
+
+    # Once she publishes the draft it counts like any paid download.
+    live.delete()
+    DownloadFile.objects.filter(pk=draft.pk).update(is_published=True)
+    assert _has_paid_content({}) is True

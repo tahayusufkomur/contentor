@@ -36,6 +36,8 @@ export interface FocusQuestion {
   paid_active?: boolean;
   /** A schedule question: her site's time zone, the one its times are in (G13). */
   timezone?: string;
+  /** A message's finish: "Also by email" as her words left it. */
+  tick?: boolean;
 }
 
 export interface FocusRecord {
@@ -175,7 +177,9 @@ export const coverAction = (
 export const finishCreation = (
   id: number,
   body: Timed<{ publish: boolean; announce: boolean }>,
-) => post<FocusState>(`${id}/finish/`, body);
+) =>
+  // `closing`: what her tap did, as the chat says it ("Sent.", "Scheduled for …").
+  post<FocusState & { closing?: string }>(`${id}/finish/`, body);
 
 export const announceCreation = (
   id: number,

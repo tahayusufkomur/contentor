@@ -122,10 +122,17 @@ def test_every_kind_module_has_the_whole_adapter():
         assert module.RECIPE.kind == kind
         assert set(module.CLOSING) == {value for value, _label in module.FINISH}
         assert module.COVER in ("styles", "photo", None)
+        # None only for a kind without that step: no cover, no announcement, no price.
+        has_step = {
+            "cover_target": module.COVER,
+            "cover_facts": module.COVER,
+            "announce_facts": module.ANNOUNCER,
+            "set_price": any(q.id == "access" for q in module.RECIPE.questions),
+        }
         for name in ("cover_target", "cover_facts", "suggest_price", "price_tiles", "announce_facts"):
-            assert callable(getattr(module, name)), f"{kind}.{name}"
+            assert callable(getattr(module, name)) or not has_step.get(name, True), f"{kind}.{name}"
         for name in ("create_draft", "record", "payload", "retitle", "set_price", "not_ready", "cannot_sell"):
-            assert callable(getattr(module, name)), f"{kind}.{name}"
+            assert callable(getattr(module, name)) or not has_step.get(name, True), f"{kind}.{name}"
         assert callable(module.go_live) and callable(module.skips) and callable(module.apply_found)
         assert callable(module.apply_change) and callable(module.apply_clarified)
         assert issubclass(module.FOUND, analysis.Found) and module.UNCLEAR_FIELDS
@@ -133,7 +140,7 @@ def test_every_kind_module_has_the_whole_adapter():
         copy = [name for name in COPY if hasattr(module, name)]
         assert copy in ([], list(COPY)), f"{kind}: {copy}"
         assert copywriter.drafts(kind) is bool(copy)
-    assert copywriter.drafts("event") and not copywriter.drafts("course")
+    assert copywriter.drafts("event") and copywriter.drafts("message") and not copywriter.drafts("course")
 
 
 def test_a_kind_reads_only_its_own_fields(monkeypatch):

@@ -98,9 +98,12 @@ def carry_out(tenant, run_id) -> None:
         wrote = dict(drafted.get("copy") or {})
         # Her topic's current working title is ours too (``flow._retitle``), until the job has written a title.
         working = draft_title(locked) if "title" not in wrote else None
+        written = {name: getattr(copy, name).strip() for name in adapter.COPY_FIELDS}
+        if clean := getattr(adapter, "clean_copy", None):  # optional: as the record keeps it (a message's HTML)
+            written = clean(written)
         fields = {}
         for name in adapter.COPY_FIELDS:
-            value = getattr(copy, name).strip()[: type(record)._meta.get_field(name).max_length]
+            value = written[name][: type(record)._meta.get_field(name).max_length]
             current = getattr(record, name) or ""
             ours = not current.strip() or current == wrote.get(name) or (name == "title" and current == working)
             if value and value != current and ours:

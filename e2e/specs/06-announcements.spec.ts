@@ -17,6 +17,10 @@ test("coach sends announcement; student sees it in feed and bell UI", async ({
   // ── 1. Coach composes and sends the announcement ───────────────────────────
   const coach = await coachContext(browser);
   const coachPage = await coach.newPage();
+  // Messages are in focus mode on the dev stack: this spec writes one in the plain composer.
+  await coachPage.route("**/api/v1/admin/focus/", (route) =>
+    route.fulfill({ json: { enabled: false, first: {}, open: [] } }),
+  );
   // The old address still lands on Messages; the one entry is "New message".
   await coachPage.goto(`${TENANT}/admin/notifications`);
   await expect(coachPage).toHaveURL(/\/admin\/messages$/);

@@ -19,6 +19,7 @@ from apps.core.focus import announce, flow, jobs
 from apps.core.focus.kinds.course import RECIPE
 from apps.courses.models import Course, Lesson, Module
 from apps.notifications.models import Announcement
+from apps.notifications.recurrence import next_send_time
 from apps.tenant_config.models import CopilotRun, FocusCreation, TenantConfig
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -153,11 +154,11 @@ def test_publish_with_tell_my_students_drafts_an_announcement_and_waits(owner, b
 def test_the_send_time_is_the_next_ten_oclock_at_least_an_hour_away():
     zone = ZoneInfo("America/New_York")
     morning = datetime(2026, 10, 19, 12, 30, tzinfo=UTC)  # 08:30 in New York
-    assert announce.send_time(morning, zone) == datetime(2026, 10, 19, 10, tzinfo=zone)
+    assert next_send_time(morning, zone) == datetime(2026, 10, 19, 10, tzinfo=zone)
     close = datetime(2026, 10, 19, 13, 30, tzinfo=UTC)  # 09:30: under an hour away
-    assert announce.send_time(close, zone) == datetime(2026, 10, 20, 10, tzinfo=zone)
+    assert next_send_time(close, zone) == datetime(2026, 10, 20, 10, tzinfo=zone)
     later = datetime(2026, 10, 19, 20, tzinfo=UTC)
-    assert announce.send_time(later, zone).isoformat() == "2026-10-20T10:00:00-04:00"
+    assert next_send_time(later, zone).isoformat() == "2026-10-20T10:00:00-04:00"
 
 
 def test_keep_as_a_draft_never_offers_an_announcement(owner, model):

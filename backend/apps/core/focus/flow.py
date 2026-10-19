@@ -73,7 +73,8 @@ def start(user, kind: str, *, value=None, text=None, delegate=False, rest=False,
     adapter = kinds.get(kind)
     recipe = adapter.RECIPE
     first = recipe.questions[0]
-    picked = _pick(recipe, first, value, text, delegate) or (DELEGATE if rest else None)
+    # "Just draft it" with no words leaves her topic to us only where it is ours to decide (not a message's).
+    picked = _pick(recipe, first, value, text, delegate) or (DELEGATE if rest and first.delegable else None)
     if picked is None:
         raise FlowError("no_answer")
     typed = picked != DELEGATE and bool((text or "").strip())
@@ -168,7 +169,8 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
                     descriptions.start(creation)
                 if line := kinds.get(creation.kind).REVIEWED_LINE:
                     _chat_append(creation, [{"role": "assistant", "text": line}])
-                if followup_allowed(creation, "later"):  # before the cover; it never redrafts the outline
+                # The Designer's, before the cover (none for a kind without one); it never redrafts the outline.
+                if kinds.get(creation.kind).COVER and followup_allowed(creation, "later"):
                     _ask_followup(creation, "later")
             elif value == "retry":
                 _retry_draft(creation)
@@ -277,9 +279,10 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
         record = _record(creation)
         live = publish and not adapter.not_ready(record) and not adapter.cannot_sell(record)
         choice = adapter.FINISH[0 if live else 1][0]
+        # Optional: the tick is the kind's own (a message's "Also by email"), kept on a draft too.
+        if tick := getattr(adapter, "apply_tick", None):
+            tick(creation.record_id, announce)
         if live:
-            if tick := getattr(adapter, "apply_tick", None):  # optional: the tick is the kind's own
-                tick(creation.record_id, announce)
             with suppress(content.ContentOpError):  # already published by hand, or gone
                 adapter.go_live(creation.record_id)
         elif keep := getattr(adapter, "keep", None):  # optional: what keeping a draft does
@@ -288,13 +291,23 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
         question = next(q for q in recipe.questions if q.id == "finish")
         creation.answers["finish"] = choice
         _say(creation, question, _label(recipe, question, choice))
-        _chat_append(creation, [{"role": "assistant", "text": adapter.CLOSING[choice]}])
+        _chat_append(creation, [{"role": "assistant", "text": closing_line(creation)}])
         if live and announce and adapter.ANNOUNCER:
             announcing.start(creation)
         else:
             _end(creation, "skip")
         creation.save()
     return creation
+
+
+def closing_line(creation) -> str:
+    """Her finish's closing line (a message's "Sent." or "Scheduled for …",
+    a kind's published or kept line); "" before she finished."""
+    choice = (creation.answers or {}).get("finish")
+    if choice is None:
+        return ""
+    closing = kinds.get(creation.kind).CLOSING[choice]  # or a function of the record, for a line that says when
+    return closing(_record(creation)) if callable(closing) else closing
 
 
 def decide_announcement(creation, *, schedule: bool, active_ms=None) -> FocusCreation:
@@ -483,6 +496,7 @@ def question(kind: str, field: str, creation=None) -> dict:
         }
     if field == "clarify":  # one short question about a detail she gave, its options written by the analysis
         unclear = creation.brief["clarify"][0]
+        recipe = kinds.get(kind).RECIPE
         return {
             "field": "clarify",
             "kind": "choice",
@@ -491,7 +505,8 @@ def question(kind: str, field: str, creation=None) -> dict:
             "options": [{"value": o["value"], "label": o["label"], "hint": ""} for o in unclear["options"]],
             "starter": None,
             "can_delegate": True,
-            "specialist": "content",
+            # Whoever asks her first question (a message's Community manager; the course's and event's: content).
+            "specialist": recipe.specialists[recipe.questions[0].id],
         }
     recipe = kinds.get(kind).RECIPE
     q = next(q for q in recipe.questions if q.id == field)
@@ -550,9 +565,11 @@ def state(creation) -> dict:
         asked = {
             **asked,
             "question": adapter.NOT_READY_LINE,
-            "why": f"{gap.capitalize()}. Until then it stays a hidden draft.",
+            # Upper-first, never capitalize(): that lowercases the rest ("Zoom", "Messages").
+            "why": f"{gap[0].upper()}{gap[1:]}. Until then it stays a hidden draft.",
             "options": [o for o in asked["options"] if o["value"] != adapter.FINISH[0][0]],
-            "specialist": "content",
+            # Whoever drafts it says what it still needs (the course's and the event's: content).
+            "specialist": recipe.specialists[_review_id(recipe)],
         }
     if record and field == "finish":
         asked = _finish_options(creation, asked, record)
@@ -821,13 +838,14 @@ def _set_price(creation, value: str) -> None:
     A kind that skips the access step for this creation answers it itself (a
     Zoom class is free); without a record yet, ``_ensure_record`` sets it later."""
     adapter = kinds.get(creation.kind)
-    if "access" in adapter.skips(creation):
+    # A kind with no price (a message, no access step) keeps none: nothing her words could set.
+    if "access" in adapter.skips(creation) or not any(q.id == "access" for q in adapter.RECIPE.questions):
         return
     if value != "membership" and creation.record_id is not None:
         adapter.set_price(creation.record_id, value)
     creation.answers["price"] = value
-    # The access step is answered too, when the kind asks it; "membership" asks which one.
-    if value != "membership" and any(q.id == "access" for q in adapter.RECIPE.questions):
+    # The access step is answered too; "membership" asks which one.
+    if value != "membership":
         creation.answers["access"] = value if value == "free" else f"paid:{value}"
 
 
@@ -1101,6 +1119,9 @@ def _label(recipe, q, answer, tiles=None) -> str:
     """Her answer as its answered line; ``tiles``: a kind's own price tiles, value to label."""
     if answer == DELEGATE:
         return "You decide"
+    own = getattr(kinds.get(recipe.kind), "label", None)  # optional: its words for an answer (a tile it drew)
+    if own and (text := own(q.id, answer)):
+        return text
     if q.kind == "review":
         return "Looks good" if answer == "ok" else str(answer)
     if q.kind == "cover":

@@ -1028,6 +1028,8 @@
     },
     "compose": {
       "alsoEmail": "Also send it as an email, in your brand",
+      "saveError": "Your message could not be saved just now. What you typed is still here.",
+      "loadError": "That message could not be loaded.",
       "audience": {
         "title": "Who gets it",
         "narrow": "Only some students",
@@ -1160,6 +1162,14 @@
         "new": "New class or event",
         "continue": "Continue your class: {title}",
         "fillMyself": "Fill it in myself"
+      },
+      "message": {
+        "new": "New message",
+        "continue": "Continue your message: {title}",
+        "fillMyself": "Write it myself",
+        "tick": "Also by email",
+        "writing": "Writing your message…",
+        "thinking": "Thinking about your message…"
       }
     },
     "youDecide": "You decide",

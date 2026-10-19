@@ -68,16 +68,16 @@ def _collect_store_items():
         )
 
     # DownloadFiles: paid
-    for df in DownloadFile.objects.filter(pricing_type="paid"):
+    for df in DownloadFile.objects.filter(pricing_type="paid").select_related("thumbnail"):
         items.append(
             {
                 "id": df.pk,
                 "title": df.title,
-                "description": "",
+                "description": df.description,
                 "type": "download",
                 "price": df.price,
                 "currency": currency,
-                "thumbnail_url": "",
+                "thumbnail_url": _thumbnail_url(df),
                 "is_active": True,
                 "item_count": 0,
                 "original_price": None,
@@ -170,12 +170,14 @@ def _collect_store_items():
 @permission_classes([AllowAny])
 def store_list(request):
     # An in-person class with no date yet, or one that is over, is not for sale; nor is a held
-    # class (a draft with a date) until she publishes it. Her products list still shows it.
+    # class (a draft with a date) until she publishes it; nor is a download that is a draft or has
+    # no file yet. Her products list still shows them.
     items = [
         i
         for i in _collect_store_items()
         if not (i["type"] == "onsite_event" and i["_obj"].computed_status in ("draft", "ended"))
         and not (i["type"] in ("live_class", "live_stream", "onsite_event") and i["_obj"].status == "draft")
+        and not (i["type"] == "download" and not (i["_obj"].is_published and i["_obj"].file_url))
     ]
 
     # Filter by type

@@ -18,13 +18,13 @@ from pydantic import BaseModel
 from apps.core import ai as core_ai
 from apps.core.copilot import runs
 from apps.core.onboarding import ai_compose
+from apps.notifications.recurrence import next_send_time
 from apps.tenant_config.models import CopilotRun, FocusCreation
 
 from . import jobs, kinds
 
 LABEL = "Writing your announcement"
 MAX_TOKENS = 2000
-SEND_HOUR = 10
 # Static per kind, byte-identical across tenants (prompt caching); ``{noun}`` is the kind's word.
 SYSTEM = (
     "Write the announcement that tells a coach's students her new {noun} is live: a short title and "
@@ -42,14 +42,6 @@ def system_for(kind: str) -> str:
 class AnnouncementDraft(BaseModel):
     title: str
     body: str
-
-
-def send_time(now: datetime, zone) -> datetime:
-    """The next 10:00 on her wall clock that is at least an hour away."""
-    at = now.astimezone(zone).replace(hour=SEND_HOUR, minute=0, second=0, microsecond=0)
-    if at < now + timedelta(hours=1):  # compared as instants: the zones differ
-        at += timedelta(days=1)
-    return at
 
 
 def start(creation) -> CopilotRun:
@@ -95,7 +87,7 @@ def carry_out(tenant, run_id) -> None:
         ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)
         raise
     ai_compose.record_spend(tenant.schema_name, cost)
-    send_at = send_time(timezone.now(), _tenant_zone(tenant))
+    send_at = next_send_time(timezone.now(), _tenant_zone(tenant))
     with transaction.atomic():
         # The creation first, then the run: the order her requests lock them in.
         FocusCreation.objects.select_for_update().filter(pk=creation.pk).first()
@@ -130,7 +122,7 @@ def draft(creation):
         return None, None
     send_at, now = result.get("send_at"), timezone.now()
     if not send_at or datetime.fromisoformat(send_at) < now + timedelta(hours=1):
-        send_at = send_time(now, _tenant_zone(connection.tenant)).isoformat()
+        send_at = next_send_time(now, _tenant_zone(connection.tenant)).isoformat()
     return row, send_at
 
 

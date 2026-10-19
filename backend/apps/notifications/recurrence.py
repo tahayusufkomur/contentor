@@ -1,4 +1,4 @@
-"""Pure schedule math for recurring announcements.
+"""Pure schedule math for announcements.
 
 No DB access — given a rule's fields and a reference instant, compute the next
 fire time in the tenant's timezone, returned as an aware UTC datetime.
@@ -9,6 +9,7 @@ from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 _UTC = ZoneInfo("UTC")
+SEND_HOUR = 10
 
 
 def _at(d: date, t: time, tz: ZoneInfo) -> datetime:
@@ -49,3 +50,12 @@ def next_occurrence(*, frequency, send_time, weekday, day_of_month, after_utc, t
         return slot.astimezone(_UTC)
 
     raise ValueError(f"bad frequency {frequency}")
+
+
+def next_send_time(now: datetime, zone) -> datetime:
+    """The next 10:00 on her wall clock that is at least an hour away: when
+    focus mode proposes to send (the course's announcement, a message's "next")."""
+    at = now.astimezone(zone).replace(hour=SEND_HOUR, minute=0, second=0, microsecond=0)
+    if at < now + timedelta(hours=1):  # compared as instants: the zones differ
+        at += timedelta(days=1)
+    return at
