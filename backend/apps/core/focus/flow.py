@@ -17,7 +17,7 @@ from django.utils import timezone
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
-from . import analysis, covers, descriptions, jobs, outline, pricing
+from . import analysis, covers, descriptions, followup, jobs, outline, pricing
 from . import announce as announcing  # ``announce`` is finish()'s flag
 from .recipes import RECIPES
 
@@ -40,6 +40,9 @@ ANNOUNCE_LABELS = {"scheduled": "Schedule", "draft": "Not now", "skip": "Not now
 NOT_READY = "Your outline is saved. Next, your lessons."
 # The finish step of a paid course she cannot sell yet: no "Publish now" (F11).
 START_SELLING = {"value": "start_selling", "label": "Start selling", "hint": "your plan, then payouts"}
+# Follow-ups asked (F4): at most four per creation, two before the outline.
+MAX_FOLLOWUPS = 4
+MAX_PER_SLOT = 2
 
 
 class FlowError(Exception):
@@ -100,11 +103,15 @@ def start(user, kind: str, *, value=None, text=None, delegate=False, rest=False,
 
 def current_field(creation) -> str | None:
     """The first question she has not answered: "clarify" while a detail she
-    gave is unclear; None while her typed answer is read, and once it is over."""
-    if creation.status != "active" or creation.pending:
+    gave is unclear, "followup" while a follow-up is asked; None while her
+    typed answer is read or a follow-up is written, and once it is over."""
+    brief = creation.brief or {}
+    if creation.status != "active" or creation.pending or brief.get("thinking"):
         return None
-    if (creation.brief or {}).get("clarify"):
+    if brief.get("clarify"):
         return "clarify"
+    if brief.get("followup"):
+        return "followup"
     answers = creation.answers or {}
     return next((q.id for q in RECIPES[creation.kind].questions if q.id not in answers), None)
 
@@ -136,7 +143,11 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
             creation.save(update_fields=["active_ms", "updated_at"])
             return creation
         words = (text or "").strip()[:ANSWER_MAX]
-        if words and not delegate:
+        if field == "followup":
+            if not _followup_answered(creation, value, words, delegate, rest):
+                creation.save(update_fields=["active_ms", "updated_at"])
+                return creation
+        elif words and not delegate:
             asking = question.question if question else creation.brief["clarify"][0]["question"]
             _chat_append(creation, [{"role": "assistant", "text": asking}, {"role": "coach", "text": words}])
             _analyse(creation, field, words, rest)
@@ -152,6 +163,8 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
                 if status == "ready":  # otherwise the outline job starts them once it has written
                     descriptions.start(creation)
                 _chat_append(creation, [{"role": "assistant", "text": WRITING_DESCRIPTIONS}])
+                if followup_allowed(creation, "later"):  # before the cover; it never redrafts the outline
+                    _ask_followup(creation, "later")
             elif value == "retry" and status in ("failed", "idle"):
                 # Again what failed: her change, when it was a redraft.
                 failed = CopilotRun.objects.filter(pk=creation.outline_run_id).first()
@@ -176,7 +189,7 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
                 _say(creation, question, _label(recipe, question, picked))
             if rest:
                 _delegate_rest(creation)
-            _maybe_outline(creation)
+            _next_draft(creation)
         creation.save()
     return creation
 
@@ -237,7 +250,7 @@ def apply(creation, found) -> None:
         creation.brief = {**brief, "clarify": clarify}
     if pending.get("rest"):
         _delegate_rest(creation)
-    _maybe_outline(creation)
+    _next_draft(creation)
 
 
 def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -> FocusCreation:
@@ -340,7 +353,10 @@ def leave(creation, *, abandon: bool = False, active_ms=None) -> FocusCreation:
         if abandon and creation.status == "active":
             creation.status = "left"
             creation.pending = {}
-            for pk in (creation.outline_run_id, jobs.run_id(creation, "analysis"), jobs.run_id(creation, "announce")):
+            for pk in (
+                creation.outline_run_id,
+                *(jobs.run_id(creation, job) for job in ("analysis", "announce", "followup")),
+            ):
                 if pk is not None:
                     runs.stop(pk)  # a finished one is left as it is
         creation.save(update_fields=["active_ms", "status", "pending", "updated_at"])
@@ -368,6 +384,18 @@ def outline_status(creation) -> str:
 
 
 def question(kind: str, field: str, creation=None) -> dict:
+    if field == "followup":  # one question specific to her course, its options written by the follow-up job
+        asked = creation.brief["followup"]
+        return {
+            "field": "followup",
+            "kind": "choice",
+            "question": asked["question"],
+            "why": "",
+            "options": [{"value": o, "label": o, "hint": ""} for o in asked["options"]],
+            "starter": None,
+            "can_delegate": True,
+            "specialist": followup.SPECIALIST[asked["slot"]],
+        }
     if field == "clarify":  # one short question about a detail she gave, its options written by the analysis
         unclear = creation.brief["clarify"][0]
         return {
@@ -415,7 +443,7 @@ def _sync_cover(creation):
 
 
 def state(creation) -> dict:
-    creation = _settle(_sync_cover(creation))
+    creation = _settle_followup(_settle(_sync_cover(creation)))
     recipe = RECIPES[creation.kind]
     record = _record(creation)
     if record is None and creation.status == "active":  # deleted by hand, or by an Undo
@@ -462,6 +490,15 @@ def state(creation) -> dict:
         "reading": (
             {"status": jobs.status(creation, "analysis"), "run": jobs.run_id(creation, "analysis")}
             if creation.pending
+            else None
+        ),
+        "thinking": (
+            {
+                "status": jobs.status(creation, "followup"),
+                "run": thinking["run"],
+                "specialist": followup.SPECIALIST[thinking["slot"]],
+            }
+            if (thinking := (creation.brief or {}).get("thinking"))
             else None
         ),
         "steps": [{"id": q.id, "done": q.id in answers} for q in recipe.questions],
@@ -511,6 +548,78 @@ def _settle(creation):
     return creation
 
 
+def followup_allowed(creation, slot: str) -> bool:
+    """Whether a follow-up may be asked in ``slot``: at most four asked per
+    creation and two per slot, never after "Just draft it", never while one is
+    open or being written, never again in a slot where a job asked nothing
+    (none needed, or it failed), and only with the model on."""
+    brief = creation.brief or {}
+    asked = brief.get("followups") or []
+    return (
+        not brief.get("rest")
+        and not brief.get("followup")
+        and not brief.get("thinking")
+        and slot not in (brief.get("settled") or [])
+        and len(asked) < MAX_FOLLOWUPS
+        and sum(1 for f in asked if f.get("slot") == slot) < MAX_PER_SLOT
+        and ai_compose.compose_available()
+    )
+
+
+def after_followup(creation) -> None:
+    """A follow-up job ended, or she answered one: the flow goes on. A job that
+    asked nothing settles its slot; before the outline, the outline (or a second
+    follow-up) comes next. Call under the creation's lock; the caller saves."""
+    brief = dict(creation.brief or {})
+    thinking = brief.pop("thinking", None)
+    if thinking and not brief.get("followup"):
+        brief["settled"] = [*(brief.get("settled") or []), thinking["slot"]]
+    creation.brief = brief
+    if not brief.get("followup"):
+        _next_draft(creation)
+
+
+def _ask_followup(creation, slot: str) -> None:
+    """A follow-up job she waits on; the caller saves."""
+    run = followup.start(creation, slot)
+    creation.brief = {**(creation.brief or {}), "thinking": {"run": run.id, "slot": slot}}
+
+
+def _followup_answered(creation, value, words, delegate, rest) -> bool:
+    """Her answer to a follow-up: a tap on one of its options, her words (as
+    she typed them, never analysed: they answer a written question) or "You
+    decide". False when the tap carried no answer."""
+    asked = creation.brief["followup"]
+    tapped = value if value in asked["options"] else None
+    label = "You decide" if delegate else words or tapped or ("You decide" if rest else None)
+    if label is None:
+        return False
+    entry = {"question": asked["question"], "answer": label, "slot": asked["slot"]}
+    creation.brief = {
+        **{k: v for k, v in creation.brief.items() if k != "followup"},
+        "followups": [*(creation.brief.get("followups") or []), entry],
+    }
+    _chat_append(creation, [{"role": "assistant", "text": asked["question"]}, {"role": "coach", "text": label}])
+    if rest:
+        _delegate_rest(creation)
+    after_followup(creation)
+    return True
+
+
+def _settle_followup(creation):
+    """A follow-up job that ended without going on (stopped, swept): the flow
+    goes on without it, so the screen never stays on it."""
+    pk = ((creation.brief or {}).get("thinking") or {}).get("run")
+    if pk is None or creation.status != "active" or jobs.status(creation, "followup") == "building":
+        return creation
+    with transaction.atomic():
+        creation = _locked(creation)
+        if ((creation.brief or {}).get("thinking") or {}).get("run") == pk and not jobs.active(pk):
+            after_followup(creation)
+            creation.save()
+    return creation
+
+
 def _clarify(creation, value, delegate, rest) -> bool:
     """A tap on the clarify question: an option, "You decide" (the size or
     level is delegated; a price is left to its own step) or "Just draft it".
@@ -533,7 +642,7 @@ def _clarify(creation, value, delegate, rest) -> bool:
         _chat_append(creation, [{"role": "assistant", "text": unclear["question"]}, {"role": "coach", "text": label}])
     if rest:
         _delegate_rest(creation)
-    _maybe_outline(creation)
+    _next_draft(creation)
     return True
 
 
@@ -730,16 +839,21 @@ def _delegate_rest(creation) -> None:
             _say(creation, q, "You decide")
 
 
-def _maybe_outline(creation) -> None:
-    """The outline starts once every question it waits for is answered and
-    nothing is being clarified."""
+def _next_draft(creation) -> None:
+    """Once every question the outline waits for is answered and nothing is
+    being clarified or followed up: a follow-up when one is allowed, else the
+    outline."""
+    brief = creation.brief or {}
     questions = _before_outline(RECIPES[creation.kind])
     if (
         creation.outline_run_id is None
-        and not (creation.brief or {}).get("clarify")
+        and not any(brief.get(key) for key in ("clarify", "followup", "thinking"))
         and all(q.id in creation.answers for q in questions)
     ):
-        outline.start(creation)
+        if followup_allowed(creation, "outline"):
+            _ask_followup(creation, "outline")
+        else:
+            outline.start(creation)
 
 
 def _choice(recipe, field: str, words: str) -> str:

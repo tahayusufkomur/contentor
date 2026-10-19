@@ -51,6 +51,13 @@ def ai_on():
 
 
 @pytest.fixture(autouse=True)
+def no_followups():
+    """The model is on here: no follow-up before the outline (test_focus_followup.py)."""
+    with mock.patch("apps.core.focus.flow.followup_allowed", return_value=False):
+        yield
+
+
+@pytest.fixture(autouse=True)
 def no_reading():
     """The outline reads a typed first answer itself when the analysis never ran
     (tests that tap their topic would otherwise reach the model)."""

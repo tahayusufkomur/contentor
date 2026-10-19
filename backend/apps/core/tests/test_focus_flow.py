@@ -355,9 +355,10 @@ RICH = "A course on desk yoga for complete beginners, 4 modules of 3 lessons, $4
 def analysed():
     """The model on, its answer patched: ``analysed(found)`` or
     ``analysed(side_effect=...)``. Nothing is enqueued; ``_run_pending``
-    runs the job in the test."""
+    runs the job in the test. No follow-ups (test_focus_followup.py)."""
     with (
         mock.patch("apps.core.focus.analysis.core_ai.structured") as model,
+        mock.patch("apps.core.focus.flow.followup_allowed", return_value=False),
         mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
         mock.patch("apps.core.onboarding.ai_compose.record_spend"),
         mock.patch.object(tasks.run_focus_job, "delay"),

@@ -46,6 +46,7 @@ export function FocusStart({
       answered: [],
       outline: { status: "idle", run: null },
       reading: null,
+      thinking: null,
       descriptions: null,
       cover: null,
       announcement: null,

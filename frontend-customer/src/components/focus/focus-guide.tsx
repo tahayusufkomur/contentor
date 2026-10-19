@@ -193,6 +193,7 @@ export function FocusGuide() {
   const building = [
     state?.outline,
     state?.reading,
+    state?.thinking,
     state?.descriptions,
     state?.cover,
     state?.announcement,
@@ -272,6 +273,15 @@ export function FocusGuide() {
           </div>
         </div>
       )}
+      {state.thinking?.status === "building" && (
+        <div className="flex flex-col gap-3">
+          <SpecialistByline k={state.thinking.specialist} />
+          <p className="flex items-center gap-2 text-sm text-foreground">
+            <Spinner size="sm" />
+            {t("focus.thinking")}
+          </p>
+        </div>
+      )}
       {question && handOver && (
         <p className="flex items-center gap-2 text-sm text-foreground">
           <SpecialistFace k={question.specialist} size="sm" />
@@ -326,7 +336,7 @@ export function FocusGuide() {
             key={question.field}
             question={question}
             sending={sending}
-            showRest={question.field !== "clarify"}
+            showRest={!["clarify", "followup"].includes(question.field)}
             onSend={send}
           />
         ))}

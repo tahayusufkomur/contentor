@@ -122,6 +122,7 @@ def _plan(tenant, creation, course, shown: list, label: str) -> tuple[list, str]
         "level": (creation.answers or {}).get("level", ""),
         "look": look,
         "notes": (creation.brief or {}).get("notes", ""),
+        "followups": (creation.brief or {}).get("followups", []),
         "earlier_layouts": shown,
     }
     try:

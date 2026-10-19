@@ -86,6 +86,12 @@ export interface FocusState {
   outline: { status: OutlineStatus; run: number | null };
   /** An analysis of her typed answer is pending; `question` is null meanwhile. */
   reading: { status: OutlineStatus; run: number | null } | null;
+  /** A follow-up question is being written; `question` is null meanwhile. */
+  thinking: {
+    status: OutlineStatus;
+    run: number;
+    specialist: SpecialistKey;
+  } | null;
   descriptions: { status: OutlineStatus; run: number | null } | null;
   /** null until the Designer was first asked for covers. */
   cover: FocusCover | null;

@@ -53,6 +53,7 @@ SYSTEM = _DRAFT_RULES + (
     "- exact: counts and titles the coach gave: use her titles word for word, in her order, and write "
     "only what she left open.\n"
     "- notes: what else she said about the course; follow it.\n"
+    "- followups: questions she answered about this course; follow her answers.\n"
     "- When 'instruction' is given, it is the coach's change to 'current_outline': apply it and keep "
     "everything she did not ask to change. Modules marked 'kept' are hers and stay on the page as they "
     "are: leave them out of your modules."
@@ -275,6 +276,7 @@ def _user_turn(tenant, answers: dict, course, instruction: str, drafted: list, b
             key: brief.get(key) or ([] if key == "named" else None) for key in ("modules", "lessons", "total", "named")
         },
         "notes": brief.get("notes", ""),
+        "followups": brief.get("followups", []),
         "instruction": instruction,
         **site(tenant, course.pk),
     }

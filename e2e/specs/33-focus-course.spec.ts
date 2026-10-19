@@ -585,6 +585,44 @@ test("an unclear detail gets one short question", async ({ browser }) => {
   await page.close();
 });
 
+test("a follow-up is written while she waits, then one tap answers it", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const answered = [{ field: "topic", label: "A course on desk yoga" }];
+  const thinking = reviewState({
+    question: null,
+    answered,
+    outline: { status: "idle", run: null },
+    thinking: { status: "building", run: 6002, specialist: "content" },
+  });
+  const followup = reviewState({
+    question: question("followup", "choice", "Where do your students practise?", {
+      options: ["Office", "Home", "Both"].map((o) => option(o, o)),
+    }),
+    answered,
+    outline: { status: "idle", run: null },
+  });
+  let polls = 0;
+  const { sent } = await stubFocus(page, {
+    script: ({ path, method }) => {
+      if (method === "POST" && path.endsWith("/admin/focus/")) return thinking;
+      if (method === "GET" && path.endsWith(`/focus/${CREATION}/`)) return polls++ ? followup : thinking;
+      if (method === "POST" && path.endsWith("/answer/")) return reviewState();
+    },
+  });
+
+  await answerReadingTopic(page);
+  await expect(guide(page).getByText("Thinking about your course…")).toBeVisible();
+  await expect(guide(page).getByText("Where do your students practise?")).toBeVisible();
+  await expect(guide(page).getByRole("button", { name: "Just draft it" })).toHaveCount(0);
+  await guide(page).getByRole("button", { name: "Office" }).click();
+  await expect(guide(page).getByRole("button", { name: "Looks good, continue" })).toBeVisible();
+  expect(sent.filter((s) => s.field === "followup")).toEqual([
+    expect.objectContaining({ field: "followup", value: "Office" }),
+  ]);
+  await page.close();
+});
+
 test("lesson descriptions type in after Looks good, with a count and Stop", async ({ browser }) => {
   const coach = await coachContext(browser);
   const page = await coach.newPage();
