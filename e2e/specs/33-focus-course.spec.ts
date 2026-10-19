@@ -1031,7 +1031,8 @@ test("publish now, then schedule the announcement", async ({ browser }) => {
         id: step === "writing" ? null : 31,
         title: step === "writing" ? "" : "Desk yoga, gently is live",
         body: step === "writing" ? "" : "A short course for office workers, in five minute breaks.",
-        send_at: step === "writing" ? null : "2026-10-20T10:00:00+02:00",
+        send_at: step === "writing" ? null : "2026-10-20T10:00:00-04:00",
+        zone: step === "writing" ? null : "America/New_York",
       },
     };
   };
@@ -1056,7 +1057,8 @@ test("publish now, then schedule the announcement", async ({ browser }) => {
   await expect(guide(page).getByText("Writing your announcement…")).toBeVisible();
   await expect(guide(page).getByText("Desk yoga, gently is live")).toBeVisible();
   await expect(guide(page).getByText("A short course for office workers, in five minute breaks.")).toBeVisible();
-  await expect(guide(page).getByText(/^Sends .*2026/)).toBeVisible();
+  // On her site's clock, as the closing line says it (the browser here may be elsewhere).
+  await expect(guide(page).getByText(/^Sends .*2026.*10[:.]00/)).toBeVisible();
   await guide(page).getByRole("button", { name: "Schedule" }).click();
   // Focus mode ends.
   await expect(guide(page)).toHaveCount(0);

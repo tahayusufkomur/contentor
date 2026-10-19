@@ -9,7 +9,7 @@ import json
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.db import transaction
+from django.db import connection, transaction
 from django.utils import timezone
 from django.utils.html import escape, strip_tags
 from pydantic import BaseModel
@@ -100,7 +100,10 @@ def carry_out(tenant, run_id) -> None:
 
 def draft(creation):
     """The announcement the run drafted and its send time, or (None, None)
-    while there is none (still writing, failed, or deleted from Messages)."""
+    while there is none (still writing, failed, or deleted from Messages).
+    A send time under an hour away (she came back later) moves to the next
+    one, so Schedule never sends at once and the screen shows what it schedules."""
+    from apps.core.copilot.engine import _tenant_zone
     from apps.notifications.models import Announcement
 
     pk = jobs.run_id(creation, "announce")
@@ -108,12 +111,20 @@ def draft(creation):
         return None, None
     result = CopilotRun.objects.filter(pk=pk).values_list("result", flat=True).first() or {}
     row = Announcement.objects.filter(pk=result.get("announcement"), status="draft").first()
-    return (row, result.get("send_at")) if row else (None, None)
+    if row is None:
+        return None, None
+    send_at, now = result.get("send_at"), timezone.now()
+    if not send_at or datetime.fromisoformat(send_at) < now + timedelta(hours=1):
+        send_at = send_time(now, _tenant_zone(connection.tenant)).isoformat()
+    return row, send_at
 
 
 def payload(creation) -> dict | None:
     """The guide's announce step: "failed" too when its draft is gone, so she
-    can try again or skip it. None before it was queued."""
+    can try again or skip it. None before it was queued. ``zone`` is her site's
+    time zone, so the guide shows the send time as the closing line says it."""
+    from apps.core.copilot.engine import _tenant_zone
+
     pk = jobs.run_id(creation, "announce")
     if pk is None:
         return None
@@ -128,4 +139,5 @@ def payload(creation) -> dict | None:
         "title": row.title if row else "",
         "body": html.unescape(strip_tags(row.body)).strip() if row else "",
         "send_at": send_at,
+        "zone": _tenant_zone(connection.tenant).key if send_at else None,
     }

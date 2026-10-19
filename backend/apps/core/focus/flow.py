@@ -334,6 +334,8 @@ def leave(creation, *, abandon: bool = False, active_ms=None) -> FocusCreation:
 
     with transaction.atomic():
         creation = _locked(creation)
+        if abandon and current_field(creation) == "announce":  # already live: it ends as Not now does
+            return decide_announcement(creation, schedule=False, active_ms=active_ms)
         _add_time(creation, active_ms)
         if abandon and creation.status == "active":
             creation.status = "left"

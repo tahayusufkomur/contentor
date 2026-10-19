@@ -70,6 +70,8 @@ export interface FocusAnnouncement {
   body: string;
   /** ISO with her site's offset. */
   send_at: string | null;
+  /** Her site's time zone: the time is shown on its clock. */
+  zone: string | null;
 }
 
 export interface FocusState {

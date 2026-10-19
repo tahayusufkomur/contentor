@@ -140,6 +140,7 @@ def test_publish_with_tell_my_students_drafts_an_announcement_and_waits(owner, b
     assert model.call_args.kwargs["label"] == "contentor:copilot"
     shown = flow.state(creation)["announcement"]
     assert shown["status"] == "ready"
+    assert shown["zone"] == "Europe/Berlin"
     assert shown["id"] == row.id
     assert shown["title"] == "New course: Desk yoga, gently"
     assert shown["body"] == "A short course for office workers. It starts today."
@@ -234,3 +235,50 @@ def test_the_announcement_comes_after_finish_and_is_never_delegated(owner):
     assert flow.current_field(creation) == "announce"
     assert "announce" not in flow.answer(creation, "announce", value="scheduled").answers
     assert "announce" not in flow.answer(creation, "announce", text="Send it now").answers
+
+
+def test_a_stale_send_time_moves_to_the_next_one(owner, berlin, model):
+    """She left and came back after the proposed 10:00: Schedule never sends at once."""
+    creation = _drafted(owner)
+    run = CopilotRun.objects.get(pk=creation.runs["announce"])
+    run.result = {**run.result, "send_at": "2026-01-05T10:00:00+01:00"}
+    run.save(update_fields=["result"])
+    shown = flow.state(creation)["announcement"]["send_at"]
+    assert datetime.fromisoformat(shown) - datetime.now(UTC) >= timedelta(hours=1)
+    flow.decide_announcement(creation, schedule=True)
+    scheduled = Announcement.objects.get().scheduled_at
+    assert scheduled == datetime.fromisoformat(shown)
+    assert scheduled - datetime.now(UTC) >= timedelta(minutes=59)
+
+
+def test_fill_it_in_myself_at_the_announcement_ends_it_as_not_now(owner, model):
+    creation = flow.leave(_drafted(owner), abandon=True)
+    assert creation.status == "done" and creation.finished_at is not None
+    assert creation.answers["announce"] == "draft"
+    assert Announcement.objects.get().status == "draft"
+    assert _chat(creation)[-1] == flow.SAVED_IN_MESSAGES
+    # While Marketing is still writing: the run stops, and nothing claims a draft.
+    writing = flow.finish(_ready(owner, "A course on breathing"), publish=True, announce=True)
+    writing = flow.leave(writing, abandon=True)
+    assert writing.status == "done" and writing.answers["announce"] == "skip"
+    assert CopilotRun.objects.get(pk=writing.runs["announce"]).status == "stopped"
+    assert _chat(writing)[-1] == flow.NO_ANNOUNCEMENT
+
+
+def test_a_run_stopped_by_not_now_never_drafts(owner, model):
+    creation = flow.finish(_ready(owner), publish=True, announce=True)
+    flow.decide_announcement(creation, schedule=False)  # before the worker took it
+    jobs.execute(SCHEMA, creation.runs["announce"])
+    assert not Announcement.objects.exists()
+    # Not now while the model writes: Stop wins, no draft lands.
+    creation = flow.finish(_ready(owner, "A course on breathing"), publish=True, announce=True)
+    draft = model.return_value
+
+    def not_now_meanwhile(**kwargs):
+        flow.decide_announcement(creation, schedule=False)
+        return draft
+
+    model.side_effect = not_now_meanwhile
+    jobs.execute(SCHEMA, creation.runs["announce"])
+    assert not Announcement.objects.exists()
+    assert CopilotRun.objects.get(pk=creation.runs["announce"]).status == "stopped"

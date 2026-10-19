@@ -700,6 +700,7 @@ function AnnounceStep({
                 when: new Date(announcement.send_at).toLocaleString(undefined, {
                   dateStyle: "full",
                   timeStyle: "short",
+                  timeZone: announcement.zone ?? undefined,
                 }),
               })}
             </p>
