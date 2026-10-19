@@ -209,7 +209,10 @@ def apply(creation, found) -> None:
     item = _pop_clarify(creation) if field == "clarify" else None
     if found is None:
         if item:
-            _redraft_waiting(creation, item, _clarified(creation, item["field"], text))
+            clarified = _clarified(creation, item["field"], text)
+            if not clarified and (waiting := _waiting(creation, item)):  # more than a count: never lost
+                waiting["redraft"] = f"{waiting['redraft']}; {text}"
+            _redraft_waiting(creation, item, clarified)
         elif field == "outline_review":
             _redraft(creation, text)
         elif field == "cover":  # never her answer (the cover endpoint sets it); her words describe the photo
@@ -250,8 +253,13 @@ def apply(creation, found) -> None:
         # A level is a change to the outline; a price alone is not.
         at_review = field == "outline_review" and (found.answer.strip() or found.level.strip() or not price)
         keep = any(n is not None for n in (found.modules, found.lessons, found.total))
-        if item and item.get("redraft"):
-            _redraft_waiting(creation, item, clarified or counted)
+        if item and (waiting := _waiting(creation, item)):
+            # A change waits on her count: what she says meanwhile goes with it, one redraft in all.
+            if found.outline_change.strip():
+                waiting["redraft"] = f"{waiting['redraft']}; {text}"
+            waiting["keep_counts"] = waiting["keep_counts"] or keep
+            if waiting is item:
+                _redraft_waiting(creation, item, clarified or counted)
         elif drafted and (found.outline_change.strip() or counted or at_review):
             if counts:  # her count first: one redraft, once she has said it (or left it to us)
                 counts[-1].update(redraft=text, keep_counts=keep)
@@ -753,6 +761,14 @@ def _clarified(creation, field, value) -> bool:
         creation.answers["size"] = size_label(creation.brief)
         return True
     return False
+
+
+def _waiting(creation, item) -> dict | None:
+    """The clarify item a change at the review waits on: the one just
+    answered, else one still to ask."""
+    if item.get("redraft"):
+        return item
+    return next((c for c in (creation.brief or {}).get("clarify") or [] if c.get("redraft")), None)
 
 
 def _redraft_waiting(creation, item, clarified: bool) -> None:

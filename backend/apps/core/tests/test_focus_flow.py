@@ -619,6 +619,46 @@ def test_a_change_whose_count_she_leaves_to_us_redrafts_without_one(owner, outli
     assert not {"modules", "lessons", "total"} & creation.brief.keys()
 
 
+def test_her_words_beyond_the_count_go_with_the_waiting_change(owner, outline_start, analysed):
+    creation = _reviewing(owner)
+    _more_lessons(analysed)
+    creation = _run_pending(flow.answer(creation, "outline_review", text="add a few more lessons"))
+    analysed(analysis.Analysis(lessons=4, outline_change="module 2 about breathing"))
+    words = "4, and make module 2 about breathing"
+    creation = _run_pending(flow.answer(creation, "clarify", text=words))
+    assert outline_start.call_count == 2
+    assert outline_start.call_args.kwargs["instruction"].startswith(f"add a few more lessons; {words}")
+    assert creation.brief["lessons"] == 4
+    # Unread (the reading failed), her words still go with it.
+    creation = _reviewing(owner)
+    _more_lessons(analysed)
+    creation = _run_pending(flow.answer(creation, "outline_review", text="add a few more lessons"))
+    analysed(side_effect=core_ai.AiError("down"))
+    creation = _run_pending(flow.answer(creation, "clarify", text=words))
+    assert outline_start.call_args.kwargs["instruction"] == f"add a few more lessons; {words}"
+
+
+def test_two_counts_for_one_change_redraft_once(owner, outline_start, analysed):
+    creation = _reviewing(owner)
+    analysed(
+        analysis.Analysis(
+            outline_change="make it bigger",
+            unclear=[
+                analysis.Unclear(field="modules", question="How many modules?", options=[]),
+                analysis.Unclear(field="lessons", question="How many lessons in each?", options=[]),
+            ],
+        )
+    )
+    creation = _run_pending(flow.answer(creation, "outline_review", text="make it bigger"))
+    analysed(analysis.Analysis(modules=5))
+    creation = _run_pending(flow.answer(creation, "clarify", text="5 modules"))
+    assert outline_start.call_count == 1  # still waiting on the lessons
+    creation = flow.answer(creation, "clarify", value="4")
+    assert outline_start.call_count == 2
+    assert outline_start.call_args.kwargs["instruction"] == "make it bigger (5 modules · 4 lessons each)"
+    assert (creation.brief["modules"], creation.brief["lessons"]) == (5, 4)
+
+
 def test_a_level_with_a_price_at_the_review_redrafts(owner, outline_start, analysed):
     creation = _reviewing(owner)
     analysed(analysis.Analysis(level="advanced", price="49"))
