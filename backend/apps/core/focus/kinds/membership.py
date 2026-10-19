@@ -567,10 +567,11 @@ def not_ready(row) -> str:
 
 
 def cannot_sell(row) -> bool:
-    """Always paid: off sale while selling is not open yet (her plan, then payouts; the Starter trial cannot sell)."""
+    """Always paid: off sale while selling is not open yet (her plan, then payouts; the Starter trial cannot sell).
+    Not before it has a price: "Set its price first" comes first."""
     from apps.core import monetization
 
-    return not monetization.can_monetize(connection.tenant)
+    return row.price > 0 and not monetization.can_monetize(connection.tenant)
 
 
 def go_live(pk) -> None:

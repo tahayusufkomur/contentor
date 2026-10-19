@@ -241,6 +241,19 @@ def test_the_trial_offers_start_selling(owner):
     assert creation.answers["finish"] == "off_sale"
 
 
+def test_the_trial_offers_start_selling_once_it_has_a_price(owner):
+    """With no price yet ("Just draft it"), "Set its price first" stands
+    beside "Sell it for", not "Start selling"."""
+    creation = _at_finish(owner, price=None)
+    with (
+        mock.patch("apps.core.monetization.is_paid_active", return_value=False),
+        mock.patch("apps.core.monetization.can_monetize", return_value=False),
+    ):
+        assert _values(creation) == ["off_sale", "price:9"]
+        creation = flow.answer(creation, "finish", value="price:9")
+        assert _values(creation) == ["start_selling", "off_sale"]
+
+
 # ── What members get (Rulings 1, 3, 7) ──────────────────────────────────────
 
 
