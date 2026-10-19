@@ -280,9 +280,9 @@ class TestCheckAccessSubscription:
         assert info.has_access is False
 
     def test_members_only_content_opens_for_the_memberships_that_include_it(self, service, student, coach):
-        """A members-only course that names a membership is that membership's:
-        another one's subscriber stays out. One no membership names is open
-        to any subscriber (the rule the paywall already offers plans by)."""
+        """A members-only course is open to the memberships that name it:
+        another one's subscriber stays out, and so does everyone on a course
+        no membership names."""
         ct = ContentType.objects.get_for_model(Course)
         named = Course.objects.create(title="Named", slug="named", instructor=coach, pricing_type="subscription")
         loose = Course.objects.create(title="Loose", slug="loose", instructor=coach, pricing_type="subscription")
@@ -300,9 +300,9 @@ class TestCheckAccessSubscription:
             current_period_end=now + timedelta(days=29),
         )
         assert service.check_access(student, named) is False
-        assert service.check_access(student, loose) is True
+        assert service.check_access(student, loose) is False
         bulk = service.bulk_check_access(student, [named, loose])
-        assert (bulk[named.pk].has_access, bulk[loose.pk].has_access) == (False, True)
+        assert (bulk[named.pk].has_access, bulk[loose.pk].has_access) == (False, False)
         assert bulk[named.pk].unlock_methods == ["subscribe"]
 
         Subscription.objects.filter(pk=sub.pk).update(plan=inside)

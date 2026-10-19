@@ -684,6 +684,16 @@ def subscription_course(tenant_ctx, owner):
     )
 
 
+def _link_plan(plan, course):
+    from django.contrib.contenttypes.models import ContentType
+
+    from apps.billing.models import SubscriptionPlanAccess
+
+    SubscriptionPlanAccess.objects.create(
+        plan=plan, content_type=ContentType.objects.get_for_model(Course), object_id=course.pk
+    )
+
+
 def _activate_subscription(student):
     from datetime import timedelta
 
@@ -715,26 +725,38 @@ class TestSubscriptionPricingType:
         assert info["has_access"] is False
         assert info["unlock_methods"] == ["subscribe"]
 
-    def test_any_active_subscription_grants_access(self, subscription_course, student):
-        """Any active subscription unlocks subscription-priced content (no plan link needed)."""
-        _activate_subscription(student)
+    def test_a_subscriber_to_a_plan_that_includes_the_course_gets_in(self, subscription_course, student):
+        """Members-only content opens for the plans that name it."""
+        sub = _activate_subscription(student)
+        _link_plan(sub.plan, subscription_course)
         client = make_client(student)
         resp = client.post(f"/api/v1/courses/{subscription_course.slug}/enroll/")
         assert resp.status_code == 201, resp.content
         detail = client.get(f"/api/v1/courses/{subscription_course.slug}/")
         assert detail.json()["access_info"]["access_reason"] == "subscription"
 
-    def test_unlock_options_offer_all_active_plans_when_unlinked(self, subscription_course, student):
-        """Subscription content with no plan links offers every active plan."""
+    def test_a_subscriber_to_a_plan_that_does_not_include_the_course_stays_out(self, subscription_course, student):
+        """No plan names the course: a subscription alone no longer opens it."""
+        _activate_subscription(student)
+        resp = make_client(student).post(f"/api/v1/courses/{subscription_course.slug}/enroll/")
+        assert resp.status_code == 400, resp.content
+        assert resp.json()["access_info"]["unlock_methods"] == ["subscribe"]
+
+    def test_unlock_options_offer_only_the_active_plans_that_include_the_course(self, subscription_course, student):
         from apps.billing.models import SubscriptionPlan
 
-        SubscriptionPlan.objects.create(name="Monthly", price=Decimal("19.00"), currency="USD")
+        monthly = SubscriptionPlan.objects.create(name="Monthly", price=Decimal("19.00"), currency="USD")
+        old = SubscriptionPlan.objects.create(name="Old", price=Decimal("9.00"), currency="USD", is_active=False)
+        SubscriptionPlan.objects.create(name="Elsewhere", price=Decimal("29.00"), currency="USD")
+        _link_plan(monthly, subscription_course)
+        _link_plan(old, subscription_course)
         client = make_client(student)
         resp = client.get(f"/api/v1/courses/{subscription_course.slug}/")
         assert resp.status_code == 200, resp.content
         options = resp.json()["unlock_options"]
         assert "purchase" not in options
         assert [p["name"] for p in options["plans"]] == ["Monthly"]
+        assert options["plans"][0]["window"] is None
 
     def test_subscription_course_not_in_store(self, subscription_course, owner):
         """Subscription-only content is not sold one-off in the store."""
