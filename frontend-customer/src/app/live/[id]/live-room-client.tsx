@@ -90,8 +90,8 @@ export default function LiveRoomClient({ liveClassId }: LiveRoomClientProps) {
             {liveClass.status === "draft" ||
             liveClass.status === "scheduled" ? (
               <p className="text-muted-foreground">
-                This class hasn&apos;t started yet. Check back when the
-                creator goes live.
+                This class hasn&apos;t started yet. Check back when the creator
+                goes live.
               </p>
             ) : (
               <p className="text-muted-foreground">This class has ended.</p>
