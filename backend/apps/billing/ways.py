@@ -123,6 +123,17 @@ def _clean_window(window, what: str) -> dict | None:
     return out or None
 
 
+def _amount(raw) -> Decimal:
+    """A price as typed ("49", "49,90") to two places; anything unreadable or non-finite is a price error."""
+    try:
+        amount = Decimal(str(raw).strip().replace(",", ".")).quantize(Decimal("0.01"))
+    except (InvalidOperation, ValueError):
+        amount = None
+    if amount is None or not amount.is_finite():
+        raise WaysError("price", "Add a price above 0.")
+    return amount
+
+
 def _clean(item, ways: dict, actor) -> dict:
     """The ways with the price as a Decimal and windows checked, or a WaysError. Writes nothing."""
     kind = kind_of(item)
@@ -145,10 +156,7 @@ def _clean(item, ways: dict, actor) -> dict:
     if free is not None:
         out["free"] = {"window": _clean_window(free.get("window"), "free access")}
     if buy is not None:
-        try:
-            price = Decimal(str(buy.get("price")).strip().replace(",", ".")).quantize(Decimal("0.01"))
-        except (InvalidOperation, ValueError):
-            price = Decimal(0)
+        price = _amount(buy.get("price"))
         if not 0 < price <= _MAX_PRICE:
             raise WaysError("price", "Add a price above 0.")
         out["buy"] = {"price": price, "window": _clean_window(buy.get("window"), "the one-time sale")}
@@ -240,10 +248,7 @@ def apply_shorthand(item, *, pricing_type: str | None = None, price=None, actor=
             raise WaysError("plan", "Pick a subscription first, then include this in it.")
         ways["free"] = ways["buy"] = None
     elif price is not None:
-        try:
-            amount = Decimal(str(price).strip().replace(",", "."))
-        except InvalidOperation:
-            raise WaysError("price", "Add a price above 0.") from None
+        amount = _amount(price)
         if amount < 0:
             raise WaysError("price", "Add a price above 0.")
         if amount > 0:

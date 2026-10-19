@@ -152,7 +152,7 @@ def test_nothing_set_is_refused(course, owner):
 
 
 def test_a_price_must_be_above_zero(course, owner):
-    for bad in ("0", "", "-5", "abc", None):
+    for bad in ("0", "", "-5", "abc", None, "NaN", "nan", "inf", "-Infinity", "1e30"):
         with pytest.raises(WaysError) as e:
             set_ways(course, buy_only(bad), actor=owner)
         assert e.value.code == "price"
@@ -286,9 +286,10 @@ def test_shorthand_price_zero_drops_buy_and_falls_back_to_free(course, gold, own
     course.refresh_from_db()
     assert (course.pricing_type, course.price) == ("free", Decimal("0"))
     assert ways_of(course) == {"free": {"window": None}, "buy": None, "plans": []}
-    with pytest.raises(WaysError) as e:
-        apply_shorthand(course, pricing_type="paid", price="0", actor=owner)
-    assert e.value.code == "price"
+    for bad in ("0", "NaN", "inf", "-inf", "abc"):
+        with pytest.raises(WaysError) as e:
+            apply_shorthand(course, pricing_type="paid" if bad == "0" else None, price=bad, actor=owner)
+        assert e.value.code == "price", bad
 
 
 def test_span_text_uses_the_largest_exact_unit():
