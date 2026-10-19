@@ -169,6 +169,7 @@ def edit_event(event_id, kind, params):
     event = event_model(kind).objects.filter(pk=event_id).first()
     if event is None:
         raise ContentOpError(f"no {kind} event with id {event_id}")
+    was_dated = event.scheduled_at is not None
     changes = []
 
     def _set(field, new):
@@ -209,6 +210,10 @@ def edit_event(event_id, kind, params):
         _set("zoom_link", link)
     if not changes:
         raise ContentOpError("nothing to change on the event")
+    # The event form's rule (_ScheduledOnCreateMixin): an undated draft that gets a
+    # date goes on the schedule; a held draft (one that had a date) stays a draft.
+    if event.status == "draft" and not was_dated and event.scheduled_at:
+        _set("status", "scheduled")
     event.save(update_fields=[c["field"] for c in changes])
     return {
         "kind": "edit_event",

@@ -37,6 +37,7 @@ def zoom_class(tenant_ctx, owner):
         instructor=owner,
         pricing_type="free",
         scheduled_at=timezone.now() + timedelta(days=1),
+        status="scheduled",  # a draft is hidden from students
     )
 
 

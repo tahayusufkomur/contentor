@@ -134,6 +134,7 @@ def _seed(owner, ref):
     from apps.tenant_config.models import TenantConfig
 
     soon = timezone.now() + timezone.timedelta(days=1)
+    on = {"scheduled_at": soon, "status": "scheduled"}  # a draft is hidden from the calendar
 
     course = Course.objects.create(
         title="Course",
@@ -147,14 +148,10 @@ def _seed(owner, ref):
     module = Module.objects.create(course=course, title="Module", order=1)
     Lesson.objects.create(module=module, title="Lesson", order=1, video_url=ref)
 
-    live = LiveClass.objects.create(
-        title="Class", instructor=owner, scheduled_at=soon, thumbnail_url=ref, recording_url=ref
-    )
-    stream = LiveStream.objects.create(
-        title="Stream", instructor=owner, scheduled_at=soon, thumbnail_url=ref, recording_url=ref
-    )
-    zoom = ZoomClass.objects.create(title="Zoom", instructor=owner, scheduled_at=soon, thumbnail_url=ref)
-    onsite = OnsiteEvent.objects.create(title="Retreat", instructor=owner, scheduled_at=soon, thumbnail_url=ref)
+    live = LiveClass.objects.create(title="Class", instructor=owner, **on, thumbnail_url=ref, recording_url=ref)
+    stream = LiveStream.objects.create(title="Stream", instructor=owner, **on, thumbnail_url=ref, recording_url=ref)
+    zoom = ZoomClass.objects.create(title="Zoom", instructor=owner, **on, thumbnail_url=ref)
+    onsite = OnsiteEvent.objects.create(title="Retreat", instructor=owner, **on, thumbnail_url=ref)
 
     Bundle.objects.create(name="Bundle", price=Decimal("30.00"), currency="USD", is_active=True, thumbnail_url=ref)
     plan = SubscriptionPlan.objects.create(name="Plan", price=Decimal("9.00"), currency="USD", is_active=True)

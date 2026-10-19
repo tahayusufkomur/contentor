@@ -52,8 +52,13 @@ def photo(name):
 
 
 def session(owner, model, title, days=3, **fields):
+    # Scheduled, as the event form saves a dated class: a draft is hidden from the calendar.
     return model.objects.create(
-        title=title, instructor=owner, scheduled_at=timezone.now() + timedelta(days=days), **fields
+        title=title,
+        instructor=owner,
+        scheduled_at=timezone.now() + timedelta(days=days),
+        status="scheduled",
+        **fields,
     )
 
 

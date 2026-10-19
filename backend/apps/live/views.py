@@ -430,8 +430,8 @@ def calendar_events(request):
     types_param = request.query_params.get("types", "")
     type_filter = [t.strip() for t in types_param.split(",") if t.strip()] if types_param else []
 
-    # Status is now computed from scheduled_at + duration_minutes.
-    # scheduled_at__isnull=False excludes drafts.
+    # Status is now computed from scheduled_at + duration_minutes. Undated
+    # drafts have no day, and a held draft (dated, not published yet) is hidden.
     events = []
     ctx = {}
 
@@ -442,6 +442,7 @@ def calendar_events(request):
     if want_live_class:
         qs = _apply_date_range(
             LiveClass.objects.filter(scheduled_at__isnull=False)
+            .exclude(status="draft")
             .select_related("thumbnail")
             .prefetch_related("filter_options"),
             date_from,
@@ -453,6 +454,7 @@ def calendar_events(request):
 
         qs = _apply_date_range(
             ZoomClass.objects.filter(scheduled_at__isnull=False)
+            .exclude(status="draft")
             .select_related("thumbnail")
             .prefetch_related("filter_options"),
             date_from,
@@ -465,6 +467,7 @@ def calendar_events(request):
     if want_live_stream:
         qs = _apply_date_range(
             LiveStream.objects.filter(scheduled_at__isnull=False)
+            .exclude(status="draft")
             .select_related("thumbnail")
             .prefetch_related("filter_options"),
             date_from,
@@ -477,6 +480,7 @@ def calendar_events(request):
     if want_onsite:
         qs = _apply_date_range(
             OnsiteEvent.objects.filter(scheduled_at__isnull=False)
+            .exclude(status="draft")
             .select_related("thumbnail")
             .prefetch_related("filter_options"),
             date_from,
@@ -508,6 +512,8 @@ def calendar_event_detail(request, event_type, pk):
         return Response({"detail": "Invalid event type."}, status=status.HTTP_404_NOT_FOUND)
 
     obj = get_object_or_404(model, pk=pk)
+    if obj.status == "draft" and not is_coach_or_owner(request.user):
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
     # Determine the student-facing type
     cal_type = event_type

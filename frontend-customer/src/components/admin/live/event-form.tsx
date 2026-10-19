@@ -97,35 +97,47 @@ export function EventForm({
       ? "free"
       : form.pricing_type;
 
-  const { run: save, loading: saving } = useAsyncAction(
-    async () => {
-      const body = {
-        title: form.title.trim(),
-        description: form.description,
-        // null clears the date: the event is a draft again.
-        scheduled_at: form.scheduled_at
-          ? new Date(form.scheduled_at).toISOString()
-          : null,
-        pricing_type: pricingType,
-        price: pricingType === "paid" ? form.price || "0" : "0",
-        filter_option_ids: filterOptionIds,
-        tag_ids: tagIds,
-        ...(has("auto_recording") && { auto_recording: form.auto_recording }),
-        ...(has("zoom_link") && { zoom_link: form.zoom_link.trim() }),
-        ...(has("location") && { location: form.location.trim() }),
-        ...(has("address") && { address: form.address }),
-        ...(has("max_capacity") && {
-          max_capacity: form.max_capacity ? Number(form.max_capacity) : null,
-        }),
-      };
-      await clientFetch(event ? `${config.api}${event.id}/` : config.api, {
-        method: event ? "PUT" : "POST",
-        body: JSON.stringify(body),
-      });
-      toast.success(t(event ? "saved" : "created"));
-      onSaved();
-    },
-    { onError: (err) => toast.error(serverMessage(err) ?? t("saveError")) },
+  // Held: a draft with a date (sell later, focus mode). Saving keeps it a draft;
+  // Publish saves and puts every upcoming session of its series on the schedule.
+  const held = event?.status === "draft" && !!event.scheduled_at;
+  const ahead = !!form.scheduled_at && new Date(form.scheduled_at) > new Date();
+  const invalid = !form.title.trim() || (pricingType === "paid" && !form.price);
+
+  const submit = async (publish: boolean) => {
+    const body = {
+      title: form.title.trim(),
+      description: form.description,
+      // null clears the date: the event is a draft again.
+      scheduled_at: form.scheduled_at
+        ? new Date(form.scheduled_at).toISOString()
+        : null,
+      pricing_type: pricingType,
+      price: pricingType === "paid" ? form.price || "0" : "0",
+      filter_option_ids: filterOptionIds,
+      tag_ids: tagIds,
+      ...(has("auto_recording") && { auto_recording: form.auto_recording }),
+      ...(has("zoom_link") && { zoom_link: form.zoom_link.trim() }),
+      ...(has("location") && { location: form.location.trim() }),
+      ...(has("address") && { address: form.address }),
+      ...(has("max_capacity") && {
+        max_capacity: form.max_capacity ? Number(form.max_capacity) : null,
+      }),
+    };
+    await clientFetch(event ? `${config.api}${event.id}/` : config.api, {
+      method: event ? "PUT" : "POST",
+      body: JSON.stringify(publish ? { ...body, publish_series: true } : body),
+    });
+    toast.success(t(publish ? "published" : event ? "saved" : "created"));
+    onSaved();
+  };
+  const onError = (err: unknown) =>
+    toast.error(serverMessage(err) ?? t("saveError"));
+  const { run: save, loading: saving } = useAsyncAction(() => submit(false), {
+    onError,
+  });
+  const { run: publish, loading: publishing } = useAsyncAction(
+    () => submit(true),
+    { onError },
   );
 
   return (
@@ -324,20 +336,35 @@ export function EventForm({
             <TagInput scope="event" value={tagIds} onChange={setTagIds} />
           </div>
 
-          <div className="flex gap-2">
+          {held && <p className="text-sm text-muted-foreground">{t("held")}</p>}
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               onClick={save}
               loading={saving}
               loadingText={t("saving")}
-              disabled={
-                !form.title.trim() || (pricingType === "paid" && !form.price)
-              }
+              disabled={invalid || publishing}
             >
               {t(event ? "save" : "create")}
             </Button>
+            {held && (
+              <Button
+                variant="secondary"
+                onClick={publish}
+                loading={publishing}
+                loadingText={t("publishing")}
+                disabled={invalid || !ahead || saving}
+              >
+                {t("publish")}
+              </Button>
+            )}
             <Button variant="outline" onClick={onCancel}>
               {t("cancel")}
             </Button>
+            {held && !ahead && (
+              <span className="text-xs text-muted-foreground">
+                {t("heldPast")}
+              </span>
+            )}
           </div>
         </div>
       </CardContent>

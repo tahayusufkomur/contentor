@@ -29,6 +29,7 @@ def _upcoming(coach, **kwargs) -> LiveClass:
         instructor=coach,
         scheduled_at=timezone.now() + timedelta(minutes=10),
         duration_minutes=60,
+        status="scheduled",  # a held draft gets no reminder (apps/live/tests/test_held_drafts.py)
         **kwargs,
     )
 

@@ -8,6 +8,7 @@ from apps.filters.serializers import FilterOptionSerializer
 from apps.media import designs
 from apps.tags.serializers import TagSerializer, tag_ids_field
 
+from . import series
 from .models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
 
@@ -62,16 +63,27 @@ class _ScheduledOnCreateMixin:
         return instance
 
     def update(self, instance, validated_data):
-        # The same transition on edit: a draft that gets a date goes on the
-        # schedule, and a scheduled event whose date is taken away is a draft
-        # again. A class that is live or has ended keeps its status.
-        if "scheduled_at" in validated_data:
-            dated = bool(validated_data["scheduled_at"])
-            if instance.status == "draft" and dated:
-                validated_data["status"] = "scheduled"
-            elif instance.status == "scheduled" and not dated:
-                validated_data["status"] = "draft"
-        return super().update(instance, validated_data)
+        # The same transition on edit: an undated draft that gets a date goes on
+        # the schedule, and a scheduled event whose date is taken away is a draft
+        # again. A draft that already had a date is held (sell later, focus mode):
+        # it stays a draft until she publishes it, by `status: "scheduled"` or by
+        # `publish_series` (every held session of its series). A class that is
+        # live or has ended keeps its status.
+        asked = getattr(self, "initial_data", {})
+        when = validated_data.get("scheduled_at", instance.scheduled_at)
+        if (
+            instance.status == "draft"
+            and when
+            and (instance.scheduled_at is None or asked.get("status") == "scheduled")
+        ):
+            validated_data["status"] = "scheduled"
+        elif instance.status == "scheduled" and not when:
+            validated_data["status"] = "draft"
+        instance = super().update(instance, validated_data)
+        if asked.get("publish_series") is True:
+            series.publish_series(instance)
+            instance.refresh_from_db(fields=["status"])
+        return instance
 
 
 def get_thumbnail_signed_url(obj):

@@ -26,7 +26,8 @@ def _send_reminders_for_current_tenant() -> None:
     now = timezone.now()
     horizon = now + timedelta(minutes=_WINDOW_MINUTES)
     for model in _LIVE_MODELS:
-        upcoming = model.objects.filter(scheduled_at__gt=now, scheduled_at__lte=horizon)
+        # A held draft has a date but students do not see it: no reminder.
+        upcoming = model.objects.filter(scheduled_at__gt=now, scheduled_at__lte=horizon).exclude(status="draft")
         for event in upcoming:
             key = f"{model.__name__.lower()}:{event.pk}"
             _, created = LiveReminderLog.objects.get_or_create(key=key)
