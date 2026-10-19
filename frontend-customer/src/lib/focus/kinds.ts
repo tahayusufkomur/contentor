@@ -30,6 +30,12 @@ export const KIND_ROUTES: Partial<Record<FocusKind, KindRoutes>> = {
     listHref: "/admin/courses",
     card: "create_course",
   },
+  event: {
+    newHref: "/admin/live?new=1",
+    plainHref: "/admin/live?new=1&form=1",
+    listHref: "/admin/live",
+    card: "create_event",
+  },
 };
 
 /** Her active time in focus mode on this kind (lib/focus/active-time). */

@@ -17,6 +17,12 @@ describe("focus kinds", () => {
       listHref: "/admin/courses",
       card: "create_course",
     });
+    expect(KIND_ROUTES.event).toEqual({
+      newHref: "/admin/live?new=1",
+      plainHref: "/admin/live?new=1&form=1",
+      listHref: "/admin/live",
+      card: "create_event",
+    });
     expect(focusTimeKey("course")).toBe("focus:course");
   });
 
@@ -26,6 +32,7 @@ describe("focus kinds", () => {
     );
     expect(new Set(cards).size).toBe(cards.length);
     expect(kindForCard("create_course")).toBe("course");
+    expect(kindForCard("create_event")).toBe("event");
     expect(kindForCard("edit_course")).toBeNull();
   });
 });

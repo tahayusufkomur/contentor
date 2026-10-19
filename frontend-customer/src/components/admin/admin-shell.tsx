@@ -109,11 +109,13 @@ function AdminShellContent({ children, user }: AdminShellProps) {
   const creation = useActiveCreation();
   // Gone to another page (not Save & leave): it stays open to resume, and
   // the studio is itself again.
-  const creationPage = creation?.record?.path ?? null;
+  // ponytail: pages are compared without their query (an event's new page and
+  // its own page are both /admin/live), so another view of the same path keeps it open.
+  const creationPage = creation?.record?.path.split("?")[0] ?? null;
   useEffect(() => {
     if (!creation) return;
     if (
-      pathname === KIND_ROUTES[creation.kind]?.newHref ||
+      pathname === KIND_ROUTES[creation.kind]?.newHref.split("?")[0] ||
       pathname === creationPage
     )
       return;

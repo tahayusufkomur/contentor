@@ -24,6 +24,7 @@ import { formatMoney } from "@/lib/format";
 import { useSetupStatus, useTenantCurrency } from "@/lib/setup-assistant";
 import { PublishCard } from "@/components/admin/publish-card";
 import { SetupGuideCard } from "@/components/admin/setup-guide-card";
+import { KIND_ROUTES } from "@/lib/focus/kinds";
 import { useFocusOverview } from "@/lib/focus/store";
 import { useAdminUser } from "@/hooks/use-admin-user";
 import { useTenant } from "@/hooks/use-tenant";
@@ -154,8 +155,15 @@ export default function AdminDashboard() {
               variant="outline"
               className="gap-1.5"
             >
-              <NavLink href={c.record.path}>
-                {t(`focus.kinds.${c.kind}.continue`, { title: c.record.title })}
+              {/* No record yet (an event before she said where): its New page resumes it. */}
+              <NavLink
+                href={
+                  c.record?.path ?? KIND_ROUTES[c.kind]?.newHref ?? "/admin"
+                }
+              >
+                {t(`focus.kinds.${c.kind}.continue`, {
+                  title: c.record?.title ?? c.title ?? "",
+                })}
               </NavLink>
             </Button>
           ))}

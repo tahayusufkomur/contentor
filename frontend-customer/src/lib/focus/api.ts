@@ -21,7 +21,8 @@ export interface FocusQuestion {
     | "cover"
     | "price"
     | "finish"
-    | "announce";
+    | "announce"
+    | "schedule";
   question: string;
   why: string;
   options: FocusOption[];
@@ -33,11 +34,16 @@ export interface FocusQuestion {
   suggested?: string | null;
   /** Finish with "Start selling": her plan is on, so payouts come next. */
   paid_active?: boolean;
+  /** A schedule question: her site's time zone, the one its times are in (G13). */
+  timezone?: string;
 }
 
 export interface FocusRecord {
   id: number;
-  slug: string;
+  /** A course's; an event has none. */
+  slug?: string;
+  /** An event's kind (live, stream, zoom, onsite). */
+  kind?: string;
   title: string;
   /** Its page in the studio. */
   path: string;
@@ -98,6 +104,9 @@ export interface FocusState {
     specialist: SpecialistKey;
   } | null;
   descriptions: { status: OutlineStatus; run: number | null } | null;
+  /** The copy job (a kind it drafts: an event's title and description); null
+   *  until it first starts. */
+  copy?: { status: OutlineStatus; run: number } | null;
   /** null until the Designer was first asked for covers. */
   cover: FocusCover | null;
   announcement: FocusAnnouncement | null;
@@ -109,7 +118,13 @@ export interface FocusOverview {
   /** The kinds switched on; the store reads a missing list as none. */
   kinds: FocusKind[];
   first: Partial<Record<string, FocusQuestion>>;
-  open: { id: number; kind: FocusKind; record: FocusRecord }[];
+  /** A creation with no record yet (an event before she said where) has its working title. */
+  open: {
+    id: number;
+    kind: FocusKind;
+    record: FocusRecord | null;
+    title?: string;
+  }[];
 }
 
 export interface AnswerBody {
@@ -170,13 +185,16 @@ export const announceCreation = (
 export const leaveCreation = (id: number, body: Timed<{ abandon?: boolean }>) =>
   post<FocusState>(`${id}/leave/`, body);
 
+/** An event's stamp names the row's kind too (`eventKind`): its pk alone is not the record. */
 export const postFormTiming = (
   kind: FocusKind,
   recordId: number,
   activeMs: number,
+  eventKind?: string,
 ) =>
   post<void>("form-timing/", {
     kind,
     record_id: recordId,
     active_ms: activeMs,
+    ...(eventKind && { event_kind: eventKind }),
   });

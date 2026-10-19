@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 import { SpecialistByline } from "@/components/copilot/specialist-face";
@@ -27,6 +27,7 @@ export function GuideQuestion({
   onSend,
   highlighted = null,
   onDelegate,
+  children,
 }: {
   question: FocusQuestion;
   sending: boolean;
@@ -37,6 +38,8 @@ export function GuideQuestion({
   highlighted?: string | null;
   /** "You decide" handled here instead of sent. */
   onDelegate?: () => void;
+  /** Its own answer, under the question (the schedule picker). */
+  children?: ReactNode;
 }) {
   const t = useTranslations("admin");
   const [text, setText] = useState("");
@@ -52,6 +55,7 @@ export function GuideQuestion({
           <p className="mt-1 text-sm text-muted-foreground">{question.why}</p>
         )}
       </div>
+      {children}
       {question.options.length > 0 && (
         <div className="grid gap-2">
           {question.options.map((option) => (

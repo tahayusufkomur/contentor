@@ -5,7 +5,9 @@ import {
   focusProgress,
   markLiveCards,
   onKindPage,
+  openCreationAt,
   openCreationFor,
+  pendingCreation,
   setFirstAnswer,
   takeFirstAnswer,
 } from "@/lib/focus/store";
@@ -40,6 +42,32 @@ describe("openCreationFor", () => {
     expect(openCreationFor(o, "course", 99)).toBeNull();
     expect(openCreationFor(o, "class", 10)).toBeNull();
     expect(openCreationFor(null, "course", 10)).toBeNull();
+  });
+});
+
+describe("an event's open creation", () => {
+  const event = (id: number, kind: string) => ({
+    id,
+    slug: "",
+    title: "Breath",
+    path: `/admin/live?event=${id}&kind=${kind}`,
+  });
+  const o = overview([
+    { id: 4, kind: "course", record: record(10) },
+    { id: 6, kind: "event", record: event(10, "zoom") },
+    { id: 7, kind: "event", record: null, title: "Morning breath" },
+  ]);
+
+  it("is found by its page: two kinds can share a row id", () => {
+    expect(openCreationAt(o, "/admin/live?event=10&kind=zoom")).toBe(6);
+    expect(openCreationAt(o, "/admin/live?event=10&kind=live")).toBeNull();
+    expect(openCreationFor(o, "course", 10)).toBe(4); // a null record never trips it
+  });
+
+  it("without a record yet, is the one New resumes", () => {
+    expect(pendingCreation(o, "event")).toBe(7);
+    expect(pendingCreation(o, "course")).toBeNull();
+    expect(pendingCreation(null, "event")).toBeNull();
   });
 });
 

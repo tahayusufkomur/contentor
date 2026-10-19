@@ -61,10 +61,19 @@ export function openCreationFor(
   recordId: number,
 ): number | null {
   return (
-    value?.open.find((c) => c.kind === kind && c.record.id === recordId)?.id ??
+    value?.open.find((c) => c.kind === kind && c.record?.id === recordId)?.id ??
     null
   );
 }
+
+/** Her open creation whose record has this page (`record.path`), if any. */
+export const openCreationAt = (value: FocusOverview | null, path: string) =>
+  value?.open.find((c) => c.record?.path === path)?.id ?? null;
+
+/** Her open creation of this kind that has no record yet (an event before
+ *  she said where, G10): the kind's New page resumes it. */
+export const pendingCreation = (value: FocusOverview | null, kind: string) =>
+  value?.open.find((c) => c.kind === kind && !c.record)?.id ?? null;
 
 // Bumped by every state set, so a poll that set out before a newer state
 // (her tap, on the page or in the guide) cannot put the older one back.

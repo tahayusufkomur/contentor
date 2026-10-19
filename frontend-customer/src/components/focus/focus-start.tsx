@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 import {
@@ -13,26 +13,40 @@ import {
 import { Label } from "@/components/ui/label";
 import { NavLink } from "@/components/ui/nav-link";
 import { startActiveTime, takeActiveMs } from "@/lib/focus/active-time";
-import { startCreation, type FocusQuestion } from "@/lib/focus/api";
+import {
+  fetchCreation,
+  startCreation,
+  type FocusQuestion,
+  type FocusState,
+} from "@/lib/focus/api";
 import { focusTimeKey, KIND_ROUTES, type FocusKind } from "@/lib/focus/kinds";
 import {
   applyCreation,
   refreshFocusOverview,
   setActiveCreation,
   takeFirstAnswer,
+  useActiveCreation,
 } from "@/lib/focus/store";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 
 /** "New course" in focus mode: the course page, still empty, while the guide
  *  asks the first question. Her first answer creates the draft and brings her
- *  to its page, where it takes shape. */
+ *  to its page, where it takes shape. A kind whose draft waits for a later
+ *  answer (an event, G10) stays here until then; `resume` is such a creation
+ *  she left, picked up where she stopped. */
 export function FocusStart({
   kind,
   question,
+  resume = null,
+  children,
 }: {
   kind: FocusKind;
   question: FocusQuestion;
+  /** Her open creation of this kind with no record yet. */
+  resume?: number | null;
+  /** The kind's empty page; the course's when omitted. */
+  children?: ReactNode;
 }) {
   const t = useTranslations("admin");
   const navigate = useNavigate();
@@ -54,6 +68,32 @@ export function FocusStart({
     if (started.current) return;
     started.current = true;
     startActiveTime(timeKey, true);
+    if (resume) {
+      void fetchCreation(resume)
+        .then((state) => {
+          if (state.status !== "active") return fresh();
+          setActiveCreation(state);
+          if (state.record) navigate(state.record.path); // made meanwhile
+        })
+        .catch(fresh);
+      return;
+    }
+    fresh();
+    const words = takeFirstAnswer();
+    if (words) void sendFirst(words);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind, question]);
+  // A later answer made the draft (she said where): on to its page.
+  const active = useActiveCreation();
+  const before = useRef<FocusState | null>(null);
+  useEffect(() => {
+    const prev = before.current;
+    before.current = active;
+    if (active?.record && prev?.id === active.id && !prev.record)
+      navigate(active.record.path);
+  }, [active, navigate]);
+
+  function fresh() {
     setActiveCreation({
       id: 0,
       kind,
@@ -70,14 +110,26 @@ export function FocusStart({
       announcement: null,
       steps: [],
     });
-    const words = takeFirstAnswer();
-    if (words) void sendFirst(words);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kind, question]);
+  }
 
-  const slot = "rounded-md border border-dashed border-border bg-muted/30";
   return (
     <div className="space-y-6">
+      {children ?? <CourseSlots />}
+      <NavLink
+        href={KIND_ROUTES[kind]?.plainHref ?? "/admin"}
+        className="inline-block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+      >
+        {t(`focus.kinds.${kind}.fillMyself`)}
+      </NavLink>
+    </div>
+  );
+}
+
+function CourseSlots() {
+  const t = useTranslations("admin");
+  const slot = "rounded-md border border-dashed border-border bg-muted/30";
+  return (
+    <>
       <Card>
         <CardContent className="space-y-6 pt-6">
           <div className="space-y-2">
@@ -100,12 +152,6 @@ export function FocusStart({
           <CardDescription>{t("focus.outlineSoon")}</CardDescription>
         </CardHeader>
       </Card>
-      <NavLink
-        href={KIND_ROUTES[kind]?.plainHref ?? "/admin"}
-        className="inline-block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-      >
-        {t(`focus.kinds.${kind}.fillMyself`)}
-      </NavLink>
-    </div>
+    </>
   );
 }

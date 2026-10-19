@@ -49,6 +49,7 @@ import { useNavigate } from "@shared/navigation/navigation-provider";
 
 import { GuideQuestion } from "./guide-question";
 import { PriceQuestion } from "./price-question";
+import { ScheduleQuestion } from "./schedule-question";
 
 const POLL_MS = 1500;
 
@@ -204,6 +205,7 @@ export function FocusGuide() {
     state?.reading,
     state?.thinking,
     state?.descriptions,
+    state?.copy,
     state?.cover,
     state?.announcement,
   ].some((job) => job?.status === "building");
@@ -227,6 +229,9 @@ export function FocusGuide() {
   // Another specialist takes this step: who, in one line (spec §4.1).
   const handOver =
     question && HAND_OVER[question.field] === question.specialist;
+  // The review's drafting: the course's outline, every other kind's copy job
+  // (its title and description), which leaves the page whole even when it fails.
+  const copy = state.kind !== "course";
 
   return (
     <div className="flex flex-col gap-5" style={SHELL_TOKENS}>
@@ -313,8 +318,11 @@ export function FocusGuide() {
         (question.kind === "review" ? (
           <OutlineReview
             question={question}
-            status={state.outline.status}
-            drafted={state.outline.drafted}
+            status={
+              copy ? (state.copy?.status ?? "ready") : state.outline.status
+            }
+            drafted={copy || state.outline.drafted}
+            copy={copy}
             sending={sending}
             stopping={stopping}
             onSend={send}
@@ -344,6 +352,20 @@ export function FocusGuide() {
             onDecide={decide}
             onRetry={retryAnnouncement}
           />
+        ) : question.kind === "schedule" ? (
+          <GuideQuestion
+            key={question.field}
+            question={question}
+            sending={sending}
+            showRest
+            onSend={send}
+          >
+            <ScheduleQuestion
+              timezone={question.timezone}
+              sending={sending}
+              onAnswer={(json) => send({ ...NONE, picked: json })}
+            />
+          </GuideQuestion>
         ) : question.kind === "price" ? (
           <PriceQuestion
             key={question.field}
@@ -395,6 +417,7 @@ function OutlineReview({
   question,
   status,
   drafted,
+  copy,
   sending,
   stopping,
   onSend,
@@ -403,6 +426,8 @@ function OutlineReview({
   question: FocusQuestion;
   status: FocusState["outline"]["status"];
   drafted: boolean;
+  /** The copy job's title and description, not an outline. */
+  copy: boolean;
   sending: boolean;
   stopping: boolean;
   onSend: (input: GuideInput) => void;
@@ -422,7 +447,7 @@ function OutlineReview({
         <SpecialistByline k={question.specialist} />
         <p className="flex items-center gap-2 text-sm text-foreground">
           <Spinner size="sm" />
-          {t("focus.writingOutline")}
+          {t(copy ? "focus.writingCopy" : "focus.writingOutline")}
         </p>
         <div>
           <Button
@@ -443,7 +468,9 @@ function OutlineReview({
       <SpecialistByline k={question.specialist} />
       <div>
         <h2 className="text-lg font-semibold leading-snug text-foreground">
-          {failed ? t("focus.outlineFailed") : question.question}
+          {failed
+            ? t(copy ? "focus.copyFailed" : "focus.outlineFailed")
+            : question.question}
         </h2>
         {!failed && question.why && (
           <p className="mt-1 text-sm text-muted-foreground">{question.why}</p>
@@ -517,7 +544,10 @@ function CoverQuestion({
         : { action },
     );
     if (!apply(state.id, next) || action !== "edit" || !next.design_id) return;
-    navigate(`/admin/studio/${next.design_id}?back=${state.record?.path}`);
+    // Encoded: an event's page has a query of its own.
+    navigate(
+      `/admin/studio/${next.design_id}?back=${encodeURIComponent(state.record?.path ?? "")}`,
+    );
   });
   const busy = loading || sending;
   const button = (
@@ -553,7 +583,8 @@ function CoverQuestion({
         {/* Also the way forward when no drafts came: it starts a round. */}
         {button(
           "more",
-          "focus.moreStyles",
+          // No round yet (the copy failed, so none was drafted ahead): this starts one.
+          state.cover ? "focus.moreStyles" : "focus.draftCovers",
           "outline",
           state.cover?.status !== "building",
         )}
