@@ -79,7 +79,7 @@ def _collect_store_items():
                 "currency": currency,
                 "thumbnail_url": _thumbnail_url(df),
                 "cover_design": designs.cover_for(df, ctx),
-                "is_active": True,
+                "is_active": df.is_published,
                 "item_count": 0,
                 "original_price": None,
                 "_obj": df,

@@ -49,10 +49,13 @@ def download_list_create(request):
     )
 
 
-@api_view(["PATCH", "DELETE"])
+@api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([IsCoachOrOwner])
 def download_detail(request, pk):
     download_file = get_object_or_404(DownloadFile, pk=pk)
+
+    if request.method == "GET":  # her download's own page
+        return Response(DownloadFileSerializer(download_file, context={"request": request}).data)
 
     if request.method == "PATCH":
         serializer = DownloadFileCreateSerializer(

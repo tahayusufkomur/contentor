@@ -3207,7 +3207,7 @@ export interface paths {
     /**
      * @description Everything she can put a cover on, each with the cover it wears and its draft: her courses in her
      *     order, then her event series (an event kind and an exact title), the ones with a session still to come
-     *     first, soonest first.
+     *     first, soonest first, then her downloads.
      *
      *     ponytail: this reads every session of every kind to group them into series (hundreds, not thousands).
      *     Aggregate in SQL (`values("title").annotate(...)`) if a calendar ever outgrows that.
@@ -3368,7 +3368,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    get: operations["v1_downloads_retrieve_2"];
     put?: never;
     post?: never;
     delete: operations["v1_downloads_destroy"];
@@ -15716,6 +15716,26 @@ export interface operations {
       query?: never;
       header?: never;
       path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_downloads_retrieve_2: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
       cookie?: never;
     };
     requestBody?: never;

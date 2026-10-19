@@ -1240,5 +1240,32 @@
       "access": "{name} here: let's decide how students get it.",
       "finish": "{name} here: let's get it out there."
     }
+  },
+  "downloads": {
+    "upload": "Upload File",
+    "new": "New download",
+    "edit": "Edit download",
+    "back": "Back to downloads",
+    "title": "Title",
+    "titlePlaceholder": "e.g. Course Workbook",
+    "description": "Description",
+    "descriptionPlaceholder": "What is in it, in a line or two.",
+    "cover": "Cover",
+    "file": "File",
+    "choose": "Choose a file, or drop it here",
+    "replace": "Choose another file, or drop it here, to replace it",
+    "titleFirst": "Give it a title first.",
+    "uploaded": "File uploaded",
+    "uploadFailed": "The file did not upload. Try again.",
+    "progress": "{pct}% uploaded",
+    "tags": "Tags",
+    "create": "Create",
+    "save": "Save",
+    "saving": "Saving…",
+    "created": "Download created",
+    "saved": "Download saved",
+    "saveError": "Failed to save the download",
+    "accessNotSaved": "Saved, but how students get it was not saved.",
+    "draft": "Draft"
   }
 }

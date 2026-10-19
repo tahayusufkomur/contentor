@@ -5,6 +5,10 @@ import type { CoverDesign } from "./design";
 export interface DownloadFile {
   id: number;
   title: string;
+  description: string;
+  /** False: a draft focus mode is still making, hidden from students. */
+  is_published: boolean;
+  thumbnail_id?: number | null;
   file_url: string;
   file_size: number;
   download_count: number;

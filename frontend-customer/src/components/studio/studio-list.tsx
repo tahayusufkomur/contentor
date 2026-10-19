@@ -12,11 +12,11 @@ import { useTenant } from "@/hooks/use-tenant";
 import {
   targetAction,
   targetItem,
+  targetNoun,
   targetState,
   type TargetState,
 } from "@/lib/covers/targets";
 import { useNavigate } from "@shared/navigation/navigation-provider";
-import { targetNoun } from "@/lib/covers/targets";
 import type { DesignTarget } from "@/types/design";
 
 const STATE_BADGE: Record<TargetState, BadgeProps["variant"]> = {

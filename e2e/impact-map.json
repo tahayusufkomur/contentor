@@ -92,6 +92,9 @@
     "src/lib/assistant-dock.ts": ["27-nav-stage-gating", "29-copilot"],
     "src/app/admin/site-ai": ["29-copilot"],
     "src/app/admin/studio": ["32-photo-studio"],
+    "src/app/admin/downloads": ["12-downloads"],
+    "src/components/admin/download-form.tsx": ["12-downloads"],
+    "src/lib/downloads": ["12-downloads"],
     "src/app/admin/courses": ["02-courses", "33-focus-course"],
     "src/components/admin/course-form.tsx": ["02-courses", "33-focus-course"],
     "src/components/focus": [

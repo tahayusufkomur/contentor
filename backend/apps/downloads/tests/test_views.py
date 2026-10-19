@@ -186,6 +186,13 @@ class TestDownloadDetail:
         assert response.status_code == 200, response.content
         assert response.json()["title"] == "Updated Ebook"
 
+    def test_owner_reads_one_download(self, free_download, owner, student):
+        """GET by owner returns the one download (its page); a student cannot."""
+        response = make_client(owner).get(f"/api/v1/downloads/{free_download.pk}/")
+        assert response.status_code == 200, response.content
+        assert response.json()["id"] == free_download.pk
+        assert make_client(student).get(f"/api/v1/downloads/{free_download.pk}/").status_code == 403
+
     def test_owner_deletes_download(self, free_download, owner):
         """DELETE by owner returns 204."""
         client = make_client(owner)
@@ -372,8 +379,8 @@ class TestUnpublishedDownload:
         # The coach still sees her draft, in the list and in her products.
         titles = {r["title"] for r in make_client(owner).get("/api/v1/downloads/").json()["results"]}
         assert titles == {"Premium Guide", "Draft Guide"}
-        products = {i["title"] for i in make_client(owner).get("/api/v1/billing/products/").json()}
-        assert products == {"Premium Guide", "Draft Guide"}
+        products = {i["title"]: i["is_active"] for i in make_client(owner).get("/api/v1/billing/products/").json()}
+        assert products == {"Premium Guide": True, "Draft Guide": False}  # her list tells the draft apart
         # Publishing puts it on sale.
         resp = make_client(owner).patch(f"/api/v1/downloads/{draft.pk}/", {"is_published": True}, format="json")
         assert resp.status_code == 200 and resp.json()["is_published"] is True, resp.content
