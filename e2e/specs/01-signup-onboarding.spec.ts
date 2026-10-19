@@ -47,6 +47,10 @@ function grantTrial() {
   ]);
 }
 
+// A real-AI run of several minutes: a failure here is rarely flaky, and a
+// retry doubles the wait. Fail once.
+test.describe.configure({ retries: 0 });
+
 test.beforeAll(() => {
   // Self-healing sweep of tenants left by previous runs (raw SQL for the
   // cross-schema PlatformSubscription FK; see git history of this spec).
@@ -97,8 +101,9 @@ test("signup lands in /setup and the interview ends in a published site", async 
   const zone = guide.getByLabel("Time zone");
   // The in-person class asks for its place and address: two boxes, no tiles.
   const place = guide.getByPlaceholder("Studio Lumen, Kreuzberg");
-  // A drafted course or class to approve.
+  // A drafted course or class to approve, or the line saying its draft failed.
   const looksGood = guide.getByRole("button", { name: "Looks good, continue" });
+  const draftFailed = guide.getByText(/I couldn’t draft your/);
   const goLive = guide.getByRole("button", { name: "Go live", exact: true });
   // The first payments tile is a paid one, and a trial cannot sell; the spec
   // goes live now and sells later instead of starting the plan. There is no
@@ -143,8 +148,11 @@ test("signup lands in /setup and the interview ends in a published site", async 
       break;
     }
     if (await looksGood.isVisible()) {
-      // Enabled once the draft is ready (it drafts in the background).
-      await looksGood.click({ timeout: 300_000 });
+      // Enabled once the draft is ready (it drafts in the background). A failed
+      // draft says so at once: fail then, instead of waiting out the timeout.
+      await expect(looksGood.and(guide.locator("button:enabled")).or(draftFailed)).toBeVisible({ timeout: 300_000 });
+      await expect(draftFailed, "the draft failed: see `docker compose logs celery-worker`").toHaveCount(0);
+      await looksGood.click();
       continue;
     }
     if (await stockPhotos.isVisible()) {

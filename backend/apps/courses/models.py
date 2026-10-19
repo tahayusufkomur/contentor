@@ -95,7 +95,9 @@ class Lesson(models.Model):
     content_html = models.TextField(blank=True, default="")
     # Exactly what the Content Creating Specialist wrote into content_html. The
     # text is hers once the two differ, so an edit needs no clearing hook.
-    drafted_html = models.TextField(blank=True, default="")
+    # db_default: a worker still on the old code mid-deploy inserts lessons
+    # without this column.
+    drafted_html = models.TextField(blank=True, default="", db_default="")
     is_free_preview = models.BooleanField(default=False)
 
     class Meta:
