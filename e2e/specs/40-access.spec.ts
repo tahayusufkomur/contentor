@@ -285,7 +285,7 @@ test("a coach who is not the owner sees the subscriptions read-only", async ({
   ).toBeVisible();
   await expect(page.locator("#access-course-plans")).toBeDisabled();
   await expect(page.locator(`#access-course-plan-${planId}`)).toBeDisabled();
-  await expect(page.getByText(PLAN_NAME)).toBeVisible();
+  await expect(page.getByText(PLAN_NAME, { exact: true })).toBeVisible();
   // Its terms read as words, not a control.
   await expect(
     page.getByText("After 1 month of membership · never closes"),
