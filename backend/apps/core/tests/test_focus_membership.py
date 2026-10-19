@@ -242,13 +242,13 @@ def test_the_trial_offers_start_selling(owner):
 
 
 def test_finance_asks_the_finish_that_is_not_ready(owner):
-    """G16: Finance asks "Set its price first", not Marketing who wrote it; every other kind's not-ready
-    finish is still asked by whoever drafts it (no FINISH_SPECIALIST)."""
+    """G16: Finance asks "Set its price first", not Marketing who wrote it (a bundle's too); every other
+    kind's not-ready finish is still asked by whoever drafts it (no FINISH_SPECIALIST)."""
     from apps.core.focus import kinds
 
     asked = flow.state(_at_finish(owner, price=None))["question"]
     assert (asked["why"].startswith("Set its price first"), asked["specialist"]) == (True, "finance")
-    assert [k for k in kinds.KINDS if getattr(kinds.get(k), "FINISH_SPECIALIST", None)] == ["membership"]
+    assert [k for k in kinds.KINDS if getattr(kinds.get(k), "FINISH_SPECIALIST", None)] == ["membership", "bundle"]
 
 
 def test_the_trial_offers_start_selling_once_it_has_a_price(owner):

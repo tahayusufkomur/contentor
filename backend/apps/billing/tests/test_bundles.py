@@ -7,6 +7,7 @@ Uses shared tenant fixtures from conftest.py.
 """
 
 from decimal import Decimal
+from unittest import mock
 
 import pytest
 from django.contrib.contenttypes.models import ContentType
@@ -209,8 +210,13 @@ class TestBundleDetail:
 
 @pytest.mark.django_db(transaction=True)
 class TestUnpublishedBundle:
-    def test_an_unpublished_bundle_is_not_in_the_store(self, bundle, owner, student):
+    def test_an_unpublished_bundle_is_not_in_the_store(self, bundle, owner, student, course):
         draft = Bundle.objects.create(name="Draft Bundle", price=Decimal("59.00"), currency="USD", is_published=False)
+        other = Course.objects.create(title="Other", slug="other", instructor=owner, is_published=True)
+        for item in (course, other):  # two items: ready to publish (focus mode's G19)
+            BundleItem.objects.create(
+                bundle=draft, content_type=ContentType.objects.get_for_model(Course), object_id=item.pk
+            )
         for viewer in (None, student):
             client = make_client(viewer)
             assert [i["title"] for i in client.get("/api/v1/billing/store/?type=bundle").json()] == ["Test Bundle"]
@@ -223,8 +229,9 @@ class TestUnpublishedBundle:
         assert coach.get(f"/api/v1/billing/bundles/{draft.pk}/").status_code == 200
         products = {i["title"] for i in coach.get("/api/v1/billing/products/").json()}
         assert products == {"Test Course", "Test Bundle", "Draft Bundle"}
-        # Publishing puts it on sale.
-        resp = coach.patch(f"/api/v1/billing/bundles/{draft.pk}/", {"is_published": True}, format="json")
+        # Publishing puts it on sale (once she can sell).
+        with mock.patch("apps.core.monetization.can_monetize", return_value=True):
+            resp = coach.patch(f"/api/v1/billing/bundles/{draft.pk}/", {"is_published": True}, format="json")
         assert resp.status_code == 200 and resp.json()["is_published"] is True, resp.content
         store = make_client(student).get("/api/v1/billing/store/?type=bundle").json()
         assert {i["title"] for i in store} == {"Test Bundle", "Draft Bundle"}

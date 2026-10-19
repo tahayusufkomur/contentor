@@ -141,9 +141,10 @@ def test_every_kind_module_has_the_whole_adapter():
         assert copy in ([], list(COPY)), f"{kind}: {copy}"
         assert copywriter.drafts(kind) is bool(copy)
     assert copywriter.drafts("event") and copywriter.drafts("message") and not copywriter.drafts("course")
-    # A membership (R1): the copy job writes its plan's name, and it has no cover nor a plan to be put in.
-    assert copywriter.drafts("membership") and kinds.get("membership").COPY_FIELDS[0] == "name"
-    assert kinds.get("membership").COVER is None and kinds.get("membership").put_in_plan is None
+    # A membership and a bundle (R1): the copy job writes their name, and they have no cover nor a plan to be in.
+    for kind in ("membership", "bundle"):
+        assert copywriter.drafts(kind) and kinds.get(kind).COPY_FIELDS[0] == "name"
+        assert kinds.get(kind).COVER is None and kinds.get(kind).put_in_plan is None
 
 
 def test_a_kind_reads_only_its_own_fields(monkeypatch):

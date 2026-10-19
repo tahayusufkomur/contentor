@@ -147,11 +147,13 @@ UNCLEAR_FIELDS = ("price",)
 # ── What members can get: her items students can see ────────────────────────
 
 
-def _choices() -> list[dict]:
+def _choices(sold: bool = False) -> list[dict]:
     """One tile per published course, class series with a session to come
     (rows of one kind with one title, apps.live.series; never a held draft,
     never Zoom) and published download: ``course:<id>``, ``event:<kind>:<id of
-    its first row>``, ``download:<id>``."""
+    its first row>``, ``download:<id>``. ``sold``: only what students can buy
+    on its own (a bundle's): a one-time price above 0, a session to come at
+    one, a download with its file; the same values as without it."""
     from django.utils import timezone
 
     from apps.core.copilot import content
@@ -161,19 +163,25 @@ def _choices() -> list[dict]:
     def tiles(prefix, hint, rows):
         return [{"value": f"{prefix}:{pk}", "label": title, "hint": hint} for pk, title in rows]
 
-    out = tiles("course", HINTS["course"], Course.objects.filter(is_published=True).values_list("pk", "title"))
+    paid = {"pricing_type": "paid", "price__gt": 0} if sold else {}
+    courses = Course.objects.filter(is_published=True, **paid).values_list("pk", "title")
+    out = tiles("course", HINTS["course"], courses)
     now = timezone.now()
     for kind in SERIES:
         firsts: dict[str, int] = {}
         to_come = set()
         published = content.event_model(kind).objects.exclude(status="draft").order_by("pk")
-        for pk, title, at in published.values_list("pk", "title", "scheduled_at"):
+        for pk, title, at, pricing_type, price in published.values_list(
+            "pk", "title", "scheduled_at", "pricing_type", "price"
+        ):
             firsts.setdefault(title, pk)
-            if at and at > now:
+            if at and at > now and (not sold or (pricing_type == "paid" and price > 0)):
                 to_come.add(title)
         out += tiles(f"event:{kind}", HINTS[kind], sorted((pk, t) for t, pk in firsts.items() if t in to_come))
-    published = DownloadFile.objects.filter(is_published=True).values_list("pk", "title")
-    return out + tiles("download", HINTS["download"], published)
+    downloads = DownloadFile.objects.filter(is_published=True, **paid)
+    if sold:
+        downloads = downloads.exclude(file_url="")  # the store shows it only with its file
+    return out + tiles("download", HINTS["download"], downloads.values_list("pk", "title"))
 
 
 def _kind(value: str) -> str:
@@ -210,10 +218,11 @@ def _ticked(raw) -> list[str]:
     return values if "all" in picked else [v for v in values if v in picked]
 
 
-def _named(titles) -> list[str]:
+def _named(titles, choices: list[dict] | None = None) -> list[str]:
     """The tiles her words named: each an exact title (any case), else the one
-    title it is a unique start of; never one she did not name. In tile order."""
-    choices = _choices()
+    title it is a unique start of; never one she did not name. In tile order.
+    ``choices``: the tiles to name from (her items students can see, else)."""
+    choices = _choices() if choices is None else choices
     named = set()
     for title in titles:
         title = str(title).strip().lower()

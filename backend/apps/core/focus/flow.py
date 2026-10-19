@@ -91,7 +91,8 @@ def start(user, kind: str, *, value=None, text=None, delegate=False, rest=False,
     if picked is None:
         raise FlowError("no_answer")
     typed = picked != DELEGATE and bool((text or "").strip())
-    title = working_title("" if picked == DELEGATE else picked, kind)
+    # Ticked tiles (a bundle's items) are values, not a title: the kind's new one until it has words.
+    title = working_title("" if picked == DELEGATE or (first.multi and not typed) else picked, kind)
     actor = user if getattr(user, "pk", None) else None
     answers = {} if typed else {first.id: picked}
     with transaction.atomic():
@@ -110,8 +111,11 @@ def start(user, kind: str, *, value=None, text=None, delegate=False, rest=False,
         if typed:
             _analyse(creation, first.id, picked, rest)
             creation.save()
-        elif rest:
-            creation = answer(creation, current_field(creation), rest=True)
+        else:
+            _next_draft(creation)  # her tap may be all its drafting waits for (a bundle's items)
+            creation.save()
+            if rest:
+                creation = answer(creation, current_field(creation), rest=True)
     return creation
 
 
@@ -1115,9 +1119,10 @@ def _add_time(creation, active_ms) -> None:
 
 def _tiles(recipe, q) -> list[dict]:
     adapter = kinds.get(recipe.kind)
+    # Optional: its own first tiles (a membership's tiers, a bundle's items), with or without a creation.
+    if q.id == recipe.questions[0].id and (own := getattr(adapter, "topic_tiles", None)):
+        return own()
     if q.starter:
-        if own := getattr(adapter, "topic_tiles", None):  # optional: its own first tiles (a membership's tiers)
-            return own()
         # Her own words from /setup, when she gave a topic for this kind there.
         from apps.tenant_config.interview_brief import answers_of
 

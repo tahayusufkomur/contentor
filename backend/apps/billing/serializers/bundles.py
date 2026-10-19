@@ -151,13 +151,20 @@ class BundleCreateSerializer(ShorthandMixin, serializers.ModelSerializer):
         return bundle
 
     def update(self, instance, validated_data):
+        from apps.core.focus.kinds import bundle as focus_bundle
+
         items_data = validated_data.pop("items", None)
+        publishing = validated_data.get("is_published") is True and not instance.is_published
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         if items_data is not None:
             instance.items.all().delete()
             self._save_items(instance, items_data)
+        # A draft is published only as focus mode's finish would (two items, a price, selling open);
+        # ShorthandMixin.save's transaction rolls the whole change back.
+        if publishing and (why := focus_bundle.refusal(instance)):
+            raise serializers.ValidationError({"is_published": [why]})
         return instance
 
     def _save_items(self, bundle, items_data):
