@@ -38,6 +38,7 @@ CLOSING = {
 NOT_READY_LINE = "Your membership is kept off sale."
 NO_ITEMS, NO_PRICE = "Add what members get first", "Set its price first"
 NOTHING = "Nothing ticked"  # a tap none of whose values is one of her tiles
+REFUSED_NAMES = 3  # the items a refusal line names; past that, "and N more"
 SAY = "Say an amount"  # the price step's typing box: her words set the price only when they give one
 CYCLES = {"month": 1, "year": 12}  # a price tile's cycle -> billing_interval_months
 YEAR_HINT = "Two months free"  # the year's tile is ten months' price
@@ -223,12 +224,13 @@ def _named(titles) -> list[str]:
     return [c["value"] for c in choices if c["value"] in named]
 
 
-def _link(value: str, plan_id: int, on: bool) -> bool:
+def _link(value: str, plan_id: int, on: bool, reasons: list[str] | None = None) -> bool:
     """The plan added to (or taken from) each row's ways in, so a ticked item
     keeps its own price and every other way in (Ruling 1); a row already in it
     keeps its window. True once every row is in it (or out of it). The ways
     refuse some (a paid item at 0, or taking the last way in from a
-    members-only one): those rows are left as they are, and it is False."""
+    members-only one): those rows are left as they are, it is False, and the
+    ways' reason goes on ``reasons``."""
     from apps.billing import ways
 
     done = True
@@ -239,9 +241,22 @@ def _link(value: str, plan_id: int, on: bool) -> bool:
         plans = [p for p in current["plans"] if p["plan_id"] != plan_id]
         try:
             ways.set_ways(row, {**current, "plans": [*plans, {"plan_id": plan_id, "window": None}] if on else plans})
-        except ways.WaysError:
+        except ways.WaysError as refused:
             done = False
+            if reasons is not None:
+                reasons.append(str(refused))
     return done
+
+
+def refused_line(titles: list[str], reasons: list[str]) -> str:
+    """What a tap could not add, in one line: "A and B could not be added: Add
+    a price above 0." A few names, then "and N more"; the ways' reasons, each once."""
+    names = titles[:REFUSED_NAMES]
+    if len(titles) > REFUSED_NAMES:
+        names.append(f"{len(titles) - REFUSED_NAMES} more")
+    named = names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
+    why = " ".join(dict.fromkeys(r for r in reasons if r))
+    return f"{named} could not be added" + (f": {why}" if why else ".")
 
 
 # ── The draft ───────────────────────────────────────────────────────────────
@@ -306,7 +321,12 @@ def topic_tiles() -> list[dict]:
 
 
 def ask(creation, asked: dict) -> dict:
-    """What's included: her items as tiles, those her words named ticked."""
+    """What's included: her items as tiles, those her words named ticked.
+    What her last ticks could not add leads the question after them (or that
+    one again, when nothing could be added)."""
+    refused = (creation.brief or {}).get("refused")
+    if refused and asked["field"] in ("included", "review"):
+        asked = {**asked, "why": f"{refused} {asked['why']}".strip()}
     if asked["field"] != "included":
         return asked
     choices = _choices()
@@ -395,8 +415,13 @@ def sync(creation) -> None:
     if isinstance(wanted, list) and creation.record_id is not None:
         done = (creation.drafted or {}).get("included") or []
         if wanted != done:
-            # Kept: what is linked. A tick the ways refuse is dropped; an untick they refuse stays ticked.
-            kept = [v for v in wanted if v in done or _link(v, creation.record_id, on=True)]
+            # Kept: what is linked. A tick the ways refuse is dropped, and named to her; an untick they
+            # refuse stays ticked.
+            reasons: list[str] = []
+            kept = [v for v in wanted if v in done or _link(v, creation.record_id, on=True, reasons=reasons)]
+            refused = [rows[0].title for v in wanted if v not in kept and (rows := _rows_of(v))]
+            brief = {k: v for k, v in (creation.brief or {}).items() if k != "refused"}
+            creation.brief = {**brief, "refused": refused_line(refused, reasons)} if refused else brief
             kept += [v for v in done if v not in wanted and not _link(v, creation.record_id, on=False)]
             creation.drafted = {**(creation.drafted or {}), "included": kept}
             wanted = kept
@@ -482,14 +507,15 @@ def set_price(pk, value: str) -> None:
 
 
 def price_tiles(creation, row) -> dict | None:
-    """The suggested monthly price with its reason, its year at ten months'
-    price, and "Say an amount" (the typing box; not a tile, so it never answers)."""
+    """The suggested monthly price with its reason, a year at what her yearly
+    memberships cost (else ten months' price), and "Say an amount" (the typing
+    box; not a tile, so it never answers)."""
     if row is None:
         return None
     s = _monthly(row)
-    year = s.amount * 10
+    y = _yearly(row) or pricing.Suggestion(s.amount * 10, YEAR_HINT)
     month = {"value": f"month:{s.amount}", "label": f"{money(s.amount)} a month", "hint": s.reason}
-    yearly = {"value": f"year:{year}", "label": f"{money(year)} a year", "hint": YEAR_HINT}
+    yearly = {"value": f"year:{y.amount}", "label": f"{money(y.amount)} a year", "hint": y.reason}
     return {"options": [month, yearly], "suggested": month["value"], "say": SAY}
 
 
@@ -510,12 +536,15 @@ def _tier(row) -> dict:
 
 def suggest_price(row) -> pricing.Suggestion | None:
     """Its price for its cycle, with a reason for that cycle ("Sell it for"
-    after "Just draft it" keeps the cycle her words gave): a year is ten months.
-    None once it has a price: one she typed on the page stands (F11)."""
+    after "Just draft it" keeps the cycle her words gave): a year is what her
+    yearly memberships cost, else ten months. None once it has a price: one
+    she typed on the page stands (F11)."""
     if row.price > 0:
         return None
-    s = _monthly(row)
     months = row.billing_interval_months
+    if months == 12 and (y := _yearly(row)):
+        return y
+    s = _monthly(row)
     if months == 1:
         return s
     if months == 12:
@@ -529,26 +558,37 @@ def amount_label(row, amount: str) -> str:
     return f"{money(amount)} " + {1: "a month", 12: "a year"}.get(months, f"every {months} months")
 
 
+def _yearly(row) -> pricing.Suggestion | None:
+    """Her other yearly memberships on sale, or None without one."""
+    return _her_plans(row, 12, "a year")
+
+
+def _her_plans(row, months: int, per: str) -> pricing.Suggestion | None:
+    """The median of her other memberships on sale billed every ``months``,
+    with them as the reason ("Annual Pass costs $349 a year"); None without one."""
+    from apps.billing.models import SubscriptionPlan
+
+    others = list(
+        SubscriptionPlan.objects.filter(is_active=True, price__gt=0, billing_interval_months=months)
+        .exclude(pk=row.pk)
+        .order_by("price")
+    )
+    if not others:
+        return None
+    low, high = others[0].price, others[-1].price
+    if len(others) == 1:
+        reason = f"{others[0].name} costs {money(low)} {per}"
+    else:
+        reason = f"Your other memberships cost {money(low)}" + (f"–{money(high)}" if high != low else "") + f" {per}"
+    return pricing.Suggestion(pricing.whole(median(p.price for p in others)), reason)
+
+
 def _monthly(row) -> pricing.Suggestion:
     """The first rule that has her numbers: her other monthly memberships on
     sale, the price she gave this tier when she picked it in /setup, else the
     catalogue's price for the closest tier."""
-    from apps.billing.models import SubscriptionPlan
-
-    others = list(
-        SubscriptionPlan.objects.filter(is_active=True, price__gt=0, billing_interval_months=1)
-        .exclude(pk=row.pk)
-        .order_by("price")
-    )
-    if others:
-        low, high = others[0].price, others[-1].price
-        if len(others) == 1:
-            reason = f"{others[0].name} costs {money(low)} a month"
-        else:
-            reason = (
-                f"Your other memberships cost {money(low)}" + (f"–{money(high)}" if high != low else "") + " a month"
-            )
-        return pricing.Suggestion(pricing.whole(median(p.price for p in others)), reason)
+    if s := _her_plans(row, 1, "a month"):
+        return s
     tier = _tier(row)
     answers = answers_of(connection.tenant)
     prices = answers.get("membership_prices") or {}

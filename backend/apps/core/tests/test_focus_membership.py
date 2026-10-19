@@ -350,6 +350,31 @@ def test_a_tick_the_ways_cannot_take_is_asked_again(owner):
     assert flow.state(creation)["answered"][-1] == {"field": "included", "label": "Good"}
 
 
+def test_what_the_ways_refuse_is_named_at_the_next_question(owner):
+    broken = _course(owner, "Broken", pricing_type="paid", price=Decimal("0"))  # the ways refuse a paid 0
+    creation = flow.start(owner, "membership", value=TIER)
+    creation = flow.answer(creation, "included", value=f"course:{broken.pk}")
+    asked = flow.state(creation)["question"]  # nothing could be added: asked again, saying why
+    assert asked["field"] == "included"
+    assert asked["why"].startswith("Broken could not be added: Add a price above 0. Tick everything")
+    _course(owner, "Good")
+    creation = flow.answer(creation, "included", value="all")  # Select all
+    asked = flow.state(creation)["question"]
+    assert asked["field"] == "review"
+    review = next(q for q in membership.RECIPE.questions if q.id == "review")
+    assert asked["why"] == f"Broken could not be added: Add a price above 0. {review.why}"
+
+
+def test_the_refusal_line_names_a_few(owner):
+    reason = ["Add a price above 0.", "Add a price above 0."]
+    assert membership.refused_line(["A"], []) == "A could not be added."
+    assert membership.refused_line(["A", "B"], reason) == "A and B could not be added: Add a price above 0."
+    assert (
+        membership.refused_line(["A", "B", "C", "D", "E"], reason)
+        == "A, B, C and 2 more could not be added: Add a price above 0."
+    )
+
+
 def test_an_untick_that_would_leave_no_way_in_keeps_the_link(owner):
     members_only = _course(owner, "Members only", pricing_type="subscription")
     creation = flow.start(owner, "membership", value=TIER)
@@ -492,6 +517,29 @@ def test_suggest_price_reads_her_plans_then_setup_then_the_tier(owner):
     yearly = membership.suggest_price(draft)
     assert (yearly.amount, yearly.reason) == (100, "Two months free on $10 a month")
     assert membership.amount_label(draft, "100.00") == "$100 a year"
+
+
+def test_the_yearly_tile_is_what_her_yearly_memberships_cost(owner):
+    creation = _at_finish(owner)
+    creation.answers.pop("access")
+    creation.save()
+    SubscriptionPlan.objects.create(name="Basic", price=Decimal("10"), is_active=True)
+    SubscriptionPlan.objects.create(
+        name="Annual Pass", price=Decimal("349"), billing_interval_months=12, is_active=True
+    )
+    SubscriptionPlan.objects.create(name="Old", price=Decimal("999"), billing_interval_months=12, is_active=False)
+    assert flow.state(creation)["question"]["options"] == [
+        {"value": "month:10", "label": "$10 a month", "hint": "Basic costs $10 a month"},
+        {"value": "year:349", "label": "$349 a year", "hint": "Annual Pass costs $349 a year"},
+    ]
+    draft = SubscriptionPlan.objects.create(name="Online", price=0, is_active=False, billing_interval_months=12)
+    assert (membership.suggest_price(draft).amount, membership.suggest_price(draft).reason) == (
+        349,
+        "Annual Pass costs $349 a year",
+    )
+    SubscriptionPlan.objects.create(name="Gold", price=Decimal("449"), billing_interval_months=12, is_active=True)
+    s = membership.suggest_price(draft)
+    assert (s.amount, s.reason) == (399, "Your other memberships cost $349–$449 a year")
 
 
 def test_the_copy_job_writes_the_plan_name_over_its_working_title(owner):
