@@ -181,11 +181,12 @@ models point at the shared `accounts.User` table.
 ### 4.2 Content (`apps.courses`, `apps.downloads`, `apps.media`)
 
 - **`Course`** [T] → `Module` [T] → `Lesson` [T] (the content tree). `Course` has
-  `instructor`, `slug`, `pricing_type ∈ {free, paid}`, `price`, `is_published`, thumbnail.
+  `instructor`, `slug`, `pricing_type ∈ {free, paid, subscription}` (the headline of its ways in, [§6](#6-content-access--ways-in-and-windows)), `price`, `is_published`, thumbnail.
 - **`Video`** [T] — reusable S3 asset (`s3_key`, duration, size). Referenced by `Lesson`,
   and by `LiveClass`/`LiveStream` as a recording.
 - **`Enrollment`** [T] — student↔course access, unique `(user, course)`, denormalized
-  `payment_id`.
+  `payment_id`. `granted=True` marks a creator's "Give access", with its own stamp
+  `access_starts_at` / `access_ends_at`.
 - **`Progress`** [T] — per-`(user, lesson)` `watched_seconds` + `completed`.
 - **`DownloadFile`** [T] — a sellable/free downloadable (`file_url`, `pricing_type`, `price`).
 - **`Photo`** [T] (`apps.media`) — image asset (UUID pk, `s3_key`); thumbnails for
@@ -215,7 +216,12 @@ fixes) is LiveCraft's: see `../livecraft/docs/permissions.md`.
 
 - **`SubscriptionPlan`** [T] — a coach-defined membership tier (name, price, currency).
 - **`SubscriptionPlanAccess`** [T] — GenericFK junction granting a plan access to any
-  content item. **This is the mechanism behind dual-access pricing.**
+  content item, with its own window (`opens_after_days`, `opens_on`, `closes_after_days`,
+  `closes_on`, from the shared `AccessWindowFields`). Read live, anchored at the
+  subscription's `created_at`. See [§6](#6-content-access--ways-in-and-windows).
+- **`AccessWindow`** [T] — the window of an item's `free` or `buy` way: GenericFK to the
+  item, `way ∈ {free, buy}`, the same four optional bounds; unique per `(item, way)`, no row
+  means no window. A bundle uses its `buy` row for its sold-once window.
 - **`Subscription`** [T] — student↔plan, `status ∈ {active, past_due, expired}`, supports
   `pending_plan` (change at next cycle).
 - **`Payment`** [T] — a transaction. `payment_type ∈ {one_time, subscription, refund}`,
@@ -223,7 +229,8 @@ fixes) is LiveCraft's: see `../livecraft/docs/permissions.md`.
   {stripe, bypass}`, `platform_fee`, `submerchant_payout`, `original_payment`
   (refund link), and a **cross-schema** `platform_subscription` FK
   (`db_constraint=False`).
-- **`PaymentItem`** [T] — line item (GenericFK to the purchased content).
+- **`PaymentItem`** [T] — line item (GenericFK to the purchased content). Carries the
+  purchase's stamp, `access_starts_at` / `access_ends_at`, set when the payment completes.
 - **`Bundle`** / **`BundleItem`** [T] — a discounted grouping of content (GenericFK items).
 
 ### 4.5 Email & config
@@ -431,25 +438,80 @@ is `IsAuthenticated`; public views override with `AllowAny`.
 
 ---
 
-## 6. Content access — dual-access pricing
+## 6. Content access — ways in and windows
 
-A coach can make any **paid** item available *both* as a one-off purchase *and* via a
-subscription plan. `pricing_type` is only `{free, paid}`; subscription access is a
-separate, additive link via `SubscriptionPlanAccess`.
+A sellable item (course, download, live class, live stream, on-site event, Zoom class,
+bundle) has one or more **ways in**, each with an optional **window**:
 
-`apps.core.access.ContentAccessService.get_access_info(user, content)` resolves access in
-this order and returns an `AccessInfo`:
+- **free** — everyone (with no window), or everyone during a window;
+- **buy** — sold once at `price`;
+- **plans** — included in ticked subscription plans (`SubscriptionPlanAccess`);
+- **granted** — given to one student by the creator (courses only, not set on the item).
+
+A window opens and closes after N days from when that student got in (a purchase: when the
+payment completed; a plan: `Subscription.created_at`; free: `User.date_joined`; a grant: when
+it was given) or on a calendar date read in the creator's zone (`TenantConfig.timezone`;
+opens at 00:00 of that day, closes at 23:59:59). Months are 30 days, a year 365, days are the
+stored unit (1 to 3650).
+
+**One writer.** `apps.billing.ways` owns the structure
+`{"free": {"window"}, "buy": {"price", "window"}, "plans": [{"plan_id", "window"}]}`:
+`ways_of(item)` reads it, `set_ways(item, ways, actor=…)` validates and writes it in one
+transaction (the `AccessWindow` rows, the plan links, `price`, and the `pricing_type`
+headline) and refuses an empty set; `describe(ways)` says it in plain words. `ALLOWED`
+limits the ways per kind: a Zoom class is free only, a bundle is sold once only. Only the
+owner may change which plans include an item or a bundle's terms. The creator's Access
+section loads and saves through `GET/PUT /api/v1/admin/access/<kind>/<pk>/`
+(`apps/billing/views/access.py`; coach or owner); `pricing_type`/`price` on an item payload
+remain a shorthand, applied through `apply_shorthand`. `pricing_type` is now only the
+headline: `free` (the free way, no window), `paid` (sold on its own), `subscription` (in
+plans, not sold on its own).
+
+**Order of checks.** `apps.core.access.ContentAccessService.get_access_info(user, content)`
+(one path with `bulk_check_access`, which batches the queries for list endpoints) returns an
+`AccessInfo`:
 
 1. **owner/coach** → always allowed (`access_reason="owner"`)
-2. **free** content → allowed
-3. **direct purchase** → a completed `PaymentItem` for this content
-4. **bundle** → owned via a `BundleItem`
-5. **active subscription** → an `active` `Subscription` whose plan links the content
-6. otherwise **no access**, with `unlock_methods`:
-   - `["purchase"]` if paid and not in any plan
-   - `["purchase", "subscribe"]` if paid and linked to ≥1 plan
+2. **free** → open when there is no free window and the headline is `free`, or the window is
+   open for the student (anchored at `User.date_joined`; a visitor only meets calendar dates)
+3. **an open purchase** → `PaymentItem` of this item (`completed` or `partially_refunded`,
+   not refunded), bounded by its stamp (`purchased`); or of a bundle containing it, by the
+   bundle's stamp (`bundle`)
+4. **an open grant** → an active `Enrollment` with `granted=True`, bounded by its stamp
+   (`granted`)
+5. **an open plan link** → the student's `active` `Subscription` (period not yet ended) to a
+   plan that links the item, with the link's window anchored at the subscription's `created_at`
+   (`subscription`)
+6. otherwise **no access**.
 
-`bulk_check_access` batches these queries to avoid N+1 in list endpoints.
+A way counts while its window is open. When several are open the winner is the first that
+never closes, else the one that closes last; `access_reason` and `access_ends_at` come from
+it. With no access, `opens_at` is the soonest start of the student's own ways still ahead
+(a waiting purchase, grant or plan), and `access_ends_at` is when the last one closed
+("Your access ended on …").
+
+**What a locked item offers.** `unlock_methods` is `["purchase"]` when sold on its own (the
+headline is `paid`), plus `"subscribe"` when an *active* plan links the item. The old rule
+"a subscription item with no plan linked means any active subscription" is gone: data
+migration `billing 0010` linked such items to every active plan so nobody lost access.
+`get_unlock_options(content)` carries the same ways with their windows: `free` (only a free
+window), `purchase` (price and `buy` window), `bundles` (active ones containing it) and
+`plans` (active plans only, each with its link's window). A plan that is off sale keeps its
+existing members' access but is never offered.
+
+**Purchases keep their terms.** `grant_access_for_payment` (`apps/billing/views/payments.py`,
+both the bypass and the Stripe webhook) stamps each `PaymentItem` without a stamp from
+`ways.stamp(item, paid_at)`, the item's (or bundle's) `buy` window as it is then; a webhook
+replay finds it stamped and leaves it. `payment_initialize` refuses an item while
+`holds_purchase` says a purchase is open or not yet open (a closed one lets the student buy
+again). `subscribe` refuses only when the student has an `active`, not cancelled
+subscription to that plan whose `current_period_end` is still in the future.
+
+**Give access.** `POST` to the student's grant-access endpoint (`student_grant_access` in
+`apps/accounts/views.py`, coach or owner) takes a `course_id` and optionally `for_days`
+(1 to 3650) or `until` (a calendar date still to come, ends 23:59:59 in the creator's zone),
+not both; neither means theirs to keep. It sets `Enrollment.granted`, `access_starts_at` =
+now and `access_ends_at`.
 
 ---
 

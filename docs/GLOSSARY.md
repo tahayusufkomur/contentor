@@ -120,10 +120,25 @@ to use in conversation, code, and commits.
   sold to students. Tenant schema. *Different from a platform plan.*
 - **Subscription** (`Subscription`) — a **student → coach** recurring membership. Tenant
   schema. (Money collection = future marketplace.)
-- **Dual-access pricing** — any **paid** item can be unlocked by *either* a one-off
-  purchase *or* a subscription plan. Implemented via `SubscriptionPlanAccess`.
-- **`pricing_type`** — `free` or `paid` (only these two). Subscription access is additive,
-  not a pricing type.
+- **Way in** — one route to a sellable item: **free**, **sold once** (`buy`), **in
+  subscriptions** (`plans`), or **given by the creator** (courses only, the student
+  drawer's "Give access"). Several can be on at once; an item is open to a student if any
+  way is. One module, `apps.billing.ways`, reads and writes them.
+- **Window** — when a way is open for a student: it opens and closes either a number of
+  days after that student got in (months are 30 days, a year 365) or on a calendar date in
+  the creator's time zone (`TenantConfig.timezone`). Stored as `AccessWindow` fields
+  (`opens_after_days`, `opens_on`, `closes_after_days`, `closes_on`).
+- **`AccessWindow`** — the window of an item's `free` or `buy` way (one row per item and
+  way, no row = no window). Plan links carry their own on `SubscriptionPlanAccess`.
+- **Headline** — `pricing_type` and `price` kept on each item as a summary only
+  `set_ways` writes: `free` = the free way is on with no window (covers everyone),
+  `paid` = sold on its own, `subscription` = in subscriptions but not sold on its own.
+  A free *window* alone keeps `free`; beside another way the headline is `paid` or
+  `subscription`.
+- **Stamps** — what a purchase or a grant keeps once it is made: `PaymentItem.access_starts_at`
+  / `access_ends_at` (set when the payment completes, from the item's or bundle's `buy`
+  window then) and `Enrollment.access_starts_at` / `access_ends_at` with
+  `Enrollment.granted` (a creator's "Give access"). Editing the item later never changes them.
 - **Payment / PaymentItem** — a transaction and its line items (GenericFK to content).
 - **Bundle** — a discounted group of content items sold together.
 - **Quota** — a plan limit (`max_students`, `max_storage_gb`, `max_streaming_hours`,
