@@ -444,6 +444,7 @@ def site_menu(request):
 
     since = timezone.now() - timedelta(hours=12)  # a class earlier today still counts
     events = any(
-        m.objects.filter(scheduled_at__gte=since).exists() for m in (LiveClass, ZoomClass, OnsiteEvent, LiveStream)
+        m.objects.filter(scheduled_at__gte=since).exclude(status="draft").exists()
+        for m in (LiveClass, ZoomClass, OnsiteEvent, LiveStream)
     )
     return Response({"courses": Course.objects.filter(is_published=True).exists(), "events": events})

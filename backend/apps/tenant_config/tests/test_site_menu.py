@@ -25,6 +25,13 @@ def test_menu_says_which_pages_have_something_behind_them(tenant_ctx):
     LiveClass.objects.create(title="Past", instructor=owner, scheduled_at=timezone.now() - timedelta(days=3))
     assert client.get(URL).json() == {"courses": False, "events": False}  # a draft, a class long over
 
+    LiveClass.objects.create(  # held until she publishes it: the public calendar hides it, so the menu does too
+        title="Held", instructor=owner, scheduled_at=timezone.now() + timedelta(days=2), status="draft"
+    )
+    assert client.get(URL).json() == {"courses": False, "events": False}
+
     Course.objects.create(title="Desk yoga", instructor=owner, is_published=True)
-    LiveClass.objects.create(title="Tuesday", instructor=owner, scheduled_at=timezone.now() + timedelta(days=2))
+    LiveClass.objects.create(
+        title="Tuesday", instructor=owner, scheduled_at=timezone.now() + timedelta(days=2), status="scheduled"
+    )
     assert client.get(URL).json() == {"courses": True, "events": True}
