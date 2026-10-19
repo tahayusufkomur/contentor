@@ -333,3 +333,79 @@ class TestOrphanVisibility:
         assert response.status_code == 200, response.content
         titles = [r["title"] for r in response.json()["results"]]
         assert "Orphan Pending Upload" in titles
+
+
+# ---------------------------------------------------------------------------
+# Tests: an unpublished (draft) download
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db(transaction=True)
+class TestUnpublishedDownload:
+    @pytest.fixture()
+    def draft(self, tenant_ctx):
+        return DownloadFile.objects.create(
+            title="Draft Guide",
+            file_url="downloads/draft-guide.pdf",
+            file_size=2048,
+            pricing_type="paid",
+            price=Decimal("29.00"),
+            is_published=False,
+        )
+
+    def test_an_unpublished_download_is_hidden_from_students_and_the_store(
+        self, draft, paid_download, owner, student, settings
+    ):
+        settings.BILLING_BYPASS_ENABLED = True
+        buy = {"items": [{"content_type": "download", "object_id": draft.pk}]}
+        for viewer in (None, student):
+            client = make_client(viewer)
+            titles = [r["title"] for r in client.get("/api/v1/downloads/").json()["results"]]
+            assert titles == ["Premium Guide"]
+            store = client.get("/api/v1/billing/store/?type=download").json()
+            assert [i["title"] for i in store] == ["Premium Guide"]
+        # A student cannot fetch its file either, however she got the id.
+        assert make_client(student).get(f"/api/v1/downloads/{draft.pk}/url/").status_code == 404
+        # Checkout refuses it.
+        bought = make_client(student).post("/api/v1/billing/payments/initialize/", data=buy, format="json")
+        assert bought.status_code == 400 and "not on sale" in bought.json()["detail"], bought.content
+        # The coach still sees her draft, in the list and in her products.
+        titles = {r["title"] for r in make_client(owner).get("/api/v1/downloads/").json()["results"]}
+        assert titles == {"Premium Guide", "Draft Guide"}
+        products = {i["title"] for i in make_client(owner).get("/api/v1/billing/products/").json()}
+        assert products == {"Premium Guide", "Draft Guide"}
+        # Publishing puts it on sale.
+        resp = make_client(owner).patch(f"/api/v1/downloads/{draft.pk}/", {"is_published": True}, format="json")
+        assert resp.status_code == 200 and resp.json()["is_published"] is True, resp.content
+        store = make_client(student).get("/api/v1/billing/store/?type=download").json()
+        assert {i["title"] for i in store} == {"Premium Guide", "Draft Guide"}
+        bought = make_client(student).post("/api/v1/billing/payments/initialize/", data=buy, format="json")
+        assert bought.status_code == 201, bought.content
+
+    def test_a_download_with_no_file_is_not_in_the_store(self, owner, student):
+        DownloadFile.objects.create(title="No File", pricing_type="paid", price=Decimal("5.00"))
+        assert make_client(student).get("/api/v1/billing/store/?type=download").json() == []
+        assert [i["title"] for i in make_client(owner).get("/api/v1/billing/products/").json()] == ["No File"]
+
+    def test_existing_downloads_stay_published(self, free_download, paid_download):
+        # The migration adds the flag as published: nothing she has today goes dark.
+        assert free_download.is_published is True and paid_download.is_published is True
+        field = DownloadFile._meta.get_field("is_published")
+        assert field.default is True
+        assert DownloadFile.objects.filter(is_published=False).count() == 0
+
+    def test_description_and_cover_photo_are_in_the_api(self, owner):
+        from apps.media.models import Photo
+
+        photo = Photo.objects.create(s3_key="photos/cover.jpg", title="Cover")
+        payload = {"title": "Workbook", "description": "Twelve pages.", "thumbnail": photo.pk}
+        with patch("apps.downloads.serializers.generate_presigned_download_url", return_value="https://x/cover"):
+            created = make_client(owner).post("/api/v1/downloads/", data=payload, format="json")
+        assert created.status_code == 201, created.content
+        body = created.json()
+        assert (body["description"], body["thumbnail_id"], body["is_published"]) == (
+            "Twelve pages.",
+            str(photo.pk),
+            True,
+        )
+        assert body["thumbnail_signed_url"] == "https://x/cover"

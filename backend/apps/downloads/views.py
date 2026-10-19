@@ -20,10 +20,10 @@ from .serializers import DownloadFileCreateSerializer, DownloadFileSerializer
 @permission_classes([AllowAny])
 def download_list_create(request):
     if request.method == "GET":
-        qs = DownloadFile.objects.all()
-        # Hide orphan rows (file_url="") from non-coach/owner users
+        qs = DownloadFile.objects.select_related("thumbnail")
+        # Hide orphan rows (file_url="") and unpublished drafts from non-coach/owner users
         if not is_coach_or_owner(request.user):
-            qs = qs.exclude(file_url="")
+            qs = qs.exclude(file_url="").filter(is_published=True)
         search = request.query_params.get("search", "").strip()
         if search:
             qs = qs.filter(title__icontains=search)
@@ -72,6 +72,10 @@ def download_detail(request, pk):
 @permission_classes([IsAuthenticated])
 def download_url(request, pk):
     download_file = get_object_or_404(DownloadFile, pk=pk)
+
+    # A draft is the coach's alone: to a student it does not exist.
+    if not download_file.is_published and not is_coach_or_owner(request.user):
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
     if not download_file.file_url:
         return Response({"detail": "File not yet available."}, status=status.HTTP_404_NOT_FOUND)

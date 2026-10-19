@@ -85,7 +85,9 @@ def design_reads(captured):
 
 def test_store_items_carry_the_cover_design(owner):
     content = paid(owner)
-    DownloadFile.objects.create(title="Guide", pricing_type="paid", price=Decimal("5.00"))
+    DownloadFile.objects.create(
+        title="Guide", file_url="downloads/guide.pdf", pricing_type="paid", price=Decimal("5.00")
+    )
     Bundle.objects.create(name="Bundle", price=Decimal("50.00"), currency="USD", is_active=True)
 
     def covers(path, user=None):
@@ -128,7 +130,9 @@ def test_plan_items_carry_the_cover_design(owner):
 def test_items_carry_the_date_their_cover_badge_reads(owner):
     """A cover's badge follows its item: "New" by when a course was made, the date by when an event starts."""
     content = paid(owner)
-    download = DownloadFile.objects.create(title="Guide", pricing_type="paid", price=Decimal("5.00"))
+    download = DownloadFile.objects.create(
+        title="Guide", file_url="downloads/guide.pdf", pricing_type="paid", price=Decimal("5.00")
+    )
     Bundle.objects.create(name="Bundle", price=Decimal("50.00"), currency="USD", is_active=True)
     plan = SubscriptionPlan.objects.create(name="Basic", price=Decimal("29.99"), currency="USD", is_active=True)
     for obj in [*(obj for obj, _kind, _key in content), download]:

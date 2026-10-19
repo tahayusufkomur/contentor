@@ -91,7 +91,7 @@ def _catalog_lines(tenant, config):
                 "course", c.title, _price(c.price, c.pricing_type, currency), f"/courses/{c.slug}", c.description or ""
             )
         )
-    for d in DownloadFile.objects.order_by("-id")[:MAX_DOWNLOADS]:
+    for d in DownloadFile.objects.filter(is_published=True).order_by("-id")[:MAX_DOWNLOADS]:
         lines.append(_line("download", d.title, _price(d.price, d.pricing_type, currency), "/store"))
     upcoming = []
     now = timezone.now()

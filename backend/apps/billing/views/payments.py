@@ -19,6 +19,7 @@ from apps.core.monetization import can_monetize
 from apps.core.pagination import StandardPagination
 from apps.core.permissions import IsOwner
 from apps.courses.models import Course, Enrollment
+from apps.downloads.models import DownloadFile
 from apps.live.models import LiveClass, LiveStream, OnsiteEvent
 
 from ..models import Bundle, BundleItem, Payment, PaymentItem, Subscription, SubscriptionPlan
@@ -72,8 +73,10 @@ def _get_fee_pct() -> Decimal:
 
 
 def _seat_unavailable(obj) -> str | None:
-    """Why a class can't be bought right now: held (a draft she has not published), or an
-    in-person class with no date, over, or full."""
+    """Why an item can't be bought right now: a download that is a draft or has no file, a class
+    that is held (a draft she has not published), or an in-person class with no date, over, or full."""
+    if isinstance(obj, DownloadFile) and not (obj.is_published and obj.file_url):
+        return "is not on sale"
     if isinstance(obj, LiveClass | LiveStream | OnsiteEvent) and obj.status == "draft":
         return "is not on sale"
     if not isinstance(obj, OnsiteEvent):

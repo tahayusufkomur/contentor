@@ -85,19 +85,26 @@ def _has_paid_content(seeded, held_course=None) -> bool:
     their own. Demo-seeded rows are excluded so an unremoved demo (which may
     contain paid items) never spuriously demands payout onboarding, and so is
     a course held back by "go live now, sell later" (``setup_flow["held"]``),
-    and so is a focus-mode draft not yet published (F11: it never blocks go-live)."""
+    and so is a focus-mode draft (course or download) not yet published (F11: it never blocks go-live)."""
     from apps.courses.models import Course
     from apps.downloads.models import DownloadFile
 
     course_demo = [row.object_id for row in seeded.get("courses.course", [])] + [held_course]
     dl_demo = [row.object_id for row in seeded.get("downloads.downloadfile", [])]
-    focus = FocusCreation.objects.filter(mode="focus", kind="course", record_id__isnull=False).values("record_id")
+    # Record ids are per model, so each kind's drafts are read on their own.
+    drafts = {
+        kind: FocusCreation.objects.filter(mode="focus", kind=kind, record_id__isnull=False).values("record_id")
+        for kind in ("course", "download")
+    }
     return (
         Course.objects.filter(pricing_type="paid", price__gt=0)
         .exclude(pk__in=course_demo)
-        .exclude(is_published=False, pk__in=focus)
+        .exclude(is_published=False, pk__in=drafts["course"])
         .exists()
-        or DownloadFile.objects.filter(pricing_type="paid", price__gt=0).exclude(pk__in=dl_demo).exists()
+        or DownloadFile.objects.filter(pricing_type="paid", price__gt=0)
+        .exclude(pk__in=dl_demo)
+        .exclude(is_published=False, pk__in=drafts["download"])
+        .exists()
     )
 
 
