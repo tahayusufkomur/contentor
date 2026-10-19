@@ -1185,11 +1185,25 @@
         "drop": "Drop your file here, or choose one",
         "fileNotAnswered": "Your file is on the page, but the guide missed it.",
         "thinking": "Thinking about your download…"
+      },
+      "membership": {
+        "new": "New membership",
+        "continue": "Continue your membership: {title}",
+        "fillMyself": "Fill it in myself",
+        "thinking": "Thinking about your membership…",
+        "writing": "Writing the name and description…",
+        "handOver": {
+          "access": "{name} here: let's set its price."
+        }
       }
     },
     "youDecide": "You decide",
     "justDraft": "Just draft it",
     "ownIdea": "My own idea…",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "pickSome": "Pick as many as fit",
+    "continueWith": "{count, plural, one {Continue} other {Continue with #}}",
     "answerPlaceholder": "Or say it your way…",
     "changePlaceholder": "Or say what to change…",
     "writingOutline": "Writing your outline…",

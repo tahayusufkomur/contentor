@@ -23,7 +23,8 @@ export interface FocusQuestion {
     | "finish"
     | "announce"
     | "schedule"
-    | "upload";
+    | "upload"
+    | "pick";
   question: string;
   why: string;
   options: FocusOption[];
@@ -35,6 +36,10 @@ export interface FocusQuestion {
   specialist: SpecialistKey;
   /** The price step: the tile "You decide" highlights for her to tap. */
   suggested?: string | null;
+  /** The price step: a control that puts her in the answer box to type an amount (not a tile). */
+  say?: string;
+  /** A pick question (several tiles): the ones her words already named. */
+  ticked?: string[];
   /** Finish with "Start selling": her plan is on, so payouts come next. */
   paid_active?: boolean;
   /** A schedule question: her site's time zone, the one its times are in (G13). */

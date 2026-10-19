@@ -48,6 +48,12 @@ export const KIND_ROUTES: Partial<Record<FocusKind, KindRoutes>> = {
     plainHref: "/admin/downloads/new?form=1",
     listHref: "/admin/downloads",
   },
+  // The owner's alone: the overview lists it only for her (else New is the plain form).
+  membership: {
+    newHref: "/admin/store/plans/new",
+    plainHref: "/admin/store/plans/new?form=1",
+    listHref: "/admin/store?tab=plans",
+  },
 };
 
 /** Her active time in focus mode on this kind (lib/focus/active-time). */

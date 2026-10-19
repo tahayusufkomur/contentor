@@ -43,6 +43,15 @@ export function GuideQuestion({
 }) {
   const t = useTranslations("admin");
   const [text, setText] = useState("");
+  // Into the answer box, the cursor after what is there.
+  const toBox = () =>
+    requestAnimationFrame(() => {
+      const box = document.getElementById(
+        "setup-answer",
+      ) as HTMLTextAreaElement | null;
+      box?.focus();
+      box?.setSelectionRange(box.value.length, box.value.length);
+    });
 
   return (
     <div className="flex flex-col gap-4">
@@ -97,20 +106,24 @@ export function GuideQuestion({
             disabled={sending}
             onClick={() => {
               setText(starter);
-              // Her sentence goes on from the starter, in the answer box.
-              requestAnimationFrame(() => {
-                const box = document.getElementById(
-                  "setup-answer",
-                ) as HTMLTextAreaElement | null;
-                box?.focus();
-                box?.setSelectionRange(box.value.length, box.value.length);
-              });
+              toBox(); // her sentence goes on from the starter
             }}
             className="rounded-xl border border-dashed border-border px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:border-foreground/30 hover:bg-accent"
           >
             {label}
           </button>
         ))}
+      {/* Not a tile: a tile would answer with no amount. She types hers. */}
+      {question.say && (
+        <button
+          type="button"
+          disabled={sending}
+          onClick={toBox}
+          className="rounded-xl border border-dashed border-border px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:border-foreground/30 hover:bg-accent"
+        >
+          {question.say}
+        </button>
+      )}
       {(question.can_delegate || showRest) && (
         <div className="flex flex-wrap gap-2">
           {question.can_delegate && (

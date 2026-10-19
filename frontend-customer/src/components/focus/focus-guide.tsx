@@ -49,6 +49,7 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 
 import { GuideQuestion } from "./guide-question";
+import { PickQuestion } from "./pick-question";
 import { PriceQuestion } from "./price-question";
 import { ScheduleQuestion } from "./schedule-question";
 import { UploadQuestion } from "./upload-question";
@@ -114,10 +115,12 @@ export function FocusGuide() {
         announce,
         active_ms: takeActiveMs(timeKey),
       });
+      // A membership says what its tap did ("On sale. …", "Kept off sale. …").
+      const own = state.kind === "membership" ? next.closing : undefined;
       // Live, with "Tell my students": Marketing's draft is the last step.
       if (next.status === "active" && next.question?.kind === "announce") {
         apply(state.id, next);
-        toast.success(t("focus.published"));
+        toast.success(own ?? t("focus.published"));
         return;
       }
       stopActiveTime(timeKey);
@@ -136,7 +139,7 @@ export function FocusGuide() {
         // A message's own line: "Sent.", or when it is scheduled for.
         publish && state.kind === "message" && next.closing
           ? next.closing
-          : t(publish ? "focus.published" : "focus.kept"),
+          : (own ?? t(publish ? "focus.published" : "focus.kept")),
       );
     },
   );
@@ -302,11 +305,9 @@ export function FocusGuide() {
           <p className="flex items-center gap-2 text-sm text-foreground">
             <Spinner size="sm" />
             {t(
-              state.kind === "message"
-                ? "focus.kinds.message.thinking"
-                : state.kind === "download"
-                  ? "focus.kinds.download.thinking"
-                  : "focus.thinking",
+              t.has(`focus.kinds.${state.kind}.thinking`)
+                ? `focus.kinds.${state.kind}.thinking`
+                : "focus.thinking",
             )}
           </p>
           <div>
@@ -324,9 +325,13 @@ export function FocusGuide() {
       {question && handOver && (
         <p className="flex items-center gap-2 text-sm text-foreground">
           <SpecialistFace k={question.specialist} size="sm" />
-          {t(`focus.handOver.${question.field}`, {
-            name: t(`team.specialists.${question.specialist}.name`),
-          })}
+          {t(
+            // A kind's own words for the step (a membership's price), else the shared ones.
+            t.has(`focus.kinds.${state.kind}.handOver.${question.field}`)
+              ? `focus.kinds.${state.kind}.handOver.${question.field}`
+              : `focus.handOver.${question.field}`,
+            { name: t(`team.specialists.${question.specialist}.name`) },
+          )}
         </p>
       )}
       {question &&
@@ -398,6 +403,23 @@ export function FocusGuide() {
                 onDone={() => send({ ...NONE, picked: "uploaded" })}
               />
             )}
+          </GuideQuestion>
+        ) : question.kind === "pick" ? (
+          // Her ticks are the answer: the tiles live in PickQuestion, not as taps.
+          <GuideQuestion
+            key={`${question.field}:${(question.ticked ?? []).join(",")}`}
+            question={{ ...question, options: [] }}
+            sending={sending}
+            showRest={false}
+            onSend={send}
+          >
+            <PickQuestion
+              options={question.options}
+              ticked={question.ticked}
+              selectAll="all"
+              sending={sending}
+              onAnswer={(value) => send({ ...NONE, picked: value })}
+            />
           </GuideQuestion>
         ) : question.kind === "price" ? (
           <PriceQuestion
@@ -487,8 +509,8 @@ function OutlineReview({
         <p className="flex items-center gap-2 text-sm text-foreground">
           <Spinner size="sm" />
           {t(
-            kind === "message"
-              ? "focus.kinds.message.writing"
+            t.has(`focus.kinds.${kind}.writing`)
+              ? `focus.kinds.${kind}.writing`
               : copy
                 ? "focus.writingCopy"
                 : "focus.writingOutline",

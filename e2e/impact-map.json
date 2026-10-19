@@ -4,10 +4,17 @@
     "blog": "none",
     "community": ["15-community"],
     "core/access.py": ["40-access"],
-    "core/focus": ["33-focus-course", "34-focus-event", "35-focus-message", "36-focus-download"],
+    "core/focus": [
+      "33-focus-course",
+      "34-focus-event",
+      "35-focus-message",
+      "36-focus-download",
+      "37-focus-membership"
+    ],
     "core/focus/kinds/event.py": ["34-focus-event"],
     "core/focus/kinds/message.py": ["35-focus-message"],
     "core/focus/kinds/download.py": ["36-focus-download"],
+    "core/focus/kinds/membership.py": ["37-focus-membership"],
     "courses": ["02-courses"],
     "domains": ["01-signup-onboarding"],
     "downloads": ["12-downloads"],
@@ -98,17 +105,20 @@
     "src/lib/downloads": ["12-downloads", "36-focus-download"],
     "src/app/admin/courses": ["02-courses", "33-focus-course"],
     "src/components/admin/course-form.tsx": ["02-courses", "33-focus-course"],
+    "src/app/admin/store": ["37-focus-membership"],
     "src/components/focus": [
       "33-focus-course",
       "34-focus-event",
       "35-focus-message",
-      "36-focus-download"
+      "36-focus-download",
+      "37-focus-membership"
     ],
     "src/lib/focus": [
       "33-focus-course",
       "34-focus-event",
       "35-focus-message",
-      "36-focus-download"
+      "36-focus-download",
+      "37-focus-membership"
     ],
     "src/app/admin/messages": ["06-announcements", "35-focus-message"],
     "src/components/admin/announcement-compose.tsx": [

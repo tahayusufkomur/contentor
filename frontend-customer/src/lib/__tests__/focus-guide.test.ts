@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { FocusQuestion } from "@/lib/focus/api";
-import { guideBody } from "@/lib/focus/guide";
+import { guideBody, pickAnswer } from "@/lib/focus/guide";
 
 const q = (field: string): FocusQuestion => ({
   field,
@@ -49,5 +49,24 @@ describe("guideBody", () => {
   it("sends nothing when nothing is picked or typed", () => {
     expect(guideBody(q("level"), none)).toBeNull();
     expect(guideBody(q("level"), { ...none, text: "   " })).toBeNull();
+  });
+});
+
+describe("pickAnswer", () => {
+  const tiles = ["course:1", "course:2", "download:3"];
+
+  it("sends her ticks as one answer, in tile order", () => {
+    expect(pickAnswer(tiles, ["download:3", "course:1"], "all")).toBe(
+      "course:1,download:3",
+    );
+  });
+
+  it("sends every tile as all", () => {
+    expect(pickAnswer(tiles, [...tiles].reverse(), "all")).toBe("all");
+  });
+
+  it("drops a tick that is no longer a tile, and sends nothing for none", () => {
+    expect(pickAnswer(tiles, ["course:2", "course:9"], "all")).toBe("course:2");
+    expect(pickAnswer(tiles, [], "all")).toBe("");
   });
 });

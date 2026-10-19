@@ -26,3 +26,16 @@ export function guideBody(
   if (input.picked !== null) return { field, value: input.picked };
   return text ? { field, text } : null;
 }
+
+/** A pick question's one answer: the ticked values in tile order, joined by
+ *  commas; `all` (the server's "every tile") once every tile is ticked. */
+export function pickAnswer(
+  values: string[],
+  ticked: string[],
+  all: string,
+): string {
+  const picked = values.filter((value) => ticked.includes(value));
+  return picked.length > 0 && picked.length === values.length
+    ? all
+    : picked.join(",");
+}

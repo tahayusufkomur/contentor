@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { PageState } from "@/components/ui/page-state";
 import { NavLink } from "@/components/ui/nav-link";
 import { clientFetch } from "@/lib/api-client";
+import { KIND_ROUTES } from "@/lib/focus/kinds";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { formatDate, formatMoney } from "@/lib/format";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -297,6 +298,9 @@ function BundlesTab() {
   );
 }
 
+// Focus mode where the overview lists memberships (the owner's), else the plain form.
+const NEW_PLAN = KIND_ROUTES.membership?.newHref ?? "/admin/store/plans/new";
+
 function PlansTab() {
   const t = useTranslations("admin.store.plans");
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -339,7 +343,7 @@ function PlansTab() {
     <div className="space-y-4">
       <div className="flex justify-end">
         <Button asChild className="gap-2">
-          <NavLink href="/admin/store/plans/new">
+          <NavLink href={NEW_PLAN}>
             <Plus className="h-4 w-4" />
             {t("new")}
           </NavLink>
@@ -373,7 +377,7 @@ function PlansTab() {
                       description={t("emptyHint")}
                       action={{
                         label: t("new"),
-                        href: "/admin/store/plans/new",
+                        href: NEW_PLAN,
                       }}
                     />
                   </td>
