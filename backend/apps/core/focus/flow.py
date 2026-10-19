@@ -590,6 +590,9 @@ def state(creation) -> dict:
         asked = _finish_options(creation, asked, record)
     # A kind's own price tiles label her access line with the tile she tapped.
     tiles = {o["value"]: o["label"] for o in (adapter.price_tiles(creation, record) or {}).get("options", [])}
+    # Her own amount (typed, or "Sell it for") in the kind's words for it: a membership's "$9 a month".
+    if (paid := str(answers.get("access") or "")).startswith("paid:") and hasattr(adapter, "amount_label"):
+        tiles[paid] = adapter.amount_label(record, paid.removeprefix("paid:"))
     return {
         "id": creation.id,
         "kind": creation.kind,

@@ -321,9 +321,10 @@ def label(field, answer) -> str | None:
         values = answer if isinstance(answer, list) else _ticked(answer)
         if not values:
             return NOTHING
+        count = f"{len(values)} item" + ("s" if len(values) > 1 else "")
         if len(values) > 3:
-            return f"{len(values)} items"
-        return ", ".join(rows[0].title for v in values if (rows := _rows_of(v))) or f"{len(values)} items"
+            return count
+        return ", ".join(rows[0].title for v in values if (rows := _rows_of(v))) or count
     if field == "access" and isinstance(answer, str):
         cycle, _, amount = answer.partition(":")
         price = analysis.price_value(amount) if cycle in CYCLES else None

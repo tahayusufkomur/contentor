@@ -153,7 +153,8 @@ def test_just_draft_it_leaves_the_price_to_her_finish_tap(owner):
     sell = next(o for o in asked["options"] if o["value"].startswith("price:"))
     assert sell == {"value": "price:9", "label": "Sell it for $9 a month", "hint": pricing.FALLBACK}
     creation = flow.answer(creation, "finish", value="price:9")
-    assert flow.state(creation)["answered"][-1]["label"] == "$9"  # her access line: the price she tapped
+    # Her access line: the price she tapped, with the plan's cycle.
+    assert flow.state(creation)["answered"][-1]["label"] == "$9 a month"
     assert CopilotChat.objects.get(pk=creation.chat_id).entries[-1]["text"] == "Sell it for $9 a month"
     assert (_plan(creation).price, _plan(creation).billing_interval_months) == (Decimal("9.00"), 1)
     with mock.patch("apps.core.monetization.can_monetize", return_value=True):
@@ -355,6 +356,22 @@ def test_a_tap_with_nothing_valid_has_a_plain_line(owner):
     long = ",".join(f"course:{n}" for n in range(1000, 2000))
     picked = flow._pick(recipe, question, long, None, False)
     assert len(picked) <= flow.MULTI_MAX and long.startswith(picked) and long[len(picked)] == ","
+
+
+def test_one_item_is_one_item(owner):
+    assert membership.label("included", ["course:99999"]) == "1 item"
+    assert membership.label("included", ["course:99998", "course:99999"]) == "2 items"
+
+
+def test_her_typed_amount_reads_with_the_yearly_cycle(owner):
+    creation = _at_finish(owner, price="year:90")
+    creation.answers.pop("access")
+    creation.save()
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
+        creation = flow.answer(creation, "access", text="80")
+    creation.refresh_from_db()
+    assert creation.answers["access"].startswith("paid:80")  # her amount, not a tile
+    assert flow.state(creation)["answered"][-1] == {"field": "access", "label": "$80 a year"}
 
 
 def test_nothing_ticked_is_asked_again(owner):
