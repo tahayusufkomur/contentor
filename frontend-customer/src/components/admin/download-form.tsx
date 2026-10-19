@@ -227,12 +227,28 @@ export function DownloadForm({
     !!record?.file_url
       ? creation.id
       : null;
+  // One answer at a time; a failed one says so and goes again on her Try
+  // again, the next upload or the guide's next state.
+  const answeringFile = useRef(false);
+  const [fileTry, setFileTry] = useState(0);
   useEffect(() => {
-    if (!fileAsked) return;
-    void answerCreation(fileAsked, { field: "file", value: "uploaded" })
+    if (!fileAsked || answeringFile.current) return;
+    answeringFile.current = true;
+    answerCreation(fileAsked, { field: "file", value: "uploaded" })
       .then((next) => applyCreation(fileAsked, next))
-      .catch(() => {});
-  }, [fileAsked]);
+      .catch(() =>
+        toast.error(tf("kinds.download.fileNotAnswered"), {
+          id: "download-file-answer",
+          action: {
+            label: tf("tryAgain"),
+            onClick: () => setFileTry((n) => n + 1),
+          },
+        }),
+      )
+      .finally(() => {
+        answeringFile.current = false;
+      });
+  }, [fileAsked, fileTry, record, creation, tf]);
   const fileAnswered = creation?.answered.some((line) => line.field === "file");
   useEffect(() => {
     if (focus && fileAnswered && !recordRef.current?.file_url) focus.reload();

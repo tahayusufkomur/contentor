@@ -128,6 +128,19 @@ def test_add_it_later_moves_on_and_finish_offers_only_keep(owner):
     assert asked["question"] == download.NOT_READY_LINE
 
 
+def test_the_first_question_offers_four_format_starters(tenant_ctx):
+    asked = flow.question("download", "topic")
+    assert asked["starters"] == [
+        {"label": "A workbook", "starter": "A workbook on "},
+        {"label": "A checklist", "starter": "A checklist for "},
+        {"label": "A recording", "starter": "A recording of "},
+        {"label": "A template", "starter": "A template for "},
+    ]
+    assert (asked["starter"], asked["can_delegate"]) == ("A ", True)  # "My own idea…" and "You decide"
+    assert "starters" not in flow.question("course", "topic")
+    assert flow.working_title("A workbook on easy 5k plans", "download") == "Workbook on easy 5k plans"
+
+
 # ── The file question ───────────────────────────────────────────────────────
 
 
@@ -162,6 +175,8 @@ def test_suggest_price_reads_her_published_paid_downloads(owner):
     assert (download.suggest_price(draft).amount, download.suggest_price(draft).reason) == (9, pricing.FALLBACK)
     DownloadFile.objects.create(title="Hidden", pricing_type="paid", price=Decimal("50"), is_published=False)
     assert download.suggest_price(draft).amount == 9  # a draft sells nothing
+    DownloadFile.objects.create(title="No file yet", pricing_type="paid", price=Decimal("80"))
+    assert download.suggest_price(draft).amount == 9  # not on sale without a file: never "sells for"
     DownloadFile.objects.create(title="Meal plan", pricing_type="paid", price=Decimal("12.40"), file_url=FILE)
     s = download.suggest_price(draft)
     assert s.amount == 12 and s.reason.startswith("Meal plan sells for")

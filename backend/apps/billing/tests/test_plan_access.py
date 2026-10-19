@@ -303,6 +303,27 @@ class TestPlanAccess:
         assert len(owner_client.get(f"/api/v1/billing/plans/{plan.pk}/").json()["items"]) == 4
         assert len(owner_client.get(f"/api/v1/billing/bundles/{bundle.pk}/").json()["items"]) == 4
 
+    def test_a_draft_in_a_bundle_is_not_counted_or_priced_for_students(self, course, owner, student, owner_client):
+        """What a bundle holds and saves, for students, leaves out the draft its listing hides (G4)."""
+        draft = DownloadFile.objects.create(
+            title="Draft download", file_url="k", pricing_type="paid", price=Decimal("30"), is_published=False
+        )
+        bundle = Bundle.objects.create(name="Starter", price=Decimal("40"), currency="USD", is_active=True)
+        for obj in (course, draft):
+            BundleItem.objects.create(
+                bundle=bundle, content_type=ContentType.objects.get_for_model(type(obj)), object_id=obj.pk
+            )
+        viewer = APIClient(HTTP_HOST=SHARED_DOMAIN)
+        viewer.force_authenticate(user=student)
+        detail = viewer.get(f"/api/v1/billing/bundles/{bundle.pk}/").json()
+        assert (detail["item_count"], Decimal(detail["original_price"])) == (1, Decimal("50.00"))
+        [listed] = [b for b in viewer.get("/api/v1/billing/bundles/").json() if b["id"] == bundle.pk]
+        assert listed["item_count"] == 1
+        [sold] = [i for i in viewer.get("/api/v1/billing/store/").json() if i["type"] == "bundle"]
+        assert (sold["item_count"], Decimal(sold["original_price"])) == (1, Decimal("50.00"))
+        mine = owner_client.get(f"/api/v1/billing/bundles/{bundle.pk}/").json()
+        assert (mine["item_count"], Decimal(mine["original_price"])) == (2, Decimal("80.00"))
+
     def test_student_forbidden(self, plan, course, student):
         """Student cannot access the plan access endpoint (GET or PUT)."""
         client = APIClient(HTTP_HOST=SHARED_DOMAIN)

@@ -95,7 +95,7 @@
     "src/app/admin/studio": ["32-photo-studio"],
     "src/app/admin/downloads": ["12-downloads", "36-focus-download"],
     "src/components/admin/download-form.tsx": ["12-downloads", "36-focus-download"],
-    "src/lib/downloads": ["12-downloads"],
+    "src/lib/downloads": ["12-downloads", "36-focus-download"],
     "src/app/admin/courses": ["02-courses", "33-focus-course"],
     "src/components/admin/course-form.tsx": ["02-courses", "33-focus-course"],
     "src/components/focus": [

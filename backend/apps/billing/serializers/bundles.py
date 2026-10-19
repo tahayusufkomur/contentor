@@ -15,6 +15,24 @@ def is_draft(obj) -> bool:
     return getattr(obj, "is_published", True) is False or getattr(obj, "status", "") == "draft"
 
 
+def listed_items(bundle, *, drafts: bool) -> list:
+    """The bundle's items as the viewer sees them: a draft only with ``drafts`` (her own view)."""
+    return [i for i in bundle.items.all() if drafts or not is_draft(i.content_object)]
+
+
+def original_price(items) -> Decimal:
+    """What the items cost bought apart."""
+    total = Decimal("0.00")
+    for item in items:
+        content_obj = item.content_object
+        if content_obj is not None:
+            price = getattr(content_obj, "price", None)
+            # Free keeps a covered price on the item; it is not part of what the bundle saves.
+            if price is not None and getattr(content_obj, "pricing_type", "paid") == "paid":
+                total += Decimal(str(price))
+    return total
+
+
 class BundleItemSerializer(serializers.ModelSerializer):
     content_type_name = serializers.SerializerMethodField()
 
@@ -66,8 +84,12 @@ class BundleListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
+    def _drafts(self) -> bool:
+        request = self.context.get("request")
+        return bool(request and is_coach_or_owner(request.user))
+
     def get_item_count(self, obj):
-        return obj.items.count()
+        return len(listed_items(obj, drafts=self._drafts()))
 
     def get_access_info(self, obj):
         request = self.context.get("request")
@@ -95,22 +117,12 @@ class BundleDetailSerializer(BundleListSerializer):
 
     def to_representation(self, obj):
         data = super().to_representation(obj)
-        request = self.context.get("request")
-        if not (request and is_coach_or_owner(request.user)):
-            drafts = {(i.content_type_id, i.object_id) for i in obj.items.all() if is_draft(i.content_object)}
-            data["items"] = [i for i in data["items"] if (i["content_type"], i["object_id"]) not in drafts]
+        listed = {i.pk for i in listed_items(obj, drafts=self._drafts())}
+        data["items"] = [i for i in data["items"] if i["id"] in listed]
         return data
 
     def get_original_price(self, obj):
-        total = Decimal("0.00")
-        for item in obj.items.all():
-            content_obj = item.content_object
-            if content_obj is not None:
-                price = getattr(content_obj, "price", None)
-                # Free keeps a covered price on the item; it is not part of what the bundle saves.
-                if price is not None and getattr(content_obj, "pricing_type", "paid") == "paid":
-                    total += Decimal(str(price))
-        return total
+        return original_price(listed_items(obj, drafts=self._drafts()))
 
 
 class BundleCreateSerializer(ShorthandMixin, serializers.ModelSerializer):

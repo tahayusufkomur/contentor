@@ -22,6 +22,13 @@ from ..recipes import Recipe
 NOUN = "download"
 NEW_TITLE = "New download"
 SETUP_TOPIC = None  # /setup asks no download topic
+# The first question's format tiles: each fills her answer box with its starter for her to finish (§1.3).
+STARTERS = (
+    ("A workbook", "A workbook on "),
+    ("A checklist", "A checklist for "),
+    ("A recording", "A recording of "),
+    ("A template", "A template for "),
+)
 COVER = "styles"
 ANNOUNCER = "marketing"
 # The follow-up slot before the copy job drafts, and what it writes (apps.core.focus.followup).
@@ -292,6 +299,7 @@ def suggest_price(row) -> pricing.Suggestion:
     # Published only: "sells for" is a claim, and a draft sells nothing.
     others = list(
         DownloadFile.objects.filter(pricing_type="paid", price__gt=0, is_published=True)
+        .exclude(file_url="")  # on sale only with its file, as the store shows it
         .exclude(pk=row.pk)
         .order_by("price")
     )

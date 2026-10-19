@@ -1,5 +1,4 @@
 from dataclasses import asdict
-from decimal import Decimal
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count
@@ -8,6 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.billing.models import Bundle, PaymentItem
+from apps.billing.serializers.bundles import listed_items, original_price
 from apps.billing.serializers.store import StoreItemSerializer
 from apps.core.access import ContentAccessService
 from apps.core.currency import tenant_charge_currency
@@ -29,20 +29,13 @@ def _thumbnail_url(obj):
     return sign_if_s3_key(getattr(obj, "thumbnail_url", "") or "") or ""
 
 
-def _bundle_original_price(bundle):
-    total = Decimal("0.00")
-    for item in bundle.items.all():
-        content_obj = item.content_object
-        if content_obj is not None:
-            price = getattr(content_obj, "price", None)
-            # Free keeps a covered price on the item; it is not part of what the bundle saves.
-            if price is not None and getattr(content_obj, "pricing_type", "paid") == "paid":
-                total += Decimal(str(price))
-    return total
+def _bundle_original_price(bundle, drafts: bool = True):
+    return original_price(listed_items(bundle, drafts=drafts))
 
 
-def _collect_store_items():
-    """Collect all paid/active content as raw dicts (no access_info yet)."""
+def _collect_store_items(drafts: bool = True):
+    """Collect all paid/active content as raw dicts (no access_info yet). A bundle's
+    draft items are counted and priced only with ``drafts`` (her products list)."""
     items = []
     currency = tenant_charge_currency()
     ctx = {}  # one for every item, so the covers' designs are read once
@@ -158,8 +151,8 @@ def _collect_store_items():
                 "currency": bundle.currency,
                 "thumbnail_url": _thumbnail_url(bundle),
                 "is_active": bundle.is_active,
-                "item_count": bundle.items.count(),
-                "original_price": _bundle_original_price(bundle),
+                "item_count": len(listed_items(bundle, drafts=drafts)),
+                "original_price": _bundle_original_price(bundle, drafts),
                 "_obj": bundle,
             }
         )
@@ -175,7 +168,7 @@ def store_list(request):
     # no file yet. Her products list still shows them.
     items = [
         i
-        for i in _collect_store_items()
+        for i in _collect_store_items(drafts=False)
         if not (i["type"] == "onsite_event" and i["_obj"].computed_status in ("draft", "ended"))
         and not (i["type"] in ("live_class", "live_stream", "onsite_event") and i["_obj"].status == "draft")
         and not (i["type"] == "download" and not (i["_obj"].is_published and i["_obj"].file_url))

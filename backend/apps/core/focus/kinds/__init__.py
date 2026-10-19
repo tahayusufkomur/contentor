@@ -7,6 +7,7 @@ The adapter (the course's in kinds/course.py):
 - RECIPE: its questions, in order (recipes.Recipe).
 - NOUN: its word in prompts ("course"). NEW_TITLE: a draft's title before she names it.
 - SETUP_TOPIC: the /setup answer that seeds the topic's starter tile, or None.
+- STARTERS: optional, (label, starter) tiles on its first question, each filling her answer box to finish.
 - create_draft(actor, title, answers): the hidden draft's id, or None until a later answer makes it.
 - record(record_id): the draft, or None when there is none (yet, or any more). ``record_id`` is the
   kind's own int: the event's packs the row's pk and which of its four models (kinds/event.py).

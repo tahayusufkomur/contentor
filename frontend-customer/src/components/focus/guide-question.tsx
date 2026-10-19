@@ -79,26 +79,38 @@ export function GuideQuestion({
           ))}
         </div>
       )}
-      {question.starter && !text && (
-        <button
-          type="button"
-          disabled={sending}
-          onClick={() => {
-            setText(question.starter ?? "");
-            // Her sentence goes on from the starter, in the answer box.
-            requestAnimationFrame(() => {
-              const box = document.getElementById(
-                "setup-answer",
-              ) as HTMLTextAreaElement | null;
-              box?.focus();
-              box?.setSelectionRange(box.value.length, box.value.length);
-            });
-          }}
-          className="rounded-xl border border-dashed border-border px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:border-foreground/30 hover:bg-accent"
-        >
-          {question.starter.trim()}…
-        </button>
-      )}
+      {question.starter &&
+        !text &&
+        [
+          // A kind's format tiles first, then "My own idea…"; the course's own starter alone.
+          ...(question.starters ?? []),
+          {
+            label: question.starters?.length
+              ? t("focus.ownIdea")
+              : `${question.starter.trim()}…`,
+            starter: question.starter,
+          },
+        ].map(({ label, starter }) => (
+          <button
+            key={starter}
+            type="button"
+            disabled={sending}
+            onClick={() => {
+              setText(starter);
+              // Her sentence goes on from the starter, in the answer box.
+              requestAnimationFrame(() => {
+                const box = document.getElementById(
+                  "setup-answer",
+                ) as HTMLTextAreaElement | null;
+                box?.focus();
+                box?.setSelectionRange(box.value.length, box.value.length);
+              });
+            }}
+            className="rounded-xl border border-dashed border-border px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:border-foreground/30 hover:bg-accent"
+          >
+            {label}
+          </button>
+        ))}
       {(question.can_delegate || showRest) && (
         <div className="flex flex-wrap gap-2">
           {question.can_delegate && (

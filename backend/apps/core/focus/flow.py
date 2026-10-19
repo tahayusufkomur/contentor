@@ -520,6 +520,8 @@ def question(kind: str, field: str, creation=None) -> dict:
         "can_delegate": q.delegable,
         "specialist": recipe.specialists[q.id],
     }
+    if q.starter and (starters := getattr(kinds.get(kind), "STARTERS", ())):  # optional: more starters, as tiles
+        asked["starters"] = [{"label": label, "starter": starter} for label, starter in starters]
     if q.kind == "price":
         asked = {**asked, **_price_tiles(creation)}
     ask = getattr(kinds.get(kind), "ask", None)  # optional: its wording for this creation

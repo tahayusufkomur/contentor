@@ -1182,11 +1182,13 @@
         "new": "New download",
         "continue": "Continue your download: {title}",
         "fillMyself": "Fill it in myself",
-        "drop": "Drop your file here, or choose one"
+        "drop": "Drop your file here, or choose one",
+        "fileNotAnswered": "Your file is on the page, but the guide missed it."
       }
     },
     "youDecide": "You decide",
     "justDraft": "Just draft it",
+    "ownIdea": "My own idea…",
     "answerPlaceholder": "Or say it your way…",
     "changePlaceholder": "Or say what to change…",
     "writingOutline": "Writing your outline…",

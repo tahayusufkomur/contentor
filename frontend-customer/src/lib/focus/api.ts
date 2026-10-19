@@ -29,6 +29,8 @@ export interface FocusQuestion {
   options: FocusOption[];
   /** A sentence starter she finishes ("A course on "), or null. */
   starter: string | null;
+  /** A kind's own starter tiles before it (a download's "A workbook" → "A workbook on "). */
+  starters?: { label: string; starter: string }[];
   can_delegate: boolean;
   specialist: SpecialistKey;
   /** The price step: the tile "You decide" highlights for her to tap. */

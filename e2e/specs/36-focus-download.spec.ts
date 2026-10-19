@@ -31,7 +31,16 @@ const question = (field: string, kind: string, text: string, extra: Body = {}) =
   ...extra,
 });
 const Q: Record<string, Body> = {
-  topic: question("topic", "text", "What are you sharing?", { starter: "A ", can_delegate: true }),
+  topic: question("topic", "text", "What are you sharing?", {
+    starter: "A ",
+    can_delegate: true,
+    starters: [
+      { label: "A workbook", starter: "A workbook on " },
+      { label: "A checklist", starter: "A checklist for " },
+      { label: "A recording", starter: "A recording of " },
+      { label: "A template", starter: "A template for " },
+    ],
+  }),
   file: question("file", "upload", "Add the file", { options: [option("later", "Add it later")] }),
   review: question("review", "review", "Here's your download. Does it fit?"),
   finish: question("finish", "finish", "Ready. Publish it?", {
@@ -210,10 +219,13 @@ test("a download from one sentence and a file", async ({ browser }) => {
 
   await page.goto(`${TENANT}/admin/downloads/new`);
   await expect(guide(page).getByText("What are you sharing?")).toBeVisible();
-  await guide(page).getByRole("button", { name: "A…" }).click();
+  // Four format tiles, her own idea and "You decide"; a tile starts her sentence for her to finish.
+  for (const name of ["A checklist", "A recording", "A template", "My own idea…", "You decide"])
+    await expect(guide(page).getByRole("button", { name, exact: true })).toBeVisible();
+  await guide(page).getByRole("button", { name: "A workbook", exact: true }).click();
   const box = guide(page).getByRole("textbox", { name: "Your answer" });
-  await expect(box).toHaveValue("A ");
-  await box.pressSequentially("workbook for new runners");
+  await expect(box).toHaveValue("A workbook on ");
+  await box.pressSequentially("new runners");
   await guide(page).getByRole("button", { name: "Send", exact: true }).click();
 
   // Her first answer made the hidden draft: its own page, and the file question.
@@ -240,7 +252,7 @@ test("a download from one sentence and a file", async ({ browser }) => {
   await guide(page).getByRole("button", { name: "Publish now" }).click();
   await expect(guide(page)).toHaveCount(0);
   expect(sent.at(-1)).toMatchObject({ publish: true });
-  expect(sent[0]).toMatchObject({ kind: "download", text: "A workbook for new runners" });
+  expect(sent[0]).toMatchObject({ kind: "download", text: "A workbook on new runners" });
   await expect(page.getByText("Published. Students can find it on your site now.")).toBeVisible();
   await page.close();
 });
