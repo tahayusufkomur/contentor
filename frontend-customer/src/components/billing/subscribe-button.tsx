@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { clientFetch } from "@/lib/api-client";
@@ -9,6 +10,11 @@ import { toast } from "sonner";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
+import {
+  EmbeddedCheckoutOverlay,
+  type CheckoutStart,
+} from "@shared/checkout/embedded-checkout";
+import { StudentCheckoutAside } from "@/components/billing/checkout-panels";
 
 interface SubscribeButtonProps {
   planId: number;
@@ -36,14 +42,22 @@ export function SubscribeButton({
 }: SubscribeButtonProps) {
   const router = useRouter();
   const navigate = useNavigate();
+  const [session, setSession] = useState<
+    (CheckoutStart & { client_secret: string }) | null
+  >(null);
 
   const { run: handleSubscribe, loading } = useAsyncAction(
     async () => {
-      const res = await clientFetch<{ checkout_url?: string }>(
+      const res = await clientFetch<CheckoutStart>(
         "/api/v1/billing/subscribe/",
         { method: "POST", body: JSON.stringify({ plan_id: planId }) },
       );
-      // Real Stripe checkout (mode=subscription): redirect to the hosted page.
+      // Real Stripe checkout (mode=subscription): embedded here, or Stripe's
+      // hosted page.
+      if (res?.client_secret) {
+        setSession({ ...res, client_secret: res.client_secret });
+        return;
+      }
       if (res?.checkout_url) {
         window.location.href = res.checkout_url;
         return;
@@ -72,20 +86,47 @@ export function SubscribeButton({
   );
 
   return (
-    <Button
-      className={className}
-      variant={variant}
-      size={size}
-      loading={loading}
-      onClick={handleSubscribe}
-    >
-      {label ?? (
-        <>
-          <Zap className="mr-2 h-4 w-4" />
-          Subscribe — {price} {currency}
-          {billingIntervalSuffix(intervalMonths)}
-        </>
+    <>
+      {session && (
+        <EmbeddedCheckoutOverlay
+          session={session}
+          onClose={() => setSession(null)}
+          aside={
+            <StudentCheckoutAside
+              title={planName}
+              steps={[
+                {
+                  when: "Now",
+                  what: `Pay ${price} ${currency}${billingIntervalSuffix(intervalMonths)} securely with Stripe.`,
+                },
+                {
+                  when: "Right after",
+                  what: `Everything in ${planName} opens in your account.`,
+                },
+                {
+                  when: "Any time",
+                  what: "Cancel from Subscriptions in your account.",
+                },
+              ]}
+            />
+          }
+        />
       )}
-    </Button>
+      <Button
+        className={className}
+        variant={variant}
+        size={size}
+        loading={loading}
+        onClick={handleSubscribe}
+      >
+        {label ?? (
+          <>
+            <Zap className="mr-2 h-4 w-4" />
+            Subscribe — {price} {currency}
+            {billingIntervalSuffix(intervalMonths)}
+          </>
+        )}
+      </Button>
+    </>
   );
 }

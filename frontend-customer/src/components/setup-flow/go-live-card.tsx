@@ -7,6 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import {
+  EmbeddedCheckoutOverlay,
+  type CheckoutStart,
+} from "@shared/checkout/embedded-checkout";
+import { CoachPlanAside } from "@/components/billing/checkout-panels";
+import {
   getSubscription,
   startCheckout,
   updateSubscription,
@@ -36,6 +41,9 @@ export function GoLiveCard({
 }) {
   const [state, setState] = useState<GoLiveState | null>(null);
   const [payoutsReady, setPayoutsReady] = useState(false);
+  const [session, setSession] = useState<
+    (CheckoutStart & { client_secret: string }) | null
+  >(null);
   const [returning, setReturning] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -94,8 +102,10 @@ export function GoLiveCard({
   const { run: checkout, loading: checkingOut } = useAsyncAction(
     async () => {
       if (!state?.plan) return;
-      const { checkout_url } = await startCheckout(state.plan.id, "/setup");
-      window.location.href = checkout_url;
+      const res = await startCheckout(state.plan.id, "/setup");
+      if (res.client_secret)
+        setSession({ ...res, client_secret: res.client_secret });
+      else window.location.href = res.checkout_url ?? "";
     },
     { errorToast: "Couldn’t open checkout. Try again." },
   );
@@ -140,6 +150,18 @@ export function GoLiveCard({
       {state && state.steps?.length > 1 && <Steps steps={state.steps} />}
       {children}
       {state?.qa && <VisualCheck qa={state.qa} />}
+      {session && state?.plan && (
+        <EmbeddedCheckoutOverlay
+          session={session}
+          onClose={() => setSession(null)}
+          aside={
+            <CoachPlanAside
+              title="Your site goes live next"
+              plan={state.plan}
+            />
+          }
+        />
+      )}
       {state && state.summary?.length > 0 && (
         <dl className="mt-5 space-y-1.5 border-t border-[var(--sf-line)] pt-4 text-[13.5px] leading-snug">
           <p className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-[var(--sf-faint)]">

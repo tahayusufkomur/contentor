@@ -4,6 +4,7 @@
  * Used by the admin/billing Subscription tab.
  */
 
+import type { CheckoutStart } from "@shared/checkout/embedded-checkout";
 import { clientFetch } from "@/lib/api-client";
 
 export type PlatformSubscriptionStatus =
@@ -57,8 +58,7 @@ export async function updateSubscription(
   );
 }
 
-export interface StartCheckoutResponse {
-  checkout_url: string;
+export interface StartCheckoutResponse extends CheckoutStart {
   expires_at: string;
   provider: string;
 }

@@ -181,6 +181,15 @@ export default async function PricingPage() {
                   </p>
                   <PricingCta
                     planId={planByKey[key]?.id ?? null}
+                    terms={
+                      planByKey[key]
+                        ? {
+                            ...planByKey[key],
+                            // Starter opens with monetization.trial_days_for's 14 days.
+                            trial_days: key === "starter" ? 14 : 0,
+                          }
+                        : null
+                    }
                     isAuthenticated={user != null}
                     label={key === "starter" ? t("trialCta") : undefined}
                     variant={key === HIGHLIGHTED ? "brand" : "outline"}

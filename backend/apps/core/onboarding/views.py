@@ -332,6 +332,7 @@ def signup_checkout(request):
 
     from apps.accounts.models import User
     from apps.billing.providers import get_provider
+    from apps.billing.providers.stripe_provider import embedded_fields
     from apps.billing.providers.types import ProviderError
     from apps.core.constants import REGION_DEFAULT_LOCALE
     from apps.core.models import PlatformPlan
@@ -370,7 +371,7 @@ def signup_checkout(request):
         logger.warning("signup checkout failed slug=%s: %s", tenant.slug, exc)
         return Response({"error": exc.code, "detail": str(exc)}, status=400)
     logger.info("signup checkout started slug=%s", tenant.slug)
-    return Response({"checkout_url": session.url})
+    return Response({"checkout_url": session.url, **embedded_fields(session.client_secret)})
 
 
 def _resolve_tenant_from_signup_token(request) -> tuple[dict | None, Tenant | None, Response | None]:

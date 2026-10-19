@@ -13,6 +13,7 @@ from rest_framework.response import Response
 
 from apps.billing import ways
 from apps.billing.providers import connect
+from apps.billing.providers.stripe_provider import embedded_fields
 from apps.billing.providers.types import ProviderError
 from apps.core.access import ContentAccessService
 from apps.core.currency import tenant_charge_currency
@@ -276,6 +277,7 @@ def payment_initialize(request):
         {
             "payment_id": payment.pk,
             "checkout_url": checkout.url,
+            **embedded_fields(checkout.client_secret, tenant.stripe_account_id),
             "amount": str(payment.amount),
             "currency": payment.currency,
             "item_count": len(resolved_items),
@@ -708,7 +710,12 @@ def subscribe(request):
         return _provider_error_response(exc)
 
     return Response(
-        {"checkout_url": checkout.url, "plan": plan.name, "status": "pending"},
+        {
+            "checkout_url": checkout.url,
+            **embedded_fields(checkout.client_secret, tenant.stripe_account_id),
+            "plan": plan.name,
+            "status": "pending",
+        },
         status=status.HTTP_201_CREATED,
     )
 

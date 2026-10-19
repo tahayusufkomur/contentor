@@ -187,3 +187,30 @@ def test_bypass_provider_create_checkout_session_with_pkless_placeholder_user(re
     # No manual cleanup: like the other tests in this module, the `db`/
     # `restore_public` fixtures wrap the test in a transaction that Django
     # rolls back automatically at teardown.
+
+
+@override_settings(STRIPE_SECRET_KEY="sk_test_embed", STRIPE_PUBLISHABLE_KEY="pk_test_embed")  # noqa: S106
+def test_stripe_provider_embeds_checkout_when_publishable_key_set(shared_tenant, plan, coach_user):
+    """With a publishable key the session is embedded: it returns to the
+    success page, has no cancel URL, and hands back the client secret."""
+    from types import SimpleNamespace
+    from unittest.mock import patch
+
+    shared_tenant.billing_currency = "USD"
+    fake = SimpleNamespace(id="cs_embed", url=None, client_secret="cs_embed_secret", expires_at=1893456000)
+    with patch("stripe.checkout.Session.create", return_value=fake) as create:
+        session = StripeProvider().create_checkout_session(
+            tenant=shared_tenant,
+            user=coach_user,
+            plan=plan,
+            success_url="https://example.com/success",
+            cancel_url="https://example.com/cancel",
+        )
+
+    kwargs = create.call_args.kwargs
+    assert kwargs["ui_mode"] == "embedded"
+    assert kwargs["return_url"] == "https://example.com/success?session_id={CHECKOUT_SESSION_ID}"
+    assert "success_url" not in kwargs
+    assert "cancel_url" not in kwargs
+    assert session.client_secret == "cs_embed_secret"
+    assert session.url == ""

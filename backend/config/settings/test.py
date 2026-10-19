@@ -38,6 +38,8 @@ AI_VISION_PROVIDER = ""
 LIVECRAFT_FAKE = True
 # The logo library is the local table unless a test picks the remote one.
 LOGO_SOURCE = "local"
+# Checkout is Stripe's hosted page unless a test embeds it.
+STRIPE_PUBLISHABLE_KEY = ""
 
 # Undo dev's raised e2e ceiling: the middleware tests assert the prod
 # thresholds (TenantRateLimitMiddleware.DEFAULT_RATE / UPLOAD_RATE).

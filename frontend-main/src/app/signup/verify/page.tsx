@@ -11,6 +11,12 @@ import {
   Rocket,
 } from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import {
+  EmbeddedCheckoutOverlay,
+  PlanCheckoutAside,
+  type CheckoutStart,
+  type PlanTerms,
+} from "@shared/checkout/embedded-checkout";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { SignupFrame } from "../signup-shell";
@@ -23,13 +29,6 @@ import {
 import { ApiError } from "@/types/api";
 
 type VerifyState = "verifying" | "card" | "preparing" | "expired" | "error";
-/** The trial the card step starts (backend interview_golive._starter_plan). */
-interface TrialPlan {
-  name: string;
-  amount_cents: number | null;
-  currency: string;
-  trial_days: number;
-}
 type ResumeState = "idle" | "sent" | "closed" | "failed";
 const TOKEN_KEY = "contentor_wizard_token";
 
@@ -66,7 +65,11 @@ export default function SignupVerifyPage() {
   const [state, setState] = useState<VerifyState>("verifying");
   const [error, setError] = useState("");
   const [domain, setDomain] = useState("");
-  const [plan, setPlan] = useState<TrialPlan | null>(null);
+  /** The trial the card step starts (backend interview_golive._starter_plan). */
+  const [plan, setPlan] = useState<PlanTerms | null>(null);
+  const [session, setSession] = useState<
+    (CheckoutStart & { client_secret: string }) | null
+  >(null);
   const [resumeState, setResumeState] = useState<ResumeState>("idle");
   const resumeToken = useRef<string | null>(null);
   const started = useRef(false);
@@ -173,8 +176,10 @@ export default function SignupVerifyPage() {
   const { run: checkout, loading: openingCheckout } = useAsyncAction(
     async () => {
       if (!resumeToken.current) return;
-      const { checkout_url } = await startSignupCheckout(resumeToken.current);
-      window.location.assign(checkout_url);
+      const res = await startSignupCheckout(resumeToken.current);
+      if (res.client_secret)
+        setSession({ ...res, client_secret: res.client_secret });
+      else window.location.assign(res.checkout_url ?? "");
     },
     { errorToast: t("verify.card.failed") },
   );
@@ -261,6 +266,25 @@ export default function SignupVerifyPage() {
         >
           {t("verify.card.cta")}
         </Button>
+        {session && (
+          <EmbeddedCheckoutOverlay
+            session={session}
+            onClose={() => setSession(null)}
+            aside={
+              <PlanCheckoutAside
+                title={t("verify.card.asideTitle", { domain })}
+                plan={
+                  plan ?? {
+                    name: "starter",
+                    currency: "USD",
+                    amount_cents: null,
+                    trial_days: days,
+                  }
+                }
+              />
+            }
+          />
+        )}
       </SignupFrame>
     );
   }

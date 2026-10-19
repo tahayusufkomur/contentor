@@ -20,6 +20,7 @@ from typing import Any
 
 from django.conf import settings
 
+from .stripe_provider import checkout_ui
 from .types import ProviderError
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,7 @@ class MarketplaceCheckout:
 
     url: str
     session_id: str
+    client_secret: str = ""
 
 
 def _client() -> Any:
@@ -161,13 +163,16 @@ def create_marketplace_checkout(
             payment_intent_data=payment_intent_data or None,
             metadata=metadata or {},
             customer_email=customer_email or None,
-            success_url=success_url,
-            cancel_url=cancel_url,
             stripe_account=account_id,
+            **checkout_ui(success_url, cancel_url),
         )
     except Exception as exc:  # noqa: BLE001
         raise ProviderError(str(exc), code="PROVIDER_ERROR") from exc
-    return MarketplaceCheckout(url=session.url, session_id=session.id)
+    return MarketplaceCheckout(
+        url=session.url or "",
+        session_id=session.id,
+        client_secret=getattr(session, "client_secret", None) or "",
+    )
 
 
 def provision_subscription_price(
@@ -229,13 +234,16 @@ def create_subscription_checkout(
             subscription_data=subscription_data,
             metadata=metadata or {},
             customer_email=customer_email or None,
-            success_url=success_url,
-            cancel_url=cancel_url,
             stripe_account=account_id,
+            **checkout_ui(success_url, cancel_url),
         )
     except Exception as exc:  # noqa: BLE001
         raise ProviderError(str(exc), code="PROVIDER_ERROR") from exc
-    return MarketplaceCheckout(url=session.url, session_id=session.id)
+    return MarketplaceCheckout(
+        url=session.url or "",
+        session_id=session.id,
+        client_secret=getattr(session, "client_secret", None) or "",
+    )
 
 
 def update_subscription_price(*, account_id: str, subscription_id: str, new_price_id: str) -> None:

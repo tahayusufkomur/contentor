@@ -17,11 +17,14 @@ class CheckoutSession:
         url: Hosted checkout URL the user should be redirected to.
         expires_at: When the hosted session expires (UTC).
         provider_session_id: Provider-specific session ID (Stripe `cs_*`).
+        client_secret: Set for an embedded session, which our page mounts
+            itself (`url` is then empty).
     """
 
     url: str
     expires_at: datetime
     provider_session_id: str
+    client_secret: str = ""
 
 
 class ProviderError(Exception):

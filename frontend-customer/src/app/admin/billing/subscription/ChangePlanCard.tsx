@@ -11,7 +11,13 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { formatPlanPrice } from "@shared/lib/format-plan-price";
+import {
+  EmbeddedCheckoutOverlay,
+  type CheckoutStart,
+  type PlanTerms,
+} from "@shared/checkout/embedded-checkout";
+import { CoachPlanAside } from "@/components/billing/checkout-panels";
+import { formatPlanName, formatPlanPrice } from "@shared/lib/format-plan-price";
 import {
   getSubscription,
   listPlatformPlans,
@@ -256,6 +262,12 @@ export function ChangePlanCard() {
                     </ul>
                     <UpgradeButton
                       plan={plan}
+                      terms={{
+                        name: plan.name,
+                        currency,
+                        amount_cents: priceEntry?.amount_cents ?? null,
+                        trial_days: trial?.plan_id === plan.id ? trial.days : 0,
+                      }}
                       isCurrent={isCurrent}
                       isDowngrade={isDowngrade || (planRunning && !isCurrent)}
                       available={available}
@@ -300,6 +312,7 @@ export function ChangePlanCard() {
  *  share one loading flag. */
 function UpgradeButton({
   plan,
+  terms,
   isCurrent,
   isDowngrade,
   available,
@@ -309,6 +322,7 @@ function UpgradeButton({
   setActionError,
 }: {
   plan: PlatformPlanSummary;
+  terms: PlanTerms;
   isCurrent: boolean;
   isDowngrade: boolean;
   available: boolean;
@@ -317,26 +331,45 @@ function UpgradeButton({
   errorLabel: string;
   setActionError: (message: string | null) => void;
 }) {
+  const [session, setSession] = useState<
+    (CheckoutStart & { client_secret: string }) | null
+  >(null);
   const { run: handleUpgrade, loading: pending } = useAsyncAction(
     async () => {
       setActionError(null);
       const res = await startCheckout(plan.id);
-      window.location.href = res.checkout_url;
+      if (res.client_secret)
+        setSession({ ...res, client_secret: res.client_secret });
+      else window.location.href = res.checkout_url ?? "";
     },
     { onError: () => setActionError(errorLabel) },
   );
 
   return (
-    <Button
-      type="button"
-      onClick={handleUpgrade}
-      disabled={isCurrent || isDowngrade || !available}
-      loading={pending}
-      loadingText={loadingLabel}
-      variant={isCurrent ? "outline" : "default"}
-      className="w-full"
-    >
-      {label}
-    </Button>
+    <>
+      {session && (
+        <EmbeddedCheckoutOverlay
+          session={session}
+          onClose={() => setSession(null)}
+          aside={
+            <CoachPlanAside
+              title={`${formatPlanName(plan.name)} for your site`}
+              plan={terms}
+            />
+          }
+        />
+      )}
+      <Button
+        type="button"
+        onClick={handleUpgrade}
+        disabled={isCurrent || isDowngrade || !available}
+        loading={pending}
+        loadingText={loadingLabel}
+        variant={isCurrent ? "outline" : "default"}
+        className="w-full"
+      >
+        {label}
+      </Button>
+    </>
   );
 }

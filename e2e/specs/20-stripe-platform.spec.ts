@@ -120,26 +120,19 @@ test("coach subscribes to a paid platform plan via real test Checkout", async ({
     (p) => !p.is_free
   );
   expect(starterPlan, "No non-free plan found in /api/v1/billing/platform/plans/ — run seed_plans first").toBeDefined();
-  const STARTER_PLAN_ID = starterPlan!.id;
 
-  // ── 1. Start a Stripe Checkout session ────────────────────────────────────
-  const start = await coach.request.post(`${TENANT}/api/v1/billing/platform/checkout/`, {
-    data: { plan_id: STARTER_PLAN_ID },
-  });
-  expect(start.ok(), `start_checkout failed: ${await start.text()}`).toBeTruthy();
-  const { checkout_url } = await start.json();
-  expect(checkout_url).toMatch(/checkout\.stripe\.com/);
-
-  // ── 2. Navigate to Stripe-hosted Checkout and pay ─────────────────────────
+  // ── 1. Open the plan's Checkout from Billing: our panel, Stripe's form ────
   const page = await coach.newPage();
-  await page.goto(checkout_url);
+  await page.goto(`${TENANT}/admin/billing`);
+  // demo-yoga keeps Free (requires_plan off), so no trial: "Upgrade to" / "Choose".
+  await page.getByRole("button", { name: new RegExp(`^(Upgrade to|Choose) ${starterPlan!.name}$`, "i") }).click();
+  await expect(page.getByRole("dialog", { name: "Checkout" })).toBeVisible({ timeout: 20_000 });
 
-  // Fill card details (4242 test card). Helper handles conditional fields
-  // (name on card, postal) with explicit isVisible() guards.
+  // ── 2. Pay in the embedded form (4242 test card) ──────────────────────────
   await payStripeCheckout(page);
 
-  // ── 3. Wait for Stripe success redirect back to our app ───────────────────
-  // success_url = <tenant-origin>/admin/billing?checkout=success
+  // ── 3. Wait for Stripe's redirect back to our app ─────────────────────────
+  // return_url = <tenant-origin>/admin/billing?checkout=success
   await expect(page).toHaveURL(/localhost.*\/admin\/billing/, { timeout: 60_000 });
 
   // ── 4. Poll subscription endpoint until webhook has flipped it to active ──

@@ -9,10 +9,10 @@
  * `X-Tenant-Domain` header from the browser.
  */
 
+import type { CheckoutStart } from "@shared/checkout/embedded-checkout";
 import { ApiError } from "@/types/api";
 
-export interface StartCheckoutResponse {
-  checkout_url: string;
+export interface StartCheckoutResponse extends CheckoutStart {
   expires_at: string;
   provider: string;
 }

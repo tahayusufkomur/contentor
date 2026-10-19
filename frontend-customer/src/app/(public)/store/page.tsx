@@ -133,6 +133,7 @@ export default function StorePage() {
       price: item.price,
       currency: item.currency,
       type: item.type,
+      image: item.thumbnail_url,
     });
     toast.success(`"${item.title}" added to cart`);
     setAddingIds((prev) => {

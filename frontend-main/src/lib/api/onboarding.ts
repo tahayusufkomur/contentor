@@ -6,6 +6,7 @@
  * their tenant subdomain after provisioning completes.
  */
 
+import type { CheckoutStart } from "@shared/checkout/embedded-checkout";
 import { ApiError } from "@/types/api";
 
 export interface SeedFromTemplateResponse {
@@ -205,7 +206,7 @@ export async function requestHandoff(
 /** The trial's Stripe Checkout: the card comes before the site is built. */
 export async function startSignupCheckout(
   token: string,
-): Promise<{ checkout_url: string }> {
+): Promise<CheckoutStart> {
   const res = await fetch("/api/v1/onboarding/signup/checkout/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

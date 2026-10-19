@@ -497,6 +497,9 @@ BILLING_FREE_PLAN_NAME = os.environ.get("BILLING_FREE_PLAN_NAME", "Free")
 # Stripe credentials. Empty in dev/CI unless explicitly wired.
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+# Set, Checkout is embedded in our own page (its form beside our panel);
+# empty, it stays Stripe's hosted page. Public: the browser mounts with it.
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 
 # Stripe Price IDs per plan and presentment currency. seed_plans reads these
 # into PlatformPlan.prices[currency].stripe_price_id. Empty values are allowed

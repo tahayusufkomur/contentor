@@ -4,6 +4,12 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import {
+  EmbeddedCheckoutOverlay,
+  PlanCheckoutAside,
+  type CheckoutStart,
+  type PlanTerms,
+} from "@shared/checkout/embedded-checkout";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { startCheckout } from "@/lib/api/billing-platform";
@@ -11,6 +17,8 @@ import { ApiError } from "@/types/api";
 
 interface PricingCtaProps {
   planId: number | null;
+  /** What the checkout panel says the plan costs and when. */
+  terms: PlanTerms | null;
   /** True when the marketing user is logged in. Unauthenticated users get routed to /signup. */
   isAuthenticated: boolean;
   /** The button's words; "Get Started" when unset. */
@@ -25,11 +33,13 @@ interface PricingCtaProps {
  *  - Anonymous: route to /signup so onboarding kicks in (the Starter trial
  *    starts when the site goes live).
  *  - Authenticated coach on a paid plan: hit /api/v1/billing/platform/checkout/
- *    and redirect to the Stripe-hosted URL.
+ *    and open its embedded checkout (Stripe's hosted page when the server
+ *    has no publishable key).
  *  - On API error: show an inline error string; the surrounding card stays.
  */
 export function PricingCta({
   planId,
+  terms,
   isAuthenticated,
   label,
   variant = "default",
@@ -39,6 +49,9 @@ export function PricingCta({
   const t = useTranslations("pricing");
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [session, setSession] = useState<
+    (CheckoutStart & { client_secret: string }) | null
+  >(null);
 
   const { run: handleClick, loading } = useAsyncAction(
     async () => {
@@ -48,7 +61,9 @@ export function PricingCta({
         return;
       }
       const res = await startCheckout(planId);
-      window.location.assign(res.checkout_url);
+      if (res.client_secret)
+        setSession({ ...res, client_secret: res.client_secret });
+      else window.location.assign(res.checkout_url ?? "");
     },
     {
       onError: (err) => {
@@ -79,6 +94,18 @@ export function PricingCta({
       </Button>
       {error != null && (
         <p className="mt-2 text-sm text-destructive">{error}</p>
+      )}
+      {session && terms && (
+        <EmbeddedCheckoutOverlay
+          session={session}
+          onClose={() => setSession(null)}
+          aside={
+            <PlanCheckoutAside
+              title="Everything you teach, in one place"
+              plan={terms}
+            />
+          }
+        />
       )}
     </>
   );

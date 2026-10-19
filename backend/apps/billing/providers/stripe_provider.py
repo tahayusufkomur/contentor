@@ -38,6 +38,28 @@ def _client() -> Any:
     return stripe
 
 
+def checkout_ui(return_url: str, cancel_url: str) -> dict[str, str]:
+    """Embedded Checkout (Stripe's form inside our page, beside our panel) once
+    the browser has a publishable key to mount it with; the hosted page until
+    then. An embedded session has no cancel URL: closing our overlay is the
+    way back."""
+    if settings.STRIPE_PUBLISHABLE_KEY:
+        return {"ui_mode": "embedded", "return_url": return_url}
+    return {"success_url": return_url, "cancel_url": cancel_url}
+
+
+def embedded_fields(client_secret: str, stripe_account: str = "") -> dict[str, str]:
+    """What the browser needs to mount an embedded session; nothing for a
+    hosted one. A direct charge's session lives on the coach's account, so
+    Stripe.js loads on that account too."""
+    if not client_secret:
+        return {}
+    fields = {"client_secret": client_secret, "publishable_key": settings.STRIPE_PUBLISHABLE_KEY}
+    if stripe_account:
+        fields["stripe_account"] = stripe_account
+    return fields
+
+
 def retrieve_checkout_session(session_id: str) -> Any:
     """Fetch a Checkout Session with its subscription expanded.
 
@@ -103,16 +125,16 @@ class StripeProvider(PaymentProvider):
                 locale=normalized_locale,
                 metadata=metadata,
                 subscription_data=subscription_data,
-                success_url=success_with_token,
-                cancel_url=cancel_url,
+                **checkout_ui(success_with_token, cancel_url),
             )
         except stripe.error.StripeError as exc:
             raise ProviderError(str(exc), code="PROVIDER_ERROR") from exc
 
         return CheckoutSession(
-            url=session.url,
+            url=session.url or "",
             expires_at=datetime.fromtimestamp(session.expires_at, tz=UTC),
             provider_session_id=session.id,
+            client_secret=getattr(session, "client_secret", None) or "",
         )
 
     def update_subscription(self, sub: Any, action: str) -> dict | None:

@@ -13,19 +13,25 @@ import { ApiError } from "@/types/api";
 import { getCart, removeFromCart, clearCart } from "@/lib/cart";
 import type { CartItem } from "@/types/billing";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import {
+  EmbeddedCheckoutOverlay,
+  type CheckoutStart,
+} from "@shared/checkout/embedded-checkout";
+import { StudentCheckoutAside } from "@/components/billing/checkout-panels";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 
-interface PaymentInitializeResponse {
+interface PaymentInitializeResponse extends CheckoutStart {
   payment_id: number;
   status: string;
-  checkout_url?: string;
-  [key: string]: unknown;
 }
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const searchParams = useSearchParams();
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [session, setSession] = useState<
+    (CheckoutStart & { client_secret: string }) | null
+  >(null);
 
   useEffect(() => {
     setCart(getCart());
@@ -63,8 +69,12 @@ export default function CheckoutPage() {
           }),
         },
       );
-      // Real Stripe checkout: hand off to the hosted page. Keep the cart so a
-      // cancel returns the buyer here intact; the success page clears it.
+      // Real Stripe checkout: embedded here, or Stripe's hosted page. Keep the
+      // cart so closing (or a cancel) leaves it intact; the success page clears it.
+      if (res.client_secret) {
+        setSession({ ...res, client_secret: res.client_secret });
+        return;
+      }
       if (res.checkout_url) {
         window.location.href = res.checkout_url;
         return;
@@ -111,6 +121,32 @@ export default function CheckoutPage() {
 
   return (
     <div className="space-y-6">
+      {session && (
+        <EmbeddedCheckoutOverlay
+          session={session}
+          onClose={() => setSession(null)}
+          aside={
+            <StudentCheckoutAside
+              title={
+                cart.length === 1
+                  ? cart[0].title
+                  : `${cart[0].title} and ${cart.length - 1} more`
+              }
+              photo={cart.find((item) => item.image)?.image}
+              steps={[
+                {
+                  when: "Now",
+                  what: `Pay ${totalFormatted} ${cartCurrency} securely with Stripe.`,
+                },
+                {
+                  when: "Right after",
+                  what: "It opens in your dashboard, ready to start.",
+                },
+              ]}
+            />
+          }
+        />
+      )}
       <div>
         <h1 className="font-display text-3xl font-bold tracking-tight">
           Checkout

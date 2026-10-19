@@ -50,6 +50,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
       price: course.price,
       currency: opts?.purchase?.currency,
       type: "course",
+      image: course.thumbnail_signed_url || course.thumbnail_url,
     });
     toast.success("Added to cart", { description: course.title });
   }

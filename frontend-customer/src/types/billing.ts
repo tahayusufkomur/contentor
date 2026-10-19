@@ -68,6 +68,8 @@ export interface CartItem {
   price: string;
   currency?: string;
   type: string;
+  /** Its cover photo, shown beside the payment form. */
+  image?: string;
 }
 
 export interface SubscriptionPlan {

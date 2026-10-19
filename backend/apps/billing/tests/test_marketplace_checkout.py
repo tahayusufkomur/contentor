@@ -109,6 +109,31 @@ def test_initialize_creates_stripe_checkout(restore_public, owner, student, paid
     assert kwargs["metadata"]["payment_id"] == str(payment.pk)
 
 
+@override_settings(BILLING_BYPASS_ENABLED=False, STRIPE_PUBLISHABLE_KEY="pk_test_mk")
+def test_initialize_returns_what_the_page_mounts_an_embedded_session_with(restore_public, owner, student, paid_course):
+    """An embedded session is created on the coach's account, so the page
+    loads Stripe.js on that account with the platform's publishable key."""
+    tenant = restore_public
+    Tenant.objects.filter(pk=tenant.pk).update(stripe_account_id="acct_mk")
+
+    checkout = MarketplaceCheckout(url="", session_id="cs_mk", client_secret="cs_mk_secret")
+    with (
+        patch("apps.billing.views.payments.can_monetize", return_value=True),
+        patch("apps.billing.providers.connect.create_marketplace_checkout", return_value=checkout),
+    ):
+        resp = _client(student).post(
+            INIT_URL,
+            {"items": [{"content_type": "course", "object_id": paid_course.pk}]},
+            format="json",
+        )
+
+    assert resp.status_code == 201, resp.content
+    body = resp.json()
+    assert body["client_secret"] == "cs_mk_secret"
+    assert body["publishable_key"] == "pk_test_mk"
+    assert body["stripe_account"] == "acct_mk"
+
+
 @override_settings(BILLING_BYPASS_ENABLED=False)
 def test_initialize_blocked_when_coach_cannot_monetize(restore_public, student, paid_course):
     # can_monetize=False (Free / not onboarded) must not reach Stripe.

@@ -33,7 +33,7 @@
  *   STRIPE_E2E=1 npx playwright test specs/21
  *
  * Reconciled against:
- *   - backend/apps/billing/views/payments.py     → response key: checkout_url (line 229)
+ *   - backend/apps/billing/views/payments.py     → response keys: client_secret, stripe_account
  *   - backend/apps/billing/serializers/payments.py → content_type: "course"
  *   - backend/apps/billing/views/webhooks.py     → connect events dispatched at same endpoint
  *   - backend/apps/core/monetization.py          → is_paid_active needs PlatformSubscription
@@ -163,6 +163,8 @@ test("student buys a fresh paid course through Connect test checkout", async ({ 
         pricing_type: "paid",
         price: "9.99",
         is_published: true,
+        // A course goes live only once every lesson has a video or text.
+        modules: [{ title: "Start", lessons: [{ title: "Welcome", content_html: "<p>Welcome.</p>" }] }],
       },
       headers: { "Content-Type": "application/json" },
     });
@@ -173,30 +175,19 @@ test("student buys a fresh paid course through Connect test checkout", async ({ 
 
     await coach.close();
 
-    // ── 2. Student: initialize payment to get the Stripe Checkout URL ─────────
+    // ── 2. Student: Buy on the course page, Pay in the cart ──────────────────
     const student = await studentContext(browser);
-
-    const init = await student.request.post(`${TENANT}/api/v1/billing/payments/initialize/`, {
-      data: { items: [{ content_type: "course", object_id: courseId }] },
-      headers: { "Content-Type": "application/json" },
-    });
-    expect(init.status(), `payment_initialize failed: ${await init.text()}`).toBe(201);
-
-    const initBody = await init.json();
-    const checkoutUrl: string = initBody.checkout_url;
-    expect(
-      checkoutUrl,
-      `checkout_url missing — bypass still on? BILLING_BYPASS_ENABLED must be false. body=${JSON.stringify(initBody)}`
-    ).toBeTruthy();
-    expect(checkoutUrl, "checkout_url must point to Stripe").toMatch(/checkout\.stripe\.com|accessible\.stripe\.com/);
-
-    // ── 3. Navigate to Stripe-hosted Checkout and pay ─────────────────────────
     const page = await student.newPage();
-    await page.goto(checkoutUrl);
+    await page.goto(`${TENANT}/courses/${course.slug}`);
+    await page.getByRole("button", { name: /^Buy for / }).click();
+    await page.waitForURL(/\/checkout$/);
+    await page.getByRole("button", { name: /^Pay / }).click();
 
+    // ── 3. Our panel beside Stripe's form, on the coach's account; pay ────────
+    await expect(page.getByRole("dialog", { name: "Checkout" })).toBeVisible({ timeout: 20_000 });
     await payStripeCheckout(page);
 
-    // ── 4. Wait for Stripe success redirect back to the tenant app ────────────
+    // ── 4. Wait for Stripe's redirect back to the tenant app ──────────────────
     await expect(page).toHaveURL(/demo-yoga\.localhost/, { timeout: 60_000 });
 
     // ── 5. Poll /api/v1/billing/orders/ until the payment shows completed ─────

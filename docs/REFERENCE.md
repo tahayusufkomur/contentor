@@ -533,6 +533,11 @@ now and `access_ends_at`.
 - **Endpoints:** `/api/v1/billing/platform/checkout/`, `/subscription/`, `/cancel/`,
   `/portal/`, `/invoices/`. **Webhooks:** `POST /api/webhooks/stripe/` — public schema,
   unauthenticated, signature-verified, idempotent via `WebhookEvent`.
+- **Embedded Checkout:** with `STRIPE_PUBLISHABLE_KEY` set, every plan and student checkout
+  session is `ui_mode=embedded` (returns `client_secret`, plus `stripe_account` for a direct
+  charge); `packages/shared/src/checkout/embedded-checkout.tsx` mounts Stripe's form beside our
+  photo panel (Contentor's for coach plans, the coach's look for students). Unset, it falls back
+  to the hosted page (`checkout_url`). Custom-domain checkout stays hosted.
 - **Lifecycle:** `incomplete → active → past_due → canceled`; a daily Celery-beat
   `cleanup_past_due_subscriptions` downgrades stale `past_due` tenants to Free after
   `PAST_DUE_GRACE_DAYS`.

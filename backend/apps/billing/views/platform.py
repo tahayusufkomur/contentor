@@ -29,6 +29,7 @@ from rest_framework.response import Response
 
 from apps.accounts.models import User
 from apps.billing.providers import get_provider
+from apps.billing.providers.stripe_provider import embedded_fields
 from apps.billing.providers.types import ProviderError
 from apps.core.constants import CURRENCY_USD, REGION_DEFAULT_LOCALE
 from apps.core.currency import currency_for_country
@@ -193,6 +194,7 @@ def start_checkout(request):
             "checkout_url": session.url,
             "expires_at": session.expires_at.isoformat(),
             "provider": provider.name,
+            **embedded_fields(session.client_secret),
         },
         status=status.HTTP_200_OK,
     )

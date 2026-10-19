@@ -53,7 +53,7 @@ export function Mark({ className }: { className?: string }) {
 }
 
 /** The apex, with the scheme the dev stack and prod each use. */
-const APEX =
+export const APEX =
   BASE_DOMAIN === "localhost" ? "http://localhost" : `https://${BASE_DOMAIN}`;
 
 /**
