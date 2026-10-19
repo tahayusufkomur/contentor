@@ -128,7 +128,8 @@ def course_detail(request, slug):
 def enroll(request, slug):
     course = get_object_or_404(Course, slug=slug)
 
-    if Enrollment.objects.filter(user=request.user, course=course).exists():
+    # A refund closes the enrollment (is_active=False); enrolling again opens it.
+    if Enrollment.objects.filter(user=request.user, course=course, is_active=True).exists():
         return Response(
             {"detail": "Already enrolled."},
             status=status.HTTP_409_CONFLICT,
@@ -143,7 +144,7 @@ def enroll(request, slug):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    enrollment = Enrollment.objects.create(user=request.user, course=course)
+    enrollment, _ = Enrollment.objects.update_or_create(user=request.user, course=course, defaults={"is_active": True})
     serializer = EnrollmentSerializer(enrollment)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 

@@ -248,7 +248,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
             return False
-        return Enrollment.objects.filter(user=request.user, course=obj).exists()
+        return Enrollment.objects.filter(user=request.user, course=obj, is_active=True).exists()
 
     def get_lesson_count(self, obj):
         return Lesson.objects.filter(module__course=obj).count()

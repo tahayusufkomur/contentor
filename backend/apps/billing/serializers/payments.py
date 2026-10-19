@@ -14,6 +14,8 @@ class PaymentItemInputSerializer(serializers.Serializer):
         "onsite_event": "live.onsiteevent",
         "bundle": "billing.bundle",
     }
+    # Only what is on sale can be bought: a draft course or a withdrawn bundle reads as not found.
+    ON_SALE = {"course": {"is_published": True}, "bundle": {"is_active": True}}
 
     def validate_content_type(self, value):
         if value not in self.CONTENT_TYPE_MAP:
@@ -27,7 +29,7 @@ class PaymentItemInputSerializer(serializers.Serializer):
         app_label, model = self.CONTENT_TYPE_MAP[key].split(".")
         ct = ContentType.objects.get(app_label=app_label, model=model)
         model_class = ct.model_class()
-        obj = model_class.objects.get(pk=self.validated_data["object_id"])
+        obj = model_class.objects.get(pk=self.validated_data["object_id"], **self.ON_SALE.get(key, {}))
         return ct, obj
 
 

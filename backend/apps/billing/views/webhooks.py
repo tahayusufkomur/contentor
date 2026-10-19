@@ -40,6 +40,7 @@ from .webhooks_common import (
 from .webhooks_connect import (
     _connected_tenant,
     _handle_account_updated,
+    _handle_marketplace_charge_reversed,
     _handle_marketplace_checkout_completed,
     _handle_marketplace_invoice_failed,
     _handle_marketplace_invoice_paid,
@@ -62,11 +63,17 @@ logger = logging.getLogger(__name__)
 
 _STRIPE_HANDLED = {
     "checkout.session.completed",
+    # A delayed payment method (bank debit, voucher) settles after the session completes.
+    "checkout.session.async_payment_succeeded",
     "customer.subscription.created",
     "customer.subscription.updated",
     "invoice.paid",
     # Connect (marketplace) — coach payout onboarding readiness (Phase B):
     "account.updated",
+    # Connect (marketplace) — money back to a student: a refund made in the Stripe
+    # dashboard, or a dispute the coach lost.
+    "charge.refunded",
+    "charge.dispute.closed",
     # Acknowledged-but-deferred (Phase 2):
     "customer.subscription.deleted",
     "invoice.payment_failed",
@@ -75,6 +82,18 @@ _STRIPE_HANDLED = {
 
 def _handle_checkout_session_completed(event, webhook_event):
     session = event["data"]["object"]
+    # Act only once the session is actually paid, on every path. Delayed payment
+    # methods complete the session with payment_status "unpaid" and settle later
+    # (checkout.session.async_payment_succeeded, routed here too) — acting on the
+    # unpaid one would hand out paid content, a membership or a paid plan for free.
+    payment_status = session.get("payment_status")
+    if payment_status not in ("paid", "no_payment_required"):
+        logger.info(
+            "checkout session %s not paid (payment_status=%s); waiting for the payment",
+            session.get("id"),
+            payment_status,
+        )
+        return
     metadata = session.get("metadata") or {}
     # Marketplace (student→coach) carries `payment_id` (one-time) or
     # `subscription_plan_id` (recurring); platform (coach→Contentor) carries `plan_id`.
@@ -83,16 +102,6 @@ def _handle_checkout_session_completed(event, webhook_event):
         return
     if metadata.get("subscription_plan_id"):
         _handle_marketplace_subscription_checkout(event)
-        return
-    # Only activate the plan once the session is actually paid. Async/delayed
-    # payment methods can complete the session with payment_status "unpaid" —
-    # granting the plan then would hand out a paid plan for free.
-    payment_status = session.get("payment_status")
-    if payment_status not in ("paid", "no_payment_required"):
-        logger.info(
-            "platform checkout.session.completed not paid (payment_status=%s); skipping activation",
-            payment_status,
-        )
         return
     tenant = _resolve_tenant(metadata)
     user = _resolve_user(metadata)
@@ -210,7 +219,7 @@ def stripe_webhook(request):
                 # `Subscription`; platform events (coach→Contentor) have none and act
                 # on `PlatformSubscription`.
                 connected = _connected_tenant(event_dict)
-                if event_type == "checkout.session.completed":
+                if event_type in ("checkout.session.completed", "checkout.session.async_payment_succeeded"):
                     _handle_checkout_session_completed(event_dict, webhook_event)
                 elif event_type in ("customer.subscription.created", "customer.subscription.updated"):
                     if connected:
@@ -232,6 +241,11 @@ def stripe_webhook(request):
                         _handle_marketplace_invoice_failed(event_dict, connected)
                     else:
                         logger.info("Acknowledged platform invoice.payment_failed (deferred)")
+                elif event_type in ("charge.refunded", "charge.dispute.closed"):
+                    if connected:
+                        _handle_marketplace_charge_reversed(event_dict, connected)
+                    else:
+                        logger.info("Acknowledged platform %s (no handler)", event_type)
                 elif event_type == "account.updated":
                     _handle_account_updated(event_dict)
                 else:

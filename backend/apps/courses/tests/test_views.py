@@ -278,6 +278,18 @@ class TestEnroll:
         resp = client.post(f"/api/v1/courses/{published_course.slug}/enroll/")
         assert resp.status_code == 409, resp.content
 
+    def test_a_refunded_student_is_not_shown_as_enrolled(self, published_course, student):
+        Enrollment.objects.create(user=student, course=published_course, is_active=False)
+        resp = make_client(student).get(f"/api/v1/courses/{published_course.slug}/")
+        assert resp.status_code == 200, resp.content
+        assert resp.json()["is_enrolled"] is False
+
+    def test_a_refunded_student_can_enroll_again(self, published_course, student):
+        Enrollment.objects.create(user=student, course=published_course, is_active=False)
+        resp = make_client(student).post(f"/api/v1/courses/{published_course.slug}/enroll/")
+        assert resp.status_code == 201, resp.content
+        assert Enrollment.objects.get(user=student, course=published_course).is_active is True
+
     def test_paid_course_without_payment_returns_400(self, owner, student):
         """Paid course enrollment without purchase returns 400."""
         paid = Course.objects.create(

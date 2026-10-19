@@ -218,6 +218,34 @@ class TestPaymentInitialize:
         again = client.post("/api/v1/billing/payments/initialize/", data=payload, format="json")
         assert again.status_code == 400, again.content
 
+    def test_an_unpublished_course_cannot_be_bought(self, student, paid_course):
+        paid_course.is_published = False
+        paid_course.save(update_fields=["is_published"])
+        payload = {"items": [{"content_type": "course", "object_id": paid_course.pk}]}
+        resp = make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        assert resp.status_code == 404, resp.content
+        assert not Payment.objects.exists()
+
+    def test_a_withdrawn_bundle_cannot_be_bought(self, student, paid_bundle):
+        paid_bundle.is_active = False
+        paid_bundle.save(update_fields=["is_active"])
+        payload = {"items": [{"content_type": "bundle", "object_id": paid_bundle.pk}]}
+        resp = make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        assert resp.status_code == 404, resp.content
+        assert not Payment.objects.exists()
+
+    def test_buying_again_after_a_refund_puts_the_course_back_in_her_courses(self, owner, student, paid_course):
+        payload = {"items": [{"content_type": "course", "object_id": paid_course.pk}]}
+        first = make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        item = PaymentItem.objects.get(payment_id=first.json()["payment_id"])
+        refund = make_client(owner).post(f"/api/v1/billing/payments/{item.payment_id}/items/{item.pk}/refund/")
+        assert refund.status_code == 200, refund.content
+        assert Enrollment.objects.get(user=student, course=paid_course).is_active is False
+
+        again = make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        assert again.status_code == 201, again.content
+        assert Enrollment.objects.get(user=student, course=paid_course).is_active is True
+
     def test_buying_an_in_person_class_reveals_its_address(self, student, paid_onsite_event):
         """The street address is hidden until the student has paid for the class."""
         client = make_client(student)
@@ -393,6 +421,48 @@ class TestPaymentItemRefund:
         resp2 = client.post(f"/api/v1/billing/payments/{payment.pk}/items/{item2.pk}/refund/")
         assert resp2.status_code == 200, resp2.content
         assert resp2.json()["payment_status"] == "refunded"
+
+    def _buy_bundle(self, settings, student, bundle):
+        settings.BILLING_BYPASS_ENABLED = True
+        payload = {"items": [{"content_type": "bundle", "object_id": bundle.pk}]}
+        resp = make_client(student).post("/api/v1/billing/payments/initialize/", data=payload, format="json")
+        assert resp.status_code == 201, resp.content
+        return PaymentItem.objects.get(payment_id=resp.json()["payment_id"])
+
+    def test_refunding_a_bundle_closes_the_courses_it_opened(self, settings, owner, student, paid_bundle, paid_course):
+        item = self._buy_bundle(settings, student, paid_bundle)
+        assert Enrollment.objects.get(user=student, course=paid_course).is_active is True
+
+        resp = make_client(owner).post(f"/api/v1/billing/payments/{item.payment_id}/items/{item.pk}/refund/")
+        assert resp.status_code == 200, resp.content
+        assert Enrollment.objects.get(user=student, course=paid_course).is_active is False
+
+    def test_refunding_a_bundle_keeps_a_course_she_bought_on_its_own(self, settings, owner, student, paid_bundle):
+        other = Course.objects.create(
+            title="Bought Alone",
+            slug="bought-alone",
+            instructor=owner,
+            pricing_type="paid",
+            price=Decimal("40.00"),
+            is_published=True,
+        )
+        from django.contrib.contenttypes.models import ContentType
+
+        settings.BILLING_BYPASS_ENABLED = True
+        alone = make_client(student).post(
+            "/api/v1/billing/payments/initialize/",
+            data={"items": [{"content_type": "course", "object_id": other.pk}]},
+            format="json",
+        )
+        assert alone.status_code == 201, alone.content
+        BundleItem.objects.create(
+            bundle=paid_bundle, content_type=ContentType.objects.get_for_model(Course), object_id=other.pk
+        )
+        item = self._buy_bundle(settings, student, paid_bundle)
+
+        resp = make_client(owner).post(f"/api/v1/billing/payments/{item.payment_id}/items/{item.pk}/refund/")
+        assert resp.status_code == 200, resp.content
+        assert Enrollment.objects.get(user=student, course=other).is_active is True
 
 
 # ===========================================================================

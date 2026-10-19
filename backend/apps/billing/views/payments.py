@@ -366,48 +366,61 @@ def _do_refund(payment, payment_item):
         except ProviderError as exc:
             return _provider_error_response(exc)
 
-    # Mark item as refunded
-    payment_item.is_refunded = True
-    payment_item.save(update_fields=["is_refunded"])
-
-    # Create a refund Payment record
-    refund_payment = Payment.objects.create(
-        student=payment.student,
-        payment_type="refund",
-        status="completed",
-        amount=payment_item.item_price,
-        platform_fee=Decimal("0.00"),
-        submerchant_payout=Decimal("0.00"),
-        currency=payment.currency,
-        provider=payment.provider,
-        provider_payment_id=refund_provider_id,
-        original_payment=payment,
-    )
-
-    # If the content is a Course, deactivate the related Enrollment
-    content_obj = payment_item.content_object
-    if isinstance(content_obj, Course):
-        Enrollment.objects.filter(
-            user=payment.student,
-            course=content_obj,
-        ).update(is_active=False)
-
-    # Determine updated payment status
-    all_items = payment.items.all()
-    all_refunded = all(item.is_refunded for item in all_items)
-    new_status = "refunded" if all_refunded else "partially_refunded"
-
-    payment.status = new_status
-    payment.save(update_fields=["status"])
-
+    refund_payment = record_refund(payment, [payment_item], refund_provider_id)
     return Response(
         {
             "detail": "Item refunded.",
-            "payment_status": new_status,
+            "payment_status": payment.status,
             "refund_payment_id": refund_payment.pk,
         },
         status=status.HTTP_200_OK,
     )
+
+
+def record_refund(payment, items, provider_refund_id=""):
+    """The local side of a refund, once the money has gone back: mark the items refunded,
+    keep a refund record, close the course enrollments they opened, and move the payment's
+    status. Shared by the coach's refund and Stripe's refund/dispute webhooks.
+    """
+    PaymentItem.objects.filter(pk__in=[i.pk for i in items]).update(is_refunded=True)
+    refund_payment = Payment.objects.create(
+        student_id=payment.student_id,
+        payment_type="refund",
+        status="completed",
+        amount=sum((i.item_price for i in items), Decimal("0.00")),
+        platform_fee=Decimal("0.00"),
+        submerchant_payout=Decimal("0.00"),
+        currency=payment.currency,
+        provider=payment.provider,
+        provider_payment_id=provider_refund_id,
+        original_payment=payment,
+    )
+    # A course she still has another way (bought on its own beside a refunded bundle,
+    # given, in her plan) stays in her courses.
+    access = ContentAccessService()
+    student = payment.student
+    for course in Course.objects.filter(pk__in=_courses_opened_by(items)):
+        if not access.check_access(student, course):
+            Enrollment.objects.filter(user_id=payment.student_id, course=course).update(is_active=False)
+
+    payment.status = "partially_refunded" if payment.items.filter(is_refunded=False).exists() else "refunded"
+    payment.save(update_fields=["status"])
+    return refund_payment
+
+
+def _courses_opened_by(items) -> set[int]:
+    """The ids of the courses these payment items open: a course, or the courses in a bundle."""
+    course_ct = ContentType.objects.get_for_model(Course)
+    ids = set()
+    for item in items:
+        obj = item.content_object
+        if isinstance(obj, Course):
+            ids.add(obj.pk)
+        elif isinstance(obj, Bundle):
+            ids.update(
+                BundleItem.objects.filter(bundle=obj, content_type=course_ct).values_list("object_id", flat=True)
+            )
+    return ids
 
 
 def _serialize_payment_item(item):
@@ -540,29 +553,17 @@ def grant_access_for_payment(payment):
     record this needs to create is a course `Enrollment` — for directly
     purchased courses and for courses inside a purchased bundle.
 
-    Idempotent: safe to call again on webhook replay (`get_or_create`).
+    Idempotent: safe to call again on webhook replay (`update_or_create`). An
+    enrollment a refund closed opens again when she buys the course again.
     """
     # Use the raw FK id, not `payment.student`: when this runs inside a tenant
     # schema (webhook path) the search_path excludes public, so dereferencing the
     # shared-schema User would raise DoesNotExist. The id is all Enrollment needs.
     user_id = payment.student_id
-    course_ct = ContentType.objects.get_for_model(Course)
-    for item in payment.items.all():
-        obj = item.content_object
-        if obj is None:
-            continue
-        if isinstance(obj, Course):
-            Enrollment.objects.get_or_create(user_id=user_id, course=obj, defaults={"payment_id": payment.pk})
-        elif isinstance(obj, Bundle):
-            bundle_course_ids = BundleItem.objects.filter(bundle=obj, content_type=course_ct).values_list(
-                "object_id", flat=True
-            )
-            for course_id in bundle_course_ids:
-                try:
-                    course = Course.objects.get(pk=course_id)
-                except Course.DoesNotExist:
-                    continue
-                Enrollment.objects.get_or_create(user_id=user_id, course=course, defaults={"payment_id": payment.pk})
+    for course in Course.objects.filter(pk__in=_courses_opened_by(payment.items.all())):
+        Enrollment.objects.update_or_create(
+            user_id=user_id, course=course, defaults={"is_active": True}, create_defaults={"payment_id": payment.pk}
+        )
 
 
 def _ensure_subscription_price(plan, account_id, currency):

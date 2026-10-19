@@ -200,6 +200,7 @@ def test_webhook_completes_payment_and_grants_access(restore_public):
                 "object": {
                     "id": "cs_mk_wh",
                     "payment_intent": "pi_mk_wh",
+                    "payment_status": "paid",
                     "metadata": {
                         "payment_id": str(payment_id),
                         "tenant_id": str(tenant.pk),
@@ -257,3 +258,181 @@ def test_grant_access_expands_bundle_courses(restore_public, owner, student):
     assert resp.json()["status"] == "completed"
     with tenant_context(tenant):
         assert Enrollment.objects.filter(user=student, course_id=course_id).exists()
+
+
+def _post_webhook(event):
+    with patch("stripe.Webhook.construct_event", return_value=_FakeEvent(event)):
+        resp = APIClient().post(
+            "/api/webhooks/stripe/",
+            data="{}",
+            content_type="application/json",
+            HTTP_STRIPE_SIGNATURE="t=1,v1=fake",
+        )
+    assert resp.status_code == 200, resp.content
+    return resp
+
+
+def _seed_course_payment(tenant, *, status, provider_payment_id=""):
+    """A student, a paid course and her Stripe payment for it, in the tenant schema."""
+    with tenant_context(tenant):
+        owner = User.objects.create_user(email="owner@rv.test", name="Owner", password="secret123", role="owner")  # noqa: S106
+        student = User.objects.create_user(
+            email="student@rv.test",
+            name="Student",
+            password="secret123",
+            role="student",  # noqa: S106
+        )
+        course = Course.objects.create(
+            title="RV Course",
+            slug="rv-course",
+            instructor=owner,
+            pricing_type="paid",
+            price=Decimal("50.00"),
+            is_published=True,
+        )
+        payment = Payment.objects.create(
+            student=student,
+            payment_type="one_time",
+            status=status,
+            amount=Decimal("50.00"),
+            platform_fee=Decimal("2.00"),
+            submerchant_payout=Decimal("48.00"),
+            currency="USD",
+            provider="stripe",
+            provider_payment_id=provider_payment_id,
+        )
+        PaymentItem.objects.create(
+            payment=payment,
+            content_type=ContentType.objects.get_for_model(Course),
+            object_id=course.pk,
+            item_price=Decimal("50.00"),
+            submerchant_payout=Decimal("48.00"),
+        )
+        if status == "completed":
+            Enrollment.objects.create(user=student, course=course, payment_id=payment.pk)
+        return payment.pk, course, student
+
+
+def _has_course(tenant, student, course):
+    from apps.core.access import ContentAccessService
+
+    with tenant_context(tenant):
+        return ContentAccessService().check_access(student, course)
+
+
+def _session_event(event_id, event_type, tenant, payment_id, payment_status):
+    return {
+        "id": event_id,
+        "type": event_type,
+        "account": "acct_rv",
+        "data": {
+            "object": {
+                "id": "cs_rv",
+                "payment_intent": "pi_rv",
+                "payment_status": payment_status,
+                "metadata": {"payment_id": str(payment_id), "tenant_id": str(tenant.pk)},
+            }
+        },
+    }
+
+
+@override_settings(BILLING_BYPASS_ENABLED=False, STRIPE_WEBHOOK_SECRET="whsec_rv")  # noqa: S106
+def test_a_delayed_payment_opens_the_course_only_once_the_money_arrives(restore_public):
+    tenant = restore_public
+    Tenant.objects.filter(pk=tenant.pk).update(stripe_account_id="acct_rv")
+    payment_id, course, student = _seed_course_payment(tenant, status="pending")
+
+    _post_webhook(_session_event("evt_rv_unpaid", "checkout.session.completed", tenant, payment_id, "unpaid"))
+    with tenant_context(tenant):
+        assert Payment.objects.get(pk=payment_id).status == "pending"
+        assert not Enrollment.objects.filter(course=course).exists()
+
+    _post_webhook(
+        _session_event("evt_rv_settled", "checkout.session.async_payment_succeeded", tenant, payment_id, "paid")
+    )
+    with tenant_context(tenant):
+        assert Payment.objects.get(pk=payment_id).status == "completed"
+        assert Enrollment.objects.get(course=course).is_active is True
+
+
+def _charge_refunded(event_id, *, refunded=True):
+    return {
+        "id": event_id,
+        "type": "charge.refunded",
+        "account": "acct_rv",
+        "data": {
+            "object": {
+                "id": "ch_rv",
+                "payment_intent": "pi_rv",
+                "amount": 5000,
+                "amount_refunded": 5000 if refunded else 1000,
+                "refunded": refunded,
+            }
+        },
+    }
+
+
+@override_settings(BILLING_BYPASS_ENABLED=False, STRIPE_WEBHOOK_SECRET="whsec_rv")  # noqa: S106
+def test_a_refund_made_in_the_stripe_dashboard_takes_the_course_away(restore_public):
+    tenant = restore_public
+    Tenant.objects.filter(pk=tenant.pk).update(stripe_account_id="acct_rv")
+    payment_id, course, student = _seed_course_payment(tenant, status="completed", provider_payment_id="pi_rv")
+    assert _has_course(tenant, student, course)
+
+    _post_webhook(_charge_refunded("evt_rv_refund"))
+
+    assert not _has_course(tenant, student, course)
+    with tenant_context(tenant):
+        assert Payment.objects.get(pk=payment_id).status == "refunded"
+        refund = Payment.objects.get(payment_type="refund", original_payment_id=payment_id)
+        assert refund.amount == Decimal("50.00")
+        assert Enrollment.objects.get(course=course).is_active is False
+
+
+@override_settings(BILLING_BYPASS_ENABLED=False, STRIPE_WEBHOOK_SECRET="whsec_rv")  # noqa: S106
+def test_a_partial_dashboard_refund_leaves_the_purchase_open(restore_public):
+    tenant = restore_public
+    Tenant.objects.filter(pk=tenant.pk).update(stripe_account_id="acct_rv")
+    payment_id, course, student = _seed_course_payment(tenant, status="completed", provider_payment_id="pi_rv")
+
+    _post_webhook(_charge_refunded("evt_rv_partial", refunded=False))
+
+    assert _has_course(tenant, student, course)
+
+
+@override_settings(BILLING_BYPASS_ENABLED=False, STRIPE_WEBHOOK_SECRET="whsec_rv")  # noqa: S106
+def test_the_refund_webhook_after_an_in_app_refund_records_nothing_twice(restore_public):
+    tenant = restore_public
+    Tenant.objects.filter(pk=tenant.pk).update(stripe_account_id="acct_rv")
+    payment_id, course, student = _seed_course_payment(tenant, status="completed", provider_payment_id="pi_rv")
+    with tenant_context(tenant):
+        owner = User.objects.get(email="owner@rv.test")
+        item = PaymentItem.objects.get(payment_id=payment_id)
+    with patch("apps.billing.providers.connect.refund_payment", return_value="re_rv"):
+        resp = _client(owner).post(f"/api/v1/billing/payments/{payment_id}/items/{item.pk}/refund/")
+    assert resp.status_code == 200, resp.content
+
+    _post_webhook(_charge_refunded("evt_rv_echo"))
+
+    with tenant_context(tenant):
+        assert Payment.objects.filter(payment_type="refund", original_payment_id=payment_id).count() == 1
+
+
+@override_settings(BILLING_BYPASS_ENABLED=False, STRIPE_WEBHOOK_SECRET="whsec_rv")  # noqa: S106
+def test_a_lost_dispute_takes_the_course_away(restore_public):
+    tenant = restore_public
+    Tenant.objects.filter(pk=tenant.pk).update(stripe_account_id="acct_rv")
+    payment_id, course, student = _seed_course_payment(tenant, status="completed", provider_payment_id="pi_rv")
+
+    _post_webhook(
+        {
+            "id": "evt_rv_dispute",
+            "type": "charge.dispute.closed",
+            "account": "acct_rv",
+            "data": {"object": {"id": "dp_rv", "charge": "ch_rv", "payment_intent": "pi_rv", "status": "lost"}},
+        }
+    )
+
+    assert not _has_course(tenant, student, course)
+    with tenant_context(tenant):
+        assert Payment.objects.get(pk=payment_id).status == "refunded"

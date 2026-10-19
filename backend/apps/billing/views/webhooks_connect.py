@@ -90,6 +90,41 @@ def _handle_marketplace_checkout_completed(event):
         )
 
 
+def _handle_marketplace_charge_reversed(event, tenant):
+    """charge.refunded / charge.dispute.closed (lost): the money went back to the
+    student, so her one-time purchase closes, as a refund from the coach admin does.
+
+    Only a full refund closes it. A partial one made in the Stripe dashboard can't be
+    matched to items, and the coach admin's own per-item refunds are already recorded
+    (its echo here finds nothing left to refund).
+    """
+    obj = event["data"]["object"]
+    if event["type"] == "charge.refunded" and not obj.get("refunded"):
+        logger.info("partial refund on charge %s left as it is (tenant=%s)", obj.get("id"), tenant.slug)
+        return
+    if event["type"] == "charge.dispute.closed" and obj.get("status") != "lost":
+        return
+    payment_intent_id = obj.get("payment_intent") or ""
+    if not payment_intent_id:
+        return
+    with tenant_context(tenant):
+        from apps.billing.models import Payment
+        from apps.billing.views.payments import record_refund
+
+        # Locked like the refund view, so the two never both refund the same item.
+        payment = (
+            Payment.objects.select_for_update()
+            .filter(provider="stripe", provider_payment_id=payment_intent_id, payment_type="one_time")
+            .first()
+        )
+        if payment is None:
+            return
+        items = list(payment.items.filter(is_refunded=False))
+        if items:
+            record_refund(payment, items, obj.get("id") or "")
+            logger.info("marketplace payment %s closed by %s (tenant=%s)", payment.pk, event["type"], tenant.slug)
+
+
 def _connected_tenant(event):
     """Return the tenant whose connected account this Connect event came from."""
     account_id = event.get("account") or ""

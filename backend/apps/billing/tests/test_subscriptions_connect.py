@@ -262,6 +262,7 @@ def test_webhook_subscription_checkout_creates_active_subscription(restore_publi
                     "id": "cs_subd",
                     "subscription": "sub_subd_1",
                     "customer": "cus_subd_1",
+                    "payment_status": "paid",
                     "metadata": {
                         "subscription_plan_id": str(plan_id),
                         "user_id": str(student_id),
