@@ -55,6 +55,8 @@ import { ScheduleQuestion } from "./schedule-question";
 import { UploadQuestion } from "./upload-question";
 
 const POLL_MS = 1500;
+// The kinds whose page edits are saved before her finish taps go out.
+const SAVE_FIRST: FocusKind[] = ["message", "membership"];
 
 // The /setup answer box reads the setup shell's tokens; here they are the
 // studio's own, so it follows the studio's light and dark.
@@ -95,6 +97,9 @@ export function FocusGuide() {
         if (apply(0, next) && next.record) navigate(next.record.path);
         return;
       }
+      // "Sell it for": a price she typed on the page is saved first, and stands.
+      if (question.kind === "finish" && SAVE_FIRST.includes(current.kind))
+        await saveFocusEdits();
       apply(
         current.id,
         await answerCreation(current.id, {
@@ -108,8 +113,9 @@ export function FocusGuide() {
   const { run: finish, loading: finishing } = useAsyncAction(
     async (publish: boolean, startSelling: boolean, announce: boolean) => {
       if (!state) return;
-      // What she typed a moment ago is what goes out (the composer saves a beat later).
-      if (state.kind === "message") await saveFocusEdits();
+      // What she typed a moment ago is what goes out (the composer saves a
+      // beat later; a membership's page saves only on leaving).
+      if (SAVE_FIRST.includes(state.kind)) await saveFocusEdits();
       const next = await finishCreation(state.id, {
         publish,
         announce,

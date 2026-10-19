@@ -19,7 +19,8 @@ The adapter (the course's in kinds/course.py):
   for a kind with no access step (no price: flow._set_price keeps none).
 - put_in_plan(record_id, plan): puts it in a membership; None when it cannot be in one.
 - suggest_price(record): a pricing.Suggestion from her own numbers, or None.
-- amount_label(record, amount): optional, an amount in its own words on the finish step ("$9 a month").
+- amount_label(record, amount): optional, an amount in its own words ("$9 a month"): on the finish step's
+  "Sell it for", and on her answered access line when she typed it or tapped "Sell it for" (paid:<amount>).
 - price_tiles(creation, record): its own price step's tiles; None for the shared ones.
 - not_ready(record): why it cannot go live yet, or "".
 - cannot_sell(record): True while it is paid and selling is not open yet.

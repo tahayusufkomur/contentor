@@ -358,6 +358,20 @@ def test_a_tap_with_nothing_valid_has_a_plain_line(owner):
     assert len(picked) <= flow.MULTI_MAX and long.startswith(picked) and long[len(picked)] == ","
 
 
+def test_a_price_she_set_on_the_page_stands_over_sell_it_for(owner):
+    """Her page's price is saved before her finish tap (E2's page): "Sell it
+    for" the suggestion is gone, and a stale tap of it changes nothing."""
+    creation = _at_finish(owner, price=None)
+    assert any(o["value"] == "price:9" for o in flow.state(creation)["question"]["options"])
+    SubscriptionPlan.objects.filter(pk=creation.record_id).update(price=Decimal("12"))  # her PATCH
+    with mock.patch("apps.core.monetization.can_monetize", return_value=True):
+        assert _values(creation) == ["on_sale", "off_sale"]
+        creation = flow.answer(creation, "finish", value="price:9")  # the button she saw before
+        assert (_plan(creation).price, creation.answers["access"]) == (Decimal("12.00"), flow.DELEGATE)
+        creation = flow.finish(creation, publish=True)
+    assert (_plan(creation).price, _plan(creation).is_active) == (Decimal("12.00"), True)
+
+
 def test_one_item_is_one_item(owner):
     assert membership.label("included", ["course:99999"]) == "1 item"
     assert membership.label("included", ["course:99998", "course:99999"]) == "2 items"

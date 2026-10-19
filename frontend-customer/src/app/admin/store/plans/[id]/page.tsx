@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NavLink } from "@/components/ui/nav-link";
 import { PageState } from "@/components/ui/page-state";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonForm } from "@/components/ui/skeletons";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -128,7 +128,10 @@ export default function PlanPage() {
   if (id !== "new") return <PlanForm key={id} id={id} />;
   const first = overview?.first.membership;
   return (
-    <PageState loading={overview === null} skeleton={<FormSkeleton />}>
+    <PageState
+      loading={overview === null}
+      skeleton={<SkeletonForm fields={5} />}
+    >
       {overview?.enabled && first && !plain ? (
         <FocusStart kind="membership" question={first}>
           <PlanSlots />
@@ -137,16 +140,6 @@ export default function PlanPage() {
         <PlanForm id={id} />
       )}
     </PageState>
-  );
-}
-
-function FormSkeleton() {
-  return (
-    <div className="space-y-3">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-10 w-full" />
-      ))}
-    </div>
   );
 }
 
@@ -333,9 +326,10 @@ function PlanForm({ id }: { id: string }) {
     : "";
   const answeredSeen = useRef(answeredKey);
   useEffect(() => {
-    if (answeredSeen.current === answeredKey) return;
+    const was = answeredSeen.current;
     answeredSeen.current = answeredKey;
-    reload();
+    // Focus mode taking the page up is no answer: the plan was just loaded.
+    if (was && was !== answeredKey) reload();
   }, [answeredKey, reload]);
 
   // The copy run's name and description type in; only the field being written
@@ -375,33 +369,42 @@ function PlanForm({ id }: { id: string }) {
   const shown = (name: OwnName) =>
     writing(name) ? (live?.fields[name]?.value ?? "") : form[name];
 
-  // "Save & leave": what she changed on the page, and nothing else (the guide's
-  // answers are saved already). On sale stays the finish step's tap.
+  // "Save & leave", and before her finish taps: what she changed on the page,
+  // and nothing else (the guide's answers are saved already). On sale stays
+  // the finish step's tap. What is saved is the server's copy from then on.
   const saveFocus = async () => {
     const was = base.current;
     const changes: Record<string, unknown> = {};
+    const saved: Partial<Saved> = {};
     for (const name of OWN)
       if (OWN_TIDY[name](form[name]) !== was[name])
-        changes[name] = OWN_TIDY[name](form[name]);
-    if (form.price !== was.price) changes.price = form.price;
-    if (cycle !== was.cycle || months !== was.months)
+        changes[name] = saved[name] = OWN_TIDY[name](form[name]);
+    if (form.price !== was.price) changes.price = saved.price = form.price;
+    if (cycle !== was.cycle || months !== was.months) {
       changes.billing_interval_months =
         cycle === "custom" ? Number(months) : Number(cycle);
-    if (Object.keys(changes).length)
+      Object.assign(saved, { cycle, months });
+    }
+    if (Object.keys(changes).length) {
       await clientFetch(`/api/v1/billing/plans/${id}/`, {
         method: "PATCH",
         body: JSON.stringify(changes),
       });
-    if (itemKeys(selectedItems) !== itemKeys(was.items))
+      base.current = { ...base.current, ...saved };
+    }
+    if (itemKeys(selectedItems) !== itemKeys(was.items)) {
+      const items = selectedItems;
       await clientFetch(`/api/v1/billing/plans/${id}/access/`, {
         method: "PUT",
         body: JSON.stringify({
-          items: selectedItems.map((i) => ({
+          items: items.map((i) => ({
             content_type: i.content_type,
             object_id: i.object_id,
           })),
         }),
       });
+      base.current = { ...base.current, items };
+    }
   };
   const saveFocusRef = useRef(saveFocus);
   saveFocusRef.current = saveFocus;
@@ -469,7 +472,7 @@ function PlanForm({ id }: { id: string }) {
         loading={loading}
         error={loadError}
         onRetry={() => setReloadKey((k) => k + 1)}
-        skeleton={<FormSkeleton />}
+        skeleton={<SkeletonForm fields={5} />}
       >
         {/* Not a <form>: Enter in the content search below would submit it,
             and a plan made by accident is public at once and cannot be

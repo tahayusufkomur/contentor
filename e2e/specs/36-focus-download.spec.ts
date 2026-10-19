@@ -277,10 +277,10 @@ test("add it later keeps it a draft", async ({ browser }) => {
   await page.goto(`${TENANT}${PATH}`);
   await expect(guide(page).getByText("Add the file")).toBeVisible();
   await guide(page).getByRole("button", { name: "Add it later" }).click();
-  expect(sent.find((s) => s.field === "file")).toMatchObject({ value: "later" });
 
   // Without a file, Publish is never offered: it stays a hidden draft.
   await expect(guide(page).getByText("Add the file first.", { exact: false })).toBeVisible();
+  expect(sent.find((s) => s.field === "file")).toMatchObject({ value: "later" });
   await expect(guide(page).getByRole("button", { name: "Publish now" })).toHaveCount(0);
   await guide(page).getByRole("button", { name: "Keep as a draft" }).click();
   await expect(guide(page)).toHaveCount(0);

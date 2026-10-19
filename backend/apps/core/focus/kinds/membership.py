@@ -508,9 +508,12 @@ def _tier(row) -> dict:
     ]
 
 
-def suggest_price(row) -> pricing.Suggestion:
+def suggest_price(row) -> pricing.Suggestion | None:
     """Its price for its cycle, with a reason for that cycle ("Sell it for"
-    after "Just draft it" keeps the cycle her words gave): a year is ten months."""
+    after "Just draft it" keeps the cycle her words gave): a year is ten months.
+    None once it has a price: one she typed on the page stands (F11)."""
+    if row.price > 0:
+        return None
     s = _monthly(row)
     months = row.billing_interval_months
     if months == 1:
