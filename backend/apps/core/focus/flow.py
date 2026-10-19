@@ -16,7 +16,7 @@ from django.utils import timezone
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
-from . import analysis, covers, descriptions, followup, jobs, kinds, outline
+from . import analysis, covers, descriptions, followup, jobs, kinds
 from . import announce as announcing  # ``announce`` is finish()'s flag
 
 DELEGATE = "delegate"
@@ -53,6 +53,14 @@ def working_title(topic: str, kind: str = "course") -> str:
     if not text:
         return adapter.NEW_TITLE
     return (text[0].upper() + text[1:])[:TITLE_MAX]
+
+
+def draft_title(creation) -> str:
+    """Her working title while a kind has no record yet (G10): the one her
+    topic named, else her topic as it stands."""
+    titles = (creation.drafted or {}).get("titles") or []
+    topic = str((creation.answers or {}).get("topic") or "")
+    return titles[-1] if titles else working_title("" if topic == DELEGATE else topic, creation.kind)
 
 
 def start(user, kind: str, *, value=None, text=None, delegate=False, rest=False, active_ms=0) -> FocusCreation:
@@ -165,7 +173,9 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
             elif value == "retry" and status in ("failed", "idle"):
                 # Again what failed: her change, when it was a redraft.
                 failed = CopilotRun.objects.filter(pk=creation.outline_run_id).first()
-                outline.start(creation, instruction=str(((failed and failed.request) or {}).get("instruction") or ""))
+                kinds.get(creation.kind).start_draft(
+                    creation, instruction=str(((failed and failed.request) or {}).get("instruction") or "")
+                )
         elif question.kind == "finish":
             price = _sell_for(creation, value)
             _set_price(creation, price)
@@ -274,6 +284,8 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
                 tick(creation.record_id, announce)
             with suppress(content.ContentOpError):  # already published by hand, or gone
                 adapter.go_live(creation.record_id)
+        elif keep := getattr(adapter, "keep", None):  # optional: what keeping a draft does
+            keep(creation.record_id)
         recipe = adapter.RECIPE
         question = next(q for q in recipe.questions if q.id == "finish")
         creation.answers["finish"] = choice
@@ -463,7 +475,10 @@ def question(kind: str, field: str, creation=None) -> dict:
         "can_delegate": q.delegable,
         "specialist": recipe.specialists[q.id],
     }
-    return {**asked, **_price_tiles(creation)} if q.kind == "price" else asked
+    if q.kind == "price":
+        asked = {**asked, **_price_tiles(creation)}
+    ask = getattr(kinds.get(kind), "ask", None)  # optional: its wording for this creation
+    return ask(creation, asked) if ask and creation is not None else asked
 
 
 def _sync_cover(creation):
@@ -766,11 +781,17 @@ def _redraft_waiting(creation, item, clarified: bool) -> None:
 
 def _set_price(creation, value: str) -> None:
     """Her price, from her own tap or words (F11): "free", "membership" (the
-    record is left as it is; the access step offers her memberships) or an amount."""
-    if value != "membership":
-        kinds.get(creation.kind).set_price(creation.record_id, value)
+    record is left as it is; the access step offers her memberships) or an amount.
+    A kind that skips the access step for this creation answers it itself (a
+    Zoom class is free); without a record yet, ``_ensure_record`` sets it later."""
+    adapter = kinds.get(creation.kind)
+    if "access" in adapter.skips(creation):
+        return
+    if value != "membership" and creation.record_id is not None:
+        adapter.set_price(creation.record_id, value)
     creation.answers["price"] = value
-    if value != "membership":  # the access step is answered too; "membership" asks which one
+    # The access step is answered too, when the kind asks it; "membership" asks which one.
+    if value != "membership" and any(q.id == "access" for q in adapter.RECIPE.questions):
         creation.answers["access"] = value if value == "free" else f"paid:{value}"
 
 
@@ -889,7 +910,10 @@ def _access_label(value: str) -> str:
 def _retitle(creation, provisional: str, title: str) -> None:
     """The working title from the topic she named, while the record still has
     the provisional one. Recorded as ours, so the outline may replace it."""
-    if title == provisional or not kinds.get(creation.kind).retitle(creation.record_id, provisional, title):
+    if title == provisional:
+        return
+    # Without a record yet (G10), it is the title the record is made with.
+    if creation.record_id is not None and not kinds.get(creation.kind).retitle(creation.record_id, provisional, title):
         return
     drafted = creation.drafted or {}
     creation.drafted = {**drafted, "titles": [*(drafted.get("titles") or []), title]}
@@ -910,32 +934,55 @@ def _redraft(creation, words: str, *, keep_counts: bool = False) -> None:
     for pk in (creation.outline_run_id, jobs.run_id(creation, "descriptions")):
         if pk is not None:
             runs.stop(pk)  # a finished one is left as it is
-    outline.start(creation, instruction=words)
+    kinds.get(creation.kind).start_draft(creation, instruction=words)
 
 
-def _before_outline(recipe):
-    """The questions the outline waits for: those before its review."""
-    return recipe.questions[: [q.id for q in recipe.questions].index("outline_review")]
+def _before_draft(creation):
+    """The questions the kind's drafting waits for: those before its review,
+    but those it skips for this creation."""
+    adapter = kinds.get(creation.kind)
+    questions = adapter.RECIPE.questions
+    skipped = adapter.skips(creation)
+    review = [q.kind for q in questions].index("review")
+    return tuple(q for q in questions[:review] if q.id not in skipped)
 
 
 def _delegate_rest(creation) -> None:
-    """ "Just draft it": every question the outline waits for that is still
-    open is hers to delegate, and the price step; nothing more is clarified."""
+    """ "Just draft it": every question the drafting waits for that is still
+    open is hers to delegate, and the price step (unless the kind skips it);
+    nothing more is clarified."""
     creation.brief = {**(creation.brief or {}), "rest": True, "clarify": []}
-    recipe = kinds.get(creation.kind).RECIPE
+    adapter = kinds.get(creation.kind)
+    access = [q for q in adapter.RECIPE.questions if q.id == "access" and q.id not in adapter.skips(creation)]
     # The price too, which keeps the course free: a paid price is only ever her tap (F11, R2).
-    for q in (*_before_outline(recipe), *(q for q in recipe.questions if q.id == "access")):
+    for q in (*_before_draft(creation), *access):
         if q.id not in creation.answers:
             creation.answers[q.id] = DELEGATE
             _say(creation, q, "You decide")
 
 
+def _ensure_record(creation) -> None:
+    """The kind's draft, once an answer lets it be made (G10; the course's is
+    made at start), with the price she gave before it existed; then her
+    answers onto it, when the kind keeps any there itself (``sync``). Call
+    under the creation's lock; the caller saves."""
+    adapter = kinds.get(creation.kind)
+    if creation.record_id is None:
+        creation.record_id = adapter.create_draft(creation.actor, draft_title(creation), creation.answers)
+        price = creation.answers.get("price")
+        if creation.record_id is not None and price not in (None, "membership"):
+            adapter.set_price(creation.record_id, price)
+    if sync := getattr(adapter, "sync", None):  # optional
+        sync(creation)
+
+
 def _next_draft(creation) -> None:
-    """Once every question the outline waits for is answered and nothing is
-    being clarified or followed up: a follow-up when one is allowed, else the
-    outline."""
+    """The draft record first, once it can be made. Then, once every question
+    the drafting waits for is answered and nothing is being clarified or
+    followed up: a follow-up when one is allowed, else the kind's drafting."""
+    _ensure_record(creation)
     brief = creation.brief or {}
-    questions = _before_outline(kinds.get(creation.kind).RECIPE)
+    questions = _before_draft(creation)
     if (
         creation.outline_run_id is None
         and not (creation.drafted or {}).get("modules")  # its run pruned: still written
@@ -945,7 +992,7 @@ def _next_draft(creation) -> None:
         if followup_allowed(creation, "outline"):
             _ask_followup(creation, "outline")
         else:
-            outline.start(creation)
+            kinds.get(creation.kind).start_draft(creation)
 
 
 def _choice(recipe, field: str, words: str) -> str:
@@ -997,6 +1044,10 @@ def _pick(recipe, q, value, text, delegate):
         return words
     if value is None:
         return None
+    if q.kind == "schedule":  # the /setup picker's JSON, or nothing it would not send
+        from apps.tenant_config import interview_schedule
+
+        return interview_schedule.parse(value)
     values = recipe.values.get(q.id)
     if values is not None:
         return value if value in values else None
@@ -1017,6 +1068,10 @@ def _label(recipe, q, answer, tiles=None) -> str:
         return ANNOUNCE_LABELS.get(answer, str(answer))
     if q.kind == "finish":
         return dict(kinds.get(recipe.kind).FINISH).get(answer, str(answer))
+    if q.kind == "schedule" and isinstance(answer, dict):
+        from apps.tenant_config import interview_schedule
+
+        return interview_schedule.summary(answer)
     values = recipe.values.get(q.id, ())
     return q.options[values.index(answer)] if answer in values else str(answer)
 

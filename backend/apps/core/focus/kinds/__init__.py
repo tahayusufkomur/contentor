@@ -8,7 +8,8 @@ The adapter (the course's in kinds/course.py):
 - NOUN: its word in prompts ("course"). NEW_TITLE: a draft's title before she names it.
 - SETUP_TOPIC: the /setup answer that seeds the topic's starter tile, or None.
 - create_draft(actor, title, answers): the hidden draft's id, or None until a later answer makes it.
-- record(record_id): the draft, or None when there is none (yet, or any more).
+- record(record_id): the draft, or None when there is none (yet, or any more). ``record_id`` is the
+  kind's own int: the event's packs the row's pk and which of its four models (kinds/event.py).
 - payload(record): the record as the studio reads it.
 - retitle(record_id, provisional, title): the new title, only while it has the provisional one; True if set.
 - set_price(record_id, value): her price ("free" or an amount, or one of its own price tiles' values).
@@ -18,6 +19,7 @@ The adapter (the course's in kinds/course.py):
 - not_ready(record): why it cannot go live yet, or "".
 - cannot_sell(record): True while it is paid and selling is not open yet.
 - go_live(record_id): puts it live.
+- keep(record_id): optional, what "Keep as a draft" does to it (the draft is already hidden).
 - FINISH: the finish step's (value, label) options: the go-live one first, the keep one second.
 - CLOSING: the dock's closing line for each FINISH value. NOT_READY_LINE: the finish question while not ready.
 - ANNOUNCER: the specialist who drafts the announcement after it goes live, or None (no offer).
@@ -27,6 +29,10 @@ The adapter (the course's in kinds/course.py):
 - cover_target(record): the (target_kind, target_key) its cover Design files under.
 - cover_facts(record): {"title", "description"} for the Designer.
 - DRAFT_SLOT: the follow-up slot before its drafting.
+- start_draft(creation, instruction=""): its drafting for the review step (the course's outline), and
+  each redraft with her words; called once every question before the review is answered or skipped.
+- sync(creation): optional, after every answer: her answers it keeps on the record, written there.
+- ask(creation, asked): optional, a question in its own words for this creation (``flow.question``).
 - skips(creation): the questions it skips for this creation.
 - FOUND: the analysis.Found subclass its typed answers are read into. RULES: its own analysis rules.
 - UNCLEAR_FIELDS: the fields the analysis may ask a clarify question about.
@@ -40,7 +46,10 @@ from types import ModuleType
 
 from django.conf import settings
 
-KINDS: dict[str, str] = {"course": "apps.core.focus.kinds.course"}
+KINDS: dict[str, str] = {
+    "course": "apps.core.focus.kinds.course",
+    "event": "apps.core.focus.kinds.event",
+}
 
 
 def get(kind: str) -> ModuleType:

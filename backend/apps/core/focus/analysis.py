@@ -12,6 +12,7 @@ from functools import cache
 
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
@@ -27,16 +28,17 @@ MAX_PRICE = Decimal("99999999.99")  # Course.price: 10 digits, 2 decimals
 STEP = {"specialist": "content", "label": "Reading your details"}
 
 # Static per kind, byte-identical across tenants (prompt caching); her words ride the user turn.
-# ``{noun}`` is the kind's word ("course"), ``{unclear}`` the fields the kind may be unclear about.
+# ``{noun}`` is the kind's word ("course"). Each kind's RULES adds its own fields, and its own
+# ``topic`` and ``unclear`` lines (what a topic is, and which fields may be unclear, differ by kind).
 SHARED_RULES = (
     "A coach is creating ONE {noun} in a guided flow, one question at a time. Read what she typed ('text') "
     "and return typed fields. You also get 'question' (the question on her screen), 'outline_exists' "
     "(whether a draft of the {noun} already exists), 'cover_step' (whether she is choosing her cover), "
-    "'currency' (the currency her site charges in) and her site (brand, niche, description, her_courses).\n"
+    "'currency' (the currency her site charges in), 'today' (her date) and her site (brand, niche, "
+    "description, her_courses).\n"
     "Rules:\n"
     "- Fill only what she said. Never guess: a field she did not mention stays empty ('', null or []).\n"
     "- answer: her answer to 'question', in her words; '' when she said something else.\n"
-    "- topic: what her students will learn, short, in her words.\n"
     "- price: 'free'; 'membership' when students get it in her membership or subscription; or a plain "
     "amount in 'currency' without a sign ('49', '19.50').\n"
     "- notes: the rest she said about the {noun} (its format, its promise, her angle), short, in her "
@@ -45,24 +47,16 @@ SHARED_RULES = (
     "the photo she wants, in her words ('hands on a keyboard, no faces'); '' when she did not describe "
     "one.\n"
     "- change: a change she asks for to what is drafted, in her words; only when outline_exists is true, "
-    "else ''.\n"
-    "- unclear: a count, amount or level she gave vaguely ('a few modules', 'around 40-50'), or a price "
-    "in a currency other than 'currency', becomes one item instead of a value: its field ({unclear}), "
-    "one short question, and 2-4 options, each a short label and its value "
-    "(a number like '3', an amount like '45', 'free', or beginners | some | advanced). Leave that field "
-    "itself empty."
+    "else ''."
 )
 
 
 @cache
 def system_for(kind: str) -> str:
-    """The kind's system prompt: the shared rules for its noun and unclear
-    fields, then its own field rules. Built once per kind."""
+    """The kind's system prompt: the shared rules for its noun, then its own
+    field rules. Built once per kind."""
     adapter = kinds.get(kind)
-    *head, last = adapter.UNCLEAR_FIELDS
-    shared = SHARED_RULES.replace("{noun}", adapter.NOUN).replace(
-        "{unclear}", f"{', '.join(head)} or {last}" if head else last
-    )
+    shared = SHARED_RULES.replace("{noun}", adapter.NOUN)
     return f"{shared}\n{adapter.RULES}" if adapter.RULES else shared
 
 
@@ -101,9 +95,12 @@ def read(
     cover_step: bool = False,
 ) -> Found:
     """The model's reading of her words, into the kind's own fields. Raises core_ai.AiError."""
+    from apps.core.copilot.engine import _tenant_zone
+
     from . import outline
 
     adapter = kinds.get(kind)
+    today = timezone.now().astimezone(_tenant_zone(tenant)).date()
     user = json.dumps(
         {
             "text": text,
@@ -111,6 +108,7 @@ def read(
             "outline_exists": outline_exists,
             "cover_step": cover_step,
             "currency": currency,
+            "today": f"{today:%A} {today.isoformat()}",  # "next Tuesday" is her calendar
             **outline.site(tenant, course_id),
         },
         ensure_ascii=False,

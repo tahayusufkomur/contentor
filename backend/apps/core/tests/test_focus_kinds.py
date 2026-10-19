@@ -56,6 +56,7 @@ ADAPTER = (
     "announce_facts",
     "DRAFT_SLOT",
     "SETUP_TOPIC",
+    "start_draft",
 )
 STUB = "apps.core.tests.focus_stub_kind"
 SCHEMA = "shared_test"

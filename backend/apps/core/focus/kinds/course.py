@@ -145,12 +145,18 @@ class CourseFound(analysis.Found):
 FOUND = CourseFound
 # Appended to the shared rules in the analysis prompt (apps.core.focus.analysis.system_for).
 RULES = (
+    "- topic: what her students will learn, short, in her words.\n"
     "- level: 'beginners' (complete beginners), 'some' (some experience) or 'advanced' when it "
     "matches; otherwise who it is for, in her words.\n"
     "- modules: how many modules. lessons: how many lessons per module. total: how many lessons in "
     "all, only when she gave a total instead of a number per module.\n"
     "- named: the module and lesson titles she wrote, word for word and in her order. Lessons she "
-    "named without a module go in one module with an empty title."
+    "named without a module go in one module with an empty title.\n"
+    "- unclear: a count, amount or level she gave vaguely ('a few modules', 'around 40-50'), or a price "
+    "in a currency other than 'currency', becomes one item instead of a value: its field (modules, "
+    "lessons, price or level), one short question, and 2-4 options, each a short label and its value "
+    "(a number like '3', an amount like '45', 'free', or beginners | some | advanced). Leave that field "
+    "itself empty."
 )
 UNCLEAR_FIELDS = ("modules", "lessons", "price", "level")
 
@@ -160,6 +166,13 @@ def create_draft(actor, title: str, answers: dict) -> int | None:
     from apps.core.copilot import content
 
     return content.create_course(actor, {"title": title}, cover=False)["id"]
+
+
+def start_draft(creation, instruction: str = ""):
+    """The outline job: what the review step shows (apps.core.focus.outline)."""
+    from .. import outline
+
+    return outline.start(creation, instruction=instruction)
 
 
 def record(record_id):

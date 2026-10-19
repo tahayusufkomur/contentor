@@ -48,9 +48,13 @@ def focus_root(request):
             return Response({"enabled": False, "kinds": [], "first": {}, "open": []})
         open_ = []
         for creation in FocusCreation.objects.filter(actor=request.user, mode="focus", status="active"):
-            record = flow.state(creation)["record"]  # closes one whose record is gone
-            if record is not None:
-                open_.append({"id": creation.id, "kind": creation.kind, "record": record})
+            body = flow.state(creation)  # closes one whose record is gone
+            if body["record"] is not None:
+                open_.append({"id": creation.id, "kind": creation.kind, "record": body["record"]})
+            elif body["status"] == "active":  # no record yet (G10): her working title, so Continue finds it
+                open_.append(
+                    {"id": creation.id, "kind": creation.kind, "record": None, "title": flow.draft_title(creation)}
+                )
         on = kinds.enabled()
         first = {kind: flow.question(kind, kinds.get(kind).RECIPE.questions[0].id) for kind in on}
         return Response({"enabled": True, "kinds": on, "first": first, "open": open_})

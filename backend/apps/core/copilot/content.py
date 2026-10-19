@@ -106,7 +106,8 @@ def event_admin_url(kind, event_id):
     return f"/admin/live?tab={EVENT_KINDS[kind][2]}&event={event_id}&kind={kind}"
 
 
-def create_event(user, kind, params):
+def create_event(user, kind, params, *, cover=True):
+    """``cover=False``: the caller gives the cover later (focus mode's cover step)."""
     from apps.live import serializers
 
     kind = event_kind(kind)
@@ -114,7 +115,8 @@ def create_event(user, kind, params):
     if not serializer.is_valid():
         _fail(serializer.errors)
     event = serializer.save(instructor=user)
-    _give_cover(event)
+    if cover:
+        _give_cover(event)
     return {
         "kind": "create_event",
         "id": event.id,
