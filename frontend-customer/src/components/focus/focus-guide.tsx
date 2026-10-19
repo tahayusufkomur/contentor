@@ -336,7 +336,7 @@ export function FocusGuide() {
             key={question.field}
             question={question}
             sending={sending}
-            showRest={!["clarify", "followup"].includes(question.field)}
+            showRest={question.field !== "clarify"}
             onSend={send}
           />
         ))}

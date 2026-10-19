@@ -567,15 +567,16 @@ def followup_allowed(creation, slot: str) -> bool:
 
 
 def after_followup(creation) -> None:
-    """A follow-up job ended, or she answered one: the flow goes on. A job that
-    asked nothing settles its slot; before the outline, the outline (or a second
-    follow-up) comes next. Call under the creation's lock; the caller saves."""
+    """A follow-up job ended (it wrote one, found none needed, failed or was
+    stopped): the flow goes on. A job that asked nothing settles its slot;
+    before the outline, the outline comes next. Call under the creation's lock
+    while she waits on the job; the caller saves."""
     brief = dict(creation.brief or {})
-    thinking = brief.pop("thinking", None)
-    if thinking and not brief.get("followup"):
+    thinking = brief.pop("thinking")
+    if not brief.get("followup"):
         brief["settled"] = [*(brief.get("settled") or []), thinking["slot"]]
     creation.brief = brief
-    if not brief.get("followup"):
+    if not brief.get("followup") and thinking["slot"] == "outline":  # a later one never touches the outline
         _next_draft(creation)
 
 
@@ -602,8 +603,24 @@ def _followup_answered(creation, value, words, delegate, rest) -> bool:
     _chat_append(creation, [{"role": "assistant", "text": asked["question"]}, {"role": "coach", "text": label}])
     if rest:
         _delegate_rest(creation)
-    after_followup(creation)
+    if asked["slot"] == "outline":
+        _next_draft(creation)  # a second follow-up when allowed, else the outline
+    elif label != "You decide":
+        _redraw_covers(creation)
     return True
+
+
+def _redraw_covers(creation) -> None:
+    """Her answer to the Designer's question shapes the cover step: the round
+    drafted ahead (before it was asked) gives way to a fresh round that reads
+    it, unless the cover is already answered. Her photo and query stay."""
+    from apps.core.copilot import runs
+
+    if "cover" in creation.answers:
+        return
+    if jobs.status(creation, "covers") == "building":
+        runs.stop(jobs.run_id(creation, "covers"))
+    covers.start(creation, ahead=False)
 
 
 def _settle_followup(creation):
@@ -847,6 +864,7 @@ def _next_draft(creation) -> None:
     questions = _before_outline(RECIPES[creation.kind])
     if (
         creation.outline_run_id is None
+        and not (creation.drafted or {}).get("modules")  # its run pruned: still written
         and not any(brief.get(key) for key in ("clarify", "followup", "thinking"))
         and all(q.id in creation.answers for q in questions)
     ):

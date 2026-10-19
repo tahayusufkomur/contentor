@@ -77,6 +77,7 @@ def carry_out(tenant, run_id) -> None:
             "level": answers.get("level", ""),
             "topic": answers.get("topic", ""),
             "notes": brief.get("notes", ""),
+            "followups": brief.get("followups", []),
             "lessons": lessons,
         }
         try:

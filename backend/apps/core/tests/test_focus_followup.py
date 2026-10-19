@@ -15,7 +15,7 @@ from apps.accounts.models import User
 from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import runs
-from apps.core.focus import flow, followup, jobs, outline
+from apps.core.focus import analysis, covers, flow, followup, jobs, outline
 from apps.courses.models import Course
 from apps.tenant_config.models import CopilotRun
 
@@ -173,6 +173,90 @@ def test_a_later_follow_up_comes_between_the_review_and_the_cover(owner, outline
     assert flow.current_field(creation) == "cover"
     assert outline_start.call_count == 1  # never a redraft
     assert creation.brief["followups"][-1]["slot"] == "later"
+
+
+def _reviewing(owner):
+    """No follow-up before the outline; the outline started, at its review."""
+    creation = _asked(owner)
+    with _model(NONE):
+        return _run(creation)
+
+
+LATER = followup.FollowUp(needed=True, question="Calm or energetic?", options=["Calm", "Energetic"])
+
+
+def test_a_typed_answer_that_settles_the_rest_gets_its_follow_up_after_the_reading(owner, outline_start):
+    found = analysis.Analysis(topic="desk yoga", level="beginners", modules=4, lessons=3)
+    with _model(found, WHERE):
+        creation = flow.start(owner, "course", text="Desk yoga for complete beginners, 4 modules of 3 lessons")
+        jobs.execute(SCHEMA, creation.runs["analysis"])
+        creation.refresh_from_db()
+        assert "followup" in creation.runs and outline_start.call_count == 0
+        creation = _run(creation)
+    assert flow.current_field(creation) == "followup"
+
+
+def test_a_failed_or_stopped_later_follow_up_moves_on_to_the_cover(owner, outline_start):
+    creation = flow.answer(_reviewing(owner), "outline_review", value="ok")
+    with _model(side_effect=core_ai.AiError("down")):
+        creation = _run(creation)
+    assert flow.current_field(creation) == "cover"
+
+    other = flow.answer(_reviewing(owner), "outline_review", value="ok")
+    runs.stop(other.runs["followup"])
+    assert flow.state(other)["question"]["field"] == "cover"
+    assert outline_start.call_count == 2  # one outline each, never a second
+
+
+def test_a_pruned_outline_run_is_never_drafted_again(owner, outline_start):
+    creation = _reviewing(owner)
+    CopilotRun.objects.filter(pk=creation.outline_run_id).delete()  # pruned after 14 days
+    creation.refresh_from_db()
+    assert creation.outline_run_id is None
+    creation.drafted = {"modules": [{"id": 1}]}
+    creation.save()
+    creation = flow.answer(creation, "outline_review", value="ok")
+    with _model(NONE):
+        creation = _run(creation)
+    assert flow.current_field(creation) == "cover"
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
+        creation = flow.answer(creation, "cover", text="hands on a keyboard")  # read at once: apply()
+    assert creation.covers["query"] == "hands on a keyboard"
+    assert outline_start.call_count == 1
+
+
+def _at_later(owner):
+    """At the Designer's follow-up, with a round of covers drafted ahead."""
+    creation = _reviewing(owner)
+    ahead = covers.start(creation, ahead=True)
+    creation = flow.answer(creation, "outline_review", value="ok")
+    with _model(LATER):
+        creation = _run(creation)
+    assert flow.current_field(creation) == "followup"
+    return creation, ahead
+
+
+def test_a_later_answer_draws_a_fresh_cover_round_that_reads_it(owner, outline_start):
+    creation, ahead = _at_later(owner)
+    creation = flow.answer(creation, "followup", value="Calm")
+    ahead.refresh_from_db()
+    assert ahead.status == "stopped"
+    fresh = CopilotRun.objects.get(pk=creation.runs["covers"])
+    assert fresh.pk != ahead.pk and fresh.request["ahead"] is False
+    plan = covers.CoverPlan(photo_query="desk", styles=[])
+    with mock.patch("apps.core.focus.covers.core_ai.structured", return_value=(plan, Decimal("0"), "x")) as model:
+        covers._plan(connection.tenant, creation, Course.objects.get(pk=creation.record_id), [], "contentor:copilot")
+    turn = json.loads(model.call_args.kwargs["user"])
+    assert turn["followups"][-1] == {"question": "Calm or energetic?", "answer": "Calm", "slot": "later"}
+
+
+def test_you_decide_at_a_later_follow_up_keeps_the_round_drafted_ahead(owner, outline_start):
+    creation, ahead = _at_later(owner)
+    creation = flow.answer(creation, "followup", delegate=True)
+    assert creation.runs["covers"] == ahead.pk
+    ahead.refresh_from_db()
+    assert ahead.status == "queued"
+    assert flow.current_field(creation) == "cover"
 
 
 def test_just_draft_it_skips_the_follow_ups(owner, outline_start):

@@ -122,6 +122,15 @@ def test_nothing_runs_before_she_confirms(owner, at_review):
     assert flow.state(at_review)["descriptions"] is None
 
 
+def test_her_follow_up_answers_reach_the_descriptions(owner, at_review, texts):
+    asked = [{"question": "Where do your students practise?", "answer": "Office", "slot": "outline"}]
+    at_review.brief = {**at_review.brief, "followups": asked}
+    at_review.save()
+    creation, run_id = _confirm(at_review)
+    jobs.execute(SCHEMA, run_id)
+    assert texts.calls[0]["followups"] == asked
+
+
 def test_each_lesson_gets_its_description_marked_as_drafted(owner, at_review, texts):
     creation, run_id = _confirm(at_review)
     jobs.execute(SCHEMA, run_id)

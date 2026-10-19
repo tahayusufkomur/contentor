@@ -614,7 +614,7 @@ test("a follow-up is written while she waits, then one tap answers it", async ({
   await answerReadingTopic(page);
   await expect(guide(page).getByText("Thinking about your course…")).toBeVisible();
   await expect(guide(page).getByText("Where do your students practise?")).toBeVisible();
-  await expect(guide(page).getByRole("button", { name: "Just draft it" })).toHaveCount(0);
+  await expect(guide(page).getByRole("button", { name: "Just draft it" })).toBeVisible();
   await guide(page).getByRole("button", { name: "Office" }).click();
   await expect(guide(page).getByRole("button", { name: "Looks good, continue" })).toBeVisible();
   expect(sent.filter((s) => s.field === "followup")).toEqual([
