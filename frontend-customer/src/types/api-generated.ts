@@ -20,6 +20,32 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/access/{kind}/{id}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description GET an item's ways in and the choices; PUT ``{"ways": {...}}`` to change them.
+     *
+     *     ``GET .../<kind>/0/?choices=1`` answers the same for an item that is not created yet.
+     */
+    get: operations["v1_admin_access_retrieve"];
+    /**
+     * @description GET an item's ways in and the choices; PUT ``{"ways": {...}}`` to change them.
+     *
+     *     ``GET .../<kind>/0/?choices=1`` answers the same for an item that is not created yet.
+     */
+    put: operations["v1_admin_access_update"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/assistant/config/": {
     parameters: {
       query?: never;
@@ -826,6 +852,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/focus/{creation_id}/announce/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description Marketing's draft: ``{"schedule": bool}`` (focus mode ends) or ``{"retry": true}``. */
+    post: operations["v1_admin_focus_announce_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/focus/{creation_id}/answer/": {
     parameters: {
       query?: never;
@@ -836,6 +879,59 @@ export interface paths {
     get?: never;
     put?: never;
     post: operations["v1_admin_focus_answer_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/focus/{creation_id}/copy/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description Try again after the copy job failed; 404 for a kind it does not draft. */
+    post: operations["v1_admin_focus_copy_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/focus/{creation_id}/cover/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description One of the cover step's taps (photo, keep, more, later, edit). Each is
+     *     refused, with the state unchanged, unless the cover is the question.
+     */
+    post: operations["v1_admin_focus_cover_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/focus/{creation_id}/descriptions/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_admin_focus_descriptions_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -874,6 +970,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/focus/{creation_id}/photos/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_admin_focus_photos_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/focus/form-timing/": {
     parameters: {
       query?: never;
@@ -884,8 +996,8 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * @description The plain form's stamp: her active time from "New course" to its create
-     *     click, for the comparison in focus_timing. One stamp per course.
+     * @description The plain form's stamp: her active time from "New <kind>" to its create
+     *     click, for the comparison in focus_timing. One stamp per record.
      */
     post: operations["v1_admin_focus_form_timing_create"];
     delete?: never;
@@ -9582,9 +9694,9 @@ export interface components {
       pricing_type?: components["schemas"]["PricingTypeEnum"];
       /** Format: decimal */
       price?: string;
-      is_published?: boolean;
       order?: number;
       readonly slug: string;
+      readonly is_published: boolean;
       /** Format: date-time */
       readonly created_at: string;
     };
@@ -10280,9 +10392,9 @@ export interface components {
       pricing_type?: components["schemas"]["PricingTypeEnum"];
       /** Format: decimal */
       price?: string;
-      is_published?: boolean;
       order?: number;
       readonly slug?: string;
+      readonly is_published?: boolean;
       /** Format: date-time */
       readonly created_at?: string;
     };
@@ -10961,6 +11073,48 @@ export interface operations {
       query?: never;
       header?: never;
       path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_access_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+        kind: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_access_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+        kind: string;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -12217,7 +12371,87 @@ export interface operations {
       };
     };
   };
+  v1_admin_focus_announce_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        creation_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_admin_focus_answer_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        creation_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_focus_copy_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        creation_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_focus_cover_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        creation_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_focus_descriptions_create: {
     parameters: {
       query?: never;
       header?: never;
@@ -12258,6 +12492,26 @@ export interface operations {
     };
   };
   v1_admin_focus_leave_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        creation_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_focus_photos_retrieve: {
     parameters: {
       query?: never;
       header?: never;
