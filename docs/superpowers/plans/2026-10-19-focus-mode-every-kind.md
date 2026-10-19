@@ -162,7 +162,17 @@ No cover, no price, no announcement.
 - Frontend conventions (root CLAUDE.md, enforced by `make lint`): `<Button loading>`, `<Spinner>`, `useAsyncAction`, `<NavLink>`/`useNavigate()`, sonner toasts, `motion-safe:` motion, a `loading.tsx` for every new route.
 - After any serializer change, run `npm run gen:api` in `frontend-customer` and review the `src/types/api-generated.ts` diff.
 - Shared checkout: format and commit only your own files and hunks (memory `reference-committing-only-my-hunks-in-the-shared-checkout`). Pre-commit must be clean. Run one heavy job at a time.
-- Verify each task with its focused tests: `docker compose exec django pytest <file> -q` and `cd frontend-customer && npx vitest run <file>`. Run `make test-changed` at the end of each stage, and `make e2e-spec SPEC=<that stage's spec>` plus `SPEC=33-focus-course` when shared focus code changed. Every new e2e spec needs its `e2e/impact-map.json` entry (the `make lint` self-test fails without it).
+- Verify each task with its focused tests: `docker compose exec django pytest <file> -q` and `cd frontend-customer && npx vitest run <file>`. Run `make test-changed` at the end of each stage.
+- E2e (rules from the owner, 2026-10-19, commits 34e13f27 and 509504bd):
+  - While iterating, run only the task's own spec: `make e2e-spec SPEC=<spec>`.
+  - Run `make e2e-changed BASE=<the stage's first commit>` once per stage, in its check task. Preview it with `PLAN=1`.
+  - Before any e2e run, check `pgrep -fl 'playwright test'`. If another session's run is going, wait: the runs share the demo tenant and the Docker VM.
+  - Never start a full `make e2e`, and never re-run a spec that passed just to confirm it.
+- Every new e2e spec needs its `e2e/impact-map.json` entries (the `make lint` self-test fails without them). Keys match by longest prefix (`scripts/select_tests.py`). Each kind's spec task adds:
+  - `"core/focus/kinds/<kind>.py": ["<its spec>"]` to the backend map;
+  - its pages to the frontend map;
+  - its spec to the shared `core/focus`, `src/components/focus` and `src/lib/focus` entries, because shared focus code can break every kind.
+  `core/copilot` still selects every spec on purpose.
 - GitNexus calibration: run `impact` before editing `content.create_event`, `expand_class_series`, `_ScheduledOnCreateMixin`, `designs.TARGET_KINDS` / `designs._model`, `get_access_info`, `setup_items._has_paid_content`, `useLiveRecord`, `ActionCard` and every `flow.py` function Stage A moves. Each is shared beyond one kind.
 - After every migration, the test DB needs `make test-fresh` once (memory `reference-dirty-test-db-seed-failures`). Restart `celery-agents` after adding a job handler (memory `reference-dev-stack-staleness-traps`).
 
@@ -305,12 +315,12 @@ Tests: `backend/apps/core/tests/test_focus_{kinds,copy,event,message,download,me
   - `focus-kinds.test.ts`: `"every kind has its routes"` and `"a card kind maps to at most one focus kind"`.
   - Backend `test_form_timing_takes_the_kind`.
 - [ ] **Step 2: Run them.** They should fail. **Step 3: Implement.**
-- [ ] **Step 4: Run** `npx vitest run src/lib/__tests__/focus-kinds.test.ts`, `make e2e-spec SPEC=33-focus-course` and `make e2e-spec SPEC=29-copilot`. All should pass.
+- [ ] **Step 4: Run** `npx vitest run src/lib/__tests__/focus-kinds.test.ts` and `make e2e-spec SPEC=33-focus-course`. Both should pass. `29-copilot` runs in Task A5's `make e2e-changed`.
 - [ ] **Step 5: Commit.** `refactor(focus): the guide, the bar and the entry points work for any kind`
 
 ### Task A5: Stage A check and deploy
 
-- [ ] Run `make test-changed` and `make test-frontend` (one at a time) and `make lint`.
+- [ ] Run `make test-changed`, `make test-frontend`, `make lint` and `make e2e-changed BASE=<Task A1's commit>`, one at a time.
 - [ ] Walk the course in focus mode once on the dev hub, desktop and phone. It must look and behave exactly as before.
 - [ ] Typecheck the committed tree fresh (memory `reference-typecheck-the-committed-tree`), then `make deploy`.
 - [ ] Verify on prod: health, then `GET /api/v1/admin/focus/` gives `kinds: ["course"]`.
@@ -360,7 +370,7 @@ Tests: `backend/apps/core/tests/test_focus_{kinds,copy,event,message,download,me
   - `test_publish_series_from_the_form_publishes_every_held_session`
   - `test_the_assistant_editing_a_held_draft_keeps_it_a_draft`
 - [ ] **Step 2: Run them.** They should fail. **Step 3: Implement.**
-- [ ] **Step 4: Run** `docker compose exec django pytest apps/live apps/notifications -q`, then `make e2e-spec SPEC=04-live-class` and `SPEC=03-calendar`. All should pass.
+- [ ] **Step 4: Run** `docker compose exec django pytest apps/live apps/notifications -q`. It should pass. The live specs run in Task B6's `make e2e-changed`.
 - [ ] **Step 5: Commit.** `fix(live): a held class stays a draft until she publishes it, and students never see it`
 
 ### Task B3: The event adapter
@@ -425,7 +435,7 @@ Tests: `backend/apps/core/tests/test_focus_{kinds,copy,event,message,download,me
 **Files:**
 - Create: `frontend-customer/src/components/focus/schedule-question.tsx`
 - Modify: `frontend-customer/src/app/admin/live/page.tsx` (`?new=1` opens `<FocusStart kind="event">` when enabled; `?form=1` the plain form; `DescribeIt` hidden when enabled), `frontend-customer/src/components/admin/live/event-form.tsx` (a `focus` prop as `CourseForm` has: live title and description through `useLiveRecord`, the field being written read-only, "All details" for filters, tags, capacity and auto-record, the schedule summary, `CoverStep` in the cover slot once the record exists), `frontend-customer/src/components/focus/focus-guide.tsx` (question kinds `schedule` and `text` with a starter), `frontend-customer/src/lib/focus/kinds.ts` (the `event` row, `card: "create_event"`), `frontend-customer/messages/en/admin.json` (`focus.kinds.event.*`)
-- Test: `e2e/specs/34-focus-event.spec.ts` (new) + `e2e/impact-map.json` (`src/components/admin/live` and `src/app/admin/live` gain `34-focus-event`)
+- Test: `e2e/specs/34-focus-event.spec.ts` (new) + `e2e/impact-map.json` (the Global Constraints entries; `src/components/admin/live` and `src/app/admin/live` gain `34-focus-event`)
 
 **Interfaces:**
 - Consumes: B3's `state()` (`record.path`, `question.kind`), B4's `copy` run, stage 1's `useLiveRecord(record, runId)`.
@@ -439,13 +449,13 @@ Tests: `backend/apps/core/tests/test_focus_{kinds,copy,event,message,download,me
   - `"keep as a draft holds the series and the form publishes it later"`
   - `"fill it in myself opens today's form"`
 - [ ] **Step 2: Run them.** They should fail. **Step 3: Implement.**
-- [ ] **Step 4: Run** `make e2e-spec SPEC=34-focus-event`, `SPEC=04-live-class` and `SPEC=33-focus-course`. All should pass.
+- [ ] **Step 4: Run** `make e2e-spec SPEC=34-focus-event`. It should pass.
 - [ ] **Step 5: Commit.** `feat(focus): make a class or event one question at a time`
 
 ### Task B6: Stage B check, switch on, deploy
 
 - [ ] Add `event` to the `FOCUS_KINDS` default and document it in `.env.prod.example`.
-- [ ] Run `make test-changed`, then `make e2e-changed`, one at a time.
+- [ ] Run `make test-changed`, then `make e2e-changed BASE=<Task B1's commit>`, one at a time.
 - [ ] Do real dev-hub runs, checked by eye, on desktop and phone, light and dark: a rich first answer (weekly, in person); a bare first answer; "Just draft it"; a model-down run (every step must still have a way forward).
 - [ ] Typecheck the committed tree fresh, then `make deploy`. On prod: health, `kinds` includes `event`, and one class kept as a draft on the test tenant (hidden from its student calendar).
 - [ ] Update memory `project-focus-mode` (stage B shipped, commits).
@@ -504,7 +514,7 @@ Tests: `backend/apps/core/tests/test_focus_{kinds,copy,event,message,download,me
   - `"students of one course: the tile shows how many"`
   - `"send is not offered with nobody to receive it"`
   - `"the assistant's draft_announcement card offers Start it"`
-- [ ] **Step 2: Run them.** They should fail. **Step 3: Implement.** **Step 4: Run** `make e2e-spec SPEC=35-focus-message` and `SPEC=06-announcements`. Both should pass.
+- [ ] **Step 2: Run them.** They should fail. **Step 3: Implement.** **Step 4: Run** `make e2e-spec SPEC=35-focus-message`. It should pass.
 - [ ] **Step 5: Commit.** `feat(focus): write a message to her students one question at a time`
 
 ### Task C4: Stage C check, switch on, deploy
@@ -542,7 +552,7 @@ Same shape as Task B6, with `message`. On prod, keep the test message as a draft
 **Interfaces:**
 - Produces: `Design.target_kind="download"`, `target_key=str(pk)`. `keep` writes `thumbnail`. `restore_cover` works as for the course.
 - [ ] **Step 1: Write the failing tests:** `test_a_download_cover_is_kept_and_undone` and `test_a_deleted_download_refuses_a_draft`.
-- [ ] **Step 2: Run them.** They should fail. **Step 3: Implement.** **Step 4: Run** `make test-app APP=media` and `make e2e-spec SPEC=32-photo-studio`. Both should pass.
+- [ ] **Step 2: Run them.** They should fail. **Step 3: Implement.** **Step 4: Run** `make test-app APP=media`. It should pass. `32-photo-studio` runs in Task D5's `make e2e-changed`.
 - [ ] **Step 5: Commit.** `feat(designer): covers for downloads`
 
 ### Task D3: The download page
@@ -746,13 +756,12 @@ Same shape as Task B6, with `bundle`. On prod, keep the test bundle as a draft.
   - `"a post from a topic idea, with a photo, published"`
   - `"an empty post cannot be published"`
   - `"fill it in myself makes today's untitled draft"`
-- [ ] **Step 2: Run them.** They should fail. **Step 3: Implement.** **Step 4: Run** `make e2e-spec SPEC=39-focus-post` and `SPEC=33-focus-course`. Both should pass.
+- [ ] **Step 2: Run them.** They should fail. **Step 3: Implement.** **Step 4: Run** `make e2e-spec SPEC=39-focus-post`. It should pass.
 - [ ] **Step 5: Commit.** `feat(focus): write a blog post one question at a time`
 
 ### Task G5: Stage G check, switch on, deploy, and close the plan
 
 - [ ] Do Task B6's steps, with `post`.
-- [ ] Then run every focus spec once (`33`–`39`), one at a time.
 - [ ] Update memory `project-focus-mode`: every kind is on, with the commits.
 - [ ] Delete this plan file in the last commit, as the course plans were deleted.
 
