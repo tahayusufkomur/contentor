@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { NavLink } from "@/components/ui/nav-link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { CoverArt } from "@/components/covers/cover-art";
 import { clientFetch } from "@/lib/api-client";
 import { courseItem } from "@/lib/covers/items";
+import { stateLine } from "@/lib/access/terms";
 import { BookOpen, GraduationCap, Play } from "lucide-react";
 import type { Course } from "@/types/course";
 
@@ -58,10 +59,10 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold tracking-tight">My Courses</h1>
         <div className="ml-auto flex items-center gap-1">
           <Button asChild variant="ghost" size="sm">
-            <Link href="/orders">Orders</Link>
+            <NavLink href="/orders">Orders</NavLink>
           </Button>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/subscriptions">My subscriptions</Link>
+            <NavLink href="/subscriptions">My subscriptions</NavLink>
           </Button>
         </div>
       </div>
@@ -120,6 +121,11 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">
                     {course.instructor_name}
                   </p>
+                  {course.access_info && stateLine(course.access_info) && (
+                    <p className="text-xs text-muted-foreground">
+                      {stateLine(course.access_info)}
+                    </p>
+                  )}
 
                   {/* Progress bar */}
                   <div className="space-y-1">
@@ -136,10 +142,10 @@ export default function DashboardPage() {
                   </div>
 
                   <Button asChild size="sm" className="w-full gap-2">
-                    <Link href={`/learn/${course.slug}`}>
+                    <NavLink href={`/learn/${course.slug}`}>
                       <Play className="h-3.5 w-3.5" />
                       Continue Learning
-                    </Link>
+                    </NavLink>
                   </Button>
                 </CardContent>
               </Card>

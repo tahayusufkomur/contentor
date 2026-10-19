@@ -1,4 +1,5 @@
 import type { AccessInfo } from "./billing";
+import type { Window } from "@/lib/access/ways";
 import type { CoverDesign } from "./design";
 
 export interface Lesson {
@@ -79,6 +80,7 @@ export interface Course {
 export interface UnlockOption {
   price: string;
   currency: string;
+  window?: Window | null;
 }
 
 export interface UnlockBundleOption {
@@ -94,12 +96,15 @@ export interface UnlockPlanOption {
   price: string;
   currency: string;
   billing_interval_months?: number;
+  window?: Window | null;
 }
 
 export interface UnlockOptions {
   purchase?: UnlockOption;
   bundles?: UnlockBundleOption[];
   plans?: UnlockPlanOption[];
+  /** Present only when free comes with a window. */
+  free?: { window: Window | null };
 }
 
 export interface CourseDetail extends Course {

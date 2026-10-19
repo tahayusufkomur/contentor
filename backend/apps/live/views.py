@@ -547,6 +547,7 @@ def calendar_event_detail(request, event_type, pk):
     info = ContentAccessService().get_access_info(request.user, obj)
 
     event["access_info"] = asdict(info)
+    event["unlock_options"] = ContentAccessService().get_unlock_options(obj)
     # The street address is for those who can attend; the place name stays public.
     event["address"] = getattr(obj, "address", "") if info.has_access else ""
 

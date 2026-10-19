@@ -1,16 +1,23 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { clientFetch } from "@/lib/api-client";
+import { NavLink } from "@/components/ui/nav-link";
 import { Play, ShoppingCart, Zap, Package } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "@/types/api";
 import { addToCart } from "@/lib/cart";
 import type { CourseDetail, UnlockPlanOption } from "@/types/course";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
+import { formatMoney } from "@/lib/format";
+import {
+  freeTerms,
+  planTerms,
+  purchaseTerms,
+  stateLine,
+} from "@/lib/access/terms";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 
@@ -22,6 +29,11 @@ export function EnrollButton({ course }: EnrollButtonProps) {
   const navigate = useNavigate();
 
   const opts = course.unlock_options;
+  const info = course.access_info;
+  const state = info ? stateLine(info) : "";
+  const stateNote = state && (
+    <p className="text-center text-xs text-muted-foreground">{state}</p>
+  );
 
   const { run: handleEnroll, loading: enrolling } = useAsyncAction(async () => {
     await clientFetch(`/api/v1/courses/${course.slug}/enroll/`, {
@@ -50,33 +62,39 @@ export function EnrollButton({ course }: EnrollButtonProps) {
   // Already enrolled
   if (course.is_enrolled) {
     return (
-      <Button
-        className="w-full gap-2"
-        onClick={() => navigate(`/learn/${course.slug}`)}
-      >
-        <Play className="h-4 w-4" />
-        Continue Learning
-      </Button>
+      <div className="flex flex-col gap-2">
+        <Button
+          className="w-full gap-2"
+          onClick={() => navigate(`/learn/${course.slug}`)}
+        >
+          <Play className="h-4 w-4" />
+          Continue Learning
+        </Button>
+        {stateNote}
+      </div>
     );
   }
 
   // Has access but not enrolled yet
   if (course.access_info?.has_access) {
     return (
-      <Button
-        className="w-full gap-2"
-        onClick={handleEnroll}
-        loading={enrolling}
-        loadingText="Starting…"
-      >
-        <Play className="h-4 w-4" />
-        Start Learning
-      </Button>
+      <div className="flex flex-col gap-2">
+        <Button
+          className="w-full gap-2"
+          onClick={handleEnroll}
+          loading={enrolling}
+          loadingText="Starting…"
+        >
+          <Play className="h-4 w-4" />
+          Start Learning
+        </Button>
+        {stateNote}
+      </div>
     );
   }
 
   // Free course
-  if (course.pricing_type === "free") {
+  if (course.pricing_type === "free" && !opts?.free) {
     return (
       <Button
         className="w-full gap-2"
@@ -90,22 +108,36 @@ export function EnrollButton({ course }: EnrollButtonProps) {
   }
 
   // No access — show all unlock options
-  const hasPurchase = !!opts?.purchase;
-  const hasBundles = !!opts?.bundles?.length;
-  const hasPlans = !!opts?.plans?.length;
+  // A member whose way opens later waits for it, but may still buy.
+  const waiting = !!info?.opens_at;
+  const hasPurchase =
+    !!opts?.purchase &&
+    (!waiting || !!info?.unlock_methods?.includes("purchase"));
+  const hasBundles = !waiting && !!opts?.bundles?.length;
+  const hasPlans = !waiting && !!opts?.plans?.length;
   const sectionCount = [hasPurchase, hasBundles, hasPlans].filter(
     Boolean,
   ).length;
 
   return (
     <div className="flex flex-col gap-3">
+      {stateNote}
+      {opts?.free && (
+        <p className="text-center text-sm font-medium">
+          {freeTerms(opts.free.window)}
+        </p>
+      )}
+
       {/* Direct purchase */}
       {hasPurchase && (
         <div className="flex flex-col gap-2">
           <Button className="w-full gap-2" onClick={handleBuyNow}>
             <ShoppingCart className="h-4 w-4" />
-            Buy Now — {opts.purchase!.price} {opts.purchase!.currency}
+            Buy for {formatMoney(opts.purchase!.price, opts.purchase!.currency)}
           </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            {purchaseTerms(opts.purchase!.window)}
+          </p>
           <Button
             className="w-full"
             variant="outline"
@@ -161,14 +193,14 @@ export function EnrollButton({ course }: EnrollButtonProps) {
               <PlanSubscribeButton key={plan.id} plan={plan} />
             ))}
             <Button variant="ghost" size="sm" className="w-full" asChild>
-              <Link href="/plans">View all plans</Link>
+              <NavLink href="/plans">View all plans</NavLink>
             </Button>
           </div>
         </>
       )}
 
       {/* Fallback if no options */}
-      {sectionCount === 0 && (
+      {sectionCount === 0 && !waiting && !opts?.free && (
         <Button className="w-full" disabled>
           Coming soon
         </Button>
@@ -206,15 +238,20 @@ function PlanSubscribeButton({ plan }: { plan: UnlockPlanOption }) {
   );
 
   return (
-    <Button
-      variant="outline"
-      className="w-full gap-2"
-      loading={subscribing}
-      onClick={handleSubscribe}
-    >
-      <Zap className="h-4 w-4" />
-      {plan.name} — {plan.price} {plan.currency}
-      {billingIntervalSuffix(plan.billing_interval_months)}
-    </Button>
+    <div className="flex flex-col gap-1">
+      <Button
+        variant="outline"
+        className="w-full gap-2"
+        loading={subscribing}
+        onClick={handleSubscribe}
+      >
+        <Zap className="h-4 w-4" />
+        {plan.name} — {plan.price} {plan.currency}
+        {billingIntervalSuffix(plan.billing_interval_months)}
+      </Button>
+      <p className="text-center text-xs text-muted-foreground">
+        {planTerms(plan.window)}
+      </p>
+    </div>
   );
 }

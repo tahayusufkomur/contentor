@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   Calendar,
   Clock,
@@ -15,7 +14,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { NavLink } from "@/components/ui/nav-link";
 import { cn } from "@/lib/utils";
+import { formatMoney } from "@/lib/format";
+import {
+  freeTerms,
+  planTerms,
+  purchaseTerms,
+  stateLine,
+} from "@/lib/access/terms";
 import { CoverArt } from "@/components/covers/cover-art";
 import { useTenant } from "@/hooks/use-tenant";
 import { eventItem } from "@/lib/covers/items";
@@ -176,6 +183,11 @@ export function EventDetailClient({
                 isEnded={isEnded}
                 isScheduled={isScheduled}
               />
+              {!isEnded && stateLine(access) && (
+                <p className="text-center text-xs text-muted-foreground">
+                  {stateLine(access)}
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -213,10 +225,10 @@ function EventAction({
     return (
       <div className="space-y-3">
         <Button asChild size="lg" className="w-full gap-2">
-          <Link href="/login">
+          <NavLink href="/login">
             <LogIn className="h-4 w-4" />
             Sign in to join
-          </Link>
+          </NavLink>
         </Button>
         <p className="text-center text-xs text-muted-foreground">
           {event.pricing_type === "free"
@@ -247,10 +259,10 @@ function EventAction({
           : `/live/${event.id}`;
       return (
         <Button asChild size="lg" className="w-full gap-2">
-          <Link href={joinHref}>
+          <NavLink href={joinHref}>
             <Video className="h-4 w-4" />
             Join Now
-          </Link>
+          </NavLink>
         </Button>
       );
     }
@@ -269,36 +281,65 @@ function EventAction({
 
   // Logged in but no access — show buy/subscribe options
   const unlockMethods = event.access_info.unlock_methods ?? [];
+  const opts = event.unlock_options;
+  // A member whose way opens later waits for it, but may still buy.
+  const waiting = !!event.access_info.opens_at;
 
   return (
     <div className="space-y-3">
+      {opts?.free && (
+        <p className="text-center text-sm font-medium">
+          {freeTerms(opts.free.window)}
+        </p>
+      )}
       {unlockMethods.includes("purchase") && (
-        <Button size="lg" className="w-full gap-2" asChild>
-          <Link href="/store">
-            <ShoppingCart className="h-4 w-4" />
-            Buy Access — {event.price} {event.access_info.currency || ""}
-          </Link>
-        </Button>
+        <>
+          <Button size="lg" className="w-full gap-2" asChild>
+            <NavLink href="/store">
+              <ShoppingCart className="h-4 w-4" />
+              Buy for{" "}
+              {formatMoney(
+                opts?.purchase?.price ?? event.price,
+                opts?.purchase?.currency ||
+                  event.access_info.currency ||
+                  undefined,
+              )}
+            </NavLink>
+          </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            {purchaseTerms(opts?.purchase?.window)}
+          </p>
+        </>
       )}
-      {unlockMethods.includes("subscribe") && (
-        <Button
-          size="lg"
-          className="w-full gap-2"
-          variant={unlockMethods.includes("purchase") ? "outline" : "default"}
-          asChild
-        >
-          <Link href="/plans">
-            <Zap className="h-4 w-4" />
-            Subscribe for Access
-          </Link>
-        </Button>
+      {!waiting && unlockMethods.includes("subscribe") && (
+        <>
+          <Button
+            size="lg"
+            className="w-full gap-2"
+            variant={unlockMethods.includes("purchase") ? "outline" : "default"}
+            asChild
+          >
+            <NavLink href="/plans">
+              <Zap className="h-4 w-4" />
+              Subscribe for Access
+            </NavLink>
+          </Button>
+          {opts?.plans?.map((plan) => (
+            <p
+              key={plan.id}
+              className="text-center text-xs text-muted-foreground"
+            >
+              {plan.name}: {planTerms(plan.window)}
+            </p>
+          ))}
+        </>
       )}
-      {unlockMethods.length === 0 && (
+      {!waiting && unlockMethods.length === 0 && (
         <Button size="lg" className="w-full gap-2" asChild>
-          <Link href="/plans">
+          <NavLink href="/plans">
             <Zap className="h-4 w-4" />
             Get Access
-          </Link>
+          </NavLink>
         </Button>
       )}
       <p className="text-center text-xs text-muted-foreground">

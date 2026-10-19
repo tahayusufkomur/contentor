@@ -1,5 +1,6 @@
 import type { AccessInfo } from "./billing";
 import type { CoverDesign } from "./design";
+import type { UnlockOptions } from "./course";
 
 export interface LiveClass {
   id: number;
@@ -125,6 +126,7 @@ export interface CalendarEvent {
 
 export interface CalendarEventDetail extends CalendarEvent {
   access_info: AccessInfo;
+  unlock_options: UnlockOptions;
   /** Street address of an in-person class; empty until the viewer has access. */
   address?: string;
 }

@@ -459,8 +459,12 @@ class AccessInfoSerializer(serializers.Serializer):
     currency = serializers.CharField(allow_null=True)
     access_reason = serializers.CharField(allow_null=True)
     unlock_methods = serializers.ListField(child=serializers.CharField(), allow_null=True)
+    access_ends_at = serializers.DateTimeField(allow_null=True)
+    opens_at = serializers.DateTimeField(allow_null=True)
 
 
 class CalendarEventDetailSerializer(CalendarEventSerializer):
     access_info = AccessInfoSerializer()
+    # Every way to unlock it, each with its window (ContentAccessService.get_unlock_options).
+    unlock_options = serializers.DictField()
     address = serializers.CharField(allow_blank=True, default="")

@@ -22,6 +22,8 @@ import pytest
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.billing.models import SubscriptionPlan
+from apps.billing.ways import set_ways
 from apps.live.models import LiveClass, LiveStream
 
 SHARED_DOMAIN = "shared-test.localhost"
@@ -536,3 +538,36 @@ def test_paid_event_price_uses_the_tenants_currency(tenant_ctx, owner):
     finally:
         Tenant.objects.filter(pk=connection.tenant.pk).update(billing_currency="USD")
         connection.tenant.billing_currency = "USD"
+
+
+@pytest.mark.django_db(transaction=True)
+def test_event_detail_offers_each_way_with_its_window(tenant_ctx, owner, student):
+    """The event page gets every way's window, and the viewer's own dates."""
+    plan = SubscriptionPlan.objects.create(name="Gold", price=Decimal("29.00"), currency="EUR")
+    event = LiveClass.objects.create(
+        title="Windowed Class", description="", instructor=owner, status="scheduled", pricing_type="free"
+    )
+    set_ways(
+        event,
+        {
+            "free": {"window": {"closes_on": "2099-12-31"}},
+            "buy": {"price": "25", "window": {"closes_after_days": 365}},
+            "plans": [{"plan_id": plan.pk, "window": {"opens_after_days": 30}}],
+        },
+    )
+    url = f"/api/v1/calendar/live_class/{event.pk}/"
+    body = make_client(student).get(url).json()
+    options = body["unlock_options"]
+    assert options["free"] == {"window": {"closes_on": "2099-12-31"}}
+    assert options["purchase"]["window"] == {"closes_after_days": 365}
+    assert options["plans"][0]["window"] == {"opens_after_days": 30}
+    assert body["access_info"]["has_access"] is True  # free until the close
+    assert body["access_info"]["access_ends_at"] is not None
+    assert body["access_info"]["opens_at"] is None
+
+    buy = {"price": "25", "window": None}
+    set_ways(event, {"free": {"window": {"opens_on": "2099-01-01"}}, "buy": buy, "plans": []})
+    info = make_client(student).get(url).json()["access_info"]
+    assert info["has_access"] is False
+    assert info["opens_at"] is not None
+    assert info["access_ends_at"] is None

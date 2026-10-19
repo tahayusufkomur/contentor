@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { stateLine } from "@/lib/access/terms";
 import type { AccessInfo } from "@/types/billing";
 
 interface PriceBadgeProps {
@@ -7,11 +8,19 @@ interface PriceBadgeProps {
   pricingType?: string;
 }
 
-export function PriceBadge({
-  accessInfo,
-  price,
-  pricingType,
-}: PriceBadgeProps) {
+export function PriceBadge(props: PriceBadgeProps) {
+  const badge = <PricePill {...props} />;
+  const state = props.accessInfo ? stateLine(props.accessInfo) : "";
+  if (!state) return badge;
+  return (
+    <span className="inline-flex flex-col items-start gap-1">
+      {badge}
+      <span className="text-xs text-muted-foreground">{state}</span>
+    </span>
+  );
+}
+
+function PricePill({ accessInfo, price, pricingType }: PriceBadgeProps) {
   if (accessInfo?.has_access && accessInfo.access_reason !== "free") {
     return <Badge variant="success">Owned</Badge>;
   }

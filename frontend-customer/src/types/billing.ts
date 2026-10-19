@@ -7,6 +7,10 @@ export interface AccessInfo {
   currency: string | null;
   access_reason: string | null;
   unlock_methods: string[] | null;
+  /** When the open way closes (or, with no access, when the last one closed). */
+  access_ends_at: string | null;
+  /** When the viewer's soonest way opens, while it is not open yet. */
+  opens_at: string | null;
 }
 
 export interface BundleItem {

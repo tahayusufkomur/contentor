@@ -56,14 +56,15 @@ def _decide(candidates, now):
     """candidates: (reason, start, end) in order of check. -> (reason, access_ends_at, opens_at).
 
     The way that opens it is the first open way that never ends, else the open way that ends last;
-    the reason and the end both come from that one way.
+    the reason and the end both come from that one way. With no way open, ``access_ends_at`` is when
+    the last way closed (None if none ever did).
     """
     open_now = [(r, e) for r, s, e in candidates if s <= now and (e is None or now <= e)]
     if open_now:
         reason, end = next(((r, e) for r, e in open_now if e is None), None) or max(open_now, key=lambda way: way[1])
         return reason, end, None
     ahead = [s for _, s, e in candidates if s > now and (e is None or e >= s)]
-    return None, None, min(ahead, default=None)
+    return None, max((e for _, _, e in candidates if e is not None and e < now), default=None), min(ahead, default=None)
 
 
 class ContentAccessService:
@@ -140,7 +141,13 @@ class ContentAccessService:
                 if pricing_type in ("paid", "subscription") and item.pk in plan_linked:
                     unlock_methods.append("subscribe")
                 result[item.pk] = AccessInfo(
-                    False, pricing_type, price, currency, unlock_methods=unlock_methods or None, opens_at=opens_at
+                    False,
+                    pricing_type,
+                    price,
+                    currency,
+                    unlock_methods=unlock_methods or None,
+                    access_ends_at=ends_at if authed else None,  # when it closed on them: "Your access ended on …"
+                    opens_at=opens_at,
                 )
         return result
 

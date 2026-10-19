@@ -9,13 +9,19 @@
 // Every check of what was saved reads GET /api/v1/admin/access/course/<id>/ too.
 
 import { test, expect, type BrowserContext } from "@playwright/test";
-import { coachContext, staffContext, TENANT } from "../helpers/auth";
+import {
+  coachContext,
+  staffContext,
+  studentContext,
+  TENANT,
+} from "../helpers/auth";
 import { manage } from "../helpers/compose";
 
 const STAMP = Date.now();
 const COURSE_TITLE = `E2E Access ${STAMP}`;
 const PLAN_NAME = `E2E Gold ${STAMP}`;
 const STAFF_EMAIL = "e2e-access-staff@example.com";
+const ENDED_MARK = `e2e-access-ended-${STAMP}`;
 
 const TENANT_SHELL =
   "from django_tenants.utils import tenant_context\n" +
@@ -107,7 +113,8 @@ test.afterAll(async () => {
   }
   inTenant(
     "from apps.accounts.models import User\n" +
-      "from apps.billing.models import SubscriptionPlan\n" +
+      "from apps.billing.models import Payment, SubscriptionPlan\n" +
+      `Payment.objects.filter(provider_payment_id='${ENDED_MARK}').delete()\n` +
       `SubscriptionPlan.objects.filter(name='${PLAN_NAME}').delete()\n` +
       (createdStaff
         ? `User.objects.filter(email='${STAFF_EMAIL}').delete()`
@@ -159,21 +166,60 @@ test("the owner sells the course once for a year and includes it in Gold after a
   await page.close();
 });
 
-// C1 adds the terms: the visitor paywall does not show them yet.
-test.fixme("a visitor is offered Buy for €49 with a year of access, and Gold after a month of membership", async ({
+test("a visitor is offered Buy for €49 with a year of access, and Gold after a month of membership", async ({
   browser,
 }) => {
+  // The price reads in the currency the tenant charges, whichever that is.
+  const { currency } = await ways();
+  const forty9 = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(49);
   const visitor = await browser.newContext();
   const page = await visitor.newPage();
   await page.goto(`${TENANT}/courses/${courseSlug}`);
 
-  await expect(page.getByText("Buy for €49")).toBeVisible();
+  await expect(page.getByText(`Buy for ${forty9}`)).toBeVisible();
   await expect(page.getByText("1 year of access")).toBeVisible();
   await expect(page.getByText(PLAN_NAME)).toBeVisible();
   await expect(
     page.getByText("Opens after 1 month of membership"),
   ).toBeVisible();
   await visitor.close();
+});
+
+test("a buyer whose year has run out is told their access ended, and may buy again", async ({
+  browser,
+}) => {
+  // The first seeded student bought it a year and a bit ago: the stamp closed 35 days back.
+  inTenant(
+    "from datetime import timedelta\n" +
+      "from decimal import Decimal\n" +
+      "from django.contrib.contenttypes.models import ContentType\n" +
+      "from django.utils import timezone\n" +
+      "from apps.accounts.models import User\n" +
+      "from apps.billing.models import Payment, PaymentItem\n" +
+      "from apps.courses.models import Course\n" +
+      "student = User.objects.filter(role='student').order_by('id').first()\n" +
+      `course = Course.objects.get(pk=${courseId})\n` +
+      "now = timezone.now()\n" +
+      "payment = Payment.objects.create(student=student, payment_type='one_time', status='completed', " +
+      "amount=Decimal('49.00'), platform_fee=Decimal('0.00'), submerchant_payout=Decimal('49.00'), " +
+      `currency='EUR', provider='bypass', provider_payment_id='${ENDED_MARK}')\n` +
+      "PaymentItem.objects.create(payment=payment, content_type=ContentType.objects.get_for_model(Course), " +
+      "object_id=course.pk, item_price=Decimal('49.00'), submerchant_payout=Decimal('49.00'), " +
+      "access_starts_at=now - timedelta(days=400), access_ends_at=now - timedelta(days=35), is_refunded=False)",
+  );
+  const student = await studentContext(browser);
+  const page = await student.newPage();
+  await page.goto(`${TENANT}/courses/${courseSlug}`);
+
+  await expect(
+    page.getByText(/Your access ended on \d{1,2} \w{3} \d{4}/),
+  ).toBeVisible();
+  await expect(page.getByText("Buy for", { exact: false })).toBeVisible();
+  await student.close();
 });
 
 test("Free for everyone covers the other ways, and keeps their settings", async () => {

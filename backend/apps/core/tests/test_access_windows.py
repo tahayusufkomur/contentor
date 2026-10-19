@@ -174,6 +174,14 @@ def test_a_purchase_ends_with_its_stamp(service, student, course):
     assert info.unlock_methods == ["purchase"]
 
 
+def test_a_buyer_whose_purchase_closed_sees_when_it_ended(service, student, course):
+    ended = NOW - timedelta(days=35)
+    buy(student, course, NOW - timedelta(days=400), ended)
+    with at(NOW):
+        assert service.get_access_info(student, course).access_ends_at == ended
+        assert service.get_access_info(AnonymousUser(), course).access_ends_at is None
+
+
 def test_a_buyer_sees_when_their_access_ends(service, student, course):
     ends = NOW + timedelta(days=20)
     buy(student, course, NOW - timedelta(days=10), ends)

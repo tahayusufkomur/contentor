@@ -43,6 +43,8 @@ const course = (over: Partial<StoreItem> = {}): StoreItem => ({
     currency: "USD",
     access_reason: null,
     unlock_methods: ["purchase"],
+    access_ends_at: null,
+    opens_at: null,
   },
   ...over,
 });

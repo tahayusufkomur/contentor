@@ -63,7 +63,7 @@ const MON = [
 ];
 
 /** An ISO date as "26 Oct 2026", like the backend's `%-d %b %Y` (ICU says "Sept"). */
-function day(iso: string): string {
+export function formatDay(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   return `${d} ${MON[m - 1]} ${y}`;
 }
@@ -84,10 +84,10 @@ function clauses(
   const out: string[] = [];
   if (w?.opens_after_days !== undefined)
     out.push(opensAfter(spanText(w.opens_after_days)));
-  if (w?.opens_on) out.push(`from ${day(w.opens_on)}`);
+  if (w?.opens_on) out.push(`from ${formatDay(w.opens_on)}`);
   if (w?.closes_after_days !== undefined)
     out.push(closesAfter(spanText(w.closes_after_days)));
-  if (w?.closes_on) out.push(`until ${day(w.closes_on)}`);
+  if (w?.closes_on) out.push(`until ${formatDay(w.closes_on)}`);
   return out;
 }
 
@@ -151,7 +151,7 @@ export function describe(
 
 export function buyPill(w: Window | null): string {
   const opens = w?.opens_on
-    ? `Opens ${day(w.opens_on)} · `
+    ? `Opens ${formatDay(w.opens_on)} · `
     : w?.opens_after_days !== undefined
       ? `Opens ${spanText(w.opens_after_days)} after purchase · `
       : "";
@@ -159,7 +159,7 @@ export function buyPill(w: Window | null): string {
     w?.closes_after_days !== undefined
       ? `${spanText(w.closes_after_days)} from purchase`
       : w?.closes_on
-        ? `Until ${day(w.closes_on)}`
+        ? `Until ${formatDay(w.closes_on)}`
         : "Forever";
   return opens + closes;
 }
@@ -169,13 +169,13 @@ export function linkPill(w: Window | null): string {
     w?.opens_after_days !== undefined
       ? `After ${spanText(w.opens_after_days)} of membership`
       : w?.opens_on
-        ? `From ${day(w.opens_on)}`
+        ? `From ${formatDay(w.opens_on)}`
         : "Right away";
   const closes =
     w?.closes_after_days !== undefined
       ? `closes after ${spanText(w.closes_after_days)}`
       : w?.closes_on
-        ? `closes ${day(w.closes_on)}`
+        ? `closes ${formatDay(w.closes_on)}`
         : "never closes";
   return `${opens} · ${closes}`;
 }
@@ -184,9 +184,9 @@ export function freePill(w: Window | null): string {
   if (w?.closes_after_days !== undefined)
     return `First ${spanText(w.closes_after_days)} after joining`;
   if (w?.opens_on && w.closes_on)
-    return `${day(w.opens_on)} – ${day(w.closes_on)}`;
-  if (w?.closes_on) return `Until ${day(w.closes_on)}`;
-  if (w?.opens_on) return `From ${day(w.opens_on)}`;
+    return `${formatDay(w.opens_on)} – ${formatDay(w.closes_on)}`;
+  if (w?.closes_on) return `Until ${formatDay(w.closes_on)}`;
+  if (w?.opens_on) return `From ${formatDay(w.opens_on)}`;
   if (w?.opens_after_days !== undefined)
     return `After ${spanText(w.opens_after_days)} of joining`;
   return "Always";
