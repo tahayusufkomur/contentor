@@ -151,6 +151,9 @@ suite("pills", () => {
   });
   it("freePill", () => {
     expect(freePill(null)).toBe("Always");
+    expect(freePill({ opens_after_days: 30, closes_after_days: 90 })).toBe(
+      "After 1 month of joining · until 3 months after joining",
+    );
     expect(freePill({ closes_on: "2026-10-26" })).toBe("Until 26 Oct 2026");
     expect(freePill({ closes_on: "2026-09-05" })).toBe("Until 5 Sep 2026");
     expect(freePill({ opens_on: "2026-10-20", closes_on: "2026-11-02" })).toBe(

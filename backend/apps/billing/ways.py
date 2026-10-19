@@ -415,13 +415,16 @@ class ShorthandMixin:
 
         sent = {key: self.validated_data[key] for key in ("pricing_type", "price") if key in self.validated_data}
         # A form that echoes the stored values back changes nothing: re-applying "free" or "paid" would drop a window.
-        if self.instance is not None and all(
-            Decimal(str(value or 0)) == Decimal(self.instance.price or 0)
-            if key == "price"
-            else value == getattr(self.instance, key)
-            for key, value in sent.items()
-        ):
-            sent = {}
+        if self.instance is not None:
+            sent = {
+                key: value
+                for key, value in sent.items()
+                if (
+                    Decimal(str(value or 0)) != Decimal(self.instance.price or 0)
+                    if key == "price"
+                    else value != getattr(self.instance, key)
+                )
+            }
         with transaction.atomic():
             instance = super().save(**kwargs)
             if sent:

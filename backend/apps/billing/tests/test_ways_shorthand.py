@@ -60,6 +60,13 @@ def test_a_form_echoing_the_stored_pricing_back_keeps_the_free_window(owner):
     )
     assert resp.status_code == 200, resp.content
     assert ways_of(Course.objects.get(pk=course.pk))["free"] == {"window": {"closes_on": "2030-11-30"}}
+    # an unchanged "paid" beside a new price is a price edit: the free window stays
+    resp = make_client(owner).put(
+        f"/api/v1/courses/{course.slug}/", {"pricing_type": "paid", "price": "35"}, format="json"
+    )
+    assert resp.status_code == 200, resp.content
+    ways = ways_of(Course.objects.get(pk=course.pk))
+    assert ways["free"] == {"window": {"closes_on": "2030-11-30"}} and ways["buy"]["price"] == "35.00"
 
 
 def test_a_members_only_download_without_a_plan_is_refused_and_not_created(owner):

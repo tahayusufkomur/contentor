@@ -193,8 +193,14 @@ export function linkPill(w: Window | null): string {
 }
 
 export function freePill(w: Window | null): string {
-  if (w?.closes_after_days !== undefined)
+  if (w?.closes_after_days !== undefined) {
+    // With an opening, the close (counted from joining) is a point, not a length.
+    const until = `until ${spanText(w.closes_after_days)} after joining`;
+    if (w.opens_after_days !== undefined)
+      return `After ${spanText(w.opens_after_days)} of joining · ${until}`;
+    if (w.opens_on) return `From ${formatDay(w.opens_on)} · ${until}`;
     return `First ${spanText(w.closes_after_days)} after joining`;
+  }
   if (w?.opens_on && w.closes_on)
     return `${formatDay(w.opens_on)} – ${formatDay(w.closes_on)}`;
   if (w?.closes_on) return `Until ${formatDay(w.closes_on)}`;
