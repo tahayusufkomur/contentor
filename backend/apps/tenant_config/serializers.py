@@ -122,6 +122,8 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("logo_layout must be one of: " + ", ".join(sorted(_LOGO_LAYOUTS)) + ".")
         cleaned["logo_layout"] = logo_layout
         cleaned["show_social"] = bool(cleaned.get("show_social", False))
+        if "custom_links" in cleaned:
+            cleaned["custom_links"] = bool(cleaned["custom_links"])
         footer_layout = cleaned.get("footer_layout") or "simple"
         if footer_layout not in _FOOTER_LAYOUTS:
             raise serializers.ValidationError(

@@ -247,8 +247,14 @@ export interface LookCards {
   /** Header and footer: the coach's own menu, header button and social
    * accounts, drawn into each preset's sketch. */
   links?: { label: string; href: string }[];
+  /** All addable page links for this coach in the navbar studio. */
+  available_links?: { label: string; href: string }[];
   cta?: string;
+  show_cta?: boolean;
   socials?: string[];
+  show_social?: boolean;
+  transparent_over_hero?: boolean;
+  custom_links?: boolean;
   /** Looks: picking one opens it as a whole page, its sample copy about
    * ``subject`` ("boxing") and the hero's line in the coach's words. */
   preview?: { subject?: string; body?: string; copy?: LookCopy | null };

@@ -67,8 +67,10 @@ export function headerNavLinks<T extends { href: string }>(
   plansEnabled: boolean,
   menu?: SiteMenu,
   signedIn = false,
+  keepPicked = false,
 ): T[] {
   const visible = visibleNavLinks(links, plansEnabled, menu);
+  if (keepPicked) return visible;
   const hasEvents = visible.some((l) => l.href === "/events");
   const hidden = signedIn ? SIGNED_IN_HEADER_HIDDEN : HEADER_HIDDEN;
   return visible.filter(

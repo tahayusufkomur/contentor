@@ -131,6 +131,7 @@ function AuthCluster({
 }) {
   return (
     <div className="flex items-center gap-3">
+      <SocialLinks />
       {allowDarkMode && <ThemeToggle compact className="shrink-0" />}
       {user ? (
         <>
@@ -236,11 +237,13 @@ export function PublicHeader({
     layout !== "pill" &&
     pathname === "/";
 
+  const isStaff = user?.role === "owner" || user?.role === "coach";
   const navLinks = headerNavLinks(
     navbar?.links?.length ? navbar.links : FALLBACK_LINKS,
     plansEnabled,
-    menu,
-    Boolean(user),
+    isStaff ? undefined : menu,
+    Boolean(user) && !isStaff,
+    Boolean(navbar?.custom_links),
   );
   // Signed-in members of a community-enabled tenant get a Community nav entry.
   const withCommunity: (NavLinkType & { dot?: boolean })[] =
@@ -250,10 +253,11 @@ export function PublicHeader({
           { label: "Community", href: "/community", dot: communityUnread },
         ]
       : navLinks;
-  // Blog only appears once the coach has published at least one post.
-  const fullNavLinks: (NavLinkType & { dot?: boolean })[] = blogEnabled
-    ? [...withCommunity, { label: "Blog", href: "/blog" }]
-    : withCommunity;
+  // Blog only appears once the coach has published at least one post (or kept it in custom_links).
+  const fullNavLinks: (NavLinkType & { dot?: boolean })[] =
+    blogEnabled && !withCommunity.some((l) => l.href === "/blog")
+      ? [...withCommunity, { label: "Blog", href: "/blog" }]
+      : withCommunity;
   const showLogin = navbar?.show_login !== false;
   const rawCta = navbar?.cta ?? null;
   const cta =
@@ -477,6 +481,7 @@ export function PublicHeader({
         <div className="mx-auto flex h-16 max-w-[var(--site-wrap,80rem)] items-center justify-between px-[var(--site-gutter,1rem)] md:px-[var(--site-gutter-md,1rem)]">
           <Brand config={config} />
           <div className="flex items-center gap-2">
+            <SocialLinks className="hidden sm:flex" />
             {!user && cta && (
               <Button asChild size="sm">
                 <Link href={cta.href}>{cta.text}</Link>

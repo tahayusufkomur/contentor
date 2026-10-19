@@ -150,9 +150,30 @@ NAV = (
     ("/events", "Events"),
     ("/calendar", "Calendar"),
     ("/plans", "Pricing"),
+    ("/blog", "Blog"),
     ("/about", "About"),
+    ("/contact", "Contact"),
     ("/faq", "FAQ"),
 )
+
+
+def available_nav_links(answers: dict, current_links: list[dict]) -> list[dict]:
+    """Every page link the coach can toggle on or off in the header studio, in
+    nav order: what she sells or writes, plus About, Contact and FAQ."""
+    offers = set(answers.get("offers") or [])
+    runs_classes = bool({"live", "onsite"} & offers)
+    has_membership = "membership" in (answers.get("payments") or [])
+    existing = {link.get("href") for link in current_links if link.get("href")}
+    allowed = {"/about", "/contact", "/faq"} | existing
+    if "course" in offers or not offers:
+        allowed.add("/courses")
+    if runs_classes:
+        allowed.update(("/events", "/calendar"))
+    if has_membership:
+        allowed.add("/plans")
+    if "articles" in offers:
+        allowed.add("/blog")
+    return [{"label": label, "href": href} for href, label in NAV if href in allowed]
 
 
 def sync_site(tenant, answers: dict) -> None:
@@ -160,7 +181,8 @@ def sync_site(tenant, answers: dict) -> None:
     follow what the coach said: classes turn on the live module and add an
     Events link (and a Calendar link when they want it in the navbar, laid out
     the way they picked), a membership a Pricing link, social accounts header
-    icons. Additive only for links, and written only when something changes."""
+    icons. Additive only for links unless she picked her exact links in the
+    navbar studio, and written only when something changes."""
     from apps.core.onboarding.compose import ALWAYS_MODULES, GOAL_MODULES
 
     modules = set(ALWAYS_MODULES).union(*(GOAL_MODULES.get(g, ()) for g in answers.get("goals") or []))
@@ -186,9 +208,14 @@ def sync_site(tenant, answers: dict) -> None:
         if cfg is None:
             return
         nav = dict(cfg.navbar_config or {})
-        links = list(nav.get("links") or [])
-        hrefs = {link.get("href") for link in links}
-        missing = [href for href in order if href in want and href not in hrefs]
+        custom_links = answers.get("navbar_links")
+        if isinstance(custom_links, list):
+            links = list(custom_links)
+            missing = []
+        else:
+            links = list(nav.get("links") or [])
+            hrefs = {link.get("href") for link in links}
+            missing = [href for href in order if href in want and href not in hrefs]
         enabled = sorted(set(cfg.enabled_modules or []) | modules)
         social = {**(cfg.social_links or {}), **socials}
         # The header button provisioning pointed at /courses leads to what
@@ -196,15 +223,37 @@ def sync_site(tenant, answers: dict) -> None:
         cta = nav.get("cta") or {}
         offers = set(answers.get("offers") or [])
         retarget = cta.get("href") == "/courses" and offers and "course" not in offers
+        default_cta_href = "/events" if runs_classes and "course" not in offers else "/courses"
+        cta_override = {}
+        if "navbar_show_cta" in answers:
+            if not answers["navbar_show_cta"]:
+                cta_override = {"cta": None}
+            elif not cta:
+                cta_override = {"cta": {"text": "Get Started", "href": default_cta_href}}
+        elif retarget:
+            cta_override = {"cta": {**cta, "href": "/events" if runs_classes else "/about"}}
+        show_social_override = (
+            {"show_social": bool(answers["navbar_show_social"])}
+            if "navbar_show_social" in answers
+            else ({"show_social": True} if socials else {})
+        )
         extra = {
             **chrome,
             **({"calendar_view": view} if view else {}),
-            **({"show_social": True} if socials else {}),
-            **({"cta": {**cta, "href": "/events" if runs_classes else "/about"}} if retarget else {}),
+            **show_social_override,
+            **(
+                {"transparent_over_hero": bool(answers["navbar_transparent"])}
+                if "navbar_transparent" in answers
+                else {}
+            ),
+            **({"custom_links": True} if isinstance(custom_links, list) else {}),
+            **cta_override,
         }
         rezone = bool(zone) and cfg.timezone != zone
+        links_changed = isinstance(custom_links, list) and links != list(nav.get("links") or [])
         if (
             not missing
+            and not links_changed
             and not rezone
             and enabled == sorted(cfg.enabled_modules or [])
             and social == (cfg.social_links or {})
@@ -945,12 +994,15 @@ CHROME = {"navbar_layout": NAVBAR_LAYOUTS, "footer_layout": FOOTER_LAYOUTS}
 
 def chrome_pick(field_id: str, answers: dict) -> tuple[str, str]:
     """The guide's header or footer: the first preset that suits a tone the
-    coach asked for (the reason says which), else the first preset."""
+    coach asked for (or the look she picked), else the first preset."""
     from . import sections
 
-    tones = sections.tones_of(answers.get("tone"))
+    style = sections.style(answers.get("style") or "")
+    tones = sections.tones_of(answers.get("tone")) or (sections.tones_of_style(style) if style else [])
     for value, _label, _detail, suits in CHROME[field_id]:
         if matched := [t for t in tones if t in suits]:
+            if style and not answers.get("tone"):
+                return value, f"Matched to your {style['label']} look."
             return value, f"It suits a site that sounds {matched[0]}."
     return CHROME[field_id][0][0], ""
 
@@ -962,8 +1014,9 @@ def chrome_cards(tenant, answers: dict, field_id: str) -> dict:
     nav = (cfg.navbar_config if cfg else None) or {}
     pick, reason = chrome_pick(field_id, answers)
     links = [link for link in nav.get("links") or [] if link.get("label") and link.get("href")]
-    if "articles" in (answers.get("offers") or []):
+    if "articles" in (answers.get("offers") or []) and not any(link.get("href") == "/blog" for link in links):
         links.append({"label": "Blog", "href": "/blog"})
+    socials = [n for n, u in ((cfg.social_links if cfg else None) or {}).items() if u]
     return {
         "kind": field_id.removesuffix("_layout"),
         "options": [
@@ -977,10 +1030,26 @@ def chrome_cards(tenant, answers: dict, field_id: str) -> dict:
         ],
         "brand": cfg.brand_name if cfg else "",
         "links": links,
+        "available_links": available_nav_links(answers, links),
         "cta": (nav.get("cta") or {}).get("text") or "",
-        "socials": [n for n, u in ((cfg.social_links if cfg else None) or {}).items() if u],
-        "style": cfg.style if cfg else "",
-        "palette": cfg.palette if cfg else "",
+        "show_cta": bool(
+            answers.get("navbar_show_cta") if "navbar_show_cta" in answers else nav.get("cta") is not None
+        ),
+        "socials": socials,
+        "show_social": bool(
+            answers.get("navbar_show_social")
+            if "navbar_show_social" in answers
+            else (nav.get("show_social") or socials)
+        ),
+        "transparent_over_hero": bool(
+            answers.get("navbar_transparent")
+            if "navbar_transparent" in answers
+            else nav.get("transparent_over_hero")
+        ),
+        "custom_links": bool(answers.get("navbar_links") or nav.get("custom_links")),
+        "headline": str(answers.get("pitch") or answers.get("teaches") or "")[:120],
+        "style": (cfg.style if cfg else "") or answers.get("style") or "",
+        "palette": (cfg.palette if cfg else "") or answers.get("palette") or "",
     }
 
 
@@ -1234,7 +1303,39 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         answers["calendar_view"] = value
         return
     if field_id in CHROME:
-        if value not in {v for v, *_ in CHROME[field_id]}:
+        valid_layouts = {v for v, *_ in CHROME[field_id]}
+        if field_id == "navbar_layout" and (
+            isinstance(value, dict) or (isinstance(value, str) and value.lstrip().startswith("{"))
+        ):
+            try:
+                picked = json.loads(value) if isinstance(value, str) else value
+            except ValueError:
+                raise ChoiceError("invalid_value") from None
+            if not isinstance(picked, dict) or picked.get("layout") not in valid_layouts:
+                raise ChoiceError("invalid_value")
+            answers["navbar_layout"] = picked["layout"]
+            if isinstance(picked.get("links"), list):
+                known = dict(NAV)
+                cfg = TenantConfig.objects.first()
+                for existing in ((cfg.navbar_config if cfg else None) or {}).get("links") or []:
+                    if existing.get("href") and existing.get("label"):
+                        known.setdefault(existing["href"], existing["label"])
+                chosen_links = []
+                seen = set()
+                for item in picked["links"]:
+                    href = item.get("href") if isinstance(item, dict) else str(item or "")
+                    if href in known and href not in seen:
+                        seen.add(href)
+                        chosen_links.append({"label": known[href], "href": href})
+                answers["navbar_links"] = chosen_links
+            if "show_social" in picked:
+                answers["navbar_show_social"] = bool(picked["show_social"])
+            if "transparent_over_hero" in picked:
+                answers["navbar_transparent"] = bool(picked["transparent_over_hero"])
+            if "show_cta" in picked:
+                answers["navbar_show_cta"] = bool(picked["show_cta"])
+            return
+        if value not in valid_layouts:
             raise ChoiceError("invalid_value")
         answers[field_id] = value  # written to the site by sync_site, on this turn's fire()
         return

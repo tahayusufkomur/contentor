@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Type, Upload } from "lucide-react";
+import { Check, Plus, Type, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import type { SiteStyle } from "@shared/sections/types";
+import { headerNavLinks } from "@/lib/navbar";
 import type { LookCards, LookOption } from "@/lib/setup-flow";
 import {
   STYLE_TAGS,
@@ -19,7 +20,11 @@ import { uploadImage } from "@/components/owner/logo-uploader";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { BrowserFrame } from "./browser-frame";
-import { FooterSketch, NavbarSketch } from "./chrome-sketch";
+import {
+  FooterSketch,
+  NavbarSketch,
+  NavbarStudioPreview,
+} from "./chrome-sketch";
 import { LookTile } from "./look-tile";
 import { SHELL_TOKENS } from "./tokens";
 
@@ -136,6 +141,34 @@ export function LookCardsView({
   const [others, setOthers] = useState(false);
   // The looks a tag filters to ("" = all).
   const [tag, setTag] = useState("");
+  const availableNavLinks = shown.available_links ?? shown.links ?? [];
+  const [navHrefs, setNavHrefs] = useState<string[]>(() => {
+    const initial = shown.custom_links
+      ? (shown.links ?? [])
+      : headerNavLinks(shown.links ?? [], true);
+    return initial.map((l) => l.href);
+  });
+  const [showSocial, setShowSocial] = useState<boolean>(
+    () => shown.show_social ?? Boolean(shown.socials?.length),
+  );
+  const [showCta, setShowCta] = useState<boolean>(
+    () => shown.show_cta ?? Boolean(shown.cta),
+  );
+  const [transparent, setTransparent] = useState<boolean>(() =>
+    Boolean(shown.transparent_over_hero),
+  );
+  const chosenLayout = (() => {
+    if (!chosen) return undefined;
+    if (chosen.startsWith("{")) {
+      try {
+        const parsed = JSON.parse(chosen) as { layout?: string };
+        return parsed.layout;
+      } catch {
+        return chosen;
+      }
+    }
+    return chosen;
+  })();
   const paletteFor = (o: LookOption) =>
     palettes[o.value] ?? pickedPalette(o, chosen, selected) ?? "";
   // The guide's pick is selected the first time the coach lands on the
@@ -158,9 +191,11 @@ export function LookCardsView({
     { errorToast: "Couldn’t load more logos. Try again." },
   );
   const isPicked = (value: string, label: string) =>
-    chosen
-      ? chosen === value
-      : !!selected && selected.trim().toLowerCase() === label.toLowerCase();
+    chosenLayout
+      ? chosenLayout === value
+      : !!selected &&
+        (selected.trim().toLowerCase() === label.toLowerCase() ||
+          selected.trim().toLowerCase().startsWith(`${label.toLowerCase()} ·`));
   const isLookPicked = (o: LookOption) =>
     chosen
       ? chosen === o.value || chosen.startsWith(`${o.value}:`)
@@ -349,10 +384,49 @@ export function LookCardsView({
     const look = getSiteStyle(shown.style ?? "");
     const colors = look ? paletteOf(look, shown.palette) : undefined;
     const brand = brandName || shown.brand || "";
+    const activeLayout =
+      chosenLayout ??
+      shown.options.find((o) => isPicked(o.value, o.label))?.value ??
+      suggested?.value ??
+      shown.options[0]?.value ??
+      "classic";
+    const activeLinks = availableNavLinks.filter((l) =>
+      navHrefs.includes(l.href),
+    );
+    const activeCta = showCta ? shown.cta || "Get Started" : "";
+    const emitNavbar = (
+      nextLayout: string,
+      nextHrefs: string[],
+      nextSocial: boolean,
+      nextCta: boolean,
+      nextTransparent: boolean,
+    ) => {
+      const opt = shown.options.find((o) => o.value === nextLayout);
+      const pickedLinks = availableNavLinks.filter((l) =>
+        nextHrefs.includes(l.href),
+      );
+      const linkSummary = pickedLinks.map((l) => l.label).join(", ");
+      const label = opt
+        ? linkSummary
+          ? `${opt.label} · ${linkSummary}`
+          : opt.label
+        : nextLayout;
+      onPick(
+        JSON.stringify({
+          layout: nextLayout,
+          links: pickedLinks.map((l) => l.href),
+          show_social: nextSocial,
+          show_cta: nextCta,
+          transparent_over_hero: nextTransparent,
+        }),
+        label,
+      );
+    };
+
     return (
-      <div className="mt-8">
+      <div className="mt-8 space-y-6">
         {suggested?.reason && (
-          <p className="mb-4 text-[14px] text-[var(--sf-graphite)]">
+          <p className="text-[14px] text-[var(--sf-graphite)]">
             <span className="font-semibold text-[var(--sf-ink)]">
               {suggested.label}
             </span>{" "}
@@ -365,7 +439,17 @@ export function LookCardsView({
               key={o.value}
               picked={isPicked(o.value, o.label)}
               disabled={disabled}
-              onClick={() => onPick(o.value, o.label)}
+              onClick={() =>
+                shown.kind === "navbar"
+                  ? emitNavbar(
+                      o.value,
+                      navHrefs,
+                      showSocial,
+                      showCta,
+                      transparent,
+                    )
+                  : onPick(o.value, o.label)
+              }
               style={enter(i)}
               className="overflow-hidden p-0"
               checkClassName="bottom-3 right-3"
@@ -374,8 +458,12 @@ export function LookCardsView({
                 <NavbarSketch
                   layout={o.value}
                   brand={brand}
-                  links={shown.links ?? []}
-                  cta={shown.cta}
+                  links={activeLinks}
+                  cta={activeCta}
+                  socials={shown.socials}
+                  showSocial={showSocial}
+                  transparent={transparent}
+                  keepPicked
                   colors={colors}
                 />
               ) : (
@@ -405,6 +493,182 @@ export function LookCardsView({
             </CardButton>
           ))}
         </div>
+
+        {shown.kind === "navbar" && (
+          <div className="max-w-3xl space-y-5">
+            {availableNavLinks.length > 0 && (
+              <div className="rounded-2xl border border-[var(--sf-line)] bg-white p-4">
+                <div className="mb-2.5 flex items-baseline justify-between gap-2">
+                  <span className="text-[13.5px] font-semibold text-[var(--sf-ink)]">
+                    Pages in your header menu
+                  </span>
+                  <span className="text-[12px] text-[var(--sf-graphite)]">
+                    Tap to add or remove
+                  </span>
+                </div>
+                <div
+                  role="group"
+                  aria-label="Pages in your header menu"
+                  className="flex flex-wrap gap-2"
+                >
+                  {availableNavLinks.map((link) => {
+                    const active = navHrefs.includes(link.href);
+                    return (
+                      <button
+                        key={link.href}
+                        type="button"
+                        aria-pressed={active}
+                        disabled={disabled}
+                        onClick={() => {
+                          const next = active
+                            ? navHrefs.filter((h) => h !== link.href)
+                            : [...navHrefs, link.href];
+                          setNavHrefs(next);
+                          emitNavbar(
+                            activeLayout,
+                            next,
+                            showSocial,
+                            showCta,
+                            transparent,
+                          );
+                        }}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors",
+                          active
+                            ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-[var(--sf-paper)]"
+                            : "border-[var(--sf-line-strong)] bg-[var(--sf-tint)] text-[var(--sf-graphite)] hover:border-[var(--sf-ink)] hover:text-[var(--sf-ink)]",
+                        )}
+                      >
+                        {active ? (
+                          <Check className="size-3.5" aria-hidden />
+                        ) : (
+                          <Plus className="size-3.5" aria-hidden />
+                        )}
+                        {link.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="rounded-2xl border border-[var(--sf-line)] bg-white p-4">
+              <span className="mb-2.5 block text-[13.5px] font-semibold text-[var(--sf-ink)]">
+                Header elements
+              </span>
+              <div
+                role="group"
+                aria-label="Header elements"
+                className="flex flex-wrap gap-2"
+              >
+                <button
+                  type="button"
+                  aria-pressed={showSocial}
+                  disabled={disabled}
+                  onClick={() => {
+                    const next = !showSocial;
+                    setShowSocial(next);
+                    emitNavbar(
+                      activeLayout,
+                      navHrefs,
+                      next,
+                      showCta,
+                      transparent,
+                    );
+                  }}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors",
+                    showSocial
+                      ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-[var(--sf-paper)]"
+                      : "border-[var(--sf-line-strong)] bg-[var(--sf-tint)] text-[var(--sf-graphite)] hover:border-[var(--sf-ink)] hover:text-[var(--sf-ink)]",
+                  )}
+                >
+                  {showSocial ? (
+                    <Check className="size-3.5" aria-hidden />
+                  ) : (
+                    <Plus className="size-3.5" aria-hidden />
+                  )}
+                  Social icons
+                  {shown.socials?.length
+                    ? ` (${shown.socials.join(", ")})`
+                    : ""}
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={showCta}
+                  disabled={disabled}
+                  onClick={() => {
+                    const next = !showCta;
+                    setShowCta(next);
+                    emitNavbar(
+                      activeLayout,
+                      navHrefs,
+                      showSocial,
+                      next,
+                      transparent,
+                    );
+                  }}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors",
+                    showCta
+                      ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-[var(--sf-paper)]"
+                      : "border-[var(--sf-line-strong)] bg-[var(--sf-tint)] text-[var(--sf-graphite)] hover:border-[var(--sf-ink)] hover:text-[var(--sf-ink)]",
+                  )}
+                >
+                  {showCta ? (
+                    <Check className="size-3.5" aria-hidden />
+                  ) : (
+                    <Plus className="size-3.5" aria-hidden />
+                  )}
+                  “{shown.cta || "Get Started"}” button
+                </button>
+                {activeLayout !== "pill" && (
+                  <button
+                    type="button"
+                    aria-pressed={transparent}
+                    disabled={disabled}
+                    onClick={() => {
+                      const next = !transparent;
+                      setTransparent(next);
+                      emitNavbar(
+                        activeLayout,
+                        navHrefs,
+                        showSocial,
+                        showCta,
+                        next,
+                      );
+                    }}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors",
+                      transparent
+                        ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-[var(--sf-paper)]"
+                        : "border-[var(--sf-line-strong)] bg-[var(--sf-tint)] text-[var(--sf-graphite)] hover:border-[var(--sf-ink)] hover:text-[var(--sf-ink)]",
+                    )}
+                  >
+                    {transparent ? (
+                      <Check className="size-3.5" aria-hidden />
+                    ) : (
+                      <Plus className="size-3.5" aria-hidden />
+                    )}
+                    Transparent over hero
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <NavbarStudioPreview
+              layout={activeLayout}
+              brand={brand}
+              headline={shown.headline}
+              links={activeLinks}
+              cta={activeCta}
+              socials={shown.socials}
+              showSocial={showSocial}
+              transparent={transparent}
+              colors={colors}
+            />
+          </div>
+        )}
       </div>
     );
   }

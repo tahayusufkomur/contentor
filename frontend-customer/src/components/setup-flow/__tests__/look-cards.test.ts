@@ -89,3 +89,51 @@ describe("LookCardsView tag chips", () => {
     expect(html).not.toContain("Sensual");
   });
 });
+
+describe("LookCardsView navbar studio", () => {
+  it("renders layout presets, addable link chips, header toggles, and desktop/mobile preview", () => {
+    const cards: LookCards = {
+      kind: "navbar",
+      options: [
+        {
+          value: "classic",
+          label: "Classic",
+          recommended: true,
+          reason: "Matched to your Quiet Journal look.",
+        },
+        { value: "pill", label: "Floating pill" },
+      ],
+      links: [
+        { label: "Courses", href: "/courses" },
+        { label: "About", href: "/about" },
+      ],
+      available_links: [
+        { label: "Courses", href: "/courses" },
+        { label: "About", href: "/about" },
+        { label: "Contact", href: "/contact" },
+        { label: "FAQ", href: "/faq" },
+      ],
+      socials: ["instagram", "youtube"],
+      show_social: true,
+      cta: "Get Started",
+      show_cta: true,
+      style: "journal",
+    };
+    const html = renderToStaticMarkup(
+      createElement(LookCardsView, {
+        cards,
+        brandName: "Maya Yoga",
+        disabled: false,
+        onPick: () => {},
+        onKeep: () => {},
+        onMore: async () => cards,
+      }),
+    );
+    expect(html).toContain("Pages in your header menu");
+    expect(html).toContain("Contact");
+    expect(html).toContain("FAQ");
+    expect(html).toContain("Social icons (instagram, youtube)");
+    expect(html).toContain("Transparent over hero");
+    expect(html).toContain("Mobile + Menu");
+  });
+});

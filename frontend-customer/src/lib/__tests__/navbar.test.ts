@@ -100,6 +100,26 @@ describe("headerNavLinks", () => {
       ),
     ).toEqual(["/courses", "/calendar", "/about"]);
   });
+  it("keeps all picked links when customized in the navbar studio", () => {
+    const picked = [...all, { label: "Contact", href: "/contact" }];
+    expect(
+      headerNavLinks(
+        picked,
+        true,
+        { courses: true, events: true },
+        true,
+        true,
+      ).map((l) => l.href),
+    ).toEqual([
+      "/courses",
+      "/events",
+      "/calendar",
+      "/plans",
+      "/about",
+      "/faq",
+      "/contact",
+    ]);
+  });
 });
 
 describe("showSubscribeButton", () => {

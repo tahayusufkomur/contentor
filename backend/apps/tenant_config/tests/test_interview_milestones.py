@@ -855,6 +855,36 @@ def test_the_header_and_footer_picks_reach_the_navbar_config(tenant_ctx, config)
     assert {f["q"] for f in brief.composer_facts(answers)} == {"How they work", "How the site should sound"}
 
 
+def test_navbar_studio_customizes_links_and_toggles(tenant_ctx, config):
+    answers = {"offers": ["course", "live"], "payments": ["membership"]}
+    cards = ms.cards_for(tenant_ctx, answers, "navbar_layout")
+    assert [link["href"] for link in cards["available_links"]] == [
+        "/courses",
+        "/events",
+        "/calendar",
+        "/plans",
+        "/about",
+        "/contact",
+        "/faq",
+    ]
+    ms.choose(
+        tenant_ctx,
+        answers,
+        "navbar_layout",
+        '{"layout": "centered", "links": ["/courses", "/events", "/about", "/contact"], '
+        '"show_social": true, "transparent_over_hero": true, "show_cta": false}',
+    )
+    assert answers["navbar_layout"] == "centered"
+    ms.sync_site(tenant_ctx, answers)
+    nav = TenantConfig.objects.first().navbar_config
+    assert nav["layout"] == "centered"
+    assert [link["href"] for link in nav["links"]] == ["/courses", "/events", "/about", "/contact"]
+    assert nav["custom_links"] is True
+    assert nav["show_social"] is True
+    assert nav["transparent_over_hero"] is True
+    assert nav["cta"] is None
+
+
 def test_a_crash_while_drafting_marks_the_draft_failed(tenant_ctx, config, owner):
     """Audit R1: any error, not only AI and content ones, ends the spinner."""
     with (

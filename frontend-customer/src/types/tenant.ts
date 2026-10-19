@@ -35,6 +35,8 @@ export interface NavbarConfig {
   logo_layout?: "horizontal" | "stacked";
   /** Show the coach's social accounts as icons in the navbar (default false). */
   show_social?: boolean;
+  /** True when the coach explicitly chose which links appear in the top bar. */
+  custom_links?: boolean;
   /** How /calendar opens: the month grid or the agenda list (default month). */
   calendar_view?: "month" | "agenda";
   /** Footer arrangement preset, picked in /setup. Missing renders as "simple". */
