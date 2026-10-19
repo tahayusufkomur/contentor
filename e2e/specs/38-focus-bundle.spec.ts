@@ -340,7 +340,7 @@ test("a kept draft is published from its page once selling is open", async ({ br
   await page.close();
 });
 
-test("with fewer than two items to sell, the guide says so and offers the plain form", async ({ browser }) => {
+test("with fewer than two items to sell, the guide says so and the page offers the plain form", async ({ browser }) => {
   const page = await (await coachContext(browser)).newPage();
   const one = { ...Q.items, options: Q.items.options.slice(0, 1) };
   const sent = await stubFocus(page, () => state({}), null, one);
@@ -352,7 +352,9 @@ test("with fewer than two items to sell, the guide says so and offers the plain 
   // Nothing to tick and no box to type in: no draft that could never be published.
   await expect(guide(page).getByRole("textbox", { name: "Your answer" })).toHaveCount(0);
   await expect(guide(page).locator("button[aria-pressed]", { hasText: "Morning workbook" })).toHaveCount(0);
-  await guide(page).getByRole("link", { name: "Fill it in myself" }).click();
+  // One way forward, on the page: the guide does not repeat it.
+  await expect(page.getByRole("link", { name: "Fill it in myself" })).toHaveCount(1);
+  await main(page).getByRole("link", { name: "Fill it in myself" }).click();
   await expect(page).toHaveURL(/\/admin\/store\/bundles\/new\?form=1$/);
   await expect(main(page).getByRole("heading", { name: "Create Bundle" })).toBeVisible();
   expect(sent).toEqual([]);
