@@ -14,6 +14,7 @@ import type {
   PartId,
 } from "@/types/design";
 import { layoutFrames } from "./layouts";
+import { targetNoun } from "./targets";
 
 export { SIZES };
 
@@ -137,7 +138,7 @@ export function layerOrder(recipe: CoverRecipe): string[] {
   ];
 }
 
-/** The badge kinds worth offering for a target ("course", or an event's kind): a course has no date to
+/** The badge kinds worth offering for a target ("course", "download", or an event's kind): a course or download has no date to
  *  show and an event is never new. The kind it has now stays in the list. Without a target, all of them. */
 export function badgeKindsFor(
   targetKind: string | undefined,
@@ -147,7 +148,7 @@ export function badgeKindsFor(
     (kind) =>
       kind === current ||
       targetKind === undefined ||
-      (targetKind === "course" ? kind !== "date" : kind !== "new"),
+      (targetNoun(targetKind) === "event" ? kind !== "new" : kind !== "date"),
   );
 }
 

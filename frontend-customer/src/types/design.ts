@@ -142,20 +142,20 @@ export interface CoverItem {
 
 // The studio's API (backend/apps/media/design_views.py, design_serializers.py).
 
-/** A course or event series the studio can put a cover on (`GET /designs/targets/`). */
+/** A course, download or event series the studio can put a cover on (`GET /designs/targets/`). */
 export interface DesignTarget {
-  /** "course", or an event kind: "live", "stream", "zoom" or "onsite". */
+  /** "course", "download", or an event kind: "live", "stream", "zoom" or "onsite". */
   target_kind: string;
-  /** A course's id, or an event series' exact title. */
+  /** A course's or download's id, or an event series' exact title. */
   target_key: string;
   title: string;
-  /** Sessions in an event series; null for a course. */
+  /** Sessions in an event series; null for a course or download. */
   sessions: number | null;
-  /** The next session still to come (ISO); null for a course, or a series with none. */
+  /** The next session still to come (ISO); null for a course or download, or a series with none. */
   next_at: string | null;
-  /** A course's state; null for an event series. */
+  /** A course's or download's state; null for an event series. */
   status: "published" | "draft" | null;
-  /** When a course was made (ISO), which its "New" badge reads; null for an event series. */
+  /** When a course or download was made (ISO), which its "New" badge reads; null for an event series. */
   created_at: string | null;
   /** The picture it wears now, a signed link; null for none. */
   photo_url: string | null;
@@ -166,7 +166,7 @@ export interface DesignTarget {
 }
 
 export interface DesignTargets {
-  /** Her courses in her order, then her event series. */
+  /** Her courses in her order, then her event series, then her downloads. */
   targets: DesignTarget[];
   /** Catalog photos already on a course or series: asset id to the title wearing it. */
   in_use: Record<string, string>;

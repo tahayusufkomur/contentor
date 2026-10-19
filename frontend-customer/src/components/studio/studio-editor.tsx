@@ -31,7 +31,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonForm, SkeletonPageHeader } from "@/components/ui/skeletons";
 import { useTenant } from "@/hooks/use-tenant";
 import { parseLook } from "@/lib/covers/palette";
-import { targetItem } from "@/lib/covers/targets";
+import { targetItem, targetNoun } from "@/lib/covers/targets";
 import { getDesign, getTargets, listDesigns } from "@/lib/designs-api";
 import { ApiError } from "@/types/api";
 import type {
@@ -118,8 +118,7 @@ function EditorBody({
       x.target_kind === design.target_kind &&
       x.target_key === design.target_key,
   );
-  const isCourse = design.target_kind === "course";
-  const noun = isCourse ? "course" : "event";
+  const noun = targetNoun(design.target_kind);
   // Only a draft whose course or event is still there can be edited or kept.
   const editable = design.state === "draft" && Boolean(target);
   const title = target?.title ?? design.title ?? "";
@@ -188,7 +187,7 @@ function EditorBody({
           cover={cover}
           item={item}
           title={title}
-          isCourse={isCourse}
+          noun={noun}
           size={size}
           onSize={setSize}
           cardAspect={cardAspect}
@@ -217,11 +216,11 @@ function EditorBody({
                 {title || t("editor.untitled")}
               </h1>
               <p className="text-sm text-muted-foreground">
-                {isCourse
-                  ? t("editor.courseCover")
-                  : t("editor.eventCover", {
+                {noun === "event"
+                  ? t("editor.eventCover", {
                       kind: ta(`events.kinds.${design.target_kind}.label`),
-                    })}
+                    })
+                  : t(`editor.${noun}Cover`)}
               </p>
             </div>
             <DraftActions
@@ -229,7 +228,7 @@ function EditorBody({
               design={design}
               editable={editable}
               canCopy={Boolean(target)}
-              isCourse={isCourse}
+              noun={noun}
               onDiscard={() => setConfirming(true)}
             />
           </header>

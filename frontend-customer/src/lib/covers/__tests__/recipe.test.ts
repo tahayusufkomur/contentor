@@ -521,6 +521,9 @@ describe("badgeKindsFor", () => {
       "live",
       "text",
     ]);
+    expect(badgeKindsFor("download", "none")).toEqual(
+      badgeKindsFor("course", "none"),
+    );
     for (const kind of ["live", "stream", "zoom", "onsite"]) {
       expect(badgeKindsFor(kind, "none")).toEqual([
         "none",

@@ -16,6 +16,7 @@ import {
   type TargetState,
 } from "@/lib/covers/targets";
 import { useNavigate } from "@shared/navigation/navigation-provider";
+import { targetNoun } from "@/lib/covers/targets";
 import type { DesignTarget } from "@/types/design";
 
 const STATE_BADGE: Record<TargetState, BadgeProps["variant"]> = {
@@ -38,7 +39,7 @@ export function StudioSkeleton() {
   );
 }
 
-/** Her courses, then her classes and events, each with the cover it wears and one button into the
+/** Her courses, her classes and events, then her downloads, each with the cover it wears and one button into the
  *  studio. An event series is every session of one kind with the same title: one cover for all. */
 export function StudioList({ targets }: { targets: DesignTarget[] }) {
   const t = useTranslations("admin");
@@ -67,7 +68,12 @@ export function StudioList({ targets }: { targets: DesignTarget[] }) {
       />
       <Section
         heading={t("nav.items.liveEvents")}
-        targets={targets.filter((x) => x.target_kind !== "course")}
+        targets={targets.filter((x) => targetNoun(x.target_kind) === "event")}
+        timeZone={timeZone}
+      />
+      <Section
+        heading={t("nav.items.downloads")}
+        targets={targets.filter((x) => x.target_kind === "download")}
         timeZone={timeZone}
       />
     </div>
@@ -112,7 +118,7 @@ function TargetCard({
   const state = targetState(target);
   const action = targetAction(target);
   const meta =
-    target.target_kind === "course"
+    targetNoun(target.target_kind) !== "event"
       ? target.status === "draft"
         ? t("studio.notPublished")
         : null

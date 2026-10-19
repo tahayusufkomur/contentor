@@ -796,6 +796,7 @@
     },
     "editor": {
       "courseCover": "Course cover",
+      "downloadCover": "Download cover",
       "coverLine": "{cover} · {notice}",
       "eventCover": "{kind} cover, shared by every session with this title",
       "untitled": "Untitled",
@@ -815,8 +816,11 @@
       "discardTitle": "Discard this draft?",
       "discardBody": "{title} keeps the cover it has now.",
       "discardCancel": "Keep editing",
-      "keepCourse": "Keep on course",
-      "keepEvent": "Keep on event",
+      "keep": {
+        "course": "Keep on course",
+        "download": "Keep on download",
+        "event": "Keep on event"
+      },
       "kept": "Kept. {title} now uses this cover.",
       "waitForPhoto": "Wait for the photo to finish",
       "notFound": "This cover isn't here any more."
@@ -824,8 +828,11 @@
     "controls": {
       "words": "Words",
       "label": "Label",
-      "labelPlaceholder": "e.g. 4-week course",
-      "labelPlaceholderEvent": "e.g. Live class",
+      "labelPlaceholder": {
+        "course": "e.g. 4-week course",
+        "download": "e.g. Free guide",
+        "event": "e.g. Live class"
+      },
       "title": "Title",
       "titleHint": "Leave it empty to use the title of the {target}.",
       "subtitle": "Subtitle",

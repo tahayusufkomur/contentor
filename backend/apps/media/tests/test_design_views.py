@@ -19,6 +19,7 @@ from apps.accounts.models import User
 from apps.core.models import Domain, Tenant
 from apps.core.storage import build_s3_path
 from apps.courses.models import Course
+from apps.downloads.models import DownloadFile
 from apps.live.models import LiveClass, OnsiteEvent, ZoomClass
 from apps.media import designs
 from apps.media.models import Design, Photo
@@ -399,6 +400,24 @@ def test_keep_refuses_what_it_cannot_keep(coach, client):
 
 
 # --- targets ---------------------------------------------------------------
+
+
+def test_targets_lists_downloads_after_the_series(coach, client, site, generated):
+    stock = Photo.objects.create(s3_key=build_s3_path("curated", "asset-4.webp"), title="stock")
+    guide = DownloadFile.objects.create(title="Guide", thumbnail=stock)
+    DownloadFile.objects.create(title="Draft guide", is_published=False)
+    session(coach, "Morning Flow")
+    design = kept("download", str(guide.pk), stock)
+
+    body = client.get(TARGETS).json()
+
+    assert [(t["target_kind"], t["title"]) for t in body["targets"]][0] == ("live", "Morning Flow")
+    by_title = {t["title"]: t for t in body["targets"]}
+    assert by_title["Guide"]["target_key"] == str(guide.pk)
+    assert (by_title["Guide"]["status"], by_title["Guide"]["cover"]["id"]) == ("published", str(design.pk))
+    assert by_title["Guide"]["created_at"] is not None
+    assert (by_title["Draft guide"]["status"], by_title["Draft guide"]["photo_url"]) == ("draft", None)
+    assert body["in_use"] == {"asset-4": "Guide"}
 
 
 def test_targets_groups_series_and_marks_in_use(coach, client, site, generated):

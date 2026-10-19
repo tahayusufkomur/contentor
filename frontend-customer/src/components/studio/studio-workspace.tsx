@@ -30,6 +30,7 @@ import type { CoverDraft } from "@/components/studio/use-cover-draft";
 import { NavLink } from "@/components/ui/nav-link";
 import { coverPalette, parseLook } from "@/lib/covers/palette";
 import { framesFor } from "@/lib/covers/recipe";
+import type { TargetNoun } from "@/lib/covers/targets";
 import { cn } from "@/lib/utils";
 import { PARTS, SIZES } from "@/types/design";
 import type {
@@ -91,7 +92,7 @@ export function Workspace({
   cover,
   item,
   title,
-  isCourse,
+  noun,
   size,
   onSize,
   cardAspect,
@@ -109,7 +110,7 @@ export function Workspace({
   cover: CoverDesign;
   item: CoverItem;
   title: string;
-  isCourse: boolean;
+  noun: TargetNoun;
   size: CoverSize;
   onSize: (size: CoverSize) => void;
   cardAspect: CoverAspect;
@@ -185,7 +186,7 @@ export function Workspace({
             design={design}
             editable
             canCopy={false}
-            isCourse={isCourse}
+            noun={noun}
             onDiscard={onDiscard}
             inBar
           />
@@ -296,11 +297,12 @@ export function Workspace({
             </div>
             <p className="shrink-0 text-center text-xs text-muted-foreground">
               {t("editor.coverLine", {
-                cover: isCourse
-                  ? t("editor.courseCover")
-                  : t("editor.eventCover", {
-                      kind: ta(`events.kinds.${design.target_kind}.label`),
-                    }),
+                cover:
+                  noun === "event"
+                    ? t("editor.eventCover", {
+                        kind: ta(`events.kinds.${design.target_kind}.label`),
+                      })
+                    : t(`editor.${noun}Cover`),
                 notice,
               })}
             </p>

@@ -63,7 +63,7 @@ export interface LayerToolbarProps {
   recipe: CoverRecipe;
   /** The look's colours, for the swatches. */
   palette: CoverPalette;
-  /** "course", or the kind of event: leaves out the badge kinds that could never draw. */
+  /** "course", "download", or the kind of event: leaves out the badge kinds that could never draw. */
   targetKind?: string;
   onEdit: (action: EditorAction) => void;
   /** Duplicate selects the copy, and Delete lets go of the layer (null). */

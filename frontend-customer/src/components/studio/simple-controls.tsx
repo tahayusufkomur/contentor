@@ -22,6 +22,7 @@ import {
   typeColour,
 } from "@/lib/covers/palette";
 import { badgeKindsFor, panelPaint } from "@/lib/covers/recipe";
+import { targetNoun } from "@/lib/covers/targets";
 import { cn } from "@/lib/utils";
 import { LAYOUTS, PAINT_ROLES, SIZES, TEXT_MAX } from "@/types/design";
 import type {
@@ -34,7 +35,7 @@ import type {
 
 export interface SimpleControlsProps {
   recipe: CoverRecipe;
-  /** "course", or the kind of event series. */
+  /** "course", "download", or the kind of event series. */
   targetKind: string;
   /** The item's own title: what an empty Title follows. */
   itemTitle: string;
@@ -149,11 +150,7 @@ export function Words({
           id={`${id}-label`}
           value={words.label}
           maxLength={TEXT_MAX.label}
-          placeholder={t(
-            targetKind === "course"
-              ? "labelPlaceholder"
-              : "labelPlaceholderEvent",
-          )}
+          placeholder={t(`labelPlaceholder.${targetNoun(targetKind)}`)}
           onChange={(e) =>
             edit({ type: "words", patch: { label: e.target.value } })
           }
@@ -173,7 +170,7 @@ export function Words({
         />
         <p id={`${id}-title-hint`} className="text-xs text-muted-foreground">
           {t("titleHint", {
-            target: targetKind === "course" ? "course" : "event",
+            target: targetNoun(targetKind),
           })}
         </p>
       </div>
@@ -356,7 +353,7 @@ function Badge({
   const t = useTranslations("admin.studio.controls");
   const id = useId();
   const { badge } = recipe;
-  // A course has no date to show, and an event is never new: leave out what could never draw.
+  // A course or download has no date to show, and an event is never new: leave out what could never draw.
   const kinds = badgeKindsFor(targetKind, badge.kind);
   // A badge she deleted on the canvas is not drawn, whatever its kind: the select then shows none of them, so
   // that choosing one, the kind it had too, brings it back.

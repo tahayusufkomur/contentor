@@ -43,7 +43,7 @@ const actions = (draft: CoverDraft, inBar = false) =>
       design: { state: "draft" } as DesignRecord,
       editable: true,
       canCopy: false,
-      isCourse: true,
+      noun: "course",
       onDiscard: vi.fn(),
       inBar,
     }),

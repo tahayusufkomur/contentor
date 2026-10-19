@@ -97,7 +97,7 @@ function workspace(draft: CoverDraft) {
         cover: design,
         item: { title: "Morning flow" },
         title: "Morning flow",
-        isCourse: true,
+        noun: "course",
         size: "card",
         onSize: vi.fn(),
         cardAspect: "4/5",

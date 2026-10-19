@@ -16,6 +16,7 @@ from apps.core.curated_images.views import generation_allowance
 from apps.core.permissions import IsCoachOrOwner
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.courses.models import Course
+from apps.downloads.models import DownloadFile
 
 from . import designs
 from .design_recipe import validate_recipe
@@ -32,7 +33,7 @@ def _photo_url(row):
     photo = row.thumbnail
     if photo and photo.s3_key:
         return generate_presigned_download_url(photo.s3_key) or None
-    return sign_if_s3_key(row.thumbnail_url) or None
+    return sign_if_s3_key(getattr(row, "thumbnail_url", "")) or None
 
 
 @api_view(["GET"])
@@ -40,7 +41,7 @@ def _photo_url(row):
 def design_targets(request):
     """Everything she can put a cover on, each with the cover it wears and its draft: her courses in her
     order, then her event series (an event kind and an exact title), the ones with a session still to come
-    first, soonest first.
+    first, soonest first, then her downloads.
 
     ponytail: this reads every session of every kind to group them into series (hundreds, not thousands).
     Aggregate in SQL (`values("title").annotate(...)`) if a calendar ever outgrows that."""
@@ -80,6 +81,17 @@ def design_targets(request):
         )
         for course in Course.objects.select_related("thumbnail").order_by("order", "title")
     ]
+    downloads = [
+        target(
+            "download",
+            str(download.pk),
+            download.title,
+            download,
+            status="published" if download.is_published else "draft",
+            created_at=download.created_at,
+        )
+        for download in DownloadFile.objects.select_related("thumbnail")
+    ]
     series = []
     for kind in content.EVENT_KINDS:
         by_title = {}
@@ -95,7 +107,7 @@ def design_targets(request):
     look, logo_url = designs.site_look(ctx)
     return Response(
         {
-            "targets": courses + series,
+            "targets": courses + series + downloads,
             "in_use": designs.in_use_assets(),
             "look": look,
             "logo_url": logo_url,

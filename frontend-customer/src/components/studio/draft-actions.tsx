@@ -8,6 +8,7 @@ import { Redo2, Undo2 } from "lucide-react";
 import { SaveStatus } from "@/components/studio/save-status";
 import type { CoverDraft } from "@/components/studio/use-cover-draft";
 import { Button } from "@/components/ui/button";
+import type { TargetNoun } from "@/lib/covers/targets";
 import type { DesignRecord } from "@/types/design";
 
 /** What can be done to this design: how much it saves, undoes, discards and keeps. On the phone it sits
@@ -17,16 +18,16 @@ export function DraftActions({
   design,
   editable,
   canCopy,
-  isCourse,
+  noun,
   onDiscard,
   inBar = false,
 }: {
   draft: CoverDraft;
   design: DesignRecord;
   editable: boolean;
-  /** A kept or retired design whose course or event is still there can be copied. */
+  /** A kept or retired design whose course, download or event is still there can be copied. */
   canCopy: boolean;
-  isCourse: boolean;
+  noun: TargetNoun;
   onDiscard: () => void;
   /** In the workspace's top bar: one row, buttons no wider than their words. */
   inBar?: boolean;
@@ -92,7 +93,7 @@ export function DraftActions({
             disabled={draft.locked}
             title={why}
           >
-            {isCourse ? t("editor.keepCourse") : t("editor.keepEvent")}
+            {t(`editor.keep.${noun}`)}
           </Button>
         )}
         {design.state !== "draft" && canCopy && (

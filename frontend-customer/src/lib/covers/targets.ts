@@ -1,6 +1,15 @@
-// What the photo studio's list says about a course or event series, and what its button does.
+// What the photo studio's list says about a course, download or event series, and what its button does.
 
 import type { CoverItem, DesignTarget } from "@/types/design";
+
+/** A course or a download is one row, targeted by its id; everything else is an event series, by title. */
+export type TargetNoun = "course" | "download" | "event";
+
+export function targetNoun(targetKind: string | undefined): TargetNoun {
+  return targetKind === "course" || targetKind === "download"
+    ? targetKind
+    : "event";
+}
 
 /** What a target wears now: a kept design, a plain photo, nothing, or a draft that waits for her. */
 export type TargetState = "designed" | "photo" | "none" | "draft";

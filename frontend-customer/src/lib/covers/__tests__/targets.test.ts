@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { defaultRecipe } from "@/lib/covers/recipe";
-import { targetAction, targetItem, targetState } from "@/lib/covers/targets";
+import {
+  targetAction,
+  targetItem,
+  targetNoun,
+  targetState,
+} from "@/lib/covers/targets";
 import type { CoverDesign, DesignTarget } from "@/types/design";
 
 const target = (over: Partial<DesignTarget> = {}): DesignTarget => ({
@@ -100,5 +105,15 @@ describe("targetItem", () => {
       startsAt: "2026-11-11T19:00:00Z",
       timeZone: "UTC",
     });
+  });
+});
+
+describe("targetNoun", () => {
+  it("is the row's own kind for a course or download, else event", () => {
+    expect(targetNoun("course")).toBe("course");
+    expect(targetNoun("download")).toBe("download");
+    for (const kind of ["live", "stream", "zoom", "onsite", undefined]) {
+      expect(targetNoun(kind)).toBe("event");
+    }
   });
 });
