@@ -355,3 +355,50 @@ def describe(ways: dict) -> str:
         )
     text = "; ".join(parts)
     return f"{text[:1].upper()}{text[1:]}."
+
+
+# ---- item serializers --------------------------------------------------------
+
+
+class ShorthandMixin:
+    """For an item's create/update serializer: ``pricing_type`` and ``price`` stay accepted as a shorthand,
+    written through ``apply_shorthand`` after the save. A refused change is a 400 and rolls the save back."""
+
+    def save(self, **kwargs):
+        from rest_framework import serializers
+
+        sent = {key: self.validated_data[key] for key in ("pricing_type", "price") if key in self.validated_data}
+        with transaction.atomic():
+            instance = super().save(**kwargs)
+            if sent:
+                request = self.context.get("request")
+                try:
+                    apply_shorthand(instance, actor=getattr(request, "user", None), **sent)
+                except WaysError as error:
+                    field = "pricing_type" if error.code in ("plan", "not_allowed") else "price"
+                    raise serializers.ValidationError({field: str(error)}) from error
+        return instance
+
+
+# ---- migration ---------------------------------------------------------------
+
+
+def link_unlinked_members_only() -> int:
+    """Link every members-only item that names no plan to every active plan, so closing the
+    "any active subscription" rule changes nobody's access. Returns how many items were linked."""
+    plans = list(SubscriptionPlan.objects.filter(is_active=True))
+    if not plans:
+        return 0
+    linked = 0
+    for kind, label in KINDS.items():
+        if kind == "bundle":
+            continue
+        model = apps.get_model(label)
+        ctype = ContentType.objects.get_for_model(model)
+        has_link = SubscriptionPlanAccess.objects.filter(content_type=ctype).values("object_id")
+        for item in model.objects.filter(pricing_type="subscription").exclude(pk__in=has_link):
+            SubscriptionPlanAccess.objects.bulk_create(
+                [SubscriptionPlanAccess(plan=plan, content_type=ctype, object_id=item.pk) for plan in plans]
+            )
+            linked += 1
+    return linked

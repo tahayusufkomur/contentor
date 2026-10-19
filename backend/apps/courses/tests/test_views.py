@@ -16,6 +16,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.billing.ways import ways_of
 from apps.core.storage import build_s3_path
 from apps.courses.models import Course, Enrollment, Lesson, Module, Video
 
@@ -116,7 +117,7 @@ def make_client(user=None):
 
 @pytest.mark.django_db(transaction=True)
 class TestCourseListCreate:
-    def test_switching_to_free_clears_price(self, owner):
+    def test_switching_to_free_covers_the_price(self, owner):
         client = make_client(owner)
         resp = client.post(
             "/api/v1/courses/", {"title": "Paid", "pricing_type": "paid", "price": "49.00"}, format="json"
@@ -126,7 +127,10 @@ class TestCourseListCreate:
         resp = client.put(f"/api/v1/courses/{course.slug}/", {"pricing_type": "free"}, format="json")
         assert resp.status_code == 200, resp.content
         course.refresh_from_db()
-        assert course.price == 0
+        assert course.price == Decimal("49.00")
+        ways = ways_of(course)
+        assert ways["free"] == {"window": None}
+        assert ways["buy"] == {"price": "49.00", "window": None}
 
     def test_student_sees_only_published(self, published_course, unpublished_course, student):
         """Students should only see published courses."""

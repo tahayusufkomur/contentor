@@ -4,6 +4,7 @@ from django.db import transaction
 from django.db.models import Prefetch
 from rest_framework import serializers
 
+from apps.billing.ways import ShorthandMixin
 from apps.core.access import ContentAccessService
 from apps.core.sanitize import clean_rich_html
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
@@ -263,7 +264,7 @@ class _NestedModuleSerializer(serializers.Serializer):
     lessons = _NestedLessonSerializer(many=True, required=False)
 
 
-class CourseCreateUpdateSerializer(serializers.ModelSerializer):
+class CourseCreateUpdateSerializer(ShorthandMixin, serializers.ModelSerializer):
     filter_option_ids = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=FilterOption.objects.all(),
@@ -290,11 +291,6 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        # Free content never keeps a price: the publish gate and the storefront
-        # both read `price`, so a leftover value would silently demand payouts.
-        pricing_type = attrs.get("pricing_type", getattr(self.instance, "pricing_type", "free"))
-        if pricing_type != "paid":
-            attrs["price"] = 0
         # Going live needs every lesson filled in (Course.not_ready); a course
         # already live is left as it is.
         if attrs.get("is_published") and not getattr(self.instance, "is_published", False):

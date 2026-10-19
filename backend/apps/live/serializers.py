@@ -2,6 +2,7 @@ from dataclasses import asdict
 
 from rest_framework import serializers
 
+from apps.billing.ways import ShorthandMixin
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.filters.models import FilterOption
 from apps.filters.serializers import FilterOptionSerializer
@@ -35,7 +36,7 @@ def _tag_ids_field():
     return tag_ids_field("event")
 
 
-class _ScheduledOnCreateMixin:
+class _ScheduledOnCreateMixin(ShorthandMixin):
     """Mark an event as 'scheduled' when it has a scheduled time, on creation and on edit.
 
     Events default to 'draft' and the student-facing lists hide drafts

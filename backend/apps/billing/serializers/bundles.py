@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
 from apps.billing.models import Bundle, BundleItem
+from apps.billing.ways import ShorthandMixin
 from apps.core.access import AccessInfo, ContentAccessService
 
 
@@ -97,7 +98,7 @@ class BundleDetailSerializer(BundleListSerializer):
         return total
 
 
-class BundleCreateSerializer(serializers.ModelSerializer):
+class BundleCreateSerializer(ShorthandMixin, serializers.ModelSerializer):
     items = BundleItemWriteSerializer(many=True, write_only=True, required=False)
 
     class Meta:
