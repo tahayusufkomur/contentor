@@ -392,26 +392,9 @@ def expand_class_series(tenant, kind: str = "event") -> int:
     flag = "series_expanded" if kind == "event" else f"series_expanded_{kind}"  # "event" keeps its first name
     if first is None or (flow.get("interview") or {}).get(flag):
         return 0
-    tz = TenantConfig.objects.first().timezone
-    later = [d for d in schedule.occurrences(picked, tz) if d > first.scheduled_at]
-    copy_fields = ("title", "description", "instructor", "status", "pricing_type", "price", "duration_minutes")
-    copy_fields += ("thumbnail", "thumbnail_url") + (("location", "address") if hasattr(first, "address") else ())
-    model = type(first)
-    from django.contrib.contenttypes.models import ContentType
+    from apps.live import series
 
-    from apps.billing.models import SubscriptionPlanAccess
-
-    # Every later class is in the memberships the first one is in.
-    ct = ContentType.objects.get_for_model(model)
-    plan_ids = list(
-        SubscriptionPlanAccess.objects.filter(content_type=ct, object_id=first.pk).values_list("plan_id", flat=True)
-    )
-    for when in later:
-        row = model(**{f: getattr(first, f) for f in copy_fields}, scheduled_at=when)
-        row.save()
-        SubscriptionPlanAccess.objects.bulk_create(
-            SubscriptionPlanAccess(plan_id=pk, content_type=ct, object_id=row.pk) for pk in plan_ids
-        )
+    added = series.expand(first, picked, TenantConfig.objects.first().timezone)
 
     def mutate(_config, flow):
         flow["interview"] = {**(flow.get("interview") or {}), flag: True}
@@ -419,7 +402,7 @@ def expand_class_series(tenant, kind: str = "event") -> int:
     from .setup_flow import _update_flow
 
     _update_flow(tenant, mutate)
-    return len(later)
+    return added
 
 
 _PHOTO_WORDS = re.compile(r"\b(photos?|pictures?|pics?|images?|covers?|thumbnails?)\b", re.IGNORECASE)
