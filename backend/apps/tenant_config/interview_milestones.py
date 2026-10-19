@@ -533,9 +533,7 @@ def apply_access(tenant, answers: dict | None = None) -> None:
     a coach with memberships: without them a draft's price is all there is."""
     from decimal import Decimal
 
-    from django.contrib.contenttypes.models import ContentType
-
-    from apps.billing.models import SubscriptionPlanAccess
+    from apps.billing import ways
 
     from .setup_flow import brief_price
 
@@ -549,20 +547,18 @@ def apply_access(tenant, answers: dict | None = None) -> None:
         row = _draft_row(flow, kind)
         if row is None:
             continue
-        ways = brief.access_of(answers, kind)
-        want = {plans[w] for w in ways if w in plans}
-        links = SubscriptionPlanAccess.objects.filter(
-            plan_id__in=plans.values(), content_type=ContentType.objects.get_for_model(type(row)), object_id=row.pk
+        chosen = brief.access_of(answers, kind)
+        want = list(dict.fromkeys(plans[w] for w in chosen if w in plans))
+        price = Decimal(f"{brief_price(answers, way, price_key) or 0:.2f}") if brief.BUY in chosen else Decimal("0")
+        # set_ways is idempotent, so a draft already in this state is not written again.
+        ways.set_ways(
+            row,
+            {
+                "free": None if price or want else {"window": None},
+                "buy": {"price": str(price), "window": None} if price else None,
+                "plans": [{"plan_id": pid, "window": None} for pid in want],
+            },
         )
-        links.exclude(plan_id__in=want).delete()
-        for plan_id in want - set(links.values_list("plan_id", flat=True)):
-            SubscriptionPlanAccess.objects.get_or_create(
-                plan_id=plan_id, content_type=ContentType.objects.get_for_model(type(row)), object_id=row.pk
-            )
-        price = Decimal(f"{brief_price(answers, way, price_key) or 0:.2f}") if brief.BUY in ways else Decimal("0")
-        pricing = "paid" if price else "subscription" if want else "free"
-        if (row.pricing_type, row.price) != (pricing, price):
-            type(row).objects.filter(pk=row.pk).update(pricing_type=pricing, price=price)
 
 
 # ── look: cards and picks ────────────────────────────────────────────────────

@@ -4,15 +4,15 @@ into its sessions here, and the event form and focus mode publish them together.
 
 from __future__ import annotations
 
-from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import Case, F, Value, When
 from django.utils import timezone
 
-from apps.billing.models import SubscriptionPlanAccess
+from apps.billing import ways
 from apps.tenant_config import interview_schedule
 
-COPIED = ("title", "description", "instructor", "status", "pricing_type", "price", "duration_minutes")
+# The ways in (pricing_type, price, windows, plan links) are copied by ways.copy_ways.
+COPIED = ("title", "description", "instructor", "status", "duration_minutes")
 COPIED += ("thumbnail", "thumbnail_url")
 # What only some kinds have: the in-person place, a Zoom link, a room's recording.
 COPIED_WHEN_PRESENT = ("location", "address", "max_capacity", "zoom_link", "zoom_meeting_id", "auto_recording")
@@ -27,17 +27,11 @@ def expand(first, schedule: dict, tz: str) -> int:
     later = [d for d in interview_schedule.occurrences(schedule, tz) if d > after]
     model = type(first)
     fields = COPIED + tuple(f for f in COPIED_WHEN_PRESENT if hasattr(first, f))
-    ct = ContentType.objects.get_for_model(model)
-    plan_ids = list(
-        SubscriptionPlanAccess.objects.filter(content_type=ct, object_id=first.pk).values_list("plan_id", flat=True)
-    )
     with transaction.atomic():
         for when in later:
             row = model(**{f: getattr(first, f) for f in fields}, scheduled_at=when)
             row.save()
-            SubscriptionPlanAccess.objects.bulk_create(
-                SubscriptionPlanAccess(plan_id=pk, content_type=ct, object_id=row.pk) for pk in plan_ids
-            )
+            ways.copy_ways(first, row)
     return len(later)
 
 

@@ -10,6 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
 from apps.accounts.models import User
+from apps.billing import ways
 from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
 from apps.live import series
 from apps.live.models import LiveClass, OnsiteEvent, ZoomClass
@@ -142,6 +143,29 @@ def test_later_sessions_join_the_first_ones_memberships(owner):
     later = LiveClass.objects.exclude(pk=first.pk).get()
     got = SubscriptionPlanAccess.objects.filter(content_type=ct, object_id=later.pk)
     assert set(got.values_list("plan__name", flat=True)) == {"Weekly", "Other"}
+
+
+def test_later_sessions_copy_the_first_ones_windows(owner):
+    sched = _weekly("2030-01-07", "2030-01-21", [2, 4], ["18:30"])
+    first = _first(owner, sched)
+    plan = SubscriptionPlan.objects.create(name="Weekly", price="25.00", currency="USD")
+    ways.set_ways(
+        first,
+        {
+            "free": None,
+            "buy": {"price": "20", "window": {"closes_after_days": 30}},
+            "plans": [{"plan_id": plan.pk, "window": {"opens_after_days": 7}}],
+        },
+    )
+    assert series.expand(first, sched, "UTC") == 3
+    later = LiveClass.objects.exclude(pk=first.pk)
+    assert later.count() == 3
+    expected = ways.ways_of(first)
+    assert expected["buy"]["window"] == {"closes_after_days": 30}
+    assert expected["plans"][0]["window"] == {"opens_after_days": 7}
+    for row in later:
+        assert ways.ways_of(row) == expected
+        assert (row.pricing_type, row.price) == ("paid", first.price)
 
 
 def test_rows_are_the_same_model_with_the_same_title(owner):

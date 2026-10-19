@@ -236,6 +236,12 @@ def set_ways(item, ways: dict, *, actor=None) -> dict:
     return ways_of(item)
 
 
+def copy_ways(source, target) -> None:
+    """Give ``target`` the same ways in as ``source``: price, windows and plan links.
+    ``ways_of`` carries every window, so a ``set_ways`` round trip is a faithful copy."""
+    set_ways(target, ways_of(source))
+
+
 def apply_shorthand(item, *, pricing_type: str | None = None, price=None, actor=None) -> dict:
     """The old item payload (pricing_type / price) as a change to the ways."""
     current = ways_of(item)
