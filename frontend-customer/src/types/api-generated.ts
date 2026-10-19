@@ -1731,7 +1731,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** @description Grant a student free enrollment into a course (coach/owner only). */
+    /** @description Grant a student free enrollment into a course (coach/owner only), for a time or for good. */
     post: operations["v1_auth_students_grant_access_create"];
     delete?: never;
     options?: never;
