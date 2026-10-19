@@ -42,6 +42,9 @@ async function roleContext(browser: Browser, role: string, host: string, tenant?
 
 export const coachContext = (b: Browser): Promise<BrowserContext> =>
   roleContext(b, "coach", TENANT_HOST, "demo-yoga");
+// A coach who is not the owner: the studio's owner-only parts read-only.
+export const staffContext = (b: Browser): Promise<BrowserContext> =>
+  roleContext(b, "staff", TENANT_HOST, "demo-yoga");
 export const studentContext = (b: Browser): Promise<BrowserContext> =>
   roleContext(b, "student", TENANT_HOST, "demo-yoga");
 export const superadminContext = (b: Browser): Promise<BrowserContext> =>

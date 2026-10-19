@@ -327,6 +327,12 @@ def _clauses(window: dict | None, opens_after: str, closes_after: str) -> list[s
     return out
 
 
+def membership_text(link) -> str:
+    """When a plan's link (a ``SubscriptionPlanAccess`` row) opens and closes the item for a member."""
+    text = ", ".join(_clauses(_window_of(link), "after {} of membership", "for {} of membership"))
+    return f"{text[:1].upper()}{text[1:]}" if text else "Right away · never closes"
+
+
 def describe(ways: dict) -> str:
     from apps.tenant_config.interview_brief import money
 

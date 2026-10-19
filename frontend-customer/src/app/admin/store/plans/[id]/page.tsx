@@ -50,6 +50,7 @@ interface PlanContent {
   title: string;
   price: string;
   pricing_type: string;
+  window_text: string;
 }
 interface PlanAccess {
   items: PlanContent[];

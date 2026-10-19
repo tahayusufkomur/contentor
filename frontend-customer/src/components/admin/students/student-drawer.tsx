@@ -94,13 +94,21 @@ export function StudentDrawer({
     { id: number; title: string }[]
   >([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
+  // How long the access lasts: "forever", a number of days, or "until" a date.
+  const [duration, setDuration] = useState("forever");
+  const [untilDate, setUntilDate] = useState("");
 
   const { run: handleGrantAccess, loading: granting } = useAsyncAction(
     async () => {
       if (!student || !selectedCourseId) return;
       await clientFetch(`/api/v1/auth/students/${student.id}/grant-access/`, {
         method: "POST",
-        body: JSON.stringify({ course_id: parseInt(selectedCourseId) }),
+        body: JSON.stringify({
+          course_id: parseInt(selectedCourseId),
+          ...(duration === "until"
+            ? { until: untilDate }
+            : duration !== "forever" && { for_days: Number(duration) }),
+        }),
       });
       toast.success("Course access granted successfully!");
       setGrantingAccess(false);
@@ -438,6 +446,36 @@ export function StudentDrawer({
                 )}
               </div>
 
+              <div className="space-y-2">
+                <label
+                  htmlFor="grant-duration"
+                  className="text-xs font-semibold text-muted-foreground"
+                >
+                  For how long:
+                </label>
+                <select
+                  id="grant-duration"
+                  className="w-full rounded-lg border bg-background p-2 text-xs font-medium focus:outline-none"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                >
+                  <option value="forever">Forever</option>
+                  <option value="30">1 month</option>
+                  <option value="90">3 months</option>
+                  <option value="365">1 year</option>
+                  <option value="until">Until a date</option>
+                </select>
+                {duration === "until" && (
+                  <input
+                    type="date"
+                    aria-label="Last day of access"
+                    className="w-full rounded-lg border bg-background p-2 text-xs font-medium focus:outline-none"
+                    value={untilDate}
+                    onChange={(e) => setUntilDate(e.target.value)}
+                  />
+                )}
+              </div>
+
               <div className="flex items-center justify-end gap-2 border-t pt-3">
                 <Button
                   variant="outline"
@@ -452,6 +490,7 @@ export function StudentDrawer({
                   onClick={handleGrantAccess}
                   loading={granting}
                   loadingText="Granting…"
+                  disabled={duration === "until" && !untilDate}
                 >
                   Confirm Grant
                 </Button>

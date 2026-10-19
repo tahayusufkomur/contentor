@@ -16,6 +16,8 @@ from apps.core.models import Tenant
 ROLE_FILTERS = {
     "coach": {"role": "owner", "is_staff": True},
     "student": {"role": "student"},
+    # A coach who is not the owner (dev/e2e): the owner-only parts of the studio stay read-only for them.
+    "staff": {"role": "coach"},
 }
 
 
@@ -23,7 +25,7 @@ class Command(BaseCommand):
     help = "Print a session JWT for a seeded user (dev only)."
 
     def add_arguments(self, parser):
-        parser.add_argument("--role", required=True, choices=["superadmin", "coach", "student"])
+        parser.add_argument("--role", required=True, choices=["superadmin", "coach", "staff", "student"])
         parser.add_argument("--tenant", default="", help="Tenant slug (required for coach/student)")
 
     def handle(self, *args, **options):

@@ -14,6 +14,7 @@ Tests for:
 Uses shared tenant fixtures from conftest.py.
 """
 
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 import pytest
@@ -502,3 +503,93 @@ class TestGoogleLogin:
         assert "accounts.google.com" in data["url"]
         assert "fake-client-id" in data["url"]
         assert "state=" in data["url"]
+
+
+# ---------------------------------------------------------------------------
+# Tests: student_grant_access
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def course(tenant_ctx, owner):
+    from apps.courses.models import Course
+
+    return Course.objects.create(title="Granted", slug="granted", instructor=owner, pricing_type="paid", price=49)
+
+
+@pytest.fixture()
+def istanbul(tenant_ctx):
+    """The creator's time zone is Istanbul for the test, and put back after."""
+    from apps.tenant_config.models import TenantConfig
+
+    config = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Grants")
+    was = config.timezone
+    config.timezone = "Europe/Istanbul"
+    config.save(update_fields=["timezone"])
+    yield
+    config.timezone = was
+    config.save(update_fields=["timezone"])
+
+
+def _grant(owner, student, course, **extra):
+    url = f"/api/v1/auth/students/{student.pk}/grant-access/"
+    return make_client(owner).post(url, {"course_id": course.pk, **extra}, format="json")
+
+
+@pytest.mark.django_db(transaction=True)
+class TestGrantAccessForATime:
+    NOW = datetime(2026, 10, 19, 9, 0, tzinfo=UTC)
+
+    def _enrollment(self, student, course):
+        from apps.courses.models import Enrollment
+
+        return Enrollment.objects.get(user=student, course=course)
+
+    def test_give_access_with_no_time_is_forever(self, owner, student, course):
+        with patch("django.utils.timezone.now", return_value=self.NOW):
+            response = _grant(owner, student, course)
+        assert response.status_code == 200, response.content
+        enrollment = self._enrollment(student, course)
+        assert (enrollment.access_starts_at, enrollment.access_ends_at) == (self.NOW, None)
+
+    def test_give_access_for_a_month_ends_after_30_days(self, owner, student, course):
+        with patch("django.utils.timezone.now", return_value=self.NOW):
+            response = _grant(owner, student, course, for_days=30)
+        assert response.status_code == 200, response.content
+        enrollment = self._enrollment(student, course)
+        assert enrollment.access_starts_at == self.NOW
+        assert enrollment.access_ends_at == self.NOW + timedelta(days=30)
+
+    def test_give_access_until_a_date_ends_that_day(self, owner, student, course, istanbul):
+        with patch("django.utils.timezone.now", return_value=self.NOW):
+            response = _grant(owner, student, course, until="2026-11-30")
+        assert response.status_code == 200, response.content
+        # 23:59:59 on 30 Nov in Istanbul (UTC+3), not UTC midnight
+        assert self._enrollment(student, course).access_ends_at == datetime(2026, 11, 30, 20, 59, 59, tzinfo=UTC)
+
+    def test_granting_again_replaces_the_time(self, owner, student, course):
+        with patch("django.utils.timezone.now", return_value=self.NOW):
+            _grant(owner, student, course, for_days=30)
+            _grant(owner, student, course)
+        assert self._enrollment(student, course).access_ends_at is None
+
+    @pytest.mark.parametrize(
+        "extra",
+        [
+            {"for_days": 0},
+            {"for_days": -5},
+            {"for_days": 3651},
+            {"for_days": "soon"},
+            {"until": "30/11/2026"},
+            {"until": "2020-01-01"},
+            {"for_days": 30, "until": "2026-11-30"},
+        ],
+    )
+    def test_a_bad_time_is_refused_with_a_sentence(self, owner, student, course, extra):
+        from apps.courses.models import Enrollment
+
+        with patch("django.utils.timezone.now", return_value=self.NOW):
+            response = _grant(owner, student, course, **extra)
+        assert response.status_code == 400, response.content
+        assert response.json()["detail"]
+        assert not Enrollment.objects.filter(user=student, course=course).exists()

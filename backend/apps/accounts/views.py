@@ -416,10 +416,34 @@ def student_delete(request, pk):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+def _grant_end(for_days, until, now):
+    """When a given access ends: ``for_days`` after ``now``, the end of the ``until`` date in the creator's
+    zone, or None (theirs to keep) with neither. A ValueError carries the sentence to show the creator."""
+    from datetime import date
+
+    from apps.billing.ways import window_bounds
+
+    if for_days is not None and until is not None:
+        raise ValueError("Choose either a number of days or an end date, not both.")
+    if for_days is not None:
+        if isinstance(for_days, bool) or not isinstance(for_days, int) or not 1 <= for_days <= 3650:
+            raise ValueError("Give access for a whole number of days between 1 and 3650.")
+        return window_bounds({"closes_after_days": for_days}, now)[1]
+    if until is not None:
+        try:
+            end = window_bounds({"closes_on": date.fromisoformat(str(until)).isoformat()}, now)[1]
+        except ValueError:
+            raise ValueError("Pick the end date as a calendar date.") from None
+        if end <= now:
+            raise ValueError("Pick an end date that is still to come.")
+        return end
+    return None
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def student_grant_access(request, pk):
-    """Grant a student free enrollment into a course (coach/owner only)."""
+    """Grant a student free enrollment into a course (coach/owner only), for a time or for good."""
     from apps.core.permissions import IsCoachOrOwner
     from apps.courses.models import Course, Enrollment
 
@@ -441,9 +465,17 @@ def student_grant_access(request, pk):
     except Course.DoesNotExist:
         return Response({"detail": "Course not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    now = timezone.now()
+    try:
+        ends_at = _grant_end(request.data.get("for_days"), request.data.get("until"), now)
+    except ValueError as error:
+        return Response({"detail": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+
     enrollment, _ = Enrollment.objects.get_or_create(user=student, course=course)
     enrollment.is_active = True
     enrollment.granted = True
+    enrollment.access_starts_at = now
+    enrollment.access_ends_at = ends_at
     enrollment.save()
 
     return Response(

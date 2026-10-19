@@ -1,8 +1,9 @@
 {
   "backend": {
-    "billing": ["20-stripe-platform", "21-stripe-marketplace"],
+    "billing": ["20-stripe-platform", "21-stripe-marketplace", "40-access"],
     "blog": "none",
     "community": ["15-community"],
+    "core/access.py": ["40-access"],
     "core/focus": ["33-focus-course", "34-focus-event"],
     "core/focus/kinds/event.py": ["34-focus-event"],
     "courses": ["02-courses"],
@@ -93,6 +94,10 @@
     "src/app/admin/courses": ["02-courses", "33-focus-course"],
     "src/components/admin/course-form.tsx": ["02-courses", "33-focus-course"],
     "src/components/focus": ["33-focus-course", "34-focus-event"],
+    "src/components/admin/access": ["40-access"],
+    "src/components/admin/students": ["40-access"],
+    "src/components/public": ["40-access"],
+    "src/lib/access": ["40-access"],
     "src/lib/focus": ["33-focus-course", "34-focus-event"],
     "src/components/admin/live": [
       "03-calendar",

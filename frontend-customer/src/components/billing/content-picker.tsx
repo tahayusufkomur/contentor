@@ -17,6 +17,8 @@ export interface SelectedItem {
   object_id: number;
   title: string;
   price: string;
+  /** When it opens and closes for a member, in plain words; set on a link the plan already holds. */
+  window_text?: string;
 }
 
 export interface Product {
@@ -152,9 +154,16 @@ export function ContentPicker({
           {selected.map((item) => (
             <span
               key={`${item.content_type}-${item.object_id}`}
-              className="inline-flex items-center gap-1 rounded-full border bg-background px-2.5 py-0.5 text-xs font-medium"
+              className="inline-flex items-center gap-1 rounded-2xl border bg-background px-2.5 py-0.5 text-xs font-medium"
             >
-              {item.title}
+              <span className="flex flex-col leading-tight">
+                {item.title}
+                {item.window_text && (
+                  <span className="text-[11px] font-normal text-muted-foreground">
+                    {item.window_text}
+                  </span>
+                )}
+              </span>
               <button
                 type="button"
                 onClick={() => removeSelected(item)}

@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from apps.billing import ways
 from apps.billing.models import Subscription, SubscriptionPlan, SubscriptionPlanAccess
 from apps.billing.serializers.plans import (
     PlanAccessWriteItemSerializer,
@@ -82,17 +83,19 @@ def _access_payload(plan):
     """What the owner's access page loads, with items in the shape it PUTs
     back: the plan, the content it includes, and all it could include
     (everything that is not free, plus whatever it includes already)."""
-    linked = set(plan.access_items.values_list("content_type_id", "object_id"))
+    links = {(link.content_type_id, link.object_id): link for link in plan.access_items.all()}
     items, available = [], []
     for name, ct in _access_content_types().items():
-        included = {object_id for ct_id, object_id in linked if ct_id == ct.pk}
+        included = {object_id for ct_id, object_id in links if ct_id == ct.pk}
         for obj in ct.model_class().objects.filter(Q(pk__in=included) | ~Q(pricing_type="free")):
+            link = links.get((ct.pk, obj.pk))
             item = {
                 "content_type": name,
                 "object_id": obj.pk,
                 "title": obj.title,
                 "price": str(obj.price),
                 "pricing_type": obj.pricing_type,
+                "window_text": ways.membership_text(link) if link else "",
             }
             available.append(item)
             if obj.pk in included:

@@ -143,6 +143,7 @@ class TestPlanAccess:
                 "title": "Plan Test Course",
                 "price": "50.00",
                 "pricing_type": "paid",
+                "window_text": "Right away · never closes",
             }
         ]
 
@@ -285,3 +286,37 @@ class TestPlanAccess:
             format="json",
         )
         assert put_resp.status_code == 403, put_resp.content
+
+    def test_the_plan_page_shows_each_items_window(self, plan, course, members_class, owner_client):
+        """Each included item says in plain words when it opens and closes for a member; one not linked says nothing."""
+        SubscriptionPlanAccess.objects.filter(pk=_link(plan, course).pk).update(opens_after_days=30)
+        SubscriptionPlanAccess.objects.filter(pk=_link(plan, members_class).pk).update(closes_after_days=90)
+
+        data = owner_client.get(f"/api/v1/billing/plans/{plan.pk}/access/").json()
+
+        texts = {i["object_id"]: i["window_text"] for i in data["items"]}
+        assert texts[course.pk] == "After 1 month of membership"
+        assert texts[members_class.pk] == "For 3 months of membership"
+        assert all(i["window_text"] == "" for i in data["available"] if i not in data["items"])
+
+    def test_an_item_with_no_window_opens_right_away_and_never_closes(self, plan, course, owner_client):
+        _link(plan, course)
+        item = owner_client.get(f"/api/v1/billing/plans/{plan.pk}/access/").json()["items"][0]
+        assert item["window_text"] == "Right away · never closes"
+
+    def test_saving_the_plan_page_keeps_each_links_window(self, plan, course, members_class, owner_client):
+        """The page PUTs its items back; a link it keeps is the same row, so its window survives."""
+        link = _link(plan, course)
+        SubscriptionPlanAccess.objects.filter(pk=link.pk).update(opens_after_days=30, closes_after_days=365)
+        url = f"/api/v1/billing/plans/{plan.pk}/access/"
+        items = owner_client.get(url).json()["items"] + [{"content_type": "live_class", "object_id": members_class.pk}]
+
+        saved = owner_client.put(url, data={"items": items}, format="json")
+
+        assert saved.status_code == 200, saved.content
+        link.refresh_from_db()
+        assert (link.opens_after_days, link.closes_after_days) == (30, 365)
+        kept = next(i for i in saved.json()["items"] if i["object_id"] == course.pk)
+        assert kept["window_text"] == "After 1 month of membership, for 1 year of membership"
+        added = SubscriptionPlanAccess.objects.get(plan=plan, object_id=members_class.pk)
+        assert (added.opens_after_days, added.closes_after_days) == (None, None)
