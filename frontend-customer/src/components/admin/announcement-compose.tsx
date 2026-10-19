@@ -127,13 +127,17 @@ export default function AnnouncementCompose({
   // "Review & send" a draft: seed the form as a one-off template, keyed on
   // the draft id so switching to a different draft re-prefills.
   useEffect(() => {
-    if (!reviewDraft || reviewDraft.id === held.current) return;
+    if (!reviewDraft) return;
+    // Who, when and by email as the draft holds them: a focus Keep wrote them.
+    setFilters(reviewDraft.prefill.filters);
+    setAlsoEmail(reviewDraft.prefill.alsoEmail);
+    setMode("once");
+    setScheduledAt(reviewDraft.prefill.scheduledAt);
+    if (reviewDraft.id === held.current) return; // her text is already here
     setTitle(reviewDraft.prefill.title);
     setBody(reviewDraft.prefill.body);
     setLink(reviewDraft.prefill.link);
     setLinkLabel(reviewDraft.prefill.link);
-    setMode("once");
-    setScheduledAt("");
     // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the draft id, not the whole object
   }, [reviewDraft?.id]);
 

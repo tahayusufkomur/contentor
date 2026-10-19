@@ -1167,7 +1167,8 @@
         "continue": "Continue your message: {title}",
         "fillMyself": "Write it myself",
         "tick": "Also by email",
-        "writing": "Writing your message…"
+        "writing": "Writing your message…",
+        "thinking": "Thinking about your message…"
       }
     },
     "youDecide": "You decide",

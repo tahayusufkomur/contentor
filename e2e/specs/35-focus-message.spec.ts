@@ -45,7 +45,7 @@ const Q: Record<string, Body> = {
   nobody: question("finish", "finish", "Your message is saved as a draft.", {
     why: "Nobody would receive it yet. Until then it stays a hidden draft.",
     options: [option("draft", "Keep as a draft")],
-    tick: false,
+    tick: true, // she said "by email too": the kept draft keeps it
   }),
 };
 const STEPS = ["topic", "audience", "review", "when", "finish"];
@@ -275,7 +275,23 @@ test("send is not offered with nobody to receive it", async ({ browser }) => {
   await expect(guide(page).getByRole("checkbox")).toHaveCount(0);
   await guide(page).getByRole("button", { name: "Keep as a draft" }).click();
   await expect(guide(page)).toHaveCount(0);
-  expect(sent.at(-1)).toMatchObject({ publish: false, announce: false });
+  expect(sent.at(-1)).toMatchObject({ publish: false, announce: true });
+  await page.close();
+});
+
+test("a follow-up being written says it is about her message", async ({ browser }) => {
+  const page = await (await coachContext(browser)).newPage();
+  await stubDraft(page);
+  const thinking = state({
+    record: RECORD,
+    answered: [["topic", "A reminder about tomorrow"], ["audience", "All my students"]],
+    thinking: { status: "building", run: COPY_RUN, specialist: "community" },
+  });
+  await stubFocus(page, () => thinking, thinking);
+
+  await page.goto(`${TENANT}${PATH}`);
+  await expect(guide(page).getByText("Thinking about your message…")).toBeVisible();
+  await expect(guide(page).getByText("Thinking about your course…")).toHaveCount(0);
   await page.close();
 });
 

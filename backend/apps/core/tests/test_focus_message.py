@@ -298,8 +298,7 @@ def test_a_link_she_named_points_at_that_course(owner, students):
 
 def test_keep_as_a_draft_never_sends(owner, students, fanout):
     creation = flow.finish(_at_finish(owner, when="next"), publish=False, announce=True)
-    row = _row(creation)
-    assert (row.status, row.scheduled_at, row.also_email) == ("draft", None, False)
+    assert _row(creation).status == "draft"  # its time and tick kept on it (test_keep_as_a_draft_keeps_…)
     fanout.assert_not_called()
     assert (creation.status, creation.answers["finish"]) == ("done", "draft")
     assert _closing(creation) == "Saved as a draft in Messages."
@@ -417,3 +416,49 @@ def test_the_finish_response_says_when_it_goes_out(owner, students, fanout):
     later = _at_finish(owner, when="next")
     at = next_send_time(timezone.now(), ZoneInfo(ZONE))
     assert send(later)["closing"] == f"Scheduled for {_said(at)}."
+
+
+# ── Delivery is a setting, never content; Keep keeps it; who signs ─────────
+
+
+def test_who_when_and_email_never_reach_the_copy(owner):
+    rule = (
+        "- Who gets it, when it goes out and whether it also goes by email or as a notification are delivery "
+        "settings the page applies, even when her words say them: never mention them in the title or the body."
+    )
+    assert rule in copywriter.system_for("message").splitlines()
+    creation = _at_review(owner, f"course:{_course(owner).pk}")
+    creation.answers = {**creation.answers, "when": "next"}
+    creation.brief = {**creation.brief, "also_email": True}
+    facts = message.copy_facts(creation, _row(creation))
+    assert not {"audience", "when", "also_email", "scheduled_at"} & set(facts)
+    assert facts["topic"] == TOPIC  # her words themselves, read under the rule
+
+
+def test_keep_as_a_draft_keeps_who_when_and_email_and_sends_nothing(owner, students, fanout):
+    course = _course(owner)
+    creation = _at_finish(owner, f"course:{course.pk}", when="next")
+    at = next_send_time(timezone.now(), ZoneInfo(ZONE))
+    creation = flow.finish(creation, publish=False, announce=True)  # Keep as a draft, "Also by email" ticked
+    row = _row(creation)
+    assert (row.status, row.filters_json, row.scheduled_at, row.also_email) == (
+        "draft",
+        {"content_type": "course", "content_id": course.pk},
+        at,
+        True,
+    )
+    assert _closing(creation) == message.KEPT
+    fanout.assert_not_called()
+    # Now (or a time already passed) leaves the time for her to pick in the composer.
+    row = _row(flow.finish(_at_finish(owner), publish=False))
+    assert (row.status, row.filters_json, row.scheduled_at, row.also_email) == ("draft", {}, None, False)
+    fanout.assert_not_called()
+
+
+@pytest.mark.parametrize(("kind", "signer"), [("message", "community"), ("course", "content"), ("event", "content")])
+def test_a_clarify_question_is_signed_by_whoever_asks_her_first_question(kind, signer):
+    from types import SimpleNamespace
+
+    unclear = {"field": "when", "question": "Which day?", "options": [{"label": "Monday", "value": "x"}]}
+    asked = flow.question(kind, "clarify", SimpleNamespace(brief={"clarify": [unclear]}))
+    assert asked["specialist"] == signer

@@ -32,6 +32,25 @@ describe("draftToComposePrefill", () => {
       title: "New timetable",
       body: "<p>From Monday…</p>",
       link: "/courses",
+      filters: {},
+      scheduledAt: "",
+      alsoEmail: false,
+    });
+  });
+
+  it("carries who, when and by email that a focus-mode Keep wrote onto the draft", () => {
+    // 20 October 10:00 on this browser's clock, whatever its zone.
+    const at = new Date(2026, 9, 20, 10, 0);
+    const draft: AnnouncementDetail = {
+      ...BASE_DRAFT,
+      filters: { content_type: "course", content_id: 1 },
+      scheduled_at: at.toISOString(),
+      also_email: true,
+    };
+    expect(draftToComposePrefill(draft)).toMatchObject({
+      filters: { content_type: "course", content_id: 1 },
+      scheduledAt: "2026-10-20T10:00",
+      alsoEmail: true,
     });
   });
 

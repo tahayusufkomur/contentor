@@ -393,19 +393,27 @@ def label(field, answer) -> str | None:
 # ── The copy: the review step's title and body (G5) ─────────────────────────
 
 COPY_FIELDS = ("title", "body")
+# Who, when and by email are the send's settings, which her words often carry ("tomorrow at 10am, also
+# by email"): never content (no "you will get this by email tomorrow").
+DELIVERY_RULE = (
+    "- Who gets it, when it goes out and whether it also goes by email or as a notification are delivery "
+    "settings the page applies, even when her words say them: never mention them in the title or the body."
+)
 # Appended to the copy job's shared prompt (apps.core.focus.copywriter.system_for).
 COPY_RULES = (
     "Write a message title under 60 characters and a body of 1–4 short sentences, from the coach to her "
     "students, in her voice.\n"
     "- topic: what she wants to tell them, in her words. Say that; add nothing she did not say.\n"
-    "- audience: who gets it. link_to: the course or class the message links to; '' when none. The page "
-    "adds the link: never write a link.\n"
+    "- link_to: the course or class the message links to; '' when none. The page adds the link: never write "
+    "a link.\n"
     "- notes and followups: what else she said about it; follow it.\n"
-    "- Separate paragraphs with a blank line."
+    + DELIVERY_RULE
+    + "\n- Separate paragraphs with a blank line."
 )
 
 
 def copy_facts(creation, row) -> dict:
+    """Her words for the copy; who, when and by email are not handed over (DELIVERY_RULE)."""
     from .. import flow, outline
 
     answers, brief = creation.answers or {}, creation.brief or {}
@@ -413,7 +421,6 @@ def copy_facts(creation, row) -> dict:
     site = outline.site(connection.tenant)
     return {
         "topic": "" if topic == flow.DELEGATE else topic,
-        "audience": label("audience", answers.get("audience")) or "All my students",
         "link_to": brief.get("link_to", ""),
         "notes": brief.get("notes", ""),
         "followups": brief.get("followups", []),
@@ -477,8 +484,25 @@ def cannot_sell(row) -> bool:
 
 
 def apply_tick(pk, ticked: bool) -> None:
-    """Finish's "Also by email", before go_live."""
+    """Finish's "Also by email", before go_live or keep."""
     _rows(pk).filter(status="draft").update(also_email=bool(ticked))
+
+
+def keep(pk) -> None:
+    """Keep as a draft: who and when as she answered them onto the draft, so
+    the plain composer opens with them. It stays a draft, which never sends
+    (the dispatcher claims only "scheduled" rows); a time already passed, or
+    now, is left for her to pick there, and a course or bundle gone meanwhile
+    leaves who unchanged."""
+    row = _rows(pk).filter(status="draft").first()
+    if row is None:
+        return
+    answers, now = _answers(row), timezone.now()
+    at = _send_at(answers.get("when"), now) if answers.get("when") else None
+    fields = {"scheduled_at": at if at and at > now else None}
+    if (filters := _filters(answers.get("audience"))) is not None:
+        fields["filters_json"] = filters
+    _rows(pk).filter(status="draft").update(**fields)
 
 
 def go_live(pk) -> None:

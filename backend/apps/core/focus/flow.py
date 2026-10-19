@@ -279,9 +279,10 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
         record = _record(creation)
         live = publish and not adapter.not_ready(record) and not adapter.cannot_sell(record)
         choice = adapter.FINISH[0 if live else 1][0]
+        # Optional: the tick is the kind's own (a message's "Also by email"), kept on a draft too.
+        if tick := getattr(adapter, "apply_tick", None):
+            tick(creation.record_id, announce)
         if live:
-            if tick := getattr(adapter, "apply_tick", None):  # optional: the tick is the kind's own
-                tick(creation.record_id, announce)
             with suppress(content.ContentOpError):  # already published by hand, or gone
                 adapter.go_live(creation.record_id)
         elif keep := getattr(adapter, "keep", None):  # optional: what keeping a draft does
@@ -495,6 +496,7 @@ def question(kind: str, field: str, creation=None) -> dict:
         }
     if field == "clarify":  # one short question about a detail she gave, its options written by the analysis
         unclear = creation.brief["clarify"][0]
+        recipe = kinds.get(kind).RECIPE
         return {
             "field": "clarify",
             "kind": "choice",
@@ -503,7 +505,8 @@ def question(kind: str, field: str, creation=None) -> dict:
             "options": [{"value": o["value"], "label": o["label"], "hint": ""} for o in unclear["options"]],
             "starter": None,
             "can_delegate": True,
-            "specialist": "content",
+            # Whoever asks her first question (a message's Community manager; the course's and event's: content).
+            "specialist": recipe.specialists[recipe.questions[0].id],
         }
     recipe = kinds.get(kind).RECIPE
     q = next(q for q in recipe.questions if q.id == field)

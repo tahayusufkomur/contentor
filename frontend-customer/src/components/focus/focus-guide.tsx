@@ -300,7 +300,11 @@ export function FocusGuide() {
           <SpecialistByline k={state.thinking.specialist} />
           <p className="flex items-center gap-2 text-sm text-foreground">
             <Spinner size="sm" />
-            {t("focus.thinking")}
+            {t(
+              state.kind === "message"
+                ? "focus.kinds.message.thinking"
+                : "focus.thinking",
+            )}
           </p>
           <div>
             <Button
@@ -672,7 +676,12 @@ function FinishStep({
   const pick = (value: string) => {
     setChoice(value);
     const publish = value === live?.value;
-    onFinish(publish, value === "start_selling", publish && tell);
+    // A message's tick is kept on its draft too; "Tell my students" only goes with going live.
+    onFinish(
+      publish,
+      value === "start_selling",
+      (publish || kind === "message") && tell,
+    );
   };
   const has = (value: string) =>
     question.options.some((o) => o.value === value);

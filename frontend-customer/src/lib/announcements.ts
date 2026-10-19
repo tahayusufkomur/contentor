@@ -15,6 +15,7 @@ export interface AnnouncementListItem {
   status: "draft" | "scheduled" | "sent";
   scheduled_at: string | null;
   created_at: string;
+  also_email?: boolean;
   recipient_count: number;
   push_sent_count: number;
   read_count: number;
@@ -84,7 +85,20 @@ export interface ComposePrefill {
   title: string;
   body: string;
   link: string;
+  /** Who, when and by email as the draft holds them (a focus-mode Keep writes them). */
+  filters: AnnouncementFilters;
+  /** A `datetime-local` value on her browser's clock, or "" (send now). */
+  scheduledAt: string;
+  alsoEmail: boolean;
 }
+
+/** An ISO time as a `datetime-local` value on this browser's clock. */
+const localInput = (iso: string) => {
+  const at = new Date(iso);
+  return new Date(at.getTime() - at.getTimezoneOffset() * 60_000)
+    .toISOString()
+    .slice(0, 16);
+};
 
 export const draftToComposePrefill = (
   draft: AnnouncementDetail,
@@ -92,6 +106,9 @@ export const draftToComposePrefill = (
   title: draft.title,
   body: draft.body,
   link: draft.link || "",
+  filters: draft.filters,
+  scheduledAt: draft.scheduled_at ? localInput(draft.scheduled_at) : "",
+  alsoEmail: draft.also_email ?? false,
 });
 
 /** The fields of a draft that she and the copy run both write (focus mode). */

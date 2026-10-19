@@ -56,7 +56,17 @@ describe("AnnouncementCompose", () => {
 
   it("the plain composer reviewing a draft keeps its banner", () => {
     const html = render({
-      reviewDraft: { id: 3, prefill: { title: "T", body: "", link: "" } },
+      reviewDraft: {
+        id: 3,
+        prefill: {
+          title: "T",
+          body: "",
+          link: "",
+          filters: {},
+          scheduledAt: "",
+          alsoEmail: false,
+        },
+      },
     });
     expect(html).toContain("Reviewing draft");
     expect(html).toContain("Send now");
