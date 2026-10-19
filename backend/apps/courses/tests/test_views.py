@@ -717,7 +717,12 @@ def _activate_subscription(student):
 @pytest.mark.django_db(transaction=True)
 class TestSubscriptionPricingType:
     def test_non_subscriber_cannot_enroll_and_sees_subscribe_unlock(self, subscription_course, student):
-        """Without any active subscription: enroll 400, unlock_methods=[subscribe] only."""
+        """Without any active subscription: enroll 400, unlock_methods=[subscribe] only (a plan on sale includes it)."""
+        from apps.billing.models import SubscriptionPlan
+
+        _link_plan(
+            SubscriptionPlan.objects.create(name="Gold", price=Decimal("9.00"), currency="USD"), subscription_course
+        )
         client = make_client(student)
         resp = client.post(f"/api/v1/courses/{subscription_course.slug}/enroll/")
         assert resp.status_code == 400, resp.content
@@ -736,11 +741,11 @@ class TestSubscriptionPricingType:
         assert detail.json()["access_info"]["access_reason"] == "subscription"
 
     def test_a_subscriber_to_a_plan_that_does_not_include_the_course_stays_out(self, subscription_course, student):
-        """No plan names the course: a subscription alone no longer opens it."""
+        """No plan names the course: a subscription alone no longer opens it, and there is nothing to subscribe to."""
         _activate_subscription(student)
         resp = make_client(student).post(f"/api/v1/courses/{subscription_course.slug}/enroll/")
         assert resp.status_code == 400, resp.content
-        assert resp.json()["access_info"]["unlock_methods"] == ["subscribe"]
+        assert resp.json()["access_info"]["unlock_methods"] is None
 
     def test_unlock_options_offer_only_the_active_plans_that_include_the_course(self, subscription_course, student):
         from apps.billing.models import SubscriptionPlan

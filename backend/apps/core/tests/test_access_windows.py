@@ -8,9 +8,12 @@ from unittest import mock
 import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.contenttypes.models import ContentType
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 
 from apps.accounts.models import User
 from apps.billing.models import (
+    AccessWindow,
     Bundle,
     BundleItem,
     Payment,
@@ -224,6 +227,56 @@ def test_members_of_an_off_sale_plan_keep_access_but_visitors_are_not_offered_it
         info = service.get_access_info(visitor, course)
     assert info.unlock_methods == ["purchase"]
     assert "plans" not in service.get_unlock_options(course)
+    # a members-only item whose only plan is off sale offers visitors nothing to subscribe to
+    members_only = Course.objects.create(title="Members", slug="members", instructor=owner, pricing_type="subscription")
+    link(gold, members_only)
+    with at(NOW):
+        assert service.get_access_info(student, members_only).access_reason == "subscription"
+        assert service.get_access_info(visitor, members_only).unlock_methods is None
+    SubscriptionPlan.objects.filter(pk=gold.pk).update(is_active=True)
+    with at(NOW):
+        assert service.get_access_info(visitor, members_only).unlock_methods == ["subscribe"]
+
+
+def test_a_forever_purchase_beside_a_dated_free_window_is_the_way_that_opened_it(service, student, course, zone):
+    zone("UTC")
+    free_window(course, {"closes_on": "2026-10-26"})
+    buy(student, course, NOW - timedelta(days=1), None)
+    with at(NOW):
+        info = service.get_access_info(student, course)
+    assert (info.access_reason, info.access_ends_at) == ("purchased", None)
+
+
+def test_of_two_dated_ways_the_one_that_ends_last_is_the_way_that_opened_it(service, student, course, gold):
+    buy(student, course, NOW - timedelta(days=1), datetime(2026, 11, 1, tzinfo=UTC))
+    link(gold, course, closes_after_days=60)
+    subscribe(student, gold, datetime(2026, 10, 1, 9, 0, tzinfo=UTC))  # closes 2026-11-30 09:00
+    with at(NOW):
+        info = service.get_access_info(student, course)
+    assert (info.access_reason, info.access_ends_at) == ("subscription", datetime(2026, 11, 30, 9, 0, tzinfo=UTC))
+
+
+def test_a_list_of_windowed_items_costs_the_same_queries_as_one(service, student, owner, gold, zone):
+    zone("Europe/Istanbul")
+    subscribe(student, gold, datetime(2026, 9, 4, 9, 0, tzinfo=UTC))
+    courses = []
+    for n in range(6):
+        c = Course.objects.create(
+            title=f"W{n}", slug=f"w{n}", instructor=owner, pricing_type="subscription", price=Decimal("0")
+        )
+        link(gold, c, opens_after_days=30, closes_on=date(2027, 1, 1))
+        AccessWindow.objects.create(
+            content_type=ContentType.objects.get_for_model(c), object_id=c.pk, way="free", closes_on=date(2026, 12, 1)
+        )
+        courses.append(c)
+
+    def count(items):
+        with at(NOW), CaptureQueriesContext(connection) as ctx:
+            service.bulk_check_access(student, items)
+        return len(ctx)
+
+    count(courses[:1])  # warm the content-type cache
+    assert count(courses) == count(courses[:1])
 
 
 def test_a_granted_course_honours_its_window(service, student, course):

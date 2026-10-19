@@ -273,10 +273,15 @@ def _tenant_zone() -> ZoneInfo:
     return ZoneInfo((config.timezone if config else None) or "UTC")
 
 
-def window_bounds(window: dict | None, anchor: datetime) -> tuple[datetime, datetime | None]:
-    """When a window opens and closes for someone who joined at ``anchor``; calendar dates are the creator's days."""
+def window_bounds(
+    window: dict | None, anchor: datetime, zone: ZoneInfo | None = None
+) -> tuple[datetime, datetime | None]:
+    """When a window opens and closes for someone who joined at ``anchor``; calendar dates are the creator's days.
+
+    ``zone`` is the creator's time zone; a caller bounding many windows looks it up once and passes it in.
+    """
     w = window or {}
-    zone = _tenant_zone()
+    zone = zone or _tenant_zone()
     start, end = anchor, None
     if "opens_after_days" in w:
         start = anchor + timedelta(days=w["opens_after_days"])

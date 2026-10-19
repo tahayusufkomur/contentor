@@ -1,3 +1,4 @@
+import functools
 import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -35,19 +36,32 @@ _EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 _PAID = ("completed", "partially_refunded")
 
 
-def _bounds(window, anchor):
-    """(start, end) of a window for someone who got in at ``anchor``; no window means open and forever."""
+def _tenant_zone():
+    from apps.billing.ways import _tenant_zone as zone
+
+    return zone()
+
+
+def _bounds(window, anchor, zone):
+    """(start, end) of a window for someone who got in at ``anchor``; no window means open and forever.
+
+    ``zone`` is a callable returning the creator's time zone (cached by the caller).
+    """
     from apps.billing.ways import window_bounds
 
-    return window_bounds(window, anchor) if window else (anchor, None)
+    return window_bounds(window, anchor, zone()) if window else (anchor, None)
 
 
 def _decide(candidates, now):
-    """candidates: (reason, start, end) in order of check. -> (reason, access_ends_at, opens_at)."""
+    """candidates: (reason, start, end) in order of check. -> (reason, access_ends_at, opens_at).
+
+    The way that opens it is the first open way that never ends, else the open way that ends last;
+    the reason and the end both come from that one way.
+    """
     open_now = [(r, e) for r, s, e in candidates if s <= now and (e is None or now <= e)]
     if open_now:
-        forever = any(e is None for _, e in open_now)
-        return open_now[0][0], None if forever else max(e for _, e in open_now), None
+        reason, end = next(((r, e) for r, e in open_now if e is None), None) or max(open_now, key=lambda way: way[1])
+        return reason, end, None
     ahead = [s for _, s, e in candidates if s > now and (e is None or e >= s)]
     return None, None, min(ahead, default=None)
 
@@ -87,14 +101,15 @@ class ContentAccessService:
         ids = [i.pk for i in items]
         now = timezone.now()
         authed = getattr(user, "pk", None) is not None and getattr(user, "is_authenticated", False)
+        zone = functools.cache(_tenant_zone)  # the creator's zone, looked up once and only if a window needs it
         free_windows = self._free_windows(ct, ids)
         purchases = self._purchases(user, ct, ids) if authed else {}
         bundles = self._bundle_purchases(user, ct, ids) if authed else {}
         grants = self._grants(user, ct, ids) if authed else {}
-        plans = self._plan_windows(user, ct, ids, now) if authed else {}
+        plans = self._plan_windows(user, ct, ids, now, zone) if authed else {}
         plan_linked = (
             self._active_plan_linked(ct, ids)
-            if any(getattr(i, "pricing_type", "free") == "paid" for i in items)
+            if any(getattr(i, "pricing_type", "free") in ("paid", "subscription") for i in items)
             else set()
         )
 
@@ -104,7 +119,7 @@ class ContentAccessService:
             candidates = [
                 (reason, *b)
                 for reason, bounds in (
-                    ("free", self._free_bounds(user, authed, pricing_type, free_windows.get(item.pk))),
+                    ("free", self._free_bounds(user, authed, pricing_type, free_windows.get(item.pk), zone)),
                     ("purchased", purchases.get(item.pk, [])),
                     ("bundle", bundles.get(item.pk, [])),
                     ("granted", grants.get(item.pk, [])),
@@ -121,12 +136,8 @@ class ContentAccessService:
                     True, pricing_type, price, currency, access_reason=reason, access_ends_at=ends_at
                 )
             else:
-                unlock_methods = []
-                if pricing_type == "paid":
-                    unlock_methods.append("purchase")
-                    if item.pk in plan_linked:
-                        unlock_methods.append("subscribe")
-                elif pricing_type == "subscription":
+                unlock_methods = ["purchase"] if pricing_type == "paid" else []
+                if pricing_type in ("paid", "subscription") and item.pk in plan_linked:
                     unlock_methods.append("subscribe")
                 result[item.pk] = AccessInfo(
                     False, pricing_type, price, currency, unlock_methods=unlock_methods or None, opens_at=opens_at
@@ -196,15 +207,15 @@ class ContentAccessService:
         rows = AccessWindow.objects.filter(content_type=ct, object_id__in=ids, way="free")
         return {w.object_id: window for w in rows if (window := _window_of(w))}
 
-    def _free_bounds(self, user, authed, pricing_type, window) -> list:
+    def _free_bounds(self, user, authed, pricing_type, window, zone) -> list:
         if window is None:  # no window: free covers everyone, or there is no free way
             return [(_EPOCH, None)] if pricing_type == "free" else []
         if authed:
-            return [_bounds(window, user.date_joined)]
+            return [_bounds(window, user.date_joined, zone)]
         # A visitor has no joining date: only a calendar window reaches them.
         if any(key.endswith("_days") for key in window):
             return []
-        return [_bounds(window, _EPOCH)]
+        return [_bounds(window, _EPOCH, zone)]
 
     def _purchases(self, user, ct, ids) -> dict[int, list]:
         from apps.billing.models import PaymentItem
@@ -255,7 +266,7 @@ class ContentAccessService:
             out.setdefault(pk, []).append((start or _EPOCH, end))
         return out
 
-    def _plan_windows(self, user, ct, ids, now) -> dict[int, list]:
+    def _plan_windows(self, user, ct, ids, now, zone) -> dict[int, list]:
         """Each plan link's window, anchored on when the user's active subscription to that plan began."""
         from apps.billing.models import Subscription, SubscriptionPlanAccess
         from apps.billing.ways import _window_of
@@ -274,7 +285,7 @@ class ContentAccessService:
             window = _window_of(link)
             for plan_id, began in subs:
                 if plan_id == link.plan_id:
-                    out.setdefault(link.object_id, []).append(_bounds(window, began))
+                    out.setdefault(link.object_id, []).append(_bounds(window, began, zone))
         return out
 
     def _active_plan_linked(self, ct, ids) -> set[int]:
