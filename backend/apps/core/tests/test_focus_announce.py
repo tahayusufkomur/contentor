@@ -16,7 +16,7 @@ from apps.accounts.models import User
 from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.focus import announce, flow, jobs
-from apps.core.focus.recipes import RECIPES
+from apps.core.focus.kinds.course import RECIPE
 from apps.courses.models import Course, Lesson, Module
 from apps.notifications.models import Announcement
 from apps.tenant_config.models import CopilotRun, FocusCreation, TenantConfig
@@ -222,7 +222,7 @@ def test_a_failed_announcement_can_be_skipped(owner, enqueue):
 
 
 def test_the_announcement_comes_after_finish_and_is_never_delegated(owner):
-    recipe = RECIPES["course"]
+    recipe = RECIPE
     assert [q.id for q in recipe.questions][-2:] == ["finish", "announce"]
     assert recipe.specialists["announce"] == "marketing"
     creation = flow.answer(flow.start(owner, "course", value="A course on desk yoga"), "level", rest=True)

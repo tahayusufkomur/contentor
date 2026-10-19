@@ -13,8 +13,7 @@ from rest_framework.response import Response
 from apps.core.permissions import IsCoachOrOwner
 from apps.tenant_config.models import FocusCreation
 
-from . import covers, flow
-from .recipes import RECIPES
+from . import covers, flow, kinds
 
 
 def _not_found():
@@ -52,8 +51,9 @@ def focus_root(request):
             record = flow.state(creation)["record"]  # closes one whose record is gone
             if record is not None:
                 open_.append({"id": creation.id, "kind": creation.kind, "record": record})
-        first = {kind: flow.question(kind, recipe.questions[0].id) for kind, recipe in RECIPES.items()}
-        return Response({"enabled": True, "first": first, "open": open_})
+        on = kinds.enabled()
+        first = {kind: flow.question(kind, kinds.get(kind).RECIPE.questions[0].id) for kind in on}
+        return Response({"enabled": True, "kinds": on, "first": first, "open": open_})
     if not settings.FOCUS_MODE_ENABLED:
         return _not_found()
     data = _body(request)

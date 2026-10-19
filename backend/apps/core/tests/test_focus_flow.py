@@ -14,7 +14,7 @@ from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import runs
 from apps.core.focus import analysis, flow, jobs, pricing
-from apps.core.focus.recipes import RECIPES
+from apps.core.focus.kinds import course as course_kind
 from apps.courses.models import Course, Lesson, Module
 from apps.media.models import Design
 from apps.tenant_config.models import CopilotRun, FocusCreation
@@ -130,7 +130,7 @@ def _at_finish(owner, text="A course on desk yoga"):
 
 
 def test_the_cover_and_the_price_come_after_the_outline_and_before_finish():
-    recipe = RECIPES["course"]
+    recipe = course_kind.RECIPE
     assert [q.id for q in recipe.questions] == [
         "topic",
         "level",
@@ -223,7 +223,7 @@ def test_a_course_with_an_empty_lesson_is_never_published(owner, outline_start):
     creation = _at_finish(owner)
     _filled(creation, content_html="")
     question = flow.state(creation)["question"]
-    assert question["question"] == flow.NOT_READY
+    assert question["question"] == course_kind.NOT_READY_LINE
     assert "1 of its 1 lessons have none yet" in question["why"]
     assert [o["value"] for o in question["options"]] == ["draft"]
     creation = flow.finish(creation, publish=True)  # a stale screen still asking

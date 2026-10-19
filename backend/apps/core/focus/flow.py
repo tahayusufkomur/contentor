@@ -9,7 +9,6 @@ row, so two tabs cannot both move it."""
 
 from contextlib import suppress
 from datetime import datetime
-from decimal import Decimal
 
 from django.db import connection, transaction
 from django.utils import timezone
@@ -17,9 +16,8 @@ from django.utils import timezone
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
-from . import analysis, covers, descriptions, followup, jobs, outline, pricing
+from . import analysis, covers, descriptions, followup, jobs, kinds, outline, pricing
 from . import announce as announcing  # ``announce`` is finish()'s flag
-from .recipes import RECIPES
 
 DELEGATE = "delegate"
 # A reported span of active time counts up to ten minutes: a bogus number
@@ -27,18 +25,12 @@ DELEGATE = "delegate"
 MAX_SPAN_MS = 600_000
 TITLE_MAX = 80
 ANSWER_MAX = 500
-CLOSING = {
-    "publish": "Published. Students can find it on your site now.",
-    "draft": "Saved as a draft. Once every lesson has its video or text, publish it from this page.",
-}
 WRITING_DESCRIPTIONS = "Writing a short description for each lesson's video. Edit any of them on the page."
 # Not now: what became of Marketing's draft, if it made one.
 SAVED_IN_MESSAGES = "Your announcement is saved as a draft in Messages."
 NO_ANNOUNCEMENT = "No announcement this time."
 ANNOUNCE_LABELS = {"scheduled": "Schedule", "draft": "Not now", "skip": "Not now", "sent": "Sent"}
 SENT = "Your announcement has gone out."
-# The finish step while a lesson is still empty: no "Publish now".
-NOT_READY = "Your outline is saved. Next, your lessons."
 # The finish step of a paid course she cannot sell yet: no "Publish now" (F11).
 START_SELLING = {"value": "start_selling", "label": "Start selling", "hint": "your plan, then payouts"}
 # Follow-ups asked (F4): at most four per creation, two before the outline.
@@ -50,48 +42,48 @@ class FlowError(Exception):
     pass
 
 
-def working_title(topic: str) -> str:
-    """Her topic as a course title until the outline writes a better one."""
+def working_title(topic: str, kind: str = "course") -> str:
+    """Her topic as the record's title until the outline writes a better one."""
+    adapter = kinds.get(kind)
     text = (topic or "").strip()
-    starter = RECIPES["course"].questions[0].options[0].strip()
+    starter = (adapter.RECIPE.questions[0].options or ("",))[0].strip()
     if text.lower().startswith(starter.lower()):
         text = text[len(starter) :].strip()
     text = text.rstrip(".").strip()
     if not text:
-        return "New course"
+        return adapter.NEW_TITLE
     return (text[0].upper() + text[1:])[:TITLE_MAX]
 
 
 def start(user, kind: str, *, value=None, text=None, delegate=False, rest=False, active_ms=0) -> FocusCreation:
-    """Her first answer (the topic): the draft course, the dock thread and the
-    creation, all at once. With ``rest`` ("Just draft it"), the questions after
-    it are delegated in the same step, so a failure cannot leave a second draft.
-    Typed words are read by the analysis first; the title is provisional until then."""
-    from apps.core.copilot import content
-
-    recipe = RECIPES.get(kind)
-    if recipe is None:
+    """Her first answer (the topic): the draft record (unless the kind needs
+    an answer first), the dock thread and the creation, all at once. With
+    ``rest`` ("Just draft it"), the questions after it are delegated in the
+    same step, so a failure cannot leave a second draft. Typed words are read
+    by the analysis first; the title is provisional until then."""
+    if kind not in kinds.enabled():
         raise FlowError("unknown_kind")
+    adapter = kinds.get(kind)
+    recipe = adapter.RECIPE
     first = recipe.questions[0]
     picked = _pick(recipe, first, value, text, delegate) or (DELEGATE if rest else None)
     if picked is None:
         raise FlowError("no_answer")
     typed = picked != DELEGATE and bool((text or "").strip())
-    title = working_title("" if picked == DELEGATE else picked)
+    title = working_title("" if picked == DELEGATE else picked, kind)
     actor = user if getattr(user, "pk", None) else None
+    answers = {} if typed else {first.id: picked}
     with transaction.atomic():
-        record_id = content.create_course(actor, {"title": title}, cover=False)["id"]
+        record_id = adapter.create_draft(actor, title, answers)
         chat = CopilotChat.objects.create(
             actor=actor,
-            title=f"New course: {title}"[:120],
+            title=f"{adapter.NEW_TITLE}: {title}"[:120],
             entries=[
                 {"role": "assistant", "text": first.question},
                 {"role": "coach", "text": _label(recipe, first, picked)},
             ],
         )
-        creation = FocusCreation(
-            kind=kind, actor=actor, chat=chat, record_id=record_id, answers={} if typed else {first.id: picked}
-        )
+        creation = FocusCreation(kind=kind, actor=actor, chat=chat, record_id=record_id, answers=answers)
         _add_time(creation, active_ms)
         creation.save()
         if typed:
@@ -114,7 +106,9 @@ def current_field(creation) -> str | None:
     if brief.get("followup"):
         return "followup"
     answers = creation.answers or {}
-    return next((q.id for q in RECIPES[creation.kind].questions if q.id not in answers), None)
+    adapter = kinds.get(creation.kind)
+    skipped = adapter.skips(creation)
+    return next((q.id for q in adapter.RECIPE.questions if q.id not in answers and q.id not in skipped), None)
 
 
 def answer(creation, field, *, value=None, text=None, delegate=False, rest=False, active_ms=None):
@@ -124,7 +118,7 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
     with transaction.atomic():
         creation = _locked(creation)
         _add_time(creation, active_ms)
-        recipe = RECIPES[creation.kind]
+        recipe = kinds.get(creation.kind).RECIPE
         question = next((q for q in recipe.questions if q.id == field), None)
         if (
             not field
@@ -204,7 +198,7 @@ def apply(creation, found) -> None:
     skipped. Call under the creation's lock; the caller saves."""
     pending, creation.pending = creation.pending or {}, {}
     field, text = pending.get("field"), str(pending.get("text") or "")
-    recipe = RECIPES[creation.kind]
+    recipe = kinds.get(creation.kind).RECIPE
     creation.answers = dict(creation.answers or {})
     item = _pop_clarify(creation) if field == "clarify" else None
     if found is None:
@@ -225,7 +219,7 @@ def apply(creation, found) -> None:
     else:
         if field == "topic":
             creation.answers["topic"] = text  # her whole words: the outline reads them
-            _retitle(creation, working_title(text), working_title(found.topic or text))
+            _retitle(creation, working_title(text, creation.kind), working_title(found.topic or text, creation.kind))
         if found.level.strip():
             creation.answers["level"] = _choice(recipe, "level", found.level)
         creation.brief = analysis.brief_from(found, creation.brief)
@@ -272,7 +266,7 @@ def apply(creation, found) -> None:
 
 
 def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -> FocusCreation:
-    """Her last tap: publish the course or keep it as a draft. Focus mode ends,
+    """Her last tap: put it live or keep it as a draft. Focus mode ends,
     unless it went live with "Tell my students" (``announce``): then Marketing
     drafts the announcement while she waits, and her Schedule or Not now ends it."""
     from apps.core.copilot import content
@@ -288,16 +282,17 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
             creation.save(update_fields=["active_ms", "status", "updated_at"])
             return creation
         # Never an empty lesson in front of students, nor a paid course she cannot sell yet: a draft.
+        adapter = kinds.get(creation.kind)
         record = _record(creation)
-        choice = "publish" if publish and not record.not_ready() and not _cannot_sell(record) else "draft"
+        choice = "publish" if publish and not adapter.not_ready(record) and not adapter.cannot_sell(record) else "draft"
         if choice == "publish":
             with suppress(content.ContentOpError):  # already published by hand, or gone
-                content.publish_course(creation.record_id)
-        recipe = RECIPES[creation.kind]
+                adapter.go_live(creation.record_id)
+        recipe = adapter.RECIPE
         question = next(q for q in recipe.questions if q.id == "finish")
         creation.answers["finish"] = choice
         _say(creation, question, _label(recipe, question, choice))
-        _chat_append(creation, [{"role": "assistant", "text": CLOSING[choice]}])
+        _chat_append(creation, [{"role": "assistant", "text": adapter.CLOSING[choice]}])
         if choice == "publish" and announce:
             announcing.start(creation)
         else:
@@ -336,7 +331,7 @@ def decide_announcement(creation, *, schedule: bool, active_ms=None) -> FocusCre
         else:
             closing = SAVED_IN_MESSAGES if row else NO_ANNOUNCEMENT
         value = "scheduled" if schedule else "draft" if row else "skip"
-        question = next(q for q in RECIPES[creation.kind].questions if q.id == "announce")
+        question = next(q for q in kinds.get(creation.kind).RECIPE.questions if q.id == "announce")
         _say(creation, question, ANNOUNCE_LABELS[value])
         _chat_append(creation, [{"role": "assistant", "text": closing}])
         _end(creation, value)
@@ -470,7 +465,7 @@ def question(kind: str, field: str, creation=None) -> dict:
             "can_delegate": True,
             "specialist": "content",
         }
-    recipe = RECIPES[kind]
+    recipe = kinds.get(kind).RECIPE
     q = next(q for q in recipe.questions if q.id == field)
     asked = {
         "field": q.id,
@@ -506,19 +501,21 @@ def _sync_cover(creation):
 
 def state(creation) -> dict:
     creation = _settle_announcement(_settle_followup(_settle(_sync_cover(creation))))
-    recipe = RECIPES[creation.kind]
+    adapter = kinds.get(creation.kind)
+    recipe = adapter.RECIPE
     record = _record(creation)
-    if record is None and creation.status == "active":  # deleted by hand, or by an Undo
+    # Deleted by hand, or by an Undo; a kind that makes its record after a later answer has none yet.
+    if record is None and creation.record_id is not None and creation.status == "active":
         FocusCreation.objects.filter(pk=creation.pk, status="active").update(status="left")
         creation.status = "left"
     field = current_field(creation)
     answers = creation.answers or {}
     asked = question(creation.kind, field, creation) if field else None
-    gap = record and field == "finish" and record.not_ready()
+    gap = record and field == "finish" and adapter.not_ready(record)
     if gap:
         asked = {
             **asked,
-            "question": NOT_READY,
+            "question": adapter.NOT_READY_LINE,
             "why": f"{gap.capitalize()}. Until then it stays a hidden draft.",
             "options": [o for o in asked["options"] if o["value"] != "publish"],
             "specialist": "content",
@@ -530,7 +527,7 @@ def state(creation) -> dict:
         "kind": creation.kind,
         "status": creation.status,
         "chat": creation.chat_id,
-        "record": {"id": record.id, "slug": record.slug, "title": record.title} if record else None,
+        "record": adapter.payload(record) if record else None,
         "question": asked,
         "answered": [
             {"field": q.id, "label": _label(recipe, q, answers[q.id])} for q in recipe.questions if q.id in answers
@@ -751,7 +748,7 @@ def _clarified(creation, field, value) -> bool:
         if price := analysis.price_value(words):
             _set_price(creation, price)
     elif field == "level":
-        creation.answers["level"] = _choice(RECIPES[creation.kind], "level", words)
+        creation.answers["level"] = _choice(kinds.get(creation.kind).RECIPE, "level", words)
     else:
         try:
             count = int(words)
@@ -781,14 +778,9 @@ def _redraft_waiting(creation, item, clarified: bool) -> None:
 
 def _set_price(creation, value: str) -> None:
     """Her price, from her own tap or words (F11): "free", "membership" (the
-    course is left as it is; the access step offers her memberships) or an amount."""
-    from apps.courses.models import Course
-
-    course = Course.objects.filter(pk=creation.record_id)
-    if value == "free":
-        course.update(pricing_type="free", price=0)
-    elif value != "membership":
-        course.update(pricing_type="paid", price=Decimal(value))
+    record is left as it is; the access step offers her memberships) or an amount."""
+    if value != "membership":
+        kinds.get(creation.kind).set_price(creation.record_id, value)
     creation.answers["price"] = value
     if value != "membership":  # the access step is answered too; "membership" asks which one
         creation.answers["access"] = value if value == "free" else f"paid:{value}"
@@ -811,11 +803,9 @@ def _access(creation, q, value, delegate) -> bool:
     """A tap at "How will students get it?": Free, a one-time price (any valid
     amount she taps is hers, F11) or one of her active memberships. "You
     decide" leaves the course as it is. False when the tap carried no answer."""
-    from django.contrib.contenttypes.models import ContentType
+    from apps.billing.models import SubscriptionPlan
 
-    from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
-    from apps.courses.models import Course
-
+    adapter = kinds.get(creation.kind)
     value = str(value or "")
     plan_id = value.removeprefix("plan:")
     if delegate:
@@ -824,17 +814,14 @@ def _access(creation, q, value, delegate) -> bool:
         _set_price(creation, "free" if value == "free" else price)
     elif value.startswith("plan:") and plan_id.isascii() and plan_id.isdigit() and len(plan_id) < 10:
         plan = SubscriptionPlan.objects.filter(pk=int(plan_id), is_active=True).first()
-        if plan is None:
+        if plan is None or adapter.put_in_plan is None:
             return False
-        Course.objects.filter(pk=creation.record_id).update(pricing_type="subscription")
-        SubscriptionPlanAccess.objects.get_or_create(
-            plan=plan, content_type=ContentType.objects.get_for_model(Course), object_id=creation.record_id
-        )
+        adapter.put_in_plan(creation.record_id, plan)
         creation.answers["price"] = "membership"
         creation.answers["access"] = f"plan:{plan.pk}"
     else:
         return False
-    _say(creation, q, _label(RECIPES[creation.kind], q, creation.answers["access"]))
+    _say(creation, q, _label(adapter.RECIPE, q, creation.answers["access"]))
     return True
 
 
@@ -855,13 +842,6 @@ def _price_tiles(creation) -> dict:
     return {"options": [{"value": "free", "label": "Free", "hint": ""}, paid, *plans], "suggested": paid["value"]}
 
 
-def _cannot_sell(record) -> bool:
-    """A paid course while selling is not open yet (her plan, then payouts)."""
-    from apps.core import monetization
-
-    return record.pricing_type == "paid" and not monetization.can_monetize(connection.tenant)
-
-
 def _finish_options(creation, asked: dict, record) -> dict:
     """The finish step's buttons: "Start selling" in place of "Publish now"
     while she cannot sell a paid course, and "Sell it for" the suggested
@@ -869,7 +849,7 @@ def _finish_options(creation, asked: dict, record) -> dict:
     from apps.core import monetization
 
     options = asked["options"]
-    if _cannot_sell(record):
+    if kinds.get(creation.kind).cannot_sell(record):
         options = [START_SELLING, *(o for o in options if o["value"] != "publish")]
         asked = {**asked, "paid_active": monetization.is_paid_active(connection.tenant)}
     if (creation.answers or {}).get("access") == DELEGATE:
@@ -898,11 +878,9 @@ def _access_label(value: str) -> str:
 
 
 def _retitle(creation, provisional: str, title: str) -> None:
-    """The working title from the topic she named, while the course still has
+    """The working title from the topic she named, while the record still has
     the provisional one. Recorded as ours, so the outline may replace it."""
-    from apps.courses.models import Course
-
-    if title == provisional or not Course.objects.filter(pk=creation.record_id, title=provisional).update(title=title):
+    if title == provisional or not kinds.get(creation.kind).retitle(creation.record_id, provisional, title):
         return
     drafted = creation.drafted or {}
     creation.drafted = {**drafted, "titles": [*(drafted.get("titles") or []), title]}
@@ -935,7 +913,7 @@ def _delegate_rest(creation) -> None:
     """ "Just draft it": every question the outline waits for that is still
     open is hers to delegate, and the price step; nothing more is clarified."""
     creation.brief = {**(creation.brief or {}), "rest": True, "clarify": []}
-    recipe = RECIPES[creation.kind]
+    recipe = kinds.get(creation.kind).RECIPE
     # The price too, which keeps the course free: a paid price is only ever her tap (F11, R2).
     for q in (*_before_outline(recipe), *(q for q in recipe.questions if q.id == "access")):
         if q.id not in creation.answers:
@@ -948,7 +926,7 @@ def _next_draft(creation) -> None:
     being clarified or followed up: a follow-up when one is allowed, else the
     outline."""
     brief = creation.brief or {}
-    questions = _before_outline(RECIPES[creation.kind])
+    questions = _before_outline(kinds.get(creation.kind).RECIPE)
     if (
         creation.outline_run_id is None
         and not (creation.drafted or {}).get("modules")  # its run pruned: still written
@@ -972,9 +950,7 @@ def _choice(recipe, field: str, words: str) -> str:
 
 
 def _record(creation):
-    from apps.courses.models import Course
-
-    return Course.objects.filter(pk=creation.record_id).first() if creation.record_id else None
+    return kinds.get(creation.kind).record(creation.record_id)
 
 
 def _locked(creation):

@@ -14,7 +14,7 @@ from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import runs
 from apps.core.focus import analysis, flow, jobs, outline
-from apps.core.focus.recipes import SIZES
+from apps.core.focus.kinds.course import SIZES
 from apps.courses.models import Course, Lesson, Module
 from apps.tenant_config.models import CopilotRun
 from apps.tenant_config.setup_flow import _Module

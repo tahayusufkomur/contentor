@@ -19,7 +19,7 @@ from apps.tenant_config.models import CopilotRun, FocusCreation
 from apps.tenant_config.setup_flow import _DRAFT_RULES, _Module
 
 from . import covers, descriptions, jobs
-from .recipes import SIZES
+from .kinds.course import SIZES
 
 logger = logging.getLogger(__name__)
 

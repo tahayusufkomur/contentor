@@ -214,10 +214,9 @@ def _acting(creation):
 
 
 def _answered(locked, value: str) -> None:
-    from . import flow
-    from .recipes import RECIPES
+    from . import flow, kinds
 
-    recipe = RECIPES[locked.kind]
+    recipe = kinds.get(locked.kind).RECIPE
     question = next(q for q in recipe.questions if q.id == "cover")
     locked.answers = {**(locked.answers or {}), "cover": value}
     flow._say(locked, question, flow._label(recipe, question, value))
