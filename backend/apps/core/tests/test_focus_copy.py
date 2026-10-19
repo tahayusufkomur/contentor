@@ -28,7 +28,7 @@ pytestmark = pytest.mark.django_db(transaction=True)
 SCHEMA = "shared_test"
 ZONE = "Europe/Istanbul"
 TITLE = "Morning breath, slowly"
-DESCRIPTION = "A calm hour of breathing for busy mornings. Bring a mat and a blanket."
+DESCRIPTION = "A live online class on morning breath. Breathe together and start your day."
 
 
 @pytest.fixture()
@@ -159,6 +159,57 @@ def test_a_redraft_never_overwrites_a_field_she_edited(owner):
     assert "covers" in creation.runs and CopilotRun.objects.filter(request__job="covers").count() == 1
 
 
+def test_her_title_set_back_to_the_working_title_survives_a_redraft(owner):
+    creation = _at_review(owner)
+    with _model():
+        jobs.execute(SCHEMA, creation.runs["copy"])
+    LiveClass.objects.filter(pk=_row(creation).pk).update(title="Morning breath")  # hers now
+    creation = _typed_at_review(
+        creation, "make the description warmer", event.EventFound(answer="", change="a warmer description")
+    )
+    with _model(copy=_copy("Morning breath, warmly", "A warmer live class on morning breath.")):
+        jobs.execute(SCHEMA, creation.runs["copy"])
+    row = _row(creation)
+    assert (row.title, row.description) == ("Morning breath", "A warmer live class on morning breath.")
+    assert [f["name"] for f in _fields(creation.runs["copy"])] == ["description"]
+
+
+def test_a_copy_finishing_after_publish_writes_nothing(owner):
+    creation = flow.answer(_at_review(owner), "review", value="ok")  # "Looks good" while the copy is written
+    creation.answers = {**creation.answers, "cover": "later"}
+    creation.save()
+    creation = flow.answer(creation, "access", value="free")
+    run = creation.runs["copy"]
+
+    def published(**kwargs):
+        flow.finish(creation, publish=True)  # before the hub returned
+        return (_copy(), Decimal("0"), "x")
+
+    with _model(side_effect=published):
+        jobs.execute(SCHEMA, run)
+    assert CopilotRun.objects.get(pk=run).status == "stopped"  # finish stopped it
+    row = _row(creation)
+    assert (row.title, row.description, row.status) == ("Morning breath", "", "scheduled")
+    assert _fields(run) == []
+    creation.refresh_from_db()
+    assert "covers" not in (creation.runs or {}) and "copy" not in (creation.drafted or {})
+
+    # Published by hand on the page while the model wrote: nothing written on the live class either.
+    other = _at_review(owner)
+    pk = _row(other).pk
+
+    def by_hand(**kwargs):
+        LiveClass.objects.filter(pk=pk).update(status="scheduled")
+        return (_copy(), Decimal("0"), "x")
+
+    with _model(side_effect=by_hand):
+        jobs.execute(SCHEMA, other.runs["copy"])
+    assert (_row(other).title, _row(other).description) == ("Morning breath", "")
+    assert CopilotRun.objects.get(pk=other.runs["copy"]).status == "done" and _fields(other.runs["copy"]) == []
+    other.refresh_from_db()
+    assert "covers" not in (other.runs or {})
+
+
 def test_her_edit_during_the_run_is_kept(owner):
     creation = _at_review(owner)
     pk = _row(creation).pk
@@ -246,7 +297,11 @@ def test_copy_never_invents_numbers():
     assert copywriter.F13 == "Never invent a claim, a result or a number."
     assert copywriter.F13 in copywriter.SHARED and copywriter.F13 in system
     assert system == copywriter.SHARED.replace("{noun}", "class") + "\n" + event.COPY_RULES
-    assert "a class title under 60 characters" in event.COPY_RULES and "what to bring" in event.COPY_RULES
+    assert event.COPY_RULES.splitlines()[:2] == [
+        "Write a class title under 60 characters and a 2–4 sentence description for students: what happens "
+        "and who it is for, from what she said.",
+        "- What to bring, or any other concrete detail (a level, a result, a benefit), only when she said it.",
+    ]
     assert "{" not in system
     assert event.COPY_FIELDS == ("title", "description")
 

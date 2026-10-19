@@ -283,7 +283,10 @@ def test_the_event_prompt_names_its_own_fields():
 def test_a_skipped_place_neither_waits_nor_is_delegated(owner):
     with mock.patch.object(event, "start_draft") as start_draft:
         creation = flow.answer(_started(owner), "where", value="stream", rest=True)
-    assert "place" not in creation.answers and creation.answers["when"] == flow.DELEGATE
+        assert "place" not in creation.answers and "when" not in creation.answers  # her date: never delegated
+        start_draft.assert_not_called()
+        creation = flow.answer(creation, "when", value=_once(3))
+    assert "place" not in creation.answers
     start_draft.assert_called_once()  # every question before the review is answered or skipped
     with mock.patch("apps.core.focus.outline.start") as outline_start:
         creation = flow.answer(flow.answer(_started(owner), "where", value="live"), "when", value=_once(3))
@@ -441,8 +444,21 @@ def test_just_draft_it_before_the_kind_is_known_stops_at_where(owner):
     assert "where" not in flow.answer(creation, "where", rest=True).answers  # and "Just draft it" again
     assert event._where(flow.DELEGATE) is None
     creation = flow.answer(creation, "where", value="stream")
-    assert creation.answers["when"] == flow.DELEGATE and "place" not in creation.answers
+    assert "when" not in creation.answers and "place" not in creation.answers
+    assert flow.current_field(creation) == "when" and "copy" not in (creation.runs or {})
+
+
+def test_just_draft_it_with_the_kind_known_stops_at_when(owner):
+    creation = flow.answer(_started(owner), "where", value="onsite", rest=True)
+    asked = flow.state(creation)["question"]
+    assert (asked["field"], asked["question"], asked["can_delegate"]) == ("when", "When is it?", False)
+    assert "when" not in flow.answer(creation, "when", delegate=True).answers  # "You decide" is refused
+    assert "when" not in flow.answer(creation, "when", rest=True).answers
+    creation = flow.answer(creation, "when", value=_once(3))
+    assert flow.current_field(creation) == "place"  # the address too: "Add it later" is hers to tap
+    creation = flow.answer(creation, "place", value="later")
     assert flow.current_field(creation) == "review" and creation.runs["copy"]
+    assert creation.answers["access"] == flow.DELEGATE  # the price step stays delegated (free)
 
 
 def test_a_zoom_place_that_is_no_link_is_asked_again_when_the_model_is_off(owner):

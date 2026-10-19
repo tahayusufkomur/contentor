@@ -73,9 +73,10 @@ RECIPE = Recipe(
             "Where",
             "Where will it happen?",
             ("Live online", "Live stream", "On Zoom", "In person"),
-            kind="choice",  # hers: never "You decide", and "Just draft it" leaves it to her (flow._delegate_rest)
+            kind="choice",  # hers (not delegable): never "You decide", and "Just draft it" leaves it to her
             why="It can't change once the class is made.",
         ),
+        # Hers too (not delegable): "Just draft it" leaves her date to her, never guessed.
         Field("when", "When", "When is it?", kind="schedule", why="Times are in your site's time zone."),
         Field(
             "place",
@@ -445,8 +446,9 @@ def sync(creation) -> None:
 COPY_FIELDS = ("title", "description")
 # Appended to the copy job's shared prompt (apps.core.focus.copywriter.system_for).
 COPY_RULES = (
-    "Write a class title under 60 characters and a 2–4 sentence description for students: what happens, "
-    "who it is for, what to bring.\n"
+    "Write a class title under 60 characters and a 2–4 sentence description for students: what happens "
+    "and who it is for, from what she said.\n"
+    "- What to bring, or any other concrete detail (a level, a result, a benefit), only when she said it.\n"
     "- topic: what the class or event is about, in her words; '' means pick one that fits her site.\n"
     "- where: how students join. schedule, duration_minutes and capacity: hers, as she gave them; empty "
     "when she did not say.\n"

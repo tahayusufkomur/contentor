@@ -258,7 +258,7 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
     my students" (``announce``) and the kind has an ANNOUNCER: then it drafts
     the announcement while she waits, and her Schedule or Not now ends it. A
     kind without one may take the tick itself (``apply_tick``)."""
-    from apps.core.copilot import content
+    from apps.core.copilot import content, runs
 
     with transaction.atomic():
         creation = _locked(creation)
@@ -270,6 +270,8 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
             creation.status = "left"
             creation.save(update_fields=["active_ms", "status", "updated_at"])
             return creation
+        if (pk := jobs.run_id(creation, "copy")) is not None:
+            runs.stop(pk)  # what she saw is what she finishes: a copy still being written is dropped (G4)
         # Never an empty lesson in front of students, nor a paid course she cannot sell yet: a draft.
         adapter = kinds.get(creation.kind)
         record = _record(creation)
@@ -989,14 +991,14 @@ def _before_draft(creation):
 def _delegate_rest(creation) -> None:
     """ "Just draft it": every question the drafting waits for that is still
     open is hers to delegate, and the price step (unless the kind skips it);
-    nothing more is clarified. A choice the guide may not make (not
-    delegable: an event's kind) is left for her to tap."""
+    nothing more is clarified. A question the guide may not answer (not
+    delegable: an event's kind and date) is left for her."""
     creation.brief = {**(creation.brief or {}), "rest": True, "clarify": []}
     adapter = kinds.get(creation.kind)
     access = [q for q in adapter.RECIPE.questions if q.id == "access" and q.id not in adapter.skips(creation)]
     # The price too, which keeps the course free: a paid price is only ever her tap (F11, R2).
     for q in (*_before_draft(creation), *access):
-        if q.id not in creation.answers and (q.delegable or q.kind != "choice"):
+        if q.id not in creation.answers and q.delegable:
             creation.answers[q.id] = DELEGATE
             _say(creation, q, "You decide")
 

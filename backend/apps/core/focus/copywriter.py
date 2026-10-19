@@ -61,8 +61,15 @@ def start(creation, instruction: str = "") -> CopilotRun:
     return jobs.queue(creation, "copy", specialist=specialist, instruction=instruction)
 
 
+def _gone(creation, record) -> bool:
+    """Nothing to write on: the record deleted, focus mode over, or the record
+    put live (by her finish tap, or by hand on the page)."""
+    # ponytail: a kind the copy job drafts keeps its draft state in ``status``; ask the adapter once one does not.
+    return record is None or creation.status != "active" or getattr(record, "status", "draft") != "draft"
+
+
 def carry_out(tenant, run_id) -> None:
-    from .flow import DELEGATE, working_title
+    from .flow import draft_title
 
     run = CopilotRun.objects.get(pk=run_id)
     request = run.request or {}
@@ -70,7 +77,7 @@ def carry_out(tenant, run_id) -> None:
     adapter = kinds.get(creation.kind)
     instruction = str(request.get("instruction") or "")
     record = adapter.record(creation.record_id)
-    if record is None:  # deleted meanwhile: nothing to write on
+    if _gone(creation, record):
         runs.finish(run_id, True, {"fields": []})
         return
     if not ai_compose.compose_available():
@@ -84,25 +91,19 @@ def carry_out(tenant, run_id) -> None:
         if not jobs.active(run_id):  # Stop won while the model wrote: drop it
             return
         record = type(record).objects.select_for_update().filter(pk=record.pk).first()
-        if record is None:  # deleted while the model wrote
+        if _gone(locked, record):  # while the model wrote
             runs.finish(run_id, True, {"fields": []})
             return
         drafted = locked.drafted or {}
         wrote = dict(drafted.get("copy") or {})
-        topic = str((locked.answers or {}).get("topic") or "")
-        # The title her topic gave the record is ours too (``flow._retitle``).
-        ours = {
-            "title": {working_title("" if topic == DELEGATE else topic, locked.kind), *(drafted.get("titles") or [])}
-        }
+        # Her topic's current working title is ours too (``flow._retitle``), until the job has written a title.
+        working = draft_title(locked) if "title" not in wrote else None
         fields = {}
         for name in adapter.COPY_FIELDS:
             value = getattr(copy, name).strip()[: type(record)._meta.get_field(name).max_length]
             current = getattr(record, name) or ""
-            if (
-                value
-                and value != current
-                and (not current.strip() or current == wrote.get(name) or current in ours.get(name, ()))
-            ):
+            ours = not current.strip() or current == wrote.get(name) or (name == "title" and current == working)
+            if value and value != current and ours:
                 fields[name] = value
         if fields:
             adapter.write_copy(locked.record_id, fields)
