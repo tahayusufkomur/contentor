@@ -13,6 +13,10 @@ import { coachContext, TENANT } from "../helpers/auth";
 test("coach creates, uploads and edits a paid download on its own page", async ({ browser }) => {
   const coach = await coachContext(browser);
   const page = await coach.newPage();
+  // Downloads are in focus mode on the dev stack: this spec fills in the plain form.
+  await page.route("**/api/v1/admin/focus/", (route) =>
+    route.fulfill({ json: { enabled: false, first: {}, open: [] } }),
+  );
   await page.goto(`${TENANT}/admin/downloads`);
 
   const title = `E2E Paid DL ${Date.now()}`;
