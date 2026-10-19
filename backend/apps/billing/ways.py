@@ -328,9 +328,22 @@ def _clauses(window: dict | None, opens_after: str, closes_after: str) -> list[s
 
 
 def membership_text(link) -> str:
-    """When a plan's link (a ``SubscriptionPlanAccess`` row) opens and closes the item for a member."""
-    text = ", ".join(_clauses(_window_of(link), "after {} of membership", "for {} of membership"))
-    return f"{text[:1].upper()}{text[1:]}" if text else "Right away · never closes"
+    """A plan link's window as the Access section's pill says it (``linkPill``): "<opens> · <closes>"."""
+    w = _window_of(link) or {}
+    day = lambda key: date.fromisoformat(w[key]).strftime("%-d %b %Y")  # noqa: E731
+    if "opens_after_days" in w:
+        opens = f"After {span_text(w['opens_after_days'])} of membership"
+    elif "opens_on" in w:
+        opens = f"From {day('opens_on')}"
+    else:
+        opens = "Right away"
+    if "closes_after_days" in w:
+        closes = f"closes after {span_text(w['closes_after_days'])}"
+    elif "closes_on" in w:
+        closes = f"closes {day('closes_on')}"
+    else:
+        closes = "never closes"
+    return f"{opens} · {closes}"
 
 
 def describe(ways: dict) -> str:

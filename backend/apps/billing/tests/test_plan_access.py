@@ -295,8 +295,8 @@ class TestPlanAccess:
         data = owner_client.get(f"/api/v1/billing/plans/{plan.pk}/access/").json()
 
         texts = {i["object_id"]: i["window_text"] for i in data["items"]}
-        assert texts[course.pk] == "After 1 month of membership"
-        assert texts[members_class.pk] == "For 3 months of membership"
+        assert texts[course.pk] == "After 1 month of membership · never closes"
+        assert texts[members_class.pk] == "Right away · closes after 3 months"
         assert all(i["window_text"] == "" for i in data["available"] if i not in data["items"])
 
     def test_an_item_with_no_window_opens_right_away_and_never_closes(self, plan, course, owner_client):
@@ -317,6 +317,6 @@ class TestPlanAccess:
         link.refresh_from_db()
         assert (link.opens_after_days, link.closes_after_days) == (30, 365)
         kept = next(i for i in saved.json()["items"] if i["object_id"] == course.pk)
-        assert kept["window_text"] == "After 1 month of membership, for 1 year of membership"
+        assert kept["window_text"] == "After 1 month of membership · closes after 1 year"
         added = SubscriptionPlanAccess.objects.get(plan=plan, object_id=members_class.pk)
         assert (added.opens_after_days, added.closes_after_days) == (None, None)

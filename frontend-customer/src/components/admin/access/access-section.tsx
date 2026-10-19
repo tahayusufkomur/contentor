@@ -70,7 +70,7 @@ function Way({
     <div
       className={cn(
         "border-t px-5 py-3.5 first:border-t-0 motion-safe:transition-opacity",
-        covered && "pointer-events-none opacity-40",
+        covered && "opacity-40",
       )}
     >
       <div className="grid grid-cols-[1.25rem_1fr_auto] items-start gap-x-2.5">
