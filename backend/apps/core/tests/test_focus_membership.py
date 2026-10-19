@@ -372,6 +372,13 @@ def test_a_price_she_set_on_the_page_stands_over_sell_it_for(owner):
     assert (_plan(creation).price, _plan(creation).is_active) == (Decimal("12.00"), True)
 
 
+def test_a_stale_sell_it_for_on_a_deleted_draft_changes_nothing(owner):
+    creation = _at_finish(owner, price=None)
+    SubscriptionPlan.objects.filter(pk=creation.record_id).delete()  # she deleted it by hand
+    creation = flow.answer(creation, "finish", value="price:9")
+    assert (creation.answers["access"], "price" in creation.answers) == (flow.DELEGATE, False)
+
+
 def test_one_item_is_one_item(owner):
     assert membership.label("included", ["course:99999"]) == "1 item"
     assert membership.label("included", ["course:99998", "course:99999"]) == "2 items"

@@ -877,10 +877,12 @@ def _amount(value, prefix: str) -> str | None:
 
 def _sell_for(creation, value) -> str | None:
     """ "Sell it for" on finish: only after "Just draft it" left the price to her,
-    and only while it is offered (a price she set on the page since stands)."""
+    and only while it is offered (a price she set on the page since stands,
+    and a draft she deleted by hand takes no tap)."""
     if (creation.answers or {}).get("access") != DELEGATE:
         return None
-    return _amount(value, "price:") if kinds.get(creation.kind).suggest_price(_record(creation)) else None
+    record = _record(creation)
+    return _amount(value, "price:") if record and kinds.get(creation.kind).suggest_price(record) else None
 
 
 def _access(creation, q, value, delegate) -> bool:
