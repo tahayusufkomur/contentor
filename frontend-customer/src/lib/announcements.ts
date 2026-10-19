@@ -1,4 +1,5 @@
 import { clientFetch } from "@/lib/api-client";
+import { ownership } from "@/lib/focus/own-fields";
 
 export interface AnnouncementFilters {
   app_type?: "pwa" | "browser";
@@ -118,39 +119,9 @@ export const draftFields = (draft: Partial<DraftFields>): DraftFields => ({
   link: TIDY.link(draft.link ?? ""),
 });
 
-/** She changed this field since `was`, the copy it was last given from the
- *  server or the copy run (the form holds it as typed, the server trims). */
-export const isHers = (field: keyof DraftFields, mine: string, was: string) =>
-  tidyField(field, mine) !== was;
-
-/** The run is typing this field in and it is not hers: read-only until it is
- *  done. A field she changed first is never taken over (her keys land, the
- *  run's typing is not shown over it). */
-export const isWriting = (
-  field: keyof DraftFields,
-  typing: boolean,
-  mine: string,
-  was: string,
-) => typing && !isHers(field, mine, was);
-
-/** A newer copy of the draft (`next`) laid over the form: each field takes the
- *  copy's value unless she changed it since `was`, or the copy has nothing new
- *  for it (what she is typing is left as typed). Returns the form after, and
- *  the copy the form now stands on (`was` for the fields it did not take). */
-export function layOver(
-  mine: DraftFields,
-  was: DraftFields,
-  next: DraftFields,
-) {
-  const form = { ...mine };
-  const placed = { ...was };
-  for (const field of Object.keys(TIDY) as (keyof DraftFields)[])
-    if (next[field] !== was[field] && !isHers(field, mine[field], was[field])) {
-      form[field] = next[field];
-      placed[field] = next[field];
-    }
-  return { form, placed };
-}
+/** Which fields of the form are hers, which the run is writing, and a newer
+ *  copy laid over the rest: the rules focus mode shares (`lib/focus/own-fields`). */
+export const { isHers, isWriting, layOver } = ownership(TIDY);
 
 /** The fields she changed since `base` (the server's copy), as a PATCH body.
  *  Only those: a field she left alone may have been written by the copy run
