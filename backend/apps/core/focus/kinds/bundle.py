@@ -38,9 +38,7 @@ CLOSING = {
 }
 NOT_READY_LINE = "Your bundle is saved as a draft."
 FINISH_SPECIALIST = "finance"  # what it still needs is Finance's (G16): its items and its price
-NO_ITEMS, NO_PRICE = "Add at least two items", "Set its price first"  # G19: a bundle of one is just the item
-# The page's Publish while she cannot sell yet: the finish offers "Start selling" there.
-NOT_SELLING = "Start selling first: your plan, then payouts."
+TOO_FEW = "too_few_items"  # her first answer while she sells fewer than two items (the guide says so instead)
 REFUSED = "A bundle holds only what students can buy."  # why one of her items could not go in
 SAY = "Say an amount"  # the price step's typing box: her words set the price only when they give one
 OFF = Decimal("0.75")  # the suggestion: a quarter off what the items cost bought apart
@@ -175,9 +173,14 @@ def _rows(pk):
 def create_draft(actor, title: str, answers: dict) -> int:
     """The unpublished bundle at price 0, from her first answer; made here, not
     through the serializer. Named "New bundle" until her words or the copy name
-    it (``flow.draft_title`` reads that as the working title)."""
+    it (``flow.draft_title`` reads that as the working title). Refused while she
+    sells fewer than two items: that draft could never be published (G19)."""
     from apps.billing.models import Bundle
 
+    from ..flow import FlowError
+
+    if len(_choices()) < 2:
+        raise FlowError(TOO_FEW)
     return Bundle.objects.create(name=NEW_TITLE, price=0, is_published=False).pk
 
 
@@ -287,7 +290,10 @@ def sync(creation) -> None:
     bundle's: her price is asked again. Call under the creation's lock; the
     caller saves."""
     answers = creation.answers
-    if isinstance(answers.get("items"), str):
+    # A tap (its values, comma-separated) says again what could not go in. Her words name theirs themselves
+    # (``apply_found``), and their line stands.
+    tapped = isinstance(answers.get("items"), str)
+    if tapped:
         answers["items"] = _ticked(answers["items"])
     wanted = answers.get("items")
     if isinstance(wanted, list) and creation.record_id is not None:
@@ -301,11 +307,12 @@ def sync(creation) -> None:
             for v in done:
                 if v not in wanted:
                     _link(v, creation.record_id, on=False)
-            refused = [v for v in wanted if v not in kept]
-            brief = {k: v for k, v in (creation.brief or {}).items() if k != "refused"}
-            creation.brief = (
-                {**brief, "refused": membership.refused_line(_titles(refused), [REFUSED])} if refused else brief
-            )
+            if tapped:
+                refused = [v for v in wanted if v not in kept]
+                brief = {k: v for k, v in (creation.brief or {}).items() if k != "refused"}
+                creation.brief = (
+                    {**brief, "refused": membership.refused_line(_titles(refused), [REFUSED])} if refused else brief
+                )
             creation.drafted = {**(creation.drafted or {}), "items": kept}
             wanted = kept
         if wanted:
@@ -410,26 +417,14 @@ def suggest_price(row) -> pricing.Suggestion | None:
 
 
 def not_ready(row) -> str:
-    from apps.billing.serializers.bundles import listed_items
-
-    if len(listed_items(row, drafts=False)) < 2:
-        return NO_ITEMS
-    return "" if row.price > 0 else NO_PRICE
+    """Two items (a series once, G19), then a price: billing's rule, which the page's Publish keeps too."""
+    return row.not_ready()
 
 
 def cannot_sell(row) -> bool:
     """Always paid: a draft while selling is not open yet (her plan, then
     payouts). Not before it has a price: "Set its price first" comes first."""
-    from apps.core import monetization
-
-    return row.price > 0 and not monetization.can_monetize(connection.tenant)
-
-
-def refusal(row) -> str:
-    """Why the page's Publish cannot publish it yet, in the finish's words; "" when it can."""
-    if gap := not_ready(row):
-        return f"{gap}."
-    return NOT_SELLING if cannot_sell(row) else ""
+    return row.cannot_sell()
 
 
 def go_live(pk) -> None:

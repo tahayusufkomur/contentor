@@ -112,9 +112,14 @@ class BundleListSerializer(serializers.ModelSerializer):
 class BundleDetailSerializer(BundleListSerializer):
     items = BundleItemSerializer(many=True, read_only=True)
     original_price = serializers.SerializerMethodField()
+    not_ready = serializers.SerializerMethodField()
 
     class Meta(BundleListSerializer.Meta):
-        fields = BundleListSerializer.Meta.fields + ["items", "original_price"]
+        fields = BundleListSerializer.Meta.fields + ["items", "original_price", "not_ready"]
+
+    def get_not_ready(self, obj) -> str:
+        """Her page's line where Publish would be: why it cannot be published yet ("" for anyone else)."""
+        return obj.not_ready() if self._drafts() else ""
 
     def to_representation(self, obj):
         data = super().to_representation(obj)
@@ -151,8 +156,6 @@ class BundleCreateSerializer(ShorthandMixin, serializers.ModelSerializer):
         return bundle
 
     def update(self, instance, validated_data):
-        from apps.core.focus.kinds import bundle as focus_bundle
-
         items_data = validated_data.pop("items", None)
         publishing = validated_data.get("is_published") is True and not instance.is_published
         for attr, value in validated_data.items():
@@ -163,7 +166,7 @@ class BundleCreateSerializer(ShorthandMixin, serializers.ModelSerializer):
             self._save_items(instance, items_data)
         # A draft is published only as focus mode's finish would (two items, a price, selling open);
         # ShorthandMixin.save's transaction rolls the whole change back.
-        if publishing and (why := focus_bundle.refusal(instance)):
+        if publishing and (why := instance.refusal()):
             raise serializers.ValidationError({"is_published": [why]})
         return instance
 

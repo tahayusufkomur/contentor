@@ -82,9 +82,9 @@ def _values(creation) -> list[str]:
 
 
 def _at_finish(owner, *, count=2, price="paid:75"):
-    """A bundle of ``count`` courses ($40, $60, …) answered up to the finish step."""
-    courses = [_course(owner, f"Course {n}", price=str(40 + 20 * n)) for n in range(count)]
-    creation = flow.start(owner, "bundle", value=",".join(f"course:{c.pk}" for c in courses))
+    """A bundle of ``count`` of her courses ($40, $60, …; she sells at least two) answered up to the finish step."""
+    courses = [_course(owner, f"Course {n}", price=str(40 + 20 * n)) for n in range(max(count, 2))]
+    creation = flow.start(owner, "bundle", value=",".join(f"course:{c.pk}" for c in courses[:count]))
     assert flow.current_field(creation) == "review"
     creation.answers = {**creation.answers, "review": "ok"}
     creation.save()
@@ -177,6 +177,7 @@ def test_named_items_are_matched_by_title(owner):
 
 def test_a_coach_who_is_not_the_owner_cannot_start_one(owner):
     course = _course(owner)
+    other = _course(owner, "Vinyasa flow", price="60")
     coach = _user("focus-bundle-coach@x.com", "coach")
     client = _client(coach)
     res = client.post(URL, {"kind": "bundle", "value": f"course:{course.pk}"}, format="json")
@@ -189,7 +190,7 @@ def test_a_coach_who_is_not_the_owner_cannot_start_one(owner):
     mine = _client(owner).get(URL).json()
     assert "bundle" in mine["kinds"]
     # Her first question's tiles are her items, before any creation exists.
-    assert [o["value"] for o in mine["first"]["bundle"]["options"]] == [f"course:{course.pk}"]
+    assert {o["value"] for o in mine["first"]["bundle"]["options"]} == {f"course:{course.pk}", f"course:{other.pk}"}
     res = _client(owner).post(URL, {"kind": "bundle", "value": f"course:{course.pk}"}, format="json")
     assert res.status_code == 201
 
@@ -267,6 +268,7 @@ def test_the_tiles_are_what_she_sells_on_its_own(owner):
 def test_what_cannot_join_is_named_with_the_reason(owner):
     basics = _course(owner, "Yoga basics")
     free = _course(owner, "Free intro", price="0")
+    _course(owner, "Pilates core", price="30")
     with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True):
         creation = flow.start(owner, "bundle", text="yoga basics and the free intro")
     flow.apply(creation, bundle.FOUND(items=["Yoga basics", "Free intro"]))
@@ -313,6 +315,7 @@ def test_a_price_she_set_on_the_page_stands_over_sell_it_for(owner):
 
 def test_her_words_set_the_price_and_free_is_asked_again(owner):
     basics = _course(owner, "Yoga basics")
+    _course(owner, "Pilates core", price="30")
     with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True):
         creation = flow.start(owner, "bundle", text="yoga basics for 35")
     flow.apply(creation, bundle.FOUND(items=["Yoga basics"], price="35"))
@@ -397,7 +400,7 @@ def test_the_page_cannot_publish_a_bundle_that_is_not_ready(owner):
     with mock.patch("apps.core.monetization.can_monetize", return_value=True):
         res = client.patch(url, {"is_published": True}, format="json")
         assert (res.status_code, res.json()) == (400, {"is_published": ["Add at least two items."]})
-        two = _course(owner, "Second", price="20")
+        two = Course.objects.exclude(pk__in=[i.object_id for i in _bundle(creation).items.all()]).get()
         items = [{"content_type": "course", "object_id": i.object_id} for i in _bundle(creation).items.all()]
         body = {"is_published": True, "price": "0", "items": [*items, {"content_type": "course", "object_id": two.pk}]}
         res = client.patch(url, body, format="json")
@@ -405,11 +408,92 @@ def test_the_page_cannot_publish_a_bundle_that_is_not_ready(owner):
         assert len(_items(_bundle(creation))) == 1 and _bundle(creation).price == Decimal("30.00")  # rolled back
     with mock.patch("apps.core.monetization.can_monetize", return_value=False):
         res = client.patch(url, {**body, "price": "40"}, format="json")
-        assert (res.status_code, res.json()) == (400, {"is_published": [bundle.NOT_SELLING]})
+        assert (res.status_code, res.json()) == (400, {"is_published": [Bundle.NOT_SELLING]})
     with mock.patch("apps.core.monetization.can_monetize", return_value=True):
         res = client.patch(url, {**body, "price": "40"}, format="json")
     assert res.status_code == 200 and res.json()["is_published"] is True
     assert _bundle(creation).is_published
+
+
+# ── Fold-in round ───────────────────────────────────────────────────────────
+
+
+def test_what_her_later_words_cannot_add_is_still_named(owner):
+    """R1: her words at the review name one item that can go in and one that cannot: the one is added,
+    and the other is named there, not dropped by the sync that adds the first."""
+    creation = _at_finish(owner, price=None)
+    creation.answers = {k: v for k, v in creation.answers.items() if k not in ("review", "access")}  # at the review
+    creation.save()
+    workbook = DownloadFile.objects.create(
+        title="Breathing workbook", is_published=True, pricing_type="paid", price=Decimal("9"), file_url="a.pdf"
+    )
+    _course(owner, "Free intro", price="0")
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True):
+        creation = flow.answer(creation, "review", text="also add Breathing workbook and Free intro")
+    flow.apply(creation, bundle.FOUND(items=["Breathing workbook", "Free intro"]))
+    creation.save()
+    assert ("downloadfile", workbook.pk) in _items(_bundle(creation))
+    asked = flow.state(creation)["question"]
+    assert asked["field"] == "review"
+    assert asked["why"].startswith(f"Free intro could not be added: {bundle.REFUSED} ")
+
+
+def test_a_series_alone_is_one_item(owner):
+    """R2 (G19): a class series counts once, wherever it would be published; its held sessions not at all."""
+    soon = timezone.now() + timedelta(days=1)
+    paid = {"pricing_type": "paid", "price": Decimal("15"), "status": "scheduled"}
+    weekly = [
+        LiveClass.objects.create(
+            title="Morning flow", instructor=owner, scheduled_at=soon + timedelta(days=7 * i), **paid
+        )
+        for i in range(3)
+    ]
+    LiveClass.objects.filter(pk=weekly[2].pk).update(status="draft")  # a held session
+    _course(owner, "Yoga basics")
+    creation = flow.start(owner, "bundle", value=f"event:live:{weekly[0].pk}")
+    assert len(_items(_bundle(creation))) == 3  # every session is in it
+    creation.answers = {**creation.answers, "review": "ok"}
+    creation.save()
+    creation = flow.answer(creation, "access", value=flow.state(creation)["question"]["options"][0]["value"])
+    row = _bundle(creation)
+    assert (row.item_count(), row.not_ready()) == (1, "Add at least two items")
+    with mock.patch("apps.core.monetization.can_monetize", return_value=True):
+        assert _values(creation) == ["draft"]
+        res = _client(owner).patch(f"/api/v1/billing/bundles/{row.pk}/", {"is_published": True}, format="json")
+        assert (res.status_code, res.json()) == (400, {"is_published": ["Add at least two items."]})
+        # The page's line where Publish would be.
+        assert _client(owner).get(f"/api/v1/billing/bundles/{row.pk}/").json()["not_ready"] == "Add at least two items"
+        creation = flow.finish(creation, publish=True)
+    assert not _bundle(creation).is_published
+
+
+def test_with_fewer_than_two_items_to_sell_no_draft_is_made(owner):
+    """R6: one item she sells (and a free one) cannot make a bundle: no draft that could never be published."""
+    course = _course(owner)
+    _course(owner, "Free intro", price="0")
+    assert [o["value"] for o in flow.question("bundle", "items")["options"]] == [f"course:{course.pk}"]
+    with pytest.raises(flow.FlowError, match=bundle.TOO_FEW):
+        flow.start(owner, "bundle", text="a bundle of my yoga course")
+    res = _client(owner).post(URL, {"kind": "bundle", "value": f"course:{course.pk}"}, format="json")
+    assert (res.status_code, res.json()) == (400, {"detail": bundle.TOO_FEW})
+    assert not Bundle.objects.exists() and not FocusCreation.objects.exists()
+
+
+def test_the_publish_rule_lives_in_billing(owner):
+    """R4: the PATCH guard and the focus adapter read one rule, on the Bundle model; billing imports no focus code."""
+    import inspect
+
+    from apps.billing.models import core
+    from apps.billing.serializers import bundles as serializers
+
+    assert "apps.core.focus" not in inspect.getsource(serializers) + inspect.getsource(core)
+    creation = _at_finish(owner, count=1, price="paid:30")
+    row = _bundle(creation)
+    assert bundle.not_ready(row) == row.not_ready() == Bundle.NO_ITEMS
+    with mock.patch("apps.core.monetization.can_monetize", return_value=False):
+        Bundle.objects.filter(pk=row.pk).update(price=0)
+        row.refresh_from_db()
+        assert (bundle.cannot_sell(row), row.cannot_sell()) == (False, False)
 
 
 # ── The adapter ─────────────────────────────────────────────────────────────

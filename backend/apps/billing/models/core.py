@@ -218,6 +218,46 @@ class Bundle(models.Model):
     def __str__(self):
         return self.name
 
+    # Why a draft cannot be published yet (focus mode's finish, the page's Publish and its PATCH).
+    NO_ITEMS, NO_PRICE = "Add at least two items", "Set its price first"  # a bundle of one is just the item
+    NOT_SELLING = "Start selling first: your plan, then payouts."
+
+    def item_count(self) -> int:
+        """Its items as she and students see them: drafts left out, and a class
+        series (sessions sharing a model and a title) once."""
+        from apps.billing.serializers.bundles import listed_items
+
+        return len(
+            {
+                (
+                    i.content_type_id,
+                    i.content_object.title if hasattr(i.content_object, "scheduled_at") else i.object_id,
+                )
+                for i in listed_items(self, drafts=False)
+                if i.content_object is not None
+            }
+        )
+
+    def not_ready(self) -> str:
+        """Why it cannot be published yet ("" when it can): two items, then a price."""
+        if self.item_count() < 2:
+            return self.NO_ITEMS
+        return "" if self.price > 0 else self.NO_PRICE
+
+    def cannot_sell(self) -> bool:
+        """Priced while selling is not open yet (her plan, then payouts)."""
+        from django.db import connection
+
+        from apps.core import monetization
+
+        return self.price > 0 and not monetization.can_monetize(connection.tenant)
+
+    def refusal(self) -> str:
+        """Why publishing it is refused, as a sentence; "" when it can be published."""
+        if gap := self.not_ready():
+            return f"{gap}."
+        return self.NOT_SELLING if self.cannot_sell() else ""
+
 
 class BundleItem(models.Model):
     """Content items within a bundle."""
