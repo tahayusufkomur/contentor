@@ -340,14 +340,16 @@ export function CourseForm({
     if (wasFocusing.current && !focusing) void loadCourse();
     wasFocusing.current = focusing;
   }, [focusing, loadCourse]);
-  // The price step set the course's price: the form takes it in, so a later
-  // save (Save & leave with her typed edits) never puts the old one back.
-  const priced = creation?.answered.find(
-    (line) => line.field === "access",
-  )?.label;
+  // The cover and price steps change the course on the server: the form takes
+  // that in (the kept cover shows at once), and a later save (Save & leave
+  // with her typed edits) never puts the old price back.
+  const settled = creation?.answered
+    .filter((line) => line.field === "access" || line.field === "cover")
+    .map((line) => `${line.field}:${line.label}`)
+    .join("|");
   useEffect(() => {
-    if (focusing && priced) void loadCourse();
-  }, [priced, focusing, loadCourse]);
+    if (focusing && settled) void loadCourse();
+  }, [settled, focusing, loadCourse]);
 
   // --- Save all course fields ---
   const { run: handleSave, loading: saving } = useAsyncAction(
