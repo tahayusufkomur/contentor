@@ -549,6 +549,10 @@ test("Describe it drafts a class series beside the manual form: cards, Apply all
       json: { result: { kind: "create_event", id: executed.length, title: "Office hour" }, audit_id: null },
     });
   });
+  // Focus mode replaces the Describe it box when it is on (the dev stack runs events in it).
+  await page.route("**/api/v1/admin/focus/", (route) =>
+    route.fulfill({ json: { enabled: false, first: {}, open: [] } }),
+  );
   await page.goto(`${TENANT}/admin/live`);
 
   await page.getByTestId("describe-event").fill("a Zoom office hour on the next two Tuesdays at 18:00");
