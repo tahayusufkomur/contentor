@@ -115,9 +115,23 @@ def _read(creation, found):
     return creation
 
 
-def _at_review(owner, audience="all"):
+def _write(creation, title="Class moves to 7pm", body="Friday's class starts at 7pm. See you there!"):
+    """The Community manager's copy run, the model patched."""
+    copy = copywriter.output_for("message")(title=title, body=body)
+    with (
+        mock.patch("apps.core.focus.copywriter.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.focus.copywriter.ai_compose.record_spend"),
+        mock.patch("apps.core.focus.copywriter.core_ai.structured", return_value=(copy, Decimal("0"), "x")),
+    ):
+        jobs.execute(SCHEMA, creation.runs["copy"])
+
+
+def _at_review(owner, audience="all", *, written=True):
+    """At the review, its copy run queued; with ``written``, done."""
     creation = flow.answer(flow.start(owner, "message", value=TOPIC), "audience", value=audience)
     assert flow.current_field(creation) == "review"
+    if written:
+        _write(creation)
     return creation
 
 
@@ -215,11 +229,45 @@ def test_a_scheduled_message_goes_out_at_her_time_not_now(owner, students, fanou
     fanout.assert_not_called()  # the per-minute dispatcher sends it when due, not before
     assert not Announcement.objects.filter(status="scheduled", scheduled_at__lte=timezone.now()).exists()
     assert _closing(creation) == f"Scheduled for {_said(at)}."
-    # A time she gave that has passed is never sent at once.
+    # Her time passes while she is at the finish step: never sent at once, and she is told where to send it.
     creation = _at_review(owner)
     creation.answers = {**creation.answers, "review": "ok", "when": _iso(_local(-1, 9))}
     creation.save()
-    assert message.not_ready(_row(creation)) == "Pick a time in the future"
+    assert message.not_ready(_row(creation)) == message.PASSED
+    asked = flow.state(creation)["question"]
+    assert [o["value"] for o in asked["options"]] == ["draft"]
+    assert asked["why"].startswith("That time has passed. Keep it as a draft and send it from Messages.")
+    assert asked["specialist"] == "community"  # who writes it says what it needs
+
+
+def test_a_time_already_past_or_impossible_is_asked_again(owner, students):
+    creation = _at_review(owner)
+    creation.answers = {**creation.answers, "review": "ok"}
+    creation.save()
+    for when in (_iso(_local(0, 0) - timedelta(minutes=1)), "2026-11-31T10:00", "2026-13-01T10:00"):
+        creation = _typed_at(creation, "when", "today at midnight", message.MessageFound(when=when))
+        assert "when" not in creation.answers, when
+        assert flow.state(creation)["question"]["field"] == "when"  # a 500 never: asked again
+    # A model-written clarify option with an impossible day is no answer either.
+    assert message.apply_clarified(creation, "when", "2026-02-30T10:00") is False
+    assert "when" not in creation.answers
+    creation = _typed_at(creation, "when", "Friday at 6pm", message.MessageFound(when=_iso(_local(2, 18))))
+    assert flow.current_field(creation) == "finish"
+
+
+def test_an_empty_message_is_never_sent(owner, students, fanout):
+    creation = _at_review(owner, written=False)  # the copy is still being written
+    creation.answers = {**creation.answers, "review": "ok", "when": "now"}
+    creation.save()
+    assert message.not_ready(_row(creation)) == "Your message is still being written"
+    assert [o["value"] for o in flow.state(creation)["question"]["options"]] == ["draft"]
+    creation = flow.finish(creation, publish=True)  # Send from a stale screen: the run is stopped, nothing written
+    assert (creation.answers["finish"], _row(creation).status) == ("draft", "draft")
+    fanout.assert_not_called()
+    # A body with no words (the run wrote none, or she cleared it): Keep only.
+    creation = _at_finish(owner)
+    Announcement.objects.filter(pk=creation.record_id).update(body="<p> &nbsp;</p>")
+    assert message.not_ready(_row(creation)) == "Write your message first"
     assert [o["value"] for o in flow.state(creation)["question"]["options"]] == ["draft"]
 
 
@@ -280,11 +328,12 @@ def test_the_audience_tiles_show_how_many_students(owner, students):
     assert {"field": "audience", "label": "Students of Everything"} in flow.state(creation)["answered"]
     # "You decide" is all of them.
     decided = flow.answer(flow.start(owner, "message", value=TOPIC), "audience", delegate=True)
+    _write(decided)
     decided.answers = {**decided.answers, "review": "ok", "when": "now"}
     decided.save()
     with mock.patch("apps.notifications.tasks.fanout_announcement.delay"):
         flow.finish(decided, publish=True)
-    assert _row(decided).filters_json == {}
+    assert (_row(decided).status, _row(decided).filters_json) == ("scheduled", {})
 
 
 def test_students_of_one_course_get_it(owner, students, fanout):
@@ -299,17 +348,11 @@ def test_students_of_one_course_get_it(owner, students, fanout):
 
 
 def test_the_models_body_is_escaped_and_sanitized_before_the_event_and_the_row(owner, students):
-    creation = _at_review(owner)
+    creation = _at_review(owner, written=False)
     body = (
         'Hi all.<script>alert(1)</script> &lt;img src=x onerror=alert(2)&gt;\n\nSee <img src=x onerror="alert(3)"> you'
     )
-    copy = copywriter.output_for("message")(title="Class moves to 7pm", body=body)
-    with (
-        mock.patch("apps.core.focus.copywriter.ai_compose.compose_available", return_value=True),
-        mock.patch("apps.core.focus.copywriter.ai_compose.record_spend"),
-        mock.patch("apps.core.focus.copywriter.core_ai.structured", return_value=(copy, Decimal("0"), "x")),
-    ):
-        jobs.execute(SCHEMA, creation.runs["copy"])
+    _write(creation, body=body)
     stored = _row(creation).body
     events = [e.data for e in CopilotRun.objects.get(pk=creation.runs["copy"]).events.filter(type="field")]
     assert {e["record"] for e in events} == {f"message:{creation.record_id}"}

@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core import signing
+from django.utils.html import escape
 
 from apps.core.models import Domain
 from apps.tenant_config.defaults import sanitize_rich_text
@@ -60,7 +61,7 @@ def announcement_email_html(announcement, cfg, base_url: str):
     html = f"""
     <div style="font-family:-apple-system,system-ui,sans-serif;max-width:520px;margin:0 auto;padding:32px 20px">
       {header}
-      <h1 style="font-size:20px;color:#1a1a2e;margin:0 0 12px">{announcement.title}</h1>
+      <h1 style="font-size:20px;color:#1a1a2e;margin:0 0 12px">{escape(announcement.title)}</h1>
       <div style="color:#444;font-size:15px;line-height:1.5">{body}</div>
       {cta}
       <hr style="border:none;border-top:1px solid #eee;margin:28px 0"/>

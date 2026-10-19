@@ -554,9 +554,11 @@ def state(creation) -> dict:
         asked = {
             **asked,
             "question": adapter.NOT_READY_LINE,
-            "why": f"{gap.capitalize()}. Until then it stays a hidden draft.",
+            # Upper-first, never capitalize(): that lowercases the rest ("Zoom", "Messages").
+            "why": f"{gap[0].upper()}{gap[1:]}. Until then it stays a hidden draft.",
             "options": [o for o in asked["options"] if o["value"] != adapter.FINISH[0][0]],
-            "specialist": "content",
+            # Whoever drafts it says what it still needs (the course's and the event's: content).
+            "specialist": recipe.specialists[_review_id(recipe)],
         }
     if record and field == "finish":
         asked = _finish_options(creation, asked, record)

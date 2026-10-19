@@ -38,6 +38,14 @@ def test_render_has_title_cta_and_unsub(tenant_ctx):
     assert primary_hex("journal") in html  # the look's brand colour
 
 
+def test_a_title_is_text_in_the_email_never_markup(tenant_ctx):
+    a = Announcement.objects.create(title="<b>New</b> <script>alert(1)</script>", body="<p>Body</p>", filters_json={})
+    a.email_unsub_url = "https://t.example.com/unsub"
+    _subject, html = email_render.announcement_email_html(a, _cfg(), "https://t.example.com")
+    assert "<script" not in html and "<b>" not in html
+    assert "&lt;b&gt;New&lt;/b&gt; &lt;script&gt;alert(1)&lt;/script&gt;" in html
+
+
 def test_unsubscribe_token_roundtrip(tenant_ctx):
     token = email_render.unsubscribe_url(tenant_ctx, email="a@b.com").split("t=")[1]
     data = email_render.decode_unsubscribe(token)

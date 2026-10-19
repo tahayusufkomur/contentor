@@ -34,7 +34,10 @@ REVIEWED_LINE = None
 ALL, NOW, NEXT = "all", "now", "next"
 NOT_READY_LINE = "Your message is saved as a draft."
 NOBODY = "Nobody would receive it yet"
-PASSED = "Pick a time in the future"
+# The plain composer sends a kept draft as a new message (prefilled from it), scheduled or now.
+PASSED = "That time has passed. Keep it as a draft and send it from Messages"
+WRITING = "Your message is still being written"
+EMPTY = "Write your message first"
 
 RECIPE = Recipe(
     kind="message",
@@ -246,11 +249,16 @@ def _zone():
 
 
 def _when(value) -> str | None:
-    """'now', 'next' or her local time 'YYYY-MM-DDTHH:MM'; None for anything else."""
+    """'now', 'next' or her local time 'YYYY-MM-DDTHH:MM' on a real day; None
+    for anything else ("2026-11-31T10:00" too: asked again, never a 500)."""
     value = str(value or "").strip()
-    if value in (NOW, NEXT) or interview_schedule.parse({"mode": "once", "at": value}):
+    if value in (NOW, NEXT):
         return value
-    return None
+    try:
+        datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    return value if interview_schedule.parse({"mode": "once", "at": value}) else None
 
 
 def _send_at(when, now: datetime) -> datetime | None:
@@ -338,8 +346,9 @@ def apply_clarified(creation, field, value) -> bool:
 
 def sync(creation) -> None:
     """After every answer: her words where a tile was expected (no model read
-    them) name a course or bundle, or are asked again, never guessed. Call
-    under the creation's lock; the caller saves."""
+    them) name a course or bundle, or are asked again, never guessed; a time
+    of hers that has already passed is asked again too. Call under the
+    creation's lock; the caller saves."""
     from .. import flow
 
     answers = creation.answers
@@ -348,8 +357,14 @@ def sync(creation) -> None:
             answers["audience"] = audience
         else:
             answers.pop("audience")
-    if "when" in answers and not _when(answers["when"]):
+    if "when" in answers and (not _when(answers["when"]) or _passed(answers["when"])):
         answers.pop("when")
+
+
+def _passed(when) -> bool:
+    """A time of hers (not now, not the next 10:00) that is not still to come."""
+    now = timezone.now()
+    return when not in (NOW, NEXT) and (at := _send_at(when, now)) is not None and at <= now
 
 
 def ask(creation, asked: dict) -> dict:
@@ -426,21 +441,33 @@ def write_copy(pk, fields: dict) -> None:
 # ── Checks and sending ──────────────────────────────────────────────────────
 
 
-def _answers(row) -> dict:
-    """Her answers in focus mode (the creation holding this draft)."""
+def _creation(row):
+    """The focus creation holding this draft, or None."""
     from apps.tenant_config.models import FocusCreation
 
-    rows = FocusCreation.objects.filter(kind="message", mode="focus", record_id=row.pk)
-    return rows.values_list("answers", flat=True).first() or {}
+    return FocusCreation.objects.filter(kind="message", mode="focus", record_id=row.pk).first()
+
+
+def _answers(row) -> dict:
+    creation = _creation(row)
+    return (creation.answers if creation else None) or {}
 
 
 def not_ready(row) -> str:
-    """Why Send is refused: nobody to receive it, or a time of hers that has passed."""
-    answers = _answers(row)
+    """Why Send is refused: the copy still being written or no message yet
+    (never an empty one), nobody to receive it, or her time has passed while
+    she was at the finish step."""
+    from .. import jobs
+
+    creation = _creation(row)
+    if creation is not None and jobs.status(creation, "copy") == "building":
+        return WRITING
+    if not html.unescape(strip_tags(row.body)).strip():
+        return EMPTY
+    answers = (creation.answers if creation else None) or {}
     if _count(_filters(answers.get("audience"))) == 0:
         return NOBODY
-    at = _send_at(answers.get("when"), timezone.now())
-    if at is not None and answers.get("when") not in (NOW, NEXT) and at <= timezone.now():
+    if _passed(answers.get("when")):
         return PASSED
     return ""
 
