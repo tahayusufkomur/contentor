@@ -96,6 +96,8 @@ def golive_state(tenant) -> dict:
         {"id": "publish", "label": "Go live", "minutes": 1, "done": False},
     ]
     ready = not brief.missing(answers) and not building
+    from .interview_team import handoff  # it reads _PAGE_LABELS from here
+
     return {
         "ready": ready,
         "building": building,
@@ -112,6 +114,8 @@ def golive_state(tenant) -> dict:
         "summary": _summary(tenant, answers, flow),
         # What waits, with its prices, until she can take payments.
         "held": _held_lines(held or {}, flow),
+        # What each specialist did, and the one next thing, for the celebration screen.
+        "team": handoff(tenant, answers, flow, sells=sells),
     }
 
 
