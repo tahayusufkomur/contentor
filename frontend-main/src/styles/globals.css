@@ -6,6 +6,12 @@
 
 /* Tokens come from packages/shared/src/styles/tokens.css (spec 5.1): light by
  * default, .dark on <html> when the system or the header toggle picks it. */
+:root {
+  --success: oklch(0.55 0.13 150);
+}
+.dark {
+  --success: oklch(0.76 0.15 150);
+}
 @layer base {
   * {
     @apply border-border;
@@ -246,13 +252,14 @@ details[open] .faq-content {
 
 /* Hero: the team works in turn, one role every 1.7 s (six roles, a 10.2 s
    round). --i is the card's (and its wire's) place in the round; children
-   inherit it, so a card's icon and status turn with it. */
+   inherit it, so a card's icon and status turn with it. The first round
+   starts from blank: no card is done until its own turn has run. */
 @media (prefers-reduced-motion: no-preference) {
   .team-turn,
   .team-turn :is(.team-icon, .team-on, .team-done) {
     animation-duration: 10.2s;
     animation-iteration-count: infinite;
-    animation-delay: calc(var(--i) * 1.7s - 10.2s);
+    animation-delay: calc(var(--i) * 1.7s);
   }
   .team-turn {
     animation-name: team-turn;
@@ -264,18 +271,20 @@ details[open] .faq-content {
     animation-name: team-on;
   }
   .team-turn .team-done {
+    opacity: 0;
     animation-name: team-done;
   }
   .team-wire {
     animation:
       team-wire 10.2s infinite,
       wire-flow 1.4s linear infinite;
-    animation-delay: calc(var(--i) * 1.7s - 10.2s), 0s;
+    animation-delay: calc(var(--i) * 1.7s), 0s;
   }
 }
+/* Done: the card flashes green as its turn ends, then settles. */
 @keyframes team-turn {
   0%,
-  17%,
+  32%,
   100% {
     border-color: var(--border);
     background-color: var(--card);
@@ -293,10 +302,17 @@ details[open] .faq-content {
     box-shadow: 0 18px 50px -24px var(--marketing-accent);
     transform: scale(1.03);
   }
+  18%,
+  22% {
+    border-color: var(--success);
+    background-color: color-mix(in oklch, var(--success) 12%, var(--card));
+    box-shadow: 0 18px 50px -28px var(--success);
+    transform: none;
+  }
 }
 @keyframes team-icon {
   0%,
-  17%,
+  32%,
   100% {
     background-color: var(--muted);
     color: var(--foreground);
@@ -305,6 +321,11 @@ details[open] .faq-content {
   15% {
     background-color: var(--marketing-accent);
     color: var(--marketing-accent-foreground);
+  }
+  18%,
+  22% {
+    background-color: var(--success);
+    color: var(--background);
   }
 }
 @keyframes team-on {
@@ -320,13 +341,12 @@ details[open] .faq-content {
 }
 @keyframes team-done {
   0%,
+  15% {
+    opacity: 0;
+  }
   17%,
   100% {
     opacity: 1;
-  }
-  2%,
-  15% {
-    opacity: 0;
   }
 }
 @keyframes team-wire {

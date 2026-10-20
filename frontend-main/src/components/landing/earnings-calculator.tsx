@@ -47,7 +47,7 @@ function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-3 w-full accent-foreground"
+        className="mt-3 w-full accent-marketing-accent"
       />
     </div>
   );
@@ -115,7 +115,7 @@ export function EarningsCalculator({
                 className={cn(
                   "rounded-full px-5 py-2 text-caption font-semibold transition-colors",
                   plan === p
-                    ? "bg-foreground text-background"
+                    ? "bg-marketing-accent text-marketing-accent-foreground"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -127,10 +127,10 @@ export function EarningsCalculator({
       </div>
       <div
         aria-live="polite"
-        className="flex flex-col justify-center rounded-tile bg-muted p-8"
+        className="flex flex-col justify-center rounded-tile border border-marketing-accent bg-[color-mix(in_oklch,var(--marketing-accent)_10%,var(--muted))] p-8"
       >
         <p className="text-caption text-muted-foreground">{t("keep")}</p>
-        <p className="mt-2 text-display-2 tabular-nums text-foreground">
+        <p className="mt-2 text-display-2 tabular-nums text-marketing-accent">
           {money(e.keep)}
         </p>
         <p className="mt-1 text-body text-muted-foreground">
