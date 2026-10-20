@@ -4,10 +4,12 @@ mirrors the fixture pattern in apps/tenant_config/tests/test_logo_ai_views.py.""
 
 import contextlib
 import json
+from datetime import timedelta
 from decimal import Decimal
 from unittest import mock
 
 import pytest
+from django.utils import timezone
 from django_tenants.utils import schema_context
 from rest_framework.test import APIClient
 
@@ -167,14 +169,16 @@ def test_create_published_directly_stamps_published_at(coach_client, free_tenant
     """Regression: a create call with status=published (bypassing the usual
     draft-then-publish flow) must still stamp published_at."""
     res = coach_client.post(
-        "/api/v1/admin/blog/posts/", {"title": "Live from day one", "status": "published"}, format="json"
+        "/api/v1/admin/blog/posts/",
+        {"title": "Live from day one", "body_html": "<p>Hello</p>", "status": "published"},
+        format="json",
     )
     assert res.status_code == 201
     assert res.data["published_at"] is not None
 
 
 def test_publish_transition_sets_published_at(coach_client, paid_tenant):
-    post = BlogPost.objects.create(title="x", slug="x")
+    post = BlogPost.objects.create(title="x", slug="x", body_html="<p>Words</p>")
     res = coach_client.patch(f"/api/v1/admin/blog/posts/{post.id}/", {"status": "published"}, format="json")
     assert res.status_code == 200
     post.refresh_from_db()
@@ -182,6 +186,50 @@ def test_publish_transition_sets_published_at(coach_client, paid_tenant):
     coach_client.patch(f"/api/v1/admin/blog/posts/{post.id}/", {"status": "draft"}, format="json")
     post.refresh_from_db()
     assert post.published_at is None
+
+
+@pytest.mark.parametrize(
+    ("title", "body", "gap"),
+    [
+        ("Untitled post", "<p>Words</p>", "Give it a title first"),
+        ("Real title", "", "Write something first"),
+        ("Real title", "<p></p>", "Write something first"),
+        ("Real title", "<p>&nbsp;</p><p> </p>", "Write something first"),
+        ("Real title", '<p><img src="https://x.test/a.png" alt=""></p>', "Write something first"),
+    ],
+)
+def test_an_untitled_or_empty_post_cannot_be_published(coach_client, free_tenant, title, body, gap):
+    post = BlogPost.objects.create(title=title, slug="gap", body_html=body)
+    res = coach_client.patch(f"/api/v1/admin/blog/posts/{post.id}/", {"status": "published"}, format="json")
+    assert res.status_code == 400
+    assert res.data["detail"] == f"{gap}."
+    assert res.data["code"] == "post.not_ready"
+    post.refresh_from_db()
+    assert post.status == "draft" and post.published_at is None
+    # The same refusal on a post created straight as published (nothing saved).
+    res = coach_client.post(
+        "/api/v1/admin/blog/posts/", {"title": title, "body_html": body, "status": "published"}, format="json"
+    )
+    assert res.status_code == 400 and res.data["code"] == "post.not_ready"
+    assert BlogPost.objects.count() == 1
+    # Fixing it in the same request publishes.
+    res = coach_client.patch(
+        f"/api/v1/admin/blog/posts/{post.id}/",
+        {"title": "A real title", "body_html": "<p>Now with words</p>", "status": "published"},
+        format="json",
+    )
+    assert res.status_code == 200 and res.data["status"] == "published"
+
+
+def test_a_published_post_is_left_as_it_is(coach_client, free_tenant):
+    when = timezone.now() - timedelta(days=3)
+    post = BlogPost.objects.create(title="Old", slug="old", status="published", published_at=when, body_html="")
+    res = coach_client.patch(
+        f"/api/v1/admin/blog/posts/{post.id}/", {"excerpt": "Still live", "status": "published"}, format="json"
+    )
+    assert res.status_code == 200
+    post.refresh_from_db()
+    assert post.status == "published" and post.published_at == when
 
 
 def test_autopilot_patch_computes_next_run(coach_client, paid_tenant):

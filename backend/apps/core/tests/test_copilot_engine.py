@@ -1476,7 +1476,9 @@ def test_publish_blog_post_card_resolves_title_and_stashes_id(tenant_with_pages)
         role="owner",
         is_staff=True,
     )
-    post = BlogPost.objects.create(title="5 stretches", status="draft", created_by=author, slug="5-stretches")
+    post = BlogPost.objects.create(
+        title="5 stretches", status="draft", created_by=author, slug="5-stretches", body_html="<p>Stretch.</p>"
+    )
     action = engine.PublishBlogPostAction(kind="publish_blog_post", post_id=post.pk)
     card = engine._card(tenant_with_pages, action)
     assert card["kind"] == "publish_blog_post"
@@ -1484,6 +1486,16 @@ def test_publish_blog_post_card_resolves_title_and_stashes_id(tenant_with_pages)
     assert card["detail"] == "Goes live for students the moment you confirm."
     stashed = copilot_tokens.take_action(card["token"], tenant_with_pages.schema_name)
     assert stashed == {"kind": "publish_blog_post", "post_id": post.pk}
+
+
+def test_publish_blog_post_card_refuses_an_empty_post(tenant_with_pages):
+    from apps.blog.models import BlogPost
+    from apps.core.copilot import content as copilot_content
+
+    post = BlogPost.objects.create(title="5 stretches", status="draft", slug="5-stretches-empty", body_html="<p></p>")
+    action = engine.PublishBlogPostAction(kind="publish_blog_post", post_id=post.pk)
+    with pytest.raises(copilot_content.ContentOpError, match="Write something first"):
+        engine._card(tenant_with_pages, action)
 
 
 def test_publish_blog_post_already_published_dropped_with_reason(tenant_with_pages):

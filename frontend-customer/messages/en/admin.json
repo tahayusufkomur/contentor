@@ -373,6 +373,8 @@
     "editorSave": "Save",
     "editorPublish": "Publish",
     "editorUnpublish": "Unpublish",
+    "notReadyTitle": "Give it a title first",
+    "notReadyBody": "Write something first",
     "editorAdvanced": "Advanced",
     "editorSlug": "URL slug",
     "editorTags": "Tags",

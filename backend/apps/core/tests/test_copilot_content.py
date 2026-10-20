@@ -412,7 +412,7 @@ def test_publish_course_unknown_id_raises(coach):
 def test_publish_blog_post_sets_status_and_date(coach):
     from apps.blog.models import BlogPost
 
-    post = BlogPost.objects.create(title="P", status="draft", created_by=coach, slug="p")
+    post = BlogPost.objects.create(title="P", status="draft", created_by=coach, slug="p", body_html="<p>Words</p>")
     result = content.publish_blog_post(post.pk)
     post.refresh_from_db()
     assert post.status == "published"
@@ -420,6 +420,23 @@ def test_publish_blog_post_sets_status_and_date(coach):
     assert result["kind"] == "publish_blog_post"
     assert result["id"] == post.id
     assert result["url"] == f"/blog/{post.slug}"
+
+
+@pytest.mark.parametrize(
+    ("title", "body", "gap"),
+    [
+        ("Untitled post", "<p>Words</p>", "Give it a title first"),
+        ("P", "<p></p>", "Write something first"),
+    ],
+)
+def test_the_assistant_cannot_publish_an_empty_post(coach, title, body, gap):
+    from apps.blog.models import BlogPost
+
+    post = BlogPost.objects.create(title=title, status="draft", created_by=coach, slug="empty", body_html=body)
+    with pytest.raises(content.ContentOpError, match=gap):
+        content.publish_blog_post(post.pk)
+    post.refresh_from_db()
+    assert post.status == "draft" and post.published_at is None
 
 
 def test_publish_blog_post_already_published_raises(coach):

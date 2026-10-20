@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import generics, viewsets
 from rest_framework.decorators import api_view, permission_classes, renderer_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.renderers import JSONRenderer
@@ -80,7 +81,21 @@ class BlogPostAdminViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return BlogPost.objects.all().order_by("-created_at")
 
+    @staticmethod
+    def _refuse_if_not_ready(serializer):
+        """Going live needs a title and some text (BlogPost.not_ready); a post already live is left as it is."""
+        data, post = serializer.validated_data, serializer.instance
+        if data.get("status") != "published" or (post and post.status == "published"):
+            return
+        after = BlogPost(
+            title=data.get("title", post.title if post else ""),
+            body_html=data.get("body_html", post.body_html if post else ""),
+        )
+        if gap := after.not_ready():  # `detail` is what the editor's error toast shows
+            raise ValidationError({"detail": f"{gap}.", "code": "post.not_ready"})
+
     def perform_create(self, serializer):
+        self._refuse_if_not_ready(serializer)
         published_at = timezone.now() if serializer.validated_data.get("status") == "published" else None
         serializer.save(
             created_by=self.request.user,
@@ -89,6 +104,7 @@ class BlogPostAdminViewSet(viewsets.ModelViewSet):
         )
 
     def perform_update(self, serializer):
+        self._refuse_if_not_ready(serializer)
         instance = serializer.instance
         new_status = serializer.validated_data.get("status", instance.status)
         published_at = instance.published_at

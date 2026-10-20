@@ -1442,9 +1442,12 @@ def _card(tenant, action, actor=None):
         with tenant_context(tenant):
             from apps.blog.models import BlogPost
 
-            status = BlogPost.objects.filter(pk=action.post_id).values_list("status", flat=True).first()
-        if status == "published":
+            post = BlogPost.objects.get(pk=action.post_id)
+            gap = post.not_ready()
+        if post.status == "published":
             raise content.ContentOpError("that post is already published")
+        if gap:
+            raise content.ContentOpError(gap)
         return {
             "kind": "publish_blog_post",
             "title": f"Publish post: {post_title[:100]}",

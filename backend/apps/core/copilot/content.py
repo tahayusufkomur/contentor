@@ -498,6 +498,8 @@ def publish_blog_post(post_id):
         raise ContentOpError(f"no blog post with id {post_id}")
     if post.status == "published":
         raise ContentOpError("that post is already published")
+    if gap := post.not_ready():
+        raise ContentOpError(gap)
     post.status = "published"
     post.published_at = timezone.now()
     post.save(update_fields=["status", "published_at"])

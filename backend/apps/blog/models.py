@@ -1,8 +1,11 @@
 """Coach blog: public posts on the tenant site, an AI topic queue, and the
 autopilot schedule rule. See docs/superpowers/specs/2026-07-09-ai-blog-design.md."""
 
+import html
+
 from django.conf import settings
 from django.db import models
+from django.utils.html import strip_tags
 from django.utils.text import slugify
 
 MAX_SLUG_LEN = 60
@@ -51,6 +54,20 @@ class BlogPost(models.Model):
 
     def __str__(self):
         return f"BlogPost<{self.pk}:{self.slug}:{self.status}>"
+
+    UNTITLED = "Untitled post"  # the title "New post" gives a blank draft (blog.untitled in admin.json)
+
+    def not_ready(self) -> str:
+        """Why it cannot go live yet ("" when it can): a real title and some text.
+        Asked wherever a post goes live (the editor, the assistant, /setup, focus
+        mode) as Course.not_ready is; autopilot always writes both. Posts already
+        live are left as they are, so callers ask only on the way to published.
+        An image-only body has no text, so it counts as empty."""
+        if self.title.strip() in ("", self.UNTITLED):
+            return "Give it a title first"
+        if not html.unescape(strip_tags(self.body_html)).strip():
+            return "Write something first"
+        return ""
 
 
 class BlogTopicIdea(models.Model):

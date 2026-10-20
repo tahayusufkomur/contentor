@@ -17,6 +17,7 @@ import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { refreshSetupStatus } from "@/lib/setup-assistant";
+import { ApiError } from "@/types/api";
 import { PageState } from "@/components/ui/page-state";
 import { SkeletonForm } from "@/components/ui/skeletons";
 import { CoverPicker } from "@/components/admin/blog/cover-picker";
@@ -29,6 +30,10 @@ import {
   getPost,
   updatePost,
 } from "@/lib/blog-api";
+
+/** Visible text of the post's HTML: an empty paragraph or an image alone has none. */
+const hasText = (html: string) =>
+  !!new DOMParser().parseFromString(html, "text/html").body.textContent?.trim();
 
 export default function BlogEditorPage() {
   const t = useTranslations("admin");
@@ -79,6 +84,15 @@ export default function BlogEditorPage() {
     void refreshSetupStatus();
   };
 
+  // Why a draft cannot be published yet; mirrors BlogPost.not_ready on the server.
+  let notReady = "";
+  if (post && post.status !== "published") {
+    const title = post.title.trim();
+    if (!title || title === t("blog.untitled"))
+      notReady = t("blog.notReadyTitle");
+    else if (!hasText(post.body_html)) notReady = t("blog.notReadyBody");
+  }
+
   const { run: save, loading: saving } = useAsyncAction(() => doSave(), {
     errorToast: t("blog.errGeneric"),
   });
@@ -86,7 +100,14 @@ export default function BlogEditorPage() {
   const { run: togglePublish, loading: publishing } = useAsyncAction(
     () =>
       doSave({ status: post?.status === "published" ? "draft" : "published" }),
-    { errorToast: t("blog.errGeneric") },
+    {
+      onError: (err) =>
+        toast.error(
+          err instanceof ApiError && err.data.code === "post.not_ready"
+            ? err.message
+            : t("blog.errGeneric"),
+        ),
+    },
   );
 
   const { run: regenerate, loading: regenerating } = useAsyncAction(
@@ -235,6 +256,9 @@ export default function BlogEditorPage() {
               )}
             </div>
             <div className="flex items-center gap-2">
+              {notReady && (
+                <p className="text-sm text-muted-foreground">{`${notReady}.`}</p>
+              )}
               <Button variant="outline" loading={saving} onClick={save}>
                 {t("blog.editorSave")}
               </Button>
@@ -245,6 +269,7 @@ export default function BlogEditorPage() {
                     ? t("blog.editorUnpublish")
                     : t("blog.editorPublish")
                 }
+                disabled={!!notReady}
                 onClick={togglePublish}
               >
                 {post.status === "published"
