@@ -343,6 +343,10 @@ export function DownloadForm({
         toast.error(`${t("accessNotSaved")} ${accessSentence(err)}`);
         return;
       }
+      // Its price decides what the page says it still needs ("Start selling first").
+      receive(
+        await clientFetch<DownloadFile>(`/api/v1/downloads/${saved.id}/`),
+      );
     }
     toast.success(t("saved"));
   };

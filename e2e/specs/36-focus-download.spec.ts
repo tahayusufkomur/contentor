@@ -149,6 +149,19 @@ async function stubDraft(page: Page, over: Body = {}) {
   return { set: (next: Body) => (current = { ...current, ...next }), get: () => current };
 }
 
+/** Its Access section (backend views/access.py): sold once at $9 until a save leaves Free alone. */
+async function stubAccess(page: Page, set: (next: Body) => void) {
+  let ways: Body = { free: null, buy: { price: "9.00", window: null }, plans: [] };
+  await page.route(`**/api/v1/admin/access/download/${DRAFT}/`, (route) => {
+    if (route.request().method() === "PUT") {
+      ways = route.request().postDataJSON().ways;
+      if (!ways.buy) set({ pricing_type: "free", price: "0.00" });
+    }
+    const payload = { kind: "download", id: DRAFT, ways, describe: "", currency: "USD", plans: [], bundles: [] };
+    return route.fulfill({ json: { ...payload, allowed: ["free", "buy", "plans"], can_edit_plans: true } });
+  });
+}
+
 /** The upload chain (lib/downloads/upload.ts): presign, the PUT to storage, complete. */
 async function stubUpload(page: Page, onComplete: () => void) {
   const steps: string[] = [];
@@ -302,13 +315,17 @@ test("add it later keeps it a draft", async ({ browser }) => {
   await expect(publish).toHaveCount(0);
   // With its file but paid, it waits for selling to open, as the finish's "Start selling" does.
   set({ file_url: `tenants/demo/downloads/${FILE.name}`, file_size: 2_400_000, pricing_type: "paid", price: "9.00" });
+  await stubAccess(page, set);
   await page.reload();
   await expect(page.getByRole("main").getByText(NOT_SELLING)).toBeVisible();
   await expect(publish).toHaveCount(0);
+  // Made free on the page and saved: the line goes with its price, no reload needed.
+  await page.locator("#access-download-free").click();
+  await page.locator("#access-download-buy").click();
+  await page.getByRole("main").getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByRole("main").getByText(NOT_SELLING)).toHaveCount(0);
   // Free, with its file: Publish puts it on the site, with the title she
   // changed on the page (saved with it, never left behind).
-  set({ pricing_type: "free", price: "0.00" });
-  await page.reload();
   await page.getByRole("main").locator("#download-title").fill("Morning workbook, revised");
   await publish.click();
   await expect(page.getByText("Published. Students can find it on your site now.")).toBeVisible();
