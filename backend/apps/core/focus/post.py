@@ -94,6 +94,18 @@ def carry_out(tenant, run_id) -> None:
         label="contentor:copilot",  # she waits at the review
     ).fields
     draft["cover_photo_id"] = ""  # the cover is her pick at the cover step
+    # Its catalog photos are copied into her storage before the locks, so a slow catalog never holds her
+    # autosave, Stop or taps: only while the text is still the job's to write (decided again below).
+    shown = BlogPost.objects.filter(pk=record.pk).values_list("body_html", flat=True).first()
+    wrote = ((FocusCreation.objects.get(pk=creation.pk).drafted or {}).get("post") or {}).get("body_html")
+    early = (
+        bool(draft["body_html"])
+        and shown is not None
+        and draft["body_html"] != shown
+        and (not shown.strip() or shown == wrote)
+    )
+    if early:
+        curated.resolve_curated_photo_ids(draft)
     with transaction.atomic():
         # The creation first, then the run, then the record: the order her requests lock them in.
         locked = FocusCreation.objects.select_for_update().get(pk=creation.pk)
@@ -119,7 +131,8 @@ def carry_out(tenant, run_id) -> None:
                 kept.append(name)  # hers: left as she wrote it
         extra = {}
         if "body_html" in fields:  # its inline images and model go with the text, never onto hers
-            curated.resolve_curated_photo_ids(draft)  # a catalog photo it placed, copied into her storage
+            if not early:  # hers became the job's to write while it wrote (she emptied it): copied here
+                curated.resolve_curated_photo_ids(draft)
             extra = {"image_placements": draft["image_placements"], "ai_model": draft["ai_model"]}
         if "title" in fields and adapter.PLACEHOLDER.fullmatch(record.slug):
             # Its own address before any publish (the page's, the assistant's): never /blog/new-post-N.

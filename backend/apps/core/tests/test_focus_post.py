@@ -233,6 +233,24 @@ def test_a_kept_body_redraft_adds_no_photos(owner, paid):
     assert _row(creation).image_placements == row.image_placements
 
 
+def test_catalog_photos_are_copied_before_the_locks(owner, paid):
+    """A slow catalog download never holds her autosave, Stop or taps (they wait on the same rows)."""
+    from django.db import connection
+
+    copy = curated.resolve_curated_photo_ids
+    locked = []
+
+    def watched(fields):
+        locked.append(connection.in_atomic_block)
+        return copy(fields)
+
+    creation = _creation(owner)
+    with _model(_draft(photo=_catalog_photo())), mock.patch.object(curated, "resolve_curated_photo_ids", watched):
+        jobs.execute(SCHEMA, post.start(creation).id)
+    assert locked == [False]
+    assert _row(creation).image_placements == [{"heading": "Why mornings", "photo_id": str(Photo.objects.get().id)}]
+
+
 def test_a_redraft_that_changes_nothing_still_says_why(owner, paid):
     creation = _creation(owner)
     with _model():
