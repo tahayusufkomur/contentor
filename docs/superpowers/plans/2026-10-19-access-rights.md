@@ -616,39 +616,44 @@ def test_a_coach_cannot_change_plans_through_the_assistant(...):  # card error m
 
 ### Task E0: Re-read before planning the steps
 
-- [ ] Read the current `apps/core/focus/flow.py` (`_price_tiles`, `_access`, `_set_price`, `_sell_for`, `_finish_options`), each kind adapter's `set_price`, `put_in_plan`, `price_tiles`, `cannot_sell` and `suggest_price`, and the `pick` question kind stage E built. Read `components/focus/` for how a question renders and answers.
-- [ ] Rewrite E1–E3 below against that code (names and line numbers), keeping their behaviour. Commit the revised plan before E1.
+- [x] Read the code as of main@ac8acbc9 (2026-10-20, every focus stage live) and rewrote E1–E3 below against it.
 
-### Task E1: "Tick every way in" with a suggested combination
+What the code does today: `flow._price_tiles` gives the shared single-pick tiles (Free, `paid:<suggested>`, one `plan:<id>` per active plan when `adapter.put_in_plan` is set). `flow._access` takes one tile: Free or an amount go through `flow._set_price` → `adapter.set_price` (a raw `.update()` of `pricing_type`/`price`, which skips the ways), and a plan goes through `adapter.put_in_plan` (a raw `pricing_type="subscription"` plus a link). Kinds with their own tiles (`price_tiles` not None) are the membership, bundle, live stream and Zoom class. Those keep a single pick. `cannot_sell` checks only `pricing_type == "paid"`. The course page, event form and download form already reload their Access section when the answered access line changes (`settled` effect), so the page follows any server write. The guide's `pick` branch (`focus-guide.tsx`) already renders a multi-select (`PickQuestion`, `ticked`, Select all = `"all"`).
 
-**Files (as of 2026-10-19; recheck in E0):**
-- Modify: `backend/apps/core/focus/flow.py`, `backend/apps/core/focus/analysis.py`, `backend/apps/billing/ways.py` (`common_setup(kind: str, exclude_pk: int | None = None) -> dict | None`)
-- Test: `backend/apps/core/tests/test_focus_access.py`
+### Task E1: "Tick every way in" with a suggested combination (backend)
 
-**Interfaces:**
-- Produces:
-  - The access question for kinds using the shared tiles is a multi-select `pick`. Its tiles are Free, Sell it once at the suggested price with the reason as hint, and each active plan. `suggested` is the list of tile values from `common_setup(kind)`, the most common combination among her other items of that kind. Otherwise it is `["paid:<suggested amount>"]`.
-  - A tile answer is turned into ways that keep the record's current windows, then `ways.set_ways(record, ways, actor=creation.actor)`.
-  - Typed answers: `analysis` reads ways and windows from her words. "€49 once, free for Gold members after their first month" gives buy 49 forever plus Gold with `opens_after_days: 30`. A paid price still comes only from her words or taps.
-  - A window is asked only when her words mention time or she taps "Add a time limit". That tile focuses the page's Access section pill instead of asking in the dock.
-  - `cannot_sell(record)` is True while any paid way (buy or plans) is set and selling is not open.
+**Files:** `backend/apps/billing/ways.py` (`common_setup`), `backend/apps/core/focus/flow.py` (`_price_tiles`, `_access`, `_set_price`, `_ensure_record`, `state`, `apply`), `backend/apps/core/focus/analysis.py` (`Found.ways`, the rule, `her_plans`), `cannot_sell` in `kinds/course.py` and `kinds/event.py`, and `DownloadFile.cannot_sell`.
+**Test:** `backend/apps/core/tests/test_focus_access.py`.
 
-- [ ] **Step 1: Write the failing tests:** `test_the_access_step_offers_every_way_and_pretics_her_usual_setup`, `test_her_words_set_a_price_and_a_members_window_in_one_go`, `test_ticking_two_ways_sets_both`, and `test_a_members_only_course_cannot_go_live_before_she_can_sell`.
-- [ ] **Step 2: Run them.** Expected: fail.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run them,** plus the existing `test_focus_*.py`. Expected: pass.
-- [ ] **Step 5: Commit:** `feat(focus): the access step takes every way in`.
+- `ways.common_setup(kind)` returns the combination most of her non-draft items of that ways kind use, counted once per title so a weekly series counts once, ties going to the newest: `{"free", "buy", "plans": [ids]}`, or None.
+- For the shared tiles, the access question payload gains `multi: True`, `ticked` and `can_delegate: False`. Plan tiles show only where `ways.ALLOWED` has plans and the creator is the owner (`set_ways` refuses a plan link from anyone else). `ticked` is:
+  - her plans, after "membership" in her words;
+  - else `common_setup`, mapped onto the tiles, with a `why` saying so;
+  - else the suggested price.
+- A tap is the ticked values, comma-separated, or `all`. `_access` turns it into ways that keep each ticked way's current window and writes them with `ways.set_ways(record, ..., actor=creation.actor)`. A refused write is no answer.
+- `_set_price` (a typed price, a clarify, "Sell it for") on a kind with the shared tiles writes through the ways: free, or a buy at her amount. Plans and windows stay. Own-tile kinds keep `adapter.set_price`.
+- Typed words: `Found.ways` reads free, a buy amount, the plans she names (from `her_plans`) and a window on each. `apply` writes them (stashed in `brief["ways"]` until a record exists) and answers the access step. A paid price still comes only from her words or taps (F11).
+- The answered access line is `ways.describe` of the record's ways.
+- `cannot_sell` is True while any uncovered paid way (buy or plans: `pricing_type != "free"`) is set and selling is not open.
+
+- [ ] Write the failing tests:
+  - `test_the_access_step_offers_every_way_and_pretics_her_usual_setup`
+  - `test_ticking_two_ways_sets_both`
+  - `test_her_words_set_a_price_and_a_members_window_in_one_go`
+  - `test_a_members_only_course_cannot_go_live_before_she_can_sell`
+- [ ] Implement, then run them with the existing `test_focus_*.py`.
+- [ ] Commit: `feat(focus): the access step takes every way in`.
 
 ### Task E2: The guide renders the multi-select and the page follows
 
-**Files (recheck in E0):** `frontend-customer/src/components/focus/focus-guide.tsx`, the `pick` question component, and `course-form.tsx` / `event-form.tsx` / `download-form.tsx` (their Access section reloads after the access answer, as `loadCourse` does today).
-- Test: `e2e/specs/33-focus-course.spec.ts`. Change its access step to tick two ways and assert the Access section shows both.
+**Files:** `frontend-customer/src/components/focus/focus-guide.tsx` (a `multi` price question takes the `pick` branch), `pick-question.tsx` (an optional second action), `lib/focus/api.ts` (`multi`), `components/admin/access/access-section.tsx` (`data-access-section`), `messages/en/admin.json`.
+**Test:** `e2e/specs/33-focus-course.spec.ts`. Its access step ticks two ways and checks what is sent, and "Add a time limit" sends her ticks and brings the page's Access section into view.
 
-- [ ] **Step 1: Make the change.** **Step 2: Run** `make e2e-spec SPEC=33-focus-course`. Expected: pass. **Step 3: Commit:** `feat(focus): the guide's access step ticks several ways`.
+- "Add a time limit" answers with her ticks, like Continue, and scrolls the page to its Access section, where she sets the window on the pill. The page's edits are saved before her finish tap, as they already are.
+- [ ] Make the change, run `make e2e-spec SPEC=33-focus-course`, and commit: `feat(focus): the guide's access step ticks several ways`.
 
 ### Task E3: Adapters stop pricing on their own
 
-**Files (recheck in E0):** `backend/apps/core/focus/kinds/course.py`, `event.py` and `download.py` drop `set_price` / `put_in_plan` in favour of the flow calling `ways.set_ways(adapter.record(id), ...)`. Membership and bundle keep their own `price_tiles`. Update the `kinds/__init__.py` docstring.
-- Test: the existing `test_focus_kinds.py` and `test_focus_*.py`.
-
-- [ ] **Step 1: Make the change.** **Step 2: Run** `make test-changed`, then `make e2e-changed`. Expected: pass. **Step 3: Commit:** `refactor(focus): every kind prices through the ways`.
+- Drop `set_price` from `kinds/course.py` and `kinds/download.py`, and `put_in_plan` from every kind and the `kinds/__init__.py` docstring. The flow writes the ways. `set_price` stays only for kinds with their own tiles (event's stream and Zoom, membership, bundle).
+- [ ] Update `test_focus_kinds.py`, `test_focus_download.py` and `test_focus_bundle.py`, then run `make test-changed` and `make e2e-changed`.
+- [ ] Commit: `refactor(focus): every kind prices through the ways`.
