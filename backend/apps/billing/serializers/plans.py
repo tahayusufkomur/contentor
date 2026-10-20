@@ -43,6 +43,11 @@ class PlanWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A membership needs a price above zero.")
         return value
 
+    def create(self, validated_data):
+        """A new plan has nothing in it yet, so it starts off sale whatever was asked: the page adds
+        what members get, then puts it on sale through update()'s check."""
+        return super().create({**validated_data, "is_active": False})
+
     def update(self, instance, validated_data):
         """Off sale to on sale only as focus mode's finish would (what members get, a price, selling
         open); refused, nothing in the request is saved. A plan on sale already is left as it is."""

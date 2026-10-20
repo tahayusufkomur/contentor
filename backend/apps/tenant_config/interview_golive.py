@@ -260,7 +260,7 @@ def release_held(tenant) -> None:
         with suppress(content.ContentOpError):  # published by hand meanwhile, or deleted
             content.publish_course((flow.get("drafts") or {}).get("course"))
     if selling and held.pop("plans", None):
-        SubscriptionPlan.objects.filter(pk__in=membership_plan_ids(flow)).update(is_active=True)
+        SubscriptionPlan.objects.filter(pk__in=_ready(membership_plan_ids(flow))).update(is_active=True)
     for key in _CLASSES:
         if key not in held or not _live_entitled(tenant):
             continue
@@ -278,6 +278,14 @@ def release_held(tenant) -> None:
         logger.info("sell later: held items released for tenant %s", tenant.schema_name)
 
 
+def _ready(plan_ids) -> list[int]:
+    """Of her interview's memberships, those that can go on sale (SubscriptionPlan.not_ready: what
+    members get, a price), as the plan page's On sale switch and focus mode's finish ask."""
+    from apps.billing.models import SubscriptionPlan
+
+    return [plan.pk for plan in SubscriptionPlan.objects.filter(pk__in=plan_ids) if not plan.not_ready()]
+
+
 # publish() publishes the interview's drafts itself, so these never need
 # the coach's attention once the draft exists.
 _SELF_RESOLVED = {"first_course": "course", "first_blog_post": "post"}
@@ -291,6 +299,7 @@ def _open_blockers(config, tenant, flow) -> list[str]:
 def publish(tenant) -> None:
     """Publish the interview's drafts, then the site. Raises
     setup_flow.PublishBlockedError when a requirement is still unmet."""
+    from apps.billing.models import SubscriptionPlan
     from apps.core.copilot import content
 
     from . import setup_flow
@@ -300,6 +309,8 @@ def publish(tenant) -> None:
     if "held" in flow:  # "sell later": hold the drafts as they are now
         held = _hold(tenant)
         _save_held(tenant, held)
+    if plan_ids := membership_plan_ids(flow):  # an empty membership never goes on sale with the site
+        SubscriptionPlan.objects.filter(pk__in=plan_ids).exclude(pk__in=_ready(plan_ids)).update(is_active=False)
     drafts = flow.get("drafts") or {}
     for kind, publisher in (("course", content.publish_course), ("post", content.publish_blog_post)):
         if drafts.get(kind) and not held.get(kind):

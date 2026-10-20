@@ -489,3 +489,39 @@ test("what she changed on the page is saved when she closes the tab", async ({ b
   await expect.poll(() => log).toContain('patch:{"price":"15"}');
   await page.close();
 });
+
+test("the plain Create form makes the plan off sale, saves what members get, then puts it on sale", async ({
+  browser,
+}) => {
+  const page = await (await coachContext(browser)).newPage();
+  const log: string[] = [];
+  // The server (billing PlanWriteSerializer): a new plan starts off sale; the
+  // PATCH's check counts what members get, saved before it.
+  await page.route("**/api/v1/billing/plans/", (route) => {
+    const req = route.request();
+    if (req.method() !== "POST") return route.fallback();
+    log.push("post");
+    return route.fulfill({ status: 201, json: { id: DRAFT, is_active: false } });
+  });
+  await page.route(`**/api/v1/billing/plans/${DRAFT}/access/`, (route) => {
+    log.push("put");
+    return route.fulfill({ json: { items: [], available: [] } });
+  });
+  await page.route(`**/api/v1/billing/plans/${DRAFT}/`, (route) => {
+    log.push(`on:${route.request().postDataJSON().is_active}`);
+    return route.fulfill({ status: 400, json: { is_active: ["Add what members get first."] } });
+  });
+
+  await page.goto(`${TENANT}/admin/store/plans/new?form=1`);
+  await main(page).locator("#plan-name").fill("Studio pass");
+  await main(page).locator("#plan-price").fill("19");
+  await expect(main(page).getByRole("switch", { name: "On sale" })).toBeChecked();
+  await main(page).getByRole("button", { name: "Create membership" }).click();
+  await expect(main(page).getByText("Add what members get first.").first()).toBeVisible();
+  expect(log).toEqual(["post", "put", "on:true"]);
+  // A second try edits the plan it made, never another.
+  await main(page).getByRole("button", { name: "Create membership" }).click();
+  await expect.poll(() => log.length).toBe(5);
+  expect(log.slice(3)).toEqual(["put", "on:true"]);
+  await page.close();
+});

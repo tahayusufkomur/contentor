@@ -199,13 +199,22 @@ def test_a_coach_who_offers_no_course_is_not_blocked_by_a_first_course(client, t
         assert "first_course" not in client.get(URL).json()["blockers"]
 
 
+def _membership(name, *items):
+    """One of her interview's memberships, giving members ``items``."""
+    from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
+
+    plan = SubscriptionPlan.objects.create(name=name, price=Decimal("19"), billing_interval_months=1)
+    for item in items:
+        SubscriptionPlanAccess.objects.create(plan=plan, content_object=item)
+    return plan
+
+
 def _sell_later(client, tenant_ctx, config, *, paid=False, monetize=False):
     """A selling coach with a paid course, a membership and a drafted class takes "go live now, sell later"."""
-    from apps.billing.models import SubscriptionPlan
     from apps.live.models import LiveClass
 
     course = _course(paid=True)
-    plan = SubscriptionPlan.objects.create(name="Online membership", price=Decimal("19"), billing_interval_months=1)
+    plan = _membership("Online membership", course)
     owner = User.objects.filter(role="owner").first()
     live = LiveClass.objects.create(title="Desk Flow", instructor=owner, status="scheduled")
     config.setup_flow = {
@@ -267,7 +276,6 @@ def test_held_items_go_on_sale_once_she_can_take_payments(client, tenant_ctx, co
 def test_what_is_held_follows_the_drafts_as_they_are_when_she_goes_live(client, tenant_ctx, config):
     """A redraft after "sell later" replaced the held course: the coach was stuck
     at go-live (payouts blocked publish, and no way out was offered)."""
-    from apps.billing.models import SubscriptionPlan
     from apps.live.models import LiveClass
 
     _, course, plan, live = _sell_later(client, tenant_ctx, config)
@@ -279,7 +287,7 @@ def test_what_is_held_follows_the_drafts_as_they_are_when_she_goes_live(client, 
     new_course = _course(paid=True)
     owner = User.objects.filter(role="owner").first()
     new_live = LiveClass.objects.create(title="Desk Flow II", instructor=owner, status="scheduled")
-    extra = SubscriptionPlan.objects.create(name="Community membership", price=Decimal("5"), billing_interval_months=1)
+    extra = _membership("Community membership", new_course)
     course.delete(), live.delete()
     config.refresh_from_db()
     drafts = config.setup_flow["drafts"]
@@ -302,6 +310,35 @@ def test_what_is_held_follows_the_drafts_as_they_are_when_she_goes_live(client, 
     new_course.refresh_from_db(), new_live.refresh_from_db(), extra.refresh_from_db()
     assert new_course.is_published is True and extra.is_active is True
     assert new_live.status == "scheduled"  # not "draft": the second click didn't overwrite it
+
+
+def test_a_membership_with_nothing_in_it_never_goes_on_sale_with_the_site(client, tenant_ctx, config):
+    """As the plan page's On sale switch and focus mode's finish: what members get first."""
+    course = _course(paid=False)
+    full, empty = _membership("Online membership", course), _membership("Community membership")
+    config.setup_flow = {**config.setup_flow, "drafts": {"course": course.id, "plans": {"a": full.pk, "b": empty.pk}}}
+    config.save()
+    with mock.patch("apps.tenant_config.interview_golive.fire"):
+        assert client.post(URL, {"action": "publish"}, format="json").status_code == 200
+    full.refresh_from_db(), empty.refresh_from_db()
+    assert full.is_active is True and empty.is_active is False
+
+
+def test_held_memberships_go_on_sale_only_with_something_in_them(client, tenant_ctx, config):
+    _, _course_, plan, _live = _sell_later(client, tenant_ctx, config)
+    empty = _membership("Community membership")
+    config.refresh_from_db()
+    config.setup_flow["drafts"]["plans"] = {"online": plan.pk, "community": empty.pk}
+    config.save()
+    with mock.patch("apps.tenant_config.interview_golive.fire"):
+        client.post(URL, {"action": "sell_later"}, format="json")  # holds both
+    with (
+        mock.patch("apps.tenant_config.interview_golive.can_monetize", return_value=True),
+        mock.patch("apps.tenant_config.interview_golive._live_entitled", return_value=True),
+    ):
+        client.get("/api/v1/admin/setup-status/")  # selling opened: what was held goes on sale
+    plan.refresh_from_db(), empty.refresh_from_db()
+    assert plan.is_active is True and empty.is_active is False
 
 
 def _without_free_plan(tenant_ctx):

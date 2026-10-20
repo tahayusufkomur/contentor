@@ -78,7 +78,7 @@ def _payment(student, **kwargs):
 def test_owner_creates_a_plan_in_the_tenants_currency(owner):
     resp = _client(owner).post(
         "/api/v1/billing/plans/",
-        {"name": "Studio pass", "price": "25.00", "billing_interval_months": 12, "currency": "JPY"},
+        {"name": "Studio pass", "price": "25.00", "billing_interval_months": 12, "currency": "JPY", "is_active": True},
         format="json",
     )
     assert resp.status_code == 201, resp.content
@@ -87,7 +87,8 @@ def test_owner_creates_a_plan_in_the_tenants_currency(owner):
     assert plan.billing_interval_months == 12
     # The charge currency belongs to the tenant; the body cannot pick one.
     assert plan.currency == "USD"
-    assert plan.is_active is True
+    # Nothing in it yet: off sale until her page adds what members get and puts it on sale (the PATCH's check).
+    assert plan.is_active is False and resp.json()["is_active"] is False
 
 
 @pytest.mark.parametrize(

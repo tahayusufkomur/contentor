@@ -461,18 +461,20 @@ function PlanForm({ id }: { id: string }) {
             })),
           }),
         });
-      // A saved plan's content goes first: putting it on sale counts what members get.
-      if (savedId.current !== null) await putAccess(savedId.current);
-      const plan = await clientFetch<{ id: number }>(
-        savedId.current === null
-          ? "/api/v1/billing/plans/"
-          : `/api/v1/billing/plans/${savedId.current}/`,
-        { method: savedId.current === null ? "POST" : "PATCH", body },
-      );
+      // A new plan is made off sale (nothing in it yet). Its content goes
+      // before the PATCH: putting it on sale counts what members get.
       if (savedId.current === null) {
-        savedId.current = plan.id;
-        await putAccess(plan.id);
+        const made = await clientFetch<{ id: number }>(
+          "/api/v1/billing/plans/",
+          { method: "POST", body },
+        );
+        savedId.current = made.id;
       }
+      await putAccess(savedId.current);
+      await clientFetch(`/api/v1/billing/plans/${savedId.current}/`, {
+        method: "PATCH",
+        body,
+      });
       toast.success(t(isNew ? "created" : "saved"));
       setLeaving(true);
       navigate(BACK);
