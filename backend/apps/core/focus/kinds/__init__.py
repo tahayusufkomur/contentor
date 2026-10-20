@@ -36,13 +36,16 @@ The adapter (the course's in kinds/course.py):
   an ANNOUNCER.
 - apply_tick(record_id, ticked): optional, for a kind with no ANNOUNCER; finish's tick, before go_live.
 - COVER: "styles" (four drafted styles), "photo" (a photo only) or None (no cover question).
-- cover_target(record): the (target_kind, target_key) its cover Design files under. None without a COVER.
-- cover_facts(record): {"title", "description"} for the Designer. None without a COVER.
+- cover_target(record): the (target_kind, target_key) its cover Design files under. None unless "styles".
+- cover_facts(record): {"title", "description"} for the Designer and the photo row's search. None without a COVER.
+- set_photo(record_id, photo_id): a "photo" cover only: "Use this photo" onto the record (covers.use_photo).
 - DRAFT_SLOT: the follow-up slot before its drafting. DRAFT_WHAT: what that drafting writes, in the
   follow-up's prompt ("title, description, modules and lessons").
 - start_draft(creation, instruction=""): its drafting for the review step (the course's outline, the
   copy job for the others), and each redraft with her words; called once, when every question before
   the review is answered or skipped. REVIEWED_LINE: the dock's line after her "Looks good", or None.
+- DRAFT_JOB: optional, the job name of a drafting of its own (a post's "post", the blog writer), whose run
+  the review's Try again, finish and leave follow as they do the copy job's (``flow.draft_job``).
 - sync(creation): optional, after every answer: her answers it keeps on the record, written there (a
   ``multi`` question's tap arrives as its tiles' values, comma-separated, for ``sync`` to check).
 - ask(creation, asked): optional, a question in its own words for this creation (``flow.question``).
@@ -77,6 +80,7 @@ KINDS: dict[str, str] = {
     "download": "apps.core.focus.kinds.download",
     "membership": "apps.core.focus.kinds.membership",
     "bundle": "apps.core.focus.kinds.bundle",
+    "post": "apps.core.focus.kinds.post",
 }
 
 

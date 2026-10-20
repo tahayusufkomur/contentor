@@ -289,7 +289,7 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
             creation.status = "left"
             creation.save(update_fields=["active_ms", "status", "updated_at"])
             return creation
-        if (pk := jobs.run_id(creation, "copy")) is not None:
+        if (job := draft_job(creation.kind)) and (pk := jobs.run_id(creation, job)) is not None:
             runs.stop(pk)  # what she saw is what she finishes: a copy still being written is dropped (G4)
         # Never an empty lesson in front of students, nor a paid course she cannot sell yet: a draft.
         adapter = kinds.get(creation.kind)
@@ -434,7 +434,7 @@ def leave(creation, *, abandon: bool = False, active_ms=None) -> FocusCreation:
             creation.pending = {}
             for pk in (
                 creation.outline_run_id,
-                *(jobs.run_id(creation, job) for job in ("analysis", "announce", "followup", "copy")),
+                *(jobs.run_id(creation, job) for job in ("analysis", "announce", "followup", draft_job(creation.kind))),
             ):
                 if pk is not None:
                     runs.stop(pk)  # a finished one is left as it is
@@ -456,21 +456,30 @@ def retry_descriptions(creation) -> FocusCreation:
 
 
 def retry_copy(creation) -> FocusCreation:
-    """Try again after the copy failed (or was stopped); never while it is
-    being written, nor before it ever started."""
+    """Try again after the copy (or a kind's own drafting, ``draft_job``)
+    failed or was stopped; never while it is being written, nor before it
+    ever started."""
     with transaction.atomic():
         creation = _locked(creation)
-        if creation.status == "active" and jobs.run_id(creation, "copy") is not None:
+        job = draft_job(creation.kind)
+        if creation.status == "active" and job and jobs.run_id(creation, job) is not None:
             _retry_draft(creation)
     return creation
 
 
+def draft_job(kind: str) -> str | None:
+    """The job drafting the kind's review, other than the course's outline:
+    its own (``DRAFT_JOB``, a post's), else the copy job for a kind it drafts;
+    None for the course."""
+    return getattr(kinds.get(kind), "DRAFT_JOB", None) or ("copy" if copywriter.drafts(kind) else None)
+
+
 def _retry_draft(creation) -> None:
-    """Again the review's drafting that failed (the copy, for a kind it
-    drafts, else the outline), with her change when it was a redraft; never
-    while it is being written. Call under the creation's lock."""
-    job = "copy" if copywriter.drafts(creation.kind) else "outline"
-    status = jobs.status(creation, job) if job == "copy" else outline_status(creation)
+    """Again the review's drafting that failed (``draft_job``, else the
+    outline), with her change when it was a redraft; never while it is being
+    written. Call under the creation's lock."""
+    job = draft_job(creation.kind) or "outline"
+    status = outline_status(creation) if job == "outline" else jobs.status(creation, job)
     if status in ("failed", "idle"):
         failed = CopilotRun.objects.filter(pk=jobs.run_id(creation, job)).first()
         kinds.get(creation.kind).start_draft(
@@ -482,8 +491,8 @@ def draft_started(creation) -> bool:
     """Whether the kind's drafting for the review has started: its job was
     queued, or what it wrote is on the record (its run pruned)."""
     drafted = creation.drafted or {}
-    if copywriter.drafts(creation.kind):
-        return jobs.run_id(creation, "copy") is not None or "copy" in drafted
+    if job := draft_job(creation.kind):
+        return jobs.run_id(creation, job) is not None or job in drafted
     return creation.outline_run_id is not None or bool(drafted.get("modules"))
 
 
@@ -551,7 +560,8 @@ def _sync_cover(creation):
     from apps.media.models import Design
 
     adapter = kinds.get(creation.kind)
-    if creation.status != "active" or "cover" in (creation.answers or {}) or adapter.COVER is None:
+    # Only a styled cover is a Design (a photo cover, a post's, is the record's own photo).
+    if creation.status != "active" or "cover" in (creation.answers or {}) or adapter.COVER != "styles":
         return creation
     record = _record(creation)
     if record is None:
@@ -627,12 +637,9 @@ def state(creation) -> dict:
             if jobs.run_id(creation, "descriptions") is not None
             else None
         ),
-        # The copy job's run, for a kind it drafts: its status, and a failed one's "Try again".
-        "copy": (
-            {"status": jobs.status(creation, "copy"), "run": jobs.run_id(creation, "copy")}
-            if jobs.run_id(creation, "copy") is not None
-            else None
-        ),
+        # The copy job's run (or the kind's own drafting, ``draft_job``): its status, and a failed one's
+        # "Try again", or why it was refused (a post's blog gate: Try again could only fail again).
+        "copy": _draft_state(creation),
         "cover": covers.payload(creation),
         "announcement": announcing.payload(creation) if field == "announce" else None,
         "reading": (
@@ -651,6 +658,17 @@ def state(creation) -> dict:
         ),
         "steps": [{"id": q.id, "done": q.id in answers} for q in recipe.questions],
     }
+
+
+def _draft_state(creation) -> dict | None:
+    job = draft_job(creation.kind)
+    pk = jobs.run_id(creation, job) if job else None
+    if pk is None:
+        return None
+    status = jobs.status(creation, job)
+    result = CopilotRun.objects.filter(pk=pk).values_list("result", flat=True).first() or {}
+    reason = result.get("reason") if status == "failed" else None
+    return {"status": status, "run": pk, **({"reason": reason} if reason else {})}
 
 
 def size_label(brief) -> str:

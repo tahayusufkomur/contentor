@@ -123,8 +123,10 @@ def test_every_kind_module_has_the_whole_adapter():
         assert set(module.CLOSING) == {value for value, _label in module.FINISH}
         assert module.COVER in ("styles", "photo", None)
         # None only for a kind without that step: no cover, no announcement, no price.
+        # A photo cover (a post's) is no Design: no cover_target, but its photo goes on the record (set_photo).
+        assert callable(getattr(module, "set_photo", None)) is (module.COVER == "photo"), f"{kind}.set_photo"
         has_step = {
-            "cover_target": module.COVER,
+            "cover_target": module.COVER == "styles",
             "cover_facts": module.COVER,
             "announce_facts": module.ANNOUNCER,
             "set_price": any(q.id == "access" for q in module.RECIPE.questions),
@@ -140,7 +142,18 @@ def test_every_kind_module_has_the_whole_adapter():
         copy = [name for name in COPY if hasattr(module, name)]
         assert copy in ([], list(COPY)), f"{kind}: {copy}"
         assert copywriter.drafts(kind) is bool(copy)
+        # A kind drafted by a job of its own (a post's) names it, and is not the copy job's too.
+        if hasattr(module, "DRAFT_JOB"):
+            assert not copy and module.DRAFT_JOB in jobs.HANDLERS, kind
+        assert flow.draft_job(kind) == getattr(module, "DRAFT_JOB", "copy" if copy else None)
     assert copywriter.drafts("event") and copywriter.drafts("message") and not copywriter.drafts("course")
+    # A post (G3): the blog writer's job drafts it, a photo is its cover, no price, Marketing announces it.
+    post = kinds.get("post")
+    assert post.DRAFT_JOB == "post" and post.COVER == "photo" and post.ANNOUNCER == "marketing"
+    assert "access" not in [q.id for q in post.RECIPE.questions] and post.suggest_price(None) is None
+    assert [q.id for q in post.RECIPE.questions] == ["topic", "length", "review", "cover", "finish", "announce"]
+    assert post.FINISH[0][0] == "publish" and post.FINISH[1][0] == "draft"
+    assert "post" not in flow.OWNER_ONLY
     # A membership and a bundle (R1): the copy job writes their name, and they have no cover nor a plan to be in.
     for kind in ("membership", "bundle"):
         assert copywriter.drafts(kind) and kinds.get(kind).COPY_FIELDS[0] == "name"

@@ -20,7 +20,7 @@ from apps.core.focus import covers, flow, jobs, outline
 from apps.core.focus.kinds.course import CourseFound
 from apps.courses.models import Course
 from apps.media.models import Design, Photo
-from apps.tenant_config.models import CopilotAudit, CopilotRun, FocusCreation
+from apps.tenant_config.models import CopilotAudit, CopilotChat, CopilotRun, FocusCreation
 from apps.tenant_config.setup_flow import _Module
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -492,3 +492,76 @@ def test_a_photo_she_chose_while_the_first_round_drew_is_kept(outlined, plan, li
         creation = _draw(outlined)
     assert creation.covers["photo"] == str(mine.pk)
     assert creation.covers["rounds"][0][0]["photo"]["id"] == str(mine.pk)
+
+
+# --- a photo cover (a post's, G7): the photo row only, no styles ------------
+
+
+@pytest.fixture()
+def post_at_cover(owner, settings):
+    """A post at its cover step: her topic and length answered, the post looked at."""
+    from apps.blog.models import BlogPost
+
+    settings.FOCUS_KINDS = ["course", "post"]
+    creation = flow.start(owner, "post", value="Breathing before class")
+    FocusCreation.objects.filter(pk=creation.pk).update(answers={**creation.answers, "length": "short", "review": "ok"})
+    BlogPost.objects.filter(pk=creation.record_id).update(excerpt="Three breaths that settle a room.")
+    creation.refresh_from_db()
+    assert flow.current_field(creation) == "cover"
+    return creation
+
+
+@on
+def test_the_post_cover_step_shows_photos_not_styles(post_at_cover, hers, library):
+    asked = flow.state(post_at_cover)["question"]
+    assert (asked["field"], asked["kind"], asked["specialist"]) == ("cover", "cover", "designer")
+    # No styles are ever drafted: the step is the photo row, searched for the post.
+    assert flow.state(post_at_cover)["cover"] == {
+        "status": "ready",
+        "run": None,
+        "round": 0,
+        "drafts": [],
+        "photo": None,
+        "query": "",
+    }
+    assert covers.start(post_at_cover, ahead=False) is None
+    _act(hers, post_at_cover, action="more")
+    assert "covers" not in (FocusCreation.objects.get(pk=post_at_cover.pk).runs or {})
+    mine = _mine("mat")
+    body = hers.get(f"/api/v1/admin/focus/{post_at_cover.id}/photos/?q=mats").json()
+    assert [r["asset_id"] for r in body["results"]] == [f"own:{mine.pk}", "lib-1"]
+    # Her words for the photo ("say it") are the row's search.
+    with mock.patch("apps.core.focus.flow.ai_compose.compose_available", return_value=False):
+        flow.answer(post_at_cover, "cover", text="hands on a yoga mat")
+    post_at_cover.refresh_from_db()
+    assert flow.state(post_at_cover)["cover"]["query"] == "hands on a yoga mat"
+    assert flow.current_field(post_at_cover) == "cover"
+
+
+@on
+def test_use_this_photo_sets_the_cover_photo_once(post_at_cover, hers, library):
+    from apps.blog.models import BlogPost
+
+    other = client.RemoteImage("lib-2", "Mat", "A yoga mat", [], 1600, 900, "", "")
+    with mock.patch.object(client, "get", return_value=other):
+        response = _act(hers, post_at_cover, action="use", asset_id="lib-2")
+    assert response.status_code == 200
+    copied = Photo.objects.get(s3_key=tenant_key_for("lib-2"))  # a library pick, copied into her Media first
+    assert BlogPost.objects.get(pk=post_at_cover.record_id).cover_photo_id == copied.pk
+    assert response.json()["question"]["field"] == "finish"
+    assert {"field": "cover", "label": "Cover chosen"} in response.json()["answered"]
+    # A double tap keeps once: the cover stays the first photo.
+    mine = _mine("lake")
+    assert _act(hers, post_at_cover, action="use", asset_id=f"own:{mine.pk}").status_code == 200
+    assert BlogPost.objects.get(pk=post_at_cover.record_id).cover_photo_id == copied.pk
+    chat = CopilotChat.objects.get(pk=post_at_cover.chat_id).entries
+    assert sum(1 for e in chat if e["text"] == "Cover chosen") == 1
+    assert not Design.objects.exists()  # a photo, not a styled cover
+
+
+@on
+def test_use_this_photo_is_only_a_photo_covers_tap(at_cover, hers):
+    mine = _mine("lake")
+    _act(hers, at_cover, action="use", asset_id=f"own:{mine.pk}")
+    assert flow.current_field(FocusCreation.objects.get(pk=at_cover.pk)) == "cover"  # a course keeps a style
+    assert Course.objects.get(pk=at_cover.record_id).thumbnail_id is None

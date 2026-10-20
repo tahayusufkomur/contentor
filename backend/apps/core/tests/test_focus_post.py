@@ -3,10 +3,9 @@ blog post. The blog generator writes the post in one call, on her blog quota
 and the blog model; each field is written only while it is blank or still
 holds what the job last wrote, and each is emitted as a ``field`` event the
 page types in. The model call is patched; what is under test is what gets
-written (her edits win), the events, the quota and the failure path.
-
-There is no post adapter yet (G3): the creation is built here directly, and
-the working title (``flow.draft_title``, which asks the adapter) is patched."""
+written (her edits win), the events, the quota and the failure path. Then the
+post's recipe (kinds/post.py, G3) through the flow: its draft, the job as its
+review's drafting, the blog gate said at once, and its finish."""
 
 from decimal import Decimal
 from unittest import mock
@@ -17,10 +16,11 @@ from django_tenants.utils import schema_context
 from apps.accounts.models import User
 from apps.blog import ai as blog_ai
 from apps.blog import curated
-from apps.blog.models import BlogPost
+from apps.blog.models import BlogPost, BlogTopicIdea
 from apps.core import ai as core_ai
 from apps.core import tasks
-from apps.core.focus import jobs, post
+from apps.core.focus import flow, jobs, kinds, post
+from apps.core.focus.kinds import post as recipe
 from apps.core.models import PlatformPlan, PlatformSubscription
 from apps.media.models import Photo
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation, TenantConfig
@@ -67,10 +67,7 @@ def paid(tenant_ctx, settings):
 
 @pytest.fixture(autouse=True)
 def quiet():
-    with (
-        mock.patch.object(tasks.run_focus_job, "delay"),
-        mock.patch("apps.core.focus.flow.draft_title", return_value=WORKING),  # G3: drop once the adapter exists
-    ):
+    with mock.patch.object(tasks.run_focus_job, "delay"):
         yield
 
 
@@ -83,7 +80,10 @@ def _creation(owner, **answers):
         chat=chat,
         record_id=record.pk,
         answers={"topic": "A post on morning breath", "length": "short", **answers},
-        brief={"notes": "For busy parents."},
+        brief={
+            "notes": "For busy parents.",
+            "followups": [{"question": "Who is it for?", "answer": "New students", "slot": "draft"}],
+        },
     )
 
 
@@ -141,6 +141,7 @@ def test_the_post_is_written_field_by_field(owner, paid):
     user = model.call_args.kwargs["user"]
     assert "Write a blog post about: A post on morning breath" in user
     assert "about 500 words" in user and "For busy parents." in user
+    assert "Who is it for? New students" in user  # her follow-up answer reaches the post
     assert f'{photo.id}: "Sunrise stretch"' in user  # her own photos are offered, as blog_generate does
 
     row = _row(creation)
@@ -154,6 +155,8 @@ def test_the_post_is_written_field_by_field(owner, paid):
     assert row.cover_photo_id is None
     assert row.ai_model == "claude-sonnet-5"  # written by the model, as a Generate draft says
     key = f"post:{row.pk}"
+    shown = kinds.get("post").payload(row)
+    assert key == f"{shown['kind']}:{shown['id']}"  # the page's live record key (useLiveRecord)
     assert _fields(run.id) == [
         {"record": key, "name": "title", "value": row.title},
         {"record": key, "name": "excerpt", "value": row.excerpt},
@@ -284,9 +287,9 @@ def test_the_post_uses_the_blog_model_and_counts_against_the_blog_quota(owner, p
     assert (usage.usd_spent, usage.generations_used) == (Decimal("0.05"), 1)
     onboarding_spend.assert_not_called()  # the blog meter, not the onboarding one
 
-    # Out of posts this month: no model call, and the run says why.
-    blog_ai.BlogAiUsage.objects.filter(pk=usage.pk).update(generations_used=5)
+    # Out of posts by the time the worker runs: no model call, and the run says why.
     again = post.start(creation, instruction="again")
+    blog_ai.BlogAiUsage.objects.filter(pk=usage.pk).update(generations_used=5)
     with _model() as model:
         jobs.execute(SCHEMA, again.id)
     model.assert_not_called()
@@ -294,3 +297,163 @@ def test_the_post_uses_the_blog_model_and_counts_against_the_blog_quota(owner, p
     assert again.status == "failed" and again.result == {"reason": "quota_exhausted"}
     creation.refresh_from_db()
     assert jobs.status(creation, "post") == "failed"
+    # The guide shows why (never Try again, which can only fail again).
+    assert flow.state(creation)["copy"] == {"status": "failed", "run": again.id, "reason": "quota_exhausted"}
+
+
+def test_kept_is_said_only_when_the_title_and_summary_are_new(owner, paid):
+    creation = _creation(owner)
+    with _model():
+        jobs.execute(SCHEMA, post.start(creation).id)
+    BlogPost.objects.filter(pk=creation.record_id).update(body_html="<p>Mine.</p>")
+    creation.refresh_from_db()
+    redraft = post.start(creation, instruction="a warmer title")
+    with _model(_draft("Warm up your mornings", intro="Other words.")):  # the same summary as before
+        jobs.execute(SCHEMA, redraft.id)
+    assert [f["name"] for f in _fields(redraft.id)] == ["title"]
+    # The summary is not new, so "the title and summary are new" would not be true.
+    assert CopilotRun.objects.get(pk=redraft.id).result == {"fields": ["title"], "text": SOME_KEPT}
+
+
+# --- the recipe through the flow (kinds/post.py) -----------------------------
+
+HOST = "shared-test.localhost"
+
+
+@pytest.fixture()
+def on(settings):
+    settings.FOCUS_KINDS = ["course", "post"]
+    settings.FOCUS_MODE_ENABLED = True
+    # No follow-up job: her taps go straight to the drafting.
+    with mock.patch("apps.core.focus.flow.ai_compose.compose_available", return_value=False):
+        yield
+
+
+@pytest.fixture()
+def hers(owner):
+    from rest_framework.test import APIClient
+
+    c = APIClient(HTTP_HOST=HOST)
+    c.force_authenticate(user=owner)
+    return c
+
+
+def _start(owner, topic="Breathing before class"):
+    return flow.start(owner, "post", value=topic)
+
+
+def _at(creation, **answers):
+    FocusCreation.objects.filter(pk=creation.pk).update(answers={**creation.answers, **answers})
+    creation.refresh_from_db()
+    return creation
+
+
+def test_her_topic_idea_is_the_drafts_title(owner, on):
+    BlogTopicIdea.objects.create(title="Breathing before class", angle="Three breaths that settle a room")
+    BlogTopicIdea.objects.create(title="Why stretch at your desk")
+    first = flow.question("post", "topic")
+    assert [o["value"] for o in first["options"]] == ["Breathing before class", "Why stretch at your desk"]
+    assert first["options"][0]["hint"] == "Three breaths that settle a room"
+    assert first["starter"] == "A post on " and first["can_delegate"] and first["specialist"] == "marketing"
+    creation = _start(owner)
+    row = BlogPost.objects.get(pk=creation.record_id)
+    assert (row.title, row.status, row.source, row.created_by_id) == ("Breathing before class", "draft", "ai", owner.id)
+    assert flow.state(creation)["record"] == {
+        "id": row.pk,
+        "kind": "post",
+        "title": row.title,
+        "path": f"/admin/blog/{row.pk}",
+    }
+    assert BlogTopicIdea.objects.get(title="Breathing before class").status == "used"  # as Write with AI's
+    assert flow.current_field(creation) == "length"
+    assert [o["value"] for o in flow.state(creation)["question"]["options"]] == ["short", "standard", "long"]
+
+
+def test_you_decide_takes_her_next_topic_idea(owner, on, paid):
+    BlogTopicIdea.objects.create(title="Why stretch at your desk")
+    creation = flow.start(owner, "post", delegate=True)
+    row = BlogPost.objects.get(pk=creation.record_id)
+    assert row.title == creation.answers["topic"] == "Why stretch at your desk"
+    assert flow.draft_title(creation) == row.title  # still the job's to write over
+    assert BlogTopicIdea.objects.get().status == "used"
+
+    # No idea left: the post is on a topic that fits her site, never on "New post".
+    creation = flow.answer(flow.start(owner, "post", delegate=True), "length", delegate=True)
+    assert BlogPost.objects.get(pk=creation.record_id).title == recipe.NEW_TITLE
+    with _model() as model:
+        jobs.execute(SCHEMA, creation.runs["post"])
+    assert f"Write a blog post about: {post.ANY_TOPIC}" in model.call_args.kwargs["user"]
+    assert BlogPost.objects.get(pk=creation.record_id).title == "Breathe before the day starts"
+
+
+def test_the_post_job_is_the_reviews_drafting(owner, on, paid, hers):
+    creation = flow.answer(_start(owner), "length", value="short")
+    run_id = creation.runs["post"]
+    run = CopilotRun.objects.get(pk=run_id)
+    assert (run.specialist, run.request) == ("marketing", {"focus": creation.id, "job": "post", "instruction": ""})
+    assert flow.current_field(creation) == "review" and flow.draft_started(creation)
+    assert flow.state(creation)["copy"] == {"status": "building", "run": run_id}
+    with _model(side_effect=core_ai.AiError("down")):
+        jobs.execute(SCHEMA, run_id)
+    creation.refresh_from_db()
+    assert flow.state(creation)["copy"] == {"status": "failed", "run": run_id}  # a model failure: Try again
+    response = hers.post(f"/api/v1/admin/focus/{creation.id}/copy/")
+    assert response.status_code == 200
+    retry = response.json()["copy"]
+    assert retry["status"] == "building" and retry["run"] != run_id
+    # A length she says at the review is kept, and her words redraft it.
+    creation.refresh_from_db()
+    creation.pending = {"field": "review", "text": "make it a long guide"}
+    flow.apply(creation, recipe.PostFound(length="long", change="make it a long guide"))
+    creation.save()
+    assert creation.answers["length"] == "long"
+    redraft = CopilotRun.objects.get(pk=creation.runs["post"])
+    assert redraft.pk != retry["run"] and redraft.request["instruction"] == "make it a long guide"
+    assert CopilotRun.objects.get(pk=retry["run"]).status == "stopped"  # it would write over the redraft
+    # "Fill it in myself" stops it too.
+    flow.leave(creation, abandon=True)
+    assert CopilotRun.objects.get(pk=redraft.pk).status == "stopped"
+
+
+def test_a_refused_blog_gate_is_said_at_once(owner, on, paid):
+    usage = blog_ai.tenant_usage(SCHEMA)
+    blog_ai.BlogAiUsage.objects.filter(pk=usage.pk).update(generations_used=5)  # out of posts this month
+    with _model() as model:
+        creation = flow.answer(_start(owner), "length", value="short")
+        refused = creation.runs["post"]
+        assert flow.state(creation)["copy"] == {"status": "failed", "run": refused, "reason": "quota_exhausted"}
+        jobs.execute(SCHEMA, refused)  # handed nothing to do
+        # Try again asks the gate again: still no run that can only fail.
+        creation = flow.answer(creation, "review", value="retry")
+        assert creation.runs["post"] != refused
+        assert flow.state(creation)["copy"]["reason"] == "quota_exhausted"
+    model.assert_not_called()
+    assert CopilotRun.objects.get(pk=refused).result == {"reason": "quota_exhausted"}
+
+
+def test_publish_is_refused_while_the_post_is_empty(owner, on, paid):
+    creation = flow.answer(_start(owner), "length", value="short")  # the post job is writing
+    writing = creation.runs["post"]
+    creation = _at(creation, review="ok", cover="later")
+    asked = flow.state(creation)["question"]
+    assert asked["field"] == "finish" and asked["question"] == recipe.NOT_READY_LINE
+    assert asked["why"] == "Write something first. Until then it stays a hidden draft."
+    assert [o["value"] for o in asked["options"]] == ["draft"]
+    creation = flow.finish(creation, publish=True)
+    assert CopilotRun.objects.get(pk=writing).status == "stopped"  # what she saw is what she finishes
+    row = BlogPost.objects.get(pk=creation.record_id)
+    assert (row.status, row.published_at) == ("draft", None)
+    assert (creation.answers["finish"], creation.status) == ("draft", "done")
+
+
+def test_a_written_post_goes_live_and_marketing_announces_it(owner, on):
+    creation = _at(_start(owner), length="short", review="ok", cover="later")
+    BlogPost.objects.filter(pk=creation.record_id).update(body_html="<p>Three slow breaths.</p>")
+    assert [o["value"] for o in flow.state(creation)["question"]["options"]] == ["publish", "draft"]
+    creation = flow.finish(creation, publish=True, announce=True)
+    row = BlogPost.objects.get(pk=creation.record_id)
+    assert row.status == "published" and row.published_at is not None
+    assert flow.closing_line(creation) == recipe.CLOSING["publish"]
+    assert flow.current_field(creation) == "announce"
+    assert CopilotRun.objects.get(pk=creation.runs["announce"]).specialist == "marketing"
+    assert recipe.announce_facts(row)["link"] == f"/blog/{row.slug}"

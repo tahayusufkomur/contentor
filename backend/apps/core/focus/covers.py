@@ -3,7 +3,9 @@ four cover styles, design recipes ``CoverArt`` draws (no image file), all on
 one photo: hers first, else the top library match copied into her Media. Each
 round is appended to ``FocusCreation.covers``; "Four more styles" is another
 round on the same photo. When the model fails, code draws four fixed styles,
-so she always has covers to pick from. A copilot run on the agents worker."""
+so she always has covers to pick from. A copilot run on the agents worker.
+A kind whose cover is a photo only (COVER "photo", a post's, G7) gets no
+styles: the photo row, and "Use this photo" (``use_photo``)."""
 
 import functools
 import json
@@ -249,6 +251,17 @@ def set_photo(creation, photo) -> None:
         locked.save(update_fields=["covers", "updated_at"])
 
 
+def use_photo(creation, photo) -> None:
+    """ "Use this photo", for a kind whose cover is a photo only: it goes on
+    the record and the cover question is answered. Once only."""
+    with transaction.atomic():
+        locked = _acting(creation)
+        adapter = kinds.get(creation.kind)
+        if locked is not None and adapter.COVER == "photo":
+            adapter.set_photo(locked.record_id, str(photo.pk))
+            _answered(locked, "kept")
+
+
 def _with_photo(recipe: dict, photo_id: str) -> dict:
     if recipe["layout"] in NO_PHOTO:
         return recipe
@@ -352,11 +365,21 @@ def photo_row(creation, tenant, query: str, page: int) -> dict:
 def payload(creation) -> dict | None:
     """The cover step's state: the current round's drafts as ``CoverDesign``s
     (what ``CoverArt`` draws), the shared photo and its query. None until a
-    covers job has been queued."""
+    covers job has been queued; a photo-only cover has no drafts, only her
+    words for the photo row."""
     pk = jobs.run_id(creation, "covers")
-    if pk is None:
-        return None
     covers = creation.covers or {}
+    if pk is None:
+        if kinds.get(creation.kind).COVER != "photo":
+            return None
+        return {
+            "status": "ready",
+            "run": None,
+            "round": 0,
+            "drafts": [],
+            "photo": None,
+            "query": covers.get("query", ""),
+        }
     rounds = covers.get("rounds") or []
     context = {}
     drafts = [

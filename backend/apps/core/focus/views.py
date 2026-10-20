@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from apps.core.permissions import IsCoachOrOwner
 from apps.tenant_config.models import FocusCreation
 
-from . import copywriter, covers, flow, kinds
+from . import covers, flow, kinds
 
 
 def _not_found():
@@ -161,9 +161,9 @@ def focus_descriptions(request, creation_id):
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
 def focus_copy(request, creation_id):
-    """Try again after the copy job failed; 404 for a kind it does not draft."""
+    """Try again after the copy job (or a kind's own drafting) failed; 404 for the course."""
     creation = _hers(request, creation_id) if settings.FOCUS_MODE_ENABLED else None
-    if creation is None or not copywriter.drafts(creation.kind):
+    if creation is None or not flow.draft_job(creation.kind):
         return _not_found()
     return Response(flow.state(flow.retry_copy(creation)))
 
@@ -171,19 +171,20 @@ def focus_copy(request, creation_id):
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
 def focus_cover(request, creation_id):
-    """One of the cover step's taps (photo, keep, more, later, edit). Each is
-    refused, with the state unchanged, unless the cover is the question."""
+    """One of the cover step's taps (photo, keep, more, later, edit; use: a
+    photo-only cover's "Use this photo"). Each is refused, with the state
+    unchanged, unless the cover is the question."""
     creation = _hers(request, creation_id) if settings.FOCUS_MODE_ENABLED else None
     if creation is None:
         return _not_found()
     data = _body(request)
     action, index, extra = data.get("action"), data.get("index"), {}
-    if action == "photo":
+    if action in ("photo", "use"):
         if flow.current_field(creation) == "cover":  # no download for a stale screen
             photo = covers.photo_for(data.get("asset_id"))
             if photo is None:  # she is told, and the shared photo stays as it was
                 return Response({"detail": "photo_unavailable"}, status=409)
-            covers.set_photo(creation, photo)
+            (covers.set_photo if action == "photo" else covers.use_photo)(creation, photo)
     elif action == "keep":
         covers.keep(creation, index, request.user)
     elif action == "more":

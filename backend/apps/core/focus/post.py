@@ -7,9 +7,11 @@ the record's lock right before the write, so her edit is never overwritten.
 Each field written is emitted as a ``field`` event the page types in; inline
 images follow the generator's own placement, with the text they belong to.
 A failure leaves the post as it was, and the guide offers Try again, as for
-the copy job. A copilot run on the agents worker."""
+the copy job; a refusal by the blog gate (her plan, her quota) fails the run
+with its ``reason`` at once, before any model call, which the guide says in
+place of Try again. A copilot run on the agents worker."""
 
-from django.db import transaction
+from django.db import connection, transaction
 
 from apps.blog import ai as blog_ai
 from apps.blog import curated
@@ -17,7 +19,7 @@ from apps.blog.models import BlogPost
 from apps.core.copilot import runs
 from apps.tenant_config.models import CopilotRun, FocusCreation
 
-from . import jobs
+from . import jobs, kinds
 
 FIELDS = ("title", "excerpt", "body_html", "meta_description", "tags")
 # Her length answer in the generator's words; "standard" is its own 800-1200.
@@ -25,15 +27,23 @@ LENGTHS = {"short": "Keep it short: about 500 words in 3-4 sections.", "long": "
 KEPT = "You changed the text, so I left it; the title and summary are new."
 ALL_KEPT = "You changed all of it, so I left it as it is."
 SOME_KEPT = "You changed some of it, so I left those parts as you wrote them."
+# "You decide" on the topic with no topic idea left (kinds/post.py ``sync``): never a post on "New post".
+ANY_TOPIC = "a topic her students would want to read, from what her site is about"
 
 
 def start(creation, instruction: str = "") -> CopilotRun:
     """A queued post run, a building one stopped first (it would write over
-    this one). Call on the locked creation, inside the writing transaction."""
+    this one). The blog gate is asked first: refused, the run fails at once
+    with its reason (the worker's claim then finds nothing to do), so no run
+    starts that can only fail. Call on the locked creation, inside the
+    writing transaction."""
     pk = jobs.run_id(creation, "post")
     if pk is not None:
         runs.stop(pk)  # a finished one is left as it is
-    return jobs.queue(creation, "post", specialist="marketing", instruction=instruction)
+    run = jobs.queue(creation, "post", specialist="marketing", instruction=instruction)
+    if reason := blog_ai.availability(connection.tenant)["reason"]:
+        runs.finish(run.id, False, {"reason": reason})
+    return run
 
 
 def _gone(creation, record) -> bool:
@@ -59,9 +69,13 @@ def carry_out(tenant, run_id) -> None:
     runs.emit(run_id, "step", {**step, "state": "start"})
     answers, brief = creation.answers or {}, creation.brief or {}
     topic = str(answers.get("topic") or "")
+    adapter = kinds.get(creation.kind)
     subject = topic if topic and topic != DELEGATE else record.title
+    subject = ANY_TOPIC if subject == adapter.NEW_TITLE else subject
     notes = str(brief.get("notes") or "")
-    words = [instruction, LENGTHS.get(answers.get("length"), ""), notes and f"Her notes: {notes}"]
+    # Her follow-up answers too (the flow asks one before the drafting when it is needed).
+    answered = [f"{f['question']} {f['answer']}" for f in brief.get("followups") or [] if f["answer"] != "You decide"]
+    words = [instruction, LENGTHS.get(answers.get("length"), ""), notes and f"Her notes: {notes}", *answered]
     draft = blog_ai.generate_counted(
         tenant,
         blog_ai.brief_for_current_tenant(),
@@ -102,14 +116,16 @@ def carry_out(tenant, run_id) -> None:
             BlogPost.objects.filter(pk=record.pk).update(**fields, **extra)
         locked.drafted = {**drafted, "post": {**wrote, **fields}}
         locked.save(update_fields=["drafted", "updated_at"])
+        shown = adapter.payload(record)  # the page's key for it, as the copy job's: "post:<id>"
+        key = f"{shown.get('kind', locked.kind)}:{shown['id']}"
         for name, value in fields.items():
-            runs.emit(run_id, "field", {"record": f"{locked.kind}:{record.pk}", "name": name, "value": value})
+            runs.emit(run_id, "field", {"record": key, "name": name, "value": value})
         # What she sees of her own edits: KEPT is only true while the title and summary are the job's.
         if not kept:
             said = ""
         elif not fields:
             said = ALL_KEPT
-        elif "body_html" in kept and not {"title", "excerpt"} & set(kept):
+        elif "body_html" in kept and {"title", "excerpt"} <= set(fields):
             said = KEPT
         else:
             said = SOME_KEPT
