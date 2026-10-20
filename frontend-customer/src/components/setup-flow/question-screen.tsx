@@ -185,9 +185,14 @@ export function QuestionScreen({
   const detailOk = (w: string, raw: string) =>
     step.address ? addressOk(raw) : contactOk(w, raw);
   // A membership question: a monthly price for each tier ticked, hers to change.
+  // A membership she named starts at the default own price, so a typed tile
+  // and "Select all" never leave a price box empty.
   const prices =
     step.prices && Object.keys(step.prices).length
       ? {
+          ...Object.fromEntries(
+            own.map((o) => [o, String(step.own_price ?? "")]),
+          ),
           ...Object.fromEntries(
             Object.entries(step.prices).map(([t, p]) => [t, String(p)]),
           ),
@@ -769,9 +774,11 @@ export function QuestionScreen({
                           : !canContinue
                             ? step.starter && ticked.length > 0
                               ? "Finish your sentence"
-                              : multi
-                                ? "Pick as many as fit"
-                                : "Pick one to continue"
+                              : prices && ticked.length > 0
+                                ? "Add a price for each"
+                                : multi
+                                  ? "Pick as many as fit"
+                                  : "Pick one to continue"
                             : !live && !changed
                               ? "Keep this answer"
                               : note && (ticked.length > 0 || draft.card)

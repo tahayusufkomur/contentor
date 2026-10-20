@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Check, Lock, RotateCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { buildSelectionPayload } from "@/lib/copilot/selection";
+import type { SelectionPayload } from "@/lib/copilot/types";
 import { cn } from "@/lib/utils";
 import { embedSrc } from "@/lib/setup-flow";
 
@@ -22,6 +24,9 @@ export function BrowserFrame({
   reloadKey,
   onReload,
   onNavigate,
+  onPick,
+  pickedBlock,
+  flashBlock,
   overlay,
 }: {
   host: string;
@@ -31,6 +36,13 @@ export function BrowserFrame({
   onReload?: () => void;
   /** A link inside the preview was followed to this site path. */
   onNavigate?: (path: string) => void;
+  /** Set while she reviews a page: a tap on a section picks it (hover
+   * outlines it) instead of following links, with a short label for it. */
+  onPick?: (selection: SelectionPayload, label: string) => void;
+  /** The section picked, outlined until the change is sent. */
+  pickedBlock?: string | null;
+  /** The section just changed: the page opens scrolled to it, and it flashes. */
+  flashBlock?: string | null;
   /** Rendered instead of the page (composing, retry). */
   overlay?: ReactNode;
 }) {
@@ -108,6 +120,9 @@ export function BrowserFrame({
                 height={box.h / scale}
                 scale={scale}
                 onNavigate={onNavigate}
+                onPick={onPick}
+                pickedBlock={pickedBlock}
+                flashBlock={flashBlock}
               />
             ))}
         </div>
@@ -116,36 +131,123 @@ export function BrowserFrame({
   );
 }
 
+// Styles put into the previewed page while a section can be picked: every
+// block outlines on hover, the picked one stays outlined, and a changed one
+// flashes once. The page is the coach's own, so plain attribute selectors are
+// safe (every block renders in a [data-block-id] wrapper).
+const PICK_CSS = `
+html[data-sf-pick] [data-block-id] { cursor: pointer; }
+html[data-sf-pick] [data-block-id]:hover { outline: 2px solid #9A773A; outline-offset: -2px; }
+html[data-sf-pick] [data-block-id][data-sf-picked] { outline: 2px solid #22211F; outline-offset: -2px; }
+@keyframes sf-flash { 0%, 60% { outline-color: #9A773A; } 100% { outline-color: transparent; } }
+`;
+// The changed block flashes by a rule on its id, not an attribute on its
+// node: the page's hydration recreates the node right after load.
+const flashCss = (id: string) =>
+  `[data-block-id="${CSS.escape(id)}"] { outline: 3px solid transparent; outline-offset: -3px; animation: sf-flash 2.4s ease-out both; }`;
+
+/** The clicked section's name for the chip: its first heading, else the
+ * tapped words, else just "this section". */
+function labelOf(block: Element, target: Element): string {
+  const text = (
+    block.querySelector("h1, h2, h3")?.textContent ??
+    target.textContent ??
+    ""
+  ).trim();
+  return text
+    ? text.length > 40
+      ? `${text.slice(0, 39)}…`
+      : text
+    : "this section";
+}
+
 function LivePage({
   src,
   width,
   height,
   scale,
   onNavigate,
+  onPick,
+  pickedBlock,
+  flashBlock,
 }: {
   src: string;
   width: number;
   height: number;
   scale: number;
   onNavigate?: (path: string) => void;
+  onPick?: (selection: SelectionPayload, label: string) => void;
+  pickedBlock?: string | null;
+  flashBlock?: string | null;
 }) {
   const [loaded, setLoaded] = useState(false);
+  const frameRef = useRef<HTMLIFrameElement | null>(null);
+  // The click handler is set once per load; picking follows the live prop.
+  const pickRef = useRef(onPick);
+  pickRef.current = onPick;
+  useEffect(() => {
+    const doc = frameRef.current?.contentDocument;
+    if (!loaded || !doc) return;
+    if (onPick) doc.documentElement.setAttribute("data-sf-pick", "");
+    else doc.documentElement.removeAttribute("data-sf-pick");
+  }, [loaded, !!onPick]); // eslint-disable-line react-hooks/exhaustive-deps
+  // The picked outline follows the pick without a reload.
+  useEffect(() => {
+    const doc = frameRef.current?.contentDocument;
+    if (!loaded || !doc) return;
+    doc
+      .querySelectorAll("[data-sf-picked]")
+      .forEach((el) => el.removeAttribute("data-sf-picked"));
+    if (pickedBlock)
+      doc
+        .querySelector(`[data-block-id="${CSS.escape(pickedBlock)}"]`)
+        ?.setAttribute("data-sf-picked", "");
+  }, [loaded, pickedBlock]);
   return (
     <>
       {!loaded && <PageSkeleton />}
       <iframe
+        ref={frameRef}
         src={src}
         title="Site preview"
         onLoad={(e) => {
           // Links to the coach's own pages open in the preview (re-framed
           // with ?embed=1, which in-frame navigation would drop); in-page
-          // anchors scroll; anything else and forms stay put.
+          // anchors scroll; anything else and forms stay put. While a page
+          // is under review a tap picks the section instead.
           const frame = e.currentTarget;
           const doc = frame.contentDocument;
+          if (doc) {
+            const style = doc.createElement("style");
+            style.textContent =
+              PICK_CSS + (flashBlock ? flashCss(flashBlock) : "");
+            doc.head.appendChild(style);
+            if (pickRef.current)
+              doc.documentElement.setAttribute("data-sf-pick", "");
+            if (flashBlock)
+              doc
+                .querySelector(`[data-block-id="${CSS.escape(flashBlock)}"]`)
+                ?.scrollIntoView({ block: "center" });
+          }
           doc?.addEventListener(
             "click",
             (ev) => {
-              const a = (ev.target as Element | null)?.closest?.("a[href]");
+              const target = ev.target as Element | null;
+              const pick = pickRef.current;
+              const block = pick ? target?.closest?.("[data-block-id]") : null;
+              if (block && target && pick) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                pick(
+                  buildSelectionPayload(
+                    target,
+                    frame.contentWindow?.location.pathname ?? "/",
+                  ),
+                  labelOf(block, target),
+                );
+                return;
+              }
+              const a = target?.closest?.("a[href]");
               if (!a) return;
               const here = frame.contentWindow?.location;
               const to = new URL(a.getAttribute("href") ?? "", here?.href);

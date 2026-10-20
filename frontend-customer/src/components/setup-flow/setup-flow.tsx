@@ -38,6 +38,7 @@ import {
   type TurnRequest,
 } from "@/lib/setup-flow";
 import { announceSiteUpdated } from "@/lib/site-events";
+import type { SelectionPayload } from "@/lib/copilot/types";
 import type { ShareDoc } from "@/lib/share-doc";
 import { ApiError } from "@/types/api";
 import { cn } from "@/lib/utils";
@@ -216,6 +217,18 @@ function Flow({
   const [reloadKey, setReloadKey] = useState(0);
   const [path, setPath] = useState("/");
   const [celebrate, setCelebrate] = useState(false);
+  // While a page is under review: the section she tapped in the preview
+  // (the change she asks for is to it), and the one just changed (the
+  // reloaded page opens on it).
+  const [picked, setPicked] = useState<{
+    selection: SelectionPayload;
+    label: string;
+  } | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
+  useEffect(() => {
+    setPicked(null);
+    setFlash(null);
+  }, [path]);
   // The home page, peeked at mid-setup.
   const [peek, setPeek] = useState(false);
   const homeReady = flow.page_builds.home?.status === "ready";
@@ -351,6 +364,8 @@ function Flow({
             setDir("next");
             setAt(null);
             dropDraft(key);
+            setPicked(null);
+            setFlash(req.selection?.block_id ?? null);
           });
           return res.edit;
         } catch (err) {
@@ -447,6 +462,16 @@ function Flow({
       reloadKey={reloadKey}
       onReload={composing ? undefined : () => setReloadKey((k) => k + 1)}
       onNavigate={setPath}
+      onPick={
+        reviewing
+          ? (selection, label) => {
+              setPicked({ selection, label });
+              if (narrow) setTab("guide");
+            }
+          : undefined
+      }
+      pickedBlock={picked?.selection.block_id}
+      flashBlock={flash}
       overlay={
         composing && currentPage ? (
           <Composing
@@ -512,10 +537,14 @@ function Flow({
           .filter((l) => step.options.includes(l) || draft.custom?.includes(l))
           .map((label) => ({
             label,
-            // The price she is typing, once it reads as one.
+            // The price she is typing, once it reads as one; a membership
+            // she named starts at the own price.
             price: priceOk(draft.prices?.[label] ?? "")
               ? `${step.sign ?? ""}${draft.prices?.[label]?.trim()} a month`
-              : (step.hints?.[label] ?? ""),
+              : (step.hints?.[label] ??
+                (step.own_price != null
+                  ? `${step.sign ?? ""}${step.own_price} a month`
+                  : "")),
             blurb: step.details?.[label] ?? "",
           })),
       };
@@ -761,6 +790,9 @@ function Flow({
                 approving,
                 onApprove: () => void approve(focus.key),
                 onShow: (p) => setPath(p.path),
+                picked: picked
+                  ? { ...picked, onClear: () => setPicked(null) }
+                  : undefined,
               }
             : undefined
         }

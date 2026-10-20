@@ -1,6 +1,7 @@
 // Client for the coach's guided onboarding (/setup). Contract:
 // GET/POST /api/v1/admin/setup-flow/ (+ build-page/, draft/).
 import type { FamilyId } from "@shared/sections/types";
+import type { SelectionPayload } from "@/lib/copilot/types";
 import { clientFetch } from "@/lib/api-client";
 import type { ShareDoc } from "@/lib/share-doc";
 import { ApiError } from "@/types/api";
@@ -405,6 +406,8 @@ export interface GuideTurn {
    * in the currency whose ``sign`` is given. */
   prices?: Record<string, number>;
   sign?: string;
+  /** ...and what a membership she names herself starts at. */
+  own_price?: number;
 }
 
 export interface CopilotCard {
@@ -451,6 +454,8 @@ export interface TurnRequest {
   field?: string;
   /** The page she is looking over before going live: the words change it. */
   page?: string;
+  /** ...and the part of it she tapped in the preview, when she did. */
+  selection?: SelectionPayload;
 }
 
 export interface TurnResponse {

@@ -205,6 +205,20 @@ def test_a_change_asked_on_a_page_under_review_goes_to_that_page(client, tenant_
     assert body["edit"] == payload
 
 
+def test_a_part_of_the_page_she_tapped_scopes_the_change(client, tenant_ctx, quiet):
+    """The review preview lets her tap a section: the copilot gets it as a
+    selection, and the request names its block."""
+    _only_missing(tenant_ctx, ())
+    payload = {"kind": "answer", "text": "Done"}
+    tapped = {"path": "/about", "block_id": "blk_1", "tag": "h2", "text": "My story", "context": "", "junk": 1}
+    with mock.patch("apps.core.copilot.engine.run_turn", return_value=(payload, Decimal("0"))) as run:
+        client.post(URL, {"message": "shorter", "page": "about", "selection": tapped}, format="json").json()
+    assert run.call_args.args[2] == [{k: v for k, v in tapped.items() if k != "junk"}]
+    assert run.call_args.args[3] == (
+        'On the "about" page (/about) only, in the section she tapped (block blk_1): shorter'
+    )
+
+
 def test_a_bio_read_once_is_not_asked_for_again(client, tenant_ctx, quiet):
     flow = {}
     assert interview.interview_state(tenant_ctx, flow)["bio_read"] is False
@@ -631,6 +645,17 @@ def test_prices_and_contact_keep_their_own_options_over_ai_ones():
     ):
         guide = interview.guide_for(brief.FIELD_BY_ID[field_id], "", "Q?", junk, ["mail", "coins"], answers)
         assert guide["options"] == list(brief.options_for(brief.FIELD_BY_ID[field_id], answers)[0])
+
+
+def test_a_membership_she_names_starts_at_the_own_price():
+    """The tiles carry her prices; a membership typed on the question has none
+    yet, so the step says what it starts at and "Select all" goes through."""
+    from apps.tenant_config import interview_brief as brief
+
+    step = interview.membership_prices("memberships", {"offers": ["course"], "payments": ["membership"]})
+    assert step["prices"] == {"Digital membership": 9}
+    assert step["own_price"] == brief.OWN_MEMBERSHIP_PRICE
+    assert interview.membership_prices("contact", {}) == {"prices": {}, "sign": ""}
 
 
 def test_story_and_credentials_offer_starters_not_claims():

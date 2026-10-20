@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowRight, Check, Eye } from "lucide-react";
+import { ArrowRight, Check, Eye, MousePointerClick, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import type { SelectionPayload } from "@/lib/copilot/types";
 import { pageLabel, type ReviewPage } from "@/lib/interview";
 import type { GuideTurn, SetupFlowApi, TurnRequest } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,8 @@ export interface PageReviewProps {
   onApprove: () => void;
   /** Show another page in the preview. */
   onShow: (page: ReviewPage) => void;
+  /** The part of the page she tapped in the preview: the change is to it. */
+  picked?: { selection: SelectionPayload; label: string; onClear: () => void };
 }
 
 /** The last stretch, beside the finished site: each page looked over and
@@ -134,17 +137,46 @@ export function GoLivePanel({
             <span className="truncate">{busy}</span>
           </p>
         )}
+        {review?.picked && (
+          <p className="mb-2 flex items-center gap-2 px-1 text-[13px] text-[var(--sf-graphite)]">
+            <MousePointerClick
+              className="size-4 shrink-0 text-[var(--sf-brass)]"
+              aria-hidden
+            />
+            <span className="min-w-0 truncate">
+              Changing{" "}
+              <strong className="font-medium text-[var(--sf-ink)]">
+                {review.picked.label}
+              </strong>
+            </span>
+            <button
+              type="button"
+              onClick={review.picked.onClear}
+              aria-label="Change the whole page instead"
+              className="ml-auto rounded-full p-1 text-[var(--sf-faint)] transition-colors hover:bg-[var(--sf-tint-strong)] hover:text-[var(--sf-ink)]"
+            >
+              <X className="size-3.5" aria-hidden />
+            </button>
+          </p>
+        )}
         <AnswerBox
           value={text}
           onChange={onText}
           sending={sending}
           placeholder={
-            review
-              ? `Change something on your ${pageLabel(review.focus.key)}…`
-              : "Ask for a change…"
+            review?.picked
+              ? "What should change here? Like “shorter” or “a warmer photo”…"
+              : review
+                ? `Change something on your ${pageLabel(review.focus.key)}…`
+                : "Ask for a change…"
           }
           onSubmit={(t, spoken) =>
-            onSend({ message: t, spoken, page: review?.focus.key })
+            onSend({
+              message: t,
+              spoken,
+              page: review?.focus.key,
+              selection: review?.picked?.selection,
+            })
           }
         />
       </div>
@@ -178,8 +210,9 @@ function PageReview({
         Happy with your {pageLabel(focus.key)}?
       </h1>
       <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--sf-graphite)]">
-        Look it over. Tell me below anything to change on this page, or approve
-        it and we&rsquo;ll go to the next one.
+        Look it over. Tap any part of it to change just that part, or tell me
+        below what to change on the page. Approve it and we&rsquo;ll go to the
+        next one.
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-2">
         {!shown ? (

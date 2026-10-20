@@ -7,6 +7,7 @@ from django.db import connection
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
 
+from apps.core.copilot.views import _clean_selections
 from apps.core.permissions import IsCoachOrOwner, IsOwner
 from apps.core.throttling import SetupInterviewThrottle
 
@@ -95,6 +96,7 @@ def setup_flow_turn(request):
             choice=choice,
             field=str(data.get("field") or "") or None,
             page=str(data.get("page") or "") or None,
+            selection=next(iter(_clean_selections([data.get("selection")])), None),
         )
     except interview_milestones.ChoiceError as exc:
         return Response({"detail": str(exc)}, status=400)

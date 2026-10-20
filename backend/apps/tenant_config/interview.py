@@ -462,7 +462,11 @@ def membership_prices(field_id, answers) -> dict:
     """The membership tiles take a monthly price each, starting at hers."""
     if field_id != "memberships":
         return {"prices": {}, "sign": ""}
-    return {"prices": brief.membership_prices(answers), "sign": brief.currency_sign()}
+    return {
+        "prices": brief.membership_prices(answers),
+        "sign": brief.currency_sign(),
+        "own_price": brief.OWN_MEMBERSHIP_PRICE,  # what a membership she names starts at
+    }
 
 
 def picked_note(tenant, field_id) -> str:
@@ -540,12 +544,14 @@ def _ask_ai(tenant, answers, turns, message, spoken, answering=None, document=Fa
     return parsed
 
 
-def _run_edit(tenant, request: str) -> dict:
+def _run_edit(tenant, request: str, selections: list | None = None) -> dict:
     from apps.core.copilot import engine
     from apps.core.onboarding import ai_compose
 
     try:
-        payload, cost = engine.run_turn(tenant, [], [], request[:MESSAGE_MAX], timeout_seconds=EDIT_TIMEOUT_SECONDS)
+        payload, cost = engine.run_turn(
+            tenant, [], selections or [], request[:MESSAGE_MAX], timeout_seconds=EDIT_TIMEOUT_SECONDS
+        )
     except Exception:
         logger.exception("interview edit failed schema=%s", tenant.schema_name)
         return {"kind": "answer", "text": "I couldn't make that change just now. Ask again in a moment."}
@@ -562,6 +568,7 @@ def run_turn(
     field: str | None = None,
     imported: bool = False,
     page: str | None = None,
+    selection: dict | None = None,
 ) -> dict:
     """One coach message (typed, spoken or a tapped answer/card) → the guide's
     reply. ``field`` names the question the message answers when the coach
@@ -571,7 +578,8 @@ def run_turn(
     only unsettled questions, never an edit or a redraft, and ImportUnavailableError
     (nothing applied) when the AI cannot read it. ``page`` is the site page the
     coach is looking over before going live: her words are a change to that
-    page, sent straight to the copilot."""
+    page, sent straight to the copilot, with ``selection`` (the part of the
+    page she tapped, a copilot selection payload) as its context."""
     from . import interview_milestones as milestones
     from . import setup_flow
 
@@ -659,7 +667,10 @@ def run_turn(
     # A tapped chip/card is applied by code; it is never also a site edit.
     edit = _run_edit(tenant, turn.edit_request) if turn and turn.edit_request and not choice and not imported else None
     if page and text:
-        edit = _run_edit(tenant, f'On the "{page}" page ({setup_flow.PAGE_PATHS[page]}) only: {text}')
+        where = f'On the "{page}" page ({setup_flow.PAGE_PATHS[page]}) only'
+        if selection and selection.get("block_id"):
+            where += f", in the section she tapped (block {selection['block_id']})"
+        edit = _run_edit(tenant, f"{where}: {text}", [selection] if selection else None)
     fired = milestones.fire(tenant, answers)
     milestones.apply_access(tenant, answers)  # a draft already made follows who she opened it to
     # Kept in the transcript; interview_state never re-serves it as the live
