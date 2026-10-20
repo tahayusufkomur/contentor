@@ -57,7 +57,7 @@ export const SETUP_CATALOG: Record<string, CatalogEntry> = {
   // by itself once she has one (and payouts, the row above).
   start_selling: { icon: Tag, href: "/admin/billing" },
   publish: { icon: Rocket, href: "/admin#publish-card" },
-  first_download: { icon: Download, href: "/admin/downloads" },
+  first_download: { icon: Download, href: "/admin/downloads/new" },
   first_live: { icon: Video, href: "/admin/live" },
   first_announcement: { icon: Megaphone, href: "/admin/messages/new" },
   first_blog_post: { icon: Newspaper, href: "/admin/blog" },

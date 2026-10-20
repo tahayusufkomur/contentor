@@ -327,7 +327,9 @@ test("an empty post cannot be published", async ({ browser }) => {
   await expect(page.getByText(KEPT)).toBeVisible();
   // The plain editor from here: still no Publish while it has no text.
   await expect(main(page).getByText("Write something first.")).toBeVisible();
-  await expect(main(page).getByRole("button", { name: "Publish", exact: true })).toBeDisabled();
+  const publish = main(page).getByRole("button", { name: "Publish", exact: true });
+  await expect(publish).toBeDisabled();
+  await expect(publish).toHaveAccessibleDescription("Write something first."); // why, for a screen reader too
   await page.close();
 });
 

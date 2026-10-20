@@ -214,6 +214,7 @@ test("a message from one sentence, scheduled for tomorrow 10:00", async ({ brows
   await expect(guide(page).getByText("Tuesday 20 October at 10:00")).toBeVisible();
   // The copy typed in; nothing here sends, schedules or picks who gets it.
   await expect(titleBox(page)).toHaveValue("Closed on Friday");
+  await expect(titleBox(page)).toHaveAttribute("maxlength", "200"); // Announcement.title
   await expect(page.getByRole("main").getByText("The studio is closed this Friday.")).toBeVisible();
   await expect(page.getByRole("button", { name: /send now|schedule/i })).toHaveCount(0);
 

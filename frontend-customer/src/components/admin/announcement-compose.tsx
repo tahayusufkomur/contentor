@@ -447,6 +447,7 @@ export default function AnnouncementCompose({
         readOnly={writing("title")}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Title"
+        maxLength={200} // Announcement.title
         className="w-full rounded-lg border border-border bg-background p-2 text-sm"
       />
 

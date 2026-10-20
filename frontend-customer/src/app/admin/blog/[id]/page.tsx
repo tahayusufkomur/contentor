@@ -518,7 +518,10 @@ export default function BlogEditorPage() {
               </div>
               <div className="flex items-center gap-2">
                 {notReady && (
-                  <p className="text-sm text-muted-foreground">{`${notReady}.`}</p>
+                  <p
+                    id="post-not-ready"
+                    className="text-sm text-muted-foreground"
+                  >{`${notReady}.`}</p>
                 )}
                 <Button variant="outline" loading={saving} onClick={save}>
                   {t("blog.editorSave")}
@@ -531,6 +534,7 @@ export default function BlogEditorPage() {
                       : t("blog.editorPublish")
                   }
                   disabled={!!notReady}
+                  aria-describedby={notReady ? "post-not-ready" : undefined}
                   onClick={togglePublish}
                 >
                   {post.status === "published"
