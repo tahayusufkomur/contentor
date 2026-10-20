@@ -133,6 +133,26 @@ class TestKnowledgePack:
         catalog = prompt.split("CATALOG:", 1)[1]
         assert catalog.count("/courses/") == 30  # per-type cap
 
+    def test_what_students_cannot_see_is_never_in_its_catalog(self, tenant, config, instructor):
+        """A draft download or one with no file yet, a held class, a plan kept off sale (G4): as the store."""
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from apps.billing.models import SubscriptionPlan
+        from apps.downloads.models import DownloadFile
+        from apps.live.models import LiveClass
+
+        DownloadFile.objects.create(title="Draft workbook", file_url="downloads/d.pdf", is_published=False)
+        DownloadFile.objects.create(title="Fileless workbook", file_url="", is_published=True)
+        DownloadFile.objects.create(title="Morning workbook", file_url="downloads/m.pdf", is_published=True)
+        soon = timezone.now() + timedelta(days=1)
+        LiveClass.objects.create(title="Held flow", instructor=instructor, status="draft", scheduled_at=soon)
+        SubscriptionPlan.objects.create(name="Kept off sale", price=9, is_active=False)
+        catalog = student_bot.build_system_prompt(tenant, config)[0].split("CATALOG:", 1)[1]
+        assert "Morning workbook" in catalog
+        assert [t for t in ("Draft workbook", "Fileless workbook", "Held flow", "Kept off sale") if t in catalog] == []
+
     def test_coach_entries_wrapped_as_data(self, tenant, config):
         AssistantKnowledgeEntry.objects.create(title="Refunds", content="14 days, email us.")
         prompt, _ = student_bot.build_system_prompt(tenant, config)
