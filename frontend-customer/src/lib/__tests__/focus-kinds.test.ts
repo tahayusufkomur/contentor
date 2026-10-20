@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { focusTimeKey, KIND_ROUTES, kindForCard } from "@/lib/focus/kinds";
+import {
+  focusTimeKey,
+  KIND_ROUTES,
+  kindForCard,
+  SAVE_FIRST,
+  type FocusKind,
+} from "@/lib/focus/kinds";
 
 describe("focus kinds", () => {
   it("every kind has its routes", () => {
@@ -63,5 +69,15 @@ describe("focus kinds", () => {
     expect(kindForCard("draft_announcement")).toBe("message");
     expect(kindForCard("create_blog_post")).toBe("post");
     expect(kindForCard("edit_course")).toBeNull();
+  });
+
+  it("every kind but the course and the event saves its page before her finish taps", () => {
+    // The course and event save as she types (as on prod); every later kind's
+    // page edits would otherwise miss what goes live.
+    const kinds = Object.keys(KIND_ROUTES) as FocusKind[];
+    expect(kinds.filter((kind) => !SAVE_FIRST.includes(kind))).toEqual([
+      "course",
+      "event",
+    ]);
   });
 });

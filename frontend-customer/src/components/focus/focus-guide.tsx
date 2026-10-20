@@ -33,7 +33,7 @@ import {
   type FocusState,
 } from "@/lib/focus/api";
 import { guideBody, type GuideInput } from "@/lib/focus/guide";
-import { focusTimeKey, type FocusKind } from "@/lib/focus/kinds";
+import { focusTimeKey, SAVE_FIRST, type FocusKind } from "@/lib/focus/kinds";
 import {
   activeCreation,
   applyCreation as apply,
@@ -58,8 +58,6 @@ import { UploadQuestion } from "./upload-question";
 const POLL_MS = 1500;
 // The blog writer's refusals with a way past them: the blog editor's Upgrade link.
 const UPGRADE: readonly string[] = ["upgrade_required", "quota_exhausted"];
-// The kinds whose page edits are saved before her finish taps go out.
-const SAVE_FIRST: FocusKind[] = ["message", "membership", "bundle", "post"];
 // The kinds whose cover is a photo only (backend COVER "photo"): no styles to keep, ask for or edit.
 const PHOTO_COVER: FocusKind[] = ["post"];
 

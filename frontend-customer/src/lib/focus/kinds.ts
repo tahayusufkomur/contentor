@@ -68,6 +68,16 @@ export const KIND_ROUTES: Partial<Record<FocusKind, KindRoutes>> = {
   },
 };
 
+/** The kinds whose page edits are saved before her finish taps go out (the
+ *  course and the event save as she types). */
+export const SAVE_FIRST: FocusKind[] = [
+  "message",
+  "download",
+  "membership",
+  "bundle",
+  "post",
+];
+
 /** Her active time in focus mode on this kind (lib/focus/active-time). */
 export const focusTimeKey = (kind: string) => `focus:${kind}`;
 
