@@ -492,9 +492,7 @@ def _retry_draft(creation) -> None:
         refused = getattr(adapter, "draft_refused", None)
         if failed and (failed.result or {}).get("reason") and refused and refused():
             return
-        adapter.start_draft(
-            creation, instruction=str(((failed and failed.request) or {}).get("instruction") or "")
-        )
+        adapter.start_draft(creation, instruction=str(((failed and failed.request) or {}).get("instruction") or ""))
 
 
 def draft_started(creation) -> bool:
