@@ -1220,6 +1220,15 @@
         "handOver": {
           "access": "{name} here: let's set its price."
         }
+      },
+      "post": {
+        "fillMyself": "Write it myself",
+        "refused": {
+          "upgrade_required": "Writing posts for you is on a paid plan. Write it yourself, or upgrade.",
+          "quota_exhausted": "You're out of AI posts for this month. Write it yourself, or upgrade for more.",
+          "disabled": "AI writing is unavailable right now. Write it yourself.",
+          "budget": "AI writing is unavailable right now. Write it yourself."
+        }
       }
     },
     "youDecide": "You decide",

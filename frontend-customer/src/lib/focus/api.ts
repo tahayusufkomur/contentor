@@ -114,9 +114,15 @@ export interface FocusState {
     specialist: SpecialistKey;
   } | null;
   descriptions: { status: OutlineStatus; run: number | null } | null;
-  /** The copy job (a kind it drafts: an event's title and description); null
-   *  until it first starts. */
-  copy?: { status: OutlineStatus; run: number } | null;
+  /** The copy job (a kind it drafts: an event's title and description), or
+   *  the kind's own drafting (a post's); null until it first starts. `reason`:
+   *  the blog writer's gate refused it (her plan, her quota), so Try again
+   *  could only fail again. */
+  copy?: {
+    status: OutlineStatus;
+    run: number;
+    reason?: "upgrade_required" | "quota_exhausted" | "disabled" | "budget";
+  } | null;
   /** null until the Designer was first asked for covers. */
   cover: FocusCover | null;
   announcement: FocusAnnouncement | null;

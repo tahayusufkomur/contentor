@@ -13,6 +13,7 @@ import {
 import { AnswerBox } from "@/components/setup-flow/answer-box";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { NavLink } from "@/components/ui/nav-link";
 import { Spinner } from "@/components/ui/spinner";
 import { useAssistantDock } from "@/lib/assistant-dock";
 import { stopRun } from "@/lib/copilot/api";
@@ -253,6 +254,11 @@ export function FocusGuide() {
   // The review's drafting: the course's outline, every other kind's copy job
   // (its title and description), which leaves the page whole even when it fails.
   const copy = state.kind !== "course";
+  // The blog writer's gate said no: the review says why and offers Write it myself.
+  const refused =
+    question?.kind === "review" && state.copy?.status === "failed"
+      ? state.copy.reason
+      : undefined;
 
   return (
     <div className="flex flex-col gap-5" style={SHELL_TOKENS}>
@@ -353,10 +359,13 @@ export function FocusGuide() {
             }
             drafted={copy || state.outline.drafted}
             copy={copy}
+            refused={refused}
             sending={sending}
             stopping={stopping}
+            leaving={leaving}
             onSend={send}
             onStop={stop}
+            onFillMyself={fillMyself}
           />
         ) : question.kind === "cover" ? (
           <CoverQuestion
@@ -459,7 +468,7 @@ export function FocusGuide() {
             onSend={send}
           />
         ))}
-      {state.id !== 0 && (
+      {state.id !== 0 && !refused && (
         <Button
           size="sm"
           variant="ghost"
@@ -496,10 +505,13 @@ function OutlineReview({
   status,
   drafted,
   copy,
+  refused,
   sending,
   stopping,
+  leaving,
   onSend,
   onStop,
+  onFillMyself,
 }: {
   kind: FocusKind;
   question: FocusQuestion;
@@ -507,10 +519,14 @@ function OutlineReview({
   drafted: boolean;
   /** The copy job's title and description, not an outline. */
   copy: boolean;
+  /** Why the drafting was refused (a post's blog gate): never Try again. */
+  refused?: NonNullable<FocusState["copy"]>["reason"];
   sending: boolean;
   stopping: boolean;
+  leaving: boolean;
   onSend: (input: GuideInput) => void;
   onStop: () => void;
+  onFillMyself: () => void;
 }) {
   const t = useTranslations("admin");
   const [text, setText] = useState("");
@@ -553,9 +569,11 @@ function OutlineReview({
       <SpecialistByline k={question.specialist} />
       <div>
         <h2 className="text-lg font-semibold leading-snug text-foreground">
-          {failed
-            ? t(copy ? "focus.copyFailed" : "focus.outlineFailed")
-            : question.question}
+          {refused
+            ? t(`focus.kinds.${kind}.refused.${refused}`)
+            : failed
+              ? t(copy ? "focus.copyFailed" : "focus.outlineFailed")
+              : question.question}
         </h2>
         {!failed && question.why && (
           <p className="mt-1 text-sm text-muted-foreground">{question.why}</p>
@@ -572,7 +590,7 @@ function OutlineReview({
             {t("focus.looksGood")}
           </Button>
         )}
-        {failed && (
+        {failed && !refused && (
           <Button
             variant={drafted ? "outline" : "default"}
             loading={sending && choice === "retry"}
@@ -582,18 +600,31 @@ function OutlineReview({
             {t("focus.tryAgain")}
           </Button>
         )}
+        {refused && (
+          <Button variant="outline" loading={leaving} onClick={onFillMyself}>
+            {t(`focus.kinds.${kind}.fillMyself`)}
+          </Button>
+        )}
+        {(refused === "upgrade_required" || refused === "quota_exhausted") && (
+          <Button asChild variant="outline">
+            <NavLink href="/admin/billing">{t("blog.upgrade")}</NavLink>
+          </Button>
+        )}
       </div>
-      <AnswerBox
-        value={text}
-        onChange={(update) => setText(update)}
-        sending={sending}
-        onSubmit={(value) => {
-          onSend({ ...NONE, text: value });
-          setText("");
-        }}
-        placeholder={t("focus.changePlaceholder")}
-        className="bg-background"
-      />
+      {/* Her words would ask the refused writer again: she edits the page instead. */}
+      {!refused && (
+        <AnswerBox
+          value={text}
+          onChange={(update) => setText(update)}
+          sending={sending}
+          onSubmit={(value) => {
+            onSend({ ...NONE, text: value });
+            setText("");
+          }}
+          placeholder={t("focus.changePlaceholder")}
+          className="bg-background"
+        />
+      )}
     </div>
   );
 }
