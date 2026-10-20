@@ -110,9 +110,13 @@
       "39-focus-post"
     ],
     "src/components/admin/describe-it.tsx": ["29-copilot"],
+    "src/lib/announcements.ts": ["06-announcements", "35-focus-message"],
+    "src/components/billing/content-picker.tsx": ["37-focus-membership", "38-focus-bundle"],
+    "src/components/setup/catalog.ts": ["27-nav-stage-gating"],
     "src/components/admin/assistant-dock.tsx": [
       "27-nav-stage-gating",
-      "29-copilot"
+      "29-copilot",
+      "33-focus-course"
     ],
     "src/components/admin/command-palette.tsx": [
       "27-nav-stage-gating",
