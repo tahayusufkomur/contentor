@@ -4,6 +4,7 @@ weekly schedule becomes its series, published or held (G11). The copy job
 itself (the review step's drafting) is tested in test_focus_copy.py."""
 
 from datetime import datetime, timedelta
+from decimal import Decimal
 from unittest import mock
 from zoneinfo import ZoneInfo
 
@@ -12,8 +13,10 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.billing import ways
+from apps.billing.models import SubscriptionPlan
 from apps.core import tasks
-from apps.core.focus import flow, followup, jobs, kinds
+from apps.core.focus import analysis, flow, followup, jobs, kinds
 from apps.core.focus.kinds import event
 from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 from apps.tenant_config.models import CopilotRun, TenantConfig
@@ -153,6 +156,17 @@ def test_leaving_before_the_kind_is_known_leaves_no_record(owner):
     creation = flow.leave(creation, abandon=True)
     assert flow.state(creation)["status"] == "left"
     assert not any(model.objects.exists() for model in MODELS)
+
+
+def test_ways_in_said_before_the_class_exists_reach_it_once_it_does(owner):
+    gold = SubscriptionPlan.objects.create(name="Gold", price=Decimal("20"), currency="USD")
+    said = analysis.FoundWays(buy="20", plans=[analysis.FoundPlan(plan="Gold")])
+    creation = _typed(owner, "breathwork, 20 lira or in Gold", event.EventFound(topic="breathwork", ways=said))
+    assert creation.record_id is None and creation.brief["ways"]
+    creation = flow.answer(creation, "where", value="live")
+    chosen = ways.ways_of(_row(creation))
+    assert (chosen["buy"]["price"], chosen["plans"]) == ("20.00", [{"plan_id": gold.pk, "window": None}])
+    assert "ways" not in creation.brief and creation.answers["access"] == f"paid:20.00,plan:{gold.pk}"
 
 
 def test_zoom_is_free_and_its_access_step_is_skipped(owner):

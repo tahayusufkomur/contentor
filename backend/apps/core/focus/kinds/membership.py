@@ -24,7 +24,6 @@ NEW_TITLE = "New membership"
 SETUP_TOPIC = None  # its first tiles are the /setup tiers for what she has (``topic_tiles``)
 COVER = None  # a plan shows no image (G7)
 cover_target = cover_facts = None
-put_in_plan = None  # a plan is never put in a plan
 ANNOUNCER = "marketing"
 # The follow-up slot before the copy job drafts, and what it writes (apps.core.focus.followup).
 DRAFT_SLOT = "copy"

@@ -515,21 +515,6 @@ def set_price(ref, value: str) -> None:
         rows.update(pricing_type="paid", price=Decimal(amount))
 
 
-def put_in_plan(ref, plan) -> None:
-    """Live classes and in-person events only: the others never offer it (``price_tiles``)."""
-    from django.contrib.contenttypes.models import ContentType
-
-    from apps.billing.models import SubscriptionPlanAccess
-
-    row = record(ref)
-    if row is None:
-        return
-    type(row).objects.filter(pk=row.pk).update(pricing_type="subscription")
-    SubscriptionPlanAccess.objects.get_or_create(
-        plan=plan, content_type=ContentType.objects.get_for_model(row), object_id=row.pk
-    )
-
-
 def price_tiles(creation, row) -> dict | None:
     """Zoom: one tile, free (G9). A live stream is never in a membership: Free
     and the suggestion. Live classes and in-person events: the shared tiles."""
@@ -603,10 +588,11 @@ def not_ready(row) -> str:
 
 
 def cannot_sell(row) -> bool:
-    """A paid class while selling is not open yet (her plan, then payouts)."""
+    """A class sold once or in a subscription (no free way covering them) while
+    selling is not open yet (her plan, then payouts)."""
     from apps.core import monetization
 
-    return row.pricing_type == "paid" and not monetization.can_monetize(connection.tenant)
+    return row.pricing_type != "free" and not monetization.can_monetize(connection.tenant)
 
 
 def _settle_series(ref):

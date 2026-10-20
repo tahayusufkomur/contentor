@@ -287,7 +287,7 @@ def announce_facts(row) -> dict:
 
 
 # No price, and no styled cover to file a Design under (the flow skips each step a kind lacks).
-set_price = put_in_plan = cover_target = None
+set_price = cover_target = None
 
 
 def suggest_price(row) -> None:

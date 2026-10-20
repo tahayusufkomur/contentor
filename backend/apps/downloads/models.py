@@ -35,12 +35,13 @@ class DownloadFile(models.Model):
         return "" if self.file_url else self.NO_FILE
 
     def cannot_sell(self) -> bool:
-        """Paid while selling is not open yet (her plan, then payouts)."""
+        """Sold once or in a subscription while selling is not open yet (her plan, then payouts)."""
         from django.db import connection
 
         from apps.core import monetization
 
-        return self.pricing_type == "paid" and self.price > 0 and not monetization.can_monetize(connection.tenant)
+        sold = self.pricing_type == "subscription" or (self.pricing_type == "paid" and self.price > 0)
+        return sold and not monetization.can_monetize(connection.tenant)
 
     def refusal(self) -> str:
         """Why publishing it is refused, as a sentence; "" when it can be published."""

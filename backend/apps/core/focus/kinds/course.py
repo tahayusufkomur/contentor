@@ -196,28 +196,6 @@ def retitle(record_id: int, provisional: str, title: str) -> bool:
     return bool(Course.objects.filter(pk=record_id, title=provisional).update(title=title))
 
 
-def set_price(record_id: int, value: str) -> None:
-    from apps.courses.models import Course
-
-    course = Course.objects.filter(pk=record_id)
-    if value == "free":
-        course.update(pricing_type="free", price=0)
-    else:
-        course.update(pricing_type="paid", price=Decimal(value))
-
-
-def put_in_plan(record_id: int, plan) -> None:
-    from django.contrib.contenttypes.models import ContentType
-
-    from apps.billing.models import SubscriptionPlanAccess
-    from apps.courses.models import Course
-
-    Course.objects.filter(pk=record_id).update(pricing_type="subscription")
-    SubscriptionPlanAccess.objects.get_or_create(
-        plan=plan, content_type=ContentType.objects.get_for_model(Course), object_id=record_id
-    )
-
-
 def suggest_price(course) -> pricing.Suggestion:
     """The first rule that has her numbers: her other courses on sale, the
     price she gave in /setup, else a starting point by the course's size."""
@@ -246,6 +224,9 @@ def suggest_price(course) -> pricing.Suggestion:
         return pricing.Suggestion(pricing.whole(Decimal(str(price))), pricing.SETUP)
     modules = course.modules.count()
     return pricing.Suggestion(Decimal(19 if modules <= 1 else 39 if modules <= 3 else 69), pricing.FALLBACK)
+
+
+set_price = None  # the shared tiles: the flow writes the ways in (apps.billing.ways)
 
 
 def price_tiles(creation, course) -> None:
@@ -277,10 +258,11 @@ def not_ready(course) -> str:
 
 
 def cannot_sell(course) -> bool:
-    """A paid course while selling is not open yet (her plan, then payouts)."""
+    """A course sold once or in a subscription (no free way covering them) while
+    selling is not open yet (her plan, then payouts)."""
     from apps.core import monetization
 
-    return course.pricing_type == "paid" and not monetization.can_monetize(connection.tenant)
+    return course.pricing_type != "free" and not monetization.can_monetize(connection.tenant)
 
 
 def go_live(record_id: int) -> None:

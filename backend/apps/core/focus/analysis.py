@@ -34,13 +34,19 @@ SHARED_RULES = (
     "A coach is creating ONE {noun} in a guided flow, one question at a time. Read what she typed ('text') "
     "and return typed fields. You also get 'question' (the question on her screen), 'outline_exists' "
     "(whether a draft of the {noun} already exists), 'cover_step' (whether she is choosing her cover), "
-    "'currency' (the currency her site charges in), 'today' (her date) and her site (brand, niche, "
-    "description, her_courses).\n"
+    "'currency' (the currency her site charges in), 'today' (her date), 'her_plans' (her subscriptions' "
+    "names) and her site (brand, niche, description, her_courses).\n"
     "Rules:\n"
     "- Fill only what she said. Never guess: a field she did not mention stays empty ('', null or []).\n"
     "- answer: her answer to 'question', in her words; '' when she said something else.\n"
     "- price: 'free'; 'membership' when students get it in her membership or subscription; or a plain "
     "amount in 'currency' without a sign ('49', '19.50').\n"
+    "- ways: only when she gives more than one way in, or a time limit on one (a span or dates); else null, "
+    "and a single price stays in price. free: true when everyone gets it at no cost. buy: the one-time "
+    "amount, as in price. plans: each of her_plans she names, by its name there ('my membership' names the "
+    "one she has). Each way's window: opens_after_days / closes_after_days, whole days counted from when "
+    "that student got in ('after their first month' is opens_after_days 30, 'for a year' is "
+    "closes_after_days 365), or opens_on / closes_on as YYYY-MM-DD on her calendar.\n"
     "- notes: the rest she said about the {noun} (its format, its promise, her angle), short, in her "
     "words.\n"
     "- photo: only when cover_step is true (she is choosing her {noun} cover): a plain description of "
@@ -71,12 +77,35 @@ class Unclear(BaseModel):
     options: list[ClarifyOption]
 
 
+class FoundWindow(BaseModel):
+    opens_after_days: int | None = None
+    opens_on: str = ""  # YYYY-MM-DD
+    closes_after_days: int | None = None
+    closes_on: str = ""
+
+
+class FoundPlan(BaseModel):
+    plan: str  # one of her_plans, as named there
+    window: FoundWindow | None = None
+
+
+class FoundWays(BaseModel):
+    """Several ways in, or one with a time limit (billing.ways); the flow writes them."""
+
+    free: bool = False
+    free_window: FoundWindow | None = None
+    buy: str = ""  # the one-time amount, as ``price``
+    buy_window: FoundWindow | None = None
+    plans: list[FoundPlan] = []
+
+
 class Found(BaseModel):
     """What every kind reads from her words; a kind adds its own fields (``adapter.FOUND``)."""
 
     answer: str = ""  # her answer to the question on screen, in her words; "" when she said something else
     topic: str = ""  # what students learn, short, her words
     price: str = ""  # "free" | "membership" | an amount in the site's currency ("49")
+    ways: FoundWays | None = None  # more than one way in, or a window: only for a kind with the shared tiles
     notes: str = ""  # the rest she said about it: format, promise, angle
     change: str = ""  # a change to what is drafted she asked for (only when something is drafted)
     photo: str = ""  # at the cover question: a plain description of the photo she wants
@@ -95,6 +124,7 @@ def read(
     cover_step: bool = False,
 ) -> Found:
     """The model's reading of her words, into the kind's own fields. Raises core_ai.AiError."""
+    from apps.billing.models import SubscriptionPlan
     from apps.core.copilot.engine import _tenant_zone
 
     from . import outline
@@ -109,6 +139,7 @@ def read(
             "cover_step": cover_step,
             "currency": currency,
             "today": f"{today:%A} {today.isoformat()}",  # "next Tuesday" is her calendar
+            "her_plans": list(SubscriptionPlan.objects.filter(is_active=True).values_list("name", flat=True)),
             **outline.site(tenant, course_id),
         },
         ensure_ascii=False,

@@ -536,7 +536,7 @@ def test_finance_asks_and_marketing_writes(owner):
     assert [q.id for q in bundle.RECIPE.questions] == ["items", "review", "access", "finish", "announce"]
     assert (specialists["items"], specialists["access"], specialists["finish"]) == ("finance",) * 3
     assert (specialists["review"], bundle.ANNOUNCER, bundle.FINISH_SPECIALIST) == ("marketing", "marketing", "finance")
-    assert (bundle.COVER, bundle.put_in_plan, bundle.COPY_FIELDS) == (None, None, ("name", "description"))
+    assert (bundle.COVER, bundle.COPY_FIELDS) == (None, ("name", "description"))
 
 
 # ── The dock: shared guide behaviour, seen on a bundle ──────────────────────

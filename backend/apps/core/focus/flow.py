@@ -13,6 +13,7 @@ from datetime import datetime
 from django.db import connection, transaction
 from django.utils import timezone
 
+from apps.billing import ways as access_ways
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
@@ -34,6 +35,8 @@ ANNOUNCE_LABELS = {"scheduled": "Schedule", "draft": "Not now", "skip": "Not now
 SENT = "Your announcement has gone out."
 # The finish step of a paid course she cannot sell yet: no "Publish now" (F11).
 START_SELLING = {"value": "start_selling", "label": "Start selling", "hint": "your plan, then payouts"}
+# The access step's line when it ticked the setup her other items of the kind use most.
+USUAL_WHY = "Ticked the way you usually set these up. You can change it any time."
 # Follow-ups asked (F4): at most four per creation, two before the outline.
 MAX_FOLLOWUPS = 4
 MAX_PER_SLOT = 2
@@ -259,6 +262,8 @@ def apply(creation, found) -> None:
         price = analysis.price_value(found.price)
         if price:
             _set_price(creation, price)
+        if (said := _found_ways(creation, found.ways)) is not None:
+            _write_ways(creation, said)  # several ways, or a window: the access step is answered
         clarified = False
         if found.answer.strip():
             if item:
@@ -627,11 +632,16 @@ def state(creation) -> dict:
         }
     if record and field == "finish":
         asked = _finish_options(creation, asked, record)
-    # A kind's own price tiles label her access line with the tile she tapped.
-    tiles = {o["value"]: o["label"] for o in (adapter.price_tiles(creation, record) or {}).get("options", [])}
+    # A kind's own price tiles label her access line with the tile she tapped; the shared ones, with
+    # the ways in the record has now (her ticks or words, or the page's since).
+    own = adapter.price_tiles(creation, record)
+    tiles = {o["value"]: o["label"] for o in (own or {}).get("options", [])}
+    access = str(answers.get("access") or "")
+    if own is None and record is not None and access not in ("", DELEGATE):
+        tiles[access] = _ways_line(record)
     # Her own amount (typed, or "Sell it for") in the kind's words for it: a membership's "$9 a month".
-    if (paid := str(answers.get("access") or "")).startswith("paid:") and hasattr(adapter, "amount_label"):
-        tiles[paid] = adapter.amount_label(record, paid.removeprefix("paid:"))
+    elif access.startswith("paid:") and hasattr(adapter, "amount_label"):
+        tiles[access] = adapter.amount_label(record, access.removeprefix("paid:"))
     return {
         "id": creation.id,
         "kind": creation.kind,
@@ -643,7 +653,9 @@ def state(creation) -> dict:
             # "You decide" names what it decided: after "Just draft it" there are several.
             {
                 "field": q.id,
-                "label": f"{q.label}: you decide" if answers[q.id] == DELEGATE else _label(recipe, q, answers[q.id], tiles),
+                "label": f"{q.label}: you decide"
+                if answers[q.id] == DELEGATE
+                else _label(recipe, q, answers[q.id], tiles),
             }
             for q in recipe.questions
             if q.id in answers
@@ -919,16 +931,40 @@ def _set_price(creation, value: str) -> None:
     record is left as it is; the access step offers her memberships) or an amount.
     A kind that skips the access step for this creation answers it itself (a
     Zoom class is free); without a record yet, ``_ensure_record`` sets it later."""
-    adapter = kinds.get(creation.kind)
     # A kind with no price (a message, no access step) keeps none: nothing her words could set.
-    if "access" in adapter.skips(creation) or not any(q.id == "access" for q in adapter.RECIPE.questions):
+    if not _asks_access(creation):
         return
-    if value != "membership" and creation.record_id is not None:
-        adapter.set_price(creation.record_id, value)
+    if value != "membership":
+        _price_onto(creation, value)
     creation.answers["price"] = value
     # The access step is answered too; "membership" asks which one.
     if value != "membership":
         creation.answers["access"] = value if value == "free" else f"paid:{value}"
+
+
+def _asks_access(creation) -> bool:
+    adapter = kinds.get(creation.kind)
+    return "access" not in adapter.skips(creation) and any(q.id == "access" for q in adapter.RECIPE.questions)
+
+
+def _price_onto(creation, value: str) -> None:
+    """Her one price ("free" or an amount) onto the record, once it exists: the kind's own ``set_price``
+    for its own tiles, else the ways in, free or sold once at her amount, her subscriptions and each
+    way's window kept."""
+    adapter = kinds.get(creation.kind)
+    record = _record(creation)
+    if record is None:
+        return
+    if adapter.price_tiles(creation, record) is not None:
+        adapter.set_price(creation.record_id, value)
+        return
+    now = access_ways.ways_of(record)
+    if value == "free":
+        chosen = {**now, "free": {"window": (now["free"] or {}).get("window")}, "buy": None}
+    else:
+        chosen = {**now, "free": None, "buy": {"price": value, "window": (now["buy"] or {}).get("window")}}
+    with suppress(access_ways.WaysError):  # her subscriptions stay as they are: nothing here can refuse it
+        access_ways.set_ways(record, chosen, actor=creation.actor)
 
 
 def _amount(value, prefix: str) -> str | None:
@@ -950,20 +986,20 @@ def _sell_for(creation, value) -> str | None:
 
 
 def _access(creation, q, value, delegate) -> bool:
-    """A tap at "How will students get it?": Free, a one-time price (any valid
-    amount she taps is hers, F11) or one of her active memberships; for a kind
-    with its own price tiles, one of those, passed to its ``set_price`` as it
-    is. "You decide" leaves the record as it is. False when the tap carried no
-    answer."""
-    from apps.billing.models import SubscriptionPlan
-
+    """A tap at "How will students get it?": for a kind with its own price
+    tiles, one of those, passed to its ``set_price`` as it is; else the ways in
+    she ticked (their values comma-separated, or "all"): Free, a one-time
+    price (any valid amount she taps is hers, F11) and her subscriptions,
+    written as the item's ways, each keeping its window. "You decide" leaves
+    the record as it is. False when the tap carried no answer."""
     adapter = kinds.get(creation.kind)
     value = str(value or "")
-    plan_id = value.removeprefix("plan:")
     own = adapter.price_tiles(creation, _record(creation))
     if delegate:
         creation.answers["access"] = DELEGATE
-    elif own is not None:
+        _say(creation, q, "You decide")
+        return True
+    if own is not None:
         tile = next((o for o in own["options"] if o["value"] == value), None)
         if tile is None:
             return False
@@ -971,26 +1007,129 @@ def _access(creation, q, value, delegate) -> bool:
         creation.answers["access"] = value
         _say(creation, q, tile["label"])
         return True
-    elif value == "free" or (price := _amount(value, "paid:")):
-        _set_price(creation, "free" if value == "free" else price)
-    elif value.startswith("plan:") and plan_id.isascii() and plan_id.isdigit() and len(plan_id) < 10:
-        plan = SubscriptionPlan.objects.filter(pk=int(plan_id), is_active=True).first()
-        if plan is None or adapter.put_in_plan is None:
-            return False
-        adapter.put_in_plan(creation.record_id, plan)
-        creation.answers["price"] = "membership"
-        creation.answers["access"] = f"plan:{plan.pk}"
-    else:
+    ticked = _ticked_ways(creation, value)
+    if ticked is None or not _write_ways(creation, ticked):
         return False
-    _say(creation, q, _label(adapter.RECIPE, q, creation.answers["access"]))
+    _say(creation, q, _ways_line(_record(creation)))
     return True
 
 
+def _ticked_ways(creation, value: str) -> dict | None:
+    """Her ticks as ways in, each ticked way keeping the window it has; None
+    when a tick is not one of hers to make (an unknown tile, an inactive or
+    someone else's subscription)."""
+    from apps.billing.models import SubscriptionPlan
+
+    record = _record(creation)
+    if record is None:
+        return None
+    parts = (
+        [o["value"] for o in _price_tiles(creation)["options"]]
+        if value == "all"
+        else [v.strip() for v in value.split(",") if v.strip()]
+    )
+    now = access_ways.ways_of(record)
+    windows = {p["plan_id"]: p["window"] for p in now["plans"]}
+    out = {"free": None, "buy": None, "plans": []}
+    for part in parts:
+        plan_id = part.removeprefix("plan:")
+        if part == "free":
+            out["free"] = {"window": (now["free"] or {}).get("window")}
+        elif price := _amount(part, "paid:"):
+            out["buy"] = {"price": price, "window": (now["buy"] or {}).get("window")}
+        elif (
+            part.startswith("plan:")
+            and plan_id.isascii()
+            and plan_id.isdigit()
+            and len(plan_id) < 10
+            and _can_link(creation, record)
+            and SubscriptionPlan.objects.filter(pk=int(plan_id), is_active=True).exists()
+        ):
+            out["plans"].append({"plan_id": int(plan_id), "window": windows.get(int(plan_id))})
+        else:
+            return None
+    return out if parts else None
+
+
+def _write_ways(creation, chosen: dict) -> bool:
+    """Her ways in onto the record (kept in the brief until it exists:
+    ``_ensure_record`` writes them), answering the access step. False when
+    they were refused."""
+    record = _record(creation)
+    if record is not None:
+        try:
+            access_ways.set_ways(record, chosen, actor=creation.actor)
+        except access_ways.WaysError:
+            return False
+    else:
+        creation.brief = {**(creation.brief or {}), "ways": chosen}
+    buy = chosen.get("buy")
+    creation.answers["access"] = ",".join(
+        [
+            *(["free"] if chosen.get("free") else []),
+            *([f"paid:{buy['price']}"] if buy else []),
+            *(f"plan:{p['plan_id']}" for p in chosen.get("plans") or []),
+        ]
+    )
+    creation.answers["price"] = buy["price"] if buy else "free" if chosen.get("free") else "membership"
+    return True
+
+
+def _found_ways(creation, said) -> dict | None:
+    """The ways in her words (``analysis.FoundWays``), her subscriptions by
+    name, for a kind with the shared tiles; None when they name none."""
+    from apps.billing.models import SubscriptionPlan
+
+    adapter = kinds.get(creation.kind)
+    record = _record(creation)
+    if said is None or not _asks_access(creation) or adapter.price_tiles(creation, record) is not None:
+        return None
+    named = {}
+    if _can_link(creation, record):
+        named = {
+            name.strip().lower(): pk
+            for pk, name in SubscriptionPlan.objects.filter(is_active=True).values_list("pk", "name")
+        }
+    plans = {}
+    for p in said.plans:
+        if (pk := named.get(p.plan.strip().lower())) is not None:
+            plans.setdefault(pk, {"plan_id": pk, "window": _window(p.window)})
+    price = analysis.price_value(said.buy)
+    chosen = {
+        "free": {"window": _window(said.free_window)} if said.free else None,
+        "buy": {"price": price, "window": _window(said.buy_window)}
+        if price not in (None, "free", "membership")
+        else None,
+        "plans": list(plans.values()),
+    }
+    return chosen if chosen["free"] or chosen["buy"] or chosen["plans"] else None
+
+
+def _window(said) -> dict | None:
+    """A window her words gave, as ``billing.ways`` keeps it (``set_ways`` checks it)."""
+    if said is None:
+        return None
+    return {k: v for k, v in said.model_dump().items() if v not in (None, "")} or None
+
+
+def _can_link(creation, record) -> bool:
+    """Whether her subscriptions are among the ways in: only where the item can
+    be in one, and only for the owner (a subscription's contents are hers)."""
+    kind = access_ways.kind_of(record) if record is not None else None
+    return (kind is None or "plans" in access_ways.ALLOWED[kind]) and getattr(creation.actor, "role", None) == "owner"
+
+
+def _ways_line(record) -> str:
+    """The ways in the record has, in plain words: her answered access line."""
+    return access_ways.describe(access_ways.ways_of(record))
+
+
 def _price_tiles(creation) -> dict:
-    """The access step's tiles: the kind's own, or Free, the suggested
-    one-time price with its reason (when the kind has one), and each active
-    membership (when it can be in one); after "membership" in her words, only
-    those (when she has any)."""
+    """The access step's tiles: the kind's own (one to pick), or every way in
+    to tick: Free, the suggested one-time price with its reason (when the kind
+    has one) and each active subscription (``_can_link``). Ticked: her
+    subscriptions after "membership" in her words, else the setup most of her
+    other items of the kind use, else the suggested price."""
     from apps.billing.models import SubscriptionPlan
 
     adapter = kinds.get(creation.kind)
@@ -999,15 +1138,38 @@ def _price_tiles(creation) -> dict:
         return own
     plans = [
         {"value": f"plan:{p.pk}", "label": f"In {p.name}", "hint": ""}
-        for p in (SubscriptionPlan.objects.filter(is_active=True) if adapter.put_in_plan is not None else ())
+        for p in (SubscriptionPlan.objects.filter(is_active=True) if _can_link(creation, record) else ())
     ]
+    paid = None
+    if (s := adapter.suggest_price(record)) is not None:
+        paid = {
+            "value": f"paid:{s.amount}",
+            "label": f"One-time price: {_price_label(str(s.amount))}",
+            "hint": s.reason,
+        }
+    options = [{"value": "free", "label": "Free", "hint": ""}, *([paid] if paid else []), *plans]
+    out = {"options": options, "suggested": paid and paid["value"], "multi": True, "can_delegate": False}
     if plans and (creation.answers or {}).get("price") == "membership":
-        return {"options": plans, "suggested": None}
-    free = {"value": "free", "label": "Free", "hint": ""}
-    if (s := adapter.suggest_price(record)) is None:
-        return {"options": [free, *plans], "suggested": None}
-    paid = {"value": f"paid:{s.amount}", "label": f"One-time price: {_price_label(str(s.amount))}", "hint": s.reason}
-    return {"options": [free, paid, *plans], "suggested": paid["value"]}
+        return {**out, "ticked": [p["value"] for p in plans]}
+    if usual := _usual(record, options):
+        return {**out, "ticked": usual, "why": USUAL_WHY}
+    return {**out, "ticked": [paid["value"] if paid else "free"]}
+
+
+def _usual(record, options) -> list[str]:
+    """The setup most of her other items of this kind use, as these tiles'
+    values; [] without one."""
+    usual = access_ways.common_setup(access_ways.kind_of(record)) if record is not None else None
+    if usual is None:
+        return []
+    values = [o["value"] for o in options]
+    paid = next((v for v in values if v.startswith("paid:")), None)
+    ticked = [
+        *(["free"] if usual["free"] else []),
+        *([paid] if usual["buy"] and paid else []),
+        *(f"plan:{pk}" for pk in usual["plans"]),
+    ]
+    return [v for v in ticked if v in values]
 
 
 def _finish_options(creation, asked: dict, record) -> dict:
@@ -1047,9 +1209,11 @@ def _price_label(value: str) -> str:
 
 
 def _access_label(value: str) -> str:
-    """ "free", "paid:39.00" or "plan:<id>", as her answered line."""
+    """ "free", "paid:39.00" or "plan:<id>" (or several ticked, comma-separated), as her answered line."""
     from apps.billing.models import SubscriptionPlan
 
+    if "," in value:  # her ticks, once the record that says them is gone
+        return " + ".join(_access_label(part) for part in value.split(","))
     if value.startswith("plan:"):
         plan = SubscriptionPlan.objects.filter(pk=int(value[5:])).first()
         return f"In {plan.name}" if plan else "In your membership"
@@ -1125,15 +1289,22 @@ def _delegate_rest(creation) -> None:
 
 def _ensure_record(creation) -> None:
     """The kind's draft, once an answer lets it be made (G10; the course's is
-    made at start), with the price she gave before it existed; then her
-    answers onto it, when the kind keeps any there itself (``sync``). Call
-    under the creation's lock; the caller saves."""
+    made at start), with the price or ways in she gave before it existed;
+    then her answers onto it, when the kind keeps any there itself
+    (``sync``). Call under the creation's lock; the caller saves."""
     adapter = kinds.get(creation.kind)
     if creation.record_id is None:
         creation.record_id = adapter.create_draft(creation.actor, draft_title(creation), creation.answers)
-        price = creation.answers.get("price")
-        if creation.record_id is not None and price not in (None, "membership"):
-            adapter.set_price(creation.record_id, price)
+        if creation.record_id is not None:
+            brief = dict(creation.brief or {})
+            said = brief.pop("ways", None)  # her ways in, from words read before it existed (``_write_ways``)
+            creation.brief = brief
+            price = creation.answers.get("price")
+            if said and adapter.price_tiles(creation, _record(creation)) is None:
+                with suppress(access_ways.WaysError):
+                    access_ways.set_ways(_record(creation), said, actor=creation.actor)
+            elif price not in (None, "membership"):
+                _price_onto(creation, price)
     if sync := getattr(adapter, "sync", None):  # optional
         sync(creation)
 

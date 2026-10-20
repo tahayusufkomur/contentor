@@ -26,7 +26,6 @@ NEW_TITLE = "New bundle"
 SETUP_TOPIC = None
 COVER = None  # a bundle shows no image (G7)
 cover_target = cover_facts = None
-put_in_plan = None  # a bundle is sold on its own
 ANNOUNCER = "marketing"
 # The follow-up slot before the copy job drafts, and what it writes (apps.core.focus.followup).
 DRAFT_SLOT = "copy"

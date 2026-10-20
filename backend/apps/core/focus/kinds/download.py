@@ -273,24 +273,7 @@ def write_copy(pk, fields: dict) -> None:
 # ── Price, checks and going live ────────────────────────────────────────────
 
 
-def set_price(pk, value: str) -> None:
-    rows = _rows(pk)
-    if value == "free":
-        rows.update(pricing_type="free", price=0)
-    else:
-        rows.update(pricing_type="paid", price=Decimal(value))
-
-
-def put_in_plan(pk, plan) -> None:
-    from django.contrib.contenttypes.models import ContentType
-
-    from apps.billing.models import SubscriptionPlanAccess
-    from apps.downloads.models import DownloadFile
-
-    _rows(pk).update(pricing_type="subscription")
-    SubscriptionPlanAccess.objects.get_or_create(
-        plan=plan, content_type=ContentType.objects.get_for_model(DownloadFile), object_id=pk
-    )
+set_price = None  # the shared tiles: the flow writes the ways in (apps.billing.ways)
 
 
 def price_tiles(creation, row) -> None:

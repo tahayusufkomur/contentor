@@ -33,7 +33,6 @@ ADAPTER = (
     "payload",
     "retitle",
     "set_price",
-    "put_in_plan",
     "not_ready",
     "cannot_sell",
     "go_live",
@@ -129,16 +128,15 @@ def test_every_kind_module_has_the_whole_adapter():
             "cover_target": module.COVER == "styles",
             "cover_facts": module.COVER,
             "announce_facts": module.ANNOUNCER,
-            "set_price": any(q.id == "access" for q in module.RECIPE.questions),
         }
         for name in ("cover_target", "cover_facts", "suggest_price", "price_tiles", "announce_facts"):
             assert callable(getattr(module, name)) or not has_step.get(name, True), f"{kind}.{name}"
-        for name in ("create_draft", "record", "payload", "retitle", "set_price", "not_ready", "cannot_sell"):
+        for name in ("create_draft", "record", "payload", "retitle", "not_ready", "cannot_sell"):
             assert callable(getattr(module, name)) or not has_step.get(name, True), f"{kind}.{name}"
         assert callable(module.go_live) and callable(module.skips) and callable(module.apply_found)
         assert callable(module.apply_change) and callable(module.apply_clarified)
         assert issubclass(module.FOUND, analysis.Found) and module.UNCLEAR_FIELDS
-        assert module.put_in_plan is None or callable(module.put_in_plan)
+        assert module.set_price is None or callable(module.set_price)  # its own tiles only
         copy = [name for name in COPY if hasattr(module, name)]
         assert copy in ([], list(COPY)), f"{kind}: {copy}"
         assert copywriter.drafts(kind) is bool(copy)
@@ -154,10 +152,10 @@ def test_every_kind_module_has_the_whole_adapter():
     assert [q.id for q in post.RECIPE.questions] == ["topic", "length", "review", "cover", "finish", "announce"]
     assert post.FINISH[0][0] == "publish" and post.FINISH[1][0] == "draft"
     assert "post" not in flow.OWNER_ONLY
-    # A membership and a bundle (R1): the copy job writes their name, and they have no cover nor a plan to be in.
+    # A membership and a bundle (R1): the copy job writes their name, and they have no cover.
     for kind in ("membership", "bundle"):
         assert copywriter.drafts(kind) and kinds.get(kind).COPY_FIELDS[0] == "name"
-        assert kinds.get(kind).COVER is None and kinds.get(kind).put_in_plan is None
+        assert kinds.get(kind).COVER is None
 
 
 def test_a_kind_reads_only_its_own_fields(monkeypatch):
@@ -363,7 +361,7 @@ def test_a_recipe_without_a_price_step_reaches_finish(owner, monkeypatch, settin
 
 
 def test_without_a_suggestion_or_memberships_the_price_step_offers_free(owner, monkeypatch, settings):
-    _on_a_course(monkeypatch, settings, put_in_plan=None)
+    _on_a_course(monkeypatch, settings)
     creation = _at(owner, "access")
     asked = flow.state(creation)["question"]
     assert asked["options"] == [{"value": "free", "label": "Free", "hint": ""}]

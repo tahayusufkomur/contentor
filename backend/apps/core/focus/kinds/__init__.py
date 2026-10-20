@@ -16,9 +16,9 @@ The adapter (the course's in kinds/course.py):
 - payload(record): the record as the studio reads it; its "kind" (else the kind's) and "id" key the page's live record.
 - owned_by(record, user): optional, whether she made it (the plain form's timing stamp); else its instructor.
 - retitle(record_id, provisional, title): the new title, only while it has the provisional one; True if set.
-- set_price(record_id, value): her price ("free" or an amount, or one of its own price tiles' values); None
-  for a kind with no access step (no price: flow._set_price keeps none).
-- put_in_plan(record_id, plan): puts it in a membership; None when it cannot be in one.
+- set_price(record_id, value): only for a kind with its own price tiles (``price_tiles``): her price ("free"
+  or an amount, or one of its tiles' values) onto the record; None for a kind with no access step. The
+  shared tiles are ways in (apps.billing.ways), which the flow writes itself.
 - suggest_price(record): a pricing.Suggestion from her own numbers, or None.
 - amount_label(record, amount): optional, an amount in its own words ("$9 a month"): on the finish step's
   "Sell it for", and on her answered access line when she typed it or tapped "Sell it for" (paid:<amount>).

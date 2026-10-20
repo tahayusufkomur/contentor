@@ -197,12 +197,13 @@ def test_suggest_price_reads_her_published_paid_downloads(owner):
 
 
 def test_a_paid_price_and_a_membership_go_on_the_draft(owner):
-    creation = flow.start(owner, "download", value=TOPIC)
-    download.set_price(creation.record_id, "19.50")
-    assert (_row(creation).pricing_type, _row(creation).price) == ("paid", Decimal("19.50"))
     plan = SubscriptionPlan.objects.create(name="All access", price=Decimal("20"), is_active=True)
-    download.put_in_plan(creation.record_id, plan)
-    assert _row(creation).pricing_type == "subscription"
+    creation = flow.start(owner, "download", value=TOPIC)
+    creation = flow.answer(creation, "file", value="later")
+    creation.answers = {**creation.answers, "review": "ok", "cover": "later"}
+    creation.save()
+    creation = flow.answer(creation, "access", value=f"paid:19.50,plan:{plan.pk}")
+    assert (_row(creation).pricing_type, _row(creation).price) == ("paid", Decimal("19.50"))
     ct = ContentType.objects.get_for_model(DownloadFile)
     assert SubscriptionPlanAccess.objects.filter(plan=plan, content_type=ct, object_id=creation.record_id).exists()
 
@@ -232,4 +233,7 @@ def test_her_price_leaves_the_working_title_and_the_chat_once_her_words_are_read
     flow.apply(creation, download.FOUND(topic="Morning routines workbook", price="9"))
     creation.save()
     chat.refresh_from_db()
-    assert (_row(creation).title, chat.title) == ("Morning routines workbook", "New download: Morning routines workbook")
+    assert (_row(creation).title, chat.title) == (
+        "Morning routines workbook",
+        "New download: Morning routines workbook",
+    )

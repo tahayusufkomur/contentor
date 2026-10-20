@@ -544,7 +544,7 @@ FINISH = (("send", "Send"), ("draft", "Keep as a draft"))
 CLOSING = {"send": _sent_line, "draft": KEPT}
 
 # No price, no cover, no announcement (the flow skips each step a kind lacks).
-set_price = put_in_plan = cover_target = cover_facts = announce_facts = None
+set_price = cover_target = cover_facts = announce_facts = None
 
 
 def suggest_price(row) -> None:

@@ -9,6 +9,7 @@ from unittest import mock
 import pytest
 
 from apps.accounts.models import User
+from apps.billing import ways
 from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
 from apps.core import ai as core_ai
 from apps.core import tasks
@@ -17,7 +18,7 @@ from apps.core.focus import analysis, flow, jobs, pricing
 from apps.core.focus.kinds import course as course_kind
 from apps.courses.models import Course, Lesson, Module
 from apps.media.models import Design
-from apps.tenant_config.models import CopilotRun, FocusCreation
+from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
 SCHEMA = "shared_test"
 
@@ -408,7 +409,7 @@ def test_a_rich_first_answer_skips_what_it_settled(owner, outline_start, analyse
     assert outline_start.called  # nothing left to ask before the outline
     assert not creation.pending
     labels = [line["label"] for line in flow.state(creation)["answered"]]
-    assert "Complete beginners" in labels and "$49" in labels
+    assert "Complete beginners" in labels and "$49 once, theirs to keep." in labels
 
 
 def test_she_waits_on_the_reading_and_cannot_tap_meanwhile(owner, outline_start, analysed):
@@ -734,15 +735,95 @@ def _at_access(owner, creation=None):
     return creation
 
 
-def test_the_access_question_offers_free_a_price_with_its_reason_and_her_memberships(owner, outline_start, plans):
-    question = flow.state(_at_access(owner))["question"]
+def _published(owner, title, chosen):
+    course = Course.objects.create(title=title, instructor=owner, is_published=True)
+    ways.set_ways(course, chosen)
+    return course
+
+
+def test_the_access_step_offers_every_way_and_pretics_her_usual_setup(owner, outline_start, plans):
+    creation = _at_access(owner)
+    question = flow.state(creation)["question"]
     assert (question["field"], question["kind"], question["specialist"]) == ("access", "price", "finance")
     assert question["options"] == [
         {"value": "free", "label": "Free", "hint": ""},
         {"value": "paid:19", "label": "One-time price: $19", "hint": "A common place to start; change it any time"},
         {"value": f"plan:{plans.pk}", "label": "In Gold", "hint": ""},
     ]
-    assert question["suggested"] == "paid:19"
+    assert (question["multi"], question["can_delegate"], question["suggested"]) == (True, False, "paid:19")
+    assert question["ticked"] == ["paid:19"]  # none of her own yet: the suggested price
+
+    # Most of her published courses are sold once and in Gold; drafts and a free one don't outvote them.
+    in_gold = [{"plan_id": plans.pk, "window": None}]
+    _published(owner, "Neck release", {"buy": {"price": "29"}, "plans": in_gold})
+    _published(owner, "Wrist care", {"buy": {"price": "49"}, "plans": in_gold})
+    _published(owner, "Free taster", {"free": {}})
+    for n in range(3):
+        Course.objects.create(title=f"Draft {n}", instructor=owner)
+    question = flow.state(creation)["question"]
+    assert question["ticked"] == ["paid:39", f"plan:{plans.pk}"]
+    assert question["why"] == flow.USUAL_WHY
+
+    # A subscription's contents are the owner's: a coach is offered no plan.
+    coach = User.objects.create_user(email="focus-coach@x.com", name="Coach", password="x", role="coach")  # noqa: S106
+    creation.actor = coach
+    creation.save()
+    assert [o["value"] for o in flow.state(creation)["question"]["options"]] == ["free", "paid:39"]
+
+
+def test_ticking_two_ways_sets_both(owner, outline_start, plans):
+    creation = _at_access(owner)
+    course = Course.objects.get(pk=creation.record_id)
+    ways.set_ways(course, {"buy": {"price": "10", "window": {"closes_after_days": 365}}})  # set on the page
+    for bad in ("", ",", f"paid:39,plan:{plans.pk},nonsense", f"plan:{plans.pk},plan:{plans.pk}"):
+        creation = flow.answer(creation, "access", value=bad)
+        assert "access" not in creation.answers
+    creation = flow.answer(creation, "access", value=f"paid:39,plan:{plans.pk}")
+    course.refresh_from_db()
+    assert ways.ways_of(course) == {
+        "free": None,
+        "buy": {"price": "39.00", "window": {"closes_after_days": 365}},  # her window stays
+        "plans": [{"plan_id": plans.pk, "window": None}],
+    }
+    assert creation.answers["access"] == f"paid:39.00,plan:{plans.pk}" and creation.answers["price"] == "39.00"
+    assert flow.current_field(creation) == "finish"
+    line = "$39 once with 1 year of access; in Gold."
+    assert {"field": "access", "label": line} in flow.state(creation)["answered"]
+    assert {"role": "coach", "text": line} in CopilotChat.objects.get(pk=creation.chat_id).entries
+
+
+def test_select_all_ticks_every_way(owner, outline_start, plans):
+    creation = flow.answer(_at_access(owner), "access", value="all")
+    chosen = ways.ways_of(Course.objects.get(pk=creation.record_id))
+    assert (bool(chosen["free"]), chosen["buy"]["price"], chosen["plans"]) == (
+        True,
+        "19.00",
+        [{"plan_id": plans.pk, "window": None}],
+    )
+
+
+def test_her_words_set_a_price_and_a_members_window_in_one_go(owner, outline_start, analysed, plans):
+    said = analysis.FoundWays(
+        buy="49", plans=[analysis.FoundPlan(plan="gold", window=analysis.FoundWindow(opens_after_days=30))]
+    )
+    analysed(course_kind.CourseFound(topic="desk yoga", level="beginners", modules=4, lessons=3, ways=said))
+    creation = _run_pending(flow.start(owner, "course", text="Desk yoga, $49 once, free for Gold after a month"))
+    assert ways.ways_of(Course.objects.get(pk=creation.record_id)) == {
+        "free": None,
+        "buy": {"price": "49.00", "window": None},
+        "plans": [{"plan_id": plans.pk, "window": {"opens_after_days": 30}}],
+    }
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
+        creation = _at_access(owner, creation)
+    assert flow.current_field(creation) == "finish"  # the access step is answered
+
+
+def test_a_members_only_course_cannot_go_live_before_she_can_sell(owner, outline_start, plans):
+    creation = flow.answer(_at_access(owner), "access", value=f"plan:{plans.pk}")
+    _filled(creation)
+    assert [o["value"] for o in flow.state(creation)["question"]["options"]] == ["start_selling", "draft"]
+    creation = flow.finish(creation, publish=True)
+    assert Course.objects.get(pk=creation.record_id).is_published is False
 
 
 def test_tapping_a_price_sets_it_and_moves_on(owner, outline_start):
@@ -765,7 +846,7 @@ def test_tapping_a_price_sets_it_and_moves_on(owner, outline_start):
     assert (course.pricing_type, course.price) == ("paid", Decimal("39.00"))
     assert creation.answers["access"] == "paid:39.00" and creation.answers["price"] == "39.00"
     assert flow.current_field(creation) == "finish"
-    assert {"field": "access", "label": "$39"} in flow.state(creation)["answered"]
+    assert {"field": "access", "label": "$39 once, theirs to keep."} in flow.state(creation)["answered"]
 
 
 def test_tapping_free_keeps_it_free(owner, outline_start):
@@ -780,7 +861,7 @@ def test_tapping_a_membership_puts_the_course_in_it(owner, outline_start, plans)
     assert SubscriptionPlanAccess.objects.filter(plan=plans, object_id=creation.record_id).count() == 1
     assert creation.answers["access"] == f"plan:{plans.pk}" and creation.answers["price"] == "membership"
     answered = flow.state(creation)["answered"]
-    assert {"field": "access", "label": "In Gold"} in answered
+    assert {"field": "access", "label": "In Gold."} in answered
     assert not any(line["field"] == "price" for line in answered)  # one line for it, not two
 
 
@@ -810,7 +891,8 @@ def test_a_membership_in_her_first_answer_keeps_the_question_with_her_membership
         creation = _at_access(owner, creation)
     question = flow.state(creation)["question"]
     assert question["field"] == "access"
-    assert [o["value"] for o in question["options"]] == [f"plan:{plans.pk}"]
+    assert [o["value"] for o in question["options"]] == ["free", "paid:19", f"plan:{plans.pk}"]
+    assert question["ticked"] == [f"plan:{plans.pk}"]
 
 
 def test_her_words_at_the_access_step_are_read_for_a_price(owner, outline_start, analysed):

@@ -6,6 +6,7 @@ The one place that reads and writes them. The item keeps ``pricing_type`` and
 """
 
 import re
+from collections import Counter
 from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal, InvalidOperation
 from zoneinfo import ZoneInfo
@@ -95,6 +96,29 @@ def ways_of(item) -> dict:
         else None,
         "plans": [{"plan_id": link.plan_id, "window": _window_of(link)} for link in links],
     }
+
+
+def common_setup(kind: str) -> dict | None:
+    """The ways in most of her items of ``kind`` use, drafts aside and each title once (a weekly series is
+    one class): {"free": bool, "buy": bool, "plans": [plan ids]}, a tie going to the newest. None without any."""
+    model = apps.get_model(KINDS[kind])
+    fields = {f.name for f in model._meta.get_fields()}
+    items = model.objects.order_by("-pk")
+    if "is_published" in fields:
+        items = items.filter(is_published=True)
+    elif "status" in fields:
+        items = items.exclude(status="draft")
+    seen, counts = set(), Counter()
+    for item in items[:50]:  # ponytail: the newest 50, a few queries each; a cached tally if she has hundreds
+        if (title := title_of(item)) in seen:
+            continue
+        seen.add(title)
+        w = ways_of(item)
+        counts[(bool(w["free"]), bool(w["buy"]), tuple(sorted(p["plan_id"] for p in w["plans"])))] += 1
+    if not counts:
+        return None
+    (free, buy, plans), _ = counts.most_common(1)[0]
+    return {"free": free, "buy": buy, "plans": list(plans)}
 
 
 # ---- checking ----------------------------------------------------------------
