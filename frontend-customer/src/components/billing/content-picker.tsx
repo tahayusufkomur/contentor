@@ -58,6 +58,21 @@ const TYPE_BADGE_VARIANT: Record<
   onsite_event: "outline",
 };
 
+const SESSIONS = ["live_class", "live_stream", "onsite_event"];
+
+/** The selected items as chips: a class series (sessions sharing a type and a
+ *  title) is one chip, as the bundle and plan counts take it. */
+export function chipsOf(selected: SelectedItem[]): SelectedItem[][] {
+  const chips = new Map<string, SelectedItem[]>();
+  for (const item of selected) {
+    const key = SESSIONS.includes(item.content_type)
+      ? `${item.content_type}:${item.title}`
+      : `${item.content_type}-${item.object_id}`;
+    chips.set(key, [...(chips.get(key) ?? []), item]);
+  }
+  return [...chips.values()];
+}
+
 interface ContentPickerProps {
   selected: SelectedItem[];
   onChange: (items: SelectedItem[]) => void;
@@ -134,16 +149,9 @@ export function ContentPicker({
     }
   }
 
-  function removeSelected(item: SelectedItem) {
-    onChange(
-      selected.filter(
-        (s) =>
-          !(
-            s.content_type === item.content_type &&
-            s.object_id === item.object_id
-          ),
-      ),
-    );
+  // Removing a series' chip removes every session in it.
+  function removeSelected(chip: SelectedItem[]) {
+    onChange(selected.filter((s) => !chip.includes(s)));
   }
 
   return (
@@ -151,29 +159,34 @@ export function ContentPicker({
       {/* Selected items */}
       {selected.length > 0 && (
         <div className="flex flex-wrap gap-2 rounded-md border p-3 bg-muted/30">
-          {selected.map((item) => (
-            <span
-              key={`${item.content_type}-${item.object_id}`}
-              className="inline-flex items-center gap-1 rounded-2xl border bg-background px-2.5 py-0.5 text-xs font-medium"
-            >
-              <span className="flex flex-col leading-tight">
-                {item.title}
-                {item.window_text && (
-                  <span className="text-[11px] font-normal text-muted-foreground">
-                    {item.window_text}
-                  </span>
-                )}
-              </span>
-              <button
-                type="button"
-                onClick={() => removeSelected(item)}
-                className="ml-1 rounded-full hover:text-destructive focus:outline-none"
-                aria-label={`Remove ${item.title}`}
+          {chipsOf(selected).map((chip) => {
+            const [item] = chip;
+            return (
+              <span
+                key={`${item.content_type}-${item.object_id}`}
+                className="inline-flex items-center gap-1 rounded-2xl border bg-background px-2.5 py-0.5 text-xs font-medium"
               >
-                <X className="h-3 w-3" />
-              </button>
-            </span>
-          ))}
+                <span className="flex flex-col leading-tight">
+                  {chip.length > 1
+                    ? `${item.title} · ${chip.length} sessions`
+                    : item.title}
+                  {item.window_text && (
+                    <span className="text-[11px] font-normal text-muted-foreground">
+                      {item.window_text}
+                    </span>
+                  )}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeSelected(chip)}
+                  className="ml-1 rounded-full hover:text-destructive focus:outline-none"
+                  aria-label={`Remove ${item.title}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            );
+          })}
         </div>
       )}
 
