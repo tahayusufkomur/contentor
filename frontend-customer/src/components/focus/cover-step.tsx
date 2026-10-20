@@ -14,17 +14,20 @@ import { PhotoRow } from "./photo-row";
 import { WorkingTag } from "./working-tag";
 
 /** The cover slot at the cover step (spec §5.2): the Designer's four drafts,
- *  big, to pick from, and under them the photo they share. The guide holds
- *  the question and what to do with the pick. */
+ *  big, to pick from, and under them the photo they share. A photo-only cover
+ *  (a post's, G7) has the photo row alone, and a tap there is the cover. The
+ *  guide holds the question and what to do with the pick. */
 export function CoverStep({
   creationId,
   cover,
   item,
+  photoOnly = false,
 }: {
   creationId: number;
   cover: FocusCover | null;
-  /** What the covers are drawn for (lib/covers/items). */
-  item: CoverItem;
+  /** What the covers are drawn for (lib/covers/items); styles only. */
+  item?: CoverItem;
+  photoOnly?: boolean;
 }) {
   const t = useTranslations("admin");
   const pick = useCoverPick();
@@ -39,7 +42,7 @@ export function CoverStep({
           <WorkingTag specialist="designer" label={t("focus.drafting")} />
         )}
       </div>
-      {(drafts.length > 0 || building) && (
+      {item && (drafts.length > 0 || building) && (
         <div className="grid grid-cols-2 gap-3">
           {drafts.length === 0
             ? Array.from({ length: 4 }, (_, i) => (
@@ -78,6 +81,7 @@ export function CoverStep({
         creationId={creationId}
         query={cover?.query ?? ""}
         selected={cover?.photo?.id ?? null}
+        action={photoOnly ? "use" : "photo"}
       />
     </div>
   );

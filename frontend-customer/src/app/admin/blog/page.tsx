@@ -13,7 +13,6 @@ import { NavLink } from "@/components/ui/nav-link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
-  createPost,
   deletePost,
   fetchAiStatus,
   listPosts,
@@ -45,14 +44,6 @@ export default function BlogListPage() {
     load();
   }, []);
 
-  const { run: handleNewPost, loading: creating } = useAsyncAction(
-    async () => {
-      const post = await createPost({ title: t("blog.untitled") });
-      navigate(`/admin/blog/${post.id}`);
-    },
-    { errorToast: t("blog.errGeneric") },
-  );
-
   const showUpsell = status?.reason === "upgrade_required";
 
   return (
@@ -79,8 +70,9 @@ export default function BlogListPage() {
             <Sparkles className="h-4 w-4" />
             {t("blog.writeWithAi")}
           </Button>
-          <Button onClick={() => void handleNewPost()} loading={creating}>
-            {t("blog.newPost")}
+          {/* Focus mode when it is on for posts, else today's untitled draft (blog/new). */}
+          <Button asChild>
+            <NavLink href="/admin/blog/new">{t("blog.newPost")}</NavLink>
           </Button>
         </div>
       </div>

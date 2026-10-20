@@ -44,6 +44,12 @@ describe("focus kinds", () => {
       plainHref: "/admin/store/bundles/new?form=1",
       listHref: "/admin/store?tab=bundles",
     });
+    expect(KIND_ROUTES.post).toEqual({
+      newHref: "/admin/blog/new",
+      plainHref: "/admin/blog/new?form=1",
+      listHref: "/admin/blog",
+      card: "create_blog_post",
+    });
     expect(focusTimeKey("course")).toBe("focus:course");
   });
 
@@ -55,6 +61,7 @@ describe("focus kinds", () => {
     expect(kindForCard("create_course")).toBe("course");
     expect(kindForCard("create_event")).toBe("event");
     expect(kindForCard("draft_announcement")).toBe("message");
+    expect(kindForCard("create_blog_post")).toBe("post");
     expect(kindForCard("edit_course")).toBeNull();
   });
 });

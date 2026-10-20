@@ -60,6 +60,12 @@ export const KIND_ROUTES: Partial<Record<FocusKind, KindRoutes>> = {
     plainHref: "/admin/store/bundles/new?form=1",
     listHref: "/admin/store?tab=bundles",
   },
+  post: {
+    newHref: "/admin/blog/new",
+    plainHref: "/admin/blog/new?form=1",
+    listHref: "/admin/blog",
+    card: "create_blog_post",
+  },
 };
 
 /** Her active time in focus mode on this kind (lib/focus/active-time). */

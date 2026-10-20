@@ -79,6 +79,16 @@ describe("liveFrame", () => {
     });
   });
 
+  it("types a list in comma-separated (a post's tags)", () => {
+    const tags = [
+      ev(1, "field", { record: R, name: "tags", value: ["a", "b"] }),
+    ];
+    expect(liveFrame(tags, R, Infinity).fields.tags).toEqual({
+      value: "a, b",
+      typing: false,
+    });
+  });
+
   it("types the title in at the given speed", () => {
     // 60 characters a second: 4 characters after 70 ms... of "Desk yoga".
     const frame = liveFrame(outline(), R, 70, 60);

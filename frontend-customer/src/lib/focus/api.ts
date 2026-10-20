@@ -183,7 +183,7 @@ export const fetchCoverPhotos = (id: number, q: string, page: number) =>
 export const coverAction = (
   id: number,
   body:
-    | { action: "photo"; asset_id: string }
+    | { action: "photo" | "use"; asset_id: string }
     | { action: "keep" | "edit"; index: number }
     | { action: "more" | "later" },
 ) => post<FocusState & { design_id?: string | null }>(`${id}/cover/`, body);

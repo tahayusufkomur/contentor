@@ -4,6 +4,7 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
+import { useEffect } from "react";
 import StarterKit from "@tiptap/starter-kit";
 import { Bold, Heading2, Heading3, Italic, Link2, List } from "lucide-react";
 
@@ -50,9 +51,15 @@ function setLink(editor: Editor) {
 interface PostEditorProps {
   value: string;
   onChange: (html: string) => void;
+  /** Being written for her (focus mode's post job): shown as it types in, not editable. */
+  readOnly?: boolean;
 }
 
-export function PostEditor({ value, onChange }: PostEditorProps) {
+export function PostEditor({
+  value,
+  onChange,
+  readOnly = false,
+}: PostEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] } }),
@@ -70,6 +77,15 @@ export function PostEditor({ value, onChange }: PostEditorProps) {
     },
     immediatelyRender: false,
   });
+  // A value from outside (the post job typing in, a reload, Regenerate) is
+  // shown; her own keystrokes come back as the editor's HTML and are left alone.
+  useEffect(() => {
+    if (editor && value !== editor.getHTML())
+      editor.commands.setContent(value, false);
+  }, [editor, value]);
+  useEffect(() => {
+    editor?.setEditable(!readOnly, false); // no update: it is not her edit
+  }, [editor, readOnly]);
 
   if (!editor) return null;
 

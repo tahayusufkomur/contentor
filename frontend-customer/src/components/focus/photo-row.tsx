@@ -43,18 +43,21 @@ const hers = (photo: {
     : [];
 
 /** The photo the cover's photo styles share: her photos first, then library
- *  matches for her words, and Upload. A tap puts it into every photo style.
- *  When her words find nothing, one photo is made for them (within her
- *  monthly allowance) while she keeps choosing. */
+ *  matches for her words, and Upload. A tap puts it into every photo style
+ *  (`use`: a photo-only cover's, it is the cover). When her words find
+ *  nothing, one photo is made for them (within her monthly allowance) while
+ *  she keeps choosing. */
 export function PhotoRow({
   creationId,
   query,
   selected,
+  action = "photo",
 }: {
   creationId: number;
   query: string;
   /** The shared photo's id, if one is set. */
   selected: string | null;
+  action?: "photo" | "use";
 }) {
   const t = useTranslations("admin");
   // Read from the generation's callbacks, so the effect never reruns for it.
@@ -131,7 +134,7 @@ export function PhotoRow({
       try {
         applyCreation(
           creationId,
-          await coverAction(creationId, { action: "photo", asset_id: assetId }),
+          await coverAction(creationId, { action, asset_id: assetId }),
         );
       } catch (error) {
         setTapped(null); // not chosen after all

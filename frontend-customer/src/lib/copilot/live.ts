@@ -209,7 +209,10 @@ export function liveFrame(
     if (data.record !== record) continue;
     if (event.type === "field") {
       const name = text(data.name);
-      const val = text(data.value);
+      // A list (a post's tags) types in as she writes it: comma-separated.
+      const val = Array.isArray(data.value)
+        ? data.value.map(text).join(", ")
+        : text(data.value);
       frame.written[name] = val;
       if (baseline?.fields && baseline.fields[name] === val) continue;
       const shown = clock.take(val);

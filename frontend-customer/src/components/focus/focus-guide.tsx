@@ -59,7 +59,9 @@ const POLL_MS = 1500;
 // The blog writer's refusals with a way past them: the blog editor's Upgrade link.
 const UPGRADE: readonly string[] = ["upgrade_required", "quota_exhausted"];
 // The kinds whose page edits are saved before her finish taps go out.
-const SAVE_FIRST: FocusKind[] = ["message", "membership", "bundle"];
+const SAVE_FIRST: FocusKind[] = ["message", "membership", "bundle", "post"];
+// The kinds whose cover is a photo only (backend COVER "photo"): no styles to keep, ask for or edit.
+const PHOTO_COVER: FocusKind[] = ["post"];
 
 // The /setup answer box reads the setup shell's tokens; here they are the
 // studio's own, so it follows the studio's light and dark.
@@ -124,11 +126,10 @@ export function FocusGuide() {
         announce,
         active_ms: takeActiveMs(timeKey),
       });
-      // A membership or bundle says what its tap did ("On sale. …", "Saved as a draft. …").
-      const own =
-        state.kind === "membership" || state.kind === "bundle"
-          ? next.closing
-          : undefined;
+      // A membership, bundle or post says what its tap did ("On sale. …", "Saved as a draft. …").
+      const own = ["membership", "bundle", "post"].includes(state.kind)
+        ? next.closing
+        : undefined;
       // Live, with "Tell my students": Marketing's draft is the last step.
       if (next.status === "active" && next.question?.kind === "announce") {
         apply(state.id, next);
@@ -257,7 +258,8 @@ export function FocusGuide() {
   // (its title and description), which leaves the page whole even when it fails.
   const copy = state.kind !== "course";
   // The blog writer's gate said no (a post's): the review says why and offers
-  // Write it myself; a redraft she asked for later is said above the question.
+  // Write it myself, and Try again (which asks the gate first); a redraft she
+  // asked for later is said above the question.
   const reason =
     state.copy?.status === "failed" ? state.copy.reason : undefined;
   const refused = question?.kind === "review" ? reason : undefined;
@@ -391,6 +393,7 @@ export function FocusGuide() {
           <CoverQuestion
             question={question}
             state={state}
+            photoOnly={PHOTO_COVER.includes(state.kind)}
             sending={sending}
             onSend={send}
           />
@@ -539,7 +542,7 @@ function OutlineReview({
   drafted: boolean;
   /** The copy job's title and description, not an outline. */
   copy: boolean;
-  /** Why the drafting was refused (a post's blog gate): never Try again. */
+  /** Why the drafting was refused (a post's blog gate): Try again asks the gate first. */
   refused?: NonNullable<FocusState["copy"]>["reason"];
   sending: boolean;
   stopping: boolean;
@@ -610,7 +613,7 @@ function OutlineReview({
             {t("focus.looksGood")}
           </Button>
         )}
-        {failed && !refused && (
+        {failed && (
           <Button
             variant={drafted ? "outline" : "default"}
             loading={sending && choice === "retry"}
@@ -658,15 +661,19 @@ type CoverTap = "keep" | "edit" | "more" | "later";
 
 /** The cover step's question: the four drafts are on the page (CoverStep),
  *  and here she keeps the one she picked there, asks for four more, edits it
- *  in the photo studio, leaves it for later, or says what photo she wants. */
+ *  in the photo studio, leaves it for later, or says what photo she wants.
+ *  A photo-only cover is her tap in the page's photo row: here only more
+ *  photos, later, or her words. */
 function CoverQuestion({
   question,
   state,
+  photoOnly,
   sending,
   onSend,
 }: {
   question: FocusQuestion;
   state: FocusState;
+  photoOnly: boolean;
   sending: boolean;
   onSend: (input: GuideInput) => void;
 }) {
@@ -719,15 +726,17 @@ function CoverQuestion({
         )}
       </div>
       <div className="flex flex-wrap gap-2">
-        {button("keep", "focus.useCover", "default", pick !== null)}
+        {!photoOnly &&
+          button("keep", "focus.useCover", "default", pick !== null)}
         {/* Also the way forward when no drafts came: it starts a round. */}
-        {button(
-          "more",
-          // No round yet (the copy failed, so none was drafted ahead): this starts one.
-          state.cover ? "focus.moreStyles" : "focus.draftCovers",
-          "outline",
-          state.cover?.status !== "building",
-        )}
+        {!photoOnly &&
+          button(
+            "more",
+            // No round yet (the copy failed, so none was drafted ahead): this starts one.
+            state.cover ? "focus.moreStyles" : "focus.draftCovers",
+            "outline",
+            state.cover?.status !== "building",
+          )}
         <Button
           size="sm"
           variant="outline"
@@ -736,7 +745,8 @@ function CoverQuestion({
         >
           {t("focus.morePhotos")}
         </Button>
-        {button("edit", "focus.editCover", "outline", pick !== null)}
+        {!photoOnly &&
+          button("edit", "focus.editCover", "outline", pick !== null)}
         {button("later", "focus.later", "ghost")}
       </div>
       <AnswerBox
