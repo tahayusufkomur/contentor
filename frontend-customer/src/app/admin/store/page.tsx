@@ -26,6 +26,8 @@ interface Product {
   type: string;
   price: string;
   currency: string;
+  /** False for a draft (a download or bundle she has not published). */
+  is_active: boolean;
   sales_count?: number;
 }
 
@@ -171,7 +173,15 @@ function ProductsTab() {
                   <td className="px-4 py-3">
                     <ProductTypeBadge type={p.type} />
                   </td>
-                  <td className="px-4 py-3 font-medium">{p.title}</td>
+                  <td className="px-4 py-3 font-medium">
+                    {p.title}
+                    {/* Hidden from students until she publishes it. */}
+                    {!p.is_active && (
+                      <Badge variant="outline" className="ml-2">
+                        Draft
+                      </Badge>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     {p.price} {p.currency}
                   </td>

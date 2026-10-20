@@ -150,7 +150,7 @@ def _collect_store_items(drafts: bool = True):
                 "price": bundle.price,
                 "currency": bundle.currency,
                 "thumbnail_url": _thumbnail_url(bundle),
-                "is_active": bundle.is_active,
+                "is_active": bundle.is_published,  # a draft is not on sale (only active bundles are listed)
                 "item_count": len(listed_items(bundle, drafts=drafts)),
                 "original_price": _bundle_original_price(bundle, drafts),
                 "_obj": bundle,

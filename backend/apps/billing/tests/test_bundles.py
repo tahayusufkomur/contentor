@@ -229,8 +229,8 @@ class TestUnpublishedBundle:
         listed = {b["name"]: b["is_published"] for b in coach.get("/api/v1/billing/bundles/").json()}
         assert listed == {"Test Bundle": True, "Draft Bundle": False}
         assert coach.get(f"/api/v1/billing/bundles/{draft.pk}/").status_code == 200
-        products = {i["title"] for i in coach.get("/api/v1/billing/products/").json()}
-        assert products == {"Test Course", "Test Bundle", "Draft Bundle"}
+        products = {i["title"]: i["is_active"] for i in coach.get("/api/v1/billing/products/").json()}
+        assert products == {"Test Course": True, "Test Bundle": True, "Draft Bundle": False}  # her list says draft
         # Publishing puts it on sale (once she can sell).
         with mock.patch("apps.core.monetization.can_monetize", return_value=True):
             resp = coach.patch(f"/api/v1/billing/bundles/{draft.pk}/", {"is_published": True}, format="json")
