@@ -1,7 +1,13 @@
 {
   "backend": {
-    "billing": ["20-stripe-platform", "21-stripe-marketplace", "40-access"],
-    "blog": "none",
+    "billing": [
+      "20-stripe-platform",
+      "21-stripe-marketplace",
+      "37-focus-membership",
+      "38-focus-bundle",
+      "40-access"
+    ],
+    "blog": ["39-focus-post"],
     "community": ["15-community"],
     "core/access.py": ["40-access"],
     "core/focus": [
@@ -22,7 +28,7 @@
     "core/focus/post.py": ["39-focus-post"],
     "courses": ["02-courses"],
     "domains": ["01-signup-onboarding"],
-    "downloads": ["12-downloads"],
+    "downloads": ["12-downloads", "36-focus-download"],
     "email_campaigns": "none",
     "filters": ["02-courses"],
     "live": ["03-calendar", "04-live-class", "13-events-page"],
@@ -151,7 +157,7 @@
       "06-announcements",
       "35-focus-message"
     ],
-    "src/components/admin/access": ["40-access"],
+    "src/components/admin/access": ["38-focus-bundle", "40-access"],
     "src/components/admin/students": ["40-access"],
     "src/components/public": ["40-access"],
     "src/lib/access": ["40-access"],
