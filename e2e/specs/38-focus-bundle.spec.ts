@@ -291,6 +291,11 @@ test("a bundle of two courses at the suggested price", async ({ browser }) => {
   await expect(main(page).getByRole("button", { name: "Remove Morning workbook" })).toHaveCount(0);
   await expect(main(page).locator("#name")).toHaveValue(COPY_NAME);
   await expect(main(page).locator("#description")).toHaveValue(COPY_DESCRIPTION);
+  // The guide asks the price: while it holds the page, 0 is not shown as an error.
+  const price = main(page).locator("#access-bundle-price");
+  await expect(price).toHaveValue("0.00");
+  await expect(main(page).getByText("Add a price above 0.")).toHaveCount(0);
+  await expect(price).not.toHaveAttribute("aria-invalid", "true");
   await guide(page).getByRole("button", { name: "Looks good, continue" }).click();
 
   // The price: a quarter off what they cost bought apart, the sum, or her own amount.
@@ -318,15 +323,18 @@ test("a kept draft is published from its page once selling is open", async ({ br
   const line = "Start selling first: your plan, then payouts.";
   const bundle = await stubBundle(page, log, line);
   bundle.link(["course:11"]);
-  bundle.set({ name: COPY_NAME, price: "75.00" });
+  bundle.set({ name: COPY_NAME });
   await stubFocus(page, () => state({}));
 
-  // Not ready: what it still needs, where Publish would be.
+  // Not ready: what it still needs, where Publish would be. Out of focus mode, price 0 is an error again.
   await page.goto(`${TENANT}${PATH}`);
   await expect(main(page).getByText("Add at least two items.")).toBeVisible();
   const publish = main(page).getByRole("button", { name: "Publish", exact: true });
   await expect(publish).toHaveCount(0);
+  await expect(main(page).getByText("Add a price above 0.")).toBeVisible();
+  await expect(main(page).locator("#access-bundle-price")).toHaveAttribute("aria-invalid", "true");
   bundle.link(["course:11", "course:12"]);
+  bundle.set({ price: "75.00" });
   await page.reload();
   await expect(main(page).getByText("Draft", { exact: true })).toBeVisible();
   await publish.click();

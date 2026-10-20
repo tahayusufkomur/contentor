@@ -550,6 +550,8 @@ export default function EditBundlePage() {
             onChange={access.setWays}
             payload={access.payload}
             onProblems={setAccessProblems}
+            // The guide asks the price: 0 is not an error until it has.
+            quietZeroPrice={focusing}
           />
           {access.error && (
             <p role="alert" className="text-xs text-destructive">

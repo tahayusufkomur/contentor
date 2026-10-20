@@ -117,6 +117,8 @@ type Problems = AccessProblem[];
  * with `useAccess` and saves it. `payload` null is still loading.
  * `onProblems` hears what stops a save (empty while there is none), including
  * the subscriptions box ticked with no plan chosen, which only this section knows.
+ * `quietZeroPrice`: a price of 0 (or none yet) is not shown as an error, while
+ * another question asks it (focus mode's guide); `onProblems` still hears it.
  */
 export function AccessSection({
   payload,
@@ -128,6 +130,7 @@ export function AccessSection({
   onChange: (next: Ways) => void;
   payload: AccessPayload | null;
   onProblems?: (problems: Problems) => void;
+  quietZeroPrice?: boolean;
 }) {
   if (!payload || !value) {
     return (
@@ -150,12 +153,14 @@ function Loaded({
   onChange,
   payload,
   onProblems,
+  quietZeroPrice = false,
 }: {
   kind: string;
   value: Ways;
   onChange: (next: Ways) => void;
   payload: AccessPayload;
   onProblems?: (problems: Problems) => void;
+  quietZeroPrice?: boolean;
 }) {
   // The In subscriptions box can be ticked before any plan is: a draft.
   const [plansDraft, setPlansDraft] = useState(false);
@@ -189,7 +194,11 @@ function Loaded({
   const count = (free ? 1 : 0) + (buy ? 1 : 0) + (plansTicked ? 1 : 0);
   const covering = !!free && !hasWindow(free.window) && !onlyFree;
   const found = problems(ways, payload.allowed, plansTicked);
-  const buyError = found.find((p) => p.way === "buy");
+  const buyError = found.find(
+    (p) =>
+      p.way === "buy" &&
+      !(quietZeroPrice && Number((buy?.price ?? "").replace(",", ".")) === 0),
+  );
   const plansError = found.find((p) => p.way === "plans");
   const allError = !refused && found.find((p) => p.way === "all");
 
