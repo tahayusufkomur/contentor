@@ -163,7 +163,7 @@ def skips(creation) -> set[str]:
 
 
 def _target(value):
-    """The published course or active bundle behind "course:<id>" / "bundle:<id>", or None."""
+    """The published course or the active bundle on sale behind "course:<id>" / "bundle:<id>", or None."""
     from apps.billing.models import Bundle
     from apps.courses.models import Course
 
@@ -173,7 +173,7 @@ def _target(value):
     if kind == "course":
         return Course.objects.filter(pk=pk, is_published=True).first()
     if kind == "bundle":
-        return Bundle.objects.filter(pk=pk, is_active=True).first()
+        return Bundle.objects.filter(pk=pk, is_active=True, is_published=True).first()
     return None
 
 
@@ -188,7 +188,7 @@ def _audience(value) -> str | None:
         return words.lower()
     if course := Course.objects.filter(is_published=True, title__iexact=words).first():
         return f"course:{course.pk}"
-    if bundle := Bundle.objects.filter(is_active=True, name__iexact=words).first():
+    if bundle := Bundle.objects.filter(is_active=True, is_published=True, name__iexact=words).first():
         return f"bundle:{bundle.pk}"
     return None
 
@@ -216,7 +216,7 @@ def _students(n: int) -> str:
 
 
 def _audience_tiles() -> list[dict]:
-    """All her students, then each published course and active bundle, with how many it reaches."""
+    """All her students, then each published course and active bundle on sale, with how many it reaches."""
     from apps.billing.models import Bundle
     from apps.courses.models import Course
 
@@ -225,7 +225,7 @@ def _audience_tiles() -> list[dict]:
     tiles = [{"value": ALL, "label": f"All my students ({_students(_count({}))})", "hint": ""}]
     for kind, rows in (
         ("course", Course.objects.filter(is_published=True).order_by("title")),
-        ("bundle", Bundle.objects.filter(is_active=True).order_by("name")),
+        ("bundle", Bundle.objects.filter(is_active=True, is_published=True).order_by("name")),
     ):
         for row in rows:
             value = f"{kind}:{row.pk}"
@@ -307,6 +307,11 @@ def apply_found(creation, found) -> None:
     answers = creation.answers
     if found.audience.strip() and (audience := _audience(found.audience)):
         answers["audience"] = audience
+    # A clarify question about who offers only those she can send to; with none, the tiles ask.
+    for unclear in found.unclear:
+        if unclear.field == "audience":
+            unclear.options = [o for o in unclear.options if _audience(o.value)]
+    found.unclear = [u for u in found.unclear if u.field != "audience" or u.options]
     if when := _when(found.when):
         answers["when"] = when
     brief = dict(creation.brief or {})

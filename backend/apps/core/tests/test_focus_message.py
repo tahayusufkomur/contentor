@@ -335,6 +335,30 @@ def test_the_audience_tiles_show_how_many_students(owner, students):
     assert (_row(decided).status, _row(decided).filters_json) == ("scheduled", {})
 
 
+def test_who_it_goes_to_is_only_what_students_can_see(owner, students):
+    """A course not published and a bundle still a draft reach no one: never a tile, a name in her
+    words, or a clarify question's option."""
+    seen = _course(owner)
+    hidden = _course(owner, "Desk Yoga Drafts")
+    Course.objects.filter(pk=hidden.pk).update(is_published=False)
+    Bundle.objects.create(name="Everything", price=Decimal("99"), is_published=False)
+    creation = flow.start(owner, "message", value=TOPIC)
+    assert [o["value"] for o in flow.state(creation)["question"]["options"]] == ["all", f"course:{seen.pk}"]
+    creation = flow.answer(creation, "audience", value="Everything")  # the draft bundle's name: asked again
+    assert flow.current_field(creation) == "audience"
+    options = [{"label": t, "value": t} for t in ("Desk Yoga", "Desk Yoga Drafts", "Everything")]
+    found = message.MessageFound(
+        topic="hi", unclear=[{"field": "audience", "question": "Which yoga students?", "options": options}]
+    )
+    asked = flow.state(_typed(owner, "Tell my yoga students hi", found))["question"]
+    assert asked["field"] == "clarify" and [o["value"] for o in asked["options"]] == ["Desk Yoga"]
+    # None she can send to: no clarify question, the audience tiles instead.
+    found = message.MessageFound(
+        topic="hi", unclear=[{"field": "audience", "question": "Which?", "options": options[1:]}]
+    )
+    assert flow.state(_typed(owner, "Tell them hi", found))["question"]["field"] == "audience"
+
+
 def test_students_of_one_course_get_it(owner, students, fanout):
     course = _course(owner)
     creation = flow.finish(_at_finish(owner, f"course:{course.pk}"), publish=True, announce=False)
