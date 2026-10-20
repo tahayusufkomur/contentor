@@ -102,6 +102,15 @@ DRAFT_JSON_WITH_PHOTOS = json.dumps(
 )
 
 
+def test_the_writer_keeps_its_tags_in_the_posts_own_language():
+    """English posts came back with Turkish (and, asked only for "the same language", Spanish) tags from
+    the hub's model; tags made of the post's own words stayed English in a probe (2026-10-20). Every field
+    follows the brief, and no language is named as an example."""
+    assert "Turkish" not in ai.BLOG_STATIC_PROMPT
+    assert "every field (title, sections, FAQ, excerpt, meta description and tags)" in ai.BLOG_STATIC_PROMPT
+    assert "tags made of words the post itself uses" in ai.BLOG_STATIC_PROMPT
+
+
 def test_available_photos_block_empty_for_no_photos():
     assert ai.available_photos_block([]) == ""
 
