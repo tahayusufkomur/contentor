@@ -43,6 +43,7 @@ import {
   useFocusOverview,
 } from "@/lib/focus/store";
 import { useTenantCurrency } from "@/lib/setup-assistant";
+import { ApiError } from "@/types/api";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 
@@ -422,34 +423,54 @@ function PlanForm({ id }: { id: string }) {
   // Stays true through the redirect, so the button cannot be pressed twice.
   const [leaving, setLeaving] = useState(false);
 
+  // Why putting it on sale was refused (the server's line), shown by the switch.
+  const [refusal, setRefusal] = useState("");
   const { run: save, loading: saving } = useAsyncAction(
     async () => {
+      setRefusal("");
       const body = JSON.stringify({
         ...form,
         billing_interval_months:
           cycle === "custom" ? Number(months) : Number(cycle),
       });
+      const putAccess = (planId: number) =>
+        clientFetch(`/api/v1/billing/plans/${planId}/access/`, {
+          method: "PUT",
+          body: JSON.stringify({
+            items: selectedItems.map((i) => ({
+              content_type: i.content_type,
+              object_id: i.object_id,
+            })),
+          }),
+        });
+      // A saved plan's content goes first: putting it on sale counts what members get.
+      if (savedId.current !== null) await putAccess(savedId.current);
       const plan = await clientFetch<{ id: number }>(
         savedId.current === null
           ? "/api/v1/billing/plans/"
           : `/api/v1/billing/plans/${savedId.current}/`,
         { method: savedId.current === null ? "POST" : "PATCH", body },
       );
-      savedId.current = plan.id;
-      await clientFetch(`/api/v1/billing/plans/${plan.id}/access/`, {
-        method: "PUT",
-        body: JSON.stringify({
-          items: selectedItems.map((i) => ({
-            content_type: i.content_type,
-            object_id: i.object_id,
-          })),
-        }),
-      });
+      if (savedId.current === null) {
+        savedId.current = plan.id;
+        await putAccess(plan.id);
+      }
       toast.success(t(isNew ? "created" : "saved"));
       setLeaving(true);
       navigate(BACK);
     },
-    { errorToast: t("saveError") },
+    {
+      onError: (err) => {
+        const why =
+          err instanceof ApiError
+            ? (err.data as { is_active?: unknown }).is_active
+            : null;
+        const line =
+          Array.isArray(why) && typeof why[0] === "string" ? why[0] : "";
+        setRefusal(line);
+        toast.error(line || t("saveError"));
+      },
+    },
   );
 
   return (
@@ -582,6 +603,9 @@ function PlanForm({ id }: { id: string }) {
                     <p className="text-xs text-muted-foreground">
                       {t("onSaleHint")}
                     </p>
+                    {form.is_active && refusal && (
+                      <p className="mt-1 text-sm text-foreground">{refusal}</p>
+                    )}
                   </div>
                   <Switch
                     id="plan-active"

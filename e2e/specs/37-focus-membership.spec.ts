@@ -428,3 +428,44 @@ test("a price she types on the page is saved before her finish tap, and stands",
   await expect(main(page).getByRole("switch", { name: "On sale" })).toBeChecked();
   await page.close();
 });
+
+test("on sale from a kept plan's page: what members get is saved first, and a refusal is said by the switch", async ({
+  browser,
+}) => {
+  const page = await (await coachContext(browser)).newPage();
+  const log: string[] = [];
+  const plan = await stubPlan(page, log);
+  plan.set({ price: "9.00" });
+  await stubFocus(page, () => state({}));
+  // The server's check (billing PlanWriteSerializer): off to on needs what
+  // members get (saved before the switch's PATCH), then selling open.
+  let linked: number[] = [];
+  await page.route(`**/api/v1/billing/plans/${DRAFT}/access/`, (route) => {
+    const req = route.request();
+    if (req.method() !== "PUT") return route.fallback();
+    linked = (req.postDataJSON().items as Body[]).map((i) => i.object_id);
+    log.push(`put:${linked.join(",")}`);
+    return route.fulfill({ json: { items: [], available: [] } });
+  });
+  await page.route(`**/api/v1/billing/plans/${DRAFT}/`, (route) => {
+    const req = route.request();
+    if (req.method() !== "PATCH") return route.fallback();
+    log.push(`on:${req.postDataJSON().is_active}`);
+    const why = linked.length ? "Start selling first: your plan, then payouts." : "Add what members get first.";
+    return route.fulfill({ status: 400, json: { is_active: [why] } });
+  });
+
+  await page.goto(`${TENANT}${PATH}`);
+  const onSale = main(page).getByRole("switch", { name: "On sale" });
+  await expect(onSale).not.toBeChecked();
+  await main(page).getByRole("checkbox", { name: /Yoga basics/ }).click();
+  await onSale.click();
+  await main(page).getByRole("button", { name: "Save membership" }).click();
+  // Her tick went first, so the check counted it: the line is selling's, by the switch.
+  await expect(main(page).getByText("Start selling first: your plan, then payouts.").first()).toBeVisible();
+  expect(log).toEqual(["put:11", "on:true"]);
+  // Still here, with what she set.
+  await expect(page).toHaveURL(new RegExp(`${PATH}$`));
+  await expect(onSale).toBeChecked();
+  await page.close();
+});

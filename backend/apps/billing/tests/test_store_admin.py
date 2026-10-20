@@ -10,12 +10,16 @@ of what students paid her.
 from __future__ import annotations
 
 from decimal import Decimal
+from unittest import mock
 
 import pytest
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
-from apps.billing.models import Payment, SubscriptionPlan
+from apps.billing.models import Payment, SubscriptionPlan, SubscriptionPlanAccess
+from apps.core import monetization
+from apps.core.focus.kinds import membership
+from apps.courses.models import Course
 
 SHARED_DOMAIN = "shared-test.localhost"
 
@@ -125,6 +129,53 @@ def test_owner_edits_a_plan_and_switches_it_off(owner):
     assert plan.price == Decimal("24.00")
     assert plan.is_active is False
     assert plan.currency == "USD"
+
+
+def _include(plan, owner):
+    course = Course.objects.create(title="Yoga basics", slug=f"yoga-{plan.pk}", instructor=owner, is_published=True)
+    SubscriptionPlanAccess.objects.create(plan=plan, content_object=course)
+
+
+def test_putting_a_plan_on_sale_from_its_page_asks_what_the_finish_asks(owner):
+    plan = _plan(is_active=False)
+    patch = _client(owner).patch
+
+    def on_sale(**body):
+        return patch(f"/api/v1/billing/plans/{plan.pk}/", {"is_active": True, **body}, format="json")
+
+    with mock.patch("apps.core.monetization.can_monetize", return_value=True):
+        # Nothing members get yet: refused, and nothing in the request is saved.
+        resp = on_sale(name="Renamed")
+        assert resp.status_code == 400 and resp.json() == {"is_active": ["Add what members get first."]}
+        plan.refresh_from_db()
+        assert (plan.is_active, plan.name) == (False, "Monthly")
+        _include(plan, owner)
+        # No price yet (focus mode's draft is made at 0).
+        SubscriptionPlan.objects.filter(pk=plan.pk).update(price=0)
+        assert on_sale().json() == {"is_active": ["Set its price first."]}
+        SubscriptionPlan.objects.filter(pk=plan.pk).update(price=Decimal("19.00"))
+    # Selling not open yet (her plan, then payouts).
+    with mock.patch("apps.core.monetization.can_monetize", return_value=False):
+        assert on_sale().json() == {"is_active": [monetization.NOT_SELLING]}
+    plan.refresh_from_db()
+    assert plan.is_active is False
+    with mock.patch("apps.core.monetization.can_monetize", return_value=True):
+        assert on_sale(name="Renamed").status_code == 200
+    plan.refresh_from_db()
+    assert (plan.is_active, plan.name) == (True, "Renamed")
+    # Focus mode's finish reads the same rule.
+    assert membership.not_ready(plan) == plan.not_ready() == ""
+
+
+def test_a_plan_on_sale_already_is_left_as_it_is(owner):
+    plan = _plan()  # on sale, nothing in it, and selling closed: only the switch turning on is checked
+    with mock.patch("apps.core.monetization.can_monetize", return_value=False):
+        resp = _client(owner).patch(
+            f"/api/v1/billing/plans/{plan.pk}/", {"is_active": True, "price": "24.00"}, format="json"
+        )
+    assert resp.status_code == 200, resp.content
+    plan.refresh_from_db()
+    assert (plan.is_active, plan.price) == (True, Decimal("24.00"))
 
 
 def test_switched_off_plans_show_to_the_owner_only_when_she_asks(owner, student):

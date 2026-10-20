@@ -37,7 +37,6 @@ CLOSING = {
 }
 NOT_READY_LINE = "Your membership is kept off sale."
 FINISH_SPECIALIST = "finance"  # what it still needs is Finance's (G16): its items and its price
-NO_ITEMS, NO_PRICE = "Add what members get first", "Set its price first"
 NOTHING = "Nothing ticked"  # a tap none of whose values is one of her tiles
 REFUSED_NAMES = 3  # the items a refusal line names; past that, "and N more"
 SAY = "Say an amount"  # the price step's typing box: her words set the price only when they give one
@@ -609,19 +608,13 @@ def _monthly(row) -> pricing.Suggestion:
 
 
 def not_ready(row) -> str:
-    from apps.billing.models import SubscriptionPlanAccess
-
-    if not SubscriptionPlanAccess.objects.filter(plan=row).exists():
-        return NO_ITEMS
-    return "" if row.price > 0 else NO_PRICE
+    """What members get, then a price: billing's rule, which the plan page's On sale switch keeps too."""
+    return row.not_ready()
 
 
 def cannot_sell(row) -> bool:
-    """Always paid: off sale while selling is not open yet (her plan, then payouts; the Starter trial cannot sell).
-    Not before it has a price: "Set its price first" comes first."""
-    from apps.core import monetization
-
-    return row.price > 0 and not monetization.can_monetize(connection.tenant)
+    """Always paid: off sale while selling is not open yet (billing's rule, as ``not_ready``)."""
+    return row.cannot_sell()
 
 
 def go_live(pk) -> None:

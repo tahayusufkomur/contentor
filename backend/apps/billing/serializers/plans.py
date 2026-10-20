@@ -1,4 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 from rest_framework import serializers
 
 from apps.billing.models import SubscriptionPlan
@@ -41,3 +42,13 @@ class PlanWriteSerializer(serializers.ModelSerializer):
         if value <= 0:
             raise serializers.ValidationError("A membership needs a price above zero.")
         return value
+
+    def update(self, instance, validated_data):
+        """Off sale to on sale only as focus mode's finish would (what members get, a price, selling
+        open); refused, nothing in the request is saved. A plan on sale already is left as it is."""
+        selling = validated_data.get("is_active") is True and not instance.is_active
+        with transaction.atomic():
+            instance = super().update(instance, validated_data)
+            if selling and (why := instance.refusal()):
+                raise serializers.ValidationError({"is_active": [why]})
+        return instance

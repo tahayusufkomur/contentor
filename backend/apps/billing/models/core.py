@@ -38,6 +38,29 @@ class SubscriptionPlan(models.Model):
     def __str__(self):
         return self.name
 
+    # Why it cannot go on sale yet (focus mode's finish, the plan page's On sale switch and its PATCH).
+    NO_ITEMS, NO_PRICE = "Add what members get first", "Set its price first"
+    NOT_SELLING = monetization.NOT_SELLING
+
+    def not_ready(self) -> str:
+        """Why it cannot go on sale yet ("" when it can): what members get, then a price."""
+        if not self.access_items.exists():
+            return self.NO_ITEMS
+        return "" if self.price > 0 else self.NO_PRICE
+
+    def cannot_sell(self) -> bool:
+        """Always paid: off sale while selling is not open yet (her plan, then payouts; the Starter trial
+        cannot sell). Not before it has a price: "Set its price first" comes first."""
+        from django.db import connection
+
+        return self.price > 0 and not monetization.can_monetize(connection.tenant)
+
+    def refusal(self) -> str:
+        """Why putting it on sale is refused, as a sentence; "" when it can go on sale."""
+        if gap := self.not_ready():
+            return f"{gap}."
+        return self.NOT_SELLING if self.cannot_sell() else ""
+
 
 class AccessWindowFields(models.Model):
     """When an item is open: a span after the person gets in, a calendar date, or both ends."""
