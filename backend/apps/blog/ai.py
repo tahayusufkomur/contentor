@@ -148,6 +148,25 @@ def brand_brief(config, course_titles=(), tenant=None):
     return "\n".join(lines)
 
 
+def brief_for_current_tenant():
+    from apps.courses.models import Course
+    from apps.tenant_config.models import TenantConfig
+
+    config = TenantConfig.objects.first()
+    titles = list(Course.objects.values_list("title", flat=True)[:6])
+    return brand_brief(config, titles)
+
+
+def photos_for(topic):
+    """What the writer may place: her own photos first (newest), then catalog candidates for the topic."""
+    from apps.media.models import Photo
+
+    from . import curated
+
+    photos = list(Photo.objects.order_by("-created_at")[:MAX_AVAILABLE_PHOTOS])
+    return photos + curated.curated_candidates(topic, limit=MAX_AVAILABLE_PHOTOS - len(photos))
+
+
 def available_photos_block(photos):
     """photos: iterable of objects with .id/.title/.alt_text (a Photo
     queryset slice in production, plain objects in tests). Empty/absent

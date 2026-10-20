@@ -23,6 +23,8 @@ FIELDS = ("title", "excerpt", "body_html", "meta_description", "tags")
 # Her length answer in the generator's words; "standard" is its own 800-1200.
 LENGTHS = {"short": "Keep it short: about 500 words in 3-4 sections.", "long": "Make it long: about 1,400 words."}
 KEPT = "You changed the text, so I left it; the title and summary are new."
+ALL_KEPT = "You changed all of it, so I left it as it is."
+SOME_KEPT = "You changed some of it, so I left those parts as you wrote them."
 
 
 def start(creation, instruction: str = "") -> CopilotRun:
@@ -40,8 +42,6 @@ def _gone(creation, record) -> bool:
 
 
 def carry_out(tenant, run_id) -> None:
-    from apps.blog.views import _brief_for_current_tenant, _photos_for
-
     from .flow import DELEGATE, _chat_append, draft_title
 
     run = CopilotRun.objects.get(pk=run_id)
@@ -64,14 +64,13 @@ def carry_out(tenant, run_id) -> None:
     words = [instruction, LENGTHS.get(answers.get("length"), ""), notes and f"Her notes: {notes}"]
     draft = blog_ai.generate_counted(
         tenant,
-        _brief_for_current_tenant(),
+        blog_ai.brief_for_current_tenant(),
         subject,
         "\n".join(w for w in words if w),
-        photos=_photos_for(subject),
+        photos=blog_ai.photos_for(subject),
         label="contentor:copilot",  # she waits at the review
     ).fields
     draft["cover_photo_id"] = ""  # the cover is her pick at the cover step
-    curated.resolve_curated_photo_ids(draft)  # a catalog photo it placed, copied into her storage
     with transaction.atomic():
         # The creation first, then the run, then the record: the order her requests lock them in.
         locked = FocusCreation.objects.select_for_update().get(pk=creation.pk)
@@ -84,23 +83,36 @@ def carry_out(tenant, run_id) -> None:
         drafted = locked.drafted or {}
         wrote = dict(drafted.get("post") or {})
         working = draft_title(locked) if "title" not in wrote else None
-        fields, hers = {}, False
+        fields, kept = {}, []
         for name in FIELDS:
             current = getattr(record, name)
             blank = not str(current or "").strip()
             ours = blank or current == wrote.get(name) or (name == "title" and current == working)
-            if name == "body_html" and not ours and draft[name] != current:
-                hers = True
-            if draft[name] and draft[name] != current and ours:
+            if not draft[name] or draft[name] == current:
+                continue
+            if ours:
                 fields[name] = draft[name]
-        placements = {"image_placements": draft["image_placements"]} if "body_html" in fields else {}
+            else:
+                kept.append(name)  # hers: left as she wrote it
+        extra = {}
+        if "body_html" in fields:  # its inline images and model go with the text, never onto hers
+            curated.resolve_curated_photo_ids(draft)  # a catalog photo it placed, copied into her storage
+            extra = {"image_placements": draft["image_placements"], "ai_model": draft["ai_model"]}
         if fields:
-            BlogPost.objects.filter(pk=record.pk).update(**fields, **placements)
+            BlogPost.objects.filter(pk=record.pk).update(**fields, **extra)
         locked.drafted = {**drafted, "post": {**wrote, **fields}}
         locked.save(update_fields=["drafted", "updated_at"])
         for name, value in fields.items():
             runs.emit(run_id, "field", {"record": f"{locked.kind}:{record.pk}", "name": name, "value": value})
-        said = KEPT if hers and fields else ""
+        # What she sees of her own edits: KEPT is only true while the title and summary are the job's.
+        if not kept:
+            said = ""
+        elif not fields:
+            said = ALL_KEPT
+        elif "body_html" in kept and not {"title", "excerpt"} & set(kept):
+            said = KEPT
+        else:
+            said = SOME_KEPT
         if said:
             _chat_append(locked, [{"role": "assistant", "text": said}])
     runs.emit(run_id, "step", {**step, "state": "done"})

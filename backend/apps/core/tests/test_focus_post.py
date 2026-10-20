@@ -16,6 +16,7 @@ from django_tenants.utils import schema_context
 
 from apps.accounts.models import User
 from apps.blog import ai as blog_ai
+from apps.blog import curated
 from apps.blog.models import BlogPost
 from apps.core import ai as core_ai
 from apps.core import tasks
@@ -30,6 +31,8 @@ SCHEMA = "shared_test"
 PLAN = "Focus Post Test Paid"
 WORKING = "Morning breath"
 KEPT = "You changed the text, so I left it; the title and summary are new."
+ALL_KEPT = "You changed all of it, so I left it as it is."
+SOME_KEPT = "You changed some of it, so I left those parts as you wrote them."
 
 
 @pytest.fixture()
@@ -84,13 +87,19 @@ def _creation(owner, **answers):
     )
 
 
-def _draft(title="Breathe before the day starts", photo=None, intro="Three slow breaths change a morning."):
+def _draft(
+    title="Breathe before the day starts",
+    photo="",
+    intro="Three slow breaths change a morning.",
+    excerpt="A calmer start in three slow breaths.",
+    tags=("Breath", "mornings"),
+):
     return blog_ai._BlogDraft(
         title=title,
         slug="x",
         meta_description="A short morning breath routine for busy parents.",
-        excerpt="A calmer start in three slow breaths.",
-        tags=["Breath", "mornings"],
+        excerpt=excerpt,
+        tags=list(tags),
         sections=[
             blog_ai._Section(heading="", body_markdown=intro),
             blog_ai._Section(
@@ -100,9 +109,14 @@ def _draft(title="Breathe before the day starts", photo=None, intro="Three slow 
     )
 
 
+def _catalog_photo(n=0):
+    """The nth catalog photo the job offers for her topic (the offline fake catalog)."""
+    return curated.curated_candidates("A post on morning breath")[n].id
+
+
 def _model(draft=None, cost="0.04", **kwargs):
     if "side_effect" not in kwargs:
-        kwargs["return_value"] = (draft or _draft(photo=""), Decimal(cost), "claude-sonnet-5")
+        kwargs["return_value"] = (draft or _draft(), Decimal(cost), "claude-sonnet-5")
     return mock.patch("apps.blog.ai.core_ai.structured", **kwargs)
 
 
@@ -138,6 +152,7 @@ def test_the_post_is_written_field_by_field(owner, paid):
     # Inline images follow the generator's own placement; the cover is the cover step's (G3).
     assert row.image_placements == [{"heading": "Why mornings", "photo_id": str(photo.id)}]
     assert row.cover_photo_id is None
+    assert row.ai_model == "claude-sonnet-5"  # written by the model, as a Generate draft says
     key = f"post:{row.pk}"
     assert _fields(run.id) == [
         {"record": key, "name": "title", "value": row.title},
@@ -159,26 +174,77 @@ def test_the_post_is_written_field_by_field(owner, paid):
 
 
 def test_a_redraft_keeps_the_paragraphs_she_edited(owner, paid):
+    photo = Photo.objects.create(s3_key="k", title="Sunrise stretch")
+    placed = [{"heading": "Why mornings", "photo_id": str(photo.id)}]
     creation = _creation(owner)
-    with _model():
+    with _model(_draft(photo=str(photo.id))):
         jobs.execute(SCHEMA, post.start(creation).id)
     first = _row(creation)
+    assert first.image_placements == placed
     BlogPost.objects.filter(pk=first.pk).update(body_html="<p>My own words about it.</p>")
     creation.refresh_from_db()
     redraft = post.start(creation, instruction="a warmer title")
     assert redraft.request["instruction"] == "a warmer title"
-    with _model(_draft("Warm up your mornings", photo="", intro="Something else entirely.")) as model:
+    warmer = _draft("Warm up your mornings", intro="Something else.", excerpt="Warm mornings, slowly.")
+    with _model(warmer) as model:
         jobs.execute(SCHEMA, redraft.id)
     assert "a warmer title" in model.call_args.kwargs["user"]
     row = _row(creation)
-    assert (row.title, row.body_html) == ("Warm up your mornings", "<p>My own words about it.</p>")
-    assert [f["name"] for f in _fields(redraft.id)] == ["title"]  # the rest came back the same
+    assert (row.title, row.excerpt) == ("Warm up your mornings", "Warm mornings, slowly.")
+    assert row.body_html == "<p>My own words about it.</p>"
+    assert row.image_placements == placed  # the images go with the text, and the text is hers
+    assert [f["name"] for f in _fields(redraft.id)] == ["title", "excerpt"]  # the rest came back the same
     creation.refresh_from_db()
     assert creation.drafted["post"]["body_html"] == first.body_html  # still what the job last wrote
-    assert creation.drafted["post"]["title"] == "Warm up your mornings"
     # The guide says so, in the dock and on the run.
     assert CopilotChat.objects.get(pk=creation.chat_id).entries == [{"role": "assistant", "text": KEPT}]
-    assert CopilotRun.objects.get(pk=redraft.id).result == {"fields": ["title"], "text": KEPT}
+    assert CopilotRun.objects.get(pk=redraft.id).result == {"fields": ["title", "excerpt"], "text": KEPT}
+
+    # She changes the summary and the tags too; the next draft brings new ones and places a catalog photo.
+    BlogPost.objects.filter(pk=first.pk).update(excerpt="My own summary.", tags=["mine"])
+    creation.refresh_from_db()
+    again = post.start(creation, instruction="calmer")
+    calmer = _draft("Calm mornings", photo=_catalog_photo(), excerpt="A new summary.", tags=("new", "tags"))
+    with _model(calmer):
+        jobs.execute(SCHEMA, again.id)
+    row = _row(creation)
+    assert (row.title, row.excerpt, row.tags) == ("Calm mornings", "My own summary.", ["mine"])
+    assert (row.body_html, row.image_placements) == ("<p>My own words about it.</p>", placed)
+    assert [f["name"] for f in _fields(again.id)] == ["title"]
+    assert CopilotRun.objects.get(pk=again.id).result["text"] == SOME_KEPT  # never "the summary is new"
+
+
+def test_a_kept_body_redraft_adds_no_photos(owner, paid):
+    creation = _creation(owner)
+    with _model(_draft(photo=_catalog_photo())):
+        jobs.execute(SCHEMA, post.start(creation).id)
+    row = _row(creation)
+    copied = Photo.objects.get()  # the catalog photo it placed, copied into her library with the text
+    assert row.image_placements == [{"heading": "Why mornings", "photo_id": str(copied.id)}]
+    BlogPost.objects.filter(pk=row.pk).update(body_html="<p>Mine.</p>")
+    creation.refresh_from_db()
+    with _model(_draft("Another title", photo=_catalog_photo(1), intro="Other words.")):  # one not copied yet
+        jobs.execute(SCHEMA, post.start(creation, instruction="again").id)
+    assert Photo.objects.count() == 1  # her text stays, so nothing it would have placed is copied
+    assert _row(creation).image_placements == row.image_placements
+
+
+def test_a_redraft_that_changes_nothing_still_says_why(owner, paid):
+    creation = _creation(owner)
+    with _model():
+        jobs.execute(SCHEMA, post.start(creation).id)
+    BlogPost.objects.filter(pk=creation.record_id).update(
+        title="My title", excerpt="My summary.", body_html="<p>Mine.</p>", meta_description="Mine.", tags=["mine"]
+    )
+    creation.refresh_from_db()
+    redraft = post.start(creation, instruction="try another angle")
+    with _model(_draft("Another title", intro="Other words.", excerpt="Another summary.", tags=("other",))):
+        jobs.execute(SCHEMA, redraft.id)
+    row = _row(creation)
+    assert (row.title, row.excerpt, row.body_html, row.tags) == ("My title", "My summary.", "<p>Mine.</p>", ["mine"])
+    assert _fields(redraft.id) == []
+    assert CopilotRun.objects.get(pk=redraft.id).result == {"fields": [], "text": ALL_KEPT}
+    assert CopilotChat.objects.get(pk=creation.chat_id).entries == [{"role": "assistant", "text": ALL_KEPT}]
 
 
 def test_a_failed_post_offers_try_again(owner, paid):

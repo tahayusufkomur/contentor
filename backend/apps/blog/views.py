@@ -117,15 +117,6 @@ class BlogPostAdminViewSet(viewsets.ModelViewSet):
         serializer.save(published_at=published_at, noindex=False)
 
 
-def _brief_for_current_tenant():
-    from apps.courses.models import Course
-    from apps.tenant_config.models import TenantConfig
-
-    config = TenantConfig.objects.first()
-    titles = list(Course.objects.values_list("title", flat=True)[:6])
-    return ai.brand_brief(config, titles)
-
-
 @api_view(["GET"])
 @permission_classes([IsCoachOrOwner])
 def blog_ai_status(request):
@@ -150,13 +141,7 @@ def _generate_inputs(request):
         topic_obj = BlogTopicIdea.objects.filter(pk=data["topic_id"], status="available").first()
     topic = (topic_obj.title if topic_obj else str(data.get("custom_topic") or ""))[:200]
     instructions = str(data.get("instructions") or "")[:500]
-    return topic, topic_obj, instructions, _photos_for(topic)
-
-
-def _photos_for(topic):
-    """What the writer may place: her own photos first (newest), then catalog candidates for the topic."""
-    photos = list(Photo.objects.order_by("-created_at")[: ai.MAX_AVAILABLE_PHOTOS])
-    return photos + curated.curated_candidates(topic, limit=ai.MAX_AVAILABLE_PHOTOS - len(photos))
+    return topic, topic_obj, instructions, ai.photos_for(topic)
 
 
 def _persist_draft(request, result, topic_obj):
@@ -205,7 +190,7 @@ def _generate_sse(request, tenant, status, topic, topic_obj, instructions, photo
 
     try:
         yield sse_frame({"type": "phase", "phase": "preparing"})
-        for kind, value in ai.generate_post_stream(_brief_for_current_tenant(), topic, instructions, photos=photos):
+        for kind, value in ai.generate_post_stream(ai.brief_for_current_tenant(), topic, instructions, photos=photos):
             if kind == "phase":
                 yield sse_frame({"type": "phase", "phase": value})
             elif kind == "preview":
@@ -263,7 +248,7 @@ def blog_generate(request):
         return stream_response(_generate_sse(request, tenant, status, topic, topic_obj, instructions, photos))
 
     try:
-        result = ai.generate_counted(tenant, _brief_for_current_tenant(), topic, instructions, photos=photos)
+        result = ai.generate_counted(tenant, ai.brief_for_current_tenant(), topic, instructions, photos=photos)
     except ai.BlogAiError:
         logger.exception("blog generate failed")
         return Response({"post": None, "source": "error", "remaining": status["remaining"]})
@@ -289,7 +274,7 @@ def blog_topics(request):
         return Response({"topics": [], "source": status["reason"]})
     existing = list(BlogPost.objects.values_list("title", flat=True)[:20])
     try:
-        topics, cost = ai.generate_topics(_brief_for_current_tenant(), existing)
+        topics, cost = ai.generate_topics(ai.brief_for_current_tenant(), existing)
     except ai.BlogAiError as exc:
         ai.record_attempt_cost(tenant.schema_name, exc.cost_usd)
         return Response({"topics": [], "source": "error"})
