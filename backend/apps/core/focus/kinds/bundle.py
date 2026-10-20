@@ -153,15 +153,18 @@ def _titles(values) -> list[str]:
 
 
 def _link(value: str, pk: int, on: bool) -> None:
-    """Every row a tile stands for (a series: every session) in the bundle, or out of it."""
+    """Every row a tile stands for (a series: every session) in the bundle, or out of it; never an
+    in-person session that is over (no one can buy it apart)."""
     from django.contrib.contenttypes.models import ContentType
 
     from apps.billing.models import BundleItem
+    from apps.billing.serializers.bundles import is_over
 
     for row in membership._rows_of(value):
         key = {"bundle_id": pk, "content_type": ContentType.objects.get_for_model(row), "object_id": row.pk}
         if on:
-            BundleItem.objects.get_or_create(**key)
+            if not is_over(row):
+                BundleItem.objects.get_or_create(**key)
         else:
             BundleItem.objects.filter(**key).delete()
 

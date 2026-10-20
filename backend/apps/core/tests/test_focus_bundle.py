@@ -22,7 +22,7 @@ from apps.core.focus import copywriter, flow, jobs
 from apps.core.focus.kinds import bundle
 from apps.courses.models import Course
 from apps.downloads.models import DownloadFile
-from apps.live.models import LiveClass, ZoomClass
+from apps.live.models import LiveClass, OnsiteEvent, ZoomClass
 from apps.tenant_config.models import FocusCreation, TenantConfig
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -133,6 +133,27 @@ def test_the_suggested_bundle_price_is_a_quarter_off_the_items(owner):
     assert flow.state(creation)["answered"][-1] == {"field": "access", "label": "$90"}
     # Priced: "Sell it for" is no longer hers to see.
     assert bundle.suggest_price(_bundle(creation)) is None
+
+
+def test_an_in_person_session_that_is_over_is_not_bought_apart(owner):
+    """The store and checkout no longer sell an in-person session that is over: it is not in what the
+    bundle costs bought apart, nor in its 25% off, nor put in it by a tick."""
+    paid = {"pricing_type": "paid", "price": Decimal("20"), "status": "scheduled", "duration_minutes": 60}
+    over, to_come = (
+        OnsiteEvent.objects.create(title="Studio class", instructor=owner, scheduled_at=timezone.now() + delta, **paid)
+        for delta in (timedelta(days=-7), timedelta(days=1))
+    )
+    basics = _course(owner, "Yoga basics", price="40")
+    creation = flow.start(owner, "bundle", value=f"course:{basics.pk},event:onsite:{over.pk}")
+    row = _bundle(creation)
+    assert _items(row) == {("course", basics.pk), ("onsiteevent", to_come.pk)}
+    creation.answers = {**creation.answers, "review": "ok"}
+    creation.save()
+    # $40 + the session to come at $20 = $60 bought apart.
+    assert _values(creation) == ["paid:45", "paid:60.00"]
+    # One put in it on the page is not counted either.
+    BundleItem.objects.create(bundle=row, content_object=over)
+    assert _client(owner).get(f"/api/v1/billing/bundles/{row.pk}/").json()["original_price"] == 60
 
 
 def test_publish_is_refused_under_two_items(owner):
