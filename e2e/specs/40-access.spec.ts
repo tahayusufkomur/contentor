@@ -88,12 +88,17 @@ test.beforeAll(async ({ browser }) => {
       description: "",
       price: "15.00",
       billing_interval_months: 1,
-      is_active: true,
     },
     headers: { "Content-Type": "application/json" },
   });
   expect(plan.status(), await plan.text()).toBe(201);
   planId = (await plan.json()).id;
+  // A new plan starts off sale (nothing is in it yet); the first test puts
+  // the course in it, and visitors are offered it: on sale, as data.
+  inTenant(
+    "from apps.billing.models import SubscriptionPlan\n" +
+      `SubscriptionPlan.objects.filter(pk=${planId}).update(is_active=True)`,
+  );
 
   // A coach who is not the owner, if the tenant has none yet.
   createdStaff =
