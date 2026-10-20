@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Check, CreditCard, Landmark, ShieldCheck } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { SpecialistFace } from "@/components/copilot/specialist-face";
 import { Button } from "@/components/ui/button";
 import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,6 +37,7 @@ export function PayoutsCard({
 }: {
   onReady: (ready: boolean) => void;
 }) {
+  const t = useTranslations("admin");
   const [status, setStatus] = useState<ConnectStatus | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [ownerOnly, setOwnerOnly] = useState(false);
@@ -79,8 +82,20 @@ export function PayoutsCard({
   const ready = Boolean(status?.connected && status.charges_enabled);
 
   return (
-    <div className="flex h-full items-center justify-center overflow-y-auto px-5 py-8">
-      <div className="w-full max-w-[560px] motion-safe:animate-[sf-rise_.45s_ease-out_both]">
+    <div className="flex h-full overflow-y-auto px-5 py-8">
+      {/* m-auto centres it when it fits and still scrolls from the top when not. */}
+      <div className="m-auto w-full max-w-[560px] motion-safe:animate-[sf-rise_.45s_ease-out_both]">
+        <div className="mb-4 flex items-center gap-2.5">
+          <SpecialistFace k="finance" size="md" />
+          <div className="leading-tight">
+            <p className="text-sm font-medium">
+              {t("team.specialists.finance.name")}
+            </p>
+            <p className="text-[13.5px] text-[var(--sf-graphite)]">
+              Here’s how you get paid.
+            </p>
+          </div>
+        </div>
         <h2 className="text-[28px] font-semibold leading-[1.15] tracking-[-0.025em] sm:text-[34px]">
           Get paid by your students
         </h2>

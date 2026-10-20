@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
+import { SpecialistFace } from "@/components/copilot/specialist-face";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { Spinner } from "@/components/ui/spinner";
@@ -414,10 +415,16 @@ export function QuestionScreen({
                   )}
                   {step.status && (
                     <p className="mt-2 flex max-w-[72ch] gap-2.5 text-[15px] leading-relaxed text-[var(--sf-graphite)] motion-safe:animate-[sf-rise_.5s_ease-out_80ms_both]">
-                      <span
-                        aria-hidden
-                        className="mt-[9px] size-1.5 shrink-0 rounded-full bg-[var(--sf-brass)]"
-                      />
+                      {step.status_by ? (
+                        <span className="mt-[3px] shrink-0">
+                          <SpecialistFace k={step.status_by} size="sm" />
+                        </span>
+                      ) : (
+                        <span
+                          aria-hidden
+                          className="mt-[9px] size-1.5 shrink-0 rounded-full bg-[var(--sf-brass)]"
+                        />
+                      )}
                       {step.status}
                     </p>
                   )}

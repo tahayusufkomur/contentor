@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
+import { SpecialistFace } from "@/components/copilot/specialist-face";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -22,6 +23,7 @@ import {
   type GoLiveState,
   type GoLiveStep,
   type SetupFlowApi,
+  type TeamLine,
 } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
 import { ApiError } from "@/types/api";
@@ -37,7 +39,7 @@ export function GoLiveCard({
   onPublished,
 }: {
   api: SetupFlowApi;
-  onPublished: () => void;
+  onPublished: (team: TeamLine[]) => void;
 }) {
   const [state, setState] = useState<GoLiveState | null>(null);
   const [payoutsReady, setPayoutsReady] = useState(false);
@@ -127,8 +129,7 @@ export function GoLiveCard({
   const { run: publish, loading: publishing } = useAsyncAction(
     async () => {
       try {
-        await api.goliveAction("publish");
-        onPublished();
+        onPublished((await api.goliveAction("publish")).team);
       } catch (err) {
         const blockers =
           err instanceof ApiError ? err.data.blockers : undefined;
@@ -373,7 +374,8 @@ function VisualCheck({ qa }: { qa: NonNullable<GoLiveState["qa"]> }) {
         />
       )}
       <div className="min-w-0">
-        <p className="font-medium">
+        <p className="flex items-center gap-1.5 font-medium">
+          {checking && <SpecialistFace k="designer" size="sm" />}
           {checking
             ? "Giving every page a last look"
             : `I looked over ${qa.pages === 1 ? "your page" : `all ${qa.pages} pages`}`}

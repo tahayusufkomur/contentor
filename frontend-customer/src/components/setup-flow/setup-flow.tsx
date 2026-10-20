@@ -35,6 +35,7 @@ import {
   type GuideTurn,
   type SetupFlowApi,
   type SetupFlowState,
+  type TeamLine,
   type TurnRequest,
 } from "@/lib/setup-flow";
 import { announceSiteUpdated } from "@/lib/site-events";
@@ -220,7 +221,7 @@ function Flow({
   const [device, setDevice] = useState<Device>("desktop");
   const [reloadKey, setReloadKey] = useState(0);
   const [path, setPath] = useState("/");
-  const [celebrate, setCelebrate] = useState(false);
+  const [celebrate, setCelebrate] = useState<TeamLine[] | null>(null);
   // While a page is under review: the section she tapped in the preview
   // (the change she asks for is to it), and the one just changed (the
   // reloaded page opens on it).
@@ -790,6 +791,7 @@ function Flow({
           <Celebration
             brandName={brandName}
             host={host}
+            team={celebrate}
             onGo={(href) => window.location.assign(href)}
           />
         )}
@@ -807,7 +809,11 @@ function Flow({
           editDraft(GOLIVE)((d) => ({ ...d, text: update(d.text ?? "") }))
         }
         onSend={(req) => void send(req)}
-        onPublished={() => setCelebrate(true)}
+        onPublished={(team) => {
+          setCelebrate(team);
+          // On a phone the hand-off sits on the site's tab.
+          setTab("preview");
+        }}
         review={
           reviewing && focus
             ? {

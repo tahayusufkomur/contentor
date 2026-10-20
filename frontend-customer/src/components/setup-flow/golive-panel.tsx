@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import type { SelectionPayload } from "@/lib/copilot/types";
 import { pageLabel, type ReviewPage } from "@/lib/interview";
-import type { GuideTurn, SetupFlowApi, TurnRequest } from "@/lib/setup-flow";
+import type {
+  GuideTurn,
+  SetupFlowApi,
+  TeamLine,
+  TurnRequest,
+} from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
 import { AnswerBox } from "./answer-box";
 import { GoLiveCard } from "./go-live-card";
@@ -50,7 +55,7 @@ export function GoLivePanel({
   text: string;
   onText: (update: (prev: string) => string) => void;
   onSend: (req: TurnRequest) => void;
-  onPublished: () => void;
+  onPublished: (team: TeamLine[]) => void;
   /** The setup menu (finish later, help, sign out), top right. */
   menu?: React.ReactNode;
   /** On a phone the site is a tab away: a card opens it. */

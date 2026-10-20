@@ -412,6 +412,8 @@ export interface GuideTurn {
   slides?: Slide[];
   /** Work this turn just started ("I'm starting on your About page now."). */
   status?: string;
+  /** Who is doing that work (a specialist); only with ``status``. */
+  status_by?: SpecialistKey | null;
   /** Other questions this answer also filled ("your training"). */
   noted?: string[];
   /** The ways ticked take their details (an email address, a number). */
@@ -490,6 +492,13 @@ export interface TurnResponse {
   state: SetupFlowState;
 }
 
+/** One specialist's hand-off at go-live: what they did, and the next thing. */
+export interface TeamLine {
+  key: SpecialistKey;
+  did: string;
+  next: string;
+}
+
 export interface GoLiveState {
   ready: boolean;
   building: boolean;
@@ -522,6 +531,8 @@ export interface GoLiveState {
   summary: { label: string; value: string }[];
   /** What "go live now, sell later" holds back, with its prices, until she can take payments. */
   held: string[];
+  /** The six specialists, in team order. */
+  team: TeamLine[];
 }
 
 export interface GoLiveStep {

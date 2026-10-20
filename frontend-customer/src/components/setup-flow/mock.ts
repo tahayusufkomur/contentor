@@ -20,6 +20,7 @@ import {
   type SetupFlowState,
   type Slide,
   type StepDraft,
+  type TeamLine,
 } from "@/lib/setup-flow";
 
 const TURN_MS = 350;
@@ -78,6 +79,39 @@ const MOCK_SLIDES: Slide[] = [
 ];
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+// The hand-off of a setup that made nothing yet: what each specialist looks after.
+const MOCK_TEAM: TeamLine[] = [
+  {
+    key: "designer",
+    did: "Looks after your site.",
+    next: "Ask me to change any page, any time.",
+  },
+  {
+    key: "content",
+    did: "Ready when you want to make your first course or class.",
+    next: "Tell me what you’d like to make first.",
+  },
+  {
+    key: "marketing",
+    did: "Ready to help new students find you.",
+    next: "Next: share your site where your students are.",
+  },
+  {
+    key: "community",
+    did: "Looks after how students reach you.",
+    next: "Messages from students land in your inbox.",
+  },
+  {
+    key: "finance",
+    did: "Kept everything free for now.",
+    next: "You can change any price in its Access section.",
+  },
+  {
+    key: "assistant",
+    did: "Ran your setup.",
+    next: "Not sure who to ask? Ask me.",
+  },
+];
 type Guide = Extract<InterviewEntry, { role: "guide" }>;
 
 const s = {
@@ -308,6 +342,6 @@ export const mockSetupFlowApi: SetupFlowApi = {
   golive: () => setupFlowApi.golive(),
   goliveAction: async (action) => {
     if (action === "publish") s.published = true;
-    return setupFlowApi.golive();
+    return { ...(await setupFlowApi.golive()), team: MOCK_TEAM };
   },
 };
