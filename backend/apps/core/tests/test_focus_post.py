@@ -513,6 +513,32 @@ def test_publish_is_refused_while_the_post_is_empty(owner, on, paid):
     row = BlogPost.objects.get(pk=creation.record_id)
     assert (row.status, row.published_at) == ("draft", None)
     assert (creation.answers["finish"], creation.status) == ("draft", "done")
+    # Her toast says why her Publish kept it a draft, and what is left once it is.
+    assert flow.closing_line(creation) == "Saved as a draft. Write something first, then publish it from this page."
+    BlogPost.objects.filter(pk=row.pk).update(body_html="<p>Three slow breaths.</p>")
+    assert flow.closing_line(creation) == "Saved as a draft. Publish it from this page when you're ready."
+
+
+def test_her_first_words_never_stay_in_the_drafts_address(owner, on):
+    # A length she said goes into the title until her words are read; the address follows the title.
+    words = "A post on breathing through the nose, short"
+    creation = flow.start(owner, "post", text=words)
+    assert _row(creation).slug == "breathing-through-the-nose-short"
+    with transaction.atomic():
+        creation = FocusCreation.objects.select_for_update().get(pk=creation.pk)
+        creation.pending = {"field": "topic", "text": words}
+        flow.apply(creation, recipe.PostFound(topic="breathing through the nose", length="short"))
+        creation.save()
+    row = _row(creation)
+    assert (row.title, row.slug, creation.answers["length"]) == (
+        "Breathing through the nose",
+        "breathing-through-the-nose",
+        "short",
+    )
+    # An address she set herself is hers.
+    BlogPost.objects.filter(pk=row.pk).update(title="Nose breathing", slug="my-own-address")
+    assert recipe.retitle(row.pk, "Nose breathing", "Nose breathing for beginners")
+    assert _row(creation).slug == "my-own-address"
 
 
 def test_a_written_post_goes_live_and_marketing_announces_it(owner, on):

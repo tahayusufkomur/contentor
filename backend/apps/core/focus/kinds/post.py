@@ -31,7 +31,12 @@ LENGTHS = ("short", "standard", "long")
 FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
 CLOSING = {
     "publish": "Published. Students can read it on your blog now.",
-    "draft": "Saved as a draft. Publish it from this page when you're ready.",
+    # Says what it still needs while it cannot be published yet (her Publish tap kept it a draft too).
+    "draft": lambda row: (
+        f"Saved as a draft. {gap}, then publish it from this page."
+        if row is not None and (gap := not_ready(row))
+        else "Saved as a draft. Publish it from this page when you're ready."
+    ),
 }
 NOT_READY_LINE = "Your post is saved as a draft."
 # The address a draft gets from NEW_TITLE ("You decide" with no topic idea), never the one it goes live at.
@@ -148,7 +153,18 @@ def owned_by(row, user) -> bool:
 
 
 def retitle(pk, provisional: str, title: str) -> bool:
-    return bool(_rows(pk).filter(title=provisional, status="draft").update(title=title[:200]))
+    """Her topic's title while the draft still has the provisional one. Its
+    address follows while it is still the one her first words made (a length
+    she said, and all), so those words never go live in it; one she set stays."""
+    from apps.blog.models import unique_slug
+
+    row = _rows(pk).filter(title=provisional, status="draft").first()
+    if row is None:
+        return False
+    fields = {"title": title[:200]}
+    if slugify(provisional).startswith(re.sub(r"-\d+$", "", row.slug)) and slugify(title) != row.slug:
+        fields["slug"] = unique_slug(title)
+    return bool(_rows(pk).filter(title=provisional, status="draft").update(**fields))
 
 
 def draft_refused() -> bool:
