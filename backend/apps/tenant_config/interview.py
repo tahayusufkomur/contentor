@@ -13,6 +13,7 @@ from django.utils import timezone
 from pydantic import BaseModel
 
 from . import interview_brief as brief
+from . import interview_slides as slides
 from .models import TenantConfig
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ MAX_OPTIONS = 8
 # made late turns about twice as slow (audit 2026-10-09: ~7 s to ~15 s).
 CONTEXT_TURNS = 8
 OPENING_ACK = (
-    "Hi. This takes about 15 minutes, and your site builds while we talk. Tap an answer, type, or use the mic."
+    "Hi. This takes about 18 minutes, and your site builds while we talk. Tap an answer, type, or use the mic."
     " Tell me a lot at once and I'll skip what you've covered. Nothing is final, and you can change anything later."
 )
 READY_QUESTION = "Your site is ready. Take a look around, then go live when you're happy."
@@ -714,6 +715,7 @@ def run_turn(
 
     setup_flow._update_flow(tenant, mutate)
     guide["cards"] = milestones.cards_for(tenant, answers, guide["field"])
+    slides.attach(guide, answers, TenantConfig.objects.first().setup_flow["interview"], brand)
     return {"coach_text": text, "guide": guide, "edit": edit, "fired": fired, "state": setup_flow.state_body(tenant)}
 
 
@@ -872,6 +874,7 @@ def interview_state(tenant, flow: dict) -> dict:
     guide.update(membership_prices(guide["field"], answers))  # hers now, also on a question gone back to
     _apply_prefills_to_guide(guide, brief.FIELD_BY_ID.get(guide["field"] or ""), tenant, answers)
     guide["cards"] = milestones.cards_for(tenant, answers, guide["field"])
+    slides.attach(guide, answers, iv, brand)
     fired = list(iv.get("fired") or [])
     # Fresh cards for look questions already behind the coach, so going back
     # shows them again (logo previews are presigned: never stored).

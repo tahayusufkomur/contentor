@@ -11,7 +11,7 @@ from apps.core.copilot.views import _clean_selections
 from apps.core.permissions import IsCoachOrOwner, IsOwner
 from apps.core.throttling import SetupInterviewThrottle
 
-from . import interview, interview_golive, interview_import, interview_milestones, setup_flow
+from . import interview, interview_golive, interview_import, interview_milestones, interview_slides, setup_flow
 from .interview_brief import touch
 
 logger = logging.getLogger(__name__)
@@ -101,6 +101,18 @@ def setup_flow_turn(request):
     except interview_milestones.ChoiceError as exc:
         return Response({"detail": str(exc)}, status=400)
     return Response(body)
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def setup_flow_slide(request):
+    """The coach passed a concept slide (``skipped`` when she skipped it rather than read on)."""
+    if (over := _setup_over()) is not None:
+        return over
+    data = _data(request)
+    if not interview_slides.record(connection.tenant, str(data.get("key") or ""), bool(data.get("skipped"))):
+        return Response({"detail": "unknown slide"}, status=400)
+    return Response(status=204)
 
 
 @api_view(["POST"])

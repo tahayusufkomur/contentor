@@ -304,3 +304,27 @@ def render(slides: list[Slide], answers: dict, examples: dict | None, record: di
         )
         met.add(slide.by)
     return out
+
+
+def attach(guide: dict, answers: dict, iv: dict, brand: str) -> None:
+    """Put the slides due before ``guide``'s question on the live guide (like ``cards``: never stored)."""
+    seen = iv.get("slides") or {}
+    guide["slides"] = render(
+        due(guide["field"], answers, seen, iv.get("slides_from")), answers, iv.get("slide_examples"), seen, brand
+    )
+
+
+def record(tenant, key: str, skipped: bool) -> bool:
+    """Remember that the coach passed slide ``key`` (seen, or skipped). False for an unknown key."""
+    from . import setup_flow
+
+    if key not in SLIDE_BY_KEY:
+        return False
+
+    def mutate(_config, flow):
+        iv = dict(flow.get("interview") or {})
+        iv["slides"] = {**(iv.get("slides") or {}), key: "skipped" if skipped else "seen"}
+        flow["interview"] = iv
+
+    setup_flow._update_flow(tenant, mutate)
+    return True

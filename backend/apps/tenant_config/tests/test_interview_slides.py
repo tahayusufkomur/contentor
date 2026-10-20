@@ -1,11 +1,22 @@
 """The slide catalogue: which slides are due before a question, and how a slide
 renders with the coach's examples or the field-neutral fallback. Pure functions."""
 
+import importlib
 import re
 
+import pytest
+from django.apps import apps as django_apps
+
+from apps.tenant_config import interview
 from apps.tenant_config import interview_brief as brief
 from apps.tenant_config import interview_slides as slides
-from apps.tenant_config.interview_slides import SLIDE_BY_KEY
+from apps.tenant_config.interview_slides import END, SLIDE_BY_KEY
+from apps.tenant_config.models import TenantConfig
+from apps.tenant_config.tests.test_interview import client, config, quiet  # noqa: F401  (fixtures)
+
+STATE_URL = "/api/v1/admin/setup-flow/"
+SLIDE_URL = "/api/v1/admin/setup-flow/slide/"
+TURN_URL = "/api/v1/admin/setup-flow/turn/"
 
 PLAUSIBLE = {
     "offers": ["course"],
@@ -125,3 +136,68 @@ def test_copy_keeps_the_words_rule():
     for s in slides.SLIDES:
         text = f"{s.title} {s.body}".lower()
         assert not re.search(r"\b(teach|teacher|teaching|coach|instructor)\b", text), s.key
+
+
+def test_opening_ack_says_eighteen_minutes():
+    assert "about 18 minutes" in interview.OPENING_ACK
+
+
+@pytest.mark.django_db
+def test_state_opens_on_the_team_slide(client, tenant_ctx):  # noqa: F811
+    guide = client.get(STATE_URL).json()["interview"]["guide"]
+    assert [s["key"] for s in guide["slides"]] == ["team"] and guide["slides"][0]["by"] == "assistant"
+
+
+@pytest.mark.django_db
+def test_state_serves_only_unrecorded_slides(client, tenant_ctx):  # noqa: F811
+    assert client.post(SLIDE_URL, {"key": "team", "skipped": True}, format="json").status_code == 204
+    guide = client.get(STATE_URL).json()["interview"]["guide"]
+    assert guide["slides"] == []
+    assert TenantConfig.objects.first().setup_flow["interview"]["slides"] == {"team": "skipped"}
+
+
+@pytest.mark.django_db
+def test_seen_is_recorded_beside_earlier_slides(client, tenant_ctx):  # noqa: F811
+    client.post(SLIDE_URL, {"key": "team", "skipped": True}, format="json")
+    client.post(SLIDE_URL, {"key": "site"}, format="json")
+    assert TenantConfig.objects.first().setup_flow["interview"]["slides"] == {"team": "skipped", "site": "seen"}
+
+
+@pytest.mark.django_db
+def test_unknown_slide_is_400(client):  # noqa: F811
+    resp = client.post(SLIDE_URL, {"key": "nope"}, format="json")
+    assert resp.status_code == 400 and resp.json() == {"detail": "unknown slide"}
+
+
+@pytest.mark.django_db
+def test_slide_is_refused_once_setup_is_over(client, tenant_ctx, config):  # noqa: F811
+    config.setup_flow = {**config.setup_flow, "status": "done"}
+    config.save()
+    assert client.post(SLIDE_URL, {"key": "team"}, format="json").status_code == 409
+
+
+@pytest.mark.django_db
+def test_turn_attaches_slides_without_storing_them(client, tenant_ctx, quiet):  # noqa: F811
+    quiet.reply = interview.InterviewTurn(facts=[{"field": "teaches", "value": "Yoga"}], question="", options=[])
+    body = client.post(TURN_URL, {"message": "Yoga"}, format="json").json()
+    assert "slides" in body["guide"]
+    turns = TenantConfig.objects.first().setup_flow["interview"]["turns"]
+    assert all("slides" not in t for t in turns)
+
+
+@pytest.mark.django_db
+def test_baseline_migration_skips_slides_behind_the_asked_field(tenant_ctx, config):  # noqa: F811
+    migration = importlib.import_module("apps.tenant_config.migrations.0036_setup_slides_baseline")
+
+    def run(interview_data):
+        config.setup_flow = {"status": "active", "interview": interview_data}
+        config.save()
+        migration.baseline(django_apps, None)
+        return TenantConfig.objects.first().setup_flow["interview"]
+
+    turn = [{"role": "guide", "field": "pitch"}]
+    assert run({"turns": turn, "asked": "pitch"})["slides_from"] == "pitch"
+    assert "slides_from" not in run({"turns": []})
+    assert run({"turns": turn, "asked": None})["slides_from"] == END
+    untouched = run({"turns": turn, "asked": "pitch", "slides": {"team": "seen"}})
+    assert "slides_from" not in untouched and untouched["slides"] == {"team": "seen"}
