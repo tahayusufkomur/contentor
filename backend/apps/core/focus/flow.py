@@ -487,7 +487,12 @@ def _retry_draft(creation) -> None:
     status = outline_status(creation) if job == "outline" else jobs.status(creation, job)
     if status in ("failed", "idle"):
         failed = CopilotRun.objects.filter(pk=jobs.run_id(creation, job)).first()
-        kinds.get(creation.kind).start_draft(
+        adapter = kinds.get(creation.kind)
+        # Refused by a gate that still refuses (a post's blog gate): its line stands, no run starts.
+        refused = getattr(adapter, "draft_refused", None)
+        if failed and (failed.result or {}).get("reason") and refused and refused():
+            return
+        adapter.start_draft(
             creation, instruction=str(((failed and failed.request) or {}).get("instruction") or "")
         )
 

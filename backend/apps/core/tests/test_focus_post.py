@@ -476,12 +476,28 @@ def test_a_refused_blog_gate_is_said_at_once(owner, on, paid):
         refused = creation.runs["post"]
         assert flow.state(creation)["copy"] == {"status": "failed", "run": refused, "reason": "quota_exhausted"}
         jobs.execute(SCHEMA, refused)  # handed nothing to do
-        # Try again asks the gate again: still no run that can only fail.
-        creation = flow.answer(creation, "review", value="retry")
-        assert creation.runs["post"] != refused
-        assert flow.state(creation)["copy"]["reason"] == "quota_exhausted"
     model.assert_not_called()
     assert CopilotRun.objects.get(pk=refused).result == {"reason": "quota_exhausted"}
+
+
+def test_try_again_asks_the_blog_gate_first(owner, on, paid):
+    usage = blog_ai.tenant_usage(SCHEMA)
+    blog_ai.BlogAiUsage.objects.filter(pk=usage.pk).update(generations_used=5)  # out of posts this month
+    creation = flow.answer(_start(owner), "length", value="short")
+    refused, runs = creation.runs["post"], CopilotRun.objects.count()
+    # Still refused: the same line, and no run started.
+    creation = flow.answer(creation, "review", value="retry")
+    assert creation.runs["post"] == refused and CopilotRun.objects.count() == runs
+    assert flow.state(creation)["copy"] == {"status": "failed", "run": refused, "reason": "quota_exhausted"}
+    # Open again (a new month, an upgrade): Try again starts the post job, which writes.
+    blog_ai.BlogAiUsage.objects.filter(pk=usage.pk).update(generations_used=0)
+    creation = flow.answer(creation, "review", value="retry")
+    assert creation.runs["post"] != refused
+    assert flow.state(creation)["copy"] == {"status": "building", "run": creation.runs["post"]}
+    with _model() as model:
+        jobs.execute(SCHEMA, creation.runs["post"])
+    model.assert_called_once()
+    assert _row(creation).title == "Breathe before the day starts"
 
 
 def test_publish_is_refused_while_the_post_is_empty(owner, on, paid):
