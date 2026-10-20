@@ -11,6 +11,7 @@ from decimal import Decimal
 from unittest import mock
 
 import pytest
+from django.db import transaction
 from django_tenants.utils import schema_context
 
 from apps.accounts.models import User
@@ -377,13 +378,65 @@ def test_you_decide_takes_her_next_topic_idea(owner, on, paid):
     assert flow.draft_title(creation) == row.title  # still the job's to write over
     assert BlogTopicIdea.objects.get().status == "used"
 
-    # No idea left: the post is on a topic that fits her site, never on "New post".
+
+def test_you_decide_without_an_idea_goes_live_at_its_own_address(owner, on, paid):
+    # No idea: the post is on a topic that fits her site, never on "New post".
     creation = flow.answer(flow.start(owner, "post", delegate=True), "length", delegate=True)
-    assert BlogPost.objects.get(pk=creation.record_id).title == recipe.NEW_TITLE
+    row = BlogPost.objects.get(pk=creation.record_id)
+    assert row.title == recipe.NEW_TITLE and row.slug.startswith("new-post")
+    assert recipe.not_ready(row) == "Give it a title first"  # the placeholder is no title
     with _model() as model:
         jobs.execute(SCHEMA, creation.runs["post"])
     assert f"Write a blog post about: {post.ANY_TOPIC}" in model.call_args.kwargs["user"]
     assert BlogPost.objects.get(pk=creation.record_id).title == "Breathe before the day starts"
+    # An idea that arrives later never changes what her post is on.
+    BlogTopicIdea.objects.create(title="Why stretch at your desk")
+    creation.refresh_from_db()
+    creation = flow.answer(flow.answer(creation, "review", value="ok"), "cover", text="hands on a mat")  # sync runs
+    assert creation.answers["topic"] == flow.DELEGATE and BlogTopicIdea.objects.get().status == "available"
+    # Published at the address of its title, not of the placeholder; its announcement links there.
+    creation = flow.finish(_at(creation, cover="later"), publish=True)
+    row = BlogPost.objects.get(pk=creation.record_id)
+    assert (row.status, row.slug) == ("published", "breathe-before-the-day-starts")
+    assert recipe.announce_facts(row)["link"] == "/blog/breathe-before-the-day-starts"
+
+
+def test_a_refused_redraft_after_the_review_is_said(owner, on, paid):
+    creation = flow.answer(_start(owner), "length", value="short")
+    with _model():
+        jobs.execute(SCHEMA, creation.runs["post"])
+    creation.refresh_from_db()
+    creation = flow.answer(creation, "review", value="ok")
+    assert flow.current_field(creation) == "cover"
+    usage = blog_ai.tenant_usage(SCHEMA)
+    blog_ai.BlogAiUsage.objects.filter(pk=usage.pk).update(generations_used=5)  # out of posts since
+    with transaction.atomic(), _model() as model:  # her words at the cover step ask for a change
+        creation = FocusCreation.objects.select_for_update().get(pk=creation.pk)
+        creation.pending = {"field": "cover", "text": "and make the title warmer"}
+        flow.apply(creation, recipe.PostFound(change="make the title warmer"))
+        creation.save()
+    model.assert_not_called()
+    body = flow.state(creation)
+    assert body["question"]["field"] == "cover" and body["copy"]["reason"] == "quota_exhausted"
+    # What she typed has its answer in the dock.
+    chat = CopilotChat.objects.get(pk=creation.chat_id).entries
+    assert chat[-1] == {"role": "assistant", "text": post.REFUSED["quota_exhausted"]}
+
+
+def test_no_follow_up_is_asked_that_goes_nowhere(owner, on, paid):
+    usage = blog_ai.tenant_usage(SCHEMA)
+    with mock.patch("apps.core.focus.flow.ai_compose.compose_available", return_value=True):
+        # The gate open: the writer may ask one question before the drafting.
+        asked = flow.answer(_start(owner, "Why stretch at your desk"), "length", value="short")
+        assert asked.brief["thinking"]["slot"] == recipe.DRAFT_SLOT and "post" not in (asked.runs or {})
+        # Refused: she is told at once, never asked a question first.
+        blog_ai.BlogAiUsage.objects.filter(pk=usage.pk).update(generations_used=5)
+        refused = flow.answer(_start(owner), "length", value="short")
+        assert not refused.brief.get("thinking")
+        assert flow.state(refused)["copy"]["reason"] == "quota_exhausted"
+        # After the review: no Designer's question for a photo cover (it would shape no styles).
+        reviewed = flow.answer(_at(_start(owner, "Desk breaks"), length="short"), "review", value="ok")
+        assert not reviewed.brief.get("thinking") and flow.current_field(reviewed) == "cover"
 
 
 def test_the_post_job_is_the_reviews_drafting(owner, on, paid, hers):
@@ -453,6 +506,7 @@ def test_a_written_post_goes_live_and_marketing_announces_it(owner, on):
     creation = flow.finish(creation, publish=True, announce=True)
     row = BlogPost.objects.get(pk=creation.record_id)
     assert row.status == "published" and row.published_at is not None
+    assert row.slug == "breathing-before-class"  # her topic's address stays
     assert flow.closing_line(creation) == recipe.CLOSING["publish"]
     assert flow.current_field(creation) == "announce"
     assert CopilotRun.objects.get(pk=creation.runs["announce"]).specialist == "marketing"

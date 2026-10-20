@@ -7,6 +7,11 @@ blog quota and model). Its cover is a photo only (G7): the page prints its
 own title, so a styled cover would print it twice. Marketing asks, writes and
 announces it (G16); no price."""
 
+import re
+
+from django.db import connection
+from django.utils.text import slugify
+
 from apps.tenant_config.interview_brief import Field
 
 from .. import analysis
@@ -29,6 +34,8 @@ CLOSING = {
     "draft": "Saved as a draft. Publish it from this page when you're ready.",
 }
 NOT_READY_LINE = "Your post is saved as a draft."
+# The address a draft gets from NEW_TITLE ("You decide" with no topic idea), never the one it goes live at.
+PLACEHOLDER = re.compile(rf"{slugify(NEW_TITLE)}(-\d+)?")
 
 RECIPE = Recipe(
     kind="post",
@@ -144,6 +151,14 @@ def retitle(pk, provisional: str, title: str) -> bool:
     return bool(_rows(pk).filter(title=provisional, status="draft").update(title=title[:200]))
 
 
+def draft_refused() -> bool:
+    """Whether the blog writer's gate (her plan, her quota) refuses a draft now: the flow then asks no
+    follow-up first, which would go nowhere (flow._next_draft)."""
+    from apps.blog import ai as blog_ai
+
+    return bool(blog_ai.availability(connection.tenant)["reason"])
+
+
 def start_draft(creation, instruction: str = ""):
     """The post job: the review step's title, summary, text, description and tags (apps.core.focus.post)."""
     from .. import post
@@ -168,15 +183,18 @@ def topic_tiles() -> list[dict]:
 
 def sync(creation) -> None:
     """After every answer: "You decide" on the topic takes her next topic idea
-    (its title types in at once), and the idea her post is on leaves the
-    queue, as Write with AI's does. Call under the creation's lock; the caller saves."""
+    (its title types in at once), until the drafting has started (an idea
+    that arrives later never changes what her post is on); the idea her post
+    is on leaves the queue, as Write with AI's does. Call under the
+    creation's lock; the caller saves."""
     from apps.blog.models import BlogTopicIdea
 
     from .. import flow
 
     answers = creation.answers
     ideas = BlogTopicIdea.objects.filter(status="available")
-    if answers.get("topic") == flow.DELEGATE and (idea := ideas.first()):
+    delegated = answers.get("topic") == flow.DELEGATE and not flow.draft_started(creation)
+    if delegated and (idea := ideas.first()):
         answers["topic"] = idea.title
         flow._retitle(creation, NEW_TITLE, flow.working_title(idea.title, NOUN))
     if topic := answers.get("topic"):
@@ -216,8 +234,9 @@ def apply_clarified(creation, field, value) -> bool:
 
 
 def not_ready(row) -> str:
-    """A real title and some text (G20): the post's own rule, wherever it is published."""
-    return row.not_ready()
+    """A real title and some text (G20): the post's own rule, wherever it is
+    published; its placeholder title is no title either."""
+    return "Give it a title first" if row.title.strip() == NEW_TITLE else row.not_ready()
 
 
 def cannot_sell(row) -> bool:
@@ -225,8 +244,15 @@ def cannot_sell(row) -> bool:
 
 
 def go_live(pk) -> None:
+    """Published by the blog's own rule; a draft still at its placeholder's
+    address moves to its title's first, so that address never goes public.
+    A published post is never moved."""
+    from apps.blog.models import unique_slug
     from apps.core.copilot import content
 
+    row = _rows(pk).filter(status="draft").first()
+    if row is not None and PLACEHOLDER.fullmatch(row.slug):
+        _rows(pk).update(slug=unique_slug(row.title))
     content.publish_blog_post(pk)
 
 

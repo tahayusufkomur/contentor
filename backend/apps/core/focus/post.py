@@ -27,6 +27,12 @@ LENGTHS = {"short": "Keep it short: about 500 words in 3-4 sections.", "long": "
 KEPT = "You changed the text, so I left it; the title and summary are new."
 ALL_KEPT = "You changed all of it, so I left it as it is."
 SOME_KEPT = "You changed some of it, so I left those parts as you wrote them."
+# The blog gate's no, in the dock (the guide's focus.kinds.post.refused.* say the same).
+REFUSED = {
+    "upgrade_required": "Writing posts for you is on a paid plan. Write it yourself, or upgrade.",
+    "quota_exhausted": "You're out of AI posts for this month. Write it yourself, or upgrade for more.",
+}
+UNAVAILABLE = "AI writing is unavailable right now. Write it yourself."
 # "You decide" on the topic with no topic idea left (kinds/post.py ``sync``): never a post on "New post".
 ANY_TOPIC = "a topic her students would want to read, from what her site is about"
 
@@ -35,14 +41,17 @@ def start(creation, instruction: str = "") -> CopilotRun:
     """A queued post run, a building one stopped first (it would write over
     this one). The blog gate is asked first: refused, the run fails at once
     with its reason (the worker's claim then finds nothing to do), so no run
-    starts that can only fail. Call on the locked creation, inside the
-    writing transaction."""
+    starts that can only fail, and the dock says why, so what she typed has
+    its answer. Call on the locked creation, inside the writing transaction."""
+    from .flow import _chat_append
+
     pk = jobs.run_id(creation, "post")
     if pk is not None:
         runs.stop(pk)  # a finished one is left as it is
     run = jobs.queue(creation, "post", specialist="marketing", instruction=instruction)
     if reason := blog_ai.availability(connection.tenant)["reason"]:
         runs.finish(run.id, False, {"reason": reason})
+        _chat_append(creation, [{"role": "assistant", "text": REFUSED.get(reason, UNAVAILABLE)}])
     return run
 
 

@@ -56,6 +56,8 @@ import { ScheduleQuestion } from "./schedule-question";
 import { UploadQuestion } from "./upload-question";
 
 const POLL_MS = 1500;
+// The blog writer's refusals with a way past them: the blog editor's Upgrade link.
+const UPGRADE: readonly string[] = ["upgrade_required", "quota_exhausted"];
 // The kinds whose page edits are saved before her finish taps go out.
 const SAVE_FIRST: FocusKind[] = ["message", "membership", "bundle"];
 
@@ -254,11 +256,13 @@ export function FocusGuide() {
   // The review's drafting: the course's outline, every other kind's copy job
   // (its title and description), which leaves the page whole even when it fails.
   const copy = state.kind !== "course";
-  // The blog writer's gate said no: the review says why and offers Write it myself.
-  const refused =
-    question?.kind === "review" && state.copy?.status === "failed"
-      ? state.copy.reason
-      : undefined;
+  // The blog writer's gate said no (a post's): the review says why and offers
+  // Write it myself; a redraft she asked for later is said above the question.
+  const reason =
+    state.copy?.status === "failed" ? state.copy.reason : undefined;
+  const refused = question?.kind === "review" ? reason : undefined;
+  const refusedLater =
+    question && question.kind !== "review" ? reason : undefined;
 
   return (
     <div className="flex flex-col gap-5" style={SHELL_TOKENS}>
@@ -336,6 +340,22 @@ export function FocusGuide() {
             </Button>
           </div>
         </div>
+      )}
+      {refusedLater && (
+        <p className="text-sm text-foreground">
+          {t(`focus.kinds.${state.kind}.refused.${refusedLater}`)}
+          {UPGRADE.includes(refusedLater) && (
+            <>
+              {" "}
+              <NavLink
+                href="/admin/billing"
+                className="font-medium underline underline-offset-2"
+              >
+                {t("blog.upgrade")}
+              </NavLink>
+            </>
+          )}
+        </p>
       )}
       {question && handOver && (
         <p className="flex items-center gap-2 text-sm text-foreground">
@@ -601,11 +621,16 @@ function OutlineReview({
           </Button>
         )}
         {refused && (
-          <Button variant="outline" loading={leaving} onClick={onFillMyself}>
+          <Button
+            variant="outline"
+            loading={leaving}
+            disabled={sending}
+            onClick={onFillMyself}
+          >
             {t(`focus.kinds.${kind}.fillMyself`)}
           </Button>
         )}
-        {(refused === "upgrade_required" || refused === "quota_exhausted") && (
+        {refused && UPGRADE.includes(refused) && (
           <Button asChild variant="outline">
             <NavLink href="/admin/billing">{t("blog.upgrade")}</NavLink>
           </Button>

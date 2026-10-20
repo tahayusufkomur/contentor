@@ -565,3 +565,6 @@ def test_use_this_photo_is_only_a_photo_covers_tap(at_cover, hers):
     _act(hers, at_cover, action="use", asset_id=f"own:{mine.pk}")
     assert flow.current_field(FocusCreation.objects.get(pk=at_cover.pk)) == "cover"  # a course keeps a style
     assert Course.objects.get(pk=at_cover.record_id).thumbnail_id is None
+    with mock.patch.object(client, "get") as get:  # a misdirected tap copies nothing into her Media
+        _act(hers, at_cover, action="use", asset_id="lib-2")
+    get.assert_not_called()

@@ -186,8 +186,9 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
                     descriptions.start(creation)
                 if line := kinds.get(creation.kind).REVIEWED_LINE:
                     _chat_append(creation, [{"role": "assistant", "text": line}])
-                # The Designer's, before the cover (none for a kind without one); it never redrafts the outline.
-                if kinds.get(creation.kind).COVER and followup_allowed(creation, "later"):
+                # The Designer's, before a styled cover (it shapes the styles; none for a photo cover or
+                # none at all); it never redrafts the outline.
+                if kinds.get(creation.kind).COVER == "styles" and followup_allowed(creation, "later"):
                     _ask_followup(creation, "later")
             elif value == "retry":
                 _retry_draft(creation)
@@ -434,7 +435,11 @@ def leave(creation, *, abandon: bool = False, active_ms=None) -> FocusCreation:
             creation.pending = {}
             for pk in (
                 creation.outline_run_id,
-                *(jobs.run_id(creation, job) for job in ("analysis", "announce", "followup", draft_job(creation.kind))),
+                *(
+                    jobs.run_id(creation, job)
+                    for job in ("analysis", "announce", "followup", draft_job(creation.kind))
+                    if job
+                ),
             ):
                 if pk is not None:
                     runs.stop(pk)  # a finished one is left as it is
@@ -666,8 +671,9 @@ def _draft_state(creation) -> dict | None:
     if pk is None:
         return None
     status = jobs.status(creation, job)
-    result = CopilotRun.objects.filter(pk=pk).values_list("result", flat=True).first() or {}
-    reason = result.get("reason") if status == "failed" else None
+    reason = None
+    if status == "failed":
+        reason = (CopilotRun.objects.filter(pk=pk).values_list("result", flat=True).first() or {}).get("reason")
     return {"status": status, "run": pk, **({"reason": reason} if reason else {})}
 
 
@@ -1106,7 +1112,10 @@ def _next_draft(creation) -> None:
         and not any(brief.get(key) for key in ("clarify", "followup", "thinking"))
         and all(q.id in creation.answers for q in questions)
     ):
-        if followup_allowed(creation, adapter.DRAFT_SLOT):
+        # Optional: a drafting refused before it starts (a post's blog gate) is said at once (its
+        # start_draft says why), never after a follow-up that would go nowhere.
+        refused = getattr(adapter, "draft_refused", None)
+        if followup_allowed(creation, adapter.DRAFT_SLOT) and not (refused and refused()):
             _ask_followup(creation, adapter.DRAFT_SLOT)
         else:
             adapter.start_draft(creation)
