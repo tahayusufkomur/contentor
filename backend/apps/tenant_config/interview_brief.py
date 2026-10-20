@@ -246,7 +246,9 @@ _TIER_CLASSES = {"online": ("event",), "studio": ("onsite",), "all": ("event", "
 # A membership can also be the coach's own: just a name ("Weekly face yoga
 # classes") and a monthly price. It is stored by that name beside the tier ids.
 OWN_MEMBERSHIP_PRICE = 19
-MAX_MEMBERSHIPS = 6
+# Above the eight tiles the question can show (three of her subjects and the
+# five tiers), so "Select all" always goes through, with room for her own.
+MAX_MEMBERSHIPS = 10
 MEMBERSHIP_NAME_MAX = 60
 
 

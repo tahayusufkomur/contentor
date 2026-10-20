@@ -479,6 +479,23 @@ def test_membership_prices_are_hers_to_set(tenant_ctx, config, side_effects):
             ms.choose(tenant_ctx, answers, "memberships", json.dumps(bad))
 
 
+def test_select_all_picks_every_membership_tile(tenant_ctx, config, side_effects):
+    """The question can show eight tiles (three of her subjects and the five
+    tiers); "Select all" ticks them all, and the cap on picks lets it through."""
+    import json
+
+    answers = {
+        **HOME,
+        "teaches": "Face yoga, Yoga, Yin yoga",
+        "offers": ["course", "live", "onsite", "community"],
+        "payments": ["membership"],
+    }
+    tiles = brief.membership_tiles(answers)
+    assert len(tiles) == 8
+    ms.choose(tenant_ctx, answers, "memberships", json.dumps({t["label"]: 10 for t in tiles}))
+    assert answers["memberships"] == [t["id"] for t in tiles]
+
+
 def test_a_delegated_membership_pick_gets_the_digital_tier(tenant_ctx, config, side_effects):
     from apps.billing.models import SubscriptionPlan
 
