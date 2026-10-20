@@ -365,7 +365,11 @@ def test_a_kept_draft_says_what_it_still_needs(owner):
     creation = flow.finish(_at_finish(owner, price=None), publish=False)
     assert flow.closing_line(creation) == "Saved as a draft. Set its price first, then publish it from this page."
     Bundle.objects.filter(pk=creation.record_id).update(price=75)  # ready: only her Publish is left
-    assert flow.closing_line(creation) == "Saved as a draft. Publish it from this page when you're ready."
+    with mock.patch("apps.core.monetization.can_monetize", return_value=True):
+        assert flow.closing_line(creation) == "Saved as a draft. Publish it from this page when you're ready."
+    with mock.patch("apps.core.monetization.can_monetize", return_value=False):  # the page's Publish waits too
+        line = flow.closing_line(creation)
+    assert line == "Saved as a draft. Start selling first: your plan, then payouts. Then publish it from this page."
 
 
 def test_start_selling_only_once_it_has_a_price(owner):

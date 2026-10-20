@@ -17,7 +17,7 @@ from apps.core import tasks
 from apps.core.focus import copywriter, flow, pricing
 from apps.core.focus.kinds import download
 from apps.downloads.models import DownloadFile
-from apps.tenant_config.models import TenantConfig
+from apps.tenant_config.models import CopilotChat, TenantConfig
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -123,6 +123,11 @@ def test_the_kept_line_asks_for_the_file_only_when_it_is_missing(owner):
     assert (
         flow.closing_line(without) == "Saved as a draft. Add the file and publish it from this page when you're ready."
     )
+    # Paid while selling is not open: the page's Publish waits for selling, so the line says so (F13).
+    DownloadFile.objects.filter(pk=with_file.record_id).update(pricing_type="paid", price=9)
+    with mock.patch("apps.core.monetization.can_monetize", return_value=False):
+        line = flow.closing_line(with_file)
+    assert line == "Saved as a draft. Start selling first: your plan, then payouts. Then publish it from this page."
 
 
 def test_add_it_later_moves_on_and_finish_offers_only_keep(owner):
@@ -216,3 +221,15 @@ def test_a_copy_finishing_after_publish_writes_nothing(owner):
     creation = flow.start(owner, "download", value=TOPIC)
     DownloadFile.objects.filter(pk=creation.record_id).update(is_published=True)
     assert copywriter._gone(creation, _row(creation))
+
+
+def test_her_price_leaves_the_working_title_and_the_chat_once_her_words_are_read(owner):
+    words = "A workbook on morning routines, 9 dollars"
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True):
+        creation = flow.start(owner, "download", text=words)
+    chat = CopilotChat.objects.get(pk=creation.chat_id)
+    assert chat.title.endswith(", 9 dollars")  # provisional: her whole first answer, until it is read
+    flow.apply(creation, download.FOUND(topic="Morning routines workbook", price="9"))
+    creation.save()
+    chat.refresh_from_db()
+    assert (_row(creation).title, chat.title) == ("Morning routines workbook", "New download: Morning routines workbook")

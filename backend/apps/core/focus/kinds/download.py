@@ -14,6 +14,7 @@ from statistics import median
 from django.db import connection
 from django.template.defaultfilters import filesizeformat
 
+from apps.core import monetization
 from apps.tenant_config.interview_brief import Field
 
 from .. import analysis, pricing
@@ -39,11 +40,13 @@ UPLOADED, LATER = "uploaded", "later"
 FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
 CLOSING = {
     "publish": "Published. Students can find it on your site now.",
-    # Asks for the file only while it is missing.
+    # Asks for the file only while it is missing, then for selling while it cannot sell yet.
     "draft": lambda row: (
-        "Saved as a draft. Publish it from this page when you're ready."
-        if row is not None and row.file_url
-        else "Saved as a draft. Add the file and publish it from this page when you're ready."
+        "Saved as a draft. Add the file and publish it from this page when you're ready."
+        if row is None or not row.file_url
+        else f"Saved as a draft. {monetization.NOT_SELLING} Then publish it from this page."
+        if row.cannot_sell()
+        else "Saved as a draft. Publish it from this page when you're ready."
     ),
 }
 NOT_READY_LINE = "Your download is saved as a draft."

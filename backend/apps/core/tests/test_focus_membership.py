@@ -214,6 +214,9 @@ def test_on_sale_is_refused_with_nothing_included(owner):
     assert membership.not_ready(_plan(creation)) == "Add what members get first"
     with mock.patch("apps.core.monetization.can_monetize", return_value=True):
         assert _values(creation) == ["off_sale"]
+    # On the trial too: what it still needs comes first, never "Start selling" beside it.
+    with mock.patch("apps.core.monetization.can_monetize", return_value=False):
+        assert _values(creation) == ["off_sale"]
         creation = flow.finish(creation, publish=True)
     assert not _plan(creation).is_active
     assert creation.answers["finish"] == "off_sale"

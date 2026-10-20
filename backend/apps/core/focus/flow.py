@@ -66,6 +66,12 @@ def working_title(topic: str, kind: str = "course") -> str:
     return (text[0].upper() + text[1:])[:TITLE_MAX]
 
 
+def _chat_title(kind: str, title: str) -> str:
+    """The dock thread's name: "New bundle", or "New course: Desk yoga"."""
+    new = kinds.get(kind).NEW_TITLE
+    return (new if title == new else f"{new}: {title}")[:120]
+
+
 def draft_title(creation) -> str:
     """Her working title while a kind has no record yet (G10): the one her
     topic named, else her topic as it stands."""
@@ -99,7 +105,7 @@ def start(user, kind: str, *, value=None, text=None, delegate=False, rest=False,
         record_id = adapter.create_draft(actor, title, answers)
         chat = CopilotChat.objects.create(
             actor=actor,
-            title=(adapter.NEW_TITLE if title == adapter.NEW_TITLE else f"{adapter.NEW_TITLE}: {title}")[:120],
+            title=_chat_title(kind, title),
             entries=[
                 {"role": "assistant", "text": first.question},
                 {"role": "coach", "text": _label(recipe, first, picked)},
@@ -1006,13 +1012,14 @@ def _price_tiles(creation) -> dict:
 
 def _finish_options(creation, asked: dict, record) -> dict:
     """The finish step's buttons: "Start selling" in place of "Publish now"
-    while she cannot sell a paid course, and "Sell it for" the suggested
-    price when "Just draft it" left the price to her (F11)."""
+    while she cannot sell a paid course (once nothing else is missing: what it
+    still needs comes first), and "Sell it for" the suggested price when
+    "Just draft it" left the price to her (F11)."""
     from apps.core import monetization
 
     adapter = kinds.get(creation.kind)
     options = asked["options"]
-    if adapter.cannot_sell(record):
+    if not adapter.not_ready(record) and adapter.cannot_sell(record):
         options = [START_SELLING, *(o for o in options if o["value"] != adapter.FINISH[0][0])]
         asked = {**asked, "paid_active": monetization.is_paid_active(connection.tenant)}
     if (creation.answers or {}).get("access") == DELEGATE and (s := adapter.suggest_price(record)):
@@ -1062,6 +1069,10 @@ def _retitle(creation, provisional: str, title: str) -> None:
         return
     drafted = creation.drafted or {}
     creation.drafted = {**drafted, "titles": [*(drafted.get("titles") or []), title]}
+    # The dock thread too (it was named from her whole first answer, a price and all), unless renamed.
+    CopilotChat.objects.filter(pk=creation.chat_id, title=_chat_title(creation.kind, provisional)).update(
+        title=_chat_title(creation.kind, title)
+    )
 
 
 def _redraft(creation, words: str, *, keep_counts: bool = False) -> None:

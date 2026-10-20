@@ -14,6 +14,7 @@ from decimal import Decimal
 
 from django.db import connection
 
+from apps.core import monetization
 from apps.tenant_config.interview_brief import Field, money
 
 from .. import analysis, pricing
@@ -38,6 +39,8 @@ CLOSING = {
     "draft": lambda row: (
         f"Saved as a draft. {gap}, then publish it from this page."
         if row is not None and (gap := row.not_ready())
+        else f"Saved as a draft. {monetization.NOT_SELLING} Then publish it from this page."
+        if row is not None and row.cannot_sell()
         else "Saved as a draft. Publish it from this page when you're ready."
     ),
 }
