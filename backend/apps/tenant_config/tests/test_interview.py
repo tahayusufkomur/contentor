@@ -237,15 +237,36 @@ def test_a_turn_that_starts_work_says_so(client, tenant_ctx, quiet):
     with mock.patch("apps.tenant_config.interview_milestones.fire", return_value=fired):
         body = client.post(URL, {"message": "Yoga"}, format="json").json()
     status = body["guide"]["status"]
-    assert "your home page and a first draft of your course now" in status and "Bear with me" in status
+    assert status.startswith(
+        "I have enough to start building, so your team is on it: your Designer on your home page"
+        " and your Content Creating Specialist on a first draft of your course."
+    )
+    assert "Bear with me" in status and body["guide"]["status_by"] is None
     flow = TenantConfig.objects.first().setup_flow
     assert flow["interview"]["turns"][-1]["status"] == status
     assert "status" not in interview.interview_state(tenant_ctx, flow)["guide"]  # a reload never re-announces it
 
     body = client.post(URL, {"message": "Beginners"}, format="json").json()
     assert "status" not in body["guide"]  # nothing started
-    assert interview.started_note(["page:about"]) == "I'm starting on your About page now."
-    assert interview.started_note(["style:auto", "rank:logos"]) == ""
+    with mock.patch("apps.tenant_config.interview_milestones.fire", return_value=["page:about"]):
+        body = client.post(URL, {"message": "Busy mums"}, format="json").json()
+    assert body["guide"]["status_by"] == "designer"  # a pages-only turn
+    assert interview.started_note(["page:about"]) == ("Your Designer is starting on your About page now.", "designer")
+    assert interview.started_note(["style:auto", "rank:logos"]) == ("", None)
+    text, by = interview.started_note(["style:auto", "page:home", "rank:logos", "draft:course"])
+    assert text.startswith(
+        "I have enough to start building, so your team is on it: your Designer on your home page"
+        " and your Content Creating Specialist on a first draft of your course."
+    )
+    assert by is None
+    assert interview.started_note(["draft:post"]) == (
+        "Your Marketing Specialist is starting on your first article now.",
+        "marketing",
+    )
+    assert interview.started_note(["page:about", "draft:post"])[0] == (
+        "Your team is starting on your Designer on your About page"
+        " and your Marketing Specialist on your first article now."
+    )
 
 
 def test_card_fields_are_asked_by_code_not_ai(client, tenant_ctx, quiet):

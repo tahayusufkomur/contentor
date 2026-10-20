@@ -51,6 +51,14 @@ STARTED = {
     "draft:post": "your first article",
 }
 
+# Who does each kind of started work (keys of team.NAMES); pages are the designer's.
+STARTED_BY = {
+    "draft:course": "content",
+    "draft:event": "content",
+    "draft:onsite": "content",
+    "draft:post": "marketing",
+}
+
 # Static: byte-identical across tenants, so the field list and icon catalogue
 # live here and are prompt-cached instead of re-sent with every turn.
 # Everything coach-specific rides the user turn as JSON data.
@@ -297,17 +305,28 @@ def builder_of(field: brief.Field) -> str | None:
     return None
 
 
-def started_note(fired: list[str]) -> str:
-    things = [STARTED[k] for k in fired if k in STARTED]
-    if not things:
-        return ""
-    what = things[0] if len(things) == 1 else f"{', '.join(things[:-1])} and {things[-1]}"
+def started_note(fired: list[str]) -> tuple[str, str | None]:
+    """The build-status line, signed by the specialists doing the work, and the
+    one owner's key when a single specialist does all of it."""
+    from apps.core.copilot.team import NAMES
+
+    by_owner: dict[str, list[str]] = {}
+    for k in fired:
+        if k in STARTED:
+            by_owner.setdefault(STARTED_BY.get(k, "designer"), []).append(STARTED[k])
+    if not by_owner:
+        return "", None
+    clauses = [f"your {NAMES[o]} on {brief.say_list(things)}" for o, things in by_owner.items()]
+    owner = next(iter(by_owner)) if len(by_owner) == 1 else None
     if "page:home" in fired:
         return (
-            f"I have enough to start building, so I'm working on {what} now. "
-            "Bear with me, it takes about a minute. Let's keep going while I build."
+            f"I have enough to start building, so your team is on it: {brief.say_list(clauses)}. "
+            "Bear with me, it takes about a minute. Let's keep going while they build.",
+            owner,
         )
-    return f"I'm starting on {what} now."
+    if owner:
+        return f"Your {NAMES[owner]} is starting on {brief.say_list(by_owner[owner])} now.", owner
+    return f"Your team is starting on {brief.say_list(clauses)} now.", None
 
 
 def redraft_ack(request: str) -> str:
@@ -676,8 +695,9 @@ def run_turn(
     milestones.apply_access(tenant, answers)  # a draft already made follows who she opened it to
     # Kept in the transcript; interview_state never re-serves it as the live
     # guide, so a reload doesn't announce finished work as starting.
-    if note := started_note(fired):
-        guide["status"] = note
+    note, owner = started_note(fired)
+    if note:
+        guide["status"], guide["status_by"] = note, owner
     guide["prefill"] = prefill_for(guide["field"], answers)
     guide.update(membership_prices(guide["field"], answers))
     if also:
