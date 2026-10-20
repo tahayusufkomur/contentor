@@ -413,9 +413,15 @@ export default function EditBundlePage() {
 
   // A kept draft, published from here once it has two items and a price (else
   // the line says what it still needs); the server refuses it as the finish
-  // would (not ready, or selling not open yet).
+  // would (not ready, or selling not open yet). What the page shows is what
+  // goes live: her changes on it are saved first.
   const { run: publish, loading: publishing } = useAsyncAction(
     async () => {
+      if (accessProblems.length) {
+        toast.error(accessProblems[0].text);
+        return;
+      }
+      await saveFocus();
       await clientFetch<Bundle>(`/api/v1/billing/bundles/${id}/`, {
         method: "PATCH",
         body: JSON.stringify({ is_published: true }),

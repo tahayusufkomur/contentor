@@ -452,14 +452,25 @@ export function DownloadForm({
 
   // A kept draft, published from here once it has its file and, when paid,
   // once she can sell (else the server's line says why); the server refuses
-  // it as the finish would.
+  // it as the finish would. What the page shows is what goes live: her price
+  // is saved first, and her title, description and tags with it.
   const { run: publish, loading: publishing } = useAsyncAction(
     async () => {
       if (!record) return;
+      if (accessProblems.length) {
+        toast.error(accessProblems[0].text);
+        return;
+      }
+      if (accessDirty) await access.save(record.id);
       receive(
         await clientFetch<DownloadFile>(`/api/v1/downloads/${record.id}/`, {
           method: "PATCH",
-          body: JSON.stringify({ is_published: true }),
+          body: JSON.stringify({
+            title: landed("title").trim(),
+            description: landed("description"),
+            tag_ids: tagIds,
+            is_published: true,
+          }),
         }),
       );
       toast.success(t("published"));
@@ -473,7 +484,7 @@ export function DownloadForm({
         toast.error(
           Array.isArray(why) && typeof why[0] === "string"
             ? why[0]
-            : t("publishError"),
+            : accessSentence(err) || t("publishError"),
         );
       },
     },

@@ -146,7 +146,7 @@ async function stubDraft(page: Page, over: Body = {}) {
         : "";
     return route.fulfill({ json: { ...current, refusal } });
   });
-  return { set: (next: Body) => (current = { ...current, ...next }) };
+  return { set: (next: Body) => (current = { ...current, ...next }), get: () => current };
 }
 
 /** The upload chain (lib/downloads/upload.ts): presign, the PUT to storage, complete. */
@@ -269,7 +269,7 @@ test("a download from one sentence and a file", async ({ browser }) => {
 
 test("add it later keeps it a draft", async ({ browser }) => {
   const page = await (await coachContext(browser)).newPage();
-  const { set } = await stubDraft(page);
+  const { set, get } = await stubDraft(page);
   const atFile = state({ record: RECORD, question: Q.file, answered: [TOPIC] });
   const later: [string, string][] = [TOPIC, ["file", "Add it later"], ["review", "Looks good"], ["access", "Free"]];
   const sent = await stubFocus(
@@ -305,11 +305,14 @@ test("add it later keeps it a draft", async ({ browser }) => {
   await page.reload();
   await expect(page.getByRole("main").getByText(NOT_SELLING)).toBeVisible();
   await expect(publish).toHaveCount(0);
-  // Free, with its file: Publish puts it on the site.
+  // Free, with its file: Publish puts it on the site, with the title she
+  // changed on the page (saved with it, never left behind).
   set({ pricing_type: "free", price: "0.00" });
   await page.reload();
+  await page.getByRole("main").locator("#download-title").fill("Morning workbook, revised");
   await publish.click();
   await expect(page.getByText("Published. Students can find it on your site now.")).toBeVisible();
+  expect(get()).toMatchObject({ title: "Morning workbook, revised", is_published: true });
   await expect(page.getByRole("main").getByText("Draft", { exact: true })).toHaveCount(0);
   await expect(publish).toHaveCount(0);
   await page.close();

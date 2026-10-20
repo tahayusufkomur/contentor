@@ -341,10 +341,16 @@ test("a kept draft is published from its page once selling is open", async ({ br
   // The server refuses it as the finish would: she is told why, and it stays a draft.
   await expect(page.getByText(line)).toBeVisible();
   await expect(main(page).getByText("Draft", { exact: true })).toBeVisible();
+  // A name she changed on the page goes live with it: saved first.
+  await main(page).locator("#name").fill("Yoga pair");
   await publish.click();
   await expect(page.getByText(CLOSING)).toBeVisible();
   await expect(main(page).getByText("Draft", { exact: true })).toHaveCount(0);
-  expect(log).toEqual(['patch:{"is_published":true}', 'patch:{"is_published":true}']);
+  expect(log).toEqual([
+    'patch:{"is_published":true}',
+    'patch:{"name":"Yoga pair"}',
+    'patch:{"is_published":true}',
+  ]);
   await page.close();
 });
 
