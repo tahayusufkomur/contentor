@@ -93,6 +93,16 @@
     "src/components/admin/admin-shell.tsx": ["27-nav-stage-gating"],
     "src/components/copilot": ["01-signup-onboarding", "29-copilot"],
     "src/lib/copilot": ["29-copilot"],
+    "src/lib/copilot/live.ts": [
+      "29-copilot",
+      "33-focus-course",
+      "34-focus-event",
+      "35-focus-message",
+      "36-focus-download",
+      "37-focus-membership",
+      "38-focus-bundle",
+      "39-focus-post"
+    ],
     "src/components/admin/describe-it.tsx": ["29-copilot"],
     "src/components/admin/assistant-dock.tsx": [
       "27-nav-stage-gating",
