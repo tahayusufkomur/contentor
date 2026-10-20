@@ -69,8 +69,10 @@ class ChoiceError(Exception):
 
 def _due(tenant, answers) -> list[str]:
     offers = set(answers.get("offers") or [])
+    # The slide examples don't wait for the site: due even before the home page's early return.
+    examples = ["slides:examples"] if brief.settled(answers, ("teaches", "audience")) else []
     if not brief.settled(answers, PAGE_NEEDS["home"]):
-        return []
+        return examples
     due = ["style:auto", "page:home", "rank:logos"]
     due += [f"page:{p}" for p in ("about", "contact", "faq") if brief.settled(answers, PAGE_NEEDS[p])]
     # A coach who runs classes gets an Events page once the class sections
@@ -87,7 +89,7 @@ def _due(tenant, answers) -> list[str]:
         wanted = kind not in skipped and (kind not in DRAFT_OFFERS or offers.intersection(DRAFT_OFFERS[kind]))
         if wanted and brief.settled(answers, needs):
             due.append(f"draft:{kind}")
-    return due
+    return due + examples
 
 
 def fire(tenant, answers: dict) -> list[str]:
@@ -139,6 +141,8 @@ def _start(tenant, answers, key) -> None:
             transaction.on_commit(lambda: tasks.rank_curated_logos.delay(tenant_id))
     elif action == "plan":
         create_memberships(tenant, answers)
+    elif action == "slides":
+        transaction.on_commit(lambda: tasks.write_setup_slides.delay(tenant_id))
     elif action == "draft":
         prompt = draft_prompt(answers, arg)
         transaction.on_commit(lambda: tasks.interview_draft_task.delay(tenant_id, arg, prompt))

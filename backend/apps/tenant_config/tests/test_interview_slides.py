@@ -3,12 +3,16 @@ renders with the coach's examples or the field-neutral fallback. Pure functions.
 
 import importlib
 import re
+from decimal import Decimal
+from unittest import mock
 
 import pytest
 from django.apps import apps as django_apps
 
+from apps.core import ai
 from apps.tenant_config import interview
 from apps.tenant_config import interview_brief as brief
+from apps.tenant_config import interview_milestones as ms
 from apps.tenant_config import interview_slides as slides
 from apps.tenant_config.interview_slides import END, SLIDE_BY_KEY
 from apps.tenant_config.models import TenantConfig
@@ -201,3 +205,94 @@ def test_baseline_migration_skips_slides_behind_the_asked_field(tenant_ctx, conf
     assert run({"turns": turn, "asked": None})["slides_from"] == END
     untouched = run({"turns": turn, "asked": "pitch", "slides": {"team": "seen"}})
     assert "slides_from" not in untouched and untouched["slides"] == {"team": "seen"}
+
+
+EXAMPLES = slides.SlideExamples(
+    course_title="Face yoga reset",
+    modules=["Week 1: Warm-up", "Week 2: Jawline", "Week 3: Eyes"],
+    lessons=18,
+    course_price=49,
+    class_title="Tuesday face yoga",
+    class_when="Tuesdays, 7 pm",
+    class_price=10,
+    event_title="Glow weekend",
+    event_place="Your studio",
+    memberships=[
+        slides.Plan(name="Glow Club", price=19, covers="Every live class"),
+        slides.Plan(name="Course library", price=12, covers="Every course"),
+    ],
+    students=[
+        slides.Student(name="Mia", about="Busy mum, short on time"),
+        slides.Student(name="Jo", about="Joins every week"),
+        slides.Student(name="Lena", about="Drops in monthly"),
+    ],
+    way_course="A 6-week face yoga course",
+    way_live="A weekly class from home",
+    way_onsite="A glow weekend at your studio",
+    way_articles="Posts on face yoga routines",
+    way_community="A space where members share progress",
+    pitch="Glow: face yoga for busy mums.",
+    message="Is Tuesday OK for beginners?",
+)
+
+
+@pytest.mark.django_db
+def test_examples_milestone_fires_once_teaches_and_audience_are_settled(tenant_ctx):
+    assert "slides:examples" not in ms._due(tenant_ctx, {"teaches": "Yoga"})
+    assert "slides:examples" in ms._due(tenant_ctx, {"teaches": "Yoga", "audience": "Parents"})
+
+
+@pytest.mark.django_db
+def test_write_examples_stores_them(tenant_ctx, config):  # noqa: F811
+    with (
+        mock.patch("apps.core.ai.structured", return_value=(EXAMPLES, Decimal("0"), "m")),
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+    ):
+        assert slides.write_examples(tenant_ctx) is True
+    stored = TenantConfig.objects.first().setup_flow["interview"]["slide_examples"]
+    assert stored["course_title"] == EXAMPLES.course_title
+    assert stored == EXAMPLES.model_dump()
+
+
+@pytest.mark.django_db
+def test_write_examples_without_ai_is_a_quiet_no(tenant_ctx, config):  # noqa: F811
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
+        assert slides.write_examples(tenant_ctx) is False
+
+
+@pytest.mark.django_db
+def test_write_examples_records_spend_and_stores_nothing_when_the_ai_fails(tenant_ctx, config):  # noqa: F811
+    with (
+        mock.patch("apps.core.ai.structured", side_effect=ai.AiError("down", cost_usd=0.02)),
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.onboarding.ai_compose.record_spend") as spend,
+    ):
+        assert slides.write_examples(tenant_ctx) is False
+    spend.assert_called_once_with(tenant_ctx.schema_name, 0.02)
+    assert "slide_examples" not in (TenantConfig.objects.first().setup_flow.get("interview") or {})
+
+
+@pytest.mark.django_db
+def test_write_examples_asks_in_the_background_with_the_words_rule(tenant_ctx, config):  # noqa: F811
+    with (
+        mock.patch("apps.core.ai.structured", return_value=(EXAMPLES, Decimal("0.01"), "m")) as call,
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.onboarding.ai_compose.record_spend") as spend,
+    ):
+        slides.write_examples(tenant_ctx)
+    assert call.call_args.kwargs["label"] == "contentor:setup-slides"
+    spend.assert_called_once_with(tenant_ctx.schema_name, Decimal("0.01"))
+    words = interview.SYSTEM.split("Words:")[1].split("\n\n")[0]
+    assert words in slides.EXAMPLES_SYSTEM
+
+
+def test_examples_fall_back_when_missing_or_short():
+    short = {**EXAMPLES.model_dump(), "students": EXAMPLES.model_dump()["students"][:2], "memberships": []}
+    pay = slides.render([SLIDE_BY_KEY["pay"]], {}, short, {}, "Glow")[0]
+    assert len(pay["picture"]["students"]) == 3
+    plans = slides.render([SLIDE_BY_KEY["membership"]], {}, short, {}, "Glow")[0]["picture"]["plans"]
+    assert len(plans) == 2
+
+
+def test_setup_slides_runs_in_the_background_on_the_hub():
+    assert "contentor:setup-slides".startswith(ai._AGENTC_BACKGROUND_LABELS)

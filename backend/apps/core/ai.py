@@ -291,7 +291,12 @@ def _agentc_url(path):
 # as interactive, two site plans held both usable accounts for over two
 # minutes, and every interview turn and look copy queued behind them was
 # cancelled at its deadline (_agentc_execute now warns about such a rule).
-_AGENTC_BACKGROUND_LABELS = ("contentor:compose", "contentor:interview-ahead", "contentor:focus-ahead")
+_AGENTC_BACKGROUND_LABELS = (
+    "contentor:compose",
+    "contentor:interview-ahead",
+    "contentor:focus-ahead",
+    "contentor:setup-slides",
+)
 
 
 def _agentc_model(effort):

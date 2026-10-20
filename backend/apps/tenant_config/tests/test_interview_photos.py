@@ -122,7 +122,7 @@ def test_the_home_page_waits_for_the_answer(tenant):
         "offers": ["course"],
         "pitch": "Chess for kids",
     }
-    assert milestones._due(tenant, answers) == []
+    assert "page:home" not in milestones._due(tenant, answers)
     assert "page:home" in milestones._due(tenant, {**answers, "photos": "stock"})
 
 

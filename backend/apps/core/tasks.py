@@ -518,6 +518,20 @@ def interview_draft_task(tenant_id, kind, prompt, keep_cover=False):
         interview_milestones.run_draft(tenant, kind, prompt, keep_cover=keep_cover)
 
 
+@shared_task
+def write_setup_slides(tenant_id):
+    """The creator's slide examples for the /setup presentation (one background AI
+    call, interview_slides.write_examples); the slides use their fallback until it lands."""
+    from apps.core.models import Tenant
+    from apps.tenant_config import interview_slides
+
+    tenant = Tenant.objects.filter(id=tenant_id).first()
+    if tenant is None:
+        return
+    with tenant_context(tenant):
+        interview_slides.write_examples(tenant)
+
+
 # How long after a pass the next one looks, while a coach's photos are still
 # being described: quick at first (she may be watching), then every ten minutes.
 OWN_PHOTO_SYNC_DELAYS = (20, 40, 60, 120, 300, 600)
