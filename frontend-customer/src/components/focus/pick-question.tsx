@@ -20,6 +20,7 @@ export function PickQuestion({
   sending,
   onTick,
   onAnswer,
+  also,
 }: {
   options: FocusOption[];
   /** Ticked when it opens (the items her words named). */
@@ -30,6 +31,8 @@ export function PickQuestion({
   /** Her ticks as they change, before she sends them. */
   onTick?: (ticked: string[]) => void;
   onAnswer: (value: string) => void;
+  /** A second way to send the same ticks (the access step's "Add a time limit"). */
+  also?: { label: string; onAnswer: (value: string) => void };
 }) {
   const t = useTranslations("admin.focus");
   const values = options.map((option) => option.value);
@@ -115,6 +118,16 @@ export function PickQuestion({
             ? t("pickSome")
             : t("continueWith", { count: ticked.length })}
         </Button>
+        {also && (
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={sending || ticked.length === 0}
+            onClick={() => also.onAnswer(pickAnswer(values, ticked, selectAll))}
+          >
+            {also.label}
+          </Button>
+        )}
         {!above && all}
       </div>
     </div>

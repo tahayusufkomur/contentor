@@ -1243,6 +1243,7 @@
     "deselectAll": "Deselect all",
     "pickSome": "Pick as many as fit",
     "continueWith": "{count, plural, one {Continue} other {Continue with #}}",
+    "addTimeLimit": "Add a time limit",
     "answerPlaceholder": "Or say it your way…",
     "changePlaceholder": "Or say what to change…",
     "writingOutline": "Writing your outline…",

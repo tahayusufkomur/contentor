@@ -40,6 +40,8 @@ export interface FocusQuestion {
   say?: string;
   /** A pick question (several tiles): the ones her words already named. */
   ticked?: string[];
+  /** The price step as ways in to tick (Free, sold once, each subscription): rendered as a pick. */
+  multi?: boolean;
   /** Finish with "Start selling": her plan is on, so payouts come next. */
   paid_active?: boolean;
   /** A schedule question: her site's time zone, the one its times are in (G13). */

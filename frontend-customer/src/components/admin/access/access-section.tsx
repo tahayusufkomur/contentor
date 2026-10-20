@@ -305,7 +305,8 @@ function Loaded({
     : ways;
 
   return (
-    <Card>
+    // Focus mode's "Add a time limit" brings this into view.
+    <Card data-access-section>
       <CardHeader className="pb-1">
         <CardTitle className="text-base">Access</CardTitle>
         <CardDescription>

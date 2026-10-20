@@ -1079,6 +1079,9 @@ const ACCESS_Q = question("access", "price", "How will students get it?", {
     option("plan:3", "In Gold"),
   ],
   suggested: "paid:39",
+  multi: true,
+  ticked: ["paid:39"],
+  can_delegate: false,
 });
 
 /** The course page with the creation at ``at()``'s step; ``onFocus`` sees each request first. */
@@ -1096,17 +1099,22 @@ async function openAt(page: Page, at: () => Body, onFocus: (req: { path: string;
   return tracked;
 }
 
-test("the price step: you decide highlights the suggestion for her to tap", async ({ browser }) => {
-  const coach = await coachContext(browser);
-  const page = await coach.newPage();
+/** The course page at the access step; ``sent`` is every request the guide made. */
+async function atAccess(page: Page) {
   let priced = false;
-  const { sent } = await openAt(
+  return openAt(
     page,
     () => (priced ? finishState() : coverState({ question: ACCESS_Q, cover: null })),
     ({ path, body }) => {
       if (path.endsWith("/answer/") && body.field === "access" && body.value) priced = true;
     },
   );
+}
+
+test("the access step: she ticks every way in, the suggestion ticked to start", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const { sent } = await atAccess(page);
 
   await expect(guide(page).getByText("How will students get it?")).toBeVisible();
   await expect(guide(page).getByText("Financial Strategist here: let's decide how students get it.")).toBeVisible();
@@ -1114,16 +1122,29 @@ test("the price step: you decide highlights the suggestion for her to tap", asyn
   await expect(guide(page).getByText("Financial Strategist", { exact: true })).toBeHidden();
   const paid = guide(page).getByRole("button", { name: /One-time price: \$39/ });
   await expect(paid).toContainText("Your other courses sell for $29–$49");
-  await expect(paid).not.toHaveAttribute("data-highlighted");
+  await expect(paid).toHaveAttribute("aria-pressed", "true");
+  await expect(guide(page).getByRole("button", { name: "You decide" })).toBeHidden();
 
-  // "You decide" picks out the suggestion; the price is still hers to tap.
-  await guide(page).getByRole("button", { name: "You decide" }).click();
-  await expect(paid).toHaveAttribute("data-highlighted", "true");
-  expect(sent.filter((s) => s.field === "access")).toEqual([]);
-
-  await paid.click();
+  await guide(page).getByRole("button", { name: "In Gold" }).click();
+  await guide(page).getByRole("button", { name: "Continue with 2" }).click();
   await expect(guide(page).getByText("Ready. Publish it now?")).toBeVisible();
-  expect(sent.filter((s) => s.field === "access")).toEqual([expect.objectContaining({ field: "access", value: "paid:39" })]);
+  expect(sent.filter((s) => s.field === "access")).toEqual([
+    expect.objectContaining({ field: "access", value: "paid:39,plan:3" }),
+  ]);
+  await page.close();
+});
+
+test("the access step: Add a time limit sends her ticks and brings up Access on the page", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const { sent } = await atAccess(page);
+
+  await guide(page).getByRole("button", { name: "Add a time limit" }).click();
+  await expect(guide(page).getByText("Ready. Publish it now?")).toBeVisible();
+  expect(sent.filter((s) => s.field === "access")).toEqual([
+    expect.objectContaining({ field: "access", value: "paid:39" }),
+  ]);
+  await expect(page.locator("[data-access-section]")).toBeInViewport();
   await page.close();
 });
 

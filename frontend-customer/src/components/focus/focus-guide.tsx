@@ -466,8 +466,9 @@ export function FocusGuide() {
           <p className="text-sm text-foreground">
             {t(`focus.kinds.${state.kind}.tooFew`)}
           </p>
-        ) : question.kind === "pick" ? (
-          // Her ticks are the answer: the tiles live in PickQuestion, not as taps.
+        ) : question.kind === "pick" || question.multi ? (
+          // Her ticks are the answer: the tiles live in PickQuestion, not as taps
+          // (the access step's ways in too).
           <GuideQuestion
             key={`${question.field}:${(question.ticked ?? []).join(",")}`}
             question={{ ...question, options: [] }}
@@ -490,6 +491,22 @@ export function FocusGuide() {
                 picking.current = null;
                 send({ ...NONE, picked: value });
               }}
+              also={
+                question.multi
+                  ? {
+                      label: t("focus.addTimeLimit"),
+                      // Her ticks go as they are; the window is set on the
+                      // page's Access section, which then shows them.
+                      onAnswer: (value) => {
+                        picking.current = null;
+                        send({ ...NONE, picked: value });
+                        document
+                          .querySelector("[data-access-section]")
+                          ?.scrollIntoView({ block: "start" });
+                      },
+                    }
+                  : undefined
+              }
             />
           </GuideQuestion>
         ) : question.kind === "price" ? (
