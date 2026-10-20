@@ -18,6 +18,7 @@ export function PickQuestion({
   ticked: initial = [],
   selectAll,
   sending,
+  onTick,
   onAnswer,
 }: {
   options: FocusOption[];
@@ -26,17 +27,25 @@ export function PickQuestion({
   /** The value that means every tile. */
   selectAll: string;
   sending: boolean;
+  /** Her ticks as they change, before she sends them. */
+  onTick?: (ticked: string[]) => void;
   onAnswer: (value: string) => void;
 }) {
   const t = useTranslations("admin.focus");
   const values = options.map((option) => option.value);
-  const [ticked, setTicked] = useState(() =>
+  const [ticked, setTickedState] = useState(() =>
     initial.filter((value) => values.includes(value)),
   );
+  const setTicked = (next: string[]) => {
+    setTickedState(next);
+    onTick?.(next);
+  };
   const every = ticked.length === values.length;
   const toggle = (value: string) =>
-    setTicked((now) =>
-      now.includes(value) ? now.filter((v) => v !== value) : [...now, value],
+    setTicked(
+      ticked.includes(value)
+        ? ticked.filter((v) => v !== value)
+        : [...ticked, value],
     );
   const all = values.length > 1 && (
     <Button

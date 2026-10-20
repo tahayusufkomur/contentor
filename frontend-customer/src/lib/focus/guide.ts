@@ -43,6 +43,24 @@ export function pickOrder<T extends { value: string }>(
   ];
 }
 
+/** Her ticks on a pick question she has not sent yet, and what her words had
+ *  named when she last ticked (`seen`). */
+export interface KeptTicks {
+  ticked: string[];
+  seen: string[];
+}
+
+/** A pick question's ticks when it opens again (it is away while her typed
+ *  words are read): hers as she left them, plus what her words named since;
+ *  with none of hers, what her words named. */
+export function keptTicks(kept: KeptTicks | null, named: string[]): string[] {
+  if (!kept) return named;
+  return [
+    ...kept.ticked,
+    ...named.filter((v) => !kept.seen.includes(v) && !kept.ticked.includes(v)),
+  ];
+}
+
 /** Whether "Select all" / "Deselect all" goes above the tiles. */
 export function pickAllAbove(count: number): boolean {
   return count > PICK_ALL_ABOVE;

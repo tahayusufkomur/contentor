@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -32,7 +32,12 @@ import {
   type FocusQuestion,
   type FocusState,
 } from "@/lib/focus/api";
-import { guideBody, type GuideInput } from "@/lib/focus/guide";
+import {
+  guideBody,
+  keptTicks,
+  type GuideInput,
+  type KeptTicks,
+} from "@/lib/focus/guide";
 import { focusTimeKey, SAVE_FIRST, type FocusKind } from "@/lib/focus/kinds";
 import {
   activeCreation,
@@ -246,8 +251,14 @@ export function FocusGuide() {
     return () => clearInterval(timer);
   }, [id, building]);
 
+  // Her unsent ticks on the pick question, kept while it is away (her typed
+  // words being read) and when it opens again with what they named.
+  const picking = useRef<(KeptTicks & { key: string }) | null>(null);
+
   if (!state) return null;
   const question = state.question;
+  const pickKey = `${state.id}:${question?.field}`;
+  const named = question?.ticked ?? [];
   const descriptions = state.descriptions?.status;
   // Another specialist takes this step: who, in one line (spec §4.1).
   const handOver =
@@ -463,10 +474,19 @@ export function FocusGuide() {
           >
             <PickQuestion
               options={question.options}
-              ticked={question.ticked}
+              ticked={keptTicks(
+                picking.current?.key === pickKey ? picking.current : null,
+                named,
+              )}
               selectAll="all"
               sending={sending}
-              onAnswer={(value) => send({ ...NONE, picked: value })}
+              onTick={(ticked) => {
+                picking.current = { key: pickKey, ticked, seen: named };
+              }}
+              onAnswer={(value) => {
+                picking.current = null;
+                send({ ...NONE, picked: value });
+              }}
             />
           </GuideQuestion>
         ) : question.kind === "price" ? (
