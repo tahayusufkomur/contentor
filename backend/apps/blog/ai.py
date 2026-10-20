@@ -295,6 +295,24 @@ def generate_post(brief, topic, instructions="", photos=(), label=None):
     return DraftResult(_draft_fields(parsed, valid_ids, effective_model, cost), cost)
 
 
+def generate_counted(tenant, brief, topic, instructions="", photos=(), label=None):
+    """generate_post on her blog quota: what it cost is recorded on every
+    attempt, and only a post that came back uses a credit. Callers check
+    availability(tenant) first. Raises what generate_post raises."""
+    try:
+        result = generate_post(brief, topic, instructions, photos=photos, label=label)
+    except BlogAiError as exc:
+        record_attempt_cost(tenant.schema_name, exc.cost_usd)
+        raise
+    except Exception:
+        record_attempt_cost(tenant.schema_name, 0)
+        raise
+    record_attempt_cost(tenant.schema_name, result.cost_usd)
+    record_success(tenant.schema_name)
+    consume_free_grant(tenant)
+    return result
+
+
 def generate_post_stream(brief, topic, instructions="", photos=()):
     """Streaming twin of generate_post. Yields ("phase", name) and
     ("preview", dict) as the draft forms, then exactly one ("result",

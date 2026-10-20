@@ -150,9 +150,13 @@ def _generate_inputs(request):
         topic_obj = BlogTopicIdea.objects.filter(pk=data["topic_id"], status="available").first()
     topic = (topic_obj.title if topic_obj else str(data.get("custom_topic") or ""))[:200]
     instructions = str(data.get("instructions") or "")[:500]
+    return topic, topic_obj, instructions, _photos_for(topic)
+
+
+def _photos_for(topic):
+    """What the writer may place: her own photos first (newest), then catalog candidates for the topic."""
     photos = list(Photo.objects.order_by("-created_at")[: ai.MAX_AVAILABLE_PHOTOS])
-    photos += curated.curated_candidates(topic, limit=ai.MAX_AVAILABLE_PHOTOS - len(photos))
-    return topic, topic_obj, instructions, photos
+    return photos + curated.curated_candidates(topic, limit=ai.MAX_AVAILABLE_PHOTOS - len(photos))
 
 
 def _persist_draft(request, result, topic_obj):
@@ -259,19 +263,14 @@ def blog_generate(request):
         return stream_response(_generate_sse(request, tenant, status, topic, topic_obj, instructions, photos))
 
     try:
-        result = ai.generate_post(_brief_for_current_tenant(), topic, instructions, photos=photos)
-    except ai.BlogAiError as exc:
-        ai.record_attempt_cost(tenant.schema_name, exc.cost_usd)
+        result = ai.generate_counted(tenant, _brief_for_current_tenant(), topic, instructions, photos=photos)
+    except ai.BlogAiError:
         logger.exception("blog generate failed")
         return Response({"post": None, "source": "error", "remaining": status["remaining"]})
     except Exception:
-        ai.record_attempt_cost(tenant.schema_name, 0)
         logger.exception("blog generate: AI call failed")
         return Response({"post": None, "source": "error", "remaining": status["remaining"]})
 
-    ai.record_attempt_cost(tenant.schema_name, result.cost_usd)
-    ai.record_success(tenant.schema_name)
-    ai.consume_free_grant(tenant)
     post = _persist_draft(request, result, topic_obj)
     return Response({"post": BlogPostAdminSerializer(post).data, "source": "ai", "remaining": status["remaining"] - 1})
 

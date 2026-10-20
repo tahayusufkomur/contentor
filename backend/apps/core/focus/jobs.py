@@ -24,6 +24,7 @@ HANDLERS = {
     "announce": "apps.core.focus.announce",
     "followup": "apps.core.focus.followup",
     "copy": "apps.core.focus.copywriter",
+    "post": "apps.core.focus.post",
 }
 STATUS = {
     "queued": "building",
