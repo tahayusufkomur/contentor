@@ -415,7 +415,7 @@ def test_she_waits_on_the_reading_and_cannot_tap_meanwhile(owner, outline_start,
     creation = flow.start(owner, "course", text="desk yoga")
     body = flow.state(creation)
     assert body["question"] is None
-    assert body["reading"] == {"status": "building", "run": creation.runs["analysis"]}
+    assert body["reading"] == {"status": "building", "run": creation.runs["analysis"], "specialist": "content"}
     assert flow.answer(creation, "level", value="beginners").answers == {}
     assert flow.state(_run_pending(creation))["reading"] is None
 

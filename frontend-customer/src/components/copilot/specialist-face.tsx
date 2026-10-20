@@ -39,7 +39,10 @@ export function SpecialistFace({
 export function SpecialistByline({ k }: { k: SpecialistKey }) {
   const t = useTranslations("admin");
   return (
-    <span className="mb-1 flex items-center gap-1.5 text-xs font-medium text-foreground">
+    <span
+      data-byline
+      className="mb-1 flex items-center gap-1.5 text-xs font-medium text-foreground"
+    >
       <SpecialistFace k={k} size="sm" />
       {t(`team.specialists.${k}.name`)}
     </span>

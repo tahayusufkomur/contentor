@@ -96,7 +96,8 @@ export function AssistantDock() {
   const creation = useActiveCreation();
   // In focus mode the phone's panel is a bottom sheet she reads the page
   // behind, so it never makes the page inert.
-  const sheet = useNarrow() && dock.isOpen && !creation;
+  const narrow = useNarrow();
+  const sheet = narrow && dock.isOpen && !creation;
   const closeDock = dock.close;
   const openDock = dock.open;
   const setup = useSetupStatus();
@@ -122,6 +123,13 @@ export function AssistantDock() {
   useEffect(() => {
     if (focusing) openDock();
   }, [focusing, openDock]);
+  // Once it ends on a phone the dock would be a sheet over the page she just
+  // made (her finish opens its chat): closed, the toast says what happened.
+  const wasFocusing = useRef(focusing);
+  useEffect(() => {
+    if (wasFocusing.current && !focusing && narrow) closeDock();
+    wasFocusing.current = focusing;
+  }, [focusing, narrow, closeDock]);
 
   // As a sheet it covers the page, so it behaves as a dialog: the page behind
   // is inert (keyboard and screen reader stay inside), Escape closes it, and

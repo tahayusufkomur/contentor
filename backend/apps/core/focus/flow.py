@@ -99,7 +99,7 @@ def start(user, kind: str, *, value=None, text=None, delegate=False, rest=False,
         record_id = adapter.create_draft(actor, title, answers)
         chat = CopilotChat.objects.create(
             actor=actor,
-            title=f"{adapter.NEW_TITLE}: {title}"[:120],
+            title=(adapter.NEW_TITLE if title == adapter.NEW_TITLE else f"{adapter.NEW_TITLE}: {title}")[:120],
             entries=[
                 {"role": "assistant", "text": first.question},
                 {"role": "coach", "text": _label(recipe, first, picked)},
@@ -295,7 +295,8 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
         # Never an empty lesson in front of students, nor a paid course she cannot sell yet: a draft.
         adapter = kinds.get(creation.kind)
         record = _record(creation)
-        live = publish and not adapter.not_ready(record) and not adapter.cannot_sell(record)
+        gap = adapter.not_ready(record)
+        live = publish and not gap and not adapter.cannot_sell(record)
         choice = adapter.FINISH[0 if live else 1][0]
         # Optional: the tick is the kind's own (a message's "Also by email"), kept on a draft too.
         if tick := getattr(adapter, "apply_tick", None):
@@ -308,8 +309,17 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
         recipe = adapter.RECIPE
         question = next(q for q in recipe.questions if q.id == "finish")
         creation.answers["finish"] = choice
-        _say(creation, question, _label(recipe, question, choice))
-        _chat_append(creation, [{"role": "assistant", "text": closing_line(creation)}])
+        # The question as the dock asked it, and the button she tapped; the closing line says what it did.
+        asked = adapter.NOT_READY_LINE if gap else question.question
+        tapped = _label(recipe, question, adapter.FINISH[0 if publish else 1][0])
+        _chat_append(
+            creation,
+            [
+                {"role": "assistant", "text": asked},
+                {"role": "coach", "text": tapped},
+                {"role": "assistant", "text": closing_line(creation)},
+            ],
+        )
         if live and announce and adapter.ANNOUNCER:
             announcing.start(creation)
         else:
@@ -624,7 +634,11 @@ def state(creation) -> dict:
         "record": adapter.payload(record) if record else None,
         "question": asked,
         "answered": [
-            {"field": q.id, "label": _label(recipe, q, answers[q.id], tiles)}
+            # "You decide" names what it decided: after "Just draft it" there are several.
+            {
+                "field": q.id,
+                "label": f"{q.label}: you decide" if answers[q.id] == DELEGATE else _label(recipe, q, answers[q.id], tiles),
+            }
             for q in recipe.questions
             if q.id in answers
         ]
@@ -651,7 +665,11 @@ def state(creation) -> dict:
         "cover": covers.payload(creation),
         "announcement": announcing.payload(creation) if field == "announce" else None,
         "reading": (
-            {"status": jobs.status(creation, "analysis"), "run": jobs.run_id(creation, "analysis")}
+            {
+                "status": jobs.status(creation, "analysis"),
+                "run": jobs.run_id(creation, "analysis"),
+                "specialist": _reader(creation, creation.pending.get("field")),
+            }
             if creation.pending
             else None
         ),
@@ -705,8 +723,16 @@ def _analyse(creation, field, text, rest) -> None:
     if not ai_compose.compose_available():
         apply(creation, None)
         return
-    run = jobs.queue(creation, "analysis", specialist="content")
+    run = jobs.queue(creation, "analysis", specialist=_reader(creation, field))
     creation.pending = {**creation.pending, "run": run.id}
+
+
+def _reader(creation, field) -> str:
+    """Who reads her typed words: whoever asked what she answered (a clarify's, its detail's asker)."""
+    recipe = kinds.get(creation.kind).RECIPE
+    if field == "clarify" and (unclear := (creation.brief or {}).get("clarify")):
+        field = unclear[0]["field"]
+    return recipe.specialists.get(field) or recipe.specialists[_review_id(recipe)]
 
 
 def _settle(creation):

@@ -276,7 +276,11 @@ export function FocusGuide() {
     question && question.kind !== "review" ? reason : undefined;
 
   return (
-    <div className="flex flex-col gap-5" style={SHELL_TOKENS}>
+    <div
+      // The hand-over line names who asks: the question's own byline would name them again.
+      className={`flex flex-col gap-5${handOver ? " [&_[data-byline]]:hidden" : ""}`}
+      style={SHELL_TOKENS}
+    >
       {state.answered.length > 0 && (
         <ul className="flex flex-col gap-1.5">
           {state.answered.map((line) => (
@@ -312,7 +316,7 @@ export function FocusGuide() {
       )}
       {state.reading?.status === "building" && (
         <div className="flex flex-col gap-3">
-          <SpecialistByline k="content" />
+          <SpecialistByline k={state.reading.specialist} />
           <p className="flex items-center gap-2 text-sm text-foreground">
             <Spinner size="sm" />
             {t("focus.readingDetails")}

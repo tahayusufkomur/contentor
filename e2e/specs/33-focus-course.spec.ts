@@ -102,7 +102,7 @@ const READING = reviewState({
   question: null,
   answered: [],
   outline: { status: "idle", run: null },
-  reading: { status: "building", run: 6000 },
+  reading: { status: "building", run: 6000, specialist: "content" },
 });
 
 function courseDetail(written: boolean, described = false): Body {
@@ -510,6 +510,23 @@ test("publish now leaves the editor showing it published", async ({ browser }) =
   await page.getByRole("button", { name: "Save Changes" }).click();
   await expect.poll(() => saved.length).toBe(1);
   expect(saved[0].is_published).toBe(true);
+  await page.close();
+});
+
+test("on a phone, publishing leaves her on the page, not under the chat", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await stubFocus(page);
+
+  await answerTopic(page);
+  await guide(page).getByRole("button", { name: "Just draft it" }).click();
+  await guide(page).getByRole("button", { name: "Looks good, continue" }).click();
+  await guide(page).getByRole("button", { name: "Publish now" }).click();
+  await expect(guide(page)).toHaveCount(0);
+  // The team chat would be a sheet over the whole page: it stays closed (the toast says it).
+  await expect(page.getByRole("dialog", { name: "Your team" })).toHaveCount(0);
+  await expect(page.locator("#published")).toBeChecked();
   await page.close();
 });
 
@@ -981,14 +998,14 @@ test("saying a photo searches the row", async ({ browser }) => {
   const { sent, searches } = await openAtCover(page, ({ path, method }) => {
     if (method === "POST" && path.endsWith("/answer/")) {
       said = true;
-      return coverState({ question: null, reading: { status: "building", run: 6001 } });
+      return coverState({ question: null, reading: { status: "building", run: 6001, specialist: "designer" } });
     }
     if (path.endsWith(`/focus/${CREATION}/`)) {
       if (!said) return coverState();
       // One read while the analysis runs, then her words are the photo's.
       reads += 1;
       return reads < 2
-        ? coverState({ question: null, reading: { status: "building", run: 6001 } })
+        ? coverState({ question: null, reading: { status: "building", run: 6001, specialist: "designer" } })
         : coverState({ cover: coverPayload(undefined, { query: WORDS }) });
     }
   });
@@ -997,6 +1014,8 @@ test("saying a photo searches the row", async ({ browser }) => {
   await guide(page).getByRole("textbox", { name: "Your answer" }).fill(WORDS);
   await guide(page).getByRole("button", { name: "Send", exact: true }).click();
   await expect(guide(page).getByText("Reading your details…")).toBeVisible();
+  // Her words about the photo are the Designer's to read.
+  await expect(guide(page).getByText("Designer", { exact: true })).toBeVisible();
   // The drafts stay on the page while she waits.
   await expect(coverStep(page).locator("[data-cover]")).toHaveCount(4);
   await expect.poll(() => searches).toContain(WORDS);
@@ -1069,6 +1088,8 @@ test("the price step: you decide highlights the suggestion for her to tap", asyn
 
   await expect(guide(page).getByText("How will students get it?")).toBeVisible();
   await expect(guide(page).getByText("Financial Strategist here: let's decide how students get it.")).toBeVisible();
+  // Named once: the hand-over line, not the question's byline under it too.
+  await expect(guide(page).getByText("Financial Strategist", { exact: true })).toBeHidden();
   const paid = guide(page).getByRole("button", { name: /One-time price: \$39/ });
   await expect(paid).toContainText("Your other courses sell for $29–$49");
   await expect(paid).not.toHaveAttribute("data-highlighted");

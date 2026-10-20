@@ -23,7 +23,7 @@ from apps.core.focus.kinds import bundle
 from apps.courses.models import Course
 from apps.downloads.models import DownloadFile
 from apps.live.models import LiveClass, OnsiteEvent, ZoomClass
-from apps.tenant_config.models import FocusCreation, TenantConfig
+from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation, TenantConfig
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -533,3 +533,30 @@ def test_finance_asks_and_marketing_writes(owner):
     assert (specialists["items"], specialists["access"], specialists["finish"]) == ("finance",) * 3
     assert (specialists["review"], bundle.ANNOUNCER, bundle.FINISH_SPECIALIST) == ("marketing", "marketing", "finance")
     assert (bundle.COVER, bundle.put_in_plan, bundle.COPY_FIELDS) == (None, None, ("name", "description"))
+
+
+# ── The dock: shared guide behaviour, seen on a bundle ──────────────────────
+
+
+def test_a_tap_start_is_titled_once_and_her_words_are_read_by_finance(owner):
+    courses = [_course(owner, f"Course {n}") for n in range(2)]
+    creation = flow.start(owner, "bundle", value=",".join(f"course:{c.pk}" for c in courses))
+    assert CopilotChat.objects.get(pk=creation.chat_id).title == "New bundle"  # never "New bundle: New bundle"
+    with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True):
+        typed = flow.start(owner, "bundle", text="My two yoga courses")
+    # Finance asks what goes in it, so Finance reads her words (not the Content Creating Specialist).
+    assert flow.state(typed)["reading"]["specialist"] == "finance"
+    assert CopilotRun.objects.get(pk=typed.pending["run"]).specialist == "finance"
+
+
+def test_each_you_decide_line_names_what_it_decided(owner):
+    creation = _at_finish(owner, price=None)
+    assert {"field": "access", "label": "Price: you decide"} in flow.state(creation)["answered"]
+
+
+def test_the_chat_keeps_what_the_dock_asked_and_what_she_tapped(owner):
+    creation = _at_finish(owner, price=None)  # not ready (no price): the dock asks NOT_READY_LINE
+    with mock.patch("apps.core.monetization.can_monetize", return_value=True):
+        creation = flow.finish(creation, publish=True)  # her Publish on a stale screen: kept as a draft
+    entries = [e["text"] for e in CopilotChat.objects.get(pk=creation.chat_id).entries][-3:]
+    assert entries == [bundle.NOT_READY_LINE, "Publish now", flow.closing_line(creation)]

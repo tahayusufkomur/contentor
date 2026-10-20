@@ -105,8 +105,13 @@ export interface FocusState {
   answered: { field: string; label: string }[];
   /** `drafted`: an outline is on the page (a failed redraft leaves the earlier one). */
   outline: { status: OutlineStatus; run: number | null; drafted: boolean };
-  /** An analysis of her typed answer is pending; `question` is null meanwhile. */
-  reading: { status: OutlineStatus; run: number | null } | null;
+  /** An analysis of her typed answer is pending; `question` is null meanwhile.
+   *  `specialist`: who asked what she answered, and so reads it. */
+  reading: {
+    status: OutlineStatus;
+    run: number | null;
+    specialist: SpecialistKey;
+  } | null;
   /** A follow-up question is being written; `question` is null meanwhile. */
   thinking: {
     status: OutlineStatus;
