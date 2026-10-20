@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from apps.core import monetization
 from apps.core.currency import tenant_charge_currency
 
 
@@ -220,7 +221,7 @@ class Bundle(models.Model):
 
     # Why a draft cannot be published yet (focus mode's finish, the page's Publish and its PATCH).
     NO_ITEMS, NO_PRICE = "Add at least two items", "Set its price first"  # a bundle of one is just the item
-    NOT_SELLING = "Start selling first: your plan, then payouts."
+    NOT_SELLING = monetization.NOT_SELLING
 
     def item_count(self) -> int:
         """Its items as she and students see them: drafts left out, and a class

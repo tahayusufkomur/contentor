@@ -33,3 +33,19 @@ class DownloadFile(models.Model):
     def not_ready(self) -> str:
         """Why it cannot be published yet ("" when it can): students get it only with its file."""
         return "" if self.file_url else self.NO_FILE
+
+    def cannot_sell(self) -> bool:
+        """Paid while selling is not open yet (her plan, then payouts)."""
+        from django.db import connection
+
+        from apps.core import monetization
+
+        return self.pricing_type == "paid" and self.price > 0 and not monetization.can_monetize(connection.tenant)
+
+    def refusal(self) -> str:
+        """Why publishing it is refused, as a sentence; "" when it can be published."""
+        from apps.core import monetization
+
+        if gap := self.not_ready():
+            return f"{gap}."
+        return monetization.NOT_SELLING if self.cannot_sell() else ""

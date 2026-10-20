@@ -381,8 +381,9 @@ class TestUnpublishedDownload:
         assert titles == {"Premium Guide", "Draft Guide"}
         products = {i["title"]: i["is_active"] for i in make_client(owner).get("/api/v1/billing/products/").json()}
         assert products == {"Premium Guide": True, "Draft Guide": False}  # her list tells the draft apart
-        # Publishing puts it on sale.
-        resp = make_client(owner).patch(f"/api/v1/downloads/{draft.pk}/", {"is_published": True}, format="json")
+        # Publishing puts it on sale (once she can sell, as the finish asks).
+        with patch("apps.core.monetization.can_monetize", return_value=True):
+            resp = make_client(owner).patch(f"/api/v1/downloads/{draft.pk}/", {"is_published": True}, format="json")
         assert resp.status_code == 200 and resp.json()["is_published"] is True, resp.content
         store = make_client(student).get("/api/v1/billing/store/?type=download").json()
         assert {i["title"] for i in store} == {"Premium Guide", "Draft Guide"}
@@ -393,15 +394,38 @@ class TestUnpublishedDownload:
         # The page's Publish keeps the finish's rule (focus mode's download): its file first.
         draft = DownloadFile.objects.create(title="No File Yet", is_published=False)
         client, path = make_client(owner), f"/api/v1/downloads/{draft.pk}/"
-        assert client.get(path).json()["not_ready"] == "Add the file first"
+        assert client.get(path).json()["refusal"] == "Add the file first."
         resp = client.patch(path, {"is_published": True, "title": "Renamed"}, format="json")
         assert resp.status_code == 400 and resp.json() == {"is_published": ["Add the file first."]}, resp.content
         draft.refresh_from_db()
         assert (draft.is_published, draft.title) == (False, "No File Yet")  # the whole change rolled back
         DownloadFile.objects.filter(pk=draft.pk).update(file_url="downloads/guide.pdf", file_size=10)
-        assert client.get(path).json()["not_ready"] == ""
+        assert client.get(path).json()["refusal"] == ""
         resp = client.patch(path, {"is_published": True}, format="json")
         assert resp.status_code == 200 and resp.json()["is_published"] is True, resp.content
+
+    def test_a_paid_draft_is_published_from_its_page_only_once_she_can_sell(self, owner):
+        # As the finish offers "Start selling" instead: a paid download goes live once selling is open.
+        line = "Start selling first: your plan, then payouts."
+        paid = DownloadFile.objects.create(
+            title="Paid Draft", file_url="downloads/p.pdf", pricing_type="paid", price=9, is_published=False
+        )
+        client, path = make_client(owner), f"/api/v1/downloads/{paid.pk}/"
+        with patch("apps.core.monetization.can_monetize", return_value=False):
+            assert client.get(path).json()["refusal"] == line
+            resp = client.patch(path, {"is_published": True}, format="json")
+            assert resp.status_code == 400 and resp.json() == {"is_published": [line]}, resp.content
+            paid.refresh_from_db()
+            assert not paid.is_published
+            # A free one publishes as today.
+            free = DownloadFile.objects.create(title="Free Draft", file_url="downloads/f.pdf", is_published=False)
+            assert client.get(f"/api/v1/downloads/{free.pk}/").json()["refusal"] == ""
+            resp = client.patch(f"/api/v1/downloads/{free.pk}/", {"is_published": True}, format="json")
+            assert resp.status_code == 200 and resp.json()["is_published"] is True, resp.content
+        with patch("apps.core.monetization.can_monetize", return_value=True):
+            assert client.get(path).json()["refusal"] == ""
+            resp = client.patch(path, {"is_published": True}, format="json")
+            assert resp.status_code == 200 and resp.json()["is_published"] is True, resp.content
 
     def test_a_download_with_no_file_is_not_in_the_store(self, owner, student):
         DownloadFile.objects.create(title="No File", pricing_type="paid", price=Decimal("5.00"))

@@ -450,8 +450,9 @@ export function DownloadForm({
     };
   }, [focusId]);
 
-  // A kept draft, published from here once it has its file (else the line says
-  // so); the server refuses it as the finish would.
+  // A kept draft, published from here once it has its file and, when paid,
+  // once she can sell (else the server's line says why); the server refuses
+  // it as the finish would.
   const { run: publish, loading: publishing } = useAsyncAction(
     async () => {
       if (!record) return;
@@ -497,8 +498,8 @@ export function DownloadForm({
         {!focus &&
           record &&
           !record.is_published &&
-          (record.not_ready ? (
-            <p className="text-sm text-muted-foreground">{`${record.not_ready}.`}</p>
+          (record.refusal ? (
+            <p className="text-sm text-muted-foreground">{record.refusal}</p>
           ) : (
             <Button
               size="sm"

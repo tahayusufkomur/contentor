@@ -323,10 +323,8 @@ def not_ready(row) -> str:
 
 
 def cannot_sell(row) -> bool:
-    """A paid download while selling is not open yet (her plan, then payouts)."""
-    from apps.core import monetization
-
-    return row.pricing_type == "paid" and not monetization.can_monetize(connection.tenant)
+    """A paid download while selling is not open yet: the download's own rule, which the page's Publish keeps too."""
+    return row.cannot_sell()
 
 
 def go_live(pk) -> None:

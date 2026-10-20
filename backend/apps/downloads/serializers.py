@@ -17,7 +17,7 @@ class DownloadFileSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     thumbnail_signed_url = serializers.SerializerMethodField()
     cover_design = serializers.SerializerMethodField()
-    not_ready = serializers.SerializerMethodField()
+    refusal = serializers.SerializerMethodField()
 
     class Meta:
         model = DownloadFile
@@ -37,7 +37,7 @@ class DownloadFileSerializer(serializers.ModelSerializer):
             "created_at",
             "access_info",
             "tags",
-            "not_ready",
+            "refusal",
         ]
         read_only_fields = ["id", "download_count", "created_at"]
 
@@ -49,9 +49,9 @@ class DownloadFileSerializer(serializers.ModelSerializer):
     def get_cover_design(self, obj):
         return designs.cover_for(obj, self.context)
 
-    def get_not_ready(self, obj) -> str:
-        """Her page's line where Publish would be: why it cannot be published yet."""
-        return obj.not_ready()
+    def get_refusal(self, obj) -> str:
+        """Her draft's line where Publish would be: why it cannot be published yet ("" once published)."""
+        return "" if obj.is_published else obj.refusal()
 
     def get_access_info(self, obj):
         access_map = self.context.get("access_map")
@@ -85,8 +85,8 @@ class DownloadFileCreateSerializer(ShorthandMixin, serializers.ModelSerializer):
     def update(self, instance, validated_data):
         publishing = validated_data.get("is_published") is True and not instance.is_published
         instance = super().update(instance, validated_data)
-        # A draft is published only as focus mode's finish would: with its file.
+        # A draft is published only as focus mode's finish would: with its file, and once she can sell.
         # ShorthandMixin.save's transaction rolls the whole change back.
-        if publishing and (gap := instance.not_ready()):
-            raise serializers.ValidationError({"is_published": [f"{gap}."]})
+        if publishing and (why := instance.refusal()):
+            raise serializers.ValidationError({"is_published": [why]})
         return instance

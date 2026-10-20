@@ -33,6 +33,9 @@ if TYPE_CHECKING:
 TRIAL_DAYS = 14
 TRIAL_PLAN_NAME = "starter"
 
+# Why a paid item's Publish waits (a bundle's or download's page, as their finish offers "Start selling").
+NOT_SELLING = "Start selling first: your plan, then payouts."
+
 
 def _bypass() -> bool:
     return bool(getattr(settings, "BILLING_BYPASS_ENABLED", False))

@@ -113,6 +113,8 @@ async function stubFocus(page: Page, reply: (path: string, body: Body) => Body, 
   return sent;
 }
 
+const NOT_SELLING = "Start selling first: your plan, then payouts.";
+
 /** The draft row: read by the page, PATCHed as she types. */
 async function stubDraft(page: Page, over: Body = {}) {
   let current: Body = {
@@ -136,7 +138,13 @@ async function stubDraft(page: Page, over: Body = {}) {
   await page.route(`**/api/v1/downloads/${DRAFT}/`, (route) => {
     const req = route.request();
     if (req.method() === "PATCH") current = { ...current, ...req.postDataJSON() };
-    return route.fulfill({ json: { ...current, not_ready: current.file_url ? "" : "Add the file first" } });
+    // The server's refusal (backend DownloadFile.refusal), on a tenant that cannot sell yet.
+    const refusal = !current.file_url
+      ? "Add the file first."
+      : current.pricing_type === "paid" && Number(current.price) > 0
+        ? NOT_SELLING
+        : "";
+    return route.fulfill({ json: { ...current, refusal } });
   });
   return { set: (next: Body) => (current = { ...current, ...next }) };
 }
@@ -292,8 +300,13 @@ test("add it later keeps it a draft", async ({ browser }) => {
   const publish = page.getByRole("main").getByRole("button", { name: "Publish", exact: true });
   await expect(page.getByRole("main").getByText("Add the file first.")).toBeVisible();
   await expect(publish).toHaveCount(0);
-  // With its file, Publish puts it on the site.
-  set({ file_url: `tenants/demo/downloads/${FILE.name}`, file_size: 2_400_000 });
+  // With its file but paid, it waits for selling to open, as the finish's "Start selling" does.
+  set({ file_url: `tenants/demo/downloads/${FILE.name}`, file_size: 2_400_000, pricing_type: "paid", price: "9.00" });
+  await page.reload();
+  await expect(page.getByRole("main").getByText(NOT_SELLING)).toBeVisible();
+  await expect(publish).toHaveCount(0);
+  // Free, with its file: Publish puts it on the site.
+  set({ pricing_type: "free", price: "0.00" });
   await page.reload();
   await publish.click();
   await expect(page.getByText("Published. Students can find it on your site now.")).toBeVisible();
