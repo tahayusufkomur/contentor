@@ -9,6 +9,27 @@ import type { Slide } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
 import { SlidePicture } from "./slide-pictures";
 
+type KeyLike = Pick<
+  KeyboardEvent,
+  "key" | "altKey" | "metaKey" | "ctrlKey" | "shiftKey" | "repeat"
+> & { target: EventTarget | null };
+
+/** Whether a key press passes the slide as seen: Enter or →, unmodified,
+ *  not while typing, and not on a focused button or link (Enter there is
+ *  that control's own click, and → must not turn "I know this" into "seen"). */
+export function passesSlide(e: KeyLike): boolean {
+  if (e.key !== "Enter" && e.key !== "ArrowRight") return false;
+  if (e.altKey || e.metaKey || e.ctrlKey || e.shiftKey || e.repeat)
+    return false;
+  // Duck-typed (not instanceof Element) so it also runs without a DOM.
+  const el = e.target as { closest?: (sel: string) => unknown } | null;
+  if (!el?.closest) return false;
+  const near = (sel: string) => el.closest?.(sel);
+  return (
+    !near("textarea, input, select, [contenteditable]") && !near("button, a")
+  );
+}
+
 /** The deck shown in place of a question: the first due slide, presented by
  *  the specialist who owns the concept. Passing one (Next, "I know this",
  *  Enter or →) hands it to the parent, which drops it from the list. Mount
@@ -38,20 +59,7 @@ export function ConceptSlides({
   useEffect(() => {
     if (!key) return;
     const onKey = (e: KeyboardEvent) => {
-      if (
-        (e.key !== "Enter" && e.key !== "ArrowRight") ||
-        !(e.target instanceof Element) ||
-        e.altKey ||
-        e.metaKey ||
-        e.ctrlKey ||
-        e.shiftKey ||
-        e.repeat
-      )
-        return;
-      if (e.target.closest("textarea, input, select, [contenteditable]"))
-        return;
-      // Enter on a focused button or link is that control's own click.
-      if (e.key === "Enter" && e.target.closest("button, a")) return;
+      if (!passesSlide(e)) return;
       e.preventDefault();
       onPass(key, false);
     };

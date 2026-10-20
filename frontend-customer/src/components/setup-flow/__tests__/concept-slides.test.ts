@@ -4,7 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it } from "vitest";
 import admin from "../../../../messages/en/admin.json";
 import type { Slide } from "@/lib/setup-flow";
-import { ConceptSlides } from "../concept-slides";
+import { ConceptSlides, passesSlide } from "../concept-slides";
 import { SlidePicture } from "../slide-pictures";
 
 const slide = (over: Partial<Slide>): Slide => ({
@@ -61,5 +61,36 @@ describe("ConceptSlides", () => {
       createElement(SlidePicture, { slide: slide({ key: "nope" }) }),
     );
     expect(html).toBe("");
+  });
+});
+
+describe("passesSlide", () => {
+  const on = (tag: string) => ({
+    closest: (sel: string) => (sel.split(", ").includes(tag) ? {} : null),
+  });
+  const press = (key: string, target: ReturnType<typeof on> | null) =>
+    passesSlide({
+      key,
+      altKey: false,
+      metaKey: false,
+      ctrlKey: false,
+      shiftKey: false,
+      repeat: false,
+      target: target as unknown as EventTarget | null,
+    });
+
+  it("passes on Enter or the right arrow when focus is on the page", () => {
+    expect(press("Enter", on("div"))).toBe(true);
+    expect(press("ArrowRight", on("div"))).toBe(true);
+  });
+
+  it("leaves a focused button alone, so the arrow never turns a skip into seen", () => {
+    expect(press("ArrowRight", on("button"))).toBe(false);
+    expect(press("Enter", on("button"))).toBe(false);
+  });
+
+  it("does nothing while typing or on other keys", () => {
+    expect(press("ArrowRight", on("input"))).toBe(false);
+    expect(press("a", on("div"))).toBe(false);
   });
 });
