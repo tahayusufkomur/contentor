@@ -111,7 +111,12 @@
     "src/app/admin/courses": ["02-courses", "33-focus-course"],
     "src/components/admin/course-form.tsx": ["02-courses", "33-focus-course"],
     "src/app/admin/store": ["37-focus-membership", "38-focus-bundle"],
-    "src/app/admin/blog": ["39-focus-post"],
+    "src/app/admin/blog": [
+      "27-nav-stage-gating",
+      "33-focus-course",
+      "35-focus-message",
+      "39-focus-post"
+    ],
     "src/components/admin/blog": ["39-focus-post"],
     "src/components/focus": [
       "33-focus-course",

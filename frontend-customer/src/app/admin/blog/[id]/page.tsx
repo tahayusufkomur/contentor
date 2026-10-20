@@ -32,7 +32,7 @@ import {
   getPost,
   updatePost,
 } from "@/lib/blog-api";
-import { useLiveRecord } from "@/lib/copilot/live";
+import { useLiveRecord, wholeHtml } from "@/lib/copilot/live";
 import { startActiveTime } from "@/lib/focus/active-time";
 import { fetchCreation } from "@/lib/focus/api";
 import { focusTimeKey } from "@/lib/focus/kinds";
@@ -63,6 +63,8 @@ const OWN_TIDY = {
 type OwnName = keyof typeof OWN_TIDY;
 type Own = Record<OwnName, string>;
 const OWN = Object.keys(OWN_TIDY) as OwnName[];
+// The post job's whole post types in within this, however long (a body runs to ~9k characters).
+const REPLAY_SECONDS = 5;
 const { isHers, isWriting, layOver } = ownership(OWN_TIDY);
 const splitTags = (value: string) =>
   value
@@ -200,8 +202,14 @@ export default function BlogEditorPage() {
 
   // The post job's title, summary, text, description and tags type in; only
   // the field being written is read-only, and a written value lands unless
-  // the field is hers.
-  const live = useLiveRecord(focusing ? `post:${postId}` : "", runId);
+  // the field is hers. It is on the server already: the replay is over within
+  // REPLAY_SECONDS, however long the post.
+  const live = useLiveRecord(
+    focusing ? `post:${postId}` : "",
+    runId,
+    undefined,
+    REPLAY_SECONDS,
+  );
   const taken = useRef<Record<string, string>>({});
   const loadedFor = useRef<number | null>(null);
   useEffect(() => {
@@ -240,6 +248,9 @@ export default function BlogEditorPage() {
     );
   const shown = (name: OwnName, value: string) =>
     writing(name) ? (live?.fields[name]?.value ?? "") : value;
+  // The text as it types in, whole tags only: never a half "<h2" on screen.
+  const shownBody = (value: string) =>
+    writing("body_html") ? wholeHtml(shown("body_html", value)) : value;
 
   // "Save & leave", and before her finish taps: what she changed on the page,
   // and nothing else (the job writes the rest on the server meanwhile, and a
@@ -291,7 +302,8 @@ export default function BlogEditorPage() {
       body_html: post.body_html,
       ...fields,
     });
-    setPost(updated);
+    // Keystrokes she typed during the round trip stay: what she has not changed takes the saved copy.
+    receive(updated);
     toast.success("Saved");
     void refreshSetupStatus();
   };
@@ -458,7 +470,7 @@ export default function BlogEditorPage() {
           </div>
 
           <PostEditor
-            value={shown("body_html", post.body_html)}
+            value={shownBody(post.body_html)}
             readOnly={writing("body_html")}
             onChange={(html) => patch({ body_html: html })}
           />

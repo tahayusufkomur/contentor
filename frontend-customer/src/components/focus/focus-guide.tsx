@@ -595,7 +595,13 @@ function OutlineReview({
           {refused
             ? t(`focus.kinds.${kind}.refused.${refused}`)
             : failed
-              ? t(copy ? "focus.copyFailed" : "focus.outlineFailed")
+              ? t(
+                  t.has(`focus.kinds.${kind}.copyFailed`)
+                    ? `focus.kinds.${kind}.copyFailed`
+                    : copy
+                      ? "focus.copyFailed"
+                      : "focus.outlineFailed",
+                )
               : question.question}
         </h2>
         {!failed && question.why && (

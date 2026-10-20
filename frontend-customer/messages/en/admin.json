@@ -1226,6 +1226,7 @@
         "continue": "Continue your post: {title}",
         "fillMyself": "Write it myself",
         "writing": "Writing your post…",
+        "copyFailed": "The post didn't come through.",
         "thinking": "Thinking about your post…",
         "refused": {
           "upgrade_required": "Writing posts for you is on a paid plan. Write it yourself, or upgrade.",

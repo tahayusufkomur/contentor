@@ -71,7 +71,8 @@ const REFUSED = "You're out of AI posts for this month. Write it yourself, or up
 const JOB = {
   title: "Three breaths before class",
   excerpt: "A calmer start in three slow breaths.",
-  body_html: "<p>Three slow breaths change a class.</p>",
+  // Long enough to type for ~40 s at the usual 60 a second: the page caps the replay at 5 s.
+  body_html: `<p>Three slow breaths change a class.</p>${"<p>Breathe in for four, out for six.</p>".repeat(60)}<p>Then begin.</p>`,
   meta_description: "A short breath routine before class.",
   tags: ["Breath", "classes"],
 };
@@ -258,8 +259,13 @@ test("a post from a topic idea, with a photo, published", async ({ browser }) =>
   await expect(guide(page).getByText("How long?")).toBeVisible();
   await guide(page).getByRole("button", { name: /Short read/ }).click();
 
-  // The post job's title, summary, text, description and tags type in.
+  // The post job's title, summary, text, description and tags type in, within seconds however long;
+  // the toolbar is off while the text is being written, so nothing she taps cuts it short.
   await expect(guide(page).getByText("Here's your post. Does it fit?")).toBeVisible();
+  const bold = main(page).getByRole("button", { name: "Bold" });
+  await expect(bold).toBeDisabled();
+  await expect(main(page).locator(".ProseMirror")).toContainText("Then begin.");
+  await expect(bold).toBeEnabled();
   await expect(main(page).getByPlaceholder("Untitled post")).toHaveValue(JOB.title);
   await expect(main(page).getByPlaceholder("Excerpt")).toHaveValue(JOB.excerpt);
   await expect(main(page).locator(".ProseMirror")).toContainText("Three slow breaths change a class.");

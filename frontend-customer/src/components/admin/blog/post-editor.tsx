@@ -12,11 +12,13 @@ function ToolbarButton({
   active,
   label,
   onClick,
+  disabled,
   children,
 }: {
   active?: boolean;
   label: string;
   onClick: () => void;
+  disabled: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -24,9 +26,10 @@ function ToolbarButton({
       type="button"
       aria-label={label}
       title={label}
+      disabled={disabled}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      className={`rounded-md p-1.5 transition-colors ${
+      className={`rounded-md p-1.5 transition-colors disabled:pointer-events-none disabled:opacity-50 ${
         active
           ? "bg-accent text-foreground"
           : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -68,7 +71,10 @@ export function PostEditor({
       Placeholder.configure({ placeholder: "Write your post…" }),
     ],
     content: value,
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    // Only her edits: never a change while it is being written for her.
+    onUpdate: ({ editor }) => {
+      if (editor.isEditable) onChange(editor.getHTML());
+    },
     editorProps: {
       attributes: {
         class:
@@ -78,10 +84,15 @@ export function PostEditor({
     immediatelyRender: false,
   });
   // A value from outside (the post job typing in, a reload, Regenerate) is
-  // shown; her own keystrokes come back as the editor's HTML and are left alone.
+  // shown, outside her undo history (one Ctrl+Z must not erase the job's
+  // text); her own keystrokes come back as the editor's HTML and are left alone.
   useEffect(() => {
     if (editor && value !== editor.getHTML())
-      editor.commands.setContent(value, false);
+      editor
+        .chain()
+        .setMeta("addToHistory", false)
+        .setContent(value, false)
+        .run();
   }, [editor, value]);
   useEffect(() => {
     editor?.setEditable(!readOnly, false); // no update: it is not her edit
@@ -91,57 +102,73 @@ export function PostEditor({
 
   return (
     <div className="rounded-lg border bg-background focus-within:ring-2 focus-within:ring-ring">
-      <div className="flex items-center gap-0.5 border-b px-2 py-1">
-        <ToolbarButton
-          label="Bold"
-          active={editor.isActive("bold")}
-          onClick={() => editor.chain().focus().toggleBold().run()}
-        >
-          <Bold className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          label="Italic"
-          active={editor.isActive("italic")}
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-        >
-          <Italic className="h-4 w-4" />
-        </ToolbarButton>
-        <div className="mx-1 h-4 w-px bg-border" />
-        <ToolbarButton
-          label="Heading 2"
-          active={editor.isActive("heading", { level: 2 })}
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
-        >
-          <Heading2 className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          label="Heading 3"
-          active={editor.isActive("heading", { level: 3 })}
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 3 }).run()
-          }
-        >
-          <Heading3 className="h-4 w-4" />
-        </ToolbarButton>
-        <div className="mx-1 h-4 w-px bg-border" />
-        <ToolbarButton
-          label="Bullet list"
-          active={editor.isActive("bulletList")}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-        >
-          <List className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          label="Link"
-          active={editor.isActive("link")}
-          onClick={() => setLink(editor)}
-        >
-          <Link2 className="h-4 w-4" />
-        </ToolbarButton>
-      </div>
+      <Toolbar editor={editor} disabled={readOnly} />
       <EditorContent editor={editor} />
+    </div>
+  );
+}
+
+/** The formatting buttons; off while the post is being written for her
+ *  (TipTap's commands run even when the editor is not editable). */
+export function Toolbar({
+  editor,
+  disabled,
+}: {
+  editor: Editor;
+  disabled: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-0.5 border-b px-2 py-1">
+      <ToolbarButton
+        disabled={disabled}
+        label="Bold"
+        active={editor.isActive("bold")}
+        onClick={() => editor.chain().focus().toggleBold().run()}
+      >
+        <Bold className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        disabled={disabled}
+        label="Italic"
+        active={editor.isActive("italic")}
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+      >
+        <Italic className="h-4 w-4" />
+      </ToolbarButton>
+      <div className="mx-1 h-4 w-px bg-border" />
+      <ToolbarButton
+        disabled={disabled}
+        label="Heading 2"
+        active={editor.isActive("heading", { level: 2 })}
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+      >
+        <Heading2 className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        disabled={disabled}
+        label="Heading 3"
+        active={editor.isActive("heading", { level: 3 })}
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+      >
+        <Heading3 className="h-4 w-4" />
+      </ToolbarButton>
+      <div className="mx-1 h-4 w-px bg-border" />
+      <ToolbarButton
+        disabled={disabled}
+        label="Bullet list"
+        active={editor.isActive("bulletList")}
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+      >
+        <List className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        disabled={disabled}
+        label="Link"
+        active={editor.isActive("link")}
+        onClick={() => setLink(editor)}
+      >
+        <Link2 className="h-4 w-4" />
+      </ToolbarButton>
     </div>
   );
 }

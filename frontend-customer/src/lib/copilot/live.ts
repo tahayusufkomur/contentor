@@ -123,6 +123,37 @@ function matchLessons(
   return result;
 }
 
+/** A field's value as it types in; a list (a post's tags) comma-separated, as she writes it. */
+const fieldText = (value: unknown) =>
+  Array.isArray(value) ? value.map(text).join(", ") : text(value);
+
+/** Characters a second for ``record``'s replay to end within ``seconds``,
+ *  never slower than ``cps`` (a long post body would otherwise type for minutes). */
+export function replaySpeed(
+  events: RunEvent[],
+  record: string,
+  seconds: number,
+  cps = 60,
+): number {
+  let chars = 0;
+  for (const e of events) {
+    if (e.data.record !== record) continue;
+    if (e.type === "field") chars += fieldText(e.data.value).length;
+    else if (e.type === "row") {
+      const value = (e.data.value ?? {}) as RowValue;
+      chars += text(value.title).length;
+      for (const lesson of Array.isArray(value.lessons) ? value.lessons : [])
+        chars += text(lesson).length;
+    }
+  }
+  return Math.max(cps, chars / seconds);
+}
+
+/** HTML partly typed in, cut back to its last whole tag or entity: never a
+ *  half "<h2" or "&am" on screen. */
+export const wholeHtml = (html: string) =>
+  html.replace(/<[^>]*$/, "").replace(/&[#\w]*$/, "");
+
 /** The character budget and step bookkeeping every replay frame shares:
  *  ``take`` reveals a text against the budget (null once the replay has not
  *  reached it), ``step`` follows the run's start/done steps, and ``settle``
@@ -209,10 +240,7 @@ export function liveFrame(
     if (data.record !== record) continue;
     if (event.type === "field") {
       const name = text(data.name);
-      // A list (a post's tags) types in as she writes it: comma-separated.
-      const val = Array.isArray(data.value)
-        ? data.value.map(text).join(", ")
-        : text(data.value);
+      const val = fieldText(data.value);
       frame.written[name] = val;
       if (baseline?.fields && baseline.fields[name] === val) continue;
       const shown = clock.take(val);
@@ -388,16 +416,25 @@ export function useReplay<F extends { settled: boolean }>(
   return frame;
 }
 
-/** The live frame of ``runId``'s work on ``record``. */
+/** The live frame of ``runId``'s work on ``record``; with ``seconds``, the
+ *  replay types faster where it would take longer than that (``replaySpeed``). */
 export function useLiveRecord(
   record: string,
   runId: number | null,
   baseline?: LiveBaseline,
+  seconds?: number,
 ): LiveFrame | null {
   return useReplay(
     runId,
     "content",
-    (events, ms) => liveFrame(events, record, ms, 60, baseline),
+    (events, ms) =>
+      liveFrame(
+        events,
+        record,
+        ms,
+        seconds ? replaySpeed(events, record, seconds) : 60,
+        baseline,
+      ),
     (events) =>
       events.some(
         (e) =>

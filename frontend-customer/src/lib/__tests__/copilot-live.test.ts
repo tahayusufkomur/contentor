@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { liveFrame } from "@/lib/copilot/live";
+import { liveFrame, replaySpeed, wholeHtml } from "@/lib/copilot/live";
 import { applyRun } from "@/lib/copilot/runs";
 import type { RunDetail, RunEvent } from "@/lib/copilot/types";
 
@@ -87,6 +87,30 @@ describe("liveFrame", () => {
       value: "a, b",
       typing: false,
     });
+  });
+
+  it("ends a long replay within the seconds given, never slower than 60 a second", () => {
+    const body = "x".repeat(9000); // a standard post with its markup
+    const long = [
+      ev(1, "field", { record: R, name: "body_html", value: body }),
+      ev(2, "field", { record: R, name: "tags", value: ["a", "b"] }),
+      ev(3, "field", { record: "post:2", name: "title", value: "Other" }),
+    ];
+    const speed = replaySpeed(long, R, 5);
+    expect(speed).toBe((9000 + "a, b".length) / 5);
+    expect(liveFrame(long, R, 5000, speed).fields.tags).toEqual({
+      value: "a, b",
+      typing: false,
+    });
+    // A short one types at the usual speed.
+    expect(replaySpeed(outline(), R, 5)).toBe(60);
+  });
+
+  it("never shows half a tag or entity of typed HTML", () => {
+    expect(wholeHtml("<p>Three slow</p><h")).toBe("<p>Three slow</p>");
+    expect(wholeHtml("<p>Three slow</p></")).toBe("<p>Three slow</p>");
+    expect(wholeHtml("<p>Tea &am")).toBe("<p>Tea ");
+    expect(wholeHtml("<p>Tea &amp; toast")).toBe("<p>Tea &amp; toast");
   });
 
   it("types the title in at the given speed", () => {
