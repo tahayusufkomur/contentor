@@ -504,6 +504,21 @@ def test_a_refused_blog_gate_is_said_at_once(owner, on, paid):
     assert CopilotRun.objects.get(pk=refused).result == {"reason": "quota_exhausted"}
 
 
+def test_a_refused_blog_gate_keeps_new_post_one_click_into_the_editor(owner, on, paid, hers):
+    # The writer open: New post asks her its first question.
+    body = hers.get("/api/v1/admin/focus/").json()
+    assert "post" in body["kinds"] and "post" in body["first"]
+    kept = _start(owner)  # one she opened while it was
+    usage = blog_ai.tenant_usage(SCHEMA)
+    blog_ai.BlogAiUsage.objects.filter(pk=usage.pk).update(generations_used=5)  # out of posts this month
+    # Refused: no questions that end in "Write it yourself"; New post is today's untitled draft.
+    body = hers.get("/api/v1/admin/focus/").json()
+    assert "post" not in body["kinds"] and "post" not in body["first"]
+    assert body["kinds"] == ["course"] and "course" in body["first"]
+    # The post she opened is still hers to continue.
+    assert [c["id"] for c in body["open"]] == [kept.id]
+
+
 def test_try_again_asks_the_blog_gate_first(owner, on, paid):
     usage = blog_ai.tenant_usage(SCHEMA)
     blog_ai.BlogAiUsage.objects.filter(pk=usage.pk).update(generations_used=5)  # out of posts this month

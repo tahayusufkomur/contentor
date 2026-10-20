@@ -47,7 +47,8 @@ The adapter (the course's in kinds/course.py):
 - DRAFT_JOB: optional, the job name of a drafting of its own (a post's "post", the blog writer), whose run
   the review's Try again, finish and leave follow as they do the copy job's (``flow.draft_job``).
 - draft_refused(): optional, True while its drafting would be refused before it starts (a post's blog
-  gate): the flow then asks no follow-up first, and start_draft says why.
+  gate): the flow then asks no follow-up first, and start_draft says why; the overview leaves the kind
+  out, so its New is today's form.
 - sync(creation): optional, after every answer: her answers it keeps on the record, written there (a
   ``multi`` question's tap arrives as its tiles' values, comma-separated, for ``sync`` to check).
 - ask(creation, asked): optional, a question in its own words for this creation (``flow.question``).

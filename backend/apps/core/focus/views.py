@@ -45,6 +45,13 @@ def _owner_only(user, kind):
         raise PermissionDenied(str(exc)) from exc
 
 
+def _refused(kind) -> bool:
+    """Its drafting refused before it starts (a post's blog gate): New is today's form, not
+    questions that end in "Write it yourself". One already open carries on."""
+    refused = getattr(kinds.get(kind), "draft_refused", None)
+    return bool(refused and refused())
+
+
 def _hers(request, creation_id):
     """Her creation, or None; every endpoint for one passes here (and so the owner check)."""
     creation = FocusCreation.objects.filter(pk=creation_id, actor=request.user, mode="focus").first()
@@ -71,7 +78,11 @@ def focus_root(request):
                 open_.append(
                     {"id": creation.id, "kind": creation.kind, "record": None, "title": flow.draft_title(creation)}
                 )
-        on = [kind for kind in kinds.enabled() if request.user.role == "owner" or kind not in flow.OWNER_ONLY]
+        on = [
+            kind
+            for kind in kinds.enabled()
+            if (request.user.role == "owner" or kind not in flow.OWNER_ONLY) and not _refused(kind)
+        ]
         first = {kind: flow.question(kind, kinds.get(kind).RECIPE.questions[0].id) for kind in on}
         return Response({"enabled": True, "kinds": on, "first": first, "open": open_})
     if not settings.FOCUS_MODE_ENABLED:
