@@ -1,6 +1,7 @@
 // Client for the coach's guided onboarding (/setup). Contract:
 // GET/POST /api/v1/admin/setup-flow/ (+ build-page/, draft/).
 import type { FamilyId } from "@shared/sections/types";
+import type { SpecialistKey } from "@/lib/copilot/team";
 import type { SelectionPayload } from "@/lib/copilot/types";
 import { clientFetch } from "@/lib/api-client";
 import type { ShareDoc } from "@/lib/share-doc";
@@ -106,6 +107,8 @@ export interface SetupFlowApi {
   /** A bio, CV or old About page: read as one turn that fills what it answers. */
   importDoc: (doc: ShareDoc, field?: string) => Promise<TurnResponse>;
   logos: (page: number) => Promise<LookCards>;
+  /** Records that a slide was passed (seen, or skipped). */
+  slide: (key: string, skipped: boolean) => Promise<void>;
   cover: (kind: ReviewKind, asset: string) => Promise<ReviewCard>;
   golive: () => Promise<GoLiveState>;
   goliveAction: (action: "publish" | "sell_later") => Promise<GoLiveState>;
@@ -136,6 +139,9 @@ export const setupFlowApi: SetupFlowApi = {
     });
   },
   logos: (page) => clientFetch<LookCards>(`${BASE}/logos/?page=${page}`),
+  slide: async (key, skipped) => {
+    await clientFetch(`${BASE}/slide/`, post({ key, skipped }));
+  },
   cover: (kind, asset) =>
     clientFetch<ReviewCard>(`${BASE}/cover/`, post({ kind, asset })),
   golive: () => clientFetch<GoLiveState>(`${BASE}/golive/`),
@@ -352,6 +358,22 @@ export const isReview = (c: GuideCards | null | undefined): c is ReviewCard =>
 export const isPhotos = (c: GuideCards | null | undefined): c is PhotoCards =>
   c?.kind === "photos";
 
+/** A concept slide a specialist presents before the question that uses it.
+ *  `picture` is built from the coach's answers; its shape depends on `key`
+ *  (backend interview_slides._picture). */
+export interface Slide {
+  key: string;
+  by: SpecialistKey;
+  /** The presenter's first slide: say what they look after. */
+  first: boolean;
+  chapter: string;
+  title: string;
+  body: string;
+  /** The Next button's label. */
+  next: string;
+  picture: Record<string, unknown>;
+}
+
 export interface GuideTurn {
   ack: string;
   question: string;
@@ -386,6 +408,8 @@ export interface GuideTurn {
   /** One line under the question: why it matters. */
   why?: string;
   cards?: GuideCards | null;
+  /** Slides due before this question: only on the live guide, never in replayed turns. */
+  slides?: Slide[];
   /** Work this turn just started ("I'm starting on your About page now."). */
   status?: string;
   /** Other questions this answer also filled ("your training"). */

@@ -15,7 +15,7 @@ export function SpecialistFace({
   busy = false,
 }: {
   k: SpecialistKey;
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
   busy?: boolean;
 }) {
   const { color, icon: Icon } = SPECIALIST_LOOK[k];
@@ -24,13 +24,17 @@ export function SpecialistFace({
       aria-hidden="true"
       className={cn(
         "inline-grid shrink-0 place-items-center rounded-full text-white",
-        size === "sm" ? "size-5" : "size-8",
+        size === "sm" ? "size-5" : size === "lg" ? "size-12" : "size-8",
         busy && "motion-safe:animate-busy",
       )}
       // The specialist's own colour: data, not a theme token.
       style={{ background: color, ["--busy-color" as string]: color }}
     >
-      <Icon className={size === "sm" ? "size-3" : "size-4"} />
+      <Icon
+        className={
+          size === "sm" ? "size-3" : size === "lg" ? "size-6" : "size-4"
+        }
+      />
     </span>
   );
 }

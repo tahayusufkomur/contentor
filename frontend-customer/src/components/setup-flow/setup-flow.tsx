@@ -44,6 +44,7 @@ import { ApiError } from "@/types/api";
 import { cn } from "@/lib/utils";
 import { BrowserFrame, Composing, type Device } from "./browser-frame";
 import { GoLivePanel } from "./golive-panel";
+import { ConceptSlides } from "./concept-slides";
 import { Celebration } from "./launch";
 import { mockSetupFlowApi } from "./mock";
 import type { BuilderData } from "./builder-preview";
@@ -187,6 +188,9 @@ function Flow({
   const iv = flow.interview;
   // The live guide keeps what only a turn's reply carries (the status line).
   const [guide, setGuide] = useState<GuideTurn>(iv.guide);
+  // Slides passed since this guide arrived (the server keeps the record).
+  const [passed, setPassed] = useState<string[]>([]);
+  useEffect(() => setPassed([]), [guide]);
   const steps = useMemo(
     () => questionSteps(iv.turns, guide),
     [iv.turns, guide],
@@ -425,6 +429,15 @@ function Flow({
     return () => window.removeEventListener("keydown", onKey);
   }, [golive, sending, index, lastIndex, goBack, goNext]);
 
+  // A failed record only means the slide may show again after a reload.
+  const passSlide = useCallback(
+    (key: string, skipped: boolean) => {
+      setPassed((p) => [...p, key]);
+      void api.slide(key, skipped).catch(() => {});
+    },
+    [api],
+  );
+
   // Before going live, every built page is looked over and approved: the
   // one on screen, else the next one still to approve.
   const pages = reviewPages(flow.steps, flow.page_builds, iv.pages_ok ?? []);
@@ -492,6 +505,11 @@ function Flow({
     const step = steps[index];
     const section = Math.min(sectionOf(step?.field), SECTIONS.length - 1);
     const live = index === steps.length - 1;
+    // Before the live question, the specialist who owns a new idea presents
+    // it: slides come first, the photos screen included.
+    const due = live
+      ? (guide.slides ?? []).filter((s) => !passed.includes(s.key))
+      : [];
     const draft =
       drafts[step?.field ?? GOLIVE] ?? preset(step?.field ?? GOLIVE);
     // A building question previews what it builds from every answer so
@@ -693,7 +711,16 @@ function Flow({
           style={{ viewTransitionName: "sf-slide" }}
           className="min-h-0 flex-1 overflow-y-auto"
         >
-          {step && isPhotos(stepCards) && (
+          {due.length > 0 && (
+            <ConceptSlides
+              key={(guide.slides ?? []).map((s) => s.key).join(",")}
+              slides={due}
+              brandName={brandName}
+              host={host}
+              onPass={passSlide}
+            />
+          )}
+          {due.length === 0 && step && isPhotos(stepCards) && (
             <PhotosScreen
               key={`${index}:${step.field}:${iv.turns.length}`}
               step={step}
@@ -705,7 +732,7 @@ function Flow({
               dir={dir}
             />
           )}
-          {step && !isPhotos(stepCards) && (
+          {due.length === 0 && step && !isPhotos(stepCards) && (
             <QuestionScreen
               key={`${index}:${step.field}:${iv.turns.length}`}
               step={step}

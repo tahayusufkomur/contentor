@@ -18,6 +18,7 @@ import {
   type Schedule,
   type SetupFlowApi,
   type SetupFlowState,
+  type Slide,
   type StepDraft,
 } from "@/lib/setup-flow";
 
@@ -30,6 +31,52 @@ const REVIEW_KIND: Record<string, ReviewKind> = {
   onsite_review: "onsite",
 };
 
+/** The deck the replay opens on: the team, then the money story, with the
+ * backend's field-neutral fallback (interview_slides.FALLBACK). */
+const MOCK_SLIDES: Slide[] = [
+  {
+    key: "team",
+    by: "assistant",
+    first: true,
+    chapter: "Welcome",
+    title: "You're not doing this alone.",
+    body: "Your site comes with a team. They take care of the website, the payments and the marketing, so you can spend your time making great content. You'll meet each of them as we set up your site.",
+    next: "Let's start",
+    picture: {},
+  },
+  {
+    key: "pay",
+    by: "finance",
+    first: true,
+    chapter: "Getting paid",
+    title: "Three ways students can pay you.",
+    body: "Most creators mix them. Here's what three of your students might pay over three months.",
+    next: "Choose yours",
+    picture: {
+      students: [
+        {
+          name: "Anna",
+          about: "Busy mum, short on time",
+          way: "course",
+          months: ["$49", null, null],
+        },
+        {
+          name: "Ben",
+          about: "Comes every week",
+          way: "membership",
+          months: ["$19", "$19", "$19"],
+        },
+        {
+          name: "Cara",
+          about: "Drops in when she can",
+          way: "class",
+          months: ["$10", null, "$10"],
+        },
+      ],
+    },
+  },
+];
+
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 type Guide = Extract<InterviewEntry, { role: "guide" }>;
 
@@ -40,6 +87,8 @@ const s = {
   answers: [] as number[],
   /** How many of them have been sent in this replay. */
   i: 0,
+  /** Where the replay opened: the deck shows there, before the question. */
+  start: 0,
   /** The replay's transcript: recorded up to the live question, then what
    * was actually sent this time. */
   turns: [] as InterviewEntry[],
@@ -74,6 +123,7 @@ async function init() {
   s.answers = s.recorded.flatMap((t, i) => (t.role === "coach" ? [i] : []));
   const at = Number(new URLSearchParams(window.location.search).get("at"));
   s.i = Math.min(Math.max(at || 0, 0), s.answers.length);
+  s.start = s.i;
   s.turns = s.recorded.slice(0, cut(s.i));
 }
 
@@ -127,7 +177,11 @@ function liveGuide(): GuideTurn {
     field: null,
     can_delegate: false,
   };
-  return { ...guide, cards: cardsFor(guide.field) };
+  return {
+    ...guide,
+    cards: cardsFor(guide.field),
+    slides: s.i === s.start ? MOCK_SLIDES : undefined,
+  };
 }
 
 function snapshot(): SetupFlowState {
@@ -243,6 +297,7 @@ export const mockSetupFlowApi: SetupFlowApi = {
     return ticked.length ? { ticked } : { text: said.text };
   },
   logos: (page) => setupFlowApi.logos(page),
+  slide: async () => {},
   cover: async (kind, asset) => {
     s.coverPick[kind] = asset;
     const card = cardsFor(`${kind}_review`);
