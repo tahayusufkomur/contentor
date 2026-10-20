@@ -530,6 +530,28 @@ test("on a phone, publishing leaves her on the page, not under the chat", async 
   await page.close();
 });
 
+test("a title she typed on the page is saved before her Publish tap", async ({ browser }) => {
+  const coach = await coachContext(browser);
+  const page = await coach.newPage();
+  const { saved } = await stubFocus(page);
+  const order: string[] = [];
+  page.on("request", (req) => {
+    if (req.method() === "PUT" && req.url().includes(`/courses/${SLUG}/`)) order.push("save");
+    if (req.url().endsWith("/finish/")) order.push("finish");
+  });
+
+  await answerTopic(page);
+  await guide(page).getByRole("button", { name: "Just draft it" }).click();
+  await guide(page).getByRole("button", { name: "Looks good, continue" }).click();
+  await page.getByRole("main").locator("#title").fill("Desk yoga, her way");
+  await guide(page).getByRole("button", { name: "Publish now" }).click();
+  await expect(guide(page)).toHaveCount(0);
+  // What the page showed is what went live.
+  expect(order).toEqual(["save", "finish"]);
+  expect(saved[0]).toMatchObject({ title: "Desk yoga, her way" });
+  await page.close();
+});
+
 test("save & leave saves what she typed on the page", async ({ browser }) => {
   const coach = await coachContext(browser);
   const page = await coach.newPage();

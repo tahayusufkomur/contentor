@@ -38,7 +38,7 @@ import {
   type GuideInput,
   type KeptTicks,
 } from "@/lib/focus/guide";
-import { focusTimeKey, SAVE_FIRST, type FocusKind } from "@/lib/focus/kinds";
+import { focusTimeKey, type FocusKind } from "@/lib/focus/kinds";
 import {
   activeCreation,
   applyCreation as apply,
@@ -106,8 +106,7 @@ export function FocusGuide() {
         return;
       }
       // "Sell it for": a price she typed on the page is saved first, and stands.
-      if (question.kind === "finish" && SAVE_FIRST.includes(current.kind))
-        await saveFocusEdits();
+      if (question.kind === "finish") await saveFocusEdits();
       apply(
         current.id,
         await answerCreation(current.id, {
@@ -121,9 +120,9 @@ export function FocusGuide() {
   const { run: finish, loading: finishing } = useAsyncAction(
     async (publish: boolean, startSelling: boolean, announce: boolean) => {
       if (!state) return;
-      // What she typed a moment ago is what goes out (the composer saves a
-      // beat later; a membership's page saves only on leaving).
-      if (SAVE_FIRST.includes(state.kind)) await saveFocusEdits();
+      // What the page shows is what goes out: no page saves its settings as
+      // she types (the composer a beat later, a membership's only on leaving).
+      await saveFocusEdits();
       const next = await finishCreation(state.id, {
         publish,
         announce,
