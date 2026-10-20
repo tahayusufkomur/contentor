@@ -418,3 +418,26 @@ test("a refused blog writer is said, with Upgrade, and Try again asks again", as
   await expect(guide(page).getByText("didn't come through")).toHaveCount(0);
   await page.close();
 });
+
+test("what she changed on the page is saved when she closes the tab", async ({ browser }) => {
+  const page = await (await coachContext(browser)).newPage();
+  const log: string[] = [];
+  await stubPost(page, log, { body_html: "<p>Three slow breaths change a class.</p>" });
+  await stubFocus(
+    page,
+    () => state({}),
+    state({
+      record: RECORD,
+      question: Q.finish,
+      answered: [["topic", IDEA], ["length", "Short read"], ["review", "Looks good"], ["cover", "Later"]],
+    }),
+  );
+
+  await page.goto(`${TENANT}${PATH}`);
+  await expect(guide(page).getByText("Ready. Publish it?")).toBeVisible();
+  const mine = "My own summary of the breaths.";
+  await main(page).getByPlaceholder("Excerpt").fill(mine);
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent("pagehide")));
+  await expect.poll(() => log).toContain(`patch:${JSON.stringify({ excerpt: mine })}`);
+  await page.close();
+});

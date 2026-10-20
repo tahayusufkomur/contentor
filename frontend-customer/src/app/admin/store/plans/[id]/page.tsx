@@ -375,7 +375,8 @@ function PlanForm({ id }: { id: string }) {
   // "Save & leave", and before her finish taps: what she changed on the page,
   // and nothing else (the guide's answers are saved already). On sale stays
   // the finish step's tap. What is saved is the server's copy from then on.
-  const saveFocus = async () => {
+  // `keepalive`: the tab is closing, and the requests have to outlive it.
+  const saveFocus = async (keepalive = false) => {
     const was = base.current;
     const changes: Record<string, unknown> = {};
     const saved: Partial<Saved> = {};
@@ -388,33 +389,50 @@ function PlanForm({ id }: { id: string }) {
         cycle === "custom" ? Number(months) : Number(cycle);
       Object.assign(saved, { cycle, months });
     }
-    if (Object.keys(changes).length) {
-      await clientFetch(`/api/v1/billing/plans/${id}/`, {
-        method: "PATCH",
-        body: JSON.stringify(changes),
-      });
-      base.current = { ...base.current, ...saved };
-    }
+    // Both at once: neither waits on the other (nor could, on a closing tab).
+    const sends: Promise<unknown>[] = [];
+    if (Object.keys(changes).length)
+      sends.push(
+        clientFetch(`/api/v1/billing/plans/${id}/`, {
+          method: "PATCH",
+          body: JSON.stringify(changes),
+          keepalive,
+        }).then(() => {
+          base.current = { ...base.current, ...saved };
+        }),
+      );
     if (itemKeys(selectedItems) !== itemKeys(was.items)) {
       const items = selectedItems;
-      await clientFetch(`/api/v1/billing/plans/${id}/access/`, {
-        method: "PUT",
-        body: JSON.stringify({
-          items: items.map((i) => ({
-            content_type: i.content_type,
-            object_id: i.object_id,
-          })),
+      sends.push(
+        clientFetch(`/api/v1/billing/plans/${id}/access/`, {
+          method: "PUT",
+          body: JSON.stringify({
+            items: items.map((i) => ({
+              content_type: i.content_type,
+              object_id: i.object_id,
+            })),
+          }),
+          keepalive,
+        }).then(() => {
+          base.current = { ...base.current, items };
         }),
-      });
-      base.current = { ...base.current, items };
+      );
     }
+    await Promise.all(sends);
   };
   const saveFocusRef = useRef(saveFocus);
   saveFocusRef.current = saveFocus;
   useEffect(() => {
     if (!focusing) return;
     setFocusSave(() => saveFocusRef.current());
-    return () => setFocusSave(null);
+    // Closing the tab: what she changed goes at once, and nobody is left to
+    // read a failure.
+    const closing = () => void saveFocusRef.current(true).catch(() => {});
+    window.addEventListener("pagehide", closing);
+    return () => {
+      window.removeEventListener("pagehide", closing);
+      setFocusSave(null);
+    };
   }, [focusing]);
 
   // Once created, a second save edits that plan: a plan cannot be deleted,

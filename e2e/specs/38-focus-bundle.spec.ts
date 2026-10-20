@@ -374,3 +374,19 @@ test("with fewer than two items to sell, the guide says so and the page offers t
   expect(sent).toEqual([]);
   await page.close();
 });
+
+test("what she changed on the page is saved when she closes the tab", async ({ browser }) => {
+  const page = await (await coachContext(browser)).newPage();
+  const log: string[] = [];
+  const bundle = await stubBundle(page, log);
+  bundle.link(["course:11", "course:12"]);
+  const atPrice = state({ record: RECORD, question: Q.access, answered: [["items", "Yoga basics, Pilates"], ["review", "Looks good"]] });
+  await stubFocus(page, () => atPrice, atPrice);
+
+  await page.goto(`${TENANT}${PATH}`);
+  await expect(guide(page).getByText("What should it cost?")).toBeVisible();
+  await main(page).locator("#name").fill("Yoga pair");
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent("pagehide")));
+  await expect.poll(() => log).toContain('patch:{"name":"Yoga pair"}');
+  await page.close();
+});

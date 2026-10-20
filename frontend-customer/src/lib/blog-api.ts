@@ -79,8 +79,13 @@ export const createPost = (body: Partial<BlogPostAdmin>) =>
     method: "POST",
     body: JSON.stringify(body),
   });
-export const updatePost = (id: number, body: Partial<BlogPostAdmin>) =>
+export const updatePost = (
+  id: number,
+  body: Partial<BlogPostAdmin>,
+  init?: Pick<RequestInit, "keepalive">,
+) =>
   clientFetch<BlogPostAdmin>(`${BASE}/posts/${id}/`, {
+    ...init,
     method: "PATCH",
     body: JSON.stringify(body),
   });

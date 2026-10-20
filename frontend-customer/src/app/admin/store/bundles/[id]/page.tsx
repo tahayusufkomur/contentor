@@ -349,7 +349,9 @@ export default function EditBundlePage() {
   // "Save & leave", and before her finish taps: what she changed on the page,
   // and nothing else (the guide's answers are saved already). Publishing
   // stays the finish step's tap. What is saved is the server's copy from then on.
-  const saveFocus = async () => {
+  // `keepalive`: the tab is closing; its name, description and items go in a
+  // request that outlives it (her price waits for the page, as a download's).
+  const saveFocus = async (keepalive = false) => {
     const was = base.current;
     const changes: Record<string, unknown> = {};
     const kept: Partial<Saved> = {};
@@ -367,17 +369,24 @@ export default function EditBundlePage() {
       await clientFetch(`/api/v1/billing/bundles/${id}/`, {
         method: "PATCH",
         body: JSON.stringify(changes),
+        keepalive,
       });
       base.current = { ...base.current, ...kept };
     }
-    if (accessDirty) await access.save(bundleId);
+    if (accessDirty && !keepalive) await access.save(bundleId);
   };
   const saveFocusRef = useRef(saveFocus);
   saveFocusRef.current = saveFocus;
   useEffect(() => {
     if (!focusing) return;
     setFocusSave(() => saveFocusRef.current());
-    return () => setFocusSave(null);
+    // Closing the tab: nobody is left to read a failure.
+    const closing = () => void saveFocusRef.current(true).catch(() => {});
+    window.addEventListener("pagehide", closing);
+    return () => {
+      window.removeEventListener("pagehide", closing);
+      setFocusSave(null);
+    };
   }, [focusing]);
 
   const { run: handleSave, loading: saving } = useAsyncAction(

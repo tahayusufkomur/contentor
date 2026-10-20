@@ -255,7 +255,10 @@ export default function BlogEditorPage() {
   // "Save & leave", and before her finish taps: what she changed on the page,
   // and nothing else (the job writes the rest on the server meanwhile, and a
   // stale copy must never go back over it). Publishing stays the finish's tap.
-  const saveFocus = async () => {
+  // `keepalive`: the tab is closing, and the request has to outlive it.
+  // ponytail: a keepalive body is capped at 64 KB; a longer post's change is
+  // not saved on close (Save & leave and the finish still save it).
+  const saveFocus = async (keepalive = false) => {
     if (!mine.current || !base.current) return;
     const now = mine.current;
     const was = base.current;
@@ -269,7 +272,7 @@ export default function BlogEditorPage() {
         name === "tags" ? splitTags(now.tags) : now[name],
       ]),
     ) as Partial<BlogPostAdmin>;
-    await updatePost(postId, changes);
+    await updatePost(postId, changes, { keepalive });
     base.current = {
       ...was,
       ...Object.fromEntries(
@@ -282,7 +285,13 @@ export default function BlogEditorPage() {
   useEffect(() => {
     if (!focusing) return;
     setFocusSave(() => saveFocusRef.current());
-    return () => setFocusSave(null);
+    // Closing the tab: nobody is left to read a failure.
+    const closing = () => void saveFocusRef.current(true).catch(() => {});
+    window.addEventListener("pagehide", closing);
+    return () => {
+      window.removeEventListener("pagehide", closing);
+      setFocusSave(null);
+    };
   }, [focusing]);
   // The cover step: the photo row in the cover's place; her tap there is the cover.
   const atCover =

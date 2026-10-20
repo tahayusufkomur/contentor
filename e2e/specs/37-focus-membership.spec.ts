@@ -469,3 +469,23 @@ test("on sale from a kept plan's page: what members get is saved first, and a re
   await expect(onSale).toBeChecked();
   await page.close();
 });
+
+test("what she changed on the page is saved when she closes the tab", async ({ browser }) => {
+  const page = await (await coachContext(browser)).newPage();
+  const log: string[] = [];
+  const plan = await stubPlan(page, log);
+  plan.link(["course:11"]);
+  const atPrice = state({
+    record: RECORD,
+    question: Q.access,
+    answered: [TOPIC, ["included", "Yoga basics"], ["review", "Looks good"]],
+  });
+  await stubFocus(page, () => atPrice, atPrice);
+
+  await page.goto(`${TENANT}${PATH}`);
+  await expect(guide(page).getByText("What should it cost?")).toBeVisible();
+  await main(page).locator("#plan-price").fill("15");
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent("pagehide")));
+  await expect.poll(() => log).toContain('patch:{"price":"15"}');
+  await page.close();
+});
