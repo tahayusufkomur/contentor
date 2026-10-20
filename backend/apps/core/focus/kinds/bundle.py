@@ -161,7 +161,7 @@ def _link(value: str, pk: int, on: bool) -> None:
     from django.contrib.contenttypes.models import ContentType
 
     from apps.billing.models import BundleItem
-    from apps.billing.serializers.bundles import is_over
+    from apps.billing.models.core import is_over
 
     for row in membership._rows_of(value):
         key = {"bundle_id": pk, "content_type": ContentType.objects.get_for_model(row), "object_id": row.pk}
@@ -387,7 +387,7 @@ def write_copy(pk, fields: dict) -> None:
 def _apart(row) -> Decimal:
     """What its items cost bought apart, as the store says it: each one's own
     one-time price (a series: each session in it), drafts left out."""
-    from apps.billing.serializers.bundles import listed_items, original_price
+    from apps.billing.models.core import listed_items, original_price
 
     return original_price(listed_items(row, drafts=False))
 

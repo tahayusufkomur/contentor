@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -217,6 +219,46 @@ class PaymentItem(models.Model):
         return f"PaymentItem #{self.pk} - Payment #{self.payment_id}"
 
 
+def is_draft(obj) -> bool:
+    """A course or download not published yet, or a class held in draft (G4): students never see it listed."""
+    return getattr(obj, "is_published", True) is False or getattr(obj, "status", "") == "draft"
+
+
+def is_over(obj) -> bool:
+    """An in-person session that is over: the store and checkout no longer sell it (live ones they still do)."""
+    return obj._meta.label_lower == "live.onsiteevent" and obj.computed_status == "ended"
+
+
+def listed_items(bundle, *, drafts: bool) -> list:
+    """The bundle's items as the viewer sees them: a draft only with ``drafts`` (her own view)."""
+    return [i for i in bundle.items.all() if drafts or not is_draft(i.content_object)]
+
+
+def original_price(items) -> Decimal:
+    """What the items cost bought apart: an in-person session that is over cannot be."""
+    total = Decimal("0.00")
+    for item in items:
+        content_obj = item.content_object
+        if content_obj is not None and not is_over(content_obj):
+            price = getattr(content_obj, "price", None)
+            # Free keeps a covered price on the item; it is not part of what the bundle saves.
+            if price is not None and getattr(content_obj, "pricing_type", "paid") == "paid":
+                total += Decimal(str(price))
+    return total
+
+
+def item_count(rows, *, drafts: bool) -> int:
+    """A bundle's or a plan's items (rows with a content_object) as the viewer sees them: a draft only with
+    ``drafts`` (her own view), and a class series (sessions sharing a model and a title) once."""
+    return len(
+        {
+            (row.content_type_id, obj.title if hasattr(obj, "scheduled_at") else row.object_id)
+            for row in rows
+            if (obj := row.content_object) is not None and (drafts or not is_draft(obj))
+        }
+    )
+
+
 class Bundle(models.Model):
     """Coach-defined product grouping multiple content items at a discount."""
 
@@ -246,21 +288,9 @@ class Bundle(models.Model):
     NO_ITEMS, NO_PRICE = "Add at least two items", "Set its price first"  # a bundle of one is just the item
     NOT_SELLING = monetization.NOT_SELLING
 
-    def item_count(self) -> int:
-        """Its items as she and students see them: drafts left out, and a class
-        series (sessions sharing a model and a title) once."""
-        from apps.billing.serializers.bundles import listed_items
-
-        return len(
-            {
-                (
-                    i.content_type_id,
-                    i.content_object.title if hasattr(i.content_object, "scheduled_at") else i.object_id,
-                )
-                for i in listed_items(self, drafts=False)
-                if i.content_object is not None
-            }
-        )
+    def item_count(self, *, drafts: bool = False) -> int:
+        """Its items as students see them (``drafts``: as she does), a class series once."""
+        return item_count(self.items.all(), drafts=drafts)
 
     def not_ready(self) -> str:
         """Why it cannot be published yet ("" when it can): two items, then a price."""

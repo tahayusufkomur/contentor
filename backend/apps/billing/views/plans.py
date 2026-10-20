@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from apps.billing import ways
 from apps.billing.models import Subscription, SubscriptionPlan, SubscriptionPlanAccess
-from apps.billing.serializers.bundles import is_draft
+from apps.billing.models.core import is_draft, item_count
 from apps.billing.serializers.plans import (
     PlanAccessWriteItemSerializer,
     PlanAccessWriteSerializer,
@@ -116,7 +116,8 @@ def _forbidden():
     return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
 
 
-def _plan_row(plan, *, is_subscribed=False):
+def _plan_row(plan, *, is_subscribed=False, drafts=False):
+    """A plan as a card; ``drafts``: her own view, which counts what members do not see yet."""
     return {
         "id": plan.id,
         "name": plan.name,
@@ -125,7 +126,7 @@ def _plan_row(plan, *, is_subscribed=False):
         "currency": plan.currency,
         "billing_interval_months": plan.billing_interval_months,
         "is_active": plan.is_active,
-        "item_count": SubscriptionPlanAccess.objects.filter(plan=plan).count(),
+        "item_count": item_count(plan.access_items.all(), drafts=drafts),
         "is_subscribed": is_subscribed,
     }
 
@@ -146,9 +147,9 @@ def plan_list(request):
         serializer.is_valid(raise_exception=True)
         # Charge currency is a tenant-level invariant, never user input.
         plan = serializer.save(currency=tenant_charge_currency())
-        return Response(_plan_row(plan), status=status.HTTP_201_CREATED)
+        return Response(_plan_row(plan, drafts=True), status=status.HTTP_201_CREATED)
 
-    plans = SubscriptionPlan.objects.all()
+    plans = SubscriptionPlan.objects.prefetch_related("access_items__content_type", "access_items__content_object")
     if not (request.query_params.get("all") and _is_owner(request)):
         plans = plans.filter(is_active=True)
 
@@ -164,7 +165,8 @@ def plan_list(request):
             ).values_list("plan_id", flat=True)
         )
 
-    return Response([_plan_row(p, is_subscribed=p.id in subscribed_plan_ids) for p in plans])
+    drafts = is_coach_or_owner(request.user)
+    return Response([_plan_row(p, is_subscribed=p.id in subscribed_plan_ids, drafts=drafts) for p in plans])
 
 
 @api_view(["GET", "PATCH"])
@@ -182,7 +184,7 @@ def plan_detail(request, pk):
         plan = get_object_or_404(SubscriptionPlan, pk=pk)
         serializer = PlanWriteSerializer(plan, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        return Response(_plan_row(serializer.save()))
+        return Response(_plan_row(serializer.save(), drafts=True))
 
     visible = SubscriptionPlan.objects.all() if _is_owner(request) else SubscriptionPlan.objects.filter(is_active=True)
     plan = get_object_or_404(visible, pk=pk)

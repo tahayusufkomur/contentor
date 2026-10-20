@@ -324,6 +324,37 @@ class TestPlanAccess:
         mine = owner_client.get(f"/api/v1/billing/bundles/{bundle.pk}/").json()
         assert (mine["item_count"], Decimal(mine["original_price"])) == (2, Decimal("80.00"))
 
+    def test_a_series_counts_once_and_a_draft_only_for_her(self, plan, course, owner, student, owner_client):
+        """A bundle's list row, its store card and a plan's card count items as the viewer sees them: a
+        weekly class once (G19), a draft only in her own view (G4)."""
+        weekly = [
+            LiveClass.objects.create(
+                title="Morning flow",
+                instructor=owner,
+                pricing_type="paid",
+                price=Decimal("10"),
+                status="scheduled",
+                scheduled_at=timezone.now() + timezone.timedelta(days=1 + 7 * n),
+            )
+            for n in range(3)
+        ]
+        draft = DownloadFile.objects.create(
+            title="Draft download", file_url="k", pricing_type="paid", price=Decimal("30"), is_published=False
+        )
+        bundle = Bundle.objects.create(name="Starter", price=Decimal("40"), currency="USD", is_active=True)
+        for obj in (course, *weekly, draft):
+            BundleItem.objects.create(bundle=bundle, content_object=obj)
+            SubscriptionPlanAccess.objects.create(plan=plan, content_object=obj)
+        viewer = APIClient(HTTP_HOST=SHARED_DOMAIN)
+        viewer.force_authenticate(user=student)
+        [listed] = [b for b in viewer.get("/api/v1/billing/bundles/").json() if b["id"] == bundle.pk]
+        [sold] = [i for i in viewer.get("/api/v1/billing/store/").json() if i["type"] == "bundle"]
+        [card] = [p for p in viewer.get("/api/v1/billing/plans/").json() if p["id"] == plan.pk]
+        assert (listed["item_count"], sold["item_count"], card["item_count"]) == (2, 2, 2)
+        [mine] = [p for p in owner_client.get("/api/v1/billing/plans/?all=1").json() if p["id"] == plan.pk]
+        assert mine["item_count"] == 3
+
+
     def test_student_forbidden(self, plan, course, student):
         """Student cannot access the plan access endpoint (GET or PUT)."""
         client = APIClient(HTTP_HOST=SHARED_DOMAIN)

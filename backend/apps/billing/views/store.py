@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.billing.models import Bundle, PaymentItem
-from apps.billing.serializers.bundles import listed_items, original_price
+from apps.billing.models.core import listed_items, original_price
 from apps.billing.serializers.store import StoreItemSerializer
 from apps.core.access import ContentAccessService
 from apps.core.currency import tenant_charge_currency
@@ -140,7 +140,7 @@ def _collect_store_items(drafts: bool = True):
         )
 
     # Bundles: active (a draft only in her products list; store_list leaves it out)
-    for bundle in Bundle.objects.filter(is_active=True).prefetch_related("items"):
+    for bundle in Bundle.objects.filter(is_active=True).prefetch_related("items__content_type", "items__content_object"):
         items.append(
             {
                 "id": bundle.pk,
@@ -151,7 +151,7 @@ def _collect_store_items(drafts: bool = True):
                 "currency": bundle.currency,
                 "thumbnail_url": _thumbnail_url(bundle),
                 "is_active": bundle.is_published,  # a draft is not on sale (only active bundles are listed)
-                "item_count": len(listed_items(bundle, drafts=drafts)),
+                "item_count": bundle.item_count(drafts=drafts),
                 "original_price": _bundle_original_price(bundle, drafts),
                 "_obj": bundle,
             }
