@@ -264,8 +264,8 @@ def test_a_turn_that_starts_work_says_so(client, tenant_ctx, quiet):
         "marketing",
     )
     assert interview.started_note(["page:about", "draft:post"])[0] == (
-        "Your team is starting on your Designer on your About page"
-        " and your Marketing Specialist on your first article now."
+        "Your team is starting now: your Designer on your About page"
+        " and your Marketing Specialist on your first article."
     )
 
 

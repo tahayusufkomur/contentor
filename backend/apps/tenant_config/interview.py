@@ -326,7 +326,7 @@ def started_note(fired: list[str]) -> tuple[str, str | None]:
         )
     if owner:
         return f"Your {NAMES[owner]} is starting on {brief.say_list(by_owner[owner])} now.", owner
-    return f"Your team is starting on {brief.say_list(clauses)} now.", None
+    return f"Your team is starting now: {brief.say_list(clauses)}.", None
 
 
 def redraft_ack(request: str) -> str:
