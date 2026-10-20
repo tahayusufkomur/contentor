@@ -499,3 +499,11 @@ def test_the_plain_forms_timing_stamp_is_the_events_own_ref(owner):
     assert event.record(stamp.record_id) == row
     for bad in ({**body, "event_kind": "live"}, {**body, "event_kind": "nope"}, {**body, "event_kind": None}):
         assert client.post("/api/v1/admin/focus/form-timing/", bad, format="json").status_code == 404
+
+
+def test_a_zoom_link_needs_its_meeting_id():
+    """The starter chip "https://zoom.us/j/" finished with a word is not a link to her class."""
+    assert not event._is_link("https://zoom.us/j/zoom")
+    assert not event._is_link(event.ZOOM_START)
+    assert event._is_link("https://us02web.zoom.us/j/81234567890?pwd=abc")
+    assert event._is_link("https://meet.google.com/abc-defg-hij")  # another room she uses for it

@@ -300,6 +300,8 @@ def _upcoming(schedule: dict):
 
 
 def _is_link(text: str) -> bool:
+    from urllib.parse import urlsplit
+
     from django.core.exceptions import ValidationError
     from django.core.validators import URLValidator
 
@@ -307,6 +309,11 @@ def _is_link(text: str) -> bool:
         URLValidator(schemes=["http", "https"])(text)
     except ValidationError:
         return False
+    # A Zoom meeting link takes its meeting id: never the starter chip alone, nor finished with a word.
+    parts = urlsplit(text)
+    host = parts.hostname or ""
+    if (host == "zoom.us" or host.endswith(".zoom.us")) and parts.path.startswith("/j/"):
+        return parts.path[3:].strip("/").isdigit()
     return len(text) <= 500  # ZoomClass.zoom_link
 
 
