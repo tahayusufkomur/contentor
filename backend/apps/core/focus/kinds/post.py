@@ -163,7 +163,7 @@ def retitle(pk, provisional: str, title: str) -> bool:
         return False
     fields = {"title": title[:200]}
     if slugify(provisional).startswith(re.sub(r"-\d+$", "", row.slug)) and slugify(title) != row.slug:
-        fields["slug"] = unique_slug(title)
+        fields["slug"] = unique_slug(title, exclude_pk=pk)
     return bool(_rows(pk).filter(title=provisional, status="draft").update(**fields))
 
 
@@ -268,7 +268,7 @@ def go_live(pk) -> None:
 
     row = _rows(pk).filter(status="draft").first()
     if row is not None and PLACEHOLDER.fullmatch(row.slug):
-        _rows(pk).update(slug=unique_slug(row.title))
+        _rows(pk).update(slug=unique_slug(row.title, exclude_pk=pk))
     content.publish_blog_post(pk)
 
 

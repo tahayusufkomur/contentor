@@ -17,7 +17,7 @@ from django_tenants.utils import schema_context
 from apps.accounts.models import User
 from apps.blog import ai as blog_ai
 from apps.blog import curated
-from apps.blog.models import BlogPost, BlogTopicIdea
+from apps.blog.models import BlogPost, BlogTopicIdea, unique_slug
 from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.focus import flow, jobs, kinds, post
@@ -399,6 +399,30 @@ def test_you_decide_without_an_idea_goes_live_at_its_own_address(owner, on, paid
     row = BlogPost.objects.get(pk=creation.record_id)
     assert (row.status, row.slug) == ("published", "breathe-before-the-day-starts")
     assert recipe.announce_facts(row)["link"] == "/blog/breathe-before-the-day-starts"
+
+
+def test_a_written_post_takes_its_own_address_before_any_publish(owner, on, paid, hers):
+    # "You decide" with no idea: the job's title brings its address, so the page's Publish uses it too.
+    creation = flow.answer(flow.start(owner, "post", delegate=True), "length", delegate=True)
+    assert recipe.PLACEHOLDER.fullmatch(_row(creation).slug)
+    with _model():
+        jobs.execute(SCHEMA, creation.runs["post"])
+    row = _row(creation)
+    assert (row.title, row.slug) == ("Breathe before the day starts", "breathe-before-the-day-starts")
+    assert "slug" not in FocusCreation.objects.get(pk=creation.pk).drafted["post"]  # never one of her fields
+    creation = flow.finish(_at(creation, review="ok", cover="later"), publish=False)
+    response = hers.patch(f"/api/v1/admin/blog/posts/{row.pk}/", {"status": "published"}, format="json")
+    assert response.status_code == 200
+    assert (_row(creation).status, _row(creation).slug) == ("published", "breathe-before-the-day-starts")
+    # An address she set herself is hers; the job leaves it.
+    mine = flow.answer(flow.start(owner, "post", delegate=True), "length", delegate=True)
+    BlogPost.objects.filter(pk=mine.record_id).update(slug="my-own-address")
+    with _model(_draft(title="Slow breaths at night")):
+        jobs.execute(SCHEMA, mine.runs["post"])
+    assert (_row(mine).title, _row(mine).slug) == ("Slow breaths at night", "my-own-address")
+    # Its own address is never counted as taken (unique_slug's exclude_pk).
+    assert unique_slug("My own address", exclude_pk=mine.record_id) == "my-own-address"
+    assert unique_slug("My own address") == "my-own-address-2"
 
 
 def test_a_refused_redraft_after_the_review_is_said(owner, on, paid):

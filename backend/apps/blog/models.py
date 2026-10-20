@@ -11,12 +11,13 @@ from django.utils.text import slugify
 MAX_SLUG_LEN = 60
 
 
-def unique_slug(title):
+def unique_slug(title, exclude_pk=None):
     """Kebab slug from a title, unique among BlogPosts (suffix -2, -3, …).
-    Always derived server-side — never trusted from AI or client input."""
+    Always derived server-side — never trusted from AI or client input.
+    ``exclude_pk``: the post being re-slugged, whose own address is not taken."""
     base = slugify(title)[:MAX_SLUG_LEN].strip("-") or "post"
     slug, n = base, 1
-    while BlogPost.objects.filter(slug=slug).exists():
+    while BlogPost.objects.filter(slug=slug).exclude(pk=exclude_pk).exists():
         n += 1
         slug = f"{base[: MAX_SLUG_LEN - len(str(n)) - 1]}-{n}"
     return slug

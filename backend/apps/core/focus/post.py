@@ -15,7 +15,7 @@ from django.db import connection, transaction
 
 from apps.blog import ai as blog_ai
 from apps.blog import curated
-from apps.blog.models import BlogPost
+from apps.blog.models import BlogPost, unique_slug
 from apps.core.copilot import runs
 from apps.tenant_config.models import CopilotRun, FocusCreation
 
@@ -121,6 +121,9 @@ def carry_out(tenant, run_id) -> None:
         if "body_html" in fields:  # its inline images and model go with the text, never onto hers
             curated.resolve_curated_photo_ids(draft)  # a catalog photo it placed, copied into her storage
             extra = {"image_placements": draft["image_placements"], "ai_model": draft["ai_model"]}
+        if "title" in fields and adapter.PLACEHOLDER.fullmatch(record.slug):
+            # Its own address before any publish (the page's, the assistant's): never /blog/new-post-N.
+            extra["slug"] = unique_slug(fields["title"], exclude_pk=record.pk)
         if fields:
             BlogPost.objects.filter(pk=record.pk).update(**fields, **extra)
         locked.drafted = {**drafted, "post": {**wrote, **fields}}
