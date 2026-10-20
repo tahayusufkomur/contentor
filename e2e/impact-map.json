@@ -201,6 +201,16 @@
     "src/types/design.ts": ["32-photo-studio"],
     "src/types/download.ts": ["12-downloads", "36-focus-download"],
     "src/components/setup-flow": ["01-signup-onboarding"],
+    "src/components/setup-flow/concept-slides.tsx": [
+      "01-signup-onboarding",
+      "14-navbar-layouts",
+      "27-nav-stage-gating"
+    ],
+    "src/components/setup-flow/slide-pictures.tsx": [
+      "01-signup-onboarding",
+      "14-navbar-layouts",
+      "27-nav-stage-gating"
+    ],
     "src/lib/setup-flow.ts": ["01-signup-onboarding"],
     "src/lib/interview.ts": ["01-signup-onboarding"],
     "src/components/sections": [
