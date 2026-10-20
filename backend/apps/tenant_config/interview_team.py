@@ -30,12 +30,14 @@ def handoff(tenant, answers: dict, flow: dict, *, sells: bool = False) -> list[d
     course = (snap["course"] or {}).get("title")
     klass = (snap["event"] or snap.get("onsite") or {}).get("title")
     post = (snap["post"] or {}).get("title")
+    post_live = bool((snap["post"] or {}).get("is_published"))
     plans = list(
         SubscriptionPlan.objects.filter(pk__in=membership_plan_ids(flow), is_active=True)
         .order_by("pk")
         .values_list("name", flat=True)
     )
-    pages = [label for key, label in _PAGE_LABELS.items() if key in (flow.get("page_builds") or {})]
+    builds = flow.get("page_builds") or {}
+    pages = [label for key, label in _PAGE_LABELS.items() if (builds.get(key) or {}).get("status") == "ready"]
     look = brief.is_settled(answers, "site_style")
     ways = _ways(answers)
     made = [t for t in (course, klass) if t]
@@ -57,8 +59,12 @@ def handoff(tenant, answers: dict, flow: dict, *, sells: bool = False) -> list[d
             else "Tell me what you'd like to make first.",
         ),
         "marketing": (
-            f"Drafted your first article, {post}." if post else "Ready to help new students find you.",
-            f"Next: publish {post} when you're happy with it."
+            f"{'Wrote' if post_live else 'Drafted'} your first article, {post}."
+            if post
+            else "Ready to help new students find you.",
+            f"Next: share {post} with your students."
+            if post and post_live
+            else f"Next: publish {post} when you're happy with it."
             if post
             else "Next: share your site where your students are.",
         ),

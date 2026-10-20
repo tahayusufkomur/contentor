@@ -59,8 +59,8 @@ SLIDES: tuple[Slide, ...] = (
         ("offers",),
         "How you'll work",
         "Five ways to work with your students.",
-        "Pick as many as fit. Each one gets its place on your site, and I'll draft your first course, class or "
-        "article while we talk.",
+        "Pick as many as fit. Each one gets its place on your site, and I'll draft your first course or class "
+        "while we talk.",
         "Choose yours",
     ),
     # Traced in code (see the task report): the pitch is what the home page's words are written from; the
@@ -196,7 +196,7 @@ FALLBACK = {
     "class_when": "Tuesdays, 7 pm",
     "class_price": 10,
     "event_title": "Weekend workshop",
-    "event_place": "Your studio",
+    "event_place": "Your usual place",
     "memberships": [
         {"name": "The Club", "price": 19, "covers": "Every live class"},
         {"name": "Course library", "price": 12, "covers": "Every course"},

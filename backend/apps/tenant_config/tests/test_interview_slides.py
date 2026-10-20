@@ -216,7 +216,7 @@ EXAMPLES = slides.SlideExamples(
     class_when="Tuesdays, 7 pm",
     class_price=10,
     event_title="Glow weekend",
-    event_place="Your studio",
+    event_place="Your usual place",
     memberships=[
         slides.Plan(name="Glow Club", price=19, covers="Every live class"),
         slides.Plan(name="Course library", price=12, covers="Every course"),

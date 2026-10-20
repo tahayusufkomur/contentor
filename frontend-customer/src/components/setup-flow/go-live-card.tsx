@@ -129,7 +129,8 @@ export function GoLiveCard({
   const { run: publish, loading: publishing } = useAsyncAction(
     async () => {
       try {
-        onPublished((await api.goliveAction("publish")).team);
+        // An older backend has no team yet: the celebration still shows.
+        onPublished((await api.goliveAction("publish")).team ?? []);
       } catch (err) {
         const blockers =
           err instanceof ApiError ? err.data.blockers : undefined;

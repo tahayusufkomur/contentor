@@ -68,10 +68,15 @@ def test_an_empty_flow_gives_the_fallback_lines(tenant_ctx):
 
 
 def test_a_paid_site_without_memberships_sets_prices_and_a_look_alone_is_named(tenant_ctx):
-    lines = _lines(tenant_ctx, {"delegated": ["site_style"]}, {"page_builds": {"home": {}}}, sells=True)
+    lines = _lines(
+        tenant_ctx, {"delegated": ["site_style"]}, {"page_builds": {"home": {"status": "ready"}}}, sells=True
+    )
     assert lines["finance"]["did"] == "Set your first prices."
     assert lines["designer"]["did"] == "Built your Home page and your look."
-    assert _lines(tenant_ctx, {}, {"page_builds": {"home": {}}})["designer"]["did"] == "Built your Home page."
+    assert (
+        _lines(tenant_ctx, {}, {"page_builds": {"home": {"status": "ready"}}})["designer"]["did"]
+        == "Built your Home page."
+    )
 
 
 def test_golive_state_carries_the_team(tenant_ctx, config):
@@ -85,3 +90,25 @@ def test_golive_state_carries_the_team(tenant_ctx, config):
         body = golive_state(tenant_ctx)
     assert [line["key"] for line in body["team"]] == list(team.KEYS)
     assert all(set(line) == {"key", "did", "next"} for line in body["team"])
+
+
+def test_a_published_article_is_shared_not_published_again(tenant_ctx):
+    from apps.blog.models import BlogPost
+
+    post = BlogPost.objects.create(title="Why face yoga", slug="why-face-yoga", status="published")
+    marketing = _lines(tenant_ctx, {}, {"drafts": {"post": post.id}})["marketing"]
+    assert marketing["did"] == "Wrote your first article, Why face yoga."
+    assert marketing["next"] == "Next: share Why face yoga with your students."
+
+    BlogPost.objects.filter(pk=post.pk).update(status="draft")
+    marketing = _lines(tenant_ctx, {}, {"drafts": {"post": post.id}})["marketing"]
+    assert marketing["did"] == "Drafted your first article, Why face yoga."
+    assert marketing["next"] == "Next: publish Why face yoga when you're happy with it."
+
+
+def test_only_finished_pages_are_claimed_as_built(tenant_ctx):
+    builds = {"home": {"status": "ready"}, "about": {"status": "failed"}, "faq": {"status": "building"}, "contact": {}}
+    assert _lines(tenant_ctx, {}, {"page_builds": builds})["designer"]["did"] == "Built your Home page."
+    assert _lines(tenant_ctx, {}, {"page_builds": {"home": {"status": "failed"}}})["designer"]["did"] == (
+        "Looks after your site."
+    )

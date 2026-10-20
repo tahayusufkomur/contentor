@@ -49,7 +49,8 @@ export function Celebration({
             {brandName} is live
           </h2>
           <p className="mt-3 text-[15px] text-[var(--sf-graphite)]">
-            Anyone can visit your site now. Here’s who’s looking after what.
+            Anyone can visit your site now.
+            {team.length > 0 && " Here’s who’s looking after what."}
           </p>
           <NavLink
             href="/"
@@ -59,25 +60,27 @@ export function Celebration({
           >
             <span className="truncate">{host}</span>
           </NavLink>
-          <ul className="mt-8 grid gap-3 text-left sm:grid-cols-2">
-            {team.map(({ key, did, next }) => (
-              <li
-                key={key}
-                className="rounded-xl border border-[var(--sf-line)] bg-white p-4"
-              >
-                <div className="flex items-center gap-2.5">
-                  <SpecialistFace k={key} size="md" />
-                  <p className="text-sm font-medium">
-                    {t(`team.specialists.${key}.name`)}
+          {team.length > 0 && (
+            <ul className="mt-8 grid gap-3 text-left sm:grid-cols-2">
+              {team.map(({ key, did, next }) => (
+                <li
+                  key={key}
+                  className="rounded-xl border border-[var(--sf-line)] bg-white p-4"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <SpecialistFace k={key} size="md" />
+                    <p className="text-sm font-medium">
+                      {t(`team.specialists.${key}.name`)}
+                    </p>
+                  </div>
+                  <p className="mt-3 text-[14px] leading-relaxed">{did}</p>
+                  <p className="mt-1 text-[14px] leading-relaxed text-[var(--sf-graphite)]">
+                    {next}
                   </p>
-                </div>
-                <p className="mt-3 text-[14px] leading-relaxed">{did}</p>
-                <p className="mt-1 text-[14px] leading-relaxed text-[var(--sf-graphite)]">
-                  {next}
-                </p>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button
               size="lg"
