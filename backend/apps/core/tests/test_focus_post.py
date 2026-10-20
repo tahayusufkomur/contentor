@@ -539,6 +539,17 @@ def test_try_again_asks_the_blog_gate_first(owner, on, paid):
     assert _row(creation).title == "Breathe before the day starts"
 
 
+def test_the_overview_never_waits_on_the_ai_hub(owner, on, paid, hers):
+    """Every New page loads the overview: her plan and quota decide the post there, never the hub's
+    health probe (2 s when the hub is slow); a hub that is down is said by the guide."""
+    with mock.patch.object(core_ai, "available", side_effect=AssertionError("probed the hub")):
+        body = hers.get("/api/v1/admin/focus/").json()
+    assert "post" in body["kinds"]
+    with mock.patch.object(blog_ai, "_provider_configured", return_value=False) as probe:
+        assert blog_ai.availability(paid)["reason"] == "disabled"
+    probe.assert_called_once()  # once per gate, not once per use
+
+
 def test_publish_is_refused_while_the_post_is_empty(owner, on, paid):
     creation = flow.answer(_start(owner), "length", value="short")  # the post job is writing
     writing = creation.runs["post"]

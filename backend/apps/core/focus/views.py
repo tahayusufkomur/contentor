@@ -47,9 +47,10 @@ def _owner_only(user, kind):
 
 def _refused(kind) -> bool:
     """Its drafting refused before it starts (a post's blog gate): New is today's form, not
-    questions that end in "Write it yourself". One already open carries on."""
+    questions that end in "Write it yourself". One already open carries on. Her plan and quota
+    only: a slow AI hub never holds the New pages; a hub that is down is said by the guide."""
     refused = getattr(kinds.get(kind), "draft_refused", None)
-    return bool(refused and refused())
+    return bool(refused and refused(probe=False))
 
 
 def _hers(request, creation_id):

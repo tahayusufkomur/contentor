@@ -167,12 +167,13 @@ def retitle(pk, provisional: str, title: str) -> bool:
     return bool(_rows(pk).filter(title=provisional, status="draft").update(**fields))
 
 
-def draft_refused() -> bool:
+def draft_refused(probe: bool = True) -> bool:
     """Whether the blog writer's gate (her plan, her quota) refuses a draft now: the flow then asks no
-    follow-up first, which would go nowhere (flow._next_draft)."""
+    follow-up first, which would go nowhere (flow._next_draft). ``probe=False`` skips the AI hub's
+    health probe (the overview's page load)."""
     from apps.blog import ai as blog_ai
 
-    return bool(blog_ai.availability(connection.tenant)["reason"])
+    return bool(blog_ai.availability(connection.tenant, probe=probe)["reason"])
 
 
 def start_draft(creation, instruction: str = ""):

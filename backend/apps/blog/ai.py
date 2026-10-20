@@ -444,13 +444,16 @@ def plan_limit(tenant):
     return plan.max_ai_blog_posts or 0
 
 
-def availability(tenant, month=None):
+def availability(tenant, month=None, *, probe=True):
     """The single gate every generation path checks. Shape mirrors the Brand
     Pack status endpoint so the frontend upsell pattern transfers.
 
     Free-plan tenants carry a one-off lifetime grant: the plan quota is monthly
     (BlogAiUsage is keyed by month), so "one time, ever" cannot be expressed as
-    a limit and lives on Tenant.free_blog_grant_used instead."""
+    a limit and lives on Tenant.free_blog_grant_used instead.
+
+    ``probe=False`` takes the provider as configured: a page load that only
+    needs her plan and quota never waits on the AI hub's health probe."""
     month = month or current_month()
     limit = plan_limit(tenant)
     free_grant = limit <= 0 and not getattr(tenant, "free_blog_grant_used", False)
@@ -458,10 +461,11 @@ def availability(tenant, month=None):
     used = tenant_usage(tenant.schema_name, month=month).generations_used
     remaining = 1 if free_grant else max(0, limit - used)
     budget_ok = global_spend(month=month) < Decimal(str(settings.BLOG_AI_MONTHLY_BUDGET_USD))
-    enabled = _provider_configured() and budget_ok
+    configured = _provider_configured() if probe else True
+    enabled = configured and budget_ok
     if not eligible:
         reason = "upgrade_required"
-    elif not _provider_configured():
+    elif not configured:
         reason = "disabled"
     elif not budget_ok:
         reason = "budget"
