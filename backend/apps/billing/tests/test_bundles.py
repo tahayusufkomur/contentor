@@ -11,6 +11,8 @@ from unittest import mock
 
 import pytest
 from django.contrib.contenttypes.models import ContentType
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
@@ -241,3 +243,23 @@ class TestUnpublishedBundle:
         assert bundle.is_published is True
         assert Bundle._meta.get_field("is_published").default is True
         assert Bundle.objects.filter(is_published=False).count() == 0
+
+
+@pytest.mark.django_db(transaction=True)
+def test_the_list_and_a_bundle_cost_the_same_queries_with_more_items(bundle, owner, student, course):
+    """Its items are fetched once per request (a prefetch), never one query per item."""
+    client = make_client(student)  # drafts left out: each item's own row is read
+
+    def queries(url):
+        with CaptureQueriesContext(connection) as ctx:
+            assert client.get(url).status_code == 200
+        return len(ctx.captured_queries)
+
+    urls = ("/api/v1/billing/bundles/", f"/api/v1/billing/bundles/{bundle.pk}/")
+    before = [queries(url) for url in urls]
+    for n in range(4):
+        more = Course.objects.create(
+            title=f"More {n}", slug=f"more-{n}", instructor=owner, pricing_type="paid", price=10, is_published=True
+        )
+        BundleItem.objects.create(bundle=bundle, content_object=more)
+    assert [queries(url) for url in urls] == before

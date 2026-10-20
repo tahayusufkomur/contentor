@@ -20,8 +20,12 @@ def bundle_list_create(request):
     return _bundle_create(request)
 
 
+# A bundle's items and what each one is, read once per request (its count, price and listing walk them).
+ITEMS = ("items__content_type", "items__content_object")
+
+
 def _bundle_list(request):
-    qs = Bundle.objects.filter(is_active=True)
+    qs = Bundle.objects.filter(is_active=True).prefetch_related(*ITEMS)
     # A draft is hers alone: students and visitors see only what is on sale.
     if not is_coach_or_owner(request.user):
         qs = qs.filter(is_published=True)
@@ -42,7 +46,8 @@ def _bundle_create(request):
 @api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([AllowAny])
 def bundle_detail(request, pk):
-    bundle = get_object_or_404(Bundle, pk=pk)
+    # Not for a PATCH: its items change under the prefetch.
+    bundle = get_object_or_404(Bundle.objects.prefetch_related(*ITEMS) if request.method == "GET" else Bundle, pk=pk)
 
     if request.method == "GET":
         # A draft is the coach's alone: to a student or visitor it does not exist.
