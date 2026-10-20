@@ -64,6 +64,15 @@ class BlogPostAdminSerializer(serializers.ModelSerializer):
         # Trust boundary: coach-authored HTML is sanitized before storage.
         return clean_rich_html(value)
 
+    def update(self, instance, validated_data):
+        """Writes only the fields this request carries: a full save would put back
+        the copy this request loaded over a field written meanwhile (focus mode's
+        post job writing the title and body while her page saves the excerpt)."""
+        for name, value in validated_data.items():
+            setattr(instance, name, value)
+        instance.save(update_fields=[*validated_data, "updated_at"])
+        return instance
+
     def get_cover_photo_url(self, obj):
         return _cover_url(obj)
 

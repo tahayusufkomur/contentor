@@ -221,6 +221,26 @@ def test_an_untitled_or_empty_post_cannot_be_published(coach_client, free_tenant
     assert res.status_code == 200 and res.data["status"] == "published"
 
 
+def test_a_patch_writes_only_its_own_fields(coach_client, free_tenant):
+    """The focus mode post job writes the title and body while her page's save
+    is in flight: a save of the excerpt alone never puts back the copy it loaded."""
+    from apps.blog.views import BlogPostAdminViewSet
+
+    post = BlogPost.objects.create(title="New post", slug="new-post", body_html="")
+    loaded = BlogPostAdminViewSet.get_object
+
+    def job_writes_meanwhile(view):
+        stale = loaded(view)
+        BlogPost.objects.filter(pk=post.pk).update(title="Breathe first", body_html="<p>Three slow breaths.</p>")
+        return stale
+
+    with mock.patch.object(BlogPostAdminViewSet, "get_object", job_writes_meanwhile):
+        res = coach_client.patch(f"/api/v1/admin/blog/posts/{post.id}/", {"excerpt": "Mine"}, format="json")
+    assert res.status_code == 200
+    post.refresh_from_db()
+    assert (post.title, post.body_html, post.excerpt) == ("Breathe first", "<p>Three slow breaths.</p>", "Mine")
+
+
 def test_a_published_post_is_left_as_it_is(coach_client, free_tenant):
     when = timezone.now() - timedelta(days=3)
     post = BlogPost.objects.create(title="Old", slug="old", status="published", published_at=when, body_html="")
