@@ -33,7 +33,10 @@ def _get_api_key() -> tuple[str | None, str | None]:
         return config.emailcraft_api_key, None
 
     try:
-        result = emailcraft_client.provision_organization(PLATFORM_BRAND)
+        # "@" is in no schema name, so the platform's org never matches a tenant's.
+        result = emailcraft_client.provision_organization(
+            PLATFORM_BRAND, external_id=f"{django_settings.CONTENTOR_DOMAIN}:@platform"
+        )
         api_key_data = result.get("api_key")
         api_key = api_key_data.get("raw", "") if isinstance(api_key_data, dict) else ""
         if not api_key:
@@ -94,7 +97,7 @@ def create_session(_request):
         return Response({"detail": error}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
     try:
-        result = emailcraft_client.create_session(api_key, _get_origin())
+        result = emailcraft_client.create_session(api_key, _get_origin(), context={})
         return Response(
             {
                 "session_token": result.get("token", ""),

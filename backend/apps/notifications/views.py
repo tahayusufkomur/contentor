@@ -22,7 +22,7 @@ def vapid_key(request):
     return Response({"public_key": settings.VAPID_PUBLIC_KEY})
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])  # POST: a mail client's one-click unsubscribe (RFC 8058, List-Unsubscribe-Post)
 @authentication_classes([])
 @permission_classes([AllowAny])
 def email_unsubscribe(request):

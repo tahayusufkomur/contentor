@@ -14,6 +14,7 @@ from apps.core.permissions import IsCoachOrOwner
 from apps.tenant_config.models import TenantConfig
 
 from . import emailcraft_client
+from .context import email_context
 from .models import CampaignStatus, EmailCampaign
 from .recipients import get_recipient_count
 from .serializers import EmailCampaignListSerializer, EmailCampaignSerializer, SendEmailSerializer
@@ -31,9 +32,11 @@ def _get_api_key() -> tuple[str | None, str | None]:
         return config.emailcraft_api_key, None
 
     brand_name = config.brand_name or connection.tenant.name
+    # One org per tenant per installation: brand names repeat, schema names don't.
+    external_id = f"{django_settings.CONTENTOR_DOMAIN}:{connection.tenant.schema_name}"
 
     try:
-        result = emailcraft_client.provision_organization(brand_name)
+        result = emailcraft_client.provision_organization(brand_name, external_id=external_id)
         api_key_data = result.get("api_key")
         api_key = api_key_data.get("raw", "") if isinstance(api_key_data, dict) else ""
         if not api_key:
@@ -103,8 +106,14 @@ def create_session(_request):
         return Response({"detail": error}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
     try:
+        context = email_context(connection.tenant)
+    except Exception:
+        logger.exception("Could not build the email builder's context; it opens without one")
+        context = {}
+
+    try:
         origin = _get_tenant_origin()
-        result = emailcraft_client.create_session(api_key, origin)
+        result = emailcraft_client.create_session(api_key, origin, context=context)
         return Response(
             {
                 "session_token": result.get("token", ""),

@@ -3,6 +3,7 @@ import logging
 from celery import shared_task
 from django.db.models import F
 from django.utils import timezone
+from django.utils.html import escape
 from django_tenants.utils import get_tenant_model, tenant_context
 from requests import HTTPError
 
@@ -61,6 +62,19 @@ def _build_recipient_summary(recipient_filter: dict) -> str:
         user_ids = recipient_filter.get("user_ids") or []
         return f"{len(user_ids)} selected student(s)"
     return ""
+
+
+def _with_unsubscribe(html: str, link: str, brand: str) -> str:
+    """The email with a one-line unsubscribe footer before </body>, unless its template already has the link."""
+    if link in html:
+        return html
+    footer = (
+        '<p style="margin:24px auto;max-width:600px;text-align:center;font-family:Arial,Helvetica,sans-serif;'
+        f'font-size:12px;line-height:18px;color:#8a8a8a">{escape(brand)} · '
+        f'<a href="{escape(link)}" style="color:#8a8a8a;text-decoration:underline">Unsubscribe</a></p>'
+    )
+    head, body_end, tail = html.rpartition("</body>")
+    return f"{head}{footer}{body_end}{tail}" if body_end else html + footer
 
 
 @shared_task(bind=True, max_retries=0)
@@ -122,6 +136,7 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
         with tenant_context(tenant):
             from apps.email_campaigns import emailcraft_client
             from apps.email_campaigns.models import CampaignRecipient, CampaignStatus, EmailCampaign, RecipientStatus
+            from apps.notifications.email_render import unsubscribe_url
 
             campaign = EmailCampaign.objects.select_related("sender").filter(pk=campaign_id).first()
             if not campaign:
@@ -151,15 +166,17 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
                     break
 
                 try:
+                    unsubscribe = unsubscribe_url(tenant, user_id=recipient["id"], email=recipient["email"])
                     variables = {
                         "Name": (recipient["name"] or recipient["email"] or "Student"),
+                        "UnsubscribeUrl": unsubscribe,
                     }
                     rendered = emailcraft_client.render_template(api_key, campaign.template_id, variables)
-                    html = rendered.get("html", "")
+                    html = _with_unsubscribe(rendered.get("html", ""), unsubscribe, brand_name)
 
-                    # Store first recipient's rendered HTML as campaign preview
+                    # Store first recipient's rendered HTML as campaign preview, their unsubscribe link inert
                     if idx == 0 and html and not campaign.rendered_html:
-                        campaign.rendered_html = html
+                        campaign.rendered_html = html.replace(unsubscribe, "#")
                         campaign.save(update_fields=["rendered_html"])
 
                     sent = send_email(
@@ -167,6 +184,10 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
                         subject=campaign.subject,
                         html=html,
                         from_name=from_name,
+                        headers={
+                            "List-Unsubscribe": f"<{unsubscribe}>",
+                            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+                        },
                     )
                     if sent:
                         success += 1

@@ -83,24 +83,26 @@ def _request_with_fallback(
     raise RuntimeError("EmailCraft request failed without a response.")
 
 
-def provision_organization(name: str) -> dict:
+def provision_organization(name: str, *, external_id: str) -> dict:
+    """external_id: our own stable id for the org; MailCraft matches by it, never by the display name."""
     response = _request_with_fallback(
         "POST",
         ["/api/site/provision", "/api/v1/site/provision"],
         headers=_site_headers(),
         timeout=30,
-        json={"name": name},
+        json={"name": name, "external_id": external_id},
     )
     return response.json()
 
 
-def create_session(api_key: str, origin: str) -> dict:
+def create_session(api_key: str, origin: str, *, context: dict) -> dict:
+    """context: what the builder's AI may use (apps.email_campaigns.context); {} for none."""
     response = _request_with_fallback(
         "POST",
         ["/api/auth/session", "/api/v1/auth/session"],
         headers=_org_headers(api_key),
         timeout=15,
-        json={"origin": origin},
+        json={"origin": origin, "context": context},
     )
     return response.json()
 
