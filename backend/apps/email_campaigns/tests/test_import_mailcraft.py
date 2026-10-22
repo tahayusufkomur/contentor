@@ -23,10 +23,16 @@ def _mailcraft(url, headers, params, timeout):
     response = mock.Mock(status_code=200)
     response.raise_for_status = lambda: None
     if url.endswith("/api/v1/templates/"):
-        response.json = lambda: {"results": [{"id": "a"}, {"id": "b"}], "next": None}
+        response.json = lambda: {"results": [{"id": i} for i in "abcd"], "next": None}
     else:
-        name = {"a": "Spring news", "b": "Big sale"}[url.rstrip("/").rsplit("/", 1)[-1]]
-        response.json = lambda: {"name": name, "category": "promotional", "json_data": DESIGN}
+        row = {
+            "a": {"name": "Spring news", "template_type": "user", "json_data": DESIGN},
+            "b": {"name": "Big sale", "json_data": DESIGN},
+            # MailCraft's stock gallery copy, and an empty one she never filled.
+            "c": {"name": "Devil's Garage — Flame sale", "template_type": "provided", "json_data": DESIGN},
+            "d": {"name": "Untitled Email", "template_type": "user", "json_data": {**DESIGN, "body": {"blocks": []}}},
+        }[url.rstrip("/").rsplit("/", 1)[-1]]
+        response.json = lambda: {"category": "promotional", **row}
     return response
 
 

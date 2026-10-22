@@ -31,6 +31,7 @@ export const ACTION_KINDS = [
   "create_blog_post",
   "draft_announcement",
   "draft_email",
+  "edit_email",
   "edit_style",
   "edit_navbar",
   "edit_seo",
@@ -78,6 +79,9 @@ export interface ExecuteResult {
   id?: number;
   title?: string;
   url?: string;
+  /** edit_email: the Designer's run on the email open in the editor. */
+  job?: number;
+  target?: "campaign" | "template";
 }
 
 export interface ExecuteResponse {

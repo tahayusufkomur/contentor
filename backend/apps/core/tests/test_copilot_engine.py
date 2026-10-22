@@ -434,6 +434,19 @@ def test_draft_email_card_maps_params_and_states_inert_detail():
     assert stashed["params"]["button_link"] == "/calendar"
 
 
+def test_an_email_edit_changes_the_email_open_in_the_editor_never_one_the_model_names():
+    from apps.core.copilot import tokens as copilot_tokens
+
+    assert "edit_email" in engine.SYSTEM_PROMPT
+    action = engine.EditEmailAction(kind="edit_email", request="A promotion for course:3, calm tone")
+    with pytest.raises(engine.content.ContentOpError):
+        engine._card(TENANT, action)
+    card = engine._card(TENANT, action, context={"email": {"kind": "template", "id": 7}})
+    assert card["kind"] == "edit_email" and card["detail"] == "A promotion for course:3, calm tone"
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed["params"] == {"target": "template", "id": 7, "brief": "A promotion for course:3, calm tone"}
+
+
 def test_edit_navbar_card_carries_layout_and_cta():
     from apps.core.copilot import tokens as copilot_tokens
 

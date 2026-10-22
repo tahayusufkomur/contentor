@@ -26,6 +26,7 @@ import {
   useFocusOverview,
 } from "@/lib/focus/store";
 import { isCreateKind, isUndoableKind, runBundle } from "@/lib/copilot/state";
+import { claimLiveEdit } from "@/lib/copilot/live-edits";
 import {
   announceAssistantApplied,
   announceSiteUpdated,
@@ -216,7 +217,9 @@ export function ActionCard({
     announceSiteUpdated();
     announceAssistantApplied(res.result);
     router.refresh();
-    toast.success(t(isCreateKind(card.kind) ? "created" : "applied"));
+    // An email edit plays in the editor, which says when it is done.
+    if (card.kind !== "edit_email")
+      toast.success(t(isCreateKind(card.kind) ? "created" : "applied"));
     onApplied?.(res.result);
   };
 
@@ -227,6 +230,14 @@ export function ActionCard({
   const { run: confirm, loading } = useAsyncAction(confirmRaw, {
     errorToast: t("error"),
   });
+
+  // A change to the email open in her editor applies itself as it arrives
+  // there (lib/copilot/live-edits).
+  useEffect(() => {
+    if (card.kind === "edit_email" && claimLiveEdit(card.token, pathname))
+      void confirm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { run: undo, loading: undoing } = useAsyncAction(
     async () => {

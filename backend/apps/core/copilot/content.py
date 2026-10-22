@@ -577,6 +577,32 @@ def create_email_draft(user, params):
     return {"kind": "draft_email", "id": row.id, "title": row.subject, "url": f"/admin/messages/email/{row.id}/edit"}
 
 
+def edit_email(user, params):
+    """The Designer changes the email open in her editor (a draft or one of her templates). The editor
+    picks the run up (its ``job``) and shows the change in place, one step her Undo there takes back."""
+    from apps.email_campaigns import designer
+    from apps.email_campaigns.models import CampaignStatus, EmailCampaign, EmailTemplate
+
+    campaign = template = None
+    if params.get("target") == "template":
+        template = EmailTemplate.objects.filter(pk=params.get("id")).first()
+    else:
+        campaign = EmailCampaign.objects.filter(pk=params.get("id"), status=CampaignStatus.DRAFT).first()
+    email = campaign or template
+    if email is None:
+        raise ContentOpError("that email was sent or deleted")
+    if not designer.available()[0]:
+        raise ContentOpError("the Designer can't work right now, try again in a minute")
+    job = designer.start(user=user, campaign=campaign, template=template, brief=params["brief"], mode="edit")
+    return {
+        "kind": "edit_email",
+        "id": email.pk,
+        "target": "template" if template else "campaign",
+        "job": job.pk,
+        "title": template.name if template else campaign.subject,
+    }
+
+
 # ── undo of a draft the copilot created ─────────────────────────────────────
 
 # The create kinds -> what they made. An event's model follows its event_kind.

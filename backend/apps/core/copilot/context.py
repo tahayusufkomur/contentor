@@ -20,6 +20,8 @@ ADMIN_PAGES = {
     "/admin/community": "Community",
     "/admin/inbox": "Inbox",
     "/admin/messages": "Messages",
+    "/admin/messages/email": "Email",
+    "/admin/messages/email/templates": "Email templates",
     "/admin/blog": "Blog",
     "/admin/payouts": "Payouts",
     "/admin/store": "Store",
@@ -103,10 +105,66 @@ def _post_record(pk):
 
 _RECORDS = {"/admin/courses": _course_record, "/admin/blog": _post_record}
 
+MAX_EMAIL_BLOCKS = 25
+# What a block is about: the first of these it has.
+_BLOCK_WORDS = ("ref", "text", "html", "title", "heading", "label", "alt")
+EDIT_EMAIL_STEER = (
+    "  Whatever she asks about an email here (write it, make it a promotion, feature a course, shorter, "
+    "warmer, another photo) is about THIS email: propose edit_email, which changes it right in her editor. "
+    "draft_email would start a separate email: only when she asks for a new one."
+)
+
+
+def _email_text(head, design):
+    from django.utils.html import strip_tags
+
+    from apps.email_campaigns.brand import blocks_of
+
+    lines = [head, "  its blocks, top to bottom (id type: first words):"]
+    for block in list(blocks_of(design))[:MAX_EMAIL_BLOCKS]:
+        data = block.get("data") or {}
+        words = next((str(data[k]) for k in _BLOCK_WORDS if data.get(k)), "")
+        lines.append(f"    {block.get('id')} {block.get('type')}: {' '.join(strip_tags(words).split())[:80]}")
+    if len(lines) == 2:
+        lines.append("    (none yet)")
+    return "\n".join([*lines, EDIT_EMAIL_STEER])
+
+
+def _draft_in_editor(rest):
+    from apps.email_campaigns.models import CampaignStatus, EmailCampaign
+
+    match = re.fullmatch(r"(\d+)/edit", rest)
+    email = EmailCampaign.objects.filter(pk=match[1], status=CampaignStatus.DRAFT).first() if match else None
+    if email is None:
+        return None, None
+    head = (
+        f"Open in the email editor: her email draft {email.id}, subject '{email.subject[:120] or '(none yet)'}', "
+        f"preheader '{email.preheader[:120] or '(none)'}'"
+    )
+    return _email_text(head, email.design), {"kind": "campaign", "id": email.id}
+
+
+def _template_in_editor(rest):
+    from apps.email_campaigns.models import EmailTemplate
+
+    email = EmailTemplate.objects.filter(pk=rest).first() if rest.isdigit() else None
+    if email is None:
+        return None, None
+    head = (
+        f"Open in the email editor: her email template {email.id} '{email.name[:120]}', "
+        f"subject '{email.subject[:120] or '(none yet)'}'"
+    )
+    return _email_text(head, email.design), {"kind": "template", "id": email.id}
+
+
+# The email editor's pages: what is open there, and the email edit_email changes.
+_EMAIL_EDITORS = {"/admin/messages/email": _draft_in_editor, "/admin/messages/email/templates": _template_in_editor}
+
 
 def clean(tenant, raw):
-    """The converse body's ``context`` -> {"page", "path", "record", "intent"},
-    or None when it names no admin page."""
+    """The converse body's ``context`` -> {"page", "path", "record", "email",
+    "intent"}, or None when it names no admin page. ``email`` is the one open
+    in the email editor ({"kind": "campaign"|"template", "id"}), else None."""
     if not isinstance(raw, dict):
         return None
     path = str(raw.get("path") or "")[:200].rstrip("/") or "/"
@@ -121,11 +179,16 @@ def clean(tenant, raw):
     if lookup and key and key != "new":
         with tenant_context(tenant):
             record = lookup(key)
+    email = None
+    if page in _EMAIL_EDITORS:
+        with tenant_context(tenant):
+            record, email = _EMAIL_EDITORS[page](rest)
     intent = raw.get("intent")
     return {
         "page": ADMIN_PAGES[page],
         "path": page,
         "record": record,
+        "email": email,
         "intent": intent if isinstance(intent, str) and intent in INTENTS else None,
     }
 

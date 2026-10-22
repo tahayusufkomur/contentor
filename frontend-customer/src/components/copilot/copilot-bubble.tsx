@@ -45,6 +45,7 @@ import {
   type SpecialistKey,
 } from "@/lib/copilot/team";
 import { markLiveCards } from "@/lib/focus/store";
+import { markLiveEdits } from "@/lib/copilot/live-edits";
 import {
   pendingEntry,
   reduceChat,
@@ -460,7 +461,10 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
           ? reduceChat(withCoach, { kind: started.kind })
           : [...withCoach, pendingEntry(started.id, specialist)];
       if (!("kind" in started)) trackRun(started.id, specialist, chat);
-      else markLiveCards(pathname, next.slice(-1));
+      else {
+        markLiveCards(pathname, next.slice(-1));
+        markLiveEdits(pathname, next.slice(-1));
+      }
       if (threadRef.current === thread) {
         setEntries(next);
         persist(next);
@@ -514,10 +518,9 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
       ended.push(run.id);
     }
     if (next === entries) return;
-    markLiveCards(
-      pathname,
-      next.filter((e) => e.run && ended.includes(e.run)),
-    );
+    const arrived = next.filter((e) => e.run && ended.includes(e.run));
+    markLiveCards(pathname, arrived);
+    markLiveEdits(pathname, arrived);
     setEntries(next);
     persist(next);
     ended.forEach((id) => void markRunSeen(id).catch(() => {}));

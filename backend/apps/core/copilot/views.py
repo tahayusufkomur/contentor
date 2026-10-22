@@ -222,6 +222,10 @@ def _execute(tenant, user, action):
                 "describe": ways.describe(after),
             }
         return result, {"kind": "restore_ways", "item_kind": action["item_kind"], "item_id": item.pk, "ways": before}
+    if kind == "edit_email":
+        with tenant_context(tenant):
+            # No inverse: the editor's Undo takes the Designer's change back.
+            return content.edit_email(user, action["params"]), {}
     creator = _CREATORS.get(kind)
     if creator is not None:
         with tenant_context(tenant):
@@ -499,6 +503,8 @@ def _audit_summary(action, result):
         return f"Drafted announcement '{title}'" if title else "Drafted an announcement"
     if kind == "draft_email":
         return f"Drafted email '{title}'" if title else "Drafted an email"
+    if kind == "edit_email":
+        return f"Changed email '{title}'" if title else "Changed an email"
     return kind
 
 

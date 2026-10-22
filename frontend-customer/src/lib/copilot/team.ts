@@ -70,6 +70,7 @@ export const OWNERS: Record<ActionKind, SpecialistKey> = {
   edit_seo: "marketing",
   draft_announcement: "community",
   draft_email: "marketing",
+  edit_email: "marketing",
   set_access: "finance",
 };
 

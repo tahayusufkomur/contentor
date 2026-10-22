@@ -124,6 +124,8 @@ const NOT_UNDOABLE_KINDS = new Set([
   "edit_blog_post",
   "publish_course",
   "publish_blog_post",
+  // The email editor's own Undo takes the Designer's change back.
+  "edit_email",
 ]);
 
 /** Server-side, these kinds record an empty inverse ({}) — undo would always

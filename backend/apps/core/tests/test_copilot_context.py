@@ -32,6 +32,7 @@ def test_a_nav_page_is_named_by_our_own_label(tenant_ctx):
         "page": "Classes & events",
         "path": "/admin/live",
         "record": None,
+        "email": None,
         "intent": None,
     }
     assert page_context.clean(tenant_ctx, {"path": "/admin"})["page"] == "Home"
@@ -65,6 +66,33 @@ def test_a_course_page_carries_its_curriculum_with_ids(tenant_ctx, course):
     assert "Wake up gently." in cleaned["record"]
     assert f"module {module.id} | Basics" in cleaned["record"]
     assert f"lesson {lesson.id} | Breath" in cleaned["record"]
+
+
+def test_the_email_editor_carries_the_open_email_its_blocks_and_the_edit_target(tenant_ctx):
+    from apps.email_campaigns.models import CampaignStatus, EmailCampaign, EmailTemplate
+    from apps.email_campaigns.starters import compose
+
+    draft = EmailCampaign.objects.create(
+        status=CampaignStatus.DRAFT, subject="Spring", design=compose(None, heading="Join me")
+    )
+    cleaned = page_context.clean(tenant_ctx, {"path": f"/admin/messages/email/{draft.pk}/edit"})
+    assert cleaned["page"] == "Email" and cleaned["email"] == {"kind": "campaign", "id": draft.pk}
+    assert f"email draft {draft.pk}, subject 'Spring'" in cleaned["record"]
+    assert "heading: Join me" in cleaned["record"] and "propose edit_email" in cleaned["record"]
+
+    template = EmailTemplate.objects.create(name="Newsletter", design=compose(None, heading="News"))
+    cleaned = page_context.clean(tenant_ctx, {"path": f"/admin/messages/email/templates/{template.pk}"})
+    assert cleaned["page"] == "Email templates" and cleaned["email"] == {"kind": "template", "id": template.pk}
+
+    # The start screen, the send step and a sent email are not open in the editor.
+    draft.status = CampaignStatus.SENT
+    draft.save()
+    for path in (
+        "/admin/messages/email/new",
+        f"/admin/messages/email/{draft.pk}/send",
+        f"/admin/messages/email/{draft.pk}/edit",
+    ):
+        assert page_context.clean(tenant_ctx, {"path": path})["email"] is None
 
 
 def test_new_and_unknown_records_have_no_record(tenant_ctx, course):
@@ -149,7 +177,13 @@ def test_converse_hands_the_cleaned_context_to_the_engine(tenant_ctx):
             HTTP_ACCEPT="text/event-stream",
         )
         b"".join(resp.streaming_content)
-    assert run.call_args.args[5] == {"page": "Blog", "path": "/admin/blog", "record": None, "intent": None}
+    assert run.call_args.args[5] == {
+        "page": "Blog",
+        "path": "/admin/blog",
+        "record": None,
+        "email": None,
+        "intent": None,
+    }
 
 
 def test_a_time_she_names_is_her_wall_clock_not_utc(tenant_ctx):

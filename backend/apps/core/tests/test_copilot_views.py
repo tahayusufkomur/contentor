@@ -1093,6 +1093,37 @@ def test_undo_deletes_an_untouched_email_draft_only(client, coach):
     assert list(EmailCampaign.objects.values_list("subject", flat=True)) == ["Hers now"]
 
 
+def test_an_email_edit_hands_the_email_open_in_the_editor_to_the_designer(client, coach):
+    from apps.email_campaigns.models import CampaignStatus, EmailCampaign, EmailDesignJob
+    from apps.email_campaigns.starters import blank_design
+
+    draft = EmailCampaign.objects.create(status=CampaignStatus.DRAFT, subject="Spring", design=blank_design())
+    action = {"kind": "edit_email", "params": {"target": "campaign", "id": draft.pk, "brief": "Make it warmer"}}
+    with (
+        mock.patch("apps.email_campaigns.designer.available", return_value=(True, "ok")),
+        mock.patch("apps.email_campaigns.tasks.run_design_job.delay") as queued,
+    ):
+        res = _execute_token(client, copilot_tokens.stash_action("shared_test", action))
+        assert res.status_code == 200, res.content
+        result = res.json()["result"]
+        job = EmailDesignJob.objects.get(pk=result["job"])
+        queued.assert_called_once_with("shared_test", job.pk)
+        assert (job.campaign_id, job.mode, job.brief) == (draft.pk, "edit", "Make it warmer")
+        assert {**result, "job": 0} == {
+            "kind": "edit_email",
+            "id": draft.pk,
+            "target": "campaign",
+            "job": 0,
+            "title": "Spring",
+        }
+        # The editor's Undo takes it back, not the card.
+        assert _undo(client, res).status_code == 400
+
+        draft.status = CampaignStatus.SENT
+        draft.save()
+        assert _execute_token(client, copilot_tokens.stash_action("shared_test", action)).status_code == 400
+
+
 def test_audit_feed_says_what_can_still_be_undone(client, coach):
     course = _create_course(client)
     older_edit = _execute_token(client, _toggle_token(enabled=False))

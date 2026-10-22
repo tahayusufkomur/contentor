@@ -1,5 +1,7 @@
 """Copy every coach's (and the platform's) MailCraft templates into Contentor's own, once, when the
-email engine moves in. Idempotent: a template already imported under the same name is skipped.
+email engine moves in. Idempotent: a template already imported under the same name is skipped. Only
+the ones she made come over: MailCraft's stock gallery copies (template_type "provided": made-up brands
+like "Devil's Garage — Flame sale") and empty ones stay behind.
 
     manage.py import_mailcraft_templates [--dry-run]
 
@@ -12,7 +14,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django_tenants.utils import get_tenant_model, tenant_context
 
-from apps.email_campaigns.brand import DesignError, clean_design
+from apps.email_campaigns.brand import DesignError, blocks_of, clean_design
 
 CATEGORIES = {"newsletter": "newsletter", "promotional": "offer", "welcome": "welcome", "event": "event"}
 
@@ -29,13 +31,15 @@ def _get(path, key, **params):
 
 
 def mailcraft_templates(key):
-    """(name, category, json_data) of every template in the org behind this key."""
+    """(name, category, json_data) of every template she made in the org behind this key."""
     page = 1
     while True:
         data = _get("/api/v1/templates/", key, page=page)
         rows = data.get("results", data) if isinstance(data, dict) else data
         for row in rows:
             detail = _get(f"/api/v1/templates/{row['id']}/", key)
+            if detail.get("template_type") == "provided":
+                continue
             yield (
                 str(detail.get("name") or "Imported email")[:120],
                 detail.get("category") or "",
@@ -94,6 +98,8 @@ class Command(BaseCommand):
                     design = clean_design(json_data or {})
                 except DesignError as e:
                     self.stderr.write(f"  skipped {name!r}: {e}")
+                    continue
+                if not any(blocks_of(design)):
                     continue
                 if not dry_run:
                     create(name, category, design)

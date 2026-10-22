@@ -31,6 +31,7 @@ import {
   type CatalogSlot,
   type DesignerJob,
 } from "@/lib/email-api";
+import { useAssistantApplied } from "@/lib/site-events";
 import { cn } from "@/lib/utils";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
@@ -59,6 +60,17 @@ interface Fields {
 const SAVE_AFTER_MS = 800;
 const POLL_MS = 1500;
 const RUNNING = new Set(["queued", "working"]);
+
+/** A run started elsewhere (the start screen, the assistant), until its first poll. */
+const queuedJob = (id: number): DesignerJob => ({
+  id,
+  status: "queued",
+  step: "Designer · reading your brief",
+  warnings: [],
+  error: "",
+  campaign: null,
+  template: null,
+});
 
 /** One email (a draft) or one template open in the editor: her subject and
  *  preview text on top, the Designer one line below, the editor filling the
@@ -207,17 +219,19 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
   // A run started on the previous screen (the start screen's brief) is picked up here.
   const jobParam = Number(params.get("job")) || 0;
   useEffect(() => {
-    if (!jobParam) return;
-    setJob({
-      id: jobParam,
-      status: "queued",
-      step: "Designer · reading your brief",
-      warnings: [],
-      error: "",
-      campaign: null,
-      template: null,
-    });
+    if (jobParam) setJob(queuedJob(jobParam));
   }, [jobParam]);
+
+  // The assistant changes this email: its run plays here like the bar's.
+  useAssistantApplied((applied) => {
+    if (
+      applied.kind === "edit_email" &&
+      applied.job &&
+      applied.target === target.kind &&
+      applied.id === target.id
+    )
+      setJob(queuedJob(applied.job));
+  });
 
   const finishJob = useCallback(
     async (done: DesignerJob) => {

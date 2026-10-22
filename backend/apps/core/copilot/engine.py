@@ -9,6 +9,7 @@ superadmin edits KB addenda. Everything tenant-specific rides in the user turn."
 
 import json
 import logging
+import textwrap
 from datetime import datetime
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
@@ -111,6 +112,12 @@ SYSTEM_PROMPT = (
     "Email templates line for the look (leave it out for her newsletter). "
     "Prefer it over draft_announcement when she asks for an email or a "
     "newsletter; never invent offers, prices or dates\n"
+    "- edit_email: change the email open in the email editor (only when the "
+    "page context shows one open there): request = what to change, written "
+    "for the Designer who makes it: the goal, the tone, what to keep, and "
+    "the offers to feature by ref (as for draft_email); never invent offers, "
+    "prices or dates. It changes the email right in her editor, as one step "
+    "her Undo there takes back\n"
     "- edit_navbar: change the navbar layout (one of: classic, centered, "
     "split, minimal, pill) and/or its call-to-action button (cta_text plus "
     "cta_href, an internal path like /courses); include only what changes\n"
@@ -350,6 +357,11 @@ class DraftEmailAction(BaseModel):
     template_id: int | None = None
 
 
+class EditEmailAction(BaseModel):
+    kind: Literal["edit_email"]
+    request: str
+
+
 class EditStyleAction(BaseModel):
     kind: Literal["edit_style"]
     style: str
@@ -477,6 +489,7 @@ CopilotAction = Annotated[
     | CreateBlogPostAction
     | DraftAnnouncementAction
     | DraftEmailAction
+    | EditEmailAction
     | EditStyleAction
     | EditNavbarAction
     | EditSeoAction
@@ -1071,12 +1084,25 @@ def _access_detail(tenant, item, access, actor):
             raise content.ContentOpError(str(exc)) from exc
 
 
-def _card(tenant, action, actor=None):
+def _card(tenant, action, actor=None, context=None):
     """Validate one proposed action and turn it into a confirmable card.
     Raises blocks.BlockOpError (or site_ai's ComposeError) when unusable.
     ``actor`` is who asked (None = the system); it decides what access
-    changes she may make."""
+    changes she may make. ``context`` is the page she asked from
+    (context.clean)."""
     schema = tenant.schema_name
+    if isinstance(action, EditEmailAction):
+        # The email is the one open in her editor, never an id the model wrote.
+        email = (context or {}).get("email")
+        if not email:
+            raise content.ContentOpError("open the email in the email editor first")
+        params = {"target": email["kind"], "id": email["id"], "brief": action.request[:2000]}
+        return {
+            "kind": "edit_email",
+            "title": "Change this email",
+            "detail": textwrap.shorten(action.request, 300, placeholder="…"),
+            "token": tokens.stash_action(schema, {"kind": "edit_email", "params": params}),
+        }
     if isinstance(action, SetAccessAction):
         from apps.billing import ways
 
@@ -1753,7 +1779,7 @@ def run_turn(
     drop_reason = None
     for action in parsed.actions:
         try:
-            card = _card(tenant, action, actor)
+            card = _card(tenant, action, actor, context)
             card["owner"] = team.owner_of(card["kind"], action.model_dump(mode="json"), writer=specialist)
             cards.append(card)
         except (

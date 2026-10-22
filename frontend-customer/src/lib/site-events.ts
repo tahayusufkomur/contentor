@@ -20,6 +20,9 @@ const ASSISTANT_APPLIED_EVENT = "contentor:assistant-applied";
 export interface AssistantApplied {
   kind: string;
   id?: number;
+  /** edit_email: the Designer's run, and which kind of email it changes. */
+  job?: number;
+  target?: "campaign" | "template";
 }
 
 export function announceAssistantApplied(result: AssistantApplied): void {
