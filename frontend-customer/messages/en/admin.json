@@ -1037,15 +1037,18 @@
     },
     "action": {
       "cancel": "Cancel",
-      "delete": "Delete"
+      "delete": "Delete",
+      "discard": "Delete"
     },
     "confirm": {
       "cancel": "Cancel “{title}”? It will not be sent.",
-      "delete": "Delete “{title}”? It also disappears from your students' app."
+      "delete": "Delete “{title}”? It also disappears from your students' app.",
+      "discard": "Delete the draft “{title}”?"
     },
     "done": {
       "cancel": "Cancelled.",
-      "delete": "Deleted."
+      "delete": "Deleted.",
+      "discard": "Draft deleted."
     },
     "compose": {
       "alsoEmail": "Also send it as an email, in your brand",

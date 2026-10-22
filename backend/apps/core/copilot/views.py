@@ -179,6 +179,7 @@ _CREATORS = {
     "create_event": lambda user, action: content.create_event(user, action["event_kind"], action["params"]),
     "create_blog_post": lambda user, action: content.create_blog_post(user, action["params"]),
     "draft_announcement": lambda user, action: content.create_announcement_draft(user, action["params"]),
+    "draft_email": lambda user, action: content.create_email_draft(user, action["params"]),
     "edit_course": lambda user, action: content.edit_course(action["course_id"], action["params"], user=user),
     "edit_curriculum": lambda user, action: content.edit_curriculum(action["course_id"], action["ops"]),
     "edit_event": lambda user, action: content.edit_event(
@@ -496,6 +497,8 @@ def _audit_summary(action, result):
         return f"Created draft {noun} '{title}'" if title else f"Created a draft {noun}"
     if kind == "draft_announcement":
         return f"Drafted announcement '{title}'" if title else "Drafted an announcement"
+    if kind == "draft_email":
+        return f"Drafted email '{title}'" if title else "Drafted an email"
     return kind
 
 

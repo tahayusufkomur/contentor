@@ -67,11 +67,13 @@ def magic_link_request(request):
         pass
 
     from apps.accounts import login_code
-    from apps.core.email import send_magic_link
+    from apps.notifications import transactional
 
     code = login_code.issue(tenant.schema_name, email)
 
-    sent = send_magic_link(email, link, brand_name, code=code)
+    # In her email style, drawn by the email engine (a plain email should it fail).
+    sign_in = transactional.sign_in(brand_name, link, code, settings.MAGIC_LINK_EXPIRY_MINUTES)
+    sent = transactional.send(email, sign_in, tenant)
     if not sent:
         if settings.DEBUG:
             # Dev convenience only: surface the link locally when email is stubbed.
@@ -116,6 +118,10 @@ def _login_user_response(request, tenant, email, via="magic_link"):
         },
     )
     logger.info("login via %s email=%s tenant=%s new_student=%s", via, user.email, tenant.slug, created)
+    if created:
+        from apps.notifications import transactional
+
+        transactional.welcome_student(user.email)
     # First visit = the row was just made, or a wizard-provisioned owner who has
     # never logged in. The portal uses it to greet "Welcome to ..." vs "back".
     first_login = created or user.last_login is None
@@ -477,6 +483,9 @@ def student_grant_access(request, pk):
     enrollment.access_starts_at = now
     enrollment.access_ends_at = ends_at
     enrollment.save()
+    from apps.notifications import transactional
+
+    transactional.access_opened(student.email, course.title, ends_at)
 
     return Response(
         {
@@ -660,6 +669,10 @@ def google_callback(request):
     if not created and avatar and not user.avatar_url:
         user.avatar_url = avatar
         user.save(update_fields=["avatar_url"])
+    if created and default_role == "student":
+        from apps.notifications import transactional
+
+        transactional.welcome_student(user.email)
 
     # Pass region as an explicit override so the JWT carries the state region,
     # not whatever the OAuth-callback's tenant happened to have. This is what

@@ -75,7 +75,7 @@ class TestMagicLinkRequest:
     def test_valid_email_returns_200(self, _mock_throttle, tenant_ctx):
         """POST with a valid email returns 200 and a generic message."""
         client = make_client()
-        with patch("apps.core.email.send_magic_link", return_value=True):
+        with patch("apps.notifications.transactional.send", return_value=True):
             response = client.post(
                 "/api/v1/auth/magic-link/",
                 {"email": "newuser@example.com"},

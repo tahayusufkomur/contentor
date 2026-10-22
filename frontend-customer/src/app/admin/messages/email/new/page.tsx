@@ -1,500 +1,335 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useNavigate } from "@shared/navigation/navigation-provider";
+import { ArrowLeft, FilePlus2, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 
+import { EmailThumbnail } from "@/components/admin/email/email-thumbnail";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { NavLink } from "@/components/ui/nav-link";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonCardGrid } from "@/components/ui/skeletons";
+import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  EmailBuilderIframe,
-  type EmailBuilderIframeHandle,
-} from "@shared/email/email-builder-iframe";
-import { RecipientSelector } from "@/components/admin/email/recipient-selector";
-import { TemplateGrid } from "@shared/email/template-grid";
-import {
-  getTemplate,
-  listGallery,
+  CATEGORY_LABELS,
+  createDraft,
+  getCatalog,
   listTemplates,
-  previewTemplates,
-  sendCampaign,
+  startDesigner,
+  type CatalogEntry,
+  type CatalogSlot,
   type EmailTemplate,
   type RecipientFilter,
 } from "@/lib/email-api";
+import { cn } from "@/lib/utils";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { Button } from "@/components/ui/button";
-import { PageState } from "@/components/ui/page-state";
-import { SkeletonCardGrid } from "@/components/ui/skeletons";
+import { useNavigate } from "@shared/navigation/navigation-provider";
 
-type Step = "choose" | "design" | "send";
+const MAX_FEATURED = 3;
 
-export const dynamic = "force-dynamic";
-
-function asArray<T>(data: T[] | { results: T[] } | { data: T[] }): T[] {
-  if (Array.isArray(data)) return data;
-  if ("results" in data && Array.isArray(data.results)) return data.results;
-  if ("data" in data && Array.isArray((data as { data: T[] }).data))
-    return (data as { data: T[] }).data;
-  return [];
-}
-
-export default function ComposePage() {
+/** Where every designed email starts: one of her templates (the ones made for
+ *  her at setup first), the Designer from a brief, or a blank page in her brand.
+ *  Old links still work: `?template=<id>` opens that template straight away,
+ *  `?recipient=<id>` addresses the draft to one student, `?subject=` names it. */
+export default function NewEmailPage() {
   const navigate = useNavigate();
-  const searchParams = useSearchParams();
-  const builderRef = useRef<EmailBuilderIframeHandle>(null);
-  const initialTemplateId = searchParams.get("template") || "";
-  const initialStep =
-    (searchParams.get("step") as Step) ||
-    (initialTemplateId ? "design" : "choose");
-  const initialSubject = searchParams.get("subject") || "";
-  const initialTemplateName = searchParams.get("templateName") || "";
-  const initialRecipientId = Number(searchParams.get("recipient")) || 0;
+  const params = useSearchParams();
+  const templateParam = Number(params.get("template")) || 0;
+  const recipientParam = Number(params.get("recipient")) || 0;
+  const subjectParam = params.get("subject") || "";
+  const base = {
+    ...(subjectParam ? { subject: subjectParam } : {}),
+    ...(recipientParam
+      ? {
+          recipient_filter: {
+            type: "individual",
+            user_ids: [recipientParam],
+          } as RecipientFilter,
+        }
+      : {}),
+  };
 
-  // Step 1 state
-  const [step, setStepRaw] = useState<Step>(initialStep);
-  const [allTemplates, setAllTemplates] = useState<EmailTemplate[]>([]);
-  const [previewHtmlMap, setPreviewHtmlMap] = useState<Record<string, string>>(
-    {},
-  );
-  const [loadingTemplates, setLoadingTemplates] = useState(false);
-  const [copyingTemplateId, setCopyingTemplateId] = useState<string | null>(
-    null,
-  );
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [items, setItems] = useState<CatalogEntry[]>([]);
+  const [slots, setSlots] = useState<CatalogSlot[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [opening, setOpening] = useState<string | null>(null);
 
-  // Step 2 state
-  const [savedTemplateId, setSavedTemplateIdRaw] = useState(initialTemplateId);
-  const [savedTemplateName, setSavedTemplateNameRaw] =
-    useState(initialTemplateName);
-  const [templateJson, setTemplateJson] = useState<
-    Record<string, unknown> | undefined
-  >(undefined);
-  const [hasSaved, setHasSaved] = useState(!!initialTemplateId);
-
-  // Step 3 state
-  const [subject, setSubjectRaw] = useState(initialSubject);
-  const [recipientFilter, setRecipientFilter] = useState<RecipientFilter>(
-    initialRecipientId
-      ? { type: "individual", user_ids: [initialRecipientId] }
-      : { type: "all" },
-  );
-  const [recipientCount, setRecipientCount] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [scheduleMode, setScheduleMode] = useState<"now" | "later">("now");
-  const [scheduledAt, setScheduledAt] = useState("");
-
-  // Sync key state to URL so refresh preserves selections
-  const syncUrl = useCallback((overrides: Record<string, string>) => {
-    const params = new URLSearchParams(window.location.search);
-    for (const [k, v] of Object.entries(overrides)) {
-      if (v) params.set(k, v);
-      else params.delete(k);
-    }
-    const qs = params.toString();
-    const next = qs
-      ? `${window.location.pathname}?${qs}`
-      : window.location.pathname;
-    window.history.replaceState({}, "", next);
-  }, []);
-
-  const setStep = useCallback(
-    (s: Step) => {
-      setStepRaw(s);
-      syncUrl({ step: s });
-    },
-    [syncUrl],
-  );
-
-  const setSavedTemplateId = useCallback(
-    (id: string) => {
-      setSavedTemplateIdRaw(id);
-      syncUrl({ template: id });
-    },
-    [syncUrl],
-  );
-
-  const setSavedTemplateName = useCallback(
-    (name: string) => {
-      setSavedTemplateNameRaw(name);
-      syncUrl({ templateName: name });
-    },
-    [syncUrl],
-  );
-
-  const setSubject = useCallback(
-    (s: string) => {
-      setSubjectRaw(s);
-      syncUrl({ subject: s });
-    },
-    [syncUrl],
-  );
-
-  // Load templates for Step 1
   useEffect(() => {
-    if (initialTemplateId) return; // Skip if editing existing template
-    setLoadingTemplates(true);
-
-    Promise.all([
-      listTemplates()
-        .then(asArray)
-        .catch(() => [] as EmailTemplate[]),
-      listGallery()
-        .then(asArray)
-        .catch(() => [] as EmailTemplate[]),
-    ]).then(([mine, gallery]) => {
-      const seen = new Set(mine.map((t) => t.id));
-      const uniqueGallery = (gallery as EmailTemplate[]).filter(
-        (t) => !seen.has(t.id),
-      );
-      const all = [...mine, ...uniqueGallery];
-      setAllTemplates(all);
-      setLoadingTemplates(false);
-
-      // Fetch previews in batches
-      const ids = all.map((t) => t.id).filter(Boolean);
-      for (let i = 0; i < ids.length; i += 20) {
-        const batch = ids.slice(i, i + 20);
-        previewTemplates(batch)
-          .then((result) => {
-            setPreviewHtmlMap((prev) => ({ ...prev, ...result.previews }));
-          })
-          .catch(() => {});
-      }
-    });
-  }, [initialTemplateId]);
-
-  // Load template JSON for editing existing template
-  useEffect(() => {
-    if (!initialTemplateId) return;
-    getTemplate(initialTemplateId)
-      .then((data) => {
-        if (data.json_data && typeof data.json_data === "object") {
-          setTemplateJson(data.json_data as Record<string, unknown>);
-        }
-        if (data.name) setSavedTemplateName(String(data.name));
-      })
-      .catch(() => {});
-  }, [initialTemplateId, setSavedTemplateName]);
-
-  // Step 1: Select a template → load its JSON and go to Step 2
-  const { run: handleSelectTemplate } = useAsyncAction(
-    async (template: EmailTemplate) => {
-      setCopyingTemplateId(template.id);
-      try {
-        const data = await getTemplate(template.id);
-        if (data.json_data && typeof data.json_data === "object") {
-          setTemplateJson(data.json_data as Record<string, unknown>);
-        }
-        setSavedTemplateName(String(data.name || template.name || ""));
-        setSavedTemplateId(template.id);
-        setHasSaved(true);
-        setStep("design");
-      } finally {
-        setCopyingTemplateId(null);
-      }
-    },
-    { onError: () => setError("Failed to load template. Please try again.") },
-  );
-
-  // Step 1: Start from scratch → go to Step 2 with no template
-  const handleStartFromScratch = useCallback(() => {
-    setSavedTemplateId("");
-    setSavedTemplateName("");
-    setHasSaved(false);
-    setStep("design");
-  }, []);
-
-  // Step 2: MAILCRAFT_SAVE event
-  const handleSave = useCallback(() => {
-    setHasSaved(true);
-  }, []);
-
-  // Step 2: MAILCRAFT_TEMPLATE_SAVED event
-  const handleTemplateSaved = useCallback(
-    (payload: { templateId: string; templateName: string }) => {
-      setSavedTemplateId(payload.templateId);
-      if (payload.templateName) setSavedTemplateName(payload.templateName);
-      setHasSaved(true);
-    },
-    [],
-  );
-
-  const canGoToSend = useMemo(
-    () => Boolean(savedTemplateId),
-    [savedTemplateId],
-  );
-
-  // Step 2: Back to Step 1
-  const handleBackToChoose = useCallback(() => {
-    if (
-      hasSaved &&
-      !window.confirm(
-        "Go back to template selection? Your current edits are saved.",
-      )
-    )
-      return;
-    setStep("choose");
-  }, [hasSaved]);
-
-  // Step 2: auto-save the template, then continue to Step 3
-  const { run: handleNextToSend, loading: savingBeforeSend } = useAsyncAction(
-    async () => {
-      if (builderRef.current && savedTemplateId) {
-        setError(null);
-        const result = await builderRef.current.requestSave();
-        if (result?.templateId) {
-          setSavedTemplateId(result.templateId);
-        }
-      }
-      setStep("send");
-    },
-  );
-
-  // Step 3: Send campaign
-  // `redirecting` keeps the send button's loading state on once the API call
-  // resolves successfully — useAsyncAction clears its own `sending` flag as
-  // soon as the promise settles, but the navigation away from this page is
-  // async, so without this the button would flash idle right before unmount.
-  const [redirecting, setRedirecting] = useState(false);
-  const { run: sendNow, loading: sending } = useAsyncAction(
-    async (scheduledIso?: string) => {
-      await sendCampaign({
-        template_id: savedTemplateId,
-        template_name: savedTemplateName,
-        subject,
-        recipient_filter: recipientFilter,
-        scheduled_at: scheduledIso,
-      });
-      // Scheduled campaigns land on the content calendar; immediate sends go
-      // back to the email dashboard. Hold the button in its loading state
-      // through the redirect instead of letting it clear and unmount idle.
-      setRedirecting(true);
-      navigate("/admin/messages");
-    },
-    {
-      onError: (err) =>
-        setError(
-          err instanceof Error ? err.message : "Failed to send campaign.",
-        ),
-    },
-  );
-
-  function handleSend() {
-    if (!savedTemplateId) {
-      setError("Please save a template first.");
-      return;
-    }
-    if (!subject.trim()) {
-      setError("Please enter a subject line.");
-      return;
-    }
-    if (
-      recipientFilter.type === "course" &&
-      recipientFilter.course_ids.length === 0
-    ) {
-      setError("Please select at least one course.");
-      return;
-    }
-    if (
-      recipientFilter.type === "individual" &&
-      recipientFilter.user_ids.length === 0
-    ) {
-      setError("Please select at least one student.");
-      return;
-    }
-
-    let scheduledIso: string | undefined;
-    if (scheduleMode === "later") {
-      if (!scheduledAt) {
-        setError("Please pick a date and time to schedule.");
-        return;
-      }
-      const when = new Date(scheduledAt);
-      if (Number.isNaN(when.getTime()) || when.getTime() <= Date.now()) {
-        setError("Scheduled time must be in the future.");
-        return;
-      }
-      scheduledIso = when.toISOString();
-    }
-
+    if (templateParam) return;
+    let cancelled = false;
+    setLoading(true);
     setError(null);
-    sendNow(scheduledIso);
+    Promise.all([listTemplates(), getCatalog().catch(() => null)])
+      .then(([list, catalog]) => {
+        if (cancelled) return;
+        setTemplates(list.results);
+        setItems(catalog?.items ?? []);
+        setSlots(catalog?.slots ?? []);
+      })
+      .catch((err) => !cancelled && setError(err))
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [templateParam, reloadKey]);
+
+  const { run: open } = useAsyncAction(
+    async (key: string, templateId?: number) => {
+      setOpening(key);
+      try {
+        const draft = await createDraft({
+          ...base,
+          ...(templateId ? { template_id: templateId } : {}),
+        });
+        navigate(`/admin/messages/email/${draft.id}/edit`);
+      } catch (err) {
+        setOpening(null);
+        throw err;
+      }
+    },
+  );
+
+  // An old link to a template: open it right away (a MailCraft id is not a number and is ignored).
+  const started = useRef(false);
+  useEffect(() => {
+    if (!templateParam || started.current) return;
+    started.current = true;
+    open(`template-${templateParam}`, templateParam);
+  }, [templateParam, open]);
+
+  if (templateParam) {
+    return <Spinner center size="lg" label="Opening your template" />;
   }
 
-  const stepLabels = [
-    { key: "choose", label: "1. Choose Template" },
-    { key: "design", label: "2. Design" },
-    { key: "send", label: "3. Send" },
-  ];
+  return (
+    <div className="space-y-8">
+      <div className="space-y-1 border-b pb-5">
+        <NavLink
+          href="/admin/messages"
+          className="mb-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Messages
+        </NavLink>
+        <h1 className="text-2xl font-bold tracking-tight">New email</h1>
+        <p className="text-sm text-muted-foreground">
+          Start from one of your templates, or tell the Designer what it&apos;s
+          about. Your logo, colours and footer are already in.
+        </p>
+      </div>
+
+      <PageState
+        loading={loading}
+        error={error}
+        onRetry={() => setReloadKey((k) => k + 1)}
+        skeleton={<SkeletonCardGrid count={6} />}
+      >
+        <AskTheDesigner
+          items={items}
+          slots={slots}
+          base={base}
+          disabled={opening !== null}
+        />
+
+        <section className="mt-8 space-y-4">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-lg font-semibold">Your templates</h2>
+            <NavLink
+              href="/admin/messages/email/templates"
+              className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              Manage templates
+            </NavLink>
+          </div>
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {templates.map((t) => (
+              <li key={t.id}>
+                <button
+                  type="button"
+                  disabled={opening !== null}
+                  onClick={() => open(`template-${t.id}`, t.id)}
+                  className="group w-full overflow-hidden rounded-xl border bg-card text-left transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                >
+                  <div className="relative">
+                    <EmailThumbnail
+                      html={t.preview_html || ""}
+                      title={t.name}
+                      className="aspect-[4/5] w-full"
+                    />
+                    {opening === `template-${t.id}` && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/70">
+                        <Spinner label="Opening" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between gap-2 border-t px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{t.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {t.subject || CATEGORY_LABELS[t.category]}
+                      </p>
+                    </div>
+                    {t.source === "starter" && (
+                      <Badge
+                        variant="accent"
+                        className="shrink-0 whitespace-nowrap"
+                      >
+                        Made for you
+                      </Badge>
+                    )}
+                  </div>
+                </button>
+              </li>
+            ))}
+            <li>
+              <button
+                type="button"
+                disabled={opening !== null}
+                onClick={() => open("blank")}
+                className="flex aspect-[4/5] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-accent hover:text-foreground disabled:opacity-60"
+              >
+                {opening === "blank" ? (
+                  <Spinner label="Opening" />
+                ) : (
+                  <FilePlus2 className="h-6 w-6" />
+                )}
+                <span className="font-medium">Blank</span>
+                <span className="px-6 text-center text-xs">
+                  Your header and footer, nothing else yet.
+                </span>
+              </button>
+            </li>
+          </ul>
+        </section>
+      </PageState>
+    </div>
+  );
+}
+
+function AskTheDesigner({
+  items,
+  slots,
+  base,
+  disabled,
+}: {
+  items: CatalogEntry[];
+  slots: CatalogSlot[];
+  base: { subject?: string; recipient_filter?: RecipientFilter };
+  disabled: boolean;
+}) {
+  const navigate = useNavigate();
+  const [brief, setBrief] = useState("");
+  const [refs, setRefs] = useState<string[]>([]);
+  const [leaving, setLeaving] = useState(false);
+  // A weekly class is one chip: its next date is what a "next class" slot already shows.
+  const seen = new Set<string>();
+  const choices = [
+    ...slots.map((s) => ({ ref: s.ref, label: s.slotLabel })),
+    ...items
+      .filter((i) => i.kind !== "page")
+      .map((i) => ({ ref: i.ref, label: i.title })),
+  ]
+    .filter((c) => !seen.has(c.label) && seen.add(c.label))
+    .slice(0, 12);
+
+  const toggle = (ref: string) =>
+    setRefs((cur) =>
+      cur.includes(ref)
+        ? cur.filter((r) => r !== ref)
+        : cur.length < MAX_FEATURED
+          ? [...cur, ref]
+          : cur,
+    );
+
+  const { run: design, loading } = useAsyncAction(async () => {
+    const draft = await createDraft(base);
+    try {
+      const job = await startDesigner({
+        brief: brief.trim(),
+        campaign_id: draft.id,
+        mode: "new",
+        refs,
+      });
+      setLeaving(true);
+      navigate(`/admin/messages/email/${draft.id}/edit?job=${job.id}`);
+    } catch (err) {
+      // The draft is there: she can still write it herself.
+      toast.error(
+        err instanceof Error && err.message
+          ? err.message
+          : "The Designer isn't available right now.",
+      );
+      setLeaving(true);
+      navigate(`/admin/messages/email/${draft.id}/edit`);
+    }
+  });
+
+  const writing = brief.trim().length > 0;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          {step === "choose" && "Choose Template"}
-          {step === "design" && "Design Email"}
-          {step === "send" && "Send Email"}
-        </h1>
-      </div>
-
-      {/* Step indicator */}
-      <div className="flex gap-4 text-sm">
-        {stepLabels.map((s, i) => (
-          <span key={s.key}>
-            {i > 0 && <span className="mr-4 text-muted-foreground">/</span>}
-            <span
-              className={
-                step === s.key
-                  ? "font-bold text-primary"
-                  : "text-muted-foreground"
-              }
-            >
-              {s.label}
-            </span>
-          </span>
-        ))}
-      </div>
-
-      {/* Step 1: Choose Template */}
-      {step === "choose" && (
-        <div className="space-y-4">
-          <PageState
-            loading={loadingTemplates}
-            skeleton={<SkeletonCardGrid count={6} />}
-          >
-            <TemplateGrid
-              templates={allTemplates}
-              previewHtmlMap={previewHtmlMap}
-              mode="picker"
-              loadingTemplateId={copyingTemplateId}
-              onSelect={handleSelectTemplate}
-              showStartFromScratch
-              onStartFromScratch={handleStartFromScratch}
+    <section className="rounded-2xl border bg-card p-4 sm:p-5">
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent">
+          <Sparkles className="h-4 w-4" />
+        </span>
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+            <Textarea
+              value={brief}
+              onChange={(e) => setBrief(e.target.value)}
+              rows={writing ? 3 : 1}
+              maxLength={2000}
+              aria-label="Ask the Designer"
+              placeholder="Or ask the Designer: “invite my students to the new morning class, warm and short”…"
+              className="min-h-0 resize-none"
             />
-          </PageState>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-        </div>
-      )}
-
-      {/* Step 2: Design */}
-      {step === "design" && (
-        <div className="space-y-4">
-          <EmailBuilderIframe
-            ref={builderRef}
-            templateJson={templateJson}
-            templateId={savedTemplateId || undefined}
-            onSave={handleSave}
-            onTemplateSaved={handleTemplateSaved}
-          />
-          <div className="flex justify-between">
-            {!initialTemplateId && (
-              <button
-                onClick={handleBackToChoose}
-                className="text-sm text-muted-foreground hover:underline"
-              >
-                Back to templates
-              </button>
-            )}
             <Button
-              onClick={handleNextToSend}
-              loading={savingBeforeSend}
-              loadingText="Saving…"
-              disabled={!canGoToSend}
-              size="lg"
-              className="ml-auto"
+              onClick={() => design()}
+              disabled={!writing || disabled}
+              loading={loading || leaving}
+              loadingText="Starting…"
+              className="shrink-0"
             >
-              Next: Send
+              <Sparkles className="h-4 w-4" />
+              Design it
             </Button>
           </div>
-          {!canGoToSend && (
-            <p className="text-right text-xs text-muted-foreground">
-              Save your template in the editor first, then click Next.
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Step 3: Send */}
-      {step === "send" && (
-        <div className="max-w-xl space-y-6">
-          <button
-            onClick={() => setStep("design")}
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            Back to editor
-          </button>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Subject Line</label>
-            <input
-              type="text"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="e.g. Welcome to our new course!"
-              className="w-full rounded-md border px-3 py-2 text-sm"
-            />
-          </div>
-
-          <RecipientSelector
-            value={recipientFilter}
-            onChange={setRecipientFilter}
-            recipientCount={recipientCount}
-            onCountChange={setRecipientCount}
-          />
-
-          {/* Delivery timing */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium">Delivery</label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setScheduleMode("now")}
-                className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
-                  scheduleMode === "now"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Send now
-              </button>
-              <button
-                type="button"
-                onClick={() => setScheduleMode("later")}
-                className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
-                  scheduleMode === "later"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                Schedule for later
-              </button>
-            </div>
-            {scheduleMode === "later" && (
-              <input
-                type="datetime-local"
-                value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                aria-label="Scheduled send time"
-              />
-            )}
-          </div>
-
-          {error && (
-            <div className="rounded-md bg-destructive/10 px-4 py-2 text-sm text-destructive">
-              {error}
+          {writing && choices.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">
+                Feature (up to {MAX_FEATURED})
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {choices.map((c) => {
+                  const on = refs.includes(c.ref);
+                  return (
+                    <button
+                      key={c.ref}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => toggle(c.ref)}
+                      className={cn(
+                        "max-w-[16rem] truncate rounded-full border px-3 py-1 text-xs transition-colors",
+                        on
+                          ? "border-foreground bg-foreground text-background"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                      )}
+                    >
+                      {c.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
-
-          <Button
-            onClick={handleSend}
-            loading={sending || redirecting}
-            loadingText={scheduleMode === "later" ? "Scheduling…" : "Sending…"}
-            size="lg"
-            className="w-full"
-          >
-            {scheduleMode === "later" ? "Schedule Campaign" : "Send Campaign"}
-          </Button>
         </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
 }

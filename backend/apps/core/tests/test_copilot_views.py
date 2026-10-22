@@ -1077,6 +1077,22 @@ def test_undo_deletes_a_draft_post_and_a_draft_announcement_but_not_sent_ones(cl
     assert list(Announcement.objects.values_list("title", flat=True)) == ["Sent one"]
 
 
+def test_undo_deletes_an_untouched_email_draft_only(client, coach):
+    from apps.email_campaigns.models import EmailCampaign
+
+    def create(subject):
+        action = {"kind": "draft_email", "params": {"subject": subject, "body_html": "<p>Hi</p>"}}
+        res = _execute_token(client, copilot_tokens.stash_action("shared_test", action))
+        assert res.status_code == 200, res.content
+        return res
+
+    untouched, edited = create("Untouched"), create("Edited")
+    EmailCampaign.objects.filter(pk=edited.json()["result"]["id"]).update(subject="Hers now")
+    assert _undo(client, untouched).status_code == 200
+    assert _undo(client, edited).status_code == 400
+    assert list(EmailCampaign.objects.values_list("subject", flat=True)) == ["Hers now"]
+
+
 def test_audit_feed_says_what_can_still_be_undone(client, coach):
     course = _create_course(client)
     older_edit = _execute_token(client, _toggle_token(enabled=False))

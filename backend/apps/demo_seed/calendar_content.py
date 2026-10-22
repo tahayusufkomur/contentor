@@ -81,6 +81,7 @@ def seed_blog_posts(owner, now=None):
 def seed_email_campaigns(owner, now=None):
     """Create demo email campaigns (idempotent). Returns the campaigns touched."""
     from apps.email_campaigns.models import CampaignStatus, EmailCampaign
+    from apps.email_campaigns.starters import compose
 
     now = now or timezone.now()
     campaigns = []
@@ -90,7 +91,7 @@ def seed_email_campaigns(owner, now=None):
         campaign, _ = EmailCampaign.objects.get_or_create(
             subject=subject,
             defaults={
-                "template_id": f"demo-tpl-sent-{i}",
+                "design": compose(None, heading=subject, body_html="<p>Hi {{FirstName}},</p><p>Here's what's new.</p>"),
                 "template_name": "Demo Template",
                 "sender": owner,
                 "recipient_filter": {"type": "all"},
@@ -108,7 +109,7 @@ def seed_email_campaigns(owner, now=None):
         campaign, _ = EmailCampaign.objects.get_or_create(
             subject=subject,
             defaults={
-                "template_id": f"demo-tpl-scheduled-{i}",
+                "design": compose(None, heading=subject, body_html="<p>Hi {{FirstName}},</p><p>Here's what's new.</p>"),
                 "template_name": "Demo Template",
                 "sender": owner,
                 "recipient_filter": {"type": "all"},

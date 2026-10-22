@@ -242,8 +242,7 @@ EMAIL_AUTH_PROVIDER = os.environ.get("EMAIL_AUTH_PROVIDER", "cloudflare")
 # Fixed From address for the superadmin platform inbox (public-schema mailbox).
 PLATFORM_SUPPORT_FROM = os.environ.get("PLATFORM_SUPPORT_FROM", "support@contentor.app")
 
-# --- EmailCraft ---
-EMAILCRAFT_TOKEN = os.environ.get("EMAILCRAFT_TOKEN", "")
+# --- MailCraft: read only by import_mailcraft_templates (the email engine lives in apps.email_campaigns) ---
 EMAILCRAFT_BASE_URL = os.environ.get("EMAILCRAFT_BASE_URL", "https://mailcraft.contentor.app")
 
 # --- S3 / Object Storage ---
@@ -366,6 +365,8 @@ BLOG_AI_MONTHLY_BUDGET_USD = float(os.environ.get("BLOG_AI_MONTHLY_BUDGET_USD", 
 # --- Coach copilot conversation engine (apps.core.copilot.engine; provider from AI_PROVIDER) ---
 # Also runs the /setup interview turns and drafts (apps.tenant_config).
 COPILOT_MODEL = os.environ.get("COPILOT_MODEL", "claude-sonnet-5-5")
+# The Designer's email designs and edits (apps.email_campaigns.designer; provider from AI_PROVIDER).
+EMAIL_DESIGNER_MODEL = os.environ.get("EMAIL_DESIGNER_MODEL", "claude-opus-5-5")
 
 # --- Onboarding wizard page compose (apps.core.onboarding.ai_compose;
 # provider from AI_PROVIDER). Free for all signups -> its own off-switch so

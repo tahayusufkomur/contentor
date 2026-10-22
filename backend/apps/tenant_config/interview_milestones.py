@@ -75,6 +75,9 @@ def _due(tenant, answers) -> list[str]:
         return examples
     due = ["style:auto", "page:home", "rank:logos"]
     due += [f"page:{p}" for p in ("about", "contact", "faq") if brief.settled(answers, PAGE_NEEDS[p])]
+    # Her email templates wear the email style she picks; they wait for it.
+    if brief.settled(answers, ("email_style",)):
+        due.append("emails:starters")
     # A coach who runs classes gets an Events page once the class sections
     # are answered or skipped.
     if offers & {"live", "onsite"} and brief.settled(
@@ -143,6 +146,10 @@ def _start(tenant, answers, key) -> None:
         create_memberships(tenant, answers)
     elif action == "slides":
         transaction.on_commit(lambda: tasks.write_setup_slides.delay(tenant_id))
+    elif action == "emails":
+        from apps.email_campaigns.tasks import build_starter_emails
+
+        transaction.on_commit(lambda: build_starter_emails.delay(tenant_id))
     elif action == "draft":
         prompt = draft_prompt(answers, arg)
         transaction.on_commit(lambda: tasks.interview_draft_task.delay(tenant_id, arg, prompt))
@@ -1135,6 +1142,10 @@ def cards_for(tenant, answers: dict, field_id: str | None) -> dict | None:
         return style_cards(answers, tenant)
     if field_id == "calendar_view":
         return calendar_cards()
+    if field_id == "email_style":
+        from apps.notifications.transactional import previews
+
+        return {"kind": "email", "options": previews(tenant)}
     if field_id in CHROME:
         return chrome_cards(tenant, answers, field_id)
     if field_id == "site_logo":
@@ -1214,6 +1225,10 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
             apply_logo(tenant, answers)
         elif field_id == "calendar_view":
             answers["calendar_view"] = "month"
+        elif field_id == "email_style":
+            from apps.notifications.transactional import DEFAULT_STYLE
+
+            answers["email_style"] = DEFAULT_STYLE
         elif field_id in CHROME:
             answers[field_id] = chrome_pick(field_id, answers)[0]
         return
@@ -1304,6 +1319,14 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         if value not in CALENDAR_IDS:
             raise ChoiceError("invalid_value")
         answers["calendar_view"] = value
+        return
+    if field_id == "email_style":
+        from apps.notifications.transactional import STYLE_IDS
+
+        if value not in STYLE_IDS:
+            raise ChoiceError("invalid_value")
+        answers["email_style"] = value
+        answers["delegated"] = [d for d in answers.get("delegated") or [] if d != "email_style"]
         return
     if field_id in CHROME:
         valid_layouts = {v for v, *_ in CHROME[field_id]}

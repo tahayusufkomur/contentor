@@ -22,6 +22,7 @@ def _coach_in_utc(monkeypatch):
     """Most tests here run on a stand-in tenant with no schema; the coach's
     time zone (a TenantConfig read) is pinned in test_copilot_context.py."""
     monkeypatch.setattr(engine, "_tenant_zone", lambda tenant: ZoneInfo("UTC"))
+    monkeypatch.setattr(engine, "_email_digest", lambda tenant: "Email templates: none yet")
 
 
 @pytest.fixture()
@@ -389,6 +390,48 @@ def test_draft_announcement_card_maps_params_and_states_inert_detail():
     stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
     assert stashed["params"]["title"] == "New timetable"
     assert stashed["params"]["link"] == "/courses"
+
+
+def test_system_prompt_lists_draft_email():
+    assert "draft_email" in engine.SYSTEM_PROMPT and "{{FirstName}}" in engine.SYSTEM_PROMPT
+
+
+def test_draft_email_card_maps_params_and_states_inert_detail():
+    from apps.core.copilot import tokens as copilot_tokens
+
+    parsed = _turn(
+        kind="actions",
+        text="",
+        actions=[
+            {
+                "kind": "draft_email",
+                "subject": "Join me Saturday",
+                "heading": "Saturday mat class",
+                "body_html": "<p>Hi {{FirstName}}</p>",
+                "refs": ["next:event", "course:3"],
+                "button_text": "See the calendar",
+                "button_link": "/calendar",
+            }
+        ],
+    )
+    with (
+        mock.patch.object(engine.core_ai, "structured", return_value=(parsed, Decimal("0.01"), "m")),
+        mock.patch.object(engine, "_pages_digest", return_value="home: blk_hero(hero)"),
+        mock.patch.object(engine, "_chrome_digest", return_value="Style: journal"),
+        mock.patch.object(engine, "_courses_digest", return_value="Courses: (none yet)"),
+        mock.patch.object(engine, "_subscriptions_digest", return_value="Subscriptions: (none yet)"),
+        mock.patch.object(engine, "_events_digest", return_value="Upcoming events: (none scheduled)"),
+        mock.patch.object(engine, "_posts_digest", return_value="Blog posts: (none yet)"),
+        mock.patch.object(engine, "_stats_digest", return_value="Stats: students: 0 (0 new this week); "),
+        mock.patch.object(engine, "_setup_digest", return_value="Setup: all done"),
+    ):
+        payload, _ = engine.run_turn(TENANT, [], [], "email my students about Saturday")
+    (card,) = payload["actions"]
+    assert card["kind"] == "draft_email" and card["title"] == "Draft email: Join me Saturday"
+    assert "Nothing is sent now." in card["detail"]
+    stashed = copilot_tokens.take_action(card["token"], "demo_yoga")
+    assert stashed["params"]["refs"] == ["next:event", "course:3"]
+    assert stashed["params"]["button_link"] == "/calendar"
 
 
 def test_edit_navbar_card_carries_layout_and_cta():

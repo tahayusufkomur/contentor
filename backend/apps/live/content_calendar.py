@@ -124,7 +124,8 @@ def coach_content_calendar(request):
     if want("email"):
         from apps.email_campaigns.models import EmailCampaign
 
-        for campaign in EmailCampaign.objects.all():
+        # A draft has no date of its own yet: it is on the calendar once it is scheduled or sent.
+        for campaign in EmailCampaign.objects.exclude(status="draft").defer("design", "rendered_html"):
             when = campaign.scheduled_at or campaign.sent_at or campaign.created_at
             if not _in_window(when, frm, to):
                 continue

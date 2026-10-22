@@ -1011,12 +1011,13 @@ class Command(BaseCommand):
 
     def _campaigns(self, owner):
         from apps.email_campaigns.models import CampaignStatus, EmailCampaign
+        from apps.email_campaigns.starters import compose
 
-        for i, (subject, days, recipients, summary) in enumerate(CAMPAIGNS):
+        for subject, days, recipients, summary in CAMPAIGNS:
             sent = days > 0
             EmailCampaign.objects.create(
                 subject=subject,
-                template_id=f"footage-tpl-{i}",
+                design=compose(None, heading=subject, body_html="<p>Hi {{FirstName}},</p>"),
                 template_name="Mara's newsletter",
                 sender=owner,
                 recipient_filter={"type": "all"},

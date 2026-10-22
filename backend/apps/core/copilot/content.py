@@ -9,6 +9,7 @@ copilot's confirmation card is the review step and states the date.
 Callers wrap these in tenant_context; imports are function-local to match
 apps/core's cycle-dodging convention."""
 
+import re
 from decimal import Decimal
 
 from django.conf import settings
@@ -533,6 +534,49 @@ def create_announcement_draft(user, params):
     }
 
 
+EMAIL_REF = re.compile(
+    r"^((course|live|stream|zoom|onsite|download|post|plan):\d+|next:event|latest:(course|post|download))$"
+)
+
+
+def create_email_draft(user, params):
+    """A designed email as a DRAFT in Messages: the team's words laid out in one of her email templates
+    (the one named, else her newsletter, else her brand's blank one). Like an announcement draft, nothing
+    is sent: she reviews it in the editor and sends it herself."""
+    from apps.email_campaigns.brand import clean_design
+    from apps.email_campaigns.models import CampaignStatus, EmailCampaign, EmailTemplate
+    from apps.email_campaigns.starters import compose
+
+    subject = str(params.get("subject") or "").strip()[:255]
+    if not subject:
+        raise ContentOpError("the email needs a subject")
+    templates = EmailTemplate.objects.all()
+    template = (
+        templates.filter(pk=params.get("template_id")).first() if params.get("template_id") else None
+    ) or templates.filter(category="newsletter").order_by("created_at").first()
+    link = str(params.get("button_link") or "")
+    if not link.startswith(("/", "https://", "http://")):
+        link = ""
+    design = compose(
+        template.design if template else None,
+        heading=str(params.get("heading") or subject)[:200],
+        body_html=str(params.get("body_html") or ""),
+        refs=[r for r in params.get("refs") or [] if isinstance(r, str) and EMAIL_REF.match(r)],
+        button_text=str(params.get("button_text") or "")[:60] if link else "",
+        button_url=link[:500],
+    )
+    row = EmailCampaign.objects.create(
+        status=CampaignStatus.DRAFT,
+        subject=subject,
+        preheader=str(params.get("preheader") or "")[:255],
+        design=clean_design(design),
+        template=template,
+        recipient_filter={"type": "all"},
+        sender=user if getattr(user, "pk", None) else None,
+    )
+    return {"kind": "draft_email", "id": row.id, "title": row.subject, "url": f"/admin/messages/email/{row.id}/edit"}
+
+
 # ── undo of a draft the copilot created ─────────────────────────────────────
 
 # The create kinds -> what they made. An event's model follows its event_kind.
@@ -541,6 +585,7 @@ _CREATED = {
     "create_event": "event",
     "create_blog_post": "post",
     "draft_announcement": "announcement",
+    "draft_email": "email",
 }
 UNDO_REFUSED = "it was changed, published or removed since, so nothing was deleted"
 
@@ -594,6 +639,11 @@ def _draft(what, pk, kind=None):
         from apps.notifications.models import Announcement
 
         row = Announcement.objects.filter(pk=pk, status="draft").first()
+        return (row, _row_state(row)) if row else None
+    if what == "email":
+        from apps.email_campaigns.models import EmailCampaign
+
+        row = EmailCampaign.objects.filter(pk=pk, status="draft").first()
         return (row, _row_state(row)) if row else None
     return None
 

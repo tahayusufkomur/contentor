@@ -88,9 +88,17 @@ function fromCampaign(c: Campaign): MessageRow {
     recipients: c.recipient_count,
     reached: c.success_count,
     failed: c.failure_count,
-    href: `/admin/messages/email/${c.id}`,
+    href:
+      c.status === "draft"
+        ? `/admin/messages/email/${c.id}/edit`
+        : `/admin/messages/email/${c.id}`,
   };
 }
+
+/** The email editor (a draft's, or a template's): a workspace that, like the
+ *  photo studio's editor, takes the whole page. */
+export const isEmailEditor = (pathname: string): boolean =>
+  /^\/admin\/messages\/email\/(\d+\/edit|templates\/\d+)\/?$/.test(pathname);
 
 /** Announcements and designed emails as one list: what is scheduled first,
  *  soonest on top, then everything else with the most recent first. */

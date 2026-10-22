@@ -144,7 +144,13 @@ def enroll(request, slug):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    enrollment, _ = Enrollment.objects.update_or_create(user=request.user, course=course, defaults={"is_active": True})
+    enrollment, created = Enrollment.objects.update_or_create(
+        user=request.user, course=course, defaults={"is_active": True}
+    )
+    if created:
+        from apps.notifications import transactional
+
+        transactional.access_opened(request.user.email, course.title)
     serializer = EnrollmentSerializer(enrollment)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 

@@ -11,7 +11,8 @@ export async function latestEmail(to: string): Promise<{ subject: string; html: 
 }
 
 export function firstLink(html: string): string {
-  const m = html.match(/href="([^"]+)"/);
+  // The first link in the body: a styled email also has <link href> for its fonts.
+  const m = html.match(/<a\b[^>]*\bhref="([^"]+)"/);
   if (!m) throw new Error("no link in email html");
   return m[1].replace(/&amp;/g, "&");
 }

@@ -894,7 +894,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** @description Try again after the copy job failed; 404 for a kind it does not draft. */
+    /** @description Try again after the copy job (or a kind's own drafting) failed; 404 for the course. */
     post: operations["v1_admin_focus_copy_create"];
     delete?: never;
     options?: never;
@@ -912,8 +912,9 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * @description One of the cover step's taps (photo, keep, more, later, edit). Each is
-     *     refused, with the state unchanged, unless the cover is the question.
+     * @description One of the cover step's taps (photo, keep, more, later, edit; use: a
+     *     photo-only cover's "Use this photo"). Each is refused, with the state
+     *     unchanged, unless the cover is the question.
      */
     post: operations["v1_admin_focus_cover_create"];
     delete?: never;
@@ -1353,6 +1354,23 @@ export interface paths {
     get: operations["v1_admin_setup_flow_logos_retrieve"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/setup-flow/slide/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description The coach passed a concept slide (``skipped`` when she skipped it rather than read on). */
+    post: operations["v1_admin_setup_flow_slide_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -3393,6 +3411,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/email/brand/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_email_brand_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/email/campaigns/": {
     parameters: {
       query?: never;
@@ -3402,7 +3436,7 @@ export interface paths {
     };
     get: operations["v1_email_campaigns_retrieve"];
     put?: never;
-    post?: never;
+    post: operations["v1_email_campaigns_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -3422,7 +3456,7 @@ export interface paths {
     delete: operations["v1_email_campaigns_destroy"];
     options?: never;
     head?: never;
-    patch?: never;
+    patch: operations["v1_email_campaigns_partial_update"];
     trace?: never;
   };
   "/api/v1/email/campaigns/{id}/recipients/": {
@@ -3441,14 +3475,63 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/email/gallery/": {
+  "/api/v1/email/campaigns/{id}/save-as-template/": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get: operations["v1_email_gallery_retrieve"];
+    get?: never;
+    put?: never;
+    post: operations["v1_email_campaigns_save_as_template_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/email/campaigns/{id}/send/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_email_campaigns_send_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/email/campaigns/{id}/test/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description The email, as her students will get it, to her own inbox. */
+    post: operations["v1_email_campaigns_test_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/email/catalog/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_email_catalog_retrieve"];
     put?: never;
     post?: never;
     delete?: never;
@@ -3457,7 +3540,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/email/send/": {
+  "/api/v1/email/designer/": {
     parameters: {
       query?: never;
       header?: never;
@@ -3466,30 +3549,47 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["v1_email_send_create"];
+    post: operations["v1_email_designer_create"];
     delete?: never;
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  "/api/v1/email/session/": {
+  "/api/v1/email/designer/{id}/": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    get: operations["v1_email_designer_retrieve"];
     put?: never;
-    post: operations["v1_email_session_create"];
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  "/api/v1/email/setup/": {
+  "/api/v1/email/i/{token}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Public: inboxes fetch these without a session. Only keys this site may hand out are served. */
+    get: operations["v1_email_i_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/email/images/": {
     parameters: {
       query?: never;
       header?: never;
@@ -3498,11 +3598,25 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /**
-     * @description Ensure tenant EmailCraft organization is provisioned.
-     *     Called by the email dashboard to bootstrap setup early.
-     */
-    post: operations["v1_email_setup_create"];
+    /** @description A photo from her library (or the catalog, already copied into it) as an email picture. */
+    post: operations["v1_email_images_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/email/render/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description The email as an inbox will show it (the editor's preview). */
+    post: operations["v1_email_render_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -3518,14 +3632,14 @@ export interface paths {
     };
     get: operations["v1_email_templates_retrieve"];
     put?: never;
-    post?: never;
+    post: operations["v1_email_templates_create"];
     delete?: never;
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  "/api/v1/email/templates/{template_id}/": {
+  "/api/v1/email/templates/{id}/": {
     parameters: {
       query?: never;
       header?: never;
@@ -3538,10 +3652,10 @@ export interface paths {
     delete: operations["v1_email_templates_destroy"];
     options?: never;
     head?: never;
-    patch?: never;
+    patch: operations["v1_email_templates_partial_update"];
     trace?: never;
   };
-  "/api/v1/email/templates/copy/": {
+  "/api/v1/email/templates/{id}/duplicate/": {
     parameters: {
       query?: never;
       header?: never;
@@ -3550,23 +3664,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["v1_email_templates_copy_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/email/templates/preview/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations["v1_email_templates_preview_create"];
+    post: operations["v1_email_templates_duplicate_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -4229,7 +4327,7 @@ export interface paths {
     };
     get: operations["v1_notifications_email_unsubscribe_retrieve"];
     put?: never;
-    post?: never;
+    post: operations["v1_notifications_email_unsubscribe_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -7515,6 +7613,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/platform/email/brand/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_platform_email_brand_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/platform/email/campaigns/": {
     parameters: {
       query?: never;
@@ -7524,7 +7638,7 @@ export interface paths {
     };
     get: operations["v1_platform_email_campaigns_retrieve"];
     put?: never;
-    post?: never;
+    post: operations["v1_platform_email_campaigns_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -7541,10 +7655,10 @@ export interface paths {
     get: operations["v1_platform_email_campaigns_retrieve_2"];
     put?: never;
     post?: never;
-    delete?: never;
+    delete: operations["v1_platform_email_campaigns_destroy"];
     options?: never;
     head?: never;
-    patch?: never;
+    patch: operations["v1_platform_email_campaigns_partial_update"];
     trace?: never;
   };
   "/api/v1/platform/email/campaigns/{id}/recipients/": {
@@ -7563,16 +7677,32 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/platform/email/gallery/": {
+  "/api/v1/platform/email/campaigns/{id}/send/": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get: operations["v1_platform_email_gallery_retrieve"];
+    get?: never;
     put?: never;
-    post?: never;
+    post: operations["v1_platform_email_campaigns_send_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/platform/email/campaigns/{id}/test/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_platform_email_campaigns_test_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -7596,7 +7726,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/platform/email/send/": {
+  "/api/v1/platform/email/render/": {
     parameters: {
       query?: never;
       header?: never;
@@ -7605,40 +7735,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["v1_platform_email_send_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/platform/email/session/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations["v1_platform_email_session_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/platform/email/setup/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** @description Ensure the platform EmailCraft organization is provisioned. */
-    post: operations["v1_platform_email_setup_create"];
+    post: operations["v1_platform_email_render_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -7654,14 +7751,14 @@ export interface paths {
     };
     get: operations["v1_platform_email_templates_retrieve"];
     put?: never;
-    post?: never;
+    post: operations["v1_platform_email_templates_create"];
     delete?: never;
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  "/api/v1/platform/email/templates/{template_id}/": {
+  "/api/v1/platform/email/templates/{id}/": {
     parameters: {
       query?: never;
       header?: never;
@@ -7674,39 +7771,7 @@ export interface paths {
     delete: operations["v1_platform_email_templates_destroy"];
     options?: never;
     head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/platform/email/templates/copy/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations["v1_platform_email_templates_copy_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/platform/email/templates/preview/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post: operations["v1_platform_email_templates_preview_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
+    patch: operations["v1_platform_email_templates_partial_update"];
     trace?: never;
   };
   "/api/v1/platform/logs/": {
@@ -13085,6 +13150,24 @@ export interface operations {
       };
     };
   };
+  v1_admin_setup_flow_slide_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_admin_setup_flow_turn_create: {
     parameters: {
       query?: never;
@@ -15809,7 +15892,43 @@ export interface operations {
       };
     };
   };
+  v1_email_brand_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_email_campaigns_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_email_campaigns_create: {
     parameters: {
       query?: never;
       header?: never;
@@ -15867,6 +15986,26 @@ export interface operations {
       };
     };
   };
+  v1_email_campaigns_partial_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_email_campaigns_recipients_retrieve: {
     parameters: {
       query?: never;
@@ -15887,7 +16026,67 @@ export interface operations {
       };
     };
   };
-  v1_email_gallery_retrieve: {
+  v1_email_campaigns_save_as_template_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_email_campaigns_send_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_email_campaigns_test_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_email_catalog_retrieve: {
     parameters: {
       query?: never;
       header?: never;
@@ -15905,7 +16104,7 @@ export interface operations {
       };
     };
   };
-  v1_email_send_create: {
+  v1_email_designer_create: {
     parameters: {
       query?: never;
       header?: never;
@@ -15923,7 +16122,47 @@ export interface operations {
       };
     };
   };
-  v1_email_session_create: {
+  v1_email_designer_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_email_i_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        token: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_email_images_create: {
     parameters: {
       query?: never;
       header?: never;
@@ -15941,7 +16180,7 @@ export interface operations {
       };
     };
   };
-  v1_email_setup_create: {
+  v1_email_render_create: {
     parameters: {
       query?: never;
       header?: never;
@@ -15977,12 +16216,30 @@ export interface operations {
       };
     };
   };
+  v1_email_templates_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_email_templates_retrieve_2: {
     parameters: {
       query?: never;
       header?: never;
       path: {
-        template_id: string;
+        id: number;
       };
       cookie?: never;
     };
@@ -16002,7 +16259,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        template_id: string;
+        id: number;
       };
       cookie?: never;
     };
@@ -16017,11 +16274,13 @@ export interface operations {
       };
     };
   };
-  v1_email_templates_copy_create: {
+  v1_email_templates_partial_update: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        id: number;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -16035,11 +16294,13 @@ export interface operations {
       };
     };
   };
-  v1_email_templates_preview_create: {
+  v1_email_templates_duplicate_create: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        id: number;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -17070,6 +17331,24 @@ export interface operations {
     };
   };
   v1_notifications_email_unsubscribe_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_notifications_email_unsubscribe_create: {
     parameters: {
       query?: never;
       header?: never;
@@ -22056,6 +22335,24 @@ export interface operations {
       };
     };
   };
+  v1_platform_email_brand_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_platform_email_campaigns_retrieve: {
     parameters: {
       query?: never;
@@ -22074,7 +22371,65 @@ export interface operations {
       };
     };
   };
+  v1_platform_email_campaigns_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_platform_email_campaigns_retrieve_2: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_platform_email_campaigns_destroy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_platform_email_campaigns_partial_update: {
     parameters: {
       query?: never;
       header?: never;
@@ -22114,11 +22469,33 @@ export interface operations {
       };
     };
   };
-  v1_platform_email_gallery_retrieve: {
+  v1_platform_email_campaigns_send_create: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_platform_email_campaigns_test_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -22150,43 +22527,7 @@ export interface operations {
       };
     };
   };
-  v1_platform_email_send_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_platform_email_session_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_platform_email_setup_create: {
+  v1_platform_email_render_create: {
     parameters: {
       query?: never;
       header?: never;
@@ -22222,12 +22563,30 @@ export interface operations {
       };
     };
   };
+  v1_platform_email_templates_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_platform_email_templates_retrieve_2: {
     parameters: {
       query?: never;
       header?: never;
       path: {
-        template_id: string;
+        id: number;
       };
       cookie?: never;
     };
@@ -22247,7 +22606,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
-        template_id: string;
+        id: number;
       };
       cookie?: never;
     };
@@ -22262,29 +22621,13 @@ export interface operations {
       };
     };
   };
-  v1_platform_email_templates_copy_create: {
+  v1_platform_email_templates_partial_update: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
+      path: {
+        id: number;
       };
-    };
-  };
-  v1_platform_email_templates_preview_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
       cookie?: never;
     };
     requestBody?: never;

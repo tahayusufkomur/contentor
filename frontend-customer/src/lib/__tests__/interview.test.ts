@@ -391,6 +391,7 @@ describe("sectionOf", () => {
       "article_topic",
       "socials",
       "contact",
+      "email_style",
       "navbar_layout",
       "footer_layout",
     ];

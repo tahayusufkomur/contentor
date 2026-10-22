@@ -700,6 +700,43 @@ export function LookCardsView({
     );
   }
 
+  if (shown.kind === "email") {
+    // Each style as the email her students get, rendered by the email engine at
+    // its 600 px width and scaled into the card. Sandboxed: no scripts, no clicks.
+    return (
+      <div className="mt-8 grid max-w-4xl grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+        {shown.options.map((o, i) => (
+          <CardButton
+            key={o.value}
+            picked={isPicked(o.value, o.label)}
+            disabled={disabled}
+            onClick={() => onPick(o.value, o.label)}
+            style={enter(i)}
+            className="overflow-hidden p-0"
+          >
+            <span className="relative block h-[300px] overflow-hidden bg-white">
+              <iframe
+                title={`${o.label} email`}
+                srcDoc={o.html}
+                sandbox=""
+                tabIndex={-1}
+                className="pointer-events-none absolute left-0 top-0 h-[750px] w-[600px] origin-top-left scale-[0.55] border-0 sm:scale-[0.46]"
+              />
+            </span>
+            <span className="block border-t border-[var(--sf-line)] px-3.5 py-2.5">
+              <span className="block text-[14px] font-semibold">{o.label}</span>
+              {o.detail && (
+                <span className="block text-[12px] text-[var(--sf-graphite)]">
+                  {o.detail}
+                </span>
+              )}
+            </span>
+          </CardButton>
+        ))}
+      </div>
+    );
+  }
+
   // Traced marks are drawn in the primary colour of the look the coach
   // picked: the logo as it will sit in their header.
   const look = getSiteStyle(shown.style ?? "");

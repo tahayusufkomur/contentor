@@ -1,15 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import {
+  cancelCampaign,
   getCampaign,
   listCampaignRecipients,
+  renderEmail,
+  updateDraft,
   type EmailCampaign,
   type CampaignRecipientEntry,
 } from "@/lib/email-api";
+import { Button } from "@/components/ui/button";
+import { NavLink } from "@/components/ui/nav-link";
 import { PageState } from "@/components/ui/page-state";
 import {
   SkeletonForm,
@@ -17,12 +22,16 @@ import {
   SkeletonTable,
 } from "@/components/ui/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useNavigate } from "@shared/navigation/navigation-provider";
+import { normalizeDesign } from "@shared/email/editor";
 
 export const dynamic = "force-dynamic";
 
 // Semantic status tints that read on both light and dark surfaces: a low-opacity
 // fill (theme-agnostic) plus a foreground that steps lighter under dark/dim.
 const STATUS_COLORS: Record<string, string> = {
+  scheduled: "bg-muted text-foreground",
   sending: "bg-blue-500/15 text-blue-700 dark:text-blue-300",
   sent: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
   partial: "bg-amber-500/15 text-amber-800 dark:text-amber-300",
@@ -37,12 +46,15 @@ const RECIPIENT_STATUS_COLORS: Record<string, string> = {
 export default function CampaignDetailPage() {
   const params = useParams();
   const campaignId = Number(params.id);
+  const router = useRouter();
+  const navigate = useNavigate();
 
   const [campaign, setCampaign] = useState<EmailCampaign | null>(null);
   const [recipients, setRecipients] = useState<CampaignRecipientEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [preview, setPreview] = useState("");
 
   useEffect(() => {
     if (!campaignId) return;
@@ -56,8 +68,23 @@ export default function CampaignDetailPage() {
     ])
       .then(([campaignData, recipientData]) => {
         if (cancelled) return;
+        if (campaignData.status === "draft") {
+          // Not sent yet: it opens in the editor.
+          router.replace(`/admin/messages/email/${campaignId}/edit`);
+          return;
+        }
         setCampaign(campaignData);
         setRecipients(recipientData.results);
+        if (!campaignData.rendered_html && campaignData.design) {
+          // Scheduled: drawn now, as it will go out.
+          renderEmail(
+            normalizeDesign(campaignData.design),
+            campaignData.subject,
+            campaignData.preheader,
+          )
+            .then(({ html }) => !cancelled && setPreview(html))
+            .catch(() => {});
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(err);
@@ -69,16 +96,36 @@ export default function CampaignDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [campaignId, reloadKey]);
+  }, [campaignId, reloadKey, router]);
+
+  const html = campaign?.rendered_html || preview;
+
+  // Editing a scheduled email takes it off the schedule until she schedules it again.
+  const { run: edit, loading: editing } = useAsyncAction(async () => {
+    if (
+      !window.confirm(
+        "Edit this email? It comes off the schedule until you schedule it again.",
+      )
+    )
+      return;
+    await updateDraft(campaignId, {});
+    navigate(`/admin/messages/email/${campaignId}/edit`);
+  });
+  const { run: cancel, loading: cancelling } = useAsyncAction(async () => {
+    if (!window.confirm("Cancel this email? It will not be sent.")) return;
+    await cancelCampaign(campaignId);
+    toast.success("Cancelled.");
+    navigate("/admin/messages");
+  });
 
   return (
     <div className="space-y-8">
-      <Link
+      <NavLink
         href="/admin/messages"
         className="text-sm text-muted-foreground hover:underline"
       >
         ← Back to messages
-      </Link>
+      </NavLink>
 
       <PageState
         loading={loading}
@@ -109,6 +156,36 @@ export default function CampaignDetailPage() {
                   >
                     {campaign.status}
                   </span>
+                  {campaign.status === "scheduled" && (
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      {campaign.scheduled_at && (
+                        <p className="mr-2 text-sm text-muted-foreground">
+                          Goes out{" "}
+                          {new Date(campaign.scheduled_at).toLocaleString(
+                            undefined,
+                            { dateStyle: "medium", timeStyle: "short" },
+                          )}
+                        </p>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => edit()}
+                        loading={editing}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={() => cancel()}
+                        loading={cancelling}
+                      >
+                        Cancel sending
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2 text-sm">
@@ -125,16 +202,19 @@ export default function CampaignDetailPage() {
                   <div className="flex justify-between border-b py-2">
                     <span className="text-muted-foreground">Recipients</span>
                     <span>
-                      {campaign.recipient_count} —{" "}
-                      {campaign.recipient_summary || "—"}
+                      {campaign.recipient_count}
+                      {campaign.recipient_summary &&
+                        ` — ${campaign.recipient_summary}`}
                     </span>
                   </div>
-                  <div className="flex justify-between border-b py-2">
-                    <span className="text-muted-foreground">Delivered</span>
-                    <span className="text-emerald-700 dark:text-emerald-400">
-                      {campaign.success_count} sent
-                    </span>
-                  </div>
+                  {campaign.status !== "scheduled" && (
+                    <div className="flex justify-between border-b py-2">
+                      <span className="text-muted-foreground">Delivered</span>
+                      <span className="text-emerald-700 dark:text-emerald-400">
+                        {campaign.success_count} sent
+                      </span>
+                    </div>
+                  )}
                   {campaign.failure_count > 0 && (
                     <div className="flex justify-between border-b py-2">
                       <span className="text-muted-foreground">Failed</span>
@@ -161,13 +241,13 @@ export default function CampaignDetailPage() {
               {/* Right: Email preview */}
               <div>
                 <h2 className="mb-2 text-sm font-medium text-muted-foreground">
-                  Email Preview
+                  Email preview
                 </h2>
-                {campaign.rendered_html ? (
+                {html ? (
                   <iframe
-                    srcDoc={campaign.rendered_html}
+                    srcDoc={html}
                     sandbox=""
-                    className="h-[400px] w-full rounded-lg border"
+                    className="h-[70vh] w-full rounded-lg border"
                     title="Email preview"
                   />
                 ) : (

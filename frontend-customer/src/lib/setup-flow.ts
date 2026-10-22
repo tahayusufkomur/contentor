@@ -235,10 +235,12 @@ export interface LookOption {
   tint?: number | null;
   /** Generated logos: 1 = the one we would pick. */
   rank?: number;
+  /** Email styles: a sample email in this style, as sent (her look, name and mark). */
+  html?: string;
 }
 
 export interface LookCards {
-  kind: "style" | "logo" | "calendar" | "navbar" | "footer";
+  kind: "style" | "logo" | "calendar" | "navbar" | "footer" | "email";
   options: LookOption[];
   page?: number;
   more?: boolean;

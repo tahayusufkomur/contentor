@@ -55,3 +55,6 @@ def notify_post_comment(comment_id: int, schema_name: str) -> None:
             return
         subs = PushSubscription.objects.filter(user=comment.post.author.user)
         send_to_subscriptions(subs, community_comment_payload(comment.author.display_name, comment.body))
+        from apps.notifications import transactional
+
+        transactional.comment_replied(comment)

@@ -3,9 +3,7 @@ import logging
 from celery import shared_task
 from django.db.models import F
 from django.utils import timezone
-from django.utils.html import escape
 from django_tenants.utils import get_tenant_model, tenant_context
-from requests import HTTPError
 
 from apps.core.email import send_email
 
@@ -65,7 +63,10 @@ def _build_recipient_summary(recipient_filter: dict) -> str:
 
 
 def _with_unsubscribe(html: str, link: str, brand: str) -> str:
-    """The email with a one-line unsubscribe footer before </body>, unless its template already has the link."""
+    """The email with a one-line unsubscribe footer before </body>, unless its design already has the link
+    (her brand footer does)."""
+    from django.utils.html import escape
+
     if link in html:
         return html
     footer = (
@@ -75,6 +76,64 @@ def _with_unsubscribe(html: str, link: str, brand: str) -> str:
     )
     head, body_end, tail = html.rpartition("</body>")
     return f"{head}{footer}{body_end}{tail}" if body_end else html + footer
+
+
+def first_name(name: str, email: str = "") -> str:
+    """What {{FirstName}} reads: the first word of her student's name, else a warm stand-in."""
+    words = (name or "").split()
+    return words[0] if words else "there"
+
+
+def campaign_html(campaign, tenant) -> tuple[str, str]:
+    """(html, text) of the campaign, rendered once; merge variables stay for personalize."""
+    from .brand import build
+
+    html, text, _warnings = build(campaign.design, tenant, subject=campaign.subject, preheader=campaign.preheader)
+    return html, text
+
+
+def _from(campaign, tenant) -> tuple[str, str]:
+    """(from_name, from_email): "<coach> via <brand>", from her mailbox when she has one."""
+    from apps.mailbox.identity import sending_identity
+    from apps.tenant_config.models import TenantConfig
+
+    cfg = TenantConfig.objects.first()
+    brand_name = (cfg.brand_name if cfg else "") or tenant.name
+    coach = (campaign.sender.name or campaign.sender.email) if campaign.sender else ""
+    return (f"{coach} via {brand_name}" if coach else brand_name), sending_identity(tenant)[0]
+
+
+def send_one(campaign, tenant, *, to, name="", subject="", unsubscribe="", html=None, text=None, sender=None) -> bool:
+    """Send the campaign to one person. Without an unsubscribe link (her own test) the footer's link
+    points at her site, so the test looks like the real thing."""
+    from .catalog import site_of
+    from .render import personalize
+
+    if html is None:
+        html, text = campaign_html(campaign, tenant)
+    values = {
+        "FirstName": first_name(name, to),
+        "Name": name or "there",
+        "UnsubscribeUrl": unsubscribe or site_of(tenant),
+    }
+    from_name, from_email = sender or _from(campaign, tenant)
+    headers = (
+        {"List-Unsubscribe": f"<{unsubscribe}>", "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"}
+        if unsubscribe
+        else None
+    )
+    body = personalize(html, values)
+    if unsubscribe:
+        body = _with_unsubscribe(body, unsubscribe, from_name)
+    return send_email(
+        to=to,
+        subject=personalize(subject or campaign.subject, values, escape=False),
+        html=body,
+        text=personalize(text or "", values, escape=False),
+        from_name=from_name,
+        from_email=from_email,
+        headers=headers,
+    )
 
 
 @shared_task(bind=True, max_retries=0)
@@ -96,33 +155,16 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
 
     try:
         with tenant_context(tenant):
-            from apps.email_campaigns.models import CampaignStatus, EmailCampaign
+            from apps.email_campaigns.models import EmailCampaign
             from apps.email_campaigns.recipients import resolve_recipients
-            from apps.tenant_config.models import TenantConfig
 
             campaign = EmailCampaign.objects.select_related("sender").filter(pk=campaign_id).first()
             if not campaign:
                 logger.error("Campaign %s not found", campaign_id)
                 return
-
-            config = TenantConfig.objects.first()
-            if not config or not config.emailcraft_api_key:
-                campaign.status = CampaignStatus.FAILED
-                campaign.sent_at = timezone.now()
-                campaign.save(update_fields=["status", "sent_at"])
-                logger.error("No EmailCraft API key for campaign %s", campaign_id)
-                return
-
-            api_key = config.emailcraft_api_key
-            brand_name = config.brand_name
-            coach_name = (campaign.sender.name or campaign.sender.email) if campaign.sender else "Coach"
-            from_name = f"{coach_name} via {brand_name}"
-
             recipients = list(resolve_recipients(campaign.recipient_filter).values("id", "name", "email"))
             recipient_count = len(recipients)
-
-            summary = _build_recipient_summary(campaign.recipient_filter)
-            campaign.recipient_summary = summary
+            campaign.recipient_summary = _build_recipient_summary(campaign.recipient_filter)
             campaign.save(update_fields=["recipient_summary"])
 
         today = timezone.now().date()
@@ -134,7 +176,6 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
             remaining_quota = max(tenant.plan.max_campaign_emails - usage.emails_sent, 0)
 
         with tenant_context(tenant):
-            from apps.email_campaigns import emailcraft_client
             from apps.email_campaigns.models import CampaignRecipient, CampaignStatus, EmailCampaign, RecipientStatus
             from apps.notifications.email_render import unsubscribe_url
 
@@ -144,6 +185,20 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
                 return
 
             campaign.recipient_count = recipient_count
+            # One render for everyone; each recipient gets their own name and unsubscribe link.
+            html, text = campaign_html(campaign, tenant)
+            sender = _from(campaign, tenant)
+
+            def record(recipient, state, error=""):
+                CampaignRecipient.objects.create(
+                    campaign=campaign,
+                    user_id=recipient["id"],
+                    user_name=recipient["name"] or "",
+                    user_email=recipient["email"] or "",
+                    status=state,
+                    error_message=error[:500],
+                    sent_at=timezone.now() if state == RecipientStatus.SENT else None,
+                )
 
             for idx, recipient in enumerate(recipients):
                 if remaining_quota is not None and success >= remaining_quota:
@@ -167,82 +222,34 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
 
                 try:
                     unsubscribe = unsubscribe_url(tenant, user_id=recipient["id"], email=recipient["email"])
-                    variables = {
-                        "Name": (recipient["name"] or recipient["email"] or "Student"),
-                        "UnsubscribeUrl": unsubscribe,
-                    }
-                    rendered = emailcraft_client.render_template(api_key, campaign.template_id, variables)
-                    html = _with_unsubscribe(rendered.get("html", ""), unsubscribe, brand_name)
+                    if idx == 0 and not campaign.rendered_html:
+                        # The campaign's preview: the first recipient's email, its unsubscribe link inert.
+                        from .render import personalize
 
-                    # Store first recipient's rendered HTML as campaign preview, their unsubscribe link inert
-                    if idx == 0 and html and not campaign.rendered_html:
-                        campaign.rendered_html = html.replace(unsubscribe, "#")
+                        campaign.rendered_html = personalize(
+                            html, {"FirstName": first_name(recipient["name"] or ""), "UnsubscribeUrl": "#"}
+                        )
                         campaign.save(update_fields=["rendered_html"])
-
-                    sent = send_email(
+                    sent = send_one(
+                        campaign,
+                        tenant,
                         to=recipient["email"],
-                        subject=campaign.subject,
+                        name=recipient["name"] or "",
+                        unsubscribe=unsubscribe,
                         html=html,
-                        from_name=from_name,
-                        headers={
-                            "List-Unsubscribe": f"<{unsubscribe}>",
-                            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-                        },
+                        text=text,
+                        sender=sender,
                     )
                     if sent:
                         success += 1
-                        CampaignRecipient.objects.create(
-                            campaign=campaign,
-                            user_id=recipient["id"],
-                            user_name=recipient["name"] or "",
-                            user_email=recipient["email"] or "",
-                            status=RecipientStatus.SENT,
-                            sent_at=timezone.now(),
-                        )
+                        record(recipient, RecipientStatus.SENT)
                     else:
                         failure += 1
-                        CampaignRecipient.objects.create(
-                            campaign=campaign,
-                            user_id=recipient["id"],
-                            user_name=recipient["name"] or "",
-                            user_email=recipient["email"] or "",
-                            status=RecipientStatus.FAILED,
-                            error_message="Send returned false",
-                        )
-                except HTTPError as exc:
-                    response_text = ""
-                    if exc.response is not None:
-                        response_text = (exc.response.text or "")[:2000]
-                    logger.exception(
-                        "EmailCraft render/send HTTP error for %s campaign %s: %s",
-                        recipient.get("email"),
-                        campaign_id,
-                        response_text,
-                    )
-                    failure += 1
-                    CampaignRecipient.objects.create(
-                        campaign=campaign,
-                        user_id=recipient["id"],
-                        user_name=recipient["name"] or "",
-                        user_email=recipient["email"] or "",
-                        status=RecipientStatus.FAILED,
-                        error_message=response_text[:500] or "HTTP error during render/send",
-                    )
+                        record(recipient, RecipientStatus.FAILED, "Send returned false")
                 except Exception as exc:
-                    logger.exception(
-                        "Failed to send email to %s for campaign %s",
-                        recipient.get("email"),
-                        campaign_id,
-                    )
+                    logger.exception("Failed to send email to %s for campaign %s", recipient.get("email"), campaign_id)
                     failure += 1
-                    CampaignRecipient.objects.create(
-                        campaign=campaign,
-                        user_id=recipient["id"],
-                        user_name=recipient["name"] or "",
-                        user_email=recipient["email"] or "",
-                        status=RecipientStatus.FAILED,
-                        error_message=str(exc)[:500],
-                    )
+                    record(recipient, RecipientStatus.FAILED, str(exc))
 
             campaign.success_count = success
             campaign.failure_count = failure
@@ -255,15 +262,7 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
             else:
                 campaign.status = CampaignStatus.PARTIAL
 
-            campaign.save(
-                update_fields=[
-                    "recipient_count",
-                    "success_count",
-                    "failure_count",
-                    "status",
-                    "sent_at",
-                ]
-            )
+            campaign.save(update_fields=["recipient_count", "success_count", "failure_count", "status", "sent_at"])
 
         if success > 0:
             TenantUsage.objects.filter(tenant=tenant, month=month_start).update(emails_sent=F("emails_sent") + success)
@@ -280,3 +279,29 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
                 campaign.status = CampaignStatus.FAILED
                 campaign.sent_at = timezone.now()
                 campaign.save(update_fields=["status", "sent_at"])
+
+
+@shared_task
+def build_starter_emails(tenant_id: int):
+    """The emails made for her at setup (the interview's emails:starters milestone)."""
+    from apps.core.models import Tenant
+
+    from . import starters
+
+    tenant = Tenant.objects.filter(pk=tenant_id).first()
+    if tenant is None:
+        return
+    with tenant_context(tenant):
+        starters.ensure(tenant)
+
+
+@shared_task(queue="agents", ignore_result=True)
+def run_design_job(schema_name: str, job_id: int):
+    """The Designer's run on one email (the agents worker)."""
+    from . import designer
+
+    tenant = get_tenant_model().objects.filter(schema_name=schema_name).first()
+    if tenant is None:
+        return
+    with tenant_context(tenant):
+        designer.execute(tenant, job_id)

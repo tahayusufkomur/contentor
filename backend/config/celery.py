@@ -14,6 +14,10 @@ app.conf.beat_schedule = {
         "task": "apps.notifications.tasks.send_live_reminders",
         "schedule": crontab(minute="*/5"),
     },
+    "send-access-ending-emails": {
+        "task": "apps.notifications.tasks.send_access_ending_emails",
+        "schedule": crontab(hour="9", minute="10"),
+    },
     "dispatch-due-announcements": {
         "task": "apps.notifications.tasks.dispatch_due_announcements",
         "schedule": crontab(minute="*"),

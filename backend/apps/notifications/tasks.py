@@ -36,6 +36,9 @@ def _send_reminders_for_current_tenant() -> None:
             # Only remind students who can actually attend (free → everyone,
             # paid → purchasers/subscribers). New-content + broadcast stay broad.
             send_to_subscriptions(subscriptions_with_access(event), live_reminder_payload(event.title))
+            from . import transactional
+
+            transactional.class_event("reminder", event)  # ticket holders also get it by email
 
 
 @shared_task
@@ -46,6 +49,29 @@ def send_live_reminders() -> None:
                 _send_reminders_for_current_tenant()
             except Exception:  # noqa: BLE001  one tenant must not break the rest
                 logger.exception("live reminder fan-out failed for %s", tenant.schema_name)
+
+
+@shared_task
+def send_access_ending_emails() -> None:
+    from . import transactional
+
+    for tenant in get_tenant_model().objects.exclude(schema_name="public").filter(provisioning_status="ready"):
+        with tenant_context(tenant):
+            try:
+                transactional.access_ending_soon()
+            except Exception:  # noqa: BLE001  one tenant must not break the rest
+                logger.exception("access-ending emails failed for %s", tenant.schema_name)
+
+
+@shared_task
+def send_transactional(schema_name: str, to: str, email: dict) -> None:
+    from . import transactional
+
+    tenant = get_tenant_model().objects.filter(schema_name=schema_name).first()
+    if tenant is None:
+        return
+    with tenant_context(tenant):
+        transactional.send(to, transactional.Email(**email), tenant)
 
 
 @shared_task

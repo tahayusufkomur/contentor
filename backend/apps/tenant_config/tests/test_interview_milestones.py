@@ -1334,3 +1334,14 @@ def test_the_review_shows_the_memberships_that_include_it(tenant_ctx, config, ow
     with mock.patch.object(ms, "_cover_images", return_value=[]):
         item = ms.review_card(tenant_ctx, "course")["item"]
     assert item["members"] == ["Digital membership"] and item["price"] == "49.00"
+
+
+def test_her_email_templates_are_made_once_she_picks_her_email_style(tenant_ctx, config):
+    assert "emails:starters" not in ms._due(tenant_ctx, dict(HOME))
+    assert "emails:starters" in ms._due(tenant_ctx, {**HOME, "email_style": "letter"})
+    with (
+        mock.patch("apps.email_campaigns.tasks.build_starter_emails.delay") as build,
+        mock.patch("django.db.transaction.on_commit", side_effect=lambda fn: fn()),
+    ):
+        ms._start(tenant_ctx, {**HOME, "email_style": "letter"}, "emails:starters")
+    build.assert_called_once_with(tenant_ctx.id)

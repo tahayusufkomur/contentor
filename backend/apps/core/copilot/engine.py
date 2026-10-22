@@ -100,6 +100,17 @@ SYSTEM_PROMPT = (
     "- draft_announcement: write an announcement to students as a DRAFT the "
     "coach reviews and sends from their admin (title, body_html with simple "
     "tags, optional internal link); you can never send anything yourself\n"
+    "- draft_email: write a designed email to her students as a DRAFT she "
+    "reviews in the email editor and sends herself: subject, preheader (the "
+    "inbox preview line), heading, body_html (p, strong, em, ul, li, a; greet "
+    "with {{FirstName}}), refs = up to 4 of her offers to feature as cards "
+    "with their picture, price or date and link (course:<course_id>, "
+    "live:<event_id> / stream: / zoom: / onsite: by the event's kind, "
+    "post:<post_id>, or next:event, latest:course, latest:post), optional "
+    "button_text + button_link (an internal path), and template_id from the "
+    "Email templates line for the look (leave it out for her newsletter). "
+    "Prefer it over draft_announcement when she asks for an email or a "
+    "newsletter; never invent offers, prices or dates\n"
     "- edit_navbar: change the navbar layout (one of: classic, centered, "
     "split, minimal, pill) and/or its call-to-action button (cta_text plus "
     "cta_href, an internal path like /courses); include only what changes\n"
@@ -327,6 +338,18 @@ class DraftAnnouncementAction(BaseModel):
     link: str = ""
 
 
+class DraftEmailAction(BaseModel):
+    kind: Literal["draft_email"]
+    subject: str
+    preheader: str = ""
+    heading: str = ""
+    body_html: str = ""
+    refs: list[str] = Field(default_factory=list)
+    button_text: str = ""
+    button_link: str = ""
+    template_id: int | None = None
+
+
 class EditStyleAction(BaseModel):
     kind: Literal["edit_style"]
     style: str
@@ -453,6 +476,7 @@ CopilotAction = Annotated[
     | CreateEventAction
     | CreateBlogPostAction
     | DraftAnnouncementAction
+    | DraftEmailAction
     | EditStyleAction
     | EditNavbarAction
     | EditSeoAction
@@ -937,6 +961,27 @@ def _students_line(now):
     return "Students: " + ", ".join(parts)
 
 
+def _email_template_name(tenant, template_id):
+    """The name of one of her email templates, or "" (none named, or not hers)."""
+    if not template_id:
+        return ""
+    from apps.email_campaigns.models import EmailTemplate
+
+    with tenant_context(tenant):
+        return EmailTemplate.objects.filter(pk=template_id).values_list("name", flat=True).first() or ""
+
+
+def _email_digest(tenant):
+    """Her email templates, for draft_email's template_id."""
+    from apps.email_campaigns.models import EmailTemplate
+
+    with tenant_context(tenant):
+        rows = list(EmailTemplate.objects.order_by("-updated_at").values_list("pk", "name", "category")[:12])
+    if not rows:
+        return "Email templates: none yet (draft_email uses her brand's design)."
+    return "Email templates (template_id name [kind]): " + "; ".join(f"{pk} {name} [{kind}]" for pk, name, kind in rows)
+
+
 def _setup_digest(tenant):
     """Open onboarding-checklist items for the user turn — lets the copilot
     answer 'what should I do next?' from real state, never invented steps."""
@@ -964,6 +1009,7 @@ def _user_turn(tenant, transcript, selections, message, attachments=None, contex
         _subscriptions_digest(tenant),
         _events_digest(tenant),
         _posts_digest(tenant),
+        _email_digest(tenant),
         _stats_digest(tenant),
         _setup_digest(tenant),
     ]
@@ -1570,6 +1616,25 @@ def _card(tenant, action, actor=None):
             "token": tokens.stash_action(
                 schema, {"kind": "create_event", "event_kind": action.event_kind, "params": params}
             ),
+        }
+    if isinstance(action, DraftEmailAction):
+        params = {
+            "subject": action.subject[:255],
+            "preheader": action.preheader[:255],
+            "heading": action.heading[:200],
+            "body_html": action.body_html,
+            "refs": [str(r)[:40] for r in action.refs[:4]],
+            "button_text": action.button_text[:60],
+            "button_link": action.button_link[:500],
+            "template_id": action.template_id,
+        }
+        template = _email_template_name(tenant, action.template_id)
+        look = f"in your {template} design" if template else "in your brand's design"
+        return {
+            "kind": "draft_email",
+            "title": f"Draft email: {action.subject[:120]}",
+            "detail": f"Saved as a draft {look}. Review and send it from Messages. Nothing is sent now.",
+            "token": tokens.stash_action(schema, {"kind": "draft_email", "params": params}),
         }
     if isinstance(action, DraftAnnouncementAction):
         params = {

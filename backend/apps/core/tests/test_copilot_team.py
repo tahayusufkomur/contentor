@@ -47,6 +47,8 @@ def test_a_message_is_signed_by_whichever_owner_wrote_it():
     assert team.owner_of("draft_announcement", writer="community") == "community"
     assert team.owner_of("draft_announcement", writer="designer") == "community"
     assert team.owner_of("draft_announcement") == "community"
+    assert team.owner_of("draft_email") == "marketing"
+    assert team.owner_of("draft_email", writer="community") == "community"
 
 
 def test_unknown_kinds_belong_to_the_assistant():

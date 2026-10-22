@@ -74,7 +74,8 @@ def _handle_marketplace_checkout_completed(event):
         if payment is None:
             logger.warning("marketplace payment %s not found in tenant=%s", payment_id, tenant.slug)
             return
-        if payment.status != "completed":
+        newly_paid = payment.status != "completed"
+        if newly_paid:
             payment.status = "completed"
             payment.provider = "stripe"
             payment.provider_payment_id = provider_payment_id
@@ -82,6 +83,10 @@ def _handle_marketplace_checkout_completed(event):
                 payment.metadata = {**(payment.metadata or {}), "receipt_url": receipt_url}
             payment.save(update_fields=["status", "provider", "provider_payment_id", "metadata"])
         grant_access_for_payment(payment)
+        if newly_paid:
+            from apps.notifications import transactional
+
+            transactional.purchase_done(payment)
         logger.info(
             "marketplace payment completed tenant=%s payment=%s amount=%s",
             tenant.slug,
@@ -171,7 +176,12 @@ def _upsert_tenant_subscription(
             logger.warning("marketplace subscription for unknown plan=%s tenant=%s", plan_id, tenant.slug)
             return
         now = timezone.now()
-        TenantSub.objects.update_or_create(
+        before = (
+            TenantSub.objects.filter(provider="stripe", provider_subscription_id=provider_sub_id)
+            .values("status", "cancel_at_period_end")
+            .first()
+        )
+        sub, _ = TenantSub.objects.update_or_create(
             provider="stripe",
             provider_subscription_id=provider_sub_id,
             defaults={
@@ -187,6 +197,12 @@ def _upsert_tenant_subscription(
                 "current_period_end": period_end or (now + timedelta(days=30 * (plan.billing_interval_months or 1))),
             },
         )
+        # She (or the coach, in Stripe) cancelled: it runs to the period's end. Started and
+        # renewed come from invoice.paid, where the first invoice is paid exactly once.
+        if before and cancel_at_period_end and not before["cancel_at_period_end"] and sub_status != "expired":
+            from apps.notifications import transactional
+
+            transactional.membership_event("cancelled", sub)
         logger.info(
             "marketplace subscription upserted tenant=%s plan=%s status=%s sub=%s",
             tenant.slug,
@@ -242,9 +258,14 @@ def _handle_marketplace_subscription_deleted(event, tenant):
         sub = TenantSub.objects.filter(provider="stripe", provider_subscription_id=provider_sub_id).first()
         if sub is None:
             return
+        was = sub.status
         sub.status = "expired"
         sub.cancelled_at = timezone.now()
         sub.save(update_fields=["status", "cancelled_at"])
+        if was != "expired":
+            from apps.notifications import transactional
+
+            transactional.membership_event("ended", sub)
 
 
 def _invoice_subscription_metadata(invoice) -> dict:
@@ -320,6 +341,18 @@ def _handle_marketplace_invoice_paid(event, tenant):
                 "receipt_url": invoice.get("hosted_invoice_url", ""),
             },
         )
+        reason = {"subscription_create": "started", "subscription_cycle": "renewed"}.get(invoice.get("billing_reason"))
+        if reason:
+            from apps.notifications import transactional
+
+            transactional.membership_event(
+                reason,
+                sub,
+                invoice_url=invoice.get("hosted_invoice_url", ""),
+                amount=transactional.money(
+                    Decimal(amount_cents) / Decimal(100), invoice.get("currency") or sub.billing_currency
+                ),
+            )
         logger.info(
             "marketplace payment recorded tenant=%s sub=%s student=%s amount=%s",
             tenant.slug,
@@ -338,7 +371,21 @@ def _handle_marketplace_invoice_failed(event, tenant):
     with tenant_context(tenant):
         from apps.billing.models import Subscription as TenantSub
 
-        TenantSub.objects.filter(provider="stripe", provider_subscription_id=provider_sub_id).update(status="past_due")
+        sub = TenantSub.objects.filter(provider="stripe", provider_subscription_id=provider_sub_id).first()
+        if sub is None or sub.status == "past_due":
+            return
+        sub.status = "past_due"
+        sub.save(update_fields=["status"])
+        from apps.notifications import transactional
+
+        transactional.membership_event(
+            "failed",
+            sub,
+            invoice_url=invoice.get("hosted_invoice_url", ""),
+            amount=transactional.money(
+                Decimal(invoice.get("amount_due") or 0) / Decimal(100), invoice.get("currency") or sub.billing_currency
+            ),
+        )
 
 
 def _handle_account_updated(event):

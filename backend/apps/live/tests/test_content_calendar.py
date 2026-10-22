@@ -66,7 +66,6 @@ def content(tenant_ctx, owner):
     )
     email = EmailCampaign.objects.create(
         subject="Weekly Newsletter",
-        template_id="tpl_1",
         sender=owner,
         recipient_filter={"type": "all"},
         recipient_count=42,
@@ -134,9 +133,9 @@ class TestContentCalendarFeed:
 
     def test_scheduled_email_appears_at_scheduled_time(self, tenant_ctx, owner):
         now = timezone.now()
+        EmailCampaign.objects.create(subject="Still a draft", status=CampaignStatus.DRAFT, sender=owner)
         EmailCampaign.objects.create(
             subject="Future Blast",
-            template_id="tpl_2",
             sender=owner,
             recipient_filter={"type": "all"},
             recipient_count=10,

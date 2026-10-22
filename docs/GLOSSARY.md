@@ -54,8 +54,7 @@ to use in conversation, code, and commits.
 - **Domains** (`apps.domains`) — public-schema custom-domain registration, pricing, and
   provisioning (registrar + Cloudflare + Resend) for a tenant's own domain.
 - **Platform email** (`apps.platform_email`) — public-schema mirror of the coach email-
-  campaign feature, used by the superadmin to email coaches via the platform's own
-  MailCraft org.
+  campaign feature, used by the superadmin to email coaches, on the same email engine.
 - **Admin Kit** (`apps.adminkit`) — no models; the shared framework (`platform_site` /
   `studio_site`) that turns other apps' registered `ModelAdmin`s into API endpoints for
   the two admin SPAs.
@@ -167,9 +166,11 @@ to use in conversation, code, and commits.
 
 - **Stream.io / GetStream** — the live video + chat provider (LiveClass/LiveStream).
 - **MailCraft** — the **sibling** email-builder SaaS (`mailcraft.contentor.app`,
-  project `emailBuilder`) that Contentor embeds for campaign templates.
-- **`django-contentor-email-builder`** — the package that embeds the MailCraft iframe in
-  Django admin.
+  project `emailBuilder`). Its engine was ported into Contentor (2026-10-22); Contentor no
+  longer embeds or calls it.
+- **Email engine** — Contentor's own designed emails (`apps.email_campaigns`): block JSON
+  with brand tokens, rendered to table HTML; edited in the native editor
+  (`packages/shared/src/email/editor`).
 - **Resend** — the transactional/campaign email **sending** service.
 - **Hetzner object storage** — the S3-compatible store (`contentor-prod` bucket) for media.
 - **Presigned upload / multipart upload** — direct-to-S3 upload patterns (single PUT vs.

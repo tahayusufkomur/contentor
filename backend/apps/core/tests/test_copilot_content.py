@@ -613,3 +613,32 @@ def test_edit_event_refuses_a_zoom_link_that_is_not_a_web_address(coach):
         content.edit_event(event.id, "zoom", {"zoom_link": "zoom.us/j/555"})
     event.refresh_from_db()
     assert event.zoom_link == ""
+
+
+def test_an_email_draft_wears_her_newsletter_and_features_only_her_offers(coach):
+    from apps.email_campaigns.models import EmailCampaign, EmailTemplate
+    from apps.email_campaigns.starters import compose
+
+    newsletter = EmailTemplate.objects.create(
+        name="Newsletter", category="newsletter", design=compose(None, heading="Old", body_html="<p>Old</p>")
+    )
+    result = content.create_email_draft(
+        coach,
+        {
+            "subject": "Join me Saturday",
+            "heading": "Saturday mat class",
+            "body_html": "<p>Hi {{FirstName}}<script>x()</script></p>",
+            "refs": ["next:event", "course:3", "https://evil.test", "../etc"],
+            "button_text": "Book",
+            "button_link": "javascript:alert(1)",
+        },
+    )
+    assert result["kind"] == "draft_email" and result["url"].endswith(f"/{result['id']}/edit")
+    draft = EmailCampaign.objects.get(pk=result["id"])
+    assert (draft.status, draft.subject, draft.template) == ("draft", "Join me Saturday", newsletter)
+    body = draft.design["body"]["blocks"]
+    assert [b["type"] for b in body] == ["heading", "text", "item", "item"]  # no button for a bad link
+    assert [b["data"]["ref"] for b in body if b["type"] == "item"] == ["next:event", "course:3"]
+    assert "script" not in body[1]["data"]["html"] and "{{FirstName}}" in body[1]["data"]["html"]
+    with pytest.raises(content.ContentOpError):
+        content.create_email_draft(coach, {"subject": " "})

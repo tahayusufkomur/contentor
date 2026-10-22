@@ -125,39 +125,63 @@ def test_resolve_unknown_type_is_empty(coaches):
 # --- endpoints ---
 
 
-def test_setup_requires_superuser(public_host, coaches):
-    resp = _client(coaches["a"]).post("/api/v1/platform/email/setup/")
+def test_drafts_require_a_superuser(public_host, coaches):
+    resp = _client(coaches["a"]).post("/api/v1/platform/email/campaigns/", {}, format="json")
     assert resp.status_code == 403
 
 
-@patch("apps.platform_email.views._get_api_key", return_value=("key_123", None))
-def test_setup_ok_for_superuser(_mock_key, public_host, superuser):
-    resp = _client(superuser).post("/api/v1/platform/email/setup/")
-    assert resp.status_code == 200, resp.content
-    assert resp.json()["ready"] is True
+def _draft(superuser, **fields):
+    from apps.email_campaigns.starters import compose
+
+    resp = _client(superuser).post("/api/v1/platform/email/campaigns/", {}, format="json")
+    assert resp.status_code == 201, resp.content
+    draft = PlatformEmailCampaign.objects.get(pk=resp.json()["id"])
+    for name, value in {"subject": "Hello coaches", "design": compose(None, heading="News"), **fields}.items():
+        setattr(draft, name, value)
+    draft.save()
+    return draft
 
 
 @patch("apps.platform_email.tasks.send_platform_campaign_emails.delay")
-@patch("apps.platform_email.views._get_api_key", return_value=("key_123", None))
-def test_send_creates_campaign_and_queues(_mock_key, mock_delay, public_host, superuser, coaches):
-    resp = _client(superuser).post(
-        "/api/v1/platform/email/send/",
-        {"template_id": "tmpl_1", "subject": "Hello coaches", "recipient_filter": {"type": "all_coaches"}},
+def test_send_queues_the_draft_once(mock_delay, public_host, superuser, coaches):
+    draft = _draft(superuser)
+    client = _client(superuser)
+    resp = client.post(
+        f"/api/v1/platform/email/campaigns/{draft.pk}/send/",
+        {"recipient_filter": {"type": "all_coaches"}},
         format="json",
     )
-    assert resp.status_code == 201, resp.content
-    campaign = PlatformEmailCampaign.objects.get(pk=resp.json()["id"])
-    assert campaign.subject == "Hello coaches"
-    assert campaign.recipient_count == 3
-    mock_delay.assert_called_once_with(campaign.id)
+    assert resp.status_code == 200, resp.content
+    draft.refresh_from_db()
+    assert (draft.status, draft.recipient_count) == ("sending", 3)
+    mock_delay.assert_called_once_with(draft.id)
+    again = client.post(
+        f"/api/v1/platform/email/campaigns/{draft.pk}/send/",
+        {"recipient_filter": {"type": "all_coaches"}},
+        format="json",
+    )
+    assert again.status_code == 409
 
 
-@patch("apps.platform_email.views._get_api_key", return_value=("key_123", None))
-def test_send_rejects_empty_recipient_set(_mock_key, public_host, superuser, plans):
+def test_send_rejects_empty_recipient_set(public_host, superuser, plans):
     # No coaches exist → all_coaches resolves to zero → 400.
+    draft = _draft(superuser)
     resp = _client(superuser).post(
-        "/api/v1/platform/email/send/",
-        {"template_id": "tmpl_1", "subject": "Hi", "recipient_filter": {"type": "all_coaches"}},
+        f"/api/v1/platform/email/campaigns/{draft.pk}/send/",
+        {"recipient_filter": {"type": "all_coaches"}},
         format="json",
     )
     assert resp.status_code == 400, resp.content
+
+
+def test_the_send_renders_once_in_contentors_kit(public_host, superuser, coaches):
+    from apps.platform_email import tasks
+
+    draft = _draft(superuser, recipient_filter={"type": "all_coaches"}, status="sending")
+    with patch.object(tasks, "send_email", return_value=True) as send:
+        tasks.send_platform_campaign_emails(draft.id)
+    draft.refresh_from_db()
+    assert (draft.status, draft.success_count) == ("sent", 3)
+    first = send.call_args_list[0].kwargs
+    assert first["from_name"] == "Contentor" and "News" in first["html"]
+    assert "Unsubscribe" not in first["html"] and "{{" not in first["html"]

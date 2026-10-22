@@ -1,226 +1,123 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
+import { blankDesign } from "@shared/email/editor";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
-import { TemplateGrid } from "@shared/email/template-grid";
+import { TemplateThumb } from "@/components/admin/email/template-thumb";
+import { Button } from "@/components/ui/button";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonCardGrid } from "@/components/ui/skeletons";
 import {
+  createDraft,
+  createTemplate,
   deleteTemplate,
-  getTemplate,
-  listGallery,
   listTemplates,
-  previewTemplates,
-  type EmailTemplate,
+  type PlatformTemplate,
 } from "@/lib/platform-email-api";
 
 export const dynamic = "force-dynamic";
 
-type Tab = "mine" | "gallery";
-
-function asArray<T>(data: T[] | { results: T[] } | { data: T[] }): T[] {
-  if (Array.isArray(data)) return data;
-  if ("results" in data && Array.isArray(data.results)) return data.results;
-  if ("data" in data && Array.isArray((data as { data: T[] }).data))
-    return (data as { data: T[] }).data;
-  return [];
-}
-
-export default function TemplatesPage() {
+/** The superadmin's email templates: use, edit, delete, or start a new one. */
+export default function PlatformTemplatesPage() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>("mine");
-  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
-  const [gallery, setGallery] = useState<EmailTemplate[]>([]);
-  const [previewHtmlMap, setPreviewHtmlMap] = useState<Record<string, string>>(
-    {},
-  );
-  const [loading, setLoading] = useState(true);
-  const [galleryLoaded, setGalleryLoaded] = useState(false);
+  const [templates, setTemplates] = useState<PlatformTemplate[] | null>(null);
+  const [error, setError] = useState<unknown>(null);
 
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewTitle, setPreviewTitle] = useState("");
-  const [previewHtml, setPreviewHtml] = useState("");
-
-  const fetchPreviews = useCallback(async (tmpls: EmailTemplate[]) => {
-    const ids = tmpls.map((t) => t.id).filter(Boolean);
-    if (ids.length === 0) return;
-    for (let i = 0; i < ids.length; i += 20) {
-      const batch = ids.slice(i, i + 20);
-      try {
-        const result = await previewTemplates(batch);
-        setPreviewHtmlMap((prev) => ({ ...prev, ...result.previews }));
-      } catch {
-        // partial failure is fine
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
+  const load = useCallback(() => {
+    setError(null);
     listTemplates()
-      .then((data) => {
-        const tmpls = asArray(data);
-        setTemplates(tmpls);
-        fetchPreviews(tmpls);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [fetchPreviews]);
-
-  useEffect(() => {
-    if (tab !== "gallery" || galleryLoaded) return;
-    listGallery()
-      .then((data) => {
-        const g = asArray(data) as unknown as EmailTemplate[];
-        setGallery(g);
-        setGalleryLoaded(true);
-        fetchPreviews(g);
-      })
-      .catch(() => {});
-  }, [tab, galleryLoaded, fetchPreviews]);
-
-  const { run: handlePreview, loading: previewLoading } = useAsyncAction(
-    async (template: EmailTemplate) => {
-      setPreviewOpen(true);
-      setPreviewTitle(template.name);
-      setPreviewHtml("");
-
-      if (previewHtmlMap[template.id]) {
-        setPreviewHtml(previewHtmlMap[template.id]);
-        return;
-      }
-
-      const detail = await getTemplate(template.id);
-      const html =
-        ((detail as Record<string, unknown>).html as string) ||
-        ((detail as Record<string, unknown>).rendered_html as string) ||
-        "";
-      if (html) {
-        setPreviewHtml(html);
-      } else {
-        const result = await previewTemplates([template.id]);
-        setPreviewHtml(result.previews[template.id] || "");
-      }
-    },
-    { onError: () => setPreviewHtml("") },
-  );
-
-  // Not a useAsyncAction: TemplateCard (packages/shared, out of scope here)
-  // has no per-row busy prop, and this callback fires once per card in a
-  // .map() — a single shared hook instance would silently drop a delete
-  // click on card B while card A's delete is still in flight (the
-  // documented per-row single-flight gotcha). Deletes stay independent;
-  // only the previously-swallowed error is now surfaced.
-  const handleDelete = useCallback(async (template: EmailTemplate) => {
-    if (!window.confirm(`Delete "${template.name}"?`)) return;
-    try {
-      await deleteTemplate(template.id);
-      setTemplates((prev) => prev.filter((t) => t.id !== template.id));
-    } catch {
-      toast.error("Could not delete template. Please try again.");
-    }
+      .then((r) => setTemplates(r.results))
+      .catch(setError);
   }, []);
+  useEffect(load, [load]);
 
-  const handleEdit = useCallback(
-    (template: EmailTemplate) => {
-      navigate(`/admin/email/compose?template=${template.id}`);
-    },
-    [navigate],
-  );
+  const create = useAsyncAction(async () => {
+    const t = await createTemplate({
+      name: "New template",
+      design: blankDesign(),
+    });
+    navigate(`/admin/email/templates/${t.id}`);
+  });
 
-  const currentTemplates = tab === "mine" ? templates : gallery;
+  // Per-row actions stay independent (a shared hook would drop a second click).
+  const use = async (t: PlatformTemplate) => {
+    try {
+      navigate(`/admin/email/drafts/${(await createDraft(t.id)).id}`);
+    } catch {
+      toast.error("Couldn't start an email from it.");
+    }
+  };
+  const remove = async (t: PlatformTemplate) => {
+    if (!window.confirm(`Delete "${t.name}"?`)) return;
+    try {
+      await deleteTemplate(t.id);
+      setTemplates((rows) => rows?.filter((r) => r.id !== t.id) ?? rows);
+    } catch {
+      toast.error("Couldn't delete it. Try again.");
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Email Templates</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Email templates</h1>
           <p className="text-sm text-muted-foreground">
-            Manage your platform email templates.
+            Designs you start emails to creators from.
           </p>
         </div>
-        <Link
-          href="/admin/email/compose"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+        <Button
+          onClick={() => create.run()}
+          loading={create.loading}
+          loadingText="Creating…"
+          className="gap-2"
         >
-          New Email
-        </Link>
+          <Plus className="h-4 w-4" /> New template
+        </Button>
       </div>
-
-      <div className="flex gap-2">
-        <button
-          onClick={() => setTab("mine")}
-          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-            tab === "mine"
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground"
-          }`}
-        >
-          My Templates
-        </button>
-        <button
-          onClick={() => setTab("gallery")}
-          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-            tab === "gallery"
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground"
-          }`}
-        >
-          Gallery
-        </button>
-      </div>
-
-      {loading && tab === "mine" ? (
-        <p className="text-sm text-muted-foreground">Loading templates...</p>
-      ) : (
-        <TemplateGrid
-          templates={currentTemplates}
-          previewHtmlMap={previewHtmlMap}
-          mode="library"
-          onEdit={handleEdit}
-          onDelete={tab === "mine" ? handleDelete : undefined}
-          onPreview={handlePreview}
-        />
-      )}
-
-      {previewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="relative mx-4 w-full max-w-3xl rounded-lg bg-background p-4 shadow-xl">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">{previewTitle}</h3>
-              <button
-                onClick={() => setPreviewOpen(false)}
-                className="rounded-md px-2 py-1 text-sm hover:bg-muted"
-              >
-                Close
-              </button>
-            </div>
-            {previewLoading ? (
-              <div className="flex h-[60vh] items-center justify-center">
-                <p className="text-sm text-muted-foreground">
-                  Loading preview...
-                </p>
+      <PageState
+        loading={!templates && !error}
+        error={error}
+        onRetry={load}
+        skeleton={<SkeletonCardGrid count={6} />}
+      >
+        {templates?.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No templates yet.</p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {templates?.map((t) => (
+              <div key={t.id} className="space-y-3 rounded-xl border p-3">
+                <TemplateThumb html={t.preview_html} title={t.name} />
+                <p className="truncate px-1 text-sm font-medium">{t.name}</p>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => use(t)}>
+                    Use
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate(`/admin/email/templates/${t.id}`)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="ml-auto text-destructive"
+                    onClick={() => remove(t)}
+                  >
+                    Delete
+                  </Button>
+                </div>
               </div>
-            ) : previewHtml ? (
-              <iframe
-                srcDoc={previewHtml}
-                sandbox=""
-                className="h-[75vh] w-full rounded border"
-                title="Template preview"
-              />
-            ) : (
-              <div className="flex h-[60vh] items-center justify-center">
-                <p className="text-sm text-muted-foreground">
-                  Preview not available.
-                </p>
-              </div>
-            )}
+            ))}
           </div>
-        </div>
-      )}
+        )}
+      </PageState>
     </div>
   );
 }

@@ -41,7 +41,7 @@ def test_emails_recipients_except_optout(tenant_ctx):
     a = Announcement.objects.create(title="T", body="b", filters_json={}, also_email=True)
     AnnouncementRecipient.objects.create(announcement=a, user=u1)
     AnnouncementRecipient.objects.create(announcement=a, user=u2)
-    with patch.object(services, "send_email", return_value=True) as mock:
+    with patch("apps.core.email.send_email", return_value=True) as mock:
         sent = services.send_announcement_emails(a)
     assert sent == 1
     assert mock.call_count == 1

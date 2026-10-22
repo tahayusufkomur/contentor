@@ -7,8 +7,6 @@ from functools import lru_cache
 from django.conf import settings
 from pywebpush import WebPushException, webpush
 
-from apps.core.email import send_email
-
 from .models import PushSubscription
 
 logger = logging.getLogger(__name__)
@@ -121,34 +119,29 @@ def send_announcement_to_recipients(announcement) -> None:
 
 
 def send_announcement_emails(announcement) -> int:
-    """Send the announcement as an email in the site's colours to its recipients who have
-    an email address and have not opted out. Returns the number emailed."""
+    """Send the announcement by email, in her email style, to its recipients who have an email
+    address and have not opted out. Returns the number emailed. Rendered once; each recipient's
+    own unsubscribe link is put in after."""
+    from dataclasses import replace
+
     from django.db import connection
 
-    from apps.tenant_config.models import TenantConfig
-
-    from . import email_render
+    from . import email_render, transactional
     from .models import EmailOptOut
 
-    cfg = TenantConfig.objects.first()
     tenant = connection.tenant
-    base_url = email_render.tenant_base_url(tenant)
+    marker = "https://unsubscribe.invalid/recipient"
+    email = email_render.announcement_email(announcement, email_render.tenant_base_url(tenant), marker)
+    html = transactional.render(email, tenant)
     opted_out = {e.lower() for e in EmailOptOut.objects.values_list("email", flat=True)}
 
     sent = 0
     for recipient in announcement.recipients.select_related("user"):
-        email = (recipient.user.email or "").strip()
-        if not email or email.lower() in opted_out:
+        to = (recipient.user.email or "").strip()
+        if not to or to.lower() in opted_out:
             continue
-        announcement.email_unsub_url = email_render.unsubscribe_url(tenant, user_id=recipient.user_id, email=email)
-        subject, html = email_render.announcement_email_html(announcement, cfg, base_url)
-        ok = send_email(
-            email,
-            subject,
-            html,
-            from_name=(cfg.brand_name if cfg else ""),
-            headers={"List-Unsubscribe": f"<{announcement.email_unsub_url}>"},
-        )
+        unsub = email_render.unsubscribe_url(tenant, user_id=recipient.user_id, email=to)
+        ok = transactional.send(to, replace(email, unsubscribe=unsub), tenant, html=html.replace(marker, unsub))
         recipient.email_status = "sent" if ok else "failed"
         recipient.save(update_fields=["email_status"])
         if ok:

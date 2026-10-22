@@ -1,414 +1,89 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { FilePlus2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
+import { TemplateThumb } from "@/components/admin/email/template-thumb";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonCardGrid } from "@/components/ui/skeletons";
+import { Spinner } from "@/components/ui/spinner";
 import {
-  EmailBuilderIframe,
-  type EmailBuilderIframeHandle,
-} from "@shared/email/email-builder-iframe";
-import { RecipientSelector } from "@/components/admin/email/recipient-selector";
-import { TemplateGrid } from "@shared/email/template-grid";
-import { Button } from "@/components/ui/button";
-import {
-  getTemplate,
-  listGallery,
+  createDraft,
   listTemplates,
-  previewTemplates,
-  sendCampaign,
-  type EmailTemplate,
-  type RecipientFilter,
+  type PlatformTemplate,
 } from "@/lib/platform-email-api";
-
-type Step = "choose" | "design" | "send";
 
 export const dynamic = "force-dynamic";
 
-function asArray<T>(data: T[] | { results: T[] } | { data: T[] }): T[] {
-  if (Array.isArray(data)) return data;
-  if ("results" in data && Array.isArray(data.results)) return data.results;
-  if ("data" in data && Array.isArray((data as { data: T[] }).data))
-    return (data as { data: T[] }).data;
-  return [];
-}
-
-export default function ComposePage() {
+/** Start an email to creators: from a template, or blank. Either makes a draft and opens it. */
+export default function PlatformComposePage() {
   const navigate = useNavigate();
-  const searchParams = useSearchParams();
-  const builderRef = useRef<EmailBuilderIframeHandle>(null);
-  const initialTemplateId = searchParams.get("template") || "";
-  const initialStep =
-    (searchParams.get("step") as Step) ||
-    (initialTemplateId ? "design" : "choose");
-  const initialSubject = searchParams.get("subject") || "";
-  const initialTemplateName = searchParams.get("templateName") || "";
+  const [templates, setTemplates] = useState<PlatformTemplate[] | null>(null);
+  const [error, setError] = useState<unknown>(null);
+  const [opening, setOpening] = useState<number | "blank" | null>(null);
 
-  const [step, setStepRaw] = useState<Step>(initialStep);
-  const [allTemplates, setAllTemplates] = useState<EmailTemplate[]>([]);
-  const [previewHtmlMap, setPreviewHtmlMap] = useState<Record<string, string>>(
-    {},
-  );
-  const [loadingTemplates, setLoadingTemplates] = useState(false);
-  const [copyingTemplateId, setCopyingTemplateId] = useState<string | null>(
-    null,
-  );
-
-  const [savedTemplateId, setSavedTemplateIdRaw] = useState(initialTemplateId);
-  const [savedTemplateName, setSavedTemplateNameRaw] =
-    useState(initialTemplateName);
-  const [templateJson, setTemplateJson] = useState<
-    Record<string, unknown> | undefined
-  >(undefined);
-  const [hasSaved, setHasSaved] = useState(!!initialTemplateId);
-
-  const [subject, setSubjectRaw] = useState(initialSubject);
-  const [recipientFilter, setRecipientFilter] = useState<RecipientFilter>({
-    type: "all_coaches",
-  });
-  const [recipientCount, setRecipientCount] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const syncUrl = useCallback((overrides: Record<string, string>) => {
-    const params = new URLSearchParams(window.location.search);
-    for (const [k, v] of Object.entries(overrides)) {
-      if (v) params.set(k, v);
-      else params.delete(k);
-    }
-    const qs = params.toString();
-    const next = qs
-      ? `${window.location.pathname}?${qs}`
-      : window.location.pathname;
-    window.history.replaceState({}, "", next);
+  useEffect(() => {
+    listTemplates()
+      .then((r) => setTemplates(r.results))
+      .catch(setError);
   }, []);
 
-  const setStep = useCallback(
-    (s: Step) => {
-      setStepRaw(s);
-      syncUrl({ step: s });
-    },
-    [syncUrl],
-  );
-  const setSavedTemplateId = useCallback(
-    (id: string) => {
-      setSavedTemplateIdRaw(id);
-      syncUrl({ template: id });
-    },
-    [syncUrl],
-  );
-  const setSavedTemplateName = useCallback(
-    (name: string) => {
-      setSavedTemplateNameRaw(name);
-      syncUrl({ templateName: name });
-    },
-    [syncUrl],
-  );
-  const setSubject = useCallback(
-    (s: string) => {
-      setSubjectRaw(s);
-      syncUrl({ subject: s });
-    },
-    [syncUrl],
-  );
-
-  useEffect(() => {
-    if (initialTemplateId) return;
-    setLoadingTemplates(true);
-
-    Promise.all([
-      listTemplates()
-        .then(asArray)
-        .catch(() => [] as EmailTemplate[]),
-      listGallery()
-        .then(asArray)
-        .catch(() => [] as EmailTemplate[]),
-    ]).then(([mine, gallery]) => {
-      const seen = new Set(mine.map((t) => t.id));
-      const uniqueGallery = (gallery as EmailTemplate[]).filter(
-        (t) => !seen.has(t.id),
-      );
-      const all = [...mine, ...uniqueGallery];
-      setAllTemplates(all);
-      setLoadingTemplates(false);
-
-      const ids = all.map((t) => t.id).filter(Boolean);
-      for (let i = 0; i < ids.length; i += 20) {
-        const batch = ids.slice(i, i + 20);
-        previewTemplates(batch)
-          .then((result) => {
-            setPreviewHtmlMap((prev) => ({ ...prev, ...result.previews }));
-          })
-          .catch(() => {});
-      }
-    });
-  }, [initialTemplateId]);
-
-  useEffect(() => {
-    if (!initialTemplateId) return;
-    getTemplate(initialTemplateId)
-      .then((data) => {
-        if (data.json_data && typeof data.json_data === "object") {
-          setTemplateJson(data.json_data as Record<string, unknown>);
-        }
-        if (data.name) setSavedTemplateName(String(data.name));
-      })
-      .catch(() => {});
-  }, [initialTemplateId, setSavedTemplateName]);
-
-  const handleSelectTemplate = useCallback(async (template: EmailTemplate) => {
-    setCopyingTemplateId(template.id);
+  const start = async (key: number | "blank") => {
+    if (opening !== null) return;
+    setOpening(key);
     try {
-      const data = await getTemplate(template.id);
-      if (data.json_data && typeof data.json_data === "object") {
-        setTemplateJson(data.json_data as Record<string, unknown>);
-      }
-      setSavedTemplateName(String(data.name || template.name || ""));
-      setSavedTemplateId(template.id);
-      setHasSaved(true);
-      setStep("design");
+      const draft = await createDraft(key === "blank" ? undefined : key);
+      navigate(`/admin/email/drafts/${draft.id}`);
     } catch {
-      setError("Failed to load template. Please try again.");
-    } finally {
-      setCopyingTemplateId(null);
+      toast.error("Couldn't start the email. Try again.");
+      setOpening(null);
     }
-  }, []);
-
-  const handleStartFromScratch = useCallback(() => {
-    setSavedTemplateId("");
-    setSavedTemplateName("");
-    setHasSaved(false);
-    setStep("design");
-  }, []);
-
-  const handleSave = useCallback(() => {
-    setHasSaved(true);
-  }, []);
-
-  const handleTemplateSaved = useCallback(
-    (payload: { templateId: string; templateName: string }) => {
-      setSavedTemplateId(payload.templateId);
-      if (payload.templateName) setSavedTemplateName(payload.templateName);
-      setHasSaved(true);
-    },
-    [],
-  );
-
-  const canGoToSend = useMemo(
-    () => Boolean(savedTemplateId),
-    [savedTemplateId],
-  );
-
-  const handleBackToChoose = useCallback(() => {
-    if (
-      hasSaved &&
-      !window.confirm(
-        "Go back to template selection? Your current edits are saved.",
-      )
-    )
-      return;
-    setStep("choose");
-  }, [hasSaved]);
-
-  // `redirecting` keeps the send button's loading state on once the API call
-  // resolves successfully — useAsyncAction clears its own `sending` flag as
-  // soon as the promise settles, but the navigation away from this page is
-  // async, so without this the button would flash idle right before unmount.
-  const [redirecting, setRedirecting] = useState(false);
-  const { run: handleSend, loading: sending } = useAsyncAction(
-    async () => {
-      if (!savedTemplateId) {
-        setError("Please save a template first.");
-        return;
-      }
-      if (!subject.trim()) {
-        setError("Please enter a subject line.");
-        return;
-      }
-      if (
-        recipientFilter.type === "plan" &&
-        recipientFilter.plan_ids.length === 0
-      ) {
-        setError("Please select at least one plan.");
-        return;
-      }
-      if (
-        recipientFilter.type === "tenant" &&
-        recipientFilter.tenant_ids.length === 0
-      ) {
-        setError("Please select at least one workspace.");
-        return;
-      }
-      if (
-        recipientFilter.type === "individual" &&
-        recipientFilter.user_ids.length === 0
-      ) {
-        setError("Please select at least one creator.");
-        return;
-      }
-
-      setError(null);
-      await sendCampaign({
-        template_id: savedTemplateId,
-        template_name: savedTemplateName,
-        subject,
-        recipient_filter: recipientFilter,
-      });
-      // Hold the button in its loading state through the redirect instead of
-      // letting it clear and unmount idle.
-      setRedirecting(true);
-      navigate("/admin/email");
-    },
-    {
-      onError: (err) =>
-        setError(
-          err instanceof Error ? err.message : "Failed to send campaign.",
-        ),
-    },
-  );
-
-  const stepLabels = [
-    { key: "choose", label: "1. Choose Template" },
-    { key: "design", label: "2. Design" },
-    { key: "send", label: "3. Send" },
-  ];
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          {step === "choose" && "Choose Template"}
-          {step === "design" && "Design Email"}
-          {step === "send" && "Send Email"}
-        </h1>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">New email</h1>
+        <p className="text-sm text-muted-foreground">
+          Start from a template, or from a blank page in Contentor&apos;s brand.
+        </p>
       </div>
-
-      <div className="flex gap-4 text-sm">
-        {stepLabels.map((s, i) => (
-          <span key={s.key}>
-            {i > 0 && <span className="mr-4 text-muted-foreground">/</span>}
-            <span
-              className={
-                step === s.key
-                  ? "font-bold text-primary"
-                  : "text-muted-foreground"
-              }
-            >
-              {s.label}
-            </span>
-          </span>
-        ))}
-      </div>
-
-      {step === "choose" && (
-        <div className="space-y-4">
-          {loadingTemplates ? (
-            <p className="text-sm text-muted-foreground">
-              Loading templates...
-            </p>
-          ) : (
-            <TemplateGrid
-              templates={allTemplates}
-              previewHtmlMap={previewHtmlMap}
-              mode="picker"
-              loadingTemplateId={copyingTemplateId}
-              onSelect={handleSelectTemplate}
-              showStartFromScratch
-              onStartFromScratch={handleStartFromScratch}
-            />
-          )}
-          {error && <p className="text-sm text-destructive">{error}</p>}
-        </div>
-      )}
-
-      {step === "design" && (
-        <div className="space-y-4">
-          <EmailBuilderIframe
-            ref={builderRef}
-            templateJson={templateJson}
-            templateId={savedTemplateId || undefined}
-            onSave={handleSave}
-            onTemplateSaved={handleTemplateSaved}
-          />
-          <div className="flex justify-between">
-            {!initialTemplateId && (
-              <button
-                onClick={handleBackToChoose}
-                className="text-sm text-muted-foreground hover:underline"
-              >
-                Back to templates
-              </button>
-            )}
-            <div className="ml-auto">
-              <button
-                onClick={async () => {
-                  if (builderRef.current && savedTemplateId) {
-                    setError(null);
-                    const result = await builderRef.current.requestSave();
-                    if (result?.templateId)
-                      setSavedTemplateId(result.templateId);
-                  }
-                  setStep("send");
-                }}
-                disabled={!canGoToSend}
-                className="rounded-md bg-primary px-6 py-2 text-sm text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Next: Send
-              </button>
-            </div>
-          </div>
-          {!canGoToSend && (
-            <p className="text-right text-xs text-muted-foreground">
-              Save your template in the editor first, then click Next.
-            </p>
-          )}
-        </div>
-      )}
-
-      {step === "send" && (
-        <div className="max-w-xl space-y-6">
+      <PageState
+        loading={!templates && !error}
+        error={error}
+        skeleton={<SkeletonCardGrid count={6} />}
+      >
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <button
-            onClick={() => setStep("design")}
-            className="text-sm text-muted-foreground hover:underline"
+            type="button"
+            onClick={() => start("blank")}
+            className="flex h-full min-h-56 flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
           >
-            Back to editor
+            {opening === "blank" ? (
+              <Spinner />
+            ) : (
+              <FilePlus2 className="h-6 w-6" />
+            )}
+            Blank email
           </button>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Subject Line</label>
-            <input
-              type="text"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="e.g. Product updates for creators"
-              className="w-full rounded-md border px-3 py-2 text-sm"
-            />
-          </div>
-
-          <RecipientSelector
-            value={recipientFilter}
-            onChange={setRecipientFilter}
-            recipientCount={recipientCount}
-            onCountChange={setRecipientCount}
-          />
-
-          {error && (
-            <div className="rounded-md bg-destructive/10 px-4 py-2 text-sm text-destructive">
-              {error}
-            </div>
-          )}
-
-          <Button
-            onClick={handleSend}
-            loading={sending || redirecting}
-            loadingText="Sending..."
-            size="lg"
-            className="w-full"
-          >
-            Send Campaign
-          </Button>
+          {templates?.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => start(t.id)}
+              className="space-y-2 rounded-xl border p-3 text-left transition-colors hover:border-primary"
+            >
+              <TemplateThumb html={t.preview_html} title={t.name} />
+              <div className="flex items-center justify-between gap-2 px-1">
+                <span className="truncate text-sm font-medium">{t.name}</span>
+                {opening === t.id && <Spinner size="sm" />}
+              </div>
+            </button>
+          ))}
         </div>
-      )}
+      </PageState>
     </div>
   );
 }

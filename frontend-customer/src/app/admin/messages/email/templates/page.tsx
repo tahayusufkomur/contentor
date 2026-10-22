@@ -1,258 +1,288 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-
+import { ArrowLeft, Copy, Plus, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { TemplateGrid } from "@shared/email/template-grid";
+import { EmailThumbnail } from "@/components/admin/email/email-thumbnail";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { NavLink } from "@/components/ui/nav-link";
+import { PageState } from "@/components/ui/page-state";
+import { SkeletonCardGrid } from "@/components/ui/skeletons";
+import { Textarea } from "@/components/ui/textarea";
 import {
+  CATEGORY_LABELS,
+  createDraft,
+  createTemplate,
   deleteTemplate,
-  getTemplate,
-  listGallery,
+  duplicateTemplate,
   listTemplates,
-  previewTemplates,
+  startDesigner,
   type EmailTemplate,
-  type GalleryTemplate,
 } from "@/lib/email-api";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
-import { PageState } from "@/components/ui/page-state";
-import { SkeletonCardGrid } from "@/components/ui/skeletons";
-import { Spinner } from "@/components/ui/spinner";
+import { blankDesign } from "@shared/email/editor";
 
 export const dynamic = "force-dynamic";
 
-type Tab = "mine" | "gallery";
-
-function asArray<T>(data: T[] | { results: T[] } | { data: T[] }): T[] {
-  if (Array.isArray(data)) return data;
-  if ("results" in data && Array.isArray(data.results)) return data.results;
-  if ("data" in data && Array.isArray((data as { data: T[] }).data))
-    return (data as { data: T[] }).data;
-  return [];
-}
-
-export default function TemplatesPage() {
+/** Her email templates: the ones made for her at setup, the Designer's, and her own. */
+export default function EmailTemplatesPage() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>("mine");
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
-  const [gallery, setGallery] = useState<EmailTemplate[]>([]);
-  const [previewHtmlMap, setPreviewHtmlMap] = useState<Record<string, string>>(
-    {},
-  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
-  const [galleryLoaded, setGalleryLoaded] = useState(false);
-  const [loadingGallery, setLoadingGallery] = useState(false);
-  const [galleryError, setGalleryError] = useState<unknown>(null);
+  const [asking, setAsking] = useState(false);
+  const [brief, setBrief] = useState("");
 
-  // Preview modal state
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewTitle, setPreviewTitle] = useState("");
-  const [previewHtml, setPreviewHtml] = useState("");
-
-  const fetchPreviews = useCallback(async (tmpls: EmailTemplate[]) => {
-    const ids = tmpls.map((t) => t.id).filter(Boolean);
-    if (ids.length === 0) return;
-
-    // Batch in groups of 20
-    for (let i = 0; i < ids.length; i += 20) {
-      const batch = ids.slice(i, i + 20);
-      try {
-        const result = await previewTemplates(batch);
-        setPreviewHtmlMap((prev) => ({ ...prev, ...result.previews }));
-      } catch {
-        // partial failure is fine
-      }
-    }
-  }, []);
-
-  const fetchMine = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async () => {
     setError(null);
     try {
-      const data = await listTemplates();
-      const tmpls = asArray(data);
-      setTemplates(tmpls);
-      fetchPreviews(tmpls);
+      setTemplates((await listTemplates()).results);
     } catch (err) {
       setError(err);
     } finally {
       setLoading(false);
     }
-  }, [fetchPreviews]);
-
-  useEffect(() => {
-    fetchMine();
-  }, [fetchMine]);
-
-  const fetchGallery = useCallback(async () => {
-    setLoadingGallery(true);
-    setGalleryError(null);
-    try {
-      const data = await listGallery();
-      // Gallery items are GalleryTemplate (no created_at/updated_at); the grid
-      // + preview path only read id/name, so treat them as EmailTemplate.
-      const g = asArray(data) as unknown as EmailTemplate[];
-      setGallery(g);
-      setGalleryLoaded(true);
-      fetchPreviews(g);
-    } catch (err) {
-      setGalleryError(err);
-    } finally {
-      setLoadingGallery(false);
-    }
-  }, [fetchPreviews]);
-
-  useEffect(() => {
-    if (tab !== "gallery" || galleryLoaded) return;
-    fetchGallery();
-  }, [tab, galleryLoaded, fetchGallery]);
-
-  const { run: handlePreview, loading: previewLoading } = useAsyncAction(
-    async (template: EmailTemplate) => {
-      setPreviewOpen(true);
-      setPreviewTitle(template.name);
-      setPreviewHtml("");
-
-      // Try cached preview first
-      if (previewHtmlMap[template.id]) {
-        setPreviewHtml(previewHtmlMap[template.id]);
-        return;
-      }
-
-      const detail = await getTemplate(template.id);
-      const html =
-        ((detail as Record<string, unknown>).html as string) ||
-        ((detail as Record<string, unknown>).rendered_html as string) ||
-        "";
-      if (html) {
-        setPreviewHtml(html);
-      } else {
-        // Try batch preview for this one
-        const result = await previewTemplates([template.id]);
-        setPreviewHtml(result.previews[template.id] || "");
-      }
-    },
-  );
-
-  // Not a useAsyncAction: TemplateCard (packages/shared, out of scope here)
-  // has no per-row busy prop, and this callback fires once per card in a
-  // .map() — a single shared hook instance would silently drop a delete
-  // click on card B while card A's delete is still in flight (the
-  // documented per-row single-flight gotcha). Deletes stay independent;
-  // only the previously-swallowed error is now surfaced.
-  const handleDelete = useCallback(async (template: EmailTemplate) => {
-    if (!window.confirm(`Delete "${template.name}"?`)) return;
-    try {
-      await deleteTemplate(template.id);
-      setTemplates((prev) => prev.filter((t) => t.id !== template.id));
-    } catch {
-      toast.error("Could not delete template. Please try again.");
-    }
   }, []);
 
-  const handleEdit = useCallback(
-    (template: EmailTemplate) => {
-      navigate(`/admin/messages/email/new?template=${template.id}`);
-    },
-    [navigate],
-  );
+  useEffect(() => {
+    load();
+  }, [load]);
 
-  const currentTemplates = tab === "mine" ? templates : gallery;
+  const { run: newTemplate, loading: creating } = useAsyncAction(async () => {
+    const template = await createTemplate({
+      name: "New template",
+      design: blankDesign(),
+    });
+    navigate(`/admin/messages/email/templates/${template.id}`);
+  });
+
+  const { run: design, loading: designing } = useAsyncAction(async () => {
+    const template = await createTemplate({
+      name: "New template",
+      design: blankDesign(),
+    });
+    try {
+      const job = await startDesigner({
+        brief: brief.trim(),
+        template_id: template.id,
+        mode: "new",
+      });
+      navigate(`/admin/messages/email/templates/${template.id}?job=${job.id}`);
+    } catch (err) {
+      toast.error(
+        err instanceof Error && err.message
+          ? err.message
+          : "The Designer isn't available right now.",
+      );
+      navigate(`/admin/messages/email/templates/${template.id}`);
+    }
+  });
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Email Templates</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your email templates.
-          </p>
-        </div>
-        <Link
-          href="/admin/messages/email/new"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+      <div className="space-y-1 border-b pb-5">
+        <NavLink
+          href="/admin/messages"
+          className="mb-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          New Email
-        </Link>
-      </div>
-
-      {/* Tab toggle */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setTab("mine")}
-          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-            tab === "mine"
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground"
-          }`}
-        >
-          My Templates
-        </button>
-        <button
-          onClick={() => setTab("gallery")}
-          className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-            tab === "gallery"
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground"
-          }`}
-        >
-          Gallery
-        </button>
-      </div>
-
-      <PageState
-        loading={tab === "mine" ? loading : loadingGallery}
-        error={tab === "mine" ? error : galleryError}
-        onRetry={tab === "mine" ? fetchMine : fetchGallery}
-        skeleton={<SkeletonCardGrid count={6} />}
-      >
-        <TemplateGrid
-          templates={currentTemplates}
-          previewHtmlMap={previewHtmlMap}
-          mode="library"
-          onEdit={handleEdit}
-          onDelete={tab === "mine" ? handleDelete : undefined}
-          onPreview={handlePreview}
-        />
-      </PageState>
-
-      {/* Preview modal */}
-      {previewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="relative mx-4 w-full max-w-3xl rounded-lg bg-background p-4 shadow-xl">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">{previewTitle}</h3>
-              <button
-                onClick={() => setPreviewOpen(false)}
-                className="rounded-md px-2 py-1 text-sm hover:bg-muted"
-              >
-                Close
-              </button>
-            </div>
-            {previewLoading ? (
-              <div className="flex h-[60vh] items-center justify-center">
-                <Spinner size="lg" label="Loading preview" />
-              </div>
-            ) : previewHtml ? (
-              <iframe
-                srcDoc={previewHtml}
-                sandbox=""
-                className="h-[75vh] w-full rounded border"
-                title="Template preview"
-              />
-            ) : (
-              <div className="flex h-[60vh] items-center justify-center">
-                <p className="text-sm text-muted-foreground">
-                  Preview not available.
-                </p>
-              </div>
-            )}
+          <ArrowLeft className="h-4 w-4" />
+          Messages
+        </NavLink>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Email templates
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Every email you write starts from one of these. Your logo, colours
+              and footer follow your brand.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => setAsking((v) => !v)}
+              aria-expanded={asking}
+            >
+              <Sparkles className="h-4 w-4" />
+              Ask the Designer
+            </Button>
+            <Button
+              className="gap-2"
+              onClick={() => newTemplate()}
+              loading={creating}
+              loadingText="Creating…"
+            >
+              <Plus className="h-4 w-4" />
+              New template
+            </Button>
           </div>
         </div>
+      </div>
+
+      {asking && (
+        <section className="space-y-3 rounded-2xl border bg-card p-5">
+          <div>
+            <h2 className="font-semibold">A new template from the Designer</h2>
+            <p className="text-sm text-muted-foreground">
+              What kind of email will you send with it?
+            </p>
+          </div>
+          <Textarea
+            autoFocus
+            value={brief}
+            onChange={(e) => setBrief(e.target.value)}
+            rows={3}
+            maxLength={2000}
+            placeholder="e.g. A monthly newsletter: a short note from me, my latest article and my next class."
+          />
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setAsking(false)}>
+              Not now
+            </Button>
+            <Button
+              onClick={() => design()}
+              disabled={!brief.trim()}
+              loading={designing}
+              loadingText="Starting…"
+            >
+              <Sparkles className="h-4 w-4" />
+              Design it
+            </Button>
+          </div>
+        </section>
       )}
+
+      <PageState
+        loading={loading}
+        error={error}
+        onRetry={() => {
+          setLoading(true);
+          load();
+        }}
+        skeleton={<SkeletonCardGrid count={6} />}
+      >
+        {templates.length === 0 ? (
+          <p className="py-16 text-center text-sm text-muted-foreground">
+            No templates yet. Start with a new one, or ask the Designer.
+          </p>
+        ) : (
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {templates.map((t) => (
+              <TemplateCard
+                key={t.id}
+                template={t}
+                onChanged={load}
+                onRemoved={() =>
+                  setTemplates((cur) => cur.filter((x) => x.id !== t.id))
+                }
+              />
+            ))}
+          </ul>
+        )}
+      </PageState>
     </div>
+  );
+}
+
+function TemplateCard({
+  template,
+  onChanged,
+  onRemoved,
+}: {
+  template: EmailTemplate;
+  onChanged: () => void;
+  onRemoved: () => void;
+}) {
+  const navigate = useNavigate();
+  const editHref = `/admin/messages/email/templates/${template.id}`;
+
+  const { run: write, loading: writing } = useAsyncAction(async () => {
+    const draft = await createDraft({ template_id: template.id });
+    navigate(`/admin/messages/email/${draft.id}/edit`);
+  });
+  const { run: duplicate, loading: duplicating } = useAsyncAction(async () => {
+    await duplicateTemplate(template.id);
+    toast.success("Duplicated.");
+    onChanged();
+  });
+  const { run: remove, loading: removing } = useAsyncAction(async () => {
+    if (!window.confirm(`Delete “${template.name}”?`)) return;
+    await deleteTemplate(template.id);
+    toast.success("Deleted.");
+    onRemoved();
+  });
+
+  return (
+    <li className="overflow-hidden rounded-xl border bg-card">
+      <NavLink
+        href={editHref}
+        className="block"
+        aria-label={`Edit ${template.name}`}
+      >
+        <EmailThumbnail
+          html={template.preview_html || ""}
+          title={template.name}
+          className="aspect-[4/5] w-full"
+        />
+      </NavLink>
+      <div className="space-y-3 border-t px-4 py-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate font-medium">{template.name}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {CATEGORY_LABELS[template.category]}
+              {template.subject ? ` · ${template.subject}` : ""}
+            </p>
+          </div>
+          {template.source === "starter" && (
+            <Badge variant="accent" className="shrink-0 whitespace-nowrap">
+              Made for you
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            onClick={() => write()}
+            loading={writing}
+            loadingText="Opening…"
+          >
+            Write an email
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <NavLink href={editHref}>Edit</NavLink>
+          </Button>
+          <div className="ml-auto flex">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-8 text-muted-foreground"
+              onClick={() => duplicate()}
+              loading={duplicating}
+              title="Duplicate"
+              aria-label={`Duplicate ${template.name}`}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-8 text-muted-foreground hover:text-destructive"
+              onClick={() => remove()}
+              loading={removing}
+              title="Delete"
+              aria-label={`Delete ${template.name}`}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </li>
   );
 }

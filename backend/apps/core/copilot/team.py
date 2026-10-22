@@ -44,11 +44,12 @@ OWNERS = {
     "publish_blog_post": "marketing",
     "edit_seo": "marketing",
     "draft_announcement": "community",
+    "draft_email": "marketing",
     "set_access": "finance",
 }
 
 # Kinds two specialists share: signed by whichever of them wrote it.
-CO_OWNERS = {"draft_announcement": {"community", "marketing"}}
+CO_OWNERS = {"draft_announcement": {"community", "marketing"}, "draft_email": {"community", "marketing"}}
 
 # A change to nothing but a price is the Financial Strategist's.
 _PRICED = {

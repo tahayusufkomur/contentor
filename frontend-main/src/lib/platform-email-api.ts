@@ -2,34 +2,9 @@
 // Mirrors frontend-customer's coach email-api, but recipients are coaches and
 // auth rides the same-origin admin cookie (shared api-client).
 
+import type { BrandKit, EmailDesign } from "@shared/email/editor";
+
 import { jsonFetch } from "./api-client";
-
-export interface EmailSession {
-  session_token: string;
-  expires_at: string;
-}
-
-export interface EmailSetupResponse {
-  ready: boolean;
-  provisioned: boolean;
-}
-
-export interface EmailTemplate {
-  id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-  json_data?: Record<string, unknown>;
-  [key: string]: unknown;
-}
-
-export interface GalleryTemplate {
-  id: string;
-  name: string;
-  category: string;
-  is_premium: boolean;
-  [key: string]: unknown;
-}
 
 export type RecipientFilter =
   | { type: "all_coaches" }
@@ -53,10 +28,19 @@ export interface CampaignRecipientEntry {
   sent_at: string | null;
 }
 
+export type CampaignStatus =
+  | "draft"
+  | "scheduled"
+  | "sending"
+  | "sent"
+  | "partial"
+  | "failed";
+
 export interface EmailCampaign {
   id: number;
   subject: string;
-  template_id: string;
+  preheader: string;
+  design?: EmailDesign;
   template_name: string;
   sender: number | null;
   sender_name: string;
@@ -65,11 +49,23 @@ export interface EmailCampaign {
   recipient_count: number;
   success_count: number;
   failure_count: number;
-  status: "sending" | "sent" | "partial" | "failed";
-  rendered_html: string;
+  status: CampaignStatus;
+  rendered_html?: string;
   recipient_summary: string;
   created_at: string;
+  updated_at: string;
   sent_at: string | null;
+}
+
+export interface PlatformTemplate {
+  id: number;
+  name: string;
+  subject: string;
+  preheader: string;
+  design?: EmailDesign;
+  preview_html?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PaginatedResponse<T> {
@@ -78,95 +74,73 @@ export interface PaginatedResponse<T> {
 }
 
 const BASE = "/api/v1/platform/email";
+const json = (method: string, body?: unknown): RequestInit => ({
+  method,
+  ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+});
 
-export async function createEmailSession(): Promise<EmailSession> {
-  return jsonFetch<EmailSession>(`${BASE}/session/`, { method: "POST" });
-}
+export const getBrand = () => jsonFetch<BrandKit>(`${BASE}/brand/`);
 
-export async function setupEmail(): Promise<EmailSetupResponse> {
-  return jsonFetch<EmailSetupResponse>(`${BASE}/setup/`, { method: "POST" });
-}
-
-export async function listTemplates(): Promise<
-  EmailTemplate[] | { results: EmailTemplate[] }
-> {
-  return jsonFetch<EmailTemplate[] | { results: EmailTemplate[] }>(
-    `${BASE}/templates/`,
+export const renderEmail = (
+  design: EmailDesign,
+  subject = "",
+  preheader = "",
+) =>
+  jsonFetch<{ html: string; text: string }>(
+    `${BASE}/render/`,
+    json("POST", { design, subject, preheader }),
   );
-}
 
-export async function getTemplate(id: string): Promise<EmailTemplate> {
-  return jsonFetch<EmailTemplate>(`${BASE}/templates/${id}/`);
-}
+export const listTemplates = () =>
+  jsonFetch<{ results: PlatformTemplate[] }>(`${BASE}/templates/`);
 
-export async function deleteTemplate(id: string): Promise<void> {
-  return jsonFetch<void>(`${BASE}/templates/${id}/`, { method: "DELETE" });
-}
+export const getTemplate = (id: number) =>
+  jsonFetch<PlatformTemplate>(`${BASE}/templates/${id}/`);
 
-export async function listGallery(
-  category?: string,
-): Promise<GalleryTemplate[] | { results: GalleryTemplate[] }> {
-  const suffix = category ? `?category=${encodeURIComponent(category)}` : "";
-  return jsonFetch<GalleryTemplate[] | { results: GalleryTemplate[] }>(
-    `${BASE}/gallery/${suffix}`,
-  );
-}
+export const createTemplate = (data: Partial<PlatformTemplate>) =>
+  jsonFetch<PlatformTemplate>(`${BASE}/templates/`, json("POST", data));
 
-export async function getRecipientOptions(): Promise<RecipientOptions> {
-  return jsonFetch<RecipientOptions>(`${BASE}/recipient-options/`);
-}
+export const updateTemplate = (id: number, data: Partial<PlatformTemplate>) =>
+  jsonFetch<PlatformTemplate>(`${BASE}/templates/${id}/`, json("PATCH", data));
 
-export async function sendCampaign(data: {
-  template_id: string;
-  template_name?: string;
-  subject: string;
-  recipient_filter: RecipientFilter;
-}): Promise<EmailCampaign> {
-  return jsonFetch<EmailCampaign>(`${BASE}/send/`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
+export const deleteTemplate = (id: number) =>
+  jsonFetch<void>(`${BASE}/templates/${id}/`, json("DELETE"));
 
-export async function listCampaigns(
-  limit = 20,
-  offset = 0,
-): Promise<PaginatedResponse<EmailCampaign>> {
-  return jsonFetch<PaginatedResponse<EmailCampaign>>(
+export const getRecipientOptions = () =>
+  jsonFetch<RecipientOptions>(`${BASE}/recipient-options/`);
+
+export const listCampaigns = (limit = 20, offset = 0) =>
+  jsonFetch<PaginatedResponse<EmailCampaign>>(
     `${BASE}/campaigns/?limit=${limit}&offset=${offset}`,
   );
-}
 
-export async function getCampaign(id: number): Promise<EmailCampaign> {
-  return jsonFetch<EmailCampaign>(`${BASE}/campaigns/${id}/`);
-}
+export const createDraft = (templateId?: number) =>
+  jsonFetch<EmailCampaign>(
+    `${BASE}/campaigns/`,
+    json("POST", templateId ? { template_id: templateId } : {}),
+  );
 
-export async function copyTemplate(
-  sourceTemplateId: string,
-): Promise<{ id: string; name: string }> {
-  return jsonFetch<{ id: string; name: string }>(`${BASE}/templates/copy/`, {
-    method: "POST",
-    body: JSON.stringify({ source_template_id: sourceTemplateId }),
-  });
-}
+export const getCampaign = (id: number) =>
+  jsonFetch<EmailCampaign>(`${BASE}/campaigns/${id}/`);
 
-export async function previewTemplates(templateIds: string[]): Promise<{
-  previews: Record<string, string>;
-  errors: Record<string, string>;
-}> {
-  return jsonFetch<{
-    previews: Record<string, string>;
-    errors: Record<string, string>;
-  }>(`${BASE}/templates/preview/`, {
-    method: "POST",
-    body: JSON.stringify({ template_ids: templateIds }),
-  });
-}
+export const updateDraft = (
+  id: number,
+  data: { subject?: string; preheader?: string; design?: EmailDesign },
+) => jsonFetch<EmailCampaign>(`${BASE}/campaigns/${id}/`, json("PATCH", data));
 
-export async function listCampaignRecipients(
-  campaignId: number,
-): Promise<{ results: CampaignRecipientEntry[] }> {
-  return jsonFetch<{ results: CampaignRecipientEntry[] }>(
+export const deleteDraft = (id: number) =>
+  jsonFetch<void>(`${BASE}/campaigns/${id}/`, json("DELETE"));
+
+export const sendDraft = (id: number, recipientFilter: RecipientFilter) =>
+  jsonFetch<EmailCampaign>(
+    `${BASE}/campaigns/${id}/send/`,
+    json("POST", { recipient_filter: recipientFilter }),
+  );
+
+export const sendTest = (id: number) =>
+  jsonFetch<{ sent_to: string }>(`${BASE}/campaigns/${id}/test/`, json("POST"));
+
+export const listCampaignRecipients = (campaignId: number) =>
+  jsonFetch<{ results: CampaignRecipientEntry[] }>(
     `${BASE}/campaigns/${campaignId}/recipients/`,
   );
-}

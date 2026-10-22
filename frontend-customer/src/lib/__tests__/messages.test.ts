@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mergeMessages } from "@/lib/messages";
+import { isEmailEditor, mergeMessages } from "@/lib/messages";
 
 const NOW = Date.parse("2026-10-13T12:00:00Z");
 
@@ -113,5 +113,33 @@ describe("mergeMessages", () => {
       reached: 28,
       failed: 2,
     });
+  });
+
+  it("opens an email draft in the editor", () => {
+    const [row] = mergeMessages(
+      [],
+      [campaign({ id: 9, status: "draft", sent_at: null })],
+      NOW,
+    );
+    expect(row).toMatchObject({
+      status: "draft",
+      href: "/admin/messages/email/9/edit",
+    });
+  });
+});
+
+describe("isEmailEditor", () => {
+  it("is true on a draft's editor and a template's editor", () => {
+    expect(isEmailEditor("/admin/messages/email/12/edit")).toBe(true);
+    expect(isEmailEditor("/admin/messages/email/templates/3")).toBe(true);
+    expect(isEmailEditor("/admin/messages/email/templates/3/")).toBe(true);
+  });
+
+  it("is false on the other email pages", () => {
+    expect(isEmailEditor("/admin/messages/email/new")).toBe(false);
+    expect(isEmailEditor("/admin/messages/email/12")).toBe(false);
+    expect(isEmailEditor("/admin/messages/email/12/send")).toBe(false);
+    expect(isEmailEditor("/admin/messages/email/templates")).toBe(false);
+    expect(isEmailEditor("/admin/messages")).toBe(false);
   });
 });

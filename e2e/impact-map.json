@@ -29,13 +29,13 @@
     "courses": ["02-courses"],
     "domains": ["01-signup-onboarding"],
     "downloads": ["12-downloads", "36-focus-download"],
-    "email_campaigns": "none",
+    "email_campaigns": ["41-email"],
     "filters": ["02-courses"],
     "live": ["03-calendar", "04-live-class", "13-events-page"],
     "logbook": ["24-admin-logs"],
     "mailbox": ["07-mailbox"],
     "media": ["05-media", "32-photo-studio"],
-    "notifications": ["06-announcements"],
+    "notifications": ["06-announcements", "11-login-code"],
     "platform_email": "none",
     "tags": ["02-courses"],
     "tenant_config": [
@@ -156,7 +156,9 @@
       "38-focus-bundle",
       "39-focus-post"
     ],
-    "src/app/admin/messages": ["06-announcements", "35-focus-message"],
+    "src/app/admin/messages": ["06-announcements", "35-focus-message", "41-email"],
+    "src/components/admin/email": ["41-email"],
+    "src/lib/email-api.ts": ["41-email"],
     "src/components/admin/announcement-compose.tsx": [
       "06-announcements",
       "35-focus-message"

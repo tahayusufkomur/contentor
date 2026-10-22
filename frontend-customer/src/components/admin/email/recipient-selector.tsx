@@ -64,23 +64,34 @@ export function RecipientSelector({
     };
   }, []);
 
+  // The server counts who the email reaches now: students who unsubscribed are left out.
   useEffect(() => {
     onCountChange(null);
+    const empty =
+      (value.type === "course" && value.course_ids.length === 0) ||
+      (value.type === "individual" && value.user_ids.length === 0);
+    if (empty) {
+      onCountChange(0);
+      return;
+    }
+    let cancelled = false;
     setLoadingCount(true);
-
     const timer = window.setTimeout(() => {
-      if (value.type === "all") {
-        onCountChange(students.length);
-      } else if (value.type === "individual") {
-        onCountChange(value.user_ids.length);
-      } else {
-        onCountChange(null);
-      }
-      setLoadingCount(false);
+      clientFetch<{ count: number }>("/api/v1/email/recipients/count/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipient_filter: value }),
+      })
+        .then(({ count }) => !cancelled && onCountChange(count))
+        .catch(() => !cancelled && onCountChange(null))
+        .finally(() => !cancelled && setLoadingCount(false));
     }, 250);
 
-    return () => window.clearTimeout(timer);
-  }, [onCountChange, students.length, value]);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [onCountChange, value]);
 
   const filteredStudents = useMemo(() => {
     const q = studentSearch.trim().toLowerCase();

@@ -1,34 +1,34 @@
 from rest_framework import serializers
 
-from .models import PlatformCampaignRecipient, PlatformEmailCampaign
+from apps.email_campaigns.serializers import DesignField
+
+from .models import PlatformCampaignRecipient, PlatformEmailCampaign, PlatformEmailTemplate
 from .recipients import FILTER_TYPES, get_recipient_count
 
 
-class SendEmailSerializer(serializers.Serializer):
-    template_id = serializers.CharField(max_length=255)
-    template_name = serializers.CharField(max_length=255, required=False, default="")
-    subject = serializers.CharField(max_length=255)
-    recipient_filter = serializers.JSONField()
+def validate_recipient_filter(value, *, require_recipients=True):
+    if not isinstance(value, dict):
+        raise serializers.ValidationError("recipient_filter must be an object.")
+    filter_type = value.get("type")
+    if filter_type not in FILTER_TYPES:
+        raise serializers.ValidationError(f"Invalid filter type. Must be one of: {', '.join(FILTER_TYPES)}.")
+    list_fields = {"plan": "plan_ids", "tenant": "tenant_ids", "individual": "user_ids"}
+    if filter_type in list_fields:
+        ids = value.get(list_fields[filter_type])
+        if not isinstance(ids, list) or not ids:
+            raise serializers.ValidationError(f"{list_fields[filter_type]} must be a non-empty list.")
+    if require_recipients and get_recipient_count(value) == 0:
+        raise serializers.ValidationError("No recipients match the filter.")
+    return value
 
-    def validate_recipient_filter(self, value):
-        if not isinstance(value, dict):
-            raise serializers.ValidationError("recipient_filter must be an object.")
 
-        filter_type = value.get("type")
-        if filter_type not in FILTER_TYPES:
-            raise serializers.ValidationError(f"Invalid filter type. Must be one of: {', '.join(FILTER_TYPES)}.")
+class PlatformTemplateSerializer(serializers.ModelSerializer):
+    design = DesignField(required=False)
 
-        list_fields = {"plan": "plan_ids", "tenant": "tenant_ids", "individual": "user_ids"}
-        if filter_type in list_fields:
-            field = list_fields[filter_type]
-            ids = value.get(field)
-            if not isinstance(ids, list) or len(ids) == 0:
-                raise serializers.ValidationError(f"{field} must be a non-empty list.")
-
-        if get_recipient_count(value) == 0:
-            raise serializers.ValidationError("No recipients match the filter.")
-
-        return value
+    class Meta:
+        model = PlatformEmailTemplate
+        fields = ["id", "name", "design", "subject", "preheader", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
 
 class PlatformEmailCampaignSerializer(serializers.ModelSerializer):
@@ -46,7 +46,8 @@ class PlatformEmailCampaignSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "subject",
-            "template_id",
+            "preheader",
+            "design",
             "template_name",
             "sender",
             "sender_name",
@@ -57,6 +58,7 @@ class PlatformEmailCampaignSerializer(serializers.ModelSerializer):
             "failure_count",
             "status",
             "created_at",
+            "updated_at",
             "sent_at",
             "rendered_html",
             "recipient_summary",
@@ -64,20 +66,35 @@ class PlatformEmailCampaignSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class PlatformEmailCampaignListSerializer(PlatformEmailCampaignSerializer):
+    class Meta(PlatformEmailCampaignSerializer.Meta):
+        fields = [n for n in PlatformEmailCampaignSerializer.Meta.fields if n not in ("rendered_html", "design")]
+        read_only_fields = fields
+
+
+class DraftCreateSerializer(serializers.Serializer):
+    template_id = serializers.IntegerField(required=False, allow_null=True)
+
+
+class DraftUpdateSerializer(serializers.Serializer):
+    subject = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    preheader = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    design = DesignField(required=False)
+    recipient_filter = serializers.JSONField(required=False)
+
+    def validate_recipient_filter(self, value):
+        return validate_recipient_filter(value, require_recipients=False)
+
+
+class SendSerializer(serializers.Serializer):
+    recipient_filter = serializers.JSONField()
+
+    def validate_recipient_filter(self, value):
+        return validate_recipient_filter(value)
+
+
 class PlatformCampaignRecipientSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlatformCampaignRecipient
         fields = ["id", "user_id", "user_name", "user_email", "status", "error_message", "sent_at"]
         read_only_fields = fields
-
-
-class CopyTemplateSerializer(serializers.Serializer):
-    source_template_id = serializers.CharField(max_length=255)
-
-
-class PreviewTemplateSerializer(serializers.Serializer):
-    template_ids = serializers.ListField(
-        child=serializers.CharField(max_length=255),
-        min_length=1,
-        max_length=20,
-    )

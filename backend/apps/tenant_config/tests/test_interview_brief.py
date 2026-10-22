@@ -288,6 +288,7 @@ def test_only_the_guides_own_calls_can_be_left_to_it():
         "site_style",
         "site_logo",
         "calendar_view",
+        "email_style",
         "navbar_layout",
         "footer_layout",
         "tone",

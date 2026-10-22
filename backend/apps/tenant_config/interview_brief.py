@@ -26,7 +26,7 @@ TEXT_MAX = 500
 # the first course and class.
 # "address" is asked like a card: by code, in order, and never filled by the
 # model (a place she mentioned in passing is not the address of her class).
-CARD_KINDS = ("style", "logo", "calendar", "navbar", "footer", "course", "event", "address", "photos")
+CARD_KINDS = ("style", "logo", "calendar", "navbar", "footer", "course", "event", "address", "photos", "email")
 # Fixed answer lists the coach's words are parsed against; the model phrases
 # the question to fit them and never rewrites them.
 FIXED_KINDS = (
@@ -1123,6 +1123,15 @@ FIELDS: tuple[Field, ...] = (
         multi=True,
         icons=("mail", "instagram", "message-circle", "phone", "pen-line"),
     ),
+    # Her look, name and mark are set by now: each card is the email her students would get.
+    Field(
+        "email_style",
+        "Email style",
+        "How should your emails to students look?",
+        kind="email",  # the cards are the email engine's renders (notifications.transactional.previews)
+        delegable=True,
+        why="Sign-in links, receipts, class reminders and your announcements all go out in it.",
+    ),
     # The site's chrome comes last: by now every page and link it carries is known.
     Field(
         "navbar_layout",
@@ -1149,6 +1158,7 @@ _NOT_FACTS = {
     "currency",
     "navbar_layout",
     "footer_layout",
+    "email_style",
 }
 
 

@@ -18,6 +18,7 @@ from rest_framework.test import APIClient
 from apps.accounts.models import User
 from apps.email_campaigns import tasks
 from apps.email_campaigns.models import CampaignStatus, EmailCampaign
+from apps.email_campaigns.starters import compose
 from apps.tenant_config.models import TenantConfig
 
 SHARED_DOMAIN = "shared-test.localhost"
@@ -47,11 +48,7 @@ def student(tenant_ctx):
 
 @pytest.fixture()
 def email_config(tenant_ctx):
-    """A TenantConfig carrying an EmailCraft key so _get_api_key skips provisioning."""
-    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Sched Brand")
-    cfg.emailcraft_api_key = "mc_test_key"  # noqa: S105  # pragma: allowlist secret
-    cfg.save()
-    return cfg
+    return TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Sched Brand")
 
 
 def make_client(user=None):
@@ -64,7 +61,7 @@ def make_client(user=None):
 def _make_campaign(owner, **kw):
     defaults = {
         "subject": "Scheduled Blast",
-        "template_id": "tpl_1",
+        "design": compose(None, heading="Hello", body_html="<p>Hi {{FirstName}}</p>"),
         "sender": owner,
         "recipient_filter": {"type": "all"},
         "recipient_count": 3,
@@ -117,60 +114,57 @@ class TestDispatchDueCampaigns:
 
 
 class TestSendCampaignScheduling:
-    def _payload(self, **kw):
-        payload = {
-            "template_id": "tpl_1",
-            "subject": "Newsletter",
-            "recipient_filter": {"type": "all"},
-        }
-        payload.update(kw)
-        return payload
+    def _draft(self, owner):
+        return _make_campaign(owner, status=CampaignStatus.DRAFT, scheduled_at=None, subject="Newsletter")
 
-    def test_future_scheduled_at_creates_scheduled_campaign_without_dispatch(
-        self, tenant_ctx, owner, student, email_config
-    ):
+    def _send(self, client, draft, **kw):
+        return client.post(
+            f"/api/v1/email/campaigns/{draft.pk}/send/", {"recipient_filter": {"type": "all"}, **kw}, format="json"
+        )
+
+    def test_future_scheduled_at_schedules_the_draft_without_dispatch(self, tenant_ctx, owner, student, email_config):
+        draft = self._draft(owner)
         when = timezone.now() + timedelta(days=2)
-        client = make_client(owner)
-
         with mock.patch.object(tasks.send_campaign_emails, "delay") as spawn:
-            resp = client.post(
-                "/api/v1/email/send/",
-                self._payload(scheduled_at=when.isoformat()),
-                format="json",
-            )
+            resp = self._send(make_client(owner), draft, scheduled_at=when.isoformat())
 
-        assert resp.status_code == 201, resp.content
+        assert resp.status_code == 200, resp.content
         assert resp.json()["status"] == CampaignStatus.SCHEDULED
-        campaign = EmailCampaign.objects.get(pk=resp.json()["id"])
-        assert campaign.status == CampaignStatus.SCHEDULED
-        assert campaign.scheduled_at is not None
+        draft.refresh_from_db()
+        assert draft.status == CampaignStatus.SCHEDULED and draft.scheduled_at is not None
+        assert draft.recipient_count == 1
         # A scheduled campaign must NOT be dispatched at request time.
         assert spawn.call_count == 0
 
-    def test_send_now_still_dispatches_immediately(self, tenant_ctx, owner, student, email_config):
+    def test_send_now_dispatches_immediately_and_only_once(self, tenant_ctx, owner, student, email_config):
+        draft = self._draft(owner)
         client = make_client(owner)
-
         with mock.patch.object(tasks.send_campaign_emails, "delay") as spawn:
-            resp = client.post("/api/v1/email/send/", self._payload(), format="json")
+            resp = self._send(client, draft)
+            again = self._send(client, draft)  # a double click
 
-        assert resp.status_code == 201, resp.content
+        assert resp.status_code == 200, resp.content
         assert resp.json()["status"] == CampaignStatus.SENDING
+        assert again.status_code == 409
         assert spawn.call_count == 1
 
     def test_past_scheduled_at_is_rejected(self, tenant_ctx, owner, student, email_config):
+        draft = self._draft(owner)
         when = timezone.now() - timedelta(minutes=5)
-        client = make_client(owner)
-
         with mock.patch.object(tasks.send_campaign_emails, "delay") as spawn:
-            resp = client.post(
-                "/api/v1/email/send/",
-                self._payload(scheduled_at=when.isoformat()),
-                format="json",
-            )
+            resp = self._send(make_client(owner), draft, scheduled_at=when.isoformat())
 
         assert resp.status_code == 400, resp.content
         assert spawn.call_count == 0
-        assert EmailCampaign.objects.count() == 0
+        draft.refresh_from_db()
+        assert draft.status == CampaignStatus.DRAFT
+
+    def test_an_email_without_a_subject_or_body_does_not_go(self, tenant_ctx, owner, student, email_config):
+        client = make_client(owner)
+        no_subject = _make_campaign(owner, status=CampaignStatus.DRAFT, scheduled_at=None, subject="")
+        empty = _make_campaign(owner, status=CampaignStatus.DRAFT, scheduled_at=None, design={})
+        assert self._send(client, no_subject).status_code == 400
+        assert self._send(client, empty).status_code == 400
 
 
 class TestCancelScheduledCampaign:
@@ -194,17 +188,13 @@ class TestCancelScheduledCampaign:
 
 
 @pytest.mark.django_db(transaction=True)
-def test_the_list_leaves_out_the_rendered_email_and_needs_no_email_account(owner):
-    # The Messages page lists campaigns on every visit: a row must be light,
-    # and reading the list must not set up an email account as a side effect
-    # (no TenantConfig key here, and no call out to provision one).
+def test_the_list_leaves_out_the_rendered_email_and_the_design(owner):
+    # The Messages page lists campaigns on every visit: a row must be light.
     campaign = _make_campaign(owner, rendered_html="<html>" + "x" * 5000 + "</html>", status=CampaignStatus.SENT)
-    with mock.patch("apps.email_campaigns.views.emailcraft_client.provision_organization") as provision:
-        listing = make_client(owner).get("/api/v1/email/campaigns/")
-        detail = make_client(owner).get(f"/api/v1/email/campaigns/{campaign.pk}/")
+    listing = make_client(owner).get("/api/v1/email/campaigns/")
+    detail = make_client(owner).get(f"/api/v1/email/campaigns/{campaign.pk}/")
     assert listing.status_code == 200, listing.content
     row = listing.json()["results"][0]
     assert row["subject"] == "Scheduled Blast"
-    assert "rendered_html" not in row
+    assert "rendered_html" not in row and "design" not in row
     assert detail.json()["rendered_html"].startswith("<html>")
-    provision.assert_not_called()

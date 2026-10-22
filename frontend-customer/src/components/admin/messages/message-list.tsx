@@ -107,13 +107,16 @@ function Row({ row, onChanged }: { row: MessageRow; onChanged: () => void }) {
   const t = useTranslations("admin.messages");
   const Icon = row.kind === "email" ? Mail : Bell;
   // A scheduled message is cancelled; a sent announcement is deleted, which
-  // also takes it out of her students' feed. A sent email is a record.
+  // also takes it out of her students' feed; an email draft is thrown away.
+  // A sent email is a record.
   const removal =
     row.status === "scheduled"
       ? "cancel"
       : row.kind === "announcement"
         ? "delete"
-        : null;
+        : row.status === "draft"
+          ? "discard"
+          : null;
 
   const { run: remove, loading: removing } = useAsyncAction(
     async () => {

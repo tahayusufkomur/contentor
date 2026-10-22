@@ -147,59 +147,6 @@ def send_email(
         return False
 
 
-_MAGIC_LINK_COPY: dict[str, dict[str, str]] = {
-    "en": {
-        "subject": "Your login link for {brand}",
-        "intro": "Click the button below to sign in. This link expires in {minutes} minutes.",
-        "button": "Sign in",
-        "ignore": "If you didn't request this, you can safely ignore this email.",
-        "copy_hint": "Or copy this link:",
-        "code_hint": "Using the installed app? Enter this code on the sign-in screen instead:",
-    },
-}
-
-
-def send_magic_link(
-    to: str,
-    link: str,
-    brand_name: str = "Contentor",
-    code: str | None = None,
-) -> bool:
-    copy = _MAGIC_LINK_COPY["en"]
-    minutes = settings.MAGIC_LINK_EXPIRY_MINUTES
-    from django.utils.html import escape
-
-    subject = copy["subject"].format(brand=brand_name)  # plain text
-    safe_brand = escape(brand_name)  # coach-controlled: never raw into HTML
-    intro = copy["intro"].format(minutes=minutes)
-    font_stack = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif"
-    code_block = ""
-    if code:
-        spaced = f"{code[:3]} {code[3:]}"
-        code_block = f"""
-        <p style="color: #444; font-size: 14px; margin-top: 24px;">{copy["code_hint"]}</p>
-        <p style="font-size: 28px; font-weight: 700; letter-spacing: 6px; color: #1a1a2e;">{spaced}</p>
-        """
-    html = f"""
-    <div style="font-family: {font_stack}; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-        <h2 style="color: #1a1a2e; margin-bottom: 8px; letter-spacing: -0.02em;">{safe_brand}</h2>
-        <p style="color: #444; font-size: 16px;">{intro}</p>
-        <a href="{link}"
-           style="display: inline-block; background: #0391F9; color: white; padding: 12px 32px;
-                  border-radius: 999px; text-decoration: none; font-weight: 600; margin: 24px 0;">
-            {copy["button"]}
-        </a>
-        {code_block}
-        <p style="color: #888; font-size: 13px;">{copy["ignore"]}</p>
-        <p style="color: #aaa; font-size: 12px; margin-top: 32px;">
-            {copy["copy_hint"]}<br/>
-            <span style="word-break: break-all;">{link}</span>
-        </p>
-    </div>
-    """
-    return send_email(to, subject, html)
-
-
 def action_email(*, heading: str, intro: str, button: str, link: str, expires: str) -> tuple[str, str]:
     """The one branded "click this button" email (signup verification, wizard
     recovery). Returns (html, text). Every argument is plain text and gets

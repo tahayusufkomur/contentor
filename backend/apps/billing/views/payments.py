@@ -197,6 +197,9 @@ def payment_initialize(request):
         )
         _create_payment_items(payment, resolved_items)
         grant_access_for_payment(payment)
+        from apps.notifications import transactional
+
+        transactional.purchase_done(payment)
         return Response(
             {
                 "payment_id": payment.pk,
@@ -411,6 +414,9 @@ def record_refund(payment, items, provider_refund_id=""):
 
     payment.status = "partially_refunded" if payment.items.filter(is_refunded=False).exists() else "refunded"
     payment.save(update_fields=["status"])
+    from apps.notifications import transactional
+
+    transactional.refund_done(payment, items, refund_payment)
     return refund_payment
 
 

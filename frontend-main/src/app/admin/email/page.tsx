@@ -4,17 +4,21 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { useNavigate } from "@shared/navigation/navigation-provider";
-import {
-  listCampaigns,
-  setupEmail,
-  type EmailCampaign,
-} from "@/lib/platform-email-api";
+import { listCampaigns, type EmailCampaign } from "@/lib/platform-email-api";
 
 export const dynamic = "force-dynamic";
 
-const STATUS_OPTIONS = ["All", "sending", "sent", "partial", "failed"] as const;
+const STATUS_OPTIONS = [
+  "All",
+  "draft",
+  "sending",
+  "sent",
+  "partial",
+  "failed",
+] as const;
 
 const STATUS_COLORS: Record<string, string> = {
+  draft: "bg-muted text-muted-foreground",
   sending: "bg-blue-100 text-blue-800",
   sent: "bg-green-100 text-green-800",
   partial: "bg-yellow-100 text-yellow-800",
@@ -56,7 +60,6 @@ export default function PlatformEmailDashboardPage() {
 
   useEffect(() => {
     fetchCampaigns();
-    setupEmail().catch(() => {});
   }, [fetchCampaigns]);
 
   const filtered = useMemo(() => {
@@ -177,10 +180,16 @@ export default function PlatformEmailDashboardPage() {
               {filtered.map((c) => (
                 <tr
                   key={c.id}
-                  onClick={() => navigate(`/admin/email/campaigns/${c.id}`)}
+                  onClick={() =>
+                    navigate(
+                      c.status === "draft"
+                        ? `/admin/email/drafts/${c.id}`
+                        : `/admin/email/campaigns/${c.id}`,
+                    )
+                  }
                   className="cursor-pointer border-b hover:bg-muted/50"
                 >
-                  <td className="py-3">{c.subject}</td>
+                  <td className="py-3">{c.subject || "(no subject)"}</td>
                   <td className="py-3">
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[c.status] || ""}`}

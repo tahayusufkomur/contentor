@@ -439,6 +439,7 @@ NOTED_NAMES = {
     "contact": "how students reach you",
     "location": "where you work",
     "navbar_layout": "your header",
+    "email_style": "your email style",
     "footer_layout": "your footer",
 }
 
@@ -508,6 +509,8 @@ def picked_note(tenant, field_id) -> str:
         return "I put your name in as the logo for now. You can pick a mark any time."
     if field_id == "calendar_view":
         return "I picked the month grid for your calendar. You can change it any time."
+    if field_id == "email_style":
+        return "I picked the Branded style for your emails: your logo on top, a band of your colour beneath."
     if field_id in milestones.CHROME:
         picked = milestones.chrome_pick(field_id, brief.answers_of(tenant))[0]
         label = next(label for value, label, *_ in milestones.CHROME[field_id] if value == picked)
@@ -899,7 +902,15 @@ def interview_state(tenant, flow: dict) -> dict:
     # Fresh cards for look questions already behind the coach, so going back
     # shows them again (logo previews are presigned: never stored).
     asked = {t.get("field") for t in turns if t.get("role") == "guide"} - {guide["field"]}
-    looks = ("site_style", "site_logo", "calendar_view", "photos", *milestones.CHROME, *milestones.REVIEW_FIELDS)
+    looks = (
+        "site_style",
+        "site_logo",
+        "calendar_view",
+        "email_style",
+        "photos",
+        *milestones.CHROME,
+        *milestones.REVIEW_FIELDS,
+    )
     cards = {f: milestones.cards_for(tenant, answers, f) for f in looks if f in asked}
     return {
         "turns": turns,

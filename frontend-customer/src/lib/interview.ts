@@ -379,6 +379,7 @@ export const SECTIONS: { label: string; fields: string[] }[] = [
     ],
   },
   { label: "Contact", fields: ["socials", "contact"] },
+  { label: "Emails", fields: ["email_style"] },
   { label: "Header & footer", fields: ["navbar_layout", "footer_layout"] },
 ];
 
