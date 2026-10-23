@@ -112,6 +112,8 @@ def test_icon_url_is_signed_from_fk_on_read(coach_client):
     resp = coach_client.get("/api/v1/admin/config/")
     assert resp.status_code == 200
     assert "tenants/shared-test/photo/icon.png" in resp.data["icon_url"]
+    # /pwa-icon draws from a lasting same-site PNG/JPEG link, not the presigned one.
+    assert resp.data["app_icon_src"].startswith("/api/v1/email/i/")
 
 
 def test_recipe_validation_rejects_bad_layout(coach_client):

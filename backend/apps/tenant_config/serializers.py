@@ -237,6 +237,13 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             data["icon_url"] = generate_presigned_download_url(instance.icon.s3_key)
         else:
             data["icon_url"] = sign_if_s3_key(data.get("icon_url"))
+        # The app icon's source as a lasting PNG/JPEG link: /pwa-icon draws it server-side, where
+        # presigned storage links can be unreachable (dev) and WebP/AVIF don't decode.
+        from apps.email_campaigns.images import stable_url_for
+
+        data["app_icon_src"] = stable_url_for(instance.icon, instance.icon_url, site="") or stable_url_for(
+            instance.logo, instance.logo_url, site=""
+        )
         # Upgrade any stored v1 recipe blob to v2 so GET always serves the
         # current schema (old rows predate the studio v2 migration).
         recipe = data.get("logo_recipe")

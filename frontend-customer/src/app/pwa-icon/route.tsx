@@ -1,7 +1,12 @@
 import { ImageResponse } from "next/og";
 
 import { lookPrimaryHex } from "@/lib/site-styles";
-import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
+import { BASE_DOMAIN, DJANGO_API_URL } from "@/lib/constants";
+import {
+  fetchTenantConfig,
+  getTenantDomain,
+  getTenantSlug,
+} from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +16,26 @@ const SIZES: Record<string, number> = {
   "192": 192,
   "512": 512,
 };
+
+/** The mark as a data URL, fetched from Django inside the network (the browser's storage host may
+ *  not resolve here) as the PNG/JPEG copy next/og can decode (it can't read WebP or AVIF). */
+async function markSrc(src: string | undefined, slug: string) {
+  if (!src?.startsWith("/")) return src || null;
+  const domain =
+    (await getTenantDomain()).split(":")[0] || `${slug}.${BASE_DOMAIN}`;
+  try {
+    const res = await fetch(`${DJANGO_API_URL}${src}`, {
+      headers: { "X-Tenant-Domain": domain },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const type = res.headers.get("content-type") || "image/png";
+    const body = Buffer.from(await res.arrayBuffer()).toString("base64");
+    return `data:${type};base64,${body}`;
+  } catch {
+    return null;
+  }
+}
 
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
@@ -24,7 +49,7 @@ export async function GET(request: Request): Promise<Response> {
   const brand = config?.brand_name || "Contentor";
   // Prefer the Logo Studio's square mark; fall back to the wide logo, then
   // to the brand-initial tile.
-  const logoUrl = config?.icon_url || config?.logo_url || null;
+  const logoUrl = await markSrc(config?.app_icon_src, slug);
 
   // The square mark already contains its own badge background from the Logo
   // Studio composer, so render it edge-to-edge (maskable keeps a small

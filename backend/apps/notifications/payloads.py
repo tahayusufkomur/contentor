@@ -4,7 +4,9 @@ from apps.tenant_config.models import TenantConfig
 def _brand() -> dict:
     cfg = TenantConfig.objects.first()
     return {
-        "icon": (cfg.logo_url if cfg and cfg.logo_url else "/pwa-icon?size=192"),
+        # Her app icon (/pwa-icon draws her mark on it); the stored logo_url is a presigned link
+        # that has long expired by the time a push shows, and a wide logo, not a square.
+        "icon": "/pwa-icon?size=192",
         "brand": (cfg.brand_name if cfg else "Contentor"),
     }
 

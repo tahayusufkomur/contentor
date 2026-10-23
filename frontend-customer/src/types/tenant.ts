@@ -182,6 +182,8 @@ export interface TenantConfig {
   /** Square mark exported by the Logo Studio (drives favicon/PWA icons). */
   icon_url?: string;
   icon_id?: string | null;
+  /** icon_url (else logo_url) as a lasting PNG/JPEG path on this site, for /pwa-icon. */
+  app_icon_src?: string;
   /** Logo Studio composer state; empty object = no saved design. */
   logo_recipe?: Partial<import("./logo").LogoRecipe> | Record<string, never>;
   dark_mode_enabled: boolean;
