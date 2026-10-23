@@ -186,10 +186,10 @@ time an existing coach opens her email templates.
 
 ## Migration off MailCraft
 
-`manage.py import_mailcraft_templates` copies every tenant's (and the platform's) MailCraft templates into
-`EmailTemplate` (source `imported`), idempotent by name. After it has run on prod, a later change drops
-`TenantConfig.emailcraft_api_key`, `PlatformEmailConfig` and the `EMAILCRAFT_*` settings; until then they
-are read only by that command.
+Done on prod on 2026-10-23: a one-off `manage.py import_mailcraft_templates` copied the templates coaches
+(and the platform) made in MailCraft into `EmailTemplate` (source `imported`); MailCraft's stock gallery
+copies (`template_type` "provided") and empty ones stayed behind. The command, `TenantConfig.emailcraft_api_key`,
+`PlatformEmailConfig` and the `EMAILCRAFT_*` settings were then removed.
 
 ## Build order
 

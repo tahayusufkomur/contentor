@@ -27,7 +27,7 @@ def _cfg(**kw):
 
 
 def _html(tenant, announcement):
-    """The built-in rendering (no MailCraft key in tests) of an announcement email."""
+    """An announcement email, as the engine draws it."""
     from apps.notifications import transactional
 
     email = email_render.announcement_email(announcement, "https://t.example.com", "https://t.example.com/unsub")
@@ -35,7 +35,7 @@ def _html(tenant, announcement):
 
 
 def test_render_has_title_cta_and_unsub(tenant_ctx):
-    _cfg(emailcraft_api_key="")
+    _cfg()
     a = Announcement.objects.create(title="Hello", body="<p>Body</p>", link="/courses/x", filters_json={})
     subject, html = _html(tenant_ctx, a)
     assert subject == "Hello"
@@ -46,7 +46,7 @@ def test_render_has_title_cta_and_unsub(tenant_ctx):
 
 
 def test_a_title_is_text_in_the_email_never_markup(tenant_ctx):
-    _cfg(emailcraft_api_key="")
+    _cfg()
     a = Announcement.objects.create(title="<b>New</b> <script>alert(1)</script>", body="<p>Body</p>", filters_json={})
     _subject, html = _html(tenant_ctx, a)
     assert "<script" not in html and "<b>" not in html

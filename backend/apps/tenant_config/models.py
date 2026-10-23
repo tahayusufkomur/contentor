@@ -58,7 +58,6 @@ class TenantConfig(models.Model):
     # started_at, completed_at, published, page_builds{page: {status, updated_at}}}.
     # {} (existing tenants) means done; the wizard sets it active at provisioning.
     setup_flow = models.JSONField(default=dict, blank=True)
-    emailcraft_api_key = models.CharField(max_length=255, blank=True, default="")
 
     class Meta:
         app_label = "tenant_config"

@@ -242,9 +242,6 @@ EMAIL_AUTH_PROVIDER = os.environ.get("EMAIL_AUTH_PROVIDER", "cloudflare")
 # Fixed From address for the superadmin platform inbox (public-schema mailbox).
 PLATFORM_SUPPORT_FROM = os.environ.get("PLATFORM_SUPPORT_FROM", "support@contentor.app")
 
-# --- MailCraft: read only by import_mailcraft_templates (the email engine lives in apps.email_campaigns) ---
-EMAILCRAFT_BASE_URL = os.environ.get("EMAILCRAFT_BASE_URL", "https://mailcraft.contentor.app")
-
 # --- S3 / Object Storage ---
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")

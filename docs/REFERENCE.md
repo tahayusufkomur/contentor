@@ -246,8 +246,7 @@ fixes) is LiveCraft's: see `../livecraft/docs/permissions.md`.
   of its colourways; colours, fonts and layouts all come from it, and it changes only
   through `POST /api/v1/admin/config/look/`, which restyles the pages), `dark_mode_enabled`,
   `custom_css`, `enabled_modules`, `navbar_config`, `landing_sections`,
-  `default_locale`, `onboarding_completed`, `emailcraft_api_key` (legacy: read only by
-  `import_mailcraft_templates`), plus per-tenant Zoom
+  `default_locale`, `onboarding_completed`, plus per-tenant Zoom
   OAuth (`zoom_refresh_token` encrypted, `zoom_connected`, `zoom_connected_email`).
 
 ### 4.7 Notifications (`apps.notifications`)
@@ -338,7 +337,6 @@ fixes) is LiveCraft's: see `../livecraft/docs/permissions.md`.
   `design`/`subject`/`preheader`, then its send (`recipient_filter`/status, reusing
   `CampaignStatus`/`RecipientStatus`). `PlatformCampaignRecipient` [P] — per-recipient
   delivery outcome, the coach stored denormalized (`user_id`/`user_name`/`user_email`).
-  `PlatformEmailConfig` [P] — legacy MailCraft key, read only by `import_mailcraft_templates`.
 - API (superadmin only, `IsSuperUser`): `brand`, `render`, `templates` CRUD,
   `recipient-options`, `campaigns` (drafts) + `send`/`test`/`recipients`.
 
@@ -605,7 +603,7 @@ drafts so the coach reviews before going live. `available_niches()` auto-discove
 |---|---|---|---|
 | **LiveCraft** (own product, `../livecraft`) | Live video: Contentor creates rooms and join links (host / participant / viewer) over its API-key API and iframes the room; LiveCraft owns the UI, moderation, chat and recording, and posts signed `recording.ready` callbacks to `/api/webhooks/livecraft/` | `apps/live/livecraft.py`, `apps/live/webhooks.py` | `LIVECRAFT_URL`, `LIVECRAFT_API_KEY` (`LIVECRAFT_FAKE` dev/tests) |
 | **Zoom OAuth** | Per-tenant Zoom connection; refresh token (Fernet-encrypted) on `TenantConfig`; access token cached `tenant:{schema}:zoom_access_token` | `apps/live/urls_zoom.py`, views | `ZOOM_TOKEN_ENCRYPTION_KEY` (+ a single shared Zoom marketplace app) |
-| **MailCraft** | Sibling email-builder SaaS (`mailcraft.contentor.app`). No longer called at runtime: its engine was ported into `apps.email_campaigns`; only the one-off template import reads it | `apps/email_campaigns/management/commands/import_mailcraft_templates.py` | `EMAILCRAFT_BASE_URL`, per-tenant `emailcraft_api_key` (legacy) |
+| **MailCraft** | Sibling email-builder SaaS (`mailcraft.contentor.app`). No longer called: its engine was ported into `apps.email_campaigns`, and coaches' own templates were copied over once (2026-10-23) | — | — |
 | **Resend** | Transactional + campaign email delivery | `apps/core/email.py` | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` |
 | **S3 / Hetzner** | Media storage; presigned single-PUT + multipart uploads; path `tenants/{slug}/{category}/…`. Download links are signed only for the current tenant's prefix and the shared `demo/` + `platform/` prefixes (`is_signable_key`, `SHARED_KEY_PREFIXES`); any other key comes back as `""` with a `storage: refused to sign` warning in the logbook | `apps/core/storage.py`, `views_upload.py`, `views_multipart.py` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BUCKET_NAME`, `AWS_ENDPOINT`, `AWS_PRESIGNED_EXPIRY` |
 | **Stripe** | Coach→platform billing (see §7) | `apps/billing/providers/stripe_provider.py` | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_*` |
@@ -707,7 +705,7 @@ Dev reads the root `.env` (template `.env.example`). Prod secrets live in Cloudf
   `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS` (must include `django` for SSR), `DJANGO_DEBUG`.
 - **DB/Cache:** `POSTGRES_*`, `REDIS_URL`, `CELERY_BROKER_URL`.
 - **Frontend (baked):** `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_BASE_DOMAIN`.
-- **Email:** `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `EMAIL_DESIGNER_MODEL`, `EMAILCRAFT_BASE_URL` (import only).
+- **Email:** `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `EMAIL_DESIGNER_MODEL`.
 - **Storage:** `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_BUCKET_NAME`,
   `AWS_ENDPOINT`, `AWS_PRESIGNED_EXPIRY`.
 - **Live:** `LIVECRAFT_URL`, `LIVECRAFT_API_KEY`, `ZOOM_TOKEN_ENCRYPTION_KEY`.

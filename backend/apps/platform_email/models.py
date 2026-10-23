@@ -14,32 +14,10 @@ from apps.email_campaigns.models import CampaignStatus, RecipientStatus
 __all__ = [
     "CampaignStatus",
     "RecipientStatus",
-    "PlatformEmailConfig",
     "PlatformEmailTemplate",
     "PlatformEmailCampaign",
     "PlatformCampaignRecipient",
 ]
-
-
-class PlatformEmailConfig(models.Model):
-    """Singleton holding the platform's MailCraft organization API key. Read only by
-    import_mailcraft_templates now; dropped once that has run on prod."""
-
-    emailcraft_api_key = models.CharField(max_length=255, blank=True, default="")
-    emailcraft_org_id = models.CharField(max_length=255, blank=True, default="")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        app_label = "platform_email"
-
-    def __str__(self):
-        return "Platform email config"
-
-    @classmethod
-    def load(cls) -> "PlatformEmailConfig":
-        obj, _ = cls.objects.get_or_create(pk=1)
-        return obj
 
 
 class PlatformEmailTemplate(models.Model):
