@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useRef,
   useState,
 } from "react";
@@ -75,15 +74,22 @@ function RichTextModal({
   onSave: (html: string) => void;
   onClose: () => void;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
   const savedRange = useRef<Range | null>(null);
   const [linkOpen, setLinkOpen] = useState(false);
 
   // Seed the editor once (uncontrolled — execCommand mutates the DOM directly).
-  useEffect(() => {
-    if (ref.current) ref.current.innerHTML = initialValue || "";
-    ref.current?.focus();
-  }, [initialValue]);
+  // A ref callback, not an effect: ModalPortal mounts the editor a render
+  // after this component, when an effect here would find no node.
+  const seed = useCallback(
+    (node: HTMLDivElement | null) => {
+      ref.current = node;
+      if (!node) return;
+      node.innerHTML = initialValue || "";
+      node.focus();
+    },
+    [initialValue],
+  );
 
   const exec = (command: string, value?: string) => {
     document.execCommand(command, false, value);
@@ -96,7 +102,7 @@ function RichTextModal({
       sel && sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
     setLinkOpen(true);
   };
-  const applyLink = (href: string) => {
+  const applyLink = (href: string, label?: string) => {
     setLinkOpen(false);
     ref.current?.focus();
     const sel = window.getSelection();
@@ -107,12 +113,12 @@ function RichTextModal({
     if (savedRange.current && !savedRange.current.collapsed) {
       document.execCommand("createLink", false, href);
     } else {
-      // No text selected — insert the link text. (Sanitized on save.)
-      document.execCommand(
-        "insertHTML",
-        false,
-        `<a href="${href}">${href}</a>`,
-      );
+      // No text selected — insert the page's name as the link text; the DOM
+      // escapes both. (Sanitized on save.)
+      const a = document.createElement("a");
+      a.setAttribute("href", href); // as given: `.href` would make it absolute
+      a.textContent = label || href;
+      document.execCommand("insertHTML", false, a.outerHTML);
     }
   };
   const save = () => onSave(ref.current?.innerHTML ?? "");
@@ -191,7 +197,7 @@ function RichTextModal({
             </div>
 
             <div
-              ref={ref}
+              ref={seed}
               contentEditable
               suppressContentEditableWarning
               role="textbox"

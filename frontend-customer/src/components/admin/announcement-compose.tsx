@@ -398,8 +398,10 @@ export default function AnnouncementCompose({
         : "Sending…";
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start">
-      <div className="space-y-4 rounded-xl border border-border bg-card p-4">
+    // The phone sits beside the form when the page has room for both (the team
+    // panel takes some of it), and drops below the form when it has not.
+    <div className="flex flex-wrap items-start gap-6">
+      <div className="min-w-0 flex-1 basis-[22rem] space-y-4 rounded-xl border border-border bg-card p-4">
         {reviewDraft && (
           <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 p-2.5 text-sm text-foreground">
             <span>
@@ -465,7 +467,8 @@ export default function AnnouncementCompose({
               onSave: setBody,
             })
           }
-          className="w-full rounded-lg border border-dashed border-border bg-background p-3 text-left text-sm text-muted-foreground"
+          // Links in the body are shown, not followed: a click opens the editor.
+          className="w-full rounded-lg border border-dashed border-border bg-background p-3 text-left text-sm text-muted-foreground [&_a]:pointer-events-none [&_a]:text-primary [&_a]:underline"
         >
           {shown("body") ? (
             <span dangerouslySetInnerHTML={{ __html: shown("body") }} />
@@ -776,7 +779,7 @@ export default function AnnouncementCompose({
           />
         )}
       </div>
-      <aside className="lg:sticky lg:top-4">
+      <aside className="sticky top-4 mx-auto w-64">
         <PushPreview title={shown("title")} body={shown("body")} />
       </aside>
     </div>
