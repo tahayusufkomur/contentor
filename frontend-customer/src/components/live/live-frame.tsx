@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clientFetch } from "@/lib/api-client";
+import { ApiError } from "@/types/api";
 import { Spinner } from "@/components/ui/spinner";
 
 // Video lives in LiveCraft (../livecraft). We fetch a join link — Django
@@ -41,7 +42,13 @@ export default function LiveFrame({ basePath, noun }: LiveFrameProps) {
   useEffect(() => {
     clientFetch<JoinResponse>(`${basePath}/token/`, { method: "POST" })
       .then(setJoin)
-      .catch(() => setError(`Failed to connect to the live ${noun}.`));
+      .catch((err) =>
+        setError(
+          err instanceof ApiError && err.status === 409
+            ? err.message
+            : `Failed to connect to the live ${noun}.`,
+        ),
+      );
   }, [basePath, noun]);
 
   useEffect(() => {

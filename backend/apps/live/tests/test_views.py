@@ -24,6 +24,7 @@ from rest_framework.test import APIClient
 from apps.accounts.models import User
 from apps.billing.models import SubscriptionPlan
 from apps.billing.ways import set_ways
+from apps.live.livecraft import LiveCraftError
 from apps.live.models import LiveClass, LiveStream
 
 SHARED_DOMAIN = "shared-test.localhost"
@@ -348,6 +349,29 @@ class TestLiveClassToken:
         client = make_client(student)
         response = client.post(f"/api/v1/live/{draft_live_class.pk}/token/")
         assert response.status_code == 400, response.content
+
+    @patch("apps.live.livecraft.create_room")
+    @patch("apps.live.livecraft.join_url")
+    def test_host_recreates_an_expired_room(self, join_url, create_room, draft_live_class, owner):
+        """LiveCraft drops a room left empty; the host's join opens it again."""
+        draft_live_class.status = "live"
+        draft_live_class.save(update_fields=["status"])
+        join_url.side_effect = [LiveCraftError("room not found", 404), "https://lc/join"]
+        response = make_client(owner).post(f"/api/v1/live/{draft_live_class.pk}/token/")
+        assert response.status_code == 200, response.content
+        assert response.json()["join_url"] == "https://lc/join"
+        assert create_room.call_args.kwargs["layout"] == "meeting"
+
+    @patch("apps.live.livecraft.create_room")
+    @patch("apps.live.livecraft.join_url", side_effect=LiveCraftError("room not found", 404))
+    def test_student_waits_for_an_expired_room(self, join_url, create_room, draft_live_class, student, owner):
+        """A student can't reopen the room: they get a clear 409, not a 502."""
+        draft_live_class.status = "live"
+        draft_live_class.save(update_fields=["status"])
+        response = make_client(student).post(f"/api/v1/live/{draft_live_class.pk}/token/")
+        assert response.status_code == 409, response.content
+        assert "not started" in response.json()["detail"]
+        create_room.assert_not_called()
 
 
 # ===========================================================================

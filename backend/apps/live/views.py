@@ -63,11 +63,25 @@ def _hidden(request, event):
     return event.status == "draft" and not is_coach_or_owner(request.user)
 
 
-def _join_response(request, event, *, guest_role):
+def _join_response(request, event, *, guest_role, layout):
     """Join link for this user: hosts moderate; everyone else joins as `guest_role`."""
     host = _is_host(request.user, event)
+    role = "host" if host else guest_role
     try:
-        url = livecraft.join_url(event.room_name, request.user, role="host" if host else guest_role)
+        try:
+            url = livecraft.join_url(event.room_name, request.user, role=role)
+        except livecraft.LiveCraftError as exc:
+            # LiveCraft drops a room left empty for 10 minutes while it is still live
+            # here: the host opens it again, everyone else waits for the host.
+            if exc.status != 404:
+                raise
+            if not host:
+                return Response(
+                    {"detail": "This session has not started yet. Please wait for the host to join."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            _start_room(event, layout=layout)
+            url = livecraft.join_url(event.room_name, request.user, role=role)
     except livecraft.LiveCraftError as exc:
         if exc.status == 403:
             return Response({"detail": "You were removed from this session."}, status=status.HTTP_403_FORBIDDEN)
@@ -188,7 +202,7 @@ def live_class_token(request, pk):
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    return _join_response(request, live_class, guest_role="participant")
+    return _join_response(request, live_class, guest_role="participant", layout="meeting")
 
 
 # ─── Live Stream views ───────────────────────────────────────────────
@@ -302,7 +316,7 @@ def live_stream_token(request, pk):
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    return _join_response(request, live_stream, guest_role="viewer")
+    return _join_response(request, live_stream, guest_role="viewer", layout="broadcast")
 
 
 # ─── Zoom Class views ──────────────────────────────────────────────
