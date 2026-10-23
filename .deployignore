@@ -15,7 +15,6 @@
 # Repo tooling not needed at runtime
 /docs/
 /scripts/
-/tools/
 /.pre-commit-config.yaml
 /.secrets.baseline
 /.ruff_cache/

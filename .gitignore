@@ -59,7 +59,7 @@ test-results/
 # Generated crawl/e2e artifacts
 e2e/screenshots/
 docs/screenshot-map/
-# tools/excalidraw/render.mjs previews; the .excalidraw beside each is the source
+# excalidraw-diagram skill render previews; the .excalidraw beside each is the source
 docs/diagrams/*.png
 
 # Local tool caches (tokensave MCP server, Playwright MCP traces)
