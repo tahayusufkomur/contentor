@@ -6,23 +6,35 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { isStandalone, pushSupported, subscribeToPush } from "@/lib/push";
+import {
+  isStandalone,
+  pushSupported,
+  subscribeToPush,
+  syncPushOncePerSession,
+} from "@/lib/push";
 
 const DISMISS_KEY = "pwa-push-dismissed";
 
-export function PushOptIn() {
+/** `authed`: the subscription is stored per user, so a signed-out grant would
+ * reach nobody (and, already granted, would never be asked again). */
+export function PushOptIn({ authed = false }: { authed?: boolean }) {
   const t = useTranslations("pwa");
   const pathname = usePathname();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    if (!authed || !pushSupported() || !isStandalone()) return; // iOS: only installed PWAs
+    if (Notification.permission === "granted") {
+      void syncPushOncePerSession();
+      return;
+    }
+    if (Notification.permission === "denied") return;
     if (localStorage.getItem(DISMISS_KEY)) return;
-    if (!pushSupported() || !isStandalone()) return; // iOS: only installed PWAs
-    if (Notification.permission === "granted") return;
     setShow(true);
-  }, []);
+  }, [authed]);
 
-  if (!show || pathname?.startsWith("/admin")) return null;
+  if (!show || pathname?.startsWith("/admin") || pathname?.startsWith("/setup"))
+    return null;
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, "1");

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { detectPlatform } from "@/lib/usage";
+import { detectPlatform, isInAppBrowser } from "@/lib/usage";
 import { isStandalone } from "@/lib/push";
 import {
   AndroidConfirmStep,
@@ -25,6 +25,7 @@ export function InstallGuide() {
   const t = useTranslations("pwa");
   const [tab, setTab] = useState<Tab>("ios");
   const [installed, setInstalled] = useState(false);
+  const [inApp, setInApp] = useState(false);
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
     null,
   );
@@ -35,6 +36,7 @@ export function InstallGuide() {
       return;
     }
     setTab(detectPlatform() === "android" ? "android" : "ios");
+    setInApp(isInAppBrowser());
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);
@@ -125,6 +127,12 @@ export function InstallGuide() {
           {t("guide.subtitle")}
         </p>
       </div>
+
+      {inApp && (
+        <p className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-center text-sm font-medium">
+          {t("guide.inAppNote")}
+        </p>
+      )}
 
       {deferred && (
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-center">

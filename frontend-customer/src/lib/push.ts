@@ -31,17 +31,24 @@ export async function subscribeToPush(): Promise<boolean> {
   if (Notification.permission === "denied") return false;
   const permission = await Notification.requestPermission();
   if (permission !== "granted") return false;
+  return saveSubscription();
+}
 
-  const { public_key } = await clientFetch<{ public_key: string }>(
-    "/api/v1/notifications/vapid-key/",
-  );
-  if (!public_key) return false;
-
+/** Reuses this browser's subscription (or makes one) and stores it for the
+ * signed-in user; the server upserts by endpoint. */
+async function saveSubscription(): Promise<boolean> {
   const reg = await navigator.serviceWorker.ready;
-  const sub = await reg.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(public_key),
-  });
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) {
+    const { public_key } = await clientFetch<{ public_key: string }>(
+      "/api/v1/notifications/vapid-key/",
+    );
+    if (!public_key) return false;
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(public_key),
+    });
+  }
 
   await clientFetch<void>("/api/v1/notifications/subscribe/", {
     method: "POST",
@@ -49,4 +56,19 @@ export async function subscribeToPush(): Promise<boolean> {
     body: JSON.stringify(sub.toJSON()),
   });
   return true;
+}
+
+const SYNCED_KEY = "push-synced";
+
+/** Once per session, re-sends the subscription of a browser that already
+ * allows notifications: iOS can drop a subscription silently, and a grant made
+ * before signing in never reached the server. */
+export async function syncPushOncePerSession(): Promise<void> {
+  if (sessionStorage.getItem(SYNCED_KEY)) return;
+  sessionStorage.setItem(SYNCED_KEY, "1");
+  try {
+    await saveSubscription();
+  } catch {
+    // Best effort; the next session tries again.
+  }
 }

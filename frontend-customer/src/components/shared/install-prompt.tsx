@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 
+import { detectPlatform, isInAppBrowser } from "@/lib/usage";
+
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
@@ -22,6 +24,7 @@ export function InstallPrompt({ hide = false }: { hide?: boolean }) {
     null,
   );
   const [showIosHint, setShowIosHint] = useState(false);
+  const [inApp, setInApp] = useState(false);
   const [hidden, setHidden] = useState(true);
   const bannerRef = useRef<HTMLDivElement | null>(null);
 
@@ -36,8 +39,8 @@ export function InstallPrompt({ hide = false }: { hide?: boolean }) {
 
     setHidden(false);
 
-    const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
-    if (isIos) setShowIosHint(true);
+    if (isInAppBrowser()) setInApp(true);
+    else if (detectPlatform() === "ios") setShowIosHint(true);
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -68,7 +71,7 @@ export function InstallPrompt({ hide = false }: { hide?: boolean }) {
       window.removeEventListener("resize", update);
       root.style.removeProperty("--install-banner-clearance");
     };
-  }, [hidden, deferred, showIosHint]);
+  }, [hidden, deferred, showIosHint, inApp]);
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, "1");
@@ -92,7 +95,7 @@ export function InstallPrompt({ hide = false }: { hide?: boolean }) {
   // dismissal, or with nothing to offer.
   if (hide || pathname?.startsWith("/admin") || pathname?.startsWith("/setup"))
     return null;
-  if (hidden || (!deferred && !showIosHint)) return null;
+  if (hidden || (!deferred && !showIosHint && !inApp)) return null;
 
   return (
     <div
@@ -103,7 +106,7 @@ export function InstallPrompt({ hide = false }: { hide?: boolean }) {
       aria-live="polite"
     >
       <span className="flex-1">
-        {deferred ? t("installPrompt") : t("iosHint")}{" "}
+        {deferred ? t("installPrompt") : inApp ? t("inAppHint") : t("iosHint")}{" "}
         <Link
           href="/install"
           className="font-medium text-primary underline underline-offset-2"

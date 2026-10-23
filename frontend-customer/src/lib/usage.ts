@@ -7,8 +7,20 @@ export function detectPlatform(): "ios" | "android" | "desktop" | "other" {
   if (typeof navigator === "undefined") return "other";
   const ua = navigator.userAgent || "";
   if (/iphone|ipad|ipod/i.test(ua)) return "ios";
+  // iPadOS asks for the desktop site, so its UA says Macintosh; only the touch
+  // screen gives it away.
+  if (/macintosh/i.test(ua) && navigator.maxTouchPoints > 1) return "ios";
   if (/android/i.test(ua)) return "android";
   return ua ? "desktop" : "other";
+}
+
+/** Instagram, Facebook, TikTok… open links in their own browser, which can't
+ * add a site to the home screen: the student has to open it in Safari/Chrome. */
+export function isInAppBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /instagram|fban|fbav|fb_iab|tiktok|musical_ly|bytedancewebview|linkedinapp|snapchat|pinterest/i.test(
+    navigator.userAgent || "",
+  );
 }
 
 export async function reportUsageOncePerSession(): Promise<void> {

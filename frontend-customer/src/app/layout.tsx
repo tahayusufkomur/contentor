@@ -218,7 +218,7 @@ export default async function RootLayout({
                     {children}
                     <InstallPrompt hide={isStaff} />
                     <SwUpdateToast />
-                    <PushOptIn />
+                    <PushOptIn authed={hasSession} />
                     <UsageReporter authed={hasSession} />
                   </>
                 )}
