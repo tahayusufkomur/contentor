@@ -1063,6 +1063,13 @@
         "android": "Android",
         "desktop": "Computer",
         "push": "Phone notifications on"
+      },
+      "preview": {
+        "caption": "How it shows on a phone",
+        "date": "Tuesday, 9 June",
+        "title": "Your title",
+        "body": "Your message",
+        "now": "now"
       }
     }
   },

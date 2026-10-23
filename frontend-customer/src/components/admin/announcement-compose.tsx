@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 
 import { WorkingTag } from "@/components/focus/working-tag";
+import { PushPreview } from "@/components/admin/push-preview";
 import { LinkPickerModal } from "@/components/owner/link-picker";
 import { useRichEditor } from "@/components/owner/rich-editor";
 import { ModalPortal } from "@/components/ui/modal-portal";
@@ -397,378 +398,387 @@ export default function AnnouncementCompose({
         : "Sending…";
 
   return (
-    <div className="space-y-4 rounded-xl border border-border bg-card p-4">
-      {reviewDraft && (
-        <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 p-2.5 text-sm text-foreground">
-          <span>Reviewing draft — nothing sends until you confirm below.</span>
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start">
+      <div className="space-y-4 rounded-xl border border-border bg-card p-4">
+        {reviewDraft && (
+          <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 p-2.5 text-sm text-foreground">
+            <span>
+              Reviewing draft — nothing sends until you confirm below.
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                onDraftReviewed?.();
+                reset();
+              }}
+              className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+        <div className="flex justify-between">
           <button
             type="button"
-            onClick={() => {
-              onDraftReviewed?.();
-              reset();
-            }}
-            className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+            onClick={() => setTemplateOpen(true)}
+            className="flex items-center gap-1.5 text-sm text-primary hover:underline"
           >
-            Cancel
+            <FileText className="h-4 w-4" /> Start from a template
           </button>
+          {title.trim() && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={saveAsTemplate}
+              loading={savingTemplate}
+              loadingText="Saving…"
+              className="h-auto p-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground"
+            >
+              Save as template
+            </Button>
+          )}
         </div>
-      )}
-      <div className="flex justify-between">
+
+        {(["title", "body"] as const).some((name) => writing(name)) &&
+          live?.working && (
+            <WorkingTag
+              specialist={live.working.specialist}
+              label={tf("writing")}
+            />
+          )}
+        <input
+          value={shown("title")}
+          readOnly={writing("title")}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Title"
+          maxLength={200} // Announcement.title
+          className="w-full rounded-lg border border-border bg-background p-2 text-sm"
+        />
+
         <button
           type="button"
-          onClick={() => setTemplateOpen(true)}
-          className="flex items-center gap-1.5 text-sm text-primary hover:underline"
+          disabled={writing("body")}
+          onClick={() =>
+            editor?.openRichEditor({
+              value: body,
+              title: "Announcement body",
+              onSave: setBody,
+            })
+          }
+          className="w-full rounded-lg border border-dashed border-border bg-background p-3 text-left text-sm text-muted-foreground"
         >
-          <FileText className="h-4 w-4" /> Start from a template
+          {shown("body") ? (
+            <span dangerouslySetInnerHTML={{ __html: shown("body") }} />
+          ) : (
+            "Write announcement body…"
+          )}
         </button>
-        {title.trim() && (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={saveAsTemplate}
-            loading={savingTemplate}
-            loadingText="Saving…"
-            className="h-auto p-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground"
-          >
-            Save as template
-          </Button>
-        )}
-      </div>
 
-      {(["title", "body"] as const).some((name) => writing(name)) &&
-        live?.working && (
-          <WorkingTag
-            specialist={live.working.specialist}
-            label={tf("writing")}
-          />
-        )}
-      <input
-        value={shown("title")}
-        readOnly={writing("title")}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title"
-        maxLength={200} // Announcement.title
-        className="w-full rounded-lg border border-border bg-background p-2 text-sm"
-      />
-
-      <button
-        type="button"
-        disabled={writing("body")}
-        onClick={() =>
-          editor?.openRichEditor({
-            value: body,
-            title: "Announcement body",
-            onSave: setBody,
-          })
-        }
-        className="w-full rounded-lg border border-dashed border-border bg-background p-3 text-left text-sm text-muted-foreground"
-      >
-        {shown("body") ? (
-          <span dangerouslySetInnerHTML={{ __html: shown("body") }} />
+        {link ? (
+          <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2 text-sm">
+            <span className="flex min-w-0 items-center gap-2">
+              <Link2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="truncate">{linkLabel || link}</span>
+            </span>
+            <span className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setLinkPickerOpen(true)}
+                className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+              >
+                Change
+              </button>
+              <button
+                type="button"
+                aria-label="Remove link"
+                onClick={() => {
+                  setLink("");
+                  setLinkLabel("");
+                }}
+                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </span>
+          </div>
         ) : (
-          "Write announcement body…"
+          <button
+            type="button"
+            onClick={() => setLinkPickerOpen(true)}
+            className="flex w-full items-center gap-2 rounded-lg border border-dashed border-border bg-background p-3 text-left text-sm text-muted-foreground hover:border-primary hover:text-foreground"
+          >
+            <Link2 className="h-4 w-4 shrink-0" />
+            Add a link (optional) — where tapping the announcement takes them
+          </button>
         )}
-      </button>
 
-      {link ? (
-        <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2 text-sm">
-          <span className="flex min-w-0 items-center gap-2">
-            <Link2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span className="truncate">{linkLabel || link}</span>
-          </span>
-          <span className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setLinkPickerOpen(true)}
-              className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
-            >
-              Change
-            </button>
-            <button
-              type="button"
-              aria-label="Remove link"
-              onClick={() => {
-                setLink("");
-                setLinkLabel("");
-              }}
-              className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </span>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setLinkPickerOpen(true)}
-          className="flex w-full items-center gap-2 rounded-lg border border-dashed border-border bg-background p-3 text-left text-sm text-muted-foreground hover:border-primary hover:text-foreground"
-        >
-          <Link2 className="h-4 w-4 shrink-0" />
-          Add a link (optional) — where tapping the announcement takes them
-        </button>
-      )}
-
-      {/* Focus mode's guide asks who gets it and when, and its finish step sends. */}
-      {!focus && (
-        <>
-          <div className="space-y-2 rounded-lg border border-border p-3 text-sm">
-            <div className="font-medium">{tr("audience.title")}</div>
-            {reach === null ? (
-              <div className="text-muted-foreground">
-                Calculating who will receive this…
-              </div>
-            ) : reach.audience === 0 ? (
-              <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2.5 text-destructive">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>
-                  No students match these filters — nobody will receive this
-                  message.
-                </span>
-              </div>
-            ) : (
-              <div className="rounded-lg border border-border bg-background p-2.5">
-                <Megaphone className="mr-1 inline h-4 w-4 align-[-3px]" />
-                Goes to{" "}
-                <strong className="text-foreground">
-                  {reach.audience}
-                </strong>{" "}
-                student
-                {reach.audience === 1 ? "" : "s"} in their feed
-                {reach.push_reachable > 0 ? (
-                  <>
-                    {" "}
-                    ·{" "}
-                    <strong className="text-foreground">
-                      {reach.push_reachable}
-                    </strong>{" "}
-                    also get a phone notification
-                  </>
-                ) : (
-                  <> · none have phone notifications turned on yet</>
-                )}
-              </div>
-            )}
-            {/* Narrowing by device is the rare case: one line until she opens it. */}
-            <details>
-              <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                {tr("audience.narrow")}
-              </summary>
-              <div className="flex flex-wrap gap-2">
-                {(["pwa", "browser"] as const).map((t) => (
+        {/* Focus mode's guide asks who gets it and when, and its finish step sends. */}
+        {!focus && (
+          <>
+            <div className="space-y-2 rounded-lg border border-border p-3 text-sm">
+              <div className="font-medium">{tr("audience.title")}</div>
+              {reach === null ? (
+                <div className="text-muted-foreground">
+                  Calculating who will receive this…
+                </div>
+              ) : reach.audience === 0 ? (
+                <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2.5 text-destructive">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>
+                    No students match these filters — nobody will receive this
+                    message.
+                  </span>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-border bg-background p-2.5">
+                  <Megaphone className="mr-1 inline h-4 w-4 align-[-3px]" />
+                  Goes to{" "}
+                  <strong className="text-foreground">
+                    {reach.audience}
+                  </strong>{" "}
+                  student
+                  {reach.audience === 1 ? "" : "s"} in their feed
+                  {reach.push_reachable > 0 ? (
+                    <>
+                      {" "}
+                      ·{" "}
+                      <strong className="text-foreground">
+                        {reach.push_reachable}
+                      </strong>{" "}
+                      also get a phone notification
+                    </>
+                  ) : (
+                    <> · none have phone notifications turned on yet</>
+                  )}
+                </div>
+              )}
+              {/* Narrowing by device is the rare case: one line until she opens it. */}
+              <details>
+                <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                  {tr("audience.narrow")}
+                </summary>
+                <div className="flex flex-wrap gap-2">
+                  {(["pwa", "browser"] as const).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() =>
+                        setFilters((f) => ({
+                          ...f,
+                          app_type: f.app_type === t ? undefined : t,
+                        }))
+                      }
+                      className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 ${filters.app_type === t ? "bg-primary text-primary-foreground" : "border-border"}`}
+                    >
+                      {t === "pwa" ? (
+                        <Smartphone className="h-3.5 w-3.5" />
+                      ) : (
+                        <Globe className="h-3.5 w-3.5" />
+                      )}
+                      {t === "pwa"
+                        ? tr("audience.app")
+                        : tr("audience.browser")}
+                    </button>
+                  ))}
+                  {PLATFORMS.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => togglePlatform(p)}
+                      className={`rounded-full border px-3 py-1 ${filters.platform?.includes(p) ? "bg-primary text-primary-foreground" : "border-border"}`}
+                    >
+                      {tr(`audience.${p}`)}
+                    </button>
+                  ))}
                   <button
-                    key={t}
                     type="button"
                     onClick={() =>
                       setFilters((f) => ({
                         ...f,
-                        app_type: f.app_type === t ? undefined : t,
+                        push_enabled: f.push_enabled ? undefined : true,
                       }))
                     }
-                    className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 ${filters.app_type === t ? "bg-primary text-primary-foreground" : "border-border"}`}
+                    className={`rounded-full border px-3 py-1 ${filters.push_enabled ? "bg-primary text-primary-foreground" : "border-border"}`}
                   >
-                    {t === "pwa" ? (
-                      <Smartphone className="h-3.5 w-3.5" />
-                    ) : (
-                      <Globe className="h-3.5 w-3.5" />
-                    )}
-                    {t === "pwa" ? tr("audience.app") : tr("audience.browser")}
+                    {tr("audience.push")}
                   </button>
-                ))}
-                {PLATFORMS.map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => togglePlatform(p)}
-                    className={`rounded-full border px-3 py-1 ${filters.platform?.includes(p) ? "bg-primary text-primary-foreground" : "border-border"}`}
-                  >
-                    {tr(`audience.${p}`)}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFilters((f) => ({
-                      ...f,
-                      push_enabled: f.push_enabled ? undefined : true,
-                    }))
-                  }
-                  className={`rounded-full border px-3 py-1 ${filters.push_enabled ? "bg-primary text-primary-foreground" : "border-border"}`}
-                >
-                  {tr("audience.push")}
-                </button>
-              </div>
-            </details>
-          </div>
-
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={alsoEmail}
-              onChange={(e) => setAlsoEmail(e.target.checked)}
-            />
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            {tr("alsoEmail")}
-          </label>
-
-          {/* Once / Repeating */}
-          <div className="space-y-3 rounded-lg border border-border p-3 text-sm">
-            <div className="inline-flex rounded-lg border border-border p-0.5">
-              {(["once", "repeating"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setMode(m)}
-                  className={`rounded-md px-3 py-1 capitalize ${mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-                >
-                  {m === "once" ? "One time" : "Repeating"}
-                </button>
-              ))}
+                </div>
+              </details>
             </div>
 
-            {mode === "once" ? (
-              <label className="block">
-                Schedule (optional)
-                <input
-                  type="datetime-local"
-                  value={scheduledAt}
-                  onChange={(e) => setScheduledAt(e.target.value)}
-                  className="ml-2 rounded-lg border border-border bg-background p-1"
-                />
-              </label>
-            ) : (
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  {(["daily", "weekly", "monthly"] as const).map((f) => (
-                    <button
-                      key={f}
-                      type="button"
-                      onClick={() => setFreq(f)}
-                      className={`rounded-full border px-3 py-1 capitalize ${freq === f ? "bg-primary text-primary-foreground" : "border-border"}`}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={alsoEmail}
+                onChange={(e) => setAlsoEmail(e.target.checked)}
+              />
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              {tr("alsoEmail")}
+            </label>
 
-                {freq === "weekly" && (
-                  <div className="flex flex-wrap gap-1">
-                    {WEEKDAYS.map((d, i) => (
+            {/* Once / Repeating */}
+            <div className="space-y-3 rounded-lg border border-border p-3 text-sm">
+              <div className="inline-flex rounded-lg border border-border p-0.5">
+                {(["once", "repeating"] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMode(m)}
+                    className={`rounded-md px-3 py-1 capitalize ${mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+                  >
+                    {m === "once" ? "One time" : "Repeating"}
+                  </button>
+                ))}
+              </div>
+
+              {mode === "once" ? (
+                <label className="block">
+                  Schedule (optional)
+                  <input
+                    type="datetime-local"
+                    value={scheduledAt}
+                    onChange={(e) => setScheduledAt(e.target.value)}
+                    className="ml-2 rounded-lg border border-border bg-background p-1"
+                  />
+                </label>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {(["daily", "weekly", "monthly"] as const).map((f) => (
                       <button
-                        key={d}
+                        key={f}
                         type="button"
-                        onClick={() => setWeekday(i)}
-                        className={`rounded-md border px-2 py-1 text-xs ${weekday === i ? "bg-primary text-primary-foreground" : "border-border"}`}
+                        onClick={() => setFreq(f)}
+                        className={`rounded-full border px-3 py-1 capitalize ${freq === f ? "bg-primary text-primary-foreground" : "border-border"}`}
                       >
-                        {d}
+                        {f}
                       </button>
                     ))}
                   </div>
-                )}
 
-                {freq === "monthly" && (
-                  <label className="block">
-                    Day of month
-                    <input
-                      type="number"
-                      min={1}
-                      max={31}
-                      value={dayOfMonth}
-                      onChange={(e) =>
-                        setDayOfMonth(
-                          Math.min(31, Math.max(1, Number(e.target.value))),
-                        )
-                      }
-                      className="ml-2 w-16 rounded-lg border border-border bg-background p-1"
-                    />
-                  </label>
-                )}
-
-                <div className="flex flex-wrap items-center gap-3">
-                  <label>
-                    Time
-                    <input
-                      type="time"
-                      value={sendTime}
-                      onChange={(e) => setSendTime(e.target.value)}
-                      className="ml-2 rounded-lg border border-border bg-background p-1"
-                    />
-                  </label>
-                  <label>
-                    Starts
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="ml-2 rounded-lg border border-border bg-background p-1"
-                    />
-                  </label>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                  <span>Ends:</span>
-                  <label className="flex items-center gap-1">
-                    <input
-                      type="radio"
-                      checked={!endsOnDate}
-                      onChange={() => setEndsOnDate(false)}
-                    />{" "}
-                    Never
-                  </label>
-                  <label className="flex items-center gap-1">
-                    <input
-                      type="radio"
-                      checked={endsOnDate}
-                      onChange={() => setEndsOnDate(true)}
-                    />{" "}
-                    On date
-                  </label>
-                  {endsOnDate && (
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="rounded-lg border border-border bg-background p-1"
-                    />
+                  {freq === "weekly" && (
+                    <div className="flex flex-wrap gap-1">
+                      {WEEKDAYS.map((d, i) => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setWeekday(i)}
+                          className={`rounded-md border px-2 py-1 text-xs ${weekday === i ? "bg-primary text-primary-foreground" : "border-border"}`}
+                        >
+                          {d}
+                        </button>
+                      ))}
+                    </div>
                   )}
+
+                  {freq === "monthly" && (
+                    <label className="block">
+                      Day of month
+                      <input
+                        type="number"
+                        min={1}
+                        max={31}
+                        value={dayOfMonth}
+                        onChange={(e) =>
+                          setDayOfMonth(
+                            Math.min(31, Math.max(1, Number(e.target.value))),
+                          )
+                        }
+                        className="ml-2 w-16 rounded-lg border border-border bg-background p-1"
+                      />
+                    </label>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label>
+                      Time
+                      <input
+                        type="time"
+                        value={sendTime}
+                        onChange={(e) => setSendTime(e.target.value)}
+                        className="ml-2 rounded-lg border border-border bg-background p-1"
+                      />
+                    </label>
+                    <label>
+                      Starts
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="ml-2 rounded-lg border border-border bg-background p-1"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span>Ends:</span>
+                    <label className="flex items-center gap-1">
+                      <input
+                        type="radio"
+                        checked={!endsOnDate}
+                        onChange={() => setEndsOnDate(false)}
+                      />{" "}
+                      Never
+                    </label>
+                    <label className="flex items-center gap-1">
+                      <input
+                        type="radio"
+                        checked={endsOnDate}
+                        onChange={() => setEndsOnDate(true)}
+                      />{" "}
+                      On date
+                    </label>
+                    {endsOnDate && (
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="rounded-lg border border-border bg-background p-1"
+                      />
+                    )}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    Times are in your account timezone.
+                  </p>
                 </div>
+              )}
+            </div>
 
-                <p className="text-xs text-muted-foreground">
-                  Times are in your account timezone.
-                </p>
-              </div>
-            )}
-          </div>
+            <Button
+              onClick={send}
+              loading={sending}
+              loadingText={sendingLabel}
+              disabled={!title.trim()}
+              className="rounded-lg px-4 py-2 font-medium"
+            >
+              {sendLabel}
+            </Button>
+          </>
+        )}
 
-          <Button
-            onClick={send}
-            loading={sending}
-            loadingText={sendingLabel}
-            disabled={!title.trim()}
-            className="rounded-lg px-4 py-2 font-medium"
-          >
-            {sendLabel}
-          </Button>
-        </>
-      )}
+        {linkPickerOpen && (
+          <LinkPickerModal
+            initialValue={link}
+            onPick={(href, label) => {
+              setLink(href);
+              setLinkLabel(label ?? href);
+              setLinkPickerOpen(false);
+            }}
+            onClose={() => setLinkPickerOpen(false)}
+          />
+        )}
 
-      {linkPickerOpen && (
-        <LinkPickerModal
-          initialValue={link}
-          onPick={(href, label) => {
-            setLink(href);
-            setLinkLabel(label ?? href);
-            setLinkPickerOpen(false);
-          }}
-          onClose={() => setLinkPickerOpen(false)}
-        />
-      )}
-
-      {templateOpen && (
-        <TemplatePickerModal
-          onPick={applyTemplate}
-          onClose={() => setTemplateOpen(false)}
-        />
-      )}
+        {templateOpen && (
+          <TemplatePickerModal
+            onPick={applyTemplate}
+            onClose={() => setTemplateOpen(false)}
+          />
+        )}
+      </div>
+      <aside className="lg:sticky lg:top-4">
+        <PushPreview title={shown("title")} body={shown("body")} />
+      </aside>
     </div>
   );
 }

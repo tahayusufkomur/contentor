@@ -153,7 +153,8 @@ export default function NewMessagePage() {
       <PageState
         loading={deciding}
         skeleton={<Skeleton className="mx-auto h-48 w-full max-w-2xl" />}
-        className="mx-auto max-w-2xl space-y-6"
+        // The composer sits beside its phone preview; the opening question alone.
+        className={`mx-auto space-y-6 ${focusNew && first ? "max-w-2xl" : "max-w-4xl"}`}
       >
         {focusNew && first ? (
           <FocusStart kind="message" question={first}>
