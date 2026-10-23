@@ -1,0 +1,17 @@
+{
+  "name": "contentor-excalidraw",
+  "private": true,
+  "type": "module",
+  "description": "Offline Excalidraw for docs/diagrams: editor (server.mjs) + PNG renderer (render.mjs)",
+  "scripts": {
+    "start": "node server.mjs",
+    "render": "node render.mjs"
+  },
+  "dependencies": {
+    "@excalidraw/excalidraw": "0.18.1",
+    "esbuild": "0.28.2",
+    "playwright": "1.61.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}
