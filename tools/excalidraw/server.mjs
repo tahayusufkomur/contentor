@@ -104,9 +104,17 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await fs.mkdir(DIAGRAMS, { recursive: true });
   await build();
   const port = Number(process.env.PORT) || 5199;
-  createServer().listen(port, "127.0.0.1", () =>
-    console.log(
-      `Contentor diagrams: http://localhost:${port}  (files: docs/diagrams/)`,
-    ),
-  );
+  createServer()
+    .on("error", (err) => {
+      if (err.code !== "EADDRINUSE") throw err;
+      console.error(
+        `Port ${port} is in use, most likely by an editor already running: open http://localhost:${port}, or pick another port: make diagrams PORT=<port>`,
+      );
+      process.exit(1);
+    })
+    .listen(port, "127.0.0.1", () =>
+      console.log(
+        `Contentor diagrams: http://localhost:${port}  (files: docs/diagrams/)`,
+      ),
+    );
 }
