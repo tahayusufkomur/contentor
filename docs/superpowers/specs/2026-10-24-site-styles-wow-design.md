@@ -329,7 +329,7 @@ Status values:
 | 1.3 | One protagonist, no faces shared with peers (composer photos) | 1.1b (same files) | Task 1.3 | done (2026-10-24, 330f48bf) |
 | 1.2 | Photo treatment per style (manifest → CSS) | none | Task 1.2 | done (2026-10-24, 2fc3af85) |
 | 1.4 | Personal chrome and sticky phone CTA | none | Task 1.4 | done (2026-10-24, 98648091) |
-| 1.5 | Craft floor (detector fixes, one money formatter) | 1.2 | Task 1.5 | todo |
+| 1.5 | Craft floor (detector fixes, one money formatter) | 1.2 | Task 1.5 | done (2026-10-24, 8a3c5635) |
 | 1.6 | Costume labels out | 1.5 | Task 1.6 | todo |
 | 1.7a | Phone-first hero, batch A | 0.2, 1.1, 1.6 | Task 1.7 | todo |
 | 1.7b | Phone-first hero, batch B | 1.7a | Task 1.7 | todo |
@@ -505,6 +505,16 @@ against G1.
   footer. A button with nowhere to go falls back to Contact. Learned: Tailwind `max-*` variants are
   no-ops in frontend-customer (the preset defines a raw screen), so `max-sm:hidden` never hid
   anything. For Gate A: the admin "social icons in the navbar" setting is now inert.
+- 2026-10-24, WP-1.5 (e9d2f4ef, 8a3c5635): detector findings on the 21 home pages fell from 512 to
+  349. Undersized UI text, tiny text and bounce easing are at 0, tight leading at 1, all-caps body
+  at 8 (kinetic's marquee). Low contrast is at 38, mostly the baseline's named false positives plus
+  6 pixel-sampling hits. Palettes fixed in dojo, trail, studiofloor, workshop, atelier and primer.
+  Every label is at least 12px. Long statements sit at line-height 1.32, the detector's 1.3 bar, above
+  the 1.12 floor. One price format everywhere in the styles and the billing badge (`formatMoney`).
+  Learned: the 18 `money()` copies already agreed, so the visible "$49 / 49.00 / 29 USD" mix came from
+  the shared badge and grid; colour tweaks must be checked in the derived dark scheme too (trail's
+  darkened ink failed AA there). Open: raw prices on public, student and admin pages outside the
+  styles; caps display headings over 24 characters in the poster styles.
 
 ## 10. Resources
 
