@@ -330,7 +330,7 @@ Status values:
 | 1.2 | Photo treatment per style (manifest → CSS) | none | Task 1.2 | done (2026-10-24, 2fc3af85) |
 | 1.4 | Personal chrome and sticky phone CTA | none | Task 1.4 | done (2026-10-24, 98648091) |
 | 1.5 | Craft floor (detector fixes, one money formatter) | 1.2 | Task 1.5 | done (2026-10-24, 8a3c5635) |
-| 1.6 | Costume labels out | 1.5 | Task 1.6 | todo |
+| 1.6 | Costume labels out | 1.5 | Task 1.6 | done (2026-10-24, 1ff87080) |
 | 1.7a | Phone-first hero, batch A | 0.2, 1.1, 1.6 | Task 1.7 | todo |
 | 1.7b | Phone-first hero, batch B | 1.7a | Task 1.7 | todo |
 | 1.7c | Phone-first hero, batch C | 1.7b | Task 1.7 | todo |
@@ -515,6 +515,15 @@ against G1.
   the shared badge and grid; colour tweaks must be checked in the derived dark scheme too (trail's
   darkened ink failed AA there). Open: raw prices on public, student and admin pages outside the
   styles; caps display headings over 24 characters in the poster styles.
+- 2026-10-24, WP-1.6 (84ad2fbc, 0dbe9d84, 1ff87080): costume labels are out of the nine looks the
+  critique named. Gone: "ACT 01 //" and the whole studiofloor cue mechanic, "FIG.", "No. 1", the
+  A1/A2/B1 tabs, terminal's window file names, `$`/`--` prefixes and dev jargon, encore's track
+  captions, trail's stamps, ledger's running-head words. Prefix words fell from numerals that count
+  real items. S3 fixes on the way: no heuristic "MOST POPULAR" badge, no invented "Studio Floor"
+  location, no "build: passing" badges. A guard test (`costume-labels.test.ts`) bans each form. Learned:
+  each costume is a family of repeats across a style's files, not a list of literals; review found the
+  rest twice. Open: sprout and sanctum still show a guessed "popular" badge; terminal labels a
+  location-less event "Online, live".
 
 ## 10. Resources
 
