@@ -153,6 +153,7 @@ services:
     networks:
       - internal
       - agentc
+      - scribe
     depends_on:
       django:
         condition: service_healthy
@@ -294,6 +295,11 @@ networks:
   # container itself runs on acemagic only.
   agentc:
     name: agent-container_default
+    external: true
+  # Scribe, the captions service (SCRIBE_URL=http://scribe-api:8000): its API
+  # runs on acemagic; the network exists on every fleet node, and prodesk
+  # reaches scribe-api over fleet-contentor's attach.
+  scribe:
     external: true
 
 volumes:
