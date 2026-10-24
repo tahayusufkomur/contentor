@@ -39,7 +39,9 @@ def _first(owner, schedule_, model=LiveClass, zone="UTC", **extra):
 def test_expand_copies_the_first_session_to_every_later_slot(owner):
     # 7 Jan 2030 is a Monday: Tue 8, Thu 10, Tue 15, Thu 17.
     sched = _weekly("2030-01-07", "2030-01-21", [2, 4], ["18:30"])
-    first = _first(owner, sched, pricing_type="paid", price=15, duration_minutes=45, auto_recording=True)
+    first = _first(
+        owner, sched, pricing_type="paid", price=15, duration_minutes=45, auto_recording=True, watermark=True
+    )
     assert series.expand(first, sched, "UTC") == 3
     rows = list(LiveClass.objects.order_by("scheduled_at"))
     assert [r.scheduled_at.isoformat()[:16] for r in rows] == [
@@ -51,6 +53,7 @@ def test_expand_copies_the_first_session_to_every_later_slot(owner):
     for row in rows:
         assert (row.title, row.description, row.instructor, row.status) == ("Pads", "Slow flow", owner, "draft")
         assert (row.pricing_type, row.price, row.duration_minutes, row.auto_recording) == ("paid", 15, 45, True)
+        assert row.watermark
     assert len({r.room_name for r in rows}) == 4
 
 

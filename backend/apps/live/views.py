@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from apps.core.access import ContentAccessService
 from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
 from apps.core.permissions import IsCoachOrOwner, is_coach_or_owner
+from apps.core.storage import generate_presigned_download_url
 from apps.media import designs
 
 from . import livecraft
@@ -91,7 +92,17 @@ def _join_response(request, event, *, guest_role, layout):
 
 
 def _start_room(event, *, layout):
-    livecraft.create_room(event.room_name, title=event.title, layout=layout, auto_record=event.auto_recording)
+    # A prepared board goes along as a link LiveCraft's server fetches when a host
+    # opens the whiteboard; a class runs for hours, so the link lasts a day.
+    board = generate_presigned_download_url(event.whiteboard_key, expiry=86400) if event.whiteboard_key else ""
+    livecraft.create_room(
+        event.room_name,
+        title=event.title,
+        layout=layout,
+        auto_record=event.auto_recording,
+        whiteboard_url=board or None,
+        watermark=event.watermark,
+    )
 
 
 @api_view(["GET", "POST"])

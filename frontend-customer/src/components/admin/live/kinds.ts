@@ -29,6 +29,10 @@ export interface EventRow {
   filter_options?: FilterOption[];
   tags?: Tag[];
   auto_recording?: boolean;
+  /** Storage key of a prepared Excalidraw board, "" for none. */
+  whiteboard_key?: string;
+  /** Students and viewers see their own name over the video. */
+  watermark?: boolean;
   zoom_link?: string;
   location?: string;
   address?: string;
@@ -37,6 +41,8 @@ export interface EventRow {
 
 export type KindField =
   | "auto_recording"
+  | "whiteboard_key"
+  | "watermark"
   | "zoom_link"
   | "location"
   | "address"
@@ -60,7 +66,7 @@ export const EVENT_KINDS: Record<EventKind, KindConfig> = {
   live: {
     api: "/api/v1/live/",
     icon: Video,
-    fields: ["auto_recording"],
+    fields: ["auto_recording", "watermark", "whiteboard_key"],
     room: (id) => `/live/${id}`,
     legacyTab: "classes",
     demo: "live_classes",
@@ -68,7 +74,7 @@ export const EVENT_KINDS: Record<EventKind, KindConfig> = {
   stream: {
     api: "/api/v1/live-streams/",
     icon: Radio,
-    fields: ["auto_recording"],
+    fields: ["auto_recording", "watermark", "whiteboard_key"],
     room: (id) => `/live-stream/${id}`,
     legacyTab: "streams",
     demo: "live_streams",

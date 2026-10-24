@@ -49,11 +49,18 @@ def _request(method, path, **kwargs):
     return res
 
 
-def create_room(room, *, title, layout, auto_record=False):
-    """layout: "meeting" (interactive class) or "broadcast" (live stream)."""
+def create_room(room, *, title, layout, auto_record=False, whiteboard_url=None, watermark=False):
+    """layout: "meeting" (interactive class) or "broadcast" (live stream).
+    whiteboard_url: a prepared board (Excalidraw file) LiveCraft fetches for the host's whiteboard.
+    watermark: students and viewers see their own name over the video (hosts switch it in the room)."""
     if settings.LIVECRAFT_FAKE:
         return
-    _request("POST", "/rooms", json={"room": room, "title": title, "layout": layout, "auto_record": auto_record})
+    body = {"room": room, "title": title, "layout": layout, "auto_record": auto_record}
+    if whiteboard_url:
+        body["whiteboard_url"] = whiteboard_url
+    if watermark:
+        body["watermark"] = True
+    _request("POST", "/rooms", json=body)
 
 
 def end_room(room):

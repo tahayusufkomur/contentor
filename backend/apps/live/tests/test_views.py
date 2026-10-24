@@ -24,6 +24,7 @@ from rest_framework.test import APIClient
 from apps.accounts.models import User
 from apps.billing.models import SubscriptionPlan
 from apps.billing.ways import set_ways
+from apps.core.storage import build_s3_path
 from apps.live.livecraft import LiveCraftError
 from apps.live.models import LiveClass, LiveStream
 
@@ -243,6 +244,25 @@ class TestLiveClassDetail:
         assert response.status_code == 200, response.content
         assert response.json()["title"] == "Updated Title"
 
+    def test_whiteboard_key_must_be_this_tenants(self, draft_live_class, owner):
+        client = make_client(owner)
+        url = f"/api/v1/live/{draft_live_class.pk}/"
+        other = {"whiteboard_key": "tenants/other/whiteboard/x.excalidraw"}
+        assert client.put(url, other, format="json").status_code == 400
+        mine = build_s3_path("whiteboard", "x.excalidraw")
+        assert client.put(url, {"whiteboard_key": mine}, format="json").status_code == 200
+        assert client.get(url).json()["whiteboard_key"] == mine
+
+    @patch("apps.live.livecraft.requests.request")
+    def test_watermark_change_on_a_live_class_never_calls_livecraft(self, req, draft_live_class, owner, settings):
+        # Only the room's creation carries it: in a running room the hosts switch it themselves.
+        settings.LIVECRAFT_FAKE = False
+        draft_live_class.status = "live"
+        draft_live_class.save(update_fields=["status"])
+        response = make_client(owner).put(f"/api/v1/live/{draft_live_class.pk}/", {"watermark": True}, format="json")
+        assert response.json()["watermark"] is True
+        req.assert_not_called()
+
     def test_student_cannot_update_live_class(self, draft_live_class, student):
         """Student gets 403 when trying to update."""
         client = make_client(student)
@@ -284,6 +304,32 @@ class TestLiveClassStart:
         response = client.post(f"/api/v1/live/{scheduled_live_class.pk}/start/")
         assert response.status_code == 200, response.content
         assert response.json()["status"] == "live"
+
+    @patch("apps.live.views.generate_presigned_download_url", return_value="https://s3/lesson.excalidraw?sig")
+    @patch("apps.live.livecraft.create_room")
+    def test_start_hands_livecraft_the_prepared_board(self, create_room, sign, draft_live_class, owner):
+        draft_live_class.whiteboard_key = build_s3_path("whiteboard", "lesson.excalidraw")
+        draft_live_class.save(update_fields=["whiteboard_key"])
+        assert make_client(owner).post(f"/api/v1/live/{draft_live_class.pk}/start/").status_code == 200
+        assert sign.call_args.args == (draft_live_class.whiteboard_key,)
+        assert create_room.call_args.kwargs["whiteboard_url"] == "https://s3/lesson.excalidraw?sig"
+
+    @patch("apps.live.livecraft.create_room")
+    def test_start_without_a_board_sends_none(self, create_room, draft_live_class, owner):
+        make_client(owner).post(f"/api/v1/live/{draft_live_class.pk}/start/")
+        assert create_room.call_args.kwargs["whiteboard_url"] is None
+
+    @patch("apps.live.livecraft.create_room")
+    def test_start_asks_livecraft_for_the_watermark_the_class_has(
+        self, create_room, draft_live_class, scheduled_live_class, owner
+    ):
+        client = make_client(owner)
+        draft_live_class.watermark = True
+        draft_live_class.save(update_fields=["watermark"])
+        assert client.post(f"/api/v1/live/{draft_live_class.pk}/start/").status_code == 200
+        assert create_room.call_args.kwargs["watermark"] is True
+        assert client.post(f"/api/v1/live/{scheduled_live_class.pk}/start/").status_code == 200
+        assert create_room.call_args.kwargs["watermark"] is False
 
     @patch("apps.live.livecraft.create_room")
     def test_already_live_class_returns_400(self, mock_create_call, draft_live_class, owner):

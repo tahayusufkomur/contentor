@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from apps.billing.ways import ShorthandMixin
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
+from apps.core.uploads.serializers import check_tenant_key
 from apps.filters.models import FilterOption
 from apps.filters.serializers import FilterOptionSerializer
 from apps.media import designs
@@ -79,6 +80,13 @@ class _ScheduledOnCreateMixin(ShorthandMixin):
         return instance
 
 
+class _PreparedBoardMixin:
+    """`whiteboard_key` is a storage key the coach's upload handed back: it must be this tenant's."""
+
+    def validate_whiteboard_key(self, value):
+        return check_tenant_key(value, getattr(self.instance, "whiteboard_key", None))
+
+
 def get_thumbnail_signed_url(obj):
     if obj.thumbnail_id and obj.thumbnail and obj.thumbnail.s3_key:
         return generate_presigned_download_url(obj.thumbnail.s3_key)
@@ -111,6 +119,8 @@ class LiveClassSerializer(serializers.ModelSerializer):
             "recording_url",
             "recording_signed_url",
             "auto_recording",
+            "whiteboard_key",
+            "watermark",
             "room_name",
             "scheduled_at",
             "started_at",
@@ -172,7 +182,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
         return asdict(ContentAccessService().get_access_info(request.user if request else None, obj))
 
 
-class LiveClassCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerializer):
+class LiveClassCreateSerializer(_PreparedBoardMixin, _ScheduledOnCreateMixin, serializers.ModelSerializer):
     filter_option_ids = _filter_option_ids_field()
     tag_ids = _tag_ids_field()
 
@@ -186,6 +196,8 @@ class LiveClassCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerial
             "thumbnail_url",
             "thumbnail",
             "auto_recording",
+            "whiteboard_key",
+            "watermark",
             "scheduled_at",
             "filter_option_ids",
             "tag_ids",
@@ -218,6 +230,8 @@ class LiveStreamSerializer(serializers.ModelSerializer):
             "recording_url",
             "recording_signed_url",
             "auto_recording",
+            "whiteboard_key",
+            "watermark",
             "room_name",
             "scheduled_at",
             "started_at",
@@ -279,7 +293,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
         return asdict(ContentAccessService().get_access_info(request.user if request else None, obj))
 
 
-class LiveStreamCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSerializer):
+class LiveStreamCreateSerializer(_PreparedBoardMixin, _ScheduledOnCreateMixin, serializers.ModelSerializer):
     filter_option_ids = _filter_option_ids_field()
     tag_ids = _tag_ids_field()
 
@@ -293,6 +307,8 @@ class LiveStreamCreateSerializer(_ScheduledOnCreateMixin, serializers.ModelSeria
             "thumbnail_url",
             "thumbnail",
             "auto_recording",
+            "whiteboard_key",
+            "watermark",
             "scheduled_at",
             "filter_option_ids",
             "tag_ids",

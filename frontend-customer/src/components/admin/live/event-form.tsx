@@ -22,6 +22,7 @@ import {
 } from "@/components/admin/access/access-section";
 import { useTenant } from "@/hooks/use-tenant";
 import { clientFetch } from "@/lib/api-client";
+import { uploadWhiteboard } from "@/lib/upload";
 import { useLiveRecord } from "@/lib/copilot/live";
 import { listedItem } from "@/lib/covers/items";
 import { EVENT_TIDY, eventOwn } from "@/lib/focus/own-fields";
@@ -72,6 +73,8 @@ const fieldsOf = (event?: EventRow) => ({
   description: event?.description ?? "",
   scheduled_at: toLocalDatetimeValue(event?.scheduled_at ?? null),
   auto_recording: event?.auto_recording ?? false,
+  watermark: event?.watermark ?? false,
+  whiteboard_key: event?.whiteboard_key ?? "",
   zoom_link: event?.zoom_link ?? "",
   location: event?.location ?? "",
   address: event?.address ?? "",
@@ -256,6 +259,18 @@ export function EventForm({
   const detailsShown = !focus || allDetails;
 
   const config = EVENT_KINDS[kind];
+  const [boardUploading, setBoardUploading] = useState(false);
+  const attachBoard = async (file: File) => {
+    setBoardUploading(true);
+    try {
+      set({ whiteboard_key: await uploadWhiteboard(file) });
+    } catch {
+      toast.error(t("whiteboardFailed"));
+    } finally {
+      setBoardUploading(false);
+    }
+  };
+
   const has = (field: (typeof config.fields)[number]) =>
     config.fields.includes(field);
   // Held: a draft with a date (sell later, focus mode). Saving keeps it a draft;
@@ -279,6 +294,8 @@ export function EventForm({
       filter_option_ids: filterOptionIds,
       tag_ids: tagIds,
       ...(has("auto_recording") && { auto_recording: form.auto_recording }),
+      ...(has("watermark") && { watermark: form.watermark }),
+      ...(has("whiteboard_key") && { whiteboard_key: form.whiteboard_key }),
       ...(has("zoom_link") && { zoom_link: form.zoom_link.trim() }),
       ...(has("location") && { location: form.location.trim() }),
       ...(has("address") && { address: form.address }),
@@ -569,6 +586,60 @@ export function EventForm({
               />
               {t("record")}
             </label>
+          )}
+
+          {has("watermark") && detailsShown && (
+            <div className="space-y-1">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={form.watermark}
+                  onChange={(e) => set({ watermark: e.target.checked })}
+                  aria-describedby="event-watermark-hint"
+                />
+                {t("watermark")}
+              </label>
+              <p
+                id="event-watermark-hint"
+                className="text-xs text-muted-foreground"
+              >
+                {t("watermarkHint")}
+              </p>
+            </div>
+          )}
+
+          {has("whiteboard_key") && detailsShown && (
+            <div className="space-y-1">
+              <Label>{t("whiteboard")}</Label>
+              {form.whiteboard_key ? (
+                <div className="flex items-center gap-3 text-sm">
+                  <span>{t("whiteboardAttached")}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => set({ whiteboard_key: "" })}
+                  >
+                    {t("whiteboardRemove")}
+                  </Button>
+                </div>
+              ) : (
+                <input
+                  type="file"
+                  accept=".excalidraw,application/json"
+                  className="block text-sm"
+                  disabled={boardUploading}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (file) void attachBoard(file);
+                  }}
+                />
+              )}
+              <p className="text-xs text-muted-foreground">
+                {t("whiteboardHint")}
+              </p>
+            </div>
           )}
 
           {detailsShown && (

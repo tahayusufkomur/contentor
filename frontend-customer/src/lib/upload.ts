@@ -184,6 +184,26 @@ export async function uploadPhoto(
   });
 }
 
+/** Upload a prepared whiteboard (an Excalidraw `.excalidraw` file) for a
+ *  live class or stream; resolves with its storage key, which the event
+ *  keeps as `whiteboard_key`. */
+export async function uploadWhiteboard(file: File): Promise<string> {
+  const type = "application/json";
+  const { upload_url, s3_key } = await clientFetch<{
+    upload_url: string;
+    s3_key: string;
+  }>("/api/v1/upload/presign/", {
+    method: "POST",
+    body: JSON.stringify({
+      filename: file.name,
+      content_type: type,
+      category: "whiteboard",
+    }),
+  });
+  await put(upload_url, file, new AbortController().signal, () => {}, type);
+  return s3_key;
+}
+
 const PART_SIZE = 10 * 1024 * 1024;
 const PART_ATTEMPTS = 3;
 

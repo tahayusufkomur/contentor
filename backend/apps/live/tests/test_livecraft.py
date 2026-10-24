@@ -41,6 +41,20 @@ class ClientTests(SimpleTestCase):
             livecraft.join_url("r", USER, role="participant")
         assert ctx.exception.status == 403
 
+    @patch("apps.live.livecraft.requests.request", return_value=_ok({}))
+    def test_create_room_sends_the_prepared_board_link_only_when_there_is_one(self, req):
+        livecraft.create_room("r", title="t", layout="meeting", whiteboard_url="https://s3/b.excalidraw")
+        assert req.call_args.kwargs["json"]["whiteboard_url"] == "https://s3/b.excalidraw"
+        livecraft.create_room("r", title="t", layout="meeting")
+        assert "whiteboard_url" not in req.call_args.kwargs["json"]
+
+    @patch("apps.live.livecraft.requests.request", return_value=_ok({}))
+    def test_create_room_asks_for_the_watermark_only_when_it_is_on(self, req):
+        livecraft.create_room("r", title="t", layout="meeting", watermark=True)
+        assert req.call_args.kwargs["json"]["watermark"] is True
+        livecraft.create_room("r", title="t", layout="meeting")
+        assert "watermark" not in req.call_args.kwargs["json"]
+
     @patch("apps.live.livecraft.requests.request", return_value=_ok(status=502))
     def test_end_room_never_raises(self, _):
         livecraft.end_room("r")

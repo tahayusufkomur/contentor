@@ -198,7 +198,8 @@ All four share `_EventStatusMixin` (computes `draft → scheduled → live/ongoi
 from `scheduled_at` + `duration_minutes`):
 
 - **`LiveClass`** [T] — interactive LiveCraft `meeting` room (1:N video, host moderation); auto-generated
-  unique `room_name`; optional `recording` → `Video`, `auto_recording`.
+  unique `room_name`; optional `recording` → `Video`, `auto_recording`,
+  `whiteboard_key` (prepared Excalidraw board, handed to LiveCraft at start).
 - **`LiveStream`** [T] — LiveCraft `broadcast` room (viewers watch + chat).
 - **`ZoomClass`** [T] — external Zoom meeting (`zoom_link`, `zoom_meeting_id`); no SDK.
 - **`OnsiteEvent`** [T] — in-person event (`location`, `address`, `max_capacity`).

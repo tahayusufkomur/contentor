@@ -15,6 +15,10 @@ export interface LiveClass {
   recording_url: string | null;
   recording_signed_url: string | null;
   auto_recording: boolean;
+  /** Storage key of a prepared Excalidraw board, "" for none. */
+  whiteboard_key?: string;
+  /** Students and viewers see their own name over the video. */
+  watermark: boolean;
   room_name: string;
   scheduled_at: string | null;
   started_at: string | null;
@@ -41,6 +45,10 @@ export interface LiveStream {
   recording_url: string | null;
   recording_signed_url: string | null;
   auto_recording: boolean;
+  /** Storage key of a prepared Excalidraw board, "" for none. */
+  whiteboard_key?: string;
+  /** Students and viewers see their own name over the video. */
+  watermark: boolean;
   room_name: string;
   scheduled_at: string | null;
   started_at: string | null;

@@ -28,7 +28,8 @@ def check_tenant_key(value, current=None):
 class PresignRequestSerializer(serializers.Serializer):
     filename = serializers.CharField(max_length=255)
     content_type = serializers.CharField(max_length=100)
-    category = serializers.ChoiceField(choices=["video", "download", "branding", "library", "photo"])
+    # "whiteboard": a live class's prepared Excalidraw board; its key is saved on the event, no complete step.
+    category = serializers.ChoiceField(choices=["video", "download", "branding", "library", "photo", "whiteboard"])
     course_slug = serializers.CharField(max_length=200, required=False)
     lesson_id = serializers.IntegerField(required=False)
     file_id = serializers.IntegerField(required=False)

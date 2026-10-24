@@ -14,8 +14,9 @@ from apps.tenant_config import interview_schedule
 # The ways in (pricing_type, price, windows, plan links) are copied by ways.copy_ways.
 COPIED = ("title", "description", "instructor", "status", "duration_minutes")
 COPIED += ("thumbnail", "thumbnail_url")
-# What only some kinds have: the in-person place, a Zoom link, a room's recording.
+# What only some kinds have: the in-person place, a Zoom link, a room's recording and watermark.
 COPIED_WHEN_PRESENT = ("location", "address", "max_capacity", "zoom_link", "zoom_meeting_id", "auto_recording")
+COPIED_WHEN_PRESENT += ("watermark",)
 
 
 def expand(first, schedule: dict, tz: str) -> int:
