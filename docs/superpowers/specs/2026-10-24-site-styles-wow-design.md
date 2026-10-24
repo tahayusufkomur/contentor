@@ -328,7 +328,7 @@ Status values:
 | 1.1b | At most three courses and three events on home | 1.1 (same files) | Task 1.1b | done (2026-10-24, c9c60462) |
 | 1.3 | One protagonist, no faces shared with peers (composer photos) | 1.1b (same files) | Task 1.3 | done (2026-10-24, 330f48bf) |
 | 1.2 | Photo treatment per style (manifest → CSS) | none | Task 1.2 | done (2026-10-24, 2fc3af85) |
-| 1.4 | Personal chrome and sticky phone CTA | none | Task 1.4 | todo |
+| 1.4 | Personal chrome and sticky phone CTA | none | Task 1.4 | done (2026-10-24, 98648091) |
 | 1.5 | Craft floor (detector fixes, one money formatter) | 1.2 | Task 1.5 | todo |
 | 1.6 | Costume labels out | 1.5 | Task 1.6 | todo |
 | 1.7a | Phone-first hero, batch A | 0.2, 1.1, 1.6 | Task 1.7 | todo |
@@ -498,6 +498,13 @@ against G1.
   grades are gone, and so is hover-to-colour in kinetic, dojo and grid; velvet's fades moved to
   `::before`. For Gate A: kinetic keeps a 20% hero scrim for H1 contrast; grid (luminosity) and kinetic
   (multiply) keep their band duotones.
+- 2026-10-24, WP-1.4 (98648091): the header holds her name, a quiet "Sign In" and one button named for
+  her offer. New sites get the label from `header_cta()`; the legacy "Get Started" is relabelled at
+  render. Her socials and the light/dark toggle moved to the footer, and the platform badge is quieter.
+  On phones a sticky button (same label and link) appears after the first screen and hides at the
+  footer. A button with nowhere to go falls back to Contact. Learned: Tailwind `max-*` variants are
+  no-ops in frontend-customer (the preset defines a raw screen), so `max-sm:hidden` never hid
+  anything. For Gate A: the admin "social icons in the navbar" setting is now inert.
 
 ## 10. Resources
 
