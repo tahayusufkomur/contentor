@@ -798,8 +798,9 @@ def test_story_signature_is_the_owners_first_name(styled, monkeypatch, catalog):
 
 
 @pytest.mark.django_db
-def test_coach_first_name_reads_the_owner_not_the_brand(styled):
-    """ "Kind Mornings" is a brand that looks like a name: the letter is signed by whoever owns the site."""
+def test_coach_first_name_reads_the_owner_not_the_brand(styled, tenant_ctx):
+    """ "Kind Mornings" is a brand that looks like a name: the letter is signed by whoever owns the site.
+    tenant_ctx empties the shared tenant's users first: other tests (xdist) leave owners behind."""
     from apps.accounts.models import User
 
     assert sc._coach_first_name(styled) == ""  # no owner yet
