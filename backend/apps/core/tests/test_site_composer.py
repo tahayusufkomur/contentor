@@ -403,6 +403,78 @@ def test_assets_are_not_reused_across_pages(styled, monkeypatch, catalog):
     assert not set(_photo_ids(again)) & set(_photo_ids(home))
 
 
+def test_plan_prompt_names_one_protagonist():
+    assert "no two photos look alike" not in sc.PLAN_SYSTEM_PROMPT
+    assert "One person stands for the coach" in sc.PLAN_SYSTEM_PROMPT
+
+
+def test_generic_briefs_show_hands_not_a_second_face():
+    ctx = sc._ctx("yoga", "Maya Laurent")
+    assert sc._generic_brief("story", "image2", ctx)["subject"] == "yoga instructor's hands demonstrating, close-up"
+    assert sc._generic_brief("contact", "image", ctx)["subject"] == "yoga hands during practice, close-up"
+    assert "portrait" in sc._generic_brief("story", "image", ctx)["subject"]  # the one protagonist slot
+
+
+@pytest.mark.django_db
+def test_peer_assets_reads_same_niche_tenants_only(styled):
+    from apps.core.models import Tenant
+
+    def ws(niche, ids):
+        return {"answers": {"niche": niche}, "site_plan": {"used_assets": {"home": ids}}}
+
+    def peer(schema, wizard_state, **kw):
+        return Tenant(
+            schema_name=schema,
+            name=schema,
+            slug=schema,
+            subdomain=schema,
+            owner_email=f"{schema}@example.com",
+            wizard_state=wizard_state,
+            **kw,
+        )
+
+    Tenant.objects.bulk_create(  # bulk_create skips save(): no schema is created
+        [
+            peer("peer_same", ws("yoga", ["a1", "own:x"])),
+            peer("peer_other", ws("cooking", ["b1"])),
+            # no niche answer: the niche the template was seeded with counts
+            peer("peer_seeded", {"site_plan": {"used_assets": {"about": ["a2"]}}}, template_niche="yoga"),
+            peer("peer_none", {}),
+        ]
+    )
+    assert sc._peer_assets(styled, "yoga") == frozenset({"a1", "a2"})  # not her own, nor the cooking coach's
+    assert sc._peer_assets(styled, "cooking") == frozenset({"b1"})
+
+
+@pytest.mark.django_db
+def test_a_peer_photo_is_used_only_when_nothing_else_fits(styled, monkeypatch, catalog):
+    monkeypatch.setattr(sc.core_ai, "structured", FakeAI(plan=core_ai.AiError("no plan")))
+    pool = [f"asset-{n}" for n in range(40)]  # what the catalog fixture returns for every search
+
+    def used(page):
+        styled.refresh_from_db()
+        return set(styled.wizard_state["site_plan"]["used_assets"][page])
+
+    monkeypatch.setattr(sc, "_peer_assets", lambda tenant, niche: frozenset())
+    baseline = len(_photo_ids(sc.compose_page(styled, "about")))
+    assert baseline > 3
+
+    monkeypatch.setattr(sc, "_peer_assets", lambda tenant, niche: frozenset(pool[:5]))
+    home = sc.compose_page(styled, "home")
+    assert not used("home") & set(pool[:5])  # plenty else fits: a peer's face is left alone
+    assert len(_photo_ids(home)) == len(used("home")) > 10
+
+    monkeypatch.setattr(sc, "_peer_assets", lambda tenant, niche: frozenset(pool))
+    about = sc.compose_page(styled, "about")  # every photo in the niche is a peer's
+    assert len(_photo_ids(about)) == baseline  # still, no empty slot
+    assert used("about") <= set(pool)
+
+    # Mixed: only the last two are free; they go first, then peers' photos fill the rest
+    monkeypatch.setattr(sc, "_peer_assets", lambda tenant, niche: frozenset(pool[:-2]))
+    courses = sc.compose_page(styled, "courses")
+    assert set(pool[-2:]) <= used("courses") and len(_photo_ids(courses)) == len(used("courses"))
+
+
 @pytest.mark.django_db
 def test_repair_fixes_failing_fields(styled, monkeypatch, catalog):
     def too_long(sections_):
@@ -813,6 +885,21 @@ def test_a_boxing_coach_never_gets_a_pole_dance_photo(monkeypatch):
     assert image.asset_id == "gym"  # neutral is fine; the pole photo never is
     image, _ = sc._find_photo(["boxing coach"], "16:9", {"box", "gym"}, ctx)
     assert image.asset_id in {"box", "gym"}
+
+
+def test_a_peers_photo_loses_to_a_fresh_one_from_the_brief_queries(monkeypatch):
+    peer, fresh = _remote("peer", "woman boxing in a gym"), _remote("fresh", "woman boxing in a gym")
+
+    def search(query, **_kw):  # the topic pool only holds the peer's photo; the slot's own query finds another
+        return curated_client.SearchPage(results=[peer] if query == "boxing" else [fresh], page=1, has_next=False)
+
+    monkeypatch.setattr(sc.curated_client, "search", search)
+    monkeypatch.setattr(sc.curated_cache, "cache_remote_image", lambda image: SimpleNamespace(pk=image.asset_id))
+    ctx = sc._ctx("general", "Iron Fist", "Boxing for beginners", "boxing")
+    assert sc._find_photo(["boxing woman"], "16:9", set(), ctx)[0].asset_id == "peer"
+    assert sc._find_photo(["boxing woman"], "16:9", set(), ctx, avoid=frozenset({"peer"}))[0].asset_id == "fresh"
+    # Nothing else fits: the peer's photo is better than an empty slot
+    assert sc._find_photo(["boxing woman"], "16:9", {"fresh"}, ctx, avoid=frozenset({"peer"}))[0].asset_id == "peer"
 
 
 def test_subject_is_what_the_coach_teaches_when_the_niche_is_unknown():

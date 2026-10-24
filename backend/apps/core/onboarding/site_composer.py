@@ -810,8 +810,11 @@ For every photo slot listed for a section you keep, write a brief (moments: slot
 - person: who is in frame, with age range and gender matched to the coach's audience ("woman in her 30s"). Infer \
 the audience from the niche and the coach's words; follow the coach when they name it.
 Every photo has a person in it: never a flat lay, an empty room or objects alone. Plain visual words for a stock \
-photo search: no brand names, no text in the image, no camera jargon. Vary subjects, framing and moments across the \
-site so no two photos look alike.
+photo search: no brand names, no text in the image, no camera jargon.
+One person stands for the coach. Brief a recognisable portrait of the coach for at most one slot per page \
+(hero.image on home, story.image on other pages), and describe the same person every time: same gender, age range, \
+hair and clothing colour. Every other slot shows either students (different people are expected there) or a close \
+detail of practice: hands, feet, a back view, no recognisable face. Vary framing and moments across the site.
 
 Also return
 - voice: one line on how the coach sounds, drawn from their own words.
@@ -866,13 +869,13 @@ _GENERIC_SUBJECTS = {
     ("hero", "image"): "instructor teaching a class",
     ("hero", "image2"): "hands close-up during practice",
     ("story", "image"): "portrait of the instructor smiling",
-    ("story", "image2"): "instructor in the studio",
+    ("story", "image2"): "instructor's hands demonstrating, close-up",
     ("benefits", "image"): "student enjoying practice",
     ("howItWorks", "image"): "student following a lesson",
     ("philosophy", "image"): "wide calm shot of practice",
     ("moments", "photos"): "candid moment in class",
     ("cta", "image"): "small group session",
-    ("contact", "image"): "friendly instructor portrait",
+    ("contact", "image"): "hands during practice, close-up",
 }
 
 
@@ -1003,6 +1006,22 @@ def _store_used_assets(tenant, page_key, asset_ids) -> None:
         state["site_plan"] = plan
         Tenant.objects.filter(pk=row.pk).update(wizard_state=state)
     tenant.wizard_state = state
+
+
+def _peer_assets(tenant, niche: str) -> frozenset[str]:
+    """Catalog photos other coaches of the same niche already show (R2). Her own
+    photos (``own:`` ids) are private to a tenant and never a peer's asset."""
+    from apps.core.models import Tenant
+
+    # ponytail: scans every tenant's wizard_state; move to a used-asset table past ~1000 tenants.
+    taken = set()
+    for state, template_niche in Tenant.objects.exclude(pk=tenant.pk).values_list("wizard_state", "template_niche"):
+        state = state or {}
+        if ((state.get("answers") or {}).get("niche") or template_niche or "general") != niche:
+            continue
+        for ids in ((state.get("site_plan") or {}).get("used_assets") or {}).values():
+            taken.update(a for a in ids if not a.startswith("own:"))
+    return frozenset(taken)
 
 
 # ── tenant data ──────────────────────────────────────────────────────────────
@@ -1598,12 +1617,14 @@ def _own_photo(queries, aspect, taken, wanted):
     return None
 
 
-def _find_photo(queries, aspect, used, ctx, pools=None, wanted=None, own=False):
+def _find_photo(queries, aspect, used, ctx, pools=None, wanted=None, own=False, avoid=frozenset()):
     """(RemoteImage, tenant Photo) for a slot: with ``own``, one of the coach's
     own photos that no slot shows yet; else the best unused image of the
     slot's orientation from the site's shared pool; the slot's own brief queries
     only when the pool has nothing left; a used image only when nothing else
     matches; (None, None) on failure. Never a photo of another discipline.
+    ``avoid`` is what peers of the niche already show: both catalog stages
+    leave it out first and take from it only when they find nothing else.
     Orientation, not exact aspect: the renderer cover-crops, and the exact-shape
     page came back short so often that every query cost two searches.
 
@@ -1618,29 +1639,32 @@ def _find_photo(queries, aspect, used, ctx, pools=None, wanted=None, own=False):
         return mine
     only = curated_client.placement_filter(wanted)
     candidates = []
-    for placement in dict.fromkeys((only, None)):
-        candidates = _ranked(
-            _pool_candidates(pools, ctx["topic"], orientation, taken, placement), queries[0], ctx, wanted
-        )
-        if candidates:
-            break
-    if not candidates:
-        for query in queries:
-            if query == ctx["topic"]:
-                continue  # that is the pool, already exhausted
-            for placement in dict.fromkeys((only, None)):
-                try:
-                    found = curated_client.search(
-                        query, orientation=orientation, subject_placement=placement, per_page=SEARCH_PER_PAGE
-                    ).results
-                except curated_client.CuratedImageError as exc:
-                    logger.warning("composer photo search failed (%s): %s", query[:60], exc)
-                    continue
-                candidates = [i for i in _ranked(found, query, ctx, wanted) if i.asset_id not in taken]
-                if candidates:
-                    break
+    for skip in [taken | avoid, taken] if avoid - taken else [taken]:  # a peer's photo is the last resort
+        for placement in dict.fromkeys((only, None)):
+            candidates = _ranked(
+                _pool_candidates(pools, ctx["topic"], orientation, skip, placement), queries[0], ctx, wanted
+            )
             if candidates:
                 break
+        if not candidates:
+            for query in queries:
+                if query == ctx["topic"]:
+                    continue  # that is the pool, already exhausted
+                for placement in dict.fromkeys((only, None)):
+                    try:
+                        found = curated_client.search(
+                            query, orientation=orientation, subject_placement=placement, per_page=SEARCH_PER_PAGE
+                        ).results
+                    except curated_client.CuratedImageError as exc:
+                        logger.warning("composer photo search failed (%s): %s", query[:60], exc)
+                        continue
+                    candidates = [i for i in _ranked(found, query, ctx, wanted) if i.asset_id not in skip]
+                    if candidates:
+                        break
+                if candidates:
+                    break
+        if candidates:
+            break
     for image in candidates:
         try:
             return image, curated_cache.cache_remote_image(image)
@@ -1665,6 +1689,11 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
     inside tenant_context (creates media.Photo rows). Never raises."""
     photo_words = (sections.style(style_id) or {}).get("photoWords", "")
     used = {a for key, ids in (plan.get("used_assets") or {}).items() if key != page_key for a in ids}
+    try:
+        avoid = _peer_assets(tenant, ctx["niche"])  # once per page: the same for every slot
+    except Exception:
+        logger.exception("peer photos unavailable for %s", tenant.schema_name)
+        avoid = frozenset()
     placed = []
     pools = {}  # (orientation, placement) -> shared candidate pages for this page build
     try:
@@ -1700,6 +1729,7 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
                     pools,
                     wanted_placement(style_id, family, slot),
                     own=own,
+                    avoid=avoid,
                 )
             except Exception:  # an image must never take the page down
                 logger.exception("composer image failed for %s %s/%s", tenant.schema_name, page_key, slot)
