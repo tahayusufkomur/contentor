@@ -324,7 +324,7 @@ Status values:
 | 0.1 | Capture tool: `make design-shots` | none | Phase 0–1, Task 0.1 | done (2026-10-24, 9edf1bd5) |
 | 0.2 | Realistic showcase fixtures (`fixture=` sets) | none | Task 0.2 | done (2026-10-24, d608bd88) |
 | 0.3 | Eval measures distinctiveness and anchors on award sites | none | Task 0.3 | done (2026-10-24, 190cb7dd) |
-| 1.1 | Hero and copy rules in the composer | none | Task 1.1 | todo |
+| 1.1 | Hero and copy rules in the composer | none | Task 1.1 | done (2026-10-24, 3a836ecc) |
 | 1.1b | At most three courses and three events on home | 1.1 (same files) | Task 1.1b | todo |
 | 1.3 | One protagonist, no faces shared with peers (composer photos) | 1.1b (same files) | Task 1.3 | todo |
 | 1.2 | Photo treatment per style (manifest → CSS) | none | Task 1.2 | todo |
@@ -472,6 +472,13 @@ against G1.
     sample: re-judge before claiming a win of about one point.
   - Report (local, `e2e/eval-shots/` is git-ignored):
     `e2e/eval-shots/sites/journal-20261024-1749/report.html`.
+- 2026-10-24, WP-1.1 (3a836ecc): the composer caps the home hero headline at 36 characters (inner
+  pages keep 70), stops writing the hero's meta and second button, bans ", one … at a time", keeps at
+  most two kickers besides the hero, and points the home hero and closing buttons at courses or
+  classes. A coach with neither gets "Get in touch" → Contact, never About. Story letters are signed
+  with the owner's first name (first word of `User.name`); skeleton letters stay unsigned. Open: the
+  no-AI fallback still writes "Hello, I'm Kind" for a brand like "Kind Mornings"; the prompt's effect
+  on a real model is first measured at Gate A.
 
 ## 10. Resources
 
