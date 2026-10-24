@@ -58,22 +58,39 @@ describe("craft floor", () => {
   });
 
   it("no section file grades a photo: globals.css's one photoTreatment rule does", () => {
-    // Filter utilities and filter functions on a photo would fight the global
-    // rule (O2: the treatment covers every section photo). Kept on purpose, each
-    // an exact match: the band blends that tint a photo into its colour band
-    // (grid luminosity, kinetic multiply, encore's halftone dot screen) and the
-    // darkroom hero's lights-up reveal, a keyframe that ends at `filter: none`.
-    const grade =
-      /(?<![\w-])(?:grayscale|sepia)(?![\w-])|(?<![\w-])(?:saturate|hue-rotate|brightness|contrast|invert)-[\w.[\]%]+|\b(?:grayscale|sepia|saturate|hue-rotate|brightness|contrast|invert)\([^)]*\)|mix-blend(?:-mode:\s*[\w-]+|-[\w-]+)/g;
-    const kept = new Set([
-      "grid/grid.css: mix-blend-mode: luminosity",
-      "kinetic/hero.tsx: mix-blend-multiply",
-      "kinetic/cta.tsx: mix-blend-multiply",
-      "encore/encore.css: mix-blend-mode: multiply",
-      "darkroom/darkroom.css: brightness(1.6)",
-      "darkroom/darkroom.css: contrast(0.8)",
-    ]);
-    expect(hits(grade).filter((h) => !kept.has(h))).toEqual([]);
+    // Filter utilities, filter functions and blend modes on a photo would fight
+    // the global rule (O2: the treatment covers every section photo). Kept on
+    // purpose, each an exact match with its exact count: the band blends that
+    // tint a photo into its colour band (grid luminosity, kinetic multiply,
+    // encore's halftone dot screen) and the darkroom hero's lights-up reveal, a
+    // keyframe that ends at `filter: none`. A second use of any of them fails.
+    const grade = new RegExp(
+      [
+        // grayscale / sepia: bare, or arbitrary (`grayscale-[.5]`, `[&_img]:sepia-[.3]`)
+        String.raw`(?<![\w-])(?:grayscale|sepia)(?![\w-])`,
+        String.raw`(?<![\w-])(?:grayscale|sepia)-\[[^\]]*\]`,
+        // bare `invert` / `md:invert`; the others always carry a value
+        String.raw`(?<![\w-])invert(?![\w-])`,
+        String.raw`(?<![\w-])(?:saturate|hue-rotate|brightness|contrast|invert)-[\w.[\]%]+`,
+        // CSS filter functions
+        String.raw`\b(?:grayscale|sepia|saturate|hue-rotate|brightness|contrast|invert)\([^)]*\)`,
+        // blend modes (mix-blend-*, bg-blend-*, and their CSS properties)
+        String.raw`(?:mix|background)-blend-mode:\s*[\w-]+`,
+        String.raw`(?:mix|bg)-blend-[\w-]+`,
+      ].join("|"),
+      "g",
+    );
+    const kept = {
+      "grid/grid.css: mix-blend-mode: luminosity": 1,
+      "kinetic/hero.tsx: mix-blend-multiply": 1,
+      "kinetic/cta.tsx: mix-blend-multiply": 1,
+      "encore/encore.css: mix-blend-mode: multiply": 1,
+      "darkroom/darkroom.css: brightness(1.6)": 1,
+      "darkroom/darkroom.css: contrast(0.8)": 1,
+    };
+    const found: Record<string, number> = {};
+    for (const h of hits(grade)) found[h] = (found[h] ?? 0) + 1;
+    expect(found).toEqual(kept);
   });
 
   it("no label or text set below 0.75rem (12px)", () => {

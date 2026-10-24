@@ -50,12 +50,13 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
                     >
                       {e.title}
                     </h3>
-                    <p className="mt-1 text-[0.9rem] text-muted-foreground">
-                      {e.location ||
-                        (e.type === "onsite_event"
-                          ? "Dojo Tatami · In Person"
-                          : "Online Live Stream")}
-                    </p>
+                    {(e.type !== "onsite_event" || e.location) && (
+                      <p className="mt-1 text-[0.9rem] text-muted-foreground">
+                        {e.type === "onsite_event"
+                          ? e.location
+                          : "Online Live Stream"}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex flex-col sm:items-end sm:text-right">

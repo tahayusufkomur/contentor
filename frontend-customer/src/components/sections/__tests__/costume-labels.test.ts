@@ -103,6 +103,30 @@ describe("costume labels", () => {
     ).toEqual([]);
   });
 
+  it("no event place is invented (S3): online says online by its type, onsite shows its own location or nothing", () => {
+    // `location || "Online"` labelled an onsite event with no location as online;
+    // `location || "Dojo Tatami · In Person"` made up a venue; `location ? … : " · Online, live"`
+    // did both. "In person" after an onsite_event check names the type, not a place.
+    expect(
+      hits(
+        /location\s*(?:\|\||\?\?)\s*\(?\s*["'`](?!In person["'`])[^"'`]*["'`]/,
+      ),
+    ).toEqual([]);
+    expect(hits(/\.location\s*\?[^:]{0,80}:\s*["'`]/)).toEqual([]);
+    expect(hits(/Dojo Tatami/)).toEqual([]);
+    // an "Online" place label only where the file checks the event type
+    expect(
+      files
+        .filter(
+          (f) =>
+            /(?:^|\/)(?:events|rows)\.tsx$/.test(f.name) &&
+            /\bOnline\b/.test(f.text) &&
+            !/onsite_event/.test(f.text),
+        )
+        .map((f) => f.name),
+    ).toEqual([]);
+  });
+
   it("no document-jargon head words or invented fallbacks (R5, S3)", () => {
     // ledger running-head marks, a lone section sign, "Produced by", "SESSION INQUIRY",
     // and a location nobody gave ("Studio Floor").

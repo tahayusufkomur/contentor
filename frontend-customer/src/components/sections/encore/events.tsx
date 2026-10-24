@@ -55,8 +55,15 @@ export function EventsTourDates({ block, data, editable }: SectionProps) {
                   >
                     {e.title}
                   </h3>
-                  <span className="text-[0.92rem] text-muted-foreground">
-                    {e.location || "Online"}
+                  <span
+                    className={cn(
+                      "text-[0.92rem] text-muted-foreground",
+                      e.type === "onsite_event" &&
+                        !e.location &&
+                        "hidden sm:block",
+                    )}
+                  >
+                    {e.type === "onsite_event" ? e.location : "Online"}
                   </span>
                   <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-col sm:items-end sm:justify-center sm:text-right">
                     <span className={cn(LABEL, NUM, "text-muted-foreground")}>
