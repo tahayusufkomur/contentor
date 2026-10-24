@@ -2,10 +2,12 @@ from dataclasses import asdict
 
 from django.db import transaction
 from django.db.models import Prefetch
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from apps.billing.ways import ShorthandMixin
 from apps.core.access import ContentAccessService
+from apps.core.permissions import is_coach_or_owner
 from apps.core.sanitize import clean_rich_html
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.core.uploads.serializers import check_tenant_key
@@ -14,6 +16,7 @@ from apps.filters.serializers import FilterOptionSerializer
 from apps.media import designs
 from apps.tags.serializers import TagSerializer, tag_ids_field
 
+from . import captions
 from .models import Course, Enrollment, Lesson, Module, Progress, Video, publish_gap
 
 
@@ -24,6 +27,7 @@ class LessonSerializer(serializers.ModelSerializer):
     content_html = serializers.SerializerMethodField()
     captions_url = serializers.SerializerMethodField()
     captions_language = serializers.SerializerMethodField()
+    captions_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
@@ -40,6 +44,7 @@ class LessonSerializer(serializers.ModelSerializer):
             "video_signed_url",
             "captions_url",
             "captions_language",
+            "captions_status",
         ]
         read_only_fields = ["id"]
 
@@ -103,6 +108,14 @@ class LessonSerializer(serializers.ModelSerializer):
 
     def get_captions_language(self, obj) -> str:
         return obj.video.captions_language if self.may_read_captions(obj) else ""
+
+    @extend_schema_field(serializers.ChoiceField(choices=["waiting", "working", "ready", "failed"], allow_null=True))
+    def get_captions_status(self, obj):
+        """Where the captions stand (captions.status), for the coach's course editor only."""
+        request = self.context.get("request")
+        if not (obj.video and request and is_coach_or_owner(request.user)):
+            return None
+        return captions.status(obj.video)
 
 
 class ModuleSerializer(serializers.ModelSerializer):

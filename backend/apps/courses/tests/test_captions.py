@@ -141,3 +141,25 @@ class TestPlayerCaptions:
         assert (found["captions_url"], found["captions_language"]) == (None, "")
         assert client.get(f"/api/v1/courses/paid-course/lessons/{lesson.id}/captions/").status_code == 404
         assert make_client().get(f"/api/v1/courses/paid-course/lessons/{lesson.id}/captions/").status_code in (401, 403)
+
+    def test_the_coach_sees_where_her_captions_stand(self, settings, lesson, video):
+        settings.SCRIBE_URL = "http://scribe-api:8000"
+        coach = User.objects.create_user(email="coach2@captions.test", name="C", password="x", role="coach")
+        student = User.objects.create_user(email="student2@captions.test", name="S", password="x", role="student")
+
+        def seen(user):
+            data = make_client(user).get("/api/v1/courses/paid-course/").json()
+            return data["modules"][0]["lessons"][0]["captions_status"]
+
+        assert (seen(coach), seen(student)) == ("ready", None)
+        Video.objects.filter(pk=video.pk).update(captions_vtt="", captions_job="job1")
+        assert seen(coach) == "working"
+        Video.objects.filter(pk=video.pk).update(captions_job="")
+        assert seen(coach) == "failed"
+        Video.objects.filter(pk=video.pk).update(s3_key=build_s3_path("videos", "take-2.mp4"))
+        assert seen(coach) == "waiting"
+        Video.objects.filter(pk=video.pk).update(s3_key="demo/videos/flow.mp4")
+        assert seen(coach) is None
+        settings.SCRIBE_URL = ""
+        Video.objects.filter(pk=video.pk).update(s3_key=build_s3_path("videos", "take-2.mp4"))
+        assert seen(coach) is None

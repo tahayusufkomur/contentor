@@ -11,6 +11,8 @@ export interface Lesson {
   video_signed_url: string | null;
   captions_url: string | null;
   captions_language: string;
+  /** Coach only; null when the video gets no captions (none, or demo footage). */
+  captions_status: "waiting" | "working" | "ready" | "failed" | null;
   duration_seconds: number;
   content_html: string;
   is_free_preview: boolean;

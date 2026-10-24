@@ -386,6 +386,7 @@ export function CourseForm({
                 video_signed_url: baseLesson?.video_signed_url ?? null,
                 captions_url: baseLesson?.captions_url ?? null,
                 captions_language: baseLesson?.captions_language ?? "",
+                captions_status: baseLesson?.captions_status ?? null,
                 duration_seconds: baseLesson?.duration_seconds ?? 0,
                 content_html: baseLesson?.content_html ?? "",
                 is_free_preview: baseLesson?.is_free_preview ?? false,
@@ -1247,13 +1248,22 @@ export function CourseForm({
                                   {formatDuration(lesson.duration_seconds)}
                                 </TableCell>
                                 <TableCell>
-                                  <Badge
-                                    variant={
-                                      lesson.video_url ? "success" : "secondary"
-                                    }
-                                  >
-                                    {lesson.video_url ? "Uploaded" : "No video"}
-                                  </Badge>
+                                  <div className="flex flex-wrap items-center gap-1">
+                                    <Badge
+                                      variant={
+                                        lesson.video_url
+                                          ? "success"
+                                          : "secondary"
+                                      }
+                                    >
+                                      {lesson.video_url
+                                        ? "Uploaded"
+                                        : "No video"}
+                                    </Badge>
+                                    <CaptionsBadge
+                                      status={lesson.captions_status}
+                                    />
+                                  </div>
                                 </TableCell>
                                 <TableCell>
                                   {lesson.is_free_preview && (
@@ -1499,6 +1509,39 @@ function LessonDescription({
         <WorkingTag specialist="content" label={t("focus.writing")} />
       )}
     </div>
+  );
+}
+
+const CAPTIONS = {
+  waiting: {
+    label: "Captions not started",
+    hint: "Captions start on their own within a few minutes.",
+    variant: "secondary",
+  },
+  working: {
+    label: "Captions in progress",
+    hint: "Captions are being written from the video's sound. Reload the page to see when they are ready.",
+    variant: "warning",
+  },
+  ready: {
+    label: "Captions ready",
+    hint: "Students can turn on captions and read the transcript under the video.",
+    variant: "success",
+  },
+  failed: {
+    label: "Captions failed",
+    hint: "No captions could be made from this video's sound. Replacing the video tries again.",
+    variant: "outline",
+  },
+} as const;
+
+function CaptionsBadge({ status }: { status: Lesson["captions_status"] }) {
+  if (!status) return null;
+  const { label, hint, variant } = CAPTIONS[status];
+  return (
+    <Badge variant={variant} title={hint} className="whitespace-nowrap">
+      {label}
+    </Badge>
   );
 }
 

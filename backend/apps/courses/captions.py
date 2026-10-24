@@ -25,11 +25,31 @@ def available():
     return bool(settings.SCRIBE_URL)
 
 
+def _own_prefixes():
+    """Its own uploads and its live recordings only: the shared demo footage isn't hers."""
+    return (f"tenants/{get_tenant_slug()}/", "recordings/")
+
+
 def due():
-    """This tenant's videos whose captions don't match the file. Its own
-    uploads and its live recordings only: the shared demo footage isn't hers."""
-    own = Q(s3_key__startswith=f"tenants/{get_tenant_slug()}/") | Q(s3_key__startswith="recordings/")
+    """This tenant's videos whose captions don't match the file."""
+    own = Q()
+    for prefix in _own_prefixes():
+        own |= Q(s3_key__startswith=prefix)
     return Video.objects.filter(own).exclude(captions_key=F("s3_key"))
+
+
+def status(video):
+    """Where this file's captions stand, for the coach: waiting for the next
+    sweep, working at Scribe, ready, or failed. None for a file that never
+    gets any (Scribe off, the demo footage)."""
+    key = video.s3_key
+    if not available() or not key.startswith(_own_prefixes()):
+        return None
+    if video.captions_key != key:
+        return "waiting"
+    if video.captions_job:
+        return "working"
+    return "ready" if video.captions_vtt else "failed"
 
 
 def pending():
