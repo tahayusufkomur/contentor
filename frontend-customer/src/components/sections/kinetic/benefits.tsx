@@ -43,7 +43,7 @@ export function BenefitsSpec({ block, editable }: SectionProps) {
               <Img
                 value={block.image}
                 alt={typeof block.heading === "string" ? block.heading : ""}
-                className="relative aspect-[3/4] w-full max-sm:aspect-square"
+                className="relative aspect-square w-full sm:aspect-[3/4]"
                 imgClassName="object-[50%_20%]"
               />
             </div>

@@ -66,9 +66,9 @@ export function EventsCron({ block, data, editable }: SectionProps) {
                           </div>
                           <p className="font-mono text-xs text-muted-foreground">
                             <LocalWhen iso={e.scheduled_at} />
-                            {e.location
-                              ? ` · ${e.location}`
-                              : " · Online, live"}
+                            {e.type !== "onsite_event"
+                              ? " · Online, live"
+                              : e.location && ` · ${e.location}`}
                           </p>
                         </div>
                       </div>

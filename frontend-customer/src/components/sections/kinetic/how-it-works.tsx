@@ -21,7 +21,7 @@ export function HowItWorksTrack({ block, editable }: SectionProps) {
               <Img
                 value={block.image}
                 alt={typeof block.heading === "string" ? block.heading : ""}
-                className="kinetic-notch aspect-[4/5] w-full [--kinetic-notch:44px] max-sm:aspect-square"
+                className="kinetic-notch aspect-square w-full [--kinetic-notch:44px] sm:aspect-[4/5]"
                 imgClassName="object-[50%_25%]"
               />
             </div>

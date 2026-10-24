@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Txt, itemsOf } from "../kit";
+import { Txt, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, Section, WRAP, pad2, str } from "./ui";
 
@@ -27,16 +27,18 @@ export function FaqMan({ block, editable }: SectionProps) {
                 "mt-4 block text-[clamp(1.8rem,1.4rem+1.8vw,3.2rem)] leading-[1.08]",
               )}
             />
-            <div className="mt-6">
-              <Txt
-                block={block}
-                field="intro"
-                editable={editable}
-                as="p"
-                placeholder="Intro"
-                className="block max-w-[38ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
-              />
-            </div>
+            {has(block, "intro", editable) && (
+              <div className="mt-6">
+                <Txt
+                  block={block}
+                  field="intro"
+                  editable={editable}
+                  as="p"
+                  placeholder="Intro"
+                  className="block max-w-[38ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
+                />
+              </div>
+            )}
           </div>
         </div>
 

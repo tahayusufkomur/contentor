@@ -10,7 +10,7 @@ import {
 import type { SectionProps } from "../types";
 import { H3, LABEL, Opener, Section, StarGlyph, WRAP, str } from "./ui";
 
-/** Pricing "offerings": Stacked arch-topped sanctuary offering tiers with celestial star badge on the featured tier. */
+/** Pricing "offerings": Stacked arch-topped sanctuary offering tiers with a glow on the middle tier (a glow, no label: no plan is flagged popular). */
 export function PricingOfferings({ block, data, editable }: SectionProps) {
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
@@ -23,14 +23,14 @@ export function PricingOfferings({ block, data, editable }: SectionProps) {
         {plans.length ? (
           <div className="mt-14 grid gap-8 sm:grid-cols-2 md:mt-16 lg:grid-cols-3">
             {plans.map((plan, i) => {
-              const isFeatured = i === 1 || (plans.length === 1 && i === 0);
+              const isHighlight = i === 1 || (plans.length === 1 && i === 0);
 
               return (
                 <div
                   key={plan.id}
                   className={cn(
                     "relative flex flex-col justify-between overflow-hidden rounded-t-[2.5rem] rounded-b-[var(--radius)] border bg-[color-mix(in_oklch,var(--background)_85%,transparent)] p-8 text-center transition-all duration-300 md:p-10",
-                    isFeatured
+                    isHighlight
                       ? "border-primary sanctum-glow"
                       : "border-[color-mix(in_oklch,var(--primary)_30%,var(--border))]",
                   )}
@@ -40,14 +40,6 @@ export function PricingOfferings({ block, data, editable }: SectionProps) {
                     aria-hidden="true"
                     className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--primary)_18%,transparent),transparent_70%)]"
                   />
-
-                  {/* Highlight Star Badge */}
-                  {isFeatured && (
-                    <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full border border-[color-mix(in_oklch,var(--primary)_60%,transparent)] bg-[color-mix(in_oklch,var(--background)_80%,transparent)] px-2.5 py-1 text-[0.75rem] uppercase tracking-[0.16em] text-primary">
-                      <StarGlyph className="size-2.5" />
-                      <span>Featured</span>
-                    </div>
-                  )}
 
                   <div className="relative z-10">
                     <h3
@@ -104,7 +96,7 @@ export function PricingOfferings({ block, data, editable }: SectionProps) {
                         intervalMonths={plan.billing_interval_months}
                         className={cn(
                           "sanctum-focus h-auto min-h-12 w-full rounded-[var(--radius)] px-6 py-3 font-display text-[0.82rem] font-medium uppercase tracking-[0.14em] shadow-none transition-transform duration-300 motion-safe:hover:-translate-y-0.5 [&_svg]:hidden",
-                          isFeatured
+                          isHighlight
                             ? "bg-primary text-primary-foreground hover:bg-[color-mix(in_oklch,var(--primary)_85%,var(--foreground))]"
                             : "border border-primary text-primary hover:bg-[color-mix(in_oklch,var(--primary)_15%,transparent)]",
                         )}

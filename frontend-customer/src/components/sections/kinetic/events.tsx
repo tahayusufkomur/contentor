@@ -143,7 +143,7 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
                           : "bg-primary text-primary-foreground group-hover:bg-foreground group-hover:text-background",
                       )}
                     >
-                      <span className="max-sm:sr-only">Book</span>
+                      <span className="sr-only sm:not-sr-only">Book</span>
                       <Arrow className="size-4" />
                     </span>
                   </SmartLink>

@@ -321,7 +321,7 @@ const YOGA = photos({
   hero2: "40609d56-227e-4564-af21-d7c991d51953", // hands on a green mat, from above
   hero3: "6dcaee5b-56c3-4a34-8b46-17ae4e472775", // student stretching, plain wall
   hero4: "5f70b176-4365-4c58-aec5-e4535b52aa16", // bare feet on a navy mat
-  story: "3c770e39-2c9c-44ce-9c1c-f7c3abf4bfb9", // student, neck stretch in class
+  story: "aa94121b-607a-41f0-9486-63e2e287e668", // women resting in savasana, studio
   story2: "00ba6f64-788c-44eb-8b61-be3ed91cd868", // hands pressing a mat, down dog
   benefits: "f55ab5f3-8a20-46e9-af24-a9eb05ad2fff", // student resting in child's pose
   how: "d1ead5a5-7c9f-4f9c-857c-fa297cdf3cd1", // student with tea on a cushion
@@ -357,7 +357,7 @@ const BIZ = photos({
   m4: "b2389dfe-5bb1-4df0-8a15-70a92f5ab5c9", // pairs in an open office
   cta: "43285c3c-edcb-404c-82df-87acedbe1d48", // handshake
   contact: "c94bc48c-345c-46a3-8021-e963acbcf2df", // writing at a table
-  c1: "96c6e144-3f64-400f-bb24-be527bdc779c", // two colleagues talking
+  c1: "7b72e8cf-1880-4c1c-9084-6395e96741a0", // hands editing a printed plan, red pen
   c2: "76618df5-abc1-4f80-a6ea-3fcdf6594435", // conversation across a table
   c3: "4815e4ea-821d-4d47-8ed7-c0c2a8f93800", // laptop by a window
   e1: "01ec3f00-9768-461b-8531-158b89c1fdf3", // laptop in a cafe

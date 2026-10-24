@@ -50,6 +50,32 @@ describe("craft floor", () => {
     expect(overshoot).toEqual([]);
   });
 
+  it("no Tailwind max-* variants (the preset's raw `stage` screen makes Tailwind skip every one)", () => {
+    // packages/shared/tailwind-preset.ts defines a raw-query screen, and Tailwind
+    // then drops all max-sm / max-md / max-lg / max-[..] rules. Write mobile-first
+    // with min-width variants (sm:, md:, lg:) instead.
+    expect(hits(/(?<![\w-])max-(?:sm|md|lg|xl|2xl|\[)[^\s"'`]*/g)).toEqual([]);
+  });
+
+  it("no section file grades a photo: globals.css's one photoTreatment rule does", () => {
+    // Filter utilities and filter functions on a photo would fight the global
+    // rule (O2: the treatment covers every section photo). Kept on purpose, each
+    // an exact match: the band blends that tint a photo into its colour band
+    // (grid luminosity, kinetic multiply, encore's halftone dot screen) and the
+    // darkroom hero's lights-up reveal, a keyframe that ends at `filter: none`.
+    const grade =
+      /(?<![\w-])(?:grayscale|sepia)(?![\w-])|(?<![\w-])(?:saturate|hue-rotate|brightness|contrast|invert)-[\w.[\]%]+|\b(?:grayscale|sepia|saturate|hue-rotate|brightness|contrast|invert)\([^)]*\)|mix-blend(?:-mode:\s*[\w-]+|-[\w-]+)/g;
+    const kept = new Set([
+      "grid/grid.css: mix-blend-mode: luminosity",
+      "kinetic/hero.tsx: mix-blend-multiply",
+      "kinetic/cta.tsx: mix-blend-multiply",
+      "encore/encore.css: mix-blend-mode: multiply",
+      "darkroom/darkroom.css: brightness(1.6)",
+      "darkroom/darkroom.css: contrast(0.8)",
+    ]);
+    expect(hits(grade).filter((h) => !kept.has(h))).toEqual([]);
+  });
+
   it("no label or text set below 0.75rem (12px)", () => {
     const rem = hits(/(?:text-\[|font-size:\s*)0?\.\d+rem/g).filter(
       (h) => parseFloat(h.replace(/.*?(\d*\.\d+)rem$/, "$1")) < 0.75,

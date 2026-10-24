@@ -86,11 +86,19 @@ describe("costume labels", () => {
     ).toEqual([]);
   });
 
-  it("no invented 'most popular' badge", () => {
+  it("no plan is labelled popular, featured or a favourite (S3): nothing says which one is", () => {
+    // SubscriptionPlan has no coach-set featured field, so a badge is a guess.
+    // A highlight with no words may stay. Identifiers (isFeatured, featured) are
+    // lower-case or prefixed and do not match; sprout's "Family Favourite" and
+    // sanctum's "Featured" were the last two.
     expect(
       hits(
-        /most popular/i,
-        /^(darkroom|grid|ledger|journal|primer|studiofloor|terminal|encore|trail)\//,
+        /most popular|(?:family|crowd|fan|customer|student)s?['\u2019]? favou?rite|best[ -]?(?:value|seller)|top pick|our pick/i,
+      ),
+    ).toEqual([]);
+    expect(
+      hits(
+        /(?<!\w)(?:Featured|Recommended|Popular|FEATURED|RECOMMENDED|POPULAR)(?!\w)/,
       ),
     ).toEqual([]);
   });

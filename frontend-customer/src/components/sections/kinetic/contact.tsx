@@ -98,7 +98,7 @@ export function ContactBigmail({ block, editable }: SectionProps) {
                 value={block.image}
                 alt={typeof block.heading === "string" ? block.heading : ""}
                 className={cn(
-                  "kinetic-notch aspect-[4/5] w-full [--kinetic-notch:40px] max-lg:max-w-md",
+                  "kinetic-notch aspect-[4/5] w-full [--kinetic-notch:40px] max-w-md lg:max-w-none",
                   showForm ? "lg:col-span-5" : "lg:col-span-4",
                 )}
               />

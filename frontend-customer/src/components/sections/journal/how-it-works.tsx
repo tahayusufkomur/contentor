@@ -56,7 +56,7 @@ export function HowItWorksColumns({ block, editable }: SectionProps) {
           {steps.map((s, i) => (
             <li
               key={i}
-              className="border-b border-border py-10 md:max-lg:odd:pr-8 md:max-lg:even:border-l md:max-lg:even:pl-8 lg:border-b-0 lg:border-l lg:px-8 lg:pb-4 lg:first:border-l-0 lg:first:pl-0"
+              className="border-b border-border py-10 md:odd:pr-8 md:even:border-l md:even:pl-8 lg:border-b-0 lg:border-l lg:px-8 lg:pb-4 lg:first:border-l-0 lg:first:pl-0"
             >
               <span
                 aria-hidden="true"

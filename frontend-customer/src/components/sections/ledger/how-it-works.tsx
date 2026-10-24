@@ -61,14 +61,14 @@ export function HowItWorksQuarters({ block, editable }: SectionProps) {
           {steps.map((s, i) => (
             <li
               key={i}
-              className="border-b border-border py-10 md:max-lg:odd:pr-8 md:max-lg:even:border-l md:max-lg:even:pl-8 lg:border-b-0 lg:border-l lg:px-8 lg:pb-4 lg:first:border-l-0 lg:first:pl-0"
+              className="border-b border-border py-10 md:odd:pr-8 md:even:border-l md:even:pl-8 lg:border-b-0 lg:border-l lg:px-8 lg:pb-4 lg:first:border-l-0 lg:first:pl-0"
             >
               <div className="flex items-center gap-3">
                 <Ref>{i + 1}</Ref>
                 <span aria-hidden="true" className="h-6 w-px bg-foreground" />
               </div>
               <h3 className={cn(H3, "mt-6 text-[1.4rem] leading-[1.15]")}>
-                <span className="sr-only">{`Quarter ${i + 1}: `}</span>
+                <span className="sr-only">{`Step ${i + 1}: `}</span>
                 {s.title}
               </h3>
               <p className="mt-3 max-w-[36ch] text-pretty text-[1rem] leading-[1.65] text-muted-foreground">

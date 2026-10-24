@@ -8,19 +8,10 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import {
-  Arrow,
-  H3,
-  Opener,
-  PILL,
-  Section,
-  StarDoodle,
-  Sticker,
-  WRAP,
-} from "./ui";
+import { Arrow, H3, Opener, PILL, Section, WRAP } from "./ui";
 
 /** Membership and class passes styled as playful ticket-stub cards with
- *  cutout notches and star stickers. */
+ *  cutout notches. The raised card carries no label: no plan is flagged popular. */
 export function PricingTickets({ block, data, editable }: SectionProps) {
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
@@ -45,30 +36,17 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
             )}
           >
             {plans.map((plan, i) => {
-              const isPopular = plans.length > 1 ? i === 1 : true;
+              const isHighlight = plans.length > 1 ? i === 1 : true;
               return (
                 <div
                   key={plan.id}
                   className={cn(
                     "relative flex flex-col justify-between overflow-hidden rounded-[2.5rem] border bg-card p-8 shadow-md transition-transform duration-200 motion-safe:hover:-translate-y-1.5",
-                    isPopular
+                    isHighlight
                       ? "border-primary/40 bg-[color-mix(in_oklch,var(--accent)_12%,var(--card))] ring-2 ring-primary/30"
                       : "border-[color-mix(in_oklch,var(--border)_75%,transparent)]",
                   )}
                 >
-                  {/* Highlight Sticker for popular plan */}
-                  {isPopular && (
-                    <div className="absolute right-6 top-6">
-                      <Sticker
-                        rotate="6deg"
-                        className="gap-1 bg-accent px-3 py-1"
-                      >
-                        <StarDoodle className="size-3.5 text-accent-foreground" />
-                        <span>Family Favourite</span>
-                      </Sticker>
-                    </div>
-                  )}
-
                   {/* Top Ticket Stub */}
                   <div>
                     <div className="min-h-[5.5rem]">
@@ -141,7 +119,7 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
                           intervalMonths={plan.billing_interval_months}
                           className={cn(
                             "h-auto min-h-12 w-full rounded-full px-6 py-3 font-display text-[1rem] font-bold shadow-md transition-transform motion-safe:hover:-translate-y-0.5 [&_svg]:hidden",
-                            isPopular
+                            isHighlight
                               ? "bg-primary text-primary-foreground hover:bg-primary/90"
                               : "bg-foreground text-background hover:bg-foreground/90",
                           )}
