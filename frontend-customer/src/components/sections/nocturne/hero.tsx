@@ -42,7 +42,11 @@ function Actions({
       {secondary && (
         <SmartLink
           href={block.secondaryHref}
-          className={cn(BTN_GHOST, "group gap-3")}
+          className={cn(
+            BTN_GHOST,
+            "group gap-3",
+            !editable && "hidden sm:inline-flex",
+          )}
         >
           <Txt
             block={block}
@@ -112,7 +116,7 @@ export function HeroLantern({ block, editable }: SectionProps) {
             </p>
           )}
           <figure
-            className="nocturne-rise relative mt-14 w-full max-w-[22rem] md:mt-20 md:max-w-[26rem]"
+            className="nocturne-rise relative mt-9 w-full max-w-[22rem] md:mt-20 md:max-w-[26rem]"
             style={delay(850)}
           >
             <Img

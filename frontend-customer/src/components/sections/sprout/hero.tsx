@@ -1,7 +1,8 @@
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
-import { heroPhotos, tileStyle, TILE_W } from "../collage";
+import { heroPhotos, tileStyle } from "../collage";
 import {
   Arrow,
   BTN,
@@ -40,7 +41,10 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
+        <SmartLink
+          href={block.secondaryHref}
+          className={cn(BTN_GHOST, !editable && "hidden sm:inline-flex")}
+        >
           <Txt
             block={block}
             field="secondaryLabel"
@@ -52,6 +56,14 @@ function Actions({
     </div>
   );
 }
+
+/** Below sm the cluster is one big blob photo with a second tucked at its
+ *  corner (a phone has no room for four small ones); from sm up each tile sits
+ *  where the cluster puts it. */
+const phoneTile = (n: number, count: number) =>
+  n === 0
+    ? cn("top-[2%] w-[84%]", count === 1 ? "left-[8%]" : "left-[4%]")
+    : "left-[52%] top-[62%] w-[44%]";
 
 /** The mosaic: a friendly centred welcome over a cluster of up to four
  *  photos cut as blobs, a circle and a soft square, on a pale yellow cloud. */
@@ -68,13 +80,13 @@ export function HeroMosaic({ block, editable }: SectionProps) {
     <Section tone="paper" className="pt-10 md:pt-16 lg:pt-20" label={alt}>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute max-sm:hidden left-6 top-8 text-accent opacity-70 sprout-wiggle"
+        className="pointer-events-none absolute left-6 top-8 hidden text-accent opacity-70 sprout-wiggle sm:block"
       >
         <SunDoodle className="size-12 md:size-16" />
       </div>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute max-sm:hidden right-8 top-12 text-primary opacity-40 sprout-float"
+        className="pointer-events-none absolute right-8 top-12 hidden text-primary opacity-40 sprout-float sm:block"
       >
         <SquiggleDoodle className="w-20 md:w-28" />
       </div>
@@ -114,7 +126,7 @@ export function HeroMosaic({ block, editable }: SectionProps) {
         />
         <div
           className={cn(
-            "relative mx-auto mt-14 w-full max-w-[64rem]",
+            "relative mx-auto mt-10 w-full max-w-[64rem] md:mt-14",
             photos.length > 0 && "aspect-[4/5] sm:aspect-[4/3] md:aspect-[5/2]",
           )}
         >
@@ -124,23 +136,37 @@ export function HeroMosaic({ block, editable }: SectionProps) {
               className="sprout-blob-3 absolute inset-x-[8%] inset-y-[6%] bg-[color-mix(in_oklch,var(--accent)_30%,transparent)]"
             />
           )}
-          {photos.map((value, n) => (
-            <div
-              key={n}
-              className={cn("absolute", TILE_W, n > 1 && "max-sm:hidden")}
-              style={{ ...tileStyle(photos.length, n), zIndex: 1 + (n % 2) }}
-            >
-              <Img
-                value={value}
-                alt={alt}
-                priority={n === 0}
+          {photos.map((value, n) => {
+            const { left, top, ...place } = tileStyle(photos.length, n);
+            return (
+              <div
+                key={n}
                 className={cn(
-                  shapes[n % 4],
-                  "w-full border-[6px] border-background shadow-lg",
+                  "absolute sm:left-[var(--tl)] sm:top-[var(--tt)] sm:w-[var(--tw)]",
+                  phoneTile(n, photos.length),
+                  n > 1 && "hidden sm:block",
                 )}
-              />
-            </div>
-          ))}
+                style={
+                  {
+                    ...place,
+                    "--tl": left,
+                    "--tt": top,
+                    zIndex: 1 + (n % 2),
+                  } as CSSProperties
+                }
+              >
+                <Img
+                  value={value}
+                  alt={alt}
+                  priority={n === 0}
+                  className={cn(
+                    shapes[n % 4],
+                    "w-full border-[6px] border-background shadow-lg",
+                  )}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
     </Section>

@@ -39,7 +39,10 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
+        <SmartLink
+          href={block.secondaryHref}
+          className={cn(BTN_GHOST, !editable && "hidden sm:inline-flex")}
+        >
           <Txt
             block={block}
             field="secondaryLabel"
@@ -96,7 +99,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
           )}
         </div>
 
-        <div className="mt-12 grid gap-y-12 md:mt-16 md:grid-cols-12 md:gap-x-8 lg:mt-20 lg:gap-x-10">
+        <div className="mt-8 grid gap-y-9 md:mt-16 md:grid-cols-12 md:gap-x-8 lg:mt-20 lg:gap-x-10">
           <div className="flex flex-col md:col-span-7 lg:col-span-8">
             <div className="ledger-rise" style={delay(400)}>
               <Txt

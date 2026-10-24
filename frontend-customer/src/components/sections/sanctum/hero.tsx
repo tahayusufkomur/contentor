@@ -42,7 +42,10 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
+        <SmartLink
+          href={block.secondaryHref}
+          className={cn(BTN_GHOST, !editable && "hidden sm:inline-flex")}
+        >
           <Txt
             block={block}
             field="secondaryLabel"
@@ -58,33 +61,41 @@ function Actions({
 /** The observatory: the same ceremonial centre line under a larger zodiac
  *  ring, but no arch: the photographs are three moons in a row on the
  *  horizon, the first one full and in the middle, the others waxing either
- *  side. One photo is one full moon; two are a pair. */
+ *  side. One photo is one full moon; two are a pair. On a phone the full moon
+ *  rises alone, across the screen, above the words. */
 export function HeroObservatory({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const all = heroPhotos(block, editable).slice(0, 3);
   // The first photo is the full moon in the middle, the rest flank it.
   const moons =
     all.length === 3 ? [all[1], all[0], all[2]] : all.length === 2 ? all : all;
+  const full = all.length === 3 ? 1 : 0;
+  // A headline past the home cap (36) is a coach's own long one: a smaller moon keeps it and the button on the first screen.
+  const FULL =
+    alt.length <= 36 ? "size-[min(calc(100vw_-_2rem),26rem)]" : "size-64";
   const sizes =
     all.length === 3
-      ? ["size-24 md:size-44", "size-40 md:size-72", "size-24 md:size-44"]
+      ? ["size-24 md:size-44", `${FULL} md:size-72`, "size-24 md:size-44"]
       : all.length === 2
-        ? ["size-36 md:size-60", "size-36 md:size-60"]
-        : ["size-52 md:size-80"];
+        ? [`${FULL} md:size-60`, "size-36 md:size-60"]
+        : [`${FULL} md:size-80`];
   return (
     <Section
       tone="temple"
-      className="relative pt-16 md:pt-24 lg:pt-28"
+      className={cn(
+        "relative md:pt-24 lg:pt-28",
+        moons.length > 0 ? "pt-4" : "pt-16",
+      )}
       label={alt}
     >
       <ZodiacRing
         size={860}
         className="left-1/2 top-4 -translate-x-1/2 opacity-30"
       />
-      <div className={cn(WRAP, "relative z-10")}>
-        <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
+      <div className={cn(WRAP, "relative z-10 flex flex-col")}>
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
           <Kicker block={block} editable={editable} />
-          <MoonPhases className="mt-4" />
+          <MoonPhases className="mt-4 hidden md:flex" />
           <Txt
             block={block}
             field="headline"
@@ -113,22 +124,27 @@ export function HeroObservatory({ block, editable }: SectionProps) {
               <StarGlyph className="size-3 text-primary" />
             </div>
           )}
-          <Actions block={block} editable={editable} className="mt-10" />
+          <Actions
+            block={block}
+            editable={editable}
+            className="mt-8 md:mt-10"
+          />
         </div>
         {moons.length > 0 && (
-          <ul className="mt-16 flex items-end justify-center gap-4 md:mt-20 md:gap-10">
+          <ul className="order-first mb-6 flex items-end justify-center gap-4 md:order-none md:mb-0 md:mt-20 md:gap-10">
             {moons.map((value, n) => (
               <li
                 key={n}
                 className={cn(
                   "rounded-full border border-[color-mix(in_oklch,var(--primary)_50%,transparent)] p-1 shadow-2xl",
                   sizes[n],
+                  n !== full && "hidden md:block",
                 )}
               >
                 <Img
                   value={value}
                   alt={alt}
-                  priority={n === (all.length === 3 ? 1 : 0)}
+                  priority={n === full}
                   className="sanctum-oval size-full rounded-full"
                 />
               </li>

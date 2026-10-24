@@ -41,7 +41,10 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
+        <SmartLink
+          href={block.secondaryHref}
+          className={cn(BTN_GHOST, !editable && "hidden sm:inline-flex")}
+        >
           <Txt
             block={block}
             field="secondaryLabel"
@@ -64,7 +67,7 @@ export function HeroPortrait({ block, editable }: SectionProps) {
   return (
     <Section className="pt-12 md:pt-16 lg:pt-24" label={alt}>
       <div className={WRAP}>
-        <div className="grid items-center gap-y-14 md:grid-cols-12 md:gap-x-10 lg:gap-x-14">
+        <div className="grid items-center gap-y-9 md:grid-cols-12 md:gap-x-10 md:gap-y-14 lg:gap-x-14">
           <div className="md:col-span-7 lg:col-span-7">
             <div className="atelier-fade-up" style={delay(0)}>
               <Kicker block={block} editable={editable} />

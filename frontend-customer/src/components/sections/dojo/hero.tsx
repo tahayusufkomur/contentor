@@ -40,7 +40,10 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
+        <SmartLink
+          href={block.secondaryHref}
+          className={cn(BTN_GHOST, !editable && "hidden sm:inline-flex")}
+        >
           <Txt
             block={block}
             field="secondaryLabel"
@@ -55,7 +58,9 @@ function Actions({
 
 /** The hall: everything on the centre line, the seal and kicker, the claim in
  *  black Mincho over a large ensō, the dek and the actions; then up to three
- *  training photos side by side as one horizontal band of thin-framed panels. */
+ *  training photos side by side as one horizontal band of thin-framed panels.
+ *  On a phone the first photo takes the whole row, tall, so it fills the first
+ *  screen under the button; the others follow in a pair. */
 export function HeroHall({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const photos = heroPhotos(block, editable).slice(0, 3);
@@ -85,7 +90,7 @@ export function HeroHall({ block, editable }: SectionProps) {
                   "mx-auto block",
                   alt.length <= 26
                     ? "max-w-[14ch] text-[clamp(3rem,1.4rem+6.4vw,7.4rem)] leading-[0.98]"
-                    : "max-w-[18ch] text-[clamp(2.4rem,1.2rem+3.8vw,5rem)] leading-[1.02]",
+                    : "max-w-[18ch] text-[clamp(2.4rem,0.6rem+6vw,6.5rem)] leading-[1.02]",
                 )}
               />
             </div>
@@ -125,7 +130,7 @@ export function HeroHall({ block, editable }: SectionProps) {
         {photos.length > 0 && (
           <ul
             className={cn(
-              "dojo-rise mt-14 grid gap-3 text-left sm:gap-4 md:mt-20",
+              "dojo-rise mt-10 grid gap-3 text-left sm:gap-4 md:mt-20",
               photos.length === 1
                 ? "grid-cols-1"
                 : photos.length === 2
@@ -139,18 +144,22 @@ export function HeroHall({ block, editable }: SectionProps) {
                 key={n}
                 className={cn(
                   "dojo-photo border border-border bg-background p-2 shadow-sm",
-                  photos.length === 3 && n === 2 && "col-span-2 md:col-span-1",
+                  photos.length === 3 && n === 0 && "col-span-2 md:col-span-1",
+                  photos.length === 2 && "col-span-2 sm:col-span-1",
                 )}
               >
                 <Img
                   value={value}
                   alt={alt}
                   priority={n === 0}
-                  className={
+                  className={cn(
+                    "w-full",
                     photos.length === 1
-                      ? "aspect-[21/9] w-full"
-                      : "aspect-[4/3] w-full"
-                  }
+                      ? "aspect-[4/5] sm:aspect-[21/9]"
+                      : n === 0
+                        ? "aspect-[4/5] sm:aspect-[4/3]"
+                        : "aspect-[4/3]",
+                  )}
                 />
               </li>
             ))}

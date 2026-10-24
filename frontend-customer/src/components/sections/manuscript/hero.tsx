@@ -41,7 +41,10 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
+        <SmartLink
+          href={block.secondaryHref}
+          className={cn(BTN_GHOST, !editable && "hidden sm:inline-flex")}
+        >
           <Txt
             block={block}
             field="secondaryLabel"
@@ -80,7 +83,9 @@ export function HeroTitlepage({ block, editable }: SectionProps) {
                 H1,
                 alt.length <= 26
                   ? "max-w-[13ch] text-[clamp(2.8rem,1.4rem+5.5vw,6rem)] leading-[1.02]"
-                  : "max-w-[18ch]",
+                  : alt.length <= 36
+                    ? "max-w-[18ch] text-[clamp(2.8rem,1.3rem+4.6vw,5.5rem)]"
+                    : "max-w-[18ch]",
                 "mx-auto block",
               )}
             />
