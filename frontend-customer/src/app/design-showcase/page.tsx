@@ -9,7 +9,12 @@ import {
 } from "@shared/sections/types";
 import { SITE_STYLES, styleFontsHref, styleScope } from "@/lib/site-styles";
 import { STYLE_SECTIONS } from "@/components/sections/registry";
-import { fixtureBlock, fixtureData } from "@/components/sections/fixtures";
+import {
+  FIXTURE_SETS,
+  fixtureBlock,
+  fixtureData,
+  type FixtureSet,
+} from "@/components/sections/fixtures";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +23,8 @@ export const dynamic = "force-dynamic";
  * content, or a whole recipe page as a coach would get it.
  *   /design-showcase?style=<id>                 all families, long content
  *   /design-showcase?style=<id>&size=short      shortest allowed content
+ *   /design-showcase?style=<id>&size=real&fixture=yoga|business|family
+ *                                               content as a composed site reads
  *   /design-showcase?style=<id>&family=hero     one family
  *   /design-showcase?style=<id>&page=home       a full recipe page
  *   &bare=1 hides the toolbar (for screenshots)
@@ -32,7 +39,9 @@ export default async function DesignShowcasePage({
   const styleIds = Object.keys(SITE_STYLES);
   const style = SITE_STYLES[sp.style ?? ""] ?? SITE_STYLES[styleIds[0]];
   if (!style) return <p className="p-8">No styles yet.</p>;
-  const size = sp.size === "short" ? "short" : "long";
+  const size = sp.size === "short" || sp.size === "real" ? sp.size : "long";
+  const set =
+    FIXTURE_SETS.find((s) => s === sp.fixture) ?? ("yoga" as FixtureSet);
   const sections = STYLE_SECTIONS[style.id] ?? {};
 
   type Item = { family: FamilyId; variant: string };
@@ -59,7 +68,7 @@ export default async function DesignShowcasePage({
           {styleIds.map((id) => (
             <a
               key={id}
-              href={`?style=${id}&size=${size}`}
+              href={`?style=${id}&size=${size}&fixture=${set}`}
               className={id === style.id ? "underline" : "opacity-60"}
             >
               {id}
@@ -96,6 +105,17 @@ export default async function DesignShowcasePage({
           <a href={`?style=${style.id}&size=short`} className="opacity-60">
             short
           </a>
+          {FIXTURE_SETS.map((f) => (
+            <a
+              key={f}
+              href={`?style=${style.id}&size=real&fixture=${f}`}
+              className={
+                size === "real" && set === f ? "underline" : "opacity-60"
+              }
+            >
+              real:{f}
+            </a>
+          ))}
         </nav>
       )}
       {items.map(({ family, variant }, i) => {
@@ -119,8 +139,8 @@ export default async function DesignShowcasePage({
               </div>
             )}
             <Comp
-              block={fixtureBlock(family, `${style.id}.${variant}`, size)}
-              data={fixtureData(family, size)}
+              block={fixtureBlock(family, `${style.id}.${variant}`, size, set)}
+              data={fixtureData(family, size, set)}
             />
           </div>
         );
