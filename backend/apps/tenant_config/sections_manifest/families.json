@@ -48,7 +48,7 @@
         "image": {
           "type": "image",
           "aspect": "4:5",
-          "role": "the coach teaching or practising, the hero moment",
+          "role": "on home the coach teaching or practising, the hero moment; on other pages students or a close detail of practice",
           "required": true,
           "label": "Main photo"
         },
@@ -111,14 +111,14 @@
         "image": {
           "type": "image",
           "aspect": "4:5",
-          "role": "warm portrait of the coach",
+          "role": "on other pages a warm portrait of the coach; on home, where the hero is the coach, students or a close detail of practice",
           "required": true,
           "label": "Portrait"
         },
         "image2": {
           "type": "image",
           "aspect": "3:2",
-          "role": "the coach in their teaching setting",
+          "role": "students in class, or a close detail of practice (hands, feet, a back view)",
           "label": "Setting photo"
         }
       }
@@ -482,7 +482,7 @@
         "image": {
           "type": "image",
           "aspect": "4:5",
-          "role": "the coach, friendly and approachable",
+          "role": "a welcoming close detail of practice, no recognisable face",
           "label": "Photo"
         }
       }
