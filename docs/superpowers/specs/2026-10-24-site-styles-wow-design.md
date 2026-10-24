@@ -327,7 +327,7 @@ Status values:
 | 1.1 | Hero and copy rules in the composer | none | Task 1.1 | done (2026-10-24, 3a836ecc) |
 | 1.1b | At most three courses and three events on home | 1.1 (same files) | Task 1.1b | done (2026-10-24, c9c60462) |
 | 1.3 | One protagonist, no faces shared with peers (composer photos) | 1.1b (same files) | Task 1.3 | done (2026-10-24, 330f48bf) |
-| 1.2 | Photo treatment per style (manifest → CSS) | none | Task 1.2 | todo |
+| 1.2 | Photo treatment per style (manifest → CSS) | none | Task 1.2 | done (2026-10-24, 2fc3af85) |
 | 1.4 | Personal chrome and sticky phone CTA | none | Task 1.4 | todo |
 | 1.5 | Craft floor (detector fixes, one money formatter) | 1.2 | Task 1.5 | todo |
 | 1.6 | Costume labels out | 1.5 | Task 1.6 | todo |
@@ -491,6 +491,13 @@ against G1.
   same-niche tenants already use, and falls back to them only when nothing else fits (each slot still
   gets a distinct photo). Learned: a test that only checks "every slot is filled" passes on a page that
   repeats one photo; assert distinctness. Plans stored before this keep their old briefs until replanned.
+- 2026-10-24, WP-1.2 (2fc3af85): every style manifest declares `photoTreatment` (mono 5, tint 5,
+  vivid 3, soft 8); `styleVars` turns it into four `--photo-*` variables. One top-level rule in
+  `globals.css` grades `[data-site-img-frame] > img[data-site-img]` and tints the frame's `::after`.
+  The literal `img[data-site-img]` would also have graded the photo inside a designed cover. Per-style
+  grades are gone, and so is hover-to-colour in kinetic, dojo and grid; velvet's fades moved to
+  `::before`. For Gate A: kinetic keeps a 20% hero scrim for H1 contrast; grid (luminosity) and kinetic
+  (multiply) keep their band duotones.
 
 ## 10. Resources
 
