@@ -13,12 +13,13 @@ import {
   Page,
   Section,
   WRAP,
+  pad2,
   str,
 } from "./ui";
 
 type Step = { title?: string; text?: string };
 
-/** Step-by-step process laid out as lettered classroom exercises on ruled paper. */
+/** Step-by-step process laid out as numbered classroom steps on ruled paper. */
 export function HowItWorksLessonPlan({ block, editable }: SectionProps) {
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
@@ -70,7 +71,7 @@ export function HowItWorksLessonPlan({ block, editable }: SectionProps) {
             {steps.map((s, i) => (
               <li key={i}>
                 <p className={cn(LABEL, "text-accent")} aria-hidden="true">
-                  Exercise 1{String.fromCharCode(97 + i)}
+                  {pad2(i)}
                 </p>
                 <div className="mt-3 flex items-start gap-3">
                   <Check className="mt-2" />

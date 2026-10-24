@@ -73,8 +73,8 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
 
                       {!!plan.item_count && (
                         <p className="mt-4 font-mono text-xs font-semibold text-primary">
-                          --includes {plan.item_count}{" "}
-                          {plan.item_count === 1 ? "item" : "items"}
+                          {plan.item_count}{" "}
+                          {plan.item_count === 1 ? "item" : "items"} included
                         </p>
                       )}
 
@@ -88,7 +88,7 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
                     <div className="mt-8 pt-6 border-t border-border/60">
                       {plan.is_subscribed ? (
                         <p className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius)] border-2 border-primary font-mono text-[0.95rem] font-bold text-primary">
-                          Subscribed [ACTIVE]
+                          Subscribed
                         </p>
                       ) : (
                         <SubscribeButton
@@ -105,7 +105,7 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
                         href={`/plans/${plan.id}`}
                         className="terminal-link mt-4 block w-fit font-mono text-[0.85rem] font-semibold"
                       >
-                        [ Inspect details -&gt; ]
+                        See what&rsquo;s included
                       </SmartLink>
                     </div>
                   </WindowChrome>
@@ -118,7 +118,7 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
             <EmptyHint
               editable={editable}
               title="No membership plans yet"
-              text="Create a plan under Billing and it appears in the manifest automatically."
+              text="Create a plan under Billing and it appears here automatically."
             />
           </div>
         )}

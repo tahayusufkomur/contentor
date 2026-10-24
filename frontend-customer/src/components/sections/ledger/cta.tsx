@@ -50,7 +50,7 @@ export function CtaSignature({ block, editable }: SectionProps) {
   return (
     <Section tone="navy" label={alt}>
       <div className={WRAP}>
-        <RunningHead block={block} editable={editable} right="Signed" />
+        <RunningHead block={block} editable={editable} />
         {showImage ? (
           <div className="mt-12 grid items-center gap-y-12 lg:mt-16 lg:grid-cols-12 lg:gap-x-10">
             <figure className="lg:col-span-6">

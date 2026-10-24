@@ -93,15 +93,6 @@ export function ContactBooking({ block, editable }: SectionProps) {
         {showForm && (
           <div className="lg:col-span-6 lg:col-start-7">
             <div className="studiofloor-card rounded-[var(--radius)] p-8 md:p-10">
-              <div className="mb-6 flex items-center justify-between border-b border-border/80 pb-4">
-                <span className="studiofloor-display text-xs font-bold uppercase tracking-widest text-primary">
-                  SESSION INQUIRY
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="size-2 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]"
-                />
-              </div>
               <ContactForm
                 className="studiofloor-form space-y-7"
                 buttonClassName="studiofloor-focus studiofloor-glow-btn h-auto min-h-12 w-full rounded-[var(--radius)] bg-primary px-8 py-3.5 studiofloor-display text-[1rem] font-extrabold italic text-primary-foreground shadow-[0_0_24px_color-mix(in_oklch,var(--primary)_40%,transparent)] hover:shadow-[0_0_36px_color-mix(in_oklch,var(--primary)_60%,transparent)]"

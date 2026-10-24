@@ -49,9 +49,6 @@ export function StoryLinerNotes({ block, editable }: SectionProps) {
             />
             {has(block, "signature", editable) && (
               <p className={cn(LABEL, "mt-8")}>
-                <span aria-hidden="true" className="text-muted-foreground">
-                  Produced by{" "}
-                </span>
                 <Txt
                   block={block}
                   field="signature"

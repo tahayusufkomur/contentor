@@ -57,12 +57,16 @@ export function EventsSchedule({ block, data, editable }: SectionProps) {
                       {e.title}
                     </h3>
                     <div className="mt-2 flex flex-wrap items-center gap-3 text-[0.92rem] text-muted-foreground">
-                      <span>
-                        {e.type === "onsite_event"
-                          ? e.location || "Studio Floor"
-                          : "Online Live Stream"}
-                      </span>
-                      <span aria-hidden="true">·</span>
+                      {(e.type !== "onsite_event" || e.location) && (
+                        <>
+                          <span>
+                            {e.type === "onsite_event"
+                              ? e.location
+                              : "Online Live Stream"}
+                          </span>
+                          <span aria-hidden="true">·</span>
+                        </>
+                      )}
                       <span className="studiofloor-display font-extrabold italic text-primary">
                         {eventPriceLabel(e)}
                       </span>

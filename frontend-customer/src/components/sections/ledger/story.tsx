@@ -14,7 +14,7 @@ export function StoryMemo({ block, editable }: SectionProps) {
   return (
     <Section label={alt}>
       <div className={WRAP}>
-        <RunningHead block={block} editable={editable} right="Memorandum" />
+        <RunningHead block={block} editable={editable} />
 
         <div className="mt-12 grid gap-y-12 md:mt-16 md:grid-cols-12 md:gap-x-8 lg:mt-20 lg:gap-x-10">
           <figure className="order-last md:order-first md:col-span-5">

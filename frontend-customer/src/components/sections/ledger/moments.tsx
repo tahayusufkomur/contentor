@@ -57,7 +57,7 @@ export function MomentsFigures({ block, editable }: SectionProps) {
         )}
 
         <ul
-          aria-label={alt || "Figures"}
+          aria-label={alt || "Moments"}
           className="grid grid-cols-2 gap-4 md:grid-cols-12 md:gap-x-8 md:gap-y-12"
         >
           {photos.map((p, i) => {

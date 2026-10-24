@@ -111,7 +111,7 @@ export function CoursesModules({ block, data, editable }: SectionProps) {
             <EmptyHint
               editable={editable}
               title="No published courses yet"
-              text="Publish a course and it appears in the module tree automatically."
+              text="Publish a course and it appears here automatically."
             />
           </div>
         )}

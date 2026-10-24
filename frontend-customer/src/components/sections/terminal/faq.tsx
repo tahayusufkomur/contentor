@@ -12,12 +12,9 @@ export function FaqMan({ block, editable }: SectionProps) {
   return (
     <Section tone="console" label={str(block.heading) || "Questions"}>
       <div className={cn(WRAP, "grid gap-y-12 lg:grid-cols-12 lg:gap-x-12")}>
-        {/* Left column: MAN(1) Header */}
+        {/* Left column: the heading */}
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-24">
-            <div className="mb-4 font-mono text-xs text-primary font-bold">
-              MANUAL(1) · FAQ REFERENCE
-            </div>
             <Kicker block={block} editable={editable} />
             <Txt
               block={block}
@@ -31,30 +28,20 @@ export function FaqMan({ block, editable }: SectionProps) {
               )}
             />
             <div className="mt-6">
-              <p
-                className="font-mono text-xs text-muted-foreground select-none"
-                aria-hidden="true"
-              >
-                {"// SYNOPSIS"}
-              </p>
               <Txt
                 block={block}
                 field="intro"
                 editable={editable}
                 as="p"
                 placeholder="Intro"
-                className="mt-1 block max-w-[38ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
+                className="block max-w-[38ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
               />
             </div>
           </div>
         </div>
 
-        {/* Right column: Options / Questions accordion */}
+        {/* Right column: the questions */}
         <div className="terminal-faq border-b border-border lg:col-span-7">
-          <div className="mb-3 font-mono text-xs text-accent font-bold uppercase tracking-wider">
-            -- OPTIONS &amp; PARAMETERS
-          </div>
-
           {items.map((it, i) => (
             <details
               key={i}
@@ -73,7 +60,7 @@ export function FaqMan({ block, editable }: SectionProps) {
                     className="text-accent mr-2 font-normal text-sm"
                     aria-hidden="true"
                   >
-                    -q{pad2(i)}
+                    {pad2(i)}
                   </span>
                   {it.q}
                 </span>

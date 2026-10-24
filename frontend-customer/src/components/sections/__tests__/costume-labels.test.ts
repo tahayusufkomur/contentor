@@ -80,7 +80,7 @@ describe("costume labels", () => {
     // --feat_01, (HEAD -> stage_01), MODE: 0755, NEXT RUN, build: passing, [OK], verified module, ...
     expect(
       hits(
-        /--feat_|HEAD -(?:&gt;|>)|MODE:|NEXT RUN|SCHEDULER:|build: passing|license: open|branch: main|assignee_email|sla_response|\[OK\]|verified module|--recommended|FAKE_HASHES|Signed-off-by|Background & Philosophy|QUICKSTART|ls -la|\/\/ overview|@author/,
+        /--feat_|HEAD -(?:&gt;|>)|MODE:|NEXT RUN|SCHEDULER:|build: passing|license: open|branch: main|assignee_email|sla_response|\[OK\]|verified module|--recommended|FAKE_HASHES|Signed-off-by|Background & Philosophy|QUICKSTART|ls -la|\/\/ overview|@author|crontab|MANUAL\(|SYNOPSIS|OPTIONS &|--includes|\[ACTIVE\]|Inspect details|-q\{pad|"(?:calendar|courses)\/"/,
         /^terminal\//,
       ),
     ).toEqual([]);
@@ -95,11 +95,22 @@ describe("costume labels", () => {
     ).toEqual([]);
   });
 
+  it("no document-jargon head words or invented fallbacks (R5, S3)", () => {
+    // ledger running-head marks, a lone section sign, "Produced by", "SESSION INQUIRY",
+    // and a location nobody gave ("Studio Floor").
+    expect(
+      hits(
+        /right="(?:Principle|Correspondence|Memorandum|Signed|Appendix)"|§ ?\d|Produced by|SESSION INQUIRY|\bQ\{i|\|\| "Studio Floor"/,
+        /^(ledger|encore|studiofloor)\//,
+      ),
+    ).toEqual([]);
+  });
+
   it("no prop word in front of an index number", () => {
     // "No. 01", "Plate 02", "Edition 03", "MOVE 01", "CUE 02", "PHASE 01", "Waypoint 01", ...
     expect(
       hits(
-        /\b(?:No\.|Plate|Edition|Move|Cue|Phase|Waypoint|Route|Pass|Permit|Unit|CH|Mirror) ?(?:\d|\{pad)/i,
+        /\b(?:No\.|Plate|Edition|Move|Cue|Phase|Waypoint|Route|Pass|Permit|Unit|CH|Mirror|Exercise) ?(?:\d|\{pad)/i,
         /^(darkroom|grid|ledger|journal|primer|studiofloor|terminal|encore|trail)\//,
       ),
     ).toEqual([]);

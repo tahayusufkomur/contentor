@@ -20,7 +20,7 @@ export function ContactLetterhead({ block, editable }: SectionProps) {
   return (
     <Section label={alt}>
       <div className={WRAP}>
-        <RunningHead block={block} editable={editable} right="Correspondence" />
+        <RunningHead block={block} editable={editable} />
 
         <div className="mt-12 grid gap-y-14 lg:mt-16 lg:grid-cols-12 lg:gap-x-10">
           <div className={showForm ? "lg:col-span-5" : "lg:col-span-7"}>

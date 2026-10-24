@@ -22,15 +22,9 @@ export function PhilosophyPrinciples({ block, editable }: SectionProps) {
   return (
     <Section tone="surface" label="Philosophy">
       <div className={WRAP}>
-        <RunningHead block={block} editable={editable} right="Principle" />
+        <RunningHead block={block} editable={editable} />
 
         <figure className="mt-12 lg:pl-[8.333%]">
-          <span
-            aria-hidden="true"
-            className={cn(LABEL, "mb-6 block text-accent")}
-          >
-            § 1
-          </span>
           <blockquote className="relative">
             <Txt
               block={block}

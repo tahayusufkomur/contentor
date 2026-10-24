@@ -15,7 +15,7 @@ export function FaqAppendix({ block, editable }: SectionProps) {
       <div className={cn(WRAP, "grid gap-y-12 lg:grid-cols-12 lg:gap-x-10")}>
         <div className="lg:col-span-4">
           <div className="lg:sticky lg:top-24">
-            <RunningHead block={block} editable={editable} right="Appendix" />
+            <RunningHead block={block} editable={editable} />
             <Txt
               block={block}
               field="heading"

@@ -94,7 +94,7 @@ export function EventsCron({ block, data, editable }: SectionProps) {
             <EmptyHint
               editable={editable}
               title="No upcoming events scheduled"
-              text="Schedule a live class or session and it appears in the crontab table."
+              text="Schedule a live class or session and it appears here."
             />
           </div>
         )}
@@ -105,12 +105,6 @@ export function EventsCron({ block, data, editable }: SectionProps) {
               href="/calendar"
               className="group terminal-link inline-flex items-center gap-2 font-mono text-[0.95rem] font-bold"
             >
-              <span
-                className="text-muted-foreground select-none"
-                aria-hidden="true"
-              >
-                $ crontab -l
-              </span>
               {has(block, "ctaLabel", editable) ? (
                 <Txt
                   block={block}
@@ -119,7 +113,7 @@ export function EventsCron({ block, data, editable }: SectionProps) {
                   placeholder="Button text"
                 />
               ) : (
-                "calendar/"
+                "Full calendar"
               )}
               <Arrow />
             </SmartLink>
