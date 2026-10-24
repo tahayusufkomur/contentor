@@ -111,6 +111,7 @@ export function HeroPortrait({ block, editable }: SectionProps) {
                     H1,
                     "max-w-[14ch] text-[clamp(3rem,1.3rem+4.9vw,6.4rem)] leading-[0.98]",
                     alt.length > 28 &&
+                      alt.length <= 40 &&
                       "text-[2.6rem] leading-[1] sm:text-[clamp(3rem,1.3rem+4.9vw,6.4rem)] sm:leading-[0.98]",
                     alt.length > 40 &&
                       "text-[clamp(2.3rem,1.2rem+3.6vw,4.8rem)] leading-[1.04]",

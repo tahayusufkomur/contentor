@@ -5,11 +5,15 @@
 // the demo tenant with the content a composed site really carries (size=real, fixture=yoga:
 // no hero meta, no second button). No sign-in, no data written.
 //
-//   phone  390x844   under a 64 px spacer (the real site header), with a short (12 characters),
-//                    a mid (26, inside every style's giant-type branch) and a longest (36)
-//                    headline: h1 bottom <= 844; the first link/button fully inside 0..844;
-//                    the largest hero image shows >= 0.4 * 844 px of its height on screen.
-//                    Type-led exception (no photo): manuscript's h1 is at least 44px.
+//   phone  390x844   under a 64 px spacer (the real site header), with headlines of 12, 24, 26, 28,
+//                    30 and 36 characters (the home hero's length tiers: kinetic's giant tier
+//                    ends at 24, dojo/encore/manuscript/maison at 26, atelier/nocturne/tavola/
+//                    primer/grid at 28, ledger at 30, the composer's cap is 36): h1 bottom <= 844;
+//                    the first link/button fully inside 0..844; the largest hero image shows
+//                    >= 0.4 * 844 px of its height on screen. Type-led exception (no photo):
+//                    manuscript's h1 is at least 44px. Each phone load also checks that the
+//                    spacer and the headline took effect (h1 top >= 64, h1 text has the headline),
+//                    so a showcase that ignored the params cannot pass.
 //   desktop 1440x900 h1 >= 72px; the first button's bottom <= 900.
 //
 // Each style also logs its slack: how far the h1, the button or the photo's minimum share could
@@ -38,13 +42,18 @@ const DESKTOP = { width: 1440, height: 900 };
 const MIN_PHOTO_SHARE = 0.4; // of the phone's height
 const MIN_DESKTOP_H1 = 72;
 const PHONE_HEADER = 64; // the real site header is about 57-64 px; showcase `header=` renders a spacer
-/** Headlines of the composer's home hero (at most 36 characters): the short, the mid and the
- *  longest, wide letters, so every style's giant-type branch and its longest wrap are measured. */
-const HEADLINES = {
-  short: "Breathe well", // 12
-  mid: "Yoga for real, busy people", // 26
-  longest: "Practical Parenting Workshops Online", // 36
-} as const;
+/** Headlines of the composer's home hero (at most 36 characters), wide letters, one at the upper
+ *  edge of each length tier the heroes branch on (see the header), so every style's giant-type
+ *  branch and its longest wrap are measured. A 29-character headline sits between the 28 and
+ *  30 ones (both measured) and is never taller than the 30. */
+const HEADLINES = [
+  "Breathe well", // 12
+  "Yoga for calm busy lives", // 24
+  "Yoga for real, busy people", // 26
+  "Practical Parenting Programs", // 28
+  "Gentle Strength For Busy Weeks", // 30
+  "Practical Parenting Workshops Online", // 36
+];
 
 type Box = { top: number; bottom: number; left: number; right: number };
 type Hero = {
@@ -129,13 +138,12 @@ test.setTimeout(240_000);
 
 for (const style of STYLE_IDS) {
   test(style, async ({ browser }) => {
-    const names = Object.keys(HEADLINES) as (keyof typeof HEADLINES)[];
     const phones = await heroesAt(
       browser,
       style,
       PHONE,
       true,
-      names.map((n) => `&header=${PHONE_HEADER}&headline=${encodeURIComponent(HEADLINES[n])}`),
+      HEADLINES.map((h) => `&header=${PHONE_HEADER}&headline=${encodeURIComponent(h)}`),
     );
     const [desktop] = await heroesAt(browser, style, DESKTOP, false, [""]);
     // one line per style: the numbers the report quotes, before and after a fix
@@ -148,17 +156,21 @@ for (const style of STYLE_IDS) {
     };
     console.log(
       `phone-first ${style} ${JSON.stringify({
-        slack: Object.fromEntries(names.map((n, i) => [n, slack(phones[i])])),
-        phone: Object.fromEntries(names.map((n, i) => [n, phones[i]])),
+        slack: Object.fromEntries(HEADLINES.map((h, i) => [h.length, slack(phones[i])])),
+        phone: Object.fromEntries(HEADLINES.map((h, i) => [h.length, phones[i]])),
         desktop,
       })}`,
     );
 
-    names.forEach((name, i) => {
+    HEADLINES.forEach((headline, i) => {
       const phone = phones[i];
-      const at = `phone (${name} headline, ${HEADLINES[name].length} characters)`;
+      const at = `phone (${headline.length} characters)`;
       expect(phone, `${at}: a hero renders`).not.toBeNull();
       expect(phone!.h1, `${at}: the hero has an h1`).not.toBeNull();
+      // the params took effect: the spacer pushed the hero down, the headline is the one asked for
+      // (toContain: terminal's h1 also holds its cursor)
+      expect(phone!.h1!.top, `${at}: the ${PHONE_HEADER} px header spacer is above the hero`).toBeGreaterThanOrEqual(PHONE_HEADER);
+      expect(phone!.h1!.text, `${at}: the h1 shows the headline`).toContain(headline);
       expect.soft(phone!.h1!.bottom, `${at}: h1 bottom within the first screen`).toBeLessThanOrEqual(PHONE.height);
       expect(phone!.button, `${at}: the hero has a link or button`).not.toBeNull();
       expect.soft(phone!.button!.top, `${at}: first button top on screen`).toBeGreaterThanOrEqual(0);

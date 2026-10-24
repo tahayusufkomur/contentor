@@ -88,7 +88,7 @@ export function HeroLantern({ block, editable }: SectionProps) {
               className={cn(
                 H1,
                 alt.length <= 28
-                  ? "max-w-[12ch] text-[clamp(3.2rem,1.3rem+7.5vw,8.5rem)] leading-[0.98]"
+                  ? "max-w-[18ch] sm:max-w-[12ch] sm:text-[clamp(3.2rem,1.3rem+7.5vw,8.5rem)] sm:leading-[0.98]"
                   : "max-w-[18ch]",
               )}
             />

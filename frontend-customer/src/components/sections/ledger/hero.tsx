@@ -111,7 +111,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
                 className={cn(
                   H1,
                   alt.length <= 30
-                    ? "max-w-[10ch] text-[clamp(3.4rem,1.3rem+8.2vw,9.5rem)] leading-[0.95]"
+                    ? "max-w-[14ch] sm:max-w-[10ch] sm:text-[clamp(3.4rem,1.3rem+8.2vw,9.5rem)] sm:leading-[0.95]"
                     : "max-w-[14ch]",
                 )}
               />

@@ -82,7 +82,7 @@ export function HeroPortrait({ block, editable }: SectionProps) {
                 className={cn(
                   H1,
                   alt.length <= 28
-                    ? "max-w-[12ch] text-[clamp(3rem,1.4rem+6.5vw,7.5rem)] leading-[0.98]"
+                    ? "max-w-[16ch] sm:max-w-[12ch] sm:text-[clamp(3rem,1.4rem+6.5vw,7.5rem)] sm:leading-[0.98]"
                     : "max-w-[16ch]",
                 )}
               />

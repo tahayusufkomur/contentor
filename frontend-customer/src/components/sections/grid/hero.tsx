@@ -157,7 +157,10 @@ export function HeroStatement({ block, editable }: SectionProps) {
             <Img
               value={block.image2}
               alt={alt}
-              className="swiss-photo hidden aspect-square lg:col-span-3 lg:block"
+              className={cn(
+                "swiss-photo col-span-12 aspect-square md:col-span-4 lg:col-span-3",
+                !editable && "hidden lg:block",
+              )}
             />
           )}
           <div className="col-span-12 md:col-span-6 lg:col-span-4 lg:col-start-4">
