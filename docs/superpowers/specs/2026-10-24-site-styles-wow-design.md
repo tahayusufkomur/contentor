@@ -334,7 +334,7 @@ Status values:
 | 1.7a | Phone-first hero, batch A | 0.2, 1.1, 1.6 | Task 1.7 | done (2026-10-24, b3790f86) |
 | 1.7b | Phone-first hero, batch B | 1.7a | Task 1.7 | done (2026-10-24, 275ed6e9) |
 | 1.7c | Phone-first hero, batch C | 1.7b | Task 1.7 | done (2026-10-24, 3a3e6546) |
-| 1.8 | Gate A: before/after capture, eval, owner review | all of Phase 1 | Task 1.8 | todo |
+| 1.8 | Gate A: before/after capture, eval, owner review | all of Phase 1 | Task 1.8 | in progress (2026-10-25, measured in 99b49330; awaiting the owner's review and deploy) |
 | 2.0 | Flagship directions and comps → Gate B | 1.8 | written at start | todo |
 | 2.1 | Flagship build: kinetic | 2.0, 2.5 | written at start | todo |
 | 2.2 | Flagship build: velvet | 2.0, 2.5 | written at start | todo |
