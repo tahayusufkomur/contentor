@@ -5,57 +5,59 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('billing', '0008_alter_payment_provider'),
-        ('contenttypes', '0002_remove_content_type_name'),
+        ("billing", "0008_alter_payment_provider"),
+        ("contenttypes", "0002_remove_content_type_name"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='paymentitem',
-            name='access_ends_at',
+            model_name="paymentitem",
+            name="access_ends_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='paymentitem',
-            name='access_starts_at',
+            model_name="paymentitem",
+            name="access_starts_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='subscriptionplanaccess',
-            name='closes_after_days',
+            model_name="subscriptionplanaccess",
+            name="closes_after_days",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='subscriptionplanaccess',
-            name='closes_on',
+            model_name="subscriptionplanaccess",
+            name="closes_on",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='subscriptionplanaccess',
-            name='opens_after_days',
+            model_name="subscriptionplanaccess",
+            name="opens_after_days",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='subscriptionplanaccess',
-            name='opens_on',
+            model_name="subscriptionplanaccess",
+            name="opens_on",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.CreateModel(
-            name='AccessWindow',
+            name="AccessWindow",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('opens_after_days', models.PositiveIntegerField(blank=True, null=True)),
-                ('opens_on', models.DateField(blank=True, null=True)),
-                ('closes_after_days', models.PositiveIntegerField(blank=True, null=True)),
-                ('closes_on', models.DateField(blank=True, null=True)),
-                ('object_id', models.PositiveIntegerField()),
-                ('way', models.CharField(choices=[('free', 'Free'), ('buy', 'Sell it once')], max_length=10)),
-                ('content_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contenttypes.contenttype')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("opens_after_days", models.PositiveIntegerField(blank=True, null=True)),
+                ("opens_on", models.DateField(blank=True, null=True)),
+                ("closes_after_days", models.PositiveIntegerField(blank=True, null=True)),
+                ("closes_on", models.DateField(blank=True, null=True)),
+                ("object_id", models.PositiveIntegerField()),
+                ("way", models.CharField(choices=[("free", "Free"), ("buy", "Sell it once")], max_length=10)),
+                (
+                    "content_type",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="contenttypes.contenttype"),
+                ),
             ],
             options={
-                'unique_together': {('content_type', 'object_id', 'way')},
+                "unique_together": {("content_type", "object_id", "way")},
             },
         ),
     ]

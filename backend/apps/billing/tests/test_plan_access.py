@@ -354,7 +354,6 @@ class TestPlanAccess:
         [mine] = [p for p in owner_client.get("/api/v1/billing/plans/?all=1").json() if p["id"] == plan.pk]
         assert mine["item_count"] == 3
 
-
     def test_student_forbidden(self, plan, course, student):
         """Student cannot access the plan access endpoint (GET or PUT)."""
         client = APIClient(HTTP_HOST=SHARED_DOMAIN)

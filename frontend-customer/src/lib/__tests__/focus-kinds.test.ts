@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  focusTimeKey,
-  KIND_ROUTES,
-  kindForCard,
-} from "@/lib/focus/kinds";
+import { focusTimeKey, KIND_ROUTES, kindForCard } from "@/lib/focus/kinds";
 
 describe("focus kinds", () => {
   it("every kind has its routes", () => {

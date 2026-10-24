@@ -132,11 +132,15 @@ def test_put_saves_and_answers_with_plain_words(owner, course, gold):
     body = resp.json()
     course.refresh_from_db()
     assert body["describe"] == "€59 once with 1 year of access; in Gold."
-    assert body["ways"] == ways_of(course) == {
-        "free": None,
-        "buy": {"price": "59.00", "window": {"closes_after_days": 365}},
-        "plans": [{"plan_id": gold.pk, "window": None}],
-    }
+    assert (
+        body["ways"]
+        == ways_of(course)
+        == {
+            "free": None,
+            "buy": {"price": "59.00", "window": {"closes_after_days": 365}},
+            "plans": [{"plan_id": gold.pk, "window": None}],
+        }
+    )
     assert course.price == Decimal("59.00")
 
 

@@ -11,7 +11,6 @@ from apps.billing.models import AccessWindow, SubscriptionPlan, SubscriptionPlan
 from apps.courses.models import Course
 from apps.live.models import LiveStream
 
-
 pytestmark = pytest.mark.django_db(transaction=True)
 
 

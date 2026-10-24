@@ -68,7 +68,6 @@ export const KIND_ROUTES: Partial<Record<FocusKind, KindRoutes>> = {
   },
 };
 
-
 /** Her active time in focus mode on this kind (lib/focus/active-time). */
 export const focusTimeKey = (kind: string) => `focus:${kind}`;
 

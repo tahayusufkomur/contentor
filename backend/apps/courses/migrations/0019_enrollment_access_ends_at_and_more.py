@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('courses', '0018_enrollment_granted'),
+        ("courses", "0018_enrollment_granted"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='enrollment',
-            name='access_ends_at',
+            model_name="enrollment",
+            name="access_ends_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='enrollment',
-            name='access_starts_at',
+            model_name="enrollment",
+            name="access_starts_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

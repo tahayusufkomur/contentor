@@ -2,9 +2,16 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/api-client", () => ({ clientFetch: vi.fn() }));
 
-import { chipsOf, type SelectedItem } from "@/components/billing/content-picker";
+import {
+  chipsOf,
+  type SelectedItem,
+} from "@/components/billing/content-picker";
 
-const item = (content_type: string, object_id: number, title: string): SelectedItem => ({
+const item = (
+  content_type: string,
+  object_id: number,
+  title: string,
+): SelectedItem => ({
   content_type,
   object_id,
   title,

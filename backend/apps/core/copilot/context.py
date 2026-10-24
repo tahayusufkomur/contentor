@@ -66,9 +66,8 @@ def _page_of(path):
 
 
 def _course_record(slug):
-    from apps.courses.models import Course
-
     from apps.billing.ways import describe, ways_of
+    from apps.courses.models import Course
 
     course = Course.objects.filter(slug=slug).prefetch_related("modules__lessons").first()
     if course is None:

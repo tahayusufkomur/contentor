@@ -140,7 +140,9 @@ def _collect_store_items(drafts: bool = True):
         )
 
     # Bundles: active (a draft only in her products list; store_list leaves it out)
-    for bundle in Bundle.objects.filter(is_active=True).prefetch_related("items__content_type", "items__content_object"):
+    for bundle in Bundle.objects.filter(is_active=True).prefetch_related(
+        "items__content_type", "items__content_object"
+    ):
         items.append(
             {
                 "id": bundle.pk,
