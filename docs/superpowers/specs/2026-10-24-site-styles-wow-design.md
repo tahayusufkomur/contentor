@@ -457,6 +457,20 @@ against G1.
   are three composed sets under the Task 1.1 rules, with 63 distinct Pix4Less photos and one coach
   portrait per set, in the hero. Open: the yoga story photo still reads as the coach (same outfit);
   the toolbar's palette and page links drop `size` and `fixture`.
+- 2026-10-24, WP-0.3: the eval has 8 axes. `rhythm` replaces
+  `rhythm_whitespace`; `distinctiveness` and `protagonist` are new; the judge's 10 now matches
+  award-recognised coach sites, and the best Framer, Webflow or Squarespace templates are a 7. New
+  baseline, `make eval-sites STYLE=journal BRIEFS=yoga` (5 pages, judge `gemini-3.8-flash-high`),
+  averages over the pages:
+  - first_impression 6.6, hierarchy 7.2, rhythm 6.2, image_quality_consistency 5.6,
+    copy_specificity 7.4, mobile 7.0, distinctiveness 4.8, protagonist 4.4;
+  - overall 6.00 (home 7, about 6, courses 6, faq 5, contact 6): bar 8.5 not met, floor 7.5
+    missed on all 5 pages;
+  - `distinctiveness` is 6 on home and 4–5 on the other pages, so the axis discriminates on the
+    first run. Its notes call the pages "interchangeable" and name a different stock model in each
+    slot, which is what `protagonist` (4.4) measures.
+  - Report (local, `e2e/eval-shots/` is git-ignored):
+    `e2e/eval-shots/sites/journal-20261024-1749/report.html`.
 
 ## 10. Resources
 

@@ -60,14 +60,18 @@ const CRITERIA = {
     "Does it look designed and premium at first glance, not assembled from a template?",
   hierarchy:
     "Is it obvious what matters? Headings, body text and calls to action read in the right order.",
-  rhythm_whitespace:
-    "Consistent spacing and section rhythm; no cramped blocks, no dead empty stretches.",
+  rhythm:
+    "Pacing with intent: quiet stretches and one or two peaks (a scale break, a full-bleed moment). Every section at the same volume is a 5; cramped blocks or dead stretches lower it.",
   image_quality_consistency:
     "Photos are sharp, well cropped, on-topic for this coach and consistent with each other in light and tone; no placeholders.",
   copy_specificity:
     "The words are specific to this coach and niche, not generic filler that would fit any business.",
   mobile:
     "The 390 px version works as a phone layout: nothing cut off, cramped or awkwardly stacked.",
+  distinctiveness:
+    "Would a visitor remember this site tomorrow? Is there one moment only this coach's site has? If another coach in the same niche could use the page unchanged, score 5 or lower.",
+  protagonist:
+    "Does the site read as one real person's? Photos of the coach show one consistent person (or her own photos), not a different model in every slot; any proof is specific and real.",
 };
 
 const BRIEFS: Brief[] = JSON.parse(
@@ -173,7 +177,8 @@ function judgePrompt(brief: Brief, pageKey: string, shots: Shot[]): string {
     `Page: ${pageKey}. Site style: ${STYLE}.`,
     "",
     "Score each criterion from 1 to 10. Be strict: 8 means a professional designer would ship it",
-    "unchanged; 10 is best-in-class (the top Framer, Webflow or Squarespace templates).",
+    "unchanged; 10 matches award-recognised coach and creator sites (an Awwwards Honorable Mention).",
+    "The best Framer, Webflow or Squarespace templates are a 7.",
     ...Object.entries(CRITERIA).map(([key, text]) => `- ${key}: ${text}`),
     "Then give an overall score (1-10) for the page as a whole.",
     "",
