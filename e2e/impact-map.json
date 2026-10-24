@@ -221,8 +221,10 @@
       "01-signup-onboarding",
       "09-builder",
       "30-custom-components",
-      "32-photo-studio"
+      "32-photo-studio",
+      "92-phone-first"
     ],
+    "src/app/design-showcase": ["92-phone-first"],
     "src/components/owner/cx-composer.tsx": ["30-custom-components"],
     "src/components/owner/cx-refine.tsx": ["30-custom-components"],
     "src/lib/site-styles.ts": ["01-signup-onboarding", "09-builder"],
