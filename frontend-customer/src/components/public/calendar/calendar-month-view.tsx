@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MapPin, Clock, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EVENT_TYPE_CONFIG } from "@/lib/event-colors";
+import { eventPriceLabel } from "@/components/sections/kit";
 import {
   getMonthGridDates,
   isSameDay,
@@ -294,11 +295,7 @@ function DetailEventCard({ event, timezone, showDate }: DetailEventCardProps) {
                   : "text-muted-foreground",
               )}
             >
-              {event.pricing_type === "free"
-                ? "Free"
-                : event.pricing_type === "subscription"
-                  ? "Members only"
-                  : event.price}
+              {eventPriceLabel(event)}
             </span>
           </div>
 
