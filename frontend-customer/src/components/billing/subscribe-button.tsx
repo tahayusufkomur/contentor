@@ -8,6 +8,7 @@ import { ApiError } from "@/types/api";
 import { Zap } from "lucide-react";
 import { toast } from "sonner";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
+import { formatMoney } from "@/lib/format";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import {
@@ -97,7 +98,7 @@ export function SubscribeButton({
               steps={[
                 {
                   when: "Now",
-                  what: `Pay ${price} ${currency}${billingIntervalSuffix(intervalMonths)} securely with Stripe.`,
+                  what: `Pay ${formatMoney(price, currency)}${billingIntervalSuffix(intervalMonths)} securely with Stripe.`,
                 },
                 {
                   when: "Right after",
@@ -122,7 +123,7 @@ export function SubscribeButton({
         {label ?? (
           <>
             <Zap className="mr-2 h-4 w-4" />
-            Subscribe — {price} {currency}
+            Subscribe — {formatMoney(price, currency)}
             {billingIntervalSuffix(intervalMonths)}
           </>
         )}

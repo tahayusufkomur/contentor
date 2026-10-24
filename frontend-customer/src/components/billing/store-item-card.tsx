@@ -4,6 +4,7 @@ import { ListedCover } from "@/components/covers/listed-cover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatMoney } from "@/lib/format";
 import type { StoreItem } from "@/types/billing";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -80,7 +81,7 @@ export function StoreItemCard({
             <span>{item.item_count} items</span>
             {item.original_price && (
               <span className="line-through ml-1">
-                {item.original_price} {item.currency}
+                {formatMoney(item.original_price, item.currency)}
               </span>
             )}
           </div>
@@ -99,7 +100,7 @@ export function StoreItemCard({
               onClick={() => onAddToCart(item)}
             >
               <ShoppingCart className="h-3.5 w-3.5" />
-              Add to Cart — {item.price} {item.currency}
+              Add to Cart — {formatMoney(item.price, item.currency)}
             </Button>
           )}
         </div>

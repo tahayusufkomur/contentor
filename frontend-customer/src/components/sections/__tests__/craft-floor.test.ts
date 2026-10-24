@@ -34,6 +34,10 @@ describe("craft floor", () => {
     expect(hits(/function money\(/g)).toEqual([]);
   });
 
+  it("no style prints a raw price or currency (formatMoney does)", () => {
+    expect(hits(/(?<!=)\{[\w.?]*\.(?:price|currency)\}/g)).toEqual([]);
+  });
+
   it("no bounce or overshoot easing in the styles", () => {
     // cubic-bezier(x1, y1, x2, y2): a y outside 0..1 overshoots.
     const overshoot = hits(/cubic-bezier\(([^)]*)\)/g).filter((h) => {

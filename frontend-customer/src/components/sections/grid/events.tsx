@@ -1,5 +1,12 @@
 import type { CalendarEvent } from "@/types/live";
-import { EmptyHint, SmartLink, Txt, eventHref, formatEventTime } from "../kit";
+import {
+  EmptyHint,
+  SmartLink,
+  Txt,
+  eventHref,
+  eventPriceLabel,
+  formatEventTime,
+} from "../kit";
 import type { SectionProps } from "../types";
 import { Head, Sheet, row, textLink } from "./ui";
 
@@ -11,12 +18,6 @@ const part = (iso: string, opts: Intl.DateTimeFormatOptions) => {
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, opts);
 };
-const priceOf = (e: CalendarEvent) =>
-  e.pricing_type === "subscription"
-    ? "Members only"
-    : e.pricing_type === "free" || !Number(e.price)
-      ? "Free"
-      : e.price;
 
 /** Upcoming sessions as a timetable; each row inverts to cobalt on hover. */
 export function EventsTable({ block, data, editable }: SectionProps) {
@@ -93,7 +94,7 @@ export function EventsTable({ block, data, editable }: SectionProps) {
                     {e.location}
                   </span>
                   <span className="swiss-mono col-span-6 text-right tabular-nums md:col-span-2">
-                    {priceOf(e)}
+                    {eventPriceLabel(e)}
                   </span>
                 </SmartLink>
               </li>

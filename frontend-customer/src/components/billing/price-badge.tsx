@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { stateLine } from "@/lib/access/terms";
+import { formatMoney } from "@/lib/format";
 import type { AccessInfo } from "@/types/billing";
 
 interface PriceBadgeProps {
@@ -39,7 +40,7 @@ function PricePill({ accessInfo, price, pricingType }: PriceBadgeProps) {
   if (effectivePricingType === "paid" && effectivePrice) {
     return (
       <Badge variant="default">
-        {effectivePrice} {accessInfo?.currency ?? ""}
+        {formatMoney(effectivePrice, accessInfo?.currency || "USD")}
       </Badge>
     );
   }

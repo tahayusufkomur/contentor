@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { formatMoney } from "@/lib/format";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
   EmptyHint,
@@ -52,9 +53,10 @@ function Action({ plan }: { plan: SubscriptionPlan }) {
 function Price({ plan }: { plan: SubscriptionPlan }) {
   return (
     <p className="flex flex-wrap items-baseline gap-x-2">
-      <span className="swiss-step tabular-nums">{plan.price}</span>
+      <span className="swiss-step tabular-nums">
+        {formatMoney(plan.price, plan.currency)}
+      </span>
       <span className="swiss-mono text-muted-foreground">
-        {plan.currency}
         {billingIntervalSuffix(plan.billing_interval_months)}
       </span>
     </p>

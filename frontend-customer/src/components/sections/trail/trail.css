@@ -6,6 +6,12 @@
      buttons and large type (below 3:1 on the stone). */
   --trail-blaze-ink: color-mix(in oklch, var(--accent) 72%, black);
 }
+/* The dark scheme already lifts the accent toward white: it reads as it is,
+   darkening it again would drop it below AA. */
+.dark .trail,
+.dim .trail {
+  --trail-blaze-ink: var(--accent);
+}
 
 /* The third face: mono for distances, elevations, waypoints. */
 .trail-mono {
