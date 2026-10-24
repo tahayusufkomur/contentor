@@ -1,8 +1,20 @@
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
-import { STAGE, TILE_ASPECT, heroPhotos, tileStyle, TILE_W } from "../collage";
+import { TILE_ASPECT, heroPhotos, tileStyle } from "../collage";
 import { Kicker, PopButton, PopSection, RingBadge, WRAP, str } from "./ui";
+
+/** Where the first two stickers sit on a phone: the first photo big (the
+ *  photograph carries the screen), the second a small sticker over its
+ *  corner. The other two wait for sm, where `tileStyle` places all four (the
+ *  editor shows them along the foot so each photo can be picked). */
+const PHONE_TILES = [
+  { left: "3%", top: "0%", width: "84%" },
+  { left: "62%", top: "50%", width: "36%" },
+  { left: "4%", top: "64%", width: "28%" },
+  { left: "68%", top: "72%", width: "26%" },
+];
 
 /** Cluster hero: up to four photos pasted over each other like stickers on a
  *  notebook, the headline slapped across them on a lime strip, the `meta`
@@ -23,7 +35,8 @@ export function HeroCluster({ block, editable }: SectionProps) {
         <div
           className={cn(
             "relative mx-auto mt-8 grid w-full max-w-[72rem]",
-            photos.length > 0 && STAGE,
+            photos.length > 0 &&
+              "aspect-[5/6] sm:aspect-[3/2] md:aspect-[2/1] lg:max-w-[64rem]",
           )}
         >
           {photos.length > 0 && (
@@ -32,23 +45,44 @@ export function HeroCluster({ block, editable }: SectionProps) {
               className="absolute inset-x-[6%] inset-y-[12%] -rotate-1 rounded-[3rem] border-2 border-[color:var(--pop-ink)] bg-[var(--primary)]"
             />
           )}
-          {photos.map((value, n) => (
-            <div
-              key={n}
-              className={cn("absolute", TILE_W, n > 1 && "max-sm:hidden")}
-              style={{ ...tileStyle(photos.length, n), zIndex: 1 + (n % 2) }}
-            >
-              <Img
-                value={value}
-                alt={alt}
-                priority={n === 0}
+          {photos.map((value, n) => {
+            const { left, top, transform, ...rest } = tileStyle(
+              photos.length,
+              n,
+            );
+            const phone = PHONE_TILES[n];
+            return (
+              <div
+                key={n}
                 className={cn(
-                  TILE_ASPECT[n % 2],
-                  "w-full rounded-[var(--pop-r)] border-2 border-[color:var(--pop-ink)] shadow-[6px_6px_0_var(--pop-ink)]",
+                  "absolute left-[var(--pl)] top-[var(--pt)] w-[var(--pw)] sm:left-[var(--l)] sm:top-[var(--t)] sm:w-[var(--tw)]",
+                  !editable && n > 1 && "hidden sm:block",
                 )}
-              />
-            </div>
-          ))}
+                style={
+                  {
+                    ...rest,
+                    transform,
+                    "--l": left,
+                    "--t": top,
+                    "--pl": phone?.left,
+                    "--pt": phone?.top,
+                    "--pw": phone?.width,
+                    zIndex: 1 + (n % 2),
+                  } as CSSProperties
+                }
+              >
+                <Img
+                  value={value}
+                  alt={alt}
+                  priority={n === 0}
+                  className={cn(
+                    TILE_ASPECT[n % 2],
+                    "w-full rounded-[var(--pop-r)] border-2 border-[color:var(--pop-ink)] shadow-[6px_6px_0_var(--pop-ink)]",
+                  )}
+                />
+              </div>
+            );
+          })}
           <Txt
             block={block}
             field="headline"
@@ -56,17 +90,17 @@ export function HeroCluster({ block, editable }: SectionProps) {
             as="h1"
             placeholder="Headline"
             className={cn(
-              "pop-display relative z-10 inline-block max-w-[88%] -rotate-2 place-self-center border-2 border-[color:var(--pop-ink)] bg-[var(--accent)] px-5 py-2 shadow-[8px_8px_0_var(--pop-ink)] md:px-8 md:py-4",
-              alt.length > 28
+              "pop-display relative z-10 inline-block max-w-[88%] -rotate-2 self-end justify-self-center border-2 border-[color:var(--pop-ink)] bg-[var(--accent)] px-5 py-2 shadow-[8px_8px_0_var(--pop-ink)] sm:self-center md:px-8 md:py-4",
+              alt.length > 36
                 ? "text-[clamp(1.9rem,0.8rem+3.6vw,4.4rem)]"
-                : "text-[clamp(2.4rem,0.8rem+5.6vw,6.8rem)]",
+                : "text-[clamp(2.6rem,0.8rem+5vw,6.8rem)]",
             )}
           />
           {meta && (
             <RingBadge
               text={meta}
               uid={String(block.id ?? "hero")}
-              className="absolute -bottom-8 right-0 z-20 w-28 sm:w-36 lg:-right-4 lg:w-40"
+              className="absolute right-0 top-2 z-20 w-24 sm:-bottom-8 sm:top-auto sm:w-36 lg:-right-4 lg:w-40"
             />
           )}
         </div>
@@ -84,13 +118,15 @@ export function HeroCluster({ block, editable }: SectionProps) {
             label="ctaLabel"
             href="ctaHref"
           />
-          <PopButton
-            block={block}
-            editable={editable}
-            label="secondaryLabel"
-            href="secondaryHref"
-            tone="paper"
-          />
+          <div className={editable ? "contents" : "hidden sm:contents"}>
+            <PopButton
+              block={block}
+              editable={editable}
+              label="secondaryLabel"
+              href="secondaryHref"
+              tone="paper"
+            />
+          </div>
         </div>
         {editable && (
           <Txt

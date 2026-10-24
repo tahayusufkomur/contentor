@@ -40,18 +40,20 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink
-          href={block.secondaryHref}
-          className={cn(BTN_GHOST, "group gap-3")}
-        >
-          <Txt
-            block={block}
-            field="secondaryLabel"
-            editable={editable}
-            placeholder="Second button"
-          />
-          <Arrow />
-        </SmartLink>
+        <div className={editable ? "contents" : "hidden sm:contents"}>
+          <SmartLink
+            href={block.secondaryHref}
+            className={cn(BTN_GHOST, "group gap-3")}
+          >
+            <Txt
+              block={block}
+              field="secondaryLabel"
+              editable={editable}
+              placeholder="Second button"
+            />
+            <Arrow />
+          </SmartLink>
+        </div>
       )}
     </div>
   );
@@ -106,7 +108,7 @@ export function HeroPortrait({ block, editable }: SectionProps) {
                   placeholder="Headline"
                   className={cn(
                     H1,
-                    "max-w-[14ch] text-[clamp(2.8rem,1.3rem+4.9vw,6.4rem)] leading-[0.98]",
+                    "max-w-[14ch] text-[clamp(3rem,1.3rem+4.9vw,6.4rem)] leading-[0.98]",
                     alt.length > 40 &&
                       "text-[clamp(2.3rem,1.2rem+3.6vw,4.8rem)] leading-[1.04]",
                   )}

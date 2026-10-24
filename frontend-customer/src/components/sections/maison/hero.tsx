@@ -41,21 +41,23 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink
-          href={block.secondaryHref}
-          className={cn(
-            LABEL,
-            "maison-link group inline-flex items-center gap-3",
-          )}
-        >
-          <Txt
-            block={block}
-            field="secondaryLabel"
-            editable={editable}
-            placeholder="Second button"
-          />
-          <Arrow />
-        </SmartLink>
+        <div className={editable ? "contents" : "hidden sm:contents"}>
+          <SmartLink
+            href={block.secondaryHref}
+            className={cn(
+              LABEL,
+              "maison-link group inline-flex items-center gap-3",
+            )}
+          >
+            <Txt
+              block={block}
+              field="secondaryLabel"
+              editable={editable}
+              placeholder="Second button"
+            />
+            <Arrow />
+          </SmartLink>
+        </div>
       )}
     </div>
   );
@@ -75,7 +77,7 @@ export function HeroCover({ block, editable }: SectionProps) {
       <div className={WRAP}>
         {has(block, "kicker", editable) && (
           <div
-            className="maison-fade border-y border-foreground py-4 md:py-6"
+            className="maison-fade border-y border-foreground py-3 md:py-4"
             style={delay(0)}
           >
             <Txt
@@ -85,10 +87,10 @@ export function HeroCover({ block, editable }: SectionProps) {
               as="p"
               placeholder="Masthead"
               className={cn(
-                "maison-opsz block text-center font-display font-normal uppercase tracking-[0.04em]",
-                masthead.length <= 18
-                  ? "text-[clamp(2.6rem,0.6rem+10.4vw,10rem)] leading-[0.9]"
-                  : "text-[clamp(1.4rem,0.8rem+2.4vw,3rem)] leading-[1.1]",
+                "maison-opsz block text-center font-display text-[clamp(0.95rem,0.8rem+0.5vw,1.25rem)] font-normal leading-[1.3]",
+                masthead.length <= 24
+                  ? "uppercase tracking-[0.3em]"
+                  : "tracking-[0.14em]",
               )}
             />
           </div>
@@ -118,7 +120,7 @@ export function HeroCover({ block, editable }: SectionProps) {
                   value={block.image}
                   alt={alt}
                   priority
-                  className="aspect-[4/5] w-full md:aspect-[5/6]"
+                  className="aspect-[4/5] w-full md:aspect-[6/7]"
                 />
                 <div
                   aria-hidden="true"
@@ -131,9 +133,9 @@ export function HeroCover({ block, editable }: SectionProps) {
                   as="h1"
                   placeholder="Headline"
                   className={cn(
-                    "maison-opsz absolute inset-x-0 bottom-0 block p-5 text-center font-display font-normal tracking-[-0.01em] text-white md:p-8",
-                    alt.length <= 26
-                      ? "text-[clamp(2.4rem,1rem+4.8vw,5.6rem)] leading-[0.96]"
+                    "maison-opsz absolute inset-x-0 bottom-0 block p-5 text-center font-display font-normal tracking-[-0.01em] text-white md:p-6",
+                    alt.length <= 36
+                      ? "text-[clamp(2.6rem,0.6rem+4.5vw,4.8rem)] leading-[0.96]"
                       : "text-[clamp(1.9rem,1rem+2.8vw,3.6rem)] leading-[1]",
                   )}
                 />

@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
-import { STAGE, heroPhotos, tileStyle, TILE_W } from "../collage";
+import { heroPhotos, tileStyle } from "../collage";
 import {
   BTN,
   BTN_GHOST,
@@ -42,18 +42,31 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
-          <Txt
-            block={block}
-            field="secondaryLabel"
-            editable={editable}
-            placeholder="Second button"
-          />
-        </SmartLink>
+        <div className={editable ? "contents" : "hidden sm:contents"}>
+          <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
+            <Txt
+              block={block}
+              field="secondaryLabel"
+              editable={editable}
+              placeholder="Second button"
+            />
+          </SmartLink>
+        </div>
       )}
     </div>
   );
 }
+
+/** Where the first two polaroids sit on a phone: the first big (the print
+ *  carries the screen), the second a small one tucked over its corner. The
+ *  other two wait for sm, where `tileStyle` places all four (the editor shows
+ *  them along the foot so each photo can be picked). */
+const PHONE_TILES = [
+  { left: "2%", top: "0%", width: "92%" },
+  { left: "58%", top: "46%", width: "40%" },
+  { left: "4%", top: "60%", width: "32%" },
+  { left: "66%", top: "66%", width: "30%" },
+];
 
 /** The pinboard: up to four taped polaroids pinned over each other on the
  *  kraft bench, the headline written on a lined note card stuck across their
@@ -63,29 +76,54 @@ export function HeroPinboard({ block, editable }: SectionProps) {
   const photos = heroPhotos(block, editable);
   const tapes = ["top-left", "top-center", "top-right", "top-center"] as const;
   return (
-    <Section tone="kraft" className="pt-12 md:pt-16 lg:pt-20" label={alt}>
+    <Section
+      tone="kraft"
+      className="pt-10 sm:pt-12 md:pt-16 lg:pt-20"
+      label={alt}
+    >
       <div className={WRAP}>
         <div
           className={cn(
             "workshop-pin relative mx-auto grid w-full max-w-[70rem]",
-            photos.length > 0 && STAGE,
+            photos.length > 0 && "aspect-[2/3] sm:aspect-[4/3] md:aspect-[2/1]",
           )}
         >
-          {photos.map((value, n) => (
-            <div
-              key={n}
-              className={cn("absolute", TILE_W, n > 0 && "max-sm:hidden")}
-              style={{ ...tileStyle(photos.length, n), zIndex: 1 + (n % 2) }}
-            >
-              <Polaroid
-                image={value}
-                alt={alt}
-                priority={n === 0}
-                imgClassName={n % 2 ? "aspect-square" : "aspect-[4/5]"}
-                tapePosition={tapes[n]}
-              />
-            </div>
-          ))}
+          {photos.map((value, n) => {
+            const { left, top, transform, ...rest } = tileStyle(
+              photos.length,
+              n,
+            );
+            const phone = PHONE_TILES[n];
+            return (
+              <div
+                key={n}
+                className={cn(
+                  "absolute left-[var(--pl)] top-[var(--pt)] w-[var(--pw)] sm:left-[var(--l)] sm:top-[var(--t)] sm:w-[var(--tw)]",
+                  !editable && n > 1 && "hidden sm:block",
+                )}
+                style={
+                  {
+                    ...rest,
+                    transform,
+                    "--l": left,
+                    "--t": top,
+                    "--pl": phone?.left,
+                    "--pt": phone?.top,
+                    "--pw": phone?.width,
+                    zIndex: 1 + (n % 2),
+                  } as CSSProperties
+                }
+              >
+                <Polaroid
+                  image={value}
+                  alt={alt}
+                  priority={n === 0}
+                  imgClassName={n % 2 ? "aspect-square" : "aspect-[4/5]"}
+                  tapePosition={tapes[n]}
+                />
+              </div>
+            );
+          })}
           <div
             className={cn(
               CARD,
@@ -107,14 +145,14 @@ export function HeroPinboard({ block, editable }: SectionProps) {
               className={cn(
                 H1,
                 "mt-2 block",
-                alt.length > 28
+                alt.length > 36
                   ? "text-[clamp(1.9rem,1rem+3.2vw,3.8rem)]"
-                  : "text-[clamp(2.4rem,1rem+5vw,6rem)] leading-[0.98]",
+                  : "text-[clamp(2.4rem,1rem+4.6vw,5rem)] leading-[0.98]",
               )}
             />
           </div>
         </div>
-        <div className="mx-auto mt-14 max-w-[46rem] text-center">
+        <div className="mx-auto mt-8 max-w-[46rem] text-center sm:mt-14">
           <Txt
             block={block}
             field="subhead"
@@ -124,7 +162,12 @@ export function HeroPinboard({ block, editable }: SectionProps) {
             className="block text-pretty text-[1.125rem] leading-[1.65] text-muted-foreground md:text-[1.2rem]"
           />
           {has(block, "meta", editable) && (
-            <p className="workshop-hand mt-5 text-[1.15rem] font-bold text-accent">
+            <p
+              className={cn(
+                "workshop-hand mt-5 text-[1.15rem] font-bold text-accent",
+                !editable && "hidden sm:block",
+              )}
+            >
               <Txt
                 block={block}
                 field="meta"

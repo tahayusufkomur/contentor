@@ -30,17 +30,19 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink
-          href={block.secondaryHref}
-          className="journal-link text-[0.95rem] font-medium"
-        >
-          <Txt
-            block={block}
-            field="secondaryLabel"
-            editable={editable}
-            placeholder="Second button"
-          />
-        </SmartLink>
+        <div className={editable ? "contents" : "hidden sm:contents"}>
+          <SmartLink
+            href={block.secondaryHref}
+            className="journal-link text-[0.95rem] font-medium"
+          >
+            <Txt
+              block={block}
+              field="secondaryLabel"
+              editable={editable}
+              placeholder="Second button"
+            />
+          </SmartLink>
+        </div>
       )}
     </div>
   );
@@ -55,7 +57,7 @@ export function HeroCover({ block, editable }: SectionProps) {
   const masthead = str(block.kicker);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   return (
-    <Section className="pt-10 md:pt-14 lg:pt-16" label={alt}>
+    <Section className="pt-4 sm:pt-8 md:pt-14 lg:pt-16" label={alt}>
       <div className={WRAP}>
         {(has(block, "kicker", editable) || has(block, "meta", editable)) && (
           <div
@@ -87,14 +89,14 @@ export function HeroCover({ block, editable }: SectionProps) {
             )}
           </div>
         )}
-        <div className="mt-8 grid gap-x-10 gap-y-10 md:grid-cols-12">
-          <figure className="relative md:col-span-8">
+        <div className="mt-5 grid gap-x-10 gap-y-6 sm:mt-6 sm:gap-y-9 md:mt-8 md:grid-cols-12 md:gap-y-10">
+          <figure className="relative md:col-span-7">
             <div className="journal-unveil" style={delay(120)}>
               <Img
                 value={block.image}
                 alt={alt}
                 priority
-                className="aspect-[4/5] w-full md:aspect-[1/1]"
+                className="aspect-[7/8] w-full sm:aspect-[16/10] md:aspect-[6/5]"
               />
             </div>
             {showDetail && (
@@ -108,7 +110,7 @@ export function HeroCover({ block, editable }: SectionProps) {
             )}
           </figure>
           <div
-            className="journal-rise flex flex-col md:col-span-4 md:border-l md:border-border md:pl-8"
+            className="journal-rise flex flex-col md:col-span-5 md:border-l md:border-border md:pl-8"
             style={delay(260)}
           >
             <Txt
@@ -119,28 +121,28 @@ export function HeroCover({ block, editable }: SectionProps) {
               placeholder="Headline"
               className={cn(
                 H1,
-                "mt-4 block",
-                alt.length <= 28
-                  ? "text-[clamp(2.2rem,1rem+3.6vw,4.4rem)] leading-[1]"
-                  : "text-[clamp(1.8rem,1rem+2.4vw,3rem)] leading-[1.04]",
+                "block",
+                alt.length <= 36
+                  ? "text-[clamp(2.5rem,1rem+4.2vw,5rem)] leading-[1.02]"
+                  : "text-[clamp(1.9rem,1rem+2.4vw,3.2rem)] leading-[1.04]",
               )}
             />
             {has(block, "subhead", editable) && (
-              <div className="mt-8 border-t border-border pt-6">
+              <div className="mt-4 border-t border-border pt-3 sm:mt-5 sm:pt-4 md:mt-8 md:pt-6">
                 <Txt
                   block={block}
                   field="subhead"
                   editable={editable}
                   as="p"
                   placeholder="Subheadline"
-                  className="block text-pretty text-[1.05rem] leading-[1.6] text-muted-foreground md:text-[1.12rem]"
+                  className="block text-pretty text-[1rem] leading-[1.55] text-muted-foreground sm:text-[1.05rem] sm:leading-[1.6] md:text-[1.12rem]"
                 />
               </div>
             )}
             <Actions
               block={block}
               editable={editable}
-              className="mt-auto pt-10"
+              className="mt-auto pt-5 sm:pt-7 md:pt-10"
             />
           </div>
         </div>

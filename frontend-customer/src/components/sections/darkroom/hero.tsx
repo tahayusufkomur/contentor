@@ -41,15 +41,17 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={cn(LINK, "group")}>
-          <Txt
-            block={block}
-            field="secondaryLabel"
-            editable={editable}
-            placeholder="Second button"
-          />
-          <Arrow />
-        </SmartLink>
+        <div className={editable ? "contents" : "hidden sm:contents"}>
+          <SmartLink href={block.secondaryHref} className={cn(LINK, "group")}>
+            <Txt
+              block={block}
+              field="secondaryLabel"
+              editable={editable}
+              placeholder="Second button"
+            />
+            <Arrow />
+          </SmartLink>
+        </div>
       )}
     </div>
   );
@@ -63,11 +65,11 @@ export function HeroExhibition({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   return (
-    <Section className="pt-6 md:pt-8 lg:pt-10" label={alt}>
+    <Section className="pt-4 sm:pt-6 md:pt-8 lg:pt-10" label={alt}>
       <div
         className={cn(
           WRAP,
-          "grid gap-y-10 md:grid-cols-12 md:items-end md:gap-x-8 lg:gap-x-12",
+          "grid gap-y-6 sm:gap-y-10 md:grid-cols-12 md:items-end md:gap-x-8 lg:gap-x-12",
         )}
       >
         <figure
@@ -78,7 +80,7 @@ export function HeroExhibition({ block, editable }: SectionProps) {
             value={block.image}
             alt={alt}
             priority
-            className="aspect-[4/5] w-full md:aspect-[5/6] lg:aspect-[4/5] xl:aspect-[5/6]"
+            className="aspect-[7/8] w-full sm:aspect-[16/9] md:aspect-[5/6] lg:aspect-auto lg:h-[min(46rem,calc(100svh-7rem))]"
           />
         </figure>
 
@@ -101,7 +103,10 @@ export function HeroExhibition({ block, editable }: SectionProps) {
               editable={editable}
               as="h1"
               placeholder="Headline"
-              className={cn(H1, "mt-5 block max-w-[16ch]")}
+              className={cn(
+                H1,
+                "mt-5 block max-w-[16ch] lg:text-[clamp(3rem,0.8rem+4.4vw,5.4rem)]",
+              )}
             />
             <Txt
               block={block}
@@ -109,13 +114,14 @@ export function HeroExhibition({ block, editable }: SectionProps) {
               editable={editable}
               as="p"
               placeholder="Subheadline"
-              className="mt-6 block max-w-[40ch] text-pretty text-[1.02rem] leading-[1.6] text-muted-foreground"
+              className="mt-4 block max-w-[40ch] text-pretty text-[1.02rem] leading-[1.6] text-muted-foreground sm:mt-6"
             />
             {has(block, "meta", editable) && (
               <p
                 className={cn(
                   LABEL,
-                  "mt-6 flex items-center gap-2.5 normal-case tracking-[0.04em]",
+                  "mt-6 items-center gap-2.5 normal-case tracking-[0.04em]",
+                  editable ? "flex" : "hidden sm:flex",
                 )}
               >
                 <Dot />
@@ -127,10 +133,14 @@ export function HeroExhibition({ block, editable }: SectionProps) {
                 />
               </p>
             )}
-            <Actions block={block} editable={editable} className="mt-8" />
+            <Actions
+              block={block}
+              editable={editable}
+              className="mt-6 sm:mt-8"
+            />
           </WallLabel>
           {showDetail && (
-            <figure className="mt-10">
+            <figure className={cn("mt-10", !editable && "hidden md:block")}>
               <Img
                 value={block.image2}
                 alt={alt}

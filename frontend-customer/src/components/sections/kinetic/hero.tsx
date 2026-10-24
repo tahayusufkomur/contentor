@@ -82,7 +82,7 @@ export function HeroPoster({ block, editable }: SectionProps) {
               {has(block, "ctaLabel", editable) && (
                 <SmartLink
                   href={str(block.ctaHref)}
-                  className={cn(BTN, "max-sm:w-full")}
+                  className={cn(BTN, "w-full sm:w-auto")}
                 >
                   <BtnBody>
                     <Txt block={block} field="ctaLabel" editable={editable} />
@@ -90,19 +90,21 @@ export function HeroPoster({ block, editable }: SectionProps) {
                 </SmartLink>
               )}
               {has(block, "secondaryLabel", editable) && (
-                <SmartLink
-                  href={str(block.secondaryHref)}
-                  className={cn(
-                    LABEL,
-                    "kinetic-focus inline-flex h-14 items-center border-2 max-sm:w-full border-[color:var(--inverse-foreground)] px-6 text-[0.8rem] transition-colors hover:bg-[var(--inverse-foreground)] hover:text-[color:var(--inverse)]",
-                  )}
-                >
-                  <Txt
-                    block={block}
-                    field="secondaryLabel"
-                    editable={editable}
-                  />
-                </SmartLink>
+                <div className={editable ? "contents" : "hidden sm:contents"}>
+                  <SmartLink
+                    href={str(block.secondaryHref)}
+                    className={cn(
+                      LABEL,
+                      "kinetic-focus inline-flex h-14 items-center border-2 border-[color:var(--inverse-foreground)] px-6 text-[0.8rem] transition-colors hover:bg-[var(--inverse-foreground)] hover:text-[color:var(--inverse)]",
+                    )}
+                  >
+                    <Txt
+                      block={block}
+                      field="secondaryLabel"
+                      editable={editable}
+                    />
+                  </SmartLink>
+                </div>
               )}
             </div>
           </div>
