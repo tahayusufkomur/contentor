@@ -87,7 +87,8 @@ MAX_CONSECUTIVE_IMAGE_HEAVY = 2  # the home recipe itself opens hero → story
 MAX_SECTIONS = 9
 # The home hero is a statement a visitor remembers (spec 2026-10-24 §6 R1); inner pages keep the manifest's 70.
 HOME_HERO_HEADLINE_MAX = 36
-# Home lists stay short: family -> (list field, most entries). Task 1.1b trims the lists a model overfills.
+# Home lists stay short: family -> (list field, most entries). A model that overfills one is flagged by
+# _problems and repaired; courseShowcase and events (rendered from her catalogue) get a `limit` instead.
 HOME_LIST_MAX = {"benefits": ("items", 4), "moments": ("photos", 4), "howItWorks": ("steps", 3)}
 MAX_KICKERS_PER_PAGE = 2  # besides the hero: a kicker is only worth its place when it adds a fact
 # Facts the AI may never write (no invented locations, schedules or addresses).
@@ -1478,12 +1479,25 @@ def _pin_home_buttons(fields: dict, ctx: dict) -> None:
             fields["ctaHref"], fields["ctaLabel"] = primary, ctx["primaryLabel"]
     elif fields.get("ctaHref") == "/about":
         fields["ctaHref"], fields["ctaLabel"] = "/contact", "Get in touch"
+    elif fields.get("ctaHref") == "/contact" and not fields.get("ctaLabel"):
+        fields["ctaLabel"] = "Get in touch"
+
+
+def _cap_home_lists(entries: list[dict], fields: list[dict]) -> None:
+    """Home shows her first three courses and three events, with the See-all button
+    for the rest. `limit` is a select, which the AI never writes (_writable skips
+    selects), so this is its only writer."""
+    for entry, f in zip(entries, fields, strict=True):
+        if entry["family"] in ("courseShowcase", "events"):
+            f["limit"] = "3"
 
 
 def _finish_copy(page_key, entries, fields, ctx, first_name="") -> None:
     """The page-level rules on filled (AI or fallback) copy, in place. The one
     place compose_page and skeleton_pages share."""
     _limit_kickers(entries, fields)
+    if page_key == "home":
+        _cap_home_lists(entries, fields)
     for entry, f in zip(entries, fields, strict=True):
         if page_key == "home" and entry["family"] in ("hero", "cta"):
             _pin_home_buttons(f, ctx)

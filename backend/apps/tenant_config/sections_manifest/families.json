@@ -512,6 +512,16 @@
           "type": "text",
           "max": 28,
           "label": "Button text"
+        },
+        "limit": {
+          "type": "select",
+          "options": [
+            "3",
+            "6",
+            "all"
+          ],
+          "default": "all",
+          "label": "How many"
         }
       }
     }

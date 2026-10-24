@@ -559,6 +559,40 @@ def test_pin_home_buttons():
     fields = {"ctaHref": "/faq", "ctaLabel": "Read the FAQ"}  # not About: left alone
     sc._pin_home_buttons(fields, nothing)
     assert fields["ctaHref"] == "/faq"
+    fields = {"ctaHref": "/contact", "ctaLabel": ""}  # already Contact, no label: the button would not show
+    sc._pin_home_buttons(fields, nothing)
+    assert fields == {"ctaHref": "/contact", "ctaLabel": "Get in touch"}
+    fields = {"ctaHref": "/contact", "ctaLabel": "Say hi"}  # her own words stay when the link is right
+    sc._pin_home_buttons(fields, nothing)
+    assert fields["ctaLabel"] == "Say hi"
+
+
+@pytest.mark.django_db
+def test_home_lists_are_capped_at_three(styled, monkeypatch, catalog):
+    """The home recipe has no events block, so the plan adds one: a coach with nine classes shows three."""
+    plan = sc.apply_guardrails(
+        {"pages": {"home": [{"family": f} for f in ("hero", "story", "courseShowcase", "events", "cta")]}}, "journal"
+    )
+    styled.wizard_state = {**styled.wizard_state, "site_plan": {**plan, "style": "journal"}}
+    styled.save(update_fields=["wizard_state"])
+    monkeypatch.setattr(sc.core_ai, "structured", FakeAI(plan=core_ai.AiError("no plan")))
+    blocks = sc.compose_page(styled, "home")
+    lists = [b for b in blocks if b["type"] in ("section.courseShowcase", "section.events")]
+    assert {b["type"] for b in lists} == {"section.courseShowcase", "section.events"}
+    assert all(b["limit"] == "3" for b in lists)
+    # The events page is untouched: no limit means every class.
+    events_page = sc.compose_page(styled, "events")
+    assert [b.get("limit", "all") for b in events_page if b["type"] == "section.events"] == ["all"]
+
+
+def test_cap_home_lists_touches_only_courses_and_events_on_home():
+    entries = [{"family": f} for f in ("hero", "courseShowcase", "events", "faq")]
+    fields = [{} for _ in entries]
+    sc._finish_copy("home", entries, fields, sc._ctx("yoga", "Maya Laurent", ""))
+    assert [f.get("limit") for f in fields] == [None, "3", "3", None]
+    fields = [{} for _ in entries]
+    sc._finish_copy("courses", entries, fields, sc._ctx("yoga", "Maya Laurent", ""))
+    assert not any("limit" in f for f in fields)
 
 
 @pytest.mark.django_db

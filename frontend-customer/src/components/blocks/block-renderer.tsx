@@ -4,6 +4,20 @@ import type { EditableContext } from "@/lib/blocks/types";
 import type { Block } from "@/types/tenant";
 import type { DynamicData } from "@/lib/blocks/fetch-dynamic-data";
 
+/** The slice a block renders: an events block with a limit of "3" or "6" shows
+ *  that many (courseShowcase styles apply their own limit). "all" or none: as is. */
+export function limitSlice(block: Block, slice: unknown): unknown {
+  const n = Number(block.limit);
+  if (
+    block.type === "section.events" &&
+    (n === 3 || n === 6) &&
+    Array.isArray(slice)
+  ) {
+    return slice.slice(0, n);
+  }
+  return slice;
+}
+
 export function BlockRenderer({
   block,
   dynamicData,
@@ -21,7 +35,7 @@ export function BlockRenderer({
   if (!def) return null; // forward-compat: silently skip unknown block types
   const Comp = def.component;
   const key = dynamicKeyOf(block);
-  const slice = key ? dynamicData?.[key] : undefined;
+  const slice = key ? limitSlice(block, dynamicData?.[key]) : undefined;
   const el = (
     <Comp
       data={block}
