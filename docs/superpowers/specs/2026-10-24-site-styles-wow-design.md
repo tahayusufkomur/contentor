@@ -323,7 +323,7 @@ Status values:
 |---|---|---|---|---|
 | 0.1 | Capture tool: `make design-shots` | none | Phase 0–1, Task 0.1 | done (2026-10-24, 9edf1bd5) |
 | 0.2 | Realistic showcase fixtures (`fixture=` sets) | none | Task 0.2 | done (2026-10-24, d608bd88) |
-| 0.3 | Eval measures distinctiveness and anchors on award sites | none | Task 0.3 | todo |
+| 0.3 | Eval measures distinctiveness and anchors on award sites | none | Task 0.3 | done (2026-10-24, 190cb7dd) |
 | 1.1 | Hero and copy rules in the composer | none | Task 1.1 | todo |
 | 1.1b | At most three courses and three events on home | 1.1 (same files) | Task 1.1b | todo |
 | 1.3 | One protagonist, no faces shared with peers (composer photos) | 1.1b (same files) | Task 1.3 | todo |
@@ -457,7 +457,7 @@ against G1.
   are three composed sets under the Task 1.1 rules, with 63 distinct Pix4Less photos and one coach
   portrait per set, in the hero. Open: the yoga story photo still reads as the coach (same outfit);
   the toolbar's palette and page links drop `size` and `fixture`.
-- 2026-10-24, WP-0.3: the eval has 8 axes. `rhythm` replaces
+- 2026-10-24, WP-0.3 (190cb7dd): the eval has 8 axes. `rhythm` replaces
   `rhythm_whitespace`; `distinctiveness` and `protagonist` are new; the judge's 10 now matches
   award-recognised coach sites, and the best Framer, Webflow or Squarespace templates are a 7. New
   baseline, `make eval-sites STYLE=journal BRIEFS=yoga` (5 pages, judge `gemini-3.8-flash-high`),
@@ -467,8 +467,9 @@ against G1.
   - overall 6.00 (home 7, about 6, courses 6, faq 5, contact 6): bar 8.5 not met, floor 7.5
     missed on all 5 pages;
   - `distinctiveness` is 6 on home and 4–5 on the other pages, so the axis discriminates on the
-    first run. Its notes call the pages "interchangeable" and name a different stock model in each
-    slot, which is what `protagonist` (4.4) measures.
+    first run. The about page's note calls it an interchangeable template, and three of five notes
+    name a different stock model per slot, which is what `protagonist` (4.4) measures. One judge
+    sample: re-judge before claiming a win of about one point.
   - Report (local, `e2e/eval-shots/` is git-ignored):
     `e2e/eval-shots/sites/journal-20261024-1749/report.html`.
 
