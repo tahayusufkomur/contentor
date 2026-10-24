@@ -326,7 +326,7 @@ Status values:
 | 0.3 | Eval measures distinctiveness and anchors on award sites | none | Task 0.3 | done (2026-10-24, 190cb7dd) |
 | 1.1 | Hero and copy rules in the composer | none | Task 1.1 | done (2026-10-24, 3a836ecc) |
 | 1.1b | At most three courses and three events on home | 1.1 (same files) | Task 1.1b | done (2026-10-24, c9c60462) |
-| 1.3 | One protagonist, no faces shared with peers (composer photos) | 1.1b (same files) | Task 1.3 | todo |
+| 1.3 | One protagonist, no faces shared with peers (composer photos) | 1.1b (same files) | Task 1.3 | done (2026-10-24, 330f48bf) |
 | 1.2 | Photo treatment per style (manifest → CSS) | none | Task 1.2 | todo |
 | 1.4 | Personal chrome and sticky phone CTA | none | Task 1.4 | todo |
 | 1.5 | Craft floor (detector fixes, one money formatter) | 1.2 | Task 1.5 | todo |
@@ -484,6 +484,13 @@ against G1.
   courses and events, and moves a home course list off the shared `rows` layout: `rows` reads `limit`
   as a catalogue size (3 shows 6), so it stays on the courses page only. Pages stored before this keep
   their lists until recomposed. Also: an empty home button label is refilled ("Get in touch").
+- 2026-10-24, WP-1.3 (4f41d9d3, c98c2412, 330f48bf): the planner briefs one person for the coach
+  (`hero.image` on home, `story.image` elsewhere); every other person slot shows students or a close
+  detail. The no-plan fallback briefs and four photo-slot roles in `families.json` now say the same:
+  before this change they asked for the coach in four slots. Photo picking skips stock assets that
+  same-niche tenants already use, and falls back to them only when nothing else fits (each slot still
+  gets a distinct photo). Learned: a test that only checks "every slot is filled" passes on a page that
+  repeats one photo; assert distinctness. Plans stored before this keep their old briefs until replanned.
 
 ## 10. Resources
 
