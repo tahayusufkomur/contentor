@@ -55,7 +55,7 @@
         "image2": {
           "type": "image",
           "aspect": "1:1",
-          "role": "a close detail of the practice (hands, tools, texture) with a person",
+          "role": "a close detail of practice (hands, feet, a back view) with a person in frame, no recognisable face",
           "label": "Detail photo"
         },
         "image3": {
@@ -67,7 +67,7 @@
         "image4": {
           "type": "image",
           "aspect": "1:1",
-          "role": "a small group or the room itself, wide and welcoming",
+          "role": "a small group of students, wide and welcoming, people in frame, never an empty room",
           "label": "Fourth photo (some layouts)"
         }
       }
