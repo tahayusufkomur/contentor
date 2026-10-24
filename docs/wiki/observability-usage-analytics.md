@@ -2,269 +2,210 @@
 
 # Observability & Usage Analytics
 
-Two independent telemetry subsystems live under this umbrella:
+Two independent subsystems, deliberately kept apart:
 
-| Subsystem   | App            | Schema     | Audience    | Answers                                                 |
-| ----------- | -------------- | ---------- | ----------- | ------------------------------------------------------- |
-| **Logbook** | `apps.logbook` | public     | superadmin  | "What happened on the platform, to whom, and how fast?" |
-| **Usage**   | `apps.usage`   | per-tenant | coach/owner | "Are my students installing the PWA?"                   |
+|          | **Logbook** (`apps.logbook`)                            | **Usage** (`apps.usage`)                  |
+| -------- | ------------------------------------------------------- | ----------------------------------------- |
+| Audience | Superadmin (us)                                         | Coach (tenant owner)                      |
+| Schema   | Public (SHARED_APPS)                                    | Per-tenant (TENANT_APPS)                  |
+| Question | "What is the platform doing right now, and who did it?" | "Are my students installing the app?"     |
+| Surface  | frontend-main `/admin/logs`, `/admin/health`            | frontend-customer `/admin` dashboard card |
 
-They share nothing but a philosophy: telemetry is best-effort and must never break the thing it observes. Every capture path here is wrapped in a suppressor, a `try`, or a fire-and-forget `fetch().catch(() => {})`.
-
-There is no Prometheus/Grafana/Loki stack — observability is an in-app feature (superadmin → Logs / Health). That is a deliberate choice recorded in `CLAUDE.md`.
+There is no Prometheus/Grafana stack. The logbook **is** the observability stack: container stdout → Vector → Postgres → a faceted viewer, with a nightly gzip export to object storage for anything older than two weeks.
 
 ---
 
 ## Part 1 — Logbook
 
-### The core idea: logs _are_ the event bus
-
-The request path performs **zero DB writes**. `RequestActivityMiddleware` emits one JSON line to stdout; Docker collects it; the `vector` container ships it to Django's ingest endpoint; ingest parses it back into rows. The same transport carries ordinary container logs (`LogEntry`) and structured request activity (`RequestEvent`) — they diverge only at parse time, based on the logger name.
+### The pipeline
 
 ```mermaid
 flowchart LR
-  A["stdout<br/>(django, celery, caddy,<br/>postgres, redis, next)"] --> V[vector container]
-  V -->|"POST batch<br/>X-Logs-Token"| I["logs_ingest"]
-  I --> P["parse_event()"]
-  P -->|"activity is not None"| RE[(RequestEvent)]
-  P -->|"passes_floor()"| LE[(LogEntry)]
-  RE --> PANEL["/admin/logs panel"]
-  LE --> PANEL
-  RE & LE --> ARC["archive_day → S3 .ndjson.gz"]
+  C[container stdout<br/>django · caddy · postgres · redis · nextjs] --> V[Vector<br/>docker_logs source]
+  V -->|"POST batches of 400<br/>X-Logs-Token"| I[logs_ingest]
+  I --> P[parse_event]
+  P -->|activity JSON| RE[(RequestEvent)]
+  P -->|"everything else,<br/>if passes_floor"| LE[(LogEntry)]
+  RE & LE --> PANEL[panel views<br/>/admin/logs]
+  RE & LE --> ARCH[archive_day → S3<br/>purge_logbook]
 ```
 
-Vector is intentionally dumb — it knows nothing about line formats. **All** format knowledge lives in `parsing.py`.
+Vector (`monitoring/vector/vector.yaml`) is **dumb transport**. It tails the Docker socket, reshapes each event to `{timestamp, container_name, stream, message}`, and POSTs. It knows nothing about levels, tenants or users — all of that is decided in Django so a parser change needs no container restart. Django/celery containers get a multiline rule (`start_pattern: ^\d{4}-\d{2}-\d{2}T`) so a traceback arrives as one event; the vector container excludes itself to avoid a feedback loop.
 
-### Capture
+Disk buffer is 256 MiB with `when_full: drop_newest` — a Django outage parks logs on disk rather than back-pressuring the app.
 
-#### `activity.py` — the API request trail
+### Writing the activity trail: `activity.py`
 
-`RequestActivityMiddleware` wraps every response, then `_record()` logs a JSON payload under the `apps.logbook.activity` logger:
+`RequestActivityMiddleware` is registered **last** in `MIDDLEWARE`, so its `process_response` runs _first_ on the way out — by then DRF has set `request.user` (DRF's `Request.user` setter propagates to the underlying `HttpRequest`). It performs **zero DB writes**: it emits one JSON line on the `apps.logbook.activity` logger and the line rides the pipeline back in as a `RequestEvent`.
 
 ```python
-{"kind": "api", "tenant": …, "user": …, "ip": …, "session_id": …,
- "method": …, "path": …, "status": …, "duration_ms": …, "user_agent": …}
+logger.info(json.dumps({"kind": "api", "tenant": …, "user": …, "ip": …,
+                        "session_id": …, "method": …, "path": …,
+                        "status": …, "duration_ms": …, "user_agent": …}))
 ```
 
-Two ordering constraints, both load-bearing:
+The whole `_record` call is wrapped in `contextlib.suppress(Exception)` — activity capture must never break a response.
 
-- **Registered LAST in `MIDDLEWARE`** so its `process_response` runs _first_ on the way out — by then DRF has set `request.user` (DRF's `Request.user` setter propagates to the underlying `HttpRequest`). Move it earlier and every authenticated request logs as anonymous.
-- `_record()` runs inside `contextlib.suppress(Exception)`. A bug in activity capture must never turn a 200 into a 500.
+Two helpers are shared with the beacon view:
 
-Skipped: `OPTIONS` preflights, and any path matching `settings.LOGBOOK_ACTIVITY_EXCLUDE_PREFIXES` (keeps the ingest endpoint from logging itself into a feedback loop, among other things).
+- `client_ip(request)` — `CF-Connecting-IP` → first hop of `X-Forwarded-For` → `REMOTE_ADDR`. Everything is behind Cloudflare and Caddy, so `REMOTE_ADDR` alone is the proxy.
+- `redact_path(full_path)` — replaces the values of `LOGBOOK_REDACT_PARAMS` (`token`, `key`, `code`, `signature`, `session`, `password`) with `"redacted"` and caps at 512 chars. Magic-link tokens must never land in a 14-day table or an S3 archive.
 
-Two helpers are shared with the pageview beacon:
+`LOGBOOK_ACTIVITY_EXCLUDE_PREFIXES` skips health probes, static files, and — importantly — `/api/v1/platform/logs/`, `/api/v1/platform/activity/` and `/api/v1/track/`, which would otherwise self-amplify (reading the log viewer would generate log rows about reading the log viewer).
 
-- `client_ip(request)` — `CF-Connecting-IP` → first hop of `X-Forwarded-For` → `REMOTE_ADDR`. Behind Cloudflare + Caddy, `REMOTE_ADDR` is always the proxy, so this priority order matters.
-- `redact_path(full_path)` — replaces the value of any query param named in `settings.LOGBOOK_REDACT_PARAMS` with `"redacted"`, then caps at 512 chars (matching `RequestEvent.path`'s column width).
+The `apps.logbook.activity` logger is pinned at `INFO` with `propagate: False` in `LOGGING`: the trail is data, not diagnostics, and must not vanish when an operator raises `DJANGO_LOG_LEVEL`.
 
-#### `context.py` — attributing arbitrary log lines to a user
+### Attributing a line to a user: `context.py`
 
-Ordinary log lines (`logger.warning("...")` anywhere in the codebase) also want a user label, but middleware can't provide one: DRF resolves the JWT at _view_ level, after middleware has already run. The fix is a `ContextVar`:
+Middleware alone can never see the JWT user — DRF resolves the token at view level. So the flow is inverted:
 
-1. `TenantJWTAuthentication.authenticate()` calls `set_current_user(label)` on success.
-2. `UserContextFilter` (a `logging.Filter` wired into the Django log formatter) stamps `record.user` on every record.
+1. `TenantJWTAuthentication.authenticate()` (in `apps/accounts/authentication.py`) calls `set_current_user(user.email)` on success.
+2. `UserContextFilter` stamps `record.user` on **every** log record from that point on, feeding the `[user=%(user)s]` field of the console formatter.
 3. `UserContextMiddleware` calls `reset_current_user()` in a `finally`.
 
-Step 3 is not optional hygiene. Gunicorn runs `gthread` workers that **reuse threads** — without the reset, a line logged between requests (Celery-adjacent code, a background thread, a signal handler) would carry the _previous_ request's user.
+The reset is not optional: gthread workers reuse threads, so without it a line logged between requests would carry the previous request's user. The filter swallows every exception — logging must never raise.
 
-`UserContextFilter.filter()` swallows every exception and falls back to `"-"`: logging must never raise.
+### Parsing: `parsing.py`
 
-#### `views/track.py` — the pageview beacon
+All per-container-family format knowledge lives here. `parse_event(raw)` dispatches on the normalized container name (`service_from_container` strips the `contentor-` prefix and any `-dev`/`-1` suffix):
 
-Client-side navigations never touch Django, so the activity middleware can't see them. `PageViewTrackView` accepts a POST from the frontend and emits the same JSON shape with `kind: "pageview"` (and `status`/`duration_ms` as `None`).
+- **`django`, `celery-worker`, `celery-agents`, `celery-beat`** → `_parse_app_line`: `_DJANGO_RE` matches the console formatter and pulls level/logger/tenant/user/message. When `logger_name == ACTIVITY_LOGGER`, the body is `json.loads`-ed into `ParsedEvent.activity` — that flag is what routes the event to `RequestEvent` instead of `LogEntry`. Falls through to `_GUNICORN_RE`, then to `_heuristic_level`.
+- **`caddy`** → JSON line, read `level`.
+- **`postgres`** → `_POSTGRES_RE` (`LOG|WARNING|ERROR|FATAL|PANIC|STATEMENT|DETAIL|HINT`).
+- **`redis`** → `_REDIS_RE`; only the `#` mark is a warning.
+- **anything else (next.js, minio, …)** → `_heuristic_level` keyword scan.
 
-- `authentication_classes = [TenantJWTAuthentication]` + `AllowAny` — auth is _optional_; an invalid token returns `None` and the visitor is recorded as anonymous.
-- `PageViewThrottle` overrides `get_cache_key()` to bucket by `client_ip(request)`. DRF's default anon ident would resolve to Caddy's address, making one shared bucket for every anonymous visitor on the internet. Rate from `settings.LOGBOOK_PAGEVIEW_RATE` (default `"60/min"`).
-- Validation is one check: `path` must start with `/`. Both `path` and `referrer` go through `redact_path()`.
-- Returns `202` — the caller gets no useful information back and shouldn't wait.
+Guiding rule: **an unparseable line is kept as INFO with the raw line as the message.** A parser bug must never silently drop logs.
 
-#### Frontend beacon (`packages/shared/src/tracking/`)
+`passes_floor(container, level)` applies `LOGBOOK_LEVEL_FLOORS` — our own services store from `INFO`, everything else from `WARNING` (`"*"`). The floor applies only to `LogEntry`; activity rows bypass it entirely.
 
-`<TrackPageView />` mounts once per app in the root layout and fires on `usePathname()` changes.
+Two sharp edges handled here: NUL bytes are stripped from the message (Postgres text columns reject `0x00`, e.g. Django logging a `/%00` path — one poisoned line would `DataError` the whole `bulk_create` batch, which Vector then retries forever), and `parse_ts` truncates nanosecond precision before `datetime.fromisoformat`.
 
-- **`pathname` only, never `useSearchParams()`** — that hook forces a Suspense boundary and a CSR bailout in the static marketing layout. Server-rendered query strings are captured (redacted) by the activity middleware instead, so nothing is lost.
-- `shouldTrack(prev, path, now)` dedupes: same path within 1000ms is dropped (React strict-mode double-effects, rapid re-renders).
-- `referrer` is the previous in-app pathname if there is one, else `document.referrer` — so journeys stitch across the entry hop.
-- `keepalive: true` so the beacon survives the navigation that triggered it.
+### Ingest: `views/ingest.py`
 
-`getSessionId()` returns a per-tab UUID from **`sessionStorage`**, sent as `X-Session-Id`. This is a privacy stance, not an oversight: anonymous visitors get no persistent identifier. Storage blocked (private mode) → returns `""` and the event is tracked without journey stitching. The shared `clientFetch` attaches this header to all API calls, which is why the server-side activity rows carry session IDs too.
+`POST /api/v1/platform/logs/ingest/` — `@authentication_classes([])` + `AllowAny`, guarded by `hmac.compare_digest` against `settings.LOGS_INGEST_TOKEN` in the `X-Logs-Token` header. Empty token ⇒ `503 ingest disabled`. Batches over `MAX_BATCH = 500` get `413` (Vector sends 400).
 
-### Parsing (`parsing.py`)
+The three sanitizers exist for the same reason as the NUL strip — one bad field would 500 the batch and Vector would retry it forever:
 
-`parse_event(raw: dict) -> ParsedEvent | None` is the single entry point. It returns `None` only for blank lines.
+- `_ip_or_none` — `ipaddress.ip_address(str(value))`; `str()` first so an int isn't read as a packed address.
+- `_int_or_none(value, max_value)` — rejects `bool` (an int subtype: `true` must not persist as `1`) and clamps to the column's range.
+- `_text(value, max_len)` — strips NULs that `json.loads` decoded from `\u0000` escapes, then truncates.
 
-Container name → service via `service_from_container()`, which strips the `contentor-` prefix and `-dev` / `-1` suffixes so `contentor-django-dev-1`, `django`, and `/contentor_django_1` all collapse to `django`.
-
-Per-family dispatch:
-
-| Container                                | Strategy                                                                                                                       |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `django`, `celery-worker`, `celery-beat` | `_parse_app_line()`: `_DJANGO_RE` (level / logger / `[tenant=…]` / optional `[user=…]` / message) → `_GUNICORN_RE` → heuristic |
-| `caddy`                                  | JSON line, read `level`                                                                                                        |
-| `postgres`                               | `_POSTGRES_RE` (`LOG:` / `ERROR:` / `STATEMENT:` …)                                                                            |
-| `redis`                                  | `_REDIS_RE`; only the `#` mark is a WARNING                                                                                    |
-| anything else (Next.js, unknown)         | `_heuristic_level()` — `⨯` or word-boundary `error`/`warn`                                                                     |
-
-**Unparseable lines are kept as INFO with the raw line as the message.** A parser bug must degrade fidelity, never silently drop logs. Every regex uses `re.DOTALL` so a multi-line Python traceback stays one event.
-
-Two functions drive the routing decision downstream:
-
-- **The activity fork:** if `logger_name == ACTIVITY_LOGGER` (`"apps.logbook.activity"`), the body is `json.loads`-ed into `ParsedEvent.activity`. Non-dict or invalid JSON → `activity = None`, and the line falls through as an ordinary log entry rather than vanishing.
-- **`passes_floor(container, level)`** — per-container minimum level from `settings.LOGBOOK_LEVEL_FLOORS`, with a `"*"` fallback (default `WARNING`). This is the volume control: chatty containers get a high floor without touching their logging config.
-
-`parse_ts()` tolerates `Z`, truncates nanoseconds to microseconds (`_TS_NANO_RE` — Go/Vector emit 9 digits, Python's `fromisoformat` accepts 6), and falls back to `timezone.now()` rather than failing. `_norm_level()` maps aliases (`WARN`→`WARNING`, `FATAL`/`PANIC`→`CRITICAL`, `LOG`/`NOTICE`→`INFO`, `TRACE`/`DBG`→`DEBUG`) and defaults unknown levels to `INFO`.
-
-### Ingest (`views/ingest.py`)
-
-`POST /api/v1/platform/logs/ingest/` — a public URL (`@authentication_classes([])`, `AllowAny`) guarded by a shared secret:
-
-- `settings.LOGS_INGEST_TOKEN` empty → `503 ingest disabled`.
-- `X-Logs-Token` compared with `hmac.compare_digest` → `403` on mismatch.
-- More than `MAX_BATCH` (500) events → `413`.
-
-Vector reaches Django on the compose-internal network, but the token guards the endpoint regardless of exposure.
-
-The body of the loop is a fan-out: `parsed.activity is not None` → `RequestEvent`, else `passes_floor(...)` → `LogEntry`. Both are written with `bulk_create(..., ignore_conflicts=True, batch_size=500)`.
-
-**Poison-batch hardening.** Vector retries failed batches, so a single malformed field that raises inside `bulk_create` would 500 the batch _forever_. Hence:
-
-- `_ip_or_none()` validates through `ipaddress.ip_address()` before the `inet` column, coercing to `str()` first — `ip_address(123)` is a valid packed address (`0.0.0.123`), which is never what a caller meant.
-- `_int_or_none(value, max_value)` rejects non-ints, rejects `bool` explicitly (it's an `int` subtype, so `true` must not persist as `1`), and clamps to the column's range — `status=99999999999` would otherwise raise `DataError`.
-- Everything else is `str(...)[:width]`, matched to the model field.
-
-`line_hash` comes from `line_digest(message)` — MD5 with `usedforsecurity=False` (it's a dedupe key, not a security primitive). Combined with the `(container, ts, line_hash)` and `(kind, ts, line_hash)` unique constraints plus `ignore_conflicts`, a redelivered Vector batch is idempotent.
+Both models are written with `bulk_create(..., ignore_conflicts=True, batch_size=500)` against a `(container|kind, ts, line_hash)` unique constraint, where `line_hash = line_digest(message)` (MD5, `usedforsecurity=False`). That is what makes a Vector retry idempotent.
 
 Response: `{"accepted": n, "logs": n, "activity": n}`.
 
-### Storage (`models.py`)
+### Models: `models.py`
 
-All three models live in the **public schema** — the logbook is platform-wide; `tenant` is a plain `CharField` holding a schema name, not an FK.
+Public-schema store, three tables:
 
-- **`LogEntry`** — `ts, container, stream, level, logger_name, tenant, user_label, message, line_hash`. Indexed on `(level, ts)`, `(container, ts)`, `(tenant, ts)`, `(user_label, ts)`, `(ts)`, plus a **`GinIndex` with `gin_trgm_ops` on `message`** — that's what makes the panel's `icontains` full-text filter usable at volume.
-- **`RequestEvent`** — the activity/pageview trail; `kind` ∈ `api | pageview`, plus `ip`, `session_id`, `method`, `path`, `status`, `duration_ms`, `referrer`, `user_agent`. Indexed on `(kind, ts)`, `(tenant, ts)`, `(user_label, ts)`, `(session_id, ts)`, `(ip, ts)`, `(ts)`.
-- **`LogArchiveDay`** — the archive ledger, unique on `(date, kind)`, recording `object_key` and `line_count`.
+- **`LogEntry`** — raw container lines. Indexed on `(level, ts)`, `(container, ts)`, `(tenant, ts)`, `(user_label, ts)`, `(ts)`, plus a **GIN trigram index on `message`** backing the panel's `q` substring search.
+- **`RequestEvent`** — the api/pageview trail. Indexed on `(kind, ts)`, `(tenant, ts)`, `(user_label, ts)`, `(session_id, ts)`, `(ip, ts)`, `(ts)`. `session_id` is what stitches an anonymous visitor's journey together.
+- **`LogArchiveDay`** — the S3 ledger, unique per `(date, kind)`.
 
-> **No `Meta.ordering` anywhere, on purpose.** A default ordering would inject the ordered column into the facet endpoints' `GROUP BY` and silently break the counts. Every query orders explicitly.
+**No `Meta.ordering` anywhere, on purpose** — a default ordering would pollute the facet `GROUP BY`s. Every query orders explicitly.
 
-### The superadmin panel (`views/panel.py`)
+### The viewer API: `views/panel.py`
 
-Four `IsSuperUser` endpoints, mounted from `urls_platform.py`:
+Four `IsSuperUser` endpoints under `/api/v1/platform/`: `logs/`, `logs/facets/`, `activity/`, `activity/facets/`.
 
-```
-GET /api/v1/platform/logs/              → keyset page of LogEntry
-GET /api/v1/platform/logs/facets/       → levels, containers, tenants, users
-GET /api/v1/platform/activity/          → keyset page of RequestEvent
-GET /api/v1/platform/activity/facets/   → kinds, methods, status_classes, tenants, users
-```
+**Faceted-search semantics.** Each facet dimension is counted under every _other_ active filter (plus `q`/`since`/`until`) but never its own — `_facet(build_qs, params, param_name, field)` calls `build_qs(params, skip=param_name)`. Picking `level=ERROR` narrows the container options to containers that _have_ errors, while the level facet keeps showing the alternatives. Zero-count options are omitted; `tenants`/`users` are capped at `FACET_LIMIT = 20` (the users facet accepts a `users_q` substring for the combobox).
 
-**Faceted-search semantics.** Each facet dimension is counted under every _other_ active filter (plus `q`/`since`/`until`) but never its own. `_facet(build_qs, params, param_name, field, ...)` calls `build_qs(params, skip=param_name)` to achieve this. Practical effect: selecting `level=ERROR` narrows the _container_ options to containers that actually have errors, while the _level_ facet keeps showing the alternatives you could switch to. Zero-count options are omitted; `tenants`/`users` are capped at `FACET_LIMIT` (20), and the logs-facets endpoint accepts `users_q` for server-side search within that truncated list.
+**Keyset pagination.** `_paginate` orders `-ts, -id` and emits `next_cursor = "<iso ts>|<id>"`; the next request filters `ts < cts OR (ts = cts AND id < cid)`. `PAGE_SIZE = 100`, fetched as `PAGE_SIZE + 1` to detect the tail.
 
-**Keyset pagination.** `_paginate()` orders by `(-ts, -id)` and encodes the cursor as `"<iso-ts>|<id>"`, resuming with `Q(ts__lt=cts) | (Q(ts=cts) & Q(id__lt=id))`. The `id` tiebreak is what makes equal-timestamp rows (very common — one request emits several lines in the same millisecond) paginate without duplicates or gaps. It over-fetches `PAGE_SIZE + 1` (100 + 1) to decide whether `next_cursor` is set.
+**Everything malformed is a 400, never ignored** — an unfiltered result mid-incident is worse than an error. `since`/`until`/`cursor`, and on the activity side `status_class` and `ip`, raise DRF `ValidationError` from the shared helpers, so every endpoint reusing those helpers enforces the same contract. Note that `status_class`/`ip` are validated even when their own dimension is skipped for a facet build.
 
-**Malformed params are `400`, never ignored.** `_apply_time_and_q` raises `ValidationError` for an unparseable `since`/`until`; `_paginate` raises for a malformed `cursor`; `_activity_queryset` raises for an unknown `status_class` or a non-IP `ip`. An unfiltered result set mid-incident is worse than an error — you'd read it as "no errors" when it's actually "your filter didn't apply." Note that `status_class`/`ip` are validated _even when that dimension is skipped_ for facet-building, so the contract doesn't depend on which facet happens to construct the queryset first.
+`_status_class_q` turns `2xx`/`3xx`/`4xx`/`5xx` into an OR of `status__gte/__lt` ranges; the status facet counts each class with its own `.count()` rather than going through `_facet`, since it isn't a stored column.
 
-`status_class` maps `2xx`/`3xx`/`4xx`/`5xx` to half-open ranges via `_STATUS_CLASSES`; multiple values OR together (`_status_class_q`). The status facet is computed with per-class `.count()` calls rather than through `_facet`, since it aggregates over ranges rather than distinct values.
+### Page-view beacon: `views/track.py` + `packages/shared/src/tracking/`
 
-Free-text `q` targets `message` for logs and `path` for activity.
+`POST /api/v1/track/pageview/` is public. Auth is _optional_: `TenantJWTAuthentication` resolves the cookie when present and returns `None` for invalid tokens, so a visitor degrades to anonymous instead of 401-ing.
 
-**Client:** `frontend-main/src/lib/platform-logs-api.ts` — `fetchLogs`, `fetchLogFacets`, `fetchActivity`, `fetchActivityFacets`, all through the shared `clientFetch` (same-origin cookie auth). `LogsFilters` is a flat `Record<string, string>` of comma-joined values, serialized by `qs()`. `sinceForRange(range)` converts the UI's `TimeRange` (`15m`…`14d`) into the ISO `since` param.
+`PageViewThrottle` is a `SimpleRateThrottle` whose `get_cache_key` idents on `client_ip(request)` — DRF's default ident would be Caddy's address for every anonymous visitor behind the proxy, i.e. one shared bucket for the internet. Rate comes from `LOGBOOK_PAGEVIEW_RATE` (`60/min`).
 
-### Retention: archive then purge (`archive.py`, `tasks.py`)
+The view validates that `path` starts with `/`, then emits the same JSON shape as the middleware with `kind: "pageview"`, `status`/`duration_ms` null, and a redacted `referrer`. Returns `202`. The row itself is created later by the ingest path — which is why `/api/v1/track/` is in the activity exclude list.
 
-Two Celery-beat tasks implement a hot-store/cold-store split.
+Client side:
 
-**`archive_logbook_days`** walks every un-archived elapsed day (`_day_range` excludes today, and floors at `today - LOGBOOK_HARD_CAP_DAYS`), calling `archive_day(day, kind)` for both kinds in `ARCHIVE_MODELS` (`{"logs": LogEntry, "activity": RequestEvent}`). Failures are logged with `logger.exception` and retried tomorrow — one bad day never blocks the others.
+- `session.ts` — `getSessionId()` mints a `crypto.randomUUID()` into **sessionStorage** (`ct_sid`) and sends it as `X-Session-Id`. sessionStorage-scoped by design: no persistent identifier for anonymous visitors. Blocked storage (private mode) returns `""` and tracking continues without stitching. `shouldTrack(prev, path, now)` dedupes same-path fires inside 1 s.
+- `track-page-view.tsx` — `<TrackPageView />`, mounted once in each app's root layout (`frontend-main/src/app/layout.tsx`, `frontend-customer/src/app/layout.tsx`). Fire-and-forget `fetch` with `keepalive`, errors swallowed. **`pathname` only, never `useSearchParams`** — that hook would force a Suspense boundary and a CSR bailout in the static marketing layout; server-side query strings are captured (redacted) by the activity middleware instead. `referrer` is the previous in-app path, falling back to `document.referrer`.
 
-`archive_day()` is idempotent (returns the existing `LogArchiveDay` if present), streams the day's rows with `.iterator(chunk_size=2000)` into an in-memory gzip NDJSON buffer, and uploads via `get_s3_client()` to `{LOGBOOK_ARCHIVE_PREFIXES[kind]}YYYY/MM/DD.ndjson.gz`. **An empty day still creates a ledger row with `object_key=""`** — that's what lets the purge treat it as archived. Serialized field sets (`_LOG_FIELDS` / `_ACTIVITY_FIELDS`) deliberately exclude `id` and `line_hash`; the archive is the long-term record for `zcat | grep`, not a restore image.
+### Retention: `archive.py` + `tasks.py`
 
-**`purge_logbook`** does two things per kind:
+Two beat tasks (`config/celery.py`): `archive_logbook_days` at 03:40, `purge_logbook` at 04:20.
 
-1. **Hard cap** — deletes anything older than `LOGBOOK_HARD_CAP_DAYS` regardless of archive status, at `logger.error` level. A persistently failing archive must not grow the table forever. Because the error is itself a log line, it lands in the panel — the system reports its own data loss.
-2. **Normal purge** — deletes days older than `LOGBOOK_RETENTION_DAYS` _that have a `LogArchiveDay` ledger row_.
+`archive_day(day, kind)` streams the day's rows (`qs.iterator(chunk_size=2000)`) into an in-memory gzip NDJSON buffer and PUTs it to `s3://$AWS_BUCKET_NAME/{LOGBOOK_ARCHIVE_PREFIXES[kind]}YYYY/MM/DD.ndjson.gz` via `apps.core.storage.get_s3_client` (MinIO in dev, Hetzner in prod). It is idempotent — an existing `LogArchiveDay` short-circuits — and an empty day still writes a ledger row with `object_key = ""`, which marks it done. `_LOG_FIELDS` / `_ACTIVITY_FIELDS` define the export schema.
 
-The ledger row is the safety interlock: no archive record, no deletion (until the hard cap).
+`archive_logbook_days` walks `_day_range` (from the oldest row, clamped to `today - LOGBOOK_HARD_CAP_DAYS`, **excluding today**) and catches per-day exceptions so one bad day doesn't stop the rest; it retries tomorrow.
+
+`purge_logbook` does two things:
+
+1. **Hard cap** — anything older than `LOGBOOK_HARD_CAP_DAYS` (21) is deleted regardless of archive state, logged at `ERROR`. A persistently failing archive must not grow the table forever, and that ERROR surfaces in the panel itself.
+2. **Normal retention** — days older than `LOGBOOK_RETENTION_DAYS` (14) that _have_ a `LogArchiveDay` row are deleted day by day. The ledger row is what licenses the delete; the archive is the long-term record (`zcat | grep` when needed).
+
+### Settings (`config/settings/base.py`)
+
+| Setting                             | Default                                        | Role                                               |
+| ----------------------------------- | ---------------------------------------------- | -------------------------------------------------- |
+| `LOGS_INGEST_TOKEN`                 | env, `""`                                      | Shared secret for the ingest endpoint; empty ⇒ 503 |
+| `LOGBOOK_RETENTION_DAYS`            | 14                                             | Hot-store window for archived days                 |
+| `LOGBOOK_HARD_CAP_DAYS`             | 21                                             | Unconditional delete, logs ERROR                   |
+| `LOGBOOK_LEVEL_FLOORS`              | app services `INFO`, `*` `WARNING`             | Minimum stored level per container                 |
+| `LOGBOOK_ACTIVITY_EXCLUDE_PREFIXES` | health/static/panel/track/dev                  | Paths that produce no `RequestEvent`               |
+| `LOGBOOK_REDACT_PARAMS`             | token, key, code, signature, session, password | Query values replaced with `redacted`              |
+| `LOGBOOK_ARCHIVE_PREFIXES`          | `logs/archive/`, `activity/archive/`           | S3 key prefixes                                    |
+| `LOGBOOK_PAGEVIEW_RATE`             | `60/min`                                       | Per-real-IP beacon throttle                        |
+
+### The superadmin viewer (frontend-main)
+
+`src/lib/platform-logs-api.ts` is the typed client: `fetchLogs` / `fetchLogFacets` / `fetchActivity` / `fetchActivityFacets`, all through the shared same-origin cookie `clientFetch`. `LogsFilters` is deliberately `Record<string, string>` — param name → comma-joined values, matching the backend's `_multi` parsing. `sinceForRange(range)` converts the `TimeRange` chips (`15m`…`14d`) into the `since` ISO timestamp.
+
+The page lives at `src/app/admin/logs/` (`page.tsx` + `logs-table.tsx`, `activity-table.tsx`, `filters.tsx`) with the `logs` / `activity` tabs mirroring the two endpoint pairs. `LogRow` and `ActivityRow` mirror `LOG_FIELDS` and `ACTIVITY_FIELDS` exactly.
+
+`/admin/health` is a separate, much simpler page: it polls `/api/health/` through `useAsyncAction` and renders three status cards (Overall / Database / Redis).
 
 ---
 
 ## Part 2 — Usage analytics (`apps.usage`)
 
-A much smaller, tenant-scoped system answering one product question: are students installing the PWA, or just using the browser?
+A tenant app answering one product question: _is the PWA actually being installed and used by students?_ (see the native-app-vs-PWA decision).
 
-### `UsageEvent`
+### Model
 
-`(user, mode, platform, day)` with `unique_together` on all four — so it's a **daily unique**, not a session counter. `mode` ∈ `pwa | browser`; `platform` ∈ `ios | android | desktop | other`. Lives in TENANT_APPS, so the row lands in whatever schema the request ran in — no tenant column needed.
+`UsageEvent(user, mode, platform, day)` with `unique_together` on all four — **one row per student per mode/platform per day**, not per session. `mode ∈ {pwa, browser}`, `platform ∈ {ios, android, desktop, other}`. No tenant column: the request runs in the tenant's schema on the customer subdomain, so the row lands in the right place by construction.
 
-### Recording — `record_usage` (`POST /api/v1/me/usage/`)
+### `record_usage` — `POST /api/v1/me/usage/` (`IsAuthenticated`)
 
-`IsAuthenticated`. Validates `mode`/`platform` against `_MODES`/`_PLATFORMS` (400 otherwise), then:
+Validates `mode`/`platform` against the module-level sets (400 otherwise), then returns `204` immediately for anyone whose `role != "student"` — coaches and owners live in the admin app and are out of scope.
 
-- **Non-students short-circuit to `204`.** Coaches and owners use the admin app and are out of scope for adoption metrics.
-- `get_or_create` inside `contextlib.suppress(IntegrityError)` — two tabs POSTing concurrently both miss the SELECT and race the unique constraint; the loser swallows it rather than 500ing.
-- Denormalizes onto the `User` for cheap querying: `last_display_mode`, `last_platform`, and a write-once `first_pwa_at`. Only changed fields go into `save(update_fields=…)`.
+The `get_or_create` is wrapped in `contextlib.suppress(IntegrityError)`: two tabs POSTing concurrently race the unique constraint, and today's row already exists, so swallowing it beats a 500.
 
-Always `204` — the client has nothing to do with a response.
+It also maintains three denormalized fields on `User`, saved with `update_fields` only when something actually changed: `last_display_mode`, `last_platform`, and `first_pwa_at` (set once, the first time a student arrives in standalone mode). `installed_students` in the summary is a count of students with a non-null `first_pwa_at`.
 
-**Client side.** `<UsageReporter authed />` (`frontend-customer`) gates on `authed` (anonymous would just 403) and skips `/admin` paths, then calls `reportUsageOncePerSession()`. That function sets the `sessionStorage` flag **before** the fetch, so a failure never re-fires on the next navigation, and swallows all errors — telemetry must never affect the page. `mode` comes from `isStandalone()` (shared with the push subsystem); `platform` from `detectPlatform()`'s user-agent sniff, where an empty UA is `"other"`.
+### `usage_summary` — `GET /api/v1/admin/usage/summary/?days=30` (`IsCoachOrOwner`)
 
-### Reporting — `usage_summary` (`GET /api/v1/admin/usage/summary/`)
+`days` is clamped to `[1, 365]`, defaulting to 30 on anything unparseable. Returns conditional-aggregate totals (`pwa_sessions`, `browser_sessions`, `pwa_pct`), `installed_students`, and a `daily` series of `{day, pwa, browser}`.
 
-`IsCoachOrOwner`. `?days=` is coerced and clamped to `[1, 365]` (default 30) — a bad value falls back rather than erroring, since this feeds a dashboard card. Returns:
+### Client
 
-```json
-{"pwa_sessions": n, "browser_sessions": n, "pwa_pct": n,
- "installed_students": n, "daily": [{"day": "…", "pwa": n, "browser": n}]}
-```
+- `frontend-customer/src/lib/usage.ts` — `detectPlatform()` (note the iPadOS branch: it asks for the desktop site so its UA says _Macintosh_; only `navigator.maxTouchPoints > 1` gives it away) and `reportUsageOncePerSession()`, which **sets the sessionStorage flag before the request** so a failure never re-fires. `isInAppBrowser()` is exported here for the install prompt — Instagram/TikTok/LinkedIn webviews cannot add to home screen.
+- `components/shared/usage-reporter.tsx` — `<UsageReporter authed={hasSession} />` in the customer root layout. Reports only when authed (anonymous would just 403) and never under `/admin`.
+- `components/admin/usage-adoption-card.tsx` — the coach's "App adoption (30 days)" card on `/admin`, rendered by the dashboard. `PageState` + skeleton for the initial load, a `reloadKey` retry, and a dependency-free CSS bar chart (`flex h-16 items-end gap-px`, each bar split by PWA share). Returns `null` when there is no data and no error, so a quiet tenant sees nothing rather than an empty card.
 
-`installed_students` counts tenant users with `role="student"` and a non-null `first_pwa_at` — the all-time install count, deliberately not windowed. Totals and the daily series come from two `Count(filter=Q(...))` aggregates over one queryset.
-
-`<UsageAdoptionCard />` renders it in the coach dashboard: a `PageState` with skeleton and retry, an install headline, a PWA/Web split bar, and a dependency-free CSS bar chart for the 30-day trend (per-day height scaled to the max day, inner bar = PWA share). It returns `null` when there's no data and no error — a tenant with zero telemetry sees nothing rather than an empty card.
+Demo data: `apps/demo_seed/seeding_helpers.py` fabricates `UsageEvent` rows with the same one-row-per-day semantics as the live endpoint.
 
 ---
 
-## Part 3 — Health page
+## Contributing
 
-`frontend-main/src/app/admin/health/page.tsx` polls `GET /api/health/` (Django's own liveness endpoint, outside `/api/v1/`) and renders three status cards: Overall, Database, Redis. It uses `useAsyncAction` for the refresh button's loading state and error toast-free inline error, plus a local `HealthSkeleton` for the first load and `loading.tsx` (`SkeletonPageHeader` + `SkeletonCardGrid`) for the route segment — per the repo-wide loading conventions.
+**Adding a field to the activity trail.** Four places move together: the payload dict in `activity.py:_record` (and `views/track.py:post` if it applies to pageviews), `_request_event` in `views/ingest.py` with the right sanitizer, a migration on `RequestEvent`, then `ACTIVITY_FIELDS` in **both** `views/panel.py` (API output) and `archive.py` (`_ACTIVITY_FIELDS`, export schema) — plus `ActivityRow` in `platform-logs-api.ts`. Forgetting the archive list silently drops the field from the long-term record.
 
----
+**Teaching the parser a new container.** Add the regex and a branch in `parse_event`, extend `_APP_SERVICES` if it uses our console formatter, and give it a floor in `LOGBOOK_LEVEL_FLOORS` (otherwise it inherits `"*"` = WARNING and you'll wonder where the INFO lines went). Vector's `include_containers` list needs the container name too.
 
-## Configuration reference
+**Adding a facet dimension.** Extend the `spec` dict in `_log_filters` / `_activity_queryset`, add a `_facet(...)` entry to the matching facets view, and add the param name to `PARAM_KEYS` in the viewer page. The `skip=` plumbing gives you the correct faceted-count semantics for free.
 
-| Setting                             | Used by                       | Purpose                                                         |
-| ----------------------------------- | ----------------------------- | --------------------------------------------------------------- |
-| `LOGS_INGEST_TOKEN`                 | `logs_ingest`                 | Shared secret; empty disables ingest (`503`)                    |
-| `LOGBOOK_LEVEL_FLOORS`              | `passes_floor`                | Per-container minimum level, `"*"` fallback (default `WARNING`) |
-| `LOGBOOK_ACTIVITY_EXCLUDE_PREFIXES` | `RequestActivityMiddleware`   | Paths that produce no activity row                              |
-| `LOGBOOK_REDACT_PARAMS`             | `redact_path`                 | Query params whose values become `redacted`                     |
-| `LOGBOOK_PAGEVIEW_RATE`             | `PageViewThrottle`            | Beacon rate limit per real client IP (default `60/min`)         |
-| `LOGBOOK_ARCHIVE_PREFIXES`          | `archive_day`                 | S3 key prefix per kind                                          |
-| `LOGBOOK_RETENTION_DAYS`            | `purge_logbook`               | Hot-store window for archived days                              |
-| `LOGBOOK_HARD_CAP_DAYS`             | `purge_logbook`, `_day_range` | Unconditional deletion age                                      |
-| `AWS_BUCKET_NAME`                   | `archive_day`                 | Archive bucket (MinIO in dev, Hetzner in prod)                  |
+**Never trust an ingested value.** Every scalar that reaches a typed column goes through `_ip_or_none` / `_int_or_none` / `_text`. A `DataError` inside `bulk_create` fails the entire batch, and Vector's retry turns one malformed line into an infinite loop.
 
-Middleware ordering in `settings`: `UserContextMiddleware` needs to wrap the request; `RequestActivityMiddleware` must be **last**.
+**Nothing in this module may break a request.** The middleware suppresses all exceptions, the logging filter swallows them, the beacon is fire-and-forget, and `reportUsageOncePerSession` catches everything. Keep it that way.
 
----
-
-## Invariants to preserve when contributing
-
-1. **Nothing on the request path writes to the DB.** If you need a new dimension on activity, add it to the JSON payload in `activity.py`/`track.py`, to `_request_event()` in `ingest.py`, to `RequestEvent`, and to `ACTIVITY_FIELDS` in both `panel.py` and `archive.py`. Four places — grep for an existing field like `session_id` to find them all.
-2. **`RequestActivityMiddleware` stays last in `MIDDLEWARE`.** Otherwise `request.user` is unset and every row is anonymous.
-3. **`reset_current_user()` must run per request.** Thread reuse leaks user labels across requests otherwise.
-4. **Ingest must not be able to raise on untrusted input.** New fields go through a `_*_or_none` guard or a `str(...)[:width]` truncation, sized to the column. A raising `bulk_create` is a permanently poisoned Vector retry loop.
-5. **Never add `Meta.ordering` to a logbook model.** It breaks the facet `GROUP BY`s.
-6. **Malformed panel params return 400.** Don't "helpfully" ignore them.
-7. **Parser changes must not drop lines.** New formats fall back to `_heuristic_level()` with the raw message preserved.
-8. **Purge stays gated on the `LogArchiveDay` ledger** (hard cap excepted), and the hard-cap deletion stays at `ERROR` level so it's visible in the panel.
-
-## Tests
-
-`backend/apps/logbook/tests/` covers each layer independently:
-
-- `test_parsing.py` — per-container format cases, multi-line tracebacks staying one event, nanosecond timestamps, message truncation at `MESSAGE_MAX`, the activity-JSON fork, `service_from_container` variants, and `passes_floor` defaults/overrides.
-- `test_context.py` — default `"-"`, filter stamping, JWT auth setting the context, and the middleware resetting after the response.
-- `test_models.py` — `line_digest` stability (32 hex chars) and both dedupe constraints under `ignore_conflicts`.
-- `test_activity.py` — `client_ip` header priority and `redact_path` length capping.
-- `test_panel_logs.py` / `test_panel_activity.py` — keyset pagination without duplicates, and the equal-timestamp `id` tiebreak.
-
-Run one file with `make test-app APP=logbook`, or the whole suite with `make test`.
+Tests live in `backend/apps/logbook/tests/` — `test_parsing.py` (per-container formats, level floors, nanosecond timestamps, message cap, empty lines), `test_context.py` (the contextvar default, the filter stamp, and the post-response reset), `test_activity.py` (`client_ip` priority, `redact_path` caps), `test_models.py` (digest stability, dedupe under `ignore_conflicts`), `test_panel_logs.py` / `test_panel_activity.py` (keyset pagination, equal-`ts` tiebreak, facet counts, 400s), and `test_tasks.py` (archive covers elapsed days, purge respects the ledger and the hard cap). Run them with `make test-app APP=logbook`.

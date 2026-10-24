@@ -2,77 +2,74 @@
 
 # Other
 
-The catch-all area for everything in Contentor that isn't application code but determines how the application is built, run, tested, deployed, observed, and understood. Nothing here is imported by `apps/*` or `src/*` — these files are consumed by `docker build`, `make`, `pytest`, `next`, `caddy`, `wrangler`, and by AI agents reading the repo.
+Everything in Contentor that isn't a Django app, a Next.js route, or a React component: the files that build the stack, run it, test it end to end, brief the agents that work on it, and document what all of it means. Nothing here imports anything else here — the coupling is by _convention and file path_, not by call graph. That is exactly why it breaks quietly.
 
-Roughly four layers, each documented on its own page.
+Four layers, each with its own failure mode.
 
-## 1. Agent & human orientation
+## 1. Agent instruction surface
 
-The repo carries an explicit contract for how coding agents should behave in it, because a plausible-looking change here (a `fetch()` without `X-Tenant-Domain`, a public endpoint without `@authentication_classes([])`) silently crosses a tenant boundary.
+Four root-level files that configure how an AI agent behaves in this repo. They have no importers, no tests, and no CI gate — their only consumer is whatever has them in context.
 
-- [CLAUDE.md](claude-md.md) — highest-precedence, always-loaded session instructions; the invariants and the working style.
-- [agent.context.md](agent-context-md.md) — the one-minute mental model: actors, tenancy, invariants.
-- [agent.commands.json](agent-commands-json.md) — machine-readable projection of the `make` surface, so an agent doesn't reverse-engineer the Makefile.
-- [docs/](docs.md) — `REFERENCE.md`, `GLOSSARY.md`, `PRODUCT.md`, and the generated `docs/wiki/` tree; [docs/superpowers](docs-superpowers.md) holds the spec/plan archive that ~29 source files link back to.
+| File                                          | Role                                                                                                          |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| [CLAUDE.md](claude-md.md)                     | Highest-precedence, always-loaded session instructions. Edit it and every future session reasons differently. |
+| [agent.context.md](agent-context-md.md)       | The one-minute mental model: actors, tenancy, invariants.                                                     |
+| [agent.commands.json](agent-commands-json.md) | Machine-readable projection of the `make` surface — the subset an agent actually needs.                       |
 
-These four are mutually reinforcing and mutually rot-prone: `agent.commands.json` and `agent.context.md` restate facts owned by the `Makefile` and `REFERENCE.md`. A command rename touches all of them.
+`agent.commands.json` is a derived view of the [Makefile](makefile.md). When a target is renamed or a workflow changes, both the JSON and `CLAUDE.md → Commands` go stale silently — nothing fails, the agent just runs the wrong thing. Same for `agent.context.md` when tenancy or auth rules move.
 
-## 2. Build & run
+## 2. Build, run, deploy
 
 ```mermaid
 graph TD
-    mk["Makefile"] --> dc["docker-compose.yml (dev)"]
-    mk --> dep["make deploy → docker-compose.prod.yml"]
-    dc --> caddy["Caddyfile"]
-    dep --> caddy
-    caddy --> dj["django"]
-    caddy --> fm["nextjs-main"]
-    caddy --> fc["nextjs-customer"]
-    dj --> ep["backend/scripts/entrypoint.sh"]
-    ep --> bdf["backend/Dockerfile"]
-    bdf --> req["backend/requirements/*.txt"]
-    dj --> vec["vector → Django logbook"]
-    fm --> shared["packages/shared"]
-    fc --> shared
+    MK["Makefile"] --> DC["docker-compose.yml (dev)"]
+    MK --> DEP["deploy.sh → docker-compose.prod.yml"]
+    DC --> CF["Caddyfile"]
+    DEP --> CF
+    CF --> DJ["django"]
+    CF --> NM["nextjs-main"]
+    CF --> NC["nextjs-customer"]
+    DJ --> EP["backend/scripts/entrypoint.sh"]
+    EP --> BD["backend/Dockerfile ← requirements/"]
+    DJ --> VEC["monitoring/vector"]
+    NM --> VEC
+    NC --> VEC
 ```
 
-- [Makefile](makefile.md) — the single entry point; every target shells into a container. If it isn't in `make help`, nobody finds it.
-- [docker-compose.yml](docker-compose-yml.md) (dev) and [docker-compose.prod.yml](docker-compose-prod-yml.md) (home server) are **two independent stacks**, not a base/override pair — parity settings (worker class, timeouts, log shipping) must be edited twice.
-- [Caddyfile](caddyfile.md) — one parametrized file for both, differing only by env vars; owns apex-vs-tenant host routing and the `/api/*`, `/static/*` bypasses.
-- [backend](backend.md) (`Dockerfile`, `pyproject.toml`, `conftest.py`), [backend/requirements](backend-requirements.md), [backend/scripts](backend-scripts.md) (the sole migration/collectstatic/seed entrypoint), [backend/config](backend-config.md) (load-order-critical Celery registration), [backend/apps](backend-apps.md) (package scaffolding, shared-schema migrations, pytest harness).
-- Frontend build layers: [frontend-main](frontend-main.md), [frontend-customer](frontend-customer.md), plus their `src` roots ([frontend-main/src](frontend-main-src.md), [frontend-customer/src](frontend-customer-src.md)) which own the global stylesheets and design tokens.
-- [packages/shared](packages-shared.md) — source-only, no `package.json`; dependencies resolve from whichever app compiles it, so a new import must be installed in **both**.
+The [Makefile](makefile.md) is the only entry point anyone is expected to learn; if a workflow isn't in `make help`, it doesn't exist. It shells into [docker-compose.yml](docker-compose-yml.md) for dev and hands prod to [docker-compose.prod.yml](docker-compose-prod-yml.md) — **not an override layer**, a separate self-contained stack. A setting that must hold in both (worker class, timeouts, log shipping) has to be edited twice.
 
-## 3. Content & assets that ship with the apps
+One [Caddyfile](caddyfile.md) serves both, parametrized by env vars only. [backend/scripts/entrypoint.sh](backend-scripts.md) is the single place migrations, collectstatic and seeding run — `celery-worker` and `celery-beat` share the image and deliberately skip those steps. The image itself comes from [backend/](backend.md)'s `Dockerfile`, layered over [backend/requirements/](backend-requirements.md) (`dev.txt` and `prod.txt` are mutually exclusive; a runtime dep belongs in `base.txt` or prod breaks). [monitoring/vector](monitoring-vector.md) ships every container's stdout to Django's logbook — it is dumb transport, all parsing stays in `apps/logbook/`.
 
-Data with no call graph, coupled to code by key path or filename rather than by import:
+Frontend build config lives separately per app: [frontend-customer](frontend-customer.md) and [frontend-main](frontend-main.md). Both build with the **repo root** as Docker context so they can resolve [packages/shared](packages-shared.md), which has no `package.json` and no build step — its deps must be installed in _both_ consuming apps or a missing import surfaces as a type error.
 
-- i18n catalogs — [frontend-main/messages](frontend-main-messages.md) (en + tr, marketing/signup/onboarding) and [frontend-customer/messages](frontend-customer-messages.md) (portal + admin).
-- [frontend-customer/public](frontend-customer-public.md) — generated Serwist service worker alongside the 220 MB committed curated-logo catalog; two very different things in one directory.
-- [frontend-customer/scripts](frontend-customer-scripts.md) — a single `postinstall` patch for `@mediapipe/tasks-vision`.
+## 3. Test harness
 
-## 4. Testing, observability, and dev tooling
+Three suites, three isolation levels:
 
-- [e2e](e2e.md) — Playwright config, global setup, and `impact-map.json`; [e2e/specs](e2e-specs.md) drives the _running dev stack_ (not a hermetic environment) across both frontends and Django; [e2e/helpers](e2e-helpers.md) supplies the five recurring primitives (`compose`, `auth`, email sink, holdout pinning, Stripe Checkout). [e2e/playwright-report](e2e-playwright-report.md) is regenerated output — read for failure context, never edited.
-- [monitoring/vector](monitoring-vector.md) — dumb transport only; all parsing, level filtering, and tenant extraction happen in `apps/logbook`. That IS the observability stack; there is no metrics stack.
-- [infra/cloudflare](infra-cloudflare.md) — the `mailbox-inbound` Email Worker, the only Contentor component running outside Docker and outside `make deploy` (deployed via `wrangler`).
-- [scripts](scripts.md) — operator-run bash: prod Postgres backup/restore, Stripe webhook forwarding.
-- Reference tooling: [tools/flowmap](tools-flowmap.md) crawls both frontends and renders user-journey DAGs at `:7878`; [tools/wizard-mockups](tools-wizard-mockups.md) regenerates the committed signup-wizard screenshots.
+- **pytest** — fixtures in [backend/](backend.md) (`conftest.py`) and [backend/apps/](backend-apps.md); runs inside the `django` container.
+- **vitest** — config in each frontend's module page; runs inside the Next.js containers.
+- **Playwright** — [e2e/](e2e.md) is the only suite that does _not_ containerize. It drives the real running dev stack over `http://localhost` through the same Caddy edge. Everything about its design follows from that: serial execution, self-healing fixtures, shared tenant state.
 
-## Workflows that cross the boundaries
+[e2e/helpers](e2e-helpers.md) carries the five recurring needs (authenticated browser, `manage.py` access via `compose.ts`, email readback, bucket pinning, Stripe Checkout) — no page objects, no global fixture file. [e2e/specs](e2e-specs.md) holds the specs themselves; `e2e/impact-map.json` maps a diff to the subset worth running, fail-closed with `00-smoke` always on, and `make lint` fails if a spec has no map entry. [e2e/playwright-report](e2e-playwright-report.md) is gitignored generated output from one past run — not current behaviour, don't read it as documentation.
 
-**Local change → verified.** `make test-changed` (backed by `scripts/select_tests.py` and the `conftest.py`/`pyproject.toml` harness in [backend](backend.md)) → `make e2e-changed`, which maps the diff through `e2e/impact-map.json`, fails closed, and always runs `00-smoke`.
+## 4. Documentation and local tooling
 
-**Container boot.** `docker-compose*.yml` → image from [backend/Dockerfile](backend.md) with the layer chosen from [backend/requirements](backend-requirements.md) → [entrypoint.sh](backend-scripts.md) runs migrations/collectstatic/seed for the `django` service only; `celery-worker` and `celery-beat` pass through the same entrypoint but skip those steps to avoid races.
+[docs/](docs.md) is the written memory, but parts of it are _generated_ — `docs/wiki/` is mirrored from GitNexus and must never be hand-edited, `PRODUCT.md` is owned by the `/po` skill. [docs/superpowers](docs-superpowers.md) is the feature-work archive: a plan is an executable build queue, its paired spec is the decision record for why the design is what it is (including what was rejected).
 
-**Request path.** Browser → Cloudflare tunnel (prod) → [Caddyfile](caddyfile.md) → Django or one of the two Next.js apps, both of which compile [packages/shared](packages-shared.md) from source and resolve strings from their own message catalogs.
+Translation catalogs are pure data with no import edges — [frontend-customer/messages](frontend-customer-messages.md) and [frontend-main/messages](frontend-main-messages.md) couple by key path, enforced at runtime, not by the compiler. The same hazard applies to the global stylesheets in [frontend-customer/src](frontend-customer-src.md) and [frontend-main/src](frontend-main-src.md): class names and `data-*` attributes defined there are consumed by name from ~100 TSX call sites, so renaming a selector is a cross-file rename with no compiler to catch it.
 
-**Log path.** Every container's stdout → [vector](monitoring-vector.md) → Django logbook ingest → superadmin → Logs.
+Static assets and build-support scripts: [frontend-customer/public](frontend-customer-public.md) (generated service worker + the 220 MB committed logo catalog — two unrelated things in one directory) and [frontend-customer/scripts](frontend-customer-scripts.md) (a `postinstall` patch for a broken third-party `exports` field).
 
-**Deploy.** `make deploy` → full backend suite → `~/ws/home-server/deploy.sh contentor` → [docker-compose.prod.yml](docker-compose-prod-yml.md) on the home-server host, with the same `Caddyfile` behind the shared `edge` network.
+Standalone operational tooling runs _outside_ the app: [scripts/](scripts.md) (Postgres backup/restore, Stripe webhook forwarding), [infra/cloudflare](infra-cloudflare.md) (the inbound-email Worker — the one piece deployed with `wrangler`, not `make deploy`), [tools/flowmap](tools-flowmap.md) (crawls both frontends and renders real user journeys as screenshot DAGs), and [tools/wizard-mockups](tools-wizard-mockups.md) (regenerates the committed wizard screenshots).
 
-## Editing rules that apply across this group
+## What spans these
 
-- Dev and prod compose files diverge silently — check both when changing runtime behavior.
-- Generated trees are not editable: `docs/wiki/`, `e2e/playwright-report/`, `frontend-customer/public/sw.js`.
-- The agent-facing files (`CLAUDE.md`, `AGENTS.md`, `agent.context.md`, `agent.commands.json`) duplicate facts on purpose; when a command or invariant changes, update every copy or the duplication becomes misinformation.
+**A new `make` target** touches the [Makefile](makefile.md), [agent.commands.json](agent-commands-json.md) and `CLAUDE.md → Commands` — only the first is enforced.
+
+**A new env var** touches [docker-compose.yml](docker-compose-yml.md), [docker-compose.prod.yml](docker-compose-prod-yml.md), `.env.prod.example`, and Cloudflare KV via `secrets.sh` — there is no `.env.prod` on disk.
+
+**A new backend dependency** touches [backend/requirements/](backend-requirements.md) and requires an image rebuild; hot-reload won't pick it up.
+
+**A new e2e spec** must get an `impact-map.json` entry or `make lint` fails.
+
+**A routing change** touches the [Caddyfile](caddyfile.md) for both environments at once — there is only one file, and `/api/*`, `/static/*` and apex `/django-admin/*` bypass Next.js entirely.

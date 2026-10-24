@@ -2,56 +2,44 @@
 
 # Live Events & Calendar
 
-Everything time-based that a coach sells: **live classes** (in-app WebRTC calls), **live streams** (in-app broadcast + chat), **Zoom classes** (external link), and **onsite events** (physical address). The four event types share one shape end to end — near-identical models, one unified calendar feed, one detail page — and diverge only in _how the event is delivered_ and _what secret the student receives on access_.
+Everything a coach sells that happens at a _time_: live classes (in-app video), live streams (broadcast), Zoom classes, and in-person onsite events. The module spans a tenant-scoped Django app and the student/coach surfaces that consume it.
 
-Two halves:
+| Sub-module                                                            | Owns                                                                            |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [Live Events & Calendar — apps](live-events-calendar-backend-apps.md) | `apps.live` models, serializers, views, GetStream rooms, the two calendar feeds |
+| [Live Events & Calendar — src](live-events-calendar-frontend-src.md)  | Calendar/event pages, detail + purchase flow, GetStream room clients            |
 
-- **[Backend — `apps/live/`](live-events-calendar-apps.md)** — the four TENANT_APP models, their create/list endpoints, the GetStream integration (`stream_service`), and the two calendar feeds (student-facing and coach-facing).
-- **[Frontend — `frontend-customer/src`](live-events-calendar-src.md)** — discovery (calendar + events list), the per-event detail/purchase page, the realtime rooms, and the coach admin tabs.
+## How the halves fit
 
-## How the halves meet
-
-Three contracts carry the whole module:
-
-| Contract        | Backend                                                                                           | Frontend                                                                                  |
-| --------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Unified feed    | `calendar_events` → `_to_calendar_event` flattens all four types into one event shape             | `CalendarClient.fetchEvents` / `EventsList` render it type-agnostically                   |
-| Access + secret | detail endpoint resolves entitlement, returns `room_name` / Zoom link / address only when granted | `EventDetailClient` branches to buy, log in, or join                                      |
-| Realtime token  | `generate_user_token` (via `get_client`, faked under `LIVE_FAKE_ENABLED`)                         | `LiveStreamRoom.fetchToken` / `CallJoiner`, both releasing via `call-session.releaseCall` |
+The four backend models (`LiveClass`, `LiveStream`, `ZoomClass`, `OnsiteEvent`) are structurally near-identical and differ only in delivery and secret. That shape is what makes the frontend cheap: `src/types/live.ts` mirrors them 1:1, and the calendar pages never branch on kind — they read one unified `/api/v1/calendar/` feed that the backend flattens across all four tables.
 
 ```mermaid
-graph LR
-  subgraph Backend["apps/live"]
-    M[4 event models<br/>computed_status]
-    F[calendar_events<br/>_to_calendar_event]
-    S[stream_service<br/>tokens + calls]
-    M --> F
-    M --> S
+flowchart LR
+  subgraph be["apps.live"]
+    M["4 event models"]
+    CAL["/api/v1/calendar/<br/>student feed"]
+    CC["content_calendar.py<br/>coach feed"]
+    ROOM["_start_room →<br/>GetStream"]
   end
-  subgraph Student["frontend-customer (student)"]
-    C[CalendarClient / EventsList]
-    D[EventDetailClient]
-    R["LiveClassRoom / LiveStreamRoom"]
-    C --> D --> R
+  subgraph fe["frontend-customer"]
+    CP["calendar-client /<br/>agenda + month views"]
+    ED["event-detail-client<br/>access → buy / login / join"]
+    LR["live-room-client /<br/>live-stream room"]
+    AD["admin/live + admin/calendar"]
   end
-  subgraph Coach["frontend-customer (admin)"]
-    T[classes / zoom / onsite tabs<br/>live-streams page]
-  end
-  F --> C
-  S --> R
-  T --> M
+  M --> CAL --> CP --> ED
+  M --> CC --> AD
+  ED --> ROOM --> LR
 ```
 
-## Key cross-cutting workflows
+Only `LiveClass` and `LiveStream` reach GetStream; Zoom and onsite events carry a coach-supplied link or address instead, so their detail pages terminate at "here is the secret" rather than at a room client.
 
-**Discovery → purchase → join.** `CalendarClient` (month grid or `CalendarAgendaView`, toggled by `ViewToggle`) requests a date window computed by `src/lib/calendar-utils.ts` (`getDateRangeParams` → `getMonthGridDates` / `toDateKey`) and renders `EventCard`s from the unified feed. Clicking through hits `/[type]/[id]`, where `EventDetailClient` resolves access; only then does the student reach a room or the external Zoom link. The room components fetch a per-user GetStream token at mount and always release the call on unmount — the single most common source of stale-call bugs.
+## Workflows that cross the boundary
 
-**Status is derived, never stored.** `computed_status` / `_computed_status` on the models decides scheduled/live/ended from timestamps, so the calendar, the detail page, and the coach tabs all show the same label without a background job keeping a status column in sync. Each type carries its own live label (a live class is `"live"`, a live stream goes backstage → live).
+**Publish.** A coach creates an event in `admin/live`; the list/create views (`live_class_list_create` and siblings) run the shared `_serialize_list_response` and push pricing through `apps.billing.ways` — `set_ways` → `_clean` validates amount, kind and purchase window. Pricing rules therefore fail at _create_ time, in the billing app, not in `apps.live`.
 
-**Coach authoring mirrors the same four shapes.** The admin tabs (`classes-tab`, `zoom-tab`, `onsite-tab`, plus the standalone `live-streams` page) share `admin/live/shared.tsx` (e.g. `PricingBadge`) and each keep their own `resetForm`; on the server the create serializers likewise share `_filter_option_ids_field` / `_tag_ids_field` so pricing options and tags validate identically across types.
+**Discover.** `CalendarPage` builds its range with `getDateRangeParams`, fetches the unified feed, and `calendar-utils.ts` (`groupEventsByDate`, `isToday`, `formatEventWhen`) does all the date shaping for both the student month/agenda views and the coach's `UnifiedCalendar`. One utility file serves both calendars.
 
-## Where to be careful
+**Buy and join.** `get_access_info` on the serializer is the single source of truth for what a student may do; `EventDetailClient` renders exactly that verdict as buy / log in / join, with `EventStatusBadge` reflecting the model's computed live status (`computed_ended_at`). Pressing join calls `live_class_start` / `live_stream_start`, which mint a GetStream room via `_start_room`; `LiveRoomClient.init` then connects with the returned credentials.
 
-- **Adding a fifth event type** means touching all three contracts, not just a model: `_to_calendar_event`, the type union in `src/types/live.ts`, and the detail-page routing.
-- **Changing a serializer** shifts the frontend contract — regenerate `api-generated.ts` and read the diff.
-- **Live rooms can't be exercised offline without `LIVE_FAKE_ENABLED=true`**, which routes `stream_service` through `_fake`; that flag is what lets the live-class e2e specs run without GetStream credentials.
+**Hide.** `_hidden` on the detail views is the shared gate that keeps unpublished or access-restricted events out of every detail response, regardless of kind.

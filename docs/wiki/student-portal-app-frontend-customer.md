@@ -1,256 +1,196 @@
 # Student Portal App (frontend-customer)
 
-I have what I need.
-
 # Student Portal App (`frontend-customer`)
 
-The tenant-facing Next.js 14 application. Every host that isn't the marketing apex (`contentor.app`) or the locale apex (`tr.contentor.app`) is routed here by Caddy — so this one app serves **every** coach's site: the public marketing pages a visitor sees, the student portal behind login, and the coach's own admin panel.
+The tenant-facing Next.js 14 app. Every host that is **not** the apex domain — `<slug>.contentor.app`, a coach's custom domain, `<slug>.localhost` in dev — is routed to this app by Caddy. It serves three audiences from one codebase:
 
-One deploy, N tenants. Nothing about a tenant is baked in at build time; the identity of the site is resolved per request from the `Host` header and materialized as a `TenantConfig` object that drives branding, theme, navigation, page content, and feature gating.
+| Audience | Routes                                                                            | Who                                        |
+| -------- | --------------------------------------------------------------------------------- | ------------------------------------------ |
+| Visitor  | `(public)` — `/`, `/about`, `/courses`, `/plans`, `/blog`, …                      | anonymous, or a logged-in student browsing |
+| Student  | `(student)` — `/dashboard`, `/learn/[slug]`, `/orders`, `/community`, `/checkout` | end users inside the tenant                |
+| Coach    | `/admin/*`, `/setup`                                                              | the tenant owner (role `owner` / `coach`)  |
+
+The marketing site, signup and superadmin live in the _other_ app, `frontend-main`. Shared UI and hooks come from `packages/shared` via the `@shared/*` alias; `@/*` is this app's own `src/`.
+
+---
 
 ## Request lifecycle
 
-Everything downstream depends on three headers that `src/middleware.ts` stamps on every request:
-
-| Header            | Value                                                                                        | Consumed by                            |
-| ----------------- | -------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `x-tenant-slug`   | first label of the host (`acme` from `acme.localhost`), or the whole host for custom domains | `getTenantSlug()`, BFF routes          |
-| `x-tenant-domain` | full host including port                                                                     | `serverFetch()`, `fetchTenantConfig()` |
-| `x-pathname`      | `request.nextUrl.pathname`                                                                   | root layout's publish gate             |
-
-In development, an `x-dev-tenant` request header overrides the slug — this is how the e2e suite and manual tooling drive a specific tenant without DNS.
-
-The matcher deliberately excludes **all** of `_next`, not just `_next/static` and `_next/image`. An earlier narrower list let middleware run on the dev HMR websocket (`_next/webpack-hmr`), which made Caddy log a steady stream of `502 malformed HTTP response "Unauthorized"`. RSC navigations hit real route paths with `?_rsc=`, not `/_next/*`, so they still receive the tenant headers.
+Nothing in this app knows which tenant it is serving until `src/middleware.ts` says so. Every server component reads the answer back off request headers.
 
 ```mermaid
-graph LR
-  B[Browser] -->|Host: acme.contentor.app| C[Caddy]
-  C -->|/api/v1/*| D[Django]
-  C -->|everything else| N[Next.js customer]
-  N --> M[middleware.ts<br/>x-tenant-slug / -domain / -pathname]
-  M --> L[RootLayout<br/>fetchTenantConfig]
-  L --> D
+flowchart TD
+    A[Caddy: any non-apex host] --> B[middleware.ts<br/>x-tenant-slug · x-tenant-domain<br/>x-pathname · x-embed]
+    B --> C[RootLayout<br/>fetchTenantConfig]
+    C -->|no tenant| D[Site not found]
+    C -->|isSiteGated| E[PreviewGate]
+    C --> F[Route group layout]
+    F --> G["(public) · (student) · /admin"]
 ```
 
-Note the split: the browser talks to Django **directly** through Caddy for `/api/v1/*`. Next.js is not a proxy for client-side data. Server components reach Django over the internal Docker network.
+### 1. `middleware.ts`
 
-### Two fetch paths, deliberately different
+Derives the tenant from `Host` and stamps four request headers:
 
-`src/lib/api-server.ts` — `serverFetch<T>()` runs in server components and route handlers. It reads the JWT from the `COOKIE_NAME` cookie and forwards `X-Tenant-Domain` from the middleware header. **The header is mandatory**: Node's undici silently drops a custom `Host`, so without it `http://django:8000` resolves to the public schema and the tenant's data disappears.
+- `x-tenant-slug` — the first label for `*.{BASE_DOMAIN}` hosts, the whole host for custom domains. In development an `x-dev-tenant` request header overrides it.
+- `x-tenant-domain` — the full host **with port**, the value every Django call must forward.
+- `x-pathname` — so the root layout can branch on the route (the publish gate's bypass list, `isAdminPath`). Server components cannot read the pathname otherwise.
+- `x-embed` — set only when `?embed=1`, the `/setup` preview iframe. Explicitly deleted otherwise so a client cannot forge it.
 
-`src/lib/api-client.ts` — `clientFetch<T>()` runs in the browser and hits _relative_ paths (`/api/v1/courses/enrolled/`). The browser's own `Host` carries the tenant; cookies go along via `credentials: "same-origin"`. It attaches the tracking session id header and normalizes failures into `ApiError` (status + parsed body + `Retry-After` when the server hinted one).
+The matcher excludes **all** of `_next`. That is load-bearing: a narrower list let middleware run on `_next/webpack-hmr` and Caddy logged a steady stream of `502 malformed HTTP response "Unauthorized"`. App Router RSC requests hit real route paths with `?_rsc=`, so they still get the headers.
 
-Both guard against `res.json()` throwing on an empty body — a 204, or a success Cloudflare stripped `Content-Length` from, returns `undefined as T` rather than a parse error.
+### 2. `src/app/layout.tsx` — the root layout
 
-Around `clientFetch` sit three helpers worth knowing before writing your own retry logic:
+Runs on every request (`dynamic = "force-dynamic"`) and does five jobs:
 
-- `isTransientApiError(err)` — 429, 5xx, and network `TypeError` only. Everything else is a deliberate API outcome the caller must interpret.
-- `retryTransient(fn, {retries, baseDelayMs, maxDelayMs})` — honors `Retry-After` but caps the wait at 3s. The tenant rate limiter hints 60s; a page gate must fail over to its error state rather than hang that long.
-- `batchedAsync(tasks, batchSize, delayMs)` — batches concurrent requests so bulk operations don't trip the rate limiter. `admin/students/page.tsx` uses it for per-row enrichment.
+1. **Resolve the tenant.** `getTenantSlug()` → `fetchTenantConfig(slug)`. A `null` config for a real-looking slug renders an inline "Site not found" page — `notFound()` is illegal in a root layout (`NotAllowedRootNotFoundError`), and `fetchTenantConfig` already retried, so `null` means the tenant genuinely does not exist.
+2. **Gate unpublished sites.** `isSiteGated()` returns true when the config is unpublished or paused, unless the path is in `GATE_BYPASS_PREFIXES` (`/login`, `/callback`, `/impersonate`), the `contentor_preview` cookie matches the slug (unpublished only — never a paused site), or the viewer is the owner. Gated requests render `<PreviewGate>` instead of `children`.
+3. **Paint the look.** `<TenantThemeStyle>` emits the tenant's style/palette as one `<style id="tenant-theme">` sheet, plus the style's Google Fonts `<link>`. `ThemeProvider` (next-themes, `storageKey = "theme"`) carries one light/dark choice for both the site and the coach admin.
+4. **Provide context.** `TenantProvider` puts the fetched `TenantConfig` into React context; client components read it with `useTenant()`. There is no client-side config fetch.
+5. **Mount the always-on chrome:** `NavigationProvider` + `NavigationProgress`, `AppToaster`, `TrackPageView`, `RedirectToast`, `InstallPrompt`, `SwUpdateToast`, `PushOptIn`, `UsageReporter`.
 
-## Tenant resolution and config
+`generateMetadata` and `generateViewport` also live here: tenant title template (`%s · <Brand>`), a description that falls back to the home hero's subheading rather than shipping an empty one, and `/pwa-icon` favicons versioned by `icon_id`/`logo_id`.
 
-`src/lib/tenant.ts` is the single door to tenant identity.
+### 3. Route-group layouts
 
-```ts
-getTenantSlug(); // x-tenant-slug header, or "unknown"
-getTenantDomain(); // x-tenant-domain header, or ""
-fetchTenantConfig(slug); // → TenantConfig | null
-```
+- **`(public)/layout.tsx`** — public header/footer, and the owner's editing chrome. If the viewer is a coach it fetches the config and wraps the page in `<EditSidebar>`; if guided setup is still running it `redirect("/setup")`. Both are skipped when `x-embed` is set, so the `/setup` preview iframe shows the site exactly as a visitor sees it. Nav links are pruned by `/api/v1/site/menu/` and the plans list, both **fail open** — a fetch hiccup must not silently hide a coach's Pricing link.
+- **`(student)/layout.tsx`** — `requireAuth()`, then the same `PublicHeader` plus subscription and community state, `ImpersonationBanner`, and the student-facing assistant bubble.
+- **`admin/layout.tsx`** — `requireAuth()` + `requireRole(user, ["owner","coach"])`, `setupFlowActive` redirect, then `<AdminShell>`. A paused tenant gets `<PausedPlanPicker>` in place of every admin page.
 
-`fetchTenantConfig` prefers the _live_ request host over a slug-built guess, so TR tenants (`<slug>.tr.contentor.app`) and custom domains resolve to the correct `Domain` row. It falls back to `${slug}.${BASE_DOMAIN}` only where headers aren't available — `generateMetadata` and `manifest.ts`.
+Both `setupFlowActive(slug)` and `sitePaused(slug)` come from `app/setup/gate.ts`. They re-read the config with the cache busted when the flag reads true, so a coach who just finished setup is not held on `/setup` for the length of the config TTL.
 
-Two behaviors here are load-bearing and easy to break:
+---
 
-**Null means "no such tenant", not "the fetch failed."** A 404 from Django returns `null` immediately. Anything else — 5xx, network error, timeout — retries once after 150ms before giving up. A transient blip reported as `null` would paint "Site not found" over a perfectly valid tenant on a cold load.
+## Talking to Django
 
-**The 60s config cache is disabled in development** (`CACHE_TTL = 0` when `NODE_ENV === "development"`). E2E specs PATCH config through Django and immediately assert the public page reflects it; a warm cache turns that into a stale window whose outcome depends on leftover tenant state. Production keeps the TTL — a coach's edit taking up to a minute to reach the public site is the accepted tradeoff. The site editor's PATCH proxy (`src/app/api/admin/config/route.ts`) calls `configCache.clear()` after every save so `router.refresh()` re-renders the preview with the just-saved blocks.
-
-The resolved config flows to the client through `TenantProvider` → `TenantContext`; client components read it with `useTenant()` from `@/hooks/use-tenant`. There is no client-side refetch of config — it's server-resolved once per navigation.
-
-## The root layout
-
-`src/app/layout.tsx` does more real work than a typical root layout. In order:
-
-1. Resolve slug and config. **If `config` is null and the slug isn't `"unknown"`, render a self-contained "Site not found" page** and return. It renders the 404 markup inline rather than calling `notFound()` — that throws `NotAllowedRootNotFoundError` in a root layout. Since `fetchTenantConfig` already retried, reaching this branch means the tenant genuinely doesn't exist.
-2. Evaluate the publish gate via `isSiteGated()`.
-3. Inject `<TenantThemeStyle>` (a `<style>` tag of generated CSS variables) plus the tenant's Google Font link into `<head>`.
-4. Wrap children in `NextIntlClientProvider` → `ThemeProvider` → `TenantProvider` → `NavigationProvider`.
-
-**Font variable naming matters.** Instrument Sans is exposed as `--font-instrument`, _not_ `--font-sans`, so it never shadows the tenant's own `--font-sans` override injected at `:root` by `TenantThemeStyle` or the builder's live preview. `globals.css` points `--font-sans` at it as the fallback default.
-
-### The publish gate
-
-An unpublished site shows `<PreviewGate>` instead of its content. `isSiteGated()` returns false — i.e. lets you through — for any of:
-
-- `config.is_published` is true (or absent)
-- the path starts with `/login`, `/callback`, or `/impersonate` (`GATE_BYPASS_PREFIXES`, read from the `x-pathname` header) — the owner must be able to log in to preview
-- the `contentor_preview` cookie equals the tenant slug
-- the authenticated user's role is `owner` or `coach`
-
-`PreviewGate` posts the preview password to `src/app/api/preview/unlock/route.ts`, which validates it against Django's `/api/v1/preview/unlock/` and, on success, sets the `contentor_preview` httpOnly cookie for 7 days.
-
-## Route groups
+Two clients, chosen by where the code runs:
 
 ```
-src/app/
-  (public)/     no auth — home, about, contact, faq, courses, events,
-                calendar, store, plans, blog, install
-  (student)/    requireAuth() — dashboard, learn, checkout, orders,
-                subscriptions, live-classes, community
-  (auth)/       login, callback
-  admin/        requireAuth + requireRole(["owner","coach"])
-  api/          BFF route handlers (auth, preview unlock, config proxy)
-  impersonate/  one-time-token session hand-off
-  live/, live-stream/  GetStream session pages
-  pwa-icon/     dynamic branded icon generation
+Server component / route handler  →  serverFetch()  →  http://django:8000  (direct)
+Client component                  →  clientFetch()  →  /api/v1/...         (Next rewrite → Django)
 ```
 
-`(public)/layout.tsx` fetches the user, subscription state, and published-post count, then renders `PublicHeader`. When the viewer is the coach, it additionally loads config and wraps the whole page in `<EditSidebar>` — that's how `/?edit=1` becomes a live site editor over the real rendered site. Students (not coaches) get the `SiteAssistantBubble`.
+**`lib/api-server.ts` — `serverFetch<T>(path, options)`**
+Attaches the JWT from the session cookie and, critically, `X-Tenant-Domain` from `x-tenant-domain`. Node's undici silently drops a custom `Host` header, so without this header Django resolves `Host: django` to the **public schema** and the request reads the wrong tenant. Guards both an empty error body and a 204/empty success body (Cloudflare can strip `Content-Length`); failures throw `ApiError(status, data)`.
 
-`(student)/layout.tsx` calls `requireAuth()` (which redirects to `/login?toast=...` when there's no session) and additionally probes `/api/v1/community/settings/` for the Community nav entry and its unread dot. Every one of these probes is wrapped in a bare `try {} catch {}` — a failing optional endpoint degrades a nav item, it doesn't fail the page.
+**`lib/api-client.ts` — `clientFetch<T>(path, options)`**
+Browser-side, same-origin, so the tenant comes from the real `Host`. Adds the tracking session header, skips `Content-Type` for `FormData`, and throws `ApiError` carrying `retryAfter` from the server's `Retry-After`. Companions: `isTransientApiError` (429, 5xx, network `TypeError`), `retryTransient` (retries those, honours but caps the hint — the tenant rate limiter suggests 60s and a page gate must fail to its error state instead of hanging), and `batchedAsync` for bulk operations.
 
-`admin/layout.tsx` is three lines: `requireAuth()`, `requireRole(user, ["owner", "coach"])`, then `<AdminShell>`.
+**`lib/tenant.ts` — `fetchTenantConfig(slug)`**
+Hits `/api/v1/admin/config/` keyed by the live request host, so custom domains resolve to the right `Domain` row. It distinguishes _definitively absent_ (Django 404 → `null`, caller may 404 the page) from _transient_ (network error/5xx → one retry) — misreporting a blip as "no tenant" shows "Site not found" on a valid site. `configCache` is a per-process map with a 5s TTL in prod and **disabled in development**, so e2e specs that PATCH config and immediately assert the public page are not racing a warm cache.
 
-### Public pages are block-rendered
+> `getTenantDomain()` returns empty inside `generateMetadata` and `manifest.ts` (headers are unavailable there). Those paths build the domain from `${slug}.${BASE_DOMAIN}` instead — follow the same pattern in any new metadata route.
 
-`(public)/page.tsx`, `/about`, `/contact`, `/faq` share one shape:
+### Route handlers (`src/app/api/`)
 
-```ts
+Thin proxies that exist only because a cookie or a `Host` workaround is needed:
+
+- `auth/verify` — magic-link verification. Builds the Django URL from the hostname (undici ignores custom `Host`) and forwards Django's `set-cookie` verbatim.
+- `auth/google`, `auth/impersonate/{verify,stop}`, `auth/logout` (re-exported from `@shared/auth/logout-route`).
+- `preview/unlock` — posts the password to `/api/v1/preview/unlock/` and, on success, sets the httpOnly `contentor_preview` cookie to the tenant slug. That cookie is what `isSiteGated` checks.
+- `admin/config` — the owner's config writes.
+
+---
+
+## Builder pages
+
+`/`, `/about`, `/contact`, `/faq` and the other composed pages are all the same four lines: read the config, pull `config.pages.<key>.blocks`, prefetch what those blocks need, render.
+
+```tsx
 const config = await fetchTenantConfig(await getTenantSlug());
 const blocks = config?.pages?.about?.blocks ?? [];
 const dynamicData = await fetchDynamicData(blocks);
-return <PageView pageKey="about" blocks={blocks} dynamicData={dynamicData} />;
+return (
+  <PageView
+    pageKey="about"
+    blocks={blocks}
+    dynamicData={dynamicData}
+    pageTitle={PAGE_LABELS.about}
+  />
+);
 ```
 
-The page content isn't code — it's a `blocks` array on the tenant config, rendered by the block registry in `lib/blocks/registry.tsx` (hero, course-grid, pricing-plans, faq, testimonials, …). `fetchDynamicData(blocks)` asks the registry which datasets the enabled blocks need (`dynamicKeysForBlocks`) and server-fetches only those. A page with no dynamic blocks makes zero extra requests; each fetch is independent, so a failing endpoint leaves its slice `undefined` and the block renders its own empty state instead of blanking the page.
+`fetchDynamicData(blocks)` (`lib/blocks/fetch-dynamic-data.ts`) asks the block registry which datasets the enabled blocks reference (`dynamicKeysForBlocks`) and fetches only those — `courses`, `plans`, `events`, `storeProducts`. A page with no dynamic blocks makes zero extra requests, and each slice is independent: one failing endpoint leaves its key `undefined` and that block renders its own empty state rather than taking down the page.
 
-## Data-fetching conventions per route type
+`PageView` is the fork between the two renderers: coaches get `EditModeCanvas` (drag-and-drop, blocks read from the editor store), everyone else gets the static server-rendered `PageRenderer`, so the public HTML and its SEO are unaffected by the editor existing.
 
-This is the rule that keeps the codebase navigable:
+To add a page kind: register the block in `lib/blocks/registry`, add its dynamic key to `fetchDynamicData`, add the route with its `loading.tsx`.
 
-- **Public routes** → server components, `serverFetch`, block-rendered.
-- **Student and admin routes** → `"use client"` + `useState`/`useEffect` + `clientFetch`, wrapped in `<PageState>`.
+---
 
-`app/(student)/dashboard/page.tsx` is the canonical client-page template. Copy its structure exactly:
+## Auth and sessions
 
-```tsx
-const [data, setData] = useState<T[]>([]);
-const [loading, setLoading] = useState(true);
-const [error, setError] = useState<unknown>(null);
-const [reloadKey, setReloadKey] = useState(0);
+`lib/auth.ts` holds the whole server-side story:
 
-useEffect(() => {
-  let cancelled = false;
-  // ...clientFetch, guard every setState with !cancelled
-  return () => { cancelled = true; };
-}, [reloadKey]);
+- `getAuthUser()` — reads the JWT cookie, calls `/api/v1/auth/users/me/` with the tenant domain, and memoises the **promise** for 60s keyed by `domain:token`, so a layout and its page do not each pay for the round trip. A rejection evicts the entry.
+- `requireAuth()` — redirects to `/login?toast=…` when absent; used by `(student)` and `/admin` layouts.
+- `requireRole(user, roles)` — redirects to `/` on mismatch.
 
-return <PageState loading={loading} error={error}
-                  onRetry={() => setReloadKey(k => k + 1)}
-                  skeleton={<SkeletonCardGrid count={3} />}>
-```
+Roles seen throughout: `owner`/`coach` (the tenant owner — the two are treated interchangeably in nearly every check) and `student`. Sign-out everywhere is `POST /api/auth/logout` followed by `navigate("/login?toast=…")` and `router.refresh()`.
 
-`reloadKey` is the retry mechanism; the `cancelled` flag prevents setState after unmount. Every route segment also needs a sibling or ancestor `loading.tsx` built from `@/components/ui/skeletons` — `scripts/check-loading-patterns.mjs` (part of `make lint`) fails the build otherwise.
-
-## Authentication
-
-Auth is JWT-in-httpOnly-cookie. `src/lib/auth.ts` provides the server-side surface:
-
-- `getAuthUser()` → `User | null` — reads the cookie, calls `/api/v1/auth/users/me/` with `Authorization: Bearer` plus `X-Tenant-Domain`.
-- `requireAuth()` → redirects to `/login?toast=Please+log+in+to+continue&toast_type=info` when unauthenticated.
-- `requireRole(user, roles)` → redirects to `/` on mismatch.
-
-**Every server-rendered navigation blocks on `getAuthUser()` before streaming**, so it's wrapped in a 60s `createTtlPromiseCache` keyed by `${tenantDomain}:${token}`. The cache (`src/lib/ttl-promise-cache.ts`) stores the _promise_, so concurrent callers share one in-flight request, and it drops entries whose fetcher returns `null` or rejects — transient failures never stick. The tradeoff: a role change takes up to 60s to propagate. Logout is unaffected, since the cookie disappears and the key is never hit again.
-
-The BFF routes under `app/api/auth/` handle the cookie-setting flows Django can't do cross-origin:
-
-- `verify/route.ts` — redeems a magic-link token, forwards Django's `set-cookie` verbatim, and returns a clean 502 when Django answers with non-JSON.
-- `google/route.ts` — OAuth start/callback.
-- `logout/route.ts` — a one-line re-export of `@shared/auth/logout-route` (shared with `frontend-main`).
-- `impersonate/verify` + `impersonate/stop` — superadmin hand-off. `app/impersonate/page.tsx` redeems the one-time token from the query string, then does a **full `window.location.replace`**, not a router push, so server components pick up the new cookie.
-
-## Coach admin shell
-
-`components/admin/admin-shell.tsx` composes the desktop `AppSidebar`, the mobile `MobileHeader`, a ⌘K `CommandPalette`, `SetupAssistantBubble`, and `ImpersonationBanner`. Both nav surfaces consume the same data structure, so the IA never drifts between them.
-
-The information architecture lives in two pure, unit-tested modules:
-
-`lib/admin-nav.ts` — `buildAdminNav(t)` returns seven `NavSection`s (home, content, mySite, audience, marketing, money, settings) as plain data. It takes a next-intl translator and returns data, so it tests without React.
-
-`lib/admin-nav-gate.ts` — `gateAdminNav(sections, state)` annotates and filters that IA from real tenant state:
-
-- **Marketing locks** until `published`, pointing at `/admin#publish-card`.
-- **Content** hides items whose module isn't in `enabled_modules` (`/admin/live` and `/admin/calendar` need `live`; `/admin/downloads` needs `downloads`) plus disclosure-only items (`/admin/photos`), surfacing them behind a "+ N more" row.
-- **My Site** demotes the raw editor links (`/?edit=1`, `/?edit=1&section=brand`) behind "Advanced editing" **only when `hasSiteAi` is true**. For a coach without AI editing, that editor is their only way to change the site, so it stays primary.
-
-Three fail-safe rules in `AdminShellContent` are worth preserving:
-
-- `hasSiteAi` reads `entitlements?.site_ai === true` explicitly rather than using `useIsLocked()`, which fails _open_. Failing open here would briefly hide the manual editor from a free coach.
-- `published` is derived from the setup checklist item whose `source === "auto"` — a coach can manually tick `publish` in the Setup Assistant, and a manual tick must never unlock Marketing.
-- `stateReady` (both `status` and `config` non-null) gates the whole gating pass, so an established coach never sees a flash of locks they already cleared.
-
-`AdminShell` splits into `AdminShell` + `AdminShellContent` for a specific React reason documented in the file: a component returning a Provider in its own JSX is an _ancestor_ of that provider, so `useEntitlements()` called in `AdminShell` would only ever see the context default. The consumer has to live one level below.
-
-Entitlements themselves are pure logic in `lib/entitlements.ts` (`EntitlementKey`, `isFeatureLocked`) with the network wrapper isolated in `lib/api/entitlements.ts`. `isFeatureLocked` returns false while entitlements are null, so a "Paid" badge never flashes on for a coach whose paid plan hasn't resolved yet.
+---
 
 ## Theming
 
-`lib/themes.ts` defines curated `ThemePalette` objects — full OKLCH variable sets for light and dark, a `cinematic` full-page gradient, `primaryHex` for the PWA manifest, and preview swatches. Two entry points:
+Three pieces cooperate so that the site wears the coach's look while the admin wears the app's own:
 
-- `getThemePalette(config?.theme)` — palette lookup, used by `manifest.ts`, `generateViewport`, and `/pwa-icon`.
-- `generateThemeCSS(theme, fontFamily, customCss)` — the `<style>` block `TenantThemeStyle` injects server-side, so there's no flash of default theme.
+| Piece                                                    | Role                                                                                                                                                        |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TenantThemeStyle`                                       | Renders `styleRootCss(siteLook(style), custom_css, palette)` as `<style id="tenant-theme">`; `off` renders it `media="not all"`                             |
+| `ThemeProvider` (`components/shared/theme-provider.tsx`) | next-themes wrapper that flips that sheet's `media` by id on in-app navigation between site and admin — the root layout only gets that right on a full load |
+| `TenantThemeEnforcer`                                    | Normalises a legacy stored `"dim"` value to `dark`                                                                                                          |
 
-Three modes are registered (`light`, `dim`, `dark`) with `enableSystem={false}`. When `config.dark_mode_enabled === false` the layout passes `forcedTheme="light"`, and `TenantThemeEnforcer` additionally watches `resolvedTheme` on the client and snaps back to light — belt and braces for a stored preference from before the coach disabled dark mode.
+`lib/site-styles.ts` is the single source for look resolution: `siteLook`, `paletteOf`, `modePalette`, `styleDefaultTheme`, `styleVars`, `styleFontsHref`, `lookPrimaryHex` (used for `theme_color` in the manifest, viewport and PWA icon), and `isAdminPath`. A site with `dark_mode_enabled === false` is force-held at its style's default theme for visitors — but `ThemeProvider` drops `forcedTheme` under `/admin`, so the coach can always choose.
+
+> Known rough edge: tenant colours only re-paint on a full page load. Client-side navigation after a look change still shows the old look.
+
+---
 
 ## PWA
 
-The portal is installable per tenant, with tenant branding all the way down.
+Every tenant gets its own installable app, branded from its config.
 
-**`manifest.ts`** is `force-dynamic` and built from live config: `name`/`short_name` from `brand_name`, `theme_color` from the palette, icons pointing at `/pwa-icon`.
+- **`manifest.ts`** — name, description and `theme_color` from the tenant config; icons point at `/pwa-icon?size=…&v=<icon_id|logo_id>`.
+- **`pwa-icon/route.tsx`** — renders the icon with `next/og`. `markSrc()` fetches the mark from Django _inside the Docker network_ (the browser-facing storage host may not resolve there) and inlines it as a data URL, because `next/og` cannot decode WebP or AVIF. Falls back: square app icon → wide logo → brand initial on the primary-colour tile. Versioned URLs are `immutable`; unversioned must revalidate.
+- **`sw.ts`** (Serwist, compiled to `public/sw.js`) — `NEVER_CACHE` matches first so `defaultCache` never sees `/admin`, `/checkout`, `/api/v1/auth`, `/api/v1/billing` or any `stripe.com` traffic. Also handles `push` → `showNotification` and `notificationclick` → focus-or-open the target URL. Offline fallback is `/offline.html`.
+- **`InstallPrompt`** — captures `beforeinstallprompt`, or shows the iOS / in-app-browser hint. Hidden for coaches (`hide={isStaff}`), under `/admin` and `/setup`, in standalone mode, and after dismissal (`localStorage: pwa-install-dismissed`). It publishes `--install-banner-clearance` so the copilot launcher can lift above it.
+- **`/install`** → `InstallGuide` — platform-detected step-by-step with the theme-aware SVGs in `install-illustrations.tsx` (colours reference OKLCH tokens directly as `var(--token)`, never wrapped in `hsl()`).
+- **`SwUpdateToast`** — a new worker reaching `installed` with an existing controller offers a Refresh toast.
 
-**`pwa-icon/route.tsx`** renders icons on the fly with `next/og` `ImageResponse` at 32/180/192/512. It prefers the Logo Studio's square mark (`icon_url`), falls back to the wide logo (`logo_url`), then to a brand-initial tile on the theme color. Padding differs per source — the square mark already carries its own badge background so it renders edge-to-edge, while the wide logo sits inset. The `?v=` param (`icon_id ?? logo_id ?? "default"`) makes versioned URLs `immutable`; unversioned ones `must-revalidate`. Any render failure falls back to the brand initial rather than a broken icon. The root layout's `generateMetadata` links these explicitly — without an explicit icon link the browser falls back to `/favicon.ico`, which 404s.
+Helpers live in `lib/usage.ts` (`detectPlatform`, `isInAppBrowser`, `reportUsageOncePerSession`) and `lib/push.ts` (`pushSupported`, `isStandalone`, `subscribeToPush`, `syncPushOncePerSession`).
 
-**`sw.ts`** is a Serwist service worker (`next.config.mjs` wires `swSrc` → `public/sw.js`; disabled in dev unless `SERWIST_DEV=1`). Its most important feature is `guardedCache`, prepended to `defaultCache` so it matches first:
+---
 
-```ts
-NEVER_CACHE = [/^\/admin/, /^\/checkout/, /^\/api\/v1\/(auth|billing)/];
-NEVER_CACHE_HOSTS = ["stripe.com", "stream-io-api.com", "getstream.io"];
-```
+## Coach admin (same app, different shell)
 
-Those go through `NetworkOnly`. Never cache auth, billing, or third-party payment/chat traffic. Document requests fall back to `/offline.html`. The worker also handles `push` (rendering notifications with the branded icon) and `notificationclick` (focus an existing window and navigate it, else open a new one).
+`/admin/*` ships inside this app rather than a separate one, because the coach edits her live site in place.
 
-Client-side PWA components in the root layout: `InstallPrompt` (captures `beforeinstallprompt`, shows an iOS hint where that event doesn't exist, dismissal persisted in `localStorage`, never shown under `/admin` or in standalone), `SwUpdateToast` (listens for `updatefound` → `installed` with an existing controller, offers a refresh toast), `PushOptIn`, and `UsageReporter`. `/install` renders `InstallGuide` with theme-aware SVG illustrations (`install-illustrations.tsx`) — the SVGs reference OKLCH tokens directly as `var(--token)`, never wrapped in `hsl()`, and are `aria-hidden` since the adjacent step text carries the meaning.
+`lib/admin-nav.ts` → `buildAdminNav(t)` is the single source for the information architecture — seven sections (`home`, `teach`, `students`, `reachOut`, `money`, `site`, `settings`) feeding the sidebar, the section tabs, the phone drawer and the ⌘K command palette. `sectionHref(section)` resolves a section to its first non-external page; `activeSection(sections, state)` resolves the current path back to a section (prefix-matched, so `/admin/courses/new` is still _Teach_). Both are pure and covered by `lib/__tests__/admin-nav.test.ts`.
 
-`lib/push.ts` (`pushSupported`, `isStandalone`, `subscribeToPush`) and `lib/usage.ts` (`detectPlatform`, `reportUsageOncePerSession`) back these. `reportUsageOncePerSession` sets its `sessionStorage` flag _before_ the request so a failure never re-fires, and swallows all errors — telemetry must never affect the page.
+`lib/admin-nav-gate.ts` → `gateAdminNav(sections, state)` hides pages whose module the coach did not enable (`MODULE_FOR_HREF` maps `/admin/live` → `live`, `/admin/downloads` → `downloads`), counts them as `hiddenCount` for the tab strip's "+ N more", and always keeps the page the coach is currently on visible. `AdminShell` fails open while `config === null` so an established coach never watches her tabs pop in.
 
-## Internationalization
+Each `NavItem.key` is the message key under `nav.items` — the page's `<h1>` reads the same key, so the sidebar, the tab and the heading cannot drift apart.
 
-`src/i18n/config.ts` declares `locales = ["en", "tr"]` and the resolution order: **user-locale cookie → region default → `en`**. Region comes from the host via `TR_HOST_REGEX`, which matches both the locale apex (`tr.contentor.app`, `tr.localhost`) and any tenant beneath it (`<slug>.tr.contentor.app`).
+---
 
-`src/i18n/request.ts` implements that resolution and loads four message namespaces in parallel: `admin`, `student`, `common`, `pwa` from `messages/<locale>/`.
+## Conventions to follow when contributing
 
-`LanguageSwitcher` POSTs to `/api/v1/auth/users/me/locale/` _and_ sets the `user-locale` cookie client-side — the cookie is what makes the toggle work for anonymous visitors, then `router.refresh()` re-renders. TR strings still need native review.
+These are enforced by `scripts/check-loading-patterns.mjs` in `make lint`; writing them correctly up front saves a round trip.
 
-## Navigation and feedback
+- **Navigation:** `<NavLink>` (never raw `next/link`) and `useNavigate()` (never `router.push`) for internal moves — they drive the top progress bar. `useTransition`'s `isPending` is not a usable navigation signal in the App Router.
+- **Loading:** client pages wrap their initial load in `<PageState loading error skeleton onRetry>` with presets from `@/components/ui/skeletons`; every route segment needs a `loading.tsx` at or above it. Refinement loads (search/filter/sort) use `<StaleContainer pending>` — rows dim, never blank.
+- **Async actions:** `useAsyncAction` from `@shared/hooks/use-async-action` (loading state, double-submit guard, error toast); `<Button loading loadingText>` and `<Spinner>` — never a raw `<Loader2>` or `animate-spin`.
+- **Outcomes** are sonner toasts; field validation stays inline. Motion is CSS-only and `motion-safe:`-gated.
+- **Serializers:** after any Django serializer change, run `npm run gen:api` and review `src/types/api-generated.ts` — a surprising diff means the contract moved.
 
-Enforced by `scripts/check-loading-patterns.mjs` in `make lint`, so these aren't stylistic preferences:
+### i18n
 
-- Internal links use `<NavLink>` (`@/components/ui/nav-link`), never raw `next/link`. It drives the top progress bar and highlights the target on click rather than on commit. `AppSidebar` and `MobileHeader` use its render-prop form (`{({ pending }) => ...}`) to swap the item icon for a `<Spinner>` while that route is in flight.
-- Programmatic navigation uses `useNavigate()` from `@shared/navigation/navigation-provider`, never `router.push`. `useTransition`'s `isPending` is not a usable navigation signal in the App Router — `router.push` inside `startTransition` resolves long before the route commits, so `NavigationProvider` derives `isNavigating` from a pending href cleared on commit.
-- Async buttons take `loading` / `loadingText`; handlers wrap in `useAsyncAction` (`@shared/hooks/use-async-action`) for the loading state, double-submit guard, and default error toast.
-- `RedirectToast` (mounted once in the root layout) reads `?toast=` / `?toast_type=`, fires the sonner toast, and strips both params with `router.replace(..., {scroll:false})`. This is why every sign-out and auth redirect in the app appends `?toast=You've+been+logged+out&toast_type=info`.
+`src/i18n/config.ts` + `request.ts`. English is the only locale; `resolveLocale` falls back for a stale `user-locale` cookie. Messages are split into four namespaces loaded per request: `admin`, `student`, `common`, `pwa` (`messages/en/*.json`).
 
-## Shared code with `frontend-main`
+### Gotchas worth knowing before you debug
 
-Cross-app code lives in `packages/shared`, imported as `@shared/*` (enabled by `experimental.externalDir` in `next.config.mjs`). Files like `components/shared/theme-toggle.tsx`, `components/shared/empty-state.tsx`, `lib/utils.ts`, and `api/auth/logout/route.ts` are one-line re-export shims. **Edit the shared source, not the shim.**
-
-## Working in this module
-
-Adding an admin resource is a four-corner slice: `app/admin/<feature>/page.tsx` + widgets in `components/admin/` + `lib/<feature>-api.ts` + `types/<feature>.ts`. Copy `app/admin/downloads/page.tsx`. Generic admin CRUD is already built — `components/admin/media-browser.tsx` (list), `inline-edit-panel.tsx` (`FieldConfig`-driven editing), `tag-filter-bar.tsx`. Those and `lib/api-client.ts` / `lib/blocks/registry.tsx` are load-bearing spines; every admin page depends on them.
-
-When you change a Django serializer, run `npm run gen:api` and read the diff in `src/types/api-generated.ts`. A surprising diff means the contract moved.
-
-Verify with `make test-frontend` (vitest), `make typecheck`, and `make e2e-spec SPEC=<nn>`. Note that `make typecheck` is advisory — it is not yet gated in `make lint`.
-
-Two dev-environment behaviors that explain otherwise-confusing symptoms: `onDemandEntries.maxInactiveAge` is raised to an hour because admin panel-to-panel navigation was re-triggering 1.5–2s webpack compiles on every revisit once entries expired; and `staleTimes.dynamic = 30` keeps the RSC payload in the router cache for 30s, which is safe because the cache holds the payload, not component state — client pages still remount and re-`clientFetch` on arrival.
+- A server-side `fetch` to Django without `X-Tenant-Domain` reads the **public schema**, not the tenant — it fails quietly with wrong data, not an error.
+- `getTenantDomain()` is empty in `generateMetadata` and `manifest.ts`; build the domain from the slug there.
+- `/api/*`, `/static/*` are served by Django directly through Caddy and never proxied through Next — the `/api/v1/:path*` rewrite in `next.config` is the browser-side path only.
+- Blank pages or hangs in e2e are usually a transient `nextjs-customer` 502, not a code bug.
+- `dynamic = "force-dynamic"` is on every tenant-dependent route. Removing it caches one tenant's page for another.

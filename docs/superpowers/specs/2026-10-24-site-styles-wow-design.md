@@ -325,7 +325,7 @@ Status values:
 | 0.2 | Realistic showcase fixtures (`fixture=` sets) | none | Task 0.2 | done (2026-10-24, d608bd88) |
 | 0.3 | Eval measures distinctiveness and anchors on award sites | none | Task 0.3 | done (2026-10-24, 190cb7dd) |
 | 1.1 | Hero and copy rules in the composer | none | Task 1.1 | done (2026-10-24, 3a836ecc) |
-| 1.1b | At most three courses and three events on home | 1.1 (same files) | Task 1.1b | todo |
+| 1.1b | At most three courses and three events on home | 1.1 (same files) | Task 1.1b | done (2026-10-24, c9c60462) |
 | 1.3 | One protagonist, no faces shared with peers (composer photos) | 1.1b (same files) | Task 1.3 | todo |
 | 1.2 | Photo treatment per style (manifest → CSS) | none | Task 1.2 | todo |
 | 1.4 | Personal chrome and sticky phone CTA | none | Task 1.4 | todo |
@@ -479,6 +479,11 @@ against G1.
   with the owner's first name (first word of `User.name`); skeleton letters stay unsigned. Open: the
   no-AI fallback still writes "Hello, I'm Kind" for a brand like "Kind Mornings"; the prompt's effect
   on a real model is first measured at Gate A.
+- 2026-10-24, WP-1.1b (7204c413, c9c60462): events get a `limit` field (3, 6 or all; default all),
+  honoured where the renderer picks a block's data (`limitSlice`). On home the composer sets 3 on
+  courses and events, and moves a home course list off the shared `rows` layout: `rows` reads `limit`
+  as a catalogue size (3 shows 6), so it stays on the courses page only. Pages stored before this keep
+  their lists until recomposed. Also: an empty home button label is refilled ("Get in touch").
 
 ## 10. Resources
 

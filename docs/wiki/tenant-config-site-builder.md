@@ -2,38 +2,42 @@
 
 # Tenant Config & Site Builder
 
-Everything that makes a coach's tenant site _theirs_ — brand, navigation, page content, and the "is this ready to go live?" question — is owned by this module group. It spans exactly two halves that talk over one endpoint:
+How a coach's tenant site is configured, composed, and published. One Django resource — `GET/PATCH /api/v1/admin/config/` → `TenantConfig` — backs everything: brand, navbar, the block tree of the public pages, the two chatbots' knowledge, and the demo-content/publish gate.
 
-- **[Backend — `apps/tenant_config`](tenant-config-site-builder-apps.md)** — the tenant-schema app holding `TenantConfig` (theme, fonts, logo, navbar, custom CSS, and the `pages` block tree), the seed registry (`SeededObject`), the Setup Assistant checklist and publish gate (`setup_items.py`, `demo_content.py`), and `AssistantConfig` for the chatbots.
-- **[Frontend — `frontend-customer/src`](tenant-config-site-builder-src.md)** — the in-place editor: a sidebar (`edit-sidebar.tsx`) that mounts over the _live_ public site for coach/owner users, backed by `owner/canvas/editor-store.tsx` and the block registry in `lib/blocks/registry.tsx`.
+Sub-modules:
 
-## The single seam
+- [Tenant Config & Site Builder — apps](tenant-config-site-builder-apps.md) — `backend/apps/tenant_config/`: the `TenantConfig` model and its page/block schema, `SeededObject` demo tracking, `setup_items.py` checklist + publish blockers, `AssistantConfig`.
+- [Tenant Config & Site Builder — src](tenant-config-site-builder-src.md) — `frontend-customer/src`: the in-place editor sidebar, the canvas editor store, the block components, and the Setup Assistant UI.
 
-There is no admin design route and no second store. The editor reads and writes `GET/PATCH /api/v1/admin/config/`, and `TenantConfigSerializer` is the contract:
+## How the halves meet
 
-- **Read** — `to_representation` runs `pages_from_landing_sections` (legacy landing-section rows become a normal page/block tree) and `_sign_landing_section_photos` (presigned media URLs the browser can actually load).
-- **Write** — `validate_pages` → `_clean_block` → `sanitize_block_style` (`defaults.py`) rejects unknown block types and strips anything not in the allowed style vocabulary. The frontend's block registry and the backend's block catalogue must agree; when they drift, saves fail validation rather than corrupting the tree.
+There is no `/admin/design` route and no second source of truth. The editor mounts **over the live public site** when the viewer is a coach/owner; the blocks it drags around are the same JSON the public renderer reads.
 
 ```mermaid
-graph LR
-  ES[editor-store.tsx<br/>optimistic block tree] -->|PATCH| API[/api/v1/admin/config//]
-  API --> SER[TenantConfigSerializer<br/>validate_pages → _clean_block]
-  SER --> TC[(TenantConfig.pages)]
-  TC -->|to_representation| PV[PageView → EditModeCanvas<br/>→ BlockRenderer]
-  REG[lib/blocks/registry.tsx] --- PV
-  REG --- SER
+flowchart LR
+  subgraph FE["frontend-customer/src"]
+    shell["edit-sidebar / edit-mode"]
+    store["editor-store<br/>insertBlock · updateBlock · removeBlock"]
+    canvas["EditModeCanvas · CanvasDndProvider<br/>SortableBlockShell"]
+    blocks["blocks/*<br/>CtaBlock · GalleryBlock · VideoBlock"]
+    setup["SetupAssistantBubble/Panel<br/>useSetupStatus"]
+  end
+  subgraph BE["apps/tenant_config"]
+    ser["serializers<br/>validate_pages → _clean_block"]
+    def["defaults.py<br/>sanitize_block_style"]
+    cfg[("TenantConfig<br/>pages · brand · navbar")]
+    items["setup_items.py<br/>compute_setup_state · publish_blockers"]
+    demo["demo_content.py<br/>SeededObject · erase_demo_content"]
+  end
+  shell --> store --> canvas --> blocks
+  store -- "PATCH /api/v1/admin/config/" --> ser --> def
+  ser --> cfg
+  setup -- "GET setup status" --> items --> demo
+  items --> cfg
 ```
 
-## Workflows that cross the seam
+**Editing a page.** `BlocksTab` and the canvas (`SortableBlockShell`, `CanvasDndProvider`, `DropZone`) all mutate the single `editor-store`; `lib/blocks/registry.tsx` seeds new blocks from `examples.ts` and `field-renderer.tsx` renders their fields. The store PATCHes the whole `pages` tree, which `validate_pages` → `_clean_block` → `sanitize_block_style` scrubs server-side — so the block schema in `defaults.py` is the contract the frontend registry must match. Change one side and the other goes silently lossy.
 
-**Editing a page.** A public route (`(public)/faq/page.tsx`) renders `PageView`, which delegates to `EditModeCanvas` when edit mode is on. `BlockRenderer` + `getBlockDef` turn stored blocks into real components (`FaqBlock`, `GalleryBlock`, `RichTextBlock` …) — so the coach edits the same tree visitors see. `BlocksTab` drives `insertBlock`/`updateBlock`/`selectBlock`; `CanvasDndProvider` maps drags (including palette drops via `paletteTypeFromId`) onto `reorderBlocks`. Field editing is generic: `FieldRenderer` dispatches to `LinkField`, `RepeaterField`, etc., from the block definition's schema — new block types need a registry entry, not new UI.
+**Getting to live.** Seeded demo rows are tracked as `SeededObject`; `compute_setup_state` turns them plus `_has_own` / `_has_paid_content` into the checklist, and `publish_blockers` gates go-live. `erase_demo_content` sweeps them, keeping anything a coach's blocks still reference (`_photo_referenced`).
 
-**Adding a block from the palette.** `newBlock` seeds content from `exampleFor` (`lib/blocks/examples.ts`), so a fresh block is never an empty box — the same instinct as `BlockPlaceholder` rendering a hint when a block has no data yet.
-
-**Demo content → publish.** Seeded rows are fingerprinted (`seeding.fingerprint_for`) and recorded as `SeededObject`. The frontend surfaces them through `useDemoContent` / `DemoBadge`, which is why admin screens like `AdminCoursesPage` can mark a course as demo without knowing anything about seeding. `compute_setup_state` (`_has_own`, `_has_paid_content`) produces the checklist consumed by `useSetupStatus` and rendered in `SetupAssistantBubble` → `SetupAssistantPanel`; `erase_demo_content` clears the demo set, using `_photo_referenced` to avoid deleting media the coach has since reused. Publishing is gated on that same computed state, so the checklist and the gate can't disagree.
-
-**Navbar.** `NavbarTab` edits `TenantConfig.navbar` directly; `DestinationButton` constrains links to real site destinations rather than free-text URLs, keeping stored nav entries valid against the page set.
-
-## Working here
-
-Backend block-shape changes (`defaults.py`, `_clean_block`) and frontend registry changes are effectively one change — ship them together or the editor saves start failing validation. Setup/publish logic lives only in `setup_items.py`; the frontend never recomputes readiness.
+**Setup status leaks widely.** `useSetupStatus` / `refreshSetupStatus` (and `useTenantCurrency` beside them in `src/lib/setup-assistant.ts`) are pulled in by admin pages far outside the builder — plans, bundles, courses — so they sit on the hot path of most coach-admin loads. Treat changes there as cross-cutting.
