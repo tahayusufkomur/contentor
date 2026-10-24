@@ -102,7 +102,12 @@ export function HeroObservatory({ block, editable }: SectionProps) {
             editable={editable}
             as="h1"
             placeholder="Headline"
-            className={cn(H1, "mt-6 max-w-[18ch]")}
+            className={cn(
+              H1,
+              "mt-4 max-w-[18ch] sm:mt-6",
+              alt.length > 24 &&
+                "text-[2rem] leading-[1.08] sm:text-[clamp(2.4rem,1.4rem+4.2vw,4.8rem)]",
+            )}
           />
           <Txt
             block={block}
@@ -110,7 +115,7 @@ export function HeroObservatory({ block, editable }: SectionProps) {
             editable={editable}
             as="p"
             placeholder="Subheadline"
-            className="mt-6 max-w-[48ch] text-pretty text-[1.0625rem] leading-[1.75] text-muted-foreground md:text-[1.15rem]"
+            className="mt-4 max-w-[48ch] text-pretty text-[1.0625rem] sm:mt-6 leading-[1.75] text-muted-foreground md:text-[1.15rem]"
           />
           {has(block, "meta", editable) && (
             <div className="mt-6 inline-flex items-center gap-2 text-[0.85rem] tracking-[0.04em] text-primary">
@@ -127,18 +132,18 @@ export function HeroObservatory({ block, editable }: SectionProps) {
           <Actions
             block={block}
             editable={editable}
-            className="mt-8 md:mt-10"
+            className="mt-6 sm:mt-8 md:mt-10"
           />
         </div>
         {moons.length > 0 && (
-          <ul className="order-first mb-6 flex items-end justify-center gap-4 md:order-none md:mb-0 md:mt-20 md:gap-10">
+          <ul className="order-first mb-4 flex items-end justify-center gap-4 sm:mb-6 md:order-none md:mb-0 md:mt-20 md:gap-10">
             {moons.map((value, n) => (
               <li
                 key={n}
                 className={cn(
                   "rounded-full border border-[color-mix(in_oklch,var(--primary)_50%,transparent)] p-1 shadow-2xl",
                   sizes[n],
-                  n !== full && "hidden md:block",
+                  n !== full && !editable && "hidden md:block",
                 )}
               >
                 <Img

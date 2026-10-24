@@ -78,7 +78,13 @@ export function HeroPrompt({ block, editable }: SectionProps) {
             <Kicker block={block} editable={editable} />
 
             <div className="mt-4 sm:mt-5">
-              <h1 className={H1}>
+              <h1
+                className={cn(
+                  H1,
+                  alt.length > 28 &&
+                    "text-[2.15rem] leading-[1.04] sm:text-[clamp(2.5rem,1.3rem+4.5vw,5.5rem)]",
+                )}
+              >
                 <Txt
                   block={block}
                   field="headline"

@@ -144,7 +144,7 @@ export function HeroMosaic({ block, editable }: SectionProps) {
                 className={cn(
                   "absolute sm:left-[var(--tl)] sm:top-[var(--tt)] sm:w-[var(--tw)]",
                   phoneTile(n, photos.length),
-                  n > 1 && "hidden sm:block",
+                  n > 1 && !editable && "hidden sm:block",
                 )}
                 style={
                   {

@@ -65,9 +65,9 @@ export function HeroPortrait({ block, editable }: SectionProps) {
   const showMeta = has(block, "meta", editable);
 
   return (
-    <Section className="pt-12 md:pt-16 lg:pt-24" label={alt}>
+    <Section className="pt-8 sm:pt-12 md:pt-16 lg:pt-24" label={alt}>
       <div className={WRAP}>
-        <div className="grid items-center gap-y-9 md:grid-cols-12 md:gap-x-10 md:gap-y-14 lg:gap-x-14">
+        <div className="grid items-center gap-y-7 sm:gap-y-9 md:grid-cols-12 md:gap-x-10 md:gap-y-14 lg:gap-x-14">
           <div className="md:col-span-7 lg:col-span-7">
             <div className="atelier-fade-up" style={delay(0)}>
               <Kicker block={block} editable={editable} />
@@ -87,7 +87,7 @@ export function HeroPortrait({ block, editable }: SectionProps) {
                 )}
               />
             </div>
-            <div className="atelier-fade-up mt-7" style={delay(300)}>
+            <div className="atelier-fade-up mt-5 sm:mt-7" style={delay(300)}>
               <Txt
                 block={block}
                 field="subhead"
@@ -116,7 +116,7 @@ export function HeroPortrait({ block, editable }: SectionProps) {
             <Actions
               block={block}
               editable={editable}
-              className="atelier-fade-up mt-10"
+              className="atelier-fade-up mt-7 sm:mt-10"
             />
           </div>
 

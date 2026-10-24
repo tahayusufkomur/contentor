@@ -28,6 +28,9 @@ export const dynamic = "force-dynamic";
  *   /design-showcase?style=<id>&family=hero     one family
  *   /design-showcase?style=<id>&page=home       a full recipe page
  *   &bare=1 hides the toolbar (for screenshots)
+ *   &header=<px> puts a spacer that tall above the page (the real site header,
+ *   about 64 px on a phone)
+ *   &headline=<text> replaces the hero headline of the `real` size (length tests)
  */
 export default async function DesignShowcasePage({
   searchParams,
@@ -43,6 +46,13 @@ export default async function DesignShowcasePage({
   const set =
     FIXTURE_SETS.find((s) => s === sp.fixture) ?? ("yoga" as FixtureSet);
   const sections = STYLE_SECTIONS[style.id] ?? {};
+  const header = Math.min(Number(sp.header) || 0, 200);
+  // The toolbar's links keep the view they sit on (size, fixture, header, headline).
+  const extra = new URLSearchParams();
+  if (sp.header) extra.set("header", sp.header);
+  if (sp.headline) extra.set("headline", sp.headline);
+  const more = extra.toString() ? `&${extra}` : "";
+  const kept = `&size=${size}&fixture=${set}${more}`;
 
   type Item = { family: FamilyId; variant: string };
   let items: Item[] = [];
@@ -68,7 +78,7 @@ export default async function DesignShowcasePage({
           {styleIds.map((id) => (
             <a
               key={id}
-              href={`?style=${id}&size=${size}&fixture=${set}`}
+              href={`?style=${id}${kept}`}
               className={id === style.id ? "underline" : "opacity-60"}
             >
               {id}
@@ -79,7 +89,7 @@ export default async function DesignShowcasePage({
             (p) => (
               <a
                 key={p.id || "own"}
-                href={`?style=${style.id}&palette=${p.id}${sp.page ? `&page=${sp.page}` : ""}`}
+                href={`?style=${style.id}&palette=${p.id}${sp.page ? `&page=${sp.page}` : ""}${kept}`}
                 className={
                   (sp.palette ?? "") === p.id ? "underline" : "opacity-60"
                 }
@@ -92,7 +102,7 @@ export default async function DesignShowcasePage({
           {Object.keys(SECTION_MANIFEST.recipes).map((p) => (
             <a
               key={p}
-              href={`?style=${style.id}&page=${p}`}
+              href={`?style=${style.id}&page=${p}${kept}`}
               className={sp.page === p ? "underline" : "opacity-60"}
             >
               {p}
@@ -108,7 +118,7 @@ export default async function DesignShowcasePage({
           {FIXTURE_SETS.map((f) => (
             <a
               key={f}
-              href={`?style=${style.id}&size=real&fixture=${f}`}
+              href={`?style=${style.id}&size=real&fixture=${f}${more}`}
               className={
                 size === "real" && set === f ? "underline" : "opacity-60"
               }
@@ -117,6 +127,14 @@ export default async function DesignShowcasePage({
             </a>
           ))}
         </nav>
+      )}
+      {header > 0 && (
+        <div
+          aria-hidden
+          data-showcase-header
+          style={{ height: header }}
+          className="bg-black/10"
+        />
       )}
       {items.map(({ family, variant }, i) => {
         const Comp = sections[family]?.[variant];
@@ -131,6 +149,9 @@ export default async function DesignShowcasePage({
             </div>
           );
         }
+        const block = fixtureBlock(family, `${style.id}.${variant}`, size, set);
+        if (family === "hero" && size === "real" && sp.headline)
+          block.headline = sp.headline;
         return (
           <div key={key} data-showcase={`${family}.${variant}`}>
             {!sp.bare && !sp.page && (
@@ -138,10 +159,7 @@ export default async function DesignShowcasePage({
                 {FAMILIES[family].label} · {variant}
               </div>
             )}
-            <Comp
-              block={fixtureBlock(family, `${style.id}.${variant}`, size, set)}
-              data={fixtureData(family, size, set)}
-            />
+            <Comp block={block} data={fixtureData(family, size, set)} />
           </div>
         );
       })}

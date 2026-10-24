@@ -66,7 +66,7 @@ export function HeroHall({ block, editable }: SectionProps) {
   const photos = heroPhotos(block, editable).slice(0, 3);
   const showMeta = has(block, "meta", editable);
   return (
-    <Section className="pt-12 md:pt-16 lg:pt-20" label={alt}>
+    <Section className="pt-8 sm:pt-12 md:pt-16 lg:pt-20" label={alt}>
       <div className={cn(WRAP, "relative text-center")}>
         <div className="relative mx-auto max-w-[56rem]">
           <Enso className="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
@@ -90,11 +90,11 @@ export function HeroHall({ block, editable }: SectionProps) {
                   "mx-auto block",
                   alt.length <= 26
                     ? "max-w-[14ch] text-[clamp(3rem,1.4rem+6.4vw,7.4rem)] leading-[0.98]"
-                    : "max-w-[18ch] text-[clamp(2.4rem,0.6rem+6vw,6.5rem)] leading-[1.02]",
+                    : "max-w-[18ch] text-[2.1rem] leading-[1.02] sm:text-[clamp(2.4rem,0.6rem+6vw,6.5rem)]",
                 )}
               />
             </div>
-            <div className="dojo-rise mt-7" style={delay(220)}>
+            <div className="dojo-rise mt-5 sm:mt-7" style={delay(220)}>
               <Txt
                 block={block}
                 field="subhead"
@@ -123,14 +123,14 @@ export function HeroHall({ block, editable }: SectionProps) {
             <Actions
               block={block}
               editable={editable}
-              className="dojo-rise mt-10 justify-center"
+              className="dojo-rise mt-7 justify-center sm:mt-10"
             />
           </div>
         </div>
         {photos.length > 0 && (
           <ul
             className={cn(
-              "dojo-rise mt-10 grid gap-3 text-left sm:gap-4 md:mt-20",
+              "dojo-rise mt-7 grid gap-3 text-left sm:mt-10 sm:gap-4 md:mt-20",
               photos.length === 1
                 ? "grid-cols-1"
                 : photos.length === 2

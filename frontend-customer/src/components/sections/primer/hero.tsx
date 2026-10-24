@@ -71,12 +71,12 @@ export function HeroTitlePage({ block, editable }: SectionProps) {
       label={alt}
     >
       <div className={WRAP}>
-        <Page className="grid gap-y-8 sm:gap-y-12 md:grid-cols-12 md:gap-x-8 lg:gap-x-10">
+        <Page className="grid gap-y-5 sm:gap-y-12 md:grid-cols-12 md:gap-x-8 lg:gap-x-10">
           <div className="md:col-span-7 lg:col-span-7">
             <div className="primer-write" style={delay(0)}>
               <Kicker block={block} editable={editable} />
             </div>
-            <div className="primer-write mt-4 sm:mt-6" style={delay(200)}>
+            <div className="primer-write mt-3 sm:mt-6" style={delay(200)}>
               <Txt
                 block={block}
                 field="headline"
@@ -87,11 +87,11 @@ export function HeroTitlePage({ block, editable }: SectionProps) {
                   H1,
                   alt.length <= 28
                     ? "max-w-[15ch] sm:max-w-[11ch] sm:text-[clamp(3.2rem,1.3rem+7.4vw,8.5rem)] sm:leading-[0.98]"
-                    : "max-w-[15ch]",
+                    : "max-w-[15ch] text-[2.3rem] leading-[1.02] sm:text-[clamp(2.6rem,1.3rem+4.8vw,6.2rem)]",
                 )}
               />
             </div>
-            <div className="primer-write mt-5 sm:mt-8" style={delay(500)}>
+            <div className="primer-write mt-4 sm:mt-8" style={delay(500)}>
               <Txt
                 block={block}
                 field="subhead"
@@ -117,7 +117,7 @@ export function HeroTitlePage({ block, editable }: SectionProps) {
             <Actions
               block={block}
               editable={editable}
-              className="primer-write mt-7 sm:mt-10"
+              className="primer-write mt-6 sm:mt-10"
             />
           </div>
 

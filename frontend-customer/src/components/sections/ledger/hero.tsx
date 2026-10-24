@@ -64,7 +64,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
   const showMeta = has(block, "meta", editable);
   const showKicker = has(block, "kicker", editable);
   return (
-    <Section className="pt-8 md:pt-10 lg:pt-12" label={alt}>
+    <Section className="pt-5 sm:pt-8 md:pt-10 lg:pt-12" label={alt}>
       <div className={WRAP}>
         <div className="relative">
           <div
@@ -99,7 +99,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
           )}
         </div>
 
-        <div className="mt-8 grid gap-y-9 md:mt-16 md:grid-cols-12 md:gap-x-8 lg:mt-20 lg:gap-x-10">
+        <div className="mt-6 grid gap-y-6 sm:mt-8 sm:gap-y-9 md:mt-16 md:grid-cols-12 md:gap-x-8 lg:mt-20 lg:gap-x-10">
           <div className="flex flex-col md:col-span-7 lg:col-span-8">
             <div className="ledger-rise" style={delay(400)}>
               <Txt
@@ -117,7 +117,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
               />
             </div>
             <div
-              className="ledger-rise mt-auto grid gap-y-8 pt-10 md:pt-14 lg:grid-cols-8 lg:gap-x-10 lg:pt-16"
+              className="ledger-rise mt-auto grid gap-y-5 pt-6 sm:gap-y-8 sm:pt-10 md:pt-14 lg:grid-cols-8 lg:gap-x-10 lg:pt-16"
               style={delay(600)}
             >
               <Txt

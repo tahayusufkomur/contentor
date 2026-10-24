@@ -5,10 +5,16 @@
 // the demo tenant with the content a composed site really carries (size=real, fixture=yoga:
 // no hero meta, no second button). No sign-in, no data written.
 //
-//   phone  390x844   h1 bottom <= 844; the first link/button fully inside 0..844;
+//   phone  390x844   under a 64 px spacer (the real site header), with a short (12 characters),
+//                    a mid (26, inside every style's giant-type branch) and a longest (36)
+//                    headline: h1 bottom <= 844; the first link/button fully inside 0..844;
 //                    the largest hero image shows >= 0.4 * 844 px of its height on screen.
 //                    Type-led exception (no photo): manuscript's h1 is at least 44px.
 //   desktop 1440x900 h1 >= 72px; the first button's bottom <= 900.
+//
+// Each style also logs its slack: how far the h1, the button or the photo's minimum share could
+// move down before the contract breaks. The design margin for real headers is 30 px; the
+// assertions are the contract's own numbers.
 //
 // Run one batch: cd e2e && npx playwright test 92-phone-first --grep "atelier|dojo"
 import fs from "node:fs";
@@ -31,6 +37,14 @@ const PHONE = { width: 390, height: 844 };
 const DESKTOP = { width: 1440, height: 900 };
 const MIN_PHOTO_SHARE = 0.4; // of the phone's height
 const MIN_DESKTOP_H1 = 72;
+const PHONE_HEADER = 64; // the real site header is about 57-64 px; showcase `header=` renders a spacer
+/** Headlines of the composer's home hero (at most 36 characters): the short, the mid and the
+ *  longest, wide letters, so every style's giant-type branch and its longest wrap are measured. */
+const HEADLINES = {
+  short: "Breathe well", // 12
+  mid: "Yoga for real, busy people", // 26
+  longest: "Practical Parenting Workshops Online", // 36
+} as const;
 
 type Box = { top: number; bottom: number; left: number; right: number };
 type Hero = {
@@ -78,7 +92,10 @@ function measure(viewportHeight: number): Hero | null {
   };
 }
 
-async function heroAt(browser: Browser, style: string, view: { width: number; height: number }, phone: boolean) {
+type View = { width: number; height: number };
+
+/** One browser context per view; each URL query is measured in turn. */
+async function heroesAt(browser: Browser, style: string, view: View, phone: boolean, queries: string[]) {
   const ctx = await browser.newContext({
     viewport: view,
     deviceScaleFactor: 1,
@@ -89,49 +106,75 @@ async function heroAt(browser: Browser, style: string, view: { width: number; he
   });
   try {
     const page = await ctx.newPage();
-    await page.goto(
-      `http://demo-yoga.localhost/design-showcase?style=${style}&page=home&bare=1&size=real&fixture=yoga`,
-      { waitUntil: "domcontentloaded", timeout: 90_000 },
-    );
-    await page.waitForSelector('[data-showcase^="hero."]', { timeout: 90_000 });
-    await page.waitForLoadState("networkidle", { timeout: 30_000 }).catch(() => {});
-    await page.evaluate(() => document.fonts.ready);
-    await page.waitForTimeout(800);
-    return await page.evaluate(measure, view.height);
+    const heroes: (Hero | null)[] = [];
+    for (const query of queries) {
+      await page.goto(
+        `http://demo-yoga.localhost/design-showcase?style=${style}&page=home&bare=1&size=real&fixture=yoga${query}`,
+        { waitUntil: "domcontentloaded", timeout: 90_000 },
+      );
+      await page.waitForSelector('[data-showcase^="hero."]', { timeout: 90_000 });
+      await page.waitForLoadState("networkidle", { timeout: 30_000 }).catch(() => {});
+      await page.evaluate(() => document.fonts.ready);
+      await page.waitForTimeout(800);
+      heroes.push(await page.evaluate(measure, view.height));
+    }
+    return heroes;
   } finally {
     await ctx.close();
   }
 }
 
 test.describe.configure({ retries: 0 }); // layout numbers do not flake; a retry would only hide a first-compile timeout
-test.setTimeout(150_000);
+test.setTimeout(240_000);
 
 for (const style of STYLE_IDS) {
   test(style, async ({ browser }) => {
-    const phone = await heroAt(browser, style, PHONE, true);
-    const desktop = await heroAt(browser, style, DESKTOP, false);
+    const names = Object.keys(HEADLINES) as (keyof typeof HEADLINES)[];
+    const phones = await heroesAt(
+      browser,
+      style,
+      PHONE,
+      true,
+      names.map((n) => `&header=${PHONE_HEADER}&headline=${encodeURIComponent(HEADLINES[n])}`),
+    );
+    const [desktop] = await heroesAt(browser, style, DESKTOP, false, [""]);
     // one line per style: the numbers the report quotes, before and after a fix
-    console.log(`phone-first ${style} ${JSON.stringify({ phone, desktop })}`);
+    const slack = (h: Hero | null) => {
+      if (!h?.h1 || !h.button) return null;
+      const bottoms = [PHONE.height - h.h1.bottom, PHONE.height - h.button.bottom];
+      // a photo below the type can slide down this far before its visible share drops under the minimum
+      if (h.image && !(style in TYPE_LED)) bottoms.push(PHONE.height - h.image.top - MIN_PHOTO_SHARE * PHONE.height);
+      return Math.round(Math.min(...bottoms) * 10) / 10;
+    };
+    console.log(
+      `phone-first ${style} ${JSON.stringify({
+        slack: Object.fromEntries(names.map((n, i) => [n, slack(phones[i])])),
+        phone: Object.fromEntries(names.map((n, i) => [n, phones[i]])),
+        desktop,
+      })}`,
+    );
 
-    expect(phone, "phone: a hero renders").not.toBeNull();
-    expect(desktop, "desktop: a hero renders").not.toBeNull();
-
-    // phone
-    expect(phone!.h1, "phone: the hero has an h1").not.toBeNull();
-    expect.soft(phone!.h1!.bottom, "phone: h1 bottom within the first screen").toBeLessThanOrEqual(PHONE.height);
-    expect(phone!.button, "phone: the hero has a link or button").not.toBeNull();
-    expect.soft(phone!.button!.top, "phone: first button top on screen").toBeGreaterThanOrEqual(0);
-    expect.soft(phone!.button!.bottom, "phone: first button bottom on screen").toBeLessThanOrEqual(PHONE.height);
-    if (style in TYPE_LED) {
-      expect.soft(phone!.h1!.fontSize, "phone: type-led h1 font-size (px)").toBeGreaterThanOrEqual(TYPE_LED[style]);
-    } else {
-      expect(phone!.image, "phone: the hero has a photo").not.toBeNull();
-      expect
-        .soft(phone!.image!.shown, `phone: photo height on the first screen (>= ${MIN_PHOTO_SHARE} x ${PHONE.height})`)
-        .toBeGreaterThanOrEqual(MIN_PHOTO_SHARE * PHONE.height);
-    }
+    names.forEach((name, i) => {
+      const phone = phones[i];
+      const at = `phone (${name} headline, ${HEADLINES[name].length} characters)`;
+      expect(phone, `${at}: a hero renders`).not.toBeNull();
+      expect(phone!.h1, `${at}: the hero has an h1`).not.toBeNull();
+      expect.soft(phone!.h1!.bottom, `${at}: h1 bottom within the first screen`).toBeLessThanOrEqual(PHONE.height);
+      expect(phone!.button, `${at}: the hero has a link or button`).not.toBeNull();
+      expect.soft(phone!.button!.top, `${at}: first button top on screen`).toBeGreaterThanOrEqual(0);
+      expect.soft(phone!.button!.bottom, `${at}: first button bottom on screen`).toBeLessThanOrEqual(PHONE.height);
+      if (style in TYPE_LED) {
+        expect.soft(phone!.h1!.fontSize, `${at}: type-led h1 font-size (px)`).toBeGreaterThanOrEqual(TYPE_LED[style]);
+      } else {
+        expect(phone!.image, `${at}: the hero has a photo`).not.toBeNull();
+        expect
+          .soft(phone!.image!.shown, `${at}: photo height on the first screen (>= ${MIN_PHOTO_SHARE} x ${PHONE.height})`)
+          .toBeGreaterThanOrEqual(MIN_PHOTO_SHARE * PHONE.height);
+      }
+    });
 
     // desktop
+    expect(desktop, "desktop: a hero renders").not.toBeNull();
     expect(desktop!.h1, "desktop: the hero has an h1").not.toBeNull();
     expect.soft(desktop!.h1!.fontSize, "desktop: h1 font-size (px)").toBeGreaterThanOrEqual(MIN_DESKTOP_H1);
     expect(desktop!.button, "desktop: the hero has a link or button").not.toBeNull();

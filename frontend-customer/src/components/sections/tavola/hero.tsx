@@ -71,7 +71,7 @@ export function HeroMenu({ block, editable }: SectionProps) {
       <div
         className={cn(
           WRAP,
-          "grid gap-y-5 sm:gap-y-14 md:grid-cols-12 md:items-center md:gap-x-8 lg:gap-x-12",
+          "grid gap-y-4 sm:gap-y-14 md:grid-cols-12 md:items-center md:gap-x-8 lg:gap-x-12",
         )}
       >
         <div className="md:col-span-7">
@@ -89,11 +89,11 @@ export function HeroMenu({ block, editable }: SectionProps) {
                 H1,
                 alt.length <= 28
                   ? "max-w-[15ch] sm:max-w-[11ch] sm:text-[clamp(3.2rem,1.3rem+7.2vw,8.2rem)] sm:leading-[0.96]"
-                  : "max-w-[15ch]",
+                  : "max-w-[15ch] text-[2.3rem] leading-[1.0] sm:text-[clamp(2.6rem,1.3rem+4.9vw,6.4rem)]",
               )}
             />
           </div>
-          <div className="tavola-rise mt-5 sm:mt-7" style={delay(260)}>
+          <div className="tavola-rise mt-4 sm:mt-7" style={delay(260)}>
             <Txt
               block={block}
               field="subhead"
@@ -106,7 +106,7 @@ export function HeroMenu({ block, editable }: SectionProps) {
           <Actions
             block={block}
             editable={editable}
-            className="tavola-rise mt-7 sm:mt-9"
+            className="tavola-rise mt-5 sm:mt-9"
           />
         </div>
 

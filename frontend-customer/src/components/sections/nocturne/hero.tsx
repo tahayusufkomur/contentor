@@ -69,7 +69,10 @@ export function HeroLantern({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   return (
-    <Section className="overflow-hidden pt-14 md:pt-20 lg:pt-24" label={alt}>
+    <Section
+      className="overflow-hidden pt-8 sm:pt-14 md:pt-20 lg:pt-24"
+      label={alt}
+    >
       <Halo className="nocturne-dawn">
         <div className={cn(WRAP, "flex flex-col items-center text-center")}>
           <div className="nocturne-rise" style={delay(300)}>
@@ -90,7 +93,7 @@ export function HeroLantern({ block, editable }: SectionProps) {
               )}
             />
           </div>
-          <div className="nocturne-rise mt-7" style={delay(600)}>
+          <div className="nocturne-rise mt-5 sm:mt-7" style={delay(600)}>
             <Txt
               block={block}
               field="subhead"
@@ -103,7 +106,7 @@ export function HeroLantern({ block, editable }: SectionProps) {
           <Actions
             block={block}
             editable={editable}
-            className="nocturne-rise mt-9 justify-center"
+            className="nocturne-rise mt-7 justify-center sm:mt-9"
           />
           {has(block, "meta", editable) && (
             <p className={cn(CHIP, "nocturne-rise mt-7")} style={delay(700)}>
@@ -116,7 +119,7 @@ export function HeroLantern({ block, editable }: SectionProps) {
             </p>
           )}
           <figure
-            className="nocturne-rise relative mt-9 w-full max-w-[22rem] md:mt-20 md:max-w-[26rem]"
+            className="nocturne-rise relative mt-7 w-full max-w-[22rem] sm:mt-9 md:mt-20 md:max-w-[26rem]"
             style={delay(850)}
           >
             <Img

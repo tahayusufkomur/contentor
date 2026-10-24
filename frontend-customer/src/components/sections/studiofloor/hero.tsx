@@ -64,7 +64,7 @@ export function HeroMirror({ block, editable }: SectionProps) {
       className="py-0 md:flex md:min-h-[min(46rem,92svh)] md:items-end md:py-0 lg:py-0"
       label={alt}
     >
-      <div className="relative h-[25rem] md:absolute md:inset-0 md:h-auto">
+      <div className="relative h-[25rem] sm:h-[26rem] md:absolute md:inset-0 md:h-auto">
         <Img
           value={block.image}
           alt={alt}
