@@ -67,7 +67,7 @@ export function Guides() {
             // Never toggle `display` here: that restarts the draw-in animation.
             className={cn(
               "swiss-guide",
-              i >= 4 && "max-md:invisible max-md:absolute",
+              i >= 4 && "invisible absolute md:visible md:static",
             )}
           />
         ))}

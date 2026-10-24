@@ -35,7 +35,10 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
+        <SmartLink
+          href={block.secondaryHref}
+          className={cn(BTN_GHOST, "hidden sm:inline-flex")}
+        >
           <Txt
             block={block}
             field="secondaryLabel"
@@ -49,30 +52,42 @@ function Actions({
 }
 
 /** The mirror wall: the whole studio fills the hero, dimmed to stage black,
- *  and the claim hangs on a frosted glass panel with a neon edge on the
- *  right, like a cue card in the mirror. One photo; without one the stage
- *  lights carry it. */
+ *  and the claim hangs on a frosted glass panel with a neon edge, low on the
+ *  right like a cue card in the mirror, so her face stays clear above it.
+ *  One photo; without one the stage lights carry it. On a phone the photo is
+ *  a block of its own and the cue card hangs over only its lower edge. */
 export function HeroMirror({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   return (
     <Section
       tone="stage"
-      className="flex min-h-[min(46rem,92svh)] items-center py-0 md:py-0 lg:py-0"
+      className="py-0 md:flex md:min-h-[min(46rem,92svh)] md:items-end md:py-0 lg:py-0"
       label={alt}
     >
-      <Img
-        value={block.image}
-        alt={alt}
-        priority
-        className="absolute inset-0 size-full"
-      />
-      <div
-        aria-hidden="true"
-        className="studiofloor-mirror-wash absolute inset-0"
-      />
+      <div className="relative h-[26rem] md:absolute md:inset-0 md:h-auto">
+        <Img
+          value={block.image}
+          alt={alt}
+          priority
+          className="absolute inset-0 size-full"
+        />
+        <div
+          aria-hidden="true"
+          className="studiofloor-mirror-wash absolute inset-0"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-background to-transparent md:hidden"
+        />
+      </div>
       <div aria-hidden="true" className="studiofloor-stage-beam" />
-      <div className={cn(WRAP, "relative z-10 py-20 md:py-24")}>
-        <div className="ml-auto max-w-[34rem] rounded-[var(--radius)] border border-primary/50 bg-background/80 p-7 shadow-[0_0_48px_color-mix(in_oklch,var(--primary)_28%,transparent)] backdrop-blur-md md:p-10">
+      <div
+        className={cn(
+          WRAP,
+          "relative z-10 -mt-14 pb-10 md:mt-0 md:pb-16 md:pt-24",
+        )}
+      >
+        <div className="ml-auto max-w-[34rem] rounded-[var(--radius)] border border-primary/50 bg-background/80 p-5 shadow-[0_0_48px_color-mix(in_oklch,var(--primary)_28%,transparent)] backdrop-blur-md sm:p-7 md:p-10 lg:max-w-[42rem]">
           <Kicker block={block} editable={editable} />
           <Txt
             block={block}
@@ -83,8 +98,8 @@ export function HeroMirror({ block, editable }: SectionProps) {
             className={cn(
               H1,
               "mt-4 block",
-              alt.length <= 32
-                ? "text-[clamp(2.3rem,1.2rem+3.8vw,4.4rem)] leading-[0.92]"
+              alt.length <= 36
+                ? "text-[clamp(2.3rem,1.2rem+4.2vw,4.5rem)] leading-[0.92]"
                 : "text-[clamp(2rem,1.2rem+2.8vw,3.4rem)] leading-[0.96]",
             )}
           />
@@ -94,7 +109,7 @@ export function HeroMirror({ block, editable }: SectionProps) {
             editable={editable}
             as="p"
             placeholder="Subheadline"
-            className="mt-6 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
+            className="mt-4 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground sm:mt-6"
           />
           {has(block, "meta", editable) && (
             <div className="mt-5">
@@ -109,7 +124,7 @@ export function HeroMirror({ block, editable }: SectionProps) {
               </span>
             </div>
           )}
-          <Actions block={block} editable={editable} className="mt-8" />
+          <Actions block={block} editable={editable} className="mt-6 sm:mt-8" />
         </div>
       </div>
     </Section>

@@ -36,7 +36,10 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
+        <SmartLink
+          href={block.secondaryHref}
+          className={cn(BTN_GHOST, "hidden sm:inline-flex")}
+        >
           <Txt
             block={block}
             field="secondaryLabel"
@@ -50,16 +53,22 @@ function Actions({
 }
 
 /** The signature terminal hero: monospace prompt, blinking block cursor,
- *  window chrome panels, and syntax-colored controls. */
+ *  window chrome panels, and syntax-colored controls. On a phone the photo
+ *  window opens the page, the prompt and the button sit right under it, and
+ *  the detail window waits for a wide screen. */
 export function HeroPrompt({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const hasImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
 
   return (
-    <Section tone="console" className="pt-12 md:pt-16 lg:pt-20" label={alt}>
+    <Section
+      tone="console"
+      className="pt-6 sm:pt-12 md:pt-16 lg:pt-20"
+      label={alt}
+    >
       <div className={WRAP}>
-        <div className="grid items-center gap-y-12 lg:grid-cols-12 lg:gap-x-12">
+        <div className="grid items-center gap-y-6 lg:grid-cols-12 lg:gap-y-12 lg:gap-x-12">
           {/* Main prompt & content */}
           <div
             className={
@@ -68,7 +77,7 @@ export function HeroPrompt({ block, editable }: SectionProps) {
           >
             <Kicker block={block} editable={editable} />
 
-            <div className="mt-5">
+            <div className="mt-4 sm:mt-5">
               <h1 className={H1}>
                 <Txt
                   block={block}
@@ -87,7 +96,7 @@ export function HeroPrompt({ block, editable }: SectionProps) {
               editable={editable}
               as="p"
               placeholder="Subheadline"
-              className="mt-6 block max-w-[48ch] text-pretty text-[1.125rem] leading-[1.65] text-muted-foreground md:text-[1.2rem]"
+              className="mt-4 block max-w-[48ch] text-pretty text-[1.125rem] leading-[1.65] text-muted-foreground sm:mt-6 md:text-[1.2rem]"
             />
 
             {has(block, "meta", editable) && (
@@ -110,24 +119,24 @@ export function HeroPrompt({ block, editable }: SectionProps) {
             <Actions
               block={block}
               editable={editable}
-              className="mt-9 md:mt-11"
+              className="mt-6 sm:mt-9 md:mt-11"
             />
           </div>
 
           {/* Right window: the photo */}
           {hasImage && (
-            <div className="relative lg:col-span-5">
+            <div className="relative order-first lg:order-none lg:col-span-5">
               <WindowChrome bodyClassName="p-0 overflow-hidden">
                 <Img
                   value={block.image}
                   alt={alt}
                   priority
-                  className="aspect-[4/5] w-full"
+                  className="h-[21.25rem] w-full sm:h-[26rem] lg:aspect-[4/5] lg:h-auto"
                 />
               </WindowChrome>
 
               {showDetail && (
-                <div className="absolute -bottom-8 -left-6 w-[52%] sm:-left-8">
+                <div className="absolute -bottom-8 -left-6 hidden w-[52%] sm:-left-8 lg:block">
                   <WindowChrome
                     bodyClassName="p-0 overflow-hidden"
                     className="shadow-xl"

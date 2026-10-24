@@ -15,6 +15,17 @@
   box-shadow: 6px 6px 0 var(--accent);
 }
 
+/* The awning over the hero's menu card: tomato and butter stripes. */
+.tavola-awning {
+  height: 0.9rem;
+  border-bottom: 2px solid var(--foreground);
+  background: repeating-linear-gradient(
+    90deg,
+    var(--accent) 0 1.4rem,
+    var(--background) 1.4rem 2.8rem
+  );
+}
+
 /* Dotted leader between a dish and its price. */
 .tavola-dots {
   border-bottom: 2px dotted var(--border);

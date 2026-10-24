@@ -39,7 +39,10 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
+        <SmartLink
+          href={block.secondaryHref}
+          className={cn(BTN_GHOST, "hidden sm:inline-flex")}
+        >
           <Txt
             block={block}
             field="secondaryLabel"
@@ -53,27 +56,33 @@ function Actions({
 }
 
 /** The overlook: the view from the trail fills the hero and the claim sits
- *  on a route card pinned low and left, so the photo stays the view. One photo; without one the pine shows through. */
+ *  on a route card pinned low and left, so the photo stays the view. One
+ *  photo; without one the pine shows through. On a phone the view is a block
+ *  of its own and the card hangs over only its lower edge. */
 export function HeroOverlook({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const showMeta = has(block, "meta", editable);
   return (
     <Section
       tone="pine"
-      className="relative flex min-h-[min(46rem,92svh)] items-end py-0 md:py-0 lg:py-0"
+      className="relative py-0 md:flex md:min-h-[min(46rem,92svh)] md:items-end md:py-0 lg:py-0"
       label={alt}
     >
-      <Img
-        value={block.image}
-        alt={alt}
-        priority
-        className="absolute inset-0 size-full"
-      />
-      <div aria-hidden="true" className="trail-scrim absolute inset-0" />
-      <div className={cn(WRAP, "relative pb-10 pt-40 md:pb-14")}>
+      <div className="relative h-[26rem] md:absolute md:inset-0 md:h-auto">
+        <Img
+          value={block.image}
+          alt={alt}
+          priority
+          className="absolute inset-0 size-full"
+        />
+        <div aria-hidden="true" className="trail-scrim absolute inset-0" />
+      </div>
+      <div
+        className={cn(WRAP, "relative -mt-14 pb-10 md:mt-0 md:pb-14 md:pt-40")}
+      >
         <div
           className={cn(
-            "trail-rise trail-contours relative max-w-[38rem] rounded-[var(--radius)] border-2 border-foreground bg-background p-7 text-foreground shadow-[8px_8px_0_0_var(--accent)] md:p-10",
+            "trail-rise trail-contours relative max-w-[38rem] rounded-[var(--radius)] border-2 border-foreground bg-background p-5 text-foreground shadow-[8px_8px_0_0_var(--accent)] sm:p-7 md:p-10",
           )}
           style={delay(0)}
         >
@@ -87,8 +96,8 @@ export function HeroOverlook({ block, editable }: SectionProps) {
             className={cn(
               H1,
               "mt-4 block",
-              alt.length <= 28
-                ? "max-w-[10ch] text-[clamp(2.8rem,1.4rem+4.6vw,5.6rem)] leading-[0.98]"
+              alt.length <= 36
+                ? "max-w-[11ch] text-[clamp(2.6rem,1.2rem+4vw,4.6rem)] leading-[0.98]"
                 : "max-w-[16ch] text-[clamp(2.2rem,1.3rem+3.2vw,4rem)]",
             )}
           />
@@ -98,7 +107,7 @@ export function HeroOverlook({ block, editable }: SectionProps) {
             editable={editable}
             as="p"
             placeholder="Subheadline"
-            className="mt-5 block max-w-[42ch] text-pretty text-[1.05rem] leading-[1.6] !text-muted-foreground"
+            className="mt-4 block max-w-[42ch] text-pretty text-[1.05rem] leading-[1.6] !text-muted-foreground sm:mt-5"
           />
           {showMeta && (
             <p
@@ -119,7 +128,7 @@ export function HeroOverlook({ block, editable }: SectionProps) {
               />
             </p>
           )}
-          <Actions block={block} editable={editable} className="mt-8" />
+          <Actions block={block} editable={editable} className="mt-6 sm:mt-8" />
         </div>
       </div>
     </Section>

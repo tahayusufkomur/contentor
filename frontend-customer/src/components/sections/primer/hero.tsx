@@ -39,7 +39,10 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
+        <SmartLink
+          href={block.secondaryHref}
+          className={cn(BTN_GHOST, "hidden sm:inline-flex")}
+        >
           <Txt
             block={block}
             field="secondaryLabel"
@@ -55,19 +58,25 @@ function Actions({
 /** The title page of the exercise book: ruled paper with the red margin,
  *  the unit label in Courier, the title written in large, the dek, the
  *  small line as a note in the margin's voice, and on the right the portrait
- *  taped in like a print. */
+ *  taped in like a print. On a phone the print comes first, so the page opens
+ *  on the photograph and the title and the button are written right under
+ *  it; the second print waits for a wider screen. */
 export function HeroTitlePage({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   return (
-    <Section tone="ruled" className="pt-12 md:pt-16 lg:pt-20" label={alt}>
+    <Section
+      tone="ruled"
+      className="pt-6 sm:pt-12 md:pt-16 lg:pt-20"
+      label={alt}
+    >
       <div className={WRAP}>
-        <Page className="grid gap-y-12 md:grid-cols-12 md:gap-x-8 lg:gap-x-10">
+        <Page className="grid gap-y-8 sm:gap-y-12 md:grid-cols-12 md:gap-x-8 lg:gap-x-10">
           <div className="md:col-span-7 lg:col-span-7">
             <div className="primer-write" style={delay(0)}>
               <Kicker block={block} editable={editable} />
             </div>
-            <div className="primer-write mt-6" style={delay(200)}>
+            <div className="primer-write mt-4 sm:mt-6" style={delay(200)}>
               <Txt
                 block={block}
                 field="headline"
@@ -82,7 +91,7 @@ export function HeroTitlePage({ block, editable }: SectionProps) {
                 )}
               />
             </div>
-            <div className="primer-write mt-8" style={delay(500)}>
+            <div className="primer-write mt-5 sm:mt-8" style={delay(500)}>
               <Txt
                 block={block}
                 field="subhead"
@@ -108,23 +117,23 @@ export function HeroTitlePage({ block, editable }: SectionProps) {
             <Actions
               block={block}
               editable={editable}
-              className="primer-write mt-10"
+              className="primer-write mt-7 sm:mt-10"
             />
           </div>
 
-          <div className="relative md:col-span-5 lg:col-span-4 lg:col-start-9">
+          <div className="order-first md:order-none md:col-span-5 lg:col-span-4 lg:col-start-9">
             <figure>
               <Img
                 value={block.image}
                 alt={alt}
                 priority
-                className="primer-print aspect-[4/5] w-full rotate-[-1.5deg]"
+                className="primer-print aspect-[10/11] w-full rotate-[-1.5deg] md:aspect-[4/5]"
               />
               {showDetail && (
                 <Img
                   value={block.image2}
                   alt={alt}
-                  className="primer-print relative -mt-10 ml-auto aspect-square w-[42%] rotate-[2deg]"
+                  className="primer-print relative -mt-10 ml-auto hidden aspect-square w-[42%] rotate-[2deg] md:block"
                 />
               )}
             </figure>

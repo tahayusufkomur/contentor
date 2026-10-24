@@ -5,7 +5,9 @@ import { heroPhotos } from "../collage";
 import { Cta, Guides, btn, row, textLink } from "./ui";
 
 /** Home hero, plates: the statement set across all twelve columns at the
- *  width of the page, then up to three grid-locked figure plates under it. */
+ *  width of the page, then up to three grid-locked figure plates under it.
+ *  On a phone the first plate sits right under the statement and the lead
+ *  and the button follow it; the other plates wait for a wider screen. */
 export function HeroPlates({ block, editable }: SectionProps) {
   const alt = String(block.headline ?? "");
   const photos = heroPhotos(block, editable).slice(0, 3);
@@ -17,7 +19,7 @@ export function HeroPlates({ block, editable }: SectionProps) {
   return (
     <section className="swiss-sec swiss-hero relative overflow-hidden bg-background px-5 pb-16 pt-6 text-foreground md:px-8 md:pb-24 md:pt-8">
       <Guides />
-      <div className="relative mx-auto max-w-[88rem]">
+      <div className="relative mx-auto flex max-w-[88rem] flex-col md:block">
         <div className="swiss-rule" />
         <div className={cn(row, "gap-y-1 pt-3")}>
           <Txt
@@ -44,13 +46,18 @@ export function HeroPlates({ block, editable }: SectionProps) {
           as="h1"
           placeholder="Headline"
           className={cn(
-            "swiss-h1 mt-8 block md:mt-12",
+            "swiss-h1 mt-6 block sm:mt-8 md:mt-12",
             alt.length <= 28
               ? "!text-[clamp(3rem,0.4rem+12.2vw,13.5rem)] !leading-[0.88]"
               : "!text-[clamp(2.6rem,0.6rem+7.4vw,8.5rem)]",
           )}
         />
-        <div className={cn(row, "mt-10 gap-y-6 md:mt-14")}>
+        <div
+          className={cn(
+            row,
+            "order-3 mt-6 gap-y-6 sm:mt-10 md:order-none md:mt-14",
+          )}
+        >
           {has(block, "subhead", editable) && (
             <Txt
               block={block}
@@ -68,21 +75,28 @@ export function HeroPlates({ block, editable }: SectionProps) {
               editable={editable}
               label="secondaryLabel"
               href="secondaryHref"
-              className={textLink}
+              className={cn(textLink, "hidden sm:inline-flex")}
             />
           </div>
         </div>
         {photos.length > 0 && (
-          <div className={cn(row, "mt-12 gap-y-8 md:mt-16")}>
+          <div
+            className={cn(
+              row,
+              "order-2 mt-5 gap-y-8 sm:mt-12 md:order-none md:mt-16",
+            )}
+          >
             {photos.map((value, n) => (
-              <figure key={n} className={span}>
+              <figure key={n} className={cn(span, n > 0 && "hidden sm:block")}>
                 <Img
                   value={value}
                   alt={alt}
                   priority={n === 0}
                   className={cn(
                     "swiss-photo w-full",
-                    photos.length === 1 ? "aspect-[16/7]" : "aspect-[4/3]",
+                    photos.length === 1
+                      ? "aspect-[10/11] sm:aspect-[16/7]"
+                      : "aspect-[10/11] sm:aspect-[4/3]",
                   )}
                 />
               </figure>

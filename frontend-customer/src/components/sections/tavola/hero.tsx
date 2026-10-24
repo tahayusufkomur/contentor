@@ -40,7 +40,10 @@ function Actions({
         </SmartLink>
       )}
       {secondary && (
-        <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
+        <SmartLink
+          href={block.secondaryHref}
+          className={cn(BTN_GHOST, "hidden sm:inline-flex")}
+        >
           <Txt
             block={block}
             field="secondaryLabel"
@@ -55,25 +58,28 @@ function Actions({
 
 /** The awning: the olive kicker, the claim in the chunky serif, the dek and
  *  the tomato button on the left; on the right the portrait as a menu card
- *  (ink border, olive shadow) with the small line as its specials board and
- *  the detail print set under its corner. */
+ *  (ink border, olive shadow) under a striped awning, with the small line as
+ *  its specials board and the detail print set under its corner. On a phone
+ *  the card comes first, so the awning and the photo are the first screen
+ *  and the claim and the button sit right under them; the detail print
+ *  waits for a wider screen. */
 export function HeroMenu({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   const showMeta = has(block, "meta", editable);
   return (
-    <Section className="pt-12 md:pt-16 lg:pt-20" label={alt}>
+    <Section className="pt-6 sm:pt-12 md:pt-16 lg:pt-20" label={alt}>
       <div
         className={cn(
           WRAP,
-          "grid gap-y-14 md:grid-cols-12 md:items-center md:gap-x-8 lg:gap-x-12",
+          "grid gap-y-6 sm:gap-y-8 md:grid-cols-12 md:items-center md:gap-x-8 md:gap-y-14 lg:gap-x-12",
         )}
       >
         <div className="md:col-span-7">
           <div className="tavola-rise" style={delay(0)}>
             <Kicker block={block} editable={editable} />
           </div>
-          <div className="tavola-rise mt-5" style={delay(120)}>
+          <div className="tavola-rise mt-3 sm:mt-5" style={delay(120)}>
             <Txt
               block={block}
               field="headline"
@@ -88,7 +94,7 @@ export function HeroMenu({ block, editable }: SectionProps) {
               )}
             />
           </div>
-          <div className="tavola-rise mt-7" style={delay(260)}>
+          <div className="tavola-rise mt-5 sm:mt-7" style={delay(260)}>
             <Txt
               block={block}
               field="subhead"
@@ -101,41 +107,44 @@ export function HeroMenu({ block, editable }: SectionProps) {
           <Actions
             block={block}
             editable={editable}
-            className="tavola-rise mt-9"
+            className="tavola-rise mt-7 sm:mt-9"
           />
         </div>
 
-        <div className="relative md:col-span-5">
+        <div className="relative order-first md:order-none md:col-span-5">
           <figure className="tavola-set relative" style={delay(350)}>
-            <div className={cn(CARD, "overflow-hidden p-3 sm:p-4")}>
-              {showMeta && (
-                <p
-                  className={cn(
-                    LABEL,
-                    "mb-3 border-b-2 border-dotted border-border pb-3 normal-case tracking-[0.04em] sm:mb-4 sm:pb-4",
-                  )}
-                >
-                  <Txt
-                    block={block}
-                    field="meta"
-                    editable={editable}
-                    placeholder="Small line"
-                  />
-                </p>
-              )}
-              <Img
-                value={block.image}
-                alt={alt}
-                priority
-                className="aspect-[4/5] w-full rounded-[calc(var(--radius)-2px)]"
-              />
+            <div className={cn(CARD, "overflow-hidden")}>
+              <div aria-hidden="true" className="tavola-awning" />
+              <div className="p-2.5 sm:p-4">
+                {showMeta && (
+                  <p
+                    className={cn(
+                      LABEL,
+                      "mb-3 border-b-2 border-dotted border-border pb-3 normal-case tracking-[0.04em] sm:mb-4 sm:pb-4",
+                    )}
+                  >
+                    <Txt
+                      block={block}
+                      field="meta"
+                      editable={editable}
+                      placeholder="Small line"
+                    />
+                  </p>
+                )}
+                <Img
+                  value={block.image}
+                  alt={alt}
+                  priority
+                  className="h-[22rem] w-full rounded-[calc(var(--radius)-2px)] sm:h-auto sm:aspect-[4/5]"
+                />
+              </div>
             </div>
           </figure>
           {showDetail && (
             <Img
               value={block.image2}
               alt={alt}
-              className="tavola-photo tavola-rise absolute -bottom-8 -left-4 aspect-square w-[36%] max-w-[11rem] rotate-[-3deg] rounded-[var(--radius)] sm:-left-8"
+              className="tavola-photo tavola-rise absolute -bottom-8 -left-4 hidden aspect-square w-[36%] max-w-[11rem] rotate-[-3deg] rounded-[var(--radius)] sm:-left-8 md:block"
             />
           )}
         </div>
