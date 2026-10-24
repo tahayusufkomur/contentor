@@ -11,6 +11,7 @@ from apps.courses.models import Course
 from apps.tenant_config import interview_brief as brief
 from apps.tenant_config import interview_milestones as ms
 from apps.tenant_config import setup_flow
+from apps.tenant_config.defaults import header_cta
 from apps.tenant_config.models import TenantConfig
 
 pytestmark = pytest.mark.django_db
@@ -1045,18 +1046,42 @@ def test_the_header_button_follows_what_the_coach_offers(tenant_ctx, config):
     cfg.navbar_config = {"links": [], "cta": {"text": "Get Started", "href": "/courses"}}
     cfg.save()
     ms.sync_site(tenant_ctx, {"offers": ["live", "community"]})
-    assert TenantConfig.objects.first().navbar_config["cta"] == {"text": "Get Started", "href": "/events"}
-    ms.sync_site(tenant_ctx, {"offers": ["community"]})  # no classes either: her story
+    assert TenantConfig.objects.first().navbar_config["cta"] == {"text": "Book a class", "href": "/events"}
+    ms.sync_site(tenant_ctx, {"offers": ["community"]})  # no classes either: contact
     cfg = TenantConfig.objects.first()
     cfg.navbar_config = {"links": [], "cta": {"text": "Get Started", "href": "/courses"}}
     cfg.save()
     ms.sync_site(tenant_ctx, {"offers": ["community"]})
-    assert TenantConfig.objects.first().navbar_config["cta"]["href"] == "/about"
+    assert TenantConfig.objects.first().navbar_config["cta"] == {"text": "Get in touch", "href": "/contact"}
     # A coach who offers courses, or set her own button, keeps it.
     cfg.navbar_config = {"links": [], "cta": {"text": "Book", "href": "/contact"}}
     cfg.save()
     ms.sync_site(tenant_ctx, {"offers": ["live"]})
     assert TenantConfig.objects.first().navbar_config["cta"]["href"] == "/contact"
+
+
+@pytest.mark.parametrize(
+    ("offers", "want"),
+    [
+        (["live"], {"text": "Book a class", "href": "/events"}),
+        (["community"], {"text": "Get in touch", "href": "/contact"}),
+    ],
+)
+def test_the_provisioned_header_button_follows_the_offer_in_label_and_link(tenant_ctx, config, offers, want):
+    """Provisioning writes "Start a course" -> /courses; moving only the href left "Start a course" on /events."""
+    cfg = TenantConfig.objects.first()
+    cfg.navbar_config = {"links": [], "cta": header_cta(["/courses"])}
+    cfg.save()
+    ms.sync_site(tenant_ctx, {"offers": offers})
+    assert TenantConfig.objects.first().navbar_config["cta"] == want
+
+
+def test_a_header_button_in_her_own_words_keeps_its_text_when_the_link_moves(tenant_ctx, config):
+    cfg = TenantConfig.objects.first()
+    cfg.navbar_config = {"links": [], "cta": {"text": "Join my course", "href": "/courses"}}
+    cfg.save()
+    ms.sync_site(tenant_ctx, {"offers": ["live"]})
+    assert TenantConfig.objects.first().navbar_config["cta"] == {"text": "Join my course", "href": "/events"}
 
 
 def test_a_new_header_button_names_the_offer(tenant_ctx, config):

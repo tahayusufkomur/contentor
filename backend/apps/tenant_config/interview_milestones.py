@@ -243,7 +243,11 @@ def sync_site(tenant, answers: dict) -> None:
             elif not cta:
                 cta_override = {"cta": header_cta([default_cta_href])}
         elif retarget:
-            cta_override = {"cta": {**cta, "href": "/events" if runs_classes else "/about"}}
+            # The label follows the link while it is a default ("Start a course", the legacy
+            # "Get Started"); her own words keep their text and only the link moves.
+            led = header_cta(["/events"] if runs_classes else [])
+            her_words = cta.get("text") not in ("Get Started", header_cta(["/courses"])["text"])
+            cta_override = {"cta": {**cta, "href": led["href"]} if her_words else led}
         show_social_override = (
             {"show_social": bool(answers["navbar_show_social"])}
             if "navbar_show_social" in answers
