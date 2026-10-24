@@ -1,5 +1,5 @@
 # --- Dev target (used by docker-compose.yml) ---
-FROM node:20-alpine AS dev
+FROM node:22.23.4-alpine AS dev
 WORKDIR /app
 COPY frontend-main/package.json frontend-main/package-lock.json* ./
 RUN npm ci || npm install
@@ -15,12 +15,12 @@ EXPOSE 3000
 CMD ["npm", "run", "dev"]
 
 # --- Production build ---
-FROM node:20-alpine AS deps
+FROM node:22.23.4-alpine AS deps
 WORKDIR /app
 COPY frontend-main/package.json frontend-main/package-lock.json* ./
 RUN npm ci || npm install
 
-FROM node:20-alpine AS builder
+FROM node:22.23.4-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY packages /packages
@@ -34,7 +34,7 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_BASE_DOMAIN=$NEXT_PUBLIC_BASE_DOMAIN
 RUN npm run build
 
-FROM node:20-alpine AS runner
+FROM node:22.23.4-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
