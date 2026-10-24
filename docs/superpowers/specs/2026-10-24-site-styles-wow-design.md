@@ -321,7 +321,7 @@ Status values:
 
 | WP | Title | Depends on | Plan | Status |
 |---|---|---|---|---|
-| 0.1 | Capture tool: `make design-shots` | none | Phase 0–1, Task 0.1 | todo |
+| 0.1 | Capture tool: `make design-shots` | none | Phase 0–1, Task 0.1 | done (2026-10-24, 9edf1bd5) |
 | 0.2 | Realistic showcase fixtures (`fixture=` sets) | none | Task 0.2 | todo |
 | 0.3 | Eval measures distinctiveness and anchors on award sites | none | Task 0.3 | todo |
 | 1.1 | Hero and copy rules in the composer | none | Task 1.1 | todo |
@@ -449,6 +449,10 @@ against G1.
 - 2026-10-24: critique of all 21 styles. Two independent assessments plus reference research. Owner
   agreed (D1, D2). Baseline captured to `e2e/eval-shots/design/baseline-2026-10-24/` (sheets, shots,
   references, detector JSON, prototype capture scripts in `tools/`). Spec and Phase 0–1 plan written.
+- 2026-10-24, WP-0.1 (9edf1bd5): `make design-shots` ports the prototype (same fold and full-page
+  waits). It shoots desktop and phone concurrently: all 21 styles take about 3.3 minutes. Kinetic's
+  ticker band differs between any two runs, so compare that band against this tool's own runs, not
+  the sequential baseline.
 
 ## 10. Resources
 
