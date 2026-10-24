@@ -13,6 +13,8 @@ catalog. TR needs native review, same caveat as the signup email strings.
 
 from __future__ import annotations
 
+from apps.tenant_config.defaults import header_cta
+
 from . import wizard_catalog
 
 COPY = {
@@ -23,7 +25,6 @@ COPY = {
         "nav_pricing": "Pricing",
         "nav_about": "About",
         "nav_faq": "FAQ",
-        "cta": "Get Started",
         "featured_courses": "Featured Courses",
         "all_courses": "All Courses",
         "events_heading": "Upcoming Events",
@@ -86,7 +87,7 @@ def build_config_overrides(answers: dict, *, brand_name: str, landing_sections: 
     return {
         "navbar_config": {
             "links": links,
-            "cta": {"text": copy["cta"], "href": "/courses"},
+            "cta": header_cta(link["href"] for link in links),
             "show_login": True,
             "layout": answers.get("navbar_layout") or "classic",
         },

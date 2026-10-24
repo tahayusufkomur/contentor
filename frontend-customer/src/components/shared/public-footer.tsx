@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { ContentorBadge } from "@shared/ui/contentor-brand";
 
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useTenant } from "@/hooks/use-tenant";
 import { visibleNavLinks, type SiteMenu } from "@/lib/navbar";
 import type { FooterLayout } from "@/types/tenant";
@@ -27,8 +28,9 @@ const WRAP =
 const LINK = "transition-colors hover:text-foreground";
 
 /** Brand, © year, the site's own nav links and any social links the coach
- * set, in the arrangement picked in /setup (navbar_config.footer_layout). A
- * public site that ends at the last block reads as unfinished. */
+ * set, the light/dark toggle and the platform badge, in the arrangement picked
+ * in /setup (navbar_config.footer_layout). A public site that ends at the last
+ * block reads as unfinished. */
 export function PublicFooter({
   plansEnabled = true,
   menu,
@@ -92,7 +94,31 @@ export function PublicFooter({
       ))}
     </ul>
   );
-  const badge = config.show_badge && <ContentorBadge />;
+  // The site's one light/dark choice (next-themes key "theme"), shared with the admin.
+  const toggle = config.dark_mode_enabled !== false && (
+    <ThemeToggle
+      className={cn(
+        "w-auto font-normal text-muted-foreground",
+        // Its padding would indent it from the links above it on a phone.
+        layout !== "centered" && "-ml-3 md:ml-0",
+      )}
+    />
+  );
+  // The platform's mark stays, but quiet: no outline, smaller, muted name.
+  const badge = config.show_badge && (
+    <ContentorBadge className="gap-1.5 border-transparent px-2 py-1 [&_span>span]:font-medium [&_span>span]:text-muted-foreground" />
+  );
+  const tail = (toggle || badge) && (
+    <div
+      className={cn(
+        "flex flex-wrap items-center gap-x-3 gap-y-2",
+        layout === "centered" && "justify-center",
+      )}
+    >
+      {toggle}
+      {badge}
+    </div>
+  );
 
   return (
     <footer
@@ -133,7 +159,7 @@ export function PublicFooter({
             className={`${WRAP} flex flex-col gap-3 border-t py-4 text-xs md:flex-row md:items-center md:justify-between`}
           >
             {copyright}
-            {badge}
+            {tail}
           </div>
         </>
       ) : layout === "centered" ? (
@@ -146,24 +172,25 @@ export function PublicFooter({
           {nav}
           {socials}
           {copyright}
-          {badge}
+          {tail}
         </div>
       ) : layout === "minimal" ? (
         <div
           className={`${WRAP} flex flex-col gap-3 py-6 md:flex-row md:items-center md:justify-between`}
         >
           {copyright}
-          {badge}
+          {socials}
+          {tail}
         </div>
       ) : (
-        /* simple — one row: ©, the menu, the social links, the badge */
+        /* simple — one row: ©, the menu, the social links, the toggle and badge */
         <div
           className={`${WRAP} flex flex-col gap-4 py-8 md:flex-row md:items-center md:justify-between`}
         >
           {copyright}
           {nav}
           {socials}
-          {badge}
+          {tail}
         </div>
       )}
     </footer>

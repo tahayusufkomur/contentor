@@ -7,6 +7,7 @@ import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { serverFetch } from "@/lib/api-server";
 import { fetchPublishedPosts } from "@/lib/blog-public";
 import { PublicHeader } from "@/components/shared/public-header";
+import { StickyCta } from "@/components/shared/sticky-cta";
 import { SiteMotion } from "@/components/shared/site-motion";
 import { EditSidebar } from "@/components/owner/edit-sidebar";
 import { SiteAssistantBubble } from "@/components/assistant/site-assistant-bubble";
@@ -68,6 +69,10 @@ export default async function PublicLayout({
         {children}
       </main>
       <PublicFooter plansEnabled={plansEnabled} menu={menu} />
+      {/* The header button, pinned on phones: a visitor's, like the header's. */}
+      {(embed || !user) && (
+        <StickyCta plansEnabled={plansEnabled} menu={menu} />
+      )}
       {!isAdmin && !embed && <SiteAssistantBubble />}
       {isAdmin && !embed && <CopilotBubble />}
     </div>

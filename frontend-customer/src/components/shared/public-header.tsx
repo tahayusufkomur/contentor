@@ -6,9 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { NavLink } from "@/components/ui/nav-link";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useTenant } from "@/hooks/use-tenant";
-import { SocialLinks } from "@/components/shared/social-links";
 import { BookOpen, LogOut, Menu, User as UserIcon, X, Zap } from "lucide-react";
 import type { User } from "@/types/auth";
 import type {
@@ -23,9 +21,9 @@ import {
   logoSizeClass,
   showBrandName,
   showSubscribeButton,
-  visibleNavLinks,
   type SiteMenu,
 } from "@/lib/navbar";
+import { resolveHeaderCta } from "@/lib/header-cta";
 import { usePublishTopnavClearance } from "@/lib/topnav-clearance";
 
 const VALID_LAYOUTS: ReadonlySet<string> = new Set([
@@ -113,7 +111,6 @@ function AuthCluster({
   showLogin,
   cta,
   compact,
-  allowDarkMode,
   signingOut,
   onSignOut,
   dashboardHref,
@@ -124,15 +121,12 @@ function AuthCluster({
   showLogin: boolean;
   cta: { text: string; href: string } | null;
   compact?: boolean;
-  allowDarkMode: boolean;
   signingOut: boolean;
   onSignOut: () => void;
   dashboardHref: string;
 }) {
   return (
     <div className="flex items-center gap-3">
-      <SocialLinks />
-      {allowDarkMode && <ThemeToggle compact className="shrink-0" />}
       {user ? (
         <>
           <NavLink
@@ -181,7 +175,12 @@ function AuthCluster({
       ) : (
         <div className="flex items-center gap-2">
           {showLogin && (
-            <Button asChild variant="ghost" size="sm">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="font-normal text-muted-foreground hover:text-foreground"
+            >
               <Link href="/login">Sign In</Link>
             </Button>
           )}
@@ -259,12 +258,7 @@ export function PublicHeader({
       ? [...withCommunity, { label: "Blog", href: "/blog" }]
       : withCommunity;
   const showLogin = navbar?.show_login !== false;
-  const rawCta = navbar?.cta ?? null;
-  const cta =
-    rawCta && visibleNavLinks([rawCta], plansEnabled, menu).length > 0
-      ? rawCta
-      : null;
-  const allowDarkMode = config?.dark_mode_enabled !== false;
+  const cta = resolveHeaderCta(navbar?.cta, plansEnabled, menu);
 
   useEffect(() => {
     if (!transparent) return;
@@ -290,7 +284,6 @@ export function PublicHeader({
     showSubscribe: showSubscribeButton(plansEnabled, user?.role),
     showLogin,
     cta,
-    allowDarkMode,
     signingOut,
     onSignOut: handleSignOut,
     dashboardHref,
@@ -398,8 +391,6 @@ export function PublicHeader({
             )}
           </div>
         )}
-        <SocialLinks className="px-1" />
-        {allowDarkMode && <ThemeToggle className="justify-start" />}
       </nav>
     </div>
   );
@@ -481,7 +472,6 @@ export function PublicHeader({
         <div className="mx-auto flex h-16 max-w-[var(--site-wrap,80rem)] items-center justify-between px-[var(--site-gutter,1rem)] md:px-[var(--site-gutter-md,1rem)]">
           <Brand config={config} />
           <div className="flex items-center gap-2">
-            <SocialLinks className="hidden sm:flex" />
             {!user && cta && (
               <Button asChild size="sm">
                 <Link href={cta.href}>{cta.text}</Link>

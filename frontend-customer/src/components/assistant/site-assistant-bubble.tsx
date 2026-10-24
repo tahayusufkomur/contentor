@@ -295,7 +295,9 @@ export function SiteAssistantBubble() {
           type="button"
           aria-label={t("bubbleLabel")}
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+          // Rides above the phone's sticky call to action when it is showing.
+          style={{ bottom: "calc(var(--sticky-cta-clearance, 0px) + 1.5rem)" }}
+          className="fixed right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl"
         >
           <MessageCircleQuestion className="h-6 w-6" />
         </button>

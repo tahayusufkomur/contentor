@@ -181,6 +181,20 @@ def sanitize_rich_text(value):
     return nh3.clean(value, tags=_RICH_TEXT_TAGS, attributes=_RICH_TEXT_ATTRS)
 
 
+def header_cta(links):
+    """The header button for a new site: it names what the coach offers.
+
+    ``links`` are the hrefs the site leads with. Courses win, then events; a
+    coach with neither gets a Contact button, never an empty one.
+    """
+    links = set(links)
+    if "/courses" in links:
+        return {"text": "Start a course", "href": "/courses"}
+    if "/events" in links:
+        return {"text": "Book a class", "href": "/events"}
+    return {"text": "Get in touch", "href": "/contact"}
+
+
 def _image(url=None, photo_id=None):
     """An image field value: a resolved URL plus the Photo id it came from.
 

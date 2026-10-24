@@ -21,6 +21,7 @@ from django_tenants.utils import schema_context
 from . import interview_brief as brief
 from . import interview_schedule as schedule
 from . import look_copy
+from .defaults import header_cta
 from .models import TenantConfig
 
 logger = logging.getLogger(__name__)
@@ -240,7 +241,7 @@ def sync_site(tenant, answers: dict) -> None:
             if not answers["navbar_show_cta"]:
                 cta_override = {"cta": None}
             elif not cta:
-                cta_override = {"cta": {"text": "Get Started", "href": default_cta_href}}
+                cta_override = {"cta": header_cta([default_cta_href])}
         elif retarget:
             cta_override = {"cta": {**cta, "href": "/events" if runs_classes else "/about"}}
         show_social_override = (

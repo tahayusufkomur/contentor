@@ -1059,6 +1059,14 @@ def test_the_header_button_follows_what_the_coach_offers(tenant_ctx, config):
     assert TenantConfig.objects.first().navbar_config["cta"]["href"] == "/contact"
 
 
+def test_a_new_header_button_names_the_offer(tenant_ctx, config):
+    cfg = TenantConfig.objects.first()
+    cfg.navbar_config = {"links": [], "cta": None}
+    cfg.save()
+    ms.sync_site(tenant_ctx, {"offers": ["live"], "navbar_show_cta": True})
+    assert TenantConfig.objects.first().navbar_config["cta"] == {"text": "Book a class", "href": "/events"}
+
+
 CLASSES = {**HOME, "payments": ["free"], "live_topic": "Slow flow", "live_when": "Sunday 9am"}
 IN_PERSON = {
     **HOME,
