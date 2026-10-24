@@ -859,9 +859,12 @@ def _plan_user_turn(coach, style_id) -> str:
     )
 
 
-def _generic_brief(family, slot, ctx) -> dict:
+def _generic_brief(family, slot, ctx, page_key) -> dict:
     role = _slot_specs(family).get(slot, ("", ""))[1]
     subject = _GENERIC_SUBJECTS.get((family, slot.partition(".")[0]), role)
+    # R2: the coach's portrait is hero.image on home and story.image elsewhere; the page's other one shows students.
+    if (family, slot) == (("story", "image") if page_key == "home" else ("hero", "image")):
+        subject = "students practising together in class"
     return {"subject": f"{ctx['topic']} {subject}"[:BRIEF_FIELD_MAX], "action": "", "setting": "", "person": ""}
 
 
@@ -956,10 +959,10 @@ def _plan_site(tenant, *, force=False) -> dict:
                 for s in page.sections
             ]
     plan = apply_guardrails({"pages": pages}, style_id)
-    for entries in plan["pages"].values():
+    for page, entries in plan["pages"].items():
         for entry in entries:
             for slot in _slot_specs(entry["family"]):
-                entry["images"].setdefault(slot, _generic_brief(entry["family"], slot, ctx))
+                entry["images"].setdefault(slot, _generic_brief(entry["family"], slot, ctx, page))
     ideas = _default_ideas(ctx)
     for key in ideas:
         got = [" ".join(str(x).split())[:IDEA_MAX] for x in (getattr(raw, key, None) or []) if str(x).strip()]
@@ -1719,7 +1722,7 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
         for slot, aspect, target, field in slots:
             if slot in skip:
                 continue
-            brief = entry.get("images", {}).get(slot) or _generic_brief(family, slot, ctx)
+            brief = entry.get("images", {}).get(slot) or _generic_brief(family, slot, ctx, page_key)
             try:
                 image, photo = _find_photo(
                     _queries(brief, ctx, photo_words),

@@ -410,9 +410,34 @@ def test_plan_prompt_names_one_protagonist():
 
 def test_generic_briefs_show_hands_not_a_second_face():
     ctx = sc._ctx("yoga", "Maya Laurent")
-    assert sc._generic_brief("story", "image2", ctx)["subject"] == "yoga instructor's hands demonstrating, close-up"
-    assert sc._generic_brief("contact", "image", ctx)["subject"] == "yoga hands during practice, close-up"
-    assert "portrait" in sc._generic_brief("story", "image", ctx)["subject"]  # the one protagonist slot
+    assert (
+        sc._generic_brief("story", "image2", ctx, "about")["subject"]
+        == "yoga instructor's hands demonstrating, close-up"
+    )
+    assert sc._generic_brief("contact", "image", ctx, "contact")["subject"] == "yoga hands during practice, close-up"
+
+
+@pytest.mark.django_db
+def test_the_fallback_plan_briefs_one_coach_portrait_per_page(styled, monkeypatch):
+    """No AI plan (often the case in prod): hero.image is the coach on home, story.image on every other page."""
+    monkeypatch.setattr(sc.core_ai, "structured", FakeAI(plan=core_ai.AiError("no plan")))
+    plan = sc.plan_site(styled)
+
+    def subject(page, family, slot="image"):
+        entry = next(e for e in plan["pages"][page] if e["family"] == family)
+        return entry["images"][slot]["subject"]
+
+    assert "instructor" in subject("home", "hero") and "instructor" not in subject("home", "story")
+    assert "portrait of the instructor" in subject("about", "story")
+    assert "instructor" not in subject("about", "hero") and "students" in subject("about", "hero")
+    for page, entries in plan["pages"].items():  # whatever the style's recipe holds
+        faces = [
+            (e["family"], slot)
+            for e in entries
+            for slot, brief in e["images"].items()
+            if "instructor" in brief["subject"] and "hands" not in brief["subject"]
+        ]
+        assert len(faces) <= 1, (page, faces)
 
 
 @pytest.mark.django_db
@@ -446,10 +471,17 @@ def test_peer_assets_reads_same_niche_tenants_only(styled):
     assert sc._peer_assets(styled, "cooking") == frozenset({"b1"})
 
 
+def _catalog_pool():
+    """Every asset id the `catalog` fixture's search returns (the same for every query)."""
+    pool = [i.asset_id for i in sc.curated_client.search("yoga").results]
+    assert len(pool) > 20  # home alone needs a dozen; the cases below take 5, all and all but 2 of it
+    return pool
+
+
 @pytest.mark.django_db
 def test_a_peer_photo_is_used_only_when_nothing_else_fits(styled, monkeypatch, catalog):
     monkeypatch.setattr(sc.core_ai, "structured", FakeAI(plan=core_ai.AiError("no plan")))
-    pool = [f"asset-{n}" for n in range(40)]  # what the catalog fixture returns for every search
+    pool = _catalog_pool()
 
     def used(page):
         styled.refresh_from_db()
@@ -460,19 +492,27 @@ def test_a_peer_photo_is_used_only_when_nothing_else_fits(styled, monkeypatch, c
     assert baseline > 3
 
     monkeypatch.setattr(sc, "_peer_assets", lambda tenant, niche: frozenset(pool[:5]))
-    home = sc.compose_page(styled, "home")
+    home = _photo_ids(sc.compose_page(styled, "home"))
     assert not used("home") & set(pool[:5])  # plenty else fits: a peer's face is left alone
-    assert len(_photo_ids(home)) == len(used("home")) > 10
+    assert len(home) == len(used("home")) > 10 and len(home) == len(set(home))
 
     monkeypatch.setattr(sc, "_peer_assets", lambda tenant, niche: frozenset(pool))
-    about = sc.compose_page(styled, "about")  # every photo in the niche is a peer's
-    assert len(_photo_ids(about)) == baseline  # still, no empty slot
+    about = _photo_ids(sc.compose_page(styled, "about"))  # every photo in the niche is a peer's
+    assert len(about) == baseline  # still, no empty slot
+    assert len(about) == len(set(about))  # and each slot its own photo, not one repeated
     assert used("about") <= set(pool)
 
-    # Mixed: only the last two are free; they go first, then peers' photos fill the rest
+
+@pytest.mark.django_db
+def test_free_photos_go_first_and_a_peers_fill_the_rest(styled, monkeypatch, catalog):
+    monkeypatch.setattr(sc.core_ai, "structured", FakeAI(plan=core_ai.AiError("no plan")))
+    pool = _catalog_pool()
     monkeypatch.setattr(sc, "_peer_assets", lambda tenant, niche: frozenset(pool[:-2]))
-    courses = sc.compose_page(styled, "courses")
-    assert set(pool[-2:]) <= used("courses") and len(_photo_ids(courses)) == len(used("courses"))
+    home = _photo_ids(sc.compose_page(styled, "home"))  # a dozen slots: the peers' photos must each go once
+    styled.refresh_from_db()
+    used = set(styled.wizard_state["site_plan"]["used_assets"]["home"])
+    assert set(pool[-2:]) <= used  # the two nobody shows go first
+    assert len(home) == len(used) > 10 and len(home) == len(set(home))  # peers' photos fill the rest, each once
 
 
 @pytest.mark.django_db
@@ -888,18 +928,28 @@ def test_a_boxing_coach_never_gets_a_pole_dance_photo(monkeypatch):
 
 
 def test_a_peers_photo_loses_to_a_fresh_one_from_the_brief_queries(monkeypatch):
-    peer, fresh = _remote("peer", "woman boxing in a gym"), _remote("fresh", "woman boxing in a gym")
+    best = _remote("best", "woman boxing in a gym")
+    other = _remote("other", "boxer wrapping hands, boxing gym")
+    fresh = _remote("fresh", "woman boxing in a gym")
 
-    def search(query, **_kw):  # the topic pool only holds the peer's photo; the slot's own query finds another
-        return curated_client.SearchPage(results=[peer] if query == "boxing" else [fresh], page=1, has_next=False)
+    def search(query, **_kw):  # the topic pool holds two photos a peer shows; the slot's own query finds a third
+        return curated_client.SearchPage(
+            results=[best, other] if query == "boxing" else [fresh], page=1, has_next=False
+        )
 
     monkeypatch.setattr(sc.curated_client, "search", search)
     monkeypatch.setattr(sc.curated_cache, "cache_remote_image", lambda image: SimpleNamespace(pk=image.asset_id))
     ctx = sc._ctx("general", "Iron Fist", "Boxing for beginners", "boxing")
-    assert sc._find_photo(["boxing woman"], "16:9", set(), ctx)[0].asset_id == "peer"
-    assert sc._find_photo(["boxing woman"], "16:9", set(), ctx, avoid=frozenset({"peer"}))[0].asset_id == "fresh"
-    # Nothing else fits: the peer's photo is better than an empty slot
-    assert sc._find_photo(["boxing woman"], "16:9", {"fresh"}, ctx, avoid=frozenset({"peer"}))[0].asset_id == "peer"
+    peers = frozenset({"best", "other"})
+
+    def pick(taken, avoid=frozenset()):
+        return sc._find_photo(["boxing woman"], "16:9", taken, ctx, avoid=avoid)[0].asset_id
+
+    assert pick(set()) == "best"
+    assert pick(set(), peers) == "fresh"  # pass 1: neither pool photo, but the query's
+    # Nothing else fits ("fresh" and "best" are on the page already): the peer's photo that is still free,
+    # not "best" again, which the repeat-a-pool-photo fallback would hand out first
+    assert pick({"best", "fresh"}, peers) == "other"
 
 
 def test_subject_is_what_the_coach_teaches_when_the_niche_is_unknown():
