@@ -8,7 +8,7 @@ import { NavLink } from "@/components/ui/nav-link";
 import { useTenant } from "@/hooks/use-tenant";
 import { resolveHeaderCta } from "@/lib/header-cta";
 import type { SiteMenu } from "@/lib/navbar";
-import { stickyCtaVisible } from "@/lib/sticky-cta";
+import { onDestination, stickyCtaVisible } from "@/lib/sticky-cta";
 import { cn } from "@/lib/utils";
 
 /** The phone's call to action: the header button again, pinned to the bottom
@@ -59,7 +59,7 @@ export function StickyCta({
     };
   }, [href]);
 
-  const shown = visible && Boolean(cta) && pathname !== href;
+  const shown = visible && Boolean(cta) && !onDestination(pathname, href);
 
   useEffect(() => {
     const bar = barRef.current;
@@ -78,7 +78,7 @@ export function StickyCta({
     <div
       ref={barRef}
       data-sticky-cta
-      className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur-md md:hidden motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom motion-safe:duration-200"
+      className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur-md md:hidden motion-safe:animate-fade-in-up"
     >
       <NavLink
         href={cta.href}

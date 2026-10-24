@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import type { SubscriptionPlanDetail, PlanAccessItem } from "@/types/billing";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
+import { formatMoney } from "@/lib/format";
 
 const TYPE_CONFIG: Record<
   string,
@@ -180,9 +181,8 @@ export default async function PlanDetailPage({
             <CardContent className="space-y-4 p-6">
               <div className="text-center">
                 <p className="font-display text-3xl font-bold tabular-nums">
-                  {plan.price}{" "}
+                  {formatMoney(plan.price, plan.currency)}
                   <span className="text-lg font-normal text-muted-foreground">
-                    {plan.currency}
                     {billingIntervalSuffix(plan.billing_interval_months)}
                   </span>
                 </p>

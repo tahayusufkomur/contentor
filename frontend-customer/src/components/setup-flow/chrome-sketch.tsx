@@ -1,35 +1,12 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import {
-  Facebook,
-  Instagram,
-  Link2,
-  Linkedin,
-  Menu,
-  Monitor,
-  Music2,
-  Smartphone,
-  Twitter,
-  X,
-  Youtube,
-  type LucideIcon,
-} from "lucide-react";
+import { Menu, Monitor, Smartphone, X } from "lucide-react";
 import type { SiteStylePalette } from "@shared/sections/types";
 import { headerNavLinks, visibleNavLinks } from "@/lib/navbar";
 import { cn } from "@/lib/utils";
 
 type Link = { label: string; href: string };
-
-const SOCIAL_ICONS: Record<string, LucideIcon> = {
-  instagram: Instagram,
-  youtube: Youtube,
-  facebook: Facebook,
-  x: Twitter,
-  twitter: Twitter,
-  linkedin: Linkedin,
-  tiktok: Music2,
-};
 
 /** The setup shell's neutrals, for a coach with no look yet. */
 const PLAIN = {
@@ -58,8 +35,6 @@ export function NavbarSketch({
   brand,
   links,
   cta,
-  socials,
-  showSocial,
   transparent,
   keepPicked,
   colors,
@@ -68,8 +43,6 @@ export function NavbarSketch({
   brand: string;
   links: Link[];
   cta?: string;
-  socials?: string[];
-  showSocial?: boolean;
   transparent?: boolean;
   keepPicked?: boolean;
   colors?: SiteStylePalette;
@@ -80,11 +53,6 @@ export function NavbarSketch({
     5,
   );
   const half = Math.ceil(menu.length / 2);
-  const socialList = showSocial
-    ? socials?.length
-      ? socials.slice(0, 3)
-      : ["instagram"]
-    : [];
   const name = (
     <span
       className="truncate text-[9px] font-bold"
@@ -104,20 +72,6 @@ export function NavbarSketch({
           {l.label}
         </span>
       ))}
-    </span>
-  );
-  const socialIcons = socialList.length > 0 && (
-    <span className="flex shrink-0 items-center gap-1">
-      {socialList.map((s) => {
-        const Icon = SOCIAL_ICONS[s.toLowerCase()] ?? Link2;
-        return (
-          <Icon
-            key={s}
-            className="size-2.5"
-            style={{ color: c.mutedForeground }}
-          />
-        );
-      })}
     </span>
   );
   const button = cta ? (
@@ -158,7 +112,6 @@ export function NavbarSketch({
           <span />
           {name}
           <span className="flex items-center justify-end gap-1.5">
-            {socialIcons}
             {button}
           </span>
         </span>
@@ -173,7 +126,6 @@ export function NavbarSketch({
         {name}
         <span className="flex min-w-0 items-center justify-end gap-1.5">
           {items(menu.slice(half))}
-          {socialIcons}
           {button}
         </span>
       </span>
@@ -184,7 +136,6 @@ export function NavbarSketch({
       >
         {name}
         <span className="flex items-center gap-1.5">
-          {socialIcons}
           {button}
           {burger}
         </span>
@@ -198,7 +149,6 @@ export function NavbarSketch({
           {name}
           {items(menu, "justify-center")}
           <span className="flex items-center gap-1.5">
-            {socialIcons}
             {signIn}
             {button}
           </span>
@@ -213,7 +163,6 @@ export function NavbarSketch({
         {name}
         {items(menu)}
         <span className="flex items-center justify-end gap-1.5">
-          {socialIcons}
           {signIn}
           {button}
         </span>
@@ -244,8 +193,6 @@ export function NavbarStudioPreview({
   headline,
   links,
   cta,
-  socials,
-  showSocial,
   transparent,
   colors,
 }: {
@@ -254,8 +201,6 @@ export function NavbarStudioPreview({
   headline?: string;
   links: Link[];
   cta?: string;
-  socials?: string[];
-  showSocial?: boolean;
   transparent?: boolean;
   colors?: SiteStylePalette;
 }) {
@@ -263,11 +208,6 @@ export function NavbarStudioPreview({
   const [drawerOpen, setDrawerOpen] = useState(true);
   const c = colors ?? PLAIN;
   const half = Math.ceil(links.length / 2);
-  const socialList = showSocial
-    ? socials?.length
-      ? socials
-      : ["instagram", "youtube"]
-    : [];
   const barStyle: CSSProperties =
     transparent && layout !== "pill"
       ? { background: "transparent", borderColor: "transparent" }
@@ -292,23 +232,6 @@ export function NavbarStudioPreview({
           {l.label}
         </span>
       ))}
-    </span>
-  );
-  const socialCluster = socialList.length > 0 && (
-    <span className="flex items-center gap-1.5">
-      {socialList.map((s) => {
-        const Icon = SOCIAL_ICONS[s.toLowerCase()] ?? Link2;
-        return (
-          <span
-            key={s}
-            title={s}
-            className="flex size-6 items-center justify-center rounded-md"
-            style={{ color: c.mutedForeground }}
-          >
-            <Icon className="size-3.5" />
-          </span>
-        );
-      })}
     </span>
   );
   const ctaBtn = cta ? (
@@ -384,7 +307,6 @@ export function NavbarStudioPreview({
                 <span />
                 {brandEl}
                 <span className="flex items-center justify-end gap-2.5">
-                  {socialCluster}
                   {signInEl}
                   {ctaBtn}
                 </span>
@@ -400,7 +322,6 @@ export function NavbarStudioPreview({
               {brandEl}
               <span className="flex items-center justify-end gap-3">
                 {navItems(links.slice(half))}
-                {socialCluster}
                 {signInEl}
                 {ctaBtn}
               </span>
@@ -412,7 +333,6 @@ export function NavbarStudioPreview({
             >
               {brandEl}
               <span className="flex items-center gap-2.5">
-                {socialCluster}
                 {ctaBtn}
                 <span
                   className="flex size-8 items-center justify-center rounded-md"
@@ -431,7 +351,6 @@ export function NavbarStudioPreview({
                 {brandEl}
                 {navItems(links, "justify-center")}
                 <span className="flex items-center gap-2.5">
-                  {socialCluster}
                   {signInEl}
                   {ctaBtn}
                 </span>
@@ -445,7 +364,6 @@ export function NavbarStudioPreview({
               {brandEl}
               {navItems(links, "justify-center")}
               <span className="flex items-center justify-end gap-2.5">
-                {socialCluster}
                 {signInEl}
                 {ctaBtn}
               </span>
@@ -555,7 +473,6 @@ export function NavbarStudioPreview({
                     </span>
                   )}
                 </div>
-                {socialCluster && <div className="pt-1">{socialCluster}</div>}
               </div>
             )}
             <div className="px-4 py-5">

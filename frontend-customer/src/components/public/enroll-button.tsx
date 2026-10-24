@@ -175,7 +175,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
                 }}
               >
                 <Package className="h-4 w-4" />
-                {bundle.name} — {bundle.price} {bundle.currency}
+                {bundle.name} — {formatMoney(bundle.price, bundle.currency)}
               </Button>
             ))}
           </div>
@@ -247,7 +247,7 @@ function PlanSubscribeButton({ plan }: { plan: UnlockPlanOption }) {
         onClick={handleSubscribe}
       >
         <Zap className="h-4 w-4" />
-        {plan.name} — {plan.price} {plan.currency}
+        {plan.name} — {formatMoney(plan.price, plan.currency)}
         {billingIntervalSuffix(plan.billing_interval_months)}
       </Button>
       <p className="text-center text-xs text-muted-foreground">

@@ -32,6 +32,7 @@ import { ApiError } from "@/types/api";
 import { addToCart } from "@/lib/cart";
 import type { StoreItem, SubscriptionPlan } from "@/types/billing";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
+import { formatMoney } from "@/lib/format";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 type FilterType =
@@ -280,7 +281,7 @@ function StorePlanCard({ plan, onSubscribed }: StorePlanCardProps) {
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-2xl font-bold tabular-nums">
-          {plan.price} {plan.currency}
+          {formatMoney(plan.price, plan.currency)}
           <span className="text-sm font-normal text-muted-foreground">
             {billingIntervalSuffix(plan.billing_interval_months)}
           </span>

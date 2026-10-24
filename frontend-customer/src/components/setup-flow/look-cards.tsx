@@ -148,9 +148,6 @@ export function LookCardsView({
       : headerNavLinks(shown.links ?? [], true);
     return initial.map((l) => l.href);
   });
-  const [showSocial, setShowSocial] = useState<boolean>(
-    () => shown.show_social ?? Boolean(shown.socials?.length),
-  );
   const [showCta, setShowCta] = useState<boolean>(
     () => shown.show_cta ?? Boolean(shown.cta),
   );
@@ -397,7 +394,6 @@ export function LookCardsView({
     const emitNavbar = (
       nextLayout: string,
       nextHrefs: string[],
-      nextSocial: boolean,
       nextCta: boolean,
       nextTransparent: boolean,
     ) => {
@@ -415,7 +411,6 @@ export function LookCardsView({
         JSON.stringify({
           layout: nextLayout,
           links: pickedLinks.map((l) => l.href),
-          show_social: nextSocial,
           show_cta: nextCta,
           transparent_over_hero: nextTransparent,
         }),
@@ -441,13 +436,7 @@ export function LookCardsView({
               disabled={disabled}
               onClick={() =>
                 shown.kind === "navbar"
-                  ? emitNavbar(
-                      o.value,
-                      navHrefs,
-                      showSocial,
-                      showCta,
-                      transparent,
-                    )
+                  ? emitNavbar(o.value, navHrefs, showCta, transparent)
                   : onPick(o.value, o.label)
               }
               style={enter(i)}
@@ -460,8 +449,6 @@ export function LookCardsView({
                   brand={brand}
                   links={activeLinks}
                   cta={activeCta}
-                  socials={shown.socials}
-                  showSocial={showSocial}
                   transparent={transparent}
                   keepPicked
                   colors={colors}
@@ -524,13 +511,7 @@ export function LookCardsView({
                             ? navHrefs.filter((h) => h !== link.href)
                             : [...navHrefs, link.href];
                           setNavHrefs(next);
-                          emitNavbar(
-                            activeLayout,
-                            next,
-                            showSocial,
-                            showCta,
-                            transparent,
-                          );
+                          emitNavbar(activeLayout, next, showCta, transparent);
                         }}
                         className={cn(
                           "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors",
@@ -563,50 +544,12 @@ export function LookCardsView({
               >
                 <button
                   type="button"
-                  aria-pressed={showSocial}
-                  disabled={disabled}
-                  onClick={() => {
-                    const next = !showSocial;
-                    setShowSocial(next);
-                    emitNavbar(
-                      activeLayout,
-                      navHrefs,
-                      next,
-                      showCta,
-                      transparent,
-                    );
-                  }}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors",
-                    showSocial
-                      ? "border-[var(--sf-ink)] bg-[var(--sf-ink)] text-[var(--sf-paper)]"
-                      : "border-[var(--sf-line-strong)] bg-[var(--sf-tint)] text-[var(--sf-graphite)] hover:border-[var(--sf-ink)] hover:text-[var(--sf-ink)]",
-                  )}
-                >
-                  {showSocial ? (
-                    <Check className="size-3.5" aria-hidden />
-                  ) : (
-                    <Plus className="size-3.5" aria-hidden />
-                  )}
-                  Social icons
-                  {shown.socials?.length
-                    ? ` (${shown.socials.join(", ")})`
-                    : ""}
-                </button>
-                <button
-                  type="button"
                   aria-pressed={showCta}
                   disabled={disabled}
                   onClick={() => {
                     const next = !showCta;
                     setShowCta(next);
-                    emitNavbar(
-                      activeLayout,
-                      navHrefs,
-                      showSocial,
-                      next,
-                      transparent,
-                    );
+                    emitNavbar(activeLayout, navHrefs, next, transparent);
                   }}
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors",
@@ -630,13 +573,7 @@ export function LookCardsView({
                     onClick={() => {
                       const next = !transparent;
                       setTransparent(next);
-                      emitNavbar(
-                        activeLayout,
-                        navHrefs,
-                        showSocial,
-                        showCta,
-                        next,
-                      );
+                      emitNavbar(activeLayout, navHrefs, showCta, next);
                     }}
                     className={cn(
                       "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors",
@@ -662,8 +599,6 @@ export function LookCardsView({
               headline={shown.headline}
               links={activeLinks}
               cta={activeCta}
-              socials={shown.socials}
-              showSocial={showSocial}
               transparent={transparent}
               colors={colors}
             />

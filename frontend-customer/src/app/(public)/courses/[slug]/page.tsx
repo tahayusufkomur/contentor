@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { CoverArt } from "@/components/covers/cover-art";
 import { courseItem } from "@/lib/covers/items";
-import { formatDuration } from "@/lib/format";
+import { formatDuration, formatMoney } from "@/lib/format";
 import { BookOpen, Clock, Lock, Play, User } from "lucide-react";
 import type { CourseDetail, Module } from "@/types/course";
 
@@ -115,7 +115,12 @@ export default async function CourseDetailPage({
                     ? "Free"
                     : course.pricing_type === "subscription"
                       ? "Included in subscription"
-                      : `$${course.price}`}
+                      : formatMoney(
+                          course.access_info?.price ?? course.price,
+                          course.access_info?.currency ||
+                            course.unlock_options?.purchase?.currency ||
+                            "USD",
+                        )}
                 </p>
               </div>
               <EnrollButton course={course} />

@@ -6,6 +6,7 @@ import { CoverArt } from "@/components/covers/cover-art";
 import { useTenant } from "@/hooks/use-tenant";
 import { formatDateHeader, formatTime } from "@/lib/calendar-utils";
 import { eventItem } from "@/lib/covers/items";
+import { eventPriceLabel } from "@/components/sections/kit";
 import type { CalendarEvent, CalendarEventType } from "@/types/live";
 
 const TYPE_META: Record<
@@ -97,11 +98,7 @@ export function EventsList({
                       </span>
                       <span>{formatTime(event.scheduled_at, tz)}</span>
                       <span className="ml-auto font-medium text-foreground">
-                        {event.pricing_type === "paid"
-                          ? `$${event.price}`
-                          : event.pricing_type === "subscription"
-                            ? "Members only"
-                            : "Free"}
+                        {eventPriceLabel(event)}
                       </span>
                     </div>
                     <h3 className="font-medium leading-snug group-hover:text-primary">

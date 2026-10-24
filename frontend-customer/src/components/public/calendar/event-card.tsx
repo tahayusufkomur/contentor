@@ -5,6 +5,7 @@ import { MapPin, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EVENT_TYPE_CONFIG } from "@/lib/event-colors";
 import { formatTime } from "@/lib/calendar-utils";
+import { eventPriceLabel } from "@/components/sections/kit";
 import type { CalendarEvent } from "@/types/live";
 
 interface EventCardProps {
@@ -101,11 +102,7 @@ export function EventCard({
             )}
           </div>
           <span className="text-xs font-semibold text-muted-foreground">
-            {event.pricing_type === "free"
-              ? "Free"
-              : event.pricing_type === "subscription"
-                ? "Members only"
-                : `${event.price}`}
+            {eventPriceLabel(event)}
           </span>
         </div>
       </div>

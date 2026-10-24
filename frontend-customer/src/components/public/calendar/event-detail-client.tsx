@@ -168,7 +168,10 @@ export function EventDetailClient({
                     ? "Free"
                     : event.pricing_type === "subscription"
                       ? "Members only"
-                      : `${access.price || event.price} ${access.currency || ""}`}
+                      : formatMoney(
+                          access.price || event.price,
+                          access.currency || event.currency || "USD",
+                        )}
                 </p>
               </div>
 

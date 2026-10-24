@@ -132,7 +132,8 @@ describe("LookCardsView navbar studio", () => {
     expect(html).toContain("Pages in your header menu");
     expect(html).toContain("Contact");
     expect(html).toContain("FAQ");
-    expect(html).toContain("Social icons (instagram, youtube)");
+    // The header no longer carries social icons: the footer lists them.
+    expect(html).not.toContain("Social icons");
     expect(html).toContain("Transparent over hero");
     expect(html).toContain("Mobile + Menu");
   });
