@@ -331,9 +331,9 @@ Status values:
 | 1.4 | Personal chrome and sticky phone CTA | none | Task 1.4 | done (2026-10-24, 98648091) |
 | 1.5 | Craft floor (detector fixes, one money formatter) | 1.2 | Task 1.5 | done (2026-10-24, 8a3c5635) |
 | 1.6 | Costume labels out | 1.5 | Task 1.6 | done (2026-10-24, 1ff87080) |
-| 1.7a | Phone-first hero, batch A | 0.2, 1.1, 1.6 | Task 1.7 | todo |
-| 1.7b | Phone-first hero, batch B | 1.7a | Task 1.7 | todo |
-| 1.7c | Phone-first hero, batch C | 1.7b | Task 1.7 | todo |
+| 1.7a | Phone-first hero, batch A | 0.2, 1.1, 1.6 | Task 1.7 | done (2026-10-24, b3790f86) |
+| 1.7b | Phone-first hero, batch B | 1.7a | Task 1.7 | done (2026-10-24, 275ed6e9) |
+| 1.7c | Phone-first hero, batch C | 1.7b | Task 1.7 | done (2026-10-24, 3a3e6546) |
 | 1.8 | Gate A: before/after capture, eval, owner review | all of Phase 1 | Task 1.8 | todo |
 | 2.0 | Flagship directions and comps → Gate B | 1.8 | written at start | todo |
 | 2.1 | Flagship build: kinetic | 2.0, 2.5 | written at start | todo |
@@ -524,6 +524,16 @@ against G1.
   each costume is a family of repeats across a style's files, not a list of literals; review found the
   rest twice. Open: sprout and sanctum still show a guessed "popular" badge; terminal labels a
   location-less event "Online, live".
+- 2026-10-24, WP-1.7a–c (0b8372a4 spec; b3790f86; cd167a5a, ed6fd60c, 275ed6e9; 05b45e82, 3a3e6546):
+  the three batches ran in parallel (owner's call, to save time). `92-phone-first` holds every style to
+  the contract; 13 of 21 failed it before. On a 390×844 phone each home hero now shows its photo (or
+  manuscript's giant type), the H1 and one button. Second buttons and extra photos hide below `sm`,
+  but never in the editor. Learned: the bare showcase with one 29-character headline flattered the
+  heroes. Every style's short-headline "giant type" branch and the real ~60 px site header pushed
+  buttons off the first screen; reviews caught it by probing headline lengths from 8 to 36 with a
+  header, and the final fix wave puts both into the spec. Tablets (640–767) needed their own check:
+  phone-only photo sizing that ran until `md` pushed buttons to 880–1228 px. Only each style's first
+  hero variant is phone-first; the composer now pins it on home (R16).
 
 ## 10. Resources
 
