@@ -558,9 +558,12 @@ def test_section_falls_back_when_repair_fails(styled, monkeypatch, catalog):
 @pytest.mark.django_db
 def test_no_ai_means_fallback_copy_and_real_photos(styled, monkeypatch, catalog):
     monkeypatch.setattr(sc.ai_compose, "compose_available", lambda: False)
+    monkeypatch.setattr(sc, "_coach_first_name", lambda tenant: "Maya")
     blocks = sc.compose_page(styled, "about")
     assert blocks[0]["headline"] == "Hello, I'm Maya"
     assert _photo_ids(blocks)
+    monkeypatch.setattr(sc, "_coach_first_name", lambda tenant: "")
+    assert sc.compose_page(styled, "about")[0]["headline"] == "Behind Maya Laurent"  # no owner name: no "Hello, I'm"
 
 
 @pytest.mark.django_db
@@ -722,6 +725,56 @@ def test_home_plan_with_rows_composes_a_capped_non_rows_block(styled, monkeypatc
     assert course["variant"] == "journal.issue" and course["limit"] == "3"
     (course,) = [b for b in sc.compose_page(styled, "courses") if b["type"] == "section.courseShowcase"]
     assert course["variant"] == "journal.rows"
+
+
+SECOND_HEROES = [
+    (style_id, name) for style_id in ENABLED for name in sections.variants(style_id, "hero")[1:] if name != "intro"
+]
+
+
+@pytest.mark.parametrize(("style_id", "second"), SECOND_HEROES)
+def test_home_hero_is_pinned_to_the_styles_first_phone_first_variant(style_id, second):
+    """The second home heroes are still text-first on a phone (R16): a plan that names one gets the first.
+    Inner pages keep the compact intro."""
+    first = f"{style_id}.{sections.variants(style_id, 'hero')[0]}"
+    plan = {"pages": {p: [{"family": "hero", "variant": second}, {"family": "cta"}] for p in ("home", "about")}}
+    pages = sc.apply_guardrails(plan, style_id)["pages"]
+    assert pages["home"][0]["variant"] == first
+    assert pages["about"][0]["variant"] == f"{style_id}.intro"
+    # A plan cached before the pin existed: pure, a new list, the entries stay as they were.
+    cached = [{"family": "hero", "variant": f"{style_id}.{second}", "images": {}}, {"family": "cta", "variant": None}]
+    pinned = sc._home_pins(style_id, "home", cached)
+    assert pinned[0]["variant"] == first and cached[0]["variant"] == f"{style_id}.{second}"
+    assert sc._home_pins(style_id, "about", cached)[0]["variant"] == f"{style_id}.{second}"  # inner pages: untouched
+
+
+def test_the_second_home_heroes_exist():
+    assert (
+        len(SECOND_HEROES) == 11
+    )  # dojo, encore, grid, journal, maison, pop, sanctum, sprout, studiofloor, trail, workshop
+
+
+@pytest.mark.django_db
+def test_a_cached_plan_with_a_second_home_hero_composes_with_the_first(styled, monkeypatch, catalog):
+    plan = sc.apply_guardrails({"pages": {"home": [{"family": f} for f in ("hero", "story", "cta")]}}, "journal")
+    plan["pages"]["home"][0]["variant"] = "journal.editorial"
+    styled.wizard_state = {**styled.wizard_state, "site_plan": {**plan, "style": "journal"}}
+    styled.save(update_fields=["wizard_state"])
+    monkeypatch.setattr(sc.core_ai, "structured", FakeAI(plan=core_ai.AiError("no plan")))
+    assert sc.compose_page(styled, "home")[0]["variant"] == "journal.cover"
+
+
+def test_fallback_greeting_uses_the_owners_first_name_never_the_brands_first_word():
+    """ "Kind Mornings" reads like a name but is a brand: no-AI copy must not say "I'm Kind"."""
+    for first, kicker, headline in (
+        ("Maya", "Hello, I'm Maya", "Hello, I'm Maya"),
+        ("", "Hello", "Behind Kind Mornings"),
+    ):
+        ctx = sc._ctx("yoga", "Kind Mornings", "", first_name=first)
+        assert sc.fallback_fields("story", "home", "journal.letter", ctx)["kicker"] == kicker
+        assert sc.fallback_fields("hero", "about", "journal.intro", ctx)["headline"] == headline
+    pages = sc.skeleton_pages("journal", niche="yoga", brand_name="Kind Mornings", description="")
+    assert "I'm Kind" not in json.dumps(pages)
 
 
 def test_cap_home_lists_touches_only_courses_and_events_on_home():

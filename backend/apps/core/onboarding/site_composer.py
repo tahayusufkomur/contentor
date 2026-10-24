@@ -214,7 +214,7 @@ def speaker(brand, description="") -> str:
     return "I" if re.search(r"\b(i|i'm|my|me)\b", text) else "we"
 
 
-def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS) -> dict:
+def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS, first_name="") -> dict:
     t = subject or topic(niche)
     solo = speaker(brand, description) == "I"
     # Buttons lead to her main offer: the courses, else the classes, else her story.
@@ -233,6 +233,8 @@ def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS) -> dict:
         "Topic": t[:1].upper() + t[1:],
         "solo": solo,
         "name_like": _name_like(brand),
+        # The owner's first name, the only name the copy greets with ("Kind Mornings" is no "Kind").
+        "first_name": first_name,
         "description": str(description or "").strip(),
         "me": "me" if solo else "us",
         "my": "my" if solo else "our",
@@ -289,8 +291,8 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
                 "clearly, patiently and without pressure.</p>"
             )
         return {
-            "kicker": _fit(f"Hello, I'm {brand.split()[0]}", 40, "Hello")
-            if c["name_like"]
+            "kicker": _fit(f"Hello, I'm {c['first_name']}", 40, "Hello")
+            if c["name_like"] and c["first_name"]
             else ("Hello" if c["solo"] else "Who we are"),
             "heading": c["why"],
             "body": first + f"<p>Here you'll find {my} {c['offering']} and a simple way to reach {me} whenever a "
@@ -463,8 +465,8 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
 def _hero_intro(page_key, c) -> dict:
     me, brand = c["me"], c["brand"]
     if page_key == "about":
-        if c["name_like"]:
-            headline = _fit(f"Hello, I'm {brand.split()[0]}", 70, f"About {brand}")
+        if c["name_like"] and c["first_name"]:
+            headline = _fit(f"Hello, I'm {c['first_name']}", 70, f"About {brand}")
         else:
             headline = _fit(f"Behind {brand}" if c["solo"] else f"About {brand}", 70, "About")
         return {
@@ -629,19 +631,27 @@ def _entry(style_id, family, name, briefs=None) -> dict:
     return {"family": family, "variant": sections.resolve_variant(style_id, family, name), "images": briefs or {}}
 
 
-def _home_courses_not_rows(style_id, page_key, entries) -> list[dict]:
-    """`rows` is the courses page's catalogue: it shows six courses whatever the block's `limit`
-    says (rows.tsx). On home a planned courseShowcase of `rows` becomes the style's first other
-    layout, so the cap to three holds. A new list; the entries (maybe a cached plan's) stay as they were."""
-    own = next((n for n in sections.variants(style_id, "courseShowcase") if n != "rows"), None)
-    if page_key != "home" or not own:
+def _home_pins(style_id, page_key, entries) -> list[dict]:
+    """Two layouts the home page never takes, whatever a plan names. A new list; the entries
+    (maybe a cached plan's) stay as they were.
+    - `rows` is the courses page's catalogue: it shows six courses whatever the block's `limit`
+      says (rows.tsx), so a home courseShowcase of `rows` becomes the style's first other layout
+      and the cap to three holds.
+    - Only a style's first hero is phone-first (R16); its later ones are still text-first on a phone.
+      Inner pages keep their compact `intro`."""
+    if page_key != "home":
         return entries
-    return [
-        {**e, "variant": f"{style_id}.{own}"}
-        if e["family"] == "courseShowcase" and _variant_name(e["variant"]) == "rows"
-        else e
-        for e in entries
-    ]
+    own = next((n for n in sections.variants(style_id, "courseShowcase") if n != "rows"), None)
+    hero = sections.resolve_variant(style_id, "hero", dict(_recipe(style_id, "home")).get("hero"))
+
+    def pin(e):
+        if e["family"] == "courseShowcase" and own and _variant_name(e["variant"]) == "rows":
+            return {**e, "variant": f"{style_id}.{own}"}
+        if e["family"] == "hero" and hero:
+            return {**e, "variant": hero}
+        return e
+
+    return [pin(e) for e in entries]
 
 
 def _guard_page(page_key, raw, style_id) -> list[dict]:
@@ -675,12 +685,7 @@ def _guard_page(page_key, raw, style_id) -> list[dict]:
     heroes = [e for e in entries if e["family"] == "hero"]
     hero = heroes[0] if heroes else _entry(style_id, "hero", recipe_names.get("hero"))
     entries = [e for e in entries if e["family"] != "hero"]
-    if page_key != "home":
-        hero_name = "intro"
-    else:
-        hero_name = _variant_name(hero["variant"])
-        if hero_name == "intro":
-            hero_name = recipe_names.get("hero")
+    hero_name = "intro" if page_key != "home" else recipe_names.get("hero")  # home: the phone-first one (R16)
     hero = {**hero, "variant": sections.resolve_variant(style_id, "hero", hero_name)}
     entries.insert(0, hero)
 
@@ -726,7 +731,7 @@ def _guard_page(page_key, raw, style_id) -> list[dict]:
                 run -= 1
                 continue
         n += 1
-    return _home_courses_not_rows(style_id, page_key, entries)
+    return _home_pins(style_id, page_key, entries)
 
 
 def apply_guardrails(plan, style_id) -> dict:
@@ -1774,13 +1779,14 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
     style_id, brand = _style_and_brand(tenant)
     plan = plan_site(tenant)
     entries = plan["pages"].get(page_key) or apply_guardrails({}, style_id)["pages"][page_key]
-    entries = _home_courses_not_rows(style_id, page_key, entries)  # a plan cached before the guard existed
+    entries = _home_pins(style_id, page_key, entries)  # a plan cached before the guard existed
     coach = _coach_data(tenant, brand)
-    ctx = _ctx(coach["niche"], brand, coach["description"], coach["topic"], tuple(coach["links"]))
+    first_name = _coach_first_name(tenant)
+    ctx = _ctx(coach["niche"], brand, coach["description"], coach["topic"], tuple(coach["links"]), first_name)
 
     _set_stage(tenant, page_key, "copy")
     fields = _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction)
-    _finish_copy(page_key, entries, fields, ctx, _coach_first_name(tenant))
+    _finish_copy(page_key, entries, fields, ctx, first_name)
     blocks = [_new_block(e, f) for e, f in zip(entries, fields, strict=True)]
     _set_stage(tenant, page_key, "photos")
     with _IMAGE_LOCK:
