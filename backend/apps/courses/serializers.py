@@ -22,6 +22,8 @@ class LessonSerializer(serializers.ModelSerializer):
     video_url = serializers.SerializerMethodField()
     duration_seconds = serializers.SerializerMethodField()
     content_html = serializers.SerializerMethodField()
+    captions_url = serializers.SerializerMethodField()
+    captions_language = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
@@ -36,6 +38,8 @@ class LessonSerializer(serializers.ModelSerializer):
             "content_html",
             "is_free_preview",
             "video_signed_url",
+            "captions_url",
+            "captions_language",
         ]
         read_only_fields = ["id"]
 
@@ -80,6 +84,25 @@ class LessonSerializer(serializers.ModelSerializer):
         if self._is_unlocked(obj):
             return generate_presigned_download_url(s3_key)
         return None
+
+    def may_read_captions(self, obj) -> bool:
+        """Captions go to whoever is handed the video itself."""
+        request = self.context.get("request")
+        return bool(
+            obj.video
+            and obj.video.has_captions
+            and request
+            and request.user.is_authenticated
+            and self._is_unlocked(obj)
+        )
+
+    def get_captions_url(self, obj) -> str | None:
+        if not self.may_read_captions(obj):
+            return None
+        return f"/api/v1/courses/{obj.module.course.slug}/lessons/{obj.id}/captions/"
+
+    def get_captions_language(self, obj) -> str:
+        return obj.video.captions_language if self.may_read_captions(obj) else ""
 
 
 class ModuleSerializer(serializers.ModelSerializer):

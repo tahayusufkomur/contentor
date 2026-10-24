@@ -9,6 +9,8 @@ export interface Lesson {
   video_id: number | null;
   video_url: string;
   video_signed_url: string | null;
+  captions_url: string | null;
+  captions_language: string;
   duration_seconds: number;
   content_html: string;
   is_free_preview: boolean;

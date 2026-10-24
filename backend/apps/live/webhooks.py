@@ -11,6 +11,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.core.models import Tenant
+from apps.courses.models import Video
 
 from . import livecraft
 from .models import LiveClass, LiveStream
@@ -40,9 +41,16 @@ def livecraft_webhook(request):
         logger.warning("LiveCraft recording for unknown room %s", room)
         return Response(status=status.HTTP_204_NO_CONTENT)
     with schema_context(tenant.schema_name):
-        updated = LiveClass.objects.filter(room_name=room).update(recording_url=key) or LiveStream.objects.filter(
-            room_name=room
-        ).update(recording_url=key)
-    if not updated:
+        session = LiveClass.objects.filter(room_name=room).first() or LiveStream.objects.filter(room_name=room).first()
+        if session:
+            # A Video like a lesson's, so the replay gets captions (apps.courses.captions).
+            video = Video.objects.filter(s3_key=key).first() or Video.objects.create(
+                title=session.title,
+                s3_key=key,
+                duration_seconds=payload.get("duration_seconds") or 0,
+                file_size=payload.get("size") or 0,
+            )
+            type(session).objects.filter(pk=session.pk).update(recording=video, recording_url=key)
+    if not session:
         logger.warning("LiveCraft recording for room %s matched no session", room)
     return Response(status=status.HTTP_204_NO_CONTENT)

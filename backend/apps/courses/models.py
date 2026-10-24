@@ -124,6 +124,13 @@ class Video(models.Model):
         "media.Photo", null=True, blank=True, on_delete=models.SET_NULL, related_name="videos"
     )
     tags = models.ManyToManyField("tags.Tag", blank=True, related_name="videos")
+    # Captions from Scribe (apps.courses.captions) for the file in captions_key,
+    # while captions_job is the Scribe job still writing them: a new file
+    # makes them stale until it is transcribed.
+    captions_key = models.CharField(max_length=500, blank=True, default="")
+    captions_job = models.CharField(max_length=64, blank=True, default="")
+    captions_vtt = models.TextField(blank=True, default="")
+    captions_language = models.CharField(max_length=8, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -133,6 +140,10 @@ class Video(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def has_captions(self):
+        return bool(self.captions_vtt) and self.captions_key == self.s3_key
 
 
 class Enrollment(models.Model):

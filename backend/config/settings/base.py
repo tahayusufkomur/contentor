@@ -311,6 +311,11 @@ AI_VISION_PROVIDER = os.environ.get("AI_VISION_PROVIDER", "")
 # them before go-live. Off without the browser URL or an image provider.
 SITE_QA_BROWSER_URL = os.environ.get("SITE_QA_BROWSER_URL", "")
 SITE_QA_MODEL = os.environ.get("SITE_QA_MODEL", "claude-opus-5-5")
+# --- Captions (apps.courses.captions) ---
+# Scribe, our own speech-to-text service on the home servers (../scribe).
+# Without a URL, videos get no captions.
+SCRIBE_URL = os.environ.get("SCRIBE_URL", "")
+SCRIBE_KEY = os.environ.get("SCRIBE_KEY", "")
 LOGO_AI_MODEL = os.environ.get("LOGO_AI_MODEL", "claude-sonnet-5")
 # Global monthly USD kill-switch, summed across all tenants (LogoAiUsage).
 LOGO_AI_MONTHLY_BUDGET_USD = float(os.environ.get("LOGO_AI_MONTHLY_BUDGET_USD", "15"))

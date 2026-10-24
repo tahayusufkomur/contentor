@@ -31,4 +31,9 @@ urlpatterns = [
         views.lesson_detail,
         name="lesson-detail",
     ),
+    path(
+        "<slug:slug>/lessons/<int:lesson_id>/captions/",
+        views.lesson_captions,
+        name="lesson-captions",
+    ),
 ]

@@ -384,6 +384,8 @@ export function CourseForm({
                 video_id: baseLesson?.video_id ?? null,
                 video_url: baseLesson?.video_url ?? "",
                 video_signed_url: baseLesson?.video_signed_url ?? null,
+                captions_url: baseLesson?.captions_url ?? null,
+                captions_language: baseLesson?.captions_language ?? "",
                 duration_seconds: baseLesson?.duration_seconds ?? 0,
                 content_html: baseLesson?.content_html ?? "",
                 is_free_preview: baseLesson?.is_free_preview ?? false,

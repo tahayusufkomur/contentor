@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { Fragment, useRef, useEffect, useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { clientFetch } from "@/lib/api-client";
@@ -23,7 +23,33 @@ export function VideoPlayer({
   onLessonComplete,
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const trackRef = useRef<HTMLTrackElement>(null);
   const lastReportedRef = useRef(0);
+  const [cues, setCues] = useState<{ start: number; text: string }[]>([]);
+
+  // The transcript is the captions track's own cues, read once it has loaded.
+  useEffect(() => {
+    setCues([]);
+    const element = trackRef.current;
+    if (!element) return;
+    const read = () =>
+      setCues(
+        Array.from(element.track.cues ?? [], (cue) => ({
+          start: cue.startTime,
+          text: (cue as VTTCue).text,
+        })),
+      );
+    if (element.readyState === HTMLTrackElement.LOADED) read();
+    element.addEventListener("load", read);
+    return () => element.removeEventListener("load", read);
+  }, [lesson.captions_url]);
+
+  function seek(seconds: number) {
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = seconds;
+    void video.play();
+  }
 
   const reportProgress = useCallback(
     async (watchedSeconds: number, completed: boolean) => {
@@ -106,7 +132,18 @@ export function VideoPlayer({
         src={lesson.video_signed_url}
         controls
         className="aspect-video w-full bg-black"
-      />
+      >
+        {lesson.captions_url && (
+          <track
+            ref={trackRef}
+            kind="captions"
+            src={lesson.captions_url}
+            srcLang={lesson.captions_language || undefined}
+            label={languageName(lesson.captions_language)}
+            default
+          />
+        )}
+      </video>
       <div className="flex items-center justify-between border-t px-4 py-3">
         {progress?.completed ? (
           <Badge variant="success" className="gap-1">
@@ -125,6 +162,36 @@ export function VideoPlayer({
           </Button>
         )}
       </div>
+      {cues.length > 0 && (
+        <details className="border-t px-4 py-3">
+          <summary className="cursor-pointer text-sm font-medium">
+            Transcript
+          </summary>
+          <p className="mt-3 max-h-72 overflow-y-auto text-sm leading-relaxed text-muted-foreground">
+            {cues.map((cue) => (
+              <Fragment key={cue.start}>
+                <button
+                  type="button"
+                  onClick={() => seek(cue.start)}
+                  className="rounded-sm text-left hover:bg-muted hover:text-foreground"
+                >
+                  {cue.text}
+                </button>{" "}
+              </Fragment>
+            ))}
+          </p>
+        </details>
+      )}
     </div>
   );
+}
+
+/** The language's own name ("Türkçe", "polski"), the same on server and client. */
+function languageName(code: string) {
+  if (!code) return "Captions";
+  try {
+    return new Intl.DisplayNames([code], { type: "language" }).of(code) ?? code;
+  } catch {
+    return code;
+  }
 }

@@ -38,6 +38,10 @@ app.conf.beat_schedule = {
         "task": "apps.core.tasks.sweep_own_photos",
         "schedule": crontab(minute="*/15"),
     },
+    "sweep-captions": {
+        "task": "apps.courses.tasks.sweep_captions",
+        "schedule": crontab(minute="*/5"),
+    },
     "purge-ai-transcripts": {
         "task": "apps.core.tasks.purge_ai_transcripts",
         "schedule": crontab(hour="4", minute="20"),

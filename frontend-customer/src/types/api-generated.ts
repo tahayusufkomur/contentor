@@ -2891,6 +2891,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/courses/{slug}/lessons/{lesson_id}/captions/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description The lesson video's captions as WebVTT, for the player's <track>, to
+     *     whoever may watch the video (apps.courses.captions writes them).
+     */
+    get: operations["v1_courses_lessons_captions_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/courses/{slug}/lessons/{lesson_id}/progress/": {
     parameters: {
       query?: never;
@@ -15077,6 +15097,27 @@ export interface operations {
     responses: {
       /** @description No response body */
       204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_courses_lessons_captions_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        lesson_id: number;
+        slug: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
         headers: {
           [name: string]: unknown;
         };

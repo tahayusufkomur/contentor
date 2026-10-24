@@ -13,6 +13,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
+from apps.courses.models import Video
 from apps.live import livecraft
 from apps.live.models import LiveClass
 
@@ -84,6 +85,25 @@ class TestRecordingCallback:
         assert self._post(tenant_ctx, raw, sig).status_code == 204
         lc.refresh_from_db()
         assert lc.recording_url == "recordings/live/x.mp4"
+
+    def test_the_recording_becomes_a_video_for_its_captions(self, tenant_ctx, owner):
+        lc = LiveClass.objects.create(title="Flow", instructor=owner, status="live", scheduled_at=timezone.now())
+        body = {
+            "event": "recording.ready",
+            "room": lc.room_name,
+            "key": "recordings/live/y.mp4",
+            "duration_seconds": 61,
+        }
+        raw, sig = _signed(body)
+        self._post(tenant_ctx, raw, sig)
+        self._post(tenant_ctx, raw, sig)  # sent twice: still one video
+        lc.refresh_from_db()
+        assert (lc.recording.title, lc.recording.s3_key, lc.recording.duration_seconds) == (
+            "Flow",
+            "recordings/live/y.mp4",
+            61,
+        )
+        assert Video.objects.filter(s3_key="recordings/live/y.mp4").count() == 1
 
     def test_rejects_a_bad_signature(self, tenant_ctx, owner):
         lc = LiveClass.objects.create(title="L", instructor=owner, status="live", scheduled_at=timezone.now())

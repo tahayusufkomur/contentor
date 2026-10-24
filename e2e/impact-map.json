@@ -202,6 +202,8 @@
     "src/lib/designs-api.ts": ["32-photo-studio"],
     "src/types/design.ts": ["32-photo-studio"],
     "src/types/download.ts": ["12-downloads", "36-focus-download"],
+    "src/types/course.ts": ["02-courses", "33-focus-course"],
+    "src/components/student/video-player.tsx": ["02-courses"],
     "src/components/setup-flow": ["01-signup-onboarding"],
     "src/components/setup-flow/concept-slides.tsx": [
       "01-signup-onboarding",

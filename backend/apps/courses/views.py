@@ -1,6 +1,7 @@
 from dataclasses import asdict
 
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -18,6 +19,7 @@ from .serializers import (
     CourseListSerializer,
     EnrollmentSerializer,
     LessonCreateSerializer,
+    LessonSerializer,
     ModuleCreateSerializer,
     ProgressUpdateSerializer,
     VideoCreateSerializer,
@@ -353,6 +355,22 @@ def lesson_detail(request, slug, lesson_id):
     if request.method == "DELETE":
         lesson.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def lesson_captions(request, slug, lesson_id):
+    """The lesson video's captions as WebVTT, for the player's <track>, to
+    whoever may watch the video (apps.courses.captions writes them)."""
+    lesson = get_object_or_404(
+        Lesson.objects.select_related("video", "module__course"), pk=lesson_id, module__course__slug=slug
+    )
+    course = lesson.module.course
+    has_access = is_coach_or_owner(request.user) or ContentAccessService().check_access(request.user, course)
+    serializer = LessonSerializer(lesson, context={"request": request, "course_has_access": has_access})
+    if not serializer.may_read_captions(lesson):
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    return HttpResponse(lesson.video.captions_vtt, content_type="text/vtt; charset=utf-8")
 
 
 # ──────────────────────────────────────────────
