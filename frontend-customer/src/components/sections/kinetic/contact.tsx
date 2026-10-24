@@ -101,7 +101,6 @@ export function ContactBigmail({ block, editable }: SectionProps) {
                   "kinetic-notch aspect-[4/5] w-full [--kinetic-notch:40px] max-lg:max-w-md",
                   showForm ? "lg:col-span-5" : "lg:col-span-4",
                 )}
-                imgClassName="grayscale contrast-[1.15]"
               />
             )}
             {showForm && (

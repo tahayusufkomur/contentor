@@ -85,6 +85,7 @@
   "radius": "0.5rem",
   "photoWords": "hands making something, pottery or knitting or sewing, craft table, natural materials, warm daylight, close-up texture",
   "coverAspect": "16/10",
+  "photoTreatment": "soft",
   "variants": {
     "hero": ["pinboard", "bench", "intro"],
     "story": ["notecard", "maker"],

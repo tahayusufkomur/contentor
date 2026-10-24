@@ -85,6 +85,7 @@
   "radius": "0rem",
   "photoWords": "clean natural light, strong graphic composition, neutral background, candid documentary, modern minimal interior",
   "coverAspect": "1/1",
+  "photoTreatment": "mono",
   "variants": {
     "hero": ["plates", "statement", "intro"],
     "story": ["essay", "columns"],

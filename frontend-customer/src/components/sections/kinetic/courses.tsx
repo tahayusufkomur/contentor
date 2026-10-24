@@ -56,7 +56,7 @@ function Poster({ course }: { course: Course }) {
           value={courseCover(course, "bare")}
           alt={course.title}
           className="absolute inset-0"
-          imgClassName="grayscale contrast-[1.15] transition duration-500 ease-out group-hover:scale-[1.04] group-hover:grayscale-0"
+          imgClassName="transition duration-500 ease-out group-hover:scale-[1.04]"
         />
         <div
           aria-hidden="true"
@@ -87,7 +87,6 @@ function Feature({ course }: { course: Course }) {
         value={courseCover(course)}
         alt={course.title}
         className="aspect-[4/3] lg:col-span-7 lg:aspect-auto lg:min-h-[30rem]"
-        imgClassName="grayscale contrast-[1.15] transition duration-500 group-hover:grayscale-0"
       />
       <div className="flex flex-col justify-between gap-10 lg:col-span-5">
         <div className="p-6 md:p-10">

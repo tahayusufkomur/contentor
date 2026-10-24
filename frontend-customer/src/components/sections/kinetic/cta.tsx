@@ -16,7 +16,7 @@ export function CtaBand({ block, editable }: SectionProps) {
             value={block.image}
             alt=""
             className="absolute inset-0 bg-primary"
-            imgClassName="grayscale contrast-[1.3] mix-blend-multiply opacity-60 lg:opacity-100"
+            imgClassName="mix-blend-multiply opacity-60 lg:opacity-100"
           />
           <div
             aria-hidden="true"

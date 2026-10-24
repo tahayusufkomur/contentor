@@ -22,7 +22,7 @@ export function HowItWorksTrack({ block, editable }: SectionProps) {
                 value={block.image}
                 alt={typeof block.heading === "string" ? block.heading : ""}
                 className="kinetic-notch aspect-[4/5] w-full [--kinetic-notch:44px] max-sm:aspect-square"
-                imgClassName="grayscale contrast-[1.15] object-[50%_25%]"
+                imgClassName="object-[50%_25%]"
               />
             </div>
           )}

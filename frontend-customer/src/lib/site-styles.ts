@@ -1,6 +1,10 @@
 import { contrastRatio } from "@shared/lib/contrast";
 import { SITE_STYLES, rankStylesForNiche } from "@shared/sections/styles";
-import type { SiteStyle, SiteStylePalette } from "@shared/sections/types";
+import type {
+  PhotoTreatment,
+  SiteStyle,
+  SiteStylePalette,
+} from "@shared/sections/types";
 
 export { SITE_STYLES };
 
@@ -184,6 +188,39 @@ const SITE_WRAP: Record<string, string> = {
 };
 const DESTRUCTIVE_FG = "oklch(0.985 0 0)";
 
+/** What each photo treatment is, as the --photo-* variables the one image rule
+ *  in globals.css reads: a filter on the photo plus a tint layer over it. */
+const PHOTO_TREATMENTS: Record<
+  PhotoTreatment,
+  { filter: string; tint: string; blend: string; opacity: string }
+> = {
+  none: { filter: "none", tint: "transparent", blend: "normal", opacity: "0" },
+  mono: {
+    filter: "grayscale(1) contrast(1.08)",
+    tint: "transparent",
+    blend: "normal",
+    opacity: "0",
+  },
+  soft: {
+    filter: "saturate(0.82) contrast(0.96) sepia(0.06)",
+    tint: "transparent",
+    blend: "normal",
+    opacity: "0",
+  },
+  tint: {
+    filter: "grayscale(0.35) contrast(1.02)",
+    tint: "var(--primary)",
+    blend: "color",
+    opacity: "0.28",
+  },
+  vivid: {
+    filter: "saturate(1.12) contrast(1.05)",
+    tint: "transparent",
+    blend: "normal",
+    opacity: "0",
+  },
+};
+
 /** A style's compact palette → the full theme variable set the whole tenant
  *  app reads (shadcn tokens + brand + charts), plus the section-only tokens
  *  (--surface, --inverse, --font-display, --radius). Keys are without the
@@ -195,6 +232,7 @@ export function styleVars(
 ): Record<string, string> {
   const own = paletteOf(style, paletteId);
   const p = mode ? modePalette(own, mode) : own;
+  const photo = PHOTO_TREATMENTS[style.photoTreatment] ?? PHOTO_TREATMENTS.none;
   // The shared badges' "success"/"pro" text and the checkout tick read
   // --marketing-accent: the tenant's accent where it reads as text on muted
   // (4.5:1), her ink where it does not (bright yellows, pale fills).
@@ -246,6 +284,10 @@ export function styleVars(
     "font-sans": `'${style.fonts.body}', system-ui, sans-serif`,
     radius: style.radius,
     "cinematic-bg": "none",
+    "photo-filter": photo.filter,
+    "photo-tint": photo.tint,
+    "photo-tint-blend": photo.blend,
+    "photo-tint-opacity": photo.opacity,
     "site-wrap": SITE_WRAP[style.id] ?? "80rem",
     "site-gutter": "1.25rem",
     "site-gutter-md": "2rem",

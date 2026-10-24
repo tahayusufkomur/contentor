@@ -71,6 +71,26 @@ main:has(> .page-fullbleed) {
   padding: 0;
 }
 
+/* The look's photo treatment (SiteStyle.photoTreatment → --photo-* in
+   styleVars): every section photo wears one grade, so a site's pictures share
+   a colour world. A filter on the photo plus a tint layer over its frame.
+   Both selectors need the photo as a direct child of the frame, which a
+   designed cover (CoverArt) never has, so a cover is never touched. Nothing
+   else may grade a section photo (no filter utilities or per-style filter
+   rules on images): this rule would fight it. */
+[data-site-img-frame] > img[data-site-img] {
+  filter: var(--photo-filter, none);
+}
+[data-site-img-frame]:has(> img[data-site-img])::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--photo-tint, transparent);
+  mix-blend-mode: var(--photo-tint-blend, normal);
+  opacity: var(--photo-tint-opacity, 0);
+}
+
 /* ── Fluid template motion (compositor-only, motion-safe gated) ────────── */
 @media (prefers-reduced-motion: no-preference) {
   html {

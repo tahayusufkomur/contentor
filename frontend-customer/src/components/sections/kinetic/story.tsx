@@ -48,14 +48,12 @@ export function StoryOutline({ block, editable }: SectionProps) {
             value={block.image}
             alt={heading}
             className="relative aspect-[4/5] w-full"
-            imgClassName="grayscale contrast-[1.15]"
           />
           {hasSetting && (
             <Img
               value={block.image2}
               alt=""
               className="absolute -bottom-16 right-0 aspect-[3/2] w-[58%] border-[6px] border-background sm:-bottom-20 lg:-right-14"
-              imgClassName="grayscale contrast-[1.15]"
             />
           )}
         </div>

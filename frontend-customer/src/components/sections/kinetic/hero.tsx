@@ -27,11 +27,10 @@ export function HeroPoster({ block, editable }: SectionProps) {
           alt={headline}
           priority
           className="absolute inset-0 -z-20 bg-[var(--inverse)]"
-          imgClassName="grayscale contrast-[1.2] brightness-[0.8]"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,var(--inverse)_4%,color-mix(in_oklch,var(--inverse)_70%,transparent)_38%,color-mix(in_oklch,var(--inverse)_10%,transparent)_75%)]"
+          className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,var(--inverse)_4%,color-mix(in_oklch,var(--inverse)_70%,transparent)_38%,color-mix(in_oklch,var(--inverse)_10%,transparent)_75%),linear-gradient(color-mix(in_oklch,var(--inverse)_20%,transparent),color-mix(in_oklch,var(--inverse)_20%,transparent))]"
         />
 
         <div className={cn(WRAP, "pb-10 pt-32 md:pb-12")}>
@@ -53,7 +52,6 @@ export function HeroPoster({ block, editable }: SectionProps) {
                 value={block.image2}
                 alt=""
                 className="kinetic-notch hidden aspect-square w-[clamp(10rem,15vw,15rem)] shrink-0 [--kinetic-notch:28px] lg:block"
-                imgClassName="grayscale contrast-[1.15]"
               />
             )}
           </div>
@@ -150,7 +148,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
             value={block.image}
             alt={headline}
             className="absolute inset-0 bg-primary"
-            imgClassName="grayscale contrast-[1.25] mix-blend-multiply"
+            imgClassName="mix-blend-multiply"
           />
         </div>
       )}

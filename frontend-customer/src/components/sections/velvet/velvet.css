@@ -64,18 +64,15 @@
 }
 
 /* A photograph: a fine champagne line set off from its edge, and the foot
- * of the picture sinking into the room's colour. */
+ * of the picture sinking into the room's colour. The fade is ::before: the
+ * photo treatment's tint layer (globals.css) owns a photo frame's ::after. */
 .velvet-frame {
   outline: 1px solid color-mix(in oklch, var(--accent) 55%, transparent);
   outline-offset: 9px;
   overflow: hidden;
   isolation: isolate;
 }
-.velvet:not(.velvet-cream) .velvet-frame img,
-.velvet:not(.velvet-cream) .velvet-veil img {
-  filter: brightness(0.94) contrast(1.03) sepia(0.06);
-}
-.velvet-frame::after {
+.velvet-frame::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -89,7 +86,7 @@
 }
 /* A full-height photograph that melts into the page: at its foot always,
  * and on its left edge where the words sit beside it. */
-.velvet-veil::after {
+.velvet-veil::before {
   content: "";
   position: absolute;
   inset: 0;

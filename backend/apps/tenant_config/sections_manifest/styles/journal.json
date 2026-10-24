@@ -85,6 +85,7 @@
   "radius": "0.25rem",
   "photoWords": "soft natural window light, muted neutral tones, calm editorial, negative space",
   "coverAspect": "4/5",
+  "photoTreatment": "soft",
   "variants": {
     "hero": ["cover", "editorial", "intro"],
     "story": ["letter"],

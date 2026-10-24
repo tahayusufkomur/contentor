@@ -76,20 +76,6 @@
   border-color: var(--inverse-foreground);
 }
 
-/* Photographs: sharp rectangular frame with grayscale hover transition */
-.dojo-photo img {
-  filter: grayscale(0.85) contrast(1.05);
-  transition:
-    filter 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
-    transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-@media (hover: hover) {
-  .group:hover .dojo-photo img,
-  .dojo-photo:hover img {
-    filter: grayscale(0) contrast(1);
-  }
-}
-
 /* One crisp 3px focus treatment for every control */
 .dojo a:focus-visible,
 .dojo button:focus-visible,

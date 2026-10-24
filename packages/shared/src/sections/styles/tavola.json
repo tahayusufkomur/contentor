@@ -85,6 +85,7 @@
   "radius": "0.5rem",
   "photoWords": "warm kitchen light, hands cooking, fresh ingredients, rustic table, overhead and close, a person cooking",
   "coverAspect": "4/3",
+  "photoTreatment": "soft",
   "variants": {
     "hero": ["menu", "intro"],
     "story": ["chalkboard", "kitchentable"],

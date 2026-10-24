@@ -89,14 +89,15 @@
 }
 
 /* Mirror wall vertical light bar */
-/* The mirror hero's wash: the room dimmed to stage black, neon tint on the right. */
+/* The mirror hero's wash: the room dimmed to stage black (no colour: the look's
+   photo treatment grades the photo). */
 .studiofloor-mirror-wash {
   background:
     linear-gradient(
       90deg,
       color-mix(in oklch, var(--background) 82%, transparent) 0%,
       color-mix(in oklch, var(--background) 58%, transparent) 55%,
-      color-mix(in oklch, var(--primary) 30%, var(--background) 40%) 100%
+      color-mix(in oklch, var(--background) 70%, transparent) 100%
     ),
     linear-gradient(
       to top,

@@ -142,3 +142,22 @@ describe("section tokens", () => {
     );
   });
 });
+
+describe("photo treatment", () => {
+  it("every enabled style declares a photo treatment", () => {
+    for (const s of Object.values(SITE_STYLES))
+      expect(["none", "mono", "soft", "tint", "vivid"]).toContain(
+        s.photoTreatment,
+      );
+  });
+  it("mono greys photos without a tint", () => {
+    const v = styleVars(SITE_STYLES.kinetic);
+    expect(v["photo-filter"]).toBe("grayscale(1) contrast(1.08)");
+    expect(v["photo-tint-opacity"]).toBe("0");
+  });
+  it("tint washes photos in the palette's primary", () => {
+    const v = styleVars(SITE_STYLES.velvet);
+    expect(v["photo-tint"]).toBe("var(--primary)");
+    expect(v["photo-tint-blend"]).toBe("color");
+  });
+});

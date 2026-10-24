@@ -27,7 +27,6 @@ export function MomentsMarquee({ block, editable }: SectionProps) {
             ? "aspect-[4/5] h-[clamp(16rem,30vw,26rem)]"
             : "aspect-square h-[clamp(11rem,19vw,17rem)]",
         )}
-        imgClassName="grayscale contrast-[1.15] transition duration-500 group-hover:grayscale-0"
       />
       {tall && p.caption && (
         <figcaption

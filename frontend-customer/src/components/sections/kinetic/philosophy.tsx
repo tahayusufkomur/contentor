@@ -22,7 +22,7 @@ export function PhilosophyStatement({ block, editable }: SectionProps) {
             value={block.image}
             alt=""
             className="absolute inset-0 bg-[var(--inverse)]"
-            imgClassName="grayscale contrast-[1.25] opacity-50"
+            imgClassName="opacity-50"
           />
           <div
             aria-hidden="true"

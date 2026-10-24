@@ -78,6 +78,13 @@ export interface SitePaletteVariant {
  *  (width/height). */
 export type CoverAspect = "3/4" | "4/5" | "1/1" | "4/3" | "3/2" | "16/10";
 
+/** The one grade a look gives every photo (catalog, her own, a cover's photo)
+ *  so a site's pictures share a colour world: none leaves them as shot, mono
+ *  greys them, soft mutes them, tint washes them in the palette's primary,
+ *  vivid lifts them. `styleVars` turns it into --photo-* variables and one
+ *  rule in globals.css applies them; designed covers are never treated. */
+export type PhotoTreatment = "none" | "mono" | "soft" | "tint" | "vivid";
+
 export interface SiteStyle {
   id: string;
   label: string;
@@ -126,6 +133,8 @@ export interface SiteStyle {
    *  card (components/sections/<id>/courses.tsx). A cover's Card size is drawn
    *  in it; Wide (16/9) and Banner (3/1) are the same on every look. */
   coverAspect: CoverAspect;
+  /** The grade every photo on the site wears (see PhotoTreatment). */
+  photoTreatment: PhotoTreatment;
   /** Layout variants this style ships per family; the first is the default.
    *  `hero` must include "intro" (compact hero for inner pages). */
   variants: Record<FamilyId, string[]>;

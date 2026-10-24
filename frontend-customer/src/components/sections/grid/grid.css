@@ -113,22 +113,13 @@
   transform-origin: top center;
 }
 
-/* Photos are monochrome so cobalt stays the only colour on the page. */
-.swiss-photo img {
-  filter: grayscale(1) contrast(1.05);
-}
+/* Photos are monochrome (the style's photo treatment) so cobalt stays the only
+ * colour on the page; the closing band's photo also takes the band's blue. */
 .swiss-duo {
   background: transparent;
 }
 .swiss-duo img {
-  filter: grayscale(1) contrast(1.1);
   mix-blend-mode: luminosity;
-}
-
-/* Cards bring their photo back to colour while pointed at. */
-.swiss-card:hover .swiss-photo img,
-.swiss-card:focus-visible .swiss-photo img {
-  filter: none;
 }
 
 /* ---- focus --------------------------------------------------------- */
@@ -190,9 +181,6 @@
   }
   .swiss-plumb {
     animation: swiss-rise 0.6s 0.7s cubic-bezier(0.5, 0, 0.2, 1) both;
-  }
-  .swiss-card .swiss-photo img {
-    transition: filter 0.45s ease;
   }
 
   @supports (animation-timeline: view()) {
