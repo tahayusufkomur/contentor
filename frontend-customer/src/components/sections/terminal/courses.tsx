@@ -83,7 +83,7 @@ export function CoursesModules({ block, data, editable }: SectionProps) {
                                 {c.title}
                               </h3>
                             </div>
-                            <p className="font-mono text-[0.75rem] text-muted-foreground opacity-75">
+                            <p className="font-mono text-[0.75rem] text-muted-foreground">
                               {filename}
                             </p>
                           </div>

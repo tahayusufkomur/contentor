@@ -38,7 +38,12 @@ export function PhilosophyStatement({ block, editable }: SectionProps) {
             field="statement"
             editable={editable}
             as="p"
-            className={cn(DISPLAY, size, "max-w-[24ch]")}
+            className={cn(
+              DISPLAY,
+              size,
+              "max-w-[24ch]",
+              statement.length > 24 && "normal-case [line-height:1.32]",
+            )}
           />
         </blockquote>
         {has(block, "attribution", editable) && (

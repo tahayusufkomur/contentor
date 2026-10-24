@@ -102,7 +102,7 @@ export function HeroObservatory({ block, editable }: SectionProps) {
             className="mt-6 max-w-[48ch] text-pretty text-[1.0625rem] leading-[1.75] text-muted-foreground md:text-[1.15rem]"
           />
           {has(block, "meta", editable) && (
-            <div className="mt-6 inline-flex items-center gap-2 text-[0.85rem] uppercase tracking-[0.14em] text-primary">
+            <div className="mt-6 inline-flex items-center gap-2 text-[0.85rem] tracking-[0.04em] text-primary">
               <StarGlyph className="size-3 text-primary" />
               <Txt
                 block={block}
@@ -183,7 +183,7 @@ export function HeroOracle({ block, editable }: SectionProps) {
           />
 
           {has(block, "meta", editable) && (
-            <div className="mt-6 inline-flex items-center gap-2 text-[0.85rem] uppercase tracking-[0.14em] text-primary">
+            <div className="mt-6 inline-flex items-center gap-2 text-[0.85rem] tracking-[0.04em] text-primary">
               <StarGlyph className="size-3 text-primary" />
               <Txt
                 block={block}
@@ -268,7 +268,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               className="mt-6 block max-w-[48ch] text-pretty text-[1.0625rem] leading-[1.7] text-muted-foreground"
             />
             {has(block, "meta", editable) && (
-              <div className="mt-5 inline-flex items-center gap-2 text-[0.82rem] uppercase tracking-[0.14em] text-primary">
+              <div className="mt-5 inline-flex items-center gap-2 text-[0.82rem] tracking-[0.04em] text-primary">
                 <StarGlyph className="size-2.5" />
                 <Txt
                   block={block}

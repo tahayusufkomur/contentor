@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -7,17 +8,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import {
-  H3,
-  LABEL,
-  LINK,
-  Opener,
-  Plate,
-  Section,
-  WRAP,
-  money,
-  pad2,
-} from "./ui";
+import { H3, LABEL, LINK, Opener, Plate, Section, WRAP, pad2 } from "./ui";
 
 /** Membership plans presented as numbered editions on a ruled gallery wall. */
 export function PricingEditions({ block, data, editable }: SectionProps) {
@@ -59,7 +50,7 @@ export function PricingEditions({ block, data, editable }: SectionProps) {
                 </div>
                 <div className="lg:col-span-2">
                   <p className="font-display text-[2.2rem] font-bold leading-none tracking-[-0.02em]">
-                    {money(plan.price, plan.currency)}
+                    {formatMoney(plan.price, plan.currency)}
                   </p>
                   <p className={cn(LABEL, "mt-2 text-muted-foreground")}>
                     {billingIntervalSuffix(plan.billing_interval_months)}
@@ -67,7 +58,7 @@ export function PricingEditions({ block, data, editable }: SectionProps) {
                 </div>
                 <div className="flex flex-col items-start lg:col-span-3 lg:items-end lg:justify-self-end lg:text-right">
                   {plan.is_subscribed ? (
-                    <p className="darkroom-mono inline-flex min-h-12 items-center border border-foreground px-5 text-[0.72rem] uppercase tracking-[0.1em]">
+                    <p className="darkroom-mono inline-flex min-h-12 items-center border border-foreground px-5 text-[0.75rem] uppercase tracking-[0.1em]">
                       Subscribed
                     </p>
                   ) : (

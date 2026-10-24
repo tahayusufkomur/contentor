@@ -7,8 +7,8 @@ function statementSize(len: number) {
   if (len <= 60)
     return "text-[clamp(2.2rem,1.3rem+3.8vw,4.8rem)] leading-[1.06] max-w-[18ch]";
   if (len <= 140)
-    return "text-[clamp(1.85rem,1.2rem+2.4vw,3.6rem)] leading-[1.12] max-w-[24ch]";
-  return "text-[clamp(1.6rem,1.1rem+1.6vw,2.8rem)] leading-[1.18] max-w-[30ch]";
+    return "text-[clamp(1.85rem,1.2rem+2.4vw,3.6rem)] leading-[1.32] max-w-[24ch]";
+  return "text-[clamp(1.6rem,1.1rem+1.6vw,2.8rem)] leading-[1.32] max-w-[30ch]";
 }
 
 /** Core philosophy and guiding principles formatted as an executable docblock. */
@@ -24,7 +24,7 @@ export function PhilosophyPrinciples({ block, editable }: SectionProps) {
           tag="DOCS"
           bodyClassName="p-6 sm:p-10 md:p-12 font-mono"
         >
-          <div className="text-primary opacity-70 select-none text-lg">
+          <div className="text-muted-foreground select-none text-lg">
             {"/**"}
           </div>
 
@@ -52,7 +52,7 @@ export function PhilosophyPrinciples({ block, editable }: SectionProps) {
             </div>
           </div>
 
-          <div className="text-primary opacity-70 select-none text-lg">
+          <div className="text-muted-foreground select-none text-lg">
             &nbsp;*/
           </div>
 

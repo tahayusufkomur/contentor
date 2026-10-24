@@ -7,7 +7,7 @@ function quoteSize(len: number) {
   if (len <= 80)
     return "text-[clamp(2.2rem,1.3rem+3.2vw,4.2rem)] leading-[1.12]";
   if (len <= 150)
-    return "text-[clamp(1.75rem,1.2rem+2.2vw,3rem)] leading-[1.22]";
+    return "text-[clamp(1.75rem,1.2rem+2.2vw,3rem)] leading-[1.32]";
   return "text-[clamp(1.45rem,1.15rem+1.4vw,2.2rem)] leading-[1.35]";
 }
 

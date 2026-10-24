@@ -15,8 +15,8 @@ function quoteSize(len: number) {
   if (len <= 60)
     return "text-[clamp(2.2rem,1.4rem+4.2vw,4.6rem)] leading-[1.12] max-w-[18ch]";
   if (len <= 140)
-    return "text-[clamp(1.8rem,1.3rem+2.8vw,3.6rem)] leading-[1.18] max-w-[24ch]";
-  return "text-[clamp(1.5rem,1.2rem+1.8vw,2.8rem)] leading-[1.24] max-w-[32ch]";
+    return "text-[clamp(1.8rem,1.3rem+2.8vw,3.6rem)] leading-[1.32] max-w-[24ch]";
+  return "text-[clamp(1.5rem,1.2rem+1.8vw,2.8rem)] leading-[1.32] max-w-[32ch]";
 }
 
 /** Philosophy "invocation": Centred uppercase ceremonial decree within the Zodiac Ring. */
@@ -43,7 +43,8 @@ export function PhilosophyInvocation({ block, editable }: SectionProps) {
             as="p"
             placeholder="Statement"
             className={cn(
-              "mt-8 block text-balance break-words font-display font-medium uppercase tracking-[0.06em] text-foreground",
+              "mt-8 block text-balance break-words font-display font-medium tracking-[0.01em] text-foreground",
+              statement.length <= 24 && "uppercase tracking-[0.06em]",
               quoteSize(statement.length),
             )}
           />

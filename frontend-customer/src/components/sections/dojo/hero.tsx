@@ -103,7 +103,7 @@ export function HeroHall({ block, editable }: SectionProps) {
               <p
                 className={cn(
                   LABEL,
-                  "dojo-rise mt-6 text-[0.78rem] tracking-[0.12em] text-foreground",
+                  "dojo-rise mt-6 text-[0.78rem] normal-case tracking-[0.04em] text-foreground",
                 )}
                 style={delay(320)}
               >
@@ -211,7 +211,7 @@ export function HeroBanner({ block, editable }: SectionProps) {
                   <p
                     className={cn(
                       LABEL,
-                      "text-[0.78rem] tracking-[0.12em] text-foreground",
+                      "text-[0.78rem] normal-case tracking-[0.04em] text-foreground",
                     )}
                   >
                     <Txt
@@ -295,7 +295,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
                 <p
                   className={cn(
                     LABEL,
-                    "text-[0.78rem] tracking-[0.12em] text-foreground",
+                    "text-[0.78rem] normal-case tracking-[0.04em] text-foreground",
                   )}
                 >
                   <Txt

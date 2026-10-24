@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -7,15 +8,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import {
-  DoubleRule,
-  H3,
-  Opener,
-  RunningHead,
-  Section,
-  WRAP,
-  money,
-} from "./ui";
+import { DoubleRule, H3, Opener, RunningHead, Section, WRAP } from "./ui";
 
 /** Membership tiers set out as a formal subscription order form with
  *  double-ruled borders, hollow radio seals, and typographic prices. */
@@ -78,7 +71,7 @@ export function PricingSubscriptions({ block, data, editable }: SectionProps) {
                     <div className="lg:col-span-3 lg:text-right">
                       <div className="flex items-baseline lg:justify-end">
                         <span className="font-display text-[2.2rem] font-light leading-none text-foreground">
-                          {money(plan.price, plan.currency)}
+                          {formatMoney(plan.price, plan.currency)}
                         </span>
                         <span className="ml-2 font-display text-[0.95rem] italic text-muted-foreground">
                           {billingIntervalSuffix(plan.billing_interval_months)}

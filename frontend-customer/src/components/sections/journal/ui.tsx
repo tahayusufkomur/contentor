@@ -26,7 +26,7 @@ export const H3 =
   "font-display font-normal text-balance break-words tracking-[-0.01em]";
 
 /** Tiny functional label (field names, units). */
-export const LABEL = "text-[0.7rem] font-medium uppercase tracking-[0.16em]";
+export const LABEL = "text-[0.75rem] font-medium uppercase tracking-[0.16em]";
 
 type Tone = "paper" | "surface" | "moss";
 

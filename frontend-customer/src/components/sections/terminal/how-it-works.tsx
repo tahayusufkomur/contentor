@@ -47,7 +47,7 @@ export function HowItWorksPipeline({ block, editable }: SectionProps) {
               <span className="font-bold text-accent" aria-hidden="true">
                 commit {hash}
               </span>
-              <span className="rounded bg-[color-mix(in_oklch,var(--surface)_80%,transparent)] px-2 py-0.5 text-[0.72rem] text-primary">
+              <span className="rounded bg-[color-mix(in_oklch,var(--surface)_80%,transparent)] px-2 py-0.5 text-[0.75rem] text-primary">
                 (HEAD -&gt; stage_{pad2(i)})
               </span>
             </div>

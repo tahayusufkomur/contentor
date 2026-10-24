@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -8,7 +9,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import { CHIP, H3, Opener, Section, WRAP, money } from "./ui";
+import { CHIP, H3, Opener, Section, WRAP } from "./ui";
 
 /** Membership plans designed as dance studio access passes / tickets with
  *  notched sides, perforated dividers, and neon price tags. */
@@ -59,7 +60,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                         STUDIO PASS // 0{i + 1}
                       </span>
                       {isFeatured && (
-                        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 studiofloor-display text-[0.72rem] font-extrabold italic text-primary shadow-[0_0_8px_var(--primary)]">
+                        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 studiofloor-display text-[0.75rem] font-extrabold italic text-primary shadow-[0_0_8px_var(--primary)]">
                           MOST POPULAR
                         </span>
                       )}
@@ -71,7 +72,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
 
                     <p className="mt-5 flex items-baseline">
                       <span className="studiofloor-display text-[2.8rem] font-extrabold italic leading-none text-primary">
-                        {money(plan.price, plan.currency)}
+                        {formatMoney(plan.price, plan.currency)}
                       </span>
                       <span className="ml-2 studiofloor-display text-[0.88rem] font-bold text-muted-foreground">
                         {billingIntervalSuffix(plan.billing_interval_months)}
@@ -81,7 +82,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                     {/* Perforated ticket tear line */}
                     <div className="my-6 flex items-center gap-2">
                       <div className="h-px flex-1 border-t border-dashed border-border" />
-                      <span className="studiofloor-display text-[0.68rem] tracking-widest text-muted-foreground">
+                      <span className="studiofloor-display text-[0.75rem] tracking-widest text-muted-foreground">
                         TEAR HERE
                       </span>
                       <div className="h-px flex-1 border-t border-dashed border-border" />

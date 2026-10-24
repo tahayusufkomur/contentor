@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -16,7 +17,6 @@ import {
   Section,
   WRAP,
   WashiTape,
-  money,
 } from "./ui";
 
 /** Workshop kit boxes with dashed seams, washi tape labels, and display pricing. */
@@ -70,7 +70,7 @@ export function PricingKits({ block, data, editable }: SectionProps) {
 
                 <div className="mt-6 flex items-baseline">
                   <span className="font-display text-[2.8rem] font-bold leading-none text-foreground">
-                    {money(plan.price, plan.currency)}
+                    {formatMoney(plan.price, plan.currency)}
                   </span>
                   <span className="ml-2 text-[0.95rem] text-muted-foreground">
                     {billingIntervalSuffix(plan.billing_interval_months)}

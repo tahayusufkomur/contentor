@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -8,7 +9,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import { CHIP, H3, Opener, Section, WRAP, money } from "./ui";
+import { CHIP, H3, Opener, Section, WRAP } from "./ui";
 
 /** Membership plans as soft night cards with amber prices and pill actions. */
 export function PricingStays({ block, data, editable }: SectionProps) {
@@ -45,7 +46,7 @@ export function PricingStays({ block, data, editable }: SectionProps) {
                 </h3>
                 <p className="mt-5 flex items-baseline">
                   <span className="nocturne-soft font-display text-[3rem] leading-none text-primary">
-                    {money(plan.price, plan.currency)}
+                    {formatMoney(plan.price, plan.currency)}
                   </span>
                   <span className="ml-2 text-[0.95rem] text-muted-foreground">
                     {billingIntervalSuffix(plan.billing_interval_months)}

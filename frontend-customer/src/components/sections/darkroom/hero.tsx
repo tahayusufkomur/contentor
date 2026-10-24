@@ -112,7 +112,12 @@ export function HeroExhibition({ block, editable }: SectionProps) {
               className="mt-6 block max-w-[40ch] text-pretty text-[1.02rem] leading-[1.6] text-muted-foreground"
             />
             {has(block, "meta", editable) && (
-              <p className={cn(LABEL, "mt-6 flex items-center gap-2.5")}>
+              <p
+                className={cn(
+                  LABEL,
+                  "mt-6 flex items-center gap-2.5 normal-case tracking-[0.04em]",
+                )}
+              >
                 <Dot />
                 <Txt
                   block={block}
@@ -186,7 +191,12 @@ export function HeroIntro({ block, editable }: SectionProps) {
             className="mt-6 block max-w-[46ch] text-pretty text-[1.05rem] leading-[1.6] text-muted-foreground"
           />
           {has(block, "meta", editable) && (
-            <p className={cn(LABEL, "mt-6 flex items-center gap-2.5")}>
+            <p
+              className={cn(
+                LABEL,
+                "mt-6 flex items-center gap-2.5 normal-case tracking-[0.04em]",
+              )}
+            >
               <Dot />
               <Txt
                 block={block}

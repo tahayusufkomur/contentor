@@ -295,21 +295,5 @@ export function Arrow({ className }: { className?: string }) {
   );
 }
 
-/** "29.00" + "EUR" → "€29". */
-export function money(price: string, currency: string) {
-  const n = Number(price);
-  if (!Number.isFinite(n)) return `${price} ${currency}`;
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: n % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).format(n);
-  } catch {
-    return `${n % 1 ? n.toFixed(2) : n} ${currency}`;
-  }
-}
-
 /** Text of a block field as a plain string. */
 export const str = (v: unknown) => (typeof v === "string" ? v : "");

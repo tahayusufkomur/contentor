@@ -128,7 +128,13 @@ export function HeroPortrait({ block, editable }: SectionProps) {
                 className="velvet-rise mt-9"
               />
               {has(block, "meta", editable) && (
-                <p className={cn(CHIP, "velvet-rise mt-8")} style={delay(750)}>
+                <p
+                  className={cn(
+                    CHIP,
+                    "velvet-rise mt-8 normal-case tracking-[0.04em]",
+                  )}
+                  style={delay(750)}
+                >
                   <Txt
                     block={block}
                     field="meta"

@@ -20,7 +20,7 @@ export function BenefitsGearList({ block, editable }: SectionProps) {
         >
           <span
             aria-hidden="true"
-            className="mt-1.5 flex size-5 items-center justify-center rounded-[2px] border-2 border-primary text-[0.7rem] font-bold text-primary"
+            className="mt-1.5 flex size-5 items-center justify-center rounded-[2px] border-2 border-primary text-[0.75rem] font-bold text-primary"
           >
             ✓
           </span>

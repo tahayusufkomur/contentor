@@ -29,7 +29,7 @@ export const H3 =
 
 /** Mono caps: track numbers, durations, dates, column titles. */
 export const LABEL =
-  "encore-mono text-[0.72rem] font-bold uppercase tracking-[0.1em]";
+  "encore-mono text-[0.75rem] font-bold uppercase tracking-[0.1em]";
 
 /** Tabular figures. */
 export const NUM = "encore-tnum";
@@ -203,22 +203,6 @@ export function Arrow({ className }: { className?: string }) {
       <path d="M4 12h15M13 5l7 7-7 7" />
     </svg>
   );
-}
-
-/** "29.00" + "EUR" → "€29". */
-export function money(price: string, currency: string) {
-  const n = Number(price);
-  if (!Number.isFinite(n)) return `${price} ${currency}`;
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: n % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).format(n);
-  } catch {
-    return `${n % 1 ? n.toFixed(2) : n} ${currency}`;
-  }
 }
 
 export const pad2 = (i: number) => String(i + 1).padStart(2, "0");

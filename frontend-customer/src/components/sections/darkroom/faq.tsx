@@ -51,7 +51,7 @@ export function FaqDidactics({ block, editable }: SectionProps) {
             >
               <summary className="flex cursor-pointer items-baseline gap-5 py-6">
                 <span
-                  className="darkroom-num darkroom-mono darkroom-tnum w-10 shrink-0 text-[0.72rem] uppercase tracking-[0.1em] text-muted-foreground"
+                  className="darkroom-num darkroom-mono darkroom-tnum w-10 shrink-0 text-[0.75rem] uppercase tracking-[0.1em] text-muted-foreground"
                   aria-hidden="true"
                 >
                   {pad2(i)}

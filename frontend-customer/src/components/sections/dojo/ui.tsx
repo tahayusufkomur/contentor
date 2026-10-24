@@ -20,7 +20,7 @@ export const H3 =
 
 /** Small tracked label in accent red / ink. */
 export const LABEL =
-  "text-[0.72rem] font-bold uppercase tracking-[0.14em] text-accent";
+  "text-[0.75rem] font-bold uppercase tracking-[0.14em] text-accent";
 
 /** Tabular figures for ranking and time. */
 export const NUM = "dojo-tnum";
@@ -59,6 +59,11 @@ export const BELT_RANKS = [
 
 export const beltColor = (index: number) =>
   BELT_COLORS[index % BELT_COLORS.length];
+
+/** Text on a belt disc: dark on the white, yellow, orange and green belts
+ *  (white fails 4.5:1 there), white on blue, brown and black. */
+export const beltInk = (index: number) =>
+  index % BELT_COLORS.length < 4 ? "#18181b" : "#ffffff";
 
 export const beltRank = (index: number) =>
   BELT_RANKS[index % BELT_RANKS.length];
@@ -161,7 +166,7 @@ export function Kicker({
   if (!has(block, "kicker", editable)) return null;
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
-      <Seal text="道" className="size-5 text-[0.65rem]" />
+      <Seal text="道" className="size-5 text-[0.75rem]" />
       <Txt
         block={block}
         field="kicker"
@@ -229,22 +234,6 @@ export function Arrow({ className }: { className?: string }) {
       <path d="M1 6h20M15 1l6 5-6 5" />
     </svg>
   );
-}
-
-/** "29.00" + "EUR" → "€29". */
-export function money(price: string, currency: string) {
-  const n = Number(price);
-  if (!Number.isFinite(n)) return `${price} ${currency}`;
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: n % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).format(n);
-  } catch {
-    return `${n % 1 ? n.toFixed(2) : n} ${currency}`;
-  }
 }
 
 export const pad2 = (i: number) => String(i + 1).padStart(2, "0");

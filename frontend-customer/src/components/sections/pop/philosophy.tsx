@@ -35,7 +35,11 @@ export function PhilosophyHighlight({ block, editable }: SectionProps) {
             className="[--pop-ink:var(--inverse-foreground)]"
           />
           <blockquote
-            className={cn("pop-display mt-8 !leading-[1.24] md:mt-10", size)}
+            className={cn(
+              "pop-display mt-8 md:mt-10",
+              statement.length > 60 ? "!leading-[1.32]" : "!leading-[1.24]",
+              size,
+            )}
           >
             <p>
               <Txt

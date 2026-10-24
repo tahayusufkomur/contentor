@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -7,7 +8,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import { BeltStripe, H3, LABEL, Opener, Section, WRAP, money } from "./ui";
+import { BeltStripe, H3, LABEL, Opener, Section, WRAP } from "./ui";
 
 /** Dojo dues and membership plans formatted as a ruled registry table. */
 export function PricingDues({ block, data, editable }: SectionProps) {
@@ -69,7 +70,7 @@ export function PricingDues({ block, data, editable }: SectionProps) {
                 <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end justify-between gap-4">
                   <p className="flex items-baseline">
                     <span className="font-display text-[2.4rem] font-extrabold leading-none text-foreground">
-                      {money(plan.price, plan.currency)}
+                      {formatMoney(plan.price, plan.currency)}
                     </span>
                     <span className="ml-2 text-[0.92rem] text-muted-foreground">
                       {billingIntervalSuffix(plan.billing_interval_months)}

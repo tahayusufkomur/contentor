@@ -20,7 +20,7 @@ export const H3 = "font-display font-normal text-balance break-words";
 
 /** Mono caps label: clause numbers, running heads, column titles. */
 export const LABEL =
-  "ledger-mono text-[0.7rem] font-medium uppercase tracking-[0.12em]";
+  "ledger-mono text-[0.75rem] font-medium uppercase tracking-[0.12em]";
 
 /** Lining tabular figures for anything counted or priced. */
 export const NUM = "ledger-tnum";
@@ -206,29 +206,6 @@ export function Opener({
       </div>
     </div>
   );
-}
-
-/** "29.00" + "EUR" → { symbol: "€", amount: "29" }. */
-export function money(price: string, currency: string) {
-  const value = Number(price);
-  if (!Number.isFinite(value)) return { symbol: currency, amount: price };
-  try {
-    const parts = new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: value % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).formatToParts(value);
-    return {
-      symbol: parts.find((p) => p.type === "currency")?.value ?? currency,
-      amount: parts
-        .filter((p) => p.type !== "currency" && p.type !== "literal")
-        .map((p) => p.value)
-        .join(""),
-    };
-  } catch {
-    return { symbol: currency, amount: price };
-  }
 }
 
 export const pad2 = (i: number) => String(i + 1).padStart(2, "0");

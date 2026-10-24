@@ -20,7 +20,7 @@ export const H3 = "font-display font-medium text-balance break-words";
 
 /** Tracked small caps label: "0.72rem", uppercase, tracked. */
 export const LABEL =
-  "text-[0.72rem] font-medium uppercase tracking-[0.2em] text-accent";
+  "text-[0.75rem] font-medium uppercase tracking-[0.2em] text-accent";
 
 /** Tabular figures for prices, hours, dates. */
 export const NUM = "atelier-tnum";
@@ -266,22 +266,6 @@ export function Arrow({ className }: { className?: string }) {
       <path d="M1 6h21M17 1l5 5-5 5" />
     </svg>
   );
-}
-
-/** "29.00" + "EUR" → "€29". */
-export function money(price: string, currency: string) {
-  const n = Number(price);
-  if (!Number.isFinite(n)) return `${price} ${currency}`;
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: n % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).format(n);
-  } catch {
-    return `${n % 1 ? n.toFixed(2) : n} ${currency}`;
-  }
 }
 
 export const pad2 = (i: number) => String(i + 1).padStart(2, "0");

@@ -45,7 +45,7 @@ export function FaqRanger({ block, editable }: SectionProps) {
               open={i === 0}
             >
               <summary className="grid cursor-pointer grid-cols-[2.5rem_minmax(0,1fr)_auto] items-baseline gap-x-4 py-5">
-                <Waypoint n={i + 1} className="size-7 text-[0.7rem]" />
+                <Waypoint n={i + 1} className="size-7 text-[0.75rem]" />
                 <span className="trail-q text-balance text-[1.15rem] font-semibold md:text-[1.3rem]">
                   {it.q}
                 </span>

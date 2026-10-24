@@ -31,7 +31,7 @@ function DateLeaf({ iso }: { iso: string }) {
 
   return (
     <div className="flex size-16 shrink-0 flex-col items-center justify-center overflow-hidden rounded-2xl border border-[color-mix(in_oklch,var(--border)_80%,transparent)] bg-background text-center shadow-sm sm:size-20">
-      <span className="w-full bg-accent px-1 py-0.5 font-display text-[0.72rem] font-bold uppercase tracking-wider text-accent-foreground sm:text-[0.78rem]">
+      <span className="w-full bg-accent px-1 py-0.5 font-display text-[0.75rem] font-bold uppercase tracking-wider text-accent-foreground sm:text-[0.78rem]">
         {month || "Event"}
       </span>
       <span className="font-display text-[1.4rem] font-bold leading-none text-foreground sm:text-[1.75rem]">

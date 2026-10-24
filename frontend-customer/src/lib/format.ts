@@ -35,6 +35,18 @@ export function formatMoney(amount: number | string, currency = "USD"): string {
   }
 }
 
+/** formatMoney split for prices that set the symbol small: "€29" → { symbol: "€", amount: "29" }. */
+export function formatMoneyParts(
+  amount: number | string,
+  currency = "USD",
+): { symbol: string; amount: string } {
+  const text = formatMoney(amount, currency);
+  const m = text.match(/^(\D*?)\s*(\d.*)$/);
+  return m
+    ? { symbol: m[1], amount: m[2] }
+    : { symbol: currency, amount: text };
+}
+
 /** Just the symbol ("$", "€") for an input prefix. */
 export function currencySymbol(currency = "USD"): string {
   try {

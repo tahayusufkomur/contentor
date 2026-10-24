@@ -37,7 +37,7 @@
     "mutedForeground": "oklch(0.5 0.035 15)",
     "primary": "oklch(0.48 0.1 12)",
     "primaryForeground": "oklch(0.975 0.014 25)",
-    "accent": "oklch(0.54 0.1 62)",
+    "accent": "oklch(0.52 0.1 62)",
     "accentForeground": "oklch(0.975 0.014 25)",
     "border": "oklch(0.89 0.03 22)",
     "inverse": "oklch(0.34 0.06 12)",

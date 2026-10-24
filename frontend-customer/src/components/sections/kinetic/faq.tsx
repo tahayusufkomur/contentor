@@ -50,6 +50,7 @@ export function FaqNumbered({ block, editable }: SectionProps) {
                   className={cn(
                     DISPLAY,
                     "text-[clamp(1.6rem,1.1rem+1.5vw,2.6rem)] [line-height:0.95] transition-colors group-hover:text-primary",
+                    (it.q?.length ?? 0) > 24 && "normal-case",
                   )}
                 >
                   {it.q}

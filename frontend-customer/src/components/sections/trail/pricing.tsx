@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -8,17 +9,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import {
-  CARD,
-  H3,
-  LABEL,
-  Opener,
-  Section,
-  Stat,
-  WRAP,
-  money,
-  pad2,
-} from "./ui";
+import { CARD, H3, LABEL, Opener, Section, Stat, WRAP, pad2 } from "./ui";
 
 function Plan({ plan, i }: { plan: SubscriptionPlan; i: number }) {
   return (
@@ -27,7 +18,7 @@ function Plan({ plan, i }: { plan: SubscriptionPlan; i: number }) {
       <h3 className={cn(H3, "mt-3 text-[1.5rem]")}>{plan.name}</h3>
       <div className="mt-5">
         <p className="trail-tnum font-display text-[2.6rem] font-bold leading-none">
-          {money(plan.price, plan.currency)}
+          {formatMoney(plan.price, plan.currency)}
         </p>
         <p className={cn(LABEL, "mt-2 text-muted-foreground")}>
           {billingIntervalSuffix(plan.billing_interval_months)}

@@ -63,7 +63,7 @@ export function CoursesPlates({ block, data, editable }: SectionProps) {
                     <Plate>Plate {pad2(i)}</Plate>
                     <CoursePrice
                       course={c}
-                      className="darkroom-price darkroom-mono darkroom-tnum text-[0.72rem] uppercase tracking-[0.1em]"
+                      className="darkroom-price darkroom-mono darkroom-tnum text-[0.75rem] uppercase tracking-[0.1em]"
                     />
                   </div>
                   <h3 className={cn(H3, "mt-3 text-[1.2rem] leading-[1.2]")}>

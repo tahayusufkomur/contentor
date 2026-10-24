@@ -71,7 +71,10 @@ export function HeroPoster({ block, editable }: SectionProps) {
                   field="meta"
                   editable={editable}
                   as="p"
-                  className={cn(LABEL, "text-accent [line-height:1.5]")}
+                  className={cn(
+                    LABEL,
+                    "normal-case tracking-[0.04em] text-accent [line-height:1.5]",
+                  )}
                 />
               )}
             </div>

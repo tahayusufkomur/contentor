@@ -84,7 +84,7 @@ export function ContactAddress({ block, editable }: SectionProps) {
           <div className="lg:col-span-6 lg:col-start-7">
             <ContactForm
               className="maison-form space-y-9"
-              buttonClassName="h-auto min-h-12 w-auto rounded-none border border-foreground bg-transparent px-8 py-3 text-[0.68rem] font-normal uppercase tracking-[0.28em] text-foreground shadow-none hover:bg-foreground hover:text-background"
+              buttonClassName="h-auto min-h-12 w-auto rounded-none border border-foreground bg-transparent px-8 py-3 text-[0.75rem] font-normal uppercase tracking-[0.28em] text-foreground shadow-none hover:bg-foreground hover:text-background"
             />
           </div>
         )}

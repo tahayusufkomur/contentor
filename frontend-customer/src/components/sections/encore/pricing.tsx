@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -8,7 +9,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import { BOX, H2, LABEL, Opener, Section, WRAP, money, pad2 } from "./ui";
+import { BOX, H2, LABEL, Opener, Section, WRAP, pad2 } from "./ui";
 
 /** Pricing passes: membership tiers styled as backstage passes with bold rates, interval tags and box frames. */
 export function PricingPasses({ block, data, editable }: SectionProps) {
@@ -57,7 +58,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                 </h3>
 
                 <p className="encore-tnum mt-6 font-display text-[2.4rem] font-bold leading-none">
-                  {money(plan.price, plan.currency)}
+                  {formatMoney(plan.price, plan.currency)}
                 </p>
 
                 {!!plan.item_count && (

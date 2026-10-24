@@ -90,7 +90,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
                 editable={editable}
                 as="span"
                 placeholder="Small line"
-                className="ledger-dim"
+                className="ledger-dim normal-case tracking-[0.04em]"
               />
             </div>
           )}
@@ -184,7 +184,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               editable={editable}
               as="span"
               placeholder="Small line"
-              className="ledger-dim"
+              className="ledger-dim normal-case tracking-[0.04em]"
             />
           </div>
         )}

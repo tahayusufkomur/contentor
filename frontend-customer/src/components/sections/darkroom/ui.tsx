@@ -21,7 +21,7 @@ export const H3 =
 
 /** Mono caps: plate numbers, dates, editions, column titles. */
 export const LABEL =
-  "darkroom-mono text-[0.68rem] font-medium uppercase tracking-[0.1em]";
+  "darkroom-mono text-[0.75rem] font-medium uppercase tracking-[0.1em]";
 
 /** Black bar button (primary action). */
 export const BTN =
@@ -29,7 +29,7 @@ export const BTN =
 
 /** Underlined mono caps link (the museum's quiet second action). */
 export const LINK =
-  "darkroom-link darkroom-mono inline-flex items-center gap-2 text-[0.72rem] font-medium uppercase tracking-[0.1em]";
+  "darkroom-link darkroom-mono inline-flex items-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.1em]";
 
 /** White bar button for the black box band. */
 export const BTN_ON_BLACK =
@@ -202,22 +202,6 @@ export function Arrow({ className }: { className?: string }) {
       <path d="M0 6h22M17 1l5 5-5 5" />
     </svg>
   );
-}
-
-/** "29.00" + "EUR" → "€29". */
-export function money(price: string, currency: string) {
-  const n = Number(price);
-  if (!Number.isFinite(n)) return `${price} ${currency}`;
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: n % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).format(n);
-  } catch {
-    return `${n % 1 ? n.toFixed(2) : n} ${currency}`;
-  }
 }
 
 export const pad2 = (i: number) => String(i + 1).padStart(2, "0");

@@ -21,7 +21,7 @@ export const H3 = "font-display font-bold text-balance break-words";
 
 /** Mono caps: distances, elevations, waypoint numbers, column titles. */
 export const LABEL =
-  "trail-mono text-[0.7rem] font-medium uppercase tracking-[0.12em]";
+  "trail-mono text-[0.75rem] font-medium uppercase tracking-[0.12em]";
 
 /** Tabular figures for distances, durations and prices. */
 export const NUM = "trail-tnum";
@@ -132,7 +132,7 @@ export function Stamp({
     <span
       aria-hidden="true"
       className={cn(
-        "trail-stamp grid size-[5.5rem] place-items-center rounded-full border-[3px] border-double border-accent p-2 text-center text-accent",
+        "trail-stamp grid size-[5.5rem] place-items-center rounded-full border-[3px] border-double border-accent p-2 text-center text-[color:var(--trail-blaze-ink)]",
         LABEL,
         "leading-[1.2] tracking-[0.08em]",
         className,
@@ -212,22 +212,6 @@ export function Arrow({ className }: { className?: string }) {
       <path d="M1 6h21M17 1l5 5-5 5" />
     </svg>
   );
-}
-
-/** "29.00" + "EUR" → "€29". */
-export function money(price: string, currency: string) {
-  const n = Number(price);
-  if (!Number.isFinite(n)) return `${price} ${currency}`;
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: n % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).format(n);
-  } catch {
-    return `${n % 1 ? n.toFixed(2) : n} ${currency}`;
-  }
 }
 
 export const pad2 = (i: number) => String(i + 1).padStart(2, "0");

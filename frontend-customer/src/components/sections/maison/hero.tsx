@@ -297,7 +297,12 @@ export function HeroIntro({ block, editable }: SectionProps) {
             className="mt-8 block max-w-[46ch] text-pretty text-[1.05rem] font-light leading-[1.7] text-muted-foreground"
           />
           {has(block, "meta", editable) && (
-            <p className={cn(LABEL, "mt-7 text-muted-foreground")}>
+            <p
+              className={cn(
+                LABEL,
+                "mt-7 text-muted-foreground normal-case tracking-[0.04em]",
+              )}
+            >
               <Txt
                 block={block}
                 field="meta"

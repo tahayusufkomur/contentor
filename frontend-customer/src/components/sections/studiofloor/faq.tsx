@@ -46,7 +46,9 @@ export function FaqWarmup({ block, editable }: SectionProps) {
               open={i === 0}
             >
               <summary className="grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 py-6 transition-colors group-hover:text-primary">
-                <span className="studiofloor-display text-balance text-[1.2rem] font-extrabold italic leading-snug transition-colors md:text-[1.35rem]">
+                <span
+                  className={`studiofloor-display text-balance text-[1.2rem] font-extrabold italic leading-snug transition-colors md:text-[1.35rem] ${(it.q?.length ?? 0) > 24 ? "!normal-case" : ""}`}
+                >
                   {it.q}
                 </span>
                 <span

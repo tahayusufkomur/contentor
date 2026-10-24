@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -8,7 +9,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import { BTN, H3, LABEL, NUM, Opener, Section, WRAP, money, roman } from "./ui";
+import { BTN, H3, LABEL, NUM, Opener, Section, WRAP, roman } from "./ui";
 
 /** The appointment: subscription plans set as ruled pedestals with roman numbering. */
 export function PricingAppointment({ block, data, editable }: SectionProps) {
@@ -48,7 +49,7 @@ export function PricingAppointment({ block, data, editable }: SectionProps) {
                     "maison-opsz mt-6 font-display text-[3rem] leading-none",
                   )}
                 >
-                  {money(p.price, p.currency)}
+                  {formatMoney(p.price, p.currency)}
                 </p>
                 <p className={cn(LABEL, "mt-3 text-muted-foreground")}>
                   {billingIntervalSuffix(p.billing_interval_months)}
@@ -73,7 +74,7 @@ export function PricingAppointment({ block, data, editable }: SectionProps) {
                       price={p.price}
                       currency={p.currency}
                       intervalMonths={p.billing_interval_months}
-                      className="h-auto min-h-12 w-auto whitespace-normal rounded-none border border-foreground bg-transparent px-7 py-3 text-[0.68rem] font-normal uppercase tracking-[0.28em] text-foreground shadow-none hover:bg-foreground hover:text-background [&_svg]:hidden"
+                      className="h-auto min-h-12 w-auto whitespace-normal rounded-none border border-foreground bg-transparent px-7 py-3 text-[0.75rem] font-normal uppercase tracking-[0.28em] text-foreground shadow-none hover:bg-foreground hover:text-background [&_svg]:hidden"
                     />
                   )}
                   <SmartLink

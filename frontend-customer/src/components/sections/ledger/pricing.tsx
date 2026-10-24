@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { formatMoneyParts } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -8,17 +9,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import {
-  HAIR,
-  LABEL,
-  NUM,
-  Opener,
-  RULE,
-  Section,
-  WRAP,
-  money,
-  str,
-} from "./ui";
+import { HAIR, LABEL, NUM, Opener, RULE, Section, WRAP, str } from "./ui";
 
 /** Pricing as an annual report comparison table: CSS grid with row headers,
  *  lining tabular prices, hairlines, and square subscribe actions. */
@@ -63,7 +54,10 @@ export function PricingTable({ block, data, editable }: SectionProps) {
               {/* Row: Price */}
               <div className={cn(HAIR, "py-6", LABEL, "ledger-dim")}>Price</div>
               {plans.map((p) => {
-                const { symbol, amount } = money(p.price, p.currency);
+                const { symbol, amount } = formatMoneyParts(
+                  p.price,
+                  p.currency,
+                );
                 return (
                   <div key={`price-${p.id}`} className={cn(HAIR, "py-6")}>
                     <div className="flex items-baseline font-display font-light leading-none tracking-[-0.03em]">
@@ -156,7 +150,10 @@ export function PricingTable({ block, data, editable }: SectionProps) {
             {/* Mobile Stacked View */}
             <ul className="mt-12 border-t border-foreground md:hidden">
               {plans.map((p) => {
-                const { symbol, amount } = money(p.price, p.currency);
+                const { symbol, amount } = formatMoneyParts(
+                  p.price,
+                  p.currency,
+                );
                 return (
                   <li key={p.id} className="border-b border-border py-8">
                     <h3 className="font-display text-[1.6rem] font-normal leading-tight">

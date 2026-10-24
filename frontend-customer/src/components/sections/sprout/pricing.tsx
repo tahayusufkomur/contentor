@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -16,7 +17,6 @@ import {
   StarDoodle,
   Sticker,
   WRAP,
-  money,
 } from "./ui";
 
 /** Membership and class passes styled as playful ticket-stub cards with
@@ -120,7 +120,7 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
                   <div>
                     <div className="flex items-baseline">
                       <span className="font-display text-[2.6rem] font-bold leading-none text-foreground">
-                        {money(plan.price, plan.currency)}
+                        {formatMoney(plan.price, plan.currency)}
                       </span>
                       <span className="ml-2 text-[0.95rem] font-semibold text-muted-foreground">
                         {billingIntervalSuffix(plan.billing_interval_months)}

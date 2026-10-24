@@ -14,7 +14,7 @@ export const DISPLAY =
 
 /** Expanded small caps for labels, buttons and meta. */
 export const LABEL =
-  "font-sans [font-stretch:125%] text-[0.72rem] font-extrabold uppercase [line-height:1] tracking-[0.06em]";
+  "font-sans [font-stretch:125%] text-[0.75rem] font-extrabold uppercase [line-height:1] tracking-[0.06em]";
 
 /** Section heading size (h2). */
 export const H2 = "text-[clamp(2.75rem,1rem+5vw,6.25rem)]";
@@ -154,22 +154,6 @@ export function Marquee({
       </div>
     </div>
   );
-}
-
-/** "29.00" + "EUR" → "€29" (falls back to "29 EUR"). */
-export function money(price: string, currency: string) {
-  const n = Number(price);
-  if (!Number.isFinite(n)) return `${price} ${currency}`;
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: n % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).format(n);
-  } catch {
-    return `${n % 1 ? n.toFixed(2) : n} ${currency}`;
-  }
 }
 
 export const pad2 = (i: number) => String(i + 1).padStart(2, "0");

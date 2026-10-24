@@ -455,21 +455,5 @@ export function Opener({
   );
 }
 
-/** Currency and money formatter. */
-export function money(price: string, currency: string) {
-  const n = Number(price);
-  if (!Number.isFinite(n)) return `${price} ${currency}`;
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: n % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).format(n);
-  } catch {
-    return `${n % 1 ? n.toFixed(2) : n} ${currency}`;
-  }
-}
-
 /** Safe string converter for block fields. */
 export const str = (v: unknown) => (typeof v === "string" ? v : "");

@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -7,7 +8,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import { H3, LABEL, Opener, Section, StarGlyph, WRAP, money, str } from "./ui";
+import { H3, LABEL, Opener, Section, StarGlyph, WRAP, str } from "./ui";
 
 /** Pricing "offerings": Stacked arch-topped sanctuary offering tiers with celestial star badge on the featured tier. */
 export function PricingOfferings({ block, data, editable }: SectionProps) {
@@ -42,7 +43,7 @@ export function PricingOfferings({ block, data, editable }: SectionProps) {
 
                   {/* Highlight Star Badge */}
                   {isFeatured && (
-                    <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full border border-[color-mix(in_oklch,var(--primary)_60%,transparent)] bg-[color-mix(in_oklch,var(--background)_80%,transparent)] px-2.5 py-1 text-[0.7rem] uppercase tracking-[0.16em] text-primary">
+                    <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full border border-[color-mix(in_oklch,var(--primary)_60%,transparent)] bg-[color-mix(in_oklch,var(--background)_80%,transparent)] px-2.5 py-1 text-[0.75rem] uppercase tracking-[0.16em] text-primary">
                       <StarGlyph className="size-2.5" />
                       <span>Featured</span>
                     </div>
@@ -67,7 +68,7 @@ export function PricingOfferings({ block, data, editable }: SectionProps) {
                     <div className="mt-8 border-y border-[color-mix(in_oklch,var(--primary)_20%,transparent)] py-6">
                       <p className="flex items-baseline justify-center">
                         <span className="font-display text-[2.6rem] font-medium leading-none text-primary">
-                          {money(plan.price, plan.currency)}
+                          {formatMoney(plan.price, plan.currency)}
                         </span>
                         <span className="ml-2 text-[0.9rem] uppercase tracking-[0.1em] text-muted-foreground">
                           {billingIntervalSuffix(plan.billing_interval_months)}

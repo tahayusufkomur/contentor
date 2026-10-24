@@ -112,7 +112,7 @@ export function HeroMenu({ block, editable }: SectionProps) {
                 <p
                   className={cn(
                     LABEL,
-                    "mb-3 border-b-2 border-dotted border-border pb-3 sm:mb-4 sm:pb-4",
+                    "mb-3 border-b-2 border-dotted border-border pb-3 normal-case tracking-[0.04em] sm:mb-4 sm:pb-4",
                   )}
                 >
                   <Txt
@@ -179,7 +179,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
             className="mt-7 block max-w-[46ch] text-pretty text-[1.125rem] leading-[1.6] text-muted-foreground"
           />
           {has(block, "meta", editable) && (
-            <p className={cn(LABEL, "mt-6")}>
+            <p className={cn(LABEL, "mt-6 normal-case tracking-[0.04em]")}>
               <Txt
                 block={block}
                 field="meta"

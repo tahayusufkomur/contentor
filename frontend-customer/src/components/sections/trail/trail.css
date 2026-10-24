@@ -2,6 +2,9 @@
 
 .trail {
   font-feature-settings: "kern", "liga";
+  /* Blaze orange darkened for small type on stone: the raw blaze is for
+     buttons and large type (below 3:1 on the stone). */
+  --trail-blaze-ink: color-mix(in oklch, var(--accent) 72%, black);
 }
 
 /* The third face: mono for distances, elevations, waypoints. */
@@ -55,6 +58,10 @@
 .trail-stamp {
   transform: rotate(-10deg);
 }
+/* On the pine band the raw blaze reads; the hero's stone card opts out. */
+.trail-pine .trail-stamp {
+  color: var(--accent);
+}
 
 /* One focus treatment for every control. */
 .trail a:focus-visible,
@@ -78,6 +85,9 @@
   text-underline-offset: 0.25em;
 }
 .trail-link:hover {
+  color: var(--trail-blaze-ink);
+}
+.trail-pine .trail-link:hover {
   color: var(--accent);
 }
 
@@ -129,7 +139,7 @@
 /* Contact form: pine-bordered fields on stone, mono labels. */
 .trail-form label {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;

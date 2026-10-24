@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { formatMoneyParts } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -11,31 +12,8 @@ import {
 import type { SectionProps } from "../types";
 import { H2, Kicker, LABEL, Section, WRAP } from "./ui";
 
-/** "29.00" EUR → { symbol: "€", amount: "29" }; falls back to the raw code. */
-function money(price: string, currency: string) {
-  const value = Number(price);
-  if (!Number.isFinite(value)) return { symbol: currency, amount: price };
-  try {
-    const parts = new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: value % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).formatToParts(value);
-    return {
-      symbol: parts.find((p) => p.type === "currency")?.value ?? currency,
-      amount: parts
-        .filter((p) => p.type !== "currency" && p.type !== "literal")
-        .map((p) => p.value)
-        .join(""),
-    };
-  } catch {
-    return { symbol: currency, amount: price };
-  }
-}
-
 function Plan({ plan, solo }: { plan: SubscriptionPlan; solo: boolean }) {
-  const { symbol, amount } = money(plan.price, plan.currency);
+  const { symbol, amount } = formatMoneyParts(plan.price, plan.currency);
   return (
     <li
       className={cn(

@@ -79,7 +79,7 @@ export function HeroOverlook({ block, editable }: SectionProps) {
           )}
           style={delay(0)}
         >
-          <Stamp className="absolute -right-5 -top-9 bg-background sm:-right-9">
+          <Stamp className="absolute -right-5 -top-9 bg-background !text-[color:var(--trail-blaze-ink)] sm:-right-9">
             Trail
             <br />
             head
@@ -105,13 +105,13 @@ export function HeroOverlook({ block, editable }: SectionProps) {
             editable={editable}
             as="p"
             placeholder="Subheadline"
-            className="mt-5 block max-w-[42ch] text-pretty text-[1.05rem] leading-[1.6] text-muted-foreground"
+            className="mt-5 block max-w-[42ch] text-pretty text-[1.05rem] leading-[1.6] !text-muted-foreground"
           />
           {showMeta && (
             <p
               className={cn(
                 LABEL,
-                "mt-6 flex items-center gap-3 border-t-2 border-dashed border-foreground/40 pt-5 text-foreground",
+                "mt-6 flex items-center gap-3 border-t-2 border-dashed border-foreground/40 pt-5 normal-case tracking-[0.04em] text-foreground",
               )}
             >
               <span
@@ -189,7 +189,12 @@ export function HeroTrailhead({ block, editable }: SectionProps) {
                 aria-hidden="true"
                 className="size-3 shrink-0 rounded-full bg-accent"
               />
-              <p className={cn(LABEL, "min-w-0 text-foreground")}>
+              <p
+                className={cn(
+                  LABEL,
+                  "min-w-0 normal-case tracking-[0.04em] text-foreground",
+                )}
+              >
                 <Txt
                   block={block}
                   field="meta"
@@ -272,7 +277,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
             <p
               className={cn(
                 LABEL,
-                "mt-6 flex items-center gap-3 text-muted-foreground",
+                "mt-6 flex items-center gap-3 normal-case tracking-[0.04em] text-muted-foreground",
               )}
             >
               <span

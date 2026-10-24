@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -7,7 +8,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import { CARD, LABEL, Leader, Opener, Section, WRAP, money } from "./ui";
+import { CARD, LABEL, Leader, Opener, Section, WRAP } from "./ui";
 
 /** Membership plans presented as a trattoria prix-fixe menu with dotted price lines. */
 export function PricingMenu({ block, data, editable }: SectionProps) {
@@ -46,7 +47,7 @@ export function PricingMenu({ block, data, editable }: SectionProps) {
                     }
                     value={
                       <span className="font-display text-[1.6rem] text-foreground">
-                        {money(plan.price, plan.currency)}
+                        {formatMoney(plan.price, plan.currency)}
                         <span className="ml-2 font-sans text-[0.9rem] text-muted-foreground">
                           {billingIntervalSuffix(plan.billing_interval_months)}
                         </span>

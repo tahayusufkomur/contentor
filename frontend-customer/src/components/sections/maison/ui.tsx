@@ -19,22 +19,22 @@ export const H2 =
 export const H3 = "font-display font-normal text-balance break-words";
 
 /** Tracked small caps: the caption voice of the house. */
-export const LABEL = "text-[0.68rem] font-normal uppercase tracking-[0.28em]";
+export const LABEL = "text-[0.75rem] font-normal uppercase tracking-[0.28em]";
 
 /** Tabular figures. */
 export const NUM = "maison-tnum";
 
 /** Hairline-outlined button (primary action): tracked caps, no fill. */
 export const BTN =
-  "maison-focus inline-flex min-h-12 items-center justify-center gap-3 border border-foreground px-7 py-3 text-[0.68rem] font-normal uppercase tracking-[0.28em] transition-colors duration-300 hover:bg-foreground hover:text-background";
+  "maison-focus inline-flex min-h-12 items-center justify-center gap-3 border border-foreground px-7 py-3 text-[0.75rem] font-normal uppercase tracking-[0.28em] transition-colors duration-300 hover:bg-foreground hover:text-background";
 
 /** Filled black button for the one place a fill is wanted. */
 export const BTN_SOLID =
-  "maison-focus inline-flex min-h-12 items-center justify-center gap-3 bg-primary px-7 py-3 text-[0.68rem] font-normal uppercase tracking-[0.28em] text-primary-foreground transition-colors duration-300 hover:bg-accent hover:text-accent-foreground";
+  "maison-focus inline-flex min-h-12 items-center justify-center gap-3 bg-primary px-7 py-3 text-[0.75rem] font-normal uppercase tracking-[0.28em] text-primary-foreground transition-colors duration-300 hover:bg-accent hover:text-accent-foreground";
 
 /** Ivory outlined button on the black band. */
 export const BTN_ON_BLACK =
-  "maison-focus inline-flex min-h-12 items-center justify-center gap-3 border border-[var(--inverse-foreground)] px-7 py-3 text-[0.68rem] font-normal uppercase tracking-[0.28em] text-[color:var(--inverse-foreground)] transition-colors duration-300 hover:bg-[var(--inverse-foreground)] hover:text-[color:var(--inverse)]";
+  "maison-focus inline-flex min-h-12 items-center justify-center gap-3 border border-[var(--inverse-foreground)] px-7 py-3 text-[0.75rem] font-normal uppercase tracking-[0.28em] text-[color:var(--inverse-foreground)] transition-colors duration-300 hover:bg-[var(--inverse-foreground)] hover:text-[color:var(--inverse)]";
 
 /** The hairline frame around a photograph. */
 export const FRAME = "maison-frame border border-foreground p-2.5 sm:p-3";
@@ -106,7 +106,11 @@ export function Caption({
 }) {
   return (
     <p
-      className={cn(LABEL, "mt-4 text-center text-muted-foreground", className)}
+      className={cn(
+        LABEL,
+        "mt-4 text-center normal-case tracking-[0.04em] text-muted-foreground",
+        className,
+      )}
     >
       {children}
     </p>
@@ -201,22 +205,6 @@ export function Arrow({ className }: { className?: string }) {
       <path d="M0 6h22M17 1l5 5-5 5" />
     </svg>
   );
-}
-
-/** "29.00" + "EUR" → "€29". */
-export function money(price: string, currency: string) {
-  const n = Number(price);
-  if (!Number.isFinite(n)) return `${price} ${currency}`;
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: n % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).format(n);
-  } catch {
-    return `${n % 1 ? n.toFixed(2) : n} ${currency}`;
-  }
 }
 
 /** Text of a block field as a plain string (for alt text). */

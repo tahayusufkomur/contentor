@@ -120,7 +120,7 @@
 /* Contact form: hairline-bottom fields, mono caps labels. */
 .ledger-form label {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;

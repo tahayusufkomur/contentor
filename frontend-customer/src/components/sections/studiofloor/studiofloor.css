@@ -169,6 +169,14 @@
 .studiofloor-spotlight-band .text-muted-foreground {
   color: color-mix(in oklch, var(--inverse-foreground) 72%, var(--inverse));
 }
+/* The neon primary and accent fail on the light band (2.8:1 and 1.2:1):
+   darkened, hue kept, for small type there. */
+.studiofloor-spotlight-band .text-primary {
+  color: color-mix(in oklch, var(--primary) 62%, black);
+}
+.studiofloor-spotlight-band .text-accent {
+  color: color-mix(in oklch, var(--accent) 55%, black);
+}
 .studiofloor-spotlight-band .border-border {
   border-color: color-mix(in oklch, var(--inverse-foreground) 20%, transparent);
 }

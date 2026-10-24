@@ -69,7 +69,7 @@ export interface KitDefinition<T extends string> {
   ornaments?: Partial<Record<OrnamentSlot, Ornament>>;
 }
 
-const DEFAULT_LABEL = "text-[0.72rem] font-medium uppercase tracking-[0.16em]";
+const DEFAULT_LABEL = "text-[0.75rem] font-medium uppercase tracking-[0.16em]";
 const DEFAULT_GHOST =
   "inline-flex min-h-11 items-center gap-2 underline decoration-1 underline-offset-[6px] transition-colors hover:text-primary";
 const DEFAULT_CARD =

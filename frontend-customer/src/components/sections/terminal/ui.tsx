@@ -99,7 +99,7 @@ export function WindowChrome({
         <span className="truncate px-2 font-mono text-xs text-muted-foreground">
           {title}
         </span>
-        <span className="font-mono text-[0.7rem] text-muted-foreground opacity-60">
+        <span className="font-mono text-[0.75rem] text-muted-foreground">
           {tag || "zsh"}
         </span>
       </div>
@@ -240,22 +240,6 @@ export function Arrow({ className }: { className?: string }) {
       <path d="M5 12h14M12 5l7 7-7 7" />
     </svg>
   );
-}
-
-/** "29.00" + "EUR" → "€29" / "$29". */
-export function money(price: string, currency: string) {
-  const n = Number(price);
-  if (!Number.isFinite(n)) return `${price} ${currency}`;
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: n % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).format(n);
-  } catch {
-    return `${n % 1 ? n.toFixed(2) : n} ${currency}`;
-  }
 }
 
 export const pad2 = (i: number) => String(i + 1).padStart(2, "0");

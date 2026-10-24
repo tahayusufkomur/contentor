@@ -8,8 +8,8 @@ function quoteSize(len: number) {
   if (len <= 50)
     return "text-[clamp(2.8rem,1.4rem+6vw,7rem)] leading-[0.90] max-w-[18ch]";
   if (len <= 120)
-    return "text-[clamp(2.2rem,1.3rem+4.2vw,5.2rem)] leading-[0.93] max-w-[24ch]";
-  return "text-[clamp(1.8rem,1.2rem+2.8vw,3.8rem)] leading-[0.96] max-w-[30ch]";
+    return "text-[clamp(2.2rem,1.3rem+4.2vw,5.2rem)] leading-[1.32] max-w-[24ch]";
+  return "text-[clamp(1.8rem,1.2rem+2.8vw,3.8rem)] leading-[1.32] max-w-[30ch]";
 }
 
 /** Dance studio philosophy with a stage reflection: one huge pull statement
@@ -43,6 +43,7 @@ export function PhilosophyMirror({ block, editable }: SectionProps) {
                 className={cn(
                   H1,
                   "block text-balance break-words",
+                  statement.length > 24 && "!normal-case",
                   quoteSize(statement.length),
                 )}
               />
@@ -55,6 +56,7 @@ export function PhilosophyMirror({ block, editable }: SectionProps) {
                 className={cn(
                   H1,
                   "studiofloor-mirror-text absolute inset-x-0 -bottom-8 block text-balance break-words select-none md:-bottom-12",
+                  statement.length > 24 && "!normal-case",
                   quoteSize(statement.length),
                 )}
               >

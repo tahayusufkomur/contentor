@@ -91,7 +91,7 @@ export function HeroLineup({ block, editable }: SectionProps) {
               editable={editable}
               as="span"
               placeholder="Small line"
-              className="text-muted-foreground"
+              className="normal-case tracking-[0.04em] text-muted-foreground"
             />
           </div>
         )}
@@ -121,7 +121,7 @@ export function HeroLineup({ block, editable }: SectionProps) {
             editable={editable}
             as="p"
             placeholder="Subheadline"
-            className="block max-w-[46ch] text-pretty text-[1rem] font-medium uppercase leading-[1.55] tracking-[0.04em] md:col-span-7 md:text-[1.05rem]"
+            className="block max-w-[46ch] text-pretty text-[1rem] font-medium leading-[1.55] md:col-span-7 md:text-[1.05rem]"
           />
           <Actions
             block={block}
@@ -222,7 +222,7 @@ export function HeroPoster({ block, editable }: SectionProps) {
                 editable={editable}
                 as="span"
                 placeholder="Small line"
-                className="text-muted-foreground"
+                className="normal-case tracking-[0.04em] text-muted-foreground"
               />
             </div>
           )}
@@ -248,7 +248,7 @@ export function HeroPoster({ block, editable }: SectionProps) {
               editable={editable}
               as="p"
               placeholder="Subheadline"
-              className="block max-w-[46ch] text-pretty text-[1rem] font-medium uppercase leading-[1.55] tracking-[0.04em] md:text-[1.05rem]"
+              className="block max-w-[46ch] text-pretty text-[1rem] font-medium leading-[1.55] md:text-[1.05rem]"
             />
           </div>
           <Stars className="encore-stamp mt-8 justify-start" />
@@ -321,7 +321,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               editable={editable}
               as="span"
               placeholder="Small line"
-              className="text-muted-foreground"
+              className="normal-case tracking-[0.04em] text-muted-foreground"
             />
           </div>
         )}

@@ -7,8 +7,8 @@ function quoteSize(len: number) {
   if (len <= 60)
     return "text-[clamp(2.5rem,1.4rem+5.2vw,6.5rem)] leading-[1.02] max-w-[16ch]";
   if (len <= 140)
-    return "text-[clamp(2.1rem,1.3rem+3.6vw,4.8rem)] leading-[1.08] max-w-[24ch]";
-  return "text-[clamp(1.8rem,1.2rem+2.4vw,3.6rem)] leading-[1.15] max-w-[30ch]";
+    return "text-[clamp(2.1rem,1.3rem+3.6vw,4.8rem)] leading-[1.32] max-w-[24ch]";
+  return "text-[clamp(1.8rem,1.2rem+2.4vw,3.6rem)] leading-[1.32] max-w-[30ch]";
 }
 
 /** Atelier philosophy: an enormous italic statement in Cormorant with delicate

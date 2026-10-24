@@ -22,7 +22,7 @@ export const H3 =
 
 /** Small tracked label in lavender (the kicker's voice). */
 export const LABEL =
-  "text-[0.74rem] font-semibold uppercase tracking-[0.16em] text-accent";
+  "text-[0.75rem] font-semibold uppercase tracking-[0.16em] text-accent";
 
 /** Tabular figures for clock times and prices. */
 export const NUM = "nocturne-tnum";
@@ -178,22 +178,6 @@ export function Arrow({ className }: { className?: string }) {
       <path d="M1 6h21M17 1l5 5-5 5" />
     </svg>
   );
-}
-
-/** "29.00" + "EUR" → "€29". */
-export function money(price: string, currency: string) {
-  const n = Number(price);
-  if (!Number.isFinite(n)) return `${price} ${currency}`;
-  try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: n % 1 ? 2 : 0,
-      maximumFractionDigits: 2,
-    }).format(n);
-  } catch {
-    return `${n % 1 ? n.toFixed(2) : n} ${currency}`;
-  }
 }
 
 /** Text of a block field as a plain string (for alt text). */

@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -7,7 +8,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import { H3, LABEL, Opener, Section, WRAP, money, str } from "./ui";
+import { H3, LABEL, Opener, Section, WRAP, str } from "./ui";
 
 /** Term fees and membership tiers set out as structured ledger rows. */
 export function PricingTermFees({ block, data, editable }: SectionProps) {
@@ -41,7 +42,7 @@ export function PricingTermFees({ block, data, editable }: SectionProps) {
                 <div className="lg:col-span-3">
                   <p className="flex items-baseline">
                     <span className="font-display text-[2.4rem] font-semibold leading-none">
-                      {money(plan.price, plan.currency)}
+                      {formatMoney(plan.price, plan.currency)}
                     </span>
                     <span className="ml-2 text-[0.95rem] text-muted-foreground">
                       {billingIntervalSuffix(plan.billing_interval_months)}

@@ -99,7 +99,7 @@
 /* Contact form: hairline-bottom fields, mono caps labels. */
 .darkroom-form label {
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;

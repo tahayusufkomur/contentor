@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -7,17 +8,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import {
-  Diamond,
-  Divider,
-  H3,
-  LABEL,
-  Opener,
-  Section,
-  WRAP,
-  money,
-  str,
-} from "./ui";
+import { Diamond, Divider, H3, LABEL, Opener, Section, WRAP, str } from "./ui";
 
 /** Membership and tiered packages presented as a refined atelier treatment menu. */
 export function PricingMenu({ block, data, editable }: SectionProps) {
@@ -65,7 +56,7 @@ export function PricingMenu({ block, data, editable }: SectionProps) {
                     <div className="flex flex-col md:col-span-5 md:items-end md:text-right">
                       <p className="flex items-baseline md:justify-end">
                         <span className="font-display text-[2.25rem] font-medium leading-none sm:text-[2.6rem]">
-                          {money(plan.price, plan.currency)}
+                          {formatMoney(plan.price, plan.currency)}
                         </span>
                         <span className="ml-2 text-[0.9rem] text-muted-foreground">
                           {billingIntervalSuffix(plan.billing_interval_months)}

@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import {
@@ -8,7 +9,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import { Flag, H3, Opener, Section, WindowChrome, WRAP, money } from "./ui";
+import { Flag, H3, Opener, Section, WindowChrome, WRAP } from "./ui";
 
 /** Membership subscription plans presented as machine config manifests. */
 export function PricingPlans({ block, data, editable }: SectionProps) {
@@ -73,7 +74,7 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
 
                       <div className="mt-5 flex items-baseline">
                         <span className="font-display text-[2.5rem] font-bold leading-none text-foreground sm:text-[2.8rem]">
-                          {money(plan.price, plan.currency)}
+                          {formatMoney(plan.price, plan.currency)}
                         </span>
                         <span className="ml-2 font-mono text-sm text-muted-foreground">
                           {billingIntervalSuffix(plan.billing_interval_months)}

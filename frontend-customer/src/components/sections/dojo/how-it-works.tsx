@@ -10,6 +10,7 @@ import {
   Section,
   WRAP,
   beltColor,
+  beltInk,
   beltRank,
   str,
 } from "./ui";
@@ -79,10 +80,10 @@ export function HowItWorksPath({ block, editable }: SectionProps) {
                   <div className="flex items-center">
                     <span
                       aria-hidden="true"
-                      className="size-7 rounded-full border-2 border-background flex items-center justify-center font-bold text-[0.72rem] text-primary-foreground shadow-sm select-none"
+                      className="size-7 rounded-full border-2 border-background flex items-center justify-center font-bold text-[0.75rem] text-primary-foreground shadow-sm select-none"
                       style={{
                         backgroundColor: beltColor(i),
-                        color: i === 0 ? "#18181b" : "#ffffff",
+                        color: beltInk(i),
                       }}
                     >
                       {i + 1}
@@ -116,10 +117,10 @@ export function HowItWorksPath({ block, editable }: SectionProps) {
               <li key={i} className="relative">
                 <span
                   aria-hidden="true"
-                  className="absolute -left-[2.15rem] top-0 size-7 rounded-full border-2 border-background flex items-center justify-center font-bold text-[0.72rem] shadow-sm select-none"
+                  className="absolute -left-[2.15rem] top-0 size-7 rounded-full border-2 border-background flex items-center justify-center font-bold text-[0.75rem] shadow-sm select-none"
                   style={{
                     backgroundColor: beltColor(i),
-                    color: i === 0 ? "#18181b" : "#ffffff",
+                    color: beltInk(i),
                   }}
                 >
                   {i + 1}

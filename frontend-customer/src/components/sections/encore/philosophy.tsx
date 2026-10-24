@@ -7,8 +7,8 @@ function statementSize(len: number) {
   if (len <= 60)
     return "text-[clamp(2.4rem,1.2rem+4.8vw,6.5rem)] leading-[0.98] max-w-[14ch]";
   if (len <= 140)
-    return "text-[clamp(1.8rem,1.1rem+3vw,4.4rem)] leading-[0.98] max-w-[22ch]";
-  return "text-[clamp(1.4rem,1rem+1.8vw,2.8rem)] leading-[0.98] max-w-[30ch]";
+    return "text-[clamp(1.8rem,1.1rem+3vw,4.4rem)] leading-[1.32] max-w-[22ch]";
+  return "text-[clamp(1.4rem,1rem+1.8vw,2.8rem)] leading-[1.32] max-w-[30ch]";
 }
 
 /** Philosophy manifesto: a full-width ink band with stars, heavy uppercase declaration and border-framed atmosphere photo. */
@@ -30,7 +30,12 @@ export function PhilosophyManifesto({ block, editable }: SectionProps) {
           editable={editable}
           as="p"
           placeholder="Statement"
-          className={cn(DISPLAY, "mt-6 block", statementSize(statement.length))}
+          className={cn(
+            DISPLAY,
+            "mt-6 block",
+            statement.length > 24 && "normal-case",
+            statementSize(statement.length),
+          )}
         />
         {has(block, "attribution", editable) && (
           <Txt

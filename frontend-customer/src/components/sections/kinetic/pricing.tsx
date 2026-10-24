@@ -1,8 +1,9 @@
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { SubscriptionPlan } from "@/types/billing";
 import { EmptyHint, SubscribeButton, Txt, billingIntervalSuffix } from "../kit";
 import type { SectionProps } from "../types";
-import { Arrow, DISPLAY, H2, Kicker, LABEL, WRAP, money } from "./ui";
+import { Arrow, DISPLAY, H2, Kicker, LABEL, WRAP } from "./ui";
 
 /** Ticket cards: notched corner, perforation, giant condensed price. The
  *  middle of three is printed in volt. */
@@ -55,7 +56,7 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
           >
             {plans.map((p, i) => {
               const hot = i === featured;
-              const [whole, cents] = money(p.price, p.currency).split(
+              const [whole, cents] = formatMoney(p.price, p.currency).split(
                 /(?=[.,]\d{2}$)/,
               );
               return (

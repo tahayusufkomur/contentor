@@ -15,8 +15,8 @@ function quoteSize(len: number) {
   if (len <= 60)
     return "text-[clamp(2.4rem,1.4rem+4.8vw,5.5rem)] leading-[1.08] max-w-[18ch]";
   if (len <= 130)
-    return "text-[clamp(1.9rem,1.3rem+3.2vw,4rem)] leading-[1.14] max-w-[24ch]";
-  return "text-[clamp(1.6rem,1.2rem+2vw,3rem)] leading-[1.2] max-w-[32ch]";
+    return "text-[clamp(1.9rem,1.3rem+3.2vw,4rem)] leading-[1.32] max-w-[24ch]";
+  return "text-[clamp(1.6rem,1.2rem+2vw,3rem)] leading-[1.32] max-w-[32ch]";
 }
 
 /** The coach's philosophy framed as a warm, reassuring promise inside
