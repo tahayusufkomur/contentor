@@ -123,7 +123,7 @@ export function Ref({
 
 /** Caption line under a photograph: a hairline, the caption, and a plate
  *  number only where a section holds several plates, so numbers never jump
- *  across a page. With neither, it is just the hairline. */
+ *  across a page. With neither, it renders nothing. */
 export function Fig({
   n,
   children,
@@ -133,6 +133,7 @@ export function Fig({
   children?: ReactNode;
   className?: string;
 }) {
+  if (n === undefined && !children) return null;
   return (
     <p
       className={cn(

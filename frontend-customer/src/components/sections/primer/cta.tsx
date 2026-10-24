@@ -1,19 +1,15 @@
-import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
-import { Arrow, BTN_ON_INK, Kicker, LABEL, Section, WRAP, str } from "./ui";
+import { Arrow, BTN_ON_INK, Kicker, Section, WRAP, str } from "./ui";
 
-/** Enrolment slip call-to-action on ink background with bordered card. */
+/** Call-to-action on ink background with a bordered card. */
 export function CtaEnrol({ block, editable }: SectionProps) {
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   const slip = (
     <div className="rounded-[var(--radius)] border-2 border-[var(--inverse-foreground)] p-8 md:p-12">
-      <p className={cn(LABEL, "text-[color:var(--inverse-foreground)]")}>
-        Enrolment slip
-      </p>
-      <Kicker block={block} editable={editable} className="mt-4" />
+      <Kicker block={block} editable={editable} />
       <Txt
         block={block}
         field="heading"

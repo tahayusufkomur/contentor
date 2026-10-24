@@ -144,26 +144,6 @@ export function Cursor({ className }: { className?: string }) {
   );
 }
 
-/** Flag chip: e.g. `--recommended` or `--v1.0`. */
-export function Flag({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-[var(--radius)] border border-border bg-[color-mix(in_oklch,var(--surface)_80%,transparent)] px-2.5 py-1 font-mono text-[0.78rem] font-semibold text-accent",
-        className,
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
 /** Standard section opener: kicker + H2 left, intro right (styled with comment prefix). */
 export function Opener({
   block,
@@ -191,19 +171,13 @@ export function Opener({
       </div>
       {field && (
         <div className="flex flex-col justify-end lg:col-span-4 lg:col-start-9">
-          <p
-            className="font-mono text-xs text-muted-foreground select-none"
-            aria-hidden="true"
-          >
-            {"// overview"}
-          </p>
           <Txt
             block={block}
             field={field}
             editable={editable}
             as="p"
             placeholder="Intro"
-            className="mt-1 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
+            className="block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
           />
         </div>
       )}

@@ -15,15 +15,6 @@ import {
 
 type Step = { title?: string; text?: string };
 
-const FAKE_HASHES = [
-  "3f2a9c1",
-  "7d4e2b8",
-  "a1c85f4",
-  "9e3b0d7",
-  "5b8f2c3",
-  "2c9a4e6",
-];
-
 /** Step-by-step methodology structured as a vertical Git commit pipeline. */
 export function HowItWorksPipeline({ block, editable }: SectionProps) {
   const steps = itemsOf<Step>(block, "steps");
@@ -33,7 +24,6 @@ export function HowItWorksPipeline({ block, editable }: SectionProps) {
   const pipeline = (
     <div className="relative border-l-2 border-border pl-6 sm:pl-8 space-y-10">
       {steps.map((s, i) => {
-        const hash = FAKE_HASHES[i % FAKE_HASHES.length];
         return (
           <div key={i} className="relative">
             {/* Git commit node dot */}
@@ -42,14 +32,12 @@ export function HowItWorksPipeline({ block, editable }: SectionProps) {
               aria-hidden="true"
             />
 
-            {/* Commit meta line */}
-            <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-muted-foreground">
-              <span className="font-bold text-accent" aria-hidden="true">
-                commit {hash}
-              </span>
-              <span className="rounded bg-[color-mix(in_oklch,var(--surface)_80%,transparent)] px-2 py-0.5 text-[0.75rem] text-primary">
-                (HEAD -&gt; stage_{pad2(i)})
-              </span>
+            {/* Step number */}
+            <div
+              className="font-mono text-xs font-bold text-accent"
+              aria-hidden="true"
+            >
+              {pad2(i)}
             </div>
 
             <div className="mt-2">

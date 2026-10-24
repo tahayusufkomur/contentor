@@ -38,13 +38,6 @@ export function EventsCron({ block, data, editable }: SectionProps) {
         {events.length ? (
           <div className="mt-14">
             <WindowChrome bodyClassName="p-3 sm:p-6 font-mono">
-              <div className="mb-4 pb-3 border-b border-border text-xs text-muted-foreground">
-                <span className="text-primary font-bold">SCHEDULER:</span>{" "}
-                active ·{" "}
-                <span className="text-accent font-bold">NEXT RUN:</span>{" "}
-                upcoming
-              </div>
-
               <ul className="space-y-2">
                 {events.map((e) => (
                   <li key={`${e.type}-${e.id}`}>

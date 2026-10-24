@@ -1,16 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
-import {
-  Arrow,
-  Flag,
-  H2,
-  Kicker,
-  Section,
-  WindowChrome,
-  WRAP,
-  str,
-} from "./ui";
+import { Arrow, H2, Kicker, Section, WindowChrome, WRAP, str } from "./ui";
 
 /** Coach story rendered as an open-source README.md file in a code editor window
  *  with line numbers, metadata tags, and developer photos. */
@@ -22,13 +13,6 @@ export function StoryReadme({ block, editable }: SectionProps) {
     <Section tone="console" label={alt}>
       <div className={WRAP}>
         <WindowChrome bodyClassName="p-6 sm:p-10 md:p-12">
-          {/* README Badges bar */}
-          <div className="mb-8 flex flex-wrap items-center gap-2.5">
-            <Flag>build: passing</Flag>
-            <Flag>license: open</Flag>
-            <Flag>branch: main</Flag>
-          </div>
-
           <div className="grid gap-y-12 lg:grid-cols-12 lg:gap-x-12">
             {/* Photos pane */}
             <div className="order-last lg:order-first relative lg:col-span-5">
@@ -78,12 +62,6 @@ export function StoryReadme({ block, editable }: SectionProps) {
               </div>
 
               <div className="mt-8 border-l-2 border-border pl-5 sm:pl-7">
-                <p
-                  className="mb-4 font-mono text-xs text-muted-foreground select-none"
-                  aria-hidden="true"
-                >
-                  {"// ## Background & Philosophy"}
-                </p>
                 <Rich
                   block={block}
                   field="body"
@@ -94,12 +72,6 @@ export function StoryReadme({ block, editable }: SectionProps) {
 
               {has(block, "signature", editable) && (
                 <div className="mt-8 flex items-center gap-2 font-mono text-[0.95rem] text-accent">
-                  <span
-                    className="text-muted-foreground select-none"
-                    aria-hidden="true"
-                  >
-                    {"// Signed-off-by:"}
-                  </span>
                   <Txt
                     block={block}
                     field="signature"

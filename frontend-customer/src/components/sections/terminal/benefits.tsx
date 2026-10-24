@@ -20,10 +20,7 @@ export function BenefitsFeatures({ block, editable }: SectionProps) {
         >
           <div>
             <div className="flex items-center justify-between font-mono text-xs text-muted-foreground">
-              <span className="text-primary font-bold">--feat_{pad2(i)}</span>
-              <span className="rounded bg-[color-mix(in_oklch,var(--primary)_15%,transparent)] px-2 py-0.5 font-bold text-primary">
-                [OK]
-              </span>
+              <span className="text-primary font-bold">{pad2(i)}</span>
             </div>
 
             <h3
@@ -40,13 +37,6 @@ export function BenefitsFeatures({ block, editable }: SectionProps) {
                 {it.text}
               </p>
             )}
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-border/40 font-mono text-[0.75rem] text-muted-foreground">
-            <span className="text-accent" aria-hidden="true">
-              {"//"}
-            </span>{" "}
-            verified module
           </div>
         </div>
       ))}

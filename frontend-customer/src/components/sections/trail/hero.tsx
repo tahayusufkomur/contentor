@@ -174,7 +174,7 @@ export function HeroTrailhead({ block, editable }: SectionProps) {
             <div
               className={cn(
                 CARD,
-                "trail-rise relative mt-8 inline-flex max-w-full items-center gap-4 py-4 pl-5 pr-24",
+                "trail-rise relative mt-8 inline-flex max-w-full items-center gap-4 py-4 pl-5 pr-5",
               )}
               style={delay(400)}
             >

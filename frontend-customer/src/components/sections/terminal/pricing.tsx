@@ -9,7 +9,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import { Flag, H3, Opener, Section, WindowChrome, WRAP } from "./ui";
+import { H3, Opener, Section, WindowChrome, WRAP } from "./ui";
 
 /** Membership subscription plans presented as machine config manifests. */
 export function PricingPlans({ block, data, editable }: SectionProps) {
@@ -53,14 +53,6 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
                     bodyClassName="flex flex-1 flex-col justify-between p-6 sm:p-8"
                   >
                     <div>
-                      {isRecommended && (
-                        <div className="mb-4">
-                          <Flag className="border-accent text-accent">
-                            --recommended
-                          </Flag>
-                        </div>
-                      )}
-
                       <h3
                         className={cn(
                           H3,

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Img, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
-import { Opener, Section, WindowChrome, WRAP, pad2, str } from "./ui";
+import { Opener, Section, WindowChrome, WRAP, str } from "./ui";
 
 type Photo = { image?: unknown; caption?: string };
 

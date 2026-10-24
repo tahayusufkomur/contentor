@@ -3,7 +3,7 @@ import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, BTN, H2, Kicker, Section, WindowChrome, WRAP, str } from "./ui";
 
-/** Call-to-action formatted as an interactive terminal quickstart command. */
+/** Call-to-action inside a terminal window. */
 export function CtaInstall({ block, editable }: SectionProps) {
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -11,11 +11,7 @@ export function CtaInstall({ block, editable }: SectionProps) {
   const commandBox = (
     <div className="flex flex-col justify-between">
       <div>
-        <div className="mb-4 inline-flex items-center gap-2 rounded bg-[color-mix(in_oklch,var(--primary)_12%,transparent)] px-3 py-1 font-mono text-xs text-primary font-bold">
-          <span className="select-none">●</span> QUICKSTART COMMAND
-        </div>
-
-        <Kicker block={block} editable={editable} className="block mt-2" />
+        <Kicker block={block} editable={editable} className="block" />
 
         <Txt
           block={block}

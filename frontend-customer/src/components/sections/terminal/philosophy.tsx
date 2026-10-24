@@ -54,12 +54,6 @@ export function PhilosophyPrinciples({ block, editable }: SectionProps) {
 
           {has(block, "attribution", editable) && (
             <div className="mt-8 flex items-center gap-2 font-mono text-[0.95rem] text-accent">
-              <span
-                className="text-muted-foreground select-none"
-                aria-hidden="true"
-              >
-                {"// @author"}
-              </span>
               <Txt
                 block={block}
                 field="attribution"

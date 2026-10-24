@@ -9,7 +9,7 @@ import {
   billingIntervalSuffix,
 } from "../kit";
 import type { SectionProps } from "../types";
-import { CHIP, H3, Opener, Section, WRAP } from "./ui";
+import { CHIP, H3, Opener, Section, WRAP, pad2 } from "./ui";
 
 /** Membership plans designed as dance studio access passes / tickets with
  *  notched sides, perforated dividers, and neon price tags. */
@@ -57,13 +57,8 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                     {/* Pass Header */}
                     <div className="flex items-center justify-between">
                       <span className="studiofloor-display text-xs font-extrabold uppercase tracking-widest text-accent">
-                        STUDIO PASS // 0{i + 1}
+                        {pad2(i)}
                       </span>
-                      {isFeatured && (
-                        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 studiofloor-display text-[0.75rem] font-extrabold italic text-primary shadow-[0_0_8px_var(--primary)]">
-                          MOST POPULAR
-                        </span>
-                      )}
                     </div>
 
                     <h3 className={cn(H3, "mt-4 text-[1.6rem] leading-snug")}>
@@ -80,13 +75,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                     </p>
 
                     {/* Perforated ticket tear line */}
-                    <div className="my-6 flex items-center gap-2">
-                      <div className="h-px flex-1 border-t border-dashed border-border" />
-                      <span className="studiofloor-display text-[0.75rem] tracking-widest text-muted-foreground">
-                        TEAR HERE
-                      </span>
-                      <div className="h-px flex-1 border-t border-dashed border-border" />
-                    </div>
+                    <div className="my-6 h-px border-t border-dashed border-border" />
 
                     {!!plan.item_count && (
                       <p className={cn(CHIP, "mb-4")}>
@@ -110,7 +99,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                   <div className="mt-8 pt-4">
                     {plan.is_subscribed ? (
                       <p className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius)] border border-primary/50 bg-primary/10 studiofloor-display text-[0.95rem] font-extrabold italic text-primary">
-                        CURRENT PASS
+                        Subscribed
                       </p>
                     ) : (
                       <SubscribeButton

@@ -11,9 +11,9 @@ export function ContactIssue({ block, editable }: SectionProps) {
   const email = str(block.email);
 
   const metaRows: { field: string; label: string }[] = [
-    { field: "email", label: "assignee_email" },
-    { field: "location", label: "headquarters" },
-    { field: "hours", label: "sla_response" },
+    { field: "email", label: "Email" },
+    { field: "location", label: "Location" },
+    { field: "hours", label: "Hours" },
   ].filter((r) => has(block, r.field, editable));
 
   return (
@@ -94,12 +94,8 @@ export function ContactIssue({ block, editable }: SectionProps) {
             {showForm && (
               <div className="lg:col-span-7">
                 <div className="rounded-[var(--radius)] border border-border bg-[color-mix(in_oklch,var(--background)_95%,var(--surface))] p-6 sm:p-8">
-                  <div className="mb-6 font-mono text-xs text-primary font-bold">
-                    -- NEW ISSUE TEMPLATE
-                  </div>
                   <ContactForm
                     className="terminal-form space-y-6"
-                    submitLabel="Submit new issue"
                     buttonClassName="terminal-btn-hover h-auto min-h-12 w-full rounded-[var(--radius)] bg-primary px-6 py-3 font-mono text-[0.95rem] font-bold text-primary-foreground shadow-none hover:bg-accent hover:text-accent-foreground"
                   />
                 </div>

@@ -30,12 +30,6 @@ export function CoursesModules({ block, data, editable }: SectionProps) {
         {courses.length ? (
           <div className="mt-14">
             <WindowChrome bodyClassName="p-3 sm:p-6 font-mono">
-              <div className="mb-4 pb-3 border-b border-border text-xs text-muted-foreground">
-                <span className="text-primary font-bold">MODE:</span> 0755 ·{" "}
-                <span className="text-accent font-bold">TOTAL:</span>{" "}
-                {courses.length} modules
-              </div>
-
               <ul className="space-y-1">
                 {courses.map((c, i) => {
                   const isLast = i === courses.length - 1;
@@ -128,12 +122,6 @@ export function CoursesModules({ block, data, editable }: SectionProps) {
               href="/courses"
               className="group terminal-link inline-flex items-center gap-2 font-mono text-[0.95rem] font-bold"
             >
-              <span
-                className="text-muted-foreground select-none"
-                aria-hidden="true"
-              >
-                $ ls -la
-              </span>
               {has(block, "ctaLabel", editable) ? (
                 <Txt
                   block={block}
@@ -142,7 +130,7 @@ export function CoursesModules({ block, data, editable }: SectionProps) {
                   placeholder="Button text"
                 />
               ) : (
-                "courses/"
+                "All courses"
               )}
               <Arrow />
             </SmartLink>
