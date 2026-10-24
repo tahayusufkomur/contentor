@@ -534,6 +534,73 @@ against G1.
   header, and the final fix wave puts both into the spec. Tablets (640–767) needed their own check:
   phone-only photo sizing that ran until `md` pushed buttons to 880–1228 px. Only each style's first
   hero variant is phone-first; the composer now pins it on home (R16).
+- 2026-10-25, WP-1.8, Gate A measurements (HEAD 1b98e3cd; nothing deployed). Numbers are local and
+  `e2e/eval-shots/` is git-ignored; the working files (eval tables, detector JSON, overlap
+  snapshots) are in `.superpowers/sdd/2026-10-24-site-styles-wow-phase-0-1/task-1.8/`.
+  - **Eval** (`make eval-sites STYLE=<id> BRIEFS=yoga,business-coaching`, 5 pages per cell, judge
+    `gemini-3.8-flash-high`, one sample per page). The only baseline is WP-0.3's journal/yoga, so
+    journal/yoga is the like-for-like cell. Axes in the order first_impression, hierarchy, rhythm,
+    image_quality_consistency, copy_specificity, mobile, distinctiveness, protagonist, overall:
+    - baseline journal/yoga: 6.6, 7.2, 6.2, 5.6, 7.4, 7.0, 4.8, 4.4, overall 6.00 (lowest page 5);
+    - journal/yoga now: 6.6, 6.6, 6.2, 7.2, 7.8, 7.2, 5.2, 5.4, overall 6.20 (lowest page 6).
+      Image consistency +1.6, protagonist +1.0, distinctiveness +0.4, hierarchy -0.6, the rest flat;
+    - velvet/yoga: 6.4, 6.8, 5.8, 7.6, 8.4, 7.6, 5.6, 5.8, overall 6.20;
+    - kinetic/yoga: 5.8, 6.4, 6.0, 4.8, 8.0, 6.2, 5.8, 4.8, overall 5.60;
+    - business-coaching (niche "general"), overall: journal 5.80, velvet 5.60, kinetic 5.00; image
+      consistency 5.4, 5.2 and 3.0, protagonist 4.6, 4.0 and 2.8.
+    - Bar 8.5 and floor 7.5 are still missed everywhere. Distinctiveness stays at 4.4–5.8, and the
+      judges' notes keep calling the pages standard or off-the-shelf templates.
+    - Confounds: one judge sample per page (WP-0.3: re-judge before claiming a win of about one
+      point); velvet and kinetic have no before-Phase-1 run. The scratch tenant's owner is "Site Eval", so every story letter is
+      signed "Site", which the judges flag in all six runs (WP-1.1's signature rule, not a style
+      defect). Kinetic's 96 "broken image" flags are its marquee's off-screen lazy copies; the
+      screenshots show the photos.
+    - Judge findings worth a Gate A look: the yoga home hero photo is a man on velvet and journal
+      (S1 asks for the audience's gender); the contact page's hero button points at courses and the
+      FAQ hero's second button has a link but no label (inner pages, not covered by WP-1.1); the
+      business brief gets gym stock (thin "general" pool after peer exclusion).
+  - **`92-phone-first`:** 21/21 pass at 1b98e3cd (5.2 min), under a 64 px header with headlines of
+    12, 24, 26, 28, 30 and 36 characters. Tightest slack: sprout 32.1 px, tavola 32.2, terminal
+    32.2, primer 35.8; every style keeps at least 32 px.
+  - **Detector** (21 home pages, same URL as the baseline): 512 findings at baseline, 349 after
+    WP-1.5, 355 now. Per rule, baseline then now: ai-color-palette 62 then 9; low-contrast 60 then
+    38; undersized-ui-text 45 then 0; all-caps-body 24 then 8; tight-leading 22 then 1;
+    tiny-text 4 then 0; bounce-easing 1 then 0; text-occlusion 3 then 2; kicker-above-heading 52
+    then 51; em-dash-overuse 20 then 19; unchanged: dark-glow 59, gpt-thin-border-wide-shadow 36,
+    cream-palette 21, layout-transition 21, heading-rhythm 16, gray-on-color 14, italic-serif-display
+    14, image-hover-transform 12. The six findings above 349 arrived after WP-1.5 (the 1.6 and 1.7
+    passes landed later): terminal's "01".."06" item counters (`numbered-section-labels`, 6, a rule that did not fire
+    before), maison's 0.14em tracking on body text (`wide-tracking`, 1), dojo's 86 px H1 for the
+    fixture's 51-character headline (`oversized-h1`, 1), less one kicker in journal and one dash in
+    terminal. The detector's remaining 355 are mostly the baseline's named false positives
+    (cream-palette, layout-transition) and studiofloor's 100.
+  - **Peer overlap** (stock assets of the newest `site_eval` composition that same-niche dev
+    tenants also show, by `/curated/<uuid>` and `used_assets`): yoga brief 0 of 32 (kinetic) and 0
+    of 28 (journal) against maralindqvist's 33 and own_photos_check; the velvet yoga composition was
+    not captured. Business brief: 0 of 28 (velvet), 1 of 26 (kinetic), 0 of 26 (journal, the newest),
+    against the one tenant with data in that niche (gs-yoga-platform, 19). Bar was at most 3: met,
+    but the business check is thin (one peer).
+  - **Phone home length** (full-page height ÷ 844; baseline about 15 on the long fixture):
+    - the long fixture is unchanged, mean 15.0 at baseline and 14.9 now, so the style code alone
+      did not shorten it;
+    - the real yoga fixture (composed under WP-1.1's caps) averages 11.3, range 9.1–13.2, and none
+      is at 8 or below (G4 target), so the cut comes from the composer's caps, not the styles;
+    - the real yoga fixture, per style: atelier 12.5, darkroom 9.1, dojo 12.9, encore 10.0, grid 9.8,
+      journal 11.7, kinetic 11.1, ledger 10.8, maison 12.8, manuscript 13.2, nocturne 11.0, pop
+      11.5, primer 9.3, sanctum 12.5, sprout 12.8, studiofloor 11.9, tavola 10.5, terminal 12.4, trail
+      10.3, velvet 10.5, workshop 10.8;
+    - the business fixture is the same within 0.6 (mean 11.1).
+  - **Captures** (`index.html`, all in `e2e/eval-shots/design/`): long fixture
+    `20261025-0048-gate-a/index.html`, real yoga `20261025-0051-gate-a-real/index.html`, real
+    business `20261025-0054-gate-a-business/index.html`. Each has `sheets/all-21-{desktop-first-
+    screens,phone-first-screens,full-home-pages,full-phone-pages}.jpg`. Baseline next to now:
+    `20261025-0051-gate-a-real/sheets/pairs/pair-<style>.jpg` (21 files, long fixture) and
+    `.../sheets/pair-all-21-phone-first-screens-baseline-above-gate-a-below.jpg`.
+  - Learned: the phone contract holds on the real yoga fixture (all 21 first screens show the photo,
+    or manuscript's type, the H1 and one button), with 9 styles photo-first, 4 with the photo behind
+    the text and 8 text-first. A scratch-tenant owner named "Site Eval" skews
+    every eval run (set the owner's name to the brief's before the next gate). Key the overlap
+    snapshot on `used_assets`, not on page URLs: site_eval pages hold `photo_id`s.
 
 ## 10. Resources
 
