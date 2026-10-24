@@ -19,7 +19,7 @@ export function HeroPlates({ block, editable }: SectionProps) {
   return (
     <section className="swiss-sec swiss-hero relative overflow-hidden bg-background px-5 pb-16 pt-6 text-foreground md:px-8 md:pb-24 md:pt-8">
       <Guides />
-      <div className="relative mx-auto flex max-w-[88rem] flex-col md:block">
+      <div className="relative mx-auto flex max-w-[88rem] flex-col sm:block">
         <div className="swiss-rule" />
         <div className={cn(row, "gap-y-1 pt-3")}>
           <Txt
@@ -55,7 +55,7 @@ export function HeroPlates({ block, editable }: SectionProps) {
         <div
           className={cn(
             row,
-            "order-3 mt-6 gap-y-6 sm:mt-10 md:order-none md:mt-14",
+            "order-3 mt-6 gap-y-6 sm:order-none sm:mt-10 md:mt-14",
           )}
         >
           {has(block, "subhead", editable) && (
@@ -75,7 +75,7 @@ export function HeroPlates({ block, editable }: SectionProps) {
               editable={editable}
               label="secondaryLabel"
               href="secondaryHref"
-              className={cn(textLink, "hidden sm:inline-flex")}
+              className={cn(textLink, !editable && "hidden sm:inline-flex")}
             />
           </div>
         </div>
@@ -83,11 +83,14 @@ export function HeroPlates({ block, editable }: SectionProps) {
           <div
             className={cn(
               row,
-              "order-2 mt-5 gap-y-8 sm:mt-12 md:order-none md:mt-16",
+              "order-2 mt-5 gap-y-8 sm:order-none sm:mt-12 md:mt-16",
             )}
           >
             {photos.map((value, n) => (
-              <figure key={n} className={cn(span, n > 0 && "hidden sm:block")}>
+              <figure
+                key={n}
+                className={cn(span, n > 0 && !editable && "hidden sm:block")}
+              >
                 <Img
                   value={value}
                   alt={alt}

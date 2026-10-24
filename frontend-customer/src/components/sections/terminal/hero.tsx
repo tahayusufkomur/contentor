@@ -38,7 +38,7 @@ function Actions({
       {secondary && (
         <SmartLink
           href={block.secondaryHref}
-          className={cn(BTN_GHOST, "hidden sm:inline-flex")}
+          className={cn(BTN_GHOST, !editable && "hidden sm:inline-flex")}
         >
           <Txt
             block={block}
@@ -64,11 +64,11 @@ export function HeroPrompt({ block, editable }: SectionProps) {
   return (
     <Section
       tone="console"
-      className="pt-6 sm:pt-12 md:pt-16 lg:pt-20"
+      className="pt-4 sm:pt-12 md:pt-16 lg:pt-20"
       label={alt}
     >
       <div className={WRAP}>
-        <div className="grid items-center gap-y-6 lg:grid-cols-12 lg:gap-y-12 lg:gap-x-12">
+        <div className="grid items-center gap-y-5 lg:grid-cols-12 lg:gap-y-12 lg:gap-x-12">
           {/* Main prompt & content */}
           <div
             className={
@@ -131,12 +131,17 @@ export function HeroPrompt({ block, editable }: SectionProps) {
                   value={block.image}
                   alt={alt}
                   priority
-                  className="h-[21.25rem] w-full sm:h-[26rem] lg:aspect-[4/5] lg:h-auto"
+                  className="h-[21.25rem] w-full sm:h-[22rem] lg:aspect-[4/5] lg:h-auto"
                 />
               </WindowChrome>
 
               {showDetail && (
-                <div className="absolute -bottom-8 -left-6 hidden w-[52%] sm:-left-8 lg:block">
+                <div
+                  className={cn(
+                    "absolute -bottom-8 -left-6 w-[52%] sm:-left-8",
+                    !editable && "hidden lg:block",
+                  )}
+                >
                   <WindowChrome
                     bodyClassName="p-0 overflow-hidden"
                     className="shadow-xl"

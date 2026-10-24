@@ -41,7 +41,7 @@ function Actions({
       {secondary && (
         <SmartLink
           href={block.secondaryHref}
-          className={cn(BTN_GHOST, "hidden sm:inline-flex")}
+          className={cn(BTN_GHOST, !editable && "hidden sm:inline-flex")}
         >
           <Txt
             block={block}

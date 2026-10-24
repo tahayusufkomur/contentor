@@ -42,7 +42,7 @@ function Actions({
       {secondary && (
         <SmartLink
           href={block.secondaryHref}
-          className={cn(BTN_GHOST, "hidden sm:inline-flex")}
+          className={cn(BTN_GHOST, !editable && "hidden sm:inline-flex")}
         >
           <Txt
             block={block}
@@ -58,21 +58,20 @@ function Actions({
 
 /** The awning: the olive kicker, the claim in the chunky serif, the dek and
  *  the tomato button on the left; on the right the portrait as a menu card
- *  (ink border, olive shadow) under a striped awning, with the small line as
- *  its specials board and the detail print set under its corner. On a phone
- *  the card comes first, so the awning and the photo are the first screen
- *  and the claim and the button sit right under them; the detail print
- *  waits for a wider screen. */
+ *  (ink border, olive shadow) with the small line as its specials board and
+ *  the detail print set under its corner. Below `sm` the card comes first,
+ *  so the photo is the first screen and the claim and the button sit right
+ *  under it; the detail print waits for `sm`. */
 export function HeroMenu({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   const showMeta = has(block, "meta", editable);
   return (
-    <Section className="pt-6 sm:pt-12 md:pt-16 lg:pt-20" label={alt}>
+    <Section className="pt-4 sm:pt-12 md:pt-16 lg:pt-20" label={alt}>
       <div
         className={cn(
           WRAP,
-          "grid gap-y-6 sm:gap-y-8 md:grid-cols-12 md:items-center md:gap-x-8 md:gap-y-14 lg:gap-x-12",
+          "grid gap-y-5 sm:gap-y-14 md:grid-cols-12 md:items-center md:gap-x-8 lg:gap-x-12",
         )}
       >
         <div className="md:col-span-7">
@@ -111,40 +110,40 @@ export function HeroMenu({ block, editable }: SectionProps) {
           />
         </div>
 
-        <div className="relative order-first md:order-none md:col-span-5">
+        <div className="relative order-first sm:order-none md:col-span-5">
           <figure className="tavola-set relative" style={delay(350)}>
-            <div className={cn(CARD, "overflow-hidden")}>
-              <div aria-hidden="true" className="tavola-awning" />
-              <div className="p-2.5 sm:p-4">
-                {showMeta && (
-                  <p
-                    className={cn(
-                      LABEL,
-                      "mb-3 border-b-2 border-dotted border-border pb-3 normal-case tracking-[0.04em] sm:mb-4 sm:pb-4",
-                    )}
-                  >
-                    <Txt
-                      block={block}
-                      field="meta"
-                      editable={editable}
-                      placeholder="Small line"
-                    />
-                  </p>
-                )}
-                <Img
-                  value={block.image}
-                  alt={alt}
-                  priority
-                  className="h-[22rem] w-full rounded-[calc(var(--radius)-2px)] sm:h-auto sm:aspect-[4/5]"
-                />
-              </div>
+            <div className={cn(CARD, "overflow-hidden p-2.5 sm:p-4")}>
+              {showMeta && (
+                <p
+                  className={cn(
+                    LABEL,
+                    "mb-3 border-b-2 border-dotted border-border pb-3 normal-case tracking-[0.04em] sm:mb-4 sm:pb-4",
+                  )}
+                >
+                  <Txt
+                    block={block}
+                    field="meta"
+                    editable={editable}
+                    placeholder="Small line"
+                  />
+                </p>
+              )}
+              <Img
+                value={block.image}
+                alt={alt}
+                priority
+                className="h-[21.5rem] w-full rounded-[calc(var(--radius)-2px)] sm:h-auto sm:aspect-[4/5]"
+              />
             </div>
           </figure>
           {showDetail && (
             <Img
               value={block.image2}
               alt={alt}
-              className="tavola-photo tavola-rise absolute -bottom-8 -left-4 hidden aspect-square w-[36%] max-w-[11rem] rotate-[-3deg] rounded-[var(--radius)] sm:-left-8 md:block"
+              className={cn(
+                "tavola-photo tavola-rise absolute -bottom-8 -left-4 aspect-square w-[36%] max-w-[11rem] rotate-[-3deg] rounded-[var(--radius)] sm:-left-8",
+                !editable && "hidden sm:block",
+              )}
             />
           )}
         </div>

@@ -44,7 +44,7 @@ function Actions({
       {secondary && (
         <SmartLink
           href={block.secondaryHref}
-          className={cn(BTN_ACCENT, "hidden sm:inline-flex")}
+          className={cn(BTN_ACCENT, !editable && "hidden sm:inline-flex")}
         >
           <Txt
             block={block}
@@ -70,13 +70,13 @@ export function HeroLineup({ block, editable }: SectionProps) {
   const showKicker = has(block, "kicker", editable);
   const showMeta = has(block, "meta", editable);
   return (
-    <Section className="pt-6 sm:pt-8 md:pt-10 lg:pt-12" label={alt}>
-      <div className={cn(WRAP, "flex flex-col md:block")}>
+    <Section className="pt-4 sm:pt-8 md:pt-10 lg:pt-12" label={alt}>
+      <div className={cn(WRAP, "flex flex-col sm:block")}>
         {(showKicker || showMeta) && (
           <div
             className={cn(
               LABEL,
-              "encore-stamp flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-y-[3px] border-foreground py-3",
+              "encore-stamp flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-y-[3px] border-foreground py-2.5 sm:py-3",
             )}
             style={delay(0)}
           >
@@ -100,7 +100,7 @@ export function HeroLineup({ block, editable }: SectionProps) {
             />
           </div>
         )}
-        <div className="encore-stamp mt-5 sm:mt-6 md:mt-8" style={delay(150)}>
+        <div className="encore-stamp mt-4 sm:mt-6 md:mt-8" style={delay(150)}>
           <Txt
             block={block}
             field="headline"
@@ -117,7 +117,7 @@ export function HeroLineup({ block, editable }: SectionProps) {
           />
         </div>
         <div
-          className="encore-stamp order-3 mt-5 grid items-end gap-x-10 gap-y-6 sm:mt-7 md:order-none md:grid-cols-12"
+          className="encore-stamp order-3 mt-5 grid items-end gap-x-10 gap-y-4 sm:order-none sm:mt-7 sm:gap-y-6 md:grid-cols-12"
           style={delay(320)}
         >
           <Txt
@@ -137,7 +137,7 @@ export function HeroLineup({ block, editable }: SectionProps) {
         {photos.length > 0 && (
           <ul
             className={cn(
-              "encore-stamp order-2 mt-5 grid gap-3 sm:mt-9 sm:gap-5 md:order-none",
+              "encore-stamp order-2 mt-4 grid gap-3 sm:order-none sm:mt-9 sm:gap-5",
               photos.length === 1
                 ? "grid-cols-1"
                 : photos.length === 2
@@ -152,7 +152,7 @@ export function HeroLineup({ block, editable }: SectionProps) {
                 className={cn(
                   photos.length === 3 && n === 2 && "col-span-2 md:col-span-1",
                   n === 0 && photos.length > 1 && "col-span-2 sm:col-span-1",
-                  n > 0 && "hidden sm:block",
+                  n > 0 && !editable && "hidden sm:block",
                 )}
               >
                 <div
@@ -164,8 +164,8 @@ export function HeroLineup({ block, editable }: SectionProps) {
                     priority={n === 0}
                     className={
                       photos.length === 1
-                        ? "aspect-[10/11] w-full sm:aspect-[16/7]"
-                        : "aspect-[10/11] w-full sm:aspect-[4/3]"
+                        ? "aspect-[24/25] w-full sm:aspect-[16/7]"
+                        : "aspect-[24/25] w-full sm:aspect-[4/3]"
                     }
                   />
                 </div>
@@ -262,7 +262,7 @@ export function HeroPoster({ block, editable }: SectionProps) {
         </div>
 
         <figure
-          className="encore-stamp order-first md:order-none md:col-span-5 lg:col-span-4"
+          className="encore-stamp order-first sm:order-none md:col-span-5 lg:col-span-4"
           style={delay(250)}
         >
           <div className={cn(BOX, "encore-halftone relative p-2 sm:p-3")}>
@@ -270,11 +270,16 @@ export function HeroPoster({ block, editable }: SectionProps) {
               value={block.image}
               alt={alt}
               priority
-              className="aspect-[10/11] w-full md:aspect-square lg:aspect-[4/5]"
+              className="aspect-[10/11] w-full sm:aspect-[4/5] md:aspect-square lg:aspect-[4/5]"
             />
           </div>
           {showDetail && (
-            <div className="mt-3 hidden justify-end sm:flex">
+            <div
+              className={cn(
+                "mt-3 flex justify-end",
+                !editable && "hidden sm:flex",
+              )}
+            >
               <Img
                 value={block.image2}
                 alt={alt}

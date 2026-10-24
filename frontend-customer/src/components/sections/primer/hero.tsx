@@ -41,7 +41,7 @@ function Actions({
       {secondary && (
         <SmartLink
           href={block.secondaryHref}
-          className={cn(BTN_GHOST, "hidden sm:inline-flex")}
+          className={cn(BTN_GHOST, !editable && "hidden sm:inline-flex")}
         >
           <Txt
             block={block}
@@ -67,7 +67,7 @@ export function HeroTitlePage({ block, editable }: SectionProps) {
   return (
     <Section
       tone="ruled"
-      className="pt-6 sm:pt-12 md:pt-16 lg:pt-20"
+      className="pt-4 sm:pt-12 md:pt-16 lg:pt-20"
       label={alt}
     >
       <div className={WRAP}>
@@ -121,19 +121,22 @@ export function HeroTitlePage({ block, editable }: SectionProps) {
             />
           </div>
 
-          <div className="order-first md:order-none md:col-span-5 lg:col-span-4 lg:col-start-9">
+          <div className="order-first sm:order-none md:col-span-5 lg:col-span-4 lg:col-start-9">
             <figure>
               <Img
                 value={block.image}
                 alt={alt}
                 priority
-                className="primer-print aspect-[10/11] w-full rotate-[-1.5deg] md:aspect-[4/5]"
+                className="primer-print aspect-[10/11] w-full rotate-[-1.5deg] sm:aspect-[4/5]"
               />
               {showDetail && (
                 <Img
                   value={block.image2}
                   alt={alt}
-                  className="primer-print relative -mt-10 ml-auto hidden aspect-square w-[42%] rotate-[2deg] md:block"
+                  className={cn(
+                    "primer-print relative -mt-10 ml-auto aspect-square w-[42%] rotate-[2deg]",
+                    !editable && "hidden sm:block",
+                  )}
                 />
               )}
             </figure>
