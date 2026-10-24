@@ -48,7 +48,7 @@ export function HeroPlates({ block, editable }: SectionProps) {
           className={cn(
             "swiss-h1 mt-6 block sm:mt-8 md:mt-12",
             alt.length <= 28
-              ? "!text-[clamp(3rem,0.4rem+12.2vw,13.5rem)] !leading-[0.88]"
+              ? "!text-[clamp(2.6rem,0.6rem+7.4vw,8.5rem)] sm:!text-[clamp(3rem,0.4rem+12.2vw,13.5rem)] sm:!leading-[0.88]"
               : "!text-[clamp(2.6rem,0.6rem+7.4vw,8.5rem)]",
           )}
         />
@@ -98,8 +98,8 @@ export function HeroPlates({ block, editable }: SectionProps) {
                   className={cn(
                     "swiss-photo w-full",
                     photos.length === 1
-                      ? "aspect-[10/11] sm:aspect-[16/7]"
-                      : "aspect-[10/11] sm:aspect-[4/3]",
+                      ? "aspect-square sm:aspect-[16/7]"
+                      : "aspect-square sm:aspect-[4/3]",
                   )}
                 />
               </figure>

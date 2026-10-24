@@ -111,7 +111,7 @@ export function HeroLineup({ block, editable }: SectionProps) {
               DISPLAY,
               "block",
               alt.length <= 26
-                ? "text-[clamp(2.8rem,0.4rem+11.6vw,13rem)] leading-[0.86]"
+                ? "text-[clamp(2.2rem,0.6rem+6.4vw,7.4rem)] leading-[0.92] sm:text-[clamp(2.8rem,0.4rem+11.6vw,13rem)] sm:leading-[0.86]"
                 : "text-[clamp(2.2rem,0.6rem+6.4vw,7.4rem)] leading-[0.92]",
             )}
           />
@@ -240,7 +240,7 @@ export function HeroPoster({ block, editable }: SectionProps) {
               className={cn(
                 H1,
                 alt.length <= 26
-                  ? "max-w-[9ch] text-[clamp(2.8rem,1rem+7.6vw,8.6rem)] leading-[0.92]"
+                  ? "max-w-[14ch] sm:max-w-[9ch] sm:text-[clamp(2.8rem,1rem+7.6vw,8.6rem)] sm:leading-[0.92]"
                   : "max-w-[14ch]",
               )}
             />

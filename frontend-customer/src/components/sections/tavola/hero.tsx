@@ -88,7 +88,7 @@ export function HeroMenu({ block, editable }: SectionProps) {
               className={cn(
                 H1,
                 alt.length <= 28
-                  ? "max-w-[11ch] text-[clamp(3.2rem,1.3rem+7.2vw,8.2rem)] leading-[0.96]"
+                  ? "max-w-[15ch] sm:max-w-[11ch] sm:text-[clamp(3.2rem,1.3rem+7.2vw,8.2rem)] sm:leading-[0.96]"
                   : "max-w-[15ch]",
               )}
             />
