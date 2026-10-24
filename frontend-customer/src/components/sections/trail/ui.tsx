@@ -1,7 +1,6 @@
 /** Trail building blocks shared by every trail section: a national park
  *  field guide — stone paper with contour lines, pine and blaze orange, a
- *  slab serif, mono labels for distances and elevations, route cards and
- *  stamps for milestones. */
+ *  slab serif, mono labels for distances and elevations, and route cards. */
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { Block } from "@/types/tenant";
@@ -117,29 +116,6 @@ export function Stat({
       </p>
       <p className={cn(LABEL, "mt-1.5 text-muted-foreground")}>{label}</p>
     </div>
-  );
-}
-
-/** A round blaze stamp: two-line mono text in a double ring, tilted. */
-export function Stamp({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        "trail-stamp grid size-[5.5rem] place-items-center rounded-full border-[3px] border-double border-accent p-2 text-center text-[color:var(--trail-blaze-ink)]",
-        LABEL,
-        "leading-[1.2] tracking-[0.08em]",
-        className,
-      )}
-    >
-      {children}
-    </span>
   );
 }
 

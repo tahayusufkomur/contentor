@@ -62,7 +62,7 @@ export function CoursesRoutes({ block, data, editable }: SectionProps) {
                   />
                   <div className="flex flex-1 flex-col p-6">
                     <p className={cn(LABEL, "text-primary")} aria-hidden="true">
-                      Route {pad2(i)}
+                      {pad2(i)}
                     </p>
                     <h3
                       className={cn(H3, "mt-2 text-[1.3rem] md:text-[1.45rem]")}

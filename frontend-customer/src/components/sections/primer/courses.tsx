@@ -32,10 +32,10 @@ export function CoursesSyllabus({ block, data, editable }: SectionProps) {
               <li key={c.id}>
                 <SmartLink
                   href={courseHref(c)}
-                  className="group grid items-start gap-x-6 gap-y-3 border-b border-border py-6 sm:grid-cols-[6rem_minmax(0,1fr)_auto]"
+                  className="group grid items-start gap-x-6 gap-y-3 border-b border-border py-6 sm:grid-cols-[3rem_minmax(0,1fr)_auto]"
                 >
                   <span className={cn(LABEL, "text-accent")} aria-hidden="true">
-                    Unit {pad2(i)}
+                    {pad2(i)}
                   </span>
                   <div className="flex min-w-0 gap-5">
                     <Img

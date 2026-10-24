@@ -8,7 +8,6 @@ import {
   CHIP,
   H1,
   Kicker,
-  LABEL_ACCENT,
   Section,
   WRAP,
   str,
@@ -74,7 +73,7 @@ export function HeroMirror({ block, editable }: SectionProps) {
       <div aria-hidden="true" className="studiofloor-stage-beam" />
       <div className={cn(WRAP, "relative z-10 py-20 md:py-24")}>
         <div className="ml-auto max-w-[34rem] rounded-[var(--radius)] border border-primary/50 bg-background/80 p-7 shadow-[0_0_48px_color-mix(in_oklch,var(--primary)_28%,transparent)] backdrop-blur-md md:p-10">
-          <Kicker block={block} editable={editable} cue="ACT 01" />
+          <Kicker block={block} editable={editable} />
           <Txt
             block={block}
             field="headline"
@@ -135,7 +134,7 @@ export function HeroStage({ block, editable }: SectionProps) {
       <div className={cn(WRAP, "relative z-10")}>
         <div className="grid items-center gap-y-12 lg:grid-cols-12 lg:gap-x-12">
           <div className={hasImages ? "lg:col-span-7" : "lg:col-span-9"}>
-            <Kicker block={block} editable={editable} cue="ACT 01" />
+            <Kicker block={block} editable={editable} />
 
             <div className="mt-5">
               <Txt
@@ -219,9 +218,6 @@ export function HeroStage({ block, editable }: SectionProps) {
                           className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none"
                         />
                       </div>
-                      <div className="mt-3 hidden sm:block">
-                        <span className={LABEL_ACCENT}>MIRROR 02</span>
-                      </div>
                     </div>
                   )}
                 </div>
@@ -234,7 +230,7 @@ export function HeroStage({ block, editable }: SectionProps) {
   );
 }
 
-/** Inner-page header: compact dance studio header with cue tag, bold Anybody
+/** Inner-page header: compact dance studio header with bold Anybody
  *  headline, subhead, actions, and optional compact photo. */
 export function HeroIntro({ block, editable }: SectionProps) {
   const alt = str(block.headline);
@@ -250,7 +246,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
       <div className={cn(WRAP, "relative z-10")}>
         <div className="grid items-center gap-y-10 lg:grid-cols-12 lg:gap-x-10">
           <div className={showImage ? "lg:col-span-8" : "lg:col-span-10"}>
-            <Kicker block={block} editable={editable} cue="STAGE" />
+            <Kicker block={block} editable={editable} />
 
             <Txt
               block={block}

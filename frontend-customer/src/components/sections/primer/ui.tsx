@@ -129,35 +129,6 @@ export function Check({
   );
 }
 
-/** Index tabs ("A1", "A2", "B1") stacked at the page edge. */
-export function Tabs({
-  items,
-  className,
-}: {
-  items: string[];
-  className?: string;
-}) {
-  return (
-    <div
-      aria-hidden="true"
-      className={cn("flex flex-col items-end gap-1.5", className)}
-    >
-      {items.map((t, i) => (
-        <span
-          key={t}
-          className={cn(
-            LABEL,
-            "primer-tab rounded-l-[var(--radius)] px-3 py-1.5 text-primary-foreground",
-          )}
-          style={{ opacity: 1 - i * 0.18 }}
-        >
-          {t}
-        </span>
-      ))}
-    </div>
-  );
-}
-
 /** Standard section opener: kicker, heading left, intro right. */
 export function Opener({
   block,

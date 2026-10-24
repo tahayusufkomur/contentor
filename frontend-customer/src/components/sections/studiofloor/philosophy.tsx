@@ -30,7 +30,7 @@ export function PhilosophyMirror({ block, editable }: SectionProps) {
         )}
       >
         <figure className="flex flex-col items-center text-center">
-          <Kicker block={block} editable={editable} cue="MANIFESTO" />
+          <Kicker block={block} editable={editable} />
 
           <div className="relative mt-8">
             <blockquote>

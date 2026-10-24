@@ -26,12 +26,6 @@ function Actions({
     <div className={cn("flex flex-wrap items-center gap-4", className)}>
       {primary && (
         <SmartLink href={block.ctaHref} className={BTN}>
-          <span
-            className="text-primary-foreground opacity-80"
-            aria-hidden="true"
-          >
-            $
-          </span>
           <Txt
             block={block}
             field="ctaLabel"
@@ -43,9 +37,6 @@ function Actions({
       )}
       {secondary && (
         <SmartLink href={block.secondaryHref} className={BTN_GHOST}>
-          <span className="text-accent" aria-hidden="true">
-            --
-          </span>
           <Txt
             block={block}
             field="secondaryLabel"
@@ -123,14 +114,10 @@ export function HeroPrompt({ block, editable }: SectionProps) {
             />
           </div>
 
-          {/* Right window: Photo preview or Console REPL */}
-          {hasImage ? (
+          {/* Right window: the photo */}
+          {hasImage && (
             <div className="relative lg:col-span-5">
-              <WindowChrome
-                title="session.raw"
-                tag="LIVE"
-                bodyClassName="p-0 overflow-hidden"
-              >
+              <WindowChrome bodyClassName="p-0 overflow-hidden">
                 <Img
                   value={block.image}
                   alt={alt}
@@ -142,8 +129,6 @@ export function HeroPrompt({ block, editable }: SectionProps) {
               {showDetail && (
                 <div className="absolute -bottom-8 -left-6 w-[52%] sm:-left-8">
                   <WindowChrome
-                    title="inspect.png"
-                    tag="200"
                     bodyClassName="p-0 overflow-hidden"
                     className="shadow-xl"
                   >
@@ -155,28 +140,6 @@ export function HeroPrompt({ block, editable }: SectionProps) {
                   </WindowChrome>
                 </div>
               )}
-            </div>
-          ) : (
-            <div className="lg:col-span-8 lg:col-start-3">
-              <WindowChrome
-                title="~/workspace/env.sh"
-                tag="ACTIVE"
-                className="mt-6"
-              >
-                <pre className="overflow-x-auto font-mono text-sm leading-relaxed text-muted-foreground">
-                  <code>
-                    <span className="text-accent font-bold">export</span> FOCUS=
-                    <span className="text-primary">&quot;deep-work&quot;</span>
-                    {"\n"}
-                    <span className="text-accent font-bold">export</span> MODE=
-                    <span className="text-primary">&quot;mentorship&quot;</span>
-                    {"\n"}
-                    <span className="text-muted-foreground">
-                      {"// system ready: start your journey below"}
-                    </span>
-                  </code>
-                </pre>
-              </WindowChrome>
             </div>
           )}
         </div>
@@ -241,7 +204,6 @@ export function HeroIntro({ block, editable }: SectionProps) {
           {showImage && (
             <figure className="lg:col-span-4">
               <WindowChrome
-                title="header.png"
                 bodyClassName="p-0 overflow-hidden"
                 className="max-w-[16rem] lg:ml-auto"
               >

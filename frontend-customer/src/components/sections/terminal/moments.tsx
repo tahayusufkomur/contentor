@@ -39,11 +39,7 @@ export function MomentsScreens({ block, editable }: SectionProps) {
                 photos.length === 1 && "sm:col-span-2 lg:col-span-1",
               )}
             >
-              <WindowChrome
-                title={`buffer_${pad2(i)}.png`}
-                tag="FRAME"
-                bodyClassName="p-0 overflow-hidden flex flex-col"
-              >
+              <WindowChrome bodyClassName="p-0 overflow-hidden flex flex-col">
                 <Img
                   value={p.image}
                   alt={p.caption || alt}

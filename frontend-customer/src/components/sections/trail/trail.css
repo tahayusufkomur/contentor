@@ -60,15 +60,6 @@
   );
 }
 
-/* Stamps sit tilted, like ink on a passport. */
-.trail-stamp {
-  transform: rotate(-10deg);
-}
-/* On the pine band the raw blaze reads; the hero's stone card opts out. */
-.trail-pine .trail-stamp {
-  color: var(--accent);
-}
-
 /* One focus treatment for every control. */
 .trail a:focus-visible,
 .trail button:focus-visible,
@@ -208,14 +199,9 @@
     transform: scale(1.03);
   }
 
-  /* The one orchestrated moment: the route card is filled in and the stamp
-   * comes down on it. */
+  /* The one orchestrated moment: the route card is filled in. */
   .trail-rise {
     animation: trail-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-    animation-delay: var(--trail-delay, 0ms);
-  }
-  .trail-stamp {
-    animation: trail-stamp 0.5s cubic-bezier(0.2, 0.9, 0.2, 1) both;
     animation-delay: var(--trail-delay, 0ms);
   }
 }
@@ -228,15 +214,5 @@
   to {
     opacity: 1;
     transform: none;
-  }
-}
-@keyframes trail-stamp {
-  from {
-    opacity: 0;
-    transform: rotate(-10deg) scale(1.5);
-  }
-  to {
-    opacity: 1;
-    transform: rotate(-10deg) scale(1);
   }
 }

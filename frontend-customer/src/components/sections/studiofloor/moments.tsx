@@ -21,7 +21,6 @@ export function MomentsReel({ block, editable }: SectionProps) {
           <Opener
             block={block}
             editable={editable}
-            cue="REEL"
             field="caption"
             className="mb-14"
           />

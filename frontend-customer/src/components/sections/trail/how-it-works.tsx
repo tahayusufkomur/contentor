@@ -1,21 +1,11 @@
 import { cn } from "@/lib/utils";
 import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
-import {
-  H3,
-  LABEL,
-  Opener,
-  Section,
-  Stamp,
-  WRAP,
-  Waypoint,
-  pad2,
-  str,
-} from "./ui";
+import { H3, Opener, Section, WRAP, Waypoint, str } from "./ui";
 
 type Step = { title?: string; text?: string };
 
-/** Steps as trail waypoints: numbered discs along a dashed route line ending with a summit stamp. */
+/** Steps as trail waypoints: numbered discs along a dashed route line. */
 export function HowItWorksWaypoints({ block, editable }: SectionProps) {
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
@@ -54,13 +44,7 @@ export function HowItWorksWaypoints({ block, editable }: SectionProps) {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p
-                  className={cn(LABEL, "text-muted-foreground")}
-                  aria-hidden="true"
-                >
-                  Waypoint {pad2(i)}
-                </p>
-                <h3 className={cn(H3, "mt-1 text-[1.3rem]")}>
+                <h3 className={cn(H3, "text-[1.3rem]")}>
                   <span className="sr-only">{`${i + 1}. `}</span>
                   {s.title}
                 </h3>
@@ -68,13 +52,6 @@ export function HowItWorksWaypoints({ block, editable }: SectionProps) {
                   {s.text}
                 </p>
               </div>
-              {i === steps.length - 1 && (
-                <Stamp className="absolute right-0 top-0 hidden lg:grid">
-                  Summit
-                  <br />
-                  reached
-                </Stamp>
-              )}
             </li>
           ))}
         </ol>

@@ -19,11 +19,7 @@ export function PhilosophyPrinciples({ block, editable }: SectionProps) {
   return (
     <Section tone="console" label="Philosophy">
       <div className={WRAP}>
-        <WindowChrome
-          title="~/principles/core.ts"
-          tag="DOCS"
-          bodyClassName="p-6 sm:p-10 md:p-12 font-mono"
-        >
+        <WindowChrome bodyClassName="p-6 sm:p-10 md:p-12 font-mono">
           <div className="text-muted-foreground select-none text-lg">
             {"/**"}
           </div>
@@ -76,11 +72,7 @@ export function PhilosophyPrinciples({ block, editable }: SectionProps) {
 
           {showImage && (
             <div className="mt-10">
-              <WindowChrome
-                title="environment_shot.raw"
-                tag="16:9"
-                bodyClassName="p-0 overflow-hidden"
-              >
+              <WindowChrome bodyClassName="p-0 overflow-hidden">
                 <Img
                   value={block.image}
                   alt={statement.slice(0, 120)}

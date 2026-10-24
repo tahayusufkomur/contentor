@@ -11,7 +11,6 @@ import {
   Kicker,
   LABEL,
   Section,
-  Stamp,
   WRAP,
   str,
 } from "./ui";
@@ -54,8 +53,7 @@ function Actions({
 }
 
 /** The overlook: the view from the trail fills the hero and the claim sits
- *  on a route card pinned low and left, stamp on its corner, so the photo
- *  stays the view. One photo; without one the pine shows through. */
+ *  on a route card pinned low and left, so the photo stays the view. One photo; without one the pine shows through. */
 export function HeroOverlook({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const showMeta = has(block, "meta", editable);
@@ -79,11 +77,6 @@ export function HeroOverlook({ block, editable }: SectionProps) {
           )}
           style={delay(0)}
         >
-          <Stamp className="absolute -right-5 -top-9 bg-background !text-[color:var(--trail-blaze-ink)] sm:-right-9">
-            Trail
-            <br />
-            head
-          </Stamp>
           <Kicker block={block} editable={editable} className="!text-primary" />
           <Txt
             block={block}
@@ -134,8 +127,8 @@ export function HeroOverlook({ block, editable }: SectionProps) {
 }
 
 /** The trailhead: contour lines on stone, the pine kicker, the claim in the
- *  slab serif, the dek, and the small line as a route card with a stamp on
- *  it; the wide photograph across the right as the view from the start. */
+ *  slab serif, the dek, and the small line as a route card; the wide
+ *  photograph across the right as the view from the start. */
 export function HeroTrailhead({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
@@ -202,11 +195,6 @@ export function HeroTrailhead({ block, editable }: SectionProps) {
                   placeholder="Small line"
                 />
               </p>
-              <Stamp className="absolute right-0 -top-6 sm:-right-5 sm:-top-5">
-                Trail
-                <br />
-                head
-              </Stamp>
             </div>
           )}
           <Actions

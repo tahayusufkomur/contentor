@@ -15,7 +15,7 @@ export function FaqWarmup({ block, editable }: SectionProps) {
       <div className={cn(WRAP, "grid gap-y-12 lg:grid-cols-12 lg:gap-x-12")}>
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-24">
-            <Kicker block={block} editable={editable} cue="WARMUP" />
+            <Kicker block={block} editable={editable} />
             <Txt
               block={block}
               field="heading"

@@ -29,11 +29,7 @@ export function CoursesModules({ block, data, editable }: SectionProps) {
 
         {courses.length ? (
           <div className="mt-14">
-            <WindowChrome
-              title="/var/www/courses/"
-              tag="TREE"
-              bodyClassName="p-3 sm:p-6 font-mono"
-            >
+            <WindowChrome bodyClassName="p-3 sm:p-6 font-mono">
               <div className="mb-4 pb-3 border-b border-border text-xs text-muted-foreground">
                 <span className="text-primary font-bold">MODE:</span> 0755 ·{" "}
                 <span className="text-accent font-bold">TOTAL:</span>{" "}

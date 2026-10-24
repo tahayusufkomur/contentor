@@ -84,7 +84,7 @@ export function HowItWorksSoundcheck({ block, editable }: SectionProps) {
               className={cn(BOX, "flex min-h-[13rem] flex-col p-5 md:p-6")}
             >
               <div className={cn(LABEL, "flex items-center justify-between")}>
-                <span aria-hidden="true">CH {pad2(i)}</span>
+                <span aria-hidden="true">{pad2(i)}</span>
                 {i === 0 && (
                   <span aria-hidden="true" className="size-2.5 bg-accent" />
                 )}

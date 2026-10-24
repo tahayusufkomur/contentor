@@ -86,11 +86,6 @@
   box-shadow: inset 0 0 0 2px var(--inverse);
 }
 
-/* Index tab fill. */
-.primer-tab {
-  background: var(--primary);
-}
-
 /* One focus treatment for every control. */
 .primer a:focus-visible,
 .primer button:focus-visible,

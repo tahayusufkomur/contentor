@@ -60,7 +60,7 @@ export function CoursesPlates({ block, data, editable }: SectionProps) {
                 />
                 <WallLabel className="mt-5 max-w-none">
                   <div className="flex items-baseline justify-between gap-4">
-                    <Plate>Plate {pad2(i)}</Plate>
+                    <Plate>{pad2(i)}</Plate>
                     <CoursePrice
                       course={c}
                       className="darkroom-price darkroom-mono darkroom-tnum text-[0.75rem] uppercase tracking-[0.1em]"

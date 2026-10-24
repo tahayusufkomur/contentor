@@ -10,7 +10,6 @@ import {
   Kicker,
   Page,
   Section,
-  Tabs,
   WRAP,
   str,
 } from "./ui";
@@ -56,7 +55,7 @@ function Actions({
 /** The title page of the exercise book: ruled paper with the red margin,
  *  the unit label in Courier, the title written in large, the dek, the
  *  small line as a note in the margin's voice, and on the right the portrait
- *  taped in like a print with level tabs at the page edge. */
+ *  taped in like a print. */
 export function HeroTitlePage({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
@@ -114,11 +113,7 @@ export function HeroTitlePage({ block, editable }: SectionProps) {
           </div>
 
           <div className="relative md:col-span-5 lg:col-span-4 lg:col-start-9">
-            <Tabs
-              items={["A1", "A2", "B1"]}
-              className="absolute -right-5 top-2 z-10 md:-right-8"
-            />
-            <figure className="mr-10 md:mr-12">
+            <figure>
               <Img
                 value={block.image}
                 alt={alt}

@@ -2,11 +2,10 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { heroPhotos } from "../collage";
-import { Cta, Guides, btn, pad, row, textLink } from "./ui";
+import { Cta, Guides, btn, row, textLink } from "./ui";
 
 /** Home hero, plates: the statement set across all twelve columns at the
- *  width of the page, then up to three grid-locked figure plates under it,
- *  each with its mono caption. */
+ *  width of the page, then up to three grid-locked figure plates under it. */
 export function HeroPlates({ block, editable }: SectionProps) {
   const alt = String(block.headline ?? "");
   const photos = heroPhotos(block, editable).slice(0, 3);
@@ -86,9 +85,6 @@ export function HeroPlates({ block, editable }: SectionProps) {
                     photos.length === 1 ? "aspect-[16/7]" : "aspect-[4/3]",
                   )}
                 />
-                <figcaption className="swiss-mono mt-2 text-muted-foreground">
-                  FIG. {pad(n + 1)}
-                </figcaption>
               </figure>
             ))}
           </div>

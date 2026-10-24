@@ -121,8 +121,9 @@ export function Ref({
   );
 }
 
-/** "Fig." caption line under a photograph — numbered only where a section
- *  holds several plates, so numbers never jump across a page. */
+/** Caption line under a photograph: a hairline, the caption, and a plate
+ *  number only where a section holds several plates, so numbers never jump
+ *  across a page. With neither, it is just the hairline. */
 export function Fig({
   n,
   children,
@@ -141,7 +142,7 @@ export function Fig({
         className,
       )}
     >
-      <span>Fig.{n === undefined ? "" : ` ${n}`}</span>
+      {n !== undefined && <span>{n}</span>}
       {children && (
         <span className="min-w-0 normal-case tracking-normal">{children}</span>
       )}

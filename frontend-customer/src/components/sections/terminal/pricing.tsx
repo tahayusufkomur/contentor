@@ -46,8 +46,6 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
               return (
                 <li key={plan.id} className="flex flex-col">
                   <WindowChrome
-                    title={`tier_${plan.name.toLowerCase().replace(/\s+/g, "_")}.conf`}
-                    tag={isRecommended ? "STARRED" : "ENV"}
                     className={cn(
                       "flex flex-1 flex-col h-full",
                       isRecommended && "border-accent ring-1 ring-accent/50",

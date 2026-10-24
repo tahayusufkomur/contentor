@@ -62,8 +62,6 @@ export function BenefitsFeatures({ block, editable }: SectionProps) {
           <div className="mt-14 grid gap-y-12 lg:grid-cols-12 lg:gap-x-10">
             <figure className="lg:col-span-4">
               <WindowChrome
-                title="features.png"
-                tag="SPECS"
                 bodyClassName="p-0 overflow-hidden"
                 className="lg:sticky lg:top-24"
               >

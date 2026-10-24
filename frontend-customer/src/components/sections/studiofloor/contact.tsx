@@ -21,7 +21,7 @@ export function ContactBooking({ block, editable }: SectionProps) {
     <Section label={alt || "Contact"}>
       <div className={cn(WRAP, "grid gap-y-14 lg:grid-cols-12 lg:gap-x-12")}>
         <div className={showForm ? "lg:col-span-5" : "lg:col-span-7"}>
-          <Kicker block={block} editable={editable} cue="BOOKING" />
+          <Kicker block={block} editable={editable} />
 
           <Txt
             block={block}

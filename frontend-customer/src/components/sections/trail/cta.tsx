@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
-import { Arrow, BTN, Kicker, Section, Stamp, WRAP, str } from "./ui";
+import { Arrow, BTN, Kicker, Section, WRAP, str } from "./ui";
 
-/** Call to action on the pine band: slab invitation, blaze lace-up button, and ink milestone stamp. */
+/** Call to action on the pine band: slab invitation and a blaze button. */
 export function CtaLaceUp({ block, editable }: SectionProps) {
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -48,11 +48,6 @@ export function CtaLaceUp({ block, editable }: SectionProps) {
           />
           <Arrow />
         </SmartLink>
-        <Stamp>
-          Lace
-          <br />
-          up
-        </Stamp>
       </div>
     </>
   );

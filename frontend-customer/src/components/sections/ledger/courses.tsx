@@ -49,7 +49,7 @@ export function CoursesDossier({ block, data, editable }: SectionProps) {
                 "ledger-dim",
               )}
             >
-              <span>No.</span>
+              <span aria-hidden="true" />
               <span>Course</span>
               <span>Lessons</span>
               <span className="text-right">Price</span>

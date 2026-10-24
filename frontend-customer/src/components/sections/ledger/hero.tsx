@@ -152,7 +152,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
 }
 
 /** Inner-page title: the running head, a large serif title with its dek, an
- *  optional small plate on the right numbered Fig. 1. */
+ *  optional small plate on the right. */
 export function HeroIntro({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);

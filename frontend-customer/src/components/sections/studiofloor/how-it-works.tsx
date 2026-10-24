@@ -6,8 +6,8 @@ import { H3, LABEL_ACCENT, Opener, Section, WRAP, pad2, str } from "./ui";
 
 type Step = { title?: string; text?: string };
 
-/** Step-by-step process as dance rehearsal cue cards: big numbered cards
- *  with cue tags, stretched headings, and optional mirror wall photo panel. */
+/** Step-by-step process as rehearsal cards: big numbered cards with
+ *  stretched headings, and an optional mirror wall photo panel. */
 export function HowItWorksRehearsal({ block, editable }: SectionProps) {
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
@@ -27,13 +27,7 @@ export function HowItWorksRehearsal({ block, editable }: SectionProps) {
         >
           <div>
             <div className="flex items-center justify-between border-b border-border/80 pb-4">
-              <span className={LABEL_ACCENT}>CUE {pad2(i)}</span>
-              <span
-                aria-hidden="true"
-                className="studiofloor-display text-xs font-bold text-muted-foreground"
-              >
-                PHASE 0{i + 1}
-              </span>
+              <span className={LABEL_ACCENT}>{pad2(i)}</span>
             </div>
             <h3 className={cn(H3, "mt-6 text-[1.3rem] leading-snug")}>
               <span className="sr-only">{`Step ${i + 1}: `}</span>
@@ -61,7 +55,7 @@ export function HowItWorksRehearsal({ block, editable }: SectionProps) {
   return (
     <Section label={alt}>
       <div className={WRAP}>
-        <Opener block={block} editable={editable} cue="REHEARSAL" />
+        <Opener block={block} editable={editable} />
 
         {showImage ? (
           <div className="mt-14 grid gap-y-12 lg:grid-cols-12 lg:gap-x-12">

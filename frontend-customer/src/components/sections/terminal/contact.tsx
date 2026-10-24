@@ -19,11 +19,7 @@ export function ContactIssue({ block, editable }: SectionProps) {
   return (
     <Section tone="console" label={alt || "Contact"}>
       <div className={WRAP}>
-        <WindowChrome
-          title="~/tracker/issues/new.md"
-          tag="[OPEN]"
-          bodyClassName="p-6 sm:p-10 md:p-12"
-        >
+        <WindowChrome bodyClassName="p-6 sm:p-10 md:p-12">
           <div className="grid gap-y-12 lg:grid-cols-12 lg:gap-x-12">
             {/* Left Column: Issue metadata & description */}
             <div
@@ -54,11 +50,7 @@ export function ContactIssue({ block, editable }: SectionProps) {
 
               {showImage && (
                 <figure className="mt-8 mb-4 max-w-[14rem]">
-                  <WindowChrome
-                    title="creator_avatar.raw"
-                    tag="ID"
-                    bodyClassName="p-0 overflow-hidden"
-                  >
+                  <WindowChrome bodyClassName="p-0 overflow-hidden">
                     <Img
                       value={block.image}
                       alt={alt}

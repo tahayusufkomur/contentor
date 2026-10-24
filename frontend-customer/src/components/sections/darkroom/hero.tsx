@@ -130,17 +130,12 @@ export function HeroExhibition({ block, editable }: SectionProps) {
             <Actions block={block} editable={editable} className="mt-8" />
           </WallLabel>
           {showDetail && (
-            <figure className="mt-10 flex items-end gap-4">
+            <figure className="mt-10">
               <Img
                 value={block.image2}
                 alt={alt}
                 className="aspect-square w-24 lg:w-28"
               />
-              <figcaption
-                className={cn(LABEL, "darkroom-tnum text-muted-foreground")}
-              >
-                Detail
-              </figcaption>
             </figure>
           )}
         </div>

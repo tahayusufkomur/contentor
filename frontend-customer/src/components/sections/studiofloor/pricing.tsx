@@ -23,7 +23,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
       label={typeof block.heading === "string" ? block.heading : "Pricing"}
     >
       <div className={WRAP}>
-        <Opener block={block} editable={editable} cue="PASSES" />
+        <Opener block={block} editable={editable} />
 
         {plans.length ? (
           <ul

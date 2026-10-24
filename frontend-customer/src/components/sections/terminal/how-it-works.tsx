@@ -104,8 +104,6 @@ export function HowItWorksPipeline({ block, editable }: SectionProps) {
 
             <figure className="lg:col-span-6">
               <WindowChrome
-                title="pipeline_build.log"
-                tag="PASS"
                 bodyClassName="p-0 overflow-hidden"
                 className="lg:sticky lg:top-24"
               >

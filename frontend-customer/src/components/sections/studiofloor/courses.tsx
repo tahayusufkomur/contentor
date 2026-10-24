@@ -18,8 +18,8 @@ const lessons = (c: Course) =>
     ? `${c.lesson_count} ${c.lesson_count === 1 ? "lesson" : "lessons"}`
     : "";
 
-/** Course catalogue formatted as a dance studio setlist / playlist with
- *  track numbers, lesson chips, neon prices, and glowing hover states. */
+/** Course catalogue as a numbered playlist with lesson chips, neon prices,
+ *  and glowing hover states. */
 export function CourseShowcaseSetlist({ block, data, editable }: SectionProps) {
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
@@ -28,7 +28,7 @@ export function CourseShowcaseSetlist({ block, data, editable }: SectionProps) {
   return (
     <Section tone="surface" label={str(block.heading) || "Courses"}>
       <div className={WRAP}>
-        <Opener block={block} editable={editable} cue="SETLIST" />
+        <Opener block={block} editable={editable} />
 
         {courses.length ? (
           <ol className="mt-14 space-y-4">
@@ -88,8 +88,7 @@ export function CourseShowcaseSetlist({ block, data, editable }: SectionProps) {
                       course={c}
                       className="studiofloor-price studiofloor-display text-[1.25rem] font-extrabold italic text-primary"
                     />
-                    <span className="studiofloor-link mt-2 inline-flex items-center gap-2 studiofloor-display text-[0.88rem] font-extrabold italic group-hover:text-accent">
-                      <span>ENTER SET</span>
+                    <span className="studiofloor-link mt-2 inline-flex items-center group-hover:text-accent">
                       <Arrow />
                     </span>
                   </div>
@@ -102,7 +101,7 @@ export function CourseShowcaseSetlist({ block, data, editable }: SectionProps) {
             <EmptyHint
               editable={editable}
               title="No published courses yet"
-              text="Publish a course and it joins the studio setlist automatically."
+              text="Publish a course and it joins this list automatically."
             />
           </div>
         )}
@@ -121,7 +120,7 @@ export function CourseShowcaseSetlist({ block, data, editable }: SectionProps) {
                   placeholder="Button text"
                 />
               ) : (
-                "EXPLORE FULL SETLIST"
+                "All courses"
               )}
               <Arrow />
             </SmartLink>

@@ -11,7 +11,7 @@ export function CtaSpotlight({ block, editable }: SectionProps) {
 
   const content = (
     <div className="flex flex-col items-center text-center">
-      <Kicker block={block} editable={editable} cue="SPOTLIGHT" />
+      <Kicker block={block} editable={editable} />
 
       <Txt
         block={block}

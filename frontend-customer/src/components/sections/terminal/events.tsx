@@ -37,11 +37,7 @@ export function EventsCron({ block, data, editable }: SectionProps) {
 
         {events.length ? (
           <div className="mt-14">
-            <WindowChrome
-              title="/etc/crontab.d/schedule"
-              tag="DAEMON"
-              bodyClassName="p-3 sm:p-6 font-mono"
-            >
+            <WindowChrome bodyClassName="p-3 sm:p-6 font-mono">
               <div className="mb-4 pb-3 border-b border-border text-xs text-muted-foreground">
                 <span className="text-primary font-bold">SCHEDULER:</span>{" "}
                 active ·{" "}

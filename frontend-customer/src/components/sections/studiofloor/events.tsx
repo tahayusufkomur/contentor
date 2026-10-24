@@ -23,7 +23,7 @@ export function EventsSchedule({ block, data, editable }: SectionProps) {
       label={typeof block.heading === "string" ? block.heading : "Events"}
     >
       <div className={WRAP}>
-        <Opener block={block} editable={editable} cue="SCHEDULE" />
+        <Opener block={block} editable={editable} />
 
         {events.length ? (
           <ol className="mt-14 space-y-4">

@@ -5,7 +5,7 @@ import { H3, LABEL_ACCENT, Opener, Section, WRAP, pad2, str } from "./ui";
 
 type Item = { title?: string; text?: string };
 
-/** Benefits as dance moves / drills: neon outline cards with move index cues,
+/** Benefits as dance moves / drills: neon outline cards with an index,
  *  with an optional mirror wall photo panel. */
 export function BenefitsMoves({ block, editable }: SectionProps) {
   const items = itemsOf<Item>(block, "items");
@@ -21,7 +21,7 @@ export function BenefitsMoves({ block, editable }: SectionProps) {
         >
           <div>
             <div className="flex items-center justify-between">
-              <span className={LABEL_ACCENT}>MOVE {pad2(i)}</span>
+              <span className={LABEL_ACCENT}>{pad2(i)}</span>
               <span
                 aria-hidden="true"
                 className="size-2 rounded-full bg-accent shadow-[0_0_8px_var(--accent)]"
@@ -42,7 +42,7 @@ export function BenefitsMoves({ block, editable }: SectionProps) {
   return (
     <Section label={alt}>
       <div className={WRAP}>
-        <Opener block={block} editable={editable} cue="MOVES" />
+        <Opener block={block} editable={editable} />
 
         {showImage ? (
           <div className="mt-14 grid gap-y-12 lg:grid-cols-12 lg:gap-x-12">

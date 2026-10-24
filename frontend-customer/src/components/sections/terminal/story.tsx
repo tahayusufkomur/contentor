@@ -21,11 +21,7 @@ export function StoryReadme({ block, editable }: SectionProps) {
   return (
     <Section tone="console" label={alt}>
       <div className={WRAP}>
-        <WindowChrome
-          title="~/creator/README.md"
-          tag="UTF-8"
-          bodyClassName="p-6 sm:p-10 md:p-12"
-        >
+        <WindowChrome bodyClassName="p-6 sm:p-10 md:p-12">
           {/* README Badges bar */}
           <div className="mb-8 flex flex-wrap items-center gap-2.5">
             <Flag>build: passing</Flag>
@@ -36,11 +32,7 @@ export function StoryReadme({ block, editable }: SectionProps) {
           <div className="grid gap-y-12 lg:grid-cols-12 lg:gap-x-12">
             {/* Photos pane */}
             <div className="order-last lg:order-first relative lg:col-span-5">
-              <WindowChrome
-                title="portrait.png"
-                tag="AUTHOR"
-                bodyClassName="p-0 overflow-hidden"
-              >
+              <WindowChrome bodyClassName="p-0 overflow-hidden">
                 <Img
                   value={block.image}
                   alt={alt}
@@ -51,8 +43,6 @@ export function StoryReadme({ block, editable }: SectionProps) {
               {showSetting && (
                 <div className="relative -mt-10 ml-auto w-[75%] sm:w-[65%]">
                   <WindowChrome
-                    title="workspace.png"
-                    tag="ENV"
                     bodyClassName="p-0 overflow-hidden"
                     className="shadow-xl"
                   >

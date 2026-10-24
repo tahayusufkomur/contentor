@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
-import { H1, Kicker, LABEL, PILL, Section, WRAP, str } from "./ui";
+import { H1, Kicker, PILL, Section, WRAP, str } from "./ui";
 
 const delay = (ms: number) =>
   ({ "--journal-delay": `${ms}ms` }) as CSSProperties;
@@ -48,8 +48,8 @@ function Actions({
 
 /** The cover: the kicker as an italic masthead on the left over a heavy
  *  rule with the small line flush right, one large photo (the detail print
- *  as a small round inset), and a ruled column of numbered coverlines: the
- *  claim, the dek, the way in. */
+ *  as a small round inset), and a ruled column of coverlines: the claim, the
+ *  dek, the way in. */
 export function HeroCover({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const masthead = str(block.kicker);
@@ -111,7 +111,6 @@ export function HeroCover({ block, editable }: SectionProps) {
             className="journal-rise flex flex-col md:col-span-4 md:border-l md:border-border md:pl-8"
             style={delay(260)}
           >
-            <p className={cn(LABEL, "text-muted-foreground")}>No. 1</p>
             <Txt
               block={block}
               field="headline"
@@ -128,14 +127,13 @@ export function HeroCover({ block, editable }: SectionProps) {
             />
             {has(block, "subhead", editable) && (
               <div className="mt-8 border-t border-border pt-6">
-                <p className={cn(LABEL, "text-muted-foreground")}>No. 2</p>
                 <Txt
                   block={block}
                   field="subhead"
                   editable={editable}
                   as="p"
                   placeholder="Subheadline"
-                  className="mt-3 block text-pretty text-[1.05rem] leading-[1.6] text-muted-foreground md:text-[1.12rem]"
+                  className="block text-pretty text-[1.05rem] leading-[1.6] text-muted-foreground md:text-[1.12rem]"
                 />
               </div>
             )}

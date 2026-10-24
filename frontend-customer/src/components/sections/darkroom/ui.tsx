@@ -126,7 +126,7 @@ export function WallLabel({
   );
 }
 
-/** Plate number ("Plate 3", "No. 04") in mono, dimmed. */
+/** Plate number ("03") in mono, dimmed. */
 export function Plate({
   children,
   className,

@@ -42,12 +42,6 @@ export function CtaInstall({ block, editable }: SectionProps) {
       {has(block, "ctaLabel", editable) && (
         <div className="mt-8 pt-6 border-t border-border/60">
           <SmartLink href={block.ctaHref} className={BTN}>
-            <span
-              className="text-primary-foreground opacity-80"
-              aria-hidden="true"
-            >
-              $
-            </span>
             <Txt
               block={block}
               field="ctaLabel"
@@ -64,20 +58,12 @@ export function CtaInstall({ block, editable }: SectionProps) {
   return (
     <Section tone="console" label={alt}>
       <div className={WRAP}>
-        <WindowChrome
-          title="~/bin/install.sh"
-          tag="READY"
-          bodyClassName="p-6 sm:p-10 md:p-12"
-        >
+        <WindowChrome bodyClassName="p-6 sm:p-10 md:p-12">
           {showImage ? (
             <div className="grid items-center gap-y-10 lg:grid-cols-12 lg:gap-x-12">
               <div className="lg:col-span-7">{commandBox}</div>
               <figure className="lg:col-span-5">
-                <WindowChrome
-                  title="live_session.raw"
-                  tag="LIVE"
-                  bodyClassName="p-0 overflow-hidden"
-                >
+                <WindowChrome bodyClassName="p-0 overflow-hidden">
                   <Img
                     value={block.image}
                     alt={alt}

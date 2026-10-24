@@ -51,7 +51,7 @@ export function StoryBackstage({ block, editable }: SectionProps) {
         </div>
 
         <div className="md:col-span-7 lg:col-span-7">
-          <Kicker block={block} editable={editable} cue="BACKSTAGE" />
+          <Kicker block={block} editable={editable} />
 
           <Txt
             block={block}

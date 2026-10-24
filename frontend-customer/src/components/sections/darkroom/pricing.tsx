@@ -30,7 +30,7 @@ export function PricingEditions({ block, data, editable }: SectionProps) {
                 className="grid gap-y-6 border-t border-border py-10 first:border-t-0 lg:grid-cols-12 lg:gap-x-10"
               >
                 <div className="lg:col-span-2">
-                  <Plate>Edition {pad2(i)}</Plate>
+                  <Plate>{pad2(i)}</Plate>
                 </div>
                 <div className="lg:col-span-5">
                   <h3 className={cn(H3, "text-[1.5rem] leading-[1.2]")}>

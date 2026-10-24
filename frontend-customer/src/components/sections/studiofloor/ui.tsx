@@ -1,6 +1,6 @@
 /** Studio Floor building blocks shared by every studiofloor section:
  *  the dance studio after dark — stage black, neon edges, stretched italic
- *  Anybody type, mirror panels with light bars, and cue numbers. */
+ *  Anybody type and mirror panels with light bars. */
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { Block } from "@/types/tenant";
@@ -18,7 +18,7 @@ export const H2 =
 export const H3 =
   "studiofloor-display-sm font-display font-extrabold italic text-balance break-words tracking-tight leading-[0.98]";
 
-/** Tracked cue / act labels: "ACT 01", "CUE 02", "STAGE 03". */
+/** Tracked neon labels for kickers and small figures. */
 export const LABEL =
   "studiofloor-display text-[0.78rem] font-extrabold uppercase tracking-[0.2em] text-primary";
 export const LABEL_ACCENT =
@@ -78,26 +78,19 @@ export function Section({
   );
 }
 
-/** The kicker as a small tracked neon cue label. */
+/** The kicker as a small tracked neon label. */
 export function Kicker({
   block,
   editable,
-  cue,
   className,
 }: {
   block: Block;
   editable?: EditableContext;
-  cue?: string;
   className?: string;
 }) {
   if (!has(block, "kicker", editable)) return null;
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      {cue && (
-        <span aria-hidden="true" className={LABEL_ACCENT}>
-          {cue} {"//"}
-        </span>
-      )}
       <Txt
         block={block}
         field="kicker"
@@ -114,20 +107,18 @@ export function Kicker({
 export function Opener({
   block,
   editable,
-  cue,
   field = "intro",
   className,
 }: {
   block: Block;
   editable?: EditableContext;
-  cue?: string;
   field?: string | null;
   className?: string;
 }) {
   return (
     <div className={cn("grid gap-y-6 lg:grid-cols-12 lg:gap-x-10", className)}>
       <div className="lg:col-span-7">
-        <Kicker block={block} editable={editable} cue={cue} />
+        <Kicker block={block} editable={editable} />
         <Txt
           block={block}
           field="heading"

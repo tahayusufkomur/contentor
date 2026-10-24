@@ -18,7 +18,7 @@ export function BenefitsCatalogue({ block, editable }: SectionProps) {
           key={i}
           className="grid gap-x-8 gap-y-2 border-t border-border py-7 sm:grid-cols-[5rem_minmax(0,5fr)_minmax(0,6fr)]"
         >
-          <Plate className="pt-1">No. {pad2(i)}</Plate>
+          <Plate className="pt-1">{pad2(i)}</Plate>
           <h3
             className={cn(H3, "text-[1.3rem] leading-[1.2] md:text-[1.5rem]")}
           >

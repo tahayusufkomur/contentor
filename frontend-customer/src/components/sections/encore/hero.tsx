@@ -14,7 +14,6 @@ import {
   Section,
   Stars,
   WRAP,
-  pad2,
   str,
 } from "./ui";
 
@@ -162,9 +161,6 @@ export function HeroLineup({ block, editable }: SectionProps) {
                     }
                   />
                 </div>
-                <p className={cn(LABEL, "mt-2 text-muted-foreground")}>
-                  Track {pad2(n)}
-                </p>
               </li>
             ))}
           </ul>
@@ -269,19 +265,16 @@ export function HeroPoster({ block, editable }: SectionProps) {
               className="aspect-[4/5] w-full md:aspect-square lg:aspect-[4/5]"
             />
           </div>
-          <div className="mt-3 flex items-end justify-between gap-4">
-            <figcaption className={cn(LABEL, "text-muted-foreground")}>
-              Side A
-            </figcaption>
-            {showDetail && (
+          {showDetail && (
+            <div className="mt-3 flex justify-end">
               <Img
                 value={block.image2}
                 alt={alt}
                 className={cn(BOX, "aspect-square w-20 rounded-full sm:w-24")}
                 imgClassName="rounded-full"
               />
-            )}
-          </div>
+            </div>
+          )}
         </figure>
       </div>
     </Section>

@@ -74,16 +74,12 @@ export function Section({
   );
 }
 
-/** Reusable terminal window frame with 3 dots and a title bar. */
+/** Reusable terminal window frame: a bar of 3 dots, no words. */
 export function WindowChrome({
-  title = "~/terminal",
-  tag,
   className,
   bodyClassName,
   children,
 }: {
-  title?: string;
-  tag?: string;
   className?: string;
   bodyClassName?: string;
   children: ReactNode;
@@ -96,12 +92,6 @@ export function WindowChrome({
           <span className="terminal-dot terminal-dot-yellow" />
           <span className="terminal-dot terminal-dot-green" />
         </div>
-        <span className="truncate px-2 font-mono text-xs text-muted-foreground">
-          {title}
-        </span>
-        <span className="font-mono text-[0.75rem] text-muted-foreground">
-          {tag || "zsh"}
-        </span>
       </div>
       <div className={cn("p-6 md:p-8", bodyClassName)}>{children}</div>
     </div>

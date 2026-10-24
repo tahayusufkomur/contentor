@@ -42,7 +42,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
             {plans.map((plan, i) => (
               <li key={plan.id} className={cn(BOX, "flex flex-col p-6 md:p-8")}>
                 <div className={cn(LABEL, "flex items-center justify-between")}>
-                  <span>Pass {pad2(i)}</span>
+                  <span>{pad2(i)}</span>
                   <span>
                     {billingIntervalSuffix(plan.billing_interval_months)}
                   </span>
