@@ -322,7 +322,7 @@ Status values:
 | WP | Title | Depends on | Plan | Status |
 |---|---|---|---|---|
 | 0.1 | Capture tool: `make design-shots` | none | Phase 0–1, Task 0.1 | done (2026-10-24, 9edf1bd5) |
-| 0.2 | Realistic showcase fixtures (`fixture=` sets) | none | Task 0.2 | todo |
+| 0.2 | Realistic showcase fixtures (`fixture=` sets) | none | Task 0.2 | done (2026-10-24, d608bd88) |
 | 0.3 | Eval measures distinctiveness and anchors on award sites | none | Task 0.3 | todo |
 | 1.1 | Hero and copy rules in the composer | none | Task 1.1 | todo |
 | 1.1b | At most three courses and three events on home | 1.1 (same files) | Task 1.1b | todo |
@@ -453,6 +453,10 @@ against G1.
   waits). It shoots desktop and phone concurrently: all 21 styles take about 3.3 minutes. Kinetic's
   ticker band differs between any two runs, so compare that band against this tool's own runs, not
   the sequential baseline.
+- 2026-10-24, WP-0.2 (d608bd88): the showcase takes `size=real&fixture=yoga|business|family`. These
+  are three composed sets under the Task 1.1 rules, with 63 distinct Pix4Less photos and one coach
+  portrait per set, in the hero. Open: the yoga story photo still reads as the coach (same outfit);
+  the toolbar's palette and page links drop `size` and `fixture`.
 
 ## 10. Resources
 
