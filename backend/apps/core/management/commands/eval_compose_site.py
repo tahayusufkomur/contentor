@@ -66,15 +66,17 @@ def _copy(block, writable) -> dict:
 def fallback_sections(page_key, blocks, ctx) -> list[str]:
     """Families on a page whose AI-writable copy is exactly the composer's
     fallback copy — i.e. the AI fill failed for that section."""
+    known = [(block, family) for block in blocks if (family := sections.family_of(block.get("type")))]
+    entries = [{"family": family, "variant": block.get("variant")} for block, family in known]
+    fallbacks = [sc.fallback_fields(e["family"], page_key, e["variant"], ctx) for e in entries]
+    sc._finish_copy(page_key, entries, fallbacks, ctx)  # the page rules the composer applies to its own fallbacks
     found = []
-    for block in blocks:
-        family = sections.family_of(block.get("type"))
-        writable = sc._writable(family) if family else {}
+    for (block, family), entry, fields in zip(known, entries, fallbacks, strict=True):
+        # the letter's signature is always the owner's first name: no signal either way
+        writable = {k: v for k, v in sc._writable(family, page_key).items() if k != "signature"}
         if not writable:
             continue
-        entry = {"family": family, "variant": block.get("variant")}
-        fallback = sc._new_block(entry, sc.fallback_fields(family, page_key, entry["variant"], ctx))
-        expected = _copy(fallback, writable)
+        expected = _copy(sc._new_block(entry, fields), writable)
         if any(expected.values()) and _copy(block, writable) == expected:
             found.append(family)
     return found

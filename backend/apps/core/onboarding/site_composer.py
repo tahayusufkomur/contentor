@@ -85,6 +85,11 @@ def coach_links(answers: dict) -> tuple[str, ...]:
 CLOSING_FAMILIES = ("cta", "contact")
 MAX_CONSECUTIVE_IMAGE_HEAVY = 2  # the home recipe itself opens hero → story
 MAX_SECTIONS = 9
+# The home hero is a statement a visitor remembers (spec 2026-10-24 §6 R1); inner pages keep the manifest's 70.
+HOME_HERO_HEADLINE_MAX = 36
+# Home lists stay short: family -> (list field, most entries). Task 1.1b trims the lists a model overfills.
+HOME_LIST_MAX = {"benefits": ("items", 4), "moments": ("photos", 4), "howItWorks": ("steps", 3)}
+MAX_KICKERS_PER_PAGE = 2  # besides the hero: a kicker is only worth its place when it adds a fact
 # Facts the AI may never write (no invented locations, schedules or addresses).
 FACT_FIELDS = frozenset({"email", "location", "hours"})
 BANNED_PHRASES = (
@@ -107,6 +112,8 @@ BANNED_PHRASES = (
     "in today's fast-paced world",
 )
 _WHETHER_OR = re.compile(r"\bwhether you(?:'re| are)\b.*\bor\b", re.IGNORECASE)
+# The LLM cadence "Glow from within, one calm minute at a time".
+_ONE_AT_A_TIME = re.compile(r",\s+one\s+(?:\w+\s+){0,2}at\s+a\s+time\b", re.IGNORECASE)
 _EMOJI = re.compile(r"[\U0001f000-\U0001faff\u2600-\u27bf\ufe0f\u200d]")
 _HASHTAG = re.compile(r"#(\w)")
 
@@ -150,24 +157,24 @@ _TOPICS = {
     "writing": "writing",
 }
 _HEADLINES = {
-    "yoga": "Steady breath, stronger body, quieter mind",
-    "pilates": "Strength that starts from your centre",
+    "yoga": "Steadier breath, quieter mind",
+    "pilates": "Strength that starts at your centre",
     "fitness": "Get stronger at a pace you can keep",
     "pole_dance": "Strength, flow and a little daring",
-    "belly_dance": "Find the rhythm that is already yours",
+    "belly_dance": "Find the rhythm already yours",
     "face_yoga": "A few calm minutes for your face",
     "makeup": "Makeup that still looks like you",
     "general": "Clear next steps toward what matters",
-    "business": "Run the business instead of it running you",
-    "creative": "Make the work you keep meaning to make",
+    "business": "Run the business, not the reverse",
+    "creative": "Make what you keep meaning to make",
     "wellness": "Calmer days and better nights",
     "learning": "Learn it properly, at your own pace",
     "cooking": "Real food, every night of the week",
     "music": "Play the music you always wanted to",
-    "outdoors": "Go further than you thought you could",
-    "martial_arts": "Train with focus, build quiet confidence",
+    "outdoors": "Go further than you expected",
+    "martial_arts": "Focused training, quiet confidence",
     "dance": "Move like nobody is watching",
-    "tech": "Build real skills, one project at a time",
+    "tech": "Build real skills on real projects",
     "family": "Calmer days with the little ones",
     "spiritual": "Find your own rhythm with the sky",
     "beauty": "Care that still looks like you",
@@ -257,12 +264,14 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
         tail = " with clear guidance, patience and room for your questions."
         return {
             "kicker": _fit(f"{c['Topic']} with {brand}", 40, c["Topic"]),
-            "headline": _HEADLINES.get(c["niche"], f"{c['Topic']} that fits your real life"),
+            "headline": _HEADLINES.get(
+                c["niche"],
+                _fit(f"{c['Topic']} that fits your real life", HOME_HERO_HEADLINE_MAX, _HEADLINES["general"]),
+            ),
             "subhead": f"I {verb}{tail}" if c["solo"] else _fit(f"At {brand} we {verb}{tail}", 180, f"We {verb}{tail}"),
-            "ctaLabel": c["primaryLabel"],
-            "ctaHref": c["primary"],
-            "secondaryLabel": f"About {me}" if c["primary"] != "/about" else "Get in touch",
-            "secondaryHref": "/about" if c["primary"] != "/about" else "/contact",
+            # One button, no second one and no meta line. With nothing to sell yet it asks, never About.
+            "ctaLabel": c["primaryLabel"] if c["primary"] != "/about" else "Get in touch",
+            "ctaHref": c["primary"] if c["primary"] != "/about" else "/contact",
         }
     if family == "story":
         share = "my coaching" if t == "coaching" and c["solo"] else ("our coaching" if t == "coaching" else t)
@@ -278,7 +287,7 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
                 f"<p>{html.escape(brand)} exists to share {share} the way we believe it should be taught: "
                 "clearly, patiently and without pressure.</p>"
             )
-        out = {
+        return {
             "kicker": _fit(f"Hello, I'm {brand.split()[0]}", 40, "Hello")
             if c["name_like"]
             else ("Hello" if c["solo"] else "Who we are"),
@@ -290,9 +299,6 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
             else f"More about {me}",
             "ctaHref": (c["primary"] if c["primary"] != "/about" else "/contact") if page_key == "about" else "/about",
         }
-        if c["name_like"]:
-            out["signature"] = _fit(brand, 40)
-        return out
     if family == "benefits":
         return {
             "kicker": "What you can expect",
@@ -1057,20 +1063,25 @@ def _offers() -> dict:
 # ── pass 2: page fill ────────────────────────────────────────────────────────
 
 
-def _writable(family) -> dict:
+def _writable(family, page_key=None) -> dict:
     """name -> spec of the fields the AI writes for a family (text, rich text,
     links, item lists with their text sub-fields). Never facts, images,
-    selects or flags."""
+    selects or flags. On the home page the hero's headline is capped at
+    HOME_HERO_HEADLINE_MAX and its meta line and second button are left
+    unwritten; the lists in HOME_LIST_MAX are capped. The manifest (and so
+    every other page and the coach's own edits) is untouched."""
+    home_hero = (family, page_key) == ("hero", "home")
+    list_field, list_max = HOME_LIST_MAX.get(family, (None, 0)) if page_key == "home" else (None, 0)
     out = {}
     for name, spec in sections.families()[family]["fields"].items():
-        if name in FACT_FIELDS:
+        if name in FACT_FIELDS or (home_hero and name in ("meta", "secondaryLabel", "secondaryHref")):
             continue
         if spec["type"] in ("text", "richtext", "link"):
-            out[name] = spec
+            out[name] = {**spec, "max": HOME_HERO_HEADLINE_MAX} if home_hero and name == "headline" else spec
         elif spec["type"] == "items":
             subs = {k: v for k, v in spec["fields"].items() if v["type"] in ("text", "richtext")}
             if subs:
-                out[name] = {**spec, "fields": subs}
+                out[name] = {**spec, "fields": subs, **({"max": list_max} if name == list_field else {})}
     return out
 
 
@@ -1124,8 +1135,11 @@ Voice
 wherever the coach talks about themselves. Address the visitor as "you".
 - Concrete and sensory. Use the details the coach gave: what they teach, how, for whom, what a session feels like. \
 One specific detail beats three adjectives.
-- Headlines are short and punchy, ideally 8 words or fewer, and say something. "Welcome", "About me" and "Our \
-courses" are labels, not headlines. Kickers are 1-4 words.
+- Headlines are short and say something. The home hero headline is 2 to 5 words (36 characters at most), or the \
+coach's name: a statement a visitor remembers, not a sentence that explains. Never the pattern "X, one Y at a \
+time". "Welcome", "About me" and "Our courses" are labels, not headlines. Kickers are 1-4 words.
+- Leave a kicker (the small label above a heading) empty unless it adds a fact the heading does not: a place, a \
+time, a number, a step. At most two per page besides the hero.
 - Plain, warm, confident. Short sentences with varied rhythm.
 - No exclamation marks. No emoji. No hashtags. No ALL CAPS.
 - Never use these words or phrases: unlock, journey, transform your life, elevate, empower, holistic, next level, \
@@ -1145,7 +1159,8 @@ someone else.
 Pages
 - Each page has one job, and its opening section (the hero, or the intro band on inner pages) says what THIS page \
 gives the visitor, in a line no other page uses:
-  home: the coach's core promise to the people they serve.
+  home: the coach's core promise to the people they serve. The hero's and the closing section's buttons lead to \
+the coach's main offer (courses, else classes), never to About.
   about: who the coach is and why they teach, personal and in the speaker's voice.
   courses: what students can take here and what they will be able to do.
   pricing: how joining works and what members get.
@@ -1184,7 +1199,7 @@ def _page_user_turn(page_key, entries, coach, data) -> str:
             "index": n,
             "family": e["family"],
             "layout": _variant_name(e["variant"]),
-            "fields": {k: _spec_for_prompt(v) for k, v in _writable(e["family"]).items()},
+            "fields": {k: _spec_for_prompt(v) for k, v in _writable(e["family"], page_key).items()},
         }
         for n, e in enumerate(entries)
     ]
@@ -1204,7 +1219,7 @@ def _repair_user_turn(page_key, entries, coach, data, problems) -> str:
         {
             "index": n,
             "family": entries[n]["family"],
-            "fields": {k: _spec_for_prompt(v) for k, v in _writable(entries[n]["family"]).items()},
+            "fields": {k: _spec_for_prompt(v) for k, v in _writable(entries[n]["family"], page_key).items()},
         }
         for n in indexes
     ]
@@ -1245,6 +1260,8 @@ def _banned(text) -> str | None:
     for phrase in BANNED_PHRASES:
         if re.search(r"\b" + re.escape(phrase), low):
             return phrase
+    if _ONE_AT_A_TIME.search(low):
+        return "…, one … at a time"
     return "whether you're ... or ..." if _WHETHER_OR.search(low) else None
 
 
@@ -1263,7 +1280,7 @@ def _normalize(family, raw, fallback, page_key, ctx=None) -> dict:
     links pinned to the allowlist. A field the model omitted (None) takes the
     fallback value when optional; required ones stay "" for validation."""
     out = {}
-    for name, spec in _writable(family).items():
+    for name, spec in _writable(family, page_key).items():
         value = raw.get(name)
         if spec["type"] == "items":
             if value is None:
@@ -1287,7 +1304,7 @@ def _normalize(family, raw, fallback, page_key, ctx=None) -> dict:
     return out
 
 
-def _problems(family, fields, *, strict=True) -> list[dict]:
+def _problems(family, fields, *, strict=True, page_key=None) -> list[dict]:
     """Rule breaks in one section's fields: missing required text, over-length
     text, list sizes, required item text; with ``strict`` also banned phrases."""
     found = []
@@ -1301,7 +1318,7 @@ def _problems(family, fields, *, strict=True) -> list[dict]:
         elif strict and (phrase := _banned(value)):
             found.append({"field": path, "problem": f"uses the banned phrase '{phrase}'", "current": value})
 
-    for name, spec in _writable(family).items():
+    for name, spec in _writable(family, page_key).items():
         if spec["type"] == "link":
             continue
         if spec["type"] == "items":
@@ -1392,7 +1409,7 @@ def _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction) -> list
     problems = [
         {"index": n, "family": e["family"], **p}
         for n, e in enumerate(entries)
-        for p in _problems(e["family"], filled[n])
+        for p in _problems(e["family"], filled[n], page_key=page_key)
     ]
     if problems:
         try:
@@ -1411,13 +1428,69 @@ def _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction) -> list
             filled[n].update({k: v for k, v in repaired.items() if k in failing and returned.get(k) is not None})
     out = []
     for n, e in enumerate(entries):
-        hard = _hard(_problems(e["family"], filled[n], strict=False))
+        hard = _hard(_problems(e["family"], filled[n], strict=False, page_key=page_key))
         if hard:
             logger.info("compose %s/%s falls back for %s: %s", page_key, e["family"], tenant.schema_name, hard)
             out.append(fallbacks[n])
         else:
-            out.append({**{k: v for k, v in fallbacks[n].items() if k not in _writable(e["family"])}, **filled[n]})
+            out.append(
+                {**{k: v for k, v in fallbacks[n].items() if k not in _writable(e["family"], page_key)}, **filled[n]}
+            )
     return out
+
+
+# ── finishing the copy ───────────────────────────────────────────────────────
+
+
+def _limit_kickers(entries: list[dict], fields: list[dict]) -> None:
+    """Blank the kicker of every non-hero section past the first MAX_KICKERS_PER_PAGE
+    that has one, in page order: a label above every heading is a template tell."""
+    kept = 0
+    for entry, f in zip(entries, fields, strict=True):
+        if entry["family"] == "hero" or not f.get("kicker"):
+            continue
+        if kept < MAX_KICKERS_PER_PAGE:
+            kept += 1
+        else:
+            f["kicker"] = ""
+
+
+def _coach_first_name(tenant) -> str:
+    """The owner's first name ("Maya Laurent" -> "Maya"), or "" when the tenant
+    has no owner yet. The story letter is signed with it; the brand is no name
+    ("Kind Mornings" is not signed "Kind")."""
+    from apps.accounts.models import User
+
+    with tenant_context(tenant):
+        owner = User.objects.filter(role="owner").order_by("id").first()
+    words = (owner.name if owner else "").split()
+    return words[0] if words else ""
+
+
+def _pin_home_buttons(fields: dict, ctx: dict) -> None:
+    """One section's fields (the home hero or closing cta): its button leads to
+    her main offer, courses else classes. With neither she has nothing to
+    browse, so a button to About becomes Contact (never an empty button, never
+    the page itself)."""
+    primary = ctx["primary"]
+    if primary in ("/courses", "/events"):
+        if fields.get("ctaHref") != primary or not fields.get("ctaLabel"):
+            fields["ctaHref"], fields["ctaLabel"] = primary, ctx["primaryLabel"]
+    elif fields.get("ctaHref") == "/about":
+        fields["ctaHref"], fields["ctaLabel"] = "/contact", "Get in touch"
+
+
+def _finish_copy(page_key, entries, fields, ctx, first_name="") -> None:
+    """The page-level rules on filled (AI or fallback) copy, in place. The one
+    place compose_page and skeleton_pages share."""
+    _limit_kickers(entries, fields)
+    for entry, f in zip(entries, fields, strict=True):
+        if page_key == "home" and entry["family"] in ("hero", "cta"):
+            _pin_home_buttons(f, ctx)
+        if entry["family"] == "story":
+            f.pop("signature", None)
+            if first_name:
+                f["signature"] = first_name
 
 
 # ── images ───────────────────────────────────────────────────────────────────
@@ -1623,10 +1696,12 @@ def skeleton_pages(style_id, *, niche, brand_name, description="") -> dict:
     copy and empty photo slots. Deterministic: no AI, no network."""
     ctx = _ctx(niche, brand_name, description)
     plan = apply_guardrails({}, style_id)
-    return {
-        page: {"blocks": [_new_block(e, fallback_fields(e["family"], page, e["variant"], ctx)) for e in entries]}
-        for page, entries in plan["pages"].items()
-    }
+    pages = {}
+    for page, entries in plan["pages"].items():
+        fields = [fallback_fields(e["family"], page, e["variant"], ctx) for e in entries]
+        _finish_copy(page, entries, fields, ctx)  # no owner yet: the letters stay unsigned until compose_page
+        pages[page] = {"blocks": [_new_block(e, f) for e, f in zip(entries, fields, strict=True)]}
+    return pages
 
 
 def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
@@ -1642,9 +1717,7 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
 
     _set_stage(tenant, page_key, "copy")
     fields = _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction)
-    if not ctx["name_like"]:  # a letter signed "Yoga Studio" reads wrong; we don't know the coach's name
-        for f in fields:
-            f.pop("signature", None)
+    _finish_copy(page_key, entries, fields, ctx, _coach_first_name(tenant))
     blocks = [_new_block(e, f) for e, f in zip(entries, fields, strict=True)]
     _set_stage(tenant, page_key, "photos")
     with _IMAGE_LOCK:

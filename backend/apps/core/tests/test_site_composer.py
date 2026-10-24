@@ -51,7 +51,7 @@ def test_skeleton_pages_are_valid_for_every_enabled_style(style_id, brand):
             assert block["variant"].startswith(f"{style_id}.")
             assert block["id"].startswith("blk_")
             _required_filled(block)
-            assert not sc._hard(sc._problems(sections.family_of(block["type"]), block))
+            assert not sc._hard(sc._problems(sections.family_of(block["type"]), block, page_key=page))
             for name in sections.image_fields(sections.family_of(block["type"])):
                 assert block[name] == {"url": None, "photo_id": None, "alt": None}
 
@@ -63,7 +63,7 @@ def test_skeleton_copy_is_honest_and_in_voice():
     assert "!" not in text
     assert sc._banned(text) is None
     story = next(b for b in solo["home"]["blocks"] if b["type"] == "section.story")
-    assert story["signature"] == "Maya Laurent" and story["heading"] == "Why I teach yoga"
+    assert story["heading"] == "Why I teach yoga" and "signature" not in story  # signed by compose_page, from the owner
     studio_story = next(b for b in studio["home"]["blocks"] if b["type"] == "section.story")
     assert studio_story["heading"] == "Why we teach yoga" and "signature" not in studio_story
     described = sc.skeleton_pages("journal", niche="yoga", brand_name="Flow Studio", description="Slow <b>flow</b>.")
@@ -367,10 +367,10 @@ def test_compose_page_happy_path(styled, monkeypatch, catalog):
     assert [b["type"] for b in blocks][0] == "section.hero"
     hero = blocks[0]
     assert hero["headline"] == "hero headline"  # model copy, not fallback
-    assert hero["ctaHref"] == "/about"
+    assert hero["ctaHref"] == "/courses"  # the model said /about; the home hero leads to the offer
     for block in blocks:
         assert sections.clean_section_block(block) == block
-        assert not sc._problems(sections.family_of(block["type"]), block, strict=False)
+        assert not sc._problems(sections.family_of(block["type"]), block, strict=False, page_key="home")
     assert hero["image"]["photo_id"] and hero["image"]["alt"].startswith("woman practising yoga")
     moments = next(b for b in blocks if b["type"] == "section.moments")
     assert all(p["image"]["photo_id"] for p in moments["photos"])
@@ -424,7 +424,7 @@ def test_repair_fixes_failing_fields(styled, monkeypatch, catalog):
     assert blocks[0]["headline"] == "Breathe out before the meeting"
     assert blocks[1]["heading"] == "Why I teach slow flow"
     repair_call = [u for label, u in fake.calls if label == "contentor:compose-page"][1]
-    assert "Repair pass" in repair_call and "max 70" in repair_call and "journey" in repair_call
+    assert "Repair pass" in repair_call and "max 36" in repair_call and "journey" in repair_call
 
 
 @pytest.mark.django_db
@@ -449,6 +449,155 @@ def test_no_ai_means_fallback_copy_and_real_photos(styled, monkeypatch, catalog)
     blocks = sc.compose_page(styled, "about")
     assert blocks[0]["headline"] == "Hello, I'm Maya"
     assert _photo_ids(blocks)
+
+
+@pytest.mark.django_db
+def test_home_hero_headline_is_capped_and_repaired(styled, monkeypatch, catalog):
+    def long(s):
+        s[0]["headline"] = "Strength that feels like ease every single day"  # 48
+        return s
+
+    def short(s):
+        for x in s:
+            if x["index"] == 0:
+                x["headline"] = "Strong, calm, unhurried"
+        return s
+
+    fake = FakeAI(plan=core_ai.AiError("no plan"), page_overrides=[long, short])
+    monkeypatch.setattr(sc.core_ai, "structured", fake)
+    blocks = sc.compose_page(styled, "home")
+    assert blocks[0]["headline"] == "Strong, calm, unhurried"
+    repair = [u for label, u in fake.calls if label == "contentor:compose-page"][1]
+    assert "max 36" in repair
+
+
+@pytest.mark.django_db
+def test_home_hero_has_no_meta_or_second_button(styled, monkeypatch, catalog):
+    monkeypatch.setattr(sc.core_ai, "structured", FakeAI(plan=core_ai.AiError("no plan")))
+    hero = sc.compose_page(styled, "home")[0]
+    assert not hero.get("meta") and not hero.get("secondaryLabel") and not hero.get("secondaryHref")
+
+
+def test_inner_hero_keeps_seventy_characters():
+    assert sc._writable("hero", "about")["headline"]["max"] == 70
+    assert sc._writable("hero", "home")["headline"]["max"] == 36
+    assert {"meta", "secondaryLabel", "secondaryHref"} <= set(sc._writable("hero", "about"))
+    assert not {"meta", "secondaryLabel", "secondaryHref"} & set(sc._writable("hero", "home"))
+
+
+def test_home_lists_are_capped_and_other_pages_keep_the_manifest():
+    for family, (field, cap) in sc.HOME_LIST_MAX.items():
+        assert sc._writable(family, "home")[field]["max"] == cap
+        assert sc._writable(family, "about")[field]["max"] > cap
+        assert sc._writable(family)[field]["max"] > cap
+
+
+def test_one_at_a_time_cadence_is_banned():
+    assert sc._banned("Glow from within, one calm minute at a time")
+    assert not sc._banned("Take it one step at a time")  # no comma clause
+
+
+@pytest.mark.django_db
+def test_kickers_capped_at_two_besides_the_hero(styled, monkeypatch, catalog):
+    def kick(s):
+        for x in s:
+            x["kicker"] = "Label"
+        return s
+
+    monkeypatch.setattr(sc.core_ai, "structured", FakeAI(plan=core_ai.AiError("no plan"), page_overrides=[kick]))
+    blocks = sc.compose_page(styled, "home")
+    assert blocks[0]["kicker"]
+    assert sum(1 for b in blocks[1:] if b.get("kicker")) <= sc.MAX_KICKERS_PER_PAGE
+
+
+@pytest.mark.django_db
+def test_home_hero_button_leads_to_the_offer(styled, monkeypatch, catalog):
+    def about(s):
+        s[0]["ctaHref"], s[0]["ctaLabel"] = "/about", "Meet us"
+        return s
+
+    monkeypatch.setattr(sc.core_ai, "structured", FakeAI(plan=core_ai.AiError("no plan"), page_overrides=[about]))
+    hero = sc.compose_page(styled, "home")[0]
+    assert hero["ctaHref"] in ("/courses", "/events") and hero["ctaLabel"] != "Meet us"
+
+
+@pytest.mark.django_db
+def test_home_buttons_of_a_coach_with_nothing_to_browse_ask_instead(styled, monkeypatch, catalog):
+    """No courses and no classes: ctx["primary"] is /about, and the home hero and closing buttons
+    become Contact: never empty, never About, never the home page itself."""
+    styled.wizard_state["answers"]["offers"] = ["articles"]
+    styled.save(update_fields=["wizard_state"])
+    monkeypatch.setattr(sc.core_ai, "structured", FakeAI(plan=core_ai.AiError("no plan")))
+    blocks = sc.compose_page(styled, "home")
+    buttons = [b for b in blocks if b["type"] in ("section.hero", "section.cta")]
+    assert len(buttons) == 2
+    assert all(b["ctaHref"] == "/contact" and b["ctaLabel"] for b in buttons)
+    # the fallback copy (no AI) lands in the same place
+    monkeypatch.setattr(sc.ai_compose, "compose_available", lambda: False)
+    buttons = [b for b in sc.compose_page(styled, "home") if b["type"] in ("section.hero", "section.cta")]
+    assert all(b["ctaHref"] == "/contact" and b["ctaLabel"] for b in buttons)
+
+
+def test_pin_home_buttons():
+    courses = sc._ctx("yoga", "Maya Laurent", "")
+    live = sc._ctx("yoga", "Maya Laurent", "", links=sc.coach_links({"offers": ["live"]}))
+    nothing = sc._ctx("yoga", "Maya Laurent", "", links=sc.coach_links({"offers": ["articles"]}))
+    assert nothing["primary"] == "/about"
+
+    fields = {"ctaHref": "/contact", "ctaLabel": "Say hi"}
+    sc._pin_home_buttons(fields, courses)
+    assert fields == {"ctaHref": "/courses", "ctaLabel": "Browse the courses"}
+    fields = {"ctaHref": "/events", "ctaLabel": ""}  # right page, no label: the button would not show
+    sc._pin_home_buttons(fields, live)
+    assert fields == {"ctaHref": "/events", "ctaLabel": "See the classes"}
+    fields = {"ctaHref": "/events", "ctaLabel": "Join a class"}  # her own words stay when the link is right
+    sc._pin_home_buttons(fields, live)
+    assert fields["ctaLabel"] == "Join a class"
+    fields = {"ctaHref": "/about", "ctaLabel": "Meet us"}
+    sc._pin_home_buttons(fields, nothing)
+    assert fields == {"ctaHref": "/contact", "ctaLabel": "Get in touch"}
+    fields = {"ctaHref": "/faq", "ctaLabel": "Read the FAQ"}  # not About: left alone
+    sc._pin_home_buttons(fields, nothing)
+    assert fields["ctaHref"] == "/faq"
+
+
+@pytest.mark.django_db
+def test_story_signature_is_the_owners_first_name(styled, monkeypatch, catalog):
+    monkeypatch.setattr(sc.core_ai, "structured", FakeAI(plan=core_ai.AiError("no plan")))
+    monkeypatch.setattr(sc, "_coach_first_name", lambda tenant: "")
+    assert all("signature" not in b for b in sc.compose_page(styled, "about"))
+    monkeypatch.setattr(sc, "_coach_first_name", lambda tenant: "Maya")
+    stories = [b for b in sc.compose_page(styled, "about") if b["type"] == "section.story"]
+    assert stories and all(b["signature"] == "Maya" for b in stories)
+
+
+@pytest.mark.django_db
+def test_coach_first_name_reads_the_owner_not_the_brand(styled):
+    """ "Kind Mornings" is a brand that looks like a name: the letter is signed by whoever owns the site."""
+    from apps.accounts.models import User
+
+    assert sc._coach_first_name(styled) == ""  # no owner yet
+    with tenant_context(styled):
+        User.objects.create_user(email="ayse@example.com", name="Ayse  Demir Yilmaz", role="owner", is_staff=True)
+        User.objects.create_user(email="student@example.com", name="Zed Student", role="student")
+    assert sc._coach_first_name(styled) == "Ayse"
+    pages = sc.skeleton_pages("journal", niche="yoga", brand_name="Kind Mornings", description="")
+    assert all("signature" not in b for p in pages.values() for b in p["blocks"])  # no owner at provisioning
+
+
+def test_fallback_headlines_fit_the_home_cap():
+    assert all(len(h) <= sc.HOME_HERO_HEADLINE_MAX for h in sc._HEADLINES.values())
+    assert not any(sc._banned(h) for h in sc._HEADLINES.values())
+    ctx = sc._ctx("unlisted_niche", "Maya Laurent", "", "strength and conditioning for trail runners")
+    assert len(sc.fallback_fields("hero", "home", "journal.editorial", ctx)["headline"]) <= sc.HOME_HERO_HEADLINE_MAX
+
+
+def test_fallback_home_hero_has_one_button_and_home_lists_fit():
+    ctx = sc._ctx("yoga", "Maya Laurent", "")
+    hero = sc.fallback_fields("hero", "home", "journal.editorial", ctx)
+    assert not {"meta", "secondaryLabel", "secondaryHref"} & set(hero)
+    for family, (field, cap) in sc.HOME_LIST_MAX.items():
+        assert len(sc.fallback_fields(family, "home", "journal.band", ctx)[field]) <= cap
 
 
 @pytest.mark.django_db
