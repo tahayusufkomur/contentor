@@ -629,6 +629,21 @@ def _entry(style_id, family, name, briefs=None) -> dict:
     return {"family": family, "variant": sections.resolve_variant(style_id, family, name), "images": briefs or {}}
 
 
+def _home_courses_not_rows(style_id, page_key, entries) -> list[dict]:
+    """`rows` is the courses page's catalogue: it shows six courses whatever the block's `limit`
+    says (rows.tsx). On home a planned courseShowcase of `rows` becomes the style's first other
+    layout, so the cap to three holds. A new list; the entries (maybe a cached plan's) stay as they were."""
+    own = next((n for n in sections.variants(style_id, "courseShowcase") if n != "rows"), None)
+    if page_key != "home" or not own:
+        return entries
+    return [
+        {**e, "variant": f"{style_id}.{own}"}
+        if e["family"] == "courseShowcase" and _variant_name(e["variant"]) == "rows"
+        else e
+        for e in entries
+    ]
+
+
 def _guard_page(page_key, raw, style_id) -> list[dict]:
     recipe = [_entry(style_id, f, n) for f, n in _recipe(style_id, page_key) if sections.variants(style_id, f)]
     recipe_names = {e["family"]: _variant_name(e["variant"]) for e in recipe}
@@ -711,7 +726,7 @@ def _guard_page(page_key, raw, style_id) -> list[dict]:
                 run -= 1
                 continue
         n += 1
-    return entries
+    return _home_courses_not_rows(style_id, page_key, entries)
 
 
 def apply_guardrails(plan, style_id) -> dict:
@@ -1726,6 +1741,7 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
     style_id, brand = _style_and_brand(tenant)
     plan = plan_site(tenant)
     entries = plan["pages"].get(page_key) or apply_guardrails({}, style_id)["pages"][page_key]
+    entries = _home_courses_not_rows(style_id, page_key, entries)  # a plan cached before the guard existed
     coach = _coach_data(tenant, brand)
     ctx = _ctx(coach["niche"], brand, coach["description"], coach["topic"], tuple(coach["links"]))
 

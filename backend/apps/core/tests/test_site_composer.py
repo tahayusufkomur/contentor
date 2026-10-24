@@ -585,6 +585,33 @@ def test_home_lists_are_capped_at_three(styled, monkeypatch, catalog):
     assert [b.get("limit", "all") for b in events_page if b["type"] == "section.events"] == ["all"]
 
 
+def test_home_courses_never_use_the_rows_layout():
+    """`rows` is the courses page's catalogue and shows six courses whatever the block's limit says,
+    so a home plan that picks it lands on the style's own layout; the courses page keeps rows."""
+    plan = {"pages": {p: [{"family": "courseShowcase", "variant": "rows"}] for p in ("home", "courses")}}
+    pages = sc.apply_guardrails(plan, "journal")["pages"]
+    assert [e["variant"] for e in pages["home"] if e["family"] == "courseShowcase"] == ["journal.issue"]
+    assert [e["variant"] for e in pages["courses"] if e["family"] == "courseShowcase"] == ["journal.rows"]
+
+
+@pytest.mark.django_db
+def test_home_plan_with_rows_composes_a_capped_non_rows_block(styled, monkeypatch, catalog):
+    """A plan cached before the guard existed still picks rows on home: compose_page moves it too."""
+    plan = sc.apply_guardrails(
+        {"pages": {"home": [{"family": f} for f in ("hero", "courseShowcase", "cta")]}}, "journal"
+    )
+    for entry in plan["pages"]["home"]:
+        if entry["family"] == "courseShowcase":
+            entry["variant"] = "journal.rows"
+    styled.wizard_state = {**styled.wizard_state, "site_plan": {**plan, "style": "journal"}}
+    styled.save(update_fields=["wizard_state"])
+    monkeypatch.setattr(sc.core_ai, "structured", FakeAI(plan=core_ai.AiError("no plan")))
+    (course,) = [b for b in sc.compose_page(styled, "home") if b["type"] == "section.courseShowcase"]
+    assert course["variant"] == "journal.issue" and course["limit"] == "3"
+    (course,) = [b for b in sc.compose_page(styled, "courses") if b["type"] == "section.courseShowcase"]
+    assert course["variant"] == "journal.rows"
+
+
 def test_cap_home_lists_touches_only_courses_and_events_on_home():
     entries = [{"family": f} for f in ("hero", "courseShowcase", "events", "faq")]
     fields = [{} for _ in entries]
