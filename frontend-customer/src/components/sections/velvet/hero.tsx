@@ -76,7 +76,7 @@ export function HeroPortrait({ block, editable }: SectionProps) {
               value={block.image}
               alt={alt}
               priority
-              className="velvet-veil bg-background h-[26rem] w-full sm:h-[34rem] lg:h-full"
+              className="velvet-veil bg-background h-[25rem] w-full sm:h-[30rem] lg:h-full"
             />
             {showDetail && (
               <Img
@@ -84,7 +84,8 @@ export function HeroPortrait({ block, editable }: SectionProps) {
                 alt={alt}
                 className={cn(
                   FRAME,
-                  "absolute bottom-8 right-8 z-10 hidden aspect-[3/4] w-[7.5rem] sm:block lg:bottom-12 lg:right-12 lg:w-[9rem]",
+                  "absolute bottom-8 right-8 z-10 aspect-[3/4] w-[7.5rem] lg:bottom-12 lg:right-12 lg:w-[9rem]",
+                  !editable && "hidden sm:block",
                 )}
               />
             )}

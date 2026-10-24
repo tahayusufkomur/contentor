@@ -51,7 +51,10 @@ export function HeroPoster({ block, editable }: SectionProps) {
               <Img
                 value={block.image2}
                 alt=""
-                className="kinetic-notch hidden aspect-square w-[clamp(10rem,15vw,15rem)] shrink-0 [--kinetic-notch:28px] lg:block"
+                className={cn(
+                  "kinetic-notch aspect-square w-[clamp(10rem,15vw,15rem)] shrink-0 [--kinetic-notch:28px]",
+                  !editable && "hidden lg:block",
+                )}
               />
             )}
           </div>

@@ -26,7 +26,7 @@ export function HeroCluster({ block, editable }: SectionProps) {
   return (
     <PopSection
       bg="var(--background)"
-      className="pop-top pb-20 pt-10 md:pb-28 md:pt-14"
+      className="pop-top pb-20 pt-8 sm:pt-10 md:pb-28 md:pt-14"
     >
       <div className={cn(WRAP, "text-center")}>
         <div className="flex justify-center">

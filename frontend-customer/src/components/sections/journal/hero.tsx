@@ -57,7 +57,7 @@ export function HeroCover({ block, editable }: SectionProps) {
   const masthead = str(block.kicker);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   return (
-    <Section className="pt-4 sm:pt-8 md:pt-14 lg:pt-16" label={alt}>
+    <Section className="pt-4 sm:pt-6 md:pt-14 lg:pt-16" label={alt}>
       <div className={WRAP}>
         {(has(block, "kicker", editable) || has(block, "meta", editable)) && (
           <div
@@ -78,7 +78,12 @@ export function HeroCover({ block, editable }: SectionProps) {
               )}
             />
             {has(block, "meta", editable) && (
-              <p className="hidden text-right font-display text-[0.98rem] italic leading-snug text-muted-foreground sm:block">
+              <p
+                className={cn(
+                  "text-right font-display text-[0.98rem] italic leading-snug text-muted-foreground",
+                  !editable && "hidden sm:block",
+                )}
+              >
                 <Txt
                   block={block}
                   field="meta"
@@ -89,14 +94,14 @@ export function HeroCover({ block, editable }: SectionProps) {
             )}
           </div>
         )}
-        <div className="mt-5 grid gap-x-10 gap-y-6 sm:mt-6 sm:gap-y-9 md:mt-8 md:grid-cols-12 md:gap-y-10">
+        <div className="mt-5 grid gap-x-10 gap-y-6 sm:mt-6 sm:gap-y-7 md:mt-8 md:grid-cols-12 md:gap-y-10">
           <figure className="relative md:col-span-7">
             <div className="journal-unveil" style={delay(120)}>
               <Img
                 value={block.image}
                 alt={alt}
                 priority
-                className="aspect-[7/8] w-full sm:aspect-[16/10] md:aspect-[6/5]"
+                className="aspect-square w-full sm:aspect-[16/10] md:aspect-[6/5]"
               />
             </div>
             {showDetail && (

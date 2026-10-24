@@ -65,11 +65,11 @@ export function HeroExhibition({ block, editable }: SectionProps) {
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   return (
-    <Section className="pt-4 sm:pt-6 md:pt-8 lg:pt-10" label={alt}>
+    <Section className="pt-4 md:pt-8 lg:pt-10" label={alt}>
       <div
         className={cn(
           WRAP,
-          "grid gap-y-6 sm:gap-y-10 md:grid-cols-12 md:items-end md:gap-x-8 lg:gap-x-12",
+          "grid gap-y-6 md:grid-cols-12 md:items-end md:gap-x-8 lg:gap-x-12",
         )}
       >
         <figure
@@ -80,7 +80,7 @@ export function HeroExhibition({ block, editable }: SectionProps) {
             value={block.image}
             alt={alt}
             priority
-            className="aspect-[7/8] w-full sm:aspect-[16/9] md:aspect-[5/6] lg:aspect-auto lg:h-[min(46rem,calc(100svh-7rem))]"
+            className="aspect-square w-full sm:aspect-[16/9] md:aspect-[5/6] lg:aspect-auto lg:h-[min(46rem,calc(100svh-7rem))]"
           />
         </figure>
 
@@ -136,7 +136,7 @@ export function HeroExhibition({ block, editable }: SectionProps) {
             <Actions
               block={block}
               editable={editable}
-              className="mt-6 sm:mt-8"
+              className="mt-6 md:mt-8"
             />
           </WallLabel>
           {showDetail && (
