@@ -86,7 +86,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         data-slot="button"
         aria-busy={loading || undefined}
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(
+          buttonVariants({ variant, size, className }),
+          // Disabled while loading, but not dimmed: the spinner keeps its contrast.
+          loading && "disabled:opacity-100",
+        )}
         ref={ref}
         disabled={disabled || loading}
         {...props}
