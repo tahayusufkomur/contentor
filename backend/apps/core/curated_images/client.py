@@ -541,6 +541,7 @@ class OwnUpload:
     title: str = ""
     description: str = ""
     failure: str = ""
+    subject_placement: str | None = None
 
 
 def _own_upload(data: dict) -> OwnUpload:
@@ -553,6 +554,7 @@ def _own_upload(data: dict) -> OwnUpload:
         title=str(image.get("title") or "")[:200],
         description=str(image.get("description") or "")[:300],
         failure=str(data.get("failure") or "")[:300],
+        subject_placement=image.get("subject_placement") if image.get("subject_placement") in PLACEMENTS else None,
     )
 
 

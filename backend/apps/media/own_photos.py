@@ -164,6 +164,8 @@ def _apply(photo, upload) -> None:
         changes = {"index_status": READY}
         if upload.description and not photo.alt_text:
             changes["alt_text"] = upload.description[:300]
+        if upload.subject_placement:
+            changes["subject_placement"] = upload.subject_placement
         Photo.objects.filter(pk=photo.pk).update(**changes)
     elif upload.status == "failed":
         logger.warning("own photo %s could not be indexed: %s", photo.pk, upload.failure)

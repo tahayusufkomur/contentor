@@ -22,6 +22,11 @@ class Photo(models.Model):
     index_status = models.CharField(max_length=12, blank=True, default="", db_index=True)
     # Its upload id in the image service's private collection.
     catalog_id = models.CharField(max_length=64, blank=True, default="")
+    # Where its subject sits across the frame, as the image service saw it
+    # (curated_images.client.PLACEMENTS; "" = not known): a page that crops the
+    # photo keeps that side in view. A database default too, so code that
+    # predates the field can still add photos while a deploy rolls.
+    subject_placement = models.CharField(max_length=12, blank=True, default="", db_default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

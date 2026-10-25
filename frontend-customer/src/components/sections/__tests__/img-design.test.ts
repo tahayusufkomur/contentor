@@ -195,7 +195,7 @@ describe("Img with a kept design", () => {
 
   it("is the same markup as before for a photo, a priority photo and no photo", () => {
     expect(frame({ url: LEGACY_URL })).toBe(
-      '<div data-site-img-frame="" class="relative overflow-hidden bg-muted aspect-square w-full"><img src="https://cdn.test/legacy.jpg" alt="Morning flow" loading="lazy" decoding="async" data-site-img="" class="absolute inset-0 h-full w-full object-cover"/></div>',
+      '<div data-site-img-frame="" class="relative overflow-hidden bg-muted aspect-square w-full"><img src="https://cdn.test/legacy.jpg" alt="Morning flow" loading="lazy" decoding="async" data-site-img="" class="absolute inset-0 h-full w-full object-cover object-[50%_30%]"/></div>',
     );
     expect(
       frame(
@@ -203,7 +203,7 @@ describe("Img with a kept design", () => {
         { priority: true, imgClassName: "grayscale" },
       ),
     ).toBe(
-      '<div data-site-img-frame="" class="relative overflow-hidden bg-muted aspect-square w-full"><img src="https://cdn.test/legacy.jpg" alt="Morning flow" loading="eager" decoding="async" data-site-img="priority" class="absolute inset-0 h-full w-full object-cover grayscale"/></div>',
+      '<div data-site-img-frame="" class="relative overflow-hidden bg-muted aspect-square w-full"><img src="https://cdn.test/legacy.jpg" alt="Morning flow" loading="eager" decoding="async" data-site-img="priority" class="absolute inset-0 h-full w-full object-cover object-[50%_30%] grayscale"/></div>',
     );
     expect(frame({ url: null })).toBe(
       '<div data-site-img-frame="" class="relative overflow-hidden bg-muted aspect-square w-full"><div aria-hidden="true" data-empty-image="" class="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,color-mix(in_oklch,var(--primary)_18%,transparent),transparent_60%),radial-gradient(ellipse_at_80%_90%,color-mix(in_oklch,var(--accent)_22%,transparent),transparent_55%)]"></div></div>',

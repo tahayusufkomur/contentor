@@ -200,7 +200,9 @@ def test_sync_follows_the_service(upload, monkeypatch):
     refused = upload("c.jpg", status=own_photos.INDEXING, catalog_id="up-3")
     working = upload("d.jpg", status=own_photos.INDEXING, catalog_id="up-4")
     answers = {
-        "up-1": catalog.OwnUpload("up-1", "ready", description="A woman in warrior pose on a mat."),
+        "up-1": catalog.OwnUpload(
+            "up-1", "ready", description="A woman in warrior pose on a mat.", subject_placement="left_third"
+        ),
         "up-2": catalog.OwnUpload("up-2", "ready", description="Something else."),
         "up-3": catalog.OwnUpload("up-3", "failed", failure="model_timeout"),
         "up-4": catalog.OwnUpload("up-4", "indexing"),
@@ -212,7 +214,9 @@ def test_sync_follows_the_service(upload, monkeypatch):
     for photo in (described, captioned, refused, working):
         photo.refresh_from_db()
     assert (described.index_status, described.alt_text) == (own_photos.READY, "A woman in warrior pose on a mat.")
+    assert described.subject_placement == "left_third"  # a page crops toward it
     assert (captioned.index_status, captioned.alt_text) == (own_photos.READY, "Her own words")  # hers is kept
+    assert captioned.subject_placement == ""
     assert refused.index_status == own_photos.FAILED
     assert working.index_status == own_photos.INDEXING
 

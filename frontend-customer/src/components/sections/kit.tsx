@@ -97,6 +97,9 @@ export interface ImageValue {
   item?: CoverItem;
   /** `bare` leaves out the design's words and badge, where the look prints its own over it. */
   mode?: CoverArtProps["mode"];
+  /** Where the photo's subject sits across it, as the image library saw it (left_third, right_third,
+   *  centered, off_center); set by the server from the photo. */
+  subject_placement?: string | null;
 }
 
 export function imageUrl(value: unknown): string | null {
@@ -104,10 +107,19 @@ export function imageUrl(value: unknown): string | null {
   return v && typeof v.url === "string" && v.url ? v.url : null;
 }
 
+/** The part of a photo a frame of another shape keeps: the side its subject sits on (the same thirds
+ *  as the cover studio's subjectFocus), and high rather than dead centre, where people's faces are. */
+function photoAim(placement: string | null | undefined): string {
+  if (placement === "left_third") return "object-[25%_30%]";
+  if (placement === "right_third") return "object-[75%_30%]";
+  return "object-[50%_30%]";
+}
+
 /** A photo that is never broken: with no URL it renders a quiet tinted
  *  placeholder of the same box. Size the box with `className` (e.g.
- *  "aspect-[4/5] w-full"); the image covers it. A value with a kept cover
- *  `design` draws that instead, live (see courseCover and eventCover). */
+ *  "aspect-[4/5] w-full"); the image covers it, cropped toward its subject
+ *  (an `object-*` position in `imgClassName` overrides). A value with a kept
+ *  cover `design` draws that instead, live (see courseCover and eventCover). */
 export function Img({
   value,
   alt = "",
@@ -147,6 +159,7 @@ export function Img({
           data-site-img={priority ? "priority" : ""}
           className={cn(
             "absolute inset-0 h-full w-full object-cover",
+            photoAim(v?.subject_placement),
             imgClassName,
           )}
         />
@@ -211,6 +224,7 @@ export const courseCover = (
   design: c.cover_design ?? null,
   item: courseItem(c),
   mode,
+  subject_placement: c.thumbnail_subject_placement,
 });
 
 /** An event's cover for `Img`, like courseCover. `timeZone` is the one its date badge reads in. */

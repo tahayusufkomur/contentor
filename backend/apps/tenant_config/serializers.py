@@ -351,7 +351,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         video_ids: set[str] = set()
         _collect_asset_ids(node, photo_ids, video_ids)
 
-        photo_map, alts = {}, {}
+        photo_map, alts, placements = {}, {}, {}
         if photo_ids:
             from apps.media.models import Photo
 
@@ -359,6 +359,8 @@ class TenantConfigSerializer(serializers.ModelSerializer):
                 photo_map[str(photo.pk)] = photo.s3_key
                 if photo.alt_text:
                     alts[str(photo.pk)] = photo.alt_text
+                if photo.subject_placement:
+                    placements[str(photo.pk)] = photo.subject_placement
 
         video_map = {}
         if video_ids:
@@ -367,7 +369,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             for video in Video.objects.filter(pk__in=video_ids):
                 video_map[str(video.pk)] = video.s3_key
 
-        _sign_assets(node, photo_map, video_map, alts)
+        _sign_assets(node, photo_map, video_map, alts, placements)
 
 
 def _clean_block(raw):
@@ -414,10 +416,11 @@ def _collect_asset_ids(node, photo_ids, video_ids):
             _collect_asset_ids(item, photo_ids, video_ids)
 
 
-def _sign_assets(node, photo_map, video_map, alts=None):
+def _sign_assets(node, photo_map, video_map, alts=None, placements=None):
     """``alts`` (photo id -> its description): an image placed without alt text
     reads the photo's own, so a coach's photo that was described after it went
-    on a page is described there too."""
+    on a page is described there too. ``placements`` (photo id -> where its
+    subject sits): the page aims its crop there (the section kit's Img)."""
     if isinstance(node, dict):
         if "photo_id" in node:
             pid = node.get("photo_id")
@@ -425,6 +428,8 @@ def _sign_assets(node, photo_map, video_map, alts=None):
                 node["url"] = generate_presigned_download_url(photo_map[str(pid)])
                 if alts and "alt" in node and not node["alt"] and str(pid) in alts:
                     node["alt"] = alts[str(pid)][:200]
+                if placements and str(pid) in placements:
+                    node["subject_placement"] = placements[str(pid)]
             elif node.get("url"):
                 node["url"] = sign_if_s3_key(node["url"])
         if "video_id" in node:
@@ -434,10 +439,10 @@ def _sign_assets(node, photo_map, video_map, alts=None):
             elif node.get("url"):
                 node["url"] = sign_if_s3_key(node["url"])
         for value in node.values():
-            _sign_assets(value, photo_map, video_map, alts)
+            _sign_assets(value, photo_map, video_map, alts, placements)
     elif isinstance(node, list):
         for item in node:
-            _sign_assets(item, photo_map, video_map, alts)
+            _sign_assets(item, photo_map, video_map, alts, placements)
 
 
 def _scrub_unsafe_urls(node):

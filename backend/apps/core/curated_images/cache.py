@@ -152,6 +152,7 @@ def cache_remote_image(image: RemoteImage, *, logo: bool = False):
         file_size=len(body),
         width=width,
         height=height,
+        subject_placement=image.subject_placement or "",
     )
 
 

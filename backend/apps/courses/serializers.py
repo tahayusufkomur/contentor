@@ -136,6 +136,10 @@ class CourseListSerializer(serializers.ModelSerializer):
     filter_options = FilterOptionSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     instructor_name = serializers.CharField(source="instructor.name", read_only=True, default="")
+    # Where the cover photo's subject sits, so a small card crops toward it.
+    thumbnail_subject_placement = serializers.CharField(
+        source="thumbnail.subject_placement", read_only=True, default=""
+    )
 
     class Meta:
         model = Course
@@ -157,6 +161,7 @@ class CourseListSerializer(serializers.ModelSerializer):
             "lesson_count",
             "enrolled_count",
             "thumbnail_signed_url",
+            "thumbnail_subject_placement",
             "cover_design",
             "access_info",
             "filter_options",

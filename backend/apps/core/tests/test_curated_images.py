@@ -426,6 +426,33 @@ def test_cache_copies_into_the_tenant_namespace_once(tenant_ctx, curated_image_u
     assert Photo.objects.filter(s3_key=photo.s3_key).count() == 1
 
 
+def test_cache_keeps_where_the_subject_sits(tenant_ctx, curated_image_uploads):
+    from dataclasses import replace
+
+    image = replace(client.get(fake.entries()[1]["asset_id"]), subject_placement="left_third")
+    assert curated_cache.cache_remote_image(image).subject_placement == "left_third"
+
+
+def test_photos_placed_before_it_was_kept_learn_where_their_subject_sits(tenant_ctx, monkeypatch):
+    from django.core.management import call_command
+
+    from apps.media.models import Photo
+
+    copy = Photo.objects.create(s3_key=curated_cache.tenant_key_for("asset-1"))
+    hers = Photo.objects.create(s3_key="tenants/shared-test/photo/a.avif", catalog_id="up-1")
+    unknown = Photo.objects.create(s3_key=curated_cache.tenant_key_for("asset-2"))
+    seen = client.RemoteImage("asset-1", "", "", [], 1, 1, "", "", subject_placement="right_third")
+    described = client.OwnUpload("up-1", "ready", subject_placement="left_third")
+    monkeypatch.setattr(client, "get", lambda asset_id: seen if asset_id == "asset-1" else None)
+    monkeypatch.setattr(client, "private_status", lambda upload_id: described)
+
+    call_command("fill_subject_placements")
+
+    for photo in (copy, hers, unknown):
+        photo.refresh_from_db()
+    assert [p.subject_placement for p in (copy, hers, unknown)] == ["right_third", "left_third", ""]
+
+
 def test_asset_id_round_trips_through_the_tenant_key(tenant_ctx):
     asset_id = "4df17ec1-10ef-4c88-99cf-37ce84ced788"
     key = curated_cache.tenant_key_for(asset_id)

@@ -290,3 +290,18 @@ def test_a_page_reads_a_photos_description_once_it_has_one(tenant):
     assert kept["alt"] == "Her own words"
     assert undescribed["alt"] == ""
     assert "alt" not in bare
+
+
+def test_a_page_learns_where_a_photos_subject_sits(tenant):
+    from apps.tenant_config.serializers import TenantConfigSerializer
+
+    placed, unknown = photo("IMG 1", subject_placement="right_third"), photo("IMG 2")
+    page = {
+        "blocks": [
+            {"image": {"url": None, "photo_id": str(placed.pk), "alt": ""}},
+            {"items": [{"image": {"url": None, "photo_id": str(unknown.pk), "alt": ""}}]},
+        ]
+    }
+    TenantConfigSerializer()._sign_tree(page)
+    assert page["blocks"][0]["image"]["subject_placement"] == "right_third"
+    assert "subject_placement" not in page["blocks"][1]["items"][0]["image"]  # the page aims high in the middle

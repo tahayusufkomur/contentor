@@ -66,6 +66,8 @@ export interface Course {
   thumbnail_url: string;
   thumbnail_id?: string | null;
   thumbnail_signed_url?: string;
+  /** Where the cover photo's subject sits (see ImageValue.subject_placement); "" when not known. */
+  thumbnail_subject_placement?: string;
   /** The kept cover design, drawn live by CoverArt; null or absent when it has none. */
   cover_design?: CoverDesign | null;
   price: string;
