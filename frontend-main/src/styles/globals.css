@@ -250,16 +250,23 @@ details[open] .faq-content {
   }
 }
 
-/* Hero: the team works in turn, one role every 1.7 s (six roles, a 10.2 s
-   round). --i is the card's (and its wire's) place in the round; children
-   inherit it, so a card's icon and status turn with it. The first round
-   starts from blank: no card is done until its own turn has run. */
+/* Hero: the team works in turn, one role every 2.125 s. When the sixth is
+   done the round holds 1 s, then all six clear at once and it starts again
+   from blank: a 13.75 s round. --i is the card's (and its wire's) place in
+   the round; children inherit it, so a card's icon and status turn with it.
+   --turn is the round's clock, counted in turns: a card reads "done" from
+   the end of its own turn until the clock wraps. */
+@property --turn {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
 @media (prefers-reduced-motion: no-preference) {
   .team-turn,
-  .team-turn :is(.team-icon, .team-on, .team-done) {
-    animation-duration: 10.2s;
+  .team-turn :is(.team-icon, .team-on) {
+    animation-duration: 13.75s;
     animation-iteration-count: infinite;
-    animation-delay: calc(var(--i) * 1.7s);
+    animation-delay: calc(var(--i) * 2.125s);
   }
   .team-turn {
     animation-name: team-turn;
@@ -271,28 +278,35 @@ details[open] .faq-content {
     animation-name: team-on;
   }
   .team-turn .team-done {
-    opacity: 0;
-    animation-name: team-done;
+    animation: team-round 13.75s linear infinite;
+    opacity: clamp(0, (var(--turn) - var(--i) - 0.9) / 0.12, 1);
   }
   .team-wire {
     animation:
-      team-wire 10.2s infinite,
-      wire-flow 1.4s linear infinite;
-    animation-delay: calc(var(--i) * 1.7s), 0s;
+      team-wire 13.75s infinite,
+      wire-flow 1.75s linear infinite;
+    animation-delay: calc(var(--i) * 2.125s), 0s;
   }
 }
-/* Done: the card flashes green as its turn ends, then settles. */
+/* 13.75 s is 6.4706 turns of 2.125 s. */
+@keyframes team-round {
+  to {
+    --turn: 6.4706;
+  }
+}
+/* Done: the card flashes green as its turn ends, then settles in time for
+   the sixth to be still when the round clears. */
 @keyframes team-turn {
   0%,
-  32%,
+  22.5%,
   100% {
     border-color: var(--border);
     background-color: var(--card);
     box-shadow: none;
     transform: none;
   }
-  2%,
-  15% {
+  1.85%,
+  13.9% {
     border-color: var(--marketing-accent);
     background-color: color-mix(
       in oklch,
@@ -302,8 +316,8 @@ details[open] .faq-content {
     box-shadow: 0 18px 50px -24px var(--marketing-accent);
     transform: scale(1.03);
   }
-  18%,
-  22% {
+  16.7%,
+  19% {
     border-color: var(--success);
     background-color: color-mix(in oklch, var(--success) 12%, var(--card));
     box-shadow: 0 18px 50px -28px var(--success);
@@ -312,51 +326,41 @@ details[open] .faq-content {
 }
 @keyframes team-icon {
   0%,
-  32%,
+  22.5%,
   100% {
     background-color: var(--muted);
     color: var(--foreground);
   }
-  2%,
-  15% {
+  1.85%,
+  13.9% {
     background-color: var(--marketing-accent);
     color: var(--marketing-accent-foreground);
   }
-  18%,
-  22% {
+  16.7%,
+  19% {
     background-color: var(--success);
     color: var(--background);
   }
 }
 @keyframes team-on {
   0%,
-  17%,
+  15.8%,
   100% {
     opacity: 0;
   }
-  2%,
-  15% {
-    opacity: 1;
-  }
-}
-@keyframes team-done {
-  0%,
-  15% {
-    opacity: 0;
-  }
-  17%,
-  100% {
+  1.85%,
+  13.9% {
     opacity: 1;
   }
 }
 @keyframes team-wire {
   0%,
-  17%,
+  15.8%,
   100% {
     stroke: var(--border);
   }
-  2%,
-  15% {
+  1.85%,
+  13.9% {
     stroke: var(--marketing-accent);
   }
 }

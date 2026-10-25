@@ -19,14 +19,15 @@ const PLACE = [
   "lg:col-start-3 lg:row-start-3",
 ];
 
-/** From each card's inner edge to the photo, in the hub's 976 × 348 box. */
+/** From each card's inner edge to the photo, in the hub's 976 × 428 box.
+ * The photo spans all three rows, so every wire meets it level. */
 const WIRES = [
-  "M300 50 C330 50 326 174 356 174",
-  "M676 50 C646 50 650 174 620 174",
-  "M300 174 L356 174",
-  "M676 174 L620 174",
-  "M300 298 C330 298 326 174 356 174",
-  "M676 298 C646 298 650 174 620 174",
+  "M300 62 L323 62",
+  "M676 62 L653 62",
+  "M300 214 L323 214",
+  "M676 214 L653 214",
+  "M300 366 L323 366",
+  "M676 366 L653 366",
 ];
 
 const TRUST = ["trial", "cancel", "time"] as const;
@@ -94,10 +95,10 @@ export async function Hero() {
         </ul>
       </div>
 
-      <div className="relative mx-auto mt-12 grid max-w-[640px] grid-cols-2 gap-2.5 px-6 sm:gap-3 lg:mt-14 lg:w-[976px] lg:max-w-none lg:grid-cols-[300px_1fr_300px] lg:grid-rows-[100px_100px_100px] lg:gap-x-0 lg:gap-y-6 lg:px-0">
+      <div className="relative mx-auto mt-12 grid max-w-[640px] grid-cols-2 gap-2.5 px-6 sm:gap-3 lg:mt-14 lg:w-[976px] lg:max-w-none lg:grid-cols-[300px_1fr_300px] lg:grid-rows-[124px_124px_124px] lg:gap-x-0 lg:gap-y-7 lg:px-0">
         <svg
           aria-hidden
-          viewBox="0 0 976 348"
+          viewBox="0 0 976 428"
           className="pointer-events-none absolute inset-0 hidden size-full lg:block"
         >
           {WIRES.map((d, i) => (
@@ -112,10 +113,12 @@ export async function Hero() {
             />
           ))}
         </svg>
-        <figure className="relative col-span-2 mx-auto mb-3 h-[250px] w-[200px] overflow-hidden rounded-[22px] shadow-[0_30px_80px_-24px_rgba(0,0,0,0.45)] ring-1 ring-border lg:col-span-1 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:mb-0 lg:h-[330px] lg:w-[264px] lg:self-center">
-          {/* eslint-disable-next-line @next/next/no-img-element -- sized AVIF, the small twin covers 2x */}
+        <figure className="relative col-span-2 mx-auto mb-3 h-[312px] w-[250px] overflow-hidden rounded-[22px] shadow-[0_30px_80px_-24px_rgba(0,0,0,0.45)] ring-1 ring-border lg:col-span-1 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:mb-0 lg:h-[412px] lg:w-[330px] lg:self-center">
+          {/* eslint-disable-next-line @next/next/no-img-element -- sized AVIF with its own srcSet */}
           <img
-            src={photo.srcSmall ?? photo.src}
+            src={photo.src}
+            srcSet={`${photo.srcSmall} ${photo.width / 2}w, ${photo.src} ${photo.width}w`}
+            sizes="(min-width: 1024px) 330px, 250px"
             alt=""
             width={photo.width}
             height={photo.height}
