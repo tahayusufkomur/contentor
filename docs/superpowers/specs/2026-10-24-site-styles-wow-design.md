@@ -310,6 +310,18 @@ Owner, 2026-10-25 (Gate B)
   below 48 px. At 48 px and above, kinetic may set its statement and its billed course titles in caps
   (§6).
 
+WP-2.5 (2026-10-25), calls made in the build (plan `plans/2026-10-24-site-styles-wow-2.5.md`)
+
+- **The flagships' own layouts move to WP-2.1–2.4.** Proof, statement and video each have one neutral layout, bound to every style's kit. Each flagship designs its own layouts of them inside its world.
+- **The three families are given-only.** A plan has one only when the coach gave its input. On home, what she gave is placed:
+  - the statement in philosophy's place;
+  - the clip after the hero;
+  - the proof before the closing section.
+
+  With nothing given, every site composes exactly as before.
+- **No AI writes proof or video** (`sections.AI_NEVER_FAMILIES`). The copilot and AI-built sections cannot lay them out; they come from the editor or her setup answers. The statement stays writable, like philosophy.
+- **Video v1 is a muted loop of a library clip.** Two follow-ups are left open: sound with captions (a public captions route for placed clips) and a rendered reel as a source.
+
 ## 6. The bar: rules every work package follows
 
 Each rule has a check, so a work package can prove it.
@@ -360,7 +372,7 @@ Status values:
 | 2.2 | Flagship build: velvet | 2.0, 2.5 | written at start | todo |
 | 2.3 | Flagship build: journal | 2.0, 2.5 | written at start | todo |
 | 2.4 | Flagship build: pop | 2.0, 2.5 | written at start | todo |
-| 2.5 | New families: proof, statement, video | 2.0 | written at start | todo |
+| 2.5 | New families: proof, statement, video | 2.0 | `plans/2026-10-24-site-styles-wow-2.5.md` | done (2026-10-25, 70fed0da) |
 | 2.6 | Setup additions: optional clip, real proof, one belief | 2.5 | written at start | todo |
 | 3.1 | Human 5-second test | 2.1–2.4 | written at start | todo |
 | 3.2 | Catalog consolidation → Gate C | 3.1 | written at start | todo |
@@ -421,7 +433,12 @@ default layout for every style, and the designed layout in each flagship.
 - numbers she states;
 - one sentence: "one thing you believe that most teachers in your field don't".
 
-All of them feed WP-2.5. Skipping any one changes nothing else.
+All of them feed WP-2.5 through the `wizard_state.answers` keys its composer reads:
+- `belief`, a string;
+- `proof`: `{"quotes": [{"quote", "name", "consent"}], "numbers": [{"value", "label"}], "press": ["<name>"]}`;
+- `clip`: `{"video_id": <int>}`.
+
+The setup inputs hold her to the manifest's limits: the composer leaves out what is longer, and never cuts her words. Skipping any one changes nothing else.
 
 **WP-3.1: human 5-second test.** A protocol plus a run by the owner: five people, each flagship's first
 screen shown for 5 seconds, then "what do you remember?" and "who is it for?". It records answers
@@ -956,6 +973,34 @@ Steered at Gate B (owner, 2026-10-25) from the roll's exhibition to Impeccable's
   - R11's caps limit now applies below 48 px (§6).
   - Nothing to deploy: docs only.
   - Next: WP-2.5 (new families), then WP-2.1–2.4. Each starts by writing its plan (§8).
+- 2026-10-25, WP-2.5 (0b5c98a7, d3fde2d8, 70fed0da): three new families that show only what the coach gave.
+  - **What they are:**
+    - proof: her clients' consented words, the numbers she states, the press she names;
+    - statement: her belief as one line of at most 60 characters;
+    - video: her library clip, muted, on a loop, with a poster and a pause button.
+  - **Layouts:** one neutral layout per family, written once against the StyleKit and bound to all 21 styles in `all-styles.ts`, with no per-style files. The editor's fields come from the manifest, which gains a `video` field type.
+  - **Composer:** the families are given-only (§5).
+    - The model writes proof's heading and nothing else of the three. Her facts ride the fallback fields it never writes.
+    - A belief counts only when it makes a line (whole, or its first sentence).
+    - An item longer than the section allows is left out, never cut.
+    - No AI writes proof or video: neither the copilot nor AI-built sections.
+  - **Verified:**
+    - backend 4031 passed, plus one parallel-run flake (`test_email_sink`, which passes alone);
+    - vitest 1240 (customer) and 233 (main); both typechecks clean;
+    - the three families shot in 21 styles: 189 shots, no overflow (`e2e/eval-shots/design/20261025-1456-wp-2.5/sheets/`);
+    - home pages identical before and after (`20261025-1442-wp-2.5-before`, `20261025-1522-wp-2.5-after`), except capture timing in kinetic's ticker, grid's fade-in and sanctum's wheel;
+    - e2e, all specs (the shared manifest plans every one): 158 passed, 7 flaky (passed on retry), 20 skipped, 4 did not run, 5 failed. None of the failures is in the sections or the composer:
+      - 35-focus-message ×2: its text locator also matches the phone preview beside the announcement form (peer commit 008acb8d, 2026-10-23);
+      - 42-reels: a peer's uncommitted reels work is live in the shared tree;
+      - 10-impersonation: `login_as` answers 200 but the page stays. It fails alone too, and this work does not touch it;
+      - 32-photo-studio's Cmd-Z test: passes alone, 16 of 16.
+  - **Learned:**
+    - Some kits set their display size and capitals in CSS classes (grid's `swiss-h1`, pop's `pop-h1`, studiofloor's uppercase face). A layout written against the kit needs `!` on size, line-height and case. Sanctum's Cinzel draws capitals by design.
+    - The costume-label guard bans "Featured", so the press row reads "In the press".
+    - A fresh review caught three bugs before shipping:
+      - an empty statement still replaced philosophy;
+      - a Play button stayed dead after the browser refused autoplay;
+      - AI-built sections could lay out proof.
 
 ## 10. Resources
 
