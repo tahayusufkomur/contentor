@@ -65,17 +65,44 @@ def submit(video):
         "get_object", Params={"Bucket": settings.AWS_BUCKET_NAME, "Key": key}, ExpiresIn=LINK_SECONDS
     )
     job = _call("POST", "/v1/transcriptions", json={"media_url": url})
-    # The same file again (for the words its captions were made without) keeps them while Scribe works.
-    stale = {} if video.captions_key == key else {"captions_vtt": "", "captions_language": "", "captions_words": []}
-    Video.objects.filter(pk=video.pk, s3_key=key).update(captions_key=key, captions_job=job["id"], **stale)
+    Video.objects.filter(pk=video.pk, s3_key=key).update(
+        captions_key=key, captions_job=job["id"], captions_vtt="", captions_language="", captions_words=[]
+    )
+
+
+def words_from_vtt(vtt):
+    """Words for captions made before Scribe sent them, so the file isn't transcribed again: each cue's
+    words spread over it by length (a cue starts at its first word and ends at its last, at most 6 s)."""
+    words = []
+    for block in vtt.split("\n\n"):
+        lines = block.strip().splitlines()
+        timing = next((i for i, line in enumerate(lines) if "-->" in line), None)
+        if timing is None:
+            continue
+        first, last = lines[timing].split("-->")
+        start, end = _seconds(first), _seconds(last.split()[0])
+        tokens = " ".join(lines[timing + 1 :]).split()
+        span, total, upto = end - start, sum(map(len, tokens)), 0
+        for token in tokens:
+            before, upto = upto, upto + len(token)
+            words.append([round(start + span * before / total, 3), round(start + span * upto / total, 3), " " + token])
+    return words
+
+
+def _seconds(stamp):
+    return sum(float(part) * 60**i for i, part in enumerate(reversed(stamp.strip().split(":"))))
 
 
 def ensure_words(video):
-    """What reels need of the file: its words. "ready"; "working" (Scribe is on it, or was asked just now:
-    for a new file, or captions from before Scribe sent words); "failed" (Scribe found no speech, or
-    could not read the file); or "unavailable" (Scribe is off, or it is the shared demo footage)."""
+    """What reels need of the file: its words. "ready" (from Scribe, or read from captions made before it
+    sent words); "working" (Scribe is on it, or was asked just now for a new file); "failed" (Scribe found
+    no speech, or could not read the file); or "unavailable" (Scribe is off, or it is the shared demo footage)."""
     if video.has_words:
         return "ready"
+    if video.has_captions:
+        video.captions_words = words_from_vtt(video.captions_vtt)
+        Video.objects.filter(pk=video.pk, captions_key=video.s3_key).update(captions_words=video.captions_words)
+        return "ready" if video.captions_words else "failed"
     state = status(video)
     if state is None:
         return "unavailable"

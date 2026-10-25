@@ -66,7 +66,7 @@ def _take(kind: str, per_hour: int) -> bool:
 
 def words_state(video) -> str:
     """The video's words for reels, as captions.ensure_words sees them, without asking Scribe for anything."""
-    if video.has_words:
+    if video.has_words or video.has_captions:  # (words are read from captions made without them)
         return "ready"
     state = captions.status(video)
     return "unavailable" if state is None else "failed" if state == "failed" else "working"
@@ -101,7 +101,7 @@ def run_search(video, count: int, made_by: str, waited: int) -> int | None:
             if video.captions_job:
                 captions.collect(video)  # rather than wait for the sweep
             else:
-                captions.ensure_words(video)  # a new file, or captions from before Scribe sent words
+                captions.ensure_words(video)  # a new file, or words read from captions made without them
         except requests.RequestException:
             away = True  # Scribe is away for a moment: look again next time
         video.refresh_from_db()

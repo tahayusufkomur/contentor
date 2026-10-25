@@ -106,11 +106,10 @@ class TestSearch:
 
     def test_scribe_away_for_a_moment_is_waited_for(self, settings, coach, tenant_ctx):
         settings.SCRIBE_URL = "http://scribe-api:8000"
-        key = build_s3_path("videos", "old.mp4")
-        captioned = Video.objects.create(title="Old", s3_key=key, captions_key=key, captions_vtt="WEBVTT")
+        fresh = Video.objects.create(title="New", s3_key=build_s3_path("videos", "new.mp4"))
         with mock.patch("apps.courses.captions._call", side_effect=requests.ConnectionError("down")):
-            assert jobs.run_search(captioned, 3, "coach", 0) == jobs.WAIT
-        assert jobs.search_state(captioned.pk)["status"] == "transcribing"
+            assert jobs.run_search(fresh, 3, "coach", 0) == jobs.WAIT
+        assert jobs.search_state(fresh.pk)["status"] == "transcribing"
 
     def test_what_it_refuses(self, coach, tenant_ctx):
         demo = Video.objects.create(title="Demo", s3_key="demo/videos/flow.mp4")

@@ -118,17 +118,22 @@ class TestWords:
         video.refresh_from_db()
         assert not video.has_words  # a new file's words are not these
 
-    def test_captions_made_without_words_are_transcribed_again_and_kept_meanwhile(self, scribe, video):
-        Video.objects.filter(pk=video.pk).update(captions_key=video.s3_key, captions_vtt=VTT, captions_language="tr")
-        video.refresh_from_db()
-        assert captions.ensure_words(video) == "working"
-        video.refresh_from_db()
-        assert (video.captions_job, video.has_captions, video.captions_language) == ("job1", True, "tr")
-        assert captions.ensure_words(video) == "working"  # not asked twice
-        _finish(scribe, "job1", status="done", vtt=VTT, language="tr", words=WORDS)
+    def test_captions_made_without_words_give_their_words_without_scribe(self, scribe, video):
+        vtt = (
+            "WEBVTT\n\n00:00:01.000 --> 00:00:03.000\nBu da\niyi.\n\n"
+            "01:00:04.500 --> 01:00:05.500 align:start\nHadi.\n"
+        )
+        Video.objects.filter(pk=video.pk).update(captions_key=video.s3_key, captions_vtt=vtt, captions_language="tr")
         video.refresh_from_db()
         assert captions.ensure_words(video) == "ready"
-        assert list(scribe.jobs) == ["job1"]
+        assert scribe.jobs == {}  # a file is transcribed once
+        video.refresh_from_db()
+        assert video.captions_words == [
+            [1.0, 1.5, " Bu"],
+            [1.5, 2.0, " da"],
+            [2.0, 3.0, " iyi."],
+            [3604.5, 3605.5, " Hadi."],
+        ]
 
     def test_a_new_file_is_sent_now_rather_than_at_the_next_sweep(self, scribe, video):
         assert captions.ensure_words(video) == "working"
