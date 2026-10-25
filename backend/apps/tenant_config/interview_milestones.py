@@ -264,6 +264,7 @@ def sync_site(tenant, answers: dict) -> None:
             ),
             **({"custom_links": True} if isinstance(custom_links, list) else {}),
             **cta_override,
+            **LOGO_LAYOUT_CONFIG.get(answers.get("navbar_logo"), {}),
         }
         rezone = bool(zone) and cfg.timezone != zone
         links_changed = isinstance(custom_links, list) and links != list(nav.get("links") or [])
@@ -1007,6 +1008,16 @@ FOOTER_LAYOUTS = (
     ("minimal", "Minimal", "Just your name and the year.", ("energetic",)),
 )
 CHROME = {"navbar_layout": NAVBAR_LAYOUTS, "footer_layout": FOOTER_LAYOUTS}
+# How her mark sits in the header, as navbar_config's logo_layout and
+# show_brand_name (public-header.tsx): asked on the header screen, only of a
+# coach who has a mark.
+LOGO_LAYOUTS = (
+    ("horizontal", "Beside your name", {"logo_layout": "horizontal", "show_brand_name": True}),
+    ("stacked", "Above your name", {"logo_layout": "stacked", "show_brand_name": True}),
+    ("mark_only", "Mark only", {"logo_layout": "horizontal", "show_brand_name": False}),
+    ("name_only", "Name only", {"logo_layout": "name_only", "show_brand_name": True}),
+)
+LOGO_LAYOUT_CONFIG = {value: config for value, _, config in LOGO_LAYOUTS}
 
 
 def chrome_pick(field_id: str, answers: dict) -> tuple[str, str]:
@@ -1034,7 +1045,22 @@ def chrome_cards(tenant, answers: dict, field_id: str) -> dict:
     if "articles" in (answers.get("offers") or []) and not any(link.get("href") == "/blog" for link in links):
         links.append({"label": "Blog", "href": "/blog"})
     socials = [n for n, u in ((cfg.social_links if cfg else None) or {}).items() if u]
+    # Her mark and the ways it can sit beside her name; the way her header has it now is picked.
+    logo = {}
+    if field_id == "navbar_layout" and cfg is not None and (cfg.logo_id or cfg.logo_url):
+        from apps.core.copilot.logos import mark_for_key
+        from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
+
+        key = cfg.logo.s3_key if cfg.logo_id else ""
+        layout = nav.get("logo_layout") if nav.get("logo_layout") in LOGO_LAYOUT_CONFIG else "horizontal"
+        logo = {
+            "logo_mark": mark_for_key(key) if key else None,
+            "logo_url": generate_presigned_download_url(key) if key else sign_if_s3_key(cfg.logo_url),
+            "logo_layout": layout if nav.get("show_brand_name") else "mark_only",
+            "logo_layouts": [{"value": value, "label": label} for value, label, _ in LOGO_LAYOUTS],
+        }
     return {
+        **logo,
         "kind": field_id.removesuffix("_layout"),
         "options": [
             {
@@ -1342,9 +1368,15 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
                 picked = json.loads(value) if isinstance(value, str) else value
             except ValueError:
                 raise ChoiceError("invalid_value") from None
-            if not isinstance(picked, dict) or picked.get("layout") not in valid_layouts:
+            if (
+                not isinstance(picked, dict)
+                or picked.get("layout") not in valid_layouts
+                or picked.get("logo_layout", "horizontal") not in LOGO_LAYOUT_CONFIG
+            ):
                 raise ChoiceError("invalid_value")
             answers["navbar_layout"] = picked["layout"]
+            if "logo_layout" in picked:
+                answers["navbar_logo"] = picked["logo_layout"]  # written to the header by sync_site
             if isinstance(picked.get("links"), list):
                 known = dict(NAV)
                 cfg = TenantConfig.objects.first()

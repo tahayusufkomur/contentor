@@ -264,6 +264,12 @@ export interface LookCards {
   show_social?: boolean;
   transparent_over_hero?: boolean;
   custom_links?: boolean;
+  /** Header: her mark (the traced vector, else its image) and how it sits
+   * beside her name now; ``logo_layouts`` only when she has a mark. */
+  logo_mark?: LogoMark | null;
+  logo_url?: string;
+  logo_layout?: string;
+  logo_layouts?: { value: string; label: string }[];
   /** Looks: picking one opens it as a whole page, its sample copy about
    * ``subject`` ("boxing") and the hero's line in the coach's words. */
   preview?: { subject?: string; body?: string; copy?: LookCopy | null };

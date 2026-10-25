@@ -3,6 +3,7 @@ import {
   headerNavLinks,
   logoSizeClass,
   showBrandName,
+  showLogoMark,
   showSubscribeButton,
   visibleNavLinks,
 } from "@/lib/navbar";
@@ -15,9 +16,34 @@ describe("logoSizeClass", () => {
     expect(logoSizeClass("xl", "classic")).toBe("h-12");
     expect(logoSizeClass(undefined, "classic")).toBe("h-8");
   });
+  it("keeps a stacked mark at md at most so the name fits under it", () => {
+    expect(logoSizeClass("lg", "centered", true)).toBe("h-8");
+    expect(logoSizeClass("xl", "classic", true)).toBe("h-8");
+    expect(logoSizeClass("sm", "classic", true)).toBe("h-6");
+  });
   it("caps xl at lg inside the pill layout", () => {
     expect(logoSizeClass("xl", "pill")).toBe("h-10");
     expect(logoSizeClass("lg", "pill")).toBe("h-10");
+  });
+});
+
+describe("showLogoMark", () => {
+  const logo_url = "https://x/logo.png";
+  it("leaves the mark out only when she picked her name alone", () => {
+    expect(
+      showLogoMark({ logo_url, navbar_config: { show_brand_name: true } }),
+    ).toBe(true);
+    expect(
+      showLogoMark({
+        logo_url,
+        navbar_config: { show_brand_name: true, logo_layout: "name_only" },
+      }),
+    ).toBe(false);
+  });
+  it("keeps the mark when the name is hidden too", () => {
+    expect(
+      showLogoMark({ logo_url, navbar_config: { logo_layout: "name_only" } }),
+    ).toBe(true);
   });
 });
 

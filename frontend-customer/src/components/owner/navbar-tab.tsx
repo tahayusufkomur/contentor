@@ -274,6 +274,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
               [
                 { id: "horizontal", label: "Side by side" },
                 { id: "stacked", label: "Stacked" },
+                { id: "name_only", label: "Name only" },
               ] as const
             ).map((opt) => (
               <button

@@ -1,12 +1,16 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { Menu, Monitor, Smartphone, X } from "lucide-react";
 import type { SiteStylePalette } from "@shared/sections/types";
+import { LogoMarkSvg } from "@/components/shared/logo-mark";
 import { headerNavLinks, visibleNavLinks } from "@/lib/navbar";
+import type { LogoMark } from "@/types/tenant";
 import { cn } from "@/lib/utils";
 
 type Link = { label: string; href: string };
+/** Her mark: the traced vector when there is one, else its image. */
+export type SketchLogo = { mark?: LogoMark | null; url?: string };
 
 /** The setup shell's neutrals, for a coach with no look yet. */
 const PLAIN = {
@@ -28,11 +32,52 @@ const Bar = ({ className }: { className?: string }) => (
   />
 );
 
+/** Her mark and name the way her header sets them (public-header.tsx's
+ * Brand): side by side, the name under the mark, the mark or the name alone.
+ * The mark takes ``color``, the name keeps its own. */
+export function Lockup({
+  logo,
+  layout,
+  markClassName,
+  color,
+  children,
+}: {
+  logo?: SketchLogo;
+  layout?: string;
+  markClassName: string;
+  color: string;
+  children: ReactNode;
+}) {
+  if (!logo || layout === "name_only") return <>{children}</>;
+  const markClass = cn(markClassName, "w-auto max-w-full shrink-0");
+  return (
+    <span
+      className={cn(
+        "flex min-w-0",
+        layout === "stacked"
+          ? "flex-col items-start gap-0.5"
+          : "items-center gap-[0.4em]",
+      )}
+      style={{ color }}
+    >
+      {logo.mark ? (
+        <LogoMarkSvg mark={logo.mark} className={markClass} />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={logo.url} alt="" className={markClass} />
+      )}
+      {layout !== "mark_only" && children}
+    </span>
+  );
+}
+
 /** A page's top as a small picture: the coach's own menu, name and header
  * button in each header preset, drawn in her look's colours. */
 export function NavbarSketch({
   layout,
   brand,
+  logo,
+  logoLayout,
   links,
   cta,
   transparent,
@@ -41,6 +86,8 @@ export function NavbarSketch({
 }: {
   layout: string;
   brand: string;
+  logo?: SketchLogo;
+  logoLayout?: string;
   links: Link[];
   cta?: string;
   transparent?: boolean;
@@ -54,12 +101,19 @@ export function NavbarSketch({
   );
   const half = Math.ceil(menu.length / 2);
   const name = (
-    <span
-      className="truncate text-[9px] font-bold"
-      style={{ color: c.foreground }}
+    <Lockup
+      logo={logo}
+      layout={logoLayout}
+      markClassName="h-3.5"
+      color={c.primary}
     >
-      {brand || "Your name"}
-    </span>
+      <span
+        className="truncate text-[9px] font-bold"
+        style={{ color: c.foreground }}
+      >
+        {brand || "Your name"}
+      </span>
+    </Lockup>
   );
   const items = (list: Link[], className = "") => (
     <span className={cn("flex min-w-0 items-center gap-2", className)}>
@@ -190,6 +244,8 @@ export function NavbarSketch({
 export function NavbarStudioPreview({
   layout,
   brand,
+  logo,
+  logoLayout,
   headline,
   links,
   cta,
@@ -198,6 +254,8 @@ export function NavbarStudioPreview({
 }: {
   layout: string;
   brand: string;
+  logo?: SketchLogo;
+  logoLayout?: string;
   headline?: string;
   links: Link[];
   cta?: string;
@@ -214,12 +272,19 @@ export function NavbarStudioPreview({
       : { background: c.surface, borderColor: c.border };
 
   const brandEl = (
-    <span
-      className="truncate text-sm font-bold tracking-tight"
-      style={{ color: c.foreground }}
+    <Lockup
+      logo={logo}
+      layout={logoLayout}
+      markClassName="h-7"
+      color={c.primary}
     >
-      {brand || "Your Studio"}
-    </span>
+      <span
+        className="truncate text-sm font-bold tracking-tight"
+        style={{ color: c.foreground }}
+      >
+        {brand || "Your Studio"}
+      </span>
+    </Lockup>
   );
   const navItems = (list: Link[], className = "") => (
     <span className={cn("flex flex-wrap items-center gap-4", className)}>

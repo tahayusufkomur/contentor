@@ -22,8 +22,10 @@ import { cn } from "@/lib/utils";
 import { BrowserFrame } from "./browser-frame";
 import {
   FooterSketch,
+  Lockup,
   NavbarSketch,
   NavbarStudioPreview,
+  type SketchLogo,
 } from "./chrome-sketch";
 import { LookTile } from "./look-tile";
 import { SHELL_TOKENS } from "./tokens";
@@ -153,6 +155,10 @@ export function LookCardsView({
   );
   const [transparent, setTransparent] = useState<boolean>(() =>
     Boolean(shown.transparent_over_hero),
+  );
+  // How her mark sits beside her name: the way her header has it now.
+  const [logoLayout, setLogoLayout] = useState(
+    () => shown.logo_layout ?? "horizontal",
   );
   const chosenLayout = (() => {
     if (!chosen) return undefined;
@@ -391,11 +397,16 @@ export function LookCardsView({
       navHrefs.includes(l.href),
     );
     const activeCta = showCta ? shown.cta || "Get Started" : "";
+    // Only a coach with a mark is asked how it sits.
+    const logo: SketchLogo | undefined = shown.logo_layouts
+      ? { mark: shown.logo_mark, url: shown.logo_url }
+      : undefined;
     const emitNavbar = (
       nextLayout: string,
       nextHrefs: string[],
       nextCta: boolean,
       nextTransparent: boolean,
+      nextLogo = logoLayout,
     ) => {
       const opt = shown.options.find((o) => o.value === nextLayout);
       const pickedLinks = availableNavLinks.filter((l) =>
@@ -413,6 +424,7 @@ export function LookCardsView({
           links: pickedLinks.map((l) => l.href),
           show_cta: nextCta,
           transparent_over_hero: nextTransparent,
+          ...(logo ? { logo_layout: nextLogo } : {}),
         }),
         label,
       );
@@ -447,6 +459,8 @@ export function LookCardsView({
                 <NavbarSketch
                   layout={o.value}
                   brand={brand}
+                  logo={logo}
+                  logoLayout={logoLayout}
                   links={activeLinks}
                   cta={activeCta}
                   transparent={transparent}
@@ -483,6 +497,61 @@ export function LookCardsView({
 
         {shown.kind === "navbar" && (
           <div className="max-w-3xl space-y-5">
+            {logo && (
+              <div className="rounded-2xl border border-[var(--sf-line)] bg-white p-4">
+                <span className="mb-2.5 block text-[13.5px] font-semibold text-[var(--sf-ink)]">
+                  How your logo sits
+                </span>
+                <div
+                  role="group"
+                  aria-label="How your logo sits"
+                  className="grid grid-cols-2 gap-2.5 sm:grid-cols-4"
+                >
+                  {(shown.logo_layouts ?? []).map((o) => (
+                    <CardButton
+                      key={o.value}
+                      picked={logoLayout === o.value}
+                      disabled={disabled}
+                      onClick={() => {
+                        setLogoLayout(o.value);
+                        emitNavbar(
+                          activeLayout,
+                          navHrefs,
+                          showCta,
+                          transparent,
+                          o.value,
+                        );
+                      }}
+                      className="overflow-hidden p-0"
+                      checkClassName="right-2 top-2"
+                    >
+                      <span
+                        className="flex h-20 items-center justify-center px-3"
+                        style={{ background: colors?.surface }}
+                      >
+                        <Lockup
+                          logo={logo}
+                          layout={o.value}
+                          markClassName="h-8"
+                          color={colors?.primary ?? "var(--sf-ink)"}
+                        >
+                          <span
+                            className="line-clamp-2 text-[13px] font-bold leading-tight"
+                            style={{ color: colors?.foreground }}
+                          >
+                            {brand || "Your name"}
+                          </span>
+                        </Lockup>
+                      </span>
+                      <span className="block border-t border-[var(--sf-line)] px-3 py-2 text-[12.5px] font-semibold">
+                        {o.label}
+                      </span>
+                    </CardButton>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {availableNavLinks.length > 0 && (
               <div className="rounded-2xl border border-[var(--sf-line)] bg-white p-4">
                 <div className="mb-2.5 flex items-baseline justify-between gap-2">
@@ -596,6 +665,8 @@ export function LookCardsView({
             <NavbarStudioPreview
               layout={activeLayout}
               brand={brand}
+              logo={logo}
+              logoLayout={logoLayout}
               headline={shown.headline}
               links={activeLinks}
               cta={activeCta}

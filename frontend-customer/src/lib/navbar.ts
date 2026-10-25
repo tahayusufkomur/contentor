@@ -10,12 +10,16 @@ const SIZE_CLASS: Record<NavbarLogoSize, string> = {
 };
 
 /** Navbar logo height class. The pill capsule is only 56px tall, so xl
- * renders as lg there. Unknown/missing sizes render as md (today's 32px). */
+ * renders as lg there; with the name stacked under it, the mark stays at md
+ * at most so both fit the bar. Unknown/missing sizes render as md (32px). */
 export function logoSizeClass(
   size: NavbarLogoSize | undefined,
   layout: string,
+  stacked = false,
 ): string {
   const effective: NavbarLogoSize = size && size in SIZE_CLASS ? size : "md";
+  if (stacked && (effective === "lg" || effective === "xl"))
+    return SIZE_CLASS.md;
   if (layout === "pill" && effective === "xl") return SIZE_CLASS.lg;
   return SIZE_CLASS[effective];
 }
@@ -31,6 +35,19 @@ export function showBrandName(
 ): boolean {
   if (!config?.logo_url) return true;
   return config.navbar_config?.show_brand_name === true;
+}
+
+/** The mark shows unless the coach picked her name alone ("name_only", from
+ * /setup's header question); with the name hidden as well, the mark stays. */
+export function showLogoMark(
+  config: {
+    logo_url?: string | null;
+    navbar_config?: { show_brand_name?: boolean; logo_layout?: string };
+  } | null,
+): boolean {
+  return !(
+    config?.navbar_config?.logo_layout === "name_only" && showBrandName(config)
+  );
 }
 
 /** Which public pages have something behind them (GET /api/v1/site/menu/). */

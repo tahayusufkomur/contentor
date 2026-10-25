@@ -31,8 +31,9 @@ export interface NavbarConfig {
    * saved studio logos already contain the wordmark). */
   show_brand_name?: boolean;
   /** Mark-and-name arrangement when both render: "horizontal" (name beside the
-   * mark) or "stacked" (name under it). Missing renders as "horizontal". */
-  logo_layout?: "horizontal" | "stacked";
+   * mark), "stacked" (name under it) or "name_only" (the mark left out).
+   * Missing renders as "horizontal". */
+  logo_layout?: "horizontal" | "stacked" | "name_only";
   /** Show the coach's social accounts as icons in the navbar (default false). */
   show_social?: boolean;
   /** True when the coach explicitly chose which links appear in the top bar. */

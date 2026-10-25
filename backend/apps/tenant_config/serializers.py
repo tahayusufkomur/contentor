@@ -28,10 +28,10 @@ _UNSAFE_URL_PREFIXES = ("javascript:", "vbscript:")
 # Navbar layout presets the public header can render.
 _NAVBAR_LAYOUTS = {"classic", "centered", "split", "minimal", "pill"}
 
-# How the header pairs a mark with the brand name. Set by the signup wizard's
-# curated-logo step (core.onboarding.wizard_catalog.CURATED_LOGO_LAYOUTS) and
-# editable afterwards in the navbar admin tab.
-_LOGO_LAYOUTS = {"horizontal", "stacked"}
+# How the header pairs a mark with the brand name ("name_only" hides the
+# mark). Set by the logo pick and the /setup header question
+# (interview_milestones.LOGO_LAYOUTS), editable afterwards in the navbar admin tab.
+_LOGO_LAYOUTS = {"horizontal", "stacked", "name_only"}
 _FOOTER_LAYOUTS = {"simple", "columns", "centered", "minimal"}  # == public-footer.tsx presets
 
 # Logo Studio recipe validation (schema v2 with v1 upgrade) lives in

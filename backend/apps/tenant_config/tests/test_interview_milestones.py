@@ -903,6 +903,40 @@ def test_navbar_studio_customizes_links_and_toggles(tenant_ctx, config):
     assert nav["cta"] is None
 
 
+def test_the_header_question_asks_how_her_mark_sits_once_she_has_one(tenant_ctx, config):
+    import json
+
+    from apps.media.models import Photo
+    from apps.tenant_config.serializers import _LOGO_LAYOUTS
+
+    assert {c["logo_layout"] for *_, c in ms.LOGO_LAYOUTS} == _LOGO_LAYOUTS
+    answers = {"offers": ["course"]}
+    # Just her name: there is nothing to arrange.
+    assert "logo_layouts" not in ms.cards_for(tenant_ctx, answers, "navbar_layout")
+    photo = Photo.objects.create(s3_key="tenants/shared-test/media/logo.png", title="logo")
+    ms.choose(tenant_ctx, answers, "site_logo", f"upload:{photo.pk}")
+    cards = ms.cards_for(tenant_ctx, answers, "navbar_layout")
+    assert [o["value"] for o in cards["logo_layouts"]] == ["horizontal", "stacked", "mark_only", "name_only"]
+    assert cards["logo_layout"] == "horizontal" and cards["logo_url"] and cards["logo_mark"] is None
+    assert "logo_layouts" not in ms.cards_for(tenant_ctx, answers, "footer_layout")
+    for picked, layout, name in (
+        ("stacked", "stacked", True),
+        ("mark_only", "horizontal", False),
+        ("name_only", "name_only", True),
+    ):
+        ms.choose(tenant_ctx, answers, "navbar_layout", json.dumps({"layout": "classic", "logo_layout": picked}))
+        ms.sync_site(tenant_ctx, answers)
+        nav = TenantConfig.objects.first().navbar_config
+        assert (nav["logo_layout"], nav["show_brand_name"]) == (layout, name)
+        assert ms.cards_for(tenant_ctx, answers, "navbar_layout")["logo_layout"] == picked
+    # A new mark keeps the way she said it sits.
+    ms.choose(tenant_ctx, answers, "site_logo", f"upload:{photo.pk}")
+    ms.sync_site(tenant_ctx, answers)
+    assert TenantConfig.objects.first().navbar_config["logo_layout"] == "name_only"
+    with pytest.raises(ms.ChoiceError, match="invalid_value"):
+        ms.choose(tenant_ctx, answers, "navbar_layout", '{"layout": "classic", "logo_layout": "sideways"}')
+
+
 def test_a_crash_while_drafting_marks_the_draft_failed(tenant_ctx, config, owner):
     """Audit R1: any error, not only AI and content ones, ends the spinner."""
     with (

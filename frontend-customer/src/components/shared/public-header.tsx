@@ -20,6 +20,7 @@ import {
   headerNavLinks,
   logoSizeClass,
   showBrandName,
+  showLogoMark,
   showSubscribeButton,
   type SiteMenu,
 } from "@/lib/navbar";
@@ -43,8 +44,9 @@ const FALLBACK_LINKS: NavLinkType[] = [
 function Brand({ config }: { config: TenantConfig | null }) {
   const layout = config?.navbar_config?.layout ?? "classic";
   // Curated marks carry no wordmark, so the header pairs them with the brand
-  // name; "stacked" puts the name under the mark (two-line lockup). Chosen in
-  // the signup wizard's logo step, editable later in the navbar admin tab.
+  // name; "stacked" puts the name under the mark (two-line lockup) and
+  // "name_only" leaves the mark out. Chosen in /setup's header question,
+  // editable later in the navbar admin tab.
   const stacked = config?.navbar_config?.logo_layout === "stacked";
   return (
     <NavLink
@@ -55,17 +57,17 @@ function Brand({ config }: { config: TenantConfig | null }) {
           : "items-center gap-2"
       }`}
     >
-      {config?.logo_mark ? (
+      {!showLogoMark(config) ? null : config?.logo_mark ? (
         <LogoMarkSvg
           mark={config.logo_mark}
           label={config.brand_name}
-          className={`${logoSizeClass(config.navbar_config?.logo_size, layout)} w-auto text-primary`}
+          className={`${logoSizeClass(config.navbar_config?.logo_size, layout, stacked)} w-auto text-primary`}
         />
       ) : config?.logo_url ? (
         <img
           src={config.logo_url}
           alt={config.brand_name}
-          className={`${logoSizeClass(config.navbar_config?.logo_size, layout)} w-auto`}
+          className={`${logoSizeClass(config.navbar_config?.logo_size, layout, stacked)} w-auto`}
         />
       ) : (
         <BookOpen className="h-5 w-5 text-primary" />

@@ -562,8 +562,12 @@ def _start_interview_provisioning(tenant, email, owner_name, answers=None, initi
     are kept on top of the defaults. A tenant that needs a plan is built once
     its trial runs (``core.signals``), not before its card."""
     from apps.core.onboarding.wizard_catalog import recommended_answers
+    from apps.tenant_config.interview_brief import FIELD_BY_ID
 
-    merged = {**recommended_answers("general"), "goals": [], **(answers or {})}
+    # A default is never her answer: the old wizard's "classic" header settled
+    # the interview's header question before it was asked.
+    defaults = {k: v for k, v in recommended_answers("general").items() if k not in FIELD_BY_ID}
+    merged = {**defaults, "goals": [], **(answers or {})}
     wizard_state = {"version": 2, "flow": "interview", "answers": merged}
     if initial_about:
         wizard_state["initial_about"] = initial_about

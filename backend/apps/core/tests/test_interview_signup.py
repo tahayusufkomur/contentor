@@ -69,6 +69,15 @@ def test_verify_takes_the_card_before_building_anything(starter):
     delay.assert_not_called()
 
 
+def test_a_new_coach_is_asked_her_header_and_then_her_footer(starter):
+    """The old wizard's "classic" header default once settled the header question unasked."""
+    from apps.tenant_config import interview_brief as brief
+
+    _verify("Iv Studio Test")
+    answers = Tenant.objects.get(slug="iv-studio-test").wizard_state["answers"]
+    assert [f.id for f in brief.missing(answers)][-2:] == ["navbar_layout", "footer_layout"]
+
+
 def test_the_trial_starting_builds_the_site_once(starter):
     _verify("Iv Studio Test")
     tenant = Tenant.objects.get(slug="iv-studio-test")
