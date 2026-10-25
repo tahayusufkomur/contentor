@@ -190,7 +190,7 @@ const DESTRUCTIVE_FG = "oklch(0.985 0 0)";
 
 /** What each photo treatment is, as the --photo-* variables the one image rule
  *  in globals.css reads: a filter on the photo plus a tint layer over it. */
-const PHOTO_TREATMENTS: Record<
+export const PHOTO_TREATMENTS: Record<
   PhotoTreatment,
   { filter: string; tint: string; blend: string; opacity: string }
 > = {

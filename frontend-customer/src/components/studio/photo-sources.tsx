@@ -37,6 +37,7 @@ import {
 import { uploadPhoto } from "@/lib/upload";
 import { cn } from "@/lib/utils";
 import { ApiError } from "@/types/api";
+import type { LayoutId } from "@/types/design";
 import type { Photo } from "@/types/photo";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import type { CoverAspect } from "@shared/sections/types";
@@ -45,6 +46,24 @@ export interface PickedPhoto {
   id: string;
   /** A link the page can draw it from. */
   url: string;
+}
+
+/** How a picked photo goes on the cover: at `focus` where its subject is known to sit; an edit of the same
+ *  picture keeping her focus and zoom (`keep`); a cutout on the cutout layout. */
+export interface PickOptions {
+  focus?: [number, number];
+  keep?: boolean;
+  layout?: LayoutId;
+}
+
+/** Where the library says a photo's subject sits, as the focus that keeps it in view when the frame crops
+ *  it: a third from its side. None where it is in the middle, or not known. */
+export function subjectFocus(
+  placement: string | null | undefined,
+): [number, number] | undefined {
+  if (placement === "left_third") return [0.25, 0.5];
+  if (placement === "right_third") return [0.75, 0.5];
+  return undefined;
 }
 
 export type PhotoTab = "yours" | "contentor" | "new";
@@ -61,7 +80,7 @@ export interface PhotoSourcesProps {
   onGenerationStart?: () => void;
   /** The server says this month's new photos are all used. */
   onUsedUp?: () => void;
-  onPick: (photo: PickedPhoto) => void;
+  onPick: (photo: PickedPhoto, options?: PickOptions) => void;
   /** True while a new photo is being made, so the cover can hold the place of its photo. */
   onGenerating?: (generating: boolean) => void;
   /** Told by the work itself: true when a photo starts to be made, uploaded or copied, false once that
@@ -376,7 +395,7 @@ function ContentorPanel({
   onBusy,
 }: {
   inUse: Record<string, string>;
-  onPick: (photo: PickedPhoto) => void;
+  onPick: (photo: PickedPhoto, options?: PickOptions) => void;
   onBusy?: (busy: boolean) => void;
 }) {
   const t = useTranslations("admin.studio.photos");
@@ -395,7 +414,10 @@ function ContentorPanel({
         try {
           const photo = await materializeCuratedImage(image.id);
           if (!photo.signed_url) throw new Error("No link for the photo");
-          onPick({ id: photo.id, url: photo.signed_url });
+          onPick(
+            { id: photo.id, url: photo.signed_url },
+            { focus: subjectFocus(image.subject_placement) },
+          );
         } finally {
           setPicking(null);
         }

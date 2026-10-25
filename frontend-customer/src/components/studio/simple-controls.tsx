@@ -129,6 +129,19 @@ function LayoutGlyph({ layout }: { layout: LayoutId }) {
         </>
       )}
       {layout === "photo" && <span className={cn(photo, "inset-0")} />}
+      {layout === "cutout" && (
+        <>
+          <span className={cn(colour, "inset-0")} />
+          {/* her figure, standing at the foot of the cover */}
+          <span
+            className={cn(
+              photo,
+              "bottom-0 right-[14%] h-[78%] w-[30%] rounded-t-full bg-background/70",
+            )}
+          />
+          <span className={cn(words, "left-[8%] top-[22%] h-[14%] w-[40%]")} />
+        </>
+      )}
     </span>
   );
 }

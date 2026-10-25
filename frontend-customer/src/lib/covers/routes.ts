@@ -6,10 +6,12 @@ export const isStudioEditor = (pathname: string): boolean =>
   /^\/admin\/studio\/[^/]+\/?$/.test(pathname);
 
 /** The tools of the editor's rail, top to bottom. `generate` ("New photo") is not a drawer of its own: it
- *  opens Photos on its New tab. */
+ *  opens Photos on its New tab. `edit` is what she does to the cover's photo (filters, its frame, the photo
+ *  tools). */
 export const STUDIO_TOOLS = [
   "layouts",
   "photos",
+  "edit",
   "text",
   "elements",
   "brand",

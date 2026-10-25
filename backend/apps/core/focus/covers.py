@@ -60,8 +60,12 @@ def system_for(kind: str) -> str:
     return SYSTEM.replace("{noun}", kinds.get(kind).NOUN)
 
 
+# The layouts drafted on a plain photo: a cutout needs one whose background she removed.
+DRAFTED = tuple(layout for layout in LAYOUTS if layout != "cutout")
+
+
 class CoverStyle(BaseModel):
-    layout: Literal[LAYOUTS]
+    layout: Literal[DRAFTED]
     panel: Literal["primary", "accent", "ink", "paper", "primary-dark", "accent-dark"]
     title_font: Literal["display", "body"]
     upper: bool

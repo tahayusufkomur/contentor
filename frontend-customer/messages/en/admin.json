@@ -740,7 +740,10 @@
     "size": {
       "card": "Card",
       "wide": "Wide",
-      "banner": "Banner"
+      "banner": "Banner",
+      "post": "Post",
+      "portrait": "Portrait",
+      "story": "Story"
     },
     "previews": {
       "label": "{size} preview of the cover",
@@ -757,10 +760,12 @@
       "elements": "Elements",
       "brand": "Brand",
       "uploads": "Uploads",
-      "generate": "New photo"
+      "generate": "New photo",
+      "edit": "Edit photo"
     },
     "bar": {
-      "size": "Cover size"
+      "size": "Cover size",
+      "social": "Social size"
     },
     "drawers": {
       "full": "A cover can hold {count} added layers. Delete one to add another.",
@@ -779,7 +784,10 @@
       },
       "elements": {
         "shapes": "Shapes",
-        "newBadge": "Your words"
+        "newBadge": "Your words",
+        "icons": "Icons",
+        "qr": "QR code",
+        "qrAdd": "Add a QR code of this page"
       },
       "brand": {
         "colours": "Colours",
@@ -791,14 +799,17 @@
           "subtitle": "the subtitle",
           "badge": "the badge",
           "text": "the selected text",
-          "shape": "the selected shape"
+          "shape": "the selected shape",
+          "icon": "the selected icon",
+          "qr": "the QR code's squares"
         },
         "fonts": "Fonts",
         "fontFor": {
           "display": "Titles",
           "body": "Text"
         },
-        "fontsHint": "Select some text on the cover to change its font."
+        "fontsHint": "Select some text on the cover to change its font.",
+        "fromPhoto": "From your photo"
       },
       "uploads": {
         "heading": "Uploads",
@@ -806,6 +817,49 @@
         "hint": "It joins your own photos and goes on the cover.",
         "choose": "Choose a photo",
         "notAPhoto": "That file isn't a photo."
+      },
+      "photo": {
+        "none": "Put a photo on the cover to edit it.",
+        "filters": "Filters",
+        "grades": {
+          "none": "Original",
+          "site": "Your site",
+          "mono": "Black and white",
+          "soft": "Soft",
+          "tint": "Tinted",
+          "vivid": "Vivid",
+          "duo": "Duotone",
+          "duo-accent": "Duotone, accent"
+        },
+        "adjust": "Adjust",
+        "warmth": "Warmth",
+        "cool": "Cool",
+        "warm": "Warm",
+        "blur": "Blur",
+        "sharp": "Sharp",
+        "soft": "Soft",
+        "frame": "Frame",
+        "masks": {
+          "none": "Square",
+          "rounded": "Rounded",
+          "circle": "Circle",
+          "arch": "Arch",
+          "blob": "Blob"
+        },
+        "tools": "Photo tools",
+        "cutout": "Remove the background",
+        "cutoutHint": "Free. Takes about 20 seconds, and the cover changes to Cutout. Your photo stays in Media.",
+        "expand": "Extend to fit {size}",
+        "costs": "{count, plural, one {Uses your last new photo this month.} other {Uses 1 of your # new photos left this month.}}",
+        "usedUp": "You've used this month's new photos.",
+        "failed": "That photo couldn't be changed. Try again.",
+        "erase": "Take it out",
+        "eraseLabel": "What should go?",
+        "erasePlaceholder": "The coffee cup on the table",
+        "change": "Change it",
+        "changeLabel": "What should change?",
+        "changePlaceholder": "Warm evening light behind me",
+        "toolsOff": "The photo tools aren't on for this site yet."
       }
     },
     "editor": {
@@ -861,7 +915,8 @@
         "title": "Title only",
         "band": "Colour band",
         "framed": "Framed photo",
-        "photo": "Photo only"
+        "photo": "Photo only",
+        "cutout": "Cutout"
       },
       "colour": "Colour",
       "custom": "Custom colour",
@@ -939,7 +994,9 @@
         "logo": "Logo",
         "badge": "Badge",
         "text": "Text",
-        "shape": "Shape"
+        "shape": "Shape",
+        "icon": "Icon",
+        "qr": "QR code"
       },
       "font": "Font",
       "fonts": {
@@ -980,7 +1037,11 @@
         "rect": "Rectangle",
         "circle": "Circle",
         "arch": "Arch",
-        "line": "Line"
+        "line": "Line",
+        "pill": "Pill",
+        "star": "Star",
+        "burst": "Burst",
+        "arrow": "Arrow"
       },
       "opacity": "Opacity",
       "logoColour": "Logo colour",
@@ -993,7 +1054,67 @@
       "forward": "Bring forward",
       "back": "Send back",
       "duplicate": "Duplicate",
-      "delete": "Delete"
+      "delete": "Delete",
+      "effect": "Effect",
+      "effects": {
+        "none": "No effect",
+        "lift": "Lift",
+        "shadow": "Shadow",
+        "outline": "Outline",
+        "highlight": "Highlight"
+      },
+      "effectColour": "Effect colour",
+      "markWord": "Colour a word",
+      "markNone": "No word",
+      "markColour": "Word colour",
+      "flip": "Flip",
+      "editPhoto": "Edit photo",
+      "icon": "Icon",
+      "qrLink": "Link",
+      "qrSquares": "Colour of the squares",
+      "qrGround": "Colour behind the squares",
+      "icons": {
+        "calendar": "Calendar",
+        "clock": "Clock",
+        "map-pin": "Place",
+        "video": "Video",
+        "mic": "Microphone",
+        "users": "People",
+        "user": "Person",
+        "heart": "Heart",
+        "star": "Star",
+        "sparkles": "Sparkles",
+        "sun": "Sun",
+        "moon": "Moon",
+        "leaf": "Leaf",
+        "flower": "Flower",
+        "mountain": "Mountain",
+        "waves": "Waves",
+        "flame": "Flame",
+        "zap": "Lightning",
+        "check": "Tick",
+        "circle-check": "Tick in a circle",
+        "play": "Play",
+        "gift": "Gift",
+        "award": "Award",
+        "trophy": "Trophy",
+        "target": "Target",
+        "book-open": "Book",
+        "graduation-cap": "Graduation cap",
+        "pen-tool": "Pen",
+        "palette": "Palette",
+        "camera": "Camera",
+        "music": "Music",
+        "dumbbell": "Dumbbell",
+        "brain": "Brain",
+        "coffee": "Coffee",
+        "smile": "Smile",
+        "globe": "Globe",
+        "mail": "Mail",
+        "phone": "Phone",
+        "arrow-right": "Arrow",
+        "chevron-right": "Chevron"
+      }
     }
   },
   "messages": {

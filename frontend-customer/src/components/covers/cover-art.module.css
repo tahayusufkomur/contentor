@@ -192,6 +192,15 @@
   pointer-events: none;
 }
 
+/* A band of colour behind each line of words (the "highlight" effect): one box per line, each with its own
+   padding and rounded ends. */
+.band {
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding: 0 0.22em;
+  border-radius: 0.12em;
+}
+
 /* Narrower than 180px (a fractional width included): the photo alone. Last, so it wins. */
 @container (max-width: 179.99px) {
   .root [data-size] {

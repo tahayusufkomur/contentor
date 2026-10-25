@@ -1,10 +1,10 @@
 "use client";
 
-// The Brand drawer: her logo, the look's colours and the look's two fonts. A colour goes to the layer she has
-// selected on the canvas, or to the cover's colour panel while none is; a font goes to the text she has
-// selected.
+// The Brand drawer: her logo, the look's colours, the colours of the cover's photo, and the look's two fonts.
+// A colour goes to the layer she has selected on the canvas, or to the cover's colour panel while none is; a
+// font goes to the text she has selected.
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { family } from "@/components/covers/cover-art";
 import { TEXT_DEFAULTS } from "@/components/studio/layer-toolbar";
@@ -17,6 +17,7 @@ import {
 import type { EditorAction } from "@/lib/covers/editor";
 import { coverPalette, parseLook } from "@/lib/covers/palette";
 import { panelPaint } from "@/lib/covers/recipe";
+import { photoColours } from "@/lib/photo-edits-api";
 import { cn } from "@/lib/utils";
 import { PAINT_ROLES } from "@/types/design";
 import type { CoverRecipe, FontRole, Paint } from "@/types/design";
@@ -25,7 +26,16 @@ import type { CoverRecipe, FontRole, Paint } from "@/types/design";
  *  (none while the layer is one she deleted on the canvas, which every swatch then brings back), and the
  *  edit that gives it another. */
 export interface PaintTarget {
-  what: "panel" | "label" | "title" | "subtitle" | "badge" | "text" | "shape";
+  what:
+    | "panel"
+    | "label"
+    | "title"
+    | "subtitle"
+    | "badge"
+    | "text"
+    | "shape"
+    | "icon"
+    | "qr";
   current: Paint | undefined;
   apply: (paint: Paint) => EditorAction;
 }
@@ -111,6 +121,25 @@ export function fontTarget(
 
 const FONTS = ["display", "body"] as const;
 
+/** The colours of a photo, as the server reads them from its pixels; none until they arrive, or for none. */
+function usePhotoColours(photoId: string | null): string[] {
+  const [colours, setColours] = useState<{ id: string; list: string[] }>();
+  useEffect(() => {
+    if (!photoId) return;
+    let gone = false;
+    photoColours(photoId)
+      .then((answer) => {
+        if (!gone) setColours({ id: photoId, list: answer.colours });
+      })
+      // a nicety: the swatches of the look are there either way
+      .catch(() => {});
+    return () => {
+      gone = true;
+    };
+  }, [photoId]);
+  return colours && colours.id === photoId ? colours.list : [];
+}
+
 export function BrandDrawer({
   recipe,
   look,
@@ -132,6 +161,7 @@ export function BrandDrawer({
   }, [look]);
   const paint = paintTarget(recipe, selected);
   const font = fontTarget(recipe, selected);
+  const fromPhoto = usePhotoColours(recipe.photo.id);
   return (
     <div className="space-y-6">
       <Logo recipe={recipe} logoUrl={logoUrl} edit={edit} />
@@ -157,6 +187,32 @@ export function BrandDrawer({
             </li>
           ))}
         </ul>
+        {fromPhoto.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium">{t("fromPhoto")}</p>
+            <ul className="flex flex-wrap gap-2">
+              {fromPhoto.map((hex) => (
+                <li key={hex}>
+                  <button
+                    type="button"
+                    aria-pressed={paint.current === hex}
+                    aria-label={hex}
+                    title={hex}
+                    onClick={() =>
+                      paint.current !== hex &&
+                      edit(paint.apply(hex as `#${string}`))
+                    }
+                    style={{ background: hex }}
+                    className={cn(
+                      "size-8 rounded-full border border-foreground/20 outline-none ring-offset-2 ring-offset-background focus-visible:ring-[3px] focus-visible:ring-ring",
+                      paint.current === hex && "ring-2 ring-foreground",
+                    )}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {/* a layer of its own colour on the canvas has its own field: the key starts it afresh */}
         <HexColour
           key={selected ?? "panel"}

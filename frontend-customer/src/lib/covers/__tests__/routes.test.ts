@@ -22,10 +22,11 @@ describe("isStudioEditor", () => {
 });
 
 describe("STUDIO_TOOLS", () => {
-  it("lists the seven tools of the rail, layouts first", () => {
+  it("lists the eight tools of the rail, layouts first", () => {
     expect(STUDIO_TOOLS).toEqual([
       "layouts",
       "photos",
+      "edit",
       "text",
       "elements",
       "brand",

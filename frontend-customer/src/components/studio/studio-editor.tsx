@@ -126,6 +126,11 @@ function EditorBody({
     ? targetItem(target, timeZone)
     : { title, createdAt: null, startsAt: null, timeZone };
   const cardAspect = parseLook(design.look).style.coverAspect;
+  // The admin is on her site's own host, so its pages are on this origin.
+  const link =
+    target?.path && typeof window !== "undefined"
+      ? `${window.location.origin}${target.path}`
+      : undefined;
 
   const [confirming, setConfirming] = useState(false);
   const draft = useCoverDraft({
@@ -199,6 +204,9 @@ function EditorBody({
           timeZone={timeZone}
           notice={notice}
           onDiscard={() => setConfirming(true)}
+          link={link}
+          photoAi={Boolean(targets.photo_ai)}
+          cutout={Boolean(targets.cutout)}
         />
       ) : (
         // (From 1024 px the page has no padding of its own in the editor: see admin-shell.tsx.)

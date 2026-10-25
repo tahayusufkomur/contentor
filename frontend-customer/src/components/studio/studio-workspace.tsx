@@ -12,6 +12,7 @@ import { DraftActions } from "@/components/studio/draft-actions";
 import { BrandDrawer } from "@/components/studio/drawers/brand";
 import { ElementsDrawer } from "@/components/studio/drawers/elements";
 import { LayoutsDrawer } from "@/components/studio/drawers/layouts";
+import { PhotoEditDrawer } from "@/components/studio/drawers/photo-edit";
 import { PhotosDrawer } from "@/components/studio/drawers/photos";
 import { TextDrawer } from "@/components/studio/drawers/text";
 import { UploadsDrawer } from "@/components/studio/drawers/uploads";
@@ -32,7 +33,7 @@ import { coverPalette, parseLook } from "@/lib/covers/palette";
 import { framesFor } from "@/lib/covers/recipe";
 import type { TargetNoun } from "@/lib/covers/targets";
 import { cn } from "@/lib/utils";
-import { PARTS, SIZES } from "@/types/design";
+import { PARTS, SIZES, SOCIAL_SIZES } from "@/types/design";
 import type {
   CoverDesign,
   CoverItem,
@@ -44,7 +45,8 @@ import type {
 } from "@/types/design";
 import type { CoverAspect } from "@shared/sections/types";
 
-/** Card, Wide and Banner, as one choice: the canvas shows the one that is pressed. */
+/** Card, Wide and Banner (where her site shows the cover), then Post, Portrait and Story (the social sizes it
+ *  is downloaded in), as one choice: the canvas shows the one that is pressed. */
 function SizeSwitcher({
   size,
   onSize,
@@ -56,12 +58,46 @@ function SizeSwitcher({
 }) {
   const t = useTranslations("admin.studio");
   return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <SizeGroup
+        label={t("bar.size")}
+        sizes={SIZES}
+        size={size}
+        onSize={onSize}
+        cardAspect={cardAspect}
+      />
+      <SizeGroup
+        label={t("bar.social")}
+        sizes={SOCIAL_SIZES}
+        size={size}
+        onSize={onSize}
+        cardAspect={cardAspect}
+      />
+    </div>
+  );
+}
+
+function SizeGroup({
+  label,
+  sizes,
+  size,
+  onSize,
+  cardAspect,
+}: {
+  label: string;
+  sizes: readonly CoverSize[];
+  size: CoverSize;
+  onSize: (size: CoverSize) => void;
+  cardAspect: CoverAspect;
+}) {
+  const t = useTranslations("admin.studio");
+  return (
     <div
       role="group"
-      aria-label={t("bar.size")}
+      aria-label={label}
       className="inline-flex rounded-lg border bg-muted p-0.5"
     >
-      {SIZES.map((s) => (
+      {sizes.map((s) => (
         <button
           key={s}
           type="button"
@@ -104,6 +140,9 @@ export function Workspace({
   timeZone,
   notice,
   onDiscard,
+  link,
+  photoAi = false,
+  cutout = false,
 }: {
   draft: CoverDraft;
   design: DesignRecord;
@@ -123,6 +162,11 @@ export function Workspace({
   timeZone: string;
   notice: string;
   onDiscard: () => void;
+  /** The page of her site the item is on, for a QR code. */
+  link?: string;
+  /** The image model can change photos; the background remover is there. */
+  photoAi?: boolean;
+  cutout?: boolean;
 }) {
   const t = useTranslations("admin.studio");
   const ta = useTranslations("admin");
@@ -131,8 +175,10 @@ export function Workspace({
   const open = (tool: Parameters<typeof openTool>[1]) =>
     setTools((now) => openTool(now, tool));
   // A photo on its way (being made, uploaded or copied) keeps the Photos drawer open under whatever tool
-  // she looks at meanwhile: closing it would stop the request, and a new photo is paid for either way.
+  // she looks at meanwhile: closing it would stop the request, and a new photo is paid for either way. The
+  // same holds for a photo being edited in the Edit photo drawer.
   const photosBusy = draft.isWorking("photos");
+  const editsBusy = draft.isWorking("edits");
 
   const palette = useMemo(() => {
     const { style, paletteId } = parseLook(design.look);
@@ -210,6 +256,26 @@ export function Workspace({
                 <PhotosDrawer {...photoTools} />
               </div>
             )}
+            {(drawer === "edit" || editsBusy) && (
+              <div hidden={drawer !== "edit"}>
+                <PhotoEditDrawer
+                  recipe={recipe}
+                  cover={cover}
+                  item={item}
+                  size={size}
+                  cardAspect={cardAspect}
+                  edit={draft.edit}
+                  photoAi={photoAi}
+                  cutout={cutout}
+                  generationsLeft={draft.left}
+                  onGenerationStart={draft.countPhoto}
+                  onUsedUp={draft.photosUsedUp}
+                  onPick={draft.pick}
+                  onGenerating={draft.setGenerating}
+                  onBusy={(on) => draft.setWork("edits", on)}
+                />
+              </div>
+            )}
             {drawer === "text" && (
               <TextDrawer
                 recipe={recipe}
@@ -226,6 +292,7 @@ export function Workspace({
                 recipe={recipe}
                 targetKind={design.target_kind}
                 cardAspect={cardAspect}
+                link={link}
                 edit={draft.edit}
                 onSelect={onSelect}
               />
@@ -266,6 +333,8 @@ export function Workspace({
                 targetKind={design.target_kind}
                 onEdit={draft.edit}
                 onSelect={onSelect}
+                itemTitle={item.title}
+                onEditPhoto={() => open("edit")}
               />
             ) : (
               <p className="pt-1 text-xs text-muted-foreground">

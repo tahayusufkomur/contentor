@@ -18,6 +18,9 @@
 //    label, and in `framed` it takes the photo's bottom corner: neither shares a row with the logo.
 //  - `full` has no panel: CoverArt darkens the bottom of the photo behind the words, so its words
 //    are white by default. In `band` the photo runs under the band, which is drawn over it.
+//  - `cutout` is her figure (a photo whose background she removed) standing on the colour: CoverArt
+//    draws its photo whole (`contain`) at the foot of its frame, and the words sit over the colour
+//    beside it, above it where they meet.
 
 import { LAYOUTS } from "@/types/design";
 import type { Frame, LayoutId, PartId } from "@/types/design";
@@ -61,6 +64,7 @@ const TITLE_SCALE: Record<LayoutId, number> = {
   band: 0.85,
   framed: 0.9,
   photo: 1,
+  cutout: 1.05,
 };
 
 /** The size of a part, in cqmin. */
@@ -105,6 +109,7 @@ function maxLines(
   const roomy =
     layout === "full" ||
     layout === "title" ||
+    layout === "cutout" ||
     (cls === "landscape" && (layout === "panel" || layout === "framed"));
   return roomy ? [3, 2] : [2, 1];
 }
@@ -144,6 +149,8 @@ const ON_PHOTO = 3;
 const BAND_PAD = 3.5;
 /** Left and right of the centred words of a title-only cover in a tall or square frame. */
 const CENTRED_MARGIN = 8;
+/** Above a cutout figure in a wide frame: the head room under the top edge. */
+const CUTOUT_TOP = 6;
 
 type Frames = Record<PartId, Frame | null>;
 type Anchor = "start" | "middle" | "end";
@@ -197,12 +204,14 @@ export function layoutFrames(
   const wordsBelow =
     layout === "title" ||
     layout === "full" ||
+    layout === "cutout" ||
     (layout === "panel" && sideBySide) ||
     (layout === "band" && cls === "banner");
   const sharesRow =
     layout === "full" ||
     layout === "band" ||
     layout === "photo" ||
+    layout === "cutout" ||
     (layout === "panel" && sideBySide);
   const roomBelow =
     H -
@@ -435,5 +444,31 @@ export function layoutFrames(
         logo: logo(MARGIN, MARGIN),
         badge: topRight,
       };
+    case "cutout": {
+      if (sideBySide) {
+        // The words in the left half, her figure standing in the right half, the full height.
+        const column = 0.5 * W - MARGIN;
+        return {
+          ...none,
+          panel: fr(0, 0, W, H),
+          photo: fr(0.46 * W, CUTOUT_TOP, 0.54 * W, H - CUTOUT_TOP),
+          logo: logo(MARGIN, MARGIN),
+          badge: topRight,
+          ...words(MARGIN, underLogo, column, H - MARGIN - underLogo, "middle"),
+        };
+      }
+      // The words at the top left, her figure standing at the foot, a little to the right of the middle:
+      // where the two meet, the words are drawn over her.
+      const column = Math.min(W - 2 * MARGIN, 0.68 * W);
+      const stack = stackHeight(WORDS);
+      return {
+        ...none,
+        panel: fr(0, 0, W, H),
+        photo: fr(0.2 * W, 0.3 * H, 0.8 * W, 0.7 * H),
+        logo: logo(MARGIN, MARGIN),
+        badge: topRight,
+        ...words(MARGIN, underLogo, column, stack, "start"),
+      };
+    }
   }
 }

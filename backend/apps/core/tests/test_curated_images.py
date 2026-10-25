@@ -560,7 +560,7 @@ def test_search_endpoint_returns_a_page(coach_client):
     assert res.status_code == 200
     assert res.data["results"] and res.data["page"] == 1
     first = res.data["results"][0]
-    assert set(first) == {"id", "title", "alt_text", "tags", "width", "height", "image_url"}
+    assert set(first) == {"id", "title", "alt_text", "tags", "width", "height", "image_url", "subject_placement"}
 
 
 def test_search_endpoint_rejects_an_unknown_orientation(coach_client):

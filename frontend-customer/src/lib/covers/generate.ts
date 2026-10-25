@@ -1,10 +1,18 @@
-// Making one new photo for a cover: the "New" tab of the photo sources. The service takes about a minute, so
-// the job is started and then followed (curated-images-api.ts).
+// Making one new photo for a cover: the "New" tab of the photo sources, and the photo edits of the Edit photo
+// drawer (a background removed, a photo extended or changed). Each takes from seconds to a minute, so the job
+// is started and then followed (curated-images-api.ts, photo-edits-api.ts).
 
 import { retryTransient } from "@/lib/api-client";
 import { generationStatus, startGeneration } from "@/lib/curated-images-api";
 import type { MaterializedPhoto } from "@/lib/curated-photos-api";
 import type { GenerationAspect } from "./recipe";
+
+/** A job as the server reports it: done, and her photo once it is fulfilled. */
+export interface PhotoJob {
+  job_id: string;
+  done: boolean;
+  photo: MaterializedPhoto | null;
+}
 
 /** Between status calls. The server already holds each call about 8 s, so this only spaces them out. */
 export const POLL_MS = 2000;
@@ -34,14 +42,28 @@ function wait(ms: number, signal?: AbortSignal): Promise<void> {
  *  while a status call is on its way (a long poll, so that is most of the time), or while one waits to be
  *  retried. After an abort nothing more is asked and no photo is returned, even one the call in flight
  *  brings. `onStart` runs once the job is on its way, which is when it counts against the month. */
-export async function makePhoto(
+export function makePhoto(
   prompt: string,
   aspect: GenerationAspect,
+  options: { signal?: AbortSignal; onStart?: () => void } = {},
+): Promise<MaterializedPhoto | null> {
+  return followJob(
+    () => startGeneration(prompt, aspect),
+    generationStatus,
+    options,
+  );
+}
+
+/** Starts a photo job with `start` and follows it with `status` to the end: makePhoto's rules (see there) for
+ *  any job that ends in one of her photos. */
+export async function followJob(
+  start: () => Promise<PhotoJob>,
+  status: (jobId: string) => Promise<PhotoJob>,
   { signal, onStart }: { signal?: AbortSignal; onStart?: () => void } = {},
 ): Promise<MaterializedPhoto | null> {
-  // A job is one of this month's photos: none is started for someone who has already gone.
+  // A job may be one of this month's photos: none is started for someone who has already gone.
   signal?.throwIfAborted();
-  let job = await startGeneration(prompt, aspect);
+  let job = await start();
   // It is on its way, and counts, whether or not she is still there.
   onStart?.();
   signal?.throwIfAborted();
@@ -54,7 +76,7 @@ export async function makePhoto(
     job = await retryTransient(
       () => {
         signal?.throwIfAborted();
-        return generationStatus(job.job_id);
+        return status(job.job_id);
       },
       { retries: 2 },
     );

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
 from apps.core.permissions import IsCoachOrOwner
 
-from . import own_photos
+from . import own_photos, photo_edits
 from .models import Photo
 from .serializers import PhotoCreateSerializer, PhotoSerializer
 
@@ -75,3 +75,89 @@ def photo_detail(request, pk):
     own_photos.forget(photo)
     photo.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def _photo(pk):
+    return Photo.objects.filter(pk=pk).first()
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def photo_colours(request, pk):
+    """The colours her photo is made of, most of it first: the studio offers them beside her look's."""
+    photo = _photo(pk)
+    if photo is None:
+        return Response({"detail": "Photo not found."}, status=status.HTTP_404_NOT_FOUND)
+    return Response({"colours": photo_edits.colours(photo)})
+
+
+def _job_response(job_id: str, state: dict) -> dict:
+    """What the studio follows: done once the job ended, with her new photo when it worked."""
+    photo = _photo(state["photo"]) if state.get("photo") else None
+    return {
+        "job_id": job_id,
+        "status": state["status"],
+        "done": state["status"] != "running",
+        "photo": PhotoSerializer(photo).data if photo else None,
+    }
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def photo_cutout(request, pk):
+    """Start removing her photo's background (free: our own service). 202 with the job to follow."""
+    if not photo_edits.cutout_available():
+        return Response({"detail": "Removing backgrounds is not on for this site."}, status=503)
+    photo = _photo(pk)
+    if photo is None:
+        return Response({"detail": "Photo not found."}, status=status.HTTP_404_NOT_FOUND)
+    job_id = photo_edits.start(photo, photo_edits.CUTOUT)
+    return Response(_job_response(job_id, {"status": "running"}), status=status.HTTP_202_ACCEPTED)
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def photo_edit(request, pk):
+    """Start an edit by the image model: `{"mode": "expand", "aspect": 3}` grows the photo to that shape;
+    `{"mode": "erase" | "change", "instruction": "..."}` takes out or changes what it says. Each is one of the
+    month's new photos: 429 once they are used."""
+    from apps.core.curated_images.views import count_generation, generation_allowance
+
+    if not photo_edits.ai_available():
+        return Response({"detail": "Photo edits are not on for this site."}, status=503)
+    photo = _photo(pk)
+    if photo is None:
+        return Response({"detail": "Photo not found."}, status=status.HTTP_404_NOT_FOUND)
+    data = request.data if isinstance(request.data, dict) else {}
+    mode = data.get("mode")
+    words = str(data.get("instruction") or "").strip()[: photo_edits.INSTRUCTION_MAX]
+    aspect = None
+    if mode == photo_edits.EXPAND:
+        try:
+            aspect = float(data.get("aspect"))
+        except (TypeError, ValueError):
+            aspect = None
+        if aspect is None or not 0.2 <= aspect <= 5:
+            return Response({"detail": "Say the shape to extend the photo to."}, status=400)
+    elif mode in (photo_edits.ERASE, photo_edits.CHANGE):
+        if not words:
+            return Response({"detail": "Say what to change."}, status=400)
+    else:
+        return Response({"detail": "Unknown edit."}, status=400)
+    if generation_allowance()["left"] <= 0:
+        return Response(
+            {"detail": "You have used this month's image generations."}, status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+    count_generation()
+    job_id = photo_edits.start(photo, mode, aspect=aspect, words=words)
+    return Response(_job_response(job_id, {"status": "running"}), status=status.HTTP_202_ACCEPTED)
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def photo_job(request, job_id):
+    """Where an edit stands. Another site's job, or one long gone, is a 404."""
+    state = photo_edits.job(job_id)
+    if state is None:
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    return Response(_job_response(job_id, state))

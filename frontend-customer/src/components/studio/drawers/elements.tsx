@@ -1,19 +1,25 @@
 "use client";
 
-// The Elements drawer: badges and shapes. "New", "Live" and "Next date" set what the cover's own badge shows;
-// "Your words" and each shape put a layer of her own on the cover and select it.
+// The Elements drawer: badges, shapes, icons and a QR code. "New", "Live" and "Next date" set what the
+// cover's own badge shows; "Your words", each shape, each icon and the QR code put a layer of her own on the
+// cover and select it.
 
 import { useTranslations } from "next-intl";
+import { QrCode as QrIcon } from "lucide-react";
+import { SHAPE_CLIP } from "@/components/covers/cover-art";
+import { COVER_ICONS } from "@/components/covers/cover-icons";
 import { Section } from "@/components/studio/simple-controls";
 import type { EditorAction } from "@/lib/covers/editor";
 import {
   newBadgeExtra,
+  newIconExtra,
+  newQrExtra,
   newShapeExtra,
   type NewLayer,
 } from "@/lib/covers/new-layers";
 import { badgeKindsFor } from "@/lib/covers/recipe";
 import { cn } from "@/lib/utils";
-import { MAX_EXTRAS, SHAPES } from "@/types/design";
+import { ICONS, MAX_EXTRAS, SHAPES } from "@/types/design";
 import type { BadgeKind, CoverRecipe, ShapeKind } from "@/types/design";
 import type { CoverAspect } from "@shared/sections/types";
 
@@ -46,7 +52,11 @@ function ShapeGlyph({ shape }: { shape: ShapeKind }) {
           shape === "circle" && "size-8 rounded-full",
           shape === "arch" && "h-9 w-7 rounded-t-full rounded-b-sm",
           shape === "line" && "h-1 w-10 rounded-full",
+          shape === "pill" && "h-4 w-10 rounded-full",
+          (shape === "star" || shape === "burst") && "size-9",
+          shape === "arrow" && "h-5 w-10",
         )}
+        style={{ clipPath: SHAPE_CLIP[shape] }}
       />
     </span>
   );
@@ -56,12 +66,15 @@ export function ElementsDrawer({
   recipe,
   targetKind,
   cardAspect,
+  link,
   edit,
   onSelect,
 }: {
   recipe: CoverRecipe;
   /** "course", or the kind of event: leaves out the badges that could never draw. */
   targetKind: string;
+  /** The page of her site the item is on, which a new QR code opens; none for no QR code. */
+  link?: string;
   /** The look's Card shape: a new layer gets a frame for each of the three sizes, which follow from it. */
   cardAspect: CoverAspect;
   edit: (action: EditorAction) => void;
@@ -132,6 +145,45 @@ export function ElementsDrawer({
           ))}
         </ul>
       </Section>
+      <Section title={td("elements.icons")}>
+        <ul className="grid grid-cols-5 gap-1.5">
+          {ICONS.map((icon) => {
+            const Icon = COVER_ICONS[icon];
+            return (
+              <li key={icon}>
+                <button
+                  type="button"
+                  disabled={full}
+                  aria-label={tt(`icons.${icon}`)}
+                  title={tt(`icons.${icon}`)}
+                  onClick={() => add(newIconExtra(recipe, icon, cardAspect))}
+                  className="grid aspect-square w-full place-items-center rounded-lg border bg-background outline-none transition-colors hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                >
+                  <Icon aria-hidden="true" className="size-5" />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </Section>
+      {link && (
+        <Section title={td("elements.qr")}>
+          <button
+            type="button"
+            disabled={full}
+            onClick={() => add(newQrExtra(recipe, link, cardAspect))}
+            className="flex w-full items-center gap-3 rounded-lg border bg-background px-3 py-2 text-left text-xs font-medium outline-none transition-colors hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+          >
+            <QrIcon aria-hidden="true" className="size-8 shrink-0" />
+            <span className="min-w-0">
+              <span className="block">{td("elements.qrAdd")}</span>
+              <span className="block truncate font-normal text-muted-foreground">
+                {link}
+              </span>
+            </span>
+          </button>
+        </Section>
+      )}
       {full && (
         <p className="text-xs text-muted-foreground">
           {td("full", { count: MAX_EXTRAS })}

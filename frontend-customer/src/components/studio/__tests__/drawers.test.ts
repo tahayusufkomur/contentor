@@ -12,6 +12,7 @@ import {
   ElementsDrawer,
 } from "@/components/studio/drawers/elements";
 import { LayoutsDrawer } from "@/components/studio/drawers/layouts";
+import { PhotoEditDrawer } from "@/components/studio/drawers/photo-edit";
 import { PhotosDrawer } from "@/components/studio/drawers/photos";
 import { TextDrawer } from "@/components/studio/drawers/text";
 import { UploadsDrawer } from "@/components/studio/drawers/uploads";
@@ -240,18 +241,30 @@ describe("ElementsDrawer", () => {
     });
   });
 
-  it("offers the four shapes", () => {
+  it("offers the shapes and the icons, and a QR code only with a page to open", () => {
     const markup = drawer("course");
-    expect(headings(markup)).toEqual(["Badge", "Shapes"]);
-    for (const name of ["Rectangle", "Circle", "Arch", "Line"]) {
+    expect(headings(markup)).toEqual(["Badge", "Shapes", "Icons"]);
+    for (const name of [
+      "Rectangle",
+      "Circle",
+      "Arch",
+      "Line",
+      "Pill",
+      "Star",
+      "Burst",
+      "Arrow",
+    ]) {
       expect(markup).toContain(name);
     }
+    expect(markup).toContain('aria-label="Calendar"');
+    expect(markup).toContain('aria-label="Place"');
   });
 
   it("holds the adding of layers of her own when the cover has all it can", () => {
     const full = drawer("course", withExtras(MAX_EXTRAS));
     expect(full).toMatch(/disabled=""[^>]*>Your words</);
-    expect((full.match(/disabled=""/g) ?? []).length).toBe(5);
+    // her own words, the eight shapes and the forty icons
+    expect((full.match(/disabled=""/g) ?? []).length).toBe(1 + 8 + 40);
     expect(full).toContain("A cover can hold 12 added layers.");
     // the kinds of the cover's own badge are not layers: they stay open
     expect(full).not.toMatch(/disabled=""[^>]*>New</);
@@ -601,5 +614,87 @@ describe("UploadsDrawer", () => {
       createElement(UploadsDrawer, { onPick: vi.fn(), disabled: true }),
     );
     expect(markup).toMatch(/disabled=""[^>]*>Choose a photo</);
+  });
+});
+
+describe("PhotoEditDrawer", () => {
+  const cover = (recipe: CoverRecipe) => ({
+    id: "d1",
+    recipe,
+    photos: recipe.photo.id
+      ? { [recipe.photo.id]: "https://cdn.test/p.jpg" }
+      : {},
+    logo_url: null,
+    look: "journal",
+  });
+  const drawerOf = (
+    recipe: CoverRecipe,
+    flags: { photoAi?: boolean; cutout?: boolean; left?: number } = {},
+  ) =>
+    render(
+      createElement(PhotoEditDrawer, {
+        recipe,
+        cover: cover(recipe),
+        item: { title: "Morning flow" },
+        size: "banner",
+        cardAspect: "4/5",
+        edit,
+        photoAi: flags.photoAi ?? true,
+        cutout: flags.cutout ?? true,
+        generationsLeft: flags.left ?? 5,
+        onPick: vi.fn(),
+      }),
+    );
+
+  it("asks for a photo first", () => {
+    const markup = drawerOf(defaultRecipe());
+    expect(headings(markup)).toEqual([]);
+    expect(markup).toContain("Put a photo on the cover to edit it.");
+  });
+
+  it("offers the filters on her photo, warmth and blur, the frames and the photo tools", () => {
+    const markup = drawerOf(defaultRecipe({ photoId: "p1" }));
+    expect(headings(markup)).toEqual([
+      "Filters",
+      "Adjust",
+      "Frame",
+      "Photo tools",
+    ]);
+    for (const name of [
+      "Original",
+      "Your site",
+      "Black and white",
+      "Duotone",
+      "Duotone, accent",
+    ]) {
+      expect(markup).toContain(name);
+    }
+    // each filter is drawn on her photo
+    expect(
+      markup.match(/src="https:\/\/cdn.test\/p.jpg"/g)?.length,
+    ).toBeGreaterThanOrEqual(8);
+    for (const name of ["Square", "Rounded", "Circle", "Arch", "Blob"]) {
+      expect(markup).toContain(`aria-label="${name}"`);
+    }
+    expect(markup).toContain("Remove the background");
+    expect(markup).toContain("Extend to fit Banner");
+    expect(markup).toContain("Take it out");
+    expect(markup).toContain("Change it");
+    expect(markup).toContain("Uses 1 of your 5 new photos left this month.");
+  });
+
+  it("holds the paid tools when the month's photos are used, and says when no tool is on", () => {
+    const usedUp = drawerOf(defaultRecipe({ photoId: "p1" }), { left: 0 });
+    expect(usedUp).toContain("You&#x27;ve used this month&#x27;s new photos.");
+    expect(usedUp).toMatch(
+      /disabled=""[^>]*>[^<]*<svg[\s\S]*?<\/svg>Extend to fit/,
+    );
+    const off = drawerOf(defaultRecipe({ photoId: "p1" }), {
+      photoAi: false,
+      cutout: false,
+    });
+    expect(off).not.toContain("Remove the background");
+    expect(off).not.toContain("Extend to fit");
+    expect(off).toContain("The photo tools aren&#x27;t on for this site yet.");
   });
 });

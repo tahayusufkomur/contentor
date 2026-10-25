@@ -15,6 +15,7 @@ import type {
   CoverSize,
   Extra,
   Frame,
+  IconName,
   LayoutId,
   Paint,
   PartId,
@@ -29,15 +30,25 @@ export type ExtraPatch = Partial<{
   text: string;
   style: Partial<PartStyle>;
   fill: Paint;
+  back: Paint;
   shape: ShapeKind;
+  icon: IconName;
   opacity: number;
   frame: Frame;
 }>;
 
 export type EditorAction =
   | { type: "layout"; layout: LayoutId }
-  /** `null` takes the photo away. The new photo's subject sits elsewhere: focus and zoom reset. */
-  | { type: "photo"; id: string | null }
+  /** `null` takes the photo away. The new photo's subject sits elsewhere: focus and zoom reset, to `focus`
+   *  and `zoom` where they are known (her subject's place, or an edit of the same picture). `layout`, in the
+   *  same step: a photo whose background she just removed goes on the cutout layout. */
+  | {
+      type: "photo";
+      id: string | null;
+      focus?: [number, number];
+      zoom?: number;
+      layout?: LayoutId;
+    }
   | {
       type: "photoAdjust";
       patch: Partial<Omit<CoverRecipe["photo"], "id">>;
@@ -193,8 +204,19 @@ export function applyEdit(
     case "photo":
       return {
         ...recipe,
-        photo: { ...recipe.photo, id: action.id, focus: [0.5, 0.5], zoom: 1 },
+        layout: action.layout ?? recipe.layout,
+        photo: {
+          ...recipe.photo,
+          id: action.id,
+          focus: action.focus ?? [0.5, 0.5],
+          zoom: action.zoom ?? 1,
+        },
         styles: shown(recipe.styles, "photo"),
+        // a fixed part's frame is a position in the old layout
+        overrides:
+          action.layout && action.layout !== recipe.layout
+            ? keepOverrides(recipe.overrides, isExtraId)
+            : recipe.overrides,
       };
 
     case "photoAdjust":

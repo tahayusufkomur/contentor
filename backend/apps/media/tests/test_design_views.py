@@ -442,7 +442,7 @@ def test_targets_groups_series_and_marks_in_use(coach, client, site, generated):
 
     assert response.status_code == 200, response.content
     body = response.json()
-    assert set(body) == {"targets", "in_use", "look", "logo_url", "generations_left"}
+    assert set(body) == {"targets", "in_use", "look", "logo_url", "generations_left", "photo_ai", "cutout"}
     assert body["look"] == "atelier:dusk"
     assert body["logo_url"] == "https://cdn.example.com/logo.png"
     assert body["generations_left"] == 17
@@ -471,7 +471,15 @@ def test_targets_groups_series_and_marks_in_use(coach, client, site, generated):
         "photo_url",
         "cover",
         "draft_id",
+        "path",
     }
+    # the page of her site each is on: what a QR code on its cover opens
+    assert {t["target_kind"]: t["path"] for t in targets if t["target_kind"] != "course"} == {
+        "live": "/events",
+        "zoom": "/events",
+        "onsite": "/events",
+    }
+    assert all(t["path"].startswith("/courses/") for t in targets if t["target_kind"] == "course")
 
     yoga_target = by_title["Yoga Basics"]
     assert (yoga_target["target_key"], yoga_target["status"]) == (str(yoga.pk), "published")

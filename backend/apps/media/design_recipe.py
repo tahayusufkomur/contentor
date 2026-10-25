@@ -18,8 +18,11 @@ from rest_framework import serializers
 
 from apps.tenant_config.logo_recipe import _HEX_RE, _enum, _num
 
-LAYOUTS = ("panel", "full", "title", "band", "framed", "photo")
+LAYOUTS = ("panel", "full", "title", "band", "framed", "photo", "cutout")
 SIZES = ("card", "wide", "banner")
+# The shapes a design is downloaded in for social posts. No page shows them, so CoverArt never picks one
+# by the frame's shape: they are drawn only when asked for by name.
+SOCIAL_SIZES = ("post", "portrait", "story")
 PARTS = ("photo", "panel", "label", "title", "subtitle", "logo", "badge")
 BADGE_KINDS = ("none", "new", "date", "live", "text")
 FONT_ROLES = ("display", "body")
@@ -38,15 +41,66 @@ PAINT_ROLES = (
     "white",
     "black",
 )
-SHAPES = ("rect", "circle", "arch", "line")
+SHAPES = ("rect", "circle", "arch", "line", "pill", "star", "burst", "arrow")
 WEIGHTS = (400, 500, 600, 700, 800)
+# A grade on the photo: one of the looks' photo treatments ("site" is her look's own, so it follows a look
+# change), or a duotone in her colours.
+GRADES = ("none", "site", "mono", "soft", "tint", "vivid", "duo", "duo-accent")
+# The photo's frame cut to a shape.
+MASKS = ("none", "rounded", "circle", "arch", "blob")
+TEXT_EFFECTS = ("lift", "shadow", "outline", "highlight")
+# The icons an icon layer can draw (lucide's names, frontend-customer/src/components/covers/cover-icons.tsx).
+ICONS = (
+    "calendar",
+    "clock",
+    "map-pin",
+    "video",
+    "mic",
+    "users",
+    "user",
+    "heart",
+    "star",
+    "sparkles",
+    "sun",
+    "moon",
+    "leaf",
+    "flower",
+    "mountain",
+    "waves",
+    "flame",
+    "zap",
+    "check",
+    "circle-check",
+    "play",
+    "gift",
+    "award",
+    "trophy",
+    "target",
+    "book-open",
+    "graduation-cap",
+    "pen-tool",
+    "palette",
+    "camera",
+    "music",
+    "dumbbell",
+    "brain",
+    "coffee",
+    "smile",
+    "globe",
+    "mail",
+    "phone",
+    "arrow-right",
+    "chevron-right",
+)
 MAX_EXTRAS = 12
-TEXT_MAX = {"label": 40, "title": 90, "subtitle": 140, "badge": 24, "extra": 140}
+TEXT_MAX = {"label": 40, "title": 90, "subtitle": 140, "badge": 24, "extra": 140, "qr": 300}
 
 ALIGNS = ("left", "center", "right")
-EXTRA_TYPES = ("text", "badge", "shape")
+EXTRA_TYPES = ("text", "badge", "shape", "icon", "qr")
 # Always matched with fullmatch: a trailing "$" would let a final newline through.
 _EXTRA_ID_RE = re.compile(r"[a-z0-9-]{1,24}")
+# What a QR code may hold: a link of her site, or any other web address.
+_QR_RE = re.compile(r"https?://\S{1,290}")
 _STYLE_RANGES = {"scale": (0.5, 2), "tracking": (-0.05, 0.3), "leading": (0.9, 1.6)}
 _FRAME_RANGES = {"x": (-0.5, 1.5), "y": (-0.5, 1.5), "w": (0.02, 2), "h": (0.02, 2)}
 
@@ -124,11 +178,19 @@ def _part_style(value, field):
     for key in ("upper", "hidden"):
         if isinstance(value.get(key), bool):
             style[key] = value[key]
-    for key, allowed in (("weight", WEIGHTS), ("align", ALIGNS), ("font", FONT_ROLES)):
+    for key, allowed in (
+        ("weight", WEIGHTS),
+        ("align", ALIGNS),
+        ("font", FONT_ROLES),
+        ("effect", TEXT_EFFECTS),
+    ):
         if key in value:
             style[key] = _enum(value[key], allowed, f"{field}.{key}")
-    if "color" in value:
-        style["color"] = _paint(value["color"], f"{field}.color")
+    # The colour of the words, of their effect (a shadow, an outline, the band behind them) and of the
+    # words she marked *like this*.
+    for key in ("color", "effectColor", "emphasis"):
+        if key in value:
+            style[key] = _paint(value[key], f"{field}.{key}")
     return style
 
 
@@ -160,8 +222,18 @@ def _extras(value):
         elif kind == "badge":
             extra["text"] = _text(raw.get("text"), TEXT_MAX["badge"])
             extra["fill"] = _paint(raw.get("fill", "accent"), f"{field}.fill")
+        elif kind == "qr":
+            link = _text(raw.get("text"), TEXT_MAX["qr"])
+            if not _QR_RE.fullmatch(link):
+                raise serializers.ValidationError(f"{field}.text must be a web address.")
+            extra["text"] = link
+            extra["fill"] = _paint(raw.get("fill", "black"), f"{field}.fill")
+            extra["back"] = _paint(raw.get("back", "white"), f"{field}.back")
         else:
-            extra["shape"] = _enum(raw.get("shape"), SHAPES, f"{field}.shape")
+            if kind == "shape":
+                extra["shape"] = _enum(raw.get("shape"), SHAPES, f"{field}.shape")
+            else:
+                extra["icon"] = _enum(raw.get("icon"), ICONS, f"{field}.icon")
             extra["fill"] = _paint(raw.get("fill", "accent"), f"{field}.fill")
             extra["opacity"] = _clamp(raw.get("opacity"), 0.1, 1, 1)
         extra["frame"] = _frame(raw.get("frame"), f"{field}.frame")
@@ -194,6 +266,12 @@ def validate_recipe(value: dict, *, photo_exists: Callable[[str], bool]) -> dict
             "contrast": _clamp(photo.get("contrast"), 0.5, 1.5, 1),
             "saturation": _clamp(photo.get("saturation"), 0.5, 1.5, 1),
             "darken": _clamp(photo.get("darken"), 0, 0.7, 0),
+            "grade": _enum(photo.get("grade", "none"), GRADES, "photo.grade"),
+            # -1 is cool, 1 warm.
+            "warmth": _clamp(photo.get("warmth"), -1, 1, 0),
+            "blur": _clamp(photo.get("blur"), 0, 1, 0),
+            "mask": _enum(photo.get("mask", "none"), MASKS, "photo.mask"),
+            "flip": photo["flip"] if isinstance(photo.get("flip"), bool) else False,
         },
         "words": {
             "label": _text(words.get("label"), TEXT_MAX["label"]),
@@ -220,6 +298,6 @@ def validate_recipe(value: dict, *, photo_exists: Callable[[str], bool]) -> dict
                 if layer in layer_ids
             }
             for size, frames in overrides.items()
-            if size in SIZES
+            if size in SIZES or size in SOCIAL_SIZES
         },
     }

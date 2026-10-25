@@ -156,22 +156,45 @@ function nearest(
   return best;
 }
 
+/** Where a frame can snap to: one list for both axes (the canvas's edges and middle, by default), or one
+ *  list across and one down. */
+export type Guides =
+  | readonly number[]
+  | { x: readonly number[]; y: readonly number[] };
+
+/** The canvas's edges and middle, and the edges and middle of each of `others` (the other layers on it):
+ *  what a layer she moves snaps to. */
+export function guidesFrom(others: readonly Frame[]): {
+  x: number[];
+  y: number[];
+} {
+  const x = [0, 0.5, 1];
+  const y = [0, 0.5, 1];
+  for (const f of others) {
+    x.push(f.x, f.x + f.w / 2, f.x + f.w);
+    y.push(f.y, f.y + f.h / 2, f.y + f.h);
+  }
+  return { x, y };
+}
+
 /** A frame moved onto a guide when its left edge, middle or right edge (and, up and down, its top,
  *  middle or bottom) is within `tolerance` of one, and the guides it landed on, for the canvas to draw.
  *  Each axis snaps on its own, to the nearest. */
 export function snap(
   frame: Frame,
-  guides: readonly number[] = [0, 0.5, 1],
+  guides: Guides = [0, 0.5, 1],
   tolerance = 0.012,
 ): { frame: Frame; guides: { x?: number; y?: number } } {
+  const across = "x" in guides ? guides.x : guides;
+  const down = "y" in guides ? guides.y : guides;
   const x = nearest(
     [frame.x, frame.x + frame.w / 2, frame.x + frame.w],
-    guides,
+    across,
     tolerance,
   );
   const y = nearest(
     [frame.y, frame.y + frame.h / 2, frame.y + frame.h],
-    guides,
+    down,
     tolerance,
   );
   return {
@@ -190,7 +213,7 @@ export function snap(
 export function snapDrawn(
   frame: Frame,
   drawn: Frame,
-  guides?: readonly number[],
+  guides?: Guides,
   tolerance?: number,
 ): { frame: Frame; guides: { x?: number; y?: number } } {
   const snapped = snap(drawn, guides, tolerance);

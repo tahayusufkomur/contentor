@@ -316,6 +316,15 @@ SITE_QA_MODEL = os.environ.get("SITE_QA_MODEL", "claude-opus-5-5")
 # Without a URL, videos get no captions.
 SCRIBE_URL = os.environ.get("SCRIBE_URL", "")
 SCRIBE_KEY = os.environ.get("SCRIBE_KEY", "")
+# --- Photo edits in the photo studio (apps.media.photo_edits) ---
+# The background remover: rembg's HTTP server (the `cutout` service), our own, free per photo. Without a
+# URL the studio offers no "Remove the background". Its model must allow commercial use (not bria-rmbg).
+CUTOUT_URL = os.environ.get("CUTOUT_URL", "")
+CUTOUT_MODEL = os.environ.get("CUTOUT_MODEL", "birefnet-general")
+# Extending, cleaning up and changing a photo: the image model on GEMINI_API_KEY (off without it). Each edit
+# bills like a new photo (~$0.10 at 2K) and counts against CURATED_IMAGE_GENERATE_MONTHLY_LIMIT.
+PHOTO_EDIT_MODEL = os.environ.get("PHOTO_EDIT_MODEL", "gemini-3.1-flash-image")
+PHOTO_EDIT_SIZE = os.environ.get("PHOTO_EDIT_SIZE", "2K")
 LOGO_AI_MODEL = os.environ.get("LOGO_AI_MODEL", "claude-sonnet-5")
 # Global monthly USD kill-switch, summed across all tenants (LogoAiUsage).
 LOGO_AI_MONTHLY_BUDGET_USD = float(os.environ.get("LOGO_AI_MONTHLY_BUDGET_USD", "15"))

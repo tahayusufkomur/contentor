@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it, vi } from "vitest";
 import {
+  isQrLink,
   LayerToolbar,
   TEXT_DEFAULTS,
   type LayerToolbarProps,
@@ -314,7 +315,16 @@ describe("LayerToolbar: badges, shapes, the colour and the logo", () => {
     const recipe = { ...defaultRecipe(), extras: [shape("x1")] };
     const markup = toolbar({ extra: recipe.extras[0], recipe });
     expect(select(markup, "Shape")).toEqual({
-      labels: ["Rectangle", "Circle", "Arch", "Line"],
+      labels: [
+        "Rectangle",
+        "Circle",
+        "Arch",
+        "Line",
+        "Pill",
+        "Star",
+        "Burst",
+        "Arrow",
+      ],
       chosen: ["Arch"],
     });
     expect(markup).toContain('aria-label="Fill"');
@@ -417,4 +427,91 @@ describe("TEXT_DEFAULTS", () => {
       });
     },
   );
+});
+
+describe("LayerToolbar: effects, marked words, the flip and the new layers", () => {
+  it("offers a text effect and a word to colour, from the words the title shows", () => {
+    const markup = toolbar({ part: "title", itemTitle: "Morning flow" });
+    expect(select(markup, "Effect")).toEqual({
+      labels: ["No effect", "Lift", "Shadow", "Outline", "Highlight"],
+      chosen: ["No effect"],
+    });
+    expect(select(markup, "Colour a word")).toEqual({
+      labels: ["No word", "Morning", "flow"],
+      chosen: ["No word"],
+    });
+    // the effect's colour and the word's colour only once there is one
+    expect(markup).not.toContain('aria-label="Effect colour"');
+    expect(markup).not.toContain('aria-label="Word colour"');
+    const recipe = {
+      ...defaultRecipe(),
+      words: { label: "", title: "Morning *flow*", subtitle: "" },
+      styles: { title: { effect: "highlight" as const } },
+    };
+    const on = toolbar({ part: "title", recipe });
+    expect(select(on, "Colour a word")?.chosen).toEqual(["flow"]);
+    expect(on).toContain('aria-label="Effect colour"');
+    expect(on).toContain('aria-label="Word colour"');
+  });
+
+  it("flips the photo and opens Edit photo", () => {
+    const recipe = defaultRecipe({ photoId: "p" });
+    expect(button(toolbar({ part: "photo", recipe }), "Flip")).not.toBeNull();
+    expect(toolbar({ part: "photo", recipe })).not.toContain("Edit photo");
+    expect(toolbar({ part: "photo", recipe, onEditPhoto: vi.fn() })).toContain(
+      "Edit photo",
+    );
+  });
+
+  it("an icon picks its icon, colour and opacity; a QR code its link and two colours", () => {
+    const icon: Extra = {
+      id: "i1",
+      type: "icon",
+      icon: "calendar",
+      fill: "accent",
+      opacity: 1,
+      frame,
+    };
+    const iconBar = toolbar({
+      extra: icon,
+      recipe: { ...defaultRecipe(), extras: [icon] },
+    });
+    expect(select(iconBar, "Icon")?.chosen).toEqual(["Calendar"]);
+    expect(select(iconBar, "Icon")?.labels).toHaveLength(40);
+    expect(sliders(iconBar)).toEqual([
+      { label: "Opacity", min: 0.1, max: 1, step: 0.05, value: 1 },
+    ]);
+    const qr: Extra = {
+      id: "q1",
+      type: "qr",
+      text: "https://yoga.test/courses/flow",
+      fill: "black",
+      back: "white",
+      frame,
+    };
+    const qrBar = toolbar({
+      extra: qr,
+      recipe: { ...defaultRecipe(), extras: [qr] },
+    });
+    expect(qrBar).toContain('aria-label="Link"');
+    expect(qrBar).toContain('value="https://yoga.test/courses/flow"');
+    expect(qrBar).toContain('aria-label="Colour of the squares"');
+    expect(qrBar).toContain('aria-label="Colour behind the squares"');
+  });
+});
+
+describe("isQrLink", () => {
+  it("takes a web address and nothing else", () => {
+    expect(isQrLink("https://yoga.test/courses/flow")).toBe(true);
+    expect(isQrLink("http://yoga.test")).toBe(true);
+    for (const bad of [
+      "yoga.test",
+      "javascript:alert(1)",
+      "https://a b",
+      "",
+      `https://${"a".repeat(300)}`,
+    ]) {
+      expect(isQrLink(bad), bad).toBe(false);
+    }
+  });
 });

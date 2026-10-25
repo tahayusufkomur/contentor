@@ -982,3 +982,53 @@ describe("what reaches the server", () => {
     }
   });
 });
+
+describe("applyEdit: a photo with its place known", () => {
+  it("takes the subject's focus, an edit's focus and zoom, and a cutout's layout in one step", () => {
+    const start = applyEdit(defaultRecipe({ photoId: "p1" }), {
+      type: "photoAdjust",
+      patch: { focus: [0.2, 0.3], zoom: 2, grade: "mono" },
+    });
+    const library = applyEdit(start, {
+      type: "photo",
+      id: "p2",
+      focus: [0.75, 0.5],
+    });
+    expect(library.photo).toMatchObject({
+      id: "p2",
+      focus: [0.75, 0.5],
+      zoom: 1,
+      grade: "mono",
+    });
+    const edited = applyEdit(start, {
+      type: "photo",
+      id: "p3",
+      focus: [0.2, 0.3],
+      zoom: 2,
+    });
+    expect(edited.photo).toMatchObject({
+      id: "p3",
+      focus: [0.2, 0.3],
+      zoom: 2,
+    });
+    const withTitleFrame = applyEdit(start, {
+      type: "frame",
+      size: "card",
+      id: "title",
+      frame: { x: 0.1, y: 0.1, w: 0.5, h: 0.2 },
+    });
+    const cut = applyEdit(withTitleFrame, {
+      type: "photo",
+      id: "p4",
+      layout: "cutout",
+    });
+    expect(cut.layout).toBe("cutout");
+    // the title's place was one in the old layout
+    expect(cut.overrides).toEqual({});
+    // the same layout keeps her frames
+    expect(
+      applyEdit(withTitleFrame, { type: "photo", id: "p4", layout: "panel" })
+        .overrides,
+    ).toEqual(withTitleFrame.overrides);
+  });
+});

@@ -38,6 +38,11 @@ def test_minimal_recipe_is_completed_with_defaults():
             "contrast": 1,
             "saturation": 1,
             "darken": 0,
+            "grade": "none",
+            "warmth": 0,
+            "blur": 0,
+            "mask": "none",
+            "flip": False,
         },
         "words": {"label": "", "title": None, "subtitle": ""},
         "badge": {"kind": "none", "text": "", "fill": "accent"},
@@ -233,7 +238,7 @@ def test_extras_are_shaped_by_their_type():
         {"id": "a1", "type": "text", "text": "Hi", "frame": {"x": 0.1}},
         {"id": "a1", "type": "text", "text": "Hi", "frame": "wide"},
         {"id": "a1", "type": "text", "text": "Hi", "frame": FRAME, "style": {"align": "justify"}},
-        {"id": "a1", "type": "shape", "shape": "star", "frame": FRAME},
+        {"id": "a1", "type": "shape", "shape": "hexagon", "frame": FRAME},
         {"id": "a1", "type": "badge", "fill": "teal", "frame": FRAME},
         "not an object",
     ],
@@ -341,3 +346,73 @@ def test_only_one_design_is_kept_per_target(tenant_ctx):
         Design.objects.create(**{**kept, **other})
     with pytest.raises(IntegrityError), transaction.atomic():
         Design.objects.create(**kept)
+
+
+def test_photo_grade_mask_flip_warmth_and_blur():
+    photo = clean({"photo": {"grade": "duo-accent", "mask": "blob", "flip": True, "warmth": -3, "blur": 0.4}})["photo"]
+    assert (photo["grade"], photo["mask"], photo["flip"], photo["warmth"], photo["blur"]) == (
+        "duo-accent",
+        "blob",
+        True,
+        -1,
+        0.4,
+    )
+    # a flip that is not a boolean is left at its default, a number out of range clamped
+    assert clean({"photo": {"flip": "yes", "blur": 9}})["photo"] == {**clean({})["photo"], "blur": 1}
+    for bad in ({"grade": "sepia"}, {"mask": "star"}, {"grade": None}):
+        with pytest.raises(ValidationError):
+            clean({"photo": bad})
+
+
+def test_text_effects_and_marked_words_keep_their_paints():
+    style = clean({"styles": {"title": {"effect": "highlight", "effectColor": "#ffcc00", "emphasis": "accent-dark"}}})[
+        "styles"
+    ]["title"]
+    assert style == {"effect": "highlight", "effectColor": "#ffcc00", "emphasis": "accent-dark"}
+    for bad in ({"effect": "glow"}, {"effectColor": "gold"}, {"emphasis": None}):
+        with pytest.raises(ValidationError):
+            clean({"styles": {"subtitle": bad}})
+
+
+def test_icon_and_qr_layers():
+    extras = clean(
+        {
+            "extras": [
+                {"id": "i1", "type": "icon", "icon": "calendar", "frame": FRAME},
+                {"id": "q1", "type": "qr", "text": " https://yoga.contentor.app/courses/flow ", "frame": FRAME},
+            ]
+        }
+    )["extras"]
+    assert extras == [
+        {"id": "i1", "type": "icon", "icon": "calendar", "fill": "accent", "opacity": 1, "frame": FRAME},
+        {
+            "id": "q1",
+            "type": "qr",
+            "text": "https://yoga.contentor.app/courses/flow",
+            "fill": "black",
+            "back": "white",
+            "frame": FRAME,
+        },
+    ]
+    for bad in (
+        {"id": "i1", "type": "icon", "icon": "skull", "frame": FRAME},
+        {"id": "q1", "type": "qr", "text": "javascript:alert(1)", "frame": FRAME},
+        {"id": "q1", "type": "qr", "text": "https://a b", "frame": FRAME},
+        {"id": "q1", "type": "qr", "text": "", "frame": FRAME},
+    ):
+        with pytest.raises(ValidationError):
+            clean({"extras": [bad]})
+
+
+def test_new_shapes_the_cutout_layout_and_social_size_frames():
+    recipe = clean(
+        {
+            "layout": "cutout",
+            "extras": [{"id": "s1", "type": "shape", "shape": "burst", "frame": FRAME}],
+            "overrides": {"story": {"s1": FRAME, "title": FRAME}, "poster": {"s1": FRAME}},
+        }
+    )
+    assert recipe["layout"] == "cutout"
+    assert recipe["extras"][0]["shape"] == "burst"
+    # a social size keeps its frames; a size that is not one of ours goes
+    assert recipe["overrides"] == {"story": {"s1": FRAME, "title": FRAME}}

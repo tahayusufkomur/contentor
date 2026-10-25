@@ -280,7 +280,7 @@ describe("CoverArt photo", () => {
         if (photo) photos++;
       }
     }
-    expect(photos).toBe(5 * 3);
+    expect(photos).toBe((LAYOUTS.length - 1) * 3);
   });
 
   it("loads the photo lazily, or eagerly at high priority when asked, and never her logo eagerly", () => {
@@ -996,7 +996,7 @@ describe("CoverArt logo and badge", () => {
         }
       }
     }
-    expect(checked).toBe(21 * 6 * 3);
+    expect(checked).toBe(21 * LAYOUTS.length * 3);
     // Where the badge still shares a row with the logo (full, band and photo, beside it) or sits on an
     // inset photo (framed), the room can be less than the cap.
     expect(lowered).toBeGreaterThan(0);
@@ -1335,5 +1335,200 @@ describe("LookFonts", () => {
     expect(els[0].tag).toBe("link");
     expect(els[0].attrs.rel).toBe("stylesheet");
     expect(els[0].attrs.href).toBe(styleFontsHref(SITE_STYLES.atelier));
+  });
+});
+
+describe("CoverArt photo grades, frames and tools", () => {
+  it("draws no grade, warmth, blur, frame or flip on a recipe saved before them", () => {
+    const card = within(parse(draw(design())), "card");
+    const img = card.find((e) => e.attrs.src === PHOTO_URL)!;
+    const wrapper = card[card.indexOf(img) - 1];
+    expect(wrapper.style.filter).toBeUndefined();
+    expect(wrapper.style["mix-blend-mode"]).toBeUndefined();
+    const frame = layer(card, "photo")!;
+    expect(frame.style["clip-path"]).toBeUndefined();
+    expect(frame.style["border-radius"]).toBeUndefined();
+    expect(card.some((e) => e.style.transform === "scaleX(-1)")).toBe(false);
+  });
+
+  it("follows her look's own grade with Your site, and grades with the look's tint in its colour", () => {
+    const filters = (look: string, grade: CoverRecipe["photo"]["grade"]) => {
+      const card = within(
+        parse(draw(design((r) => (r.photo.grade = grade), look))),
+        "card",
+      );
+      const img = card.find((e) => e.attrs.src === PHOTO_URL)!;
+      return { card, wrapper: card[card.indexOf(img) - 1] };
+    };
+    const mono = filters("atelier", "mono").wrapper.style.filter;
+    expect(mono).toBe("grayscale(1) contrast(1.08)");
+    // a look whose site wears the mono grade gives "Your site" its filter
+    const look = Object.entries(SITE_STYLES).find(
+      ([, style]) => style.photoTreatment === "mono",
+    )?.[0];
+    if (look) expect(filters(look, "site").wrapper.style.filter).toBe(mono);
+    // the tint grade lays the cover's own main colour over the photo, never the page's --primary
+    const { card } = filters("atelier", "tint");
+    const primary = coverPalette(SITE_STYLES.atelier).primary;
+    const tint = card.find((e) => e.style["mix-blend-mode"] === "color");
+    expect(tint?.style.background).toBe(primary);
+  });
+
+  it("draws a duotone in her colours: the darker takes the shadows, the lighter the lights", () => {
+    const card = within(
+      parse(draw(design((r) => (r.photo.grade = "duo")))),
+      "card",
+    );
+    const palette = coverPalette(SITE_STYLES.atelier);
+    const img = card.find((e) => e.attrs.src === PHOTO_URL)!;
+    const wrapper = card[card.indexOf(img) - 1];
+    expect(wrapper.style["mix-blend-mode"]).toBe("multiply");
+    const lighten = card.find((e) => e.style["mix-blend-mode"] === "lighten");
+    const ground = card[card.indexOf(wrapper) - 1];
+    expect(
+      new Set([lighten?.style.background, ground.style.background]),
+    ).toEqual(new Set([palette.primary, palette.paper]));
+    // its blends stay inside the photo's frame
+    expect(layer(card, "photo")?.style.isolation).toBe("isolate");
+  });
+
+  it("warms, cools and blurs the photo, cuts its frame to a shape and flips it", () => {
+    const card = within(
+      parse(
+        draw(
+          design((r) => {
+            r.photo.warmth = 0.5;
+            r.photo.blur = 0.4;
+            r.photo.mask = "circle";
+            r.photo.flip = true;
+          }),
+        ),
+      ),
+      "card",
+    );
+    const warm = card.find((e) => e.style["mix-blend-mode"] === "soft-light");
+    expect(warm?.style.background).toBe("rgb(255 150 50)");
+    expect(num(warm?.style.opacity)).toBeCloseTo(0.3);
+    expect(card.some((e) => e.style.filter?.includes("blur(1cqmin)"))).toBe(
+      true,
+    );
+    expect(layer(card, "photo")?.style["clip-path"]).toBe(
+      "circle(closest-side)",
+    );
+    const img = card.find((e) => e.attrs.src === PHOTO_URL)!;
+    expect(card[card.indexOf(img) - 1].style.transform).toBe("scaleX(-1)");
+    const cool = within(
+      parse(draw(design((r) => (r.photo.warmth = -1)))),
+      "card",
+    ).find((e) => e.style["mix-blend-mode"] === "soft-light");
+    expect(cool?.style.background).toBe("rgb(60 140 255)");
+  });
+
+  it("stands a cutout whole at the foot of its frame", () => {
+    const card = within(
+      parse(draw(design((r) => (r.layout = "cutout")))),
+      "card",
+    );
+    const img = card.find((e) => e.attrs.src === PHOTO_URL)!;
+    expect(img.attrs.class).toMatch(/contain/);
+    expect(img.style["object-position"]).toBe("50% 100%");
+  });
+});
+
+describe("CoverArt text effects and marked words", () => {
+  const title = (
+    style: CoverRecipe["styles"]["title"],
+    words = "Find your *calm*",
+  ) => {
+    const els = parse(
+      draw(
+        design((r) => {
+          r.words.title = words;
+          r.styles.title = style;
+        }),
+      ),
+    );
+    return within(els, "card");
+  };
+
+  it("draws the marked word in the accent, without its stars", () => {
+    const card = title({});
+    const accent = coverPalette(SITE_STYLES.atelier).accent;
+    const word = after(card, after(card, layer(card, "title")));
+    expect(word.tag).toBe("span");
+    expect(word.style.color).toBe(accent);
+    expect(
+      draw(design((r) => (r.words.title = "Find your *calm*"))),
+    ).not.toContain("*calm*");
+  });
+
+  it("gives a highlight's band to the marked words alone, or to all of them where none is marked", () => {
+    const marked = title({ effect: "highlight" });
+    const bands = marked.filter((e) => /band/.test(e.attrs.class ?? ""));
+    expect(bands).toHaveLength(1);
+    const plain = title({ effect: "highlight" }, "Find your calm");
+    expect(plain.filter((e) => /band/.test(e.attrs.class ?? ""))).toHaveLength(
+      1,
+    );
+    // the words on a band read on it
+    const palette = coverPalette(SITE_STYLES.atelier);
+    expect(bands[0].style.color).toBe(readableOn("accent", palette));
+  });
+
+  it("lifts, shadows and outlines words in her colour or the effect's own", () => {
+    const style = (effect: "lift" | "shadow" | "outline", color?: Paint) =>
+      layer(title({ effect, effectColor: color }), "title")!.style;
+    expect(style("lift")["text-shadow"]).toContain("rgb(0 0 0 / 0.55)");
+    expect(style("shadow", "#112233")["text-shadow"]).toBe(
+      "0.07em 0.07em 0 #112233",
+    );
+    expect(style("outline")["-webkit-text-stroke"]).toContain("0.09em");
+    expect(style("outline")["paint-order"]).toBe("stroke fill");
+  });
+});
+
+describe("CoverArt icons, stickers and QR codes", () => {
+  it("draws an icon in its colour, a star sticker by its polygon and a QR code of its link", () => {
+    const els = within(
+      parse(
+        draw(
+          design((r) => {
+            r.extras = [
+              {
+                id: "i1",
+                type: "icon",
+                icon: "calendar",
+                fill: "#ff0000",
+                opacity: 0.5,
+                frame: FRAME,
+              },
+              {
+                id: "s1",
+                type: "shape",
+                shape: "star",
+                fill: "accent",
+                opacity: 1,
+                frame: FRAME,
+              },
+              {
+                id: "q1",
+                type: "qr",
+                text: "https://yoga.test/courses/flow",
+                fill: "black",
+                back: "white",
+                frame: FRAME,
+              },
+            ];
+          }),
+        ),
+      ),
+      "card",
+    );
+    expect(layer(els, "i1")?.style.color).toBe("#ff0000");
+    expect(after(els, layer(els, "i1")).tag).toBe("svg");
+    expect(layer(els, "s1")?.style["clip-path"]).toMatch(/^polygon\(50% 0%/);
+    const qr = els.slice(els.indexOf(layer(els, "q1")!));
+    expect(qr[1].tag).toBe("svg");
+    expect(qr.find((e) => e.tag === "path")?.attrs.fill).toBe("#000");
   });
 });

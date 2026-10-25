@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { undoCopilotAction } from "@/lib/copilot/api";
 import { createAutosave, flushWhenHidden } from "@/lib/covers/autosave";
+import type { PickOptions } from "@/components/studio/photo-sources";
 import { editHistory, type EditorAction } from "@/lib/covers/editor";
 import { openCoverStudio } from "@/lib/covers/open-studio";
 import {
@@ -171,14 +172,25 @@ export function useCoverDraft({
     apply(editHistory(historyRef.current, action));
 
   // A photo she picks draws at once, before the next save tells the server about it.
-  const pick = (photo: { id: string; url: string }) => {
+  const pick = (
+    photo: { id: string; url: string },
+    options: PickOptions = {},
+  ) => {
     // A photo can arrive late: an upload, a library copy or a new photo that finishes after she left, or
     // after Keep. Taking it then would start a save nobody cancels: refused (400) once the design is kept,
     // a 404 once it is discarded, and a quiet edit of a draft she is no longer looking at otherwise. (The
     // guard is a ref, read when the photo lands: a flag in state would be the one the upload started with.)
     if (!alive.current) return;
     setPhotos((now) => ({ ...now, [photo.id]: photo.url }));
-    edit({ type: "photo", id: photo.id });
+    // an edit of the same picture keeps her focus and zoom
+    const { focus, zoom } = historyRef.current.present.photo;
+    edit({
+      type: "photo",
+      id: photo.id,
+      focus: options.keep ? focus : options.focus,
+      zoom: options.keep ? zoom : undefined,
+      layout: options.layout,
+    });
   };
 
   const lastRefresh = useRef(0);

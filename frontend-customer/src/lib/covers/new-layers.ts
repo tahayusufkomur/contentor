@@ -1,4 +1,5 @@
-// The layers the editor's drawers add to a cover: a title, a line of text, a badge, a shape. Each comes with
+// The layers the editor's drawers add to a cover: a title, a line of text, a badge, a shape, an icon, a QR
+// code. Each comes with
 // a place and a size that read on any cover, and the id the reducer will keep (lib/covers/editor.ts).
 //
 // The sizes are in cqmin, the unit the layouts are written in (1% of the canvas's smaller side), so a layer
@@ -9,12 +10,13 @@
 
 import { newExtraId } from "@/lib/covers/editor";
 import { RANGES, sizeAspect } from "@/lib/covers/recipe";
-import { SIZES } from "@/types/design";
+import { ALL_SIZES } from "@/types/design";
 import type {
   CoverRecipe,
   CoverSize,
   Extra,
   Frame,
+  IconName,
   PartStyle,
   ShapeKind,
 } from "@/types/design";
@@ -81,7 +83,10 @@ function framed(
   return {
     frame: at("card"),
     frames: Object.fromEntries(
-      SIZES.filter((size) => size !== "card").map((size) => [size, at(size)]),
+      ALL_SIZES.filter((size) => size !== "card").map((size) => [
+        size,
+        at(size),
+      ]),
     ) as NewLayer["frames"],
   };
 }
@@ -141,6 +146,10 @@ const SHAPE: Record<ShapeKind, [w: number, h: number]> = {
   circle: [28, 28],
   arch: [24, 34],
   line: [40, 2.7],
+  pill: [36, 12],
+  star: [26, 26],
+  burst: [30, 30],
+  arrow: [34, 16],
 };
 
 export function newShapeExtra(
@@ -190,6 +199,62 @@ export function newBadgeExtra(
       type: "badge",
       text,
       fill: "accent",
+      frame,
+    },
+    frames,
+  };
+}
+
+/** An icon's box in cqmin: about a line of title high. */
+const ICON = 14;
+
+export function newIconExtra(
+  recipe: CoverRecipe,
+  icon: IconName,
+  cardAspect: CoverAspect,
+): NewLayer<Extract<Extra, { type: "icon" }>> {
+  // where a new shape goes: right of the middle and above it
+  const { frame, frames } = framed(recipe, cardAspect, (c) => [
+    0.62 * c.width - ICON / 2 + c.across,
+    0.38 * c.height - ICON / 2 + c.down,
+    ICON,
+    ICON,
+  ]);
+  return {
+    extra: {
+      id: newExtraId(recipe),
+      type: "icon",
+      icon,
+      fill: "accent",
+      opacity: 1,
+      frame,
+    },
+    frames,
+  };
+}
+
+/** A QR code's box in cqmin: big enough for a phone held at arm's length to a poster. */
+const QR = 26;
+
+export function newQrExtra(
+  recipe: CoverRecipe,
+  link: string,
+  cardAspect: CoverAspect,
+): NewLayer<Extract<Extra, { type: "qr" }>> {
+  // in the bottom right corner, where the layouts leave the most room
+  const { frame, frames } = framed(recipe, cardAspect, (c) => [
+    c.width - MARGIN - QR - c.across,
+    c.height - MARGIN - QR - c.down,
+    QR,
+    QR,
+  ]);
+  return {
+    extra: {
+      id: newExtraId(recipe),
+      type: "qr",
+      text: link,
+      fill: "black",
+      back: "white",
       frame,
     },
     frames,

@@ -2,7 +2,7 @@
 // the defaults and the constants are the same (see types/design.ts).
 
 import type { CoverAspect } from "@shared/sections/types";
-import { BADGE_KINDS, PARTS, SIZES } from "@/types/design";
+import { BADGE_KINDS, PARTS, SIZES, SOCIAL_SIZES } from "@/types/design";
 import type {
   BadgeKind,
   CoverItem,
@@ -16,7 +16,7 @@ import type {
 import { layoutFrames } from "./layouts";
 import { targetNoun } from "./targets";
 
-export { SIZES };
+export { SIZES, SOCIAL_SIZES };
 
 /** The ranges the server clamps numbers to (backend/apps/media/design_recipe.py; recipe.test.ts pins
  *  them). Every slider and drag in the studio stays inside them, so what she sees is what is saved. */
@@ -27,6 +27,8 @@ export const RANGES = {
   contrast: [0.5, 1.5],
   saturation: [0.5, 1.5],
   darken: [0, 0.7],
+  warmth: [-1, 1],
+  blur: [0, 1],
   scale: [0.5, 2],
   tracking: [-0.05, 0.3],
   leading: [0.9, 1.6],
@@ -37,6 +39,12 @@ export const RANGES = {
 
 const WIDE = 16 / 9;
 const BANNER = 3;
+/** Width over height of the social sizes. */
+const SOCIAL: Record<(typeof SOCIAL_SIZES)[number], number> = {
+  post: 1,
+  portrait: 4 / 5,
+  story: 9 / 16,
+};
 const DAY = 86_400_000;
 export type GenerationAspect = "16:9" | "1:1" | "4:3" | "9:16" | "4:5";
 /** The shapes the photo generation endpoint can draw. */
@@ -48,12 +56,34 @@ const GENERATION: [ratio: GenerationAspect, aspect: number][] = [
   ["4:5", 4 / 5],
 ];
 
-/** Width over height of a size: the look's own for Card, 16/9 for Wide, 3 for Banner. */
+/** Width over height of a size: the look's own for Card, 16/9 for Wide, 3 for Banner, and the social
+ *  sizes' own. */
 export function sizeAspect(size: CoverSize, cardAspect: CoverAspect): number {
   if (size === "wide") return WIDE;
   if (size === "banner") return BANNER;
+  if (size !== "card") return SOCIAL[size];
   const [w, h] = cardAspect.split("/").map(Number);
   return w / h;
+}
+
+/** Whether a size is one of the social ones, which no page of her site shows. */
+export const isSocial = (size: CoverSize): boolean =>
+  (SOCIAL_SIZES as readonly string[]).includes(size);
+
+/** A frame drawn for a canvas of one shape, on a canvas of another: the same box in cqmin (so a circle
+ *  stays round and a line as thin), centred where it was, as a share of the canvas. A layer she added
+ *  before the social sizes existed has no frame of its own there, and is placed with this. */
+export function adaptFrame(frame: Frame, from: number, to: number): Frame {
+  const across = Math.max(1, from) / Math.max(1, to);
+  const down = Math.min(1, to) / Math.min(1, from);
+  const w = frame.w * across;
+  const h = frame.h * down;
+  return {
+    x: frame.x + frame.w / 2 - w / 2,
+    y: frame.y + frame.h / 2 - h / 2,
+    w,
+    h,
+  };
 }
 
 /** The index of the aspect nearest `aspect`, by ratio (a frame twice as wide is as far as one half as wide). */
@@ -117,7 +147,17 @@ export function framesFor(
     const frame = base[part];
     if (frame && drawn(part)) frames[part] = frame;
   }
-  for (const extra of recipe.extras) frames[extra.id] = extra.frame;
+  // Her layers keep the Card's frame, but in a social size, which was never drawn when a layer older than
+  // it was added, it is adapted to that shape.
+  const adapt = isSocial(size)
+    ? (frame: Frame) =>
+        adaptFrame(
+          frame,
+          sizeAspect("card", cardAspect),
+          sizeAspect(size, cardAspect),
+        )
+    : (frame: Frame) => frame;
+  for (const extra of recipe.extras) frames[extra.id] = adapt(extra.frame);
   for (const [id, frame] of Object.entries(recipe.overrides[size] ?? {})) {
     if (id in frames) frames[id] = frame;
   }
@@ -178,6 +218,11 @@ export function defaultRecipe(
       contrast: 1,
       saturation: 1,
       darken: 0,
+      grade: "none",
+      warmth: 0,
+      blur: 0,
+      mask: "none",
+      flip: false,
     },
     words: { label: "", title: null, subtitle: "" },
     badge: { kind: "none", text: "", fill: "accent" },

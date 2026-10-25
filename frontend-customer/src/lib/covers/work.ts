@@ -5,9 +5,9 @@
 // A drawer must not do it from an effect, whose cleanup runs when she leaves the drawer while the work goes
 // on. The editor counts the reports by where the photos come from.
 
-/** Where a photo on its way comes from: the Photos drawer (her photos, the library, a new photo) or the
- *  Uploads drawer. */
-export type WorkKind = "photos" | "uploads";
+/** Where a photo on its way comes from: the Photos drawer (her photos, the library, a new photo), the
+ *  Uploads drawer, or the Edit photo drawer (a photo being changed). */
+export type WorkKind = "photos" | "uploads" | "edits";
 
 /** How many photos are on their way, by where they come from. */
 export type Working = Readonly<Partial<Record<WorkKind, number>>>;

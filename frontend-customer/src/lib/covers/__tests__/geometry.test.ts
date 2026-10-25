@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  guidesFrom,
   hitTest,
   moveFrame,
   panFocus,
@@ -405,5 +406,29 @@ describe("panFocus", () => {
     expect(
       panFocus([0.3, 0.7], [50, 50], { w: 400, h: 225 }, image, 1),
     ).toEqual([0.3, 0.7]);
+  });
+});
+
+describe("smart guides", () => {
+  it("lists the canvas's edges and middle, then each other layer's", () => {
+    expect(guidesFrom([{ x: 0.1, y: 0.2, w: 0.4, h: 0.2 }])).toEqual({
+      x: [0, 0.5, 1, 0.1, 0.30000000000000004, 0.5],
+      y: [0, 0.5, 1, 0.2, 0.30000000000000004, 0.4],
+    });
+  });
+
+  it("snaps each axis to its own guides: a layer lines up with another's edge", () => {
+    const guides = guidesFrom([{ x: 0.1, y: 0.62, w: 0.3, h: 0.1 }]);
+    // its left edge comes near the other's left edge, its top near the other's bottom
+    const moved = snap({ x: 0.108, y: 0.725, w: 0.2, h: 0.1 }, guides);
+    expect(moved.frame.x).toBeCloseTo(0.1);
+    expect(moved.frame.y).toBeCloseTo(0.72);
+    expect(moved.guides).toEqual({ x: 0.1, y: 0.72 });
+    // a guide across is not one down: 0.62 is a top edge, so a left edge there does not snap to it
+    const across = snap(
+      { x: 0.618, y: 0.9, w: 0.1, h: 0.05 },
+      { x: [], y: [0.62] },
+    );
+    expect(across.frame.x).toBe(0.618);
   });
 });

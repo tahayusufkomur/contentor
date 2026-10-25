@@ -6,7 +6,9 @@ import { layoutFrames } from "@/lib/covers/layouts";
 import {
   RANGES,
   SIZES,
+  adaptFrame,
   badgeKindsFor,
+  isSocial,
   defaultRecipe,
   fromSet,
   framesFor,
@@ -20,11 +22,16 @@ import {
 import {
   BADGE_KINDS,
   FONT_ROLES,
+  GRADES,
+  ICONS,
   LAYOUTS,
+  MASKS,
   MAX_EXTRAS,
   PAINT_ROLES,
   PARTS,
   SHAPES,
+  SOCIAL_SIZES,
+  TEXT_EFFECTS,
   TEXT_MAX,
   WEIGHTS,
 } from "@/types/design";
@@ -67,6 +74,11 @@ describe("the recipe matches the backend validator", () => {
     expect(tuple("PAINT_ROLES")).toEqual([...PAINT_ROLES]);
     expect(tuple("SHAPES")).toEqual([...SHAPES]);
     expect(tuple("WEIGHTS")).toEqual([...WEIGHTS]);
+    expect(tuple("SOCIAL_SIZES")).toEqual([...SOCIAL_SIZES]);
+    expect(tuple("GRADES")).toEqual([...GRADES]);
+    expect(tuple("MASKS")).toEqual([...MASKS]);
+    expect(tuple("TEXT_EFFECTS")).toEqual([...TEXT_EFFECTS]);
+    expect(tuple("ICONS")).toEqual([...ICONS]);
     expect(Number(/^MAX_EXTRAS = (\d+)/m.exec(python)?.[1])).toBe(MAX_EXTRAS);
     const limits = Object.fromEntries(
       [
@@ -105,6 +117,8 @@ describe("the recipe matches the backend validator", () => {
       contrast: clamp('photo\\.get\\("contrast"\\)'),
       saturation: clamp('photo\\.get\\("saturation"\\)'),
       darken: clamp('photo\\.get\\("darken"\\)'),
+      warmth: clamp('photo\\.get\\("warmth"\\)'),
+      blur: clamp('photo\\.get\\("blur"\\)'),
       opacity: clamp('raw\\.get\\("opacity"\\)'),
     }).toEqual(RANGES);
   });
@@ -121,6 +135,8 @@ describe("the recipe matches the backend validator", () => {
       "contrast",
       "saturation",
       "darken",
+      "warmth",
+      "blur",
     ] as const) {
       expect(photo[key]).toBeGreaterThanOrEqual(RANGES[key][0]);
       expect(photo[key]).toBeLessThanOrEqual(RANGES[key][1]);
@@ -141,6 +157,11 @@ describe("defaultRecipe", () => {
         contrast: 1,
         saturation: 1,
         darken: 0,
+        grade: "none",
+        warmth: 0,
+        blur: 0,
+        mask: "none",
+        flip: false,
       },
       words: { label: "", title: null, subtitle: "" },
       badge: { kind: "none", text: "", fill: "accent" },
@@ -685,5 +706,51 @@ describe("panelPaint", () => {
     expect(panelPaint({ ...recipe, styles: { logo: { hidden: true } } })).toBe(
       "accent",
     );
+  });
+});
+
+describe("the social sizes", () => {
+  it("are Post 1:1, Portrait 4:5 and Story 9:16, and no frame of her site picks one", () => {
+    expect(sizeAspect("post", "3/4")).toBe(1);
+    expect(sizeAspect("portrait", "3/4")).toBeCloseTo(0.8);
+    expect(sizeAspect("story", "16/10")).toBeCloseTo(9 / 16);
+    expect(isSocial("story")).toBe(true);
+    expect(isSocial("banner")).toBe(false);
+    // a square or tall frame on her site still shows the nearest of Card, Wide and Banner
+    for (const card of CARDS) {
+      for (const aspect of [0.5, 0.8, 1, 2, 3.5]) {
+        expect(SIZES).toContain(nearestSize(aspect, card));
+      }
+    }
+  });
+
+  it("place a layer older than them with the Card's box, kept round, centred where it was", () => {
+    // a circle 0.2 wide on a 3/4 Card, at its middle
+    const circle = frame(0.4, 0.4, 0.2, 0.15);
+    const story = adaptFrame(circle, 3 / 4, 9 / 16);
+    // as wide in cqmin (both are portrait, 100 cqmin across) and as tall: so a share of a taller canvas
+    expect(story.w).toBeCloseTo(0.2);
+    expect(story.h).toBeCloseTo((0.15 * (9 / 16)) / (3 / 4));
+    expect(story.x + story.w / 2).toBeCloseTo(0.5);
+    expect(story.y + story.h / 2).toBeCloseTo(0.475);
+    const recipe = recipeWith({
+      extras: [
+        {
+          id: "x1",
+          type: "shape",
+          shape: "circle",
+          fill: "accent",
+          opacity: 1,
+          frame: circle,
+        },
+      ],
+      overrides: { wide: { x1: frame(0.1, 0.1, 0.1, 0.1) } },
+    });
+    expect(framesFor(recipe, "story", "3/4").x1).toEqual(story);
+    // her own frame for a size wins, and Wide and Banner keep the Card's when they have none
+    expect(framesFor(recipe, "wide", "3/4").x1).toEqual(
+      frame(0.1, 0.1, 0.1, 0.1),
+    );
+    expect(framesFor(recipe, "banner", "3/4").x1).toEqual(circle);
   });
 });

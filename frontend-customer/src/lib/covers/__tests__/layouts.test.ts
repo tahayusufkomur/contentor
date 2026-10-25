@@ -75,7 +75,7 @@ describe("aspectClass", () => {
 });
 
 describe("LAYOUTS", () => {
-  it("lists the six layouts", () => {
+  it("lists the seven layouts", () => {
     expect([...LAYOUTS]).toEqual([
       "panel",
       "full",
@@ -83,6 +83,7 @@ describe("LAYOUTS", () => {
       "band",
       "framed",
       "photo",
+      "cutout",
     ]);
   });
 });
@@ -283,9 +284,12 @@ describe("layoutFrames", () => {
       for (const aspect of REAL) {
         let expected = 10 * grow(aspect);
         // Beside the badge in a row 89 cqmin wide the logo leaves the chip room for "Free preview"
-        // (10.3 em, headroom for the looks' real fonts included) only up to 8.6: full, band and photo
-        // at a Card as narrow as 3:4, 4:5 and 1:1.
-        if (["full", "band", "photo"].includes(layout) && aspect <= 1) {
+        // (10.3 em, headroom for the looks' real fonts included) only up to 8.6: full, band, photo and
+        // cutout at a Card as narrow as 3:4, 4:5 and 1:1.
+        if (
+          ["full", "band", "photo", "cutout"].includes(layout) &&
+          aspect <= 1
+        ) {
           expected = 8.6;
         }
         // At Banner, 100 cqmin high, it is 9.5 in every layout so that it does not compete with the title

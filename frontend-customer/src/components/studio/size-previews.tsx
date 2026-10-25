@@ -41,9 +41,16 @@ export function CoverBox({
   );
 }
 
-/** A size's shape as it is labelled: "3:4" for a Card of that shape, "16:9", "3:1". */
+/** A size's shape as it is labelled: "3:4" for a Card of that shape, "16:9", "3:1", and the social sizes'. */
+const SHAPE_LABELS: Partial<Record<CoverSize, string>> = {
+  wide: "16:9",
+  banner: "3:1",
+  post: "1:1",
+  portrait: "4:5",
+  story: "9:16",
+};
 export const shapeLabel = (size: CoverSize, card: CoverAspect) =>
-  size === "wide" ? "16:9" : size === "banner" ? "3:1" : card.replace("/", ":");
+  SHAPE_LABELS[size] ?? card.replace("/", ":");
 
 /** The cover in every size: the picked one large and pinned to the top while the page scrolls past the
  *  controls, the other two small and tappable. While a new photo is being made, a shimmer holds the

@@ -93,7 +93,7 @@ function hexLightness(hex: string): number {
 }
 
 /** Lightness (0-1) of a palette colour: oklch() or hex. Anything else counts as dark. */
-function lightness(color: string): number {
+export function lightness(color: string): number {
   if (color.startsWith("#")) return hexLightness(color);
   return parseOklch(color)?.l ?? 0;
 }

@@ -31,6 +31,7 @@ import {
   type EditorAction,
 } from "@/lib/covers/editor";
 import {
+  guidesFrom,
   hitTest,
   moveFrame,
   panFocus,
@@ -233,6 +234,8 @@ type Gesture =
       origin: Frame;
       /** The box actually drawn: the frame, unless the layer is drawn smaller than it (a logo, a badge). */
       drawn: Frame;
+      /** What it snaps to: the canvas's edges and middle, and those of the other layers on it. */
+      guides: { x: number[]; y: number[] };
     }
   | {
       kind: "resize";
@@ -520,6 +523,13 @@ export function StudioCanvas({
           id: layer,
           origin: frames[layer],
           drawn: boxes[layer] ?? frames[layer],
+          // the boxes she sees of the layers that stay (the photo and the panel included, so her words line
+          // up with them too)
+          guides: guidesFrom(
+            Object.entries(boxes)
+              .filter(([id]) => id !== layer)
+              .map(([, box]) => box),
+          ),
         },
         e.currentTarget,
       );
@@ -562,11 +572,15 @@ export function StudioCanvas({
     if (g.kind === "move") {
       const moved = moveFrame(g.origin, dx, dy);
       // the guides are met by the box she sees (a logo's mark, a badge's chip), which goes as far as its frame
-      const snapped = snapDrawn(moved, {
-        ...g.drawn,
-        x: g.drawn.x + moved.x - g.origin.x,
-        y: g.drawn.y + moved.y - g.origin.y,
-      });
+      const snapped = snapDrawn(
+        moved,
+        {
+          ...g.drawn,
+          x: g.drawn.x + moved.x - g.origin.x,
+          y: g.drawn.y + moved.y - g.origin.y,
+        },
+        g.guides,
+      );
       next = {
         action: { type: "frame", size, id: g.id, frame: snapped.frame },
         guides: snapped.guides,
@@ -578,9 +592,10 @@ export function StudioCanvas({
         : resizeFrame(g.origin, g.handle, dx, dy, e.shiftKey, aspect);
       next = { action: { type: "frame", size, id: g.id, frame }, guides: {} };
     } else {
+      // a flipped photo moves the other way under the pointer
       const focus = panFocus(
         g.focus,
-        [px, py],
+        [recipe.photo.flip ? -px : px, py],
         g.frame,
         g.image,
         recipe.photo.zoom,

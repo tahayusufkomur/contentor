@@ -37,6 +37,8 @@ def _serialize(image: client.RemoteImage) -> dict:
         "width": image.width,
         "height": image.height,
         "image_url": image.preview_url,
+        # where its subject sits, so a cover can keep it in view when it crops the photo
+        "subject_placement": image.subject_placement,
     }
 
 
@@ -113,6 +115,13 @@ def generation_allowance() -> dict:
     return {"limit": limit, "used": used, "left": max(0, limit - used)}
 
 
+def count_generation() -> None:
+    """One more of this month's new photos is on its way (a new photo, or a photo edited by the image model)."""
+    count_key = _count_key()
+    cache.add(count_key, 0, timeout=40 * 86400)
+    cache.incr(count_key)
+
+
 @api_view(["GET", "POST"])
 @permission_classes([IsCoachOrOwner])
 def curated_image_generate(request):
@@ -137,8 +146,7 @@ def curated_image_generate(request):
         return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     if job.done and job.image is None:  # the service refused the description outright
         return Response({"detail": "That description could not be turned into an image."}, status=422)
-    cache.add(count_key, 0, timeout=40 * 86400)
-    cache.incr(count_key)
+    count_generation()
     # Job ids belong to the platform's one account; remember whose this is so a
     # tenant can only poll (and collect the image of) jobs it started.
     cache.set(_job_key(job.job_id), connection.schema_name, timeout=3600)

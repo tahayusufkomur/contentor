@@ -80,7 +80,7 @@ describe("StudioRail", () => {
   const rail = (active: (typeof STUDIO_TOOLS)[number] = "layouts") =>
     render(createElement(StudioRail, { active, onOpen: vi.fn() }));
 
-  it("lists the seven tools in order, New photo last and set apart", () => {
+  it("lists the eight tools in order, New photo last and set apart", () => {
     const markup = rail();
     const names = [
       ...markup.matchAll(
@@ -90,6 +90,7 @@ describe("StudioRail", () => {
     expect(names).toEqual([
       "Layouts",
       "Photos",
+      "Edit photo",
       "Text",
       "Elements",
       "Brand",

@@ -15,8 +15,10 @@ import {
   CaseUpper,
   ChevronDown,
   Copy,
+  FlipHorizontal2,
   SendToBack,
   Trash2,
+  WandSparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,14 +35,17 @@ import {
   type ExtraPatch,
 } from "@/lib/covers/editor";
 import { LEADING } from "@/lib/covers/layouts";
+import { markedWord, markWord, wordsOf } from "@/lib/covers/marks";
 import { paintColor, type CoverPalette } from "@/lib/covers/palette";
 import { badgeKindsFor, RANGES } from "@/lib/covers/recipe";
 import { cn } from "@/lib/utils";
 import {
   FONT_ROLES,
+  ICONS,
   MAX_EXTRAS,
   PAINT_ROLES,
   SHAPES,
+  TEXT_EFFECTS,
   TEXT_MAX,
   WEIGHTS,
 } from "@/types/design";
@@ -48,10 +53,12 @@ import type {
   CoverRecipe,
   Extra,
   FontRole,
+  IconName,
   Paint,
   PartId,
   PartStyle,
   ShapeKind,
+  TextEffect,
   Weight,
 } from "@/types/design";
 
@@ -68,6 +75,10 @@ export interface LayerToolbarProps {
   onEdit: (action: EditorAction) => void;
   /** Duplicate selects the copy, and Delete lets go of the layer (null). */
   onSelect?: (id: string | null) => void;
+  /** The item's own title: the words an untouched title shows, which a marked word is picked from. */
+  itemTitle?: string;
+  /** Opens the Edit photo drawer (the photo's "Edit photo" button); none hides the button. */
+  onEditPhoto?: () => void;
 }
 
 /** How a kind of text is set when neither the layout nor her style says otherwise.
@@ -279,15 +290,26 @@ function TextTools({
   layout,
   palette,
   setStyle,
+  text,
+  limit,
+  onText,
 }: {
   kind: TextKind;
   style: PartStyle;
   layout: CoverRecipe["layout"];
   palette: CoverPalette;
   setStyle: (patch: Partial<PartStyle>) => void;
+  /** The words the layer shows, her marks in them. */
+  text: string;
+  /** The most characters the layer keeps. */
+  limit: number;
+  /** Gives the layer these words (a word marked, or unmarked). */
+  onText: (text: string) => void;
 }) {
   const t = useTranslations("admin.studio.toolbar");
   const d = TEXT_DEFAULTS[kind];
+  const marked = markedWord(text);
+  const choices = wordsOf(text);
   // Words align left, except in a title-only cover, where its own are centred.
   const align =
     style.align ?? (kind !== "extra" && layout === "title" ? "center" : "left");
@@ -365,6 +387,50 @@ function TextTools({
         value={style.leading ?? d.leading}
         onChange={(leading) => setStyle({ leading })}
       />
+      <Separator />
+      <Select<TextEffect | "none">
+        label={t("effect")}
+        value={style.effect ?? "none"}
+        options={(["none", ...TEXT_EFFECTS] as const).map((effect) => ({
+          value: effect,
+          label: t(`effects.${effect}`),
+        }))}
+        onChange={(effect) =>
+          setStyle({ effect: effect === "none" ? undefined : effect })
+        }
+      />
+      {style.effect && (
+        <ColourMenu
+          label={t("effectColour")}
+          value={style.effectColor}
+          palette={palette}
+          onPick={(effectColor) => setStyle({ effectColor })}
+          onAuto={() => setStyle({ effectColor: undefined })}
+        />
+      )}
+      {choices.length > 1 && (
+        <Select<string>
+          label={t("markWord")}
+          value={marked}
+          options={[
+            { value: "", label: t("markNone") },
+            ...choices.map((word) => ({ value: word, label: word })),
+          ]}
+          onChange={(word) => {
+            const next = markWord(text, word, limit);
+            if (next !== null && next !== text) onText(next);
+          }}
+        />
+      )}
+      {marked && (
+        <ColourMenu
+          label={t("markColour")}
+          value={style.emphasis}
+          palette={palette}
+          onPick={(emphasis) => setStyle({ emphasis })}
+          onAuto={() => setStyle({ emphasis: undefined })}
+        />
+      )}
     </>
   );
 }
@@ -372,9 +438,11 @@ function TextTools({
 function PhotoTools({
   photo,
   onEdit,
+  onEditPhoto,
 }: {
   photo: CoverRecipe["photo"];
   onEdit: (action: EditorAction) => void;
+  onEditPhoto?: () => void;
 }) {
   const t = useTranslations("admin.studio.toolbar");
   const adjust = (patch: Partial<CoverRecipe["photo"]>) =>
@@ -431,6 +499,26 @@ function PhotoTools({
         value={photo.darken}
         onChange={(darken) => adjust({ darken })}
       />
+      <Separator />
+      <Tool
+        label={t("flip")}
+        pressed={Boolean(photo.flip)}
+        onClick={() => adjust({ flip: !photo.flip })}
+      >
+        <FlipHorizontal2 />
+      </Tool>
+      {onEditPhoto && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 px-2.5 text-xs"
+          onClick={onEditPhoto}
+        >
+          <WandSparkles aria-hidden="true" className="size-3.5" />
+          {t("editPhoto")}
+        </Button>
+      )}
     </>
   );
 }
@@ -552,6 +640,99 @@ function ShapeTools({
   );
 }
 
+function IconTools({
+  extra,
+  palette,
+  onEdit,
+}: {
+  extra: Extract<Extra, { type: "icon" }>;
+  palette: CoverPalette;
+  onEdit: (action: EditorAction) => void;
+}) {
+  const t = useTranslations("admin.studio.toolbar");
+  const update = (patch: ExtraPatch) =>
+    onEdit({ type: "updateExtra", id: extra.id, patch });
+  return (
+    <>
+      <Select<IconName>
+        label={t("icon")}
+        value={extra.icon}
+        options={ICONS.map((icon) => ({
+          value: icon,
+          label: t(`icons.${icon}`),
+        }))}
+        onChange={(icon) => update({ icon })}
+      />
+      <ColourMenu
+        label={t("colour")}
+        value={extra.fill}
+        palette={palette}
+        onPick={(fill) => update({ fill })}
+      />
+      <Slider
+        label={t("opacity")}
+        range={RANGES.opacity}
+        step={0.05}
+        value={extra.opacity}
+        onChange={(opacity) => update({ opacity })}
+      />
+    </>
+  );
+}
+
+/** Whether `link` is a web address a QR code can hold (the server keeps the same rule). */
+export const isQrLink = (link: string) =>
+  /^https?:\/\/\S+$/.test(link) && link.length <= TEXT_MAX.qr;
+
+function QrTools({
+  extra,
+  palette,
+  onEdit,
+}: {
+  extra: Extract<Extra, { type: "qr" }>;
+  palette: CoverPalette;
+  onEdit: (action: EditorAction) => void;
+}) {
+  const t = useTranslations("admin.studio.toolbar");
+  const update = (patch: ExtraPatch) =>
+    onEdit({ type: "updateExtra", id: extra.id, patch });
+  return (
+    <>
+      <Input
+        aria-label={t("qrLink")}
+        title={t("qrLink")}
+        // what she is typing shows as typed; only a whole web address reaches the code
+        defaultValue={extra.text}
+        key={extra.text}
+        maxLength={TEXT_MAX.qr}
+        type="url"
+        spellCheck={false}
+        className="h-8 w-56 px-2 text-xs"
+        onBlur={(e) => {
+          const link = e.target.value.trim();
+          if (isQrLink(link) && link !== extra.text) update({ text: link });
+          else e.target.value = extra.text;
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+        }}
+      />
+      <ColourMenu
+        label={t("qrSquares")}
+        value={extra.fill}
+        palette={palette}
+        onPick={(fill) => update({ fill })}
+      />
+      <ColourMenu
+        label={t("qrGround")}
+        value={extra.back}
+        palette={palette}
+        onPick={(back) => update({ back })}
+      />
+    </>
+  );
+}
+
 /** The logo is white, black, or as it is; none is whichever reads on what it sits on (CoverArt). */
 const LOGO_COLOURS = ["auto", "white", "black", "original"] as const;
 
@@ -606,6 +787,8 @@ export function LayerToolbar({
   targetKind,
   onEdit,
   onSelect,
+  itemTitle = "",
+  onEditPhoto,
 }: LayerToolbarProps) {
   const t = useTranslations("admin.studio.toolbar");
   const id = extra?.id ?? part;
@@ -623,6 +806,21 @@ export function LayerToolbar({
         ? part
         : null;
   const at = extra ? recipe.extras.findIndex((e) => e.id === extra.id) : -1;
+  // The words a text layer shows, and how it is given others: a word of the cover, or her own layer's.
+  const wordPart =
+    part === "label" || part === "title" || part === "subtitle" ? part : null;
+  const shownText =
+    extra?.type === "text"
+      ? extra.text
+      : wordPart === "title"
+        ? (recipe.words.title ?? itemTitle)
+        : wordPart
+          ? recipe.words[wordPart]
+          : "";
+  const setText = (text: string) =>
+    extra
+      ? onEdit({ type: "updateExtra", id: extra.id, patch: { text } })
+      : wordPart && onEdit({ type: "words", patch: { [wordPart]: text } });
 
   return (
     <div
@@ -643,9 +841,18 @@ export function LayerToolbar({
           layout={recipe.layout}
           palette={palette}
           setStyle={setStyle}
+          text={shownText}
+          limit={wordPart ? TEXT_MAX[wordPart] : TEXT_MAX.extra}
+          onText={setText}
         />
       )}
-      {part === "photo" && <PhotoTools photo={recipe.photo} onEdit={onEdit} />}
+      {part === "photo" && (
+        <PhotoTools
+          photo={recipe.photo}
+          onEdit={onEdit}
+          onEditPhoto={onEditPhoto}
+        />
+      )}
       {(part === "badge" || extra?.type === "badge") && (
         <BadgeTools
           extra={extra}
@@ -657,6 +864,12 @@ export function LayerToolbar({
       )}
       {extra?.type === "shape" && (
         <ShapeTools extra={extra} palette={palette} onEdit={onEdit} />
+      )}
+      {extra?.type === "icon" && (
+        <IconTools extra={extra} palette={palette} onEdit={onEdit} />
+      )}
+      {extra?.type === "qr" && (
+        <QrTools extra={extra} palette={palette} onEdit={onEdit} />
       )}
       {part === "panel" && (
         <ColourMenu

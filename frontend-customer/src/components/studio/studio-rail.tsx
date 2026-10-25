@@ -10,6 +10,7 @@ import {
   LayoutTemplate,
   Palette,
   Shapes,
+  SlidersHorizontal,
   Sparkles,
   Type,
   Upload,
@@ -49,6 +50,7 @@ export const activeTool = (state: ToolState): StudioTool =>
 const ICONS: Record<StudioTool, ComponentType<{ className?: string }>> = {
   layouts: LayoutTemplate,
   photos: ImageIcon,
+  edit: SlidersHorizontal,
   text: Type,
   elements: Shapes,
   brand: Palette,

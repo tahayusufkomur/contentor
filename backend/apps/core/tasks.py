@@ -566,6 +566,25 @@ def process_own_photo(tenant_id, photo_id):
 
 
 @shared_task
+def edit_photo(tenant_id, job_id, photo_id, kind, aspect=None, words=""):
+    """One edit of a coach's photo in the photo studio: its background removed, or the photo extended,
+    cleaned up or changed (apps.media.photo_edits). The studio follows the job by its id."""
+    from apps.core.models import Tenant
+    from apps.media import photo_edits
+    from apps.media.models import Photo
+
+    tenant = Tenant.objects.filter(id=tenant_id).first()
+    if tenant is None:
+        return
+    with tenant_context(tenant):
+        photo = Photo.objects.filter(pk=photo_id).first()
+        if photo is None:
+            photo_edits.fail(job_id)
+            return
+        photo_edits.run(job_id, photo, kind, aspect, words)
+
+
+@shared_task
 def sync_own_photos(tenant_id, attempt=0):
     """Ask the image service how the tenant's photos are doing, and again
     later while any is still on its way."""

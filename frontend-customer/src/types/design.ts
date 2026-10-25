@@ -9,8 +9,14 @@ export const LAYOUTS = [
   "band",
   "framed",
   "photo",
+  "cutout",
 ] as const;
+/** The sizes her site shows a cover in. CoverArt picks the nearest of them by the frame's shape. */
 export const SIZES = ["card", "wide", "banner"] as const;
+/** The sizes a design is downloaded in for social posts: drawn only when asked for by name. */
+export const SOCIAL_SIZES = ["post", "portrait", "story"] as const;
+/** Every size a design has frames for. */
+export const ALL_SIZES = [...SIZES, ...SOCIAL_SIZES] as const;
 export const PARTS = [
   "photo",
   "panel",
@@ -37,8 +43,74 @@ export const PAINT_ROLES = [
   "white",
   "black",
 ] as const;
-export const SHAPES = ["rect", "circle", "arch", "line"] as const;
+export const SHAPES = [
+  "rect",
+  "circle",
+  "arch",
+  "line",
+  "pill",
+  "star",
+  "burst",
+  "arrow",
+] as const;
 export const WEIGHTS = [400, 500, 600, 700, 800] as const;
+/** A grade on the photo: a look's photo treatment ("site" is her look's own), or a duotone in her colours. */
+export const GRADES = [
+  "none",
+  "site",
+  "mono",
+  "soft",
+  "tint",
+  "vivid",
+  "duo",
+  "duo-accent",
+] as const;
+/** The photo's frame cut to a shape. */
+export const MASKS = ["none", "rounded", "circle", "arch", "blob"] as const;
+export const TEXT_EFFECTS = ["lift", "shadow", "outline", "highlight"] as const;
+/** The icons an icon layer can draw: lucide's names (components/covers/cover-icons.tsx draws them). */
+export const ICONS = [
+  "calendar",
+  "clock",
+  "map-pin",
+  "video",
+  "mic",
+  "users",
+  "user",
+  "heart",
+  "star",
+  "sparkles",
+  "sun",
+  "moon",
+  "leaf",
+  "flower",
+  "mountain",
+  "waves",
+  "flame",
+  "zap",
+  "check",
+  "circle-check",
+  "play",
+  "gift",
+  "award",
+  "trophy",
+  "target",
+  "book-open",
+  "graduation-cap",
+  "pen-tool",
+  "palette",
+  "camera",
+  "music",
+  "dumbbell",
+  "brain",
+  "coffee",
+  "smile",
+  "globe",
+  "mail",
+  "phone",
+  "arrow-right",
+  "chevron-right",
+] as const;
 export const MAX_EXTRAS = 12;
 export const TEXT_MAX = {
   label: 40,
@@ -46,11 +118,13 @@ export const TEXT_MAX = {
   subtitle: 140,
   badge: 24,
   extra: 140,
+  qr: 300,
 } as const;
 
 export type LayoutId = (typeof LAYOUTS)[number];
-/** Card is the look's own shape, Wide is 16/9, Banner is 3/1. */
-export type CoverSize = (typeof SIZES)[number];
+/** Card is the look's own shape, Wide is 16/9, Banner is 3/1; Post is 1/1, Portrait 4/5 and Story 9/16. */
+export type CoverSize = (typeof ALL_SIZES)[number];
+export type SiteSize = (typeof SIZES)[number];
 /** The fixed layers every layout can draw. */
 export type PartId = (typeof PARTS)[number];
 export type BadgeKind = (typeof BADGE_KINDS)[number];
@@ -58,6 +132,10 @@ export type FontRole = (typeof FONT_ROLES)[number];
 export type PaintRole = (typeof PAINT_ROLES)[number];
 export type ShapeKind = (typeof SHAPES)[number];
 export type Weight = (typeof WEIGHTS)[number];
+export type Grade = (typeof GRADES)[number];
+export type Mask = (typeof MASKS)[number];
+export type TextEffect = (typeof TEXT_EFFECTS)[number];
+export type IconName = (typeof ICONS)[number];
 
 /** A palette role (it follows a look change) or `#rrggbb` (it does not). */
 export type Paint = PaintRole | `#${string}`;
@@ -82,6 +160,12 @@ export interface PartStyle {
   font?: FontRole;
   /** A fixed part she removed. */
   hidden?: boolean;
+  /** A shadow, an outline or a colour band behind the words; none is plain. */
+  effect?: TextEffect;
+  /** The effect's colour; none is the effect's own (see CoverArt). */
+  effectColor?: Paint;
+  /** The colour of the words she marked `*like this*`; none is the accent. */
+  emphasis?: Paint;
 }
 
 /** A layer she added. They stack above the fixed parts, in array order. */
@@ -94,6 +178,23 @@ export type Extra =
       shape: ShapeKind;
       fill: Paint;
       opacity: number;
+      frame: Frame;
+    }
+  | {
+      id: string;
+      type: "icon";
+      icon: IconName;
+      fill: Paint;
+      opacity: number;
+      frame: Frame;
+    }
+  /** A QR code of a web address (`text`): `fill` is its squares, `back` the ground under them. */
+  | {
+      id: string;
+      type: "qr";
+      text: string;
+      fill: Paint;
+      back: Paint;
       frame: Frame;
     };
 
@@ -108,6 +209,13 @@ export interface CoverRecipe {
     contrast: number;
     saturation: number;
     darken: number;
+    // A recipe saved before these existed has none of them: each reads as its default (CoverArt).
+    grade?: Grade;
+    /** -1 is cool, 1 warm. */
+    warmth?: number;
+    blur?: number;
+    mask?: Mask;
+    flip?: boolean;
   };
   /** `title: null` is the item's own title. */
   words: { label: string; title: string | null; subtitle: string };
@@ -163,6 +271,8 @@ export interface DesignTarget {
   cover: CoverDesign | null;
   /** Its open draft, if she has one. */
   draft_id: string | null;
+  /** The page of her site it is on ("/courses/<slug>", "/events", "/store"): what a QR code opens. */
+  path?: string;
 }
 
 export interface DesignTargets {
@@ -175,6 +285,10 @@ export interface DesignTargets {
   logo_url: string | null;
   /** New photos she can still make this month. */
   generations_left: number;
+  /** The image model can change her photos (extend, take out, change). */
+  photo_ai?: boolean;
+  /** Her photos' backgrounds can be removed. */
+  cutout?: boolean;
 }
 
 /** A design as the API sends it: a draft or kept cover, with what the renderer needs to draw it. */

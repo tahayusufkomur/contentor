@@ -15,6 +15,8 @@ export interface CuratedImage {
   width: number | null;
   height: number | null;
   image_url: string;
+  /** Where its subject sits ("left_third", "right_third", "centered", "off_center"), when the library knows. */
+  subject_placement?: string | null;
 }
 
 export interface CuratedImagePage {

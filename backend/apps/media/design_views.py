@@ -18,7 +18,7 @@ from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.courses.models import Course
 from apps.downloads.models import DownloadFile
 
-from . import designs
+from . import designs, photo_edits
 from .design_recipe import validate_recipe
 from .design_serializers import DesignSerializer
 from .models import Design, Photo
@@ -64,6 +64,7 @@ def design_targets(request):
             "next_at": None,
             "status": None,
             "created_at": None,  # a course's, for the "New" badge its cover may carry
+            "path": None,  # the page of her site it is on, which a QR code on its cover opens
             **fields,
             "photo_url": _photo_url(row),
             "cover": designs.cover_for(row, ctx),
@@ -78,6 +79,7 @@ def design_targets(request):
             course,
             status="published" if course.is_published else "draft",
             created_at=course.created_at,
+            path=f"/courses/{course.slug}",
         )
         for course in Course.objects.select_related("thumbnail").order_by("order", "title")
     ]
@@ -89,6 +91,7 @@ def design_targets(request):
             download,
             status="published" if download.is_published else "draft",
             created_at=download.created_at,
+            path="/store",
         )
         for download in DownloadFile.objects.select_related("thumbnail")
     ]
@@ -100,7 +103,17 @@ def design_targets(request):
         for title, rows in by_title.items():
             to_come = [row.scheduled_at for row in rows if row.scheduled_at and row.scheduled_at >= now]
             # rows[0] is the series' first row, the one Keep reports (the newest created)
-            series.append(target(kind, title, title, rows[0], sessions=len(rows), next_at=min(to_come, default=None)))
+            series.append(
+                target(
+                    kind,
+                    title,
+                    title,
+                    rows[0],
+                    sessions=len(rows),
+                    next_at=min(to_come, default=None),
+                    path="/events",
+                )
+            )
     # a series with a session to come first, soonest first; the others after them, by title
     series.sort(key=lambda item: (item["next_at"] is None, item["next_at"] or now, item["title"].lower()))
 
@@ -112,6 +125,8 @@ def design_targets(request):
             "look": look,
             "logo_url": logo_url,
             "generations_left": generation_allowance()["left"],
+            "photo_ai": photo_edits.ai_available(),
+            "cutout": photo_edits.cutout_available(),
         }
     )
 

@@ -173,15 +173,24 @@ describe("every kind of new layer, at all three sizes", () => {
     }
   });
 
-  it("gives Card the extra's own frame and Wide and Banner theirs, nothing else", () => {
+  it("gives Card the extra's own frame and every other size its own, nothing else", () => {
     const recipe = defaultRecipe();
     const layer = newShapeExtra(recipe, "circle", "4/5");
-    expect(Object.keys(layer.frames).sort()).toEqual(["banner", "wide"]);
+    expect(Object.keys(layer.frames).sort()).toEqual([
+      "banner",
+      "portrait",
+      "post",
+      "story",
+      "wide",
+    ]);
     const { after } = addedTo(recipe, layer, "4/5");
     expect(after.extras).toEqual([layer.extra]);
     expect(after.overrides).toEqual({
       wide: { [layer.extra.id]: layer.frames.wide },
       banner: { [layer.extra.id]: layer.frames.banner },
+      post: { [layer.extra.id]: layer.frames.post },
+      portrait: { [layer.extra.id]: layer.frames.portrait },
+      story: { [layer.extra.id]: layer.frames.story },
     });
   });
 
