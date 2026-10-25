@@ -8,7 +8,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
 import { SkeletonCardGrid } from "@/components/ui/skeletons";
 import { EmptyState } from "@/components/shared/empty-state";
+import { eventPriceLabel } from "@/components/sections/kit";
 import { clientFetch } from "@/lib/api-client";
+import type { AccessInfo } from "@/types/billing";
 import {
   Video,
   Radio,
@@ -23,7 +25,7 @@ interface LiveClass {
   title: string;
   description: string;
   status: string;
-  pricing_type: string;
+  pricing_type: "free" | "paid" | "subscription";
   price: string;
   recording_url: string;
   recording_signed_url: string | null;
@@ -31,6 +33,8 @@ interface LiveClass {
   started_at: string | null;
   ended_at: string | null;
   created_at: string;
+  /** Carries the tenant's charge currency; the class itself has no currency field. */
+  access_info?: AccessInfo;
 }
 
 const statusConfig: Record<
@@ -196,9 +200,11 @@ export default function LiveClassesPage() {
                         </span>
                       ) : (
                         <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                          {lc.pricing_type === "subscription"
-                            ? "Members only"
-                            : `$${parseFloat(lc.price).toFixed(0)}`}
+                          {eventPriceLabel({
+                            pricing_type: lc.pricing_type,
+                            price: lc.price,
+                            currency: lc.access_info?.currency ?? undefined,
+                          })}
                         </span>
                       )}
                     </div>

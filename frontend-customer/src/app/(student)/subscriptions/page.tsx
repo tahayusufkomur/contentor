@@ -15,6 +15,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/shared/empty-state";
 import { clientFetch } from "@/lib/api-client";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
+import { formatMoney } from "@/lib/format";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 interface MySubscription {
@@ -140,7 +141,7 @@ export default function SubscriptionsPage() {
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {sub.billing_amount} {sub.billing_currency}
+                    {formatMoney(sub.billing_amount, sub.billing_currency)}
                     {billingIntervalSuffix(sub.billing_interval_months)}
                   </p>
                 </CardHeader>
@@ -247,7 +248,7 @@ function SubscriptionRowActions({
             </option>
             {otherPlans.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name} — {p.price} {p.currency}
+                {p.name} — {formatMoney(p.price, p.currency)}
                 {billingIntervalSuffix(p.billing_interval_months)}
               </option>
             ))}

@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { clientFetch } from "@/lib/api-client";
 import { ApiError } from "@/types/api";
 import { getCart, removeFromCart, clearCart } from "@/lib/cart";
+import { formatMoney } from "@/lib/format";
 import type { CartItem } from "@/types/billing";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import {
@@ -50,9 +51,12 @@ export default function CheckoutPage() {
     (sum, item) => sum + parseFloat(item.price || "0"),
     0,
   );
-  const totalFormatted = total.toFixed(2);
   // All items on a tenant are priced in the tenant's single charge currency.
-  const cartCurrency = cart.find((item) => item.currency)?.currency ?? "";
+  const cartCurrency = cart.find((item) => item.currency)?.currency;
+  const itemPrice = (item: CartItem) =>
+    formatMoney(item.price, item.currency || cartCurrency);
+  // toFixed(2) drops float noise, so a whole total still reads "$20".
+  const totalLabel = formatMoney(total.toFixed(2), cartCurrency);
 
   const { run: handlePay, loading: paying } = useAsyncAction(
     async () => {
@@ -136,7 +140,7 @@ export default function CheckoutPage() {
               steps={[
                 {
                   when: "Now",
-                  what: `Pay ${totalFormatted} ${cartCurrency} securely with Stripe.`,
+                  what: `Pay ${totalLabel} securely with Stripe.`,
                 },
                 {
                   when: "Right after",
@@ -170,7 +174,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="text-right flex items-center gap-3 shrink-0">
                   <span className="font-semibold tabular-nums">
-                    {item.price} {item.currency ?? ""}
+                    {itemPrice(item)}
                   </span>
                   <Button
                     variant="ghost"
@@ -203,7 +207,7 @@ export default function CheckoutPage() {
                     {item.title}
                   </span>
                   <span className="tabular-nums shrink-0 ml-2">
-                    {item.price} {item.currency ?? ""}
+                    {itemPrice(item)}
                   </span>
                 </div>
               ))}
@@ -212,9 +216,7 @@ export default function CheckoutPage() {
 
               <div className="flex justify-between font-semibold text-base">
                 <span>Total</span>
-                <span className="tabular-nums">
-                  {totalFormatted} {cartCurrency}
-                </span>
+                <span className="tabular-nums">{totalLabel}</span>
               </div>
 
               <Button
@@ -224,7 +226,7 @@ export default function CheckoutPage() {
                 loadingText="Processing…"
                 onClick={handlePay}
               >
-                Pay {totalFormatted} {cartCurrency}
+                Pay {totalLabel}
               </Button>
             </CardContent>
           </Card>

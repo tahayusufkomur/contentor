@@ -11,6 +11,7 @@ import { PageState } from "@/components/ui/page-state";
 import { SkeletonList } from "@/components/ui/skeletons";
 import { EmptyState } from "@/components/shared/empty-state";
 import { clientFetch } from "@/lib/api-client";
+import { formatMoney } from "@/lib/format";
 
 interface OrderItem {
   id: number;
@@ -111,7 +112,8 @@ export default function OrdersPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base capitalize">
-                    {o.payment_type.replace("_", " ")} · {o.amount} {o.currency}
+                    {o.payment_type.replace("_", " ")} ·{" "}
+                    {formatMoney(o.amount, o.currency)}
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <Badge variant={STATUS_VARIANT[o.status] ?? "secondary"}>
@@ -139,7 +141,7 @@ export default function OrdersPage() {
                       {item.title}
                     </span>
                     <span className="tabular-nums text-muted-foreground">
-                      {item.item_price} {o.currency}
+                      {formatMoney(item.item_price, o.currency)}
                     </span>
                   </p>
                 ))}

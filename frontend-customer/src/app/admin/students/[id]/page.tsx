@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { PageState } from "@/components/ui/page-state";
 import { SkeletonList } from "@/components/ui/skeletons";
 import { clientFetch } from "@/lib/api-client";
+import { formatMoney } from "@/lib/format";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 export const dynamic = "force-dynamic";
@@ -119,8 +120,8 @@ export default function StudentPaymentsPage() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-base capitalize">
-                      {p.payment_type.replace("_", " ")} · {p.amount}{" "}
-                      {p.currency}
+                      {p.payment_type.replace("_", " ")} ·{" "}
+                      {formatMoney(p.amount, p.currency)}
                     </CardTitle>
                     <div className="flex items-center gap-2">
                       <Badge variant={STATUS_VARIANT[p.status] ?? "secondary"}>
@@ -145,7 +146,7 @@ export default function StudentPaymentsPage() {
                         <span className="text-sm">{item.title}</span>
                         <div className="flex items-center gap-3">
                           <span className="text-sm tabular-nums text-muted-foreground">
-                            {item.item_price} {p.currency}
+                            {formatMoney(item.item_price, p.currency)}
                           </span>
                           {item.is_refunded ? (
                             <Badge variant="secondary">Refunded</Badge>

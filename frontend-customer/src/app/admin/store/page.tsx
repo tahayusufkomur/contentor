@@ -183,7 +183,7 @@ function ProductsTab() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    {p.price} {p.currency}
+                    {formatMoney(p.price, p.currency)}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {p.sales_count ?? 0}
