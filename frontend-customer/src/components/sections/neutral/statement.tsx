@@ -39,10 +39,12 @@ export function StatementNeutral({
             editable={editable}
             as="p"
             placeholder="One line you believe"
+            // `!`: some kits set their display size and caps in CSS classes
+            // (grid's swiss-h1, pop's pop-h1, studiofloor's uppercase face).
             className={cn(
               kit.display,
-              "block max-w-[18ch] text-[1em] text-balance [line-height:1.05] [overflow-wrap:break-word]",
-              statement.length > 24 && "normal-case [line-height:1.32]",
+              "block max-w-[18ch] !text-[1em] text-balance ![line-height:1.05] [overflow-wrap:break-word]",
+              statement.length > 24 && "!normal-case ![line-height:1.32]",
             )}
           />
         </div>
@@ -53,7 +55,12 @@ export function StatementNeutral({
             editable={editable}
             as="p"
             placeholder="Your name"
-            className={cn(kit.label, "mt-10 block")}
+            // The band's own ink: some kits colour their label voice, too faint on the inverse band.
+            className={cn(
+              kit.label,
+              "mt-10 block !text-current",
+              String(block.attribution ?? "").length > 24 && "!normal-case",
+            )}
           />
         )}
       </div>

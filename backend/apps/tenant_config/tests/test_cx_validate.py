@@ -224,3 +224,15 @@ def test_layout_items_need_matching_sub_field_types():
     tree = {"t": "Layout", "family": "benefits", "map": {"heading": "heading", "items": "perks"}}
     spec, _ = validate_spec(_spec(fields=fields, tree=tree))
     assert spec["tree"]["map"] == {"heading": "heading"}
+
+
+def test_layout_never_embeds_a_family_of_her_own_words_or_media():
+    from apps.tenant_config.cx.prompt import families_text
+
+    for family in ("proof", "video"):
+        tree = {"t": "Layout", "family": family, "map": {"heading": "heading"}}
+        spec, errors = validate_spec(_spec(tree=tree))
+        assert spec is None or "Layout" not in str(spec["tree"]), family
+        assert errors
+        assert f"- {family} (" not in families_text()
+    assert "- statement (" in families_text()

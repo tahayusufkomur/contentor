@@ -86,8 +86,12 @@ export function VideoNeutral({
         ) : (
           <EmptyHint
             editable={editable}
-            title="No clip yet"
-            text="Pick a clip in the panel on the left."
+            title={value.url ? "This link cannot loop" : "No clip yet"}
+            text={
+              value.url
+                ? "A page link (YouTube, Vimeo) cannot play here. Pick a clip from your library, or link to a video file."
+                : "Pick a clip in the panel on the left."
+            }
           />
         )}
       </div>

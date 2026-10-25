@@ -26,6 +26,9 @@ SECTION_PREFIX = "section."
 _UNSAFE_URL_PREFIXES = ("javascript:", "data:", "vbscript:")
 _LINK_MAX = 300
 _IMAGE_KEYS = ("url", "photo_id", "alt")
+# Families that carry only the coach's own words or media: her clients' quotes, her numbers and press, her
+# clip. No AI writes them (the copilot, AI-built sections); the editor and her setup answers do.
+AI_NEVER_FAMILIES = ("proof", "video")
 _VIDEO_KEYS = ("url", "video_id")  # the page signer adds a poster on read; it is never stored
 _BASE_KEYS = ("id", "type", "variant", "enabled", "style")
 _DROP = object()  # sentinel: omit the field

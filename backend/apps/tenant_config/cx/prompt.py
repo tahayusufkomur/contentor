@@ -186,6 +186,8 @@ def catalog_text() -> str:
 def families_text() -> str:
     lines = []
     for family_id, family in sections.families().items():
+        if family_id in sections.AI_NEVER_FAMILIES:
+            continue
         parts = []
         for name, spec in family["fields"].items():
             if spec["type"] == "items":
@@ -233,7 +235,8 @@ def _style_lines(style_id) -> list[str]:
         return ["STYLE: neutral (no site style). Layout uses variant auto."]
     lines = [f"STYLE: {style.get('label', style_id)} — {style.get('mood', '')}", "LAYOUT VARIANTS IN THIS STYLE:"]
     for family, names in (style.get("variants") or {}).items():
-        lines.append(f"- {family}: {', '.join(names)}")
+        if family not in sections.AI_NEVER_FAMILIES:
+            lines.append(f"- {family}: {', '.join(names)}")
     return lines
 
 

@@ -135,6 +135,25 @@ describe("proof, statement and video", () => {
     });
   });
 
+  it("the editor says why a page link is no clip", () => {
+    const html = render(
+      "video",
+      { video: { url: "https://youtu.be/abc", video_id: null } },
+      true,
+    );
+    expect(html).toContain("This link cannot loop");
+  });
+
+  it("long names and attributions are not set in capitals", () => {
+    const long = "Maya Laurent and the Tuesday group";
+    expect(render("statement", { statement: "Rest.", attribution: long })).toMatch(
+      /!normal-case[^"]*">Maya Laurent and the Tuesday group/,
+    );
+    expect(
+      render("proof", { quotes: [{ quote: "Calmer.", name: long }] }),
+    ).toMatch(/!normal-case[^"]*">Maya Laurent and the Tuesday group/);
+  });
+
   it("autoplay waits for motion, sight and the visitor", () => {
     const at = (
       reducedMotion: boolean,

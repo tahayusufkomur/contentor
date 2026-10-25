@@ -1191,6 +1191,20 @@ def test_statement_takes_philosophys_place_and_proof_closes():
     assert _families(home) == ["hero", "story", "statement", "benefits", "proof", "cta"]
 
 
+def test_her_statement_beats_a_planned_philosophy():
+    plan = {"pages": {"home": [{"family": f} for f in ("hero", "philosophy", "story", "statement", "cta")]}}
+    home = sc.apply_guardrails(plan, "journal", frozenset({"statement"}))["pages"]["home"]
+    assert _families(home) == ["hero", "story", "statement", "cta"]
+
+
+def test_a_belief_counts_only_when_it_makes_a_line():
+    long_one = "I believe every body can learn to rest deeply, whatever it has been through so far"
+    assert sc.statement_line(long_one) == ""
+    assert "statement" not in sc.given_families({"belief": long_one})
+    assert sc.statement_line("Rest is training. " + long_one) == "Rest is training."
+    assert "statement" in sc.given_families({"belief": "Rest is training."})
+
+
 def test_philosophy_and_statement_never_share_a_page():
     plan = {"pages": {"about": [{"family": f} for f in ("hero", "philosophy", "statement", "cta")]}}
     about = sc.apply_guardrails(plan, "journal", frozenset({"statement"}))["pages"]["about"]
@@ -1221,8 +1235,8 @@ def test_only_consented_quotes_are_placed(styled, monkeypatch, catalog):
                 {"quote": "She never asked me.", "name": "Bo", "consent": False},
                 {"quote": "", "name": "Cy", "consent": True},
             ],
-            "numbers": [{"value": "300", "label": ""}],
-            "press": ["Yoga Journal", " "],
+            "numbers": [{"value": "300", "label": ""}, {"value": "More than 300", "label": "students"}],
+            "press": ["Yoga Journal", " ", "N" * 41],
         },
     )
     given = sc.coach_given(styled)
@@ -1300,3 +1314,11 @@ def test_statement_fallback_is_her_belief(styled, monkeypatch, catalog):
     )
     blocks = sc.compose_page(styled, "home")
     assert next(b for b in blocks if b["type"] == "section.statement")["statement"] == "Rest is part of training."
+
+
+@pytest.mark.django_db
+def test_her_words_are_never_cut_or_split(styled):
+    _give(styled, proof={"quotes": [{"quote": "word " * 70, "name": "Ana", "consent": True}], "press": "Vogue"})
+    given = sc.coach_given(styled)
+    assert given["proof"] == {"quotes": [], "numbers": [], "press": []}  # too long for the section: left out
+    assert sc.given_families(given) == frozenset()

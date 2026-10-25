@@ -474,8 +474,7 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
         proof = given.get("proof") or {}
         return {"heading": "In their words" if proof.get("quotes") else "", **proof}
     if family == "statement":
-        belief, limit = given.get("belief") or "", sections.families()["statement"]["fields"]["statement"]["max"]
-        return {"statement": _fit(belief, limit, _fit(_FIRST_SENTENCE.split(belief, maxsplit=1)[0], limit))}
+        return {"statement": statement_line(given.get("belief") or "")}
     if family == "video" and given.get("clip"):
         return {"video": given["clip"], "shape": "vertical"}
     return {}
@@ -718,6 +717,8 @@ def _given_pins(style_id, page_key, entries, given) -> list[dict]:
             out.insert(1, new("video"))
         if "proof" in missing:
             out.insert(len(out) - 1, new("proof"))
+    if page_key == "home" and "statement" in given:
+        out = [e for e in out if e["family"] != "philosophy"]
     beliefs = [n for n, e in enumerate(out) if e["family"] in ("philosophy", "statement")]
     for n in reversed(beliefs[1:]):
         out.pop(n)
@@ -1163,7 +1164,9 @@ def coach_given(tenant) -> dict:
     proof = sections.families()["proof"]["fields"]
 
     def text(value, field, sub):
-        return sections.clamp_text(" ".join(str(value or "").split()), proof[field]["fields"][sub]["max"])
+        # Never cut her words: what is longer than the section allows is left out (setup holds her to it).
+        value = " ".join(str(value or "").split())
+        return value if len(value) <= proof[field]["fields"][sub]["max"] else ""
 
     def rows(value):
         return [r for r in value if isinstance(r, dict)] if isinstance(value, list) else []
@@ -1172,14 +1175,17 @@ def coach_given(tenant) -> dict:
     quotes = [
         {"quote": text(r.get("quote"), "quotes", "quote"), "name": text(r.get("name"), "quotes", "name")}
         for r in rows(raw.get("quotes"))
-        if r.get("consent") is True and str(r.get("quote") or "").strip()
+        if r.get("consent") is True
     ]
     numbers = [
         {"value": text(r.get("value"), "numbers", "value"), "label": text(r.get("label"), "numbers", "label")}
         for r in rows(raw.get("numbers"))
-        if str(r.get("value") or "").strip() and str(r.get("label") or "").strip()
     ]
-    press = [{"name": text(n, "press", "name")} for n in raw.get("press") or [] if isinstance(n, str) and n.strip()]
+    names = raw.get("press") if isinstance(raw.get("press"), list) else []
+    press = [{"name": text(n, "press", "name")} for n in names if isinstance(n, str)]
+    quotes = [q for q in quotes if q["quote"]]
+    numbers = [n for n in numbers if n["value"] and n["label"]]
+    press = [p for p in press if p["name"]]
 
     clip = answers.get("clip") if isinstance(answers.get("clip"), dict) else {}
     vid = clip.get("video_id")
@@ -1198,10 +1204,22 @@ def coach_given(tenant) -> dict:
     }
 
 
+def statement_line(belief) -> str:
+    """Her belief as the statement: whole when it fits, else its first sentence when that fits, else ""
+    (never a cut: a shortened belief may say something else)."""
+    limit = sections.families()["statement"]["fields"]["statement"]["max"]
+    return _fit(belief, limit, _fit(_FIRST_SENTENCE.split(belief, maxsplit=1)[0], limit))
+
+
 def given_families(given) -> frozenset[str]:
-    """The GIVEN_FAMILIES ``given`` (coach_given) has input for."""
+    """The GIVEN_FAMILIES ``given`` (coach_given) has input for. A belief counts when it makes a statement
+    line, so a model that fails it still has her own line to fall back on."""
     proof = given.get("proof") or {}
-    has = {"statement": given.get("belief"), "proof": any(proof.values()), "video": given.get("clip")}
+    has = {
+        "statement": statement_line(given.get("belief") or ""),
+        "proof": any(proof.values()),
+        "video": given.get("clip"),
+    }
     return frozenset(family for family, value in has.items() if value)
 
 

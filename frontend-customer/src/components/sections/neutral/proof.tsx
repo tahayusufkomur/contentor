@@ -56,7 +56,7 @@ export function ProofNeutral({
                   className={cn(
                     kit.display,
                     kit.num,
-                    "text-[clamp(2.75rem,1.5rem+3vw,4.5rem)] [line-height:1]",
+                    "!text-[clamp(2.75rem,1.5rem+3vw,4.5rem)] ![line-height:1]",
                   )}
                 >
                   {n.value}
@@ -83,6 +83,7 @@ export function ProofNeutral({
                     className={cn(
                       kit.label,
                       "mt-5 block text-muted-foreground",
+                      (q.name?.length ?? 0) > 24 && "!normal-case",
                     )}
                   >
                     {q.name}

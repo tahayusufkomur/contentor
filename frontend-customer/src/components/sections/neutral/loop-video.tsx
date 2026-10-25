@@ -82,7 +82,8 @@ export function LoopVideo({
         muted
         loop
         playsInline
-        preload={poster ? "none" : "metadata"}
+        // Nothing loads until it nears the screen; then its first frame stands in for a missing poster.
+        preload={visible ? "metadata" : "none"}
         aria-label={label}
         className="absolute inset-0 h-full w-full object-cover"
         onPlay={() => setPlaying(true)}
@@ -90,7 +91,14 @@ export function LoopVideo({
       />
       <button
         type="button"
-        onClick={() => setChoice(playing ? "pause" : "play")}
+        onClick={() => {
+          // In the tap itself: a browser that refused to start it on its own lets her start it.
+          const el = ref.current;
+          setChoice(playing ? "pause" : "play");
+          if (!el) return;
+          if (playing) el.pause();
+          else el.play().catch(() => setPlaying(false));
+        }}
         aria-label={playing ? "Pause video" : "Play video"}
         className="absolute bottom-3 right-3 inline-flex size-11 items-center justify-center rounded-full bg-[color-mix(in_oklch,var(--background)_88%,transparent)] text-foreground shadow-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >

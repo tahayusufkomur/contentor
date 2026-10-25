@@ -19,7 +19,8 @@ def test_system_prompt_lists_every_primitive_family_and_icon():
     for name in primitives():
         assert f"- {name} [" in text
     for family in sections.families():
-        assert f"- {family} (" in text
+        # Her own words and media (proof, video) are never the AI's to lay out.
+        assert (f"- {family} (" in text) == (family not in sections.AI_NEVER_FAMILIES)
     assert ", ".join(icons()) in text
     assert '"name": "Retreat itinerary"' in text
 

@@ -186,7 +186,8 @@ class _Walker:
         if "icon" in pdef:
             ok = isinstance(value, str) and value in icons()
         elif "family" in pdef:
-            ok = isinstance(value, str) and value in sections.families()
+            # Never a family that shows only her own words or media: the AI would be writing them.
+            ok = isinstance(value, str) and value in sections.families() and value not in sections.AI_NEVER_FAMILIES
         elif "each" in pdef:
             ok = isinstance(value, str) and (self.fields.get(value) or {}).get("type") == "items"
         elif "bind" in pdef:
