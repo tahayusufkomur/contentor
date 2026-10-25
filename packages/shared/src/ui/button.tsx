@@ -94,13 +94,21 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {loading ? (
           loadingText ? (
             <>
-              <Loader2 className="animate-spin" aria-hidden="true" />
+              <Loader2
+                className="animate-spin"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
               {loadingText}
             </>
           ) : (
             <>
               <span className="absolute inset-0 inline-flex items-center justify-center">
-                <Loader2 className="animate-spin" aria-hidden="true" />
+                <Loader2
+                  className="animate-spin"
+                  strokeWidth={3}
+                  aria-hidden="true"
+                />
                 <span className="sr-only">Loading</span>
               </span>
               <span

@@ -43,7 +43,11 @@ export function Spinner({
       )}
       {...props}
     >
-      <Loader2 aria-hidden="true" className={spinnerVariants({ size })} />
+      <Loader2
+        aria-hidden="true"
+        strokeWidth={3}
+        className={spinnerVariants({ size })}
+      />
       <span className="sr-only">{label}</span>
     </span>
   );

@@ -1,6 +1,6 @@
 import { cn } from "../lib/utils";
 
-/** 2px bar. Shared by NavigationProgress (viewport top) and StaleContainer
+/** 3px bar. Shared by NavigationProgress (viewport top) and StaleContainer
  *  (container top edge) so the app has one "work in progress" visual, and by
  *  the blog's reading bar with `value`. Indeterminate by default; under
  *  reduced motion the travel is dropped but the bar stays visible — the state
@@ -23,7 +23,7 @@ export function ProgressLine({
       aria-valuemin={determinate ? 0 : undefined}
       aria-valuemax={determinate ? 100 : undefined}
       aria-valuenow={determinate ? Math.round(value * 100) : undefined}
-      className={cn("h-0.5 w-full overflow-hidden bg-muted", className)}
+      className={cn("h-[3px] w-full overflow-hidden bg-muted", className)}
     >
       {determinate ? (
         <div

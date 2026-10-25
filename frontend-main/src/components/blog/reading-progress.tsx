@@ -39,7 +39,7 @@ export function ReadingProgress({ targetId }: { targetId: string }) {
     <ProgressLine
       value={value}
       label="Reading progress"
-      className="fixed inset-x-0 top-12 z-40 bg-transparent"
+      className="fixed inset-x-0 top-12 z-40 h-0.5 bg-transparent"
     />
   );
 }
