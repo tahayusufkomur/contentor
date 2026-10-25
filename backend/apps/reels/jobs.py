@@ -96,17 +96,18 @@ def run_search(video, count: int, made_by: str, waited: int) -> int | None:
     """One step of a search (in the video worker): seconds until the next step while the words are on their
     way, else None once it is done or failed."""
     if not video.has_words:
+        away = False
         try:
             if video.captions_job:
                 captions.collect(video)  # rather than wait for the sweep
             else:
                 captions.ensure_words(video)  # a new file, or captions from before Scribe sent words
         except requests.RequestException:
-            pass  # Scribe is away for a moment: look again next time
+            away = True  # Scribe is away for a moment: look again next time
         video.refresh_from_db()
         if not video.has_words:
             # Scribe is done with this file and gave no words, or can't do it at all
-            over = video.captions_key == video.s3_key and not video.captions_job
+            over = not away and video.captions_key == video.s3_key and not video.captions_job
             if over or captions.status(video) is None or waited >= WAIT_MAX:
                 fail_search(video.pk, "The video could not be transcribed. Try again later.")
                 return None
@@ -184,8 +185,9 @@ def start_render(reel) -> None:
         return
     if not _take("renders", RENDERS_PER_HOUR):
         raise JobError("That's a lot of videos for one hour. Try again a little later.")
-    Reel.objects.filter(pk=reel.pk).update(status=Reel.RENDERING, error="", updated_at=timezone.now())
-    reel.status = Reel.RENDERING
+    now = timezone.now()
+    Reel.objects.filter(pk=reel.pk).update(status=Reel.RENDERING, error="", updated_at=now)
+    reel.status, reel.updated_at = Reel.RENDERING, now
     tasks.render_reel.delay(connection.tenant.id, str(reel.pk))
 
 

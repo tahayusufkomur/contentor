@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Copy, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { errorMessage } from "@shared/hooks/async-runner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { LookFonts } from "@/components/covers/look-fonts";
@@ -79,7 +80,13 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
     },
     [reel.id],
   );
-  const { run: change } = useAsyncAction(save);
+  // Not useAsyncAction: it drops a call while one is in flight, and edits come quicker than saves.
+  const change = useCallback(
+    (patch: ReelPatch) => {
+      save(patch).catch((err) => toast.error(errorMessage(err)));
+    },
+    [save],
+  );
 
   // Typed fields save once typing stops.
   const typed = useRef({ title, caption, endText });

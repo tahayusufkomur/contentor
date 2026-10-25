@@ -178,7 +178,7 @@ def search_status(request, video_id):
 def _apply(reel, data, length_cap) -> str | None:
     """The PATCH's fields onto the reel in memory; the reason it is refused, else None."""
     if "title" in data:
-        reel.title = moments.title_of(str(data["title"] or ""))[:120]
+        reel.title = " ".join(str(data["title"] or "").split())[:120]  # as typed: "#1 tip" keeps its "#1"
     if "caption" in data:
         reel.caption = str(data["caption"] or "")[:2200]
     if "style" in data:

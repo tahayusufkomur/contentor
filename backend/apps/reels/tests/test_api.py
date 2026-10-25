@@ -1,10 +1,12 @@
 """The reels studio's API and jobs: who may use it, finding moments, editing, rendering through the video
 service (HTTP mocked), the end card's token and downloads."""
 
+from datetime import timedelta
 from unittest import mock
 
 import pytest
 import requests
+from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.core.storage import build_s3_path
@@ -102,6 +104,14 @@ class TestSearch:
             assert jobs.run_search(fresh, 3, "coach", 2 * jobs.WAIT) is None  # words in, but too few for a reel
         assert jobs.search_state(fresh.pk)["status"] == "failed"
 
+    def test_scribe_away_for_a_moment_is_waited_for(self, settings, coach, tenant_ctx):
+        settings.SCRIBE_URL = "http://scribe-api:8000"
+        key = build_s3_path("videos", "old.mp4")
+        captioned = Video.objects.create(title="Old", s3_key=key, captions_key=key, captions_vtt="WEBVTT")
+        with mock.patch("apps.courses.captions._call", side_effect=requests.ConnectionError("down")):
+            assert jobs.run_search(captioned, 3, "coach", 0) == jobs.WAIT
+        assert jobs.search_state(captioned.pk)["status"] == "transcribing"
+
     def test_what_it_refuses(self, coach, tenant_ctx):
         demo = Video.objects.create(title="Demo", s3_key="demo/videos/flow.mp4")
         client = make_client(coach)
@@ -133,7 +143,7 @@ class TestEdit:
         )
         assert res.status_code == 200
         reel.refresh_from_db()
-        assert (reel.title, reel.style, render.options_of(reel)["progress"]) == ("New hook", "clean", False)
+        assert (reel.title, reel.style, render.options_of(reel)["progress"]) == ('"New hook" #tag', "clean", False)
 
     def test_a_language_translates_the_captions(self, coach, reel):
         with mock.patch("apps.reels.moments.translate", side_effect=lambda lines, lang: [f"de:{x}" for x in lines]):
@@ -238,6 +248,10 @@ class TestRender:
         assert res.status_code == 202 and res.json()["status"] == "rendering"
         reel_jobs["render_reel"].assert_called_once()
         assert client.get(f"/api/v1/reels/{reel.pk}/download/").status_code == 409
+        # a reel last changed long ago is not "failed" the moment it starts again
+        Reel.objects.filter(pk=reel.pk).update(status=Reel.FAILED, updated_at=timezone.now() - timedelta(hours=2))
+        res = client.post(f"/api/v1/reels/{reel.pk}/render/")
+        assert res.status_code == 202 and res.json()["status"] == "rendering"
 
     def test_the_job_carries_the_whole_reel_and_the_file_is_kept(self, settings, reel):
         settings.VIDEO_URL = "http://video:7100"
