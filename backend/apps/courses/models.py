@@ -131,6 +131,10 @@ class Video(models.Model):
     captions_job = models.CharField(max_length=64, blank=True, default="")
     captions_vtt = models.TextField(blank=True, default="")
     captions_language = models.CharField(max_length=8, blank=True, default="")
+    # Every word of those captions, [[start, end, text], ...] in seconds (the text keeps its leading space):
+    # what reels cut and highlight on (apps.reels). In the database too: code without this field still
+    # inserts videos mid-deploy.
+    captions_words = models.JSONField(default=list, blank=True, db_default=[])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -144,6 +148,10 @@ class Video(models.Model):
     @property
     def has_captions(self):
         return bool(self.captions_vtt) and self.captions_key == self.s3_key
+
+    @property
+    def has_words(self):
+        return bool(self.captions_words) and self.captions_key == self.s3_key
 
 
 class Enrollment(models.Model):

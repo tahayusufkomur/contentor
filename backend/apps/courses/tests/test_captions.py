@@ -10,11 +10,13 @@ import requests
 
 from apps.accounts.models import User
 from apps.core.storage import build_s3_path
+from apps.courses import captions
 from apps.courses.models import Course, Lesson, Module, Video
 from apps.courses.tasks import sweep_captions
 from apps.courses.tests.test_views import make_client
 
 VTT = "WEBVTT\n\n00:00:00.000 --> 00:00:01.500\nMerhaba.\n"
+WORDS = [[0.0, 1.5, " Merhaba."]]
 
 
 @pytest.fixture()
@@ -103,6 +105,44 @@ class TestSweep:
             sweep_captions()
         video.refresh_from_db()
         assert video.captions_key == ""
+
+
+@pytest.mark.django_db(transaction=True)
+class TestWords:
+    def test_the_words_come_with_the_captions(self, scribe, video):
+        sweep_captions()
+        _finish(scribe, "job1", status="done", vtt=VTT, language="tr", words=WORDS)
+        video.refresh_from_db()
+        assert (video.captions_words, video.has_words) == (WORDS, True)
+        Video.objects.filter(pk=video.pk).update(s3_key=build_s3_path("videos", "take-2.mp4"))
+        video.refresh_from_db()
+        assert not video.has_words  # a new file's words are not these
+
+    def test_captions_made_without_words_are_transcribed_again_and_kept_meanwhile(self, scribe, video):
+        Video.objects.filter(pk=video.pk).update(captions_key=video.s3_key, captions_vtt=VTT, captions_language="tr")
+        video.refresh_from_db()
+        assert captions.ensure_words(video) == "working"
+        video.refresh_from_db()
+        assert (video.captions_job, video.has_captions, video.captions_language) == ("job1", True, "tr")
+        assert captions.ensure_words(video) == "working"  # not asked twice
+        _finish(scribe, "job1", status="done", vtt=VTT, language="tr", words=WORDS)
+        video.refresh_from_db()
+        assert captions.ensure_words(video) == "ready"
+        assert list(scribe.jobs) == ["job1"]
+
+    def test_a_new_file_is_sent_now_rather_than_at_the_next_sweep(self, scribe, video):
+        assert captions.ensure_words(video) == "working"
+        assert list(scribe.jobs) == ["job1"]
+
+    def test_none_for_the_demo_footage_without_scribe_or_without_speech(self, scribe, settings, video):
+        demo = Video.objects.create(title="Demo", s3_key="demo/videos/flow.mp4")
+        assert captions.ensure_words(demo) == "unavailable"
+        Video.objects.filter(pk=video.pk).update(captions_key=video.s3_key)  # done, no captions: no speech
+        video.refresh_from_db()
+        assert captions.ensure_words(video) == "failed"
+        settings.SCRIBE_URL = ""
+        assert captions.ensure_words(video) == "unavailable"
+        assert scribe.jobs == {}
 
 
 @pytest.mark.django_db(transaction=True)

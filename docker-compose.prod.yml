@@ -118,6 +118,7 @@ services:
       - DJANGO_SETTINGS_MODULE=config.settings.prod
       - SITE_QA_BROWSER_URL=http://browser:3000
       - CUTOUT_URL=http://cutout:7000
+      - VIDEO_URL=http://video:7100
     networks:
       - internal
       - agentc
@@ -217,6 +218,54 @@ services:
     logging: *logging
     environment:
       - OMP_NUM_THREADS=4
+    networks:
+      - internal
+
+  # Reels (apps.reels): finding a video's moments and rendering them, one job at
+  # a time per node, on their own queue so a render never holds up the site's
+  # other jobs. It asks Scribe for a video's words (scribe) and the model for
+  # its moments (agentc); the grace period lets a deploy finish a render.
+  celery-video:
+    build:
+      context: ./backend
+      args:
+        PIP_REQUIREMENTS: prod.txt
+    container_name: contentor-celery-video
+    restart: unless-stopped
+    mem_limit: 384m
+    stop_grace_period: 120s
+    logging: *logging
+    command: celery -A config.celery worker -Q video -c 1 -l warning -n video@%h
+    env_file: .env.prod
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.prod
+      - SITE_QA_BROWSER_URL=http://browser:3000
+      - VIDEO_URL=http://video:7100
+    networks:
+      - internal
+      - agentc
+      - scribe
+    depends_on:
+      django:
+        condition: service_healthy
+
+  # The reels' video service (apps.reels): ffmpeg and a face detector behind a
+  # tiny HTTP API (infra/video), reached only from inside the network. It reads
+  # the video from storage and uploads the reel there, so it needs the internet
+  # (the internal network has it). ~60 MB idle; a render takes VIDEO_THREADS
+  # cores (capped by cpus, so the site keeps the rest) and ~0.5 GB for the
+  # seconds it runs.
+  video:
+    build:
+      context: ./infra/video
+    container_name: contentor-video
+    restart: unless-stopped
+    init: true
+    mem_limit: 2g
+    cpus: 6
+    logging: *logging
+    environment:
+      - VIDEO_THREADS=6
     networks:
       - internal
 

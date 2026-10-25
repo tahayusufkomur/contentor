@@ -180,6 +180,7 @@ _CREATORS = {
     "create_blog_post": lambda user, action: content.create_blog_post(user, action["params"]),
     "draft_announcement": lambda user, action: content.create_announcement_draft(user, action["params"]),
     "draft_email": lambda user, action: content.create_email_draft(user, action["params"]),
+    "make_reels": lambda user, action: content.make_reels(user, action["params"]),
     "edit_course": lambda user, action: content.edit_course(action["course_id"], action["params"], user=user),
     "edit_curriculum": lambda user, action: content.edit_curriculum(action["course_id"], action["ops"]),
     "edit_event": lambda user, action: content.edit_event(
@@ -505,6 +506,8 @@ def _audit_summary(action, result):
         return f"Drafted email '{title}'" if title else "Drafted an email"
     if kind == "edit_email":
         return f"Changed email '{title}'" if title else "Changed an email"
+    if kind == "make_reels":
+        return f"Started reels from '{title}'" if title else "Started reels from a video"
     return kind
 
 

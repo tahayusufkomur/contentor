@@ -46,6 +46,7 @@ OWNERS = {
     "draft_announcement": "community",
     "draft_email": "marketing",
     "edit_email": "marketing",
+    "make_reels": "marketing",
     "set_access": "finance",
 }
 

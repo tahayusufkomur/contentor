@@ -23,6 +23,7 @@ def _coach_in_utc(monkeypatch):
     time zone (a TenantConfig read) is pinned in test_copilot_context.py."""
     monkeypatch.setattr(engine, "_tenant_zone", lambda tenant: ZoneInfo("UTC"))
     monkeypatch.setattr(engine, "_email_digest", lambda tenant: "Email templates: none yet")
+    monkeypatch.setattr(engine, "_videos_digest", lambda tenant: "Videos: (none yet)")
 
 
 @pytest.fixture()

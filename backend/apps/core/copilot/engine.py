@@ -118,6 +118,11 @@ SYSTEM_PROMPT = (
     "the offers to feature by ref (as for draft_email); never invent offers, "
     "prices or dates. It changes the email right in her editor, as one step "
     "her Undo there takes back\n"
+    "- make_reels: find the best moments of one of the coach's videos (video_id from "
+    "the Videos line) and make them into draft reels: short vertical clips "
+    "framed for phones and captioned, for Instagram Reels, TikTok and YouTube "
+    "Shorts; count is how many (1 to 5, 3 when not told). The coach reviews "
+    "each one in Reels and makes the video file there\n"
     "- edit_navbar: change the navbar layout (one of: classic, centered, "
     "split, minimal, pill) and/or its call-to-action button (cta_text plus "
     "cta_href, an internal path like /courses); include only what changes\n"
@@ -362,6 +367,12 @@ class EditEmailAction(BaseModel):
     request: str
 
 
+class MakeReelsAction(BaseModel):
+    kind: Literal["make_reels"]
+    video_id: int
+    count: int = 3
+
+
 class EditStyleAction(BaseModel):
     kind: Literal["edit_style"]
     style: str
@@ -490,6 +501,7 @@ CopilotAction = Annotated[
     | DraftAnnouncementAction
     | DraftEmailAction
     | EditEmailAction
+    | MakeReelsAction
     | EditStyleAction
     | EditNavbarAction
     | EditSeoAction
@@ -771,6 +783,7 @@ def _subscriptions_digest(tenant):
 
 MAX_DIGEST_EVENTS = 20
 MAX_DIGEST_POSTS = 20
+MAX_DIGEST_VIDEOS = 15
 
 
 def _event_site_link(kind, event_id):
@@ -831,6 +844,30 @@ def _posts_digest(tenant):
         site_link = f"/blog/{r['slug']}" if r["status"] == "published" else "(not published yet)"
         lines.append(f"  {r['id']} | {str(r['title'])[:60]} | {r['status']} | /admin/blog/{r['id']} | {site_link}")
     return "\n".join(lines)
+
+
+def _videos_digest(tenant):
+    """The coach's latest videos, for make_reels: the id it keys off and whether reels can be cut from it."""
+    from apps.courses.models import Video
+    from apps.reels import jobs
+
+    with tenant_context(tenant):
+        rows = list(Video.objects.exclude(s3_key="").order_by("-created_at")[:MAX_DIGEST_VIDEOS])
+        states = {v.pk: jobs.words_state(v) for v in rows}
+    if not rows:
+        return "Videos: (none yet)"
+    lines = ["Videos (id | title | minutes | transcript):"]
+    for v in rows:
+        state = {"ready": "ready", "working": "on its way", "failed": "no speech"}.get(states[v.pk], "none (sample)")
+        lines.append(f"  {v.pk} | {str(v.title)[:60]} | {round((v.duration_seconds or 0) / 60)} | {state}")
+    return "\n".join(lines)
+
+
+def _video_title(tenant, video_id):
+    from apps.courses.models import Video
+
+    with tenant_context(tenant):
+        return Video.objects.filter(pk=video_id).exclude(s3_key="").values_list("title", flat=True).first()
 
 
 def _stats_digest(tenant):
@@ -1026,6 +1063,7 @@ def _user_turn(tenant, transcript, selections, message, attachments=None, contex
         _subscriptions_digest(tenant),
         _events_digest(tenant),
         _posts_digest(tenant),
+        _videos_digest(tenant),
         _email_digest(tenant),
         _stats_digest(tenant),
         _setup_digest(tenant),
@@ -1665,6 +1703,20 @@ def _card(tenant, action, actor=None, context=None):
             "title": f"Draft email: {action.subject[:120]}",
             "detail": f"Saved as a draft {look}. Review and send it from Messages. Nothing is sent now.",
             "token": tokens.stash_action(schema, {"kind": "draft_email", "params": params}),
+        }
+    if isinstance(action, MakeReelsAction):
+        title = _video_title(tenant, action.video_id)
+        if title is None:
+            raise content.ContentOpError("that video does not exist")
+        count = max(1, min(5, action.count))
+        return {
+            "kind": "make_reels",
+            "title": f"Make {count} reel{'s' if count > 1 else ''} from {title[:100]}",
+            "detail": "I find its best moments, frame them for phones and caption them. You review each "
+            "one in Reels before it becomes a video. Nothing is posted.",
+            "token": tokens.stash_action(
+                schema, {"kind": "make_reels", "params": {"video_id": action.video_id, "count": count}}
+            ),
         }
     if isinstance(action, DraftAnnouncementAction):
         params = {

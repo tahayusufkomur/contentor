@@ -111,6 +111,7 @@ const CREATE_KINDS = new Set([
   "create_blog_post",
   "draft_announcement",
   "draft_email",
+  "make_reels",
 ]);
 
 /** Distinguishes content-creation actions (new draft, gets a "view" link)
@@ -126,6 +127,8 @@ const NOT_UNDOABLE_KINDS = new Set([
   "publish_blog_post",
   // The email editor's own Undo takes the Designer's change back.
   "edit_email",
+  // Reels are deleted in the studio, one by one.
+  "make_reels",
 ]);
 
 /** Server-side, these kinds record an empty inverse ({}) — undo would always

@@ -65,9 +65,24 @@ def submit(video):
         "get_object", Params={"Bucket": settings.AWS_BUCKET_NAME, "Key": key}, ExpiresIn=LINK_SECONDS
     )
     job = _call("POST", "/v1/transcriptions", json={"media_url": url})
-    Video.objects.filter(pk=video.pk, s3_key=key).update(
-        captions_key=key, captions_job=job["id"], captions_vtt="", captions_language=""
-    )
+    # The same file again (for the words its captions were made without) keeps them while Scribe works.
+    stale = {} if video.captions_key == key else {"captions_vtt": "", "captions_language": "", "captions_words": []}
+    Video.objects.filter(pk=video.pk, s3_key=key).update(captions_key=key, captions_job=job["id"], **stale)
+
+
+def ensure_words(video):
+    """What reels need of the file: its words. "ready"; "working" (Scribe is on it, or was asked just now:
+    for a new file, or captions from before Scribe sent words); "failed" (Scribe found no speech, or
+    could not read the file); or "unavailable" (Scribe is off, or it is the shared demo footage)."""
+    if video.has_words:
+        return "ready"
+    state = status(video)
+    if state is None:
+        return "unavailable"
+    if state in ("working", "failed"):
+        return state
+    submit(video)
+    return "working"
 
 
 def collect(video):
@@ -78,7 +93,9 @@ def collect(video):
     if job is None:
         mine.update(captions_key="", captions_job="")
     elif job["status"] == "done":
-        mine.update(captions_vtt=job["vtt"], captions_language=job["language"], captions_job="")
+        # (a Scribe from before it sent words sends none)
+        words = job.get("words") or []
+        mine.update(captions_vtt=job["vtt"], captions_language=job["language"], captions_words=words, captions_job="")
     elif job["status"] == "failed":
         logger.warning("captions: Scribe could not transcribe video %s (%s): %s", video.pk, video.s3_key, job["error"])
         mine.update(captions_job="")

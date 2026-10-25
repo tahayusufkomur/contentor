@@ -42,7 +42,11 @@ describe("buildAdminNav", () => {
       "/admin/community",
       "/admin/inbox",
     ]);
-    expect(hrefs("reachOut")).toEqual(["/admin/messages", "/admin/blog"]);
+    expect(hrefs("reachOut")).toEqual([
+      "/admin/messages",
+      "/admin/blog",
+      "/admin/reels",
+    ]);
     expect(hrefs("money")).toEqual(["/admin/payouts", "/admin/store"]);
     expect(hrefs("site")).toEqual([
       "/?edit=1",

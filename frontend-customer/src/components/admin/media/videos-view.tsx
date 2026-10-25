@@ -2,10 +2,20 @@
 
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Clock, Code, Copy, Pencil, Play, Trash2, Video } from "lucide-react";
+import {
+  Clapperboard,
+  Clock,
+  Code,
+  Copy,
+  Pencil,
+  Play,
+  Trash2,
+  Video,
+} from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { NavLink } from "@/components/ui/nav-link";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { clientFetch, batchedAsync } from "@/lib/api-client";
 import { toast } from "sonner";
@@ -226,6 +236,13 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
                       </button>
                     </>
                   )}
+                  <NavLink
+                    href={`/admin/reels?video=${video.id}`}
+                    className="p-1 hover:text-foreground rounded"
+                    title="Make reels"
+                  >
+                    <Clapperboard className="h-3.5 w-3.5" />
+                  </NavLink>
                   <button
                     type="button"
                     onClick={() => setEditingId(video.id)}
@@ -300,6 +317,17 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
                     </Button>
                   </>
                 )}
+                <Button
+                  asChild
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  title="Make reels"
+                >
+                  <NavLink href={`/admin/reels?video=${video.id}`}>
+                    <Clapperboard className="h-3.5 w-3.5 text-muted-foreground" />
+                  </NavLink>
+                </Button>
                 <Button
                   size="sm"
                   variant="ghost"

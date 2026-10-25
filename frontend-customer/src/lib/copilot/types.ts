@@ -32,6 +32,7 @@ export const ACTION_KINDS = [
   "draft_announcement",
   "draft_email",
   "edit_email",
+  "make_reels",
   "edit_style",
   "edit_navbar",
   "edit_seo",

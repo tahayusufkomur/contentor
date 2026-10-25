@@ -68,6 +68,7 @@ from apps.notifications.models import (
     LiveReminderLog,
     PushSubscription,
 )
+from apps.reels.models import Reel
 from apps.tenant_config.models import AssistantConfig, AssistantKnowledgeEntry, CopilotChat, CopilotRun, FocusCreation
 
 SHARED_SCHEMA = "shared_test"
@@ -264,6 +265,23 @@ def photo_jobs(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def reel_jobs(monkeypatch):
+    """Reels' jobs go to the dev stack's video worker through the shared broker: same reasoning as
+    photo_jobs. Yields the mocks by task name so a test can assert what was queued."""
+    from unittest import mock
+
+    from apps.reels import tasks
+
+    mocks = {}
+    for name in ("find_reels", "scan_reel", "render_reel"):
+        mocks[name] = mock.Mock(name=f"{name}.delay")
+        monkeypatch.setattr(getattr(tasks, name), "delay", mocks[name])
+    mocks["find_reels.later"] = mock.Mock(name="find_reels.apply_async")
+    monkeypatch.setattr(tasks.find_reels, "apply_async", mocks["find_reels.later"])
+    return mocks
+
+
+@pytest.fixture(autouse=True)
 def _curated_mirror_off(settings):
     """The dev container exports CURATED_LOGO_SYNC_DIR (repo bind mount) — force
     the CuratedLogo mirror OFF for every test so suites never write into the
@@ -348,6 +366,7 @@ TENANT_CLEANUP_MODELS = [
     Enrollment,
     Lesson,
     Module,
+    Reel,
     Video,
     PaymentItem,
     Payment,

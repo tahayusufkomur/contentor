@@ -33,6 +33,8 @@ AI_PROVIDER = "anthropic"
 # test turns it on: a dev .env commonly runs it on the claude CLI.
 SITE_QA_BROWSER_URL = ""
 AI_VISION_PROVIDER = ""
+# Same for the reels' video service the dev compose points at.
+VIDEO_URL = ""
 # Same reasoning: a dev .env pointing at a running LiveCraft must not make
 # tests create real rooms. Tests of the HTTP client turn the fake off themselves.
 LIVECRAFT_FAKE = True

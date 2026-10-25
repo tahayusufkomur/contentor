@@ -577,6 +577,22 @@ def create_email_draft(user, params):
     return {"kind": "draft_email", "id": row.id, "title": row.subject, "url": f"/admin/messages/email/{row.id}/edit"}
 
 
+def make_reels(user, params):
+    """The Marketing Specialist starts finding reels in one of the coach's videos (apps.reels.jobs). The card's
+    link opens Reels on that video, where the drafts appear once found; the coach makes each one a video."""
+    from apps.courses.models import Video
+    from apps.reels import jobs
+
+    video = Video.objects.filter(pk=params.get("video_id")).exclude(s3_key="").first()
+    if video is None:
+        raise ContentOpError("that video was deleted")
+    try:
+        jobs.start_search(video, max(1, min(5, int(params.get("count") or 3))), made_by="marketing")
+    except jobs.JobError as exc:
+        raise ContentOpError(str(exc)) from exc
+    return {"kind": "make_reels", "id": video.pk, "title": video.title, "url": f"/admin/reels?video={video.pk}"}
+
+
 def edit_email(user, params):
     """The Designer changes the email open in her editor (a draft or one of her templates). The editor
     picks the run up (its ``job``) and shows the change in place, one step her Undo there takes back."""

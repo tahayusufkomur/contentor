@@ -56,7 +56,7 @@ Per-area deep docs live in `docs/wiki/` — read the relevant page before workin
 
 ### Docker services (`docker-compose.yml`)
 
-`caddy` (:80), `postgres:17-alpine`, `redis:7-alpine`, `django` (Gunicorn :8000 — its entrypoint alone runs migrations + collectstatic; celery skips to avoid races), `nextjs-main`, `nextjs-customer`, `celery-worker`, `celery-beat`, `browser` (headless Chromium behind a small HTTP API, `infra/browser`: the screenshots for the final visual check; internal only), `vector` (ships every container's logs to the in-app logbook, superadmin → Logs — that IS the observability stack; there is no metrics stack).
+`caddy` (:80), `postgres:17-alpine`, `redis:7-alpine`, `django` (Gunicorn :8000 — its entrypoint alone runs migrations + collectstatic; celery skips to avoid races), `nextjs-main`, `nextjs-customer`, `celery-worker`, `celery-agents` (the team's runs), `celery-video` (reels, one job at a time), `celery-beat`, `browser` (headless Chromium behind a small HTTP API, `infra/browser`: the screenshots for the final visual check and the reels' end cards; internal only), `video` (ffmpeg + a face detector behind a small HTTP API, `infra/video`: reels; internal only), `vector` (ships every container's logs to the in-app logbook, superadmin → Logs — that IS the observability stack; there is no metrics stack).
 
 ### Local fakes + e2e
 

@@ -1,6 +1,7 @@
 import {
   Bell,
   BookOpen,
+  Clapperboard,
   CreditCard,
   Download,
   Globe,
@@ -72,6 +73,7 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
       items: [
         item("messages", "/admin/messages", Bell),
         item("blog", "/admin/blog", Newspaper),
+        item("reels", "/admin/reels", Clapperboard),
       ],
     },
     {

@@ -59,6 +59,7 @@ TENANT_APPS = [
     "apps.usage",
     "apps.community",
     "apps.blog",
+    "apps.reels",
 ]
 
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
@@ -320,6 +321,9 @@ SCRIBE_KEY = os.environ.get("SCRIBE_KEY", "")
 # The background remover: rembg's model behind a tiny HTTP API (the `cutout` service, infra/cutout), our
 # own, free per photo. Without a URL the studio offers no "Remove the background".
 CUTOUT_URL = os.environ.get("CUTOUT_URL", "")
+# Reels (apps.reels): our own video service on the home servers (ffmpeg and a face detector, infra/video).
+# Without it the studio still finds a video's moments, but can't frame them by face or make video files.
+VIDEO_URL = os.environ.get("VIDEO_URL", "")
 # Extending, cleaning up and changing a photo: the image model on GEMINI_API_KEY (off without it). Each edit
 # bills like a new photo (~$0.10 at 2K) and counts against CURATED_IMAGE_GENERATE_MONTHLY_LIMIT.
 PHOTO_EDIT_MODEL = os.environ.get("PHOTO_EDIT_MODEL", "gemini-3.1-flash-image")

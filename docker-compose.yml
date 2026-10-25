@@ -109,6 +109,7 @@ services:
       CURATED_PHOTO_SYNC_DIR: /app/photo_sync
       LOGS_INGEST_TOKEN: ${LOGS_INGEST_TOKEN:-dev-logs-token}
       CUTOUT_URL: http://cutout:7000
+      VIDEO_URL: http://video:7100
     volumes:
       - ./backend:/app/backend
       - ./.env:/app/.env:ro
@@ -206,6 +207,17 @@ services:
       - OMP_NUM_THREADS=2
     mem_limit: 3g
 
+  # The reels' video service (apps.reels): ffmpeg and a face detector behind a
+  # tiny HTTP API (infra/video), internal only. Idle ~60 MB; a render takes
+  # VIDEO_THREADS cores and ~0.5 GB for the few seconds it runs.
+  video:
+    build:
+      context: ./infra/video
+    init: true
+    environment:
+      - VIDEO_THREADS=3
+    mem_limit: 2g
+
   celery-worker:
     build:
       context: ./backend
@@ -234,6 +246,24 @@ services:
       - ./backend:/app/backend
       - ${HOME}/ws/agent-studio-runs:/agent-studio-runs:ro
     env_file: .env
+    depends_on:
+      django:
+        condition: service_healthy
+
+  # Reels (apps.reels): finding a video's moments and rendering them, one at a
+  # time, on their own queue so a render never holds up the site's other jobs.
+  celery-video:
+    build:
+      context: ./backend
+      args:
+        INSTALL_CLAUDE_CLI: "1"
+    command: celery -A config.celery worker -Q video -c 1 -l info -n video@%h
+    volumes:
+      - ./backend:/app/backend
+      - ${HOME}/ws/agent-studio-runs:/agent-studio-runs:ro
+    env_file: .env
+    environment:
+      VIDEO_URL: http://video:7100
     depends_on:
       django:
         condition: service_healthy
