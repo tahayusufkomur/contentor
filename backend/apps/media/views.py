@@ -111,6 +111,11 @@ def photo_cutout(request, pk):
     photo = _photo(pk)
     if photo is None:
         return Response({"detail": "Photo not found."}, status=status.HTTP_404_NOT_FOUND)
+    if not photo_edits.take_cutout():
+        return Response(
+            {"detail": "That's a lot of backgrounds this hour. Try again later."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
     job_id = photo_edits.start(photo, photo_edits.CUTOUT)
     return Response(_job_response(job_id, {"status": "running"}), status=status.HTTP_202_ACCEPTED)
 

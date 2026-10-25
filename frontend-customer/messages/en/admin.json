@@ -859,7 +859,8 @@
         "change": "Change it",
         "changeLabel": "What should change?",
         "changePlaceholder": "Warm evening light behind me",
-        "toolsOff": "The photo tools aren't on for this site yet."
+        "toolsOff": "The photo tools aren't on for this site yet.",
+        "tooMany": "That's a lot of backgrounds this hour. Try again later."
       },
       "layouts": {
         "styles": "Four styles for this cover",

@@ -81,6 +81,19 @@ def cutout_available() -> bool:
     return bool(settings.CUTOUT_URL)
 
 
+CUTOUTS_PER_HOUR = 60  # the remover is one CPU service for every site: one site may not fill its hours
+
+
+def take_cutout() -> bool:
+    """Count one background removal for this site this hour; False once it has had CUTOUTS_PER_HOUR."""
+    key = f"photo-edits:cutouts:{connection.schema_name}"
+    cache.add(key, 0, timeout=3600)
+    try:
+        return cache.incr(key) <= CUTOUTS_PER_HOUR
+    except ValueError:  # the hour ran out between the two calls
+        return True
+
+
 # --- what a photo is made of ------------------------------------------------
 
 
@@ -278,7 +291,12 @@ def _model_edit(body: bytes, photo, kind: str, aspect: float | None, words: str)
 
     with Image.open(io.BytesIO(body)) as im:
         own = im.width / im.height
-        # The model reads PNG and JPEG; her photos are AVIF once they are made light.
+        # The model reads PNG and JPEG; her photos are AVIF once they are made light. A cutout's see-through
+        # background goes white (as JPEG it would be black).
+        if "A" in im.getbands():
+            ground = Image.new("RGB", im.size, (255, 255, 255))
+            ground.paste(im, mask=im.getchannel("A"))
+            im = ground
         out = io.BytesIO()
         im.convert("RGB").save(out, "JPEG", quality=92)
     shape = nearest_aspect(aspect if kind == EXPAND and aspect else own)

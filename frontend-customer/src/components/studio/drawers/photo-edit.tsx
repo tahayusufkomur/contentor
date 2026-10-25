@@ -244,6 +244,9 @@ export function PhotoEditDrawer({
   const adjust = (patch: Partial<CoverRecipe["photo"]>) =>
     edit({ type: "photoAdjust", patch });
   const [running, setRunning] = useState<Tool | null>(null);
+  // The tool asked last, for what a refusal means: the month's photos are a paid tool's, an hour's cap the
+  // background remover's.
+  const asked = useRef<Tool>("cutout");
   const asking = useRef<AbortController | null>(null);
   // Leaving the editor stops the asking; a photo already being made is paid for either way.
   useEffect(() => () => asking.current?.abort(), []);
@@ -260,6 +263,7 @@ export function PhotoEditDrawer({
             : tool === "erase" || tool === "change"
               ? { mode: tool, instruction: words }
               : null;
+        asked.current = tool;
         setRunning(tool);
         onGenerating?.(true);
         try {
@@ -289,9 +293,13 @@ export function PhotoEditDrawer({
     {
       onError: (error) => {
         if (asking.current?.signal.aborted) return;
-        const usedUp = error instanceof ApiError && error.status === 429;
-        if (usedUp) onUsedUp?.();
-        toast.error(usedUp ? t("usedUp") : t("failed"));
+        const refused = error instanceof ApiError && error.status === 429;
+        if (refused && asked.current === "cutout") {
+          toast.error(t("tooMany"));
+          return;
+        }
+        if (refused) onUsedUp?.();
+        toast.error(refused ? t("usedUp") : t("failed"));
       },
     },
   );

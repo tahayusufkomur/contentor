@@ -134,6 +134,24 @@ def test_a_cutout_is_queued_and_followed_to_her_new_photo(client, photo, setting
     assert Photo.objects.get(pk=photo.pk).s3_key == "tenants/t/photo/a.png"
 
 
+def test_a_site_has_its_cutouts_per_hour(client, photo, settings, queued, monkeypatch):
+    settings.CUTOUT_URL = "http://cutout:7000"
+    monkeypatch.setattr(photo_edits, "CUTOUTS_PER_HOUR", 2)
+    url = f"/api/v1/photos/{photo.pk}/cutout/"
+    assert [client.post(url).status_code for _ in range(3)] == [202, 202, 429]
+    assert queued.call_count == 2
+
+
+def test_a_cutout_is_extended_on_white(photo, settings):
+    settings.GEMINI_API_KEY = "key"  # pragma: allowlist secret
+    payload = {"candidates": [{"content": {"parts": [{"inlineData": {"data": base64.b64encode(png()).decode()}}]}}]}
+    answer = mock.Mock(json=mock.Mock(return_value=payload), raise_for_status=mock.Mock())
+    with mock.patch.object(photo_edits.requests, "post", return_value=answer) as post:
+        photo_edits._model_edit(png(colour=(0, 0, 0, 0)), photo, "expand", 2, "")
+    sent = post.call_args.kwargs["json"]["contents"][0]["parts"][0]["inlineData"]["data"]
+    assert Image.open(io.BytesIO(base64.b64decode(sent))).convert("RGB").getpixel((5, 5)) == (255, 255, 255)
+
+
 def test_a_cutout_of_nothing_is_an_error_and_a_faint_speck_is_no_subject():
     with pytest.raises(photo_edits.EditError):
         photo_edits.trimmed(png(colour=(0, 0, 0, 0)))
