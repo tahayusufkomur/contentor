@@ -78,7 +78,7 @@ export function EventsSessions({ block, data, editable }: SectionProps) {
             <EmptyHint
               editable={editable}
               title="No upcoming workshop sessions"
-              text="Schedule a live craft class or workshop and it appears here."
+              text="Schedule a live session or workshop and it appears here."
             />
           </div>
         )}

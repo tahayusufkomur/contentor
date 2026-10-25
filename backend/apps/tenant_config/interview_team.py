@@ -51,7 +51,7 @@ def handoff(tenant, answers: dict, flow: dict, *, sells: bool = False) -> list[d
     lines = {
         "designer": (designer, "Ask me to change any page, any time."),
         "content": (
-            f"Drafted {brief.say_list(made)}." if made else "Ready when you want to make your first course or class.",
+            f"Drafted {brief.say_list(made)}." if made else "Ready when you want to make your first course or session.",
             f"Next: record the first lesson of {course}."
             if course
             else f"Next: check the date and time of {klass}."

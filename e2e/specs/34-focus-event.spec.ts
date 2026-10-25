@@ -30,7 +30,7 @@ const question = (field: string, kind: string, text: string, extra: Body = {}) =
   ...extra,
 });
 const Q: Record<string, Body> = {
-  topic: question("topic", "text", "What's your class or event about?", { starter: "A class on ", can_delegate: true }),
+  topic: question("topic", "text", "What's your session or event about?", { starter: "A session on ", can_delegate: true }),
   where: question("where", "choice", "Where will it happen?", {
     options: [
       option("live", "Live online"),
@@ -44,7 +44,7 @@ const Q: Record<string, Body> = {
     starter: "https://zoom.us/j/",
     options: [option("later", "Add it later")],
   }),
-  review: question("review", "review", "Here's your class. Does it fit?"),
+  review: question("review", "review", "Here's your session. Does it fit?"),
   finish: question("finish", "finish", "Ready. Publish it?", {
     options: [option("publish", "Publish now"), option("draft", "Keep as a draft")],
   }),
@@ -155,10 +155,10 @@ async function stubRow(page: Page, initial: Body, onPut?: (body: Body, row: Body
 /** The copy run: done, with its title and description for `rec`. */
 async function stubCopyRun(page: Page, rec: string, title: string, description: string) {
   const events = [
-    { type: "step", data: { specialist: "content", label: "Writing your class", state: "start" } },
+    { type: "step", data: { specialist: "content", label: "Writing your session", state: "start" } },
     { type: "field", data: { record: rec, name: "title", value: title } },
     { type: "field", data: { record: rec, name: "description", value: description } },
-    { type: "step", data: { specialist: "content", label: "Writing your class", state: "done" } },
+    { type: "step", data: { specialist: "content", label: "Writing your session", state: "done" } },
   ].map((event, i) => ({ seq: i + 1, at: new Date().toISOString(), ...event }));
   await page.route("**/api/v1/admin/copilot/runs/**", (route) => {
     const url = new URL(route.request().url());
@@ -172,11 +172,11 @@ async function stubCopyRun(page: Page, rec: string, title: string, description: 
   });
 }
 
-const guide = (page: Page) => page.getByRole("complementary", { name: "New class or event" });
+const guide = (page: Page) => page.getByRole("complementary", { name: "New session or event" });
 
 async function sendFirst(page: Page, text: string) {
   await page.goto(`${TENANT}/admin/live?new=1`);
-  await expect(guide(page).getByText("What's your class or event about?")).toBeVisible();
+  await expect(guide(page).getByText("What's your session or event about?")).toBeVisible();
   await guide(page).getByRole("textbox", { name: "Your answer" }).fill(text);
   await guide(page).getByRole("button", { name: "Send", exact: true }).click();
 }
@@ -210,7 +210,7 @@ test("a weekly in-person class from one rich first answer", async ({ browser }) 
   await sendFirst(page, "Yoga in the park, Tuesdays 18:00 for 8 weeks at Moda Park, 12 places");
   // Straight to its page: the in-person form, the copy typed in, her schedule under the date.
   await expect(page).toHaveURL(/\/admin\/live\?event=555&kind=onsite$/);
-  await expect(guide(page).getByText("Here's your class. Does it fit?")).toBeVisible();
+  await expect(guide(page).getByText("Here's your session. Does it fit?")).toBeVisible();
   await expect(page.locator("#event-kind")).toHaveValue("onsite");
   await expect(page.locator("#event-description")).toHaveValue("Slow flow under the trees, for every level.");
   await expect(page.locator("#event-title")).toHaveValue("Yoga in the park");
@@ -237,12 +237,12 @@ test("the kind is asked when her first answer does not say it", async ({ browser
   const live = row("live", 556);
   await stubRow(page, live);
   const sent = await stubFocus(page, (path, body) => {
-    if (body.field === "when") return state({ record: record(live), question: Q.review, answered: [["topic", "A class on morning breath"], ["where", "Live online"], ["when", "Once"]] });
-    if (body.field === "where") return state({ record: record(live), question: Q.when, answered: [["topic", "A class on morning breath"], ["where", "Live online"]] });
-    return state({ question: Q.where, answered: [["topic", "A class on morning breath"]] }); // no record yet (G10)
+    if (body.field === "when") return state({ record: record(live), question: Q.review, answered: [["topic", "A session on morning breath"], ["where", "Live online"], ["when", "Once"]] });
+    if (body.field === "where") return state({ record: record(live), question: Q.when, answered: [["topic", "A session on morning breath"], ["where", "Live online"]] });
+    return state({ question: Q.where, answered: [["topic", "A session on morning breath"]] }); // no record yet (G10)
   });
 
-  await sendFirst(page, "A class on morning breath");
+  await sendFirst(page, "A session on morning breath");
   await expect(guide(page).getByText("Where will it happen?")).toBeVisible();
   // No draft yet: the empty form with her working title, still on the new page.
   await expect(page).toHaveURL(/\/admin\/live\?new=1$/);
@@ -255,7 +255,7 @@ test("the kind is asked when her first answer does not say it", async ({ browser
   await guide(page).getByRole("button", { name: "Once", exact: true }).click();
   await guide(page).getByLabel("Date and time").fill("2030-01-08T18:30");
   await guide(page).getByRole("button", { name: "Use this time" }).click();
-  await expect(guide(page).getByText("Here's your class. Does it fit?")).toBeVisible();
+  await expect(guide(page).getByText("Here's your session. Does it fit?")).toBeVisible();
 
   const when = sent.find((s) => s.field === "when");
   expect(when?.text).toBeUndefined(); // a tap: never read by a model
@@ -271,7 +271,7 @@ test("a Zoom class skips the price and asks for the link", async ({ browser }) =
     ["topic", "Office hours"],
     ["where", "On Zoom"],
     ["when", "Thursday 22 October at 18:00"],
-    ["access", "Zoom classes are free to join."],
+    ["access", "Zoom sessions are free to join."],
   ];
   const sent = await stubFocus(page, (_path, body) => {
     if (body.field === "place") {
@@ -284,14 +284,14 @@ test("a Zoom class skips the price and asks for the link", async ({ browser }) =
   await sendFirst(page, "Office hours on Zoom, Thursday at 6pm");
   await expect(page).toHaveURL(/\/admin\/live\?event=557&kind=zoom$/);
   // Free, without a price question; the link is asked with its start written for her.
-  await expect(guide(page).getByText("Zoom classes are free to join.")).toBeVisible();
+  await expect(guide(page).getByText("Zoom sessions are free to join.")).toBeVisible();
   await expect(guide(page).getByText("Paste your Zoom link")).toBeVisible();
   await guide(page).getByRole("button", { name: "https://zoom.us/j/…" }).click();
   const box = guide(page).getByRole("textbox", { name: "Your answer" });
   await expect(box).toHaveValue("https://zoom.us/j/");
   await box.pressSequentially("8675309");
   await guide(page).getByRole("button", { name: "Send", exact: true }).click();
-  await expect(guide(page).getByText("Here's your class. Does it fit?")).toBeVisible();
+  await expect(guide(page).getByText("Here's your session. Does it fit?")).toBeVisible();
   await expect(page.locator("#event-zoom")).toHaveValue("https://zoom.us/j/8675309");
   expect(sent.find((s) => s.field === "place")?.text).toBe("https://zoom.us/j/8675309");
   expect(sent.some((s) => s.field === "access")).toBe(false);
@@ -341,7 +341,7 @@ test("fill it in myself opens today's form", async ({ browser }) => {
   const sent = await stubFocus(page, (path) =>
     path.endsWith("/leave/")
       ? state({ status: "left" })
-      : state({ question: Q.where, answered: [["topic", "A class on morning breath"]] }),
+      : state({ question: Q.where, answered: [["topic", "A session on morning breath"]] }),
   );
   const created = row("zoom", 9001, { title: "Hand made", status: "scheduled" });
   await page.route(`**${API.zoom}`, (route) =>
@@ -349,7 +349,7 @@ test("fill it in myself opens today's form", async ({ browser }) => {
   );
 
   // Her first answer did not say where, so there is no draft yet; then she fills it in herself.
-  await sendFirst(page, "A class on morning breath");
+  await sendFirst(page, "A session on morning breath");
   await expect(guide(page).getByText("Where will it happen?")).toBeVisible();
   await page.getByRole("main").getByRole("link", { name: "Fill it in myself" }).click();
   await expect(page).toHaveURL(/\/admin\/live\?new=1&form=1$/);
@@ -359,7 +359,7 @@ test("fill it in myself opens today's form", async ({ browser }) => {
   await expect(page.getByTestId("copilot-input")).toBeVisible();
   await expect.poll(() => sent.find((s) => s.path.endsWith("/leave/"))).toMatchObject({ abandon: true });
   expect(sent.filter((s) => s.path.endsWith("/answer/"))).toEqual([]);
-  await expect(page.getByText("Describe a class or a series and the assistant schedules it")).toHaveCount(0); // focus mode replaces it
+  await expect(page.getByText("Describe a session or a series and the assistant schedules it")).toHaveCount(0); // focus mode replaces it
 
   await page.locator("#event-kind").selectOption("zoom");
   await page.locator("#event-title").fill("Hand made");
@@ -389,7 +389,7 @@ test("her saved title survives a finished copy run on a later visit", async ({ b
   await stubFocus(page, () => atReview, atReview);
 
   await page.goto(`${TENANT}/admin/live?event=559&kind=onsite`);
-  await expect(guide(page).getByText("Here's your class. Does it fit?")).toBeVisible();
+  await expect(guide(page).getByText("Here's your session. Does it fit?")).toBeVisible();
   await expect(page.locator("#event-title")).toHaveValue("Breath at dawn");
   await expect(page.locator("#event-description")).toHaveValue("Her own words.");
   await page.close();

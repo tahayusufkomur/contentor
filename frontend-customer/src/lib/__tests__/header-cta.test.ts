@@ -22,7 +22,7 @@ describe("resolveHeaderCta", () => {
   it("is the coach's button, with the label of her offer", () => {
     expect(
       resolveHeaderCta({ text: "Get Started", href: "/events" }, true, menu),
-    ).toEqual({ text: "Book a class", href: "/events" });
+    ).toEqual({ text: "Book a session", href: "/events" });
   });
   it("is nothing when she turned the button off", () => {
     expect(resolveHeaderCta(null, true, menu)).toBeNull();

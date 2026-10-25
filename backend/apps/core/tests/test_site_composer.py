@@ -681,7 +681,7 @@ def test_pin_home_buttons():
     assert fields == {"ctaHref": "/courses", "ctaLabel": "Browse the courses"}
     fields = {"ctaHref": "/events", "ctaLabel": ""}  # right page, no label: the button would not show
     sc._pin_home_buttons(fields, live)
-    assert fields == {"ctaHref": "/events", "ctaLabel": "See the classes"}
+    assert fields == {"ctaHref": "/events", "ctaLabel": "See the sessions"}
     fields = {"ctaHref": "/events", "ctaLabel": "Join a class"}  # her own words stay when the link is right
     sc._pin_home_buttons(fields, live)
     assert fields["ctaLabel"] == "Join a class"

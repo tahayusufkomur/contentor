@@ -19,10 +19,10 @@ import { eventItem } from "@/lib/covers/items";
 import type { CalendarEvent } from "@/types/live";
 
 const TYPE_LABELS: Record<string, string> = {
-  live_class: "Live Class",
+  live_class: "Live Session",
   live_stream: "Live Stream",
   onsite_event: "Event",
-  zoom_class: "Live Class",
+  zoom_class: "Live Session",
 };
 
 interface EventsCatalogClientProps {

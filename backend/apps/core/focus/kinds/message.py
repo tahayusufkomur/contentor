@@ -105,7 +105,7 @@ RULES = (
     "means, as she wrote it ('my Desk Yoga students' -> 'Desk Yoga'); otherwise ''.\n"
     "- when: 'now' when she said now or right away; or 'YYYY-MM-DDTHH:MM' on a 24-hour clock, read against "
     "'today', when she gave the day and the time it goes out; otherwise ''.\n"
-    "- link_to: the title of the course or class the message should link to, as she wrote it; otherwise ''.\n"
+    "- link_to: the title of the course or session the message should link to, as she wrote it; otherwise ''.\n"
     "- also_email: true only when she said to send it by email too.\n"
     "- A message has no price: leave price ''.\n"
     "- unclear: who or when she gave vaguely ('my yoga students' with two yoga courses, 'tomorrow sometime') "
@@ -409,7 +409,7 @@ COPY_RULES = (
     "Write a message title under 60 characters and a body of 1–4 short sentences, from the coach to her "
     "students, in her voice.\n"
     "- topic: what she wants to tell them, in her words. Say that; add nothing she did not say.\n"
-    "- link_to: the course or class the message links to; '' when none. The page adds the link: never write "
+    "- link_to: the course or session the message links to; '' when none. The page adds the link: never write "
     "a link.\n"
     "- notes and followups: what else she said about it; follow it.\n"
     + DELIVERY_RULE

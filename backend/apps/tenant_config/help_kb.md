@@ -48,21 +48,21 @@ What: sellable or free downloadable files (PDFs, worksheets, plans, guides).
 
 ## Live sessions
 
-What: every class and event is on one page, Classes & events (under Teach), in one list. "Where it happens" is a field of the event, with four choices:
+What: every live session and event is on one page, Sessions & events (under Teach), in one list. "Where it happens" is a field of the event, with four choices:
 
-1. **Live class** — interactive video call with chat, runs right in the browser (no extra software). Can record automatically.
+1. **Live session** — a group class or a 1-1 call: an interactive video call with chat, runs right in the browser (no extra software). Can record automatically.
 2. **Live stream** — one-way broadcast to your students (you present, they watch).
 3. **Zoom** — an event that links out to a Zoom meeting you host on Zoom.
 4. **In person** — an event at a place, with an address and a number of places.
 
-- **Schedule one**: open Classes & events and click "New class or event". Choose where it happens, give it a title and a date and time; it can be free, paid, or (live classes and in-person events) members only. Leave the date empty to keep it as a draft students do not see. Where it happens cannot be changed after it is created.
-- **Or describe it**: the line above the list ("Describe a class or a series…") lets the assistant draft one class or a whole weekly series for you to confirm.
+- **Schedule one**: open Sessions & events and click "New session or event". Choose where it happens, give it a title and a date and time; it can be free, paid, or (live sessions and in-person events) members only. Leave the date empty to keep it as a draft students do not see. Where it happens cannot be changed after it is created.
+- **Or describe it**: the line above the list ("Describe a session or a series…") lets the assistant draft one session or a whole weekly series for you to confirm.
 - **The list**: Upcoming and Past, nearest first, with search, tags and sorting. Each row shows when, where and the price.
 - **Edit**: click Edit on its row. A date, a price or the number of places can be cleared as well as changed.
-- **Run a live class or stream**: click "Go live" on its row when you are ready; "End" stops it. A Zoom event has "Open Zoom" instead.
-- **Calendar**: switch from List to Calendar on the same page to see classes, emails and blog posts by date; click an item and "Manage" to open it.
-- **Delete**: tick the events and choose Actions → Delete. Only the site owner can delete a class or event.
-- Gotchas: live video (Live Class / Live Stream) is **not available on the Free plan** — it needs Starter or Pro. Streaming time counts against your plan's monthly hours (100h Starter / 500h Pro).
+- **Run a live session or stream**: click "Go live" on its row when you are ready; "End" stops it. A Zoom event has "Open Zoom" instead.
+- **Calendar**: switch from List to Calendar on the same page to see sessions, emails and blog posts by date; click an item and "Manage" to open it.
+- **Delete**: tick the events and choose Actions → Delete. Only the site owner can delete a session or event.
+- Gotchas: live video (Live Session / Live Stream) is **not available on the Free plan** — it needs Starter or Pro. Streaming time counts against your plan's monthly hours (100h Starter / 500h Pro).
 
 ## Community
 
@@ -176,8 +176,8 @@ Open Settings for:
 What: one assistant panel in the admin, opened with the **Assistant** button in the top bar. Tabs: Assistant (chat), Setup (the checklist), Help (questions about Contentor), History (what it changed).
 
 - **It knows the page you are on**: on a course's page "add a module to this course" changes that course; each page suggests a few things to ask.
-- **Describe it**: on Courses, New course and Classes & events there is a one-line field. Describe a course ("a 4-week beginner course on breathing for runners") or a class or series ("a live flow class every Tuesday at 18:00 for 6 weeks") and it drafts it. You review a card and press Apply; nothing is created before that. The normal form stays available.
-- **What it can do**: draft a course with modules and lessons; add, rename or remove modules and lessons of an existing course; schedule live classes, live streams, Zoom classes and in-person events; draft blog posts and announcements (it never sends anything); set covers, logo and page content. Class times are read in your time zone (Settings → General).
+- **Describe it**: on Courses, New course and Sessions & events there is a one-line field. Describe a course ("a 4-week beginner course on breathing for runners") or a session or series ("a live flow class every Tuesday at 18:00 for 6 weeks") and it drafts it. You review a card and press Apply; nothing is created before that. The normal form stays available.
+- **What it can do**: draft a course with modules and lessons; add, rename or remove modules and lessons of an existing course; schedule live sessions, live streams, Zoom sessions and in-person events; draft blog posts and announcements (it never sends anything); set covers, logo and page content. Session times are read in your time zone (Settings → General).
 - **Search**: type a question in the admin's search box and choose "Ask the assistant".
 - **Undo**: a draft it created can be taken back from its card or from History while you have not changed or published it. Changes to your site's pages can be undone from History, newest first.
 - Gotchas: a turn takes a few seconds. It will not delete a lesson that has a video or student progress; remove those from the course page.
@@ -209,7 +209,7 @@ You can manually mark items done/undone, but manual marks never satisfy the hard
 
 ## Student mobile app (install as an app / PWA)
 
-Your site works as an installable app on students' phones — it opens full-screen like a native app and supports push notifications (for live classes, new lessons, and announcements).
+Your site works as an installable app on students' phones — it opens full-screen like a native app and supports push notifications (for live sessions, new lessons, and announcements).
 
 - **iPhone**: student opens your site **in Safari**, taps Share, then "Add to Home Screen", then Add. Other iPhone browsers can't install it.
 - **Android**: student taps the ⋮ menu, then "Install app" (or "Add to Home screen"), then Install.
@@ -230,7 +230,7 @@ Your site works as an installable app on students' phones — it opens full-scre
 - **Why can't I publish?** → The publish card lists what's missing: set your look/logo, remove demo content, create one own course or download, and connect payouts if you have paid items.
 - **Can I use my own domain?** → Yes — contact support at support@contentor.app to set it up. It also unlocks a branded email address.
 - **Can students email me?** → On a paid plan, yes: claim your address in Settings (e.g. `you@contentor.app`, or `info@yourdomain.com` with a custom domain). Mail lands in your Inbox. Free plan is send-only.
-- **Do live classes need Zoom?** → No — Live Classes and Live Streams run in the browser. Zoom Classes are a separate option that links to your own Zoom meeting.
+- **Do live sessions need Zoom?** → No — Live Sessions and Live Streams run in the browser. Zoom Sessions are a separate option that links to your own Zoom meeting.
 - **Why is live video greyed out?** → Live sessions need Starter or Pro; the Free plan has no live streaming.
 - **How do I raise my student limit / storage?** → Upgrade the plan in Settings → Your plan (Starter: 100 students/100 GB; Pro: 500 students/500 GB).
 - **Is there a student mobile app?** → Students install your site itself as an app (Add to Home Screen on iPhone Safari / Install app on Android) with push notifications.
@@ -248,9 +248,9 @@ The ONLY links you may include in answers. Always link relative paths exactly as
 | /admin | Home | Overview stats; the publish card lives here |
 | /admin/courses | Courses | Managing or editing courses |
 | /admin/courses/new | New course | Creating the first/next course |
-| /admin/live | Classes & events | Scheduling live classes, streams, Zoom, in-person events; starting/stopping a broadcast |
-| /admin/live?view=calendar | Calendar | Classes, emails and blog posts by date (a view of Classes & events) |
-| /admin/live?new=1 | New class or event | Opens the form for a new class or event |
+| /admin/live | Sessions & events | Scheduling live sessions, streams, Zoom, in-person events; starting/stopping a broadcast |
+| /admin/live?view=calendar | Calendar | Sessions, emails and blog posts by date (a view of Sessions & events) |
+| /admin/live?new=1 | New session or event | Opens the form for a new session or event |
 | /admin/downloads | Downloads | Adding or selling downloadable files |
 | /admin/students | People | Student list, finding a student, refunds (via student detail) |
 | /admin/community | Community | Enabling community, moderation, members |

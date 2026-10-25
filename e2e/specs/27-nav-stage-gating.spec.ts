@@ -95,12 +95,12 @@ test("a coach with no optional modules sees Courses and + more under Teach", asy
       "page",
     );
     await expect(
-      teach.getByRole("link", { name: /classes & events/i }),
+      teach.getByRole("link", { name: /sessions & events/i }),
     ).toHaveCount(0);
 
     await teach.getByRole("button", { name: /\+ \d+ more/i }).click();
     await expect(
-      teach.getByRole("link", { name: /classes & events/i }),
+      teach.getByRole("link", { name: /sessions & events/i }),
     ).toBeVisible();
 
     // Search and Help can still send her to a page of a module that is off:
@@ -108,7 +108,7 @@ test("a coach with no optional modules sees Courses and + more under Teach", asy
     await page.goto(`${TENANT}/admin/live`);
     const there = page.getByRole("navigation", { name: "Create" });
     await expect(
-      there.getByRole("link", { name: /classes & events/i }),
+      there.getByRole("link", { name: /sessions & events/i }),
     ).toHaveAttribute("aria-current", "page");
     await expect(
       sidebar(page).getByRole("link", { name: "Create" }),

@@ -328,7 +328,7 @@ def test_the_tiles_list_only_what_students_can_see(owner):
     asked = flow.state(creation)["question"]
     assert asked["options"] == [
         {"value": f"course:{course.pk}", "label": "Yoga basics", "hint": "Course"},
-        {"value": f"event:live:{weekly[0].pk}", "label": "Morning flow", "hint": "Live class"},
+        {"value": f"event:live:{weekly[0].pk}", "label": "Morning flow", "hint": "Live session"},
         {"value": f"download:{workbook.pk}", "label": "Breathing workbook", "hint": "Download"},
     ]
     assert asked["ticked"] == []

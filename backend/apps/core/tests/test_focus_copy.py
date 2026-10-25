@@ -80,7 +80,7 @@ def _once(days: int) -> str:
 
 def _at_review(owner):
     """A live class with its kind and date: the review is the question, and its copy run is queued."""
-    creation = flow.answer(flow.start(owner, "event", value="A class on morning breath"), "where", value="live")
+    creation = flow.answer(flow.start(owner, "event", value="A session on morning breath"), "where", value="live")
     creation = flow.answer(creation, "when", value=_once(3))
     assert flow.current_field(creation) == "review"
     return creation
@@ -118,7 +118,7 @@ def test_copy_writes_each_field_as_a_field_event(owner):
         jobs.execute(SCHEMA, run_id)
     assert model.call_args.kwargs["label"] == "contentor:copilot"
     turn = json.loads(model.call_args.kwargs["user"])
-    assert (turn["topic"], turn["where"], turn["instruction"]) == ("A class on morning breath", "Live online", "")
+    assert (turn["topic"], turn["where"], turn["instruction"]) == ("A session on morning breath", "Live online", "")
     assert turn["schedule"].endswith("at 6:00 PM")
     assert turn["current"] == {"title": "Morning breath", "description": ""}
     row = _row(creation)
@@ -296,9 +296,9 @@ def test_copy_never_invents_numbers():
     system = copywriter.system_for("event")
     assert copywriter.F13 == "Never invent a claim, a result or a number."
     assert copywriter.F13 in copywriter.SHARED and copywriter.F13 in system
-    assert system == copywriter.SHARED.replace("{noun}", "class") + "\n" + event.COPY_RULES
+    assert system == copywriter.SHARED.replace("{noun}", "session") + "\n" + event.COPY_RULES
     assert event.COPY_RULES.splitlines()[:2] == [
-        "Write a class title under 60 characters and a 2–4 sentence description for students: what happens "
+        "Write a session title under 60 characters and a 2–4 sentence description for students: what happens "
         "and who it is for, from what she said.",
         "- What to bring, or any other concrete detail (a level, a result, a benefit), only when she said it.",
     ]
@@ -310,7 +310,7 @@ def test_copy_never_invents_numbers():
 
 
 def test_the_model_is_never_given_her_address_or_zoom_link(owner):
-    creation = flow.answer(flow.start(owner, "event", value="A class on morning breath"), "where", value="zoom")
+    creation = flow.answer(flow.start(owner, "event", value="A session on morning breath"), "where", value="zoom")
     creation = flow.answer(creation, "when", value=_once(3))
     with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
         creation = flow.answer(creation, "place", text="https://zoom.us/j/123?pwd=AbC")

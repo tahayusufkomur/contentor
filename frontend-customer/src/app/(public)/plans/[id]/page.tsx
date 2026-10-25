@@ -37,7 +37,7 @@ const TYPE_CONFIG: Record<
     href: (item) => `/courses/${item.slug}`,
   },
   liveclass: {
-    label: "Live Class",
+    label: "Live Session",
     icon: Radio,
   },
   livestream: {
@@ -45,7 +45,7 @@ const TYPE_CONFIG: Record<
     icon: Tv,
   },
   onsiteevent: {
-    label: "In-Person Class",
+    label: "In-Person Event",
     icon: MapPin,
   },
   download: {

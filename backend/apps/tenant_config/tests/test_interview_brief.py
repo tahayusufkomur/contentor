@@ -16,7 +16,7 @@ def test_offers_parse_from_words_and_ids():
 
 def test_payments_price_and_tone():
     assert brief.coerce("payments", "One-time course purchases, Monthly membership") == ["course", "membership"]
-    assert brief.coerce("payments", "Pay per class or event") == ["event"]
+    assert brief.coerce("payments", "Pay per session or event") == ["event"]
     assert brief.coerce("payments", "Free for now") == ["free"]
     assert brief.coerce("payments", "free trial, then a monthly membership") == ["membership"]
     assert brief.coerce("payments", "they pay") == ["course"]
@@ -59,8 +59,8 @@ def test_memberships_are_a_payment_not_a_way_to_teach():
 def test_paying_per_class_is_offered_only_to_coaches_who_run_classes():
     field = brief.FIELD_BY_ID["payments"]
     options, icons, hints = brief.options_for(field, {"offers": ["course"]})
-    assert "Pay per class or event" not in options and len(options) == len(icons) == len(hints) == 3
-    assert "Pay per class or event" in brief.options_for(field, {"offers": ["course", "onsite"]})[0]
+    assert "Pay per session or event" not in options and len(options) == len(icons) == len(hints) == 3
+    assert "Pay per session or event" in brief.options_for(field, {"offers": ["course", "onsite"]})[0]
 
 
 def test_skipping_a_section_drops_its_questions():
@@ -309,7 +309,7 @@ def test_only_the_guides_own_calls_can_be_left_to_it():
     assert len(brief.FIELD_BY_ID["teaches"].options) == 8
     assert brief.FIELD_BY_ID["location"].kind == "address" and brief.FIELD_BY_ID["live_when"].kind == "schedule"
     assert brief.details_for(brief.FIELD_BY_ID["offers"], {})["Articles"].startswith("A blog")
-    assert brief.parse_offers("Digital Courses, Community") == ["course", "community"]
+    assert brief.parse_offers("Digital content, Community") == ["course", "community"]
 
 
 def test_a_broad_niche_asks_its_kinds_and_the_studio_name_opens_on_them():

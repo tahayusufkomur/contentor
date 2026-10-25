@@ -81,7 +81,7 @@ export function nextToReview(
 
 const DRAFT_LABELS: Record<string, string> = {
   course: "your first course",
-  event: "your first online class",
+  event: "your first live session",
   onsite: "your first in-person event",
   post: "your first article",
 };
@@ -119,7 +119,7 @@ export function activityLine(builds: Builds, drafts: Drafts): string | null {
 
 const DRAFT_DONE: Record<string, string> = {
   course: "Your first course is drafted. I’m adding it to your Courses page.",
-  event: "Your first online class is on the calendar.",
+  event: "Your first live session is on the calendar.",
   onsite: "Your first in-person event is on the calendar.",
   post: "Your first article is drafted.",
 };

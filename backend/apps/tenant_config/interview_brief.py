@@ -52,7 +52,7 @@ OFFER_GOALS = {
     "community": "build_community",
 }
 _OFFER_WORDS = (
-    ("course", r"course|program"),
+    ("course", r"course|program|digital content|download"),
     ("live", r"\blive\b|online class|zoom|stream"),
     ("onsite", r"in[- ]person|studio|on[- ]?site|retreat|workshop"),
     ("articles", r"article|blog|writ"),
@@ -89,7 +89,7 @@ _TEACHER_WORDS = (
 # Sections a coach can skip, and what the skip button says.
 SKIP_LABELS = {
     "course": "No course for now",
-    "event": "No online class for now",
+    "event": "No live session for now",
     "onsite": "No in-person event for now",
     "post": "No article for now",
 }
@@ -219,9 +219,9 @@ MEMBERSHIP_TIERS = (
         "needs": ("live",),
         "courses": True,
         "icon": "video",
-        "perks": ("All live online classes", "Class replays", "Every digital course"),
-        "blurb": "Every live class from home, plus the courses.",
-        "blurb_alone": "Every live class from home.",  # for a coach who sells no courses
+        "perks": ("All live online sessions", "Session replays", "Every digital course"),
+        "blurb": "Every live session from home, plus the courses.",
+        "blurb_alone": "Every live session from home.",  # for a coach who sells no courses
     },
     {
         "id": "studio",
@@ -375,7 +375,7 @@ FREE_DETAIL = "Anyone with a free account. A good first taste of your work."
 # payment way that sells it, the answer holding its price, the topic answer)
 ACCESS = {
     "course": ("Anyone who buys the course", "paid once", "course", "course_price", "course_topic"),
-    "event": ("Anyone who pays per class", "a class", "event", "event_price", "live_topic"),
+    "event": ("Anyone who pays per session", "a session", "event", "event_price", "live_topic"),
     "onsite": ("Anyone who pays per event", "an event", "event", "onsite_price", "onsite_topic"),
 }
 
@@ -819,14 +819,14 @@ FIELDS: tuple[Field, ...] = (
         "offers",
         "How they work",
         "How will you work with your students?",
-        ("Digital Courses", "Live online classes", "In-person sessions", "Articles", "Community"),
+        ("Digital content", "Live online sessions", "In-person sessions", "Articles", "Community"),
         kind="offers",
         why="This decides which pages I build and what I ask you next.",
         multi=True,
         icons=("book-open", "video", "map-pin", "newspaper", "users"),
         details=(
-            "Pre-recorded lessons students buy once and follow at their own pace.",
-            "Scheduled video sessions students join from home, with you live.",
+            "Pre-recorded courses and downloads students buy once and use at their own pace.",
+            "Group classes or 1-1 calls students join from home, with you live.",
             "Classes, workshops or retreats at your own place.",
             "A blog that brings new students in from search and keeps them reading.",
             "A members' space where your students talk, share and stay motivated.",
@@ -916,7 +916,7 @@ FIELDS: tuple[Field, ...] = (
         "Their time zone",
         "Which time zone are you in?",
         kind="timezone",  # the screen is a picker, opened on the browser's own zone
-        why="Class times and your calendar follow it.",
+        why="Session times and your calendar follow it.",
     ),
     Field(
         "currency",
@@ -931,7 +931,7 @@ FIELDS: tuple[Field, ...] = (
         "payments",
         "How students pay",
         "How will students pay you?",
-        ("One-time course purchases", "Monthly membership", "Pay per class or event", "Free for now"),
+        ("One-time course purchases", "Monthly membership", "Pay per session or event", "Free for now"),
         kind="payments",
         why="Free stays free. You can change prices any time.",
         multi=True,
@@ -940,7 +940,7 @@ FIELDS: tuple[Field, ...] = (
         hints=(
             "Students buy each course once",
             "One monthly price for everything",
-            "Students pay for each live class",
+            "Students pay for each live session",
             "Everything free now, prices later",
         ),
     ),
@@ -997,16 +997,16 @@ FIELDS: tuple[Field, ...] = (
     ),
     Field(
         "live_topic",
-        "Online class topic",
-        "Let's set up your first online class. What should it focus on?",
+        "Live session topic",
+        "Let's set up your first live session. What should it focus on?",
         needs=("live",),
         group="event",
         delegable=True,
     ),
     Field(
         "live_when",
-        "Online class schedule",
-        "When does your first online class run?",
+        "Live session schedule",
+        "When does your first live session run?",
         ("Recurring", "One-time"),
         kind="schedule",  # the tile picks weekly or one-time; the picker sends the dates
         needs=("live",),
@@ -1017,8 +1017,8 @@ FIELDS: tuple[Field, ...] = (
     ),
     Field(
         "event_access",
-        "Who can join the online class",
-        "Who can join this online class?",
+        "Who can join the live session",
+        "Who can join this live session?",
         kind="access",  # options come from access_options(): buying it, each membership, or free
         needs=("live",),
         pays=("event", "membership"),
@@ -1030,8 +1030,8 @@ FIELDS: tuple[Field, ...] = (
     ),
     Field(
         "event_price",
-        "Price per online class",
-        "What should one online class cost?",
+        "Price per live session",
+        "What should one live session cost?",
         ("5", "10", "15", "20", "25", "35", "50", "75"),
         kind="price",
         needs=("live",),
@@ -1041,8 +1041,8 @@ FIELDS: tuple[Field, ...] = (
     ),
     Field(
         "event_review",
-        "First online class",
-        "Here's your first online class. Happy with it?",
+        "First live session",
+        "Here's your first live session. Happy with it?",
         kind="event",
         needs=("live",),
         group="event",
@@ -1114,7 +1114,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "calendar_view",
         "Calendar layout",
-        "How should your class calendar look?",
+        "How should your calendar look?",
         kind="calendar",
         needs=("live", "onsite"),
         group="calendar",
@@ -1154,7 +1154,7 @@ FIELDS: tuple[Field, ...] = (
         "How should your emails to students look?",
         kind="email",  # the cards are the email engine's renders (notifications.transactional.previews)
         delegable=True,
-        why="Sign-in links, receipts, class reminders and your announcements all go out in it.",
+        why="Sign-in links, receipts, session reminders and your announcements all go out in it.",
     ),
     # The site's chrome comes last: by now every page and link it carries is known.
     Field(
@@ -1577,7 +1577,7 @@ def options_for(
         )
     )
     if field.kind == "payments" and not {"live", "onsite"} & set(answers.get("offers") or []):
-        rows = [r for r in rows if r[0] != "Pay per class or event"]
+        rows = [r for r in rows if r[0] != "Pay per session or event"]
     # Course purchases only for a coach who offers courses; a membership only
     # when there is something to bundle into one.
     if field.kind == "payments" and "course" not in (answers.get("offers") or ["course"]):

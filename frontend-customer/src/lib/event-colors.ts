@@ -11,7 +11,7 @@ export const EVENT_TYPE_CONFIG: Record<
   }
 > = {
   live_class: {
-    label: "Live Class",
+    label: "Live Session",
     dotClass: "bg-primary",
     borderClass: "border-l-primary",
     textClass: "text-foreground",
@@ -32,7 +32,7 @@ export const EVENT_TYPE_CONFIG: Record<
     bgClass: "bg-emerald-500/10",
   },
   zoom_class: {
-    label: "Live Class",
+    label: "Live Session",
     dotClass: "bg-primary",
     borderClass: "border-l-primary",
     textClass: "text-foreground",

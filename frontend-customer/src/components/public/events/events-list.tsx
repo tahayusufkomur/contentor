@@ -13,7 +13,7 @@ const TYPE_META: Record<
   CalendarEventType,
   { label: string; icon: React.ComponentType<{ className?: string }> }
 > = {
-  live_class: { label: "Live class", icon: Video },
+  live_class: { label: "Live session", icon: Video },
   live_stream: { label: "Livestream", icon: Radio },
   zoom_class: { label: "Zoom", icon: Video },
   onsite_event: { label: "In person", icon: MapPin },
@@ -39,7 +39,7 @@ export function EventsList({
             href="/admin/live"
             className="text-sm font-medium text-primary hover:underline"
           >
-            Schedule your first live class →
+            Schedule your first live session →
           </Link>
         )}
       </div>

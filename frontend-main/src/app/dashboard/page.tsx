@@ -115,8 +115,8 @@ function EmptyState() {
         Launch your first platform
       </h2>
       <p className="mx-auto mt-3 max-w-md text-body text-muted-foreground">
-        Create a beautifully designed studio for your courses, live classes, and
-        email campaigns — all under your own brand.
+        Create a beautifully designed studio for your courses, live sessions,
+        and email campaigns — all under your own brand.
       </p>
       <Button
         asChild

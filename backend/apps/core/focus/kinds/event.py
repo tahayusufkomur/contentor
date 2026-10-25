@@ -26,8 +26,8 @@ from apps.tenant_config.interview_brief import Field
 from .. import analysis, pricing
 from ..recipes import Recipe
 
-NOUN = "class"
-NEW_TITLE = "New class"
+NOUN = "session"
+NEW_TITLE = "New session"
 # The /setup answer that seeds the topic's starter tile: her first online class.
 SETUP_TOPIC = "live_topic"
 COVER = "styles"
@@ -41,15 +41,15 @@ CLOSING = {
     "publish": "Published. Students can find it on your site now.",
     "draft": "Saved as a draft. Publish it from this page when you're ready.",
 }
-NOT_READY_LINE = "Your class is saved as a draft."
+NOT_READY_LINE = "Your session is saved as a draft."
 WHERE = ("live", "stream", "zoom", "onsite")
 LATER = "later"
-ZOOM_FREE = "Zoom classes are free to join."
+ZOOM_FREE = "Zoom sessions are free to join."
 ZOOM_START = "https://zoom.us/j/"
 PLACE_QUESTION = {"onsite": "What's the address?", "zoom": "Paste your Zoom link"}
 BAD_LINK = "That doesn't look like a whole link. Paste your Zoom link?"
 # Her other classes on sale, in the price step's reason.
-PLURAL = {"live": "live classes", "stream": "live streams", "zoom": "Zoom classes", "onsite": "events"}
+PLURAL = {"live": "live sessions", "stream": "live streams", "zoom": "Zoom sessions", "onsite": "events"}
 MAX_MINUTES = 24 * 60
 MAX_CAPACITY = 10_000  # far under OnsiteEvent.max_capacity's PositiveIntegerField
 
@@ -59,8 +59,8 @@ RECIPE = Recipe(
         Field(
             "topic",
             "Topic",
-            "What's your class or event about?",
-            ("A class on ",),
+            "What's your session or event about?",
+            ("A session on ",),
             delegable=True,
             starter=True,
             why=(
@@ -74,7 +74,7 @@ RECIPE = Recipe(
             "Where will it happen?",
             ("Live online", "Live stream", "On Zoom", "In person"),
             kind="choice",  # hers (not delegable): never "You decide", and "Just draft it" leaves it to her
-            why="It can't change once the class is made.",
+            why="It can't change once the session is made.",
         ),
         # Hers too (not delegable): "Just draft it" leaves her date to her, never guessed.
         Field("when", "When", "When is it?", kind="schedule", why="Times are in your site's time zone."),
@@ -87,15 +87,15 @@ RECIPE = Recipe(
         ),
         Field(
             "review",
-            "Class",
-            "Here's your class. Does it fit?",
+            "Session",
+            "Here's your session. Does it fit?",
             kind="review",
             why="Say what to change, or edit it on the page yourself.",
         ),
         Field(
             "cover",
             "Cover",
-            "Which cover fits your class?",
+            "Which cover fits your session?",
             kind="cover",
             why=(
                 "Pick a style on the page. The photo row under it changes the photo in all four; "
@@ -167,9 +167,9 @@ class EventFound(analysis.Found):
 FOUND = EventFound
 # Appended to the shared rules in the analysis prompt (apps.core.focus.analysis.system_for).
 RULES = (
-    "- topic: what the class or event is about, short, in her words.\n"
-    "- where: 'live' (a live online class), 'stream' (a live stream), 'zoom' (on Zoom) or 'onsite' (in "
-    "person: her studio, a park, an address) when she said which; otherwise ''.\n"
+    "- topic: what the session or event is about, short, in her words.\n"
+    "- where: 'live' (a live online session: a group class or a 1-1 call), 'stream' (a live stream), "
+    "'zoom' (on Zoom) or 'onsite' (in person: her studio, a park, an address) when she said which; otherwise ''.\n"
     "- schedule: when it happens, with her exact dates and times: 'HH:MM' on a 24-hour clock, dates "
     "'YYYY-MM-DD' read against 'today'. mode 'once' with date and time; or mode 'weekly' with days "
     "(0 Sunday, 1 Monday ... 6 Saturday), times, start (the first date, only when she gave one) and "
@@ -178,7 +178,7 @@ RULES = (
     "- address: the street address of an in-person event, word for word as she wrote it.\n"
     "- zoom_link: her Zoom link, character for character as she wrote it.\n"
     "- capacity: how many people can come, when she said.\n"
-    "- A price is what one session costs to join. A Zoom class is always free to join: for one on Zoom, "
+    "- A price is what one session costs to join. A Zoom session is always free to join: for one on Zoom, "
     "leave price ''.\n"
     "- unclear: where, a day or time, or an amount she gave vaguely ('somewhere online', 'next week "
     "sometime', 'around 40-50'), or a price in a currency other than 'currency', becomes one item instead "
@@ -458,10 +458,10 @@ def sync(creation) -> None:
 COPY_FIELDS = ("title", "description")
 # Appended to the copy job's shared prompt (apps.core.focus.copywriter.system_for).
 COPY_RULES = (
-    "Write a class title under 60 characters and a 2–4 sentence description for students: what happens "
+    "Write a session title under 60 characters and a 2–4 sentence description for students: what happens "
     "and who it is for, from what she said.\n"
     "- What to bring, or any other concrete detail (a level, a result, a benefit), only when she said it.\n"
-    "- topic: what the class or event is about, in her words; '' means pick one that fits her site.\n"
+    "- topic: what the session or event is about, in her words; '' means pick one that fits her site.\n"
     "- where: how students join. schedule, duration_minutes and capacity: hers, as she gave them; empty "
     "when she did not say.\n"
     "- notes and followups: what else she said about it; follow it.\n"

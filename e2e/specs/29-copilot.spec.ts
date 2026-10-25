@@ -535,7 +535,7 @@ test("Describe it drafts a class series beside the manual form: cards, Apply all
         text: "Two Tuesdays.",
         actions: [1, 2].map((n) => ({
           kind: "create_event",
-          title: `Schedule Zoom class: Office hour ${n}`,
+          title: `Schedule Zoom session: Office hour ${n}`,
           detail: "Tue — visible to students once confirmed",
           token: `e2e-series-${n}`,
         })),
@@ -557,11 +557,11 @@ test("Describe it drafts a class series beside the manual form: cards, Apply all
 
   await page.getByTestId("describe-event").fill("a Zoom office hour on the next two Tuesdays at 18:00");
   await page.getByRole("button", { name: "Draft it" }).click();
-  await expect(page.getByText("Schedule Zoom class: Office hour 2")).toBeVisible();
+  await expect(page.getByText("Schedule Zoom session: Office hour 2")).toBeVisible();
   expect(sent[0].context).toEqual({ path: "/admin/live", intent: "draft_event" });
   expect(sent[0].specialist).toBe("content");
   // The manual way is still on the page.
-  await expect(page.getByRole("button", { name: "New class or event" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "New session or event" })).toBeVisible();
 
   await page.getByRole("button", { name: "Apply all" }).click();
   await expect(page.getByText("Created", { exact: true })).toHaveCount(2);

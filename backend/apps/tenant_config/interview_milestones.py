@@ -359,7 +359,7 @@ def draft_prompt(answers: dict, kind: str) -> str:
         when = f"{_val(answers, f'{key}_when', 'an evening that suits my students')}" + (
             f" (the first one on {first.strftime('%Y-%m-%dT%H:%M')})" if first else ""
         )
-        what = "in person event" if kind == "onsite" else "online class"
+        what = "in person event" if kind == "onsite" else "live session"
         return f"My first {what}. Topic: {_val(answers, f'{key}_topic', 'you choose')}. When: {when}.{place}"
     return f"My first article. Topic: {_val(answers, 'article_topic', 'you choose something useful for my students')}."
 
@@ -973,7 +973,7 @@ def set_cover(tenant, kind: str, asset_id: str) -> dict:
 
 CALENDAR_VIEWS = (
     ("month", "Month grid", "The whole month at a glance, with a day panel."),
-    ("agenda", "Agenda list", "Upcoming classes in a simple list, day by day."),
+    ("agenda", "Agenda list", "Upcoming sessions in a simple list, day by day."),
 )
 
 
@@ -1106,7 +1106,7 @@ PHOTO_SHOTS = {
     "landscape": (
         "Wide",
         "16:9",
-        "Banners between sections, and the covers of your courses and classes.",
+        "Banners between sections, and the covers of your courses and sessions.",
         "A wide view of a class or your space, with room around the subject.",
     ),
     "square": ("Square", "1:1", "Small accents beside the opening photo.", "A detail: hands, tools, a close-up."),

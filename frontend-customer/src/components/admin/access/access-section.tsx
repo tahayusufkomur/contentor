@@ -311,7 +311,7 @@ function Loaded({
         <CardTitle className="text-base">Access</CardTitle>
         <CardDescription>
           {onlyFree
-            ? "Zoom classes are free to join"
+            ? "Zoom sessions are free to join"
             : "How students get this. Tick every way in."}
         </CardDescription>
       </CardHeader>

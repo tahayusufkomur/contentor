@@ -34,17 +34,17 @@ const TYPE_FILTERS = [
   { label: "All", value: "all" },
   { label: "Course", value: "course" },
   { label: "Download", value: "download" },
-  { label: "Live Class", value: "live_class" },
+  { label: "Live Session", value: "live_class" },
   { label: "Live Stream", value: "live_stream" },
-  { label: "In-Person Class", value: "onsite_event" },
+  { label: "In-Person Event", value: "onsite_event" },
 ];
 
 const TYPE_LABEL_MAP: Record<string, string> = {
   course: "Course",
   download: "Download",
-  live_class: "Live Class",
+  live_class: "Live Session",
   live_stream: "Live Stream",
-  onsite_event: "In-Person Class",
+  onsite_event: "In-Person Event",
 };
 
 const TYPE_BADGE_VARIANT: Record<

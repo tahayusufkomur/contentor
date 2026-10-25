@@ -7,8 +7,8 @@ type Cta = { text: string; href: string };
 /** What the legacy default "Get Started" says once it knows where it leads. */
 export const HEADER_CTA_BY_HREF: Record<string, string> = {
   "/courses": "Start a course",
-  "/events": "Book a class",
-  "/calendar": "Book a class",
+  "/events": "Book a session",
+  "/calendar": "Book a session",
   "/plans": "Join",
   "/contact": "Get in touch",
 };

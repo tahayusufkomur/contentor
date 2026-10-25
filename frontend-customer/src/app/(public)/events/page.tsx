@@ -54,7 +54,7 @@ export default async function EventsPage() {
             Upcoming events
           </h1>
           <p className="mt-1 text-muted-foreground">
-            Live classes, streams, and in-person events over the next 90 days.
+            Live sessions, streams, and in-person events over the next 90 days.
           </p>
         </div>
         <Link

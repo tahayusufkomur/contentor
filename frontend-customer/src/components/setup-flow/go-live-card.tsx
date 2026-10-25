@@ -283,7 +283,7 @@ export function GoLiveCard({
           To sell on your site, choose {name}
         </p>
         <p className="mt-1 text-[14px] leading-relaxed text-[var(--sf-graphite)]">
-          Paid courses and live classes need the {name} plan
+          Paid courses and live sessions need the {name} plan
           {price ? ` (${price} a month)` : ""}. You’ll come straight back here.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">

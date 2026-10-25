@@ -69,7 +69,7 @@ def _weekly(weeks: int = 2) -> str:
     )
 
 
-def _started(owner, topic="A class on morning breath"):
+def _started(owner, topic="A session on morning breath"):
     return flow.start(owner, "event", value=topic)
 
 
@@ -308,7 +308,7 @@ def test_a_skipped_place_neither_waits_nor_is_delegated(owner):
 
 
 def test_the_overview_lists_a_class_without_a_record_yet(owner):
-    creation = flow.start(owner, "event", value="A class on morning breath")
+    creation = flow.start(owner, "event", value="A session on morning breath")
     client = APIClient(HTTP_HOST="shared-test.localhost")
     client.force_authenticate(user=owner)
     open_ = client.get("/api/v1/admin/focus/").json()["open"]
@@ -418,13 +418,13 @@ def test_a_typed_answer_after_the_draft_is_read_as_a_change_without_a_course_id(
 def test_the_follow_up_before_the_copy_is_the_events_own(owner, tenant_ctx):
     for kind, line in (
         ("course", "'outline' (the course outline: title, description, modules and lessons)"),
-        ("event", "'copy' (the class copy: title and description)"),
+        ("event", "'copy' (the session copy: title and description)"),
     ):
         assert line in followup.system_for(kind)
     assert "modules" not in followup.system_for("event")
     assert (followup.label("course"), followup.label("event")) == (
         "Thinking about your course",
-        "Thinking about your class",
+        "Thinking about your session",
     )
     creation = flow.answer(_started(owner), "where", value="live")
     with mock.patch("apps.core.focus.flow.followup_allowed", return_value=True):
@@ -444,13 +444,13 @@ def test_the_follow_up_before_the_copy_is_the_events_own(owner, tenant_ctx):
     ):
         jobs.execute(SCHEMA, run.id)
     site.assert_called_once_with(tenant_ctx, None)
-    assert run.events.first().data["label"] == "Thinking about your class"
+    assert run.events.first().data["label"] == "Thinking about your session"
     creation.refresh_from_db()
     assert creation.runs["copy"] and creation.brief["settled"] == ["copy"]
 
 
 def test_just_draft_it_before_the_kind_is_known_stops_at_where(owner):
-    creation = flow.start(owner, "event", value="A class on morning breath", rest=True)
+    creation = flow.start(owner, "event", value="A session on morning breath", rest=True)
     assert creation.record_id is None and "where" not in creation.answers
     asked = flow.state(creation)["question"]
     assert (asked["field"], asked["question"], asked["can_delegate"]) == ("where", "Where will it happen?", False)

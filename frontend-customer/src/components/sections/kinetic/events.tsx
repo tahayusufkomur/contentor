@@ -63,8 +63,8 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No upcoming live classes"
-              text="Schedule a live class or event and it appears here in the timetable."
+              title="No upcoming live sessions"
+              text="Schedule a live session or event and it appears here in the timetable."
             />
           </div>
         ) : (

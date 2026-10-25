@@ -97,12 +97,19 @@ to use in conversation, code, and commits.
 - **Video** — a reusable S3 video asset (`s3_key`); also used as a live-event recording.
 - **Photo** — an image asset in S3 (UUID-keyed); thumbnails and branding.
 - **Download** (`DownloadFile`) — a sellable or free downloadable resource (PDF, etc.).
+- **Digital content** — the user-facing umbrella for courses and downloads together (menu
+  groups, headings, the setup interview's "Digital content" offer). One item is still "a
+  course" or "a download". Code names stay `Course` / `DownloadFile`.
 - **Live event** — umbrella for the four live types below, all with a computed status
-  (`draft → scheduled → live/ongoing → ended`):
-  - **LiveClass** — interactive Stream.io video call (1:N + chat).
-  - **LiveStream** — one-way Stream.io broadcast.
-  - **ZoomClass** — an external Zoom meeting (link only, no SDK).
-  - **OnsiteEvent** — an in-person event (location, capacity).
+  (`draft → scheduled → live/ongoing → ended`). User-facing copy names them **live
+  session**, **live stream**, **Zoom session** and **in-person event**, never "live class",
+  "online class" or "Zoom class"; their admin page is **Sessions & events**. Code names
+  (models, fields, API, routes such as `/live-classes`) stay as they are:
+  - **LiveClass** (UI: **live session**, a group class or a 1-1 call) — interactive
+    Stream.io video call (1:N + chat).
+  - **LiveStream** (UI: **live stream**) — one-way Stream.io broadcast.
+  - **ZoomClass** (UI: **Zoom session**) — an external Zoom meeting (link only, no SDK).
+  - **OnsiteEvent** (UI: **in-person event**) — an in-person event (location, capacity).
 - **Enrollment** — a student's access record to a course.
 - **Progress** — a student's per-lesson watch/completion record.
 - **Niche template** — a pre-built starter pack of content (courses, plans, events) for a

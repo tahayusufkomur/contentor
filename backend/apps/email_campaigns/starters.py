@@ -366,7 +366,7 @@ def _invite(f) -> dict:
         _sign_off(ids, f["owner"]),
     ]
     return {
-        "name": "Class invitation",
+        "name": "Session invitation",
         "category": TemplateCategory.EVENT,
         "subject": "Join me live",
         "preheader": "Here are the details of my next session.",

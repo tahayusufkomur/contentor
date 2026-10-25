@@ -110,7 +110,7 @@ FOUND = BundleFound
 # Appended to the shared rules in the analysis prompt (apps.core.focus.analysis.system_for).
 RULES = (
     "- topic: what the bundle is or who it is for, short, in her words; '' when she only named items.\n"
-    "- items: the titles of her courses, classes and downloads she named as part of it, as she wrote "
+    "- items: the titles of her courses, live sessions and downloads she named as part of it, as she wrote "
     "them; [] when she named none. Never a title she did not name.\n"
     "- A price is what the whole bundle costs once.\n"
     "- unclear: an amount she gave vaguely ('around 10-15'), or a price in a currency other than "

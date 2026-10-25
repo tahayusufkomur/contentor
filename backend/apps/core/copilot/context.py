@@ -14,7 +14,7 @@ from django_tenants.utils import tenant_context
 ADMIN_PAGES = {
     "/admin": "Home",
     "/admin/courses": "Courses",
-    "/admin/live": "Classes & events",
+    "/admin/live": "Sessions & events",
     "/admin/downloads": "Downloads",
     "/admin/students": "People",
     "/admin/community": "Community",
@@ -42,10 +42,10 @@ INTENTS = {
         "details yourself; ask only if the sentence names no subject at all."
     ),
     "draft_event": (
-        "The coach typed this into the 'Describe it' field on Classes & events. "
-        "Propose create_event cards: one for a single class, or one per date "
+        "The coach typed this into the 'Describe it' field on Sessions & events. "
+        "Propose create_event cards: one for a single session, or one per date "
         "for a series (weekly unless she says otherwise, at most 12). Pick the "
-        "event_kind from her words (live class by default, onsite when she "
+        "event_kind from her words (live session by default, onsite when she "
         "names a place, zoom when she names Zoom, stream for a broadcast). "
         "Ask only if she gave no day or time at all."
     ),

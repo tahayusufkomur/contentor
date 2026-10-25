@@ -131,7 +131,7 @@ function ItemCard({
       kicker={
         {
           course: "Your first course",
-          event: "Your first online class",
+          event: "Your first live session",
           onsite: "Your first in-person event",
         }[kind]
       }

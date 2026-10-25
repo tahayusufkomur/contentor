@@ -229,8 +229,8 @@ def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS, first_na
     return {
         "links": links,
         "primary": primary,
-        "primaryLabel": {"/courses": "Browse the courses", "/events": "See the classes"}.get(primary, f"About {me}"),
-        "offering": {"/courses": "courses", "/events": "classes"}.get(primary, "work"),
+        "primaryLabel": {"/courses": "Browse the courses", "/events": "See the sessions"}.get(primary, f"About {me}"),
+        "offering": {"/courses": "courses", "/events": "sessions"}.get(primary, "work"),
         "niche": str(niche or "general"),
         # Photo disciplines this coach's words allow (see ai_curate.off_topic).
         "allowed": ai_curate.allowed_disciplines(t, str(description or "")),
@@ -337,10 +337,10 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
     if family == "howItWorks" and page_key == "events":
         return {
             "kicker": "How it works",
-            "heading": "Join a class in three steps",
+            "heading": "Join a session in three steps",
             "steps": [
-                {"title": "Pick a class", "text": "Find a session above that fits your week, online or in person."},
-                {"title": "Save your spot", "text": "Book in a few clicks; online classes send you the link to join."},
+                {"title": "Pick a session", "text": "Find a session above that fits your week, online or in person."},
+                {"title": "Save your spot", "text": "Book in a few clicks; live sessions send you the link to join."},
                 {"title": "Show up and train", "text": f"Come as you are. {i.capitalize()} take it from there."},
             ],
         }
@@ -380,20 +380,20 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
     if family == "faq" and page_key == "events":
         return {
             "kicker": "Questions",
-            "heading": "Before your first class",
+            "heading": "Before your first session",
             "intro": f"Can't find yours? Send {me} a message.",
             "items": [
                 {
                     "q": "Do I need experience to join?",
-                    "a": "Each class says who it is for. If you are unsure, send a message and ask.",
+                    "a": "Each session says who it is for. If you are unsure, send a message and ask.",
                 },
                 {
-                    "q": "How do I join an online class?",
-                    "a": "Book your spot and the link to join arrives by email; it is on the class page too.",
+                    "q": "How do I join a live session?",
+                    "a": "Book your spot and the link to join arrives by email; it is on the session page too.",
                 },
                 {
                     "q": "What should I bring?",
-                    "a": "The class page lists anything you need. Comfortable clothes and water are a good start.",
+                    "a": "The session page lists anything you need. Comfortable clothes and water are a good start.",
                 },
                 {
                     "q": "Can I cancel?",
@@ -430,7 +430,7 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
     if family == "cta":
         if page_key == "events":
             return {
-                "heading": "See you in class",
+                "heading": "See you soon",
                 "text": f"Pick a session above, or ask {me} which one suits you best.",
                 "ctaLabel": "Ask a question",
                 "ctaHref": "/contact",
@@ -493,9 +493,9 @@ def _hero_intro(page_key, c) -> dict:
         ),
         "faq": ("FAQ", "Good questions, plain answers", "The things worth knowing before you start."),
         "events": (
-            "Classes & events",
+            "Sessions & events",
             "Train with me live",
-            f"Upcoming classes and sessions, online and in person. Pick one and save your spot with {me}.",
+            f"Upcoming sessions and events, online and in person. Pick one and save your spot with {me}.",
         ),
         "contact": (
             "Contact",
@@ -810,7 +810,7 @@ brief only its slot "image".
 - The courses page includes courseShowcase, pricing includes pricing, faq includes faq, contact includes contact.
 - Home has 6-8 sections; other pages 3-5. Each family at most once per page.
 - Use only the families and variant names listed for the style. Start from the recipe and change it only when the \
-coach's brief gives a reason (for example: add events for a coach who runs live classes; drop moments for a coach \
+coach's brief gives a reason (for example: add events for a coach who runs live sessions; drop moments for a coach \
 who works one-to-one).
 
 Photo briefs

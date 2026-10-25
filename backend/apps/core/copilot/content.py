@@ -115,9 +115,9 @@ def create_course(user, params, *, cover=True):
 # The four kinds of class or event: the copilot's event_kind -> (model name,
 # create serializer name, admin tab, public calendar type, plain name).
 EVENT_KINDS = {
-    "live": ("LiveClass", "LiveClassCreateSerializer", "classes", "live_class", "live class"),
+    "live": ("LiveClass", "LiveClassCreateSerializer", "classes", "live_class", "live session"),
     "stream": ("LiveStream", "LiveStreamCreateSerializer", "streams", "live_stream", "live stream"),
-    "zoom": ("ZoomClass", "ZoomClassCreateSerializer", "zoom", "zoom_class", "Zoom class"),
+    "zoom": ("ZoomClass", "ZoomClassCreateSerializer", "zoom", "zoom_class", "Zoom session"),
     "onsite": ("OnsiteEvent", "OnsiteEventCreateSerializer", "onsite", "onsite_event", "onsite event"),
 }
 

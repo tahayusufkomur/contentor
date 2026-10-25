@@ -182,7 +182,7 @@ def live_class_stop(request, pk):
     live_class = get_object_or_404(LiveClass, pk=pk)
     if live_class.status != "live":
         return Response(
-            {"detail": "Class is not live."},
+            {"detail": "Session is not live."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -200,7 +200,7 @@ def live_class_token(request, pk):
     live_class = get_object_or_404(LiveClass, pk=pk)
     if live_class.status != "live":
         return Response(
-            {"detail": "Class is not live."},
+            {"detail": "Session is not live."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -209,7 +209,7 @@ def live_class_token(request, pk):
     if not access_service.check_access(request.user, live_class):
         info = access_service.get_access_info(request.user, live_class)
         return Response(
-            {"detail": "You do not have access to this live class.", "access_info": asdict(info)},
+            {"detail": "You do not have access to this live session.", "access_info": asdict(info)},
             status=status.HTTP_403_FORBIDDEN,
         )
 

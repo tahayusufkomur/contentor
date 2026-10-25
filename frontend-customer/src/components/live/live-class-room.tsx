@@ -7,5 +7,5 @@ export default function LiveClassRoom({
 }: {
   liveClassId: string;
 }) {
-  return <LiveFrame basePath={`/api/v1/live/${liveClassId}`} noun="class" />;
+  return <LiveFrame basePath={`/api/v1/live/${liveClassId}`} noun="session" />;
 }

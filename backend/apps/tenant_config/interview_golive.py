@@ -157,7 +157,7 @@ def _summary(tenant, answers, flow) -> list[dict]:
     offers = set(answers.get("offers") or [])
     runs = False
     for offer, label, when_id, price_id, key in (
-        ("live", "Online classes", "live_when", "event_price", "event"),
+        ("live", "Live sessions", "live_when", "event_price", "event"),
         ("onsite", "In-person events", "onsite_when", "onsite_price", "onsite"),
     ):
         if offer in offers and brief.is_settled(answers, when_id):
@@ -171,7 +171,7 @@ def _summary(tenant, answers, flow) -> list[dict]:
             )
             runs = True
     if runs and answers.get("calendar_nav") != "no":
-        lines.append({"label": "Class calendar", "value": "A month grid, linked in your menu"})
+        lines.append({"label": "Calendar", "value": "A month grid, linked in your menu"})
     return lines
 
 
@@ -196,7 +196,7 @@ def _held_lines(held, flow) -> list[str]:
     if names := list(plans.values_list("name", flat=True)):
         out.append(f"Your {'membership' if len(names) == 1 else 'memberships'}: {', '.join(names)}")
     if any(k in held for k in _CLASSES):
-        out.append("Your classes")
+        out.append("Your sessions and events")
     return out
 
 

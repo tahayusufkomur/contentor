@@ -48,7 +48,7 @@ STEP_COPY = {
     "page:pricing": ("Pricing page", "Your membership plans, side by side."),
     "page:faq": ("FAQ page", "Answers to what students ask before they join."),
     "page:contact": ("Contact page", "How students reach you."),
-    "page:events": ("Events page", "Your upcoming classes, online and in person."),
+    "page:events": ("Events page", "Your upcoming sessions and events, online and in person."),
     "payouts": ("Get paid", "Connect Stripe so your sales reach your bank account."),
     "launch": ("Go live", "Publish your site — or keep it private a little longer."),
 }
@@ -655,7 +655,7 @@ def fallback_draft(kind: str, answers: dict):
         return EventDraft(
             title=str(
                 answers.get("onsite_topic" if kind == "onsite" else "live_topic")
-                or f"{teaches} {'event' if kind == 'onsite' else 'live class'}"
+                or f"{teaches} {'event' if kind == 'onsite' else 'live session'}"
             )[:80],
             description="A live session to practise together.",
             event_kind="onsite" if kind == "onsite" or ("onsite" in offers and "live" not in offers) else "live",

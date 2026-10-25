@@ -165,7 +165,7 @@ export const BLOCKERS: Record<string, { label: string; step: string }> = {
   plan: { label: "Start your free trial", step: "plan" },
   first_course: { label: "Publish your first course", step: "course" },
   payouts: { label: "Connect payouts", step: "payouts" },
-  first_event: { label: "Schedule your first live class", step: "event" },
+  first_event: { label: "Schedule your first live session", step: "event" },
   first_blog_post: { label: "Publish your first article", step: "post" },
   look: { label: "Finish your home page", step: "page:home" },
 };
@@ -180,7 +180,7 @@ export function embedSrc(path: string): string {
 const CHOICE_ERRORS: Record<string, string> = {
   invalid_handle:
     "That handle doesn’t look right. Use your handle, like @mira.yoga, or paste the link to your profile.",
-  invalid_schedule: "Pick at least one day and a time for the class.",
+  invalid_schedule: "Pick at least one day and a time for the session.",
   unknown_logo: "That logo isn’t available any more. Pick another one.",
   unknown_style: "That look isn’t available any more. Pick another one.",
 };

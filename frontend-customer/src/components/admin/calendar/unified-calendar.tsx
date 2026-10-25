@@ -214,7 +214,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
       {/* The calendar is a view of Classes & events, which titles the page. */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">
-          Your classes, emails and blog posts, by date.
+          Your sessions, emails and blog posts, by date.
         </p>
 
         {/* Action Controls */}
@@ -227,7 +227,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
           >
             <Link href="/admin/live?new=1">
               <Plus className="h-4 w-4" />
-              Class or event
+              Session or event
             </Link>
           </Button>
           <Button

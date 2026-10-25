@@ -17,7 +17,7 @@
     "roles": {
       "designer": "Builds your site, look and logo",
       "marketer": "Writes articles, sends campaigns",
-      "producer": "Drafts your courses, runs live classes",
+      "producer": "Drafts your courses, runs live sessions",
       "community": "Reminds students by push and email",
       "assistant": "Answers students, day and night",
       "cashier": "Suggests prices, pays you through Stripe"
@@ -67,8 +67,8 @@
         "name": "Content Creating Specialist",
         "title": "From one sentence to a course, then go live.",
         "text": "Describe a course and its outline drafts itself, lesson by lesson. Then go live from your own site: students join from a laptop, a tablet or a phone.",
-        "tools": "Course drafts · Live classes · In-person classes · Your calendar",
-        "sceneLabel": "Lena, Hannah and Priya follow Mara's live class on a laptop, a tablet and a phone",
+        "tools": "Course drafts · Live sessions, group or one-to-one · In-person events · Your calendar",
+        "sceneLabel": "Lena, Hannah and Priya follow Mara's live session on a laptop, a tablet and a phone",
         "live": "Mara is live",
         "devices": {
           "laptop": "Lena, on her laptop",
@@ -79,7 +79,7 @@
       "community": {
         "name": "Community manager",
         "title": "Students who keep coming back.",
-        "text": "Before every class, each student gets a reminder: a push on their phone, an email and a note in their app. In between, your community keeps talking.",
+        "text": "Before every session, each student gets a reminder: a push on their phone, an email and a note in their app. In between, your community keeps talking.",
         "tools": "Push reminders · Email · Community · Your app on their phone",
         "sceneLabel": "One reminder from Mara arrives as a push, an email and a note in her students' app",
         "scene": {
@@ -172,7 +172,7 @@
   "start": {
     "pricing": {
       "title": "Try Starter free for 14 days.",
-      "text": "Build your site, invite students and run live classes before you pay anything. Selling opens when your plan starts. Cancel any time before the first charge.",
+      "text": "Build your site, invite students and run live sessions before you pay anything. Selling opens when your plan starts. Cancel any time before the first charge.",
       "cta": "Compare all plans"
     },
     "faq": {

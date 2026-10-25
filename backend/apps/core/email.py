@@ -169,7 +169,7 @@ def action_email(*, heading: str, intro: str, button: str, link: str, expires: s
         </a>
         <p style="color: #888; font-size: 13px;">{escape(expires)}</p>
         <p style="color: #aaa; font-size: 12px; margin-top: 32px;">
-            Contentor · Courses, live classes and payments under your own brand.
+            Contentor · Courses, live sessions and payments under your own brand.
         </p>
     </div>
     """

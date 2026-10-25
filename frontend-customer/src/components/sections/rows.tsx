@@ -267,7 +267,7 @@ export function EventsRows(props: SectionProps) {
         <EmptyHint
           editable={editable}
           title="No upcoming events yet"
-          text="Schedule a class and the next one leads this page."
+          text="Schedule a session and the next one leads this page."
         />
       ) : (
         <>

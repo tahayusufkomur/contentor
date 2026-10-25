@@ -94,7 +94,7 @@ export function EventsCron({ block, data, editable }: SectionProps) {
             <EmptyHint
               editable={editable}
               title="No upcoming events scheduled"
-              text="Schedule a live class or session and it appears here."
+              text="Schedule a live session or event and it appears here."
             />
           </div>
         )}

@@ -116,7 +116,7 @@ describe("SimpleControls", () => {
     );
     for (const targetKind of ["live", "zoom", "in_person"]) {
       expect(label(controls({ targetKind })), targetKind).toBe(
-        "e.g. Live class",
+        "e.g. Live session",
       );
     }
   });

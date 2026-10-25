@@ -1376,9 +1376,9 @@ function BrandFooterSettings({ block }: { block: BrandFooterBlock }) {
 
 const KIND_LABELS: Record<string, string> = {
   course: "Course",
-  live: "Live class",
+  live: "Live session",
   stream: "Live stream",
-  zoom: "Zoom class",
+  zoom: "Zoom session",
   onsite: "In person",
   event: "Event",
   download: "Download",

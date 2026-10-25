@@ -46,7 +46,7 @@ STARTED = {
     "page:contact": "your Contact page",
     "page:faq": "your FAQ page",
     "draft:course": "a first draft of your course",
-    "draft:event": "your first online class",
+    "draft:event": "your first live session",
     "draft:onsite": "your first in-person event",
     "draft:post": "your first article",
 }
@@ -87,10 +87,10 @@ Do these things:
    credentials, prices): leave those unanswered.
    For "offers" give the matching ids from: course, live, onsite, articles, community.
    For "payments" give the matching ids from: course (one-time course purchases), membership
-   (a monthly subscription), event (paying per class or event), free.
+   (a monthly subscription), event (paying per session or event), free.
    For "teachers" (who students learn from) give one id from: solo (only them), solo_for_now (only
    them for now, more teachers later), several (more than one teacher).
-   For "course_access", "event_access" and "onsite_access" (who can open that course or class)
+   For "course_access", "event_access" and "onsite_access" (who can open that course or session)
    give the matching answers from that field's "fixed_options", word for word.
 2. edit_request: if the message asks you to change or create something on their site (a
    headline, a photo, colours, wording, a page section, a course, an event, a post, the logo,
@@ -432,9 +432,9 @@ NOTED_NAMES = {
     "course_topic": "your course topic",
     "course_price": "your course price",
     "course_access": "who can take your course",
-    "live_topic": "your online class topic",
-    "event_price": "your online class price",
-    "event_access": "who can join your online class",
+    "live_topic": "your live session topic",
+    "event_price": "your live session price",
+    "event_access": "who can join your live session",
     "onsite_topic": "your in-person event topic",
     "onsite_price": "your in-person event price",
     "onsite_access": "who can come to your in-person event",

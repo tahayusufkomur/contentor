@@ -96,7 +96,7 @@ export function SchedulePicker({
               return (
                 <section
                   key={i}
-                  aria-label={`Class time ${i + 1}`}
+                  aria-label={`Session time ${i + 1}`}
                   className="grid gap-4 rounded-xl bg-[var(--sf-tint)] p-4 sm:col-span-2"
                 >
                   {slots.length > 1 && (

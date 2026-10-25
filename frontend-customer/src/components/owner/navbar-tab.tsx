@@ -139,7 +139,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
           `/api/v1/calendar/?from=${isoDate(from)}&to=${isoDate(to)}`,
         );
         if (Array.isArray(events) && events.length > 0) {
-          found.push({ label: "Live Classes", href: "/events" });
+          found.push({ label: "Live Sessions", href: "/events" });
         }
       } catch {}
       try {

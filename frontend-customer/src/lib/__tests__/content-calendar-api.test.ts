@@ -12,7 +12,7 @@ describe("mapContentCalendarItem", () => {
     title: "Live Pilates",
     scheduled_at: "2026-07-21T18:00:00Z",
     status: "scheduled",
-    subtitle: "60 min • Live class",
+    subtitle: "60 min • Live session",
     href: "/admin/live",
   };
 
@@ -29,7 +29,7 @@ describe("mapContentCalendarItem", () => {
       title: "Live Pilates",
       status: "scheduled",
       href: "/admin/live",
-      subtitle: "60 min • Live class",
+      subtitle: "60 min • Live session",
     });
   });
 

@@ -116,7 +116,7 @@ def test_go_live_lists_the_steps_left_and_what_was_built(client, tenant_ctx, con
     assert [s["id"] for s in body["steps"]] == ["plan", "payouts", "publish"]
     assert all(s["minutes"] for s in body["steps"])
     summary = {line["label"]: line["value"] for line in body["summary"]}
-    assert "Online membership" in summary["Memberships"] and "Tuesdays at 7:00 PM" in summary["Online classes"]
+    assert "Online membership" in summary["Memberships"] and "Tuesdays at 7:00 PM" in summary["Live sessions"]
     assert "Saturdays at 10:00 AM" in summary["In-person events"]
     assert summary["Pages"].startswith("Home")
 
@@ -239,7 +239,7 @@ def test_sell_later_goes_live_with_paid_items_held_and_prices_kept(client, tenan
     assert body["needs_plan"] is False and body["needs_payouts"] is False
     assert [s["id"] for s in body["steps"]] == ["publish"]
     held = " ".join(body["held"])
-    assert "Desk Yoga" in held and "Online membership" in held and "classes" in held
+    assert "Desk Yoga" in held and "Online membership" in held and "sessions" in held
     course.refresh_from_db(), plan.refresh_from_db(), live.refresh_from_db()
     assert (course.pricing_type, course.is_published) == ("paid", False)
     assert plan.is_active is False and live.status == "draft"

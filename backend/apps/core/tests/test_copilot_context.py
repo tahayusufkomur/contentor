@@ -29,7 +29,7 @@ def course(tenant_ctx):
 
 def test_a_nav_page_is_named_by_our_own_label(tenant_ctx):
     assert page_context.clean(tenant_ctx, {"path": "/admin/live"}) == {
-        "page": "Classes & events",
+        "page": "Sessions & events",
         "path": "/admin/live",
         "record": None,
         "email": None,

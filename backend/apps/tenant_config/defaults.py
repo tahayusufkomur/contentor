@@ -191,7 +191,7 @@ def header_cta(links):
     if "/courses" in links:
         return {"text": "Start a course", "href": "/courses"}
     if "/events" in links:
-        return {"text": "Book a class", "href": "/events"}
+        return {"text": "Book a session", "href": "/events"}
     return {"text": "Get in touch", "href": "/contact"}
 
 

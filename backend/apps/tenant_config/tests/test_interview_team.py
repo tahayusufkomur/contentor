@@ -59,7 +59,7 @@ def test_an_empty_flow_gives_the_fallback_lines(tenant_ctx):
     assert lines["designer"]["did"] == "Looks after your site."
     assert lines["content"] == {
         "key": "content",
-        "did": "Ready when you want to make your first course or class.",
+        "did": "Ready when you want to make your first course or session.",
         "next": "Tell me what you'd like to make first.",
     }
     assert lines["finance"]["did"] == "Kept everything free for now."

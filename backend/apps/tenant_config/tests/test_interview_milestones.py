@@ -1117,7 +1117,7 @@ def test_the_header_button_follows_what_the_coach_offers(tenant_ctx, config):
     cfg.navbar_config = {"links": [], "cta": {"text": "Get Started", "href": "/courses"}}
     cfg.save()
     ms.sync_site(tenant_ctx, {"offers": ["live", "community"]})
-    assert TenantConfig.objects.first().navbar_config["cta"] == {"text": "Book a class", "href": "/events"}
+    assert TenantConfig.objects.first().navbar_config["cta"] == {"text": "Book a session", "href": "/events"}
     ms.sync_site(tenant_ctx, {"offers": ["community"]})  # no classes either: contact
     cfg = TenantConfig.objects.first()
     cfg.navbar_config = {"links": [], "cta": {"text": "Get Started", "href": "/courses"}}
@@ -1134,7 +1134,7 @@ def test_the_header_button_follows_what_the_coach_offers(tenant_ctx, config):
 @pytest.mark.parametrize(
     ("offers", "want"),
     [
-        (["live"], {"text": "Book a class", "href": "/events"}),
+        (["live"], {"text": "Book a session", "href": "/events"}),
         (["community"], {"text": "Get in touch", "href": "/contact"}),
     ],
 )
@@ -1160,7 +1160,7 @@ def test_a_new_header_button_names_the_offer(tenant_ctx, config):
     cfg.navbar_config = {"links": [], "cta": None}
     cfg.save()
     ms.sync_site(tenant_ctx, {"offers": ["live"], "navbar_show_cta": True})
-    assert TenantConfig.objects.first().navbar_config["cta"] == {"text": "Book a class", "href": "/events"}
+    assert TenantConfig.objects.first().navbar_config["cta"] == {"text": "Book a session", "href": "/events"}
 
 
 CLASSES = {**HOME, "payments": ["free"], "live_topic": "Slow flow", "live_when": "Sunday 9am"}
@@ -1184,7 +1184,7 @@ def test_online_and_in_person_events_are_drafted_separately(
         fired = ms.fire(tenant_ctx, dict(BOTH))
     assert {"draft:event", "draft:onsite"} <= set(fired)
     prompts = {call.args[1]: call.args[2] for call in side_effects["draft"].call_args_list}
-    assert "online class. Topic: Slow flow" in prompts["event"]
+    assert "live session. Topic: Slow flow" in prompts["event"]
     assert "in person event. Topic: Pole basics" in prompts["onsite"]
 
 
@@ -1226,7 +1226,7 @@ def test_each_kind_of_event_keeps_its_own_schedule(tenant_ctx, config):
 def test_the_in_person_event_prompt_names_its_place(tenant_ctx, config):
     answers = {**BOTH, "live_topic": "Pads", "location": "Studio 4"}
     online = ms.draft_prompt(answers, "event")
-    assert "online class" in online and "Where:" not in online
+    assert "live session" in online and "Where:" not in online
     in_person = ms.draft_prompt(answers, "onsite")
     assert "in person event" in in_person and "Where: Studio 4." in in_person
 

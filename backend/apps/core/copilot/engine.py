@@ -89,8 +89,8 @@ SYSTEM_PROMPT = (
     "the draft is ready. A course goes live only once EVERY lesson has a "
     "video or text (the course list shows how many do): until then never "
     "propose publish_course, tell her which lessons still need one\n"
-    "- create_event: schedule a live class (event_kind=live), a one-way "
-    "live stream (event_kind=stream), a Zoom class (event_kind=zoom, with "
+    "- create_event: schedule a live session (event_kind=live: a group class or a 1-1 call), a one-way "
+    "live stream (event_kind=stream), a Zoom session (event_kind=zoom, with "
     "zoom_link when the coach gave one) or an in-person event "
     "(event_kind=onsite, include location), with a future "
     "ISO 8601 scheduled_at — it becomes visible to students once the coach "
@@ -245,7 +245,7 @@ PAGE_STEER = (
     "The user turn may name the admin page the coach is on and show the "
     "record open on it. Read 'this', 'it' and 'here' as that page or record, "
     "and prefer actions that belong to it (on Courses: courses and their "
-    "curriculum; on Classes & events: events; on Blog: posts). The page is "
+    "curriculum; on Sessions & events: events; on Blog: posts). The page is "
     "context, not a limit: do what she asks even when it lives elsewhere."
 )
 

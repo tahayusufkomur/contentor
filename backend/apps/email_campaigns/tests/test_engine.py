@@ -241,7 +241,7 @@ def test_her_catalog_links_her_live_pages_and_nothing_else(tenant_ctx, config, o
     assert items[f"course:{course.id}"]["summary"] == "Ten minutes"
     assert items[f"course:{course.id}"]["meta"].endswith("49")
     assert [i["title"] for i in items.values() if i["kind"] == "course"] == ["Face Yoga"]
-    assert f"live:{soon.id}" in items and items[f"live:{soon.id}"]["kindLabel"] == "Live class"
+    assert f"live:{soon.id}" in items and items[f"live:{soon.id}"]["kindLabel"] == "Live session"
     assert [i["title"] for i in items.values() if i["kind"] == "live"] == ["Morning"]
     assert items["page:about"]["url"] == f"{SITE}/about"
     assert not [i for i in items.values() if "elsewhere" in i["url"]]

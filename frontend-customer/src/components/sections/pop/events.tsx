@@ -70,7 +70,7 @@ export function EventsTickets({ block, data, editable }: SectionProps) {
             <EmptyHint
               editable={editable}
               title="No upcoming events"
-              text="Scheduled live classes appear here automatically."
+              text="Scheduled live sessions appear here automatically."
             />
           </div>
         ) : (

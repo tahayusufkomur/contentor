@@ -48,7 +48,7 @@ FIELD_METADATA = {
     },
     "live_topic": {
         "label": "Live session topic",
-        "answers": "First live class schedule",
+        "answers": "First live session schedule",
     },
     "outcome": {
         "label": "What students get",
@@ -95,11 +95,12 @@ Recognized fields:
 - "audience": Who they teach or their target student (e.g. "Beginners and desk workers", "Busy moms").
 - "story": 1-2 concise sentences about their personal journey or why they practice/teach.
 - "credentials": Their certifications, training, degrees, or years of experience.
-- "offers": How they teach: pre-recorded courses, live online classes, in-person sessions, articles or a \
+- "offers": How they teach: digital content (pre-recorded courses, downloads), live online sessions (group \
+classes or 1-1 calls), in-person sessions, articles or a \
 blog, a community.
 - "location": Where they teach or whether online/in-person (e.g. "Online & in-person in Brooklyn, NY").
 - "course_topic": Any specific course topic they mention wanting to offer.
-- "live_topic": Any live class, retreat, or event topic mentioned.
+- "live_topic": Any live session, retreat, or event topic mentioned.
 - "outcome": What students get out of working with them (e.g. "Less stress, better sleep").
 - "difference": What they do differently from other creators (e.g. "Small groups, my own method").
 - "tone": What tone fits their voice: Warm, Energetic, Calm, Expert, Playful, Confident, or Sensual.

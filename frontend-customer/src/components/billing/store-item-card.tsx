@@ -10,9 +10,9 @@ import type { StoreItem } from "@/types/billing";
 const TYPE_LABELS: Record<string, string> = {
   course: "Course",
   download: "Download",
-  live_class: "Live Class",
+  live_class: "Live Session",
   live_stream: "Live Stream",
-  onsite_event: "In-Person Class",
+  onsite_event: "In-Person Event",
   bundle: "Bundle",
 };
 

@@ -20,9 +20,9 @@ from .models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
 # (model, source key, human label, kind on /admin/live) for the four live event types.
 LIVE_SOURCES = [
-    (LiveClass, "live_class", "Live class", "live"),
+    (LiveClass, "live_class", "Live session", "live"),
     (LiveStream, "live_stream", "Live stream", "stream"),
-    (ZoomClass, "zoom_class", "Zoom class", "zoom"),
+    (ZoomClass, "zoom_class", "Zoom session", "zoom"),
     (OnsiteEvent, "onsite_event", "On-site event", "onsite"),
 ]
 

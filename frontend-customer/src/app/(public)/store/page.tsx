@@ -48,9 +48,9 @@ const FILTER_BUTTONS: { value: FilterType; label: string }[] = [
   { value: "all", label: "All" },
   { value: "course", label: "Courses" },
   { value: "download", label: "Downloads" },
-  { value: "live_class", label: "Live Classes" },
+  { value: "live_class", label: "Live Sessions" },
   { value: "live_stream", label: "Live Streams" },
-  { value: "onsite_event", label: "In-Person Classes" },
+  { value: "onsite_event", label: "In-Person Events" },
   { value: "bundle", label: "Bundles" },
 ];
 
@@ -151,7 +151,7 @@ export default function StorePage() {
           Store
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Browse courses, downloads, live classes, and bundles.
+          Browse courses, downloads, live sessions, and bundles.
         </p>
       </div>
 

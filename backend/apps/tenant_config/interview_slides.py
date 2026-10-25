@@ -59,7 +59,7 @@ SLIDES: tuple[Slide, ...] = (
         ("offers",),
         "How you'll work",
         "Five ways to work with your students.",
-        "Pick as many as fit. Each one gets its place on your site, and I'll draft your first course or class "
+        "Pick as many as fit. Each one gets its place on your site, and I'll draft your first course or session "
         "while we talk.",
         "Choose yours",
     ),
@@ -111,7 +111,7 @@ SLIDES: tuple[Slide, ...] = (
         "Getting paid",
         "Ways in: who gets to open it.",
         "Anything you make can be free, sold on its own, part of a membership, or several of these at once. "
-        "Every course and class you add later has the same Access section.",
+        "Every course and session you add later has the same Access section.",
         "Next: who can join",
     ),
     Slide(
@@ -128,11 +128,12 @@ SLIDES: tuple[Slide, ...] = (
         "live",
         "content",
         ("live_topic",),
-        "Your first online class",
-        "A live class happens at a set time.",
-        "Students sign up on your site and join the video call from it. It can run once, or every week on the "
-        "days and times you choose, like Mondays and Wednesdays at 9:00 and Saturdays at 10:00.",
-        "Next: your class",
+        "Your first live session",
+        "A live session happens at a set time.",
+        "It can be a group class or a 1-1 call. Students sign up on your site and join the video call from it. "
+        "It can run once, or every week on the days and times you choose, like Mondays and Wednesdays at 9:00 "
+        "and Saturdays at 10:00.",
+        "Next: your session",
     ),
     Slide(
         "onsite",
@@ -153,7 +154,7 @@ SLIDES: tuple[Slide, ...] = (
         ("contact",),
         "Your students",
         "When students write to you.",
-        "Messages from your site land in your inbox in the studio, and class reminders go out on their own. If "
+        "Messages from your site land in your inbox in the studio, and session reminders go out on their own. If "
         "you run a community, that's where your students talk to each other.",
         "Next: how to reach you",
     ),
@@ -198,7 +199,7 @@ FALLBACK = {
     "event_title": "Weekend workshop",
     "event_place": "Your usual place",
     "memberships": [
-        {"name": "The Club", "price": 19, "covers": "Every live class"},
+        {"name": "The Club", "price": 19, "covers": "Every live session"},
         {"name": "Course library", "price": 12, "covers": "Every course"},
     ],
     "students": [
@@ -207,7 +208,7 @@ FALLBACK = {
         {"name": "Cara", "about": "Drops in when she can"},
     ],
     "way_course": "A 6-week program people buy once and follow at home",
-    "way_live": "A weekly class students join from home, with you live",
+    "way_live": "Group classes or 1-1 calls students join from home, with you live",
     "way_onsite": "A workshop or retreat at your own place",
     "way_articles": "Posts that bring new students in from search",
     "way_community": "A members' space where your students keep each other going",
@@ -384,7 +385,7 @@ Write every example in their field and for their audience, as if for their own b
   event_title, event_place (a kind of place, not an address).
 - Prices (course_price, class_price, each membership price) are typical for the field, in plain numbers.
 - memberships: exactly 2 plans, each with a name, a price and what it covers (under 6 words).
-- students: exactly 3, in this order: one who buys the course, one who joins a membership, one who pays per class.
+- students: exactly 3, in this order: one who buys the course, one who joins a membership, one who pays per session.
   Names fit the audience. Each "about" is under 6 words.
 - way_course, way_live, way_onsite, way_articles, way_community: one line each (under 12 words) showing that way
   of working in their field, written to the creator ("you").

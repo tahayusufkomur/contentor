@@ -27,7 +27,7 @@
     "items": {
       "home": "Home",
       "courses": "Courses",
-      "liveEvents": "Classes & events",
+      "liveEvents": "Sessions & events",
       "downloads": "Downloads",
       "students": "People",
       "communityFeed": "Community",
@@ -86,7 +86,7 @@
       "onSaleHint": "Switch off to stop new sign-ups. Current members keep their membership.",
       "priceChangeHint": "A new price or cycle applies to new members. Current members keep the terms they joined on.",
       "access": "What members can open",
-      "accessHint": "The courses, downloads, live classes and streams this membership includes.",
+      "accessHint": "The courses, downloads, live sessions and streams this membership includes.",
       "create": "Create membership",
       "save": "Save membership",
       "saving": "Saving…",
@@ -153,7 +153,7 @@
       "history": "History"
     },
     "noChangesYet": "No changes yet — everything your assistant applies will show up here.",
-    "placeholder": "Ask for a course, a class, a change to your site…",
+    "placeholder": "Ask for a course, a live session, a change to your site…",
     "startersTitle": "Try on this page",
     "undo": "Undo",
     "undoing": "Undoing…",
@@ -223,7 +223,7 @@
       },
       "content": {
         "name": "Content Creating Specialist",
-        "job": "Courses, classes and downloads"
+        "job": "Courses, live sessions and downloads"
       },
       "marketing": {
         "name": "Marketing Specialist",
@@ -537,7 +537,7 @@
       },
       "first_live": {
         "title": "Schedule a live session",
-        "description": "Put your first class on the calendar."
+        "description": "Put your first live session on the calendar."
       },
       "first_announcement": {
         "title": "Send an announcement",
@@ -621,7 +621,7 @@
     "currency": "Currency",
     "nextBillingDate": "Next billing date",
     "provider": "Provider",
-    "freeNotice": "Free plan: 10 students, 1 GB, free content only. Upgrade to sell courses and run live classes.",
+    "freeNotice": "Free plan: 10 students, 1 GB, free content only. Upgrade to sell courses and run live sessions.",
     "cancelsOn": "Subscription cancels on {date}.",
     "checkoutCanceled": "Checkout was canceled. Your plan was not changed.",
     "noData": "No subscription data available.",
@@ -665,7 +665,7 @@
         "streamingHours": "{n} streaming hours/mo",
         "campaignEmails": "{n} campaign emails/mo",
         "sell": "Sell paid content and get paid through Stripe",
-        "live": "Live classes",
+        "live": "Live sessions",
         "fee": "{n}% transaction fee on sales",
         "aiBlog": "{n} AI blog posts/mo"
       }
@@ -677,7 +677,7 @@
       "placeholder": "e.g. a 4-week beginner course on breathing for runners"
     },
     "event": {
-      "label": "Describe a class or a series and the assistant schedules it",
+      "label": "Describe a session or a series and the assistant schedules it",
       "placeholder": "e.g. a live flow class every Tuesday at 18:00 for 6 weeks"
     },
     "submit": "Draft it",
@@ -719,7 +719,7 @@
     }
   },
   "studio": {
-    "subtitle": "Design the cover your students see for each course, class and event.",
+    "subtitle": "Design the cover your students see for each course, session and event.",
     "design": "Design a cover",
     "saveFirst": "Save your changes first.",
     "continue": "Continue",
@@ -734,7 +734,7 @@
     "notPublished": "Not published",
     "empty": {
       "title": "Nothing to put a cover on yet",
-      "description": "Add a course or a class, then come back to design its cover.",
+      "description": "Add a course or a session, then come back to design its cover.",
       "action": "New course"
     },
     "size": {
@@ -907,7 +907,7 @@
       "labelPlaceholder": {
         "course": "e.g. 4-week course",
         "download": "e.g. Free guide",
-        "event": "e.g. Live class"
+        "event": "e.g. Live session"
       },
       "title": "Title",
       "titleHint": "Leave it empty to use the title of the {target}.",
@@ -1222,12 +1222,12 @@
     }
   },
   "events": {
-    "subtitle": "Live classes, streams, Zoom sessions and in-person events, in one place.",
-    "new": "New class or event",
+    "subtitle": "Live sessions, live streams, Zoom sessions and in-person events, in one place.",
+    "new": "New session or event",
     "editing": "Editing: {title}",
-    "locked": "Live classes and live streams need a paid plan. Zoom classes and in-person events are always free.",
+    "locked": "Live sessions and live streams need a paid plan. Zoom sessions and in-person events are always free.",
     "upgrade": "See plans",
-    "linkMissing": "That class or event could not be found. It may have been deleted.",
+    "linkMissing": "That session or event could not be found. It may have been deleted.",
     "views": {
       "list": "List",
       "calendar": "Calendar"
@@ -1235,7 +1235,7 @@
     "whenFilter": "Show",
     "upcoming": "Upcoming",
     "past": "Past",
-    "empty": "Nothing coming up. Create a class or event, or describe one above.",
+    "empty": "Nothing coming up. Create a session or event, or describe one above.",
     "emptyPast": "Nothing in the past yet.",
     "sort": {
       "date": "By date",
@@ -1259,8 +1259,8 @@
     },
     "kinds": {
       "live": {
-        "label": "Live class",
-        "hint": "An interactive video room, right in the browser. No extra software.",
+        "label": "Live session",
+        "hint": "A group class or a 1-1 call in a video room, right in the browser. No extra software.",
         "titlePlaceholder": "e.g. Friday flow session"
       },
       "stream": {
@@ -1302,7 +1302,7 @@
     "watermark": "Watermark",
     "watermarkHint": "Students see their own name over the video, to discourage screen recording.",
     "whiteboard": "Whiteboard",
-    "whiteboardHint": "A board saved from Excalidraw (an .excalidraw file). It is on the whiteboard when you open it in the class.",
+    "whiteboardHint": "A board saved from Excalidraw (an .excalidraw file). It is on the whiteboard when you open it in the session.",
     "whiteboardAttached": "Board attached",
     "whiteboardRemove": "Remove",
     "whiteboardFailed": "Could not upload the board.",
@@ -1333,7 +1333,7 @@
     "stopError": "Could not end it. Please try again.",
     "openZoom": "Open Zoom",
     "deleted": "{count, plural, one {# deleted} other {# deleted}}.",
-    "deleteRefused": "{count, plural, one {# could not be deleted} other {# could not be deleted}}. Only the site owner can delete a class or event."
+    "deleteRefused": "{count, plural, one {# could not be deleted} other {# could not be deleted}}. Only the site owner can delete a session or event."
   },
   "focus": {
     "startIt": "Start it",
@@ -1345,8 +1345,8 @@
         "fillMyself": "Fill it in myself"
       },
       "event": {
-        "new": "New class or event",
-        "continue": "Continue your class: {title}",
+        "new": "New session or event",
+        "continue": "Continue your session: {title}",
         "fillMyself": "Fill it in myself"
       },
       "message": {

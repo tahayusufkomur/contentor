@@ -31,11 +31,11 @@ FOCUS_KINDS = {"course": "course", "download": "download"}
 
 # Static (prompt caching): what changes per cover travels in the user turn.
 WORDS_SYSTEM = (
-    "You write the words on the cover image of something a coach sells online: a course, a class or event, "
+    "You write the words on the cover image of something a coach sells online: a course, a session or event, "
     "or a download (a guide, a workbook). You are given its facts, the words on the cover now, and which part "
     "to write. Give exactly three options for that part, each a different approach.\n"
     "- label: a small line above the title, 1 to 4 words, at most 30 characters (like '4-week course', "
-    "'Free guide', 'Live class', 'Beginners welcome').\n"
+    "'Free guide', 'Live session', 'Beginners welcome').\n"
     "- title: the cover's headline, at most 60 characters, true to the item's own title: shorter, sharper, "
     "or the same idea in other words.\n"
     "- subtitle: one short line under the title, at most 90 characters: who it is for, or what they get.\n"

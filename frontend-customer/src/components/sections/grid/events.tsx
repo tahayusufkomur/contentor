@@ -51,7 +51,7 @@ export function EventsTable({ block, data, editable }: SectionProps) {
           <EmptyHint
             editable={editable}
             title="No upcoming sessions"
-            text="Schedule a live class and it appears here automatically."
+            text="Schedule a live session and it appears here automatically."
           />
         </div>
       ) : (

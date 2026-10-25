@@ -44,7 +44,7 @@ YEAR_HINT = "Two months free"  # the year's tile is ten months' price
 SERIES = ("live", "stream", "onsite")  # never Zoom: billing cannot put one in a plan (G9)
 HINTS = {
     "course": "Course",
-    "live": "Live class",
+    "live": "Live session",
     "stream": "Live stream",
     "onsite": "In-person event",
     "download": "Download",
@@ -131,7 +131,7 @@ FOUND = MembershipFound
 # Appended to the shared rules in the analysis prompt (apps.core.focus.analysis.system_for).
 RULES = (
     "- topic: what members get, short, in her words.\n"
-    "- included: the titles of her courses, classes and downloads she named as part of it, as she wrote "
+    "- included: the titles of her courses, live sessions and downloads she named as part of it, as she wrote "
     "them; [] when she named none. Never a title she did not name.\n"
     "- cycle: 'month' when members pay monthly, 'year' when yearly; '' when she did not say.\n"
     "- A price is what members pay each month or year.\n"

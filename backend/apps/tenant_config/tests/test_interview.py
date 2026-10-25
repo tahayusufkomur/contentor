@@ -466,7 +466,7 @@ def test_fixed_options_carry_icons_and_hints(client, tenant_ctx):
     tone = interview.guide_for(brief.FIELD_BY_ID["tone"])
     assert tone["icons"]["Warm"] == "heart" and tone["hints"]["Warm"].startswith("Come as you are")
     offers = interview.guide_for(brief.FIELD_BY_ID["offers"], options=["AI made-up"], icons=["star"])
-    assert offers["icons"]["Digital Courses"] == "book-open"  # the fixed offer list keeps its own icons
+    assert offers["icons"]["Digital content"] == "book-open"  # the fixed offer list keeps its own icons
     assert interview.guide_for(None)["icons"] == {} and interview.guide_for(None)["hints"] == {}
 
 
@@ -596,7 +596,7 @@ def test_guide_carries_details_builder_and_schedule():
     from apps.tenant_config import interview_brief as brief
 
     offers = interview.guide_for(brief.FIELD_BY_ID["offers"])
-    assert offers["details"]["Digital Courses"].startswith("Pre-recorded")
+    assert offers["details"]["Digital content"].startswith("Pre-recorded")
     assert offers["can_delegate"] is False and offers["builder"] is None and offers["schedule"] is False
     when = interview.guide_for(brief.FIELD_BY_ID["live_when"])
     assert when["schedule"] is True and when["options"] == ["Recurring", "One-time"] and when["builder"] == "event"
@@ -645,13 +645,13 @@ def test_the_model_cannot_start_a_section_before_its_turn(client, tenant_ctx, qu
     fires (seen in e2e: teaches → outcome → offers → course_topic)."""
     _set_answers(tenant_ctx, {**PHOTOS, "teaches": "Pottery", "outcome": "Less back pain"})
     quiet.reply = interview.InterviewTurn(
-        facts=[{"field": "offers", "value": "Digital Courses"}],
+        facts=[{"field": "offers", "value": "Digital content"}],
         ack="Ok.",
         next_field="course_topic",
         question="What should your first course teach?",
         options=["Neck release"],
     )
-    guide = client.post(URL, {"message": "Digital Courses", "field": "offers"}, format="json").json()["guide"]
+    guide = client.post(URL, {"message": "Digital content", "field": "offers"}, format="json").json()["guide"]
     assert guide["field"] == "audience"  # the next open question in order, not the course section
 
 
@@ -923,7 +923,7 @@ def test_the_address_question_is_two_boxes_and_opens_on_what_she_gave():
     assert guide["builder"] == "onsite"
     review = interview.guide_for(brief.FIELD_BY_ID["onsite_review"], answers={"offers": ["live", "onsite"]})
     assert review["skip"] == "No in-person event for now" and review["builder"] is None
-    assert interview.guide_for(brief.FIELD_BY_ID["event_review"])["skip"] == "No online class for now"
+    assert interview.guide_for(brief.FIELD_BY_ID["event_review"])["skip"] == "No live session for now"
 
 
 def test_an_address_pick_skips_the_model_and_asks_the_next_question(client, tenant_ctx, quiet):
@@ -1070,7 +1070,7 @@ def test_the_bio_opens_the_first_question_and_rides_every_ai_turn(tenant_ctx, co
     tenant_ctx.save(update_fields=["wizard_state"])
     facts = [
         {"field": "teaches", "value": "Face yoga and yoga", "items": ["Face yoga", "Yoga"]},
-        {"field": "offers", "value": "Online classes", "items": ["Live online classes"]},
+        {"field": "offers", "value": "Online classes", "items": ["Live online sessions"]},
     ]
     with mock.patch("apps.core.onboarding.about_check.analyze", return_value={"facts": facts}):
         assert interview.apply_initial_about(tenant_ctx, "I teach face yoga and yoga online.")
@@ -1086,7 +1086,7 @@ def test_the_bio_opens_the_first_question_and_rides_every_ai_turn(tenant_ctx, co
     # How she teaches, as her bio says it, is ticked on its question.
     offers = {"options": list(brief.FIELD_BY_ID["offers"].options)}
     interview._apply_prefills_to_guide(offers, brief.FIELD_BY_ID["offers"], tenant_ctx, answers)
-    assert offers["prefill_options"] == ["Live online classes"]
+    assert offers["prefill_options"] == ["Live online sessions"]
 
 
 def test_about_items_become_ticked_tiles(tenant_ctx):

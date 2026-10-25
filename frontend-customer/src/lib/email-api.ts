@@ -71,7 +71,7 @@ export type TemplateSource = "starter" | "designer" | "coach" | "imported";
 export const CATEGORY_LABELS: Record<TemplateCategory, string> = {
   newsletter: "Newsletter",
   launch: "Launch",
-  event: "Class or event",
+  event: "Session or event",
   note: "Personal note",
   offer: "Offer",
   welcome: "Welcome",

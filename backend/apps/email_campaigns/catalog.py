@@ -17,7 +17,7 @@ from . import images
 
 MAX_EACH = 20
 SLOTS = {
-    "next:event": "Your next class or event",
+    "next:event": "Your next session or event",
     "latest:course": "Your newest course",
     "latest:post": "Your latest article",
     "latest:download": "Your newest download",
@@ -29,7 +29,7 @@ SERIF_FONTS = {
     "Playfair Display", "Shippori Mincho", "Source Serif 4", "Spectral", "Young Serif", "Zilla Slab",
 }  # fmt: skip
 _PAGE_PATH = re.compile(r"/[\w/-]*")
-_EVENT_LABELS = {"live": "Live class", "stream": "Live stream", "zoom": "Zoom class", "onsite": "In-person event"}
+_EVENT_LABELS = {"live": "Live session", "stream": "Live stream", "zoom": "Zoom session", "onsite": "In-person event"}
 
 
 def font_stack(font: str) -> str:

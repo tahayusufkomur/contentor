@@ -22,7 +22,7 @@ export function CalendarAgendaView({
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
         <CalendarOff className="h-12 w-12 mb-4 opacity-40" />
         <p className="text-lg font-semibold">No upcoming events</p>
-        <p className="text-sm">Check back later for new classes and events.</p>
+        <p className="text-sm">Check back later for new sessions and events.</p>
       </div>
     );
   }

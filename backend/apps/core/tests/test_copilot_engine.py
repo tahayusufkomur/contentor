@@ -1181,7 +1181,7 @@ def test_create_event_card_for_a_zoom_class_carries_its_link(tenant_ctx):
             location="ignored for zoom",
         ),
     )
-    assert card["title"] == "Schedule Zoom class: Office hours"
+    assert card["title"] == "Schedule Zoom session: Office hours"
     stashed = tokens.take_action(card["token"], tenant_ctx.schema_name)
     assert stashed["event_kind"] == "zoom"
     assert stashed["params"]["zoom_link"] == "https://zoom.us/j/123"

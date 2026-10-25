@@ -275,7 +275,7 @@ def test_the_tiles_are_what_she_sells_on_its_own(owner):
     asked = flow.question("bundle", "items")
     assert asked["options"] == [
         {"value": f"course:{course.pk}", "label": "Yoga basics", "hint": "Course"},
-        {"value": f"event:live:{weekly[0].pk}", "label": "Morning flow", "hint": "Live class"},
+        {"value": f"event:live:{weekly[0].pk}", "label": "Morning flow", "hint": "Live session"},
         {"value": f"download:{workbook.pk}", "label": "Breathing workbook", "hint": "Download"},
     ]
     creation = flow.start(owner, "bundle", value="all")

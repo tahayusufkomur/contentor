@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 
 const NOUN: Record<ReviewKind, string> = {
   course: "course",
-  event: "online class",
+  event: "live session",
   onsite: "in-person event",
 };
 const DRAFTING: Record<ReviewKind, string[]> = {
@@ -95,8 +95,8 @@ export function DraftReview({
         style={enter(0)}
         className="mt-8 max-w-[60ch] rounded-2xl border border-[var(--sf-line)] bg-white px-5 py-4 text-[15px] leading-relaxed text-[var(--sf-graphite)] motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both]"
       >
-        Live classes come with a paid plan. When you go live I’ll offer you one,
-        and your first class will be drafted the moment it’s active.
+        Live sessions come with a paid plan. When you go live I’ll offer you
+        one, and your first session will be drafted the moment it’s active.
       </p>
     );
   if (!card.item) {

@@ -114,7 +114,7 @@ export default function LiveClassesPage() {
     >
       <div className="flex items-center gap-3">
         <Video className="h-7 w-7 text-primary" />
-        <h1 className="text-2xl font-bold tracking-tight">Live Classes</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Live Sessions</h1>
       </div>
 
       {/* Live now banner */}
@@ -179,8 +179,8 @@ export default function LiveClassesPage() {
           {upcoming.length === 0 ? (
             <EmptyState
               icon={Calendar}
-              title="No upcoming classes"
-              description="There are no scheduled live classes at the moment. Check back later!"
+              title="No upcoming sessions"
+              description="There are no scheduled live sessions at the moment. Check back later!"
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -233,8 +233,8 @@ export default function LiveClassesPage() {
           {past.length === 0 ? (
             <EmptyState
               icon={Video}
-              title="No past classes"
-              description="No previous live classes to show yet."
+              title="No past sessions"
+              description="No previous live sessions to show yet."
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

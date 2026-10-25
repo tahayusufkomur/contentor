@@ -40,7 +40,7 @@ export default async function CalendarPage({ searchParams }: Props) {
             Calendar
           </h1>
           <p className="mt-1 text-muted-foreground">
-            Browse upcoming live classes, streams, and events.
+            Browse upcoming live sessions, streams, and events.
           </p>
         </div>
         <Link

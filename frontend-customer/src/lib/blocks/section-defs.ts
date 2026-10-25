@@ -137,7 +137,7 @@ const PLACEHOLDER: Partial<Record<FamilyId, Partial<Block>>> = {
   howItWorks: {
     heading: "How it works",
     steps: [
-      { title: "Choose", text: "Pick the course or class that fits you." },
+      { title: "Choose", text: "Pick the course or session that fits you." },
       { title: "Join", text: "Learn at your own pace or live with me." },
       { title: "Grow", text: "Practise, ask questions and see progress." },
     ],
@@ -165,7 +165,7 @@ const PLACEHOLDER: Partial<Record<FamilyId, Partial<Block>>> = {
     text: "Questions about a course or a session? Send a message.",
     showForm: true,
   },
-  events: { heading: "Upcoming classes", ctaLabel: "See the calendar" },
+  events: { heading: "Upcoming sessions", ctaLabel: "See the calendar" },
 };
 
 /** Fresh content for a new section block in `styleId` (first variant). */

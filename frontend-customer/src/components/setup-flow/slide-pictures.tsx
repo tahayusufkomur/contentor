@@ -68,8 +68,8 @@ function Sketch({ dark = false }: { dark?: boolean }) {
 }
 
 const WAYS: Record<string, { label: string; icon: LucideIcon }> = {
-  course: { label: "Course", icon: BookOpen },
-  live: { label: "Live class", icon: Video },
+  course: { label: "Digital content", icon: BookOpen },
+  live: { label: "Live session", icon: Video },
   onsite: { label: "In-person event", icon: MapPin },
   articles: { label: "Articles", icon: Newspaper },
   community: { label: "Community", icon: Users },
@@ -78,7 +78,7 @@ const WAYS: Record<string, { label: string; icon: LucideIcon }> = {
 const PAY_WAYS: Record<string, string> = {
   course: "Buys a course",
   membership: "Joins a membership",
-  class: "Pays per class",
+  class: "Pays per session",
 };
 
 function Team() {

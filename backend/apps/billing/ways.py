@@ -31,7 +31,7 @@ ALLOWED["zoom_class"] = ("free",)
 ALLOWED["bundle"] = ("buy",)
 
 _NOT_ALLOWED = {
-    "zoom_class": "A Zoom class is free only.",
+    "zoom_class": "A Zoom session is free only.",
     "bundle": "A bundle is sold once only.",
 }
 _WINDOW_KEYS = ("opens_after_days", "opens_on", "closes_after_days", "closes_on")

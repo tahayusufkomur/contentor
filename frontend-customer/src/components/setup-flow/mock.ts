@@ -88,7 +88,7 @@ const MOCK_TEAM: TeamLine[] = [
   },
   {
     key: "content",
-    did: "Ready when you want to make your first course or class.",
+    did: "Ready when you want to make your first course or session.",
     next: "Tell me what you’d like to make first.",
   },
   {

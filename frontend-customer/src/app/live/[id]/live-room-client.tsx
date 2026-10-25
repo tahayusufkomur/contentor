@@ -30,7 +30,7 @@ export default function LiveRoomClient({ liveClassId }: LiveRoomClientProps) {
           credentials: "same-origin",
         });
         if (!res.ok) {
-          setError("Live class not found");
+          setError("Live session not found");
           setLoading(false);
           return;
         }
@@ -49,9 +49,9 @@ export default function LiveRoomClient({ liveClassId }: LiveRoomClientProps) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <Spinner size="lg" label="Connecting to live class" />
+          <Spinner size="lg" label="Connecting to live session" />
           <p className="mt-4 text-muted-foreground">
-            Connecting to live class...
+            Connecting to live session...
           </p>
         </div>
       </div>

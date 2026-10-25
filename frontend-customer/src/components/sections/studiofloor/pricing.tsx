@@ -82,8 +82,8 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                         <span className="size-1.5 rounded-full bg-primary shadow-[0_0_6px_var(--primary)]" />
                         {plan.item_count}{" "}
                         {plan.item_count === 1
-                          ? "course/class"
-                          : "courses/classes"}{" "}
+                          ? "course/session"
+                          : "courses/sessions"}{" "}
                         included
                       </p>
                     )}

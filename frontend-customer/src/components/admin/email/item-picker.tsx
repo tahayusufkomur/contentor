@@ -65,7 +65,7 @@ export function ItemPickerModal({
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search your courses, classes and pages…"
+                placeholder="Search your courses, sessions and pages…"
                 className="h-8 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
             </div>
@@ -101,7 +101,7 @@ export function ItemPickerModal({
                 <p className="px-1 py-6 text-center text-sm text-muted-foreground">
                   {q
                     ? "Nothing matches."
-                    : "Nothing published yet. Your courses, classes and articles show here once they are live."}
+                    : "Nothing published yet. Your courses, sessions and articles show here once they are live."}
                 </p>
               ) : (
                 <ul className="space-y-1">

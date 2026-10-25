@@ -11,7 +11,7 @@ export const PUBLISH_BLOCKER_META: Record<
     href: "/admin/courses",
   },
   first_event: {
-    label: "Schedule your first live class or event",
+    label: "Schedule your first live session or event",
     href: "/admin/live",
   },
   first_blog_post: {
