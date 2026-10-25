@@ -698,3 +698,33 @@ describe("PhotoEditDrawer", () => {
     expect(off).toContain("The photo tools aren&#x27;t on for this site yet.");
   });
 });
+
+describe("LayoutsDrawer: the Designer's four styles", () => {
+  it("leads with Show me four styles when it can draw them, and is the layouts alone when not", () => {
+    const recipe = defaultRecipe({ photoId: "p1" });
+    const cover = {
+      id: "d1",
+      recipe,
+      photos: { p1: "https://cdn.test/p.jpg" },
+      logo_url: null,
+      look: "journal",
+    };
+    const withStyles = render(
+      createElement(LayoutsDrawer, {
+        recipe,
+        set: null,
+        edit,
+        cover,
+        item: { title: "Morning flow" },
+        cardAspect: "4/5",
+      }),
+    );
+    expect(headings(withStyles)[0]).toBe("Four styles for this cover");
+    expect(withStyles).toContain("Show me four styles");
+    const plain = render(
+      createElement(LayoutsDrawer, { recipe, set: null, edit }),
+    );
+    expect(plain).not.toContain("Four styles for this cover");
+    expect(plain).toContain("Cutout");
+  });
+});

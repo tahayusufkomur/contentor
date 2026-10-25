@@ -40,6 +40,8 @@ const GATE_BYPASS_PREFIXES = [
   "/login",
   "/callback",
   "/impersonate",
+  // A design drawn for the studio's Download: it opens only with a token the site signed.
+  "/render/",
   // Dev-only design showcase (the page itself 404s in production).
   ...(process.env.NODE_ENV === "production" ? [] : ["/design-showcase"]),
 ];

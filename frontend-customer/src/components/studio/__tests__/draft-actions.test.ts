@@ -77,3 +77,38 @@ describe("DraftActions while a photo is on its way", () => {
     expect(button(keeping, "Discard")).toContain('disabled=""');
   });
 });
+
+describe("DraftActions: Download", () => {
+  const withExport = (inBar: boolean, editable = true) =>
+    render(
+      createElement(DraftActions, {
+        draft: draftOf({ save: vi.fn() } as Partial<CoverDraft>),
+        design: {
+          id: "d1",
+          state: editable ? "draft" : "kept",
+        } as DesignRecord,
+        editable,
+        canCopy: !editable,
+        noun: "course",
+        onDiscard: vi.fn(),
+        inBar,
+        exportShape: "4/5",
+      }),
+    );
+
+  it("is a button with its name in the workspace's bar, and an icon beside Undo on a phone", () => {
+    expect(withExport(true)).toMatch(
+      /<button[^>]*>(?:(?!<\/button>)[\s\S])*Download<\/button>/,
+    );
+    const phone = withExport(false);
+    expect(phone).toContain('aria-label="Download"');
+    expect(phone).not.toMatch(/<svg[^>]*>[\s\S]*?<\/svg>Download<\/button>/);
+    // a kept cover has no Undo row: its Download sits with Edit a copy
+    expect(withExport(false, false)).toMatch(/<\/svg>Download<\/button>/);
+  });
+
+  it("is not there when the site cannot make files", () => {
+    expect(actions(draftOf(), true)).not.toContain("Download");
+    expect(actions(draftOf())).not.toContain("Download");
+  });
+});

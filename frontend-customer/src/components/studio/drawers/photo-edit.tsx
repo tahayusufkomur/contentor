@@ -274,7 +274,8 @@ export function PhotoEditDrawer({
           onPick(
             { id: made.id, url: made.signed_url },
             tool === "cutout"
-              ? { layout: "cutout" }
+              ? // she stands at the bottom right, clear of the words at the left
+                { layout: "cutout", focus: [1, 1] }
               : { keep: tool === "erase" || tool === "change" },
           );
         } finally {

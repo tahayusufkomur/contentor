@@ -860,6 +860,13 @@
         "changeLabel": "What should change?",
         "changePlaceholder": "Warm evening light behind me",
         "toolsOff": "The photo tools aren't on for this site yet."
+      },
+      "layouts": {
+        "styles": "Four styles for this cover",
+        "show": "Show me four styles",
+        "more": "Four more",
+        "drawing": "Drawing four styles…",
+        "failed": "The styles couldn't be drawn. Try again."
       }
     },
     "editor": {
@@ -951,7 +958,11 @@
       "logo": "Logo",
       "showLogo": "Show your logo",
       "noLogo": "You haven't added a logo yet.",
-      "size": "Size"
+      "size": "Size",
+      "suggest": "Suggest",
+      "suggestMore": "Three more",
+      "suggesting": "Thinking…",
+      "suggestFailed": "No suggestions came back. Try again."
     },
     "photos": {
       "yours": "Yours",
@@ -1114,6 +1125,20 @@
         "phone": "Phone",
         "arrow-right": "Arrow",
         "chevron-right": "Chevron"
+      }
+    },
+    "download": {
+      "label": "Download",
+      "making": "Making the file…",
+      "failed": "That file couldn't be made. Try again.",
+      "jpeg": "As JPG (a smaller file)",
+      "for": {
+        "card": "Your site's cards",
+        "wide": "YouTube thumbnail",
+        "banner": "Header image",
+        "post": "Square post",
+        "portrait": "Portrait post",
+        "story": "Story"
       }
     }
   },

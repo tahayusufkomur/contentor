@@ -108,6 +108,7 @@ services:
       CURATED_LOGO_SYNC_DIR: /app/logo_sync
       CURATED_PHOTO_SYNC_DIR: /app/photo_sync
       LOGS_INGEST_TOKEN: ${LOGS_INGEST_TOKEN:-dev-logs-token}
+      CUTOUT_URL: http://cutout:7000
     volumes:
       - ./backend:/app/backend
       - ./.env:/app/.env:ro
@@ -193,6 +194,18 @@ services:
     depends_on:
       - caddy
 
+  # The photo studio's background remover (apps.media.photo_edits): rembg's model
+  # behind a tiny HTTP API (infra/cutout), internal only, the model baked in at
+  # build. ~0.6 GB idle, ~1.5 GB for the few seconds a photo takes; `docker
+  # compose stop cutout` frees it while nobody needs it.
+  cutout:
+    build:
+      context: ./infra/cutout
+    init: true
+    environment:
+      - OMP_NUM_THREADS=2
+    mem_limit: 3g
+
   celery-worker:
     build:
       context: ./backend
@@ -203,6 +216,8 @@ services:
       - ./backend:/app/backend
       - ${HOME}/ws/agent-studio-runs:/agent-studio-runs:ro
     env_file: .env
+    environment:
+      CUTOUT_URL: http://cutout:7000
     depends_on:
       django:
         condition: service_healthy

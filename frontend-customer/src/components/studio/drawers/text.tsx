@@ -34,7 +34,11 @@ export function TextDrawer({
   cardAspect,
   edit,
   onSelect,
-}: Pick<SimpleControlsProps, "itemTitle" | "targetKind" | "look" | "edit"> & {
+  suggest,
+}: Pick<
+  SimpleControlsProps,
+  "itemTitle" | "targetKind" | "look" | "edit" | "suggest"
+> & {
   recipe: CoverRecipe;
   /** The look's Card shape: a new layer gets a frame for each of the three sizes, which follow from it. */
   cardAspect: CoverAspect;
@@ -88,6 +92,7 @@ export function TextDrawer({
         itemTitle={itemTitle}
         targetKind={targetKind}
         edit={edit}
+        suggest={suggest}
       />
     </div>
   );

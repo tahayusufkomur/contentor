@@ -1,8 +1,10 @@
-// The photo studio's designs: what she can put a cover on, her drafts and kept covers, and Keep
+// The photo studio's designs: what she can put a cover on, her drafts and kept covers, Keep, and Download
 // (backend/apps/media/design_views.py). Nothing changes on a course or event until keepDesign.
 import { clientFetch } from "@/lib/api-client";
+import { ApiError } from "@/types/api";
 import type {
   CoverRecipe,
+  CoverSize,
   DesignRecord,
   DesignTargets,
   KeepResponse,
@@ -59,4 +61,61 @@ export function deleteDesign(id: string): Promise<void> {
  *  (`undoCopilotAction` in lib/copilot/api.ts). */
 export function keepDesign(id: string): Promise<KeepResponse> {
   return clientFetch<KeepResponse>(`${BASE}/${id}/keep/`, { method: "POST" });
+}
+
+/** Three options for one of the cover's words, from the item's facts. 503 when the model is not on. */
+export async function suggestWords(
+  id: string,
+  part: "label" | "title" | "subtitle",
+): Promise<string[]> {
+  const { options } = await clientFetch<{ options: string[] }>(
+    `${BASE}/${id}/words/`,
+    { method: "POST", body: JSON.stringify({ part }) },
+  );
+  return options;
+}
+
+/** Four styles for the cover on its own photo, as recipes; `shown` are the layouts she has seen, so the
+ *  next four are others. */
+export async function fourStyles(
+  id: string,
+  shown: string[],
+): Promise<CoverRecipe[]> {
+  const { styles } = await clientFetch<{ styles: CoverRecipe[] }>(
+    `${BASE}/${id}/styles/`,
+    { method: "POST", body: JSON.stringify({ shown }) },
+  );
+  return styles;
+}
+
+/** Downloads the design, as it is saved, at `size` as a PNG or JPEG file: the browser saves it under the
+ *  name the server gives it ("<title>-<size>.png"). */
+export async function downloadDesign(
+  id: string,
+  size: CoverSize,
+  format: "png" | "jpeg",
+): Promise<void> {
+  const res = await fetch(`${BASE}/${id}/export/`, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ size, format }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({ detail: "Request failed" }));
+    throw new ApiError(res.status, data);
+  }
+  const file = URL.createObjectURL(await res.blob());
+  const name =
+    /filename="([^"]+)"/.exec(
+      res.headers.get("Content-Disposition") ?? "",
+    )?.[1] ?? `cover-${size}.${format === "jpeg" ? "jpg" : "png"}`;
+  const link = document.createElement("a");
+  link.href = file;
+  link.download = name;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  // after the browser has taken the file
+  setTimeout(() => URL.revokeObjectURL(file), 10_000);
 }

@@ -117,6 +117,7 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.prod
       - SITE_QA_BROWSER_URL=http://browser:3000
+      - CUTOUT_URL=http://cutout:7000
     networks:
       - internal
       - agentc
@@ -150,6 +151,7 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.prod
       - SITE_QA_BROWSER_URL=http://browser:3000
+      - CUTOUT_URL=http://cutout:7000
     networks:
       - internal
       - agentc
@@ -200,6 +202,23 @@ services:
       - internal
     depends_on:
       - caddy
+
+  # The photo studio's background remover (apps.media.photo_edits): rembg's
+  # model (isnet-general-use, Apache-2.0) behind a tiny HTTP API (infra/cutout),
+  # free per photo, reached only from inside the network. The model is baked
+  # in at build. ~0.6 GB idle, ~1.5 GB for the few seconds a photo takes.
+  cutout:
+    build:
+      context: ./infra/cutout
+    container_name: contentor-cutout
+    restart: unless-stopped
+    init: true
+    mem_limit: 3g
+    logging: *logging
+    environment:
+      - OMP_NUM_THREADS=4
+    networks:
+      - internal
 
   celery-beat:
     build:

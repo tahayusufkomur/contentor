@@ -307,6 +307,8 @@ export function useCoverDraft({
     canRedo: canRedo(history),
     /** Saves what is waiting, for the "try again" of a failed save. */
     retrySave: () => void autosave.flush().catch(() => {}),
+    /** Saves what is waiting, and says when it is saved (or why not): a download draws what is saved. */
+    save: () => autosave.flush(),
     refreshPhotos,
     /** True while a new photo is being made, so the canvas can hold the place of its photo. */
     generating,

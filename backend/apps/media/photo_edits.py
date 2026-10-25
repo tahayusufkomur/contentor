@@ -8,8 +8,9 @@ where Undo takes it off again.
 Edits run as Celery jobs the studio follows, as it follows a new photo from the library service
 (apps.core.curated_images.views): a job's state is kept in the cache under its id, with the schema that
 started it, so a tenant can only follow its own. The background remover is our own service on the home
-servers (rembg, settings.CUTOUT_URL) and costs nothing per photo; the image model (settings.GEMINI_API_KEY,
-the key the logo marks use) bills each edit, so each one counts against the month's new photos.
+servers (rembg, infra/cutout, settings.CUTOUT_URL) and costs nothing per photo; the image model
+(settings.GEMINI_API_KEY, the key the logo marks use) bills each edit, so each one counts against the month's
+new photos.
 
 Runs inside the tenant context (media is a TENANT_APP).
 """
@@ -210,18 +211,53 @@ def _store(source, body: bytes, kind: str):
 # --- the background remover --------------------------------------------------
 
 
+CUTOUT_EDGE = 1600  # px on the long side: more than a cover shows, and the model works at 1024
+
+
 def _cutout(body: bytes) -> bytes:
-    """Her photo with its background removed, as a PNG that is see-through around the subject."""
+    """Her photo with its background removed, as a PNG that is see-through around the subject. It is sent
+    at CUTOUT_EDGE at most: the cutout is drawn and kept at that size, and a full-size photo would hold
+    the service's memory for nothing."""
+    from PIL import Image, ImageOps
+
+    with Image.open(io.BytesIO(body)) as im:
+        im = ImageOps.exif_transpose(im).convert("RGB")
+        im.thumbnail((CUTOUT_EDGE, CUTOUT_EDGE))
+        sent = io.BytesIO()
+        im.save(sent, "JPEG", quality=95)
     res = requests.post(
-        f"{settings.CUTOUT_URL.rstrip('/')}/api/remove",
-        files={"file": ("photo", body)},
-        data={"model": settings.CUTOUT_MODEL},
+        f"{settings.CUTOUT_URL.rstrip('/')}/remove",
+        data=sent.getvalue(),
+        headers={"Content-Type": "application/octet-stream"},
         timeout=_CUTOUT_TIMEOUT,
     )
     res.raise_for_status()
     if not res.content.startswith(b"\x89PNG"):
         raise EditError("the background remover sent no picture")
-    return res.content
+    return trimmed(res.content)
+
+
+SOLID = 128  # the alpha from which a pixel is the subject's, for trimming: below it are edges and specks
+
+
+def trimmed(png: bytes) -> bytes:
+    """The cutout without the see-through margin around its subject (a person beside a desk leaves half the
+    photo empty), so the subject fills the frame a cover stands it in. The box is the subject's solid part
+    with a margin for its soft edge: a faint speck the model left far away would otherwise keep the whole
+    margin. Nothing solid left is an error."""
+    from PIL import Image
+
+    with Image.open(io.BytesIO(png)) as im:
+        im = im.convert("RGBA")
+        box = im.getchannel("A").point(lambda v: 255 if v >= SOLID else 0).getbbox()
+        if box is None:
+            raise EditError("the background remover found nothing in the photo")
+        pad = round(0.02 * max(im.size))
+        left, top, right, bottom = box
+        box = (max(0, left - pad), max(0, top - pad), min(im.width, right + pad), min(im.height, bottom + pad))
+        out = io.BytesIO()
+        im.crop(box).save(out, "PNG")
+        return out.getvalue()
 
 
 # --- the image model ---------------------------------------------------------

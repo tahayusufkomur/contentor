@@ -1032,3 +1032,45 @@ describe("applyEdit: a photo with its place known", () => {
     ).toEqual(withTitleFrame.overrides);
   });
 });
+
+describe("applyEdit: one of the four styles", () => {
+  it("takes its layout, colour panel and title type, and its subtitle only where she has none", () => {
+    const hers = applyEdit(
+      applyEdit(defaultRecipe({ photoId: "p1" }), {
+        type: "words",
+        patch: { title: "Morning flow", label: "Course" },
+      }),
+      {
+        type: "frame",
+        size: "card",
+        id: "title",
+        frame: { x: 0, y: 0, w: 1, h: 0.2 },
+      },
+    );
+    const style = {
+      ...defaultRecipe({ layout: "band" }),
+      panel: "accent" as const,
+      styles: { title: { font: "body" as const, upper: true } },
+      words: { label: "", title: null, subtitle: "Before work" },
+    };
+    const styled = applyEdit(hers, { type: "applyStyle", style });
+    expect(styled.layout).toBe("band");
+    expect(styled.panel).toBe("accent");
+    expect(styled.styles.title).toEqual({ font: "body", upper: true });
+    expect(styled.words).toEqual({
+      label: "Course",
+      title: "Morning flow",
+      subtitle: "Before work",
+    });
+    expect(styled.photo.id).toBe("p1");
+    // the title's place was one in the old layout
+    expect(styled.overrides).toEqual({});
+    const withSubtitle = applyEdit(hers, {
+      type: "words",
+      patch: { subtitle: "Mine" },
+    });
+    expect(
+      applyEdit(withSubtitle, { type: "applyStyle", style }).words.subtitle,
+    ).toBe("Mine");
+  });
+});

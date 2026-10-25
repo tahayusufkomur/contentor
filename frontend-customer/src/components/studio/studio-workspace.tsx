@@ -30,6 +30,7 @@ import { StudioCanvas } from "@/components/studio/studio-canvas";
 import type { CoverDraft } from "@/components/studio/use-cover-draft";
 import { NavLink } from "@/components/ui/nav-link";
 import { coverPalette, parseLook } from "@/lib/covers/palette";
+import { suggestWords } from "@/lib/designs-api";
 import { framesFor } from "@/lib/covers/recipe";
 import type { TargetNoun } from "@/lib/covers/targets";
 import { cn } from "@/lib/utils";
@@ -143,6 +144,8 @@ export function Workspace({
   link,
   photoAi = false,
   cutout = false,
+  canExport = false,
+  wordsAi = false,
 }: {
   draft: CoverDraft;
   design: DesignRecord;
@@ -167,6 +170,10 @@ export function Workspace({
   /** The image model can change photos; the background remover is there. */
   photoAi?: boolean;
   cutout?: boolean;
+  /** A design can be downloaded as an image file. */
+  canExport?: boolean;
+  /** The Designer can suggest the cover's words. */
+  wordsAi?: boolean;
 }) {
   const t = useTranslations("admin.studio");
   const ta = useTranslations("admin");
@@ -235,6 +242,7 @@ export function Workspace({
             noun={noun}
             onDiscard={onDiscard}
             inBar
+            exportShape={canExport ? cardAspect : undefined}
           />
         </div>
       </header>
@@ -249,7 +257,14 @@ export function Workspace({
           <fieldset disabled={draft.busy} className="min-w-0 p-3">
             <legend className="sr-only">{t("editor.controls")}</legend>
             {drawer === "layouts" && (
-              <LayoutsDrawer recipe={recipe} set={set} edit={draft.edit} />
+              <LayoutsDrawer
+                recipe={recipe}
+                set={set}
+                edit={draft.edit}
+                cover={cover}
+                item={item}
+                cardAspect={cardAspect}
+              />
             )}
             {(drawer === "photos" || photosBusy) && (
               <div hidden={drawer !== "photos"}>
@@ -285,6 +300,9 @@ export function Workspace({
                 cardAspect={cardAspect}
                 edit={draft.edit}
                 onSelect={onSelect}
+                suggest={
+                  wordsAi ? (part) => suggestWords(design.id, part) : undefined
+                }
               />
             )}
             {drawer === "elements" && (

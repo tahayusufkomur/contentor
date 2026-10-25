@@ -1,11 +1,15 @@
 // Screenshot service for the site's final visual check
-// (backend/apps/tenant_config/site_qa.py). Internal network only: no port is
+// (backend/apps/tenant_config/site_qa.py) and the photo studio's downloads
+// (backend/apps/media/design_export.py). Internal network only: no port is
 // published.
 //
 //   POST /capture {url, width, theme?, cookies?}
 //     -> {status, theme, height, issues: [..], tiles: [<base64 jpeg>, ..]}
 //   The page top to bottom, cut into strips a vision model reads at full
 //   size (a whole page in one image would be scaled down to a blur).
+//   POST /render {url, width, selector, format?}
+//     -> {image: <base64 png or jpeg>}
+//   One element of the page, as a file: a design the page draws alone.
 //   GET /health
 //
 // HOST_RULES   Chromium --host-resolver-rules, so tenant hosts reach Caddy
@@ -170,6 +174,62 @@ async function capture({ url, width, theme, cookies = [] }) {
   }
 }
 
+/** The element `selector` names on the page at `url`, opened `width` px wide,
+ *  as a PNG or JPEG once its fonts and pictures are in. Everything else on the
+ *  page is hidden, so nothing the site lays over its pages (a prompt, a toast)
+ *  is in the picture. */
+async function render({ url, width, selector, format = "png" }) {
+  const target = new URL(url);
+  const ctx = await browser.newContext({
+    viewport: { width, height: 2000 },
+    reducedMotion: "reduce",
+  });
+  try {
+    await ctx.route("**/*", async (route) => {
+      const { protocol, hostname } = new URL(route.request().url());
+      if (!protocol.startsWith("http")) return route.continue();
+      if (hostname === target.hostname || ALLOW_HOSTS.has(hostname))
+        return route.continue();
+      return (await isInternal(hostname)) ? route.abort() : route.continue();
+    });
+    const page = await ctx.newPage();
+    const res = await page.goto(url, { waitUntil: "networkidle", timeout: 45_000 });
+    if (!res || res.status() >= 400)
+      throw new Error(`HTTP ${res?.status() ?? "no response"}`);
+    await page.addStyleTag({
+      content: `body * { visibility: hidden !important; } ${selector}, ${selector} * { visibility: visible !important; } nextjs-portal { display: none !important; }`,
+    });
+    const element = page.locator(selector).first();
+    await element.waitFor({ timeout: 15_000 });
+    // Its fonts and its pictures in (a picture that never comes is waited for 10 s at most).
+    await page.evaluate(async (sel) => {
+      await document.fonts.ready;
+      const pending = Array.from(
+        document.querySelector(sel).querySelectorAll("img"),
+      )
+        .filter((i) => !i.complete)
+        .map(
+          (i) =>
+            new Promise((done) => {
+              i.addEventListener("load", done, { once: true });
+              i.addEventListener("error", done, { once: true });
+            }),
+        );
+      await Promise.race([
+        Promise.all(pending),
+        new Promise((done) => setTimeout(done, 10_000)),
+      ]);
+    }, selector);
+    const shot = await element.screenshot({
+      type: format === "jpeg" ? "jpeg" : "png",
+      ...(format === "jpeg" ? { quality: 92 } : {}),
+    });
+    return { image: shot.toString("base64") };
+  } finally {
+    await ctx.close();
+  }
+}
+
 http
   .createServer(async (req, res) => {
     const send = (code, body) => {
@@ -178,7 +238,7 @@ http
     };
     if (req.method === "GET" && req.url === "/health")
       return send(200, { ok: true });
-    if (req.method !== "POST" || req.url !== "/capture")
+    if (req.method !== "POST" || !["/capture", "/render"].includes(req.url))
       return send(404, { detail: "not found" });
     try {
       let raw = "";
@@ -186,6 +246,11 @@ http
       const body = JSON.parse(raw);
       if (typeof body.url !== "string" || !Number.isInteger(body.width))
         return send(400, { detail: "url and width are required" });
+      if (req.url === "/render") {
+        if (typeof body.selector !== "string")
+          return send(400, { detail: "selector is required" });
+        return send(200, await render(body));
+      }
       send(200, await capture(body));
     } catch (err) {
       send(500, { detail: String(err).slice(0, 300) });

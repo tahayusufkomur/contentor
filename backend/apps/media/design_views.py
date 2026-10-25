@@ -5,10 +5,13 @@ so a design of another site is a 404.
 """
 
 from django.db import connection, transaction
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.text import slugify
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.core.copilot import content
@@ -18,7 +21,7 @@ from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.courses.models import Course
 from apps.downloads.models import DownloadFile
 
-from . import designs, photo_edits
+from . import design_ai, design_export, designs, photo_edits
 from .design_recipe import validate_recipe
 from .design_serializers import DesignSerializer
 from .models import Design, Photo
@@ -127,6 +130,8 @@ def design_targets(request):
             "generations_left": generation_allowance()["left"],
             "photo_ai": photo_edits.ai_available(),
             "cutout": photo_edits.cutout_available(),
+            "export": design_export.available(),
+            "words_ai": design_ai.available(),
         }
     )
 
@@ -204,3 +209,74 @@ def design_keep(request, pk):
     action = {"kind": "keep_cover", "design_id": str(design.pk), "title": result["title"], "made_by": design.made_by}
     audit_id = _record_audit(connection.tenant, request.user, action, result, inverse)
     return Response({"result": result, "audit_id": audit_id})
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def design_export_view(request, pk):
+    """The design as an image file to download: `{"size": "story", "format": "png" | "jpeg"}`. Drawn from what
+    is saved, so the studio saves first."""
+    if not design_export.available():
+        return Response({"detail": "Downloads are not on for this site."}, status=503)
+    design = get_object_or_404(Design, pk=pk)
+    data = request.data if isinstance(request.data, dict) else {}
+    size, fmt = data.get("size"), data.get("format", "png")
+    if size not in design_export.WIDTHS or fmt not in design_export.FORMATS:
+        return Response({"detail": "Choose a size and png or jpeg."}, status=400)
+    try:
+        image = design_export.render(design, size, fmt)
+    except design_export.ExportError as exc:
+        return Response({"detail": str(exc)}, status=503)
+    name = slugify(designs.target_title(design.target_kind, design.target_key))[:60] or "cover"
+    response = HttpResponse(image, content_type=design_export.FORMATS[fmt])
+    response["Content-Disposition"] = f'attachment; filename="{name}-{size}.{"jpg" if fmt == "jpeg" else "png"}"'
+    return response
+
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def design_render(request, token):
+    """What the render page draws: a design and what it is for, at one size. Open to anyone holding a token
+    this site signed in the last two minutes (design_export), which is how the browser sidecar reads it."""
+    found = design_export.read_token(token)
+    design = Design.objects.filter(pk=found[0]).first() if found else None
+    if design is None:
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    return Response(
+        {
+            "design": designs.design_payload(design, {}),
+            "item": design_export.item_of(design),
+            "size": found[1],
+        }
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def design_words(request, pk):
+    """Three options for one of the cover's words: `{"part": "label" | "title" | "subtitle"}`."""
+    from apps.core import ai as core_ai
+
+    design = get_object_or_404(Design, pk=pk)
+    part = request.data.get("part") if isinstance(request.data, dict) else None
+    if part not in design_ai.PARTS:
+        return Response({"detail": "part is label, title or subtitle."}, status=400)
+    try:
+        options = design_ai.suggest_words(design, part)
+    except design_ai.AiUnavailableError:
+        return Response({"detail": "Suggestions are not on for this site."}, status=503)
+    except core_ai.AiError:
+        return Response({"detail": "No words came back. Try again."}, status=502)
+    return Response({"options": options})
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def design_styles(request, pk):
+    """Four styles for the cover on its own photo, as recipes the studio draws and applies. `{"shown":
+    ["panel", ...]}`: the layouts she has already been shown, so "Four more" brings others."""
+    design = get_object_or_404(Design, pk=pk)
+    shown = request.data.get("shown") if isinstance(request.data, dict) else None
+    shown = [str(layout) for layout in shown if isinstance(layout, str)][:40] if isinstance(shown, list) else []
+    return Response({"styles": design_ai.four_styles(design, shown)})

@@ -442,7 +442,17 @@ def test_targets_groups_series_and_marks_in_use(coach, client, site, generated):
 
     assert response.status_code == 200, response.content
     body = response.json()
-    assert set(body) == {"targets", "in_use", "look", "logo_url", "generations_left", "photo_ai", "cutout"}
+    assert set(body) == {
+        "targets",
+        "in_use",
+        "look",
+        "logo_url",
+        "generations_left",
+        "photo_ai",
+        "cutout",
+        "export",
+        "words_ai",
+    }
     assert body["look"] == "atelier:dusk"
     assert body["logo_url"] == "https://cdn.example.com/logo.png"
     assert body["generations_left"] == 17

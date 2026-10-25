@@ -61,6 +61,9 @@ export type EditorAction =
   | { type: "logo"; on: boolean }
   /** "Your set": the layout, colours, styles, badge and logo of a kept cover. */
   | { type: "applySet"; set: CoverRecipe }
+  /** One of the Designer's four styles: its layout, colour panel and title type, and its subtitle where
+   *  she has none. Her words, photo, badge and layers stay. */
+  | { type: "applyStyle"; style: CoverRecipe }
   /** One layer's frame at one size; the other sizes keep theirs. */
   | { type: "frame"; size: CoverSize; id: string; frame: Frame }
   /** `extra.frame` is its frame at every size; `frames` gives it its own at the sizes named, in the same
@@ -200,6 +203,24 @@ export function applyEdit(
         ...fromSet(action.set),
         overrides: keepOverrides(recipe.overrides, isExtraId),
       };
+
+    case "applyStyle": {
+      const title = action.style.styles.title ?? {};
+      return {
+        ...recipe,
+        layout: action.style.layout,
+        panel: action.style.panel,
+        styles: withStyle(recipe.styles, "title", {
+          font: title.font,
+          upper: title.upper,
+        }),
+        words:
+          recipe.words.subtitle.trim() || !action.style.words.subtitle
+            ? recipe.words
+            : { ...recipe.words, subtitle: action.style.words.subtitle },
+        overrides: keepOverrides(recipe.overrides, isExtraId),
+      };
+    }
 
     case "photo":
       return {

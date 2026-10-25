@@ -317,10 +317,9 @@ SITE_QA_MODEL = os.environ.get("SITE_QA_MODEL", "claude-opus-5-5")
 SCRIBE_URL = os.environ.get("SCRIBE_URL", "")
 SCRIBE_KEY = os.environ.get("SCRIBE_KEY", "")
 # --- Photo edits in the photo studio (apps.media.photo_edits) ---
-# The background remover: rembg's HTTP server (the `cutout` service), our own, free per photo. Without a
-# URL the studio offers no "Remove the background". Its model must allow commercial use (not bria-rmbg).
+# The background remover: rembg's model behind a tiny HTTP API (the `cutout` service, infra/cutout), our
+# own, free per photo. Without a URL the studio offers no "Remove the background".
 CUTOUT_URL = os.environ.get("CUTOUT_URL", "")
-CUTOUT_MODEL = os.environ.get("CUTOUT_MODEL", "birefnet-general")
 # Extending, cleaning up and changing a photo: the image model on GEMINI_API_KEY (off without it). Each edit
 # bills like a new photo (~$0.10 at 2K) and counts against CURATED_IMAGE_GENERATE_MONTHLY_LIMIT.
 PHOTO_EDIT_MODEL = os.environ.get("PHOTO_EDIT_MODEL", "gemini-3.1-flash-image")

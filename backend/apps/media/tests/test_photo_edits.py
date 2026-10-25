@@ -110,24 +110,42 @@ def test_a_cutout_is_queued_and_followed_to_her_new_photo(client, photo, setting
     _tenant, queued_job, photo_id, kind, aspect, words = queued.call_args.args
     assert (queued_job, photo_id, kind, aspect, words) == (job_id, str(photo.pk), "cutout", None, "")
 
-    # the worker: the service answers with a see-through PNG
+    # the worker: the service answers with a PNG see-through on its left half
     monkeypatch.setattr(photo_edits, "_read", lambda _photo: png())
-    answer = mock.Mock(content=png(colour=(0, 0, 0, 0)), raise_for_status=mock.Mock())
+    answer = mock.Mock(content=png(colour=(9, 9, 9, 255), left=(0, 0, 0, 0)), raise_for_status=mock.Mock())
     with mock.patch.object(photo_edits.requests, "post", return_value=answer) as post:
         photo_edits.run(job_id, photo, kind, aspect, words)
-    assert post.call_args.args[0] == "http://cutout:7000/api/remove"
-    assert post.call_args.kwargs["data"] == {"model": settings.CUTOUT_MODEL}
+    assert post.call_args.args[0] == "http://cutout:7000/remove"
+    # her photo, as a JPEG no larger than the cutout is kept at
+    sent = Image.open(io.BytesIO(post.call_args.kwargs["data"]))
+    assert (sent.format, sent.size) == ("JPEG", (40, 20))
 
     done = client.get(f"/api/v1/photos/jobs/{job_id}/").json()
     assert done["done"] is True and done["status"] == "done"
     new = Photo.objects.get(pk=done["photo"]["id"])
     assert new.pk != photo.pk
     assert new.title == "Porch (no background)"
+    # trimmed to its subject, with its margin: the see-through half is gone
+    assert (new.width, new.height) == (21, 20)
     assert "/photo/" in new.s3_key and new.s3_key.endswith(".png")
     # one of her own photos: made light and indexed like an upload
     assert new.index_status == "pending"
     # and the photo it came from is as it was
     assert Photo.objects.get(pk=photo.pk).s3_key == "tenants/t/photo/a.png"
+
+
+def test_a_cutout_of_nothing_is_an_error_and_a_faint_speck_is_no_subject():
+    with pytest.raises(photo_edits.EditError):
+        photo_edits.trimmed(png(colour=(0, 0, 0, 0)))
+    # a speck at the far left is too faint to hold the margin open
+    im = Image.new("RGBA", (100, 50), (0, 0, 0, 0))
+    im.putpixel((1, 1), (200, 200, 200, 40))
+    for x in range(60, 80):
+        for y in range(10, 40):
+            im.putpixel((x, y), (9, 9, 9, 255))
+    out = io.BytesIO()
+    im.save(out, "PNG")
+    assert Image.open(io.BytesIO(photo_edits.trimmed(out.getvalue()))).size == (24, 34)
 
 
 def test_a_failed_edit_is_said_and_another_sites_job_is_not_hers(client, photo, settings, monkeypatch):

@@ -1,15 +1,17 @@
 "use client";
 
-// What can be done to a design in the photo studio's editor: how much it saves, undoes, discards and keeps.
-// The phone's header and the workspace's top bar both show it.
+// What can be done to a design in the photo studio's editor: how much it saves, undoes, downloads, discards and
+// keeps. The phone's header and the workspace's top bar both show it.
 
 import { useTranslations } from "next-intl";
 import { Redo2, Undo2 } from "lucide-react";
+import { DownloadMenu } from "@/components/studio/download-menu";
 import { SaveStatus } from "@/components/studio/save-status";
 import type { CoverDraft } from "@/components/studio/use-cover-draft";
 import { Button } from "@/components/ui/button";
 import type { TargetNoun } from "@/lib/covers/targets";
 import type { DesignRecord } from "@/types/design";
+import type { CoverAspect } from "@shared/sections/types";
 
 /** What can be done to this design: how much it saves, undoes, discards and keeps. On the phone it sits
  *  in the header; in the workspace, in the top bar. */
@@ -21,6 +23,7 @@ export function DraftActions({
   noun,
   onDiscard,
   inBar = false,
+  exportShape,
 }: {
   draft: CoverDraft;
   design: DesignRecord;
@@ -31,6 +34,8 @@ export function DraftActions({
   onDiscard: () => void;
   /** In the workspace's top bar: one row, buttons no wider than their words. */
   inBar?: boolean;
+  /** The look's Card shape, when the design can be downloaded as a file; none hides Download. */
+  exportShape?: CoverAspect;
 }) {
   const t = useTranslations("admin.studio");
   const grow = inBar ? undefined : "flex-1 sm:flex-none";
@@ -68,12 +73,31 @@ export function DraftActions({
           >
             <Redo2 />
           </Button>
+          {/* on a phone the row of buttons below has no room for a fourth */}
+          {exportShape && !inBar && (
+            <DownloadMenu
+              designId={design.id}
+              cardAspect={exportShape}
+              save={draft.save}
+              disabled={draft.locked}
+              compact
+            />
+          )}
         </div>
       )}
       <div
         className={inBar ? "flex gap-2" : "flex w-full gap-2 sm:w-auto"}
         title={why}
       >
+        {exportShape && (inBar || !editable) && (
+          <DownloadMenu
+            designId={design.id}
+            cardAspect={exportShape}
+            save={draft.save}
+            disabled={draft.locked}
+            className={grow}
+          />
+        )}
         {design.state === "draft" && (
           <Button
             variant="outline"

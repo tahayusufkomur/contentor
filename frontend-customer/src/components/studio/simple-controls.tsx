@@ -6,11 +6,13 @@
 
 import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
+import { Sparkles } from "lucide-react";
 import {
   PhotoSources,
   type PhotoSourcesProps,
 } from "@/components/studio/photo-sources";
 import { shapeLabel } from "@/components/studio/size-previews";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -32,6 +34,10 @@ import type {
   LayoutId,
   Paint,
 } from "@/types/design";
+import { useAsyncAction } from "@shared/hooks/use-async-action";
+
+/** One of the cover's own words. */
+export type WordPart = "label" | "title" | "subtitle";
 
 export interface SimpleControlsProps {
   recipe: CoverRecipe;
@@ -50,6 +56,8 @@ export interface SimpleControlsProps {
   onSize: (size: CoverSize) => void;
   edit: (action: EditorAction) => void;
   photoSources: PhotoSourcesProps;
+  /** Asks the Designer for three options for one of the words; none hides the Suggest buttons. */
+  suggest?: (part: WordPart) => Promise<string[]>;
 }
 
 const FIELD =
@@ -146,12 +154,63 @@ function LayoutGlyph({ layout }: { layout: LayoutId }) {
   );
 }
 
+/** "Suggest" under a word: the Designer's three options for it, each one tap from the cover. */
+function Suggest({
+  part,
+  suggest,
+  edit,
+}: {
+  part: WordPart;
+  suggest: (part: WordPart) => Promise<string[]>;
+  edit: (action: EditorAction) => void;
+}) {
+  const t = useTranslations("admin.studio.controls");
+  const [options, setOptions] = useState<string[]>([]);
+  const { run, loading } = useAsyncAction(
+    async () => setOptions(await suggest(part)),
+    { errorToast: t("suggestFailed") },
+  );
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-7 gap-1 px-2 text-xs"
+        loading={loading}
+        loadingText={t("suggesting")}
+        onClick={() => void run()}
+      >
+        <Sparkles aria-hidden="true" />
+        {t(options.length > 0 ? "suggestMore" : "suggest")}
+      </Button>
+      {options.map((option) => (
+        <button
+          key={option}
+          type="button"
+          onClick={() => {
+            edit({ type: "words", patch: { [part]: option } });
+            setOptions([]);
+          }}
+          className="rounded-full border bg-background px-2.5 py-1 text-left text-xs outline-none transition-colors hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring"
+        >
+          {option}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function Words({
   recipe,
   itemTitle,
   targetKind,
   edit,
-}: Pick<SimpleControlsProps, "recipe" | "itemTitle" | "targetKind" | "edit">) {
+  suggest,
+}: Pick<
+  SimpleControlsProps,
+  "recipe" | "itemTitle" | "targetKind" | "edit" | "suggest"
+>) {
   const t = useTranslations("admin.studio.controls");
   const id = useId();
   const { words } = recipe;
@@ -168,6 +227,7 @@ export function Words({
             edit({ type: "words", patch: { label: e.target.value } })
           }
         />
+        {suggest && <Suggest part="label" suggest={suggest} edit={edit} />}
       </div>
       <div className="space-y-1.5">
         <Label htmlFor={`${id}-title`}>{t("title")}</Label>
@@ -186,6 +246,7 @@ export function Words({
             target: targetNoun(targetKind),
           })}
         </p>
+        {suggest && <Suggest part="title" suggest={suggest} edit={edit} />}
       </div>
       <div className="space-y-1.5">
         <Label htmlFor={`${id}-subtitle`}>{t("subtitle")}</Label>
@@ -198,6 +259,7 @@ export function Words({
             edit({ type: "words", patch: { subtitle: e.target.value } })
           }
         />
+        {suggest && <Suggest part="subtitle" suggest={suggest} edit={edit} />}
       </div>
     </Section>
   );
@@ -486,6 +548,7 @@ export function SimpleControls(props: SimpleControlsProps) {
     size,
     onSize,
     edit,
+    suggest,
   } = props;
   return (
     <div className="space-y-6">
@@ -494,6 +557,7 @@ export function SimpleControls(props: SimpleControlsProps) {
         itemTitle={itemTitle}
         targetKind={targetKind}
         edit={edit}
+        suggest={suggest}
       />
       <Section title={t("photo")}>
         <PhotoSources {...props.photoSources} />

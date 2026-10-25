@@ -32,7 +32,12 @@ import { SkeletonForm, SkeletonPageHeader } from "@/components/ui/skeletons";
 import { useTenant } from "@/hooks/use-tenant";
 import { parseLook } from "@/lib/covers/palette";
 import { targetItem, targetNoun } from "@/lib/covers/targets";
-import { getDesign, getTargets, listDesigns } from "@/lib/designs-api";
+import {
+  getDesign,
+  getTargets,
+  listDesigns,
+  suggestWords,
+} from "@/lib/designs-api";
 import { ApiError } from "@/types/api";
 import type {
   CoverDesign,
@@ -207,6 +212,8 @@ function EditorBody({
           link={link}
           photoAi={Boolean(targets.photo_ai)}
           cutout={Boolean(targets.cutout)}
+          canExport={Boolean(targets.export)}
+          wordsAi={Boolean(targets.words_ai)}
         />
       ) : (
         // (From 1024 px the page has no padding of its own in the editor: see admin-shell.tsx.)
@@ -238,6 +245,7 @@ function EditorBody({
               canCopy={Boolean(target)}
               noun={noun}
               onDiscard={() => setConfirming(true)}
+              exportShape={targets.export ? cardAspect : undefined}
             />
           </header>
           <p className="text-sm text-muted-foreground">{notice}</p>
@@ -275,6 +283,11 @@ function EditorBody({
                   onSize={setSize}
                   edit={draft.edit}
                   photoSources={photoSources}
+                  suggest={
+                    targets.words_ai
+                      ? (part) => suggestWords(design.id, part)
+                      : undefined
+                  }
                 />
               </fieldset>
             )}

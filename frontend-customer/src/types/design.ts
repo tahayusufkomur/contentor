@@ -289,6 +289,10 @@ export interface DesignTargets {
   photo_ai?: boolean;
   /** Her photos' backgrounds can be removed. */
   cutout?: boolean;
+  /** A design can be downloaded as an image file. */
+  export?: boolean;
+  /** The Designer can suggest a cover's words. */
+  words_ai?: boolean;
 }
 
 /** A design as the API sends it: a draft or kept cover, with what the renderer needs to draw it. */

@@ -290,3 +290,14 @@ describe("PhotoSources", () => {
     expect(trigger).toContain("You&#x27;ve used this month&#x27;s new photos.");
   });
 });
+
+describe("SimpleControls: suggested words", () => {
+  it("puts a Suggest under each of the three words when the Designer can suggest them", () => {
+    const suggest = vi.fn(async () => ["One"]);
+    const markup = controls({ suggest });
+    expect(markup.match(/>Suggest<\/button>/g)).toHaveLength(3);
+    expect(controls()).not.toContain(">Suggest</button>");
+    // nothing is asked until she taps one
+    expect(suggest).not.toHaveBeenCalled();
+  });
+});
