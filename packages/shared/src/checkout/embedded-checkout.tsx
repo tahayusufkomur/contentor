@@ -171,10 +171,12 @@ export interface PlanTerms {
 }
 
 /** A coach's own plan: Contentor's panel, deep teal with brass, and the
- *  plan's timeline under `title`, over her own photo or a teacher's from
- *  the landing (served by the apex, so the tenant app can show it too). */
+ *  plan's timeline under `title`, over her own photo or a creator's kept
+ *  beside the landing's stills (served by the apex, so the tenant app can
+ *  show it too): Pix4Less 08450a43's 4K upscale, cut 4:5 at 2048 px with
+ *  her face in the top quarter, above the wash. */
 export function PlanCheckoutAside({
-  photo = `${APEX}/media/stills/still-music.avif`,
+  photo = `${APEX}/media/stills/checkout-creator.avif`,
   title,
   plan,
 }: {

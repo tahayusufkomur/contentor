@@ -20,7 +20,7 @@ function useSitePhoto(): string | null {
 }
 
 /** A coach paying for her own plan: Contentor's panel over her own photo
- *  (a teacher's from the landing while her site has none). */
+ *  (a creator's while her site has none). */
 export function CoachPlanAside({
   title,
   plan,
