@@ -40,6 +40,13 @@ class TestWords:
         assert all(abs(t * w.FPS - round(t * w.FPS)) < 0.05 for span in spans for t in span)
         assert w.keep(WORDS, 0.9, 5.8, cut=False) == [[0.0, 4.9]]
 
+    def test_stretches_cut_out_by_hand_go_with_the_pauses(self):
+        spans = w.keep(WORDS, 0.9, 5.8, removed=[[1.9, 2.3], [5.5, 9.0]])
+        assert spans[:2] == [[0.0, 1.0], [1.4, pytest.approx(3.0 + w.PAD - 0.9, abs=0.04)]]
+        assert spans[-1][1] == 4.6  # (5.5 - 0.9) the end cut out
+        assert w.keep(WORDS, 0.9, 5.8, cut=False, removed=[[2.0, 3.0]]) == [[0.0, 1.1], [2.1, 4.9]]
+        assert w.keep(WORDS, 0.9, 5.8, removed=[[0, 9]]) == []
+
     def test_video_times_on_the_reels_clock(self):
         spans = w.keep(WORDS, 0.9, 5.8)
         after_cut = round(spans[0][1] + (5.0 - 0.9) - spans[1][0], 3)
@@ -55,7 +62,7 @@ class TestWords:
 class TestFraming:
     def _reel(self, samples, layout="auto", width=1920, height=1080):
         faces = {"from": 0.0, "to": 20.0, "width": width, "height": height, "samples": samples}
-        return SimpleNamespace(start=2.0, end=12.0, layout=layout, faces=faces)
+        return SimpleNamespace(start=2.0, end=12.0, layout=layout, faces=faces, edits={})
 
     def test_the_window_holds_still_while_the_face_stays_near_its_centre(self):
         samples = [[i * 0.25, [[0.45, 0.3, 0.1, 0.2, 0.9]]] for i in range(80)]
@@ -132,6 +139,10 @@ class TestCaptions:
         assert [line for line in text.splitlines() if line.startswith("Dialogue")] == [
             r"Dialogue: 1,0:00:00.00,0:00:01.20,Caption,,0,0,0,,{\fad(60,0)}Hallo"
         ]
+
+    def test_the_coach_places_and_sizes_the_captions(self):
+        text = ass.build(words=[(0, 1, " Hi")], length=2, style="clean", colors=COLORS, below=300, scale=0.5)
+        assert "Style: Caption,@caption,31," in text and text.splitlines()[9].endswith(",110,110,300,1")
 
     def test_nothing_to_draw_is_no_file(self):
         assert ass.build(words=[], length=5, style="bold", colors=COLORS) == ""

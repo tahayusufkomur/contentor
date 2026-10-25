@@ -21,6 +21,7 @@ import {
 import { useAssistantDock } from "@/lib/assistant-dock";
 import { isStudioEditor } from "@/lib/covers/routes";
 import { isEmailEditor } from "@/lib/messages";
+import { isVideoStudio } from "@/lib/reels/studio";
 import { cn } from "@/lib/utils";
 import { SectionTabs } from "@/components/admin/section-tabs";
 import { useNavigation } from "@shared/navigation/navigation-provider";
@@ -103,9 +104,13 @@ function AdminShellContent({ children, user }: AdminShellProps) {
   );
 
   const section = activeSection(navSections, { pathname, pendingHref });
-  // The photo studio's editor and the email editor fill the page: the navigation shrinks to icons, and
-  // from 1024 px the page loses its padding (the editor has bars and panels of its own that reach the edges).
-  const studio = isStudioEditor(pathname) || isEmailEditor(pathname);
+  // The photo studio's editor, the email editor and the video studio fill the page: the navigation shrinks
+  // to icons, and from 1024 px the page loses its padding (the editor has bars and panels of its own that
+  // reach the edges).
+  const studio =
+    isStudioEditor(pathname) ||
+    isEmailEditor(pathname) ||
+    isVideoStudio(pathname);
   // Focus mode: the side menu is tucked away and the top bar is the creation's.
   const creation = useActiveCreation();
   // Gone to another page (not Save & leave): it stays open to resume, and

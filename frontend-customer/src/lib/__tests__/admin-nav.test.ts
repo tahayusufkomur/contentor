@@ -46,6 +46,7 @@ describe("buildAdminNav", () => {
       "/admin/messages",
       "/admin/blog",
       "/admin/reels",
+      "/admin/video-studio",
     ]);
     expect(hrefs("money")).toEqual(["/admin/payouts", "/admin/store"]);
     expect(hrefs("site")).toEqual([

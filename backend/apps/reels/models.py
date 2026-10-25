@@ -42,6 +42,10 @@ class Reel(models.Model):
     cutaways = models.JSONField(default=list, blank=True)
     # Captions in another language: {"language", "groups": [{"start", "end", "text"}], "of": fingerprint}.
     translation = models.JSONField(default=dict, blank=True)
+    # What the coach changed by hand in the video studio: stretches cut out ("cuts": [[a, b]], the video's
+    # seconds), words retyped ("text": {start: text}), where the captions sit ("caption_at": a share of the
+    # height from the bottom) and how big ("caption_size": a scale), and the fixed window's centre ("centre").
+    edits = models.JSONField(default=dict, blank=True, db_default={})
     status = models.CharField(max_length=10, default=DRAFT)
     error = models.CharField(max_length=300, blank=True, default="")
     file_key = models.CharField(max_length=500, blank=True, default="")

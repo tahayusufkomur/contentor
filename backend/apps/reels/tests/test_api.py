@@ -1,6 +1,7 @@
 """The reels studio's API and jobs: who may use it, finding moments, editing, rendering through the video
 service (HTTP mocked), the end card's token and downloads."""
 
+import uuid
 from datetime import timedelta
 from unittest import mock
 
@@ -189,6 +190,64 @@ class TestEdit:
         client.patch(f"/api/v1/reels/{reel.pk}/", {"end": 40}, format="json")
         reel_jobs["scan_reel"].assert_called_once()
 
+    def test_the_studio_cuts_retypes_and_places_by_hand(self, coach, reel):
+        client = make_client(coach)
+        url = f"/api/v1/reels/{reel.pk}/"
+        edits = {"cuts": [[5, 7], [2, 4], [3.5, 4.5]], "text": {"1.0": "  Fixed  "}, "caption_at": 0.4}
+        res = client.patch(url, {"edits": {**edits, "caption_size": 1.2}}, format="json")
+        assert res.status_code == 200
+        data = res.json()
+        assert data["edits"] == {
+            "cuts": [[2.0, 4.5], [5.0, 7.0]],  # merged, in order
+            "text": {"1.0": " Fixed"},  # (the space Scribe wrote before it kept)
+            "caption_at": 0.4,
+            "caption_size": 1.2,
+        }
+        assert data["keep"] == [[0.0, 2.0], [4.5, 5.0], [7.0, 26.0]]
+        assert data["words"][1] == [1.0, 1.9, " Fixed"]
+        # each one sent replaces what was there; None or blank undoes it
+        data = client.patch(url, {"edits": {"text": {"1.0": " "}, "caption_at": None}}, format="json").json()
+        assert data["edits"] == {"cuts": [[2.0, 4.5], [5.0, 7.0]], "caption_size": 1.2}
+        assert data["words"][1][2] == " s0w1"
+
+    def test_what_the_studio_refuses(self, coach, reel):
+        client = make_client(coach)
+        url = f"/api/v1/reels/{reel.pk}/"
+        for edits in (
+            {"cuts": [[0, 25]]},  # less than two seconds left
+            {"cuts": [[3, 1]]},
+            {"cuts": "all"},
+            {"text": {"1.5": "No word starts here"}},
+            {"caption_at": 2},
+            {"caption_size": True},
+            {"centre": "left"},
+        ):
+            assert client.patch(url, {"edits": edits}, format="json").status_code == 400, edits
+        assert (
+            client.patch(url, {"cutaways": [{"at": 3, "photo": str(uuid.uuid4())}]}, format="json").status_code == 400
+        )
+        reel.refresh_from_db()
+        assert reel.edits == {} and reel.cutaways == []
+
+    def test_a_held_window_sits_where_she_dragged_it(self, coach, reel):
+        res = make_client(coach).patch(
+            f"/api/v1/reels/{reel.pk}/", {"layout": "center", "edits": {"centre": 0.02}}, format="json"
+        )
+        window = framing.share(None, None)
+        assert res.json()["frame"] == {"layout": "crop", "keys": [[0.0, round(window / 2, 4)]], "share": window}
+
+    def test_photos_over_the_clip_move_to_where_she_put_them(self, coach, reel):
+        from apps.media.models import Photo
+
+        photo = Photo.objects.create(s3_key=build_s3_path("photos", "mat.jpg"))
+        Reel.objects.filter(pk=reel.pk).update(options={"cutaways": True}, cutaways=[{"at": 3, "photo": str(photo.pk)}])
+        res = make_client(coach).patch(
+            f"/api/v1/reels/{reel.pk}/", {"cutaways": [{"at": 12.5, "photo": str(photo.pk)}]}, format="json"
+        )
+        assert res.status_code == 200
+        (placed,) = res.json()["cutaways"]
+        assert (placed["at"], placed["photo"], placed["start"]) == (12.5, str(photo.pk), 12.5)
+
     def test_delete_removes_the_file(self, coach, reel):
         Reel.objects.filter(pk=reel.pk).update(file_key=build_s3_path("reels", "a.mp4"))
         with mock.patch("apps.reels.render.forget") as forget:
@@ -302,6 +361,16 @@ class TestRender:
         Reel.objects.filter(pk=reel.pk).update(title="Changed")
         reel.refresh_from_db()
         assert reel.rendered != render.fingerprint(reel)  # stale
+
+    def test_hand_edits_reach_the_render_and_make_the_file_stale(self, settings, reel):
+        reel.rendered = render.fingerprint(reel)
+        reel.edits = {"cuts": [[10, 12]], "text": {"1.0": " Fixed"}, "caption_at": 0.4, "caption_size": 1.2}
+        assert reel.rendered != render.fingerprint(reel)
+        with mock.patch("apps.reels.render.fonts.files", return_value=FONTS):
+            job = render.job_for(reel, "http://upload")
+        assert job["keep"] == [[0.0, 10.0], [12.0, 26.0]]
+        assert "FIXED" in job["captions"] and "S0W1" not in job["captions"]
+        assert ",103,&H00FFFFFF," in job["captions"] and job["captions"].count(",768,") == 1  # bigger, higher
 
     def test_the_cover_opens_the_reel_and_is_kept_as_its_own_picture(self, settings, reel):
         settings.VIDEO_URL = "http://video:7100"

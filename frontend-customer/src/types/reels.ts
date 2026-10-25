@@ -144,6 +144,29 @@ export interface ReelFont {
   ratio: number;
 }
 
+/** What the coach changed by hand in the video studio (backend/apps/reels/models.py Reel.edits). */
+export interface ReelEdits {
+  /** Stretches cut out, [start, end] in the video's seconds. */
+  cuts?: [number, number][];
+  /** Retyped words, by the word's start. */
+  text?: Record<string, string>;
+  /** Where the captions sit: a share of the height, from the bottom. */
+  caption_at?: number;
+  /** The captions' size, times the style's own. */
+  caption_size?: number;
+  /** The held window's centre, a share of the frame's width. */
+  centre?: number;
+}
+
+/** A photo over the clip: on the reel's clock, and where it sits in the video (`at`). */
+export interface ReelCutaway {
+  start: number;
+  end: number;
+  url: string;
+  at: number;
+  photo: string;
+}
+
 export interface ReelDetail extends ReelSummary {
   cover: ReelCoverCard & CoverBrand & { frame: string };
   frames: ReelCoverFrame[];
@@ -167,8 +190,9 @@ export interface ReelDetail extends ReelSummary {
   keep: [number, number][];
   frame: ReelFrame;
   translation: Phrase[] | null;
-  /** Photos over the clip, on the reel's clock. */
-  cutaways: { start: number; end: number; url: string }[];
+  /** Photos over the clip. */
+  cutaways: ReelCutaway[];
+  edits: ReelEdits;
   ideas: { at: number; query: string }[];
   brand: {
     colors: Record<string, string>;
@@ -191,4 +215,8 @@ export type ReelPatch = Partial<
 > & {
   options?: Partial<ReelOptions>;
   cover?: Partial<{ design: CoverDesign; frame: string; label: string }>;
+  /** Each edit sent replaces what was there; null undoes it. */
+  edits?: { [K in keyof ReelEdits]?: ReelEdits[K] | null };
+  /** Every photo over the clip, where it now sits. */
+  cutaways?: { at: number; photo: string }[];
 };

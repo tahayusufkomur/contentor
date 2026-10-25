@@ -106,13 +106,24 @@ def source_url(video) -> str:
     )
 
 
+def words_of(reel) -> list[tuple[float, float, str]]:
+    """The reel's video's words, as the coach retyped them in the studio (their times stay Scribe's)."""
+    retyped = (reel.edits or {}).get("text") or {}
+    words = w.words_of(reel.video)
+    return [(s, e, retyped.get(str(s), text)) for s, e, text in words] if retyped else words
+
+
 def spans(reel, words) -> list[list[float]]:
-    return w.keep(words, reel.start, reel.end, options_of(reel)["cuts"])
+    return w.keep(words, reel.start, reel.end, options_of(reel)["cuts"], (reel.edits or {}).get("cuts") or ())
 
 
 def translation_key(reel) -> str:
-    """What a translation's timing depends on: trimming the reel or cutting its pauses makes it stale."""
+    """What a translation's timing depends on: trimming the reel or cutting its pauses makes it stale, and so
+    do cutting out a stretch or retyping a word."""
     raw = f"{reel.video.s3_key}:{reel.start}:{reel.end}:{options_of(reel)['cuts']}"
+    edits = reel.edits or {}
+    if edits.get("cuts") or edits.get("text"):  # (a reel without edits keeps the key it had before them)
+        raw += f":{json.dumps([edits.get('cuts'), edits.get('text')], sort_keys=True)}"
     return hashlib.sha1(raw.encode(), usedforsecurity=False).hexdigest()[:12]
 
 
@@ -164,7 +175,7 @@ def translate(reel) -> dict:
     """The reel's captions translated into its language, a sentence at a time (a translation needs the whole
     thought) shown a phrase at a time, on the reel's clock. Raises moments.TranslationError."""
     language = options_of(reel)["language"]
-    words = w.words_of(reel.video)
+    words = words_of(reel)
     runs = sentence_runs(w.reel_words(words, reel.start, reel.end, spans(reel, words)))
     lines = moments.translate([w.text_of(run) for run in runs], language)
     groups = []
@@ -190,6 +201,8 @@ def fingerprint(reel) -> str:
         phrases(reel),
         reel.cutaways if opts["cutaways"] else [],
     ]
+    if reel.edits:  # (a reel without edits keeps the fingerprint it had before them: its file is not stale)
+        data.append(reel.edits)
     return hashlib.sha1(json.dumps(data, sort_keys=True, default=str).encode(), usedforsecurity=False).hexdigest()
 
 
@@ -308,7 +321,7 @@ def _jpeg(photo) -> str:
 
 
 def cutaways_on_reel(reel, kept) -> list[dict]:
-    """The reel's cutaways on its own clock: [{"photo", "start", "end"}], none in its last seconds."""
+    """The reel's cutaways on its own clock: [{"photo", "at", "start", "end"}], none in its last seconds."""
     length = w.length_of(kept)
     out = []
     for cut in reel.cutaways or []:
@@ -316,7 +329,10 @@ def cutaways_on_reel(reel, kept) -> list[dict]:
         if at is None or length < CUTAWAY_SECONDS + 1:
             continue
         at = min(at, round(length - CUTAWAY_SECONDS - 0.5, 3))
-        out.append({"photo": cut.get("photo"), "start": max(0.0, at), "end": round(max(0.0, at) + CUTAWAY_SECONDS, 3)})
+        start = max(0.0, at)
+        out.append(
+            {"photo": cut.get("photo"), "at": cut["at"], "start": start, "end": round(start + CUTAWAY_SECONDS, 3)}
+        )
     return out
 
 
@@ -326,8 +342,8 @@ def cutaways_on_reel(reel, kept) -> list[dict]:
 def job_for(reel, upload: str) -> dict:
     from apps.media.models import Photo
 
-    video, opts = reel.video, options_of(reel)
-    words = w.words_of(video)
+    video, opts, edits = reel.video, options_of(reel), reel.edits or {}
+    words = words_of(reel)
     kept = spans(reel, words)
     frame, found_kit = framing.frame_of(reel), kit()
     translated = phrases(reel)
@@ -339,6 +355,8 @@ def job_for(reel, upload: str) -> dict:
         language=opts["language"] if translated is not None else video.captions_language,
         layout=frame["layout"],
         phrases=translated,
+        below=round(edits["caption_at"] * 1920) if edits.get("caption_at") is not None else None,
+        scale=edits.get("caption_size") or 1.0,
     )
     cuts = []
     if opts["cutaways"]:

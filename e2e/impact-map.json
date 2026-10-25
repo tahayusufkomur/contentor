@@ -127,6 +127,8 @@
     "src/app/admin/site-ai": ["29-copilot"],
     "src/app/admin/studio": ["32-photo-studio"],
     "src/app/admin/reels": ["42-reels"],
+    "src/app/admin/video-studio": ["42-reels"],
+    "src/components/admin/video-studio": ["42-reels"],
     "src/app/render/reel": ["42-reels"],
     "src/components/admin/reels": ["42-reels"],
     "src/components/reels": ["42-reels"],

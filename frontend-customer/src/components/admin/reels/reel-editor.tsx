@@ -1,170 +1,60 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Copy, Download, ImageDown, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { errorMessage } from "@shared/hooks/async-runner";
-import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { useNavigate } from "@shared/navigation/navigation-provider";
+import { ArrowLeft, Download, Film, ImageDown, Trash2 } from "lucide-react";
 import { ReelPreview } from "@/components/admin/reels/reel-preview";
 import {
-  COVER_DESIGNS,
-  CoverFonts,
-  ReelCover,
-} from "@/components/reels/reel-cover";
+  CaptionFields,
+  CoverFields,
+  ExtrasFields,
+  FramingFields,
+  PostFields,
+  Section,
+} from "@/components/admin/reels/reel-fields";
+import { useReel } from "@/components/admin/reels/use-reel";
+import { CoverFonts } from "@/components/reels/reel-cover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { NavLink } from "@/components/ui/nav-link";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import {
-  coverLink,
-  deleteReel,
-  downloadLink,
-  getReel,
-  renderReel,
-  saveReel,
-} from "@/lib/reels-api";
-import { focus, plainHook } from "@/lib/reels/cover";
+import { plainHook } from "@/lib/reels/cover";
 import { clock, reelLength, type Span } from "@/lib/reels/timeline";
-import type {
-  ReelDetail,
-  ReelLayout,
-  ReelOptions,
-  ReelPatch,
-  ReelStyle,
-} from "@/types/reels";
+import type { ReelDetail } from "@/types/reels";
 
-// The caption languages the server translates into (backend/apps/reels/moments.py LANGUAGES).
-const LANGUAGES = ["en", "de", "es", "fr", "it", "nl", "pl", "pt", "tr"];
-const STYLES: ReelStyle[] = ["bold", "clean", "brand"];
-const LAYOUTS: ReelLayout[] = ["auto", "center", "fit"];
-const TYPING_MS = 700;
-const POLL_MS = 2500;
-const BOLD_FONT =
+export const BOLD_FONT =
   "https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap";
 
 /** One reel: its live preview, and everything about it the coach can change — its cover (the hook, the
  *  design, the frame), where it starts and ends, the caption style and language, the framing, the extras and
  *  the post's text — each change saved at once. Making the video file is one button; the file and its cover
- *  download once they are ready. */
+ *  download once they are ready. Cutting it by hand happens in the video studio. */
 export function ReelEditor({ initial }: { initial: ReelDetail }) {
   const t = useTranslations("admin.reels.editor");
   const tr = useTranslations("admin.reels");
-  const navigate = useNavigate();
-  const [reel, setReel] = useState(initial);
-  const [title, setTitle] = useState(initial.title);
-  const [caption, setCaption] = useState(initial.caption);
-  const [endText, setEndText] = useState(initial.options.end_text);
-  const [label, setLabel] = useState(initial.cover.label);
-  const [saving, setSaving] = useState(false);
+  const editing = useReel(initial);
+  const {
+    reel,
+    live,
+    saving,
+    change,
+    make,
+    starting,
+    download,
+    fetching,
+    downloadCover,
+    fetchingCover,
+    remove,
+    deleting,
+  } = editing;
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const latest = useRef(0);
 
-  // Every change goes to the server, which answers with the reel as it will draw it (its cuts, crop and
-  // translation); an answer to an older change never overwrites a newer one.
-  const save = useCallback(
-    async (patch: ReelPatch) => {
-      const ticket = ++latest.current;
-      setSaving(true);
-      try {
-        const next = await saveReel(reel.id, patch);
-        if (ticket === latest.current) setReel(next);
-      } finally {
-        if (ticket === latest.current) setSaving(false);
-      }
-    },
-    [reel.id],
-  );
-  // Not useAsyncAction: it drops a call while one is in flight, and edits come quicker than saves.
-  const change = useCallback(
-    (patch: ReelPatch) => {
-      save(patch).catch((err) => toast.error(errorMessage(err)));
-    },
-    [save],
-  );
-
-  // Typed fields save once typing stops.
-  const typed = useRef({ title, caption, endText, label });
-  useEffect(() => {
-    const before = typed.current;
-    if (
-      before.title === title &&
-      before.caption === caption &&
-      before.endText === endText &&
-      before.label === label
-    )
-      return;
-    const timer = setTimeout(() => {
-      const patch: ReelPatch = {};
-      if (before.title !== title) patch.title = title;
-      if (before.caption !== caption) patch.caption = caption;
-      if (before.endText !== endText) patch.options = { end_text: endText };
-      if (before.label !== label) patch.cover = { label };
-      typed.current = { title, caption, endText, label };
-      change(patch);
-    }, TYPING_MS);
-    return () => clearTimeout(timer);
-  }, [title, caption, endText, label, change]);
-
-  // A video being made: look again until it is ready.
-  useEffect(() => {
-    if (reel.status !== "rendering") return;
-    const timer = setInterval(() => {
-      getReel(reel.id)
-        .then((next) => {
-          if (next.status === "rendering") return;
-          setReel(next);
-          if (next.status === "ready") toast.success(t("made"));
-          else toast.error(next.error || t("notMade"));
-        })
-        .catch(() => undefined);
-    }, POLL_MS);
-    return () => clearInterval(timer);
-  }, [reel.status, reel.id, t]);
-
-  const { run: make, loading: starting } = useAsyncAction(async () => {
-    const next = await renderReel(reel.id);
-    setReel((r) => ({ ...r, ...next, cover: r.cover })); // (the summary's cover lacks the brand)
-  });
-  const { run: download, loading: fetching } = useAsyncAction(async () => {
-    const { url } = await downloadLink(reel.id);
-    window.location.assign(url);
-  });
-  const { run: downloadCover, loading: fetchingCover } = useAsyncAction(
-    async () => {
-      const { url } = await coverLink(reel.id);
-      window.location.assign(url);
-    },
-  );
-  const { run: remove, loading: deleting } = useAsyncAction(async () => {
-    await deleteReel(reel.id);
-    toast.success(t("deleted"));
-    navigate(`/admin/reels?video=${reel.video}`);
-  });
-
-  const option = (key: keyof ReelOptions, value: boolean | string) =>
-    change({ options: { [key]: value } as Partial<ReelOptions> });
   const nudge = (edge: "start" | "end", by: number) => {
     const at = Math.max(0, +(reel[edge] + by).toFixed(2));
     change(edge === "start" ? { start: at } : { end: at });
   };
   const length = reelLength(reel.keep as Span[]);
   const ready = reel.status === "ready" && !reel.stale;
-  // what is typed shows on the covers at once, before it is saved
-  const cover = { ...reel.cover, title, label };
 
   return (
     <div className="space-y-6">
@@ -181,7 +71,7 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
             {t("back")}
           </NavLink>
           <h1 className="truncate text-2xl font-bold tracking-tight">
-            {plainHook(reel.title) || tr("untitled")}
+            {plainHook(live.title) || tr("untitled")}
           </h1>
           <p className="text-sm text-muted-foreground">
             {t("from", { video: reel.video_title })} · {clock(reel.start)}–
@@ -191,6 +81,12 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
         </div>
         <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
           <div className="flex gap-2">
+            <Button asChild variant="outline" className="gap-2">
+              <NavLink href={`/admin/video-studio/${reel.id}`}>
+                <Film className="h-4 w-4" />
+                {t("openStudio")}
+              </NavLink>
+            </Button>
             {ready && reel.cover_file ? (
               <Button
                 variant="outline"
@@ -230,24 +126,14 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
             className="text-xs text-muted-foreground sm:text-right"
             aria-live="polite"
           >
-            {!reel.render
-              ? t("noRender")
-              : reel.status === "rendering"
-                ? t("makingHint")
-                : reel.stale
-                  ? t("staleHint")
-                  : reel.status === "failed"
-                    ? reel.error
-                    : ready
-                      ? t("readyHint")
-                      : t("makeHint")}
+            <MakeHint reel={reel} />
           </p>
         </div>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[340px_minmax(0,1fr)]">
         <div className="space-y-3 lg:sticky lg:top-6 lg:self-start">
-          <ReelPreview reel={{ ...reel, cover }} />
+          <ReelPreview reel={live} />
           {reel.file_url && reel.status === "ready" ? (
             <details className="mx-auto max-w-[340px] text-sm">
               <summary className="cursor-pointer text-muted-foreground">
@@ -266,114 +152,7 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
 
         <div className="min-w-0 space-y-8">
           <Section title={t("cover")} hint={t("coverHint")}>
-            <div className="max-w-xl space-y-1.5">
-              <Label htmlFor="reel-hook">{t("hook")}</Label>
-              <Input
-                id="reel-hook"
-                value={title}
-                maxLength={120}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">{t("hookHint")}</p>
-            </div>
-            <div
-              className="grid max-w-xl grid-cols-4 gap-2"
-              role="radiogroup"
-              aria-label={t("design")}
-            >
-              {COVER_DESIGNS.map((design) => (
-                <button
-                  key={design}
-                  type="button"
-                  role="radio"
-                  aria-checked={reel.cover.design === design}
-                  onClick={() => change({ cover: { design } })}
-                  className={cn(
-                    "flex flex-col gap-1.5 rounded-lg border p-1.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring",
-                    reel.cover.design === design
-                      ? "border-primary ring-2 ring-primary"
-                      : "hover:border-foreground/40",
-                  )}
-                >
-                  <ReelCover
-                    cover={{ ...cover, design }}
-                    brand={reel.cover}
-                    className="rounded-md"
-                  />
-                  <span className="px-0.5 text-xs font-medium">
-                    {t(`designs.${design}`)}
-                  </span>
-                </button>
-              ))}
-            </div>
-            {reel.frames.length ? (
-              <div className="space-y-1.5">
-                <p className="text-sm font-medium" id="reel-frames">
-                  {t("frame")}
-                </p>
-                <div
-                  className="flex gap-2 overflow-x-auto pb-1"
-                  role="radiogroup"
-                  aria-labelledby="reel-frames"
-                >
-                  {reel.frames.map((frame) => (
-                    <button
-                      key={frame.key}
-                      type="button"
-                      role="radio"
-                      aria-checked={reel.cover.frame === frame.key}
-                      aria-label={t("frameAt", { at: clock(frame.at) })}
-                      onClick={() => change({ cover: { frame: frame.key } })}
-                      className={cn(
-                        "relative w-16 shrink-0 overflow-hidden rounded-md border-2 transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring",
-                        reel.cover.frame === frame.key
-                          ? "border-primary"
-                          : "border-transparent hover:border-foreground/40",
-                      )}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element -- a signed storage link */}
-                      <img
-                        src={frame.url}
-                        alt=""
-                        className="aspect-[9/16] w-full object-cover"
-                        style={{
-                          objectPosition: focus(
-                            frame.aspect,
-                            9 / 16,
-                            frame.face,
-                          ),
-                        }}
-                      />
-                      {frame.pick ? (
-                        <span className="absolute inset-x-0 bottom-0 bg-background/85 py-0.5 text-center text-[10px] font-medium">
-                          {t("ourPick")}
-                        </span>
-                      ) : null}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">{t("noFrames")}</p>
-            )}
-            {reel.cover.design === "series" ? (
-              <div className="max-w-xs space-y-1.5">
-                <Label htmlFor="reel-label">{t("label")}</Label>
-                <Input
-                  id="reel-label"
-                  value={label}
-                  maxLength={40}
-                  placeholder={t("labelPlaceholder")}
-                  onChange={(e) => setLabel(e.target.value)}
-                />
-              </div>
-            ) : null}
-            <Toggle
-              id="opt-cover"
-              label={t("openWithCover")}
-              checked={reel.options.cover}
-              onChange={(v) => option("cover", v)}
-            />
+            <CoverFields editing={editing} />
           </Section>
 
           <Section title={t("clip")} hint={t("clipHint")}>
@@ -444,157 +223,19 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
           </Section>
 
           <Section title={t("captions")}>
-            <div
-              className="grid grid-cols-3 gap-2"
-              role="radiogroup"
-              aria-label={t("captions")}
-            >
-              {STYLES.map((style) => (
-                <button
-                  key={style}
-                  type="button"
-                  role="radio"
-                  aria-checked={reel.style === style}
-                  onClick={() => change({ style })}
-                  className={cn(
-                    "flex flex-col items-center gap-1 rounded-lg border bg-neutral-900 px-2 py-3 text-white transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring",
-                    reel.style === style
-                      ? "border-primary ring-2 ring-primary"
-                      : "hover:border-foreground/40",
-                  )}
-                >
-                  <StyleSample style={style} reel={reel} />
-                  <span className="text-xs opacity-80">
-                    {t(`styles.${style}`)}
-                  </span>
-                </button>
-              ))}
-            </div>
-            <div className="max-w-xs space-y-1.5">
-              <Label htmlFor="reel-language">{t("language")}</Label>
-              <Select
-                value={reel.options.language || "spoken"}
-                onValueChange={(v) =>
-                  option("language", v === "spoken" ? "" : v)
-                }
-              >
-                <SelectTrigger id="reel-language">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="spoken">{t("asSpoken")}</SelectItem>
-                  {LANGUAGES.filter((l) => l !== reel.source.language).map(
-                    (l) => (
-                      <SelectItem key={l} value={l}>
-                        {t(`languages.${l}`)}
-                      </SelectItem>
-                    ),
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+            <CaptionFields editing={editing} />
           </Section>
 
           <Section title={t("framing")}>
-            <div
-              className="grid grid-cols-3 gap-2"
-              role="radiogroup"
-              aria-label={t("framing")}
-            >
-              {LAYOUTS.map((layout) => (
-                <button
-                  key={layout}
-                  type="button"
-                  role="radio"
-                  aria-checked={reel.layout === layout}
-                  onClick={() => change({ layout })}
-                  className={cn(
-                    "rounded-lg border px-3 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring",
-                    reel.layout === layout
-                      ? "border-primary bg-primary/5"
-                      : "hover:border-foreground/40",
-                  )}
-                >
-                  <span className="block font-medium">
-                    {t(`layouts.${layout}`)}
-                  </span>
-                  <span className="block text-xs text-muted-foreground">
-                    {t(`layouts.${layout}Hint`)}
-                  </span>
-                </button>
-              ))}
-            </div>
+            <FramingFields editing={editing} />
           </Section>
 
           <Section title={t("extras")}>
-            <Toggle
-              id="opt-cuts"
-              label={t("cuts")}
-              checked={reel.options.cuts}
-              onChange={(v) => option("cuts", v)}
-            />
-            <Toggle
-              id="opt-progress"
-              label={t("progress")}
-              checked={reel.options.progress}
-              onChange={(v) => option("progress", v)}
-            />
-            <Toggle
-              id="opt-audio"
-              label={t("cleanAudio")}
-              checked={reel.options.clean_audio}
-              onChange={(v) => option("clean_audio", v)}
-            />
-            <Toggle
-              id="opt-cutaways"
-              label={t("cutaways")}
-              hint={reel.ideas.length ? undefined : t("noIdeas")}
-              checked={reel.options.cutaways}
-              disabled={!reel.ideas.length}
-              onChange={(v) => option("cutaways", v)}
-            />
-            <Toggle
-              id="opt-end"
-              label={t("endCard")}
-              checked={reel.options.end_card}
-              onChange={(v) => option("end_card", v)}
-            />
-            {reel.options.end_card ? (
-              <div className="max-w-sm space-y-1.5 pl-12">
-                <Label htmlFor="reel-end-text">{t("endText")}</Label>
-                <Input
-                  id="reel-end-text"
-                  value={endText}
-                  maxLength={80}
-                  placeholder={reel.end_card.line}
-                  onChange={(e) => setEndText(e.target.value)}
-                />
-              </div>
-            ) : null}
+            <ExtrasFields editing={editing} />
           </Section>
 
           <Section title={t("post")} hint={t("postHint")}>
-            <Textarea
-              value={caption}
-              rows={5}
-              maxLength={2200}
-              onChange={(e) => setCaption(e.target.value)}
-              aria-label={t("post")}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() =>
-                navigator.clipboard.writeText(caption).then(
-                  () => toast.success(t("copied")),
-                  () => toast.error(t("notCopied")),
-                )
-              }
-            >
-              <Copy className="h-4 w-4" />
-              {t("copy")}
-            </Button>
+            <PostFields editing={editing} />
           </Section>
 
           <div className="flex items-center gap-2 border-t pt-5">
@@ -640,102 +281,23 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
   );
 }
 
-function Section({
-  title,
-  hint,
-  children,
-}: {
-  title: string;
-  hint?: string;
-  children: ReactNode;
-}) {
+/** Where making the reel's video stands, in a line. */
+export function MakeHint({ reel }: { reel: ReelDetail }) {
+  const t = useTranslations("admin.reels.editor");
+  const ready = reel.status === "ready" && !reel.stale;
   return (
-    <section className="space-y-3">
-      <div>
-        <h2 className="text-sm font-semibold">{title}</h2>
-        {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function Toggle({
-  id,
-  label,
-  hint,
-  checked,
-  disabled,
-  onChange,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  checked: boolean;
-  disabled?: boolean;
-  onChange: (value: boolean) => void;
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <Switch
-        id={id}
-        checked={checked}
-        disabled={disabled}
-        onCheckedChange={onChange}
-      />
-      <Label
-        htmlFor={id}
-        className={cn("font-normal", disabled && "text-muted-foreground")}
-      >
-        {label}
-        {hint ? (
-          <span className="block text-xs text-muted-foreground">{hint}</span>
-        ) : null}
-      </Label>
-    </div>
-  );
-}
-
-/** "Aa" in the style, as the captions will look. */
-function StyleSample({ style, reel }: { style: ReelStyle; reel: ReelDetail }) {
-  const look = reel.brand.look_fonts;
-  const shared = { fontSize: 22, lineHeight: 1.1, fontWeight: 700 } as const;
-  if (style === "bold")
-    return (
-      <span
-        style={{
-          ...shared,
-          fontFamily: "'Montserrat', sans-serif",
-          fontWeight: 800,
-          textShadow: "0 0 3px #000",
-        }}
-      >
-        AA <span style={{ color: reel.brand.highlight }}>BB</span>
-      </span>
-    );
-  if (style === "clean")
-    return (
-      <span
-        style={{
-          ...shared,
-          fontSize: 18,
-          background: "rgba(0,0,0,.62)",
-          padding: "0 6px",
-          fontFamily: `'${look.body}', system-ui, sans-serif`,
-        }}
-      >
-        Aa <span style={{ color: reel.brand.highlight }}>Bb</span>
-      </span>
-    );
-  return (
-    <span
-      style={{
-        ...shared,
-        fontFamily: `'${look.display}', Georgia, serif`,
-        textShadow: `0 0 3px ${reel.brand.edge}, 0 0 3px ${reel.brand.edge}`,
-      }}
-    >
-      Aa <span style={{ color: reel.brand.highlight }}>Bb</span>
-    </span>
+    <>
+      {!reel.render
+        ? t("noRender")
+        : reel.status === "rendering"
+          ? t("makingHint")
+          : reel.stale
+            ? t("staleHint")
+            : reel.status === "failed"
+              ? reel.error
+              : ready
+                ? t("readyHint")
+                : t("makeHint")}
+    </>
   );
 }

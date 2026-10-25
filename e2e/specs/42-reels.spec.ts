@@ -106,6 +106,30 @@ test("an idea is picked, its cover designed, made into a video and downloaded", 
     expect(picture.ok, `the cover did not download: ${picture.status}`).toBeTruthy();
     const png = Buffer.from(await picture.arrayBuffer());
     expect(png.subarray(1, 4).toString(), "a PNG file").toBe("PNG");
+
+    // ── The video studio: two words cut out by their text, then undone ──────
+    const detail = (await (await api.get(`${TENANT}/api/v1/reels/${reel}/`)).json()) as {
+      start: number;
+      end: number;
+      words: [number, number, string][];
+    };
+    const inside = detail.words.filter(([s, e]) => e > detail.start && s < detail.end);
+    await page.getByRole("link", { name: "Open in studio" }).click();
+    await page.waitForURL(new RegExp(`/admin/video-studio/${reel}$`), SLOW);
+    const transcript = page.locator("#studio-panel");
+    await transcript.getByRole("button", { name: inside[1][2].trim(), exact: true }).click(SLOW);
+    await transcript.getByRole("button", { name: inside[2][2].trim(), exact: true }).click({ modifiers: ["Shift"] });
+    saved = save();
+    await transcript.getByRole("button", { name: "Cut out" }).click();
+    const cut = (await (await saved).json()) as { edits: { cuts?: number[][] }; stale: boolean };
+    expect(cut.edits.cuts).toHaveLength(1);
+    expect(cut.stale).toBe(true);
+    await expect(page.getByRole("button", { name: "Cut out by you" })).toHaveCount(1);
+    saved = save();
+    await page.getByRole("button", { name: "Undo" }).click();
+    const undone = (await (await saved).json()) as { edits: object; stale: boolean };
+    expect(undone.edits).toEqual({});
+    expect(undone.stale, "back to the video as it was made").toBe(false);
   } finally {
     // the video's deletion takes its reels, and their files with them
     await api.delete(`${TENANT}/api/v1/courses/videos/${video.id}/`);

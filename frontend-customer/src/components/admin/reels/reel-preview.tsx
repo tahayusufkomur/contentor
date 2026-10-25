@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Pause, Play, Volume2, VolumeX } from "lucide-react";
@@ -20,6 +28,7 @@ import {
   windowLeft,
   type Span,
 } from "@/lib/reels/timeline";
+import { cn } from "@/lib/utils";
 import type { ReelDetail } from "@/types/reels";
 
 const END_MS = 2500;
@@ -45,11 +54,31 @@ function outline(px: number, colour: string): string {
     .join(", ");
 }
 
+/** What the video studio drives the preview with: its playhead and its play button. */
+export interface ReelPreviewHandle {
+  /** Shows the video at `t`, its seconds (also outside the reel's stretch, while trimming). */
+  seek: (t: number) => void;
+  toggle: () => void;
+}
+
 /** The reel played live from the coach's video: the cover over its first second, the 9:16 window following
  *  the face (or the whole frame on a blurred copy), the pauses skipped, the words lighting up, the progress
  *  bar, photo cutaways and the end card, as the render will draw them. No file is made until the coach asks
- *  for one. */
-export function ReelPreview({ reel }: { reel: ReelDetail }) {
+ *  for one. The video studio hides its controls for its own, follows its time (`onTime`, the video's
+ *  seconds) and lays its handles over the frame (`children`). */
+export const ReelPreview = forwardRef<
+  ReelPreviewHandle,
+  {
+    reel: ReelDetail;
+    controls?: boolean;
+    stageClassName?: string;
+    onTime?: (t: number, playing: boolean) => void;
+    children?: ReactNode;
+  }
+>(function ReelPreview(
+  { reel, controls = true, stageClassName, onTime, children },
+  ref,
+) {
   const t = useTranslations("admin.reels.preview");
   const video = useRef<HTMLVideoElement>(null);
   const backdrop = useRef<HTMLCanvasElement>(null);
@@ -151,13 +180,21 @@ export function ReelPreview({ reel }: { reel: ReelDetail }) {
     );
   };
 
-  const seek = (fraction: number) => {
+  const seekTo = (at: number) => {
     const v = video.current;
     if (!v) return;
+    clearTimeout(endTimer.current);
     setEnding(false);
-    v.currentTime = toSource(fraction * length, reel.start, keep);
-    setNow(v.currentTime);
+    v.currentTime = at;
+    setNow(at);
   };
+  const seek = (fraction: number) =>
+    seekTo(toSource(fraction * length, reel.start, keep));
+
+  useImperativeHandle(ref, () => ({ seek: seekTo, toggle }));
+  const timeListener = useRef(onTime);
+  timeListener.current = onTime;
+  useEffect(() => timeListener.current?.(now, playing), [now, playing]);
 
   const reelNow = onReel(now, reel.start, keep);
   const language = reel.translation
@@ -167,6 +204,7 @@ export function ReelPreview({ reel }: { reel: ReelDetail }) {
     reel.style === "bold" ? upper(text, language) : text;
 
   const fonts = reel.brand.fonts;
+  const scale = reel.edits.caption_size ?? 1;
   const captionStyle: CSSProperties = {
     fontFamily: `'${fonts.caption.family}', system-ui, sans-serif`,
     fontWeight: fonts.caption.weight,
@@ -174,17 +212,17 @@ export function ReelPreview({ reel }: { reel: ReelDetail }) {
     lineHeight: 1.25,
     ...(reel.style === "bold"
       ? {
-          fontSize: textAt1080(86, fonts.caption.ratio),
+          fontSize: textAt1080(86 * scale, fonts.caption.ratio),
           letterSpacing: at1080(1),
           textShadow: `${outline(7, "#000")}, 0 ${at1080(3)} ${at1080(2)} rgba(0,0,0,.5)`,
         }
       : reel.style === "brand"
         ? {
-            fontSize: textAt1080(76, fonts.caption.ratio),
+            fontSize: textAt1080(76 * scale, fonts.caption.ratio),
             textShadow: outline(8, reel.brand.edge),
           }
         : {
-            fontSize: textAt1080(62, fonts.caption.ratio),
+            fontSize: textAt1080(62 * scale, fonts.caption.ratio),
             background: "rgba(0,0,0,.62)",
             padding: `0 ${at1080(14)}`,
             boxDecorationBreak: "clone",
@@ -262,7 +300,10 @@ export function ReelPreview({ reel }: { reel: ReelDetail }) {
     <div className="space-y-3">
       <div
         aria-label={t("label")}
-        className="relative mx-auto aspect-[9/16] w-full max-w-[340px] overflow-hidden rounded-xl bg-black [container-type:inline-size]"
+        className={cn(
+          "relative mx-auto aspect-[9/16] w-full max-w-[340px] overflow-hidden rounded-xl bg-black [container-type:inline-size]",
+          stageClassName,
+        )}
       >
         {fit ? (
           <canvas
@@ -301,7 +342,12 @@ export function ReelPreview({ reel }: { reel: ReelDetail }) {
           <div
             className="absolute inset-x-0 text-center"
             style={{
-              bottom: fit ? "22.9%" : "31.25%",
+              bottom:
+                reel.edits.caption_at != null
+                  ? `${reel.edits.caption_at * 100}%`
+                  : fit
+                    ? "22.9%"
+                    : "31.25%",
               padding: `0 ${at1080(90)}`,
               // libass's smart wrapping evens its lines out
               textWrap: "balance",
@@ -330,55 +376,58 @@ export function ReelPreview({ reel }: { reel: ReelDetail }) {
             <EndCard card={reel.end_card} />
           </div>
         ) : null}
+        {children}
       </div>
 
-      <div className="mx-auto flex w-full max-w-[340px] items-center gap-2">
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          onClick={toggle}
-          aria-label={playing ? t("pause") : t("play")}
-        >
-          {playing ? (
-            <Pause className="h-4 w-4" />
-          ) : (
-            <Play className="h-4 w-4" />
-          )}
-        </Button>
-        <button
-          type="button"
-          aria-label={t("seek")}
-          className="relative h-2 flex-1 cursor-pointer rounded-full bg-muted"
-          onClick={(e) => {
-            const box = e.currentTarget.getBoundingClientRect();
-            seek((e.clientX - box.left) / box.width);
-          }}
-        >
-          <span
-            className="absolute inset-y-0 left-0 rounded-full bg-primary"
-            style={{
-              width: `${Math.min(100, ((reelNow ?? 0) / Math.max(length, 0.1)) * 100)}%`,
+      {controls ? (
+        <div className="mx-auto flex w-full max-w-[340px] items-center gap-2">
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            onClick={toggle}
+            aria-label={playing ? t("pause") : t("play")}
+          >
+            {playing ? (
+              <Pause className="h-4 w-4" />
+            ) : (
+              <Play className="h-4 w-4" />
+            )}
+          </Button>
+          <button
+            type="button"
+            aria-label={t("seek")}
+            className="relative h-2 flex-1 cursor-pointer rounded-full bg-muted"
+            onClick={(e) => {
+              const box = e.currentTarget.getBoundingClientRect();
+              seek((e.clientX - box.left) / box.width);
             }}
-          />
-        </button>
-        <span className="w-20 text-right text-xs tabular-nums text-muted-foreground">
-          {clock(reelNow ?? 0)} / {clock(length)}
-        </span>
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          onClick={() => setMuted((m) => !m)}
-          aria-label={muted ? t("unmute") : t("mute")}
-        >
-          {muted ? (
-            <VolumeX className="h-4 w-4" />
-          ) : (
-            <Volume2 className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
+          >
+            <span
+              className="absolute inset-y-0 left-0 rounded-full bg-primary"
+              style={{
+                width: `${Math.min(100, ((reelNow ?? 0) / Math.max(length, 0.1)) * 100)}%`,
+              }}
+            />
+          </button>
+          <span className="w-20 text-right text-xs tabular-nums text-muted-foreground">
+            {clock(reelNow ?? 0)} / {clock(length)}
+          </span>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={() => setMuted((m) => !m)}
+            aria-label={muted ? t("unmute") : t("mute")}
+          >
+            {muted ? (
+              <VolumeX className="h-4 w-4" />
+            ) : (
+              <Volume2 className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
-}
+});

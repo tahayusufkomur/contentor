@@ -55,24 +55,28 @@ def inside(words, start: float, end: float) -> list:
     return [w for w in words if w[1] > start and w[0] < end]
 
 
-def keep(words, start: float, end: float, cut: bool = True) -> list[list[float]]:
+def keep(words, start: float, end: float, cut: bool = True, removed=()) -> list[list[float]]:
     """The stretches of [start, end] a reel keeps, counted from `start`, on whole frames: all of it, or with
-    every pause longer than PAUSE cut down to PAD on each side of the words around it."""
+    every pause longer than PAUSE cut down to PAD on each side of the words around it; and without the
+    stretches the coach cut out by hand (`removed`, [[a, b]] in the video's seconds)."""
     length = frame(end - start)
     spoken = inside(words, start, end)
-    if not cut or len(spoken) < 2:
-        return [[0.0, length]]
     spans, a = [], start
-    for before, after in zip(spoken, spoken[1:], strict=False):
-        if after[0] - before[1] > PAUSE:
-            spans.append((a, before[1] + PAD))
-            a = after[0] - PAD
+    if cut and len(spoken) >= 2:
+        for before, after in zip(spoken, spoken[1:], strict=False):
+            if after[0] - before[1] > PAUSE:
+                spans.append((a, before[1] + PAD))
+                a = after[0] - PAD
     spans.append((a, end))
+    for ra, rb in sorted(removed):
+        spans = [piece for s, e in spans for piece in ((s, min(e, ra)), (max(s, rb), e)) if piece[1] > piece[0]]
     out = []
     for s, e in spans:
         s, e = max(0.0, frame(s - start)), min(length, frame(e - start))
         if e - s >= 0.2:
             out.append([s, e])
+    if not out and removed:  # all of it cut out: nothing (the studio refuses that)
+        return []
     return out or [[0.0, length]]
 
 

@@ -17,6 +17,7 @@ YELLOW = "#FFD43B"
 # Where the captions sit (px on 1080x1920, from the bottom), clear of the apps' buttons and caption. A fitted
 # frame is a band in the middle: the captions under it.
 _MARGINS = {"crop": 600, "fit": 440}
+SIZES = {"clean": 62, "brand": 76, "bold": 86}  # px on 1080x1920, before the coach's own scale
 
 
 def luminance(colour: str) -> float:
@@ -97,21 +98,34 @@ def groups(words, style: str) -> list[list]:
     return out
 
 
-def _styles(style: str, colors: dict, layout: str) -> list[str]:
-    below = _MARGINS.get(layout, _MARGINS["crop"])
+def _styles(style: str, colors: dict, layout: str, below: int | None = None, scale: float = 1.0) -> list[str]:
+    below = _MARGINS.get(layout, _MARGINS["crop"]) if below is None else below
     white, black = "&H00FFFFFF", "&H00000000"
+    size = round(SIZES.get(style, SIZES["bold"]) * scale)
     if style == "clean":
-        caption = f"62,{white},{white},&H60000000,&H60000000,-1,0,0,0,100,100,0,0,3,14,0,2,110,110,{below}"
+        caption = f"{size},{white},{white},&H60000000,&H60000000,-1,0,0,0,100,100,0,0,3,14,0,2,110,110,{below}"
     elif style == "brand":
-        caption = f"76,{white},{white},{_bgr(edge(colors))},{black},-1,0,0,0,100,100,0,0,1,8,0,2,90,90,{below}"
+        caption = f"{size},{white},{white},{_bgr(edge(colors))},{black},-1,0,0,0,100,100,0,0,1,8,0,2,90,90,{below}"
     else:
-        caption = f"86,{white},{white},{black},&H80000000,-1,0,0,0,100,100,1,0,1,7,3,2,90,90,{below}"
+        caption = f"{size},{white},{white},{black},&H80000000,-1,0,0,0,100,100,1,0,1,7,3,2,90,90,{below}"
     return [f"Style: Caption,@caption,{caption},1"]
 
 
-def build(*, words, length: float, style: str, colors: dict, language: str = "", layout="crop", phrases=None) -> str:
+def build(
+    *,
+    words,
+    length: float,
+    style: str,
+    colors: dict,
+    language: str = "",
+    layout="crop",
+    phrases=None,
+    below: int | None = None,
+    scale: float = 1.0,
+) -> str:
     """The ASS file: `words` ([[start, end, text]] on the reel's clock) lighting up a word at a time; or,
-    translated, `phrases` ([{"start", "end", "text"}]) one at a time. "" when there is nothing to draw."""
+    translated, `phrases` ([{"start", "end", "text"}]) one at a time. "" when there is nothing to draw. The
+    captions sit `below` px from the bottom (else where the layout puts them), their size times `scale`."""
     style = style if style in STYLES else "bold"
     lit = _tag(highlight(colors))
     grow = r"\fscx112\fscy112" if style == "bold" else ""
@@ -159,7 +173,7 @@ def build(*, words, length: float, style: str, colors: dict, language: str = "",
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, "
         "Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, "
         "MarginR, MarginV, Encoding",
-        *_styles(style, colors, layout),
+        *_styles(style, colors, layout, below, scale),
         "",
         "[Events]",
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",

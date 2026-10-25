@@ -43,7 +43,8 @@
       "media": "Media",
       "studio": "Photo studio",
       "messages": "Messages",
-      "reels": "Reels"
+      "reels": "Reels",
+      "videoStudio": "Video studio"
     },
     "more": "+ {count} more"
   },
@@ -123,6 +124,7 @@
       "making": "Making the video…",
       "download": "Download",
       "downloadCover": "Cover",
+      "openStudio": "Open in studio",
       "makeHint": "The preview is live: make the video when it looks right.",
       "makingHint": "This takes about a minute. You can keep editing.",
       "staleHint": "You changed the reel since its video was made.",
@@ -199,6 +201,70 @@
       "keep": "Keep it",
       "deleted": "Reel deleted",
       "madeByTeam": "Made by your Marketing Specialist"
+    },
+    "studio": {
+      "subtitle": "Edit a reel yourself on a timeline: trim it, cut out any moment, retype a caption, move the captions and the picture, and undo anything.",
+      "noneTitle": "No reels to edit yet",
+      "none": "Use one of the ideas in Reels first, then open it here.",
+      "toReels": "Go to Reels",
+      "back": "All reels in the studio",
+      "timeline": "Timeline",
+      "panelsLabel": "Studio panels",
+      "panels": {
+        "words": "Words",
+        "cover": "Cover",
+        "captions": "Captions",
+        "frame": "Frame",
+        "extras": "Extras",
+        "post": "Post"
+      },
+      "tracks": {
+        "cover": "Cover",
+        "video": "Video",
+        "captions": "Captions",
+        "photos": "Photos",
+        "end": "End card"
+      },
+      "piece": "Clip from {from} to {to}",
+      "cut": "Cut out by you",
+      "pauseCut": "A pause the reel skips",
+      "trimStart": "Where the reel starts: drag it, or use the arrow keys",
+      "trimEnd": "Where the reel ends: drag it, or use the arrow keys",
+      "photoAt": "Photo at {at}: drag to move it",
+      "play": "Play",
+      "pause": "Pause",
+      "undo": "Undo",
+      "redo": "Redo",
+      "split": "Split at the playhead",
+      "cutOut": "Cut out",
+      "putBack": "Put back",
+      "remove": "Remove",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "zoom": "Timeline zoom",
+      "fit": "Fit the reel",
+      "stageHint": "Drag the captions up or down, or the picture sideways. Click to play or pause.",
+      "frame": {
+        "dragHint": "Or drag the picture sideways in the player: it stays where you leave it.",
+        "reset": "Back to the middle"
+      },
+      "captions": {
+        "dragHint": "Or drag them up or down in the player.",
+        "size": "Size",
+        "position": "Height",
+        "reset": "Back to the style's own",
+        "group": "This caption's words",
+        "groupHint": "Retype any word the transcript got wrong."
+      },
+      "words": {
+        "hint": "Click a word to go to it. Shift-click another to select the words between. Double-click a word to retype it.",
+        "selected": "{count, plural, one {# word} other {# words}} selected",
+        "cutOut": "Cut out",
+        "putBack": "Put back",
+        "startHere": "Start here",
+        "endHere": "End here",
+        "retype": "Retype"
+      }
     }
   },
   "store": {

@@ -2,6 +2,9 @@
 its cover, and making it into a file to download. Coach and owner only, but for the cover and the end card
 the browser sidecar reads with a signed token."""
 
+import re
+import uuid
+
 from django.conf import settings
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
@@ -22,6 +25,8 @@ from .models import Reel
 COUNTS = (1, 2, 3, 4, 5)
 _MADE = (Reel.DRAFT, Reel.RENDERING, Reel.READY, Reel.FAILED)  # a reel she works on, not an idea
 MIN_LENGTH, MAX_LENGTH = 5.0, 180.0
+KEEP_LEAST = 2.0  # seconds of the clip the studio's cuts must leave
+MOST_CUTS, MOST_RETYPED, MOST_CUTAWAYS = 100, 1000, 6
 WORDS_AROUND = 30.0  # seconds of words around the stretch sent to the editor, for trimming
 _BOOLEAN_OPTIONS = ("cuts", "cover", "progress", "end_card", "clean_audio", "cutaways")
 
@@ -78,7 +83,7 @@ def _detail(reel) -> dict:
     from apps.media.models import Photo
 
     video = reel.video
-    words = w.words_of(video)
+    words = render.words_of(reel)
     kept = render.spans(reel, words)
     found_kit = render.kit()
     placed = render.cutaways_on_reel(reel, kept)
@@ -106,10 +111,17 @@ def _detail(reel) -> dict:
         "frame": framing.frame_of(reel),
         "translation": render.phrases(reel),
         "cutaways": [
-            {"start": c["start"], "end": c["end"], "url": generate_presigned_download_url(photos[c["photo"]].s3_key)}
+            {
+                "start": c["start"],
+                "end": c["end"],
+                "url": generate_presigned_download_url(photos[c["photo"]].s3_key),
+                "at": c["at"],
+                "photo": c["photo"],
+            }
             for c in placed
             if c["photo"] in photos
         ],
+        "edits": reel.edits or {},
         "ideas": reel.ideas,
         "brand": {
             "colors": found_kit["colors"],
@@ -207,7 +219,92 @@ def search_status(request, video_id):
     return Response(jobs.search_state(video_id))
 
 
-def _apply(reel, data, length_cap) -> str | None:
+def _number(value, low: float, high: float) -> float | None:
+    """`value` as a number in [low, high], else None."""
+    if isinstance(value, bool) or not isinstance(value, int | float) or not low <= value <= high:
+        return None
+    return round(float(value), 4)
+
+
+def _apply_edits(reel, given, words) -> str | None:
+    """The studio's hand edits onto the reel: each one sent replaces what was there, None (or blank) undoes
+    it. The reason they are refused, else None."""
+    if not isinstance(given, dict):
+        return "Send the edits as an object."
+    edits = dict(reel.edits or {})
+    if "cuts" in given:
+        cuts = given["cuts"] or []
+        if not isinstance(cuts, list) or len(cuts) > MOST_CUTS:
+            return "Send the stretches cut out as a list."
+        spans = []
+        for cut in cuts:
+            a = _number(cut[0], 0, 1e6) if isinstance(cut, list) and len(cut) == 2 else None
+            b = _number(cut[1], 0, 1e6) if a is not None else None
+            if b is None or b <= a:
+                return "Each stretch cut out is [start, end] in the video's seconds."
+            spans.append([round(a, 3), round(b, 3)])
+        merged = []
+        for a, b in sorted(spans):
+            if merged and a <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], b)
+            else:
+                merged.append([a, b])
+        edits["cuts"] = merged
+    if "text" in given:
+        typed = given["text"] or {}
+        if not isinstance(typed, dict) or len(typed) > MOST_RETYPED:
+            return "Send the retyped words by their start."
+        starts = {s: text for s, _e, text in words}
+        retyped = {}
+        for key, value in typed.items():
+            try:
+                at = float(key)
+            except (TypeError, ValueError):
+                return "A retyped word is one of the video's words, by its start."
+            found = next((s for s in starts if abs(s - at) < 0.001), None)
+            if found is None:
+                return "A retyped word is one of the video's words, by its start."
+            text = " ".join(str(value or "").split())[:60]
+            if text:  # (it keeps the space Scribe wrote before the word)
+                retyped[str(found)] = re.match(r"\s*", starts[found]).group(0) + text
+        edits["text"] = retyped
+    for key, low, high in (("caption_at", 0.05, 0.8), ("caption_size", 0.6, 1.6), ("centre", 0.0, 1.0)):
+        if key in given:
+            if given[key] is None:
+                edits.pop(key, None)
+                continue
+            value = _number(given[key], low, high)
+            if value is None:
+                return f"{key} is a number from {low} to {high}."
+            edits[key] = value
+    reel.edits = {k: v for k, v in edits.items() if v not in ({}, [], None)}
+    return None
+
+
+def _apply_cutaways(reel, given) -> str | None:
+    """The photos over the clip as the studio placed them: [{"at": the video's second, "photo": id}]."""
+    from apps.media.models import Photo
+
+    if not isinstance(given, list) or len(given) > MOST_CUTAWAYS:
+        return "Send the photos over the clip as a list."
+    placed = []
+    for cut in given:
+        at = _number(cut.get("at"), 0, 1e6) if isinstance(cut, dict) else None
+        try:
+            photo = str(uuid.UUID(str(cut.get("photo")))) if at is not None else None
+        except ValueError:
+            photo = None
+        if photo is None:
+            return "Each photo over the clip is {at, photo}."
+        placed.append({"at": round(at, 3), "photo": photo})
+    known = {str(pk) for pk in Photo.objects.filter(pk__in=[c["photo"] for c in placed]).values_list("pk", flat=True)}
+    if any(c["photo"] not in known for c in placed):
+        return "Choose one of the photos found for this reel."
+    reel.cutaways = placed
+    return None
+
+
+def _apply(reel, data, length_cap, words) -> str | None:
     """The PATCH's fields onto the reel in memory; the reason it is refused, else None."""
     if "title" in data:
         reel.title = " ".join(str(data["title"] or "").split())[:120]  # as typed: "#1 tip" keeps its "#1"
@@ -256,6 +353,16 @@ def _apply(reel, data, length_cap) -> str | None:
             elif key == "end_text":
                 options[key] = str(value or "")[:80]
         reel.options = options
+    if "edits" in data:
+        refused = _apply_edits(reel, data["edits"], words)
+        if refused:
+            return refused
+    if "cutaways" in data:
+        refused = _apply_cutaways(reel, data["cutaways"])
+        if refused:
+            return refused
+    if ("edits" in data or "start" in data or "end" in data) and w.length_of(render.spans(reel, words)) < KEEP_LEAST:
+        return f"Keep at least {int(KEEP_LEAST)} seconds of the clip."
     return None
 
 
@@ -273,7 +380,7 @@ def reel_detail(request, pk):
     words = w.words_of(reel.video)
     cap = max(reel.video.duration_seconds or 0, words[-1][1] if words else 0, reel.end)
     was = (reel.start, reel.end, reel.layout)
-    refused = _apply(reel, data, cap)
+    refused = _apply(reel, data, cap, words)
     if refused:
         return Response({"detail": refused}, status=400)
     options = render.options_of(reel)

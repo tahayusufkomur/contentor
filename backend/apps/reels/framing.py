@@ -93,8 +93,17 @@ def frame_of(reel) -> dict:
     middle = {"layout": "crop", "keys": [[0.0, 0.5]], "share": window}
     if reel.layout == "fit":
         return {"layout": "fit", "keys": [], "share": window}
-    if reel.layout == "center" or window >= 0.999:
+    if window >= 0.999:
         return middle
+    if reel.layout == "center":  # held still: in the middle, or where she dragged it in the studio
+        centre = (reel.edits or {}).get("centre")
+        if centre is None:
+            return middle
+        return {
+            "layout": "crop",
+            "keys": [[0.0, round(min(1 - window / 2, max(window / 2, centre)), 4)]],
+            "share": window,
+        }
     if faces.get("samples") is None:  # not scanned yet (or the video service is off)
         return middle
     keys = follow(faces, reel.start, reel.end)

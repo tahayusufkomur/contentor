@@ -4,6 +4,7 @@ import {
   Clapperboard,
   CreditCard,
   Download,
+  Film,
   Globe,
   Image as ImageIcon,
   Images,
@@ -74,6 +75,7 @@ export function buildAdminNav(t: (key: string) => string): NavSection[] {
         item("messages", "/admin/messages", Bell),
         item("blog", "/admin/blog", Newspaper),
         item("reels", "/admin/reels", Clapperboard),
+        item("videoStudio", "/admin/video-studio", Film),
       ],
     },
     {

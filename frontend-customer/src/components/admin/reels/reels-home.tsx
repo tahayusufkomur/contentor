@@ -390,12 +390,21 @@ function IdeaCard({
   );
 }
 
-function ReelCard({ reel, brand }: { reel: ReelSummary; brand: CoverBrand }) {
+/** A reel as its cover, its length and where it stands; it opens in the reel editor (or `href`). */
+export function ReelCard({
+  reel,
+  brand,
+  href,
+}: {
+  reel: ReelSummary;
+  brand: CoverBrand;
+  href?: string;
+}) {
   const t = useTranslations("admin.reels");
   const state = reel.stale ? "changed" : reel.status;
   return (
     <NavLink
-      href={`/admin/reels/${reel.id}`}
+      href={href ?? `/admin/reels/${reel.id}`}
       className="group block space-y-2 rounded-lg focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
     >
       <div className="relative transition-opacity group-hover:opacity-90">
