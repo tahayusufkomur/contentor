@@ -130,8 +130,8 @@ SLIDES: tuple[Slide, ...] = (
         ("live_topic",),
         "Your first online class",
         "A live class happens at a set time.",
-        "Students sign up on your site and join the video call from it. It can run once, or every week at the "
-        "same time.",
+        "Students sign up on your site and join the video call from it. It can run once, or every week on the "
+        "days and times you choose, like Mondays and Wednesdays at 9:00 and Saturdays at 10:00.",
         "Next: your class",
     ),
     Slide(
