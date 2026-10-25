@@ -297,6 +297,18 @@ Owner, 2026-10-25 (Gate A)
   scrim and the band duotones kept, long quotes at line-height 1.32, a renamed button with nowhere to go
   falls back to Contact, the home hero pinned to each style's phone-first variant until Phase 2.
 
+Proposed at Gate B (WP-2.0), awaiting the owner
+
+- **The four directions** in §7.1–§7.4, each with its alternates. Recommended, after two review rounds:
+  - approve kinetic's two-ink bill;
+  - approve velvet's invitation. The monogram reads stronger at 5 seconds, but it is the luxury-house
+    canon the thesis refuses.
+  - steer journal to the cover (see the note under 7.3);
+  - approve pop's panel.
+- **R11 and display caps** (the open Gate A item):
+  - R11's "never uppercase over 24 characters" applies below 48 px.
+  - At 48 px and above, kinetic may set its statement and its billed course titles in caps.
+
 ## 6. The bar: rules every work package follows
 
 Each rule has a check, so a work package can prove it.
@@ -342,7 +354,7 @@ Status values:
 | 1.7b | Phone-first hero, batch B | 1.7a | Task 1.7 | done (2026-10-24, 275ed6e9) |
 | 1.7c | Phone-first hero, batch C | 1.7b | Task 1.7 | done (2026-10-24, 3a3e6546) |
 | 1.8 | Gate A: before/after capture, eval, owner review | all of Phase 1 | Task 1.8 | done (2026-10-25, 8f2702e1 deployed) |
-| 2.0 | Flagship directions and comps → Gate B | 1.8 | written at start | todo |
+| 2.0 | Flagship directions and comps → Gate B | 1.8 | `plans/2026-10-24-site-styles-wow-2.0.md` | in progress (2026-10-25, eb9081a5) |
 | 2.1 | Flagship build: kinetic | 2.0, 2.5 | written at start | todo |
 | 2.2 | Flagship build: velvet | 2.0, 2.5 | written at start | todo |
 | 2.3 | Flagship build: journal | 2.0, 2.5 | written at start | todo |
@@ -419,6 +431,288 @@ against G1.
 - Migrate tenants on a retired look to the nearest flagship and palette.
 - The setup gallery shows fewer, better looks.
 - Niche ranking spreads peers across looks, so two face-yoga coaches do not land on the same one.
+
+### Flagship direction contracts (WP-2.0, for Gate B)
+
+Written with the Impeccable new-work flow: one `concept-seed` roll per flagship in Persuade mode,
+each challenger fused and judged on audience identification and product clarity, and each declined
+challenger donating one discipline (the "Raised by" lines). The personality (O1) was pinned and won
+every collision. Every contract keeps the 12 families' content model.
+
+Rules every contract shares:
+- **First screen (R1):** four elements besides the header.
+- **Motion:**
+  - nothing on the first screen waits for motion (LCP), and motion starts below it or on interaction;
+  - reduced motion shows every final state.
+- **Photo treatments:** each contract names one. The threshold print and the halftone are new values
+  for the manifest's `photoTreatment`.
+- **Alternates** are listed so the owner can steer to one at Gate B.
+
+#### 7.1 kinetic: the two-ink bill
+
+- **THESIS:** Energy as print. Her site is a fight-night bill pulled in two inks, volt and black, with
+  nothing between them. It refuses both the category's "bold" default (a dark photo, white type, a red
+  button and a ticker) and the incumbent's red-and-lime clash.
+- **OWN-WORLD:** Two inks and no midtones.
+  - **Inks:** volt `oklch(0.93 0.21 122)` and ink `oklch(0.17 0.01 260)` (16:1).
+  - **No grey:** muted text, surfaces and borders are one of the two inks. Hierarchy comes from size
+    and weight, never from grey.
+  - **Photos print into the field** (the threshold print): grayscale through a near-binary curve,
+    multiplied onto volt. Light walls print as pure volt, so the figure stands in the field with no
+    frame, and every stock photo becomes the same black print of a person.
+  - **Bands, not cards:** sections are full-width bands of one ink, with no cards, rounded corners or
+    shadows. Buttons are square slabs in the opposite ink, with one cut corner.
+  - **Other palettes keep the roles:** Ocean prints navy on aqua, Ember burnt black on amber.
+  - **Dark scheme:** the inks swap areas (a black field with a volt print), never roles.
+- **FIRST VIEWPORT:**
+  - **Phone:** volt to every edge.
+    - The statement comes first: black caps at 64–72 px in three lines, leaning 8° as one block.
+    - Her print follows: head and shoulders, bleeding off both sides, with a hard straight bottom edge.
+    - One line of subhead at 17 px, then the black slab button. The button ends at 780 px or above.
+  - **Desktop:** volt to every edge.
+    - The statement runs across the left 54% at 112–148 px in three balanced, leaning lines.
+    - The print fills the right 44% at full height, never under the letters.
+    - The subhead and the button sit under the statement on clean volt.
+  - **Header:** her name in black, a quiet "Sign in", the offer as a small black slab.
+- **SIGNATURE SECTION:** The bill. On a black band, her home courses (three at most) are billed like a
+  fight card.
+  - Each title is a full-width line of volt caps, stepped one indent right of the line above.
+  - Each line carries its real price and a slab button.
+  - Hovering or focusing a line reverses it to volt.
+  - It renders `courseShowcase` and shows nothing the coach did not give.
+- **MOTION GRAMMAR:** Hard cuts, like lights switching on.
+  - Bands flip between volt and black at the middle of the viewport (scroll-driven, `steps(1)`).
+  - Billed lines cut to volt on focus.
+  - No easing, slides or fades anywhere.
+  - Reduced motion: every band in its final ink.
+- **TYPE:**
+  - **Faces:** Big Shoulders (Google Fonts, opsz 72, weight 900) for the statement and the bill,
+    uppercase and leaning as a skewed block. Archivo (width 100) for body and UI.
+  - **Scale:** the statement at 64–72 px on phones and 112–148 px on desktop; body at 17 px. Nothing
+    sits between the two sizes except the bill.
+  - The caps need the R11 wording proposed in §5.
+- **FORM:** Seed `ea430533`.
+  - **The roll** assigned candidate 4, broadcast sports graphics.
+  - **The cabaret challenger won.** The fused Weimar cabaret bill beat it on both axes:
+    - a poster is the gym's own wall culture across every energetic niche, where broadcast graphics
+      read as sports TV;
+    - two inks and one figure hold four elements, where straps, bugs and chips stack up.
+
+    It became the build.
+  - **Raised by:**
+    - the torn billboard: scale jumps, no middle sizes;
+    - the rain-night city: phones stack full-width bands;
+    - the orizuru: one uncut sheet, no cards;
+    - the risograph: photos multiply into the field;
+    - the cutting bench: volt covers at least a third of every screen.
+  - **Alternates:**
+    - broadcast graphics (assigned, lost both axes);
+    - Impeccable's pick, variable-width poster type that stretches with scroll on one volt field. Its
+      risk: the most familiar sports-poster look, the closest to the incumbent.
+
+#### 7.2 velvet: the invitation
+
+- **THESIS:** Premium as being invited in person. The home page is a couture invitation in her name: a
+  thick oxblood card laid on velvet, which opens. It refuses both the luxury canon (black, gold and
+  thin serif caps over a full-bleed photo) and the incumbent's faded split portrait.
+- **OWN-WORLD:** Three materials.
+  - **Velvet ground** `oklch(0.16 0.035 15)`: crushed pile under one soft key light that drifts. The ground
+    and the card stock are authored raster plates, not CSS gradients.
+  - **Oxblood duplex card** `oklch(0.31 0.1 18)`:
+    - a blush painted edge `oklch(0.8 0.07 22)`, thicker at the foot where the card's depth shows;
+    - square corners;
+    - a deep soft shadow onto the velvet.
+  - **Champagne foil** `oklch(0.86 0.065 80)` for type, at 9:1 on the card. A metallic gradient is
+    clipped to the name only.
+  - **Photos are prints tipped onto the card** with a thin blush mat, warm-toned (`tint`).
+  - **Two places only:** every section is either a card of the suite or set straight on velvet, with
+    no other boxes. The suite's cards are the hero, events as the details card, and the closing call as
+    the reply card.
+  - **Buttons** are foil-edged rectangles that fill with foil on hover.
+  - **Other palettes keep the roles:** Noir is a black card on black velvet with crimson edges, Satin a
+    blush card on wine velvet.
+  - **Schemes:** dark is native. Light mode turns the ground to blush paper and keeps the oxblood card.
+  - **No wedding cues:** no script, florals, ivory stock or centred ceremony copy.
+- **FIRST VIEWPORT:**
+  - **Phone:** velvet and the header, then the card, the full width less 16 px margins, at 3:5. On the
+    card:
+    - her portrait print, 4:5 at 60% of the card's width, centred;
+    - the site name in foil at 44–52 px;
+    - the statement in one or two lines at 20–22 px;
+    - the button, ending at 780 px or above.
+  - **Desktop:** the same 3:5 card stands centred at about 84% of the viewport height, with velvet on
+    both sides and the light drifting across it. The card holds the same four things. Nothing else is
+    on screen.
+- **SIGNATURE SECTION:** The gatefold. Past the hero, the card's two panels part from the centre to
+  reveal its inside.
+  - The inside floods oxblood to the full width.
+  - Her belief is set in foil at monument scale: WP-2.5's statement, or the philosophy statement's
+    first sentence when there is none. Her name sits under it.
+  - Two detail prints (students or hands) ride on the opening panels.
+- **MOTION GRAMMAR:** Slow light.
+  - The key light drifts across the velvet with scroll.
+  - On desktop, the foil sheen follows the pointer.
+  - Cards are laid down: a 12 px settle and a growing shadow, 900 ms ease-out.
+  - The gatefold opens over one screen of scroll.
+  - Nothing is faster than 600 ms and nothing loops.
+  - Reduced motion: still light, cards in place, the gatefold open.
+- **TYPE:**
+  - **Faces:** Kalnia (Google Fonts, width 100–125, weight 100–700). The name is at weight 600, the
+    statement at weight 380 and width 125. Jost for body at 16–17 px.
+  - **Scale:** the name at 44–52 px on phones and 72–84 px on desktop, in two lines when it must.
+- **FORM:** Seed `ff412b51`.
+  - **The roll** assigned candidate 7, a couture invitation.
+  - **Ebru, floated pigment, is competitive.** Marbled silk reads as sensual luxury, but a moving
+    pigment field fights her words. It stays a full alternate.
+  - **Declined:** the other five.
+  - **Raised by:**
+    - the alphabet storm: her name at monument scale, not small formal type;
+    - the cassette j-card: the suite unfolds panel by panel;
+    - the CD-ROM console: one live area per screen;
+    - the chromatophore skin: the foil answers the light;
+    - the drum machine: the card keeps its proportion at every width and scales, never reflows.
+  - **Alternates:**
+    - ebru, a marbled ground;
+    - Impeccable's pick, her initials as a house monogram at poster scale, with the portrait standing
+      between the letters. Its risk: the familiar luxury-house move.
+  - **Honest risk of the build:** an invitation can read as wedding stationery. The no-wedding-cues
+    rule exists for that.
+
+#### 7.3 journal: the exhibition
+
+- **THESIS:** Calm as a museum room. The home page is a one-person exhibition: the statement cut in
+  vinyl on a painted wall, and her photo hung like a work with its label. It refuses both the AI-median
+  editorial (cream paper, an italic display serif, hairlines and tracked mono labels) and the
+  incumbent's split cover.
+- **OWN-WORLD:** Painted walls and hung prints.
+  - **Default walls:**
+    - gallery green `oklch(0.37 0.055 165)`, with wall ink `oklch(0.97 0.01 95)` (9:1);
+    - a cool white room `oklch(0.975 0.004 100)`, with ink `oklch(0.24 0.02 165)`.
+  - **Rooms:** sections are rooms. Each floods one wall colour to every edge, and the colours alternate
+    down the page.
+  - **Photos hang:** never full-bleed, with wall on every side and a soft contact shadow below. No frame
+    and no rounded corners.
+  - **Labels:** every photo has a museum label beside it in small grotesk: its caption, or for the
+    hero her name as the title, her kicker as the medium line and the subhead as the note.
+  - **Light:** a picture light falls from above onto the work, with no halo around it.
+  - **Buttons** are plain rectangles in wall ink.
+  - **Never:** kickers above headings, hairlines or italics.
+  - **Other palettes repaint the walls and never move the hang:** Sage hangs on sage and stone, Dusk on
+    plum and lilac.
+  - **Dark scheme:** the green room deepens and the white room becomes charcoal.
+- **FIRST VIEWPORT:**
+  - **Two groups:** the wall text with its button, then the work with its label.
+  - **Phone:** a green wall.
+    - The statement as wall text at 44–48 px, in two or three lines, flush left on the wall's margin.
+    - The button sits under the statement and ends at 780 px or above.
+    - Her portrait hangs at 74% width on the same margin, at 4:5.
+    - The label sits under the print and may fall below the fold.
+  - **Desktop:** the green wall to every edge.
+    - The statement on the left at 88–108 px, in two lines, with the button under it.
+    - Her portrait hangs on the right at eye level, at 68% of the viewport height.
+    - The label sits at the print's foot, to its left.
+- **SIGNATURE SECTION:** The hang. Her moments hang in one row along a single centre line on the green
+  wall, at varied sizes, each with its label (her captions). Scrolling walks along the wall: the section
+  pins and the row travels sideways, one work at a time. It renders `moments`.
+- **MOTION GRAMMAR:** One breath.
+  - Prints below the first screen develop into view, from the wall colour to the full print over 1.2 s.
+  - Every transition takes a breath (1.2 s in and out), and nothing snaps.
+  - The hang travels at walking pace with scroll.
+  - Reduced motion: every print developed, and the hang becomes an ordinary horizontal scroller.
+- **TYPE:**
+  - **Faces:** Hahmlet (Google Fonts, variable weight) at 300 for wall text and statements. Familjen
+    Grotesk for labels, body and buttons.
+  - **Scale:** wall text at 44–48 px on phones and 88–108 px on desktop, labels at 14 px, body at 17 px.
+- **FORM:** Seed `168c71ac`.
+  - **The roll** assigned candidate 3, a museum print and wall label.
+  - **The design annual's plate section is competitive.** One grotesk at plate scale reads at once,
+    which holds product clarity. It loses audience identification: an annual is a designer's object,
+    while everyone has walked through a museum. It stays a full alternate.
+  - **Declined:** the other four.
+  - **Raised by:**
+    - the darkroom: prints develop into view;
+    - the tensegrity column: motion at breathing tempo;
+    - the ASCII renderer: palettes repaint walls, never the hang;
+    - the mook: no unlabelled photo;
+    - the streetwear quote grammar: headings say plainly what the room holds, with no kicker.
+  - **Alternates:**
+    - the design annual: near-white stock, one grotesk, and her name in a round signature stamp half
+      off the plate;
+    - Impeccable's pick, a magazine cover with her name as the nameplate. Its risk: it is the
+      incumbent's own idea done at full scale.
+
+**Gate B note on 7.3 (WP-2.0 review):**
+- **Finding:** after two review rounds, the exhibition keeps its contract and still fails G1. Its
+  5-second memory is "green". The cover (`comps/journal-cover.html`) clears G1 on every set.
+- **Recommendation:** steer journal to the cover.
+- **If chosen, the cover's contract:**
+  - it keeps this OWN-WORLD's green and Hahmlet;
+  - her name becomes a full-width nameplate in Noto Serif Display, condensed (width 62.5, weight 800);
+  - a full-bleed cover photo carries the statement over a scrim at the foot;
+  - the hang moves to the signature section.
+
+#### 7.4 pop: the panel
+
+- **THESIS:** Joy as pop art. The home page is one giant comic panel in process colours. Her photo is
+  screen-printed in halftone and her words sit in a speech balloon, so she is the one talking. It
+  refuses both the category's pastel blobs and the incumbent's busy four-photo collage.
+- **OWN-WORLD:** Process colours and one keyline.
+  - **Colours:**
+    - field: hot magenta `oklch(0.64 0.25 355)`;
+    - print: cyan `oklch(0.86 0.12 210)`;
+    - keyline and type: ink `oklch(0.18 0.02 330)` (4.9:1 on the field, 12.8:1 on cyan);
+    - balloons: white.
+  - **One keyline:** a single 3 px ink line draws every panel, balloon, caption box and button. States
+    thicken or double the line, never change only the colour.
+  - **Photos are screen prints** (the halftone): a flat cyan block under black halftone dots, made in
+    CSS by averaging the grayscale photo with a dot grid, then high contrast. Stock becomes one printed
+    look.
+  - **Crops go to the face:** each photo's focal point and zoom come from Pix4Less
+    `subject_placement`.
+  - **Caption boxes** are white rectangles with the keyline. Each balloon and its tail are one
+    outline.
+  - **Panels:** sections are panels on the magenta field, square-cornered, with gutters of field
+    between them.
+  - **Other palettes keep the roles:** Sorbet is tangerine and sky, Mint teal and lemon.
+  - **Dark scheme:** the field goes to deep ink-violet and the panels keep their colours.
+- **FIRST VIEWPORT:**
+  - **Phone:** the magenta field and the header, then one panel, the full width less 12 px.
+    - Her photo is printed in cyan halftone, cropped to face and shoulders.
+    - A white balloon at the panel's top left holds the statement at 28–32 px, its tail pointing at
+      her.
+    - A caption box straddles the panel's bottom edge with the subhead at 16 px.
+    - The ink button with a white label follows and ends at 780 px or above.
+  - **Desktop:** one panel spans 92% of the width and 80% of the height, and the print fills it.
+    - The balloon at top left, at 56–64 px.
+    - The caption box at bottom left.
+    - The button inside the panel, at bottom right.
+- **SIGNATURE SECTION:** The strip. Her moments run as a four-panel strip: each photo printed in
+  halftone, its caption in a caption box. Panels print in one after another as they reach the middle of
+  the screen. It renders `moments`.
+- **MOTION GRAMMAR:** The print run.
+  - Photos below the first screen print in by dot gain: the halftone dots grow from nothing to full size
+    in four steps as a panel enters.
+  - Balloons and buttons are pasted: scale 1.04 to 1 in 140 ms, with no overshoot.
+  - Nothing fades.
+  - Reduced motion: printed and pasted from the start.
+- **TYPE:**
+  - **Faces:** Bagel Fat One (Google Fonts) in mixed case for balloons and headings. Bricolage Grotesque
+    for body, caption boxes and buttons.
+  - **Scale:** the balloon statement at 28–32 px on phones and 56–64 px on desktop; body at 17 px.
+- **FORM:** Seed `e7149bcc`.
+  - **The roll** assigned candidate 4, pop art.
+  - **Declined:** all six challengers.
+  - **Raised by:**
+    - the neon circuit: one keyline weight everywhere;
+    - the paper menagerie: one colour reserved for what moves or is active;
+    - the streaming wall: one panel speaks at a time;
+    - the Merz collage: pasted, not faded;
+    - the darkroom: photos print in step by step;
+    - the emission-line rail: states change the line, not only the hue.
+  - **Alternate:** Impeccable's pick, a die-cut sticker sheet of her photos and offers. Its risk:
+    stickers are the incumbent pop's motif and a common "fun brand" look.
+  - **Honest risk of the build:** pop art is the party-flyer cliché when the halftone is cheap. The dots
+    must be fine, and they stay in the photos.
 
 ## 8. How we iterate
 
@@ -614,6 +908,37 @@ against G1.
   on prod: CareQueen (primer) shows the photo-first phone hero, the personal header and the sticky "Start a
   course" bar after the first screen. Existing sites keep their composed copy until recomposed: CareQueen's
   38-character headline and meta line push its button just below the first screen. Next: WP-2.0 (§8).
+- 2026-10-25, WP-2.0, Gate B prepared (plan `plans/2026-10-24-site-styles-wow-2.0.md`; nothing built).
+  - **Directions:** the four contracts in §7.1–§7.4 came from one Impeccable `concept-seed` roll per
+    flagship in Persuade mode: kinetic `ea430533`, velvet `ff412b51`, journal `168c71ac`, pop `e7149bcc`.
+    - The rolls assigned candidates 4, 7, 3 and 4 of my grounded lists.
+    - Kinetic's fused Weimar-cabaret challenger beat its assignment (broadcast graphics) on both axes and
+      became the build.
+    - Velvet, journal and pop build their assignments, raised by the declined challengers.
+  - **Comps:** static HTML first screens, because Impeccable's image generator needs `OPENAI_API_KEY`.
+    - Content: the real yoga fixture, plus the business set and a 36-character statement.
+    - Shot at 1440×900 and 390×844 with design-shots' fold sequence.
+    - Impeccable's picks were also comped for velvet (her monogram) and journal (a magazine cover with her
+      name as the nameplate).
+    - Every phone button ends at 780 px or above.
+    - Detector: 0 findings. Three are suppressed per file as each world's own material: journal's picture
+      light, velvet's key light and velvet's foil.
+  - **Review:** a fresh `impeccable-finish-reviewer` ran twice, which was the budget.
+    - Round 1: kinetic fix, velvet rebuild (material), journal rebuild (composition), pop fix.
+    - Round 2: kinetic, velvet and pop fix, applied with no third round. Journal rebuild, steered to the
+      cover: the exhibition keeps its contract and still fails G1, while the cover clears it on every
+      set (the note under 7.3).
+  - **Captures** (git-ignored), in `e2e/eval-shots/design/20261025-0441-gate-b/`:
+    - `index.html`;
+    - `sheets/compare-gate-b-{desktop,phone}.jpg` (baseline, Gate A now, comps, award references);
+    - `sheets/alternates-*`, `sheets/robustness-*`, `sheets/pairs/`.
+  - **Learned:**
+    - A 1-bit threshold loses a brightly lit face. A near-binary curve that sends light walls to pure
+      volt keeps the face and drops the photo's frame.
+    - CSS gradients don't sell a material such as velvet or card stock. Plates rendered once from SVG
+      lighting filters do.
+    - The comp review caught template skeletons the contract prose hid: journal's split hero and
+      kinetic's photo rectangle. Judge the render, not the paragraph.
 
 ## 10. Resources
 
