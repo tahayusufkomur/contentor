@@ -70,8 +70,8 @@ class LiveClass(_EventStatusMixin, models.Model):
     recording_url = models.CharField(max_length=2000, blank=True, default="")
     auto_recording = models.BooleanField(default=False)
     # A prepared whiteboard (Excalidraw file) in this tenant's storage: LiveCraft
-    # gets a signed link to it when the room starts.
-    whiteboard_key = models.CharField(max_length=500, blank=True, default="")
+    # gets a signed link to it when the room starts. In the database too (as `watermark`).
+    whiteboard_key = models.CharField(max_length=500, blank=True, default="", db_default="")
     # Students and viewers see their own name over the video, to discourage
     # screen recording: LiveCraft gets it when the room is created. In the
     # database too: code without this field still inserts sessions.
@@ -145,8 +145,8 @@ class LiveStream(_EventStatusMixin, models.Model):
     recording_url = models.CharField(max_length=2000, blank=True, default="")
     auto_recording = models.BooleanField(default=False)
     # A prepared whiteboard (Excalidraw file) in this tenant's storage: LiveCraft
-    # gets a signed link to it when the room starts.
-    whiteboard_key = models.CharField(max_length=500, blank=True, default="")
+    # gets a signed link to it when the room starts. In the database too (as `watermark`).
+    whiteboard_key = models.CharField(max_length=500, blank=True, default="", db_default="")
     # Students and viewers see their own name over the video, to discourage
     # screen recording: LiveCraft gets it when the room is created. In the
     # database too: code without this field still inserts sessions.
