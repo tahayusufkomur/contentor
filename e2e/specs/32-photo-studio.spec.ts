@@ -10,6 +10,10 @@
 //   Undo from the toast -> Discard (asks first) -> the desktop editor's own tests (below) -> the course
 //   form's door waits for unsaved edits.
 //
+// The Canva-style tools have tests of their own: a filter and a frame from Edit photo, an icon and a QR code
+// from Elements, the Story size, and a real download of it (drawn by the browser sidecar). They spend nothing:
+// the paid photo tools (extend, take out, change) and the background remover are left to the unit tests.
+//
 // The editor has two faces. From 1024 px (the coach context is 1440x900) it is a rail of tools with a
 // drawer each and a canvas the cover is edited on: the flow above goes through it (the title is typed in
 // the Text drawer), and then tests of its own measure the first screen, drag a layer and undo it with
@@ -569,6 +573,65 @@ test.describe.serial("photo studio: design a cover, keep it, take it back", () =
   });
 
   // ---- Below 1024 px the simple controls are the whole editor. ----
+
+  // The draft as the server keeps it, for what an edit wrote.
+  async function draftRecipe(page: Page) {
+    const id = page.url().split("/").pop();
+    const res = await coach.request.get(`${TENANT}/api/v1/designs/${id}/`);
+    expect(res.ok(), `reading the draft failed: ${await res.text()}`).toBeTruthy();
+    return (await res.json()).recipe;
+  }
+
+  test("desktop: Edit photo grades the photo and cuts its frame; Elements adds an icon and a QR code of the page", async () => {
+    const page = await coach.newPage();
+    await openEditor(page);
+    await expect(layerOn(page, "photo")).toBeVisible(SLOW);
+
+    await tool(page, "Edit photo").click();
+    const drawer = page.getByRole("region", { name: "Edit photo" });
+    await savedAfter(page, () => drawer.getByRole("button", { name: "Black and white" }).click());
+    await savedAfter(page, () => drawer.getByRole("button", { name: "Circle", exact: true }).click());
+    expect((await draftRecipe(page)).photo).toMatchObject({ grade: "mono", mask: "circle" });
+    await expect(layerOn(page, "photo")).toHaveCSS("clip-path", /circle/);
+
+    await tool(page, "Elements").click();
+    const elements = page.getByRole("region", { name: "Elements" });
+    await savedAfter(page, () => elements.getByRole("button", { name: "Calendar" }).click());
+    await savedAfter(page, () => elements.getByRole("button", { name: /Add a QR code of this page/ }).click());
+    const extras = (await draftRecipe(page)).extras as { type: string; text?: string; icon?: string }[];
+    expect(extras.map((extra) => extra.type)).toEqual(["icon", "qr"]);
+    expect(extras[0].icon).toBe("calendar");
+    expect(extras[1].text).toMatch(new RegExp(`/courses/${course!.slug}$`));
+    // both drawn on the canvas, as pictures of their own
+    await expect(canvasOf(page).locator('[data-layer^="x"] svg')).toHaveCount(2);
+  });
+
+  test("desktop: Story draws the cover 9:16, and Download makes a file of it", async () => {
+    const page = await coach.newPage();
+    await openEditor(page);
+    await expect(layerOn(page, "title")).toBeVisible(SLOW);
+    const story = page.getByRole("group", { name: "Social size" }).getByRole("button", { name: /^Story/ });
+    await story.press("Enter");
+    await expect(story).toHaveAttribute("aria-pressed", "true");
+    const box = await boxOf(canvasOf(page));
+    expect(box.width / box.height).toBeCloseTo(9 / 16, 2);
+
+    const targets = await (await coach.request.get(`${TENANT}/api/v1/designs/targets/`)).json();
+    test.skip(!targets.export, "this stack has no browser sidecar to draw files with");
+    await page.getByRole("button", { name: "Download" }).click();
+    const sizes = page.getByRole("menuitem");
+    await expect(sizes).toHaveCount(7); // six sizes and the JPG choice
+    const download = page.waitForEvent("download", SLOW);
+    await page.getByRole("menuitem", { name: /^Story/ }).click();
+    const file = await download;
+    expect(file.suggestedFilename()).toMatch(/-story\.png$/);
+    const saved = await file.path();
+    const head = fs.readFileSync(saved).subarray(0, 24);
+    // a PNG, 1080 wide and 1920 high
+    expect(head.subarray(1, 4).toString()).toBe("PNG");
+    expect(head.readUInt32BE(16)).toBe(1080);
+    expect(head.readUInt32BE(20)).toBe(1920);
+  });
 
   test("phone: the title is typed in the simple controls, and saves itself", async () => {
     const page = await coach.newPage();

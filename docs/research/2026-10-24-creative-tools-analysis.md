@@ -144,6 +144,18 @@ The gaps are video work (captions, repurposing, recording) and promo graphics.
 Follow-up, 2026-10-25. The owner's question: give coaches a photo studio that feels like Canva, with
 the best Canva features that are easy to add.
 
+Built the same night (A, B and C; commits `2240a425` and `8ae5a963`, not deployed). Where the build
+differs from the plan below:
+
+- B1–B3 (extend, take out, change) call Gemini 3.1 Flash Image from Contentor on `GEMINI_API_KEY`, as
+  the logo marks do, not through a new Pix4Less endpoint. Her photos never leave her own storage for a
+  public catalog, and nothing waits on a Pix4Less deploy. Edits run at 2K (`PHOTO_EDIT_SIZE`), about
+  $0.10 each.
+- B4 runs IS-Net (Apache-2.0), not BiRefNet: on CPU, even BiRefNet's lite model was killed at 6 GB,
+  while IS-Net takes 3–5 s and ~1.5 GB at its peak. The service is our own image (`infra/cutout`),
+  because rembg's image has no arm64 build.
+- C1 uses `SITE_QA_BROWSER_URL`, the same browser sidecar as the visual check.
+
 ### Short answer
 
 Build them into the photo studio (`/admin/studio`); don't embed Canva. Most of what makes Canva feel

@@ -13,10 +13,12 @@ import {
   AlignRight,
   BringToFront,
   CaseUpper,
+  Check,
   ChevronDown,
   Copy,
   FlipHorizontal2,
   SendToBack,
+  Sparkles,
   Trash2,
   WandSparkles,
 } from "lucide-react";
@@ -25,6 +27,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -58,7 +61,6 @@ import type {
   PartId,
   PartStyle,
   ShapeKind,
-  TextEffect,
   Weight,
 } from "@/types/design";
 
@@ -284,6 +286,141 @@ function ColourMenu({
   );
 }
 
+/** Swatches of the look's palette, as items of a menu that is open: a tap picks one and closes it. */
+function Swatches({
+  value,
+  palette,
+  onPick,
+}: {
+  value: Paint | undefined;
+  palette: CoverPalette;
+  onPick: (paint: Paint) => void;
+}) {
+  const t = useTranslations("admin.studio");
+  return (
+    <div className="grid grid-cols-7 gap-1 px-2 pb-1.5">
+      {PAINT_ROLES.map((role) => (
+        <DropdownMenuItem
+          key={role}
+          aria-label={t(`controls.paint.${role}`)}
+          title={t(`controls.paint.${role}`)}
+          onSelect={() => onPick(role)}
+          className={cn(
+            "size-6 justify-center rounded-full border border-foreground/25 p-0",
+            value === role && "ring-2 ring-foreground ring-offset-1",
+          )}
+          style={{ background: palette[role] }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** The words' effect and the word coloured in them, in one menu, so the toolbar keeps its one row (it may
+ *  not grow when she picks something: the canvas under it would move). Shown on its button: the effect, or
+ *  "Effects". */
+function EffectsMenu({
+  style,
+  palette,
+  setStyle,
+  text,
+  limit,
+  onText,
+}: {
+  style: PartStyle;
+  palette: CoverPalette;
+  setStyle: (patch: Partial<PartStyle>) => void;
+  text: string;
+  limit: number;
+  onText: (text: string) => void;
+}) {
+  const t = useTranslations("admin.studio.toolbar");
+  const marked = markedWord(text);
+  const choices = wordsOf(text);
+  const heading =
+    "px-2 pb-1 pt-1.5 text-[11px] font-semibold text-muted-foreground";
+  const check = (on: boolean) => (
+    <Check
+      aria-hidden="true"
+      className={cn("size-3.5", on ? "opacity-100" : "opacity-0")}
+    />
+  );
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label={t("effects.label")}
+          title={t("effects.label")}
+          className={cn(FIELD, "flex items-center gap-1.5")}
+        >
+          <Sparkles aria-hidden="true" className="size-3.5" />
+          {style.effect ? t(`effects.${style.effect}`) : t("effects.label")}
+          {marked && <span className="font-semibold">· {marked}</span>}
+          <ChevronDown aria-hidden="true" className="size-3 opacity-60" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className="max-h-[min(32rem,var(--radix-dropdown-menu-content-available-height))] w-60 overflow-y-auto"
+      >
+        <p className={heading}>{t("effect")}</p>
+        {(["none", ...TEXT_EFFECTS] as const).map((effect) => (
+          <DropdownMenuItem
+            key={effect}
+            className="gap-2 text-xs"
+            onSelect={() =>
+              setStyle({ effect: effect === "none" ? undefined : effect })
+            }
+          >
+            {check((style.effect ?? "none") === effect)}
+            {t(`effects.${effect}`)}
+          </DropdownMenuItem>
+        ))}
+        {style.effect && (
+          <>
+            <p className={heading}>{t("effectColour")}</p>
+            <Swatches
+              value={style.effectColor}
+              palette={palette}
+              onPick={(effectColor) => setStyle({ effectColor })}
+            />
+          </>
+        )}
+        {choices.length > 1 && (
+          <>
+            <DropdownMenuSeparator />
+            <p className={heading}>{t("markWord")}</p>
+            {["", ...choices].map((word) => (
+              <DropdownMenuItem
+                key={word || "none"}
+                className="gap-2 text-xs"
+                onSelect={() => {
+                  const next = markWord(text, word, limit);
+                  if (next !== null && next !== text) onText(next);
+                }}
+              >
+                {check(marked === word)}
+                {word || t("markNone")}
+              </DropdownMenuItem>
+            ))}
+          </>
+        )}
+        {marked && (
+          <>
+            <p className={heading}>{t("markColour")}</p>
+            <Swatches
+              value={style.emphasis}
+              palette={palette}
+              onPick={(emphasis) => setStyle({ emphasis })}
+            />
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function TextTools({
   kind,
   style,
@@ -308,8 +445,6 @@ function TextTools({
 }) {
   const t = useTranslations("admin.studio.toolbar");
   const d = TEXT_DEFAULTS[kind];
-  const marked = markedWord(text);
-  const choices = wordsOf(text);
   // Words align left, except in a title-only cover, where its own are centred.
   const align =
     style.align ?? (kind !== "extra" && layout === "title" ? "center" : "left");
@@ -388,49 +523,14 @@ function TextTools({
         onChange={(leading) => setStyle({ leading })}
       />
       <Separator />
-      <Select<TextEffect | "none">
-        label={t("effect")}
-        value={style.effect ?? "none"}
-        options={(["none", ...TEXT_EFFECTS] as const).map((effect) => ({
-          value: effect,
-          label: t(`effects.${effect}`),
-        }))}
-        onChange={(effect) =>
-          setStyle({ effect: effect === "none" ? undefined : effect })
-        }
+      <EffectsMenu
+        style={style}
+        palette={palette}
+        setStyle={setStyle}
+        text={text}
+        limit={limit}
+        onText={onText}
       />
-      {style.effect && (
-        <ColourMenu
-          label={t("effectColour")}
-          value={style.effectColor}
-          palette={palette}
-          onPick={(effectColor) => setStyle({ effectColor })}
-          onAuto={() => setStyle({ effectColor: undefined })}
-        />
-      )}
-      {choices.length > 1 && (
-        <Select<string>
-          label={t("markWord")}
-          value={marked}
-          options={[
-            { value: "", label: t("markNone") },
-            ...choices.map((word) => ({ value: word, label: word })),
-          ]}
-          onChange={(word) => {
-            const next = markWord(text, word, limit);
-            if (next !== null && next !== text) onText(next);
-          }}
-        />
-      )}
-      {marked && (
-        <ColourMenu
-          label={t("markColour")}
-          value={style.emphasis}
-          palette={palette}
-          onPick={(emphasis) => setStyle({ emphasis })}
-          onAuto={() => setStyle({ emphasis: undefined })}
-        />
-      )}
     </>
   );
 }
@@ -470,35 +570,7 @@ function PhotoTools({
         value={photo.zoom}
         onChange={(zoom) => adjust({ zoom })}
       />
-      <Separator />
-      <Slider
-        label={t("brightness")}
-        range={RANGES.brightness}
-        step={0.05}
-        value={photo.brightness}
-        onChange={(brightness) => adjust({ brightness })}
-      />
-      <Slider
-        label={t("contrast")}
-        range={RANGES.contrast}
-        step={0.05}
-        value={photo.contrast}
-        onChange={(contrast) => adjust({ contrast })}
-      />
-      <Slider
-        label={t("saturation")}
-        range={RANGES.saturation}
-        step={0.05}
-        value={photo.saturation}
-        onChange={(saturation) => adjust({ saturation })}
-      />
-      <Slider
-        label={t("darken")}
-        range={RANGES.darken}
-        step={0.05}
-        value={photo.darken}
-        onChange={(darken) => adjust({ darken })}
-      />
+      {/* (its light and colour are set in the Edit photo drawer, with the filters) */}
       <Separator />
       <Tool
         label={t("flip")}

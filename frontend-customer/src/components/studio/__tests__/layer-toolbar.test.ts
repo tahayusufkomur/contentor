@@ -222,7 +222,7 @@ describe("LayerToolbar: words", () => {
 });
 
 describe("LayerToolbar: the photo", () => {
-  it("sets its focus, zoom, brightness, contrast, saturation and darkening", () => {
+  it("sets its focus and zoom; its light and colour are in the Edit photo drawer", () => {
     const recipe: CoverRecipe = {
       ...defaultRecipe({ photoId: "p" }),
       photo: {
@@ -239,10 +239,6 @@ describe("LayerToolbar: the photo", () => {
       { label: "Focus across", min: 0, max: 1, step: 0.01, value: 0.25 },
       { label: "Focus down", min: 0, max: 1, step: 0.01, value: 0.75 },
       { label: "Zoom", min: 1, max: 3, step: 0.05, value: 1.5 },
-      { label: "Brightness", min: 0.5, max: 1.5, step: 0.05, value: 1.1 },
-      { label: "Contrast", min: 0.5, max: 1.5, step: 0.05, value: 0.9 },
-      { label: "Saturation", min: 0.5, max: 1.5, step: 0.05, value: 1.2 },
-      { label: "Darken", min: 0, max: 0.7, step: 0.05, value: 0.3 },
     ]);
   });
 });
@@ -385,7 +381,8 @@ describe("LayerToolbar: every slider stays inside the ranges the server keeps", 
       toolbar({ part: "badge", recipe }),
     ].join("");
     const found = sliders(markup);
-    expect(found.length).toBeGreaterThanOrEqual(15);
+    // the title's three, the photo's three, the text layer's three, the shape's and the badge's
+    expect(found.length).toBeGreaterThanOrEqual(11);
     for (const { label, min, max } of found) {
       expect(allowed.has(`${min},${max}`), `${label}: ${min}-${max}`).toBe(
         true,
@@ -430,28 +427,21 @@ describe("TEXT_DEFAULTS", () => {
 });
 
 describe("LayerToolbar: effects, marked words, the flip and the new layers", () => {
-  it("offers a text effect and a word to colour, from the words the title shows", () => {
-    const markup = toolbar({ part: "title", itemTitle: "Morning flow" });
-    expect(select(markup, "Effect")).toEqual({
-      labels: ["No effect", "Lift", "Shadow", "Outline", "Highlight"],
-      chosen: ["No effect"],
-    });
-    expect(select(markup, "Colour a word")).toEqual({
-      labels: ["No word", "Morning", "flow"],
-      chosen: ["No word"],
-    });
-    // the effect's colour and the word's colour only once there is one
-    expect(markup).not.toContain('aria-label="Effect colour"');
-    expect(markup).not.toContain('aria-label="Word colour"');
+  it("puts the effect and the coloured word in one Effects menu, which names what is on", () => {
+    // one button, whatever is chosen: the toolbar keeps its row, so the canvas under it never moves
+    const plain = toolbar({ part: "title", itemTitle: "Morning flow" });
+    expect(plain.match(/aria-label="Effects"/g)).toHaveLength(1);
+    expect(select(plain, "Effect")).toBeNull();
+    expect(select(plain, "Colour a word")).toBeNull();
+    expect(plain).toMatch(/aria-label="Effects"[^>]*>[\s\S]*?Effects/);
     const recipe = {
       ...defaultRecipe(),
       words: { label: "", title: "Morning *flow*", subtitle: "" },
       styles: { title: { effect: "highlight" as const } },
     };
     const on = toolbar({ part: "title", recipe });
-    expect(select(on, "Colour a word")?.chosen).toEqual(["flow"]);
-    expect(on).toContain('aria-label="Effect colour"');
-    expect(on).toContain('aria-label="Word colour"');
+    expect(on.match(/aria-label="Effects"/g)).toHaveLength(1);
+    expect(on).toMatch(/Highlight<span[^>]*>· flow<\/span>/);
   });
 
   it("flips the photo and opens Edit photo", () => {

@@ -120,9 +120,9 @@ function Slider({
   onChange,
 }: {
   label: string;
-  /** What each end of the slider means. */
-  low: string;
-  high: string;
+  /** What each end of the slider means, where its name does not say. */
+  low?: string;
+  high?: string;
   range: readonly [number, number];
   step: number;
   value: number;
@@ -144,13 +144,15 @@ function Slider({
         onChange={(e) => onChange(Number(e.target.value))}
         className="h-1 w-full cursor-pointer accent-foreground"
       />
-      <span
-        aria-hidden="true"
-        className="flex justify-between text-[11px] text-muted-foreground"
-      >
-        <span>{low}</span>
-        <span>{high}</span>
-      </span>
+      {low && high && (
+        <span
+          aria-hidden="true"
+          className="flex justify-between text-[11px] text-muted-foreground"
+        >
+          <span>{low}</span>
+          <span>{high}</span>
+        </span>
+      )}
     </div>
   );
 }
@@ -236,6 +238,7 @@ export function PhotoEditDrawer({
 }: PhotoEditDrawerProps) {
   const t = useTranslations("admin.studio.drawers.photo");
   const ts = useTranslations("admin.studio.size");
+  const tt = useTranslations("admin.studio.toolbar");
   const { photo } = recipe;
   const hasPhoto = Boolean(photo.id && cover.photos[photo.id]);
   const adjust = (patch: Partial<CoverRecipe["photo"]>) =>
@@ -323,6 +326,27 @@ export function PhotoEditDrawer({
           </Section>
           <Section title={t("adjust")}>
             <Slider
+              label={tt("brightness")}
+              range={RANGES.brightness}
+              step={0.05}
+              value={photo.brightness}
+              onChange={(brightness) => adjust({ brightness })}
+            />
+            <Slider
+              label={tt("contrast")}
+              range={RANGES.contrast}
+              step={0.05}
+              value={photo.contrast}
+              onChange={(contrast) => adjust({ contrast })}
+            />
+            <Slider
+              label={tt("saturation")}
+              range={RANGES.saturation}
+              step={0.05}
+              value={photo.saturation}
+              onChange={(saturation) => adjust({ saturation })}
+            />
+            <Slider
               label={t("warmth")}
               low={t("cool")}
               high={t("warm")}
@@ -339,6 +363,13 @@ export function PhotoEditDrawer({
               step={0.05}
               value={photo.blur ?? 0}
               onChange={(blur) => adjust({ blur })}
+            />
+            <Slider
+              label={tt("darken")}
+              range={RANGES.darken}
+              step={0.05}
+              value={photo.darken}
+              onChange={(darken) => adjust({ darken })}
             />
           </Section>
           <Section title={t("frame")}>

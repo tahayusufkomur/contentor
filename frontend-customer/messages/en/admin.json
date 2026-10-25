@@ -1072,7 +1072,8 @@
         "lift": "Lift",
         "shadow": "Shadow",
         "outline": "Outline",
-        "highlight": "Highlight"
+        "highlight": "Highlight",
+        "label": "Effects"
       },
       "effectColour": "Effect colour",
       "markWord": "Colour a word",

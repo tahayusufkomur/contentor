@@ -200,6 +200,8 @@
     "src/components/studio": ["32-photo-studio"],
     "src/lib/covers": ["32-photo-studio"],
     "src/lib/designs-api.ts": ["32-photo-studio"],
+    "src/lib/photo-edits-api.ts": ["32-photo-studio"],
+    "src/app/render": ["32-photo-studio"],
     "src/types/design.ts": ["32-photo-studio"],
     "src/types/download.ts": ["12-downloads", "36-focus-download"],
     "src/types/course.ts": ["02-courses", "33-focus-course"],

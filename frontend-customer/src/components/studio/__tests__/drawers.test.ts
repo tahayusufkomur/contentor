@@ -676,6 +676,17 @@ describe("PhotoEditDrawer", () => {
     for (const name of ["Square", "Rounded", "Circle", "Arch", "Blob"]) {
       expect(markup).toContain(`aria-label="${name}"`);
     }
+    // all of the photo's light and colour, with the filters
+    for (const name of [
+      "Brightness",
+      "Contrast",
+      "Saturation",
+      "Warmth",
+      "Blur",
+      "Darken",
+    ]) {
+      expect(markup).toContain(`>${name}</label>`);
+    }
     expect(markup).toContain("Remove the background");
     expect(markup).toContain("Extend to fit Banner");
     expect(markup).toContain("Take it out");
