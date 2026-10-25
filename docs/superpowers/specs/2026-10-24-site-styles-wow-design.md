@@ -297,17 +297,18 @@ Owner, 2026-10-25 (Gate A)
   scrim and the band duotones kept, long quotes at line-height 1.32, a renamed button with nowhere to go
   falls back to Contact, the home hero pinned to each style's phone-first variant until Phase 2.
 
-Proposed at Gate B (WP-2.0), awaiting the owner
+Owner, 2026-10-25 (Gate B)
 
-- **The four directions** in §7.1–§7.4, each with its alternates. Recommended, after two review rounds:
-  - approve kinetic's two-ink bill;
-  - approve velvet's invitation. The monogram reads stronger at 5 seconds, but it is the luxury-house
-    canon the thesis refuses.
-  - steer journal to the cover (see the note under 7.3);
-  - approve pop's panel.
-- **R11 and display caps** (the open Gate A item):
-  - R11's "never uppercase over 24 characters" applies below 48 px.
-  - At 48 px and above, kinetic may set its statement and its billed course titles in caps.
+- **Gate B approved as recommended.** The owner's words: "approve kinetic (the two-ink bill), velvet
+  (the invitation) and pop (the panel); steer journal to the cover; accept the R11 caps wording (caps
+  allowed at 48 px and above for kinetic)."
+  - kinetic builds §7.1, the two-ink bill;
+  - velvet builds §7.2, the invitation (the monogram stays its alternate);
+  - journal builds §7.3, now the cover: Impeccable's pick, steered from the roll's exhibition;
+  - pop builds §7.4, the panel.
+- **R11 and display caps** (the open Gate A item): the "never uppercase over 24 characters" limit applies
+  below 48 px. At 48 px and above, kinetic may set its statement and its billed course titles in caps
+  (§6).
 
 ## 6. The bar: rules every work package follows
 
@@ -325,7 +326,7 @@ Each rule has a check, so a work package can prove it.
 | R8 | **Motion with intent:** one motion grammar per flagship. CSS scroll-driven animation preferred. Reduced motion respected. No LCP regression. | Lighthouse before/after on home (WP-2.x) |
 | R9 | **Personal chrome:** the header holds her name and one offer button; "Sign in" is quiet; the toggle is not in the header. The page ends on her easiest offer. | Header/footer tests (WP-1.4) |
 | R10 | **Real proof only:** proof renders only from input the coach gave, and the section hides when it is empty. | WP-2.5 tests |
-| R11 | **Craft floor:** AA contrast (4.5:1 text, 3:1 large text and UI); labels ≥ 12px; text over 24 characters never uppercase; pull quotes at line-height ≥ 1.12; no bounce easing; one price format. | Detector re-run on all 21 rendered pages (WP-1.5) |
+| R11 | **Craft floor:** AA contrast (4.5:1 text, 3:1 large text and UI); labels ≥ 12px; text over 24 characters never uppercase below 48 px (kinetic's statement and billed course titles may be caps at 48 px and up, Gate B); pull quotes at line-height ≥ 1.12; no bounce easing; one price format. | Detector re-run on all 21 rendered pages (WP-1.5) |
 
 ## 7. The program: work packages and status board
 
@@ -354,7 +355,7 @@ Status values:
 | 1.7b | Phone-first hero, batch B | 1.7a | Task 1.7 | done (2026-10-24, 275ed6e9) |
 | 1.7c | Phone-first hero, batch C | 1.7b | Task 1.7 | done (2026-10-24, 3a3e6546) |
 | 1.8 | Gate A: before/after capture, eval, owner review | all of Phase 1 | Task 1.8 | done (2026-10-25, 8f2702e1 deployed) |
-| 2.0 | Flagship directions and comps → Gate B | 1.8 | `plans/2026-10-24-site-styles-wow-2.0.md` | in progress (2026-10-25, eb9081a5) |
+| 2.0 | Flagship directions and comps → Gate B | 1.8 | `plans/2026-10-24-site-styles-wow-2.0.md` | done (2026-10-25, dca71839) |
 | 2.1 | Flagship build: kinetic | 2.0, 2.5 | written at start | todo |
 | 2.2 | Flagship build: velvet | 2.0, 2.5 | written at start | todo |
 | 2.3 | Flagship build: journal | 2.0, 2.5 | written at start | todo |
@@ -578,78 +579,87 @@ Rules every contract shares:
   - **Honest risk of the build:** an invitation can read as wedding stationery. The no-wedding-cues
     rule exists for that.
 
-#### 7.3 journal: the exhibition
+#### 7.3 journal: the cover
 
-- **THESIS:** Calm as a museum room. The home page is a one-person exhibition: the statement cut in
-  vinyl on a painted wall, and her photo hung like a work with its label. It refuses both the AI-median
-  editorial (cream paper, an italic display serif, hairlines and tracked mono labels) and the
-  incumbent's split cover.
-- **OWN-WORLD:** Painted walls and hung prints.
-  - **Default walls:**
-    - gallery green `oklch(0.37 0.055 165)`, with wall ink `oklch(0.97 0.01 95)` (9:1);
-    - a cool white room `oklch(0.975 0.004 100)`, with ink `oklch(0.24 0.02 165)`.
-  - **Rooms:** sections are rooms. Each floods one wall colour to every edge, and the colours alternate
-    down the page.
-  - **Photos hang:** never full-bleed, with wall on every side and a soft contact shadow below. No frame
-    and no rounded corners.
-  - **Labels:** every photo has a museum label beside it in small grotesk: its caption, or for the
-    hero her name as the title, her kicker as the medium line and the subhead as the note.
-  - **Light:** a picture light falls from above onto the work, with no halo around it.
-  - **Buttons** are plain rectangles in wall ink.
-  - **Never:** kickers above headings, hairlines or italics.
-  - **Other palettes repaint the walls and never move the hang:** Sage hangs on sage and stone, Dusk on
-    plum and lilac.
-  - **Dark scheme:** the green room deepens and the white room becomes charcoal.
+Steered at Gate B (owner, 2026-10-25) from the roll's exhibition to Impeccable's pick. The comp is
+`e2e/eval-shots/design/20261025-0441-gate-b/comps/journal-cover.html`.
+
+- **THESIS:** Calm editorial as her own magazine. The home page is a cover: her name is the nameplate
+  across the top, her photo is the cover, and her statement is the cover line. It refuses both the
+  AI-median editorial (cream paper, an italic display serif, hairlines and tracked mono labels) and the
+  incumbent's split layout, where the masthead had shrunk to a small italic kicker.
+- **OWN-WORLD:** A printed magazine: a cover, pages and captions.
+  - **Inks:** gallery green `oklch(0.33 0.06 165)` for the nameplate, headings and buttons, and paper
+    `oklch(0.985 0.006 95)` for pages and the cover's wash. Green pages flood edge to edge (R6) and
+    alternate with paper pages down the home page.
+  - **The cover:** her photo runs full-bleed under the header.
+    - A paper wash at the top guarantees the nameplate's ground. Measured over dark hair, 98% or more
+      of its box clears 3:1.
+    - A green scrim at the foot carries the cover line, measured at 9:1 or better.
+    - Where Pix4Less's measured colours show a dark top, the build may print the nameplate in paper on
+      a green wash instead.
+  - **Pages:** sections are pages, paper or green, edge to edge. Photos run full-bleed or sit in the
+    page margin, never in cards.
+  - **Captions:** every photo carries a caption in small grotesk, taken from her captions.
+  - **Buttons:** plain rectangles, paper on green and green on paper.
+  - **Never:** kickers above headings, hairlines, italics, or issue numbers and dates (S3: they would
+    be invented).
+  - **Other palettes keep the roles:** Sage prints sage ink on paper, Dusk plum ink on lilac paper.
+  - **Dark scheme:** paper pages turn deep green-black, and the cover's wash and the nameplate's ink
+    invert.
 - **FIRST VIEWPORT:**
-  - **Two groups:** the wall text with its button, then the work with its label.
-  - **Phone:** a green wall.
-    - The statement as wall text at 44–48 px, in two or three lines, flush left on the wall's margin.
-    - The button sits under the statement and ends at 780 px or above.
-    - Her portrait hangs at 74% width on the same margin, at 4:5.
-    - The label sits under the print and may fall below the fold.
-  - **Desktop:** the green wall to every edge.
-    - The statement on the left at 88–108 px, in two lines, with the button under it.
-    - Her portrait hangs on the right at eye level, at 68% of the viewport height.
-    - The label sits at the print's foot, to its left.
-- **SIGNATURE SECTION:** The hang. Her moments hang in one row along a single centre line on the green
-  wall, at varied sizes, each with its label (her captions). Scrolling walks along the wall: the section
-  pins and the row travels sideways, one work at a time. It renders `moments`.
-- **MOTION GRAMMAR:** One breath.
-  - Prints below the first screen develop into view, from the wall colour to the full print over 1.2 s.
-  - Every transition takes a breath (1.2 s in and out), and nothing snaps.
-  - The hang travels at walking pace with scroll.
-  - Reduced motion: every print developed, and the hang becomes an ordinary horizontal scroller.
+  - **Phone:** the cover photo fills the screen under a 64 px header that holds only the menu.
+    - The nameplate: her name in caps across the full width, in one or two lines, at the size that
+      fits (about 64–80 px).
+    - The issue line (her kicker) sits under the nameplate at 13 px, as one lockup with it.
+    - The cover line (her statement) sits at the foot over the scrim, in Hahmlet 300 at 40–44 px.
+    - The button follows and ends at 780 px or above.
+  - **Desktop:** the cover photo runs full-bleed, focused on her face.
+    - The nameplate takes one line across the full width, sized to fit her name (up to about 204 px).
+    - The cover line sits at the foot on the left, at 64–76 px, with the button under it.
+    - The header's nav, a quiet "Sign in" and the offer button sit on the wash above the nameplate.
+  - **R1 count:** the nameplate lockup, the photo, the cover line and the button.
+  - **R9:** on home, the nameplate stands in for the header's name until it scrolls away. Every other
+    page shows her name in the header.
+- **SIGNATURE SECTION:** The photo essay. Her moments run as a magazine photo essay on a green page:
+  one photo per spread, full-bleed, each with its caption. Scrolling turns the essay sideways one spread
+  at a time: the section pins and the row travels. It renders `moments`, and it carries the
+  exhibition's hang into the cover's vocabulary.
+- **MOTION GRAMMAR:** One breath, and the masthead.
+  - As the cover scrolls away, the nameplate shrinks into the header's name (scroll-driven). From then
+    on the header carries her name.
+  - Photos below the first screen develop into view over 1.2 s. Every transition takes one breath
+    (1.2 s in and out).
+  - The photo essay travels at reading pace with scroll.
+  - Reduced motion: the header shows her name from the start, photos show developed, and the essay is
+    an ordinary horizontal scroller.
 - **TYPE:**
-  - **Faces:** Hahmlet (Google Fonts, variable weight) at 300 for wall text and statements. Familjen
-    Grotesk for labels, body and buttons.
-  - **Scale:** wall text at 44–48 px on phones and 88–108 px on desktop, labels at 14 px, body at 17 px.
+  - **Faces:**
+    - Noto Serif Display (Google Fonts, width 62.5, weight 800, uppercase) for the nameplate only;
+    - Hahmlet (weight 300) for cover lines and headings;
+    - Familjen Grotesk for captions, body and buttons.
+  - **Scale:**
+    - the nameplate fits the width to her name's length, which the build sets from the name;
+    - the cover line at 40–44 px on phones and 64–76 px on desktop;
+    - captions at 13–14 px and body at 17 px.
 - **FORM:** Seed `168c71ac`.
-  - **The roll** assigned candidate 3, a museum print and wall label.
-  - **The design annual's plate section is competitive.** One grotesk at plate scale reads at once,
-    which holds product clarity. It loses audience identification: an annual is a designer's object,
-    while everyone has walked through a museum. It stays a full alternate.
-  - **Declined:** the other four.
-  - **Raised by:**
-    - the darkroom: prints develop into view;
-    - the tensegrity column: motion at breathing tempo;
-    - the ASCII renderer: palettes repaint walls, never the hang;
+  - **The roll** assigned candidate 3, a museum print and wall label (the exhibition).
+  - **Gate B:** the owner steered to Impeccable's pick, the cover. Two review rounds failed the
+    exhibition on G1 (its 5-second memory was "green"), and the cover passed on every set.
+  - **Kept from the exhibition:** the green, Hahmlet, captions on every photo, the hang's motion as
+    the signature, and motion at breathing tempo.
+  - **Kept from the declined challengers:**
+    - the darkroom: photos develop into view;
+    - the tensegrity column: breathing tempo;
+    - the ASCII renderer: palettes repaint, never move the layout;
     - the mook: no unlabelled photo;
-    - the streetwear quote grammar: headings say plainly what the room holds, with no kicker.
+    - the streetwear quote grammar: headings say plainly what the page holds.
+  - **Honest risk:** the cover is the incumbent's own idea at full scale, and a nameplate over a photo
+    needs its ground guaranteed by the wash or by a per-photo ink.
   - **Alternates:**
-    - the design annual: near-white stock, one grotesk, and her name in a round signature stamp half
-      off the plate;
-    - Impeccable's pick, a magazine cover with her name as the nameplate. Its risk: it is the
-      incumbent's own idea done at full scale.
-
-**Gate B note on 7.3 (WP-2.0 review):**
-- **Finding:** after two review rounds, the exhibition keeps its contract and still fails G1. Its
-  5-second memory is "green". The cover (`comps/journal-cover.html`) clears G1 on every set.
-- **Recommendation:** steer journal to the cover.
-- **If chosen, the cover's contract:**
-  - it keeps this OWN-WORLD's green and Hahmlet;
-  - her name becomes a full-width nameplate in Noto Serif Display, condensed (width 62.5, weight 800);
-  - a full-bleed cover photo carries the statement over a scrim at the foot;
-  - the hang moves to the signature section.
+    - the exhibition, the roll's direction (`comps/journal.html`): the statement as wall text on a
+      gallery-green wall, her photo hung with a museum label;
+    - the design annual.
 
 #### 7.4 pop: the panel
 
@@ -927,7 +937,7 @@ Rules every contract shares:
     - Round 1: kinetic fix, velvet rebuild (material), journal rebuild (composition), pop fix.
     - Round 2: kinetic, velvet and pop fix, applied with no third round. Journal rebuild, steered to the
       cover: the exhibition keeps its contract and still fails G1, while the cover clears it on every
-      set (the note under 7.3).
+      set (§7.3's FORM).
   - **Captures** (git-ignored), in `e2e/eval-shots/design/20261025-0441-gate-b/`:
     - `index.html`;
     - `sheets/compare-gate-b-{desktop,phone}.jpg` (baseline, Gate A now, comps, award references);
@@ -939,6 +949,13 @@ Rules every contract shares:
       lighting filters do.
     - The comp review caught template skeletons the contract prose hid: journal's split hero and
       kinetic's photo rectangle. Judge the render, not the paragraph.
+- 2026-10-25, Gate B (§5): the owner approved as recommended.
+  - Kinetic (§7.1), velvet (§7.2) and pop (§7.4) build as written.
+  - Journal was steered to the cover. §7.3 now holds the cover's contract, and the exhibition is its
+    alternate.
+  - R11's caps limit now applies below 48 px (§6).
+  - Nothing to deploy: docs only.
+  - Next: WP-2.5 (new families), then WP-2.1–2.4. Each starts by writing its plan (§8).
 
 ## 10. Resources
 

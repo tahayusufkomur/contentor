@@ -178,7 +178,7 @@ git add docs/superpowers/specs/2026-10-24-site-styles-wow-design.md docs/superpo
 git commit --no-verify -m "docs(styles): WP-2.0 flagship directions and comps for Gate B"
 ```
 
-- [ ] **Step 4: Hand Gate B to the owner.**
+- [x] **Step 4: Hand Gate B to the owner.**
   - Send the compare sheets, the robustness sheets and `index.html`.
   - Ask for approve or steer per flagship, plus any R11 wording the contracts propose.
   - Record the answers in §5.
