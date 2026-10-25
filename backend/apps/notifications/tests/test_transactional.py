@@ -15,7 +15,9 @@ from apps.accounts.models import User
 from apps.billing.models import Payment, PaymentItem, Subscription, SubscriptionPlan
 from apps.billing.tests.test_subscriptions_connect import _FakeEvent, _post_webhook
 from apps.core.models import Tenant
+from apps.courses.models import Course
 from apps.email_campaigns import brand
+from apps.media.models import Photo
 from apps.notifications import transactional as tx
 from apps.tenant_config.models import TenantConfig
 
@@ -105,6 +107,67 @@ def test_setup_cards_preview_each_style(tenant_ctx):
         cards = milestones.cards_for(tenant_ctx, {}, "email_style")
     assert cards["kind"] == "email"
     assert [(o["value"], o["html"]) for o in cards["options"]] == [(s, f"<p>{s}</p>") for s, _, _ in tx.STYLES]
+
+
+@pytest.fixture()
+def own_cache(monkeypatch):
+    """A cache of its own: the test cache is the shared Redis, where other runs keep cards."""
+    from django.core.cache.backends.locmem import LocMemCache
+
+    monkeypatch.setattr(tx, "cache", LocMemCache("tx-previews-test", {}))
+
+
+def _zen():
+    cfg = _config()
+    cfg.brand_name = "Zen"
+    cfg.save(update_fields=["brand_name"])
+
+
+def _body(html):
+    return html.split("<body", 1)[1]
+
+
+def test_setup_samples_are_whole_emails_with_her_photo_and_offer(tenant_ctx, own_cache):
+    _zen()
+    owner = User.objects.create_user(email="ana@tx.test", name="Ana", password=_PW, role="owner")
+    Photo.objects.create(s3_key="tenants/shared-test/photo/me.jpg", alt_text="Ana teaching", index_status="ready")
+    Course.objects.create(title="Face Yoga", slug="face", instructor=owner, is_published=False)  # /setup's draft
+
+    cards = tx.previews(tenant_ctx)
+    assert [c["value"] for c in cards] == [s for s, _, _ in tx.STYLES]
+    for card in cards:
+        body = _body(card["html"])
+        heading, button = body.index("Welcome to Zen"), body.index("Go to your dashboard")
+        assert "Zen" in body[:heading]  # her name (the branded mark's alt) on top
+        assert 'alt="Ana teaching"' in body and "?a=16:9" in body  # her photo, cropped wide
+        assert heading < button < body.index("Face Yoga") < body.index("shared-test.localhost</a>")  # footer
+        assert "http://shared-test.localhost/courses/face" in body and "Take a look" in body
+        assert "brand:" not in body
+
+
+def test_setup_samples_render_with_no_photo_and_no_offer(tenant_ctx, own_cache):
+    _zen()
+    for card in tx.previews(tenant_ctx):
+        body = _body(card["html"])
+        footer = body.index("shared-test.localhost</a>")
+        assert body.index("Welcome to Zen") < body.index("Go to your dashboard") < footer
+        assert "/api/v1/email/i/" not in body and "Take a look" not in body
+
+
+def test_setup_samples_are_drawn_again_only_when_what_they_show_changes(tenant_ctx, own_cache):
+    _zen()
+    owner = User.objects.create_user(email="ana@tx.test", name="Ana", password=_PW, role="owner")
+    Photo.objects.create(s3_key="tenants/shared-test/photo/me.jpg", alt_text="Ana", index_status="ready")
+    signed_at = "django.core.signing.TimestampSigner.timestamp"
+    with patch.object(tx, "render", wraps=tx.render) as drawn:
+        with patch(signed_at, return_value="a"):
+            first = tx.previews(tenant_ctx)
+        with patch(signed_at, return_value="b"):  # her photo's link is signed anew: the same cards
+            assert tx.previews(tenant_ctx) == first
+        assert drawn.call_count == len(tx.STYLES)
+        Course.objects.create(title="Face Yoga", slug="face", instructor=owner)
+        assert "Face Yoga" in tx.previews(tenant_ctx)[0]["html"]
+        assert drawn.call_count == 2 * len(tx.STYLES)
 
 
 def test_deliver_waits_for_the_commit_and_queues_the_send(tenant_ctx):

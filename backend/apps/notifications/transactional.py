@@ -12,6 +12,7 @@ import functools
 import hashlib
 import itertools
 import logging
+import re
 from dataclasses import asdict, dataclass
 
 from django.core.cache import cache
@@ -28,6 +29,7 @@ STYLES = (
 STYLE_IDS = {s for s, _, _ in STYLES}
 DEFAULT_STYLE = "branded"
 PREVIEW_SECONDS = 3600
+_SIGNED_AT = re.compile(r"(/api/v1/email/i/[^/:]+):[^/]+/")  # a lasting link's signing time and signature
 
 
 @dataclass(frozen=True)
@@ -85,14 +87,29 @@ def _paragraphs(lines, colour) -> str:
     return "".join(f'<p style="color:{colour};">{escape(line)}</p>' for line in lines if line)
 
 
-def blocks(kit: dict, style: str, email: Email) -> dict:
-    """The email as block JSON (apps.email_campaigns.render) in one of the three styles."""
+def blocks(kit: dict, style: str, email: Email, *, picture=("", ""), offer=None) -> dict:
+    """The email as block JSON (apps.email_campaigns.render) in one of the three styles. ``picture``
+    (src, alt) and ``offer`` (a catalog item) fill out the setup samples; the emails sent carry neither."""
+    from apps.email_campaigns.images import with_aspect
+
     ids = itertools.count(1)
     c = kit["colours"]
     hf, bf = kit["heading_font"], kit["body_font"]
 
     def block(kind, data, style_):
         return {"id": f"t{next(ids)}", "type": kind, "data": data, "style": style_}
+
+    def image(src, alt, full):
+        return block(
+            "image",
+            {"src": with_aspect(src, "16:9"), "alt": alt, "width": 600 if full else 600 - 2 * side},
+            {
+                "padding": _pad(8, 0 if full else side, 8),
+                "alignment": "center",
+                "fullWidth": full,
+                "borderRadius": 0 if full else kit["radius"],
+            },
+        )
 
     def heading(text, size, colour, pad, align="left", font=hf, **extra):
         return block(
@@ -190,6 +207,9 @@ def blocks(kit: dict, style: str, email: Email) -> dict:
         top = 8
     if email.body_html:
         body.append(text(email.body_html, c["foreground"], _pad(top, side, 8)))
+    if picture[0]:
+        # Words first in a letter; in the others her picture opens the message, edge to edge.
+        body.insert(len(body) if style == "letter" else 0, image(*picture, full=style != "letter"))
     if email.rows:
         body.append(block("divider", {}, {"lineColor": c["border"], "spacing": 12}))
         body.extend(row(label, value) for label, value in email.rows)
@@ -214,6 +234,22 @@ def blocks(kit: dict, style: str, email: Email) -> dict:
                     "fontWeight": 600,
                     "paddingX": 28,
                     "paddingY": 14,
+                },
+            )
+        )
+    if offer:
+        body.append(
+            block(
+                "item",
+                {"_item": offer, "layout": "row", "showSummary": False, "buttonText": "Take a look"},
+                {
+                    "padding": _pad(12, side, 12),
+                    "backgroundColor": c["surface"],
+                    "borderRadius": 0 if style == "bold" else 14,
+                    "titleColor": c["foreground"],
+                    "textColor": c["mutedForeground"],
+                    "buttonColor": c["primary"],
+                    "buttonTextColor": c["primaryForeground"],
                 },
             )
         )
@@ -326,14 +362,15 @@ def _config():
     return TenantConfig.objects.first()
 
 
-def render(email: Email, tenant, *, style: str = "", cfg=None) -> str:
+def render(email: Email, tenant, *, style: str = "", cfg=None, picture=("", ""), offer=None) -> str:
     """Her email's HTML, drawn by the email engine; the plain one should it ever fail."""
     from apps.email_campaigns import render as engine
 
     cfg = cfg or _config()
     kit = brand_kit(tenant, cfg)
     try:
-        return engine.render(blocks(kit, style or style_of(tenant), email), kit=kit["kit"], subject=email.subject)
+        design = blocks(kit, style or style_of(tenant), email, picture=picture, offer=offer)
+        return engine.render(design, kit=kit["kit"], subject=email.subject)
     except Exception:  # noqa: BLE001 — never blocks the email
         logger.exception("email engine failed for %s; sending the plain email", tenant.schema_name)
         return fallback_html(kit, email)
@@ -377,16 +414,27 @@ def deliver(to: str, email: Email) -> None:
 
 
 def previews(tenant) -> list[dict]:
-    """The three styles with a sample email in each, for the setup question. Cached: the screen
-    re-opens, and her look or name changing makes a new key."""
+    """The three styles with a sample email in each, for the setup question: her welcome with her photo
+    and one of her offers, so each card shows a whole email. Cached: the screen re-opens, and her look,
+    name, photo or offer changing makes a new key."""
+    from apps.email_campaigns.starters import _site_photo
+
     cfg = _config()
     kit = brand_kit(tenant, cfg)
     sample = welcome(kit["name"], kit["site"], _pitch(tenant))
-    key = f"tx-previews:{tenant.schema_name}:{hashlib.sha256(repr((kit, sample)).encode()).hexdigest()}"
+    picture, offer = _site_photo(tenant, cfg), _offer(tenant, cfg)
+    # A lasting picture link is signed again every second: what it points at names it, not when.
+    inputs = _SIGNED_AT.sub(r"\1/", repr((kit, sample, picture, offer)))
+    key = f"tx-previews:{tenant.schema_name}:{hashlib.sha256(inputs.encode()).hexdigest()}"
     cached = cache.get(key)
     if cached is None:
         cached = [
-            {"value": sid, "label": label, "detail": detail, "html": render(sample, tenant, style=sid, cfg=cfg)}
+            {
+                "value": sid,
+                "label": label,
+                "detail": detail,
+                "html": render(sample, tenant, style=sid, cfg=cfg, picture=picture, offer=offer),
+            }
             for sid, label, detail in STYLES
         ]
         cache.set(key, cached, PREVIEW_SECONDS)
@@ -588,6 +636,18 @@ def _pitch(tenant) -> str:
     from apps.tenant_config.interview_brief import answers_of
 
     return str(answers_of(tenant).get("pitch") or "")[:200]
+
+
+def _offer(tenant, cfg) -> dict | None:
+    """The offer her setup samples feature: her newest course (a draft too: /setup's course waits for
+    go-live), else her next class or event; None when she has neither."""
+    from apps.courses.models import Course
+    from apps.email_campaigns import catalog
+
+    course = Course.objects.select_related("thumbnail").order_by("-created_at").first()
+    if course is not None:
+        return catalog._course(course, catalog.site_of(tenant))
+    return catalog.find(["next:event"], tenant, cfg).get("next:event")
 
 
 # --- the emails ------------------------------------------------------------------------------

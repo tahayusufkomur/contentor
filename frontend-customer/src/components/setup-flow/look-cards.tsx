@@ -709,6 +709,7 @@ export function LookCardsView({
   if (shown.kind === "email") {
     // Each style as the email her students get, rendered by the email engine at
     // its 600 px width and scaled into the card. Sandboxed: no scripts, no clicks.
+    // The window shows about 1120 px of it: a whole sample, photo and offer included.
     return (
       <div className="mt-8 grid max-w-4xl grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         {shown.options.map((o, i) => (
@@ -720,13 +721,13 @@ export function LookCardsView({
             style={enter(i)}
             className="overflow-hidden p-0"
           >
-            <span className="relative block h-[300px] overflow-hidden bg-white">
+            <span className="relative block h-[615px] overflow-hidden bg-white sm:h-[540px]">
               <iframe
                 title={`${o.label} email`}
                 srcDoc={o.html}
                 sandbox=""
                 tabIndex={-1}
-                className="pointer-events-none absolute left-0 top-0 h-[750px] w-[600px] origin-top-left scale-[0.55] border-0 sm:scale-[0.46]"
+                className="pointer-events-none absolute left-0 top-0 h-[1400px] w-[600px] origin-top-left scale-[0.55] border-0 sm:scale-[0.48]"
               />
             </span>
             <span className="block border-t border-[var(--sf-line)] px-3.5 py-2.5">
