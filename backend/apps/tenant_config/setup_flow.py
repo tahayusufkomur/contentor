@@ -620,6 +620,11 @@ def _store_draft(tenant, user, config, kind: str, parsed) -> dict:
 
     flow = _update_flow(tenant, mutate)
     _delete_draft(kind, previous.get("ref"))
+    if kind == "course":
+        from apps.core.focus import descriptions
+
+        # Focus mode's writer gives each lesson its text in the background: none opens blank.
+        descriptions.start_for_course(ref)
     item = content_snapshot(flow)[kind]
     return {
         "id": item["id"],

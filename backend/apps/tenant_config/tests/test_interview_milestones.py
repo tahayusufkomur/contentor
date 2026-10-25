@@ -361,6 +361,42 @@ def test_run_draft_falls_back_when_ai_fails(tenant_ctx, config, owner):
     build.assert_called_once_with(tenant_ctx, "courses")
 
 
+def test_a_drafted_course_gets_its_lessons_written(tenant_ctx, config, owner, django_capture_on_commit_callbacks):
+    """Focus mode's descriptions job starts on the course setup drafted: a
+    lesson with text keeps it, and one only the AI wrote still counts as empty."""
+    import json
+
+    from django.db import connection
+
+    from apps.core.focus import descriptions, jobs
+    from apps.courses.models import Lesson
+    from apps.tenant_config.models import CopilotRun
+
+    with (
+        mock.patch("apps.core.copilot.content._give_cover"),
+        mock.patch("apps.core.tasks.run_focus_job.delay") as delay,
+        django_capture_on_commit_callbacks(execute=True),
+    ):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "course", {"course_topic": "Morning mobility"})
+    run = CopilotRun.objects.get(request__job="descriptions")
+    delay.assert_called_once_with(connection.schema_name, run.id)
+    welcome, practice = Lesson.objects.order_by("order")
+    Lesson.objects.filter(pk=welcome.pk).update(content_html="<p>Mine.</p>")  # she typed it meanwhile
+    reply = descriptions.ModuleTexts(lessons=[descriptions.LessonText(id=practice.id, text="Breathe first.")])
+    with (
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.onboarding.ai_compose.record_spend"),
+        mock.patch("apps.core.ai.structured", return_value=(reply, Decimal("0"), "m")) as model,
+    ):
+        jobs.execute(connection.schema_name, run.id)
+    assert [x["id"] for x in json.loads(model.call_args.kwargs["user"])["lessons"]] == [practice.id]
+    welcome.refresh_from_db()
+    practice.refresh_from_db()
+    assert welcome.content_html == "<p>Mine.</p>"
+    assert "Breathe first." in practice.content_html and practice.empty()
+    assert Course.objects.get().not_ready()
+
+
 def test_page_finishing_after_style_switch_lands_in_new_style(tenant_ctx, config):
     """Review focus 1: a build started under 'journal' that saves after the
     coach picked 'grid' is restyled on save."""

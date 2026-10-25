@@ -1,13 +1,14 @@
 """The descriptions job (spec §5.3): once she confirms the outline's lesson
-titles, the Content Creating Specialist writes the short description that goes
-with each lesson's video, one module per model call, into the lesson's text.
-It never overwrites a lesson that already has text, and Stop keeps what is
-already written. A copilot run on the agents worker, so it survives her leaving."""
+titles, or once /setup has drafted her course, the Content Creating Specialist
+writes the short description that goes with each lesson's video, one module
+per model call, into the lesson's text. It never overwrites a lesson that
+already has text, and Stop keeps what is already written. A copilot run on the
+agents worker, so it survives her leaving."""
 
 import json
 
 from django.conf import settings
-from django.db import transaction
+from django.db import connection, transaction
 from django.utils.html import escape
 from pydantic import BaseModel
 
@@ -48,11 +49,26 @@ def start(creation) -> CopilotRun:
     return jobs.queue(creation, "descriptions", specialist="content")
 
 
+def start_for_course(course_id: int) -> CopilotRun:
+    """A queued descriptions run for the course /setup drafted, which has no
+    creation: the run names the course. Nobody's run, so it is not in her
+    studio's list; the agents worker takes it once the row is committed."""
+    from apps.core import tasks
+
+    run = CopilotRun.objects.create(specialist="content", request={"job": "descriptions", "course": course_id})
+    schema = connection.schema_name
+    transaction.on_commit(lambda: tasks.run_focus_job.delay(schema, run.id))
+    return run
+
+
 def carry_out(tenant, run_id) -> None:
     from apps.courses.models import Course, Lesson
 
     request = CopilotRun.objects.get(pk=run_id).request or {}
-    creation = FocusCreation.objects.get(pk=request.get("focus"))
+    if "course" in request:  # /setup's course has no creation: an unsaved one stands in, nothing to lock, no answers
+        creation = FocusCreation(record_id=request["course"])
+    else:
+        creation = FocusCreation.objects.get(pk=request.get("focus"))
     if not ai_compose.compose_available():
         raise core_ai.AiError("ai_unavailable")
     course_id = creation.record_id
