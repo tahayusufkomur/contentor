@@ -347,7 +347,7 @@ export function questionSteps(
 export const SECTIONS: { label: string; fields: string[] }[] = [
   { label: "You", fields: ["teaches", "specialty"] },
   { label: "Students", fields: ["audience", "outcome"] },
-  { label: "Offer", fields: ["offers", "pitch", "difference"] },
+  { label: "Offer", fields: ["offers", "teachers", "pitch", "difference"] },
   {
     label: "Look & story",
     fields: ["tone", "site_style", "story", "credentials", "site_logo"],

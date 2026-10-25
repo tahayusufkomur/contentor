@@ -366,6 +366,7 @@ describe("sectionOf", () => {
       "audience",
       "outcome",
       "offers",
+      "teachers",
       "pitch",
       "difference",
       "tone",

@@ -290,3 +290,9 @@ def test_spent_grant_survives_upgrade_then_downgrade(db):
         )
     assert status["free_grant"] is False
     assert status["reason"] == "upgrade_required"
+
+
+def test_brand_brief_says_how_she_speaks_once_she_answered_who_students_learn_from():
+    several = SimpleNamespace(wizard_state={"answers": {"teachers": "several"}})
+    assert 'The coach speaks as: "we"' in ai.brand_brief(None, tenant=several)
+    assert "speaks as" not in ai.brand_brief(None, tenant=SimpleNamespace(wizard_state={}))

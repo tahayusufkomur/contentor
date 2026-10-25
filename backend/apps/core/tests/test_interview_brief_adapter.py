@@ -33,3 +33,10 @@ def test_composer_coach_data_carries_interview_facts():
     data = site_composer._coach_data(_tenant(), "Glow")
     assert {"q": "Who they work with", "a": "Desk workers"} in data["followups"]
     assert data["description"] == "Gentle yoga for desk workers"
+
+
+def test_composer_coach_data_speaks_as_she_answered():
+    several = {**STATE, "answers": {**STATE["answers"], "teachers": "several"}}
+    tenant = SimpleNamespace(wizard_state=several, name="Glow", template_niche="yoga")
+    assert site_composer._coach_data(tenant, "Maya Laurent")["speaker"] == "we"
+    assert site_composer._coach_data(_tenant(), "Maya Laurent")["speaker"] == "I"  # no answer: the guess

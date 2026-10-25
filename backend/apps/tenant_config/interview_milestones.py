@@ -28,8 +28,9 @@ logger = logging.getLogger(__name__)
 
 PAGE_NEEDS = {
     # "photos": the page is built with her own photos, so it waits for them.
-    "home": ("teaches", "photos", "audience", "outcome", "offers", "pitch"),
-    "about": ("teaches", "story", "credentials", "tone"),
+    # "teachers": every page says "I" or "we" as she answered it.
+    "home": ("teaches", "photos", "audience", "outcome", "offers", "teachers", "pitch"),
+    "about": ("teaches", "teachers", "story", "credentials", "tone"),
     "contact": ("contact", "location"),
     "faq": (
         "offers",

@@ -85,6 +85,23 @@ def test_speaker(brand, description, expected):
     assert sc.speaker(brand, description) == expected
 
 
+@pytest.mark.parametrize(
+    ("brand", "teachers", "expected"),
+    [
+        ("G's Face Yoga Studio", "solo", "I"),  # reads as a business; her answer wins
+        ("G's Face Yoga Studio", "solo_for_now", "I"),
+        ("Maya Laurent", "several", "we"),  # reads as a person; her answer wins
+        ("G's Face Yoga Studio", None, "we"),  # no answer: the guess
+        ("Maya Laurent", None, "I"),
+    ],
+)
+def test_speaker_follows_who_students_learn_from(brand, teachers, expected):
+    said = sc.speaker(brand, "", {"teachers": teachers} if teachers else {})
+    assert said == expected
+    story = sc.fallback_fields("story", "about", "journal.letter", sc._ctx("face_yoga", brand, said=said))
+    assert story["heading"] == f"Why {expected} teach face yoga"
+
+
 def _families(entries):
     return [e["family"] for e in entries]
 

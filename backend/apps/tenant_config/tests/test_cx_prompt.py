@@ -45,3 +45,8 @@ def test_refine_turn_carries_the_current_section():
 def test_repair_turn_lists_at_most_twelve_problems():
     turn = cx_prompt.repair_turn("BUILD", [f"problem {i}" for i in range(20)])
     assert "- problem 11" in turn and "problem 12" not in turn
+
+
+def test_compose_turn_speaks_as_the_rest_of_her_pages():
+    assert 'SPEAKS AS: "we"' in cx_prompt.compose_turn("A team page", "about", {**COACH, "speaker": "we"}, "maison")
+    assert "SPEAKS AS" not in cx_prompt.compose_turn("A team page", "about", COACH, "maison")

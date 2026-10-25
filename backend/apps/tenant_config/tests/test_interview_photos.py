@@ -120,6 +120,7 @@ def test_the_home_page_waits_for_the_answer(tenant):
         "audience": "Kids",
         "outcome": "Focus",
         "offers": ["course"],
+        "teachers": "solo",
         "pitch": "Chess for kids",
     }
     assert "page:home" not in milestones._due(tenant, answers)

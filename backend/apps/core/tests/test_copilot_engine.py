@@ -2201,3 +2201,12 @@ def test_edit_curriculum_with_a_foreign_id_drops_the_card_with_its_reason(tenant
         "text": "I couldn't make that change: that module is not in this course. Nothing on your site was changed.",
         "specialist": "assistant",
     }
+
+
+def test_user_turn_speaks_as_she_answered_who_students_learn_from():
+    digests = ("_pages_digest", "_chrome_digest", "_clock_digest", "_courses_digest", "_subscriptions_digest")
+    digests += ("_events_digest", "_posts_digest", "_email_digest", "_stats_digest", "_setup_digest")
+    several = SimpleNamespace(**{**vars(TENANT), "wizard_state": {"answers": {"niche": "yoga", "teachers": "several"}}})
+    with mock.patch.multiple(engine, **{name: mock.Mock(return_value="") for name in digests}):
+        assert 'Speaks as: "we"' in engine._user_turn(several, [], [], "hi")
+        assert "Speaks as" not in engine._user_turn(TENANT, [], [], "hi")  # no answer: the pages' own voice

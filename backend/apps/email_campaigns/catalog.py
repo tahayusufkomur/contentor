@@ -307,7 +307,7 @@ def slots(tenant, cfg=None) -> list[dict]:
 def voice(tenant, cfg=None) -> dict:
     """How she talks and what she teaches, from her setup answers and her look's mood."""
     from apps.tenant_config import sections
-    from apps.tenant_config.interview_brief import answers_of
+    from apps.tenant_config.interview_brief import answers_of, speaker_of
 
     cfg = cfg or _config()
     answers = answers_of(tenant)
@@ -316,6 +316,8 @@ def voice(tenant, cfg=None) -> dict:
         for key in ("teaches", "audience", "outcome", "tone", "pitch", "story")
         if answers.get(key)
     }
+    if said := speaker_of(answers):
+        out["speaks_as"] = said  # "I" or "we", as she answered who students learn from
     look = sections.style(getattr(cfg, "style", "") or "") or {}
     if look.get("mood"):
         out["mood"] = look["mood"]

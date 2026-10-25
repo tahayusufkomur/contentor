@@ -203,9 +203,14 @@ def _name_like(brand) -> bool:
     return all(w[:1].isupper() and w.strip(".-'").lower() not in _BUSINESS_WORDS for w in words)
 
 
-def speaker(brand, description="") -> str:
-    """'I' when the brand reads as a person (or the coach describes their work
-    in the first person singular), else 'we'."""
+def speaker(brand, description="", answers=None) -> str:
+    """'I' or 'we' as the coach answered who students learn from. Before she
+    has: 'I' when the brand reads as a person (or the coach describes their
+    work in the first person singular), else 'we'."""
+    from apps.tenant_config import interview_brief
+
+    if said := interview_brief.speaker_of(answers or {}):
+        return said
     if _name_like(brand):
         return "I"
     text = f" {str(description or '').lower()} "
@@ -214,9 +219,10 @@ def speaker(brand, description="") -> str:
     return "I" if re.search(r"\b(i|i'm|my|me)\b", text) else "we"
 
 
-def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS, first_name="") -> dict:
+def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS, first_name="", said="") -> dict:
+    """``said``: "I" or "we" as _coach_data read it from her answers."""
     t = subject or topic(niche)
-    solo = speaker(brand, description) == "I"
+    solo = (said or speaker(brand, description)) == "I"
     # Buttons lead to her main offer: the courses, else the classes, else her story.
     primary = next(h for h in ("/courses", "/events", "/about") if h in links)
     me = "me" if solo else "us"
@@ -935,7 +941,9 @@ def _plan_site(tenant, *, force=False) -> dict:
         return _store_plan(tenant, plan)
 
     coach = _coach_data(tenant, brand)
-    ctx = _ctx(coach["niche"], brand, coach["description"], coach["topic"], tuple(coach["links"]))
+    ctx = _ctx(
+        coach["niche"], brand, coach["description"], coach["topic"], tuple(coach["links"]), said=coach["speaker"]
+    )
     raw, source = None, "fallback"
     if ai_compose.compose_available():
         try:
@@ -1067,6 +1075,8 @@ def _coach_data(tenant, brand) -> dict:
         "niche": niche,
         "topic": interview_brief.subject_of(answers) or topic(niche),
         "description": str(answers.get("description") or "").strip()[:500],
+        # "I" or "we" on every page: her answer, else the guess from her name and words.
+        "speaker": speaker(brand, answers.get("description"), answers),
         "followups": followups[:12],
         "goals": [str(g) for g in (answers.get("goals") or []) if isinstance(g, str)][:8],
         # The pages her site may link to (every Href field is one of them).
@@ -1782,7 +1792,9 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
     entries = _home_pins(style_id, page_key, entries)  # a plan cached before the guard existed
     coach = _coach_data(tenant, brand)
     first_name = _coach_first_name(tenant)
-    ctx = _ctx(coach["niche"], brand, coach["description"], coach["topic"], tuple(coach["links"]), first_name)
+    ctx = _ctx(
+        coach["niche"], brand, coach["description"], coach["topic"], tuple(coach["links"]), first_name, coach["speaker"]
+    )
 
     _set_stage(tenant, page_key, "copy")
     fields = _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction)

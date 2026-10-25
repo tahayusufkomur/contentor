@@ -1011,10 +1011,14 @@ def _setup_digest(tenant):
 
 
 def _user_turn(tenant, transcript, selections, message, attachments=None, context=None):
+    from apps.tenant_config.interview_brief import speaker_of
+
     answers = (tenant.wizard_state or {}).get("answers") or {}
     parts = [
         f"Brand: {tenant.name}",
         f"Niche: {answers.get('niche') or 'general'}",
+        # Her answer to who students learn from: the words written for her say "I" or "we" by it.
+        *([f'Speaks as: "{said}"'] if (said := speaker_of(answers)) else []),
         "Current pages:\n" + _pages_digest(tenant),
         _chrome_digest(tenant),
         _clock_digest(tenant),

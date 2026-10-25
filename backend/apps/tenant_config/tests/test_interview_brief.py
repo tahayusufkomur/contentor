@@ -693,3 +693,31 @@ def test_the_ways_in_are_read_from_tiles_and_from_her_own_words():
         "q": "Who can take the first course",
         "a": "Anyone who buys the course, Online membership",
     }
+
+
+@pytest.mark.parametrize(
+    ("said", "stored", "speaker"),
+    [
+        ("Just me", "solo", "I"),
+        ("Just me for now, more teachers later", "solo_for_now", "I"),
+        ("Several teachers", "several", "we"),
+        ("solo_for_now", "solo_for_now", "I"),  # the id the model gives
+        ("My sister and I run it together, we are a team", "several", "we"),
+    ],
+)
+def test_who_students_learn_from_sets_i_or_we(said, stored, speaker):
+    answers = {}
+    assert brief.apply_fact(answers, "teachers", said)
+    assert answers["teachers"] == stored
+    assert brief.speaker_of(answers) == speaker
+    tile = brief.TEACHERS[stored][0]
+    assert {"q": "Who students learn from", "a": tile} in brief.composer_facts(answers)
+
+
+def test_who_students_learn_from_is_asked_before_the_pitch_and_unanswered_has_no_speaker():
+    assert brief.speaker_of({}) is None
+    assert brief.coerce("teachers", "somewhere warm") is None
+    ids = [f.id for f in brief.required({})]
+    assert ids[ids.index("offers") + 1 : ids.index("offers") + 3] == ["teachers", "pitch"]
+    assert "teachers" in brief.FIXED_KINDS
+    assert brief.FIELD_BY_ID["teachers"].options == tuple(tile for tile, _ in brief.TEACHERS.values())

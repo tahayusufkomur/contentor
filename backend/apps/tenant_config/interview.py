@@ -88,6 +88,8 @@ Do these things:
    For "offers" give the matching ids from: course, live, onsite, articles, community.
    For "payments" give the matching ids from: course (one-time course purchases), membership
    (a monthly subscription), event (paying per class or event), free.
+   For "teachers" (who students learn from) give one id from: solo (only them), solo_for_now (only
+   them for now, more teachers later), several (more than one teacher).
    For "course_access", "event_access" and "onsite_access" (who can open that course or class)
    give the matching answers from that field's "fixed_options", word for word.
 2. edit_request: if the message asks you to change or create something on their site (a
@@ -343,8 +345,9 @@ def _next_field(missing: list[brief.Field], turn: InterviewTurn | None, answers=
     # Cards are asked by code, in order; so is a section (course, class,
     # article): once started it runs to its review screen before anything else.
     # The specialty follows its broad answer straight away; so does the tone,
-    # which ranks the looks right after it.
-    if top.kind in brief.CARD_KINDS or top.group or top.kind in ("specialty", "tone"):
+    # which ranks the looks right after it, and who students learn from, which
+    # the home page waits for.
+    if top.kind in brief.CARD_KINDS or top.group or top.kind in ("specialty", "tone", "teachers"):
         return top
     begun = {f.group for f in brief.FIELDS if f.group and brief.is_settled(answers or {}, f.id)}
     if section := next((f for f in missing if f.group in begun), None):
@@ -417,6 +420,7 @@ NOTED_NAMES = {
     "audience": "who you work with",
     "outcome": "what students get",
     "offers": "how you work",
+    "teachers": "who students learn from",
     "pitch": "your one-liner",
     "difference": "what sets you apart",
     "tone": "your tone",

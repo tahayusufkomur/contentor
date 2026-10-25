@@ -22,6 +22,7 @@ HOME = {
     "audience": "Desk workers",
     "outcome": "No back pain",
     "offers": ["course"],
+    "teachers": "solo",  # every page says "I" or "we" by it
     "pitch": "Yoga for desks",
 }
 
@@ -1412,3 +1413,39 @@ def test_her_email_templates_are_made_once_she_picks_her_email_style(tenant_ctx,
     ):
         ms._start(tenant_ctx, {**HOME, "email_style": "letter"}, "emails:starters")
     build.assert_called_once_with(tenant_ctx.id)
+
+
+def test_the_home_and_about_pages_wait_for_who_students_learn_from(tenant_ctx):
+    unasked = {k: v for k, v in HOME.items() if k != "teachers"}
+    about = {"story": "s", "credentials": "c", "tone": "warm"}
+    assert "page:home" not in ms._due(tenant_ctx, unasked)
+    assert {"page:home", "page:about"} <= set(ms._due(tenant_ctx, {**HOME, **about}))
+    assert "teachers" in ms.PAGE_NEEDS["about"]
+
+
+@pytest.mark.parametrize(
+    ("teachers", "speaker"), [("solo", "I"), ("solo_for_now", "I"), ("several", "we"), (None, "I")]
+)
+def test_the_look_copy_speaks_as_she_answered_who_students_learn_from(tenant_ctx, config, teachers, speaker):
+    import json
+
+    from django.core.cache import cache
+
+    from apps.tenant_config import look_copy
+
+    cache.clear()
+    calls = []
+
+    def fake(**kwargs):
+        calls.append(kwargs)
+        return look_copy.LookCopy(), Decimal("0"), "m"
+
+    answers = {"teaches": "Yoga", **({"teachers": teachers} if teachers else {})}
+    with (
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.onboarding.ai_compose.record_spend"),
+        mock.patch("apps.core.ai.structured", side_effect=fake),
+    ):
+        look_copy.for_tenant(tenant_ctx, answers)
+    assert json.loads(calls[0]["user"])["speaker"] == speaker  # no answer: "I", as before
+    assert 'Use "I"' not in calls[0]["system"]

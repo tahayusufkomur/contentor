@@ -276,6 +276,7 @@ def test_card_fields_are_asked_by_code_not_ai(client, tenant_ctx, quiet):
         "audience": "a",
         "outcome": "o",
         "offers": ["course"],
+        "teachers": "solo",
         "pitch": "p",
         "difference": "d",
         "tone": "warm",
@@ -293,6 +294,7 @@ def test_the_tone_is_asked_before_the_look_so_it_can_rank_the_looks(client, tena
         "audience": "a",
         "outcome": "o",
         "offers": ["course"],
+        "teachers": "solo",
         "pitch": "p",
         "difference": "d",
     }
@@ -300,6 +302,17 @@ def test_the_tone_is_asked_before_the_look_so_it_can_rank_the_looks(client, tena
     quiet.reply = interview.InterviewTurn(next_field="story", question="Tell me your story?")
     body = client.post(URL, {"message": "ok"}, format="json").json()
     assert body["guide"]["field"] == "tone"
+
+
+def test_who_students_learn_from_is_asked_right_after_the_offers(client, tenant_ctx, quiet):
+    """The home page waits for it (every page says "I" or "we" by it): the AI never puts it off."""
+    answers = {**PHOTOS, "teaches": "Pottery", "audience": "a", "outcome": "o", "offers": ["course"]}
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    quiet.reply = interview.InterviewTurn(next_field="difference", question="What sets you apart?")
+    guide = client.post(URL, {"message": "ok"}, format="json").json()["guide"]
+    assert guide["field"] == "teachers"
+    assert guide["options"] == ["Just me", "Just me for now, more teachers later", "Several teachers"]
+    assert guide["multi"] is False and guide["why"]
 
 
 def test_state_opening_and_phase(client, tenant_ctx):
@@ -491,6 +504,7 @@ BEFORE_COURSE = {
     "audience": "Beginners",
     "outcome": "Fitter",
     "offers": ["course"],
+    "teachers": "solo",
     "pitch": "Boxing for beginners",
     "difference": "Technique first",
     "site_style": "journal",

@@ -218,6 +218,8 @@ def _coach_lines(coach) -> list[str]:
     lines = [f"COACH: {coach.get('brand', '')}, teaches {coach.get('topic', '')} (niche: {coach.get('niche', '')})."]
     if coach.get("description"):
         lines.append(f"ABOUT: {coach['description']}")
+    if coach.get("speaker"):
+        lines.append(f'SPEAKS AS: "{coach["speaker"]}"')  # as on the rest of her pages
     for fact in coach.get("followups") or []:
         lines.append(f"FACT: {fact.get('q', '')} — {fact.get('a', '')}")
     if coach.get("goals"):

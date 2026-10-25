@@ -138,6 +138,10 @@ mistakes, seasonal angles.
 def brand_brief(config, course_titles=(), tenant=None):
     """~200-token plain-text brief. Everything tenant-specific goes HERE (the
     cacheable static prompt must stay byte-identical across tenants)."""
+    from django.db import connection
+
+    from apps.tenant_config.interview_brief import speaker_of
+
     lines = [
         "<brand_brief>",
         f"Brand: {(config.brand_name if config else '') or 'a coaching brand'}",
@@ -146,6 +150,11 @@ def brand_brief(config, course_titles=(), tenant=None):
     if course_titles:
         lines.append("Their courses: " + "; ".join(list(course_titles)[:6]))
     lines.append("Audience: this coach's students and prospective students.")
+    # Her answer to who students learn from (setup): "I" or "we".
+    tenant = tenant or getattr(connection, "tenant", None)
+    answers = (getattr(tenant, "wizard_state", None) or {}).get("answers") or {}
+    if said := speaker_of(answers):
+        lines.append(f'The coach speaks as: "{said}"')
     lines.append("</brand_brief>")
     return "\n".join(lines)
 

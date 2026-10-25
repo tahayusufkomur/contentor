@@ -41,6 +41,7 @@ FIXED_KINDS = (
     "timezone",
     "currency",
     "access",
+    "teachers",
 )
 OFFERS = ("course", "live", "onsite", "articles", "community")
 OFFER_GOALS = {
@@ -72,6 +73,19 @@ CURRENCIES = {
     "USD": ("US Dollar ($)", "$", r"\busd\b|dollar|\$"),
     "EUR": ("Euro (€)", "€", r"\beur\b|euro|€"),
 }
+# Who students learn from: the tile, and how her site speaks ("more teachers
+# later" is still one creator today).
+TEACHERS = {
+    "solo": ("Just me", "I"),
+    "solo_for_now": ("Just me for now, more teachers later", "I"),
+    "several": ("Several teachers", "we"),
+}
+# The coach's own words for each, in the order they are tried.
+_TEACHER_WORDS = (
+    ("solo_for_now", r"for now|later|one day|soon|eventually|\bplan"),
+    ("several", r"several|team|\bwe\b|\bour\b|\bus\b|partner|colleague|teachers"),
+    ("solo", r"\bsolo\b|\bme\b|myself|alone|on my own"),
+)
 # Sections a coach can skip, and what the skip button says.
 SKIP_LABELS = {
     "course": "No course for now",
@@ -818,6 +832,16 @@ FIELDS: tuple[Field, ...] = (
             "A members' space where your students talk, share and stay motivated.",
         ),
     ),
+    # Before the pitch, which starts the home page: every page says "I" or "we" from it.
+    Field(
+        "teachers",
+        "Who students learn from",
+        "Who will your students learn from?",
+        tuple(label for label, _ in TEACHERS.values()),
+        kind="teachers",
+        why='Your site speaks as "I" or "we" to match.',
+        icons=("user-round", "sprout", "users"),
+    ),
     Field("pitch", "One-line pitch", "If someone asked what you do, what would you say in one sentence?"),
     Field(
         "difference",
@@ -1213,6 +1237,20 @@ def parse_currency(raw) -> str | None:
     return next((code for code, (_, _, words) in CURRENCIES.items() if re.search(words, text)), None)
 
 
+def parse_teachers(raw) -> str | None:
+    """A TEACHERS id: the id itself, else read from its tile or her own words."""
+    text = str(raw or "").strip().lower()
+    if text in TEACHERS:
+        return text
+    return next((key for key, words in _TEACHER_WORDS if re.search(words, text)), None)
+
+
+def speaker_of(answers: dict) -> str | None:
+    """How her site speaks ("I" or "we") as she answered who students learn
+    from; None before she has."""
+    return TEACHERS[answers["teachers"]][1] if answers.get("teachers") in TEACHERS else None
+
+
 def currency_sign() -> str:
     """The sign of the currency the coach charges in: "$", "€"."""
     from apps.core.currency import tenant_charge_currency
@@ -1326,6 +1364,8 @@ def coerce(field_id: str, raw):
         return parse_timezone(raw)
     if field.kind == "currency":
         return parse_currency(raw)
+    if field.kind == "teachers":
+        return parse_teachers(raw)
     if field.kind == "socials":
         links = parse_socials(raw)
         if links:
@@ -1594,6 +1634,8 @@ def composer_facts(answers: dict) -> list[dict]:
             value = ", ".join(access_labels(answers, field.group, value))
         elif field.kind == "price":
             value = "free" if value == 0 else f"{value:g}"
+        elif field.kind == "teachers":
+            value = TEACHERS.get(value, (value,))[0]
         out.append({"q": field.label, "a": str(value)[:TEXT_MAX]})
     return out
 
