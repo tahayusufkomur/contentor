@@ -35,6 +35,8 @@ SITE_QA_BROWSER_URL = ""
 AI_VISION_PROVIDER = ""
 # Same for the reels' video service the dev compose points at.
 VIDEO_URL = ""
+# No developer joins the tenants tests make (a test turns it on to check it).
+DEV_TENANT_ADMINS = []
 # Same reasoning: a dev .env pointing at a running LiveCraft must not make
 # tests create real rooms. Tests of the HTTP client turn the fake off themselves.
 LIVECRAFT_FAKE = True

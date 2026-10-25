@@ -5,3 +5,6 @@ class AccountsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "apps.accounts"
     label = "accounts"
+
+    def ready(self):
+        from . import dev_admins  # noqa: F401 (its signal: a no-op unless settings.DEV_TENANT_ADMINS)

@@ -1,3 +1,5 @@
+import os
+
 from .base import *  # noqa: F401, F403
 from .base import _env_bool  # noqa: E402
 
@@ -14,6 +16,12 @@ if not LIVECRAFT_URL:  # noqa: F405
     LIVECRAFT_FAKE = True
 
 EMAIL_SINK_ENABLED = _env_bool("EMAIL_SINK_ENABLED", True)
+
+# Owners of every local tenant besides its own coach, so the developer can sign in to any site on the dev
+# stack (apps.accounts.dev_admins). Comma-separated; DEV_TENANT_ADMINS= in .env turns it off.
+DEV_TENANT_ADMINS = [
+    e.strip() for e in os.environ.get("DEV_TENANT_ADMINS", "tahayusufkomur@gmail.com").split(",") if e.strip()
+]
 
 # The e2e suite's student/anonymous traffic all comes from one client IP, and
 # back-to-back specs (plus retries) blow the prod 100/min bucket — the 429s
