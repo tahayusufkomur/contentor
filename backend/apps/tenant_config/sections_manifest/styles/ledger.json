@@ -98,6 +98,9 @@
     "faq": ["appendix"],
     "cta": ["signature"],
     "contact": ["letterhead"],
-    "events": ["agenda", "rows"]
+    "events": ["agenda", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

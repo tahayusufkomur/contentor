@@ -21,8 +21,18 @@ export function styleRecipe(
 }
 
 export interface FamilyField {
-  type: "text" | "richtext" | "link" | "image" | "items" | "select" | "bool";
+  type:
+    | "text"
+    | "richtext"
+    | "link"
+    | "image"
+    | "video"
+    | "items"
+    | "select"
+    | "bool";
   label: string;
+  /** One line the editor shows under the field (e.g. proof's "only real words"). */
+  help?: string;
   max?: number;
   required?: boolean;
   aspect?: string;

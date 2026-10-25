@@ -26,6 +26,7 @@ SECTION_PREFIX = "section."
 _UNSAFE_URL_PREFIXES = ("javascript:", "data:", "vbscript:")
 _LINK_MAX = 300
 _IMAGE_KEYS = ("url", "photo_id", "alt")
+_VIDEO_KEYS = ("url", "video_id")  # the page signer adds a poster on read; it is never stored
 _BASE_KEYS = ("id", "type", "variant", "enabled", "style")
 _DROP = object()  # sentinel: omit the field
 
@@ -358,6 +359,17 @@ def _clean_image(value):
     return out
 
 
+def _clean_video(value):
+    if not isinstance(value, dict):
+        return None
+    url = value.get("url") if isinstance(value.get("url"), str) else None
+    if url and url.strip().lower().startswith(_UNSAFE_URL_PREFIXES):
+        url = None
+    vid = value.get("video_id")
+    vid = int(vid) if isinstance(vid, int) or (isinstance(vid, str) and vid.isdigit()) else None
+    return {"url": url, "video_id": vid}
+
+
 def _clean_value(spec, value):
     """Cleaned value for one field, or ``_DROP`` to omit the field."""
     kind = spec.get("type")
@@ -380,6 +392,8 @@ def _clean_value(spec, value):
         return str(default) if default is not None else (options[0] if options else _DROP)
     if kind == "image":
         return _clean_image(value) or _DROP
+    if kind == "video":
+        return _clean_video(value) or _DROP
     if kind == "items":
         if not isinstance(value, list):
             return _DROP
@@ -403,7 +417,7 @@ def clean_section_block(block):
     """Shape a ``section.*`` block against its family schema: text clamped to
     its max on a word boundary, item lists capped (unknown item keys dropped),
     selects coerced to an allowed option, image dicts reduced to url/photo_id/
-    alt, unknown keys dropped. Unknown family → None (drop the block). A
+    alt, video dicts to url/video_id, unknown keys dropped. Unknown family → None (drop the block). A
     variant of a known style resolves to one that style ships; a variant of an
     unknown style is kept as-is (the frontend falls back)."""
     if not isinstance(block, dict):

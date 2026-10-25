@@ -98,6 +98,9 @@
     "faq": ["etiquette"],
     "cta": ["join"],
     "contact": ["dojoinfo"],
-    "events": ["timetable", "rows"]
+    "events": ["timetable", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

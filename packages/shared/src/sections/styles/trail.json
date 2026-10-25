@@ -98,6 +98,9 @@
     "faq": ["ranger"],
     "cta": ["laceup"],
     "contact": ["basecamp"],
-    "events": ["meetups", "rows"]
+    "events": ["meetups", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

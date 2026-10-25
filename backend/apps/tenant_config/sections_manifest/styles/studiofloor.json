@@ -98,6 +98,9 @@
     "faq": ["warmup"],
     "cta": ["spotlight"],
     "contact": ["booking"],
-    "events": ["schedule", "rows"]
+    "events": ["schedule", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

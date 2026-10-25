@@ -1,5 +1,6 @@
 import type { StyleKit } from "./kit-contract";
 import type { StyleSections } from "./types";
+import { neutralSections, type NeutralFamily } from "./neutral";
 import * as atelier from "./atelier";
 import * as darkroom from "./darkroom";
 import * as dojo from "./dojo";
@@ -47,11 +48,21 @@ const MODULES = {
   velvet,
 };
 
+/** Each style's own layouts, plus the neutral ones in its kit (a style's own
+ *  layout of a neutral family comes first, beside `neutral`). */
 export const STYLE_SECTION_MODULES: Record<
   string,
   Partial<StyleSections>
 > = Object.fromEntries(
-  Object.entries(MODULES).map(([id, mod]) => [id, mod.sections]),
+  Object.entries(MODULES).map(([id, mod]) => {
+    const own: Partial<StyleSections> = mod.sections;
+    const neutral = neutralSections(mod.kit);
+    const merged = { ...own };
+    for (const family of Object.keys(neutral) as NeutralFamily[]) {
+      merged[family] = { ...own[family], ...neutral[family] };
+    }
+    return [id, merged];
+  }),
 );
 
 /** style id → its StyleKit (what AI-built sections render with). */

@@ -98,6 +98,9 @@
     "faq": ["notes"],
     "cta": ["introduction"],
     "contact": ["address"],
-    "events": ["salons", "rows"]
+    "events": ["salons", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

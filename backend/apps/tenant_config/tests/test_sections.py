@@ -189,6 +189,24 @@ def test_clean_section_block_selects_bools_links_and_bad_images():
     assert sections.clean_section_block({"type": "section.courseShowcase", "limit": 6})["limit"] == "6"
 
 
+def test_video_field_keeps_url_and_id_only():
+    out = sections.clean_section_block(
+        {"type": "section.video", "video": {"url": "https://x/a.mp4", "video_id": "12", "poster": "p"}}
+    )
+    assert out["video"] == {"url": "https://x/a.mp4", "video_id": 12}
+
+
+def test_video_field_drops_unsafe_url_and_bad_id():
+    out = sections.clean_section_block({"type": "section.video", "video": {"url": "javascript:x", "video_id": "abc"}})
+    assert out["video"] == {"url": None, "video_id": None}
+
+
+def test_proof_lists_are_capped():
+    quotes = [{"quote": f"Words {n}", "name": "Ana", "extra": "x"} for n in range(5)]
+    out = sections.clean_section_block({"type": "section.proof", "quotes": quotes})
+    assert out["quotes"] == [{"quote": f"Words {n}", "name": "Ana"} for n in range(3)]
+
+
 def test_clean_section_block_richtext_measures_plain_text():
     short = sections.clean_section_block({"type": "section.story", "body": "<p>Hi <strong>there</strong></p>"})
     assert short["body"] == "<p>Hi <strong>there</strong></p>"  # fits → HTML kept
@@ -260,6 +278,12 @@ def test_style_round_trips_through_the_look_api(tenant_ctx):
     public = APIClient(HTTP_HOST="shared-test.localhost").get("/api/v1/admin/config/")
     assert public.status_code == 200
     assert public.json()["style"] == "calm"
+
+
+def test_every_enabled_style_ships_the_neutral_families(real_styles):
+    for style_id in sections.enabled_styles():
+        for family in ("proof", "statement", "video"):
+            assert sections.variants(style_id, family) == ["neutral"], (style_id, family)
 
 
 def test_every_enabled_style_ships_two_full_palettes(real_styles):

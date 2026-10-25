@@ -40,6 +40,14 @@ export const FIXTURE_PHOTOS = {
 
 const P = FIXTURE_PHOTOS;
 
+/** A clip for the video family: the file is missing on purpose (no video in the
+ *  repo), so the player shows its poster, which is all a capture needs. */
+const clip = (poster: { url: string }) => ({
+  url: "/fixture-clip.mp4",
+  video_id: null,
+  poster: poster.url,
+});
+
 type Content = Partial<Block>;
 
 const LONG: Record<FamilyId, Content> = {
@@ -227,6 +235,47 @@ const LONG: Record<FamilyId, Content> = {
       "Small groups, real-time cues and a few minutes for questions at the end. Join from home or the studio.",
     ctaLabel: "See the full calendar",
   },
+  proof: {
+    heading: "What students say after a few weeks of practice with me",
+    quotes: [
+      {
+        quote:
+          "I came for my back and stayed for the quiet. Three months in, I sleep better, I sit better at my desk, and the twenty minutes before work have become the part of the day I protect most fiercely.",
+        name: "Ana",
+      },
+      {
+        quote:
+          "Maya explains why a pose feels the way it does, so I finally practise on my own between classes instead of waiting for someone to tell me what to do.",
+        name: "Joana",
+      },
+      {
+        quote:
+          "The online classes feel like the studio. She sees you through the camera and fixes the small things that used to hurt.",
+        name: "Margarida",
+      },
+    ],
+    numbers: [
+      { value: "1,200+", label: "students taught since the first class" },
+      { value: "14", label: "years teaching vinyasa and breathwork" },
+      { value: "40", label: "live classes every month, online and in Lisbon" },
+    ],
+    press: [
+      { name: "The Lisbon Wellness Review" },
+      { name: "Yoga Journal Portugal" },
+      { name: "Observador" },
+    ],
+  },
+  statement: {
+    statement: "Rest is part of the practice, not a break from it, every day",
+    attribution: "Maya Laurent",
+  },
+  video: {
+    heading: "Ten seconds from a Tuesday morning class in the Lisbon studio",
+    caption:
+      "Slow sun salutations with the window open. Every class starts like this, online or in the room.",
+    video: clip(P.teaching),
+    shape: "vertical",
+  },
 };
 
 const SHORT: Record<FamilyId, Content> = {
@@ -277,6 +326,9 @@ const SHORT: Record<FamilyId, Content> = {
   cta: { heading: "Start today", ctaLabel: "Join", ctaHref: "/courses" },
   contact: { heading: "Contact", showForm: true },
   events: { heading: "Live classes" },
+  proof: { quotes: [{ quote: "I sleep better." }] },
+  statement: { statement: "Unapologetically" },
+  video: { video: clip(P.stretch), shape: "vertical" },
 };
 
 // --- REAL: three composed sets --------------------------------------------------
@@ -537,6 +589,30 @@ const realYoga = (p: Ph): Record<FamilyId, Content> => ({
       "Small groups, real-time cues and a few minutes for questions at the end.",
     ctaLabel: "See the full calendar",
   },
+  proof: {
+    heading: "In their words",
+    quotes: [
+      {
+        quote:
+          "I came for my back and stayed for the quiet. The twenty minutes before work are mine now.",
+        name: "Ana",
+      },
+      {
+        quote:
+          "She explains why a pose feels the way it does, so I practise on my own between classes.",
+        name: "Joana",
+      },
+    ],
+    numbers: [
+      { value: "1,200", label: "students taught" },
+      { value: "14", label: "years teaching" },
+    ],
+  },
+  statement: {
+    statement: "Rest is part of the practice.",
+    attribution: "Maya",
+  },
+  video: { video: clip(p.m1), shape: "vertical" },
 });
 
 const realBusiness = (p: Ph): Record<FamilyId, Content> => ({
@@ -680,6 +756,28 @@ const realBusiness = (p: Ph): Record<FamilyId, Content> => ({
     heading: "Upcoming sessions",
     intro: "Small groups, real situations and time for your questions.",
     ctaLabel: "See the full calendar",
+  },
+  proof: {
+    heading: "What clients say",
+    quotes: [
+      {
+        quote:
+          "Elena helped me have the conversation I had avoided for a year. It took ten minutes and changed the team.",
+        name: "Priya",
+      },
+      {
+        quote:
+          "Practical, kind and very direct. I left every session with one thing to try on Monday.",
+        name: "Tom",
+      },
+    ],
+    press: [{ name: "Harvard Business Review" }, { name: "The Guardian" }],
+  },
+  statement: { statement: "Have the hard talks early.", attribution: "Elena" },
+  video: {
+    heading: "A minute from a workshop",
+    video: clip(p.m1),
+    shape: "wide",
   },
 });
 
@@ -829,6 +927,19 @@ const realFamily = (p: Ph): Record<FamilyId, Content> => ({
       "Small groups, real questions and no judgement. Join from the sofa or in person.",
     ctaLabel: "See the full calendar",
   },
+  proof: {
+    heading: "From parents who came",
+    quotes: [
+      {
+        quote:
+          "Bedtime used to take two hours. Now it takes twenty minutes and a story.",
+        name: "Lena",
+      },
+    ],
+    numbers: [{ value: "600", label: "families in the evening circles" }],
+  },
+  statement: { statement: "Come back, every time.", attribution: "Hannah" },
+  video: { video: clip(p.m1), shape: "vertical" },
 });
 
 const REAL: Record<FixtureSet, Record<FamilyId, Content>> = {

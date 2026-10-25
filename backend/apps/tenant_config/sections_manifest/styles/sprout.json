@@ -98,6 +98,9 @@
     "faq": ["askaway"],
     "cta": ["join"],
     "contact": ["hello"],
-    "events": ["playdates", "rows"]
+    "events": ["playdates", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

@@ -98,6 +98,9 @@
     "faq": ["man"],
     "cta": ["install"],
     "contact": ["issue"],
-    "events": ["cron", "rows"]
+    "events": ["cron", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

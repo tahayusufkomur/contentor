@@ -98,6 +98,9 @@
     "faq": ["consult"],
     "cta": ["appointment"],
     "contact": ["studio"],
-    "events": ["masterclasses", "rows"]
+    "events": ["masterclasses", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

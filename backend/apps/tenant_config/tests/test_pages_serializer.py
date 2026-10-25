@@ -4,6 +4,7 @@ coach-saved page-template validation + asset signing."""
 import pytest
 from rest_framework import serializers
 
+from apps.courses.models import Video
 from apps.media.models import Photo
 from apps.tenant_config.models import TenantConfig
 from apps.tenant_config.serializers import TenantConfigSerializer
@@ -202,3 +203,31 @@ class TestPageTemplateAssetSigning:
             assert img["url"] == "signed://photos/hero.jpg"
         finally:
             config.delete()
+
+
+@pytest.mark.django_db(transaction=True)
+class TestSectionVideoSigning:
+    def _read(self, monkeypatch, video_node):
+        import apps.tenant_config.serializers as ser
+
+        monkeypatch.setattr(ser, "sign_if_s3_key", lambda v: f"signed://{v}" if v else v)
+        monkeypatch.setattr(ser, "generate_presigned_download_url", lambda s3_key, *a, **k: f"signed://{s3_key}")
+        block = {"id": "v", "type": "section.video", "variant": "journal.neutral", "video": video_node}
+        config = TenantConfig.objects.create(brand_name="Test", pages={"home": {"blocks": [block]}})
+        try:
+            return ser.TenantConfigSerializer(config).data["pages"]["home"]["blocks"][0]["video"]
+        finally:
+            config.delete()
+
+    def test_a_placed_clip_gets_its_poster(self, tenant_ctx, monkeypatch):
+        video = Video.objects.create(title="Clip", s3_key="library/clip.mp4", thumbnail_url="library/clip.jpg")
+        node = self._read(monkeypatch, {"url": None, "video_id": video.pk})
+        assert node["url"] == "signed://library/clip.mp4"
+        assert node["poster"] == "signed://library/clip.jpg"
+
+    def test_a_deleted_library_video_signs_to_no_url(self, tenant_ctx, monkeypatch):
+        video = Video.objects.create(title="Clip", s3_key="library/clip.mp4")
+        pk = video.pk
+        video.delete()
+        node = self._read(monkeypatch, {"url": "signed://old", "video_id": pk})
+        assert node["url"] is None

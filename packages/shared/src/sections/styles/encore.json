@@ -98,6 +98,9 @@
     "faq": ["bsides"],
     "cta": ["encore"],
     "contact": ["booking"],
-    "events": ["tourdates", "rows"]
+    "events": ["tourdates", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

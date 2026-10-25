@@ -98,6 +98,9 @@
     "faq": ["questions"],
     "cta": ["begin"],
     "contact": ["message"],
-    "events": ["gatherings", "rows"]
+    "events": ["gatherings", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

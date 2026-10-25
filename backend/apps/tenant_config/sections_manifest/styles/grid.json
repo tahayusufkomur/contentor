@@ -98,6 +98,9 @@
     "faq": ["open"],
     "cta": ["block"],
     "contact": ["definition"],
-    "events": ["table", "rows"]
+    "events": ["table", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

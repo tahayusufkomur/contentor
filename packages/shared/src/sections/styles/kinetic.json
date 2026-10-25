@@ -98,6 +98,9 @@
     "faq": ["numbered"],
     "cta": ["band"],
     "contact": ["bigmail"],
-    "events": ["timetable", "rows"]
+    "events": ["timetable", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

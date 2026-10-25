@@ -2,10 +2,13 @@ import {
   BookOpen,
   CalendarDays,
   CircleHelp,
+  Clapperboard,
   CreditCard,
   Footprints,
   Images,
   Mail,
+  Megaphone,
+  MessageSquareQuote,
   MousePointerClick,
   Quote,
   Sparkles,
@@ -39,6 +42,9 @@ const ICONS: Record<FamilyId, LucideIcon> = {
   cta: MousePointerClick,
   contact: Mail,
   events: CalendarDays,
+  proof: MessageSquareQuote,
+  statement: Megaphone,
+  video: Clapperboard,
 };
 
 const SOURCE_KEY: Record<string, DynamicDataKey> = {
@@ -66,6 +72,14 @@ export function toField(key: string, f: FamilyField): FieldSchema {
       return { key, label: f.label, type: "link" };
     case "image":
       return { key, label: f.label, type: "image", required: f.required };
+    case "video":
+      return {
+        key,
+        label: f.label,
+        type: "video",
+        required: f.required,
+        helpText: f.help,
+      };
     case "bool":
       return { key, label: f.label, type: "toggle" };
     case "select":
@@ -80,6 +94,7 @@ export function toField(key: string, f: FamilyField): FieldSchema {
         key,
         label: f.label,
         type: "repeater",
+        helpText: f.help,
         itemLabel: f.itemLabel,
         maxItems: f.max,
         itemFields: Object.entries(f.fields ?? {}).map(([k, sub]) =>
@@ -166,6 +181,9 @@ const PLACEHOLDER: Partial<Record<FamilyId, Partial<Block>>> = {
     showForm: true,
   },
   events: { heading: "Upcoming sessions", ctaLabel: "See the calendar" },
+  proof: { heading: "In their words" },
+  statement: { statement: "One line you believe." },
+  video: { shape: "vertical" },
 };
 
 /** Fresh content for a new section block in `styleId` (first variant). */

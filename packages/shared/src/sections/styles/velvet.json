@@ -98,6 +98,9 @@
     "faq": ["soft"],
     "cta": ["invitation"],
     "contact": ["note"],
-    "events": ["evenings", "rows"]
+    "events": ["evenings", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

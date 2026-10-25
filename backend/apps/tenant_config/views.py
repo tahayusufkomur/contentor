@@ -58,8 +58,9 @@ def _strip_volatile_urls(node):
     GET re-derives a fresh, uniquely-signed ``url`` from the durable asset id,
     so the same underlying asset never serializes to the same ``url`` string
     twice. Any dict carrying a ``photo_id`` or ``video_id`` key has its
-    ``url`` blanked out here so a pure re-sign round-trip (autosave with no
-    real edits) can't register as a content change. Only used for the
+    ``url`` (and a clip's read-time ``poster``) blanked out here so a pure
+    re-sign round-trip (autosave with no real edits) can't register as a
+    content change. Only used for the
     before/after comparison in ``perform_update`` — never mutates what's
     actually persisted.
     """
@@ -67,6 +68,7 @@ def _strip_volatile_urls(node):
         out = {k: _strip_volatile_urls(v) for k, v in node.items()}
         if "photo_id" in out or "video_id" in out:
             out["url"] = None
+            out.pop("poster", None)
         return out
     if isinstance(node, list):
         return [_strip_volatile_urls(item) for item in node]

@@ -98,6 +98,9 @@
     "faq": ["bubbles"],
     "cta": ["marquee"],
     "contact": ["postcard"],
-    "events": ["tickets", "rows"]
+    "events": ["tickets", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

@@ -98,6 +98,9 @@
     "faq": ["glossary"],
     "cta": ["enrol"],
     "contact": ["officehours"],
-    "events": ["termdates", "rows"]
+    "events": ["termdates", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

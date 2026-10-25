@@ -98,6 +98,9 @@
     "faq": ["tips"],
     "cta": ["pickup"],
     "contact": ["visit"],
-    "events": ["sessions", "rows"]
+    "events": ["sessions", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

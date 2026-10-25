@@ -98,6 +98,9 @@
     "faq": ["sticky"],
     "cta": ["band"],
     "contact": ["colophon"],
-    "events": ["programme", "rows"]
+    "events": ["programme", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

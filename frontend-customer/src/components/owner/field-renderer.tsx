@@ -466,6 +466,9 @@ function RepeaterField({ field, value, onChange }: FieldRendererProps) {
   return (
     <div className="space-y-2">
       <FieldLabel field={field} />
+      {field.helpText && (
+        <p className="text-xs text-muted-foreground">{field.helpText}</p>
+      )}
       {items.map((item, i) => (
         <div key={i} className="space-y-2 rounded border bg-background p-3">
           <div className="flex items-center justify-between">

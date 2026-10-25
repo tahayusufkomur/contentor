@@ -97,6 +97,9 @@
     "faq": ["didactics"],
     "cta": ["privateview"],
     "contact": ["hours"],
-    "events": ["openings", "rows"]
+    "events": ["openings", "rows"],
+    "proof": ["neutral"],
+    "statement": ["neutral"],
+    "video": ["neutral"]
   }
 }

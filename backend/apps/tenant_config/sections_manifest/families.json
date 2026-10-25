@@ -524,6 +524,120 @@
           "label": "How many"
         }
       }
+    },
+    "proof": {
+      "label": "Proof",
+      "kind": "content",
+      "imageHeavy": false,
+      "fields": {
+        "heading": {
+          "type": "text",
+          "max": 80,
+          "label": "Heading"
+        },
+        "quotes": {
+          "type": "items",
+          "max": 3,
+          "label": "Client words",
+          "itemLabel": "Quote",
+          "help": "Only words a client really said, with their permission.",
+          "fields": {
+            "quote": {
+              "type": "text",
+              "max": 280,
+              "label": "What they said"
+            },
+            "name": {
+              "type": "text",
+              "max": 40,
+              "label": "Their first name"
+            }
+          }
+        },
+        "numbers": {
+          "type": "items",
+          "max": 3,
+          "label": "Numbers",
+          "itemLabel": "Number",
+          "help": "Only numbers you can stand behind.",
+          "fields": {
+            "value": {
+              "type": "text",
+              "max": 12,
+              "label": "Number"
+            },
+            "label": {
+              "type": "text",
+              "max": 40,
+              "label": "What it counts"
+            }
+          }
+        },
+        "press": {
+          "type": "items",
+          "max": 6,
+          "label": "Press",
+          "itemLabel": "Name",
+          "help": "Where you were featured, as they name themselves.",
+          "fields": {
+            "name": {
+              "type": "text",
+              "max": 40,
+              "label": "Name"
+            }
+          }
+        }
+      }
+    },
+    "statement": {
+      "label": "Statement",
+      "kind": "content",
+      "imageHeavy": false,
+      "fields": {
+        "statement": {
+          "type": "text",
+          "max": 60,
+          "required": true,
+          "label": "One line you believe"
+        },
+        "attribution": {
+          "type": "text",
+          "max": 60,
+          "label": "Attribution (creator name)"
+        }
+      }
+    },
+    "video": {
+      "label": "Video",
+      "kind": "content",
+      "imageHeavy": true,
+      "fields": {
+        "heading": {
+          "type": "text",
+          "max": 80,
+          "label": "Heading"
+        },
+        "caption": {
+          "type": "text",
+          "max": 160,
+          "label": "Caption"
+        },
+        "video": {
+          "type": "video",
+          "required": true,
+          "label": "Clip",
+          "help": "A short clip from your library. It plays muted, on a loop."
+        },
+        "shape": {
+          "type": "select",
+          "options": [
+            "vertical",
+            "wide"
+          ],
+          "default": "vertical",
+          "label": "Shape"
+        }
+      }
     }
   },
   "recipes": {

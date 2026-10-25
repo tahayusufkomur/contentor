@@ -362,14 +362,17 @@ class TenantConfigSerializer(serializers.ModelSerializer):
                 if photo.subject_placement:
                     placements[str(photo.pk)] = photo.subject_placement
 
-        video_map = {}
+        video_map, posters = {}, {}
         if video_ids:
             from apps.courses.models import Video
 
-            for video in Video.objects.filter(pk__in=video_ids):
+            for video in Video.objects.filter(pk__in=video_ids).select_related("thumbnail"):
                 video_map[str(video.pk)] = video.s3_key
+                poster = (video.thumbnail.s3_key if video.thumbnail else "") or video.thumbnail_url
+                if poster:
+                    posters[str(video.pk)] = poster
 
-        _sign_assets(node, photo_map, video_map, alts, placements)
+        _sign_assets(node, photo_map, video_map, alts, placements, posters)
 
 
 def _clean_block(raw):
@@ -416,11 +419,14 @@ def _collect_asset_ids(node, photo_ids, video_ids):
             _collect_asset_ids(item, photo_ids, video_ids)
 
 
-def _sign_assets(node, photo_map, video_map, alts=None, placements=None):
+def _sign_assets(node, photo_map, video_map, alts=None, placements=None, posters=None):
     """``alts`` (photo id -> its description): an image placed without alt text
     reads the photo's own, so a coach's photo that was described after it went
     on a page is described there too. ``placements`` (photo id -> where its
-    subject sits): the page aims its crop there (the section kit's Img)."""
+    subject sits): the page aims its crop there (the section kit's Img).
+    ``posters`` (video id -> its thumbnail): a placed clip shows it before it
+    plays. A clip deleted from the library signs to no url, so its section
+    hides instead of showing a dead player."""
     if isinstance(node, dict):
         if "photo_id" in node:
             pid = node.get("photo_id")
@@ -436,13 +442,17 @@ def _sign_assets(node, photo_map, video_map, alts=None, placements=None):
             vid = node.get("video_id")
             if vid and str(vid) in video_map:
                 node["url"] = sign_if_s3_key(video_map[str(vid)])
+                if posters and str(vid) in posters:
+                    node["poster"] = sign_if_s3_key(posters[str(vid)])
+            elif vid:
+                node["url"] = None
             elif node.get("url"):
                 node["url"] = sign_if_s3_key(node["url"])
         for value in node.values():
-            _sign_assets(value, photo_map, video_map, alts, placements)
+            _sign_assets(value, photo_map, video_map, alts, placements, posters)
     elif isinstance(node, list):
         for item in node:
-            _sign_assets(item, photo_map, video_map, alts, placements)
+            _sign_assets(item, photo_map, video_map, alts, placements, posters)
 
 
 def _scrub_unsafe_urls(node):
