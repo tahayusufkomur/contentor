@@ -1142,3 +1142,161 @@ def test_an_overlay_slot_falls_back_to_the_unfiltered_search_and_prefers_unknown
     )
     image, _ = sc._find_photo(["boxing"], "16:9", set(), ctx, wanted="left_third", pools={})
     assert image.asset_id == "mid"
+
+
+# ── given-only families: proof, statement, video (R10, S3) ──────────────────
+
+GIVEN_ALL = frozenset(sc.GIVEN_FAMILIES)
+
+
+def _runs_ok(families):
+    run = 0
+    for family in families:
+        run = run + 1 if sc._image_heavy(family) else 0
+        if run > sc.MAX_CONSECUTIVE_IMAGE_HEAVY:
+            return False
+    return True
+
+
+def test_ai_never_writes_proof_or_clip_words():
+    assert set(sc._writable("proof")) == {"heading"}
+    assert sc._writable("video") == {}
+
+
+@pytest.mark.parametrize("style_id", ENABLED)
+def test_nothing_given_composes_as_before(style_id):
+    pages = sc.apply_guardrails({}, style_id)["pages"]
+    assert pages == sc.apply_guardrails({}, style_id, frozenset())["pages"]
+    assert not {e["family"] for entries in pages.values() for e in entries} & GIVEN_ALL
+
+
+def test_given_only_families_are_dropped_without_input():
+    plan = {"pages": {"home": [{"family": f} for f in ("hero", "video", "story", "statement", "proof", "cta")]}}
+    home = sc.apply_guardrails(plan, "journal")["pages"]["home"]
+    assert not set(_families(home)) & GIVEN_ALL
+
+
+@pytest.mark.parametrize("style_id", ENABLED)
+def test_home_places_what_she_gave(style_id):
+    home = _families(sc.apply_guardrails({}, style_id, GIVEN_ALL)["pages"]["home"])
+    assert home[0] == "hero" and home[1] == "video"
+    assert {"statement", "proof"} <= set(home) and "philosophy" not in home
+    assert home[-1] in sc.CLOSING_FAMILIES
+    assert len(home) <= sc.MAX_SECTIONS and _runs_ok(home)
+
+
+def test_statement_takes_philosophys_place_and_proof_closes():
+    plan = {"pages": {"home": [{"family": f} for f in ("hero", "story", "philosophy", "benefits", "cta")]}}
+    home = sc.apply_guardrails(plan, "journal", frozenset({"statement", "proof"}))["pages"]["home"]
+    assert _families(home) == ["hero", "story", "statement", "benefits", "proof", "cta"]
+
+
+def test_philosophy_and_statement_never_share_a_page():
+    plan = {"pages": {"about": [{"family": f} for f in ("hero", "philosophy", "statement", "cta")]}}
+    about = sc.apply_guardrails(plan, "journal", frozenset({"statement"}))["pages"]["about"]
+    assert _families(about) == ["hero", "philosophy", "cta"]
+
+
+def test_the_planner_sees_only_what_she_gave():
+    coach = {"brand": "Maya Laurent", "niche": "yoga"}
+    assert '"proof"' not in sc._plan_user_turn(coach, "journal")
+    turn = sc._plan_user_turn(coach, "journal", frozenset({"proof"}))
+    assert '"proof"' in turn and '"video"' not in turn
+
+
+def _give(tenant, **answers):
+    tenant.refresh_from_db()
+    tenant.wizard_state["answers"].update(answers)
+    tenant.save(update_fields=["wizard_state"])
+
+
+@pytest.mark.django_db
+def test_only_consented_quotes_are_placed(styled, monkeypatch, catalog):
+    monkeypatch.setattr(sc.ai_compose, "compose_available", lambda: False)
+    _give(
+        styled,
+        proof={
+            "quotes": [
+                {"quote": "Mornings got  easier.", "name": "Ana", "consent": True},
+                {"quote": "She never asked me.", "name": "Bo", "consent": False},
+                {"quote": "", "name": "Cy", "consent": True},
+            ],
+            "numbers": [{"value": "300", "label": ""}],
+            "press": ["Yoga Journal", " "],
+        },
+    )
+    given = sc.coach_given(styled)
+    assert given["proof"] == {
+        "quotes": [{"quote": "Mornings got easier.", "name": "Ana"}],
+        "numbers": [],
+        "press": [{"name": "Yoga Journal"}],
+    }
+    proof = next(b for b in sc.compose_page(styled, "home") if b["type"] == "section.proof")
+    assert proof["quotes"] == [{"quote": "Mornings got easier.", "name": "Ana"}]
+    assert proof["press"] == [{"name": "Yoga Journal"}]
+    assert proof["heading"] == "In their words"
+
+
+@pytest.mark.django_db
+def test_the_page_model_writes_proofs_heading_only_and_hears_her_belief(styled, monkeypatch, catalog):
+    fake = FakeAI(plan=core_ai.AiError("no plan"))
+    monkeypatch.setattr(sc.core_ai, "structured", fake)
+    _give(
+        styled,
+        belief="Rest is part of training.",
+        proof={"quotes": [{"quote": "Mornings got easier.", "name": "Ana", "consent": True}]},
+    )
+    blocks = sc.compose_page(styled, "home")
+    page_turn = next(user for label, user in fake.calls if "Page spec" in user)
+    assert "Rest is part of training." in page_turn
+    proof = next(b for b in blocks if b["type"] == "section.proof")
+    assert proof["heading"] == "proof heading"  # the model's
+    assert proof["quotes"] == [{"quote": "Mornings got easier.", "name": "Ana"}]  # hers, untouched
+
+
+@pytest.mark.django_db
+def test_a_deleted_clip_is_not_placed(styled, monkeypatch, catalog):
+    monkeypatch.setattr(sc.ai_compose, "compose_available", lambda: False)
+    _give(styled, clip={"video_id": 987654})
+    assert sc.coach_given(styled)["clip"] is None
+    assert not any(b["type"] == "section.video" for b in sc.compose_page(styled, "home"))
+
+
+@pytest.mark.django_db
+def test_her_clip_follows_the_home_hero(styled, monkeypatch, catalog):
+    from apps.courses.models import Video
+
+    monkeypatch.setattr(sc.ai_compose, "compose_available", lambda: False)
+    with tenant_context(styled):
+        video = Video.objects.create(title="Clip", s3_key="library/clip.mp4")
+    _give(styled, clip={"video_id": video.pk})
+    blocks = sc.compose_page(styled, "home")
+    assert blocks[1]["type"] == "section.video"
+    assert blocks[1]["video"] == {"url": None, "video_id": video.pk}
+    assert blocks[1]["shape"] == "vertical" and not blocks[1].get("heading")
+
+
+@pytest.mark.django_db
+def test_cached_plan_gets_her_given_families_at_compose(styled, monkeypatch, catalog):
+    monkeypatch.setattr(sc.ai_compose, "compose_available", lambda: False)
+    plan = sc.plan_site(styled)
+    assert "proof" not in _families(plan["pages"]["home"])
+    _give(styled, proof={"numbers": [{"value": "300", "label": "students taught"}]})
+    proof = next(b for b in sc.compose_page(styled, "home") if b["type"] == "section.proof")
+    assert proof["numbers"] == [{"value": "300", "label": "students taught"}]
+    assert proof["heading"] == ""  # no quotes: no "In their words"
+
+
+@pytest.mark.django_db
+def test_statement_fallback_is_her_belief(styled, monkeypatch, catalog):
+    monkeypatch.setattr(sc.ai_compose, "compose_available", lambda: False)
+    _give(styled, belief="Rest is part of training.")
+    blocks = sc.compose_page(styled, "home")
+    assert next(b for b in blocks if b["type"] == "section.statement")["statement"] == "Rest is part of training."
+    assert not any(b["type"] == "section.philosophy" for b in blocks)
+    _give(
+        styled,
+        belief="Rest is part of training. Most teachers push through pain; bodies that sit all day need the opposite.",
+    )
+    blocks = sc.compose_page(styled, "home")
+    assert next(b for b in blocks if b["type"] == "section.statement")["statement"] == "Rest is part of training."

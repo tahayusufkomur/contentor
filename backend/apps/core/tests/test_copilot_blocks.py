@@ -32,6 +32,16 @@ def test_build_block_rejects_unknown_and_testimonials_types():
         blocks.build_block("testimonials", {"heading": "x"})
 
 
+def test_build_block_refuses_proof_and_video_sections():
+    # Proof is her clients' words and a video needs her clip: neither is the copilot's to write.
+    for family in ("proof", "video"):
+        with pytest.raises(blocks.BlockOpError):
+            blocks.build_block(f"section.{family}", {"heading": "x"}, "journal")
+        with pytest.raises(blocks.BlockOpError):
+            blocks.clean_field(f"section.{family}", "heading", "x")
+    assert blocks.build_block("section.statement", {"statement": "Rest is training."}, "journal")["statement"]
+
+
 def test_add_block_appends_or_inserts_after():
     new = blocks.build_block("cta", {"heading": "Join"})
     appended = blocks.add_block(PAGES, "home", new, after_block_id=None)

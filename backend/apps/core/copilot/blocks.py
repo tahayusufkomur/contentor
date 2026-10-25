@@ -114,9 +114,16 @@ def _section_schema(family):
     return schema
 
 
-# Styled sections (section.<family>) derive from the synced manifest.
+# Styled sections (section.<family>) derive from the synced manifest. proof is
+# left out like testimonials (her clients' words come only from her, through
+# the editor or setup) and video like the legacy video block (it needs a clip).
+COPILOT_NEVER = ("proof", "video")
 BLOCK_SCHEMA.update(
-    {f"{sections.SECTION_PREFIX}{fam}": _section_schema(spec) for fam, spec in sections.families().items()}
+    {
+        f"{sections.SECTION_PREFIX}{fam}": _section_schema(spec)
+        for fam, spec in sections.families().items()
+        if fam not in COPILOT_NEVER
+    }
 )
 
 # Placeholder copy for required section text the model left out, so an added

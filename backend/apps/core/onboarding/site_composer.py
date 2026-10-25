@@ -92,7 +92,10 @@ HOME_HERO_HEADLINE_MAX = 36
 HOME_LIST_MAX = {"benefits": ("items", 4), "moments": ("photos", 4), "howItWorks": ("steps", 3)}
 MAX_KICKERS_PER_PAGE = 2  # besides the hero: a kicker is only worth its place when it adds a fact
 # Facts the AI may never write (no invented locations, schedules or addresses).
-FACT_FIELDS = frozenset({"email", "location", "hours"})
+FACT_FIELDS = frozenset({"email", "location", "hours", "quotes", "numbers", "press"})
+# Families that show only what the coach gave (R10, S3): a plan has one only when she gave its input, and home
+# places what she gave (_given_pins). Her answers hold it (coach_given); the setup interview asks for it.
+GIVEN_FAMILIES = ("proof", "statement", "video")
 BANNED_PHRASES = (
     "unlock",
     "journey",
@@ -117,6 +120,7 @@ _WHETHER_OR = re.compile(r"\bwhether you(?:'re| are)\b.*\bor\b", re.IGNORECASE)
 _ONE_AT_A_TIME = re.compile(r",\s+one\s+(?:\w+\s+){0,2}at\s+a\s+time\b", re.IGNORECASE)
 _EMOJI = re.compile(r"[\U0001f000-\U0001faff\u2600-\u27bf\ufe0f\u200d]")
 _HASHTAG = re.compile(r"#(\w)")
+_FIRST_SENTENCE = re.compile(r"(?<=[.!?])\s+")
 
 BUILD_STATUSES = ("idle", "building", "ready", "failed")
 STALE_BUILD_SECONDS = 180
@@ -465,6 +469,15 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
             "intro": "Join a live session and learn together in real time.",
             "ctaLabel": "See the calendar",
         }
+    given = c.get("given") or {}
+    if family == "proof":
+        proof = given.get("proof") or {}
+        return {"heading": "In their words" if proof.get("quotes") else "", **proof}
+    if family == "statement":
+        belief, limit = given.get("belief") or "", sections.families()["statement"]["fields"]["statement"]["max"]
+        return {"statement": _fit(belief, limit, _fit(_FIRST_SENTENCE.split(belief, maxsplit=1)[0], limit))}
+    if family == "video" and given.get("clip"):
+        return {"video": given["clip"], "shape": "vertical"}
     return {}
 
 
@@ -660,7 +673,64 @@ def _home_pins(style_id, page_key, entries) -> list[dict]:
     return [pin(e) for e in entries]
 
 
-def _guard_page(page_key, raw, style_id) -> list[dict]:
+def _keep_rhythm(entries, protected) -> list[dict]:
+    """Never more than MAX_CONSECUTIVE_IMAGE_HEAVY photo-led sections in a row: a quiet one moves up, else
+    the photo-led one goes (never one in ``protected``). In place; returns ``entries``."""
+    n, run = 0, 0
+    while n < len(entries):
+        run = run + 1 if _image_heavy(entries[n]["family"]) else 0
+        if run > MAX_CONSECUTIVE_IMAGE_HEAVY:
+            swap = next(
+                (j for j in range(n + 1, len(entries) - 1) if not _image_heavy(entries[j]["family"])),
+                None,
+            )
+            if swap is not None:
+                entries.insert(n, entries.pop(swap))
+                run = 0
+            elif entries[n]["family"] not in protected:
+                entries.pop(n)
+                run -= 1
+                continue
+        n += 1
+    return entries
+
+
+def _given_pins(style_id, page_key, entries, given) -> list[dict]:
+    """What the coach gave (``given``, from given_families) placed, what she did not gone, whatever a plan
+    (maybe one cached before she gave it) says. A new list. On home her belief takes philosophy's place as
+    the statement, her clip follows the hero and her proof comes before the closing section. A page holds
+    one belief: the first of philosophy and statement."""
+    out = [e for e in entries if e["family"] not in GIVEN_FAMILIES or e["family"] in given]
+    if page_key == "home":
+        names = dict(_recipe(style_id, page_key))
+        missing = {f for f in given if sections.variants(style_id, f)} - {e["family"] for e in out}
+
+        def new(family):
+            return _entry(style_id, family, names.get(family))
+
+        if "statement" in missing:
+            at = next((n for n, e in enumerate(out) if e["family"] == "philosophy"), None)
+            if at is None:
+                out.insert(len(out) - 1, new("statement"))
+            else:
+                out[at] = new("statement")
+        if "video" in missing:
+            out.insert(1, new("video"))
+        if "proof" in missing:
+            out.insert(len(out) - 1, new("proof"))
+    beliefs = [n for n, e in enumerate(out) if e["family"] in ("philosophy", "statement")]
+    for n in reversed(beliefs[1:]):
+        out.pop(n)
+    protected = set(sections.manifest().get("requiredFamilies", {}).get(page_key) or []) | set(given)
+    while len(out) > MAX_SECTIONS:
+        drop = next((n for n in range(len(out) - 2, 0, -1) if out[n]["family"] not in protected), None)
+        if drop is None:
+            break
+        out.pop(drop)
+    return _keep_rhythm(out, protected)
+
+
+def _guard_page(page_key, raw, style_id, given=frozenset()) -> list[dict]:
     recipe = [_entry(style_id, f, n) for f, n in _recipe(style_id, page_key) if sections.variants(style_id, f)]
     recipe_names = {e["family"]: _variant_name(e["variant"]) for e in recipe}
     required = list(sections.manifest().get("requiredFamilies", {}).get(page_key) or [])
@@ -670,6 +740,7 @@ def _guard_page(page_key, raw, style_id) -> list[dict]:
             family in sections.families()
             and bool(sections.variants(style_id, family))
             and (family != "pricing" or page_key == "pricing")
+            and (family not in GIVEN_FAMILIES or family in given)
         )
 
     entries, seen = [], set()
@@ -720,34 +791,19 @@ def _guard_page(page_key, raw, style_id) -> list[dict]:
     if len(entries) > MAX_SECTIONS:
         entries = entries[: MAX_SECTIONS - 1] + entries[-1:]
 
-    # Rhythm: never more than MAX_CONSECUTIVE_IMAGE_HEAVY photo-led sections in a row.
-    n, run = 0, 0
-    while n < len(entries):
-        run = run + 1 if _image_heavy(entries[n]["family"]) else 0
-        if run > MAX_CONSECUTIVE_IMAGE_HEAVY:
-            swap = next(
-                (j for j in range(n + 1, len(entries) - 1) if not _image_heavy(entries[j]["family"])),
-                None,
-            )
-            if swap is not None:
-                entries.insert(n, entries.pop(swap))
-                run = 0
-            elif entries[n]["family"] not in required:
-                entries.pop(n)
-                run -= 1
-                continue
-        n += 1
-    return _home_pins(style_id, page_key, entries)
+    _keep_rhythm(entries, set(required))
+    return _home_pins(style_id, page_key, _given_pins(style_id, page_key, entries, given))
 
 
-def apply_guardrails(plan, style_id) -> dict:
+def apply_guardrails(plan, style_id, given=frozenset()) -> dict:
     """Pure: a copy of ``plan`` whose ``pages`` cover every known page and obey
     the layout rules — hero first (``intro`` on inner pages), cta/contact last,
     required families present, at most two photo-led sections in a row, every
-    (family, variant) one the style ships (else the recipe's)."""
+    (family, variant) one the style ships (else the recipe's), and the
+    GIVEN_FAMILIES only as the coach gave them (``given``, see _given_pins)."""
     out = copy.deepcopy(plan) if isinstance(plan, dict) else {}
     pages = out.get("pages") if isinstance(out.get("pages"), dict) else {}
-    out["pages"] = {key: _guard_page(key, pages.get(key), style_id) for key in KNOWN_PAGE_KEYS}
+    out["pages"] = {key: _guard_page(key, pages.get(key), style_id, given) for key in KNOWN_PAGE_KEYS}
     return out
 
 
@@ -801,12 +857,17 @@ Families
 - cta: one closing invitation with a button.
 - contact: how to reach the coach, with a contact form.
 - events: the coach's upcoming live sessions, rendered from their calendar.
+- statement: one line the coach believes, set huge as the page's peak. Listed only when the coach gave a belief; \
+on home it takes philosophy's place.
+- proof: what the coach's clients said, numbers the coach stated, press that featured them. Listed only when the \
+coach gave them.
+- video: a short clip of the coach at work, playing on a loop. Listed only when the coach gave one.
 
 Page rules
 - Every page starts with hero. Pages other than home use the hero variant "intro", which shows one photo: \
 brief only its slot "image".
 - Every page ends with cta or contact.
-- Never more than two photo-led sections (hero, story, courseShowcase, moments) in a row.
+- Never more than two photo-led sections (hero, story, courseShowcase, moments, video) in a row.
 - The courses page includes courseShowcase, pricing includes pricing, faq includes faq, contact includes contact.
 - Home has 6-8 sections; other pages 3-5. Each family at most once per page.
 - Use only the families and variant names listed for the style. Start from the recipe and change it only when the \
@@ -836,12 +897,12 @@ first, grounded in what they teach. No prices, dates, credentials or claims.
 {_DATA_RULE}"""
 
 
-def _plan_user_turn(coach, style_id) -> str:
+def _plan_user_turn(coach, style_id, given=frozenset()) -> str:
     style = sections.style(style_id) or {}
     families = {}
     for family in sections.families():
         names = sections.variants(style_id, family)
-        if not names:
+        if not names or (family in GIVEN_FAMILIES and family not in given):
             continue
         # Only what the style's default layout shows: every brief is output the planner must fit in its budget.
         unshown = sections.unshown_slots(family, f"{style_id}.{names[0]}")
@@ -932,11 +993,12 @@ def _plan_site(tenant, *, force=False) -> dict:
     kept). Never raises for AI trouble: failure falls back to the recipes with
     generic briefs."""
     style_id, brand = _style_and_brand(tenant)
+    given = given_families(coach_given(tenant))
     cached = (tenant.wizard_state or {}).get("site_plan")
     if isinstance(cached, dict) and cached.get("pages") and not force:
         if cached.get("style") == style_id:
             return cached
-        plan = apply_guardrails(cached, style_id)
+        plan = apply_guardrails(cached, style_id, given)
         plan["style"] = style_id
         return _store_plan(tenant, plan)
 
@@ -949,7 +1011,7 @@ def _plan_site(tenant, *, force=False) -> dict:
         try:
             parsed, cost, _model = core_ai.structured(
                 system=PLAN_SYSTEM_PROMPT,
-                user=_plan_user_turn(coach, style_id),
+                user=_plan_user_turn(coach, style_id, given),
                 output_model=_SitePlan,
                 model=settings.ONBOARDING_AI_MODEL,
                 max_tokens=PLAN_MAX_TOKENS,
@@ -971,7 +1033,7 @@ def _plan_site(tenant, *, force=False) -> dict:
                 {"family": s.family, "variant": s.variant, "images": [b.model_dump() for b in s.images]}
                 for s in page.sections
             ]
-    plan = apply_guardrails({"pages": pages}, style_id)
+    plan = apply_guardrails({"pages": pages}, style_id, given)
     for page, entries in plan["pages"].items():
         for entry in entries:
             for slot in _slot_specs(entry["family"]):
@@ -1081,7 +1143,66 @@ def _coach_data(tenant, brand) -> dict:
         "goals": [str(g) for g in (answers.get("goals") or []) if isinstance(g, str)][:8],
         # The pages her site may link to (every Href field is one of them).
         "links": list(coach_links(answers)),
+        # The statement is made from it (GIVEN_FAMILIES); absent when she gave none.
+        **({"belief": belief} if (belief := " ".join(str(answers.get("belief") or "").split())[:300]) else {}),
     }
+
+
+def coach_given(tenant) -> dict:
+    """What the coach gave for the GIVEN_FAMILIES, read from her answers and cut to the manifest:
+    - belief: a string (the statement is made from it);
+    - proof: {"quotes": [{"quote", "name"}], "numbers": [{"value", "label"}], "press": [{"name"}]}; a client's
+      words only with that client's consent, a number only with what it counts;
+    - clip: {"url": None, "video_id": int} for a video still in her library, else None.
+    The answers' shape: belief "...", proof {"quotes": [{"quote", "name", "consent"}], "numbers": [{"value",
+    "label"}], "press": ["..."]}, clip {"video_id": int}."""
+    from apps.courses.models import Video
+    from apps.tenant_config import interview_brief
+
+    answers = interview_brief.answers_of(tenant)
+    proof = sections.families()["proof"]["fields"]
+
+    def text(value, field, sub):
+        return sections.clamp_text(" ".join(str(value or "").split()), proof[field]["fields"][sub]["max"])
+
+    def rows(value):
+        return [r for r in value if isinstance(r, dict)] if isinstance(value, list) else []
+
+    raw = answers.get("proof") if isinstance(answers.get("proof"), dict) else {}
+    quotes = [
+        {"quote": text(r.get("quote"), "quotes", "quote"), "name": text(r.get("name"), "quotes", "name")}
+        for r in rows(raw.get("quotes"))
+        if r.get("consent") is True and str(r.get("quote") or "").strip()
+    ]
+    numbers = [
+        {"value": text(r.get("value"), "numbers", "value"), "label": text(r.get("label"), "numbers", "label")}
+        for r in rows(raw.get("numbers"))
+        if str(r.get("value") or "").strip() and str(r.get("label") or "").strip()
+    ]
+    press = [{"name": text(n, "press", "name")} for n in raw.get("press") or [] if isinstance(n, str) and n.strip()]
+
+    clip = answers.get("clip") if isinstance(answers.get("clip"), dict) else {}
+    vid = clip.get("video_id")
+    vid = int(vid) if isinstance(vid, int) or (isinstance(vid, str) and vid.isdigit()) else None
+    if vid is not None:
+        with tenant_context(tenant):
+            vid = vid if Video.objects.filter(pk=vid).exists() else None
+    return {
+        "belief": " ".join(str(answers.get("belief") or "").split())[:300],
+        "proof": {
+            "quotes": quotes[: proof["quotes"]["max"]],
+            "numbers": numbers[: proof["numbers"]["max"]],
+            "press": press[: proof["press"]["max"]],
+        },
+        "clip": {"url": None, "video_id": vid} if vid is not None else None,
+    }
+
+
+def given_families(given) -> frozenset[str]:
+    """The GIVEN_FAMILIES ``given`` (coach_given) has input for."""
+    proof = given.get("proof") or {}
+    has = {"statement": given.get("belief"), "proof": any(proof.values()), "video": given.get("clip")}
+    return frozenset(family for family, value in has.items() if value)
 
 
 def _offers() -> dict:
@@ -1123,6 +1244,8 @@ def _writable(family, page_key=None) -> dict:
     HOME_HERO_HEADLINE_MAX and its meta line and second button are left
     unwritten; the lists in HOME_LIST_MAX are capped. The manifest (and so
     every other page and the coach's own edits) is untouched."""
+    if family == "video":
+        return {}  # the composer cannot know what her clip shows: its words are hers to write
     home_hero = (family, page_key) == ("hero", "home")
     list_field, list_max = HOME_LIST_MAX.get(family, (None, 0)) if page_key == "home" else (None, 0)
     out = {}
@@ -1208,6 +1331,10 @@ the page shows them.
 - When the coach's data is thin, stay specific to their niche and warm in tone rather than making things up.
 - philosophy.statement is a belief in the coach's own voice that follows from what they told you, never a quote from \
 someone else.
+- statement.statement is the coach's belief ("belief" in the coach data) as one line of at most 60 characters, in \
+their words: shorten it, never change what it says. Two words are welcome.
+- proof: write only its heading, short and fitting what the section holds. Its quotes, numbers and press are the \
+coach's own and are added for you.
 
 Pages
 - Each page has one job, and its opening section (the hero, or the intro band on inner pages) says what THIS page \
@@ -1788,13 +1915,16 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
         raise ValueError(f"unknown page {page_key!r}")
     style_id, brand = _style_and_brand(tenant)
     plan = plan_site(tenant)
+    given = coach_given(tenant)
     entries = plan["pages"].get(page_key) or apply_guardrails({}, style_id)["pages"][page_key]
+    entries = _given_pins(style_id, page_key, entries, given_families(given))  # she may have given it since
     entries = _home_pins(style_id, page_key, entries)  # a plan cached before the guard existed
     coach = _coach_data(tenant, brand)
     first_name = _coach_first_name(tenant)
     ctx = _ctx(
         coach["niche"], brand, coach["description"], coach["topic"], tuple(coach["links"]), first_name, coach["speaker"]
     )
+    ctx["given"] = given  # her proof and clip ride the fallback fields the model never writes (_fill_page)
 
     _set_stage(tenant, page_key, "copy")
     fields = _fill_page(tenant, page_key, entries, coach, ctx, plan, instruction)
