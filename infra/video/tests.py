@@ -100,6 +100,18 @@ class Command(unittest.TestCase):
         self.assertIn("[3:a]aformat", fc)
         self.assertIn("[mv][ma][ev][ea]concat=n=2:v=1:a=1[vout][aout]", fc)
 
+    def test_the_cover_opens_the_reel_over_its_captions_and_progress_bar(self):
+        paths = {**PATHS, "ass": "/w/captions.ass", "cover": "/w/cover.png", "end_card": "/w/end.png"}
+        args, total = graph.command(job(progress="#ff8800", cover_seconds=1), PROBE, paths)
+        fc = graph_of(args)
+        self.assertEqual(total, 12.5)  # the cover lies over the clip: it adds no time
+        cover = args.index("/w/cover.png")
+        self.assertEqual(args[cover - 7 : cover], ["-loop", "1", "-framerate", "30", "-t", "1.0", "-i"])
+        self.assertIn("[1:v]scale=1080:1920,setsar=1,format=yuva420p[cover]", fc)  # the cover is input 1
+        self.assertIn("[pv][cover]overlay=eof_action=pass[cov]", fc)
+        self.assertIn("[cov]format=yuv420p[mv]", fc)
+        self.assertIn("[2:v]scale=1080:1920", fc)  # then the end card
+
     def test_a_cutaway_shorter_than_a_second_is_left_out(self):
         paths = {**PATHS, "cutaways": ["/w/cut0.jpg"]}
         args, _ = graph.command(job(cutaways=[{"start": 9.5, "end": 12}]), PROBE, paths)

@@ -9,7 +9,10 @@ urlpatterns = [
     path("search/", views.search_start, name="reel-search"),
     path("search/<int:video_id>/", views.search_status, name="reel-search-status"),
     path("render/<str:token>/", views.end_card, name="reel-end-card"),
+    path("render/<str:token>/cover/", views.cover_card, name="reel-cover-card"),
     path("<uuid:pk>/", views.reel_detail, name="reel-detail"),
+    path("<uuid:pk>/use/", views.reel_use, name="reel-use"),
+    path("<uuid:pk>/cover/", views.cover_download, name="reel-cover"),
     path("<uuid:pk>/render/", views.reel_render, name="reel-render"),
     path("<uuid:pk>/download/", views.reel_download, name="reel-download"),
 ]

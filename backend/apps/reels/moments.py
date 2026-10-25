@@ -1,9 +1,10 @@
 """The moments of a coach's video that work as reels, and their captions in another language.
 
 The model picks moments from the timed transcript: runs of whole sentences, 20 to 60 s, that open with a
-hook and end on a complete thought, each with a hook title, the post's text, a score and up to two photo
-ideas. Without the model (no key, over budget, or it failed) a plain rule picks the liveliest runs, so a
-coach always gets reels.
+hook and end on a complete thought, each of a kind (one people send on, a funny one, a strong hook, an
+insight) with why it works, a curiosity hook for its cover, a topic label, the post's text, a score and up
+to two photo ideas. Without the model (no key, over budget, or it failed) a plain rule picks the liveliest
+runs, so a coach always gets reels.
 
 Runs inside the tenant context (reels is a TENANT_APP).
 """
@@ -24,10 +25,11 @@ from . import words as w
 logger = logging.getLogger(__name__)
 
 MIN, TARGET, MAX = 12.0, 20.0, 75.0  # seconds: the shortest kept, the shortest aimed for, the longest
-MAX_COUNT = 5
+MAX_COUNT = 8
 MAX_SENTENCES = 3000  # ~3 hours of talk
 LEAD, TAIL = 0.12, 0.3  # kept before a moment's first word and after its last
 LABEL = "contentor:reels"
+KINDS = ("send", "funny", "hook", "insight")
 LANGUAGES = {
     "en": "English",
     "de": "German",
@@ -42,21 +44,30 @@ LANGUAGES = {
 
 # Static (prompt caching): the video's transcript travels in the user turn.
 PICK_SYSTEM = (
-    "You pick the moments of a coach's video that work best as short vertical clips (Instagram Reels, "
+    "You pick the moments of a coach's video that can go viral as short vertical clips (Instagram Reels, "
     "TikTok, YouTube Shorts). You get the transcript as numbered sentences with their start and end times in "
     "seconds, how many moments are wanted, and the time ranges already used (never pick sentences inside "
     "them).\n"
     "Each moment is a run of whole sentences, first to last, of 20 to 60 seconds that makes sense on its own "
-    "to someone who never saw the video: it opens with a hook (a bold claim, a question, a common mistake, a "
-    "surprising fact or a promise), delivers one clear idea, tip or story, and ends on a complete thought. "
+    "to someone who never saw the video: it opens strongly, delivers one clear idea, tip, laugh or story, and "
+    "ends on a complete thought. Look for four kinds of moment:\n"
+    "- send: one a viewer would send to a friend: a relatable truth, a fix for a common pain, 'this is so "
+    "you';\n"
+    "- funny: a laugh, a light or self-mocking moment, a surprising turn;\n"
+    "- hook: a bold claim, a myth busted, a common mistake, a surprising fact, a promise the clip keeps;\n"
+    "- insight: an interesting idea, story or tip worth saving.\n"
     "Prefer moments where the coach speaks to the viewer directly. Moments never overlap. Fewer good moments "
     "beat padding.\n"
     "For each moment write, in the language of the transcript:\n"
-    "- title: the hook shown on screen over the clip, at most 8 words, no hashtags, no emoji, no quotation "
-    "marks;\n"
+    "- kind: send, funny, hook or insight;\n"
+    "- why: one short sentence, to the coach, on why people would watch it to the end or send it on;\n"
+    "- title: the hook on the clip's cover, at most 8 words, that opens a question the clip answers "
+    "(curiosity the clip pays off, never a false promise); wrap the one word that carries it in *stars*; no "
+    "hashtags, no emoji, no quotation marks;\n"
+    "- label: the topic in one to three words, for a series label on the cover;\n"
     "- caption: the post's text, one or two short sentences true to what is said, then 3 to 5 relevant "
     "hashtags;\n"
-    "- score: 1 to 10, how strongly it stands alone and stops someone scrolling;\n"
+    "- score: 1 to 10, how likely it stops someone scrolling, is watched to the end and is sent on;\n"
     "- photos: 0 to 2 ideas for a photo shown over the clip for a moment, each the number of the sentence it "
     "illustrates and a short search query in English for a photo of a concrete scene or object (no text).\n"
     "Never invent a claim, number, name or result the transcript does not state."
@@ -77,7 +88,10 @@ class PhotoIdea(BaseModel):
 class Pick(BaseModel):
     first: int
     last: int
+    kind: str = ""
+    why: str = ""
     title: str
+    label: str = ""
     caption: str = ""
     score: int = 5
     photos: list[PhotoIdea] = Field(default_factory=list)
@@ -151,7 +165,10 @@ def _accept(picks, sents, count: int, taken) -> list[dict]:
             {
                 "start": start,
                 "end": end,
+                "kind": pick.kind.strip().lower() if pick.kind.strip().lower() in KINDS else "",
+                "why": " ".join(pick.why.split())[:200],
                 "title": title_of(pick.title),
+                "label": " ".join(pick.label.split())[:40],
                 "caption": pick.caption.strip()[:800],
                 "score": max(1, min(10, pick.score)),
                 "ideas": ideas,
@@ -192,7 +209,10 @@ def by_rule(sents, count: int, taken=()) -> list[dict]:
             {
                 "start": start,
                 "end": end,
+                "kind": "",
+                "why": "",
                 "title": title_of(title),
+                "label": "",
                 "caption": caption[:220].rsplit(" ", 1)[0] + "…" if len(caption) > 220 else caption,
                 "score": max(1, 8 - len(out)),
                 "ideas": [],
@@ -203,7 +223,7 @@ def by_rule(sents, count: int, taken=()) -> list[dict]:
     return out
 
 
-def _ask(video, sents, count: int, taken):
+def _ask(video, sents, count: int, taken, label: str):
     turn = {
         "video": video.title[:200],
         "language": video.captions_language or "",
@@ -216,17 +236,17 @@ def _ask(video, sents, count: int, taken):
         user=json.dumps(turn, ensure_ascii=False),
         output_model=Picks,
         model=settings.COPILOT_MODEL,
-        max_tokens=8000,
-        label=LABEL,
+        max_tokens=12000,
+        label=label,
         effort="medium",
         timeout_seconds=240,
     )
     return parsed.moments, cost
 
 
-def pick(video, count: int, taken=()) -> list[dict]:
+def pick(video, count: int, taken=(), label: str = LABEL) -> list[dict]:
     """Up to `count` moments of the video, none overlapping `taken` ([(start, end)]): the model's, else the
-    rule's."""
+    rule's. `label` tags the model's run (a search nobody waits on runs as background on the hub)."""
     sents = w.sentences(w.words_of(video))[:MAX_SENTENCES]
     if not sents:
         return []
@@ -235,7 +255,7 @@ def pick(video, count: int, taken=()) -> list[dict]:
     if ai_compose.compose_available():
         cost = Decimal("0")
         try:
-            picks, cost = _ask(video, sents, count, taken)
+            picks, cost = _ask(video, sents, count, taken, label)
             chosen = _accept(picks, sents, count, taken)
         except core_ai.AiError as exc:
             cost = exc.cost_usd

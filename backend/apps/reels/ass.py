@@ -1,8 +1,8 @@
-"""A reel's captions and title as an ASS file, which the video service draws with libass: the words appear a
-few at a time and each lights up as it is said, in one of three styles, in the coach's colours and fonts.
+"""A reel's captions as an ASS file, which the video service draws with libass: the words appear a few at a
+time and each lights up as it is said, in one of three styles, in the coach's colours and fonts.
 
-Fonts are written as `@caption` and `@title`: the video service puts in the families of the files it fetched
-for them (fonts.py). Pure functions; times on the reel's clock (words.reel_words).
+The font is written as `@caption`: the video service puts in the family of the file it fetched for it
+(fonts.py). Pure functions; times on the reel's clock (words.reel_words).
 """
 
 import re
@@ -14,9 +14,9 @@ _GROUP = {"bold": (3, 16), "clean": (6, 30), "brand": (4, 22)}
 GROUP_GAP = 0.45  # a pause this long starts a new group of words
 HOLD = 0.5  # a group stays this long after its last word, unless the next comes first
 YELLOW = "#FFD43B"
-# Where the text sits (px on 1080x1920). Captions: from the bottom, clear of the apps' buttons and caption;
-# titles: from the top, under their status bars. A fitted frame is a band in the middle: text around it.
-_MARGINS = {"crop": (600, 230), "fit": (440, 300)}
+# Where the captions sit (px on 1080x1920, from the bottom), clear of the apps' buttons and caption. A fitted
+# frame is a band in the middle: the captions under it.
+_MARGINS = {"crop": 600, "fit": 440}
 
 
 def luminance(colour: str) -> float:
@@ -98,7 +98,7 @@ def groups(words, style: str) -> list[list]:
 
 
 def _styles(style: str, colors: dict, layout: str) -> list[str]:
-    below, above = _MARGINS.get(layout, _MARGINS["crop"])
+    below = _MARGINS.get(layout, _MARGINS["crop"])
     white, black = "&H00FFFFFF", "&H00000000"
     if style == "clean":
         caption = f"62,{white},{white},&H60000000,&H60000000,-1,0,0,0,100,100,0,0,3,14,0,2,110,110,{below}"
@@ -106,24 +106,16 @@ def _styles(style: str, colors: dict, layout: str) -> list[str]:
         caption = f"76,{white},{white},{_bgr(edge(colors))},{black},-1,0,0,0,100,100,0,0,1,8,0,2,90,90,{below}"
     else:
         caption = f"86,{white},{white},{black},&H80000000,-1,0,0,0,100,100,1,0,1,7,3,2,90,90,{below}"
-    box = colors.get("primary") if HEX.match(colors.get("primary") or "") else "#111111"
-    ink = colors.get("primaryForeground") if HEX.match(colors.get("primaryForeground") or "") else "#FFFFFF"
-    title = f"60,{_bgr(ink)},{_bgr(ink)},{_bgr(box)},{black},-1,0,0,0,100,100,0,0,3,20,0,8,110,110,{above}"
-    return [f"Style: Caption,@caption,{caption},1", f"Style: Title,@title,{title},1"]
+    return [f"Style: Caption,@caption,{caption},1"]
 
 
-def build(
-    *, words, length: float, style: str, colors: dict, language: str = "", title: str = "", layout="crop", phrases=None
-) -> str:
-    """The ASS file: `title` over the whole clip, and `words` ([[start, end, text]] on the reel's clock) lighting
-    up a word at a time; or, translated, `phrases` ([{"start", "end", "text"}]) one at a time. "" when there
-    is nothing to draw."""
+def build(*, words, length: float, style: str, colors: dict, language: str = "", layout="crop", phrases=None) -> str:
+    """The ASS file: `words` ([[start, end, text]] on the reel's clock) lighting up a word at a time; or,
+    translated, `phrases` ([{"start", "end", "text"}]) one at a time. "" when there is nothing to draw."""
     style = style if style in STYLES else "bold"
     lit = _tag(highlight(colors))
     grow = r"\fscx112\fscy112" if style == "bold" else ""
     events = []
-    if title.strip():
-        events.append(f"Dialogue: 0,{_time(0)},{_time(length)},Title,,0,0,0,,{clean(title)}")
 
     def shown(text):
         text = clean(text)

@@ -21,7 +21,17 @@ export function listReels(video?: number): Promise<ReelSummary[]> {
   );
 }
 
-/** Starts finding `count` reels in the video (its words first, when it has none yet). */
+/** The ideas found in a video, best first. */
+export function listIdeas(video: number): Promise<ReelSummary[]> {
+  return clientFetch<ReelSummary[]>(`${BASE}/?video=${video}&ideas=1`);
+}
+
+/** An idea she picked becomes a reel she works on. */
+export function pickIdea(id: string): Promise<ReelDetail> {
+  return clientFetch<ReelDetail>(`${BASE}/${id}/use/`, { method: "POST" });
+}
+
+/** Starts finding `count` more ideas in the video (its words first, when it has none yet). */
 export function startSearch(video: number, count: number): Promise<ReelSearch> {
   return clientFetch<ReelSearch>(`${BASE}/search/`, {
     method: "POST",
@@ -57,4 +67,9 @@ export function renderReel(id: string): Promise<ReelSummary> {
 /** A link that downloads the reel's file. */
 export function downloadLink(id: string): Promise<{ url: string }> {
   return clientFetch<{ url: string }>(`${BASE}/${id}/download/`);
+}
+
+/** A link that downloads the cover made with the video, to post as the reel's cover. */
+export function coverLink(id: string): Promise<{ url: string }> {
+  return clientFetch<{ url: string }>(`${BASE}/${id}/cover/`);
 }

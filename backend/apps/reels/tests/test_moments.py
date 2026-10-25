@@ -62,17 +62,22 @@ class TestModel:
             {
                 "first": 0,
                 "last": 3,
-                "title": '"Stop doing this" #yoga',
+                "kind": "Send",
+                "why": "  Everyone  does this. ",
+                "title": '"Stop *doing* this" #yoga',
+                "label": "Mobility",
                 "caption": "Tip. #yoga",
                 "score": 9,
                 "photos": [{"sentence": 1, "query": "yoga mat"}, {"sentence": 15, "query": "outside the moment"}],
             },
             {"first": 2, "last": 5, "title": "Overlaps the first", "score": 8},
             {"first": 30, "last": 31, "title": "Out of range", "score": 10},
-            {"first": 10, "last": 13, "title": "Second", "score": 7},
+            {"first": 10, "last": 13, "kind": "viral", "title": "Second", "score": 7},
         )
         found = moments._accept(picks.moments, sents, 3, [])
-        assert [m["title"] for m in found] == ["Stop doing this", "Second"]
+        assert [m["title"] for m in found] == ["Stop *doing* this", "Second"]
+        assert (found[0]["kind"], found[0]["why"], found[0]["label"]) == ("send", "Everyone does this.", "Mobility")
+        assert found[1]["kind"] == ""  # not one of the kinds
         assert found[0]["ideas"] == [{"at": sents[1]["start"], "query": "yoga mat"}]
         assert found[0]["start"] == pytest.approx(max(0.0, sents[0]["start"] - moments.LEAD))
 

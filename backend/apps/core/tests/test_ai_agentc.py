@@ -305,3 +305,20 @@ def test_a_hub_rule_that_overrides_the_priority_is_logged(hub, monkeypatch):
     assert said == []
     _call(label="contentor:compose-plan")
     assert "was asked as background and the hub runs it as interactive" in said[0]
+
+
+def test_a_look_downloads_the_pictures_and_may_use_tools(hub):
+    """agentc_look: the agent fetches the links and opens them, so a tool event is expected, not refused."""
+    hub.events = ("tool", "text")
+    parsed, cost, model = ai.agentc_look(
+        system="sys",
+        user="usr",
+        urls=["https://storage.example/a.jpg", "https://storage.example/b.jpg"],
+        output_model=_Greeting,
+        label="contentor:reels-ahead-covers",
+    )
+    assert (parsed.greeting, cost) == ("hi", Decimal("0"))
+    body = hub.created[0]
+    assert "Image 1: https://storage.example/a.jpg\nImage 2: https://storage.example/b.jpg" in body["prompt"]
+    assert "Do not use any tools" not in body["prompt"]
+    assert body["priority"] == "background"

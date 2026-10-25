@@ -25,8 +25,22 @@ def sweep_captions():
                     captions.submit(video)
                 for video in captions.pending():
                     captions.collect(video)
+                    _reels_ahead(video)
         except requests.RequestException as e:
             logger.warning("captions: Scribe unreachable, next sweep retries: %s", e)
             return
         except Exception:
             logger.exception("captions sweep skipped %s", tenant.schema_name)
+
+
+def _reels_ahead(video):
+    """A video just transcribed: the reels studio finds its ideas before the coach asks (apps.reels.jobs)."""
+    from apps.reels import jobs
+
+    video.refresh_from_db()
+    if not video.has_words:
+        return
+    try:
+        jobs.prepare(video)
+    except Exception:  # never the reason the sweep stops
+        logger.exception("reels: ideas ahead not started for video %s", video.pk)

@@ -1,6 +1,6 @@
-"""The reels studio's API (/api/v1/reels/): the coach's videos, finding their moments, editing a reel, and
-making it into a file to download. Coach and owner only, but for the end card the browser sidecar reads with
-a signed token."""
+"""The reels studio's API (/api/v1/reels/): the coach's videos, the ideas found in them, editing a reel and
+its cover, and making it into a file to download. Coach and owner only, but for the cover and the end card
+the browser sidecar reads with a signed token."""
 
 from django.conf import settings
 from django.db.models import Count
@@ -15,14 +15,15 @@ from apps.core.permissions import IsCoachOrOwner
 from apps.core.storage import generate_presigned_download_url, get_s3_client, is_signable_key, sign_if_s3_key
 from apps.courses.models import Video
 
-from . import ass, fonts, framing, jobs, moments, render
+from . import ass, covers, fonts, framing, jobs, moments, render
 from . import words as w
 from .models import Reel
 
 COUNTS = (1, 2, 3, 4, 5)
+_MADE = (Reel.DRAFT, Reel.RENDERING, Reel.READY, Reel.FAILED)  # a reel she works on, not an idea
 MIN_LENGTH, MAX_LENGTH = 5.0, 180.0
 WORDS_AROUND = 30.0  # seconds of words around the stretch sent to the editor, for trimming
-_BOOLEAN_OPTIONS = ("cuts", "title", "progress", "end_card", "clean_audio", "cutaways")
+_BOOLEAN_OPTIONS = ("cuts", "cover", "progress", "end_card", "clean_audio", "cutaways")
 
 
 def _thumbnail(video) -> str | None:
@@ -31,7 +32,7 @@ def _thumbnail(video) -> str | None:
     return sign_if_s3_key(video.thumbnail_url) or None
 
 
-def _video_row(video, counts) -> dict:
+def _video_row(video, counts, ideas) -> dict:
     return {
         "id": video.pk,
         "title": video.title,
@@ -40,8 +41,14 @@ def _video_row(video, counts) -> dict:
         "words": jobs.words_state(video),
         "search": jobs.search_state(video.pk),
         "reels": counts.get(video.pk, 0),
+        "ideas": ideas.get(video.pk, 0),
         "created_at": video.created_at.isoformat(),
     }
+
+
+def _brand(found_kit) -> dict:
+    """What a cover is drawn in, besides the reel's own: the site's name, look and colours."""
+    return {k: found_kit[k] for k in ("name", "look", "colors", "highlight")}
 
 
 def _summary(reel) -> dict:
@@ -55,6 +62,9 @@ def _summary(reel) -> dict:
         "title": reel.title,
         "caption": reel.caption,
         "score": reel.score,
+        "kind": reel.kind,
+        "why": reel.why,
+        "cover": covers.card(reel),
         "status": current,
         "error": reel.error or ("The video could not be made. Try again." if current != reel.status else ""),
         "stale": current == Reel.READY and reel.rendered != render.fingerprint(reel),
@@ -77,6 +87,9 @@ def _detail(reel) -> dict:
     roles = fonts.roles(reel.style, found_kit["fonts"])
     return {
         **_summary(reel),
+        "cover": {**covers.card(reel, found_kit), "frame": (covers.frame_of(reel) or {}).get("key", "")},
+        "frames": [{**f, "url": generate_presigned_download_url(f["key"])} for f in reel.frames or [] if f.get("key")],
+        "cover_file": bool(reel.cover_key),
         "style": reel.style,
         "layout": reel.layout,
         "options": render.options_of(reel),
@@ -118,41 +131,60 @@ def _detail(reel) -> dict:
     }
 
 
-def _file_url(reel, download: bool = False) -> str:
-    if not is_signable_key(reel.file_key):
+def _file_url(reel, download: bool = False, key: str = "", ext: str = "mp4") -> str:
+    """A link to the reel's video (or, with `key`, another of its files); `download` saves it under its hook."""
+    key = key or reel.file_key
+    if not is_signable_key(key):
         return ""
-    params = {"Bucket": settings.AWS_BUCKET_NAME, "Key": reel.file_key}
+    params = {"Bucket": settings.AWS_BUCKET_NAME, "Key": key}
     if download:
         name = slugify(reel.title)[:60] or "reel"
-        params["ResponseContentDisposition"] = f'attachment; filename="{name}.mp4"'
+        params["ResponseContentDisposition"] = f'attachment; filename="{name}.{ext}"'
     return get_s3_client(external=True).generate_presigned_url("get_object", Params=params, ExpiresIn=3600)
+
+
+def _counts(**where) -> dict:
+    rows = Reel.objects.filter(**where).values_list("video").annotate(n=Count("id")).values_list("video", "n")
+    return dict(rows)
 
 
 @api_view(["GET"])
 @permission_classes([IsCoachOrOwner])
 def video_list(request):
-    """The coach's videos, each with where its words and its search stand."""
+    """The coach's videos, each with where its words and its search stand, and how many reels and ideas it
+    has; and what covers are drawn in."""
     videos = list(Video.objects.exclude(s3_key="").select_related("thumbnail").order_by("-created_at")[:200])
-    counts = dict(Reel.objects.values_list("video").annotate(n=Count("id")).values_list("video", "n"))
-    return Response({"render": render.available(), "videos": [_video_row(v, counts) for v in videos]})
+    reels, ideas = _counts(status__in=_MADE), _counts(status=Reel.IDEA)
+    return Response(
+        {
+            "render": render.available(),
+            "brand": _brand(render.kit()),
+            "videos": [_video_row(v, reels, ideas) for v in videos],
+        }
+    )
 
 
 @api_view(["GET"])
 @permission_classes([IsCoachOrOwner])
 def reel_list(request):
+    """The coach's reels, or with `?ideas=1` the ideas found in a video (`?video=`), best first."""
     reels = Reel.objects.select_related("video")
     video = request.query_params.get("video")
     if video:
         if not video.isdigit():
             return Response({"detail": "video is a video's id."}, status=400)
         reels = reels.filter(video_id=int(video))
+    if request.query_params.get("ideas") == "1":
+        reels = reels.filter(status=Reel.IDEA).order_by("-score", "start")
+    else:
+        reels = reels.exclude(status=Reel.IDEA)
     return Response([_summary(r) for r in reels[:300]])
 
 
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
 def search_start(request):
-    """Find `count` reels in a video: `{"video": id, "count": 1-5}`."""
+    """Find `count` more reel ideas in a video: `{"video": id, "count": 1-5}`."""
     data = request.data if isinstance(request.data, dict) else {}
     try:
         count = int(data.get("count", 3))
@@ -179,6 +211,20 @@ def _apply(reel, data, length_cap) -> str | None:
     """The PATCH's fields onto the reel in memory; the reason it is refused, else None."""
     if "title" in data:
         reel.title = " ".join(str(data["title"] or "").split())[:120]  # as typed: "#1 tip" keeps its "#1"
+    if "cover" in data:
+        given = data["cover"] if isinstance(data["cover"], dict) else {}
+        cover = dict(reel.cover or {})
+        if "design" in given:
+            if given["design"] not in covers.DESIGNS:
+                return "Choose one of the cover designs."
+            cover["design"] = given["design"]
+        if "frame" in given:
+            if given["frame"] not in [f.get("key") for f in reel.frames or []]:
+                return "Choose one of the video's frames for the cover."
+            cover["frame"] = given["frame"]
+        if "label" in given:
+            cover["label"] = " ".join(str(given["label"] or "").split())[:40]
+        reel.cover = cover
     if "caption" in data:
         reel.caption = str(data["caption"] or "")[:2200]
     if "style" in data:
@@ -246,6 +292,17 @@ def reel_detail(request, pk):
 
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
+def reel_use(request, pk):
+    """An idea she picked: from now on a reel she works on."""
+    reel = get_object_or_404(Reel.objects.select_related("video"), pk=pk)
+    if reel.status == Reel.IDEA:
+        Reel.objects.filter(pk=reel.pk).update(status=Reel.DRAFT)
+        reel.status = Reel.DRAFT
+    return Response(_detail(reel))
+
+
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
 def reel_render(request, pk):
     reel = get_object_or_404(Reel.objects.select_related("video"), pk=pk)
     try:
@@ -265,6 +322,28 @@ def reel_download(request, pk):
 
 
 @api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def cover_download(request, pk):
+    """A link that downloads the cover as made with the video, to post as the reel's cover."""
+    reel = get_object_or_404(Reel.objects.select_related("video"), pk=pk)
+    if not reel.cover_key or jobs.status_of(reel) != Reel.READY:
+        return Response({"detail": "Make the video first."}, status=409)
+    return Response({"url": _file_url(reel, download=True, key=reel.cover_key, ext="png")})
+
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def cover_card(request, token):
+    """What the cover page draws, for a token this site signed in the last two minutes (render.cover)."""
+    reel_id = render.read_token(token)
+    reel = Reel.objects.select_related("video").filter(pk=reel_id).first() if reel_id else None
+    if reel is None:
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    return Response(covers.card(reel, render.kit()))
+
+
+@api_view(["GET"])
 @authentication_classes([])
 @permission_classes([AllowAny])
 def end_card(request, token):
@@ -280,8 +359,9 @@ def end_card(request, token):
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
 def dev_words(request, video_id):
-    """Dev only (DEBUG, for e2e): give a video the words Scribe would, without Scribe; with `"reel": true`, also a
-    draft reel picked from them by rule (the model is slow and never the same twice), its faces scanned.
+    """Dev only (DEBUG, for e2e): give a video the words Scribe would, without Scribe; with `"reel": true`, also an
+    idea picked from them by rule (the model is slow and never the same twice), its faces scanned and its
+    cover frames found (in the video service's order: no model looks at them).
     `{"words": [[start, end, text], ...], "language": "en", "reel": true}`."""
     video = get_object_or_404(Video, pk=video_id)
     data = request.data if isinstance(request.data, dict) else {}
@@ -302,8 +382,17 @@ def dev_words(request, video_id):
             return Response({"detail": "Too few words for a reel."}, status=400)
         found = picked[0]
         reel = Reel.objects.create(
-            video=video, start=found["start"], end=found["end"], title=found["title"], caption=found["caption"], score=7
+            video=video,
+            status=Reel.IDEA,
+            kind="hook",
+            why="It opens with a question everyone has.",
+            start=found["start"],
+            end=found["end"],
+            title=found["title"],
+            caption=found["caption"],
+            score=7,
         )
         jobs.scan(reel)
+        covers.find(reel)
         out["reel"] = str(reel.pk)
     return Response(out)

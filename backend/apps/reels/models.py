@@ -7,20 +7,31 @@ from django.dispatch import receiver
 
 class Reel(models.Model):
     """A short vertical clip of one of the coach's videos, for Instagram Reels, TikTok or YouTube Shorts: the
-    stretch it takes, how it is framed and captioned, and its file once rendered (apps.reels)."""
+    stretch it takes, how it is framed and captioned, and its file once rendered (apps.reels).
 
-    DRAFT, RENDERING, READY, FAILED = "draft", "rendering", "ready", "failed"
+    An idea is a moment found ahead of the coach (every transcribed video is searched): it becomes a draft
+    when she picks it."""
+
+    IDEA, DRAFT, RENDERING, READY, FAILED = "idea", "draft", "rendering", "ready", "failed"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     video = models.ForeignKey("courses.Video", on_delete=models.CASCADE, related_name="reels")
     # The stretch of the video, in its seconds.
     start = models.FloatField()
     end = models.FloatField()
-    # The hook shown over the clip, and the text of the post it goes out with.
+    # The hook on the cover (one *word* in stars is the one lit up), and the text of the post it goes out with.
     title = models.CharField(max_length=120, blank=True, default="")
     caption = models.TextField(blank=True, default="")
-    # How strongly the moment stands on its own, 1-10 (moments.py).
+    # How strongly the moment stands on its own, 1-10, why it works (a kind in moments.KINDS) and in a line.
     score = models.PositiveSmallIntegerField(default=0)
+    kind = models.CharField(max_length=12, blank=True, default="", db_default="")
+    why = models.CharField(max_length=200, blank=True, default="", db_default="")
+    # The frames the cover can be made of, best first: [{"at": s, "key", "face": [x, y, w, h] | None,
+    # "pick": the model chose it}] (covers.py); the cover: {"design", "frame": a frame's key, "label"}; and the
+    # cover's own picture once rendered, posted as the reel's cover.
+    frames = models.JSONField(default=list, blank=True, db_default=[])
+    cover = models.JSONField(default=dict, blank=True, db_default={})
+    cover_key = models.CharField(max_length=500, blank=True, default="", db_default="")
     style = models.CharField(max_length=12, default="bold")
     layout = models.CharField(max_length=8, default="auto")
     options = models.JSONField(default=dict, blank=True)
@@ -52,8 +63,11 @@ class Reel(models.Model):
 
 @receiver(post_delete, sender=Reel)
 def _forget_file(sender, instance, **kwargs):
-    """A reel's video file goes with it, however it is deleted (its own Delete, or its video's)."""
-    if instance.file_key:
+    """A reel's files go with it, however it is deleted (its own Delete, or its video's): the video, the
+    cover and its frames."""
+    keys = [instance.file_key, instance.cover_key, *(f.get("key") for f in instance.frames or [])]
+    keys = [k for k in keys if k]
+    if keys:
         from . import render
 
-        transaction.on_commit(lambda: render.forget(instance.file_key))
+        transaction.on_commit(lambda: [render.forget(k) for k in keys])

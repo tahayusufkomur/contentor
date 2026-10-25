@@ -1,9 +1,10 @@
-"""Reels as jobs on the `video` queue (tasks.py): finding a video's moments (its words first, from Scribe if
-need be), scanning their faces, and rendering.
+"""Reels as jobs on the `video` queue (tasks.py): finding a video's moments as ideas (its words first, from
+Scribe if need be), scanning their faces and finding their cover frames, and rendering.
 
-The studio follows a video's search by its state in the cache, kept under the schema that started it, and a
-render by its reel's status. One search per video at a time; per site, SEARCHES_PER_HOUR and
-RENDERS_PER_HOUR, as the video service is one machine's CPU for every site.
+Every video Scribe transcribes is searched ahead of the coach (prepare), so its ideas wait for her when she
+opens Reels. The studio follows a video's search by its state in the cache, kept under the schema that
+started it, and a render by its reel's status. One search per video at a time; per site, SEARCHES_PER_HOUR
+(her own searches) and RENDERS_PER_HOUR, as the video service is one machine's CPU for every site.
 
 Runs inside the tenant context (reels is a TENANT_APP).
 """
@@ -19,13 +20,15 @@ from django.utils import timezone
 
 from apps.courses import captions
 
-from . import framing, moments, render
+from . import covers, framing, moments, render
 from .models import Reel
 
 logger = logging.getLogger(__name__)
 
 SEARCH_TTL = 3 * 3600
-RUNNING = ("transcribing", "picking", "framing")
+RUNNING = ("transcribing", "picking", "framing", "covering")
+AHEAD = 6  # ideas found in every new video, before the coach asks
+AHEAD_BY = "auto"  # made_by of a search nobody started
 WAIT = 15  # seconds between looks at Scribe while the words are on their way
 WAIT_MAX = 45 * 60
 SEARCHES_PER_HOUR = 12
@@ -73,13 +76,13 @@ def words_state(video) -> str:
 
 
 def start_search(video, count: int, made_by: str = "coach") -> dict:
-    """Start finding `count` reels in the video (a search already running is left to finish)."""
+    """Start finding `count` reel ideas in the video (a search already running is left to finish)."""
     from . import tasks
 
     state = search_state(video.pk)
     if state["status"] in RUNNING:
         return state
-    if not _take("searches", SEARCHES_PER_HOUR):
+    if made_by != AHEAD_BY and not _take("searches", SEARCHES_PER_HOUR):
         raise JobError("That's a lot of reels for one hour. Try again a little later.")
     # (Scribe is asked by the job, in the video worker: the web process can't reach it in prod)
     found = words_state(video)
@@ -90,6 +93,19 @@ def start_search(video, count: int, made_by: str = "coach") -> dict:
     _set(video.pk, "picking" if found == "ready" else "transcribing", count=count, made_by=made_by)
     tasks.find_reels.delay(connection.tenant.id, video.pk, count, made_by, 0)
     return search_state(video.pk)
+
+
+def prepare(video) -> None:
+    """A video Scribe just transcribed: its ideas found ahead of the coach, once (a video with any reel or
+    idea is left alone). ponytail: one search per new video on the video worker, behind any render; a
+    lower-priority queue if bulk uploads ever make coaches wait for their renders."""
+    # (no render.available() here: the sweep's worker has no video service; the search's own worker does)
+    if video.reels.exists() or search_state(video.pk)["status"] in RUNNING:
+        return
+    try:
+        start_search(video, AHEAD, made_by=AHEAD_BY)
+    except JobError as exc:
+        logger.info("reels: no ideas ahead for video %s: %s", video.pk, exc)
 
 
 def run_search(video, count: int, made_by: str, waited: int) -> int | None:
@@ -114,29 +130,38 @@ def run_search(video, count: int, made_by: str, waited: int) -> int | None:
             _set(video.pk, "transcribing", count=count, made_by=made_by)
             return WAIT
     _set(video.pk, "picking", count=count, made_by=made_by)
+    ahead = made_by == AHEAD_BY
     taken = list(video.reels.values_list("start", "end"))
-    picked = moments.pick(video, count, taken)
+    picked = moments.pick(video, count, taken, label=f"{moments.LABEL}-ahead" if ahead else moments.LABEL)
     if not picked:
         fail_search(video.pk, "No moments long enough for a reel were found in this video.")
         return None
     reels = [
         Reel.objects.create(
             video=video,
+            status=Reel.IDEA,
             start=m["start"],
             end=m["end"],
+            kind=m["kind"],
+            why=m["why"],
             title=m["title"],
             caption=m["caption"],
             score=m["score"],
             ideas=m["ideas"],
+            cover={"label": m["label"]} if m["label"] else {},
             made_by=made_by,
         )
         for m in picked
     ]
     ids = [str(r.pk) for r in reels]
-    _set(video.pk, "framing", reels=ids)
+    _set(video.pk, "framing", reels=ids, made_by=made_by)
     for reel in reels:
         scan(reel)
-    _set(video.pk, "done", reels=ids)
+    _set(video.pk, "covering", reels=ids, made_by=made_by)
+    for reel in reels:
+        covers.find(reel)
+    covers.judge(reels, background=ahead)
+    _set(video.pk, "done", reels=ids, made_by=made_by)
     return None
 
 

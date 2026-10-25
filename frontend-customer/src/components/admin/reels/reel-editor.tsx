@@ -3,13 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Copy, Download, Trash2 } from "lucide-react";
+import { ArrowLeft, Copy, Download, ImageDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { errorMessage } from "@shared/hooks/async-runner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
-import { LookFonts } from "@/components/covers/look-fonts";
 import { ReelPreview } from "@/components/admin/reels/reel-preview";
+import {
+  COVER_DESIGNS,
+  CoverFonts,
+  ReelCover,
+} from "@/components/reels/reel-cover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,12 +30,14 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
+  coverLink,
   deleteReel,
   downloadLink,
   getReel,
   renderReel,
   saveReel,
 } from "@/lib/reels-api";
+import { focus, plainHook } from "@/lib/reels/cover";
 import { clock, reelLength, type Span } from "@/lib/reels/timeline";
 import type {
   ReelDetail,
@@ -50,9 +56,10 @@ const POLL_MS = 2500;
 const BOLD_FONT =
   "https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap";
 
-/** One reel: its live preview, and everything about it the coach can change — the hook, where it starts and
- *  ends, the caption style and language, the framing, the extras and the post's text — each change saved at
- *  once. Making the video file is one button; the file downloads once it is ready. */
+/** One reel: its live preview, and everything about it the coach can change — its cover (the hook, the
+ *  design, the frame), where it starts and ends, the caption style and language, the framing, the extras and
+ *  the post's text — each change saved at once. Making the video file is one button; the file and its cover
+ *  download once they are ready. */
 export function ReelEditor({ initial }: { initial: ReelDetail }) {
   const t = useTranslations("admin.reels.editor");
   const tr = useTranslations("admin.reels");
@@ -61,6 +68,7 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
   const [title, setTitle] = useState(initial.title);
   const [caption, setCaption] = useState(initial.caption);
   const [endText, setEndText] = useState(initial.options.end_text);
+  const [label, setLabel] = useState(initial.cover.label);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const latest = useRef(0);
@@ -89,13 +97,14 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
   );
 
   // Typed fields save once typing stops.
-  const typed = useRef({ title, caption, endText });
+  const typed = useRef({ title, caption, endText, label });
   useEffect(() => {
     const before = typed.current;
     if (
       before.title === title &&
       before.caption === caption &&
-      before.endText === endText
+      before.endText === endText &&
+      before.label === label
     )
       return;
     const timer = setTimeout(() => {
@@ -103,11 +112,12 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
       if (before.title !== title) patch.title = title;
       if (before.caption !== caption) patch.caption = caption;
       if (before.endText !== endText) patch.options = { end_text: endText };
-      typed.current = { title, caption, endText };
+      if (before.label !== label) patch.cover = { label };
+      typed.current = { title, caption, endText, label };
       change(patch);
     }, TYPING_MS);
     return () => clearTimeout(timer);
-  }, [title, caption, endText, change]);
+  }, [title, caption, endText, label, change]);
 
   // A video being made: look again until it is ready.
   useEffect(() => {
@@ -127,12 +137,18 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
 
   const { run: make, loading: starting } = useAsyncAction(async () => {
     const next = await renderReel(reel.id);
-    setReel((r) => ({ ...r, ...next }));
+    setReel((r) => ({ ...r, ...next, cover: r.cover })); // (the summary's cover lacks the brand)
   });
   const { run: download, loading: fetching } = useAsyncAction(async () => {
     const { url } = await downloadLink(reel.id);
     window.location.assign(url);
   });
+  const { run: downloadCover, loading: fetchingCover } = useAsyncAction(
+    async () => {
+      const { url } = await coverLink(reel.id);
+      window.location.assign(url);
+    },
+  );
   const { run: remove, loading: deleting } = useAsyncAction(async () => {
     await deleteReel(reel.id);
     toast.success(t("deleted"));
@@ -147,10 +163,12 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
   };
   const length = reelLength(reel.keep as Span[]);
   const ready = reel.status === "ready" && !reel.stale;
+  // what is typed shows on the covers at once, before it is saved
+  const cover = { ...reel.cover, title, label };
 
   return (
     <div className="space-y-6">
-      <LookFonts look={reel.brand.look} />
+      <CoverFonts look={reel.brand.look} />
       <link rel="stylesheet" href={BOLD_FONT} />
 
       <div className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-start sm:justify-between">
@@ -163,7 +181,7 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
             {t("back")}
           </NavLink>
           <h1 className="truncate text-2xl font-bold tracking-tight">
-            {reel.title || tr("untitled")}
+            {plainHook(reel.title) || tr("untitled")}
           </h1>
           <p className="text-sm text-muted-foreground">
             {t("from", { video: reel.video_title })} · {clock(reel.start)}–
@@ -173,6 +191,17 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
         </div>
         <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
           <div className="flex gap-2">
+            {ready && reel.cover_file ? (
+              <Button
+                variant="outline"
+                onClick={() => downloadCover()}
+                loading={fetchingCover}
+                className="gap-2"
+              >
+                <ImageDown className="h-4 w-4" />
+                {t("downloadCover")}
+              </Button>
+            ) : null}
             {ready ? (
               <Button
                 onClick={() => download()}
@@ -218,7 +247,7 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
 
       <div className="grid gap-8 lg:grid-cols-[340px_minmax(0,1fr)]">
         <div className="space-y-3 lg:sticky lg:top-6 lg:self-start">
-          <ReelPreview reel={reel} />
+          <ReelPreview reel={{ ...reel, cover }} />
           {reel.file_url && reel.status === "ready" ? (
             <details className="mx-auto max-w-[340px] text-sm">
               <summary className="cursor-pointer text-muted-foreground">
@@ -236,18 +265,114 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
         </div>
 
         <div className="min-w-0 space-y-8">
-          <Section title={t("hook")}>
-            <Input
-              value={title}
-              maxLength={120}
-              onChange={(e) => setTitle(e.target.value)}
-              aria-label={t("hook")}
-            />
+          <Section title={t("cover")} hint={t("coverHint")}>
+            <div className="max-w-xl space-y-1.5">
+              <Label htmlFor="reel-hook">{t("hook")}</Label>
+              <Input
+                id="reel-hook"
+                value={title}
+                maxLength={120}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">{t("hookHint")}</p>
+            </div>
+            <div
+              className="grid max-w-xl grid-cols-4 gap-2"
+              role="radiogroup"
+              aria-label={t("design")}
+            >
+              {COVER_DESIGNS.map((design) => (
+                <button
+                  key={design}
+                  type="button"
+                  role="radio"
+                  aria-checked={reel.cover.design === design}
+                  onClick={() => change({ cover: { design } })}
+                  className={cn(
+                    "flex flex-col gap-1.5 rounded-lg border p-1.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring",
+                    reel.cover.design === design
+                      ? "border-primary ring-2 ring-primary"
+                      : "hover:border-foreground/40",
+                  )}
+                >
+                  <ReelCover
+                    cover={{ ...cover, design }}
+                    brand={reel.cover}
+                    className="rounded-md"
+                  />
+                  <span className="px-0.5 text-xs font-medium">
+                    {t(`designs.${design}`)}
+                  </span>
+                </button>
+              ))}
+            </div>
+            {reel.frames.length ? (
+              <div className="space-y-1.5">
+                <p className="text-sm font-medium" id="reel-frames">
+                  {t("frame")}
+                </p>
+                <div
+                  className="flex gap-2 overflow-x-auto pb-1"
+                  role="radiogroup"
+                  aria-labelledby="reel-frames"
+                >
+                  {reel.frames.map((frame) => (
+                    <button
+                      key={frame.key}
+                      type="button"
+                      role="radio"
+                      aria-checked={reel.cover.frame === frame.key}
+                      aria-label={t("frameAt", { at: clock(frame.at) })}
+                      onClick={() => change({ cover: { frame: frame.key } })}
+                      className={cn(
+                        "relative w-16 shrink-0 overflow-hidden rounded-md border-2 transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring",
+                        reel.cover.frame === frame.key
+                          ? "border-primary"
+                          : "border-transparent hover:border-foreground/40",
+                      )}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element -- a signed storage link */}
+                      <img
+                        src={frame.url}
+                        alt=""
+                        className="aspect-[9/16] w-full object-cover"
+                        style={{
+                          objectPosition: focus(
+                            frame.aspect,
+                            9 / 16,
+                            frame.face,
+                          ),
+                        }}
+                      />
+                      {frame.pick ? (
+                        <span className="absolute inset-x-0 bottom-0 bg-background/85 py-0.5 text-center text-[10px] font-medium">
+                          {t("ourPick")}
+                        </span>
+                      ) : null}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">{t("noFrames")}</p>
+            )}
+            {reel.cover.design === "series" ? (
+              <div className="max-w-xs space-y-1.5">
+                <Label htmlFor="reel-label">{t("label")}</Label>
+                <Input
+                  id="reel-label"
+                  value={label}
+                  maxLength={40}
+                  placeholder={t("labelPlaceholder")}
+                  onChange={(e) => setLabel(e.target.value)}
+                />
+              </div>
+            ) : null}
             <Toggle
-              id="opt-title"
-              label={t("showHook")}
-              checked={reel.options.title}
-              onChange={(v) => option("title", v)}
+              id="opt-cover"
+              label={t("openWithCover")}
+              checked={reel.options.cover}
+              onChange={(v) => option("cover", v)}
             />
           </Section>
 
@@ -503,7 +628,7 @@ export function ReelEditor({ initial }: { initial: ReelDetail }) {
                 {t("delete")}
               </Button>
             )}
-            {reel.made_by !== "coach" ? (
+            {reel.made_by === "marketing" ? (
               <Badge variant="secondary" className="ml-auto">
                 {t("madeByTeam")}
               </Badge>

@@ -17,7 +17,7 @@ def _tenant(tenant_id):
 
 @shared_task(queue="video", ignore_result=True)
 def find_reels(tenant_id, video_id, count, made_by="coach", waited=0):
-    """Find a video's moments as draft reels; while its words are on their way, look again in a moment."""
+    """Find a video's moments as reel ideas; while its words are on their way, look again in a moment."""
     from apps.courses.models import Video
 
     from . import jobs

@@ -4,7 +4,7 @@ A reel is a stretch of the coach's video turned into a 1080x1920 clip:
 
     source  -> 30 fps -> framed (a crop window that follows the coach's face, or the whole frame on a blurred
                copy of itself) -> only the stretches with speech kept (pauses cut) -> photo cutaways
-               -> captions and title (an ASS file, libass) -> progress bar -> end card
+               -> captions (an ASS file, libass) -> progress bar -> the cover over its first second -> end card
     audio   -> the same stretches -> denoised and evened out to -14 LUFS (or as it is)
 
 Every time in the job is in seconds. `start`/`end` are the source's; `keep` and `crop` keys are from
@@ -151,6 +151,14 @@ def command(job: dict, probe: dict, paths: dict, threads: int = 6) -> tuple[list
         parts.append(f"color=c=0x{progress[1:]}:s={W}x12:r={FPS}:d={main}[bar]")
         parts.append(f"[{video}][bar]overlay=x='-w+w*t/{main}':y=H-h:eof_action=pass[pv]")
         video = "pv"
+
+    # the cover: the reel's first moment, a still with its hook, while the voice already starts under it
+    if paths.get("cover"):
+        seconds = min(main, max(0.5, min(3.0, _num(job.get("cover_seconds", 1.0), "cover_seconds"))))
+        args += ["-loop", "1", "-framerate", str(FPS), "-t", str(seconds), "-i", paths["cover"]]
+        parts.append(f"[{inputs}:v]scale={W}:{H},setsar=1,format=yuva420p[cover]")
+        parts.append(f"[{video}][cover]overlay=eof_action=pass[cov]")
+        video, inputs = "cov", inputs + 1
 
     if job.get("clean_audio", True):
         audio = "afftdn=nr=10:nf=-45,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000,"

@@ -1,8 +1,8 @@
 """A reel made into a file: the job the video service renders (infra/video/graph.py) and what is kept of it.
 
-The captions and title are an ASS file (ass.py) in the look's fonts (fonts.py); the end card is a page of the
-coach's site photographed by the browser sidecar, as the photo studio's downloads are
-(apps.media.design_export); cutaways are photos from the site's storage, the coach's own first.
+The captions are an ASS file (ass.py) in the look's fonts (fonts.py); the cover (covers.py, its first second)
+and the end card are pages of the coach's site photographed by the browser sidecar, as the photo studio's
+downloads are (apps.media.design_export); cutaways are photos from the site's storage, the coach's own first.
 
 Runs inside the tenant context (reels is a TENANT_APP).
 """
@@ -21,7 +21,7 @@ from django.db import connection
 
 from apps.core.storage import build_s3_path, generate_presigned_download_url, get_s3_client, sign_if_s3_key
 
-from . import ass, fonts, framing, moments
+from . import ass, covers, fonts, framing, moments
 from . import words as w
 from .models import Reel
 
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 OPTIONS = {
     "cuts": True,  # pauses cut out
-    "title": True,  # the hook over the clip
+    "cover": True,  # the first second: the hook over a frame, as designed (covers.py)
     "progress": True,  # a bar along the bottom
     "end_card": True,  # the site, its QR code and a line, for the last seconds
     "clean_audio": True,  # denoised and evened out
@@ -183,7 +183,7 @@ def fingerprint(reel) -> str:
         reel.video.s3_key,
         reel.start,
         reel.end,
-        reel.title if opts["title"] else "",
+        covers.fingerprint(reel) if opts["cover"] else "",
         reel.style,
         framing.frame_of(reel),
         opts,
@@ -227,9 +227,9 @@ def end_card_of(reel, found_kit=None) -> dict:
     }
 
 
-def end_card(reel) -> str | None:
-    """The end card as a base64 PNG, 1080x1920; None when the browser sidecar is off or could not draw it
-    (the reel then simply ends)."""
+def _photograph(reel, page: str) -> str | None:
+    """One of the reel's pages on the site (/render/reel/<token><page>) as a base64 PNG, 1080x1920; None when
+    the browser sidecar is off or could not draw it."""
     from apps.media import design_export
 
     if not design_export.available():
@@ -239,7 +239,7 @@ def end_card(reel) -> str | None:
         res = requests.post(
             f"{settings.SITE_QA_BROWSER_URL.rstrip('/')}/render",
             json={
-                "url": f"http://{host}/render/reel/{token_for(reel)}",
+                "url": f"http://{host}/render/reel/{token_for(reel)}{page}",
                 "width": 1080,
                 "format": "png",
                 "selector": "[data-render-reel]",
@@ -249,8 +249,19 @@ def end_card(reel) -> str | None:
         res.raise_for_status()
         return res.json()["image"]
     except (requests.RequestException, KeyError, ValueError) as exc:
-        logger.warning("reel %s: no end card: %s", reel.pk, exc)
+        logger.warning("reel %s: %s not drawn: %s", reel.pk, page or "the end card", exc)
         return None
+
+
+def end_card(reel) -> str | None:
+    """The end card; None when it can't be drawn (the reel then simply ends)."""
+    return _photograph(reel, "")
+
+
+def cover(reel) -> str | None:
+    """The cover; None when the reel has no frame for one or it can't be drawn (the reel then opens on the
+    video itself)."""
+    return _photograph(reel, "/cover") if covers.frame_of(reel) else None
 
 
 # --- cutaways -----------------------------------------------------------------------------------------
@@ -326,7 +337,6 @@ def job_for(reel, upload: str) -> dict:
         style=reel.style,
         colors=found_kit["colors"],
         language=opts["language"] if translated is not None else video.captions_language,
-        title=reel.title if opts["title"] else "",
         layout=frame["layout"],
         phrases=translated,
     )
@@ -352,6 +362,8 @@ def job_for(reel, upload: str) -> dict:
         "progress": found_kit["highlight"] if opts["progress"] else None,
         "end_card": end_card(reel) if opts["end_card"] else None,
         "end_seconds": END_SECONDS,
+        "cover": cover(reel) if opts["cover"] else None,
+        "cover_seconds": covers.SECONDS,
         "clean_audio": opts["clean_audio"],
         "upload": upload,
     }
@@ -367,9 +379,8 @@ def run(reel) -> None:
     )
     try:
         stamp = fingerprint(reel)
-        res = requests.post(
-            f"{settings.VIDEO_URL.rstrip('/')}/render", json=job_for(reel, upload), timeout=RENDER_TIMEOUT
-        )
+        job = job_for(reel, upload)
+        res = requests.post(f"{settings.VIDEO_URL.rstrip('/')}/render", json=job, timeout=RENDER_TIMEOUT)
         if res.status_code != 200:
             raise RenderError(f"{res.status_code}: {res.text[:500]}")
         made = res.json()
@@ -377,17 +388,26 @@ def run(reel) -> None:
         logger.warning("reel %s could not be rendered: %s", reel.pk, exc)
         Reel.objects.filter(pk=reel.pk).update(status=Reel.FAILED, error="The video could not be made. Try again.")
         return
-    old = reel.file_key
+    # The cover is also its own picture, the one she posts as the reel's cover.
+    cover_key = ""
+    if job["cover"]:
+        cover_key = build_s3_path("reels", f"{reel.pk}-cover-{uuid.uuid4().hex[:8]}.png")
+        get_s3_client().put_object(
+            Bucket=settings.AWS_BUCKET_NAME, Key=cover_key, Body=base64.b64decode(job["cover"]), ContentType="image/png"
+        )
+    old = [reel.file_key, reel.cover_key]
     Reel.objects.filter(pk=reel.pk).update(
         status=Reel.READY,
         error="",
         file_key=key,
+        cover_key=cover_key,
         file_size=int(made.get("size") or 0),
         duration=float(made.get("duration") or 0),
         rendered=stamp,
     )
-    if old and old != key:
-        forget(old)
+    for gone in old:
+        if gone and gone not in (key, cover_key):
+            forget(gone)
 
 
 def forget(key: str) -> None:

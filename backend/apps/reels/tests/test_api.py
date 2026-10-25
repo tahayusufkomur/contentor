@@ -12,7 +12,7 @@ from apps.accounts.models import User
 from apps.core.storage import build_s3_path
 from apps.courses.models import Video
 from apps.courses.tests.test_views import make_client
-from apps.reels import fonts, framing, jobs, render
+from apps.reels import covers, fonts, framing, jobs, render
 from apps.reels.models import Reel
 from apps.reels.tests.test_moments import talk
 
@@ -69,11 +69,18 @@ class TestSearch:
         assert jobs.run_search(video, 2, "coach", 0) is None
         state = client.get(f"/api/v1/reels/search/{video.pk}/").json()
         assert state["status"] == "done" and len(state["reels"]) == 2
-        listed = client.get(f"/api/v1/reels/?video={video.pk}").json()
+        assert client.get(f"/api/v1/reels/?video={video.pk}").json() == []  # ideas until she picks one
+        listed = client.get(f"/api/v1/reels/?video={video.pk}&ideas=1").json()
         assert {r["id"] for r in listed} == set(state["reels"])
-        assert all(r["status"] == "draft" and r["file"] is None for r in listed)
-        row = client.get("/api/v1/reels/videos/").json()["videos"][0]
-        assert (row["words"], row["reels"], row["search"]["status"]) == ("ready", 2, "done")
+        assert all(r["status"] == "idea" and r["file"] is None and r["cover"]["photo"] == "" for r in listed)
+        videos = client.get("/api/v1/reels/videos/").json()
+        row = videos["videos"][0]
+        assert (row["words"], row["reels"], row["ideas"], row["search"]["status"]) == ("ready", 0, 2, "done")
+        assert set(videos["brand"]) == {"name", "look", "colors", "highlight"}
+
+        used = client.post(f"/api/v1/reels/{state['reels'][0]}/use/").json()
+        assert used["status"] == "draft"
+        assert [r["id"] for r in client.get(f"/api/v1/reels/?video={video.pk}").json()] == [state["reels"][0]]
 
     def test_a_second_search_skips_what_is_taken(self, coach, video, no_ai):
         jobs.run_search(video, 2, "coach", 0)
@@ -125,7 +132,8 @@ class TestEdit:
     def test_the_editor_gets_what_it_draws(self, coach, reel):
         data = make_client(coach).get(f"/api/v1/reels/{reel.pk}/").json()
         assert data["frame"] == {"layout": "crop", "keys": [[0.0, 0.5]], "share": framing.share(None, None)}
-        assert data["options"] == render.OPTIONS
+        assert data["options"] == render.OPTIONS and data["options"]["cover"] is True
+        assert data["cover"]["design"] == "editorial" and data["frames"] == [] and data["cover_file"] is False
         assert data["keep"][0][0] == 0.0 and data["words"][0][2] == " s0w0"
         assert data["brand"]["fonts"]["caption"] == {"family": "Montserrat", "weight": 800, "ratio": fonts.RATIO}
         assert data["end_card"]["line"] == "More on my site"
@@ -143,6 +151,21 @@ class TestEdit:
         assert res.status_code == 200
         reel.refresh_from_db()
         assert (reel.title, reel.style, render.options_of(reel)["progress"]) == ('"New hook" #tag', "clean", False)
+
+    def test_the_cover_is_checked_then_saved(self, coach, reel):
+        frames = [{"at": 1.0, "key": build_s3_path("reels/frames", "a.jpg"), "face": None, "aspect": 1.7778}]
+        Reel.objects.filter(pk=reel.pk).update(frames=frames)
+        client = make_client(coach)
+        url = f"/api/v1/reels/{reel.pk}/"
+        assert client.patch(url, {"cover": {"design": "neon"}}, format="json").status_code == 400
+        assert client.patch(url, {"cover": {"frame": "someone/else.jpg"}}, format="json").status_code == 400
+        res = client.patch(
+            url, {"cover": {"design": "bold", "frame": frames[0]["key"], "label": "  Hip   mobility "}}, format="json"
+        )
+        assert res.status_code == 200
+        cover = res.json()["cover"]
+        assert (cover["design"], cover["label"], cover["frame"]) == ("bold", "Hip mobility", frames[0]["key"])
+        assert cover["photo"].startswith("http") and cover["colors"] and cover["name"]
 
     def test_a_language_translates_the_captions(self, coach, reel):
         with mock.patch("apps.reels.moments.translate", side_effect=lambda lines, lang: [f"de:{x}" for x in lines]):
@@ -271,13 +294,46 @@ class TestRender:
         assert reel.rendered == render.fingerprint(reel)
         assert sent["start"] == 0.0 and sent["end"] == 26.0 and sent["layout"] == "crop"
         assert sent["fonts"] == FONTS
-        assert "Style: Caption,@caption" in sent["captions"] and "Hook" in sent["captions"]
+        assert "Style: Caption,@caption" in sent["captions"] and "S0W0" in sent["captions"]
         assert sent["progress"].startswith("#") and sent["end_card"] is None  # no browser sidecar in tests
+        assert sent["cover"] is None and reel.cover_key == ""  # no frame to make a cover of
         assert sent["upload"].startswith("http") and sent["source"].startswith("http")
 
         Reel.objects.filter(pk=reel.pk).update(title="Changed")
         reel.refresh_from_db()
         assert reel.rendered != render.fingerprint(reel)  # stale
+
+    def test_the_cover_opens_the_reel_and_is_kept_as_its_own_picture(self, settings, reel):
+        settings.VIDEO_URL = "http://video:7100"
+        frames = [{"at": 1.0, "key": build_s3_path("reels/frames", "a.jpg"), "face": None, "aspect": 1.7778}]
+        Reel.objects.filter(pk=reel.pk).update(frames=frames)
+        reel.refresh_from_db()
+        sent, stored = {}, mock.Mock()
+
+        def video_service(url, json=None, timeout=None):
+            sent.update(json)
+            return _Answer(200, {"duration": 25.5, "size": 99})
+
+        with (
+            mock.patch("apps.reels.render.fonts.files", return_value=FONTS),
+            mock.patch("apps.reels.render._photograph", side_effect=lambda r, page: "UE5H" if page else None),
+            mock.patch("apps.reels.render.requests.post", side_effect=video_service),
+            mock.patch("apps.reels.render.get_s3_client", return_value=stored),
+        ):
+            render.run(reel)
+        reel.refresh_from_db()
+        assert sent["cover"] == "UE5H" and sent["cover_seconds"] == covers.SECONDS
+        assert reel.status == Reel.READY and reel.cover_key.endswith(".png")
+        assert stored.put_object.call_args.kwargs["Key"] == reel.cover_key
+
+        stamp = reel.rendered
+        Reel.objects.filter(pk=reel.pk).update(cover={"design": "poster"})
+        reel.refresh_from_db()
+        assert render.fingerprint(reel) != stamp  # a new design makes the file stale
+        res = make_client(User.objects.create_user(email="c2@reels.test", name="C", password="x", role="coach")).get(
+            f"/api/v1/reels/{reel.pk}/cover/"
+        )
+        assert res.status_code == 200 and "response-content-disposition=attachment" in res.json()["url"]
 
     def test_a_failed_render_tells_the_coach(self, settings, reel):
         settings.VIDEO_URL = "http://video:7100"
@@ -302,6 +358,124 @@ class TestEndCard:
         res = make_client().get(f"/api/v1/reels/render/{token}/")
         assert res.status_code == 200 and res.json()["line"] == "More on my site"
         assert make_client().get("/api/v1/reels/render/forged/").status_code == 404
+
+    def test_the_cover_page_reads_it_the_same_way(self, reel):
+        res = make_client().get(f"/api/v1/reels/render/{render.token_for(reel)}/cover/")
+        assert res.status_code == 200 and res.json()["title"] == "Hook" and res.json()["look"]
+        assert make_client().get("/api/v1/reels/render/forged/cover/").status_code == 404
+
+
+def _still(n=0):
+    import base64
+
+    return {"t": 2.0 + n, "face": [0.4, 0.2, 0.1, 0.2], "score": 9 - n, "image": base64.b64encode(b"jpeg").decode()}
+
+
+@pytest.mark.django_db(transaction=True)
+class TestCovers:
+    def test_the_frames_are_kept_in_storage_and_the_old_ones_deleted(self, settings, reel):
+        settings.VIDEO_URL = "http://video:7100"
+        Reel.objects.filter(pk=reel.pk).update(frames=[{"key": build_s3_path("reels/frames", "old.jpg")}])
+        reel.refresh_from_db()
+        answer = _Answer(200, {"width": 1920, "height": 1080, "frames": [_still(0), _still(1)]})
+        storage = mock.Mock()
+        with (
+            mock.patch("apps.reels.covers.requests.post", return_value=answer) as post,
+            mock.patch("apps.reels.covers.get_s3_client", return_value=storage),
+            mock.patch("apps.reels.render.forget") as forget,
+        ):
+            found = covers.find(reel)
+        assert post.call_args.kwargs["json"]["count"] == covers.COUNT
+        assert [f["at"] for f in found] == [2.0, 3.0] and found[0]["aspect"] == round(1920 / 1080, 4)
+        assert storage.put_object.call_count == 2
+        forget.assert_called_once_with(build_s3_path("reels/frames", "old.jpg"))
+        reel.refresh_from_db()
+        assert covers.frame_of(reel)["key"] == found[0]["key"]
+
+    def test_a_model_that_looked_orders_them_best_first(self, settings, reel):
+        frames = [{"at": float(i), "key": f"k{i}", "face": None, "pick": False} for i in range(4)]
+        Reel.objects.filter(pk=reel.pk).update(frames=frames)
+        reel.refresh_from_db()
+        settings.AI_PROVIDER = "anthropic"
+        answer = covers.Choices(sheets=[covers.Choice(sheet=1, best=[3, 3, 9, 1])])
+        with (
+            mock.patch("apps.reels.covers.sheet", return_value=b"jpeg"),
+            mock.patch("apps.reels.covers.core_ai.vision_provider", return_value="anthropic"),
+            mock.patch("apps.reels.covers.core_ai.structured_messages", return_value=(answer, 0, "m")) as asked,
+            mock.patch("apps.reels.covers.ai_compose.record_spend"),
+        ):
+            covers.judge([reel])
+        assert asked.call_args.kwargs["messages"][0]["content"][1]["type"] == "image"
+        reel.refresh_from_db()
+        assert [f["key"] for f in reel.frames] == ["k2", "k0", "k1", "k3"]
+        assert [f["pick"] for f in reel.frames] == [True, True, False, False]
+
+    def test_without_a_model_the_order_stands(self, settings, reel):
+        frames = [{"at": float(i), "key": f"k{i}", "pick": False} for i in range(3)]
+        Reel.objects.filter(pk=reel.pk).update(frames=frames)
+        reel.refresh_from_db()
+        settings.AI_PROVIDER = "agentc"
+        with (
+            mock.patch("apps.reels.covers.sheet", return_value=b"jpeg"),
+            mock.patch("apps.reels.covers.ai_compose.compose_available", return_value=True),
+            mock.patch("apps.reels.covers._ask_hub", return_value=None),  # the hub can't open dev's storage
+            mock.patch("apps.reels.covers.core_ai.vision_provider", return_value=None),
+        ):
+            covers.judge([reel], background=True)
+        reel.refresh_from_db()
+        assert [f["key"] for f in reel.frames] == ["k0", "k1", "k2"]
+
+    def test_the_hub_gets_links_it_can_open_only(self, settings):
+        assert covers._reachable("https://fsn1.your-objectstorage.com/b/k.jpg?X-Amz=1")
+        assert not covers._reachable("http://localhost:9000/b/k.jpg")
+        assert not covers._reachable("http://acme.localhost/b/k.jpg")
+
+    def test_the_sheet_numbers_each_frame_cropped_as_the_cover_shows_it(self, reel):
+        import io
+
+        from PIL import Image
+
+        photo = io.BytesIO()
+        Image.new("RGB", (1920, 1080), "red").save(photo, "JPEG")
+        storage = mock.Mock()
+        storage.get_object.side_effect = lambda **kw: {"Body": io.BytesIO(photo.getvalue())}
+        reel.frames = [{"key": f"k{i}", "face": [0.0, 0.1, 0.1, 0.2]} for i in range(4)]
+        with mock.patch("apps.reels.covers.get_s3_client", return_value=storage):
+            body = covers.sheet(reel)
+        with Image.open(io.BytesIO(body)) as im:
+            assert im.size == (covers.CELL[0] * 3, covers.CELL[1] * 2)
+        crop = covers._crop(Image.new("RGB", (1920, 1080)), [0.0, 0.1, 0.1, 0.2])
+        assert crop.size == (608, 1080)  # 9:16, held at the frame's left edge
+
+
+@pytest.mark.django_db(transaction=True)
+class TestAhead:
+    def test_a_transcribed_video_gets_its_ideas_before_the_coach_asks(self, settings, video, reel_jobs, tenant_ctx):
+        settings.VIDEO_URL = "http://video:7100"
+        with mock.patch("apps.reels.jobs._take", return_value=False):  # her hourly searches don't count
+            jobs.prepare(video)
+        reel_jobs["find_reels"].assert_called_once_with(tenant_ctx.id, video.pk, jobs.AHEAD, jobs.AHEAD_BY, 0)
+
+    def test_once_only(self, settings, video, reel, reel_jobs):
+        settings.VIDEO_URL = "http://video:7100"
+        jobs.prepare(video)  # the video has a reel already
+        reel_jobs["find_reels"].assert_not_called()
+
+    def test_the_captions_sweep_starts_it(self, settings, tenant_ctx, reel_jobs):
+        from apps.courses import tasks as course_tasks
+
+        settings.SCRIBE_URL = "http://scribe-api:8000"
+        settings.VIDEO_URL = ""  # the sweep's worker has no video service: the search's own worker has
+        key = build_s3_path("videos", "fresh.mp4")
+        Video.objects.create(title="Fresh", s3_key=key, captions_key=key, captions_job="job1")
+        done = {"status": "done", "vtt": "WEBVTT", "language": "en", "words": [[0.0, 0.5, " Hi."]]}
+        with (
+            mock.patch("apps.courses.captions._call", return_value=done),
+            mock.patch("apps.core.models.Tenant.objects.exclude", return_value=[tenant_ctx]),
+        ):
+            course_tasks.sweep_captions()
+        reel_jobs["find_reels"].assert_called_once()
+        assert reel_jobs["find_reels"].call_args.args[3] == jobs.AHEAD_BY
 
 
 @pytest.mark.django_db(transaction=True)

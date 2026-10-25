@@ -5,6 +5,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { EndCard } from "@/components/reels/end-card";
+import { ReelCover } from "@/components/reels/reel-cover";
 import { Button } from "@/components/ui/button";
 import {
   captionAt,
@@ -22,6 +23,7 @@ import {
 import type { ReelDetail } from "@/types/reels";
 
 const END_MS = 2500;
+const COVER_SECONDS = 1; // the cover's time at the start (backend/apps/reels/covers.py SECONDS)
 // Sizes as the render draws them on a 1080 px wide frame (backend/apps/reels/ass.py), in container units.
 const at1080 = (px: number) => `${(px / 1080) * 100}cqw`;
 // libass sizes a font by its whole line (ascent + descent), CSS by its em: each font's ratio comes with it.
@@ -43,9 +45,10 @@ function outline(px: number, colour: string): string {
     .join(", ");
 }
 
-/** The reel played live from the coach's video: the 9:16 window following the face (or the whole frame on a
- *  blurred copy), the pauses skipped, the words lighting up, the title, the progress bar, photo cutaways and
- *  the end card, as the render will draw them. No file is made until the coach asks for one. */
+/** The reel played live from the coach's video: the cover over its first second, the 9:16 window following
+ *  the face (or the whole frame on a blurred copy), the pauses skipped, the words lighting up, the progress
+ *  bar, photo cutaways and the end card, as the render will draw them. No file is made until the coach asks
+ *  for one. */
 export function ReelPreview({ reel }: { reel: ReelDetail }) {
   const t = useTranslations("admin.reels.preview");
   const video = useRef<HTMLVideoElement>(null);
@@ -216,6 +219,13 @@ export function ReelPreview({ reel }: { reel: ReelDetail }) {
       );
   }
 
+  const showCover =
+    reel.options.cover &&
+    !!reel.cover.photo &&
+    !ending &&
+    reelNow !== null &&
+    reelNow < COVER_SECONDS;
+
   const cutaway =
     reel.options.cutaways && reelNow !== null
       ? reel.cutaways.find((c) => reelNow >= c.start && reelNow < c.end)
@@ -287,32 +297,6 @@ export function ReelPreview({ reel }: { reel: ReelDetail }) {
             className="absolute inset-0 h-full w-full object-cover"
           />
         ) : null}
-        {reel.options.title && reel.title ? (
-          <div
-            className="absolute inset-x-0 flex justify-center text-center"
-            style={{
-              top: fit ? "15.6%" : "12%",
-              padding: `0 ${at1080(110)}`,
-              textWrap: "balance",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: `'${fonts.title.family}', Georgia, serif`,
-                fontWeight: 700,
-                fontSize: textAt1080(60, fonts.title.ratio),
-                lineHeight: 1.55,
-                color: reel.brand.colors.primaryForeground || "#fff",
-                background: reel.brand.colors.primary || "#111",
-                padding: `${at1080(6)} ${at1080(20)}`,
-                boxDecorationBreak: "clone",
-                WebkitBoxDecorationBreak: "clone",
-              }}
-            >
-              {reel.title}
-            </span>
-          </div>
-        ) : null}
         {caption ? (
           <div
             className="absolute inset-x-0 text-center"
@@ -335,6 +319,11 @@ export function ReelPreview({ reel }: { reel: ReelDetail }) {
               background: reel.brand.highlight,
             }}
           />
+        ) : null}
+        {showCover ? (
+          <div className="absolute inset-0">
+            <ReelCover cover={reel.cover} brand={reel.cover} />
+          </div>
         ) : null}
         {ending ? (
           <div className="absolute inset-0">

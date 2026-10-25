@@ -1,6 +1,6 @@
-"""The fonts a reel is drawn in: the captions' (a heavy sans for the bold style, else the look's own) and the
-title's (the look's display font). The video service draws them with libass, which reads TrueType; Google
-Fonts serves an old browser exactly that, so a font's file is looked up there and kept a month.
+"""The font a reel's captions are drawn in: a heavy sans for the bold style, else the look's own. The video
+service draws them with libass, which reads TrueType; Google Fonts serves an old browser exactly that, so a
+font's file is looked up there and kept a month.
 """
 
 import re
@@ -19,11 +19,10 @@ RATIO = 1.22  # a typical font's line over its em, when the file can't be read
 
 
 def roles(style: str, look_fonts: dict) -> dict:
-    """{role: (family, weight)} for the captions and the title."""
+    """{role: (family, weight)}: the captions'."""
     display = look_fonts.get("display") or BOLD[0]
     body = look_fonts.get("body") or display
-    caption = {"clean": (body, 700), "brand": (display, 700)}.get(style, BOLD)
-    return {"caption": caption, "title": (display, 700)}
+    return {"caption": {"clean": (body, 700), "brand": (display, 700)}.get(style, BOLD)}
 
 
 def ttf(family: str, weight: int) -> str:

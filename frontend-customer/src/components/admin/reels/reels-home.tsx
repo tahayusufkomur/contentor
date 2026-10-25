@@ -3,10 +3,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Clapperboard } from "lucide-react";
+import { Clapperboard, X } from "lucide-react";
 import { toast } from "sonner";
+import { errorMessage } from "@shared/hooks/async-runner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
+import { CoverFonts, ReelCover } from "@/components/reels/reel-cover";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,43 +24,50 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonCardGrid } from "@/components/ui/skeletons";
+import { StaleContainer } from "@/components/ui/stale-container";
 import {
+  deleteReel,
   getReelVideos,
   getSearch,
+  listIdeas,
   listReels,
+  pickIdea,
   startSearch,
 } from "@/lib/reels-api";
 import { clock } from "@/lib/reels/timeline";
 import type {
+  CoverBrand,
   ReelSearch,
   ReelStatus,
   ReelSummary,
   ReelVideos,
 } from "@/types/reels";
 
-const RUNNING = new Set(["transcribing", "picking", "framing"]);
-const COUNTS = [1, 2, 3, 4, 5];
+const RUNNING = new Set(["transcribing", "picking", "framing", "covering"]);
+const FIRST = 5; // ideas a first search asks for (a new video's are found ahead, backend jobs.AHEAD)
+const MORE = 3; // and a "find more"
 const POLL_MS = 3000;
 const STATUS_BADGE: Record<ReelStatus, BadgeProps["variant"]> = {
+  idea: "outline",
   draft: "outline",
   rendering: "accent",
   ready: "success",
   failed: "destructive",
 };
 
-/** The list while it loads, in the shape it will take. */
+/** The page while it loads, in the shape it will take. */
 export function ReelsSkeleton() {
   return (
     <div className="space-y-6">
-      <Skeleton className="h-36 rounded-xl" />
+      <Skeleton className="h-24 rounded-xl" />
       <SkeletonCardGrid count={4} className="grid-cols-2 lg:grid-cols-4" />
     </div>
   );
 }
 
-/** The reels studio's front page: pick one of the coach's videos and how many reels to find in it, then the
- *  reels found so far, by video. A search runs on the server (transcribing first if need be); the page
- *  follows it and lists its reels when it is done. */
+/** The reels studio's front page. Every video the coach uploads is searched ahead of her for the moments that
+ *  can travel, each found as an idea with its cover already designed: she picks a video, sees its ideas and
+ *  uses the ones she likes (or asks for more). Below, the reels she is working on, by video. */
 export function ReelsHome() {
   const t = useTranslations("admin.reels");
   const navigate = useNavigate();
@@ -69,8 +78,10 @@ export function ReelsHome() {
   const [error, setError] = useState<unknown>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [picked, setPicked] = useState<number | null>(wanted);
-  const [count, setCount] = useState(3);
   const [searches, setSearches] = useState<Record<number, ReelSearch>>({});
+  const [ideas, setIdeas] = useState<ReelSummary[]>([]);
+  const [ideasFor, setIdeasFor] = useState<number | null>(null);
+  const [ideasKey, setIdeasKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -86,6 +97,7 @@ export function ReelsHome() {
         setPicked(
           (p) =>
             p ??
+            found.videos.find((v) => v.ideas > 0)?.id ??
             found.videos.find((v) => v.words !== "unavailable")?.id ??
             found.videos[0]?.id ??
             null,
@@ -98,7 +110,23 @@ export function ReelsHome() {
     };
   }, [reloadKey]);
 
-  // Follow every search still running; when one ends, the list reloads with its reels.
+  // The picked video's ideas: the ones shown stay, dimmed, while another video's load.
+  useEffect(() => {
+    if (!picked) return;
+    let cancelled = false;
+    listIdeas(picked)
+      .then((found) => {
+        if (cancelled) return;
+        setIdeas(found);
+        setIdeasFor(picked);
+      })
+      .catch((err) => !cancelled && toast.error(errorMessage(err)));
+    return () => {
+      cancelled = true;
+    };
+  }, [picked, ideasKey]);
+
+  // Follow every search still running; when one ends, its ideas load.
   const running = useMemo(
     () =>
       Object.entries(searches)
@@ -115,7 +143,7 @@ export function ReelsHome() {
             setSearches((m) => ({ ...m, [id]: s }));
             if (s.status === "done") {
               toast.success(t("found", { count: s.reels.length }));
-              setReloadKey((k) => k + 1);
+              setIdeasKey((k) => k + 1);
             } else if (s.status === "failed")
               toast.error(s.detail || t("failed"));
           })
@@ -125,15 +153,16 @@ export function ReelsHome() {
     return () => clearInterval(timer);
   }, [running, t]);
 
-  const { run: find, loading: starting } = useAsyncAction(async () => {
-    if (!picked) return;
-    const state = await startSearch(picked, count);
-    setSearches((m) => ({ ...m, [picked]: state }));
-  });
-
   const selected = videos?.videos.find((v) => v.id === picked);
   const search = picked ? searches[picked] : undefined;
   const busy = !!search && RUNNING.has(search.status);
+  const shown = ideasFor === picked ? ideas : [];
+
+  const { run: findMore, loading: starting } = useAsyncAction(async () => {
+    if (!picked) return;
+    const state = await startSearch(picked, shown.length ? MORE : FIRST);
+    setSearches((m) => ({ ...m, [picked]: state }));
+  });
 
   const byVideo = useMemo(() => {
     const order = new Map<number, { title: string; reels: ReelSummary[] }>();
@@ -172,63 +201,49 @@ export function ReelsHome() {
             onClick: () => navigate("/admin/media?type=videos"),
           }}
         />
-      ) : (
-        <div className="space-y-8">
-          <section className="space-y-4 rounded-xl border p-4 sm:p-5">
-            <div>
-              <h2 className="font-semibold">{t("make.title")}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t("make.description")}
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-              <div className="min-w-0 flex-1 space-y-1.5">
-                <Label htmlFor="reels-video">{t("make.video")}</Label>
-                <Select
-                  value={picked ? String(picked) : undefined}
-                  onValueChange={(v) => setPicked(Number(v))}
-                >
-                  <SelectTrigger id="reels-video" className="w-full">
-                    <SelectValue placeholder={t("make.pick")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {videos?.videos.map((v) => (
-                      <SelectItem key={v.id} value={String(v.id)}>
-                        {v.title}
-                        {v.duration ? ` · ${clock(v.duration)}` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+      ) : videos ? (
+        <div className="space-y-10">
+          <CoverFonts look={videos.brand.look} />
+          <section className="space-y-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-xl">
+                <h2 className="font-semibold">{t("ideas.title")}</h2>
+                <p className="text-sm text-muted-foreground">
+                  {t("ideas.description")}
+                </p>
               </div>
-              <div className="space-y-1.5 sm:w-36">
-                <Label htmlFor="reels-count">{t("make.count")}</Label>
-                <Select
-                  value={String(count)}
-                  onValueChange={(v) => setCount(Number(v))}
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                <div className="min-w-0 space-y-1.5 sm:w-72">
+                  <Label htmlFor="reels-video">{t("make.video")}</Label>
+                  <Select
+                    value={picked ? String(picked) : undefined}
+                    onValueChange={(v) => setPicked(Number(v))}
+                  >
+                    <SelectTrigger id="reels-video" className="w-full">
+                      <SelectValue placeholder={t("make.pick")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {videos.videos.map((v) => (
+                        <SelectItem key={v.id} value={String(v.id)}>
+                          {v.title}
+                          {v.duration ? ` · ${clock(v.duration)}` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  variant={shown.length ? "outline" : "default"}
+                  onClick={() => findMore()}
+                  loading={starting || busy}
+                  loadingText={
+                    busy ? t(`search.${search!.status}`) : t("make.starting")
+                  }
+                  disabled={!selected || selected.words === "unavailable"}
                 >
-                  <SelectTrigger id="reels-count" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COUNTS.map((n) => (
-                      <SelectItem key={n} value={String(n)}>
-                        {t("make.reels", { count: n })}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  {shown.length ? t("ideas.more") : t("ideas.find")}
+                </Button>
               </div>
-              <Button
-                onClick={() => find()}
-                loading={starting || busy}
-                loadingText={
-                  busy ? t(`search.${search!.status}`) : t("make.starting")
-                }
-                disabled={!selected || selected.words === "unavailable"}
-              >
-                {t("make.action")}
-              </Button>
             </div>
             {selected?.words === "unavailable" ? (
               <p className="text-sm text-muted-foreground">
@@ -245,36 +260,137 @@ export function ReelsHome() {
             ) : search?.status === "failed" && search.detail ? (
               <p className="text-sm text-destructive">{search.detail}</p>
             ) : null}
-            {videos && !videos.render ? (
+            {!videos.render ? (
               <p className="text-sm text-muted-foreground">
                 {t("make.noRender")}
               </p>
             ) : null}
-          </section>
 
-          {byVideo.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t("none")}</p>
-          ) : (
-            byVideo.map(([id, row]) => (
-              <section key={id} className="space-y-3">
-                <h2 className="font-semibold">{row.title}</h2>
-                <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                  {row.reels.map((reel) => (
-                    <li key={reel.id}>
-                      <ReelCard reel={reel} />
+            <StaleContainer pending={ideasFor !== picked}>
+              {shown.length ? (
+                <ul className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                  {shown.map((idea) => (
+                    <li key={idea.id}>
+                      <IdeaCard
+                        idea={idea}
+                        brand={videos.brand}
+                        onUsed={() => navigate(`/admin/reels/${idea.id}`)}
+                        onDismissed={() =>
+                          setIdeas((list) =>
+                            list.filter((i) => i.id !== idea.id),
+                          )
+                        }
+                      />
                     </li>
                   ))}
                 </ul>
-              </section>
-            ))
-          )}
+              ) : !busy && selected?.words !== "unavailable" ? (
+                <p className="text-sm text-muted-foreground">
+                  {t("ideas.none")}
+                </p>
+              ) : null}
+            </StaleContainer>
+          </section>
+
+          <section className="space-y-5 border-t pt-8">
+            <h2 className="font-semibold">{t("yours")}</h2>
+            {byVideo.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("none")}</p>
+            ) : (
+              byVideo.map(([id, row]) => (
+                <div key={id} className="space-y-3">
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    {row.title}
+                  </h3>
+                  <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                    {row.reels.map((reel) => (
+                      <li key={reel.id}>
+                        <ReelCard reel={reel} brand={videos.brand} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            )}
+          </section>
         </div>
-      )}
+      ) : null}
     </PageState>
   );
 }
 
-function ReelCard({ reel }: { reel: ReelSummary }) {
+/** An idea: its cover as it will open the reel, what kind of moment it is and why it works; use it or let
+ *  it go. */
+function IdeaCard({
+  idea,
+  brand,
+  onUsed,
+  onDismissed,
+}: {
+  idea: ReelSummary;
+  brand: CoverBrand;
+  onUsed: () => void;
+  onDismissed: () => void;
+}) {
+  const t = useTranslations("admin.reels");
+  const { run: use, loading: using } = useAsyncAction(async () => {
+    await pickIdea(idea.id);
+    onUsed();
+  });
+  const { run: dismiss, loading: dismissing } = useAsyncAction(async () => {
+    await deleteReel(idea.id);
+    toast.success(t("ideas.dismissed"));
+    onDismissed();
+  });
+  return (
+    <article className="space-y-2.5" aria-label={t("ideas.label")}>
+      <div className="relative">
+        <ReelCover
+          cover={idea.cover}
+          brand={brand}
+          className="rounded-lg shadow-sm"
+        />
+        <span className="absolute bottom-2 right-2 rounded bg-background/85 px-1.5 py-0.5 text-xs tabular-nums">
+          {clock(idea.end - idea.start)}
+        </span>
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5">
+        {idea.kind ? (
+          <Badge variant="secondary">{t(`kinds.${idea.kind}`)}</Badge>
+        ) : null}
+        <span className="text-xs text-muted-foreground">
+          {t("score", { score: idea.score })}
+        </span>
+      </div>
+      {idea.why ? (
+        <p className="line-clamp-3 text-xs text-muted-foreground">{idea.why}</p>
+      ) : null}
+      <div className="flex items-center gap-1.5">
+        <Button
+          size="sm"
+          className="flex-1"
+          onClick={() => use()}
+          loading={using}
+          loadingText={t("ideas.using")}
+        >
+          {t("ideas.use")}
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          className="h-8 w-8 text-muted-foreground"
+          onClick={() => dismiss()}
+          loading={dismissing}
+          aria-label={t("ideas.dismiss")}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </article>
+  );
+}
+
+function ReelCard({ reel, brand }: { reel: ReelSummary; brand: CoverBrand }) {
   const t = useTranslations("admin.reels");
   const state = reel.stale ? "changed" : reel.status;
   return (
@@ -282,10 +398,8 @@ function ReelCard({ reel }: { reel: ReelSummary }) {
       href={`/admin/reels/${reel.id}`}
       className="group block space-y-2 rounded-lg focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
     >
-      <div className="relative flex aspect-[9/16] items-center justify-center overflow-hidden rounded-lg bg-gradient-to-b from-muted to-secondary p-4 text-center transition-colors group-hover:from-accent/40">
-        <p className="line-clamp-5 text-sm font-semibold leading-snug">
-          {reel.title || t("untitled")}
-        </p>
+      <div className="relative transition-opacity group-hover:opacity-90">
+        <ReelCover cover={reel.cover} brand={brand} className="rounded-lg" />
         <span className="absolute bottom-2 right-2 rounded bg-background/85 px-1.5 py-0.5 text-xs tabular-nums">
           {clock(reel.file?.duration || reel.end - reel.start)}
         </span>

@@ -116,10 +116,10 @@ class TestCaptions:
     def test_turkish_capitals_keep_their_dots(self):
         assert ass.upper("istanbul ılık", "tr") == "İSTANBUL ILIK"
 
-    def test_the_title_rides_over_the_whole_clip_and_braces_never_reach_libass(self):
-        text = ass.build(words=[], length=30.0, style="clean", colors=COLORS, title="Do {\\b1}this")
-        assert "Dialogue: 0,0:00:00.00,0:00:30.00,Title,,0,0,0,,Do b1this" in text
-        assert "Style: Title,@title," in text and "Style: Caption,@caption," in text
+    def test_braces_never_reach_libass(self):
+        text = ass.build(words=[(0, 1, " Do"), (1, 2, " {\\b1}this")], length=5, style="clean", colors=COLORS)
+        assert "{\\b1}" not in text and "b1this" in text
+        assert "Style: Caption,@caption," in text and "Title" not in text
 
     def test_translated_phrases_replace_the_words(self):
         text = ass.build(

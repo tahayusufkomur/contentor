@@ -119,10 +119,10 @@ SYSTEM_PROMPT = (
     "prices or dates. It changes the email right in her editor, as one step "
     "her Undo there takes back\n"
     "- make_reels: find the best moments of one of the coach's videos (video_id from "
-    "the Videos line) and make them into draft reels: short vertical clips "
-    "framed for phones and captioned, for Instagram Reels, TikTok and YouTube "
-    "Shorts; count is how many (1 to 5, 3 when not told). The coach reviews "
-    "each one in Reels and makes the video file there\n"
+    "the Videos line) as reel ideas: short vertical clips framed for phones, "
+    "captioned and opening on a designed cover, for Instagram Reels, TikTok "
+    "and YouTube Shorts; count is how many (1 to 5, 3 when not told). The "
+    "coach picks the ideas she likes in Reels and makes the video file there\n"
     "- edit_navbar: change the navbar layout (one of: classic, centered, "
     "split, minimal, pill) and/or its call-to-action button (cta_text plus "
     "cta_href, an internal path like /courses); include only what changes\n"
@@ -1712,8 +1712,8 @@ def _card(tenant, action, actor=None, context=None):
         return {
             "kind": "make_reels",
             "title": f"Make {count} reel{'s' if count > 1 else ''} from {title[:100]}",
-            "detail": "I find its best moments, frame them for phones and caption them. You review each "
-            "one in Reels before it becomes a video. Nothing is posted.",
+            "detail": "I find its best moments and design a cover for each. You pick the ones you like in "
+            "Reels before they become videos. Nothing is posted.",
             "token": tokens.stash_action(
                 schema, {"kind": "make_reels", "params": {"video_id": action.video_id, "count": count}}
             ),

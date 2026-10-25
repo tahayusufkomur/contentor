@@ -10,11 +10,47 @@ export type SearchStatus =
   | "transcribing"
   | "picking"
   | "framing"
+  | "covering"
   | "done"
   | "failed";
-export type ReelStatus = "draft" | "rendering" | "ready" | "failed";
+/** An idea is a moment found ahead of the coach; it becomes a draft when she picks it. */
+export type ReelStatus = "idea" | "draft" | "rendering" | "ready" | "failed";
 export type ReelStyle = "bold" | "clean" | "brand";
 export type ReelLayout = "auto" | "center" | "fit";
+/** Why a moment works (backend/apps/reels/moments.py KINDS); "" when picked by rule. */
+export type ReelKind = "send" | "funny" | "hook" | "insight" | "";
+export type CoverDesign = "editorial" | "bold" | "poster" | "series";
+
+/** What a cover is drawn in besides the reel's own: the site's name, look and colours. */
+export interface CoverBrand {
+  name: string;
+  look: string;
+  colors: Record<string, string>;
+  highlight: string;
+}
+
+/** A reel's cover: its first second, the hook (one *word* in stars lit up) over a frame of the video. */
+export interface ReelCoverCard {
+  design: CoverDesign;
+  title: string;
+  label: string;
+  /** The frame, on a signed link; "" before the video service found any. */
+  photo: string;
+  /** The face on the frame [x, y, w, h], as shares of it. */
+  face: number[] | null;
+  /** The frame's width over its height. */
+  aspect: number | null;
+}
+
+/** A still of the video the cover can be made of; `pick`: the model chose it. */
+export interface ReelCoverFrame {
+  at: number;
+  key: string;
+  url: string;
+  face: number[] | null;
+  aspect: number | null;
+  pick: boolean;
+}
 
 export interface ReelSearch {
   status: SearchStatus;
@@ -31,12 +67,14 @@ export interface ReelVideo {
   words: WordsState;
   search: ReelSearch;
   reels: number;
+  ideas: number;
   created_at: string;
 }
 
 export interface ReelVideos {
   /** Whether the video service is on, so reels can be made into files. */
   render: boolean;
+  brand: CoverBrand;
   videos: ReelVideo[];
 }
 
@@ -49,6 +87,10 @@ export interface ReelSummary {
   title: string;
   caption: string;
   score: number;
+  kind: ReelKind;
+  /** Why the moment works, in a line, to the coach. */
+  why: string;
+  cover: ReelCoverCard;
   status: ReelStatus;
   error: string;
   /** Ready, but edited since its file was made. */
@@ -60,7 +102,8 @@ export interface ReelSummary {
 
 export interface ReelOptions {
   cuts: boolean;
-  title: boolean;
+  /** The reel opens on its cover. */
+  cover: boolean;
   progress: boolean;
   end_card: boolean;
   clean_audio: boolean;
@@ -102,6 +145,10 @@ export interface ReelFont {
 }
 
 export interface ReelDetail extends ReelSummary {
+  cover: ReelCoverCard & CoverBrand & { frame: string };
+  frames: ReelCoverFrame[];
+  /** Whether the cover was made as its own picture with the video. */
+  cover_file: boolean;
   style: ReelStyle;
   layout: ReelLayout;
   options: ReelOptions;
@@ -129,7 +176,7 @@ export interface ReelDetail extends ReelSummary {
     /** The brand style's outline colour. */
     edge: string;
     look: string;
-    fonts: { caption: ReelFont; title: ReelFont };
+    fonts: { caption: ReelFont };
     /** The look's own families, whatever the style. */
     look_fonts: { display: string; body: string };
   };
@@ -141,4 +188,7 @@ export interface ReelDetail extends ReelSummary {
 
 export type ReelPatch = Partial<
   Pick<ReelDetail, "title" | "caption" | "start" | "end" | "style" | "layout">
-> & { options?: Partial<ReelOptions> };
+> & {
+  options?: Partial<ReelOptions>;
+  cover?: Partial<{ design: CoverDesign; frame: string; label: string }>;
+};

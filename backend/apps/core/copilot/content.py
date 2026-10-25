@@ -578,8 +578,9 @@ def create_email_draft(user, params):
 
 
 def make_reels(user, params):
-    """The Marketing Specialist starts finding reels in one of the coach's videos (apps.reels.jobs). The card's
-    link opens Reels on that video, where the drafts appear once found; the coach makes each one a video."""
+    """The Marketing Specialist starts finding reel ideas in one of the coach's videos (apps.reels.jobs). The
+    card's link opens Reels on that video, where the ideas appear once found; the coach picks the ones she
+    likes and makes each a video."""
     from apps.courses.models import Video
     from apps.reels import jobs
 

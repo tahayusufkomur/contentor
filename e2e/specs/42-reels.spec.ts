@@ -1,12 +1,14 @@
 // e2e/specs/42-reels.spec.ts
 //
-// Reels (backend/apps/reels, frontend-customer components/admin/reels): a short clip of a coach's video,
-// framed 9:16 and captioned, made into a real MP4 by the video service (infra/video) and downloaded.
+// Reels (backend/apps/reels, frontend-customer components/admin/reels): a moment of a coach's video found as
+// an idea with its cover designed, picked, framed 9:16 and captioned, made into a real MP4 by the video
+// service (infra/video) and downloaded with its cover picture.
 //
-// Scribe and the moment-picking model are not part of the run: the dev-only words endpoint gives the video
-// its words and a draft reel picked from them by rule (both are unit-tested on the backend). What runs for
-// real: the Reels page, the editor's live preview and autosave, the render (ffmpeg in the video service,
-// the end card through the browser sidecar) and the download link.
+// Scribe and the models are not part of the run: the dev-only words endpoint gives the video its words and an
+// idea picked from them by rule (both are unit-tested on the backend), its cover frames found by the video
+// service in its own order. What runs for real: the Reels page's ideas, the editor's live preview, cover
+// designs and autosave, the render (ffmpeg in the video service, the cover and the end card through the
+// browser sidecar) and the download links.
 
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
@@ -23,7 +25,7 @@ const WORDS = Array.from({ length: 6 }, (_, s) =>
   ]),
 ).flat();
 
-test("a reel is edited, made into a video and downloaded", async ({ browser }) => {
+test("an idea is picked, its cover designed, made into a video and downloaded", async ({ browser }) => {
   test.setTimeout(240_000);
   const coach = await coachContext(browser);
   const api = coach.request;
@@ -45,25 +47,41 @@ test("a reel is edited, made into a video and downloaded", async ({ browser }) =
   const video = (await made.json()) as { id: number };
 
   try {
-    // ── Its words and a draft reel ──────────────────────────────────────────
+    // ── Its words and an idea, its cover frames found ───────────────────────
     const seeded = await api.post(`${TENANT}/api/v1/reels/dev/words/${video.id}/`, {
       data: { words: WORDS, language: "en", reel: true },
     });
     expect(seeded.status(), `seeding failed: ${await seeded.text()}`).toBe(200);
     const { reel } = (await seeded.json()) as { reel: string };
 
-    // ── The Reels page lists it under its video ─────────────────────────────
+    // ── The Reels page shows the video's ideas, each as its cover ───────────
     const page = await coach.newPage();
     await page.goto(`${TENANT}/admin/reels?video=${video.id}`);
-    await expect(page.getByRole("heading", { name: title, level: 2 })).toBeVisible(SLOW);
-    await page.locator(`a[href="/admin/reels/${reel}"]`).click();
-    await page.waitForURL(new RegExp(`/admin/reels/${reel}$`));
+    const idea = page.getByRole("article", { name: "Reel idea" });
+    await expect(idea).toHaveCount(1, SLOW);
+    await expect(idea.getByText("Strong hook")).toBeVisible();
+    await expect(idea.locator("[data-cover-design] img")).toHaveAttribute("src", /^http/);
+    await idea.getByRole("button", { name: "Use this idea" }).click();
+    await page.waitForURL(new RegExp(`/admin/reels/${reel}$`), SLOW);
 
-    // ── The editor: a live preview, and every change saved ──────────────────
+    // ── The editor: a live preview, the cover, and every change saved ───────
     await expect(page.getByLabel("Preview of the reel")).toBeVisible(SLOW);
-    const saved = page.waitForResponse(
-      (res) => res.request().method() === "PATCH" && res.url().endsWith(`/api/v1/reels/${reel}/`),
-    );
+    const save = () =>
+      page.waitForResponse(
+        (res) => res.request().method() === "PATCH" && res.url().endsWith(`/api/v1/reels/${reel}/`),
+      );
+    const designs = page.getByRole("radiogroup", { name: "Design" });
+    let saved = save();
+    await designs.getByRole("radio", { name: /Bold/ }).click();
+    expect((await saved).ok()).toBe(true);
+    await expect(designs.getByRole("radio", { name: /Bold/ })).toHaveAttribute("aria-checked", "true");
+    const frames = page.getByRole("radiogroup", { name: "Frame" }).getByRole("radio");
+    expect(await frames.count()).toBeGreaterThan(1);
+    saved = save();
+    await frames.nth(1).click();
+    expect((await saved).ok()).toBe(true);
+    await expect(frames.nth(1)).toHaveAttribute("aria-checked", "true");
+    saved = save();
     await page.getByRole("radio", { name: /Clean/ }).click();
     expect((await saved).ok()).toBe(true);
     await expect(page.getByRole("radio", { name: /Clean/ })).toHaveAttribute("aria-checked", "true");
@@ -79,6 +97,15 @@ test("a reel is edited, made into a video and downloaded", async ({ browser }) =
     const body = Buffer.from(await file.arrayBuffer());
     expect(body.subarray(4, 8).toString(), "an MP4 file").toBe("ftyp");
     expect(body.length).toBeGreaterThan(20_000);
+
+    // ── Its cover, the picture posted as the reel's cover ───────────────────
+    await expect(page.getByRole("button", { name: "Cover" })).toBeVisible();
+    const coverLink = await api.get(`${TENANT}/api/v1/reels/${reel}/cover/`);
+    expect(coverLink.status(), `no cover link: ${await coverLink.text()}`).toBe(200);
+    const picture = await fetch(((await coverLink.json()) as { url: string }).url);
+    expect(picture.ok, `the cover did not download: ${picture.status}`).toBeTruthy();
+    const png = Buffer.from(await picture.arrayBuffer());
+    expect(png.subarray(1, 4).toString(), "a PNG file").toBe("PNG");
   } finally {
     // the video's deletion takes its reels, and their files with them
     await api.delete(`${TENANT}/api/v1/courses/videos/${video.id}/`);
