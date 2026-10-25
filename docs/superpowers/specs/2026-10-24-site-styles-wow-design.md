@@ -290,6 +290,13 @@ Open, with the default this program uses until the owner says otherwise
 - **O3:** which looks retire or merge. Decided at Gate C, from the post-Phase-2 capture and eval.
 - **O4:** the site's light/dark toggle moves to the footer.
 
+Owner, 2026-10-25 (Gate A)
+
+- **Gate A approved as built** ("Amazing work, approved, deploy"). The photo-treatment assignment, the
+  O1 flagship set (kinetic, velvet, journal, pop) and the calls listed at the gate stand as built: kinetic's
+  scrim and the band duotones kept, long quotes at line-height 1.32, a renamed button with nowhere to go
+  falls back to Contact, the home hero pinned to each style's phone-first variant until Phase 2.
+
 ## 6. The bar: rules every work package follows
 
 Each rule has a check, so a work package can prove it.
@@ -334,7 +341,7 @@ Status values:
 | 1.7a | Phone-first hero, batch A | 0.2, 1.1, 1.6 | Task 1.7 | done (2026-10-24, b3790f86) |
 | 1.7b | Phone-first hero, batch B | 1.7a | Task 1.7 | done (2026-10-24, 275ed6e9) |
 | 1.7c | Phone-first hero, batch C | 1.7b | Task 1.7 | done (2026-10-24, 3a3e6546) |
-| 1.8 | Gate A: before/after capture, eval, owner review | all of Phase 1 | Task 1.8 | in progress (2026-10-25, measured in 99b49330; awaiting the owner's review and deploy) |
+| 1.8 | Gate A: before/after capture, eval, owner review | all of Phase 1 | Task 1.8 | done (2026-10-25, 8f2702e1 deployed) |
 | 2.0 | Flagship directions and comps → Gate B | 1.8 | written at start | todo |
 | 2.1 | Flagship build: kinetic | 2.0, 2.5 | written at start | todo |
 | 2.2 | Flagship build: velvet | 2.0, 2.5 | written at start | todo |
@@ -601,6 +608,12 @@ against G1.
     the text and 8 text-first. A scratch-tenant owner named "Site Eval" skews
     every eval run (set the owner's name to the brief's before the next gate). Key the overlap
     snapshot on `used_assets`, not on page URLs: site_eval pages hold `photo_id`s.
+- 2026-10-25, Gate A: the owner approved Phase 1 as built, and it was deployed from a clean worktree at
+  `8f2702e1` (acemagic, then prodesk; health 200; prod files match the commit). A peer session had already
+  deployed main at 22:47 the night before, before the final review fixes; this deploy carries them. Checked
+  on prod: CareQueen (primer) shows the photo-first phone hero, the personal header and the sticky "Start a
+  course" bar after the first screen. Existing sites keep their composed copy until recomposed: CareQueen's
+  38-character headline and meta line push its button just below the first screen. Next: WP-2.0 (§8).
 
 ## 10. Resources
 
