@@ -2,6 +2,7 @@
 docs/superpowers/specs/2026-10-18-focus-mode-design.md): its questions, its
 draft Course, and how that course is priced, checked and published."""
 
+import re
 from decimal import Decimal
 from statistics import median
 from typing import Literal
@@ -153,6 +154,8 @@ RULES = (
     "matches; otherwise who it is for, in her words.\n"
     "- modules: how many modules. lessons: how many lessons per module. total: how many lessons in "
     "all, only when she gave a total instead of a number per module.\n"
+    "- A course of 'N days' or 'N lessons' is total N (a lesson a day); 'N weeks' or 'N modules' is "
+    "modules N.\n"
     "- named: the module and lesson titles she wrote, word for word and in her order. Lessons she "
     "named without a module go in one module with an empty title.\n"
     "- unclear: a count, amount or level she gave vaguely ('a few modules', 'around 40-50'), or a price "
@@ -277,6 +280,39 @@ def skips(creation) -> set[str]:
 
 def _gave_counts(found) -> bool:
     return any(n is not None for n in (found.modules, found.lessons, found.total))
+
+
+# A count in digits with its unit: "21-day" and "30 lessons" are lessons in all (a lesson a day), "8 weeks" and
+# "5 modules" are modules. Not a range ("40-50 lessons") nor a rate ("3 lessons a week"): those are the model's.
+_COUNT = re.compile(
+    r"(?<![\d\-\u2013])(\d{1,3})[\s-]*(days?|lessons?|sessions?|videos?|classes|weeks?|modules?)\b(\s+(?:per|a|each|every)\b)?",
+    re.IGNORECASE,
+)
+
+
+def counts_in(text: str) -> dict[str, int]:
+    """The one plain count in her words ({"total": 21} or {"modules": 8}); {}
+    when there is none, or modules and lessons both appear (which is per
+    module is the model's reading) or one is a rate."""
+    found: dict[str, int] = {}
+    for number, unit, rate in _COUNT.findall(text):
+        if rate:
+            return {}
+        found.setdefault("modules" if unit.lower().startswith(("week", "module")) else "total", int(number))
+    return found if len(found) == 1 else {}
+
+
+def read_counts(found, text: str) -> None:
+    """The count the model missed, from her digits (``counts_in``), onto
+    ``found``: "A 21 day yoga challenge" sometimes reads as no count.
+    Only when it read none of hers (what it understood, such as "3 lessons a
+    week for 8 weeks", wins) and she named no titles. ``analysis.read`` calls
+    it for her words before an outline exists: a change to a drafted one
+    ("add 2 lessons") is never a count."""
+    if _gave_counts(found) or found.named or any(u.field in ("modules", "lessons") for u in found.unclear):
+        return
+    for field, value in counts_in(text).items():
+        setattr(found, field, value)
 
 
 def apply_found(creation, found) -> None:

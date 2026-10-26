@@ -56,6 +56,8 @@ The adapter (the course's in kinds/course.py):
 - skips(creation): the questions it skips for this creation.
 - FOUND: the analysis.Found subclass its typed answers are read into. RULES: its own analysis rules.
 - UNCLEAR_FIELDS: the fields the analysis may ask a clarify question about.
+- read_counts(found, text): optional, a count of hers the model missed, filled onto ``found`` from her digits;
+  called for her words before a draft exists.
 - apply_found(creation, found): its own fields of a read answer, onto the creation.
 - apply_change(creation, found, *, field, text, item, clarified, fresh): its redraft after a read answer.
 - apply_clarified(creation, field, value): a clarify answer stored onto its own field; True only when

@@ -10,7 +10,7 @@ import pytest
 
 from apps.core import ai as core_ai
 from apps.core.focus import analysis
-from apps.core.focus.kinds.course import CourseFound, NamedModule
+from apps.core.focus.kinds.course import CourseFound, CourseUnclear, NamedModule
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -87,6 +87,60 @@ def test_read_tells_the_model_the_question_on_screen_and_her_site(tenant_ctx):
     assert model.call_args.kwargs["output_model"] is CourseFound
     assert model.call_args.kwargs["system"] is analysis.system_for("course")
     spend.assert_called_once()
+
+
+def _read(text, found=None, *, outline_exists=False, tenant):
+    with _model(found=found or CourseFound()), mock.patch("apps.core.focus.analysis.ai_compose.record_spend"):
+        return analysis.read(tenant, text, kind="course", question="?", outline_exists=outline_exists, currency="usd")
+
+
+@pytest.mark.parametrize(
+    ("text", "counts"),
+    [
+        ("21-day yoga course, one lesson per day", {"total": 21}),
+        ("A 21 day yoga challenge for beginners", {"total": 21}),
+        ("30 lessons on sourdough", {"total": 30}),
+        ("8 week yoga course for back pain", {"modules": 8}),
+        ("A 5-module course on pricing", {"modules": 5}),
+    ],
+)
+def test_an_explicit_count_the_model_missed_is_read_from_her_words(tenant_ctx, text, counts):
+    found = _read(text, tenant=tenant_ctx)
+    assert {k: getattr(found, k) for k in ("modules", "lessons", "total") if getattr(found, k)} == counts
+    brief = analysis.brief_from(found, {})
+    assert {k: brief[k] for k in counts} == counts and brief["capped"] is False
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "yoga for 10 minute lessons",  # a length, not a count
+        "around 40-50 lessons",  # a range: the model asks which
+        "3 lessons a week for 8 weeks",  # a rate: not the lessons in all
+        "4 modules of 3 lessons",  # both kinds: which is per module is the model's reading
+        "A course on desk yoga",
+    ],
+)
+def test_words_that_are_not_one_plain_count_are_left_to_the_model(tenant_ctx, text):
+    found = _read(text, tenant=tenant_ctx)
+    assert (found.modules, found.lessons, found.total) == (None, None, None)
+
+
+def test_what_the_model_read_wins_over_the_digits(tenant_ctx):
+    found = _read("21 days, 3 lessons a week", CourseFound(modules=3, lessons=3), tenant=tenant_ctx)
+    assert (found.modules, found.lessons, found.total) == (3, 3, None)
+    found = _read("a 21 day course", CourseFound(named=[NamedModule(title="Week 1")]), tenant=tenant_ctx)
+    assert found.total is None  # her own titles are her outline
+
+
+def test_a_count_the_model_called_unclear_is_not_read_from_the_digits(tenant_ctx):
+    unclear = CourseUnclear(field="lessons", question="How many?", options=[])
+    assert _read("about 20 lessons", CourseFound(unclear=[unclear]), tenant=tenant_ctx).total is None
+
+
+def test_a_change_to_a_drafted_outline_is_never_a_count(tenant_ctx):
+    found = _read("add 2 lessons to module 3", outline_exists=True, tenant=tenant_ctx)
+    assert (found.modules, found.lessons, found.total) == (None, None, None)
 
 
 def test_read_records_the_spend_of_a_failed_call_and_raises(tenant_ctx):

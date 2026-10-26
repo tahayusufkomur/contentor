@@ -13,7 +13,7 @@ from apps.accounts.models import User
 from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import runs
-from apps.core.focus import flow, jobs, outline
+from apps.core.focus import analysis, flow, jobs, outline
 from apps.core.focus.kinds.course import SIZES, CourseFound
 from apps.courses.models import Course, Lesson, Module
 from apps.tenant_config.models import CopilotRun
@@ -342,6 +342,54 @@ def test_a_total_smaller_than_the_modules_drops_the_last_ones():
 def test_a_total_with_her_module_count_keeps_both():
     out = outline.conform(_draft(modules=2, lessons=2), {"modules": 4, "total": 10}, first=True)
     assert len(out.modules) == 4 and sum(len(m.lessons) for m in out.modules) == 10
+
+
+@pytest.mark.parametrize(
+    ("brief", "sizes"),
+    [
+        ({"total": 21}, [7, 7, 7]),  # whole weeks
+        ({"total": 28}, [7, 7, 7, 7]),
+        ({"total": 30}, [6] * 5),
+        ({"total": 10}, [5, 5]),
+        ({"total": 5}, [5]),
+        ({"total": 100}, [9] * 4 + [8] * 8),  # never over twelve modules
+        ({"total": 144}, [12] * 12),
+        ({"total": 21, "modules": 4}, [6, 5, 5, 5]),  # her modules, shared evenly
+        ({"modules": 8}, []),
+        ({"total": 12, "lessons": 3}, []),
+    ],
+)
+def test_a_total_is_planned_in_whole_weeks_or_evenly_over_her_modules(brief, sizes):
+    assert outline.plan(brief) == sizes
+
+
+def test_the_plan_leaves_out_the_modules_a_redraft_keeps():
+    assert outline.plan({"total": 21, "modules": 4}, kept=1) == [7, 7, 7]
+    assert outline.plan({"total": 21, "modules": 1}, kept=1) == []
+
+
+def test_the_model_is_told_the_plan_and_the_outline_is_exactly_her_total(owner):
+    run_id, creation = _typed(owner, {"analysed": True, "total": 21})
+    with _model(draft=_draft(modules=4, lessons=3)) as model:  # the model ignores the plan
+        jobs.execute(SCHEMA, run_id)
+    turn = json.loads(model.call_args.kwargs["user"])
+    assert turn["exact"]["total"] == 21 and turn["exact"]["lessons_per_module"] == [7, 7, 7]
+    assert Lesson.objects.filter(module__course=_course(creation)).count() == 21
+
+
+def test_a_total_above_twelve_by_twelve_is_held_there_and_says_so(owner):
+    brief = analysis.brief_from(CourseFound(total=365), {})
+    assert brief["total"] == 144 and brief["capped"] is True
+    run_id, creation = _typed(owner, brief)
+    with _model(draft=_draft(modules=12, lessons=12)):
+        jobs.execute(SCHEMA, run_id)
+    assert Lesson.objects.filter(module__course=_course(creation)).count() == 144
+    assert CopilotRun.objects.get(pk=run_id).result["text"].endswith(outline.CAPPED)
+
+
+def test_the_fallback_shapes_a_total_by_the_plan():
+    draft = outline.fallback({"size": "21 lessons"}, "Yoga", {"total": 21})
+    assert [len(m.lessons) for m in draft.modules] == [7, 7, 7]
 
 
 def test_a_redraft_counts_the_modules_she_keeps():

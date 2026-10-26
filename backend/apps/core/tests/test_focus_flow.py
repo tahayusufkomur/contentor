@@ -14,11 +14,12 @@ from apps.billing.models import SubscriptionPlan, SubscriptionPlanAccess
 from apps.core import ai as core_ai
 from apps.core import tasks
 from apps.core.copilot import runs
-from apps.core.focus import analysis, flow, jobs, pricing
+from apps.core.focus import analysis, flow, jobs, outline, pricing
 from apps.core.focus.kinds import course as course_kind
 from apps.courses.models import Course, Lesson, Module
 from apps.media.models import Design
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
+from apps.tenant_config.setup_flow import _Module
 
 SCHEMA = "shared_test"
 
@@ -410,6 +411,30 @@ def test_a_rich_first_answer_skips_what_it_settled(owner, outline_start, analyse
     assert not creation.pending
     labels = [line["label"] for line in flow.state(creation)["answered"]]
     assert "Complete beginners" in labels and "$49 once, theirs to keep." in labels
+
+
+def test_a_21_day_course_drafts_21_lessons_in_three_weeks(owner, analysed):
+    """Her typed first answer, a model that read no count of it, the size question
+    skipped, the outline job and its post-processing: 21 lessons, a week each."""
+    analysed(course_kind.CourseFound(topic="21-day yoga course"))
+    creation = _run_pending(flow.start(owner, "course", text="21-day yoga course, one lesson per day"))
+    assert creation.answers["size"] == "21 lessons"
+    creation = flow.answer(creation, "level", value="beginners")
+    assert creation.outline_run_id  # her words left no size to ask
+
+    def write(**kwargs):
+        plan = json.loads(kwargs["user"])["exact"]["lessons_per_module"]
+        modules = [
+            _Module(title=f"Week {w}", lessons=[f"Day {w}.{n}" for n in range(1, size + 1)])
+            for w, size in enumerate(plan, start=1)
+        ]
+        return outline.OutlineDraft(title="21 days of yoga", description="A week at a time.", modules=modules), 0, "x"
+
+    with mock.patch("apps.core.focus.outline.core_ai.structured", side_effect=write):
+        jobs.execute(SCHEMA, creation.outline_run_id)
+    course = Course.objects.get(pk=creation.record_id)
+    assert [m.lessons.count() for m in course.modules.order_by("order")] == [7, 7, 7]
+    assert not (creation.brief or {}).get("capped")
 
 
 def test_she_waits_on_the_reading_and_cannot_tap_meanwhile(owner, outline_start, analysed):

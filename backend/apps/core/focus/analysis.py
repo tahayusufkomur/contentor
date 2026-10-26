@@ -159,6 +159,8 @@ def read(
         raise
     ai_compose.record_spend(tenant.schema_name, cost)
     found.unclear = [u for u in found.unclear if u.field in adapter.UNCLEAR_FIELDS]
+    if not outline_exists and (read_counts := getattr(adapter, "read_counts", None)):
+        read_counts(found, text)  # an explicit count of hers must not depend on the model's reading
     return found
 
 

@@ -49,9 +49,10 @@ SYSTEM = _DRAFT_RULES + (
     "own words; 'delegate' means pick what suits the topic.\n"
     "- size: "
     + "; ".join(f"'{key}' is {m} module{'s' if m > 1 else ''} of {n} lessons" for key, (m, n) in SIZES.items())
-    + "; 'delegate' or anything else means 3-5 modules of 2-4 lessons.\n"
+    + "; 'delegate' or anything else means 3-5 modules of 2-4 lessons (counts in 'exact' win).\n"
     "- exact: counts and titles the coach gave: use her titles word for word, in her order, and write "
-    "only what she left open.\n"
+    "only what she left open. 'lessons_per_module', when there, is her total shared out: write exactly "
+    "that many modules, each with exactly that many lessons.\n"
     "- notes: what else she said about the course; follow it.\n"
     "- followups: questions she answered about this course; follow her answers.\n"
     "- When 'instruction' is given, it is the coach's change to 'current_outline': apply it and keep "
@@ -136,7 +137,7 @@ def _draft(tenant, creation, course, instruction: str) -> OutlineDraft:
     try:
         parsed, cost, _model = core_ai.structured(
             system=SYSTEM,
-            user=_user_turn(tenant, answers, course, instruction, drafted, brief),
+            user=_user_turn(tenant, answers, course, instruction, drafted, brief, kept),
             output_model=OutlineDraft,
             model=settings.COPILOT_MODEL,
             max_tokens=12000,
@@ -229,6 +230,26 @@ def conform(draft: OutlineDraft, brief: dict, *, first: bool, kept: int = 0) -> 
     return draft.model_copy(update={"modules": [_Module(title=t, lessons=ls) for t, ls in modules]})
 
 
+def plan(brief: dict, kept: int = 0) -> list[int]:
+    """The lessons in each module for a total she gave without a number per
+    module: shared evenly over her modules, else whole weeks of 7 (21 lessons
+    are 3 weeks), else modules of up to 6, never over MAX_MODULES. [] without
+    a total. ``kept``: the modules a redraft keeps, which her count includes."""
+    total, count = brief.get("total"), brief.get("modules")
+    if not total or brief.get("lessons"):
+        return []
+    if count:
+        modules = max(count - kept, 0)
+    elif total % 7 == 0 and total // 7 <= MAX_MODULES:
+        modules = total // 7
+    else:
+        modules = min(-(-total // 6), MAX_MODULES)
+    if not modules:
+        return []
+    base, extra = divmod(total, modules)
+    return [min(base + (k < extra), MAX_LESSONS) for k in range(modules)]
+
+
 def _fit_total(modules: list, total: int, *, resize: bool) -> None:
     """Trim or pad lessons from the last module back until they add up to
     ``total``. ``resize``: a module count of hers is not given, so modules may
@@ -269,14 +290,17 @@ def site(tenant, course_id=None) -> dict:
     }
 
 
-def _user_turn(tenant, answers: dict, course, instruction: str, drafted: list, brief: dict) -> str:
+def _user_turn(tenant, answers: dict, course, instruction: str, drafted: list, brief: dict, kept: int = 0) -> str:
+    exact = {
+        key: brief.get(key) or ([] if key == "named" else None) for key in ("modules", "lessons", "total", "named")
+    }
+    if sizes := plan(brief, kept):
+        exact["lessons_per_module"] = sizes
     turn = {
         "topic": answers.get("topic", ""),
         "level": answers.get("level", ""),
         "size": answers.get("size", ""),
-        "exact": {
-            key: brief.get(key) or ([] if key == "named" else None) for key in ("modules", "lessons", "total", "named")
-        },
+        "exact": exact,
         "notes": brief.get("notes", ""),
         "followups": brief.get("followups", []),
         "instruction": instruction,
@@ -317,15 +341,16 @@ def fallback(answers: dict, title: str, brief: dict | None = None) -> OutlineDra
     brief = brief or {}
     modules, lessons = SIZES.get(answers.get("size"), SIZES["short"])
     modules, lessons = brief.get("modules") or modules, brief.get("lessons") or lessons
+    sizes = plan(brief) or [lessons] * min(modules, MAX_MODULES)
     draft = OutlineDraft(
         title=title,
         description="",
         modules=[
             _Module(
                 title=FALLBACK_MODULES[i] if i < len(FALLBACK_MODULES) else f"Module {i + 1}",
-                lessons=[f"Lesson {n}" for n in range(1, lessons + 1)],
+                lessons=[f"Lesson {n}" for n in range(1, size + 1)],
             )
-            for i in range(min(modules, MAX_MODULES))
+            for i, size in enumerate(sizes)
         ],
     )
     return conform(draft, brief, first=True)
