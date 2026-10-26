@@ -118,6 +118,7 @@ def test_an_explicit_count_the_model_missed_is_read_from_her_words(tenant_ctx, t
         "around 40-50 lessons",  # a range: the model asks which
         "3 lessons a week for 8 weeks",  # a rate: not the lessons in all
         "4 modules of 3 lessons",  # both kinds: which is per module is the model's reading
+        "a 5-day intro with 20 lessons",  # two different totals: the model's reading
         "A course on desk yoga",
     ],
 )

@@ -298,7 +298,9 @@ def counts_in(text: str) -> dict[str, int]:
     for number, unit, rate in _COUNT.findall(text):
         if rate:
             return {}
-        found.setdefault("modules" if unit.lower().startswith(("week", "module")) else "total", int(number))
+        key = "modules" if unit.lower().startswith(("week", "module")) else "total"
+        if found.setdefault(key, int(number)) != int(number):
+            return {}  # "a 5-day intro with 20 lessons": two counts, the model's reading
     return found if len(found) == 1 else {}
 
 
