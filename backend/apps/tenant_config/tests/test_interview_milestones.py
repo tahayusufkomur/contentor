@@ -317,6 +317,20 @@ def test_style_cards_rank_by_niche_then_tone_and_say_why():
     assert sections.tones_of("Warm, Calm") == ["warm", "calm"]
 
 
+def test_the_look_cards_follow_how_her_disciplines_weigh():
+    def pick(teaches, focus):
+        answers = {}
+        brief.apply_fact(answers, "teaches", teaches)
+        brief.apply_fact(answers, "discipline_focus", focus)
+        cards = ms.style_cards(answers)
+        return next(o for o in cards["options"] if o.get("recommended"))
+
+    assert pick("Yoga, Nutrition", "Mostly yoga")["style"] == "journal"
+    assert pick("Yoga, Nutrition", "Mostly nutrition")["style"] == "tavola"
+    both = pick("Yoga, Meditation", "They're equal")
+    assert both["style"] == "nocturne" and both["reason"].startswith("Made for yoga and meditation creators")
+
+
 def test_free_plan_coach_who_sells_gets_a_paid_course_draft(tenant_ctx, config, owner):
     """Review focus 2: never silently turn a priced course free."""
     from apps.core.models import Tenant

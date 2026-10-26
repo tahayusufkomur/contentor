@@ -721,3 +721,117 @@ def test_who_students_learn_from_is_asked_before_the_pitch_and_unanswered_has_no
     assert ids[ids.index("offers") + 1 : ids.index("offers") + 3] == ["teachers", "pitch"]
     assert "teachers" in brief.FIXED_KINDS
     assert brief.FIELD_BY_ID["teachers"].options == tuple(tile for tile, _ in brief.TEACHERS.values())
+
+
+# ── several things offered: which one leads the site ────────────────────────
+
+
+def _offers(teaches, focus=None):
+    answers = {}
+    brief.apply_fact(answers, "teaches", teaches)
+    if focus:
+        assert brief.apply_fact(answers, "discipline_focus", focus)
+    return answers
+
+
+@pytest.mark.parametrize("teaches", ["Yoga", "Face yoga", "Dance", "Yoga and nutrition coaching"])
+def test_one_discipline_is_never_asked_which_leads_and_behaves_as_before(teaches):
+    answers = _offers(teaches)
+    assert "discipline_focus" not in [f.id for f in brief.required(answers)]
+    assert brief.focus_of(answers) is None and brief.also_niches(answers) == ()
+    assert not brief.apply_fact(answers, "discipline_focus", "They're equal")  # nothing to answer
+    assert "discipline_focus" not in answers
+    # the niche and the subject are the ones read from her words, as ever
+    assert answers["niche"] == brief.niche_for(teaches)
+    assert brief.subject_of(answers) == brief.subject_of({"niche": answers["niche"], "teaches": teaches})
+
+
+def test_several_disciplines_ask_which_leads_right_after_their_kinds():
+    from apps.tenant_config.interview import default_question
+
+    answers = _offers("Yoga, Nutrition")
+    assert brief.disciplines_of(answers) == ["Yoga", "Nutrition"]
+    assert [f.id for f in brief.missing(answers)][:3] == ["specialty", "discipline_focus", "photos"]
+    field = brief.FIELD_BY_ID["discipline_focus"]
+    options, icons, hints = brief.options_for(field, answers)
+    assert options == ("They're equal", "Mostly yoga", "Mostly nutrition")
+    assert icons == ("layers", "flower-2", "salad") and len(hints) == 3
+    assert default_question(field, answers) == "Are yoga and nutrition equally important, or is one your main focus?"
+    assert field.why and field.help.term and not field.multi
+
+
+def test_the_focus_is_stored_as_equal_or_a_main_one_with_the_others_secondary():
+    assert _offers("Yoga, Nutrition", "They're equal")["discipline_focus"] == {"mode": "equal"}
+    assert _offers("Yoga, Nutrition", "Mostly nutrition")["discipline_focus"] == {
+        "mode": "primary",
+        "primary": "Nutrition",
+        "secondary": ["Yoga"],
+    }
+    three = _offers("Yoga, Pilates, Dance", "Mostly pilates")
+    assert three["discipline_focus"] == {"mode": "primary", "primary": "Pilates", "secondary": ["Yoga", "Dance"]}
+    both = _offers("Yoga, Nutrition")
+    assert brief.parse_focus("both the same", both) == {"mode": "equal"}
+    assert brief.parse_focus("yoga mostly", both)["primary"] == "Yoga"
+    assert brief.parse_focus("yoga and nutrition", both) is None  # names both: that is no answer
+    assert brief.parse_focus("Mostly pottery", both) is None
+
+
+def test_the_main_focus_sets_the_niche_and_the_subject_the_site_is_built_on():
+    assert _offers("Yoga, Nutrition")["niche"] == "yoga"  # unanswered: the first niche in the table
+    nutrition = _offers("Yoga, Nutrition", "Mostly nutrition")
+    assert (nutrition["niche"], brief.subject_of(nutrition)) == ("cooking", "nutrition")
+    yoga = _offers("Nutrition, Yoga", "Mostly yoga")
+    assert (yoga["niche"], brief.subject_of(yoga)) == ("yoga", "yoga")
+    # equal: the one she named first leads the niche and the single subject photo searches take
+    equal = _offers("Nutrition, Yoga", "They're equal")
+    assert (equal["niche"], brief.subject_of(equal)) == ("cooking", "nutrition")
+    assert brief.focus_of(equal)["disciplines"] == ["nutrition", "yoga"]
+    assert brief.also_niches(equal) == ("yoga",) and brief.also_niches(nutrition) == ()
+
+
+def test_the_kinds_she_picked_stay_with_their_discipline():
+    answers = _offers("Yoga, Nutrition")
+    brief.apply_fact(answers, "specialty", "Face yoga, Meal planning")
+    assert answers["niche"] == "face_yoga"  # unanswered focus: as before
+    nutrition, yoga = dict(answers), dict(answers)
+    brief.apply_fact(nutrition, "discipline_focus", "Mostly nutrition")
+    assert brief.subject_of(nutrition) == "nutrition meal"
+    brief.apply_fact(yoga, "discipline_focus", "Mostly yoga")
+    assert (yoga["niche"], brief.subject_of(yoga)) == ("face_yoga", "face yoga")
+
+
+def test_her_answer_is_asked_again_when_what_she_offers_changes():
+    answers = _offers("Yoga, Nutrition", "Mostly yoga")
+    brief.apply_fact(answers, "teaches", "Nutrition, Yoga")  # the same two: her answer stands
+    assert answers["discipline_focus"]["primary"] == "Yoga"
+    brief.apply_fact(answers, "teaches", "Yoga, Dance")
+    assert "discipline_focus" not in answers and "discipline_focus" in [f.id for f in brief.required(answers)]
+    brief.apply_fact(answers, "teaches", "Yoga")
+    assert "discipline_focus" not in [f.id for f in brief.required(answers)]
+    # an answer about other disciplines is never read as hers
+    stale = {**_offers("Yoga, Nutrition"), "discipline_focus": {"mode": "primary", "primary": "Dance", "secondary": []}}
+    assert brief.focus_of(stale) is None
+
+
+def test_the_composer_reads_the_focus_as_a_fact():
+    facts = {f["q"]: f["a"] for f in brief.composer_facts(_offers("Yoga, Nutrition", "Mostly yoga"))}
+    assert facts["Their main focus"] == "Mostly yoga, with nutrition alongside"
+    equal = {f["q"]: f["a"] for f in brief.composer_facts(_offers("Yoga, Nutrition", "They're equal"))}
+    assert equal["Their main focus"] == "Yoga and nutrition, equally important"
+    assert "Their main focus" not in {f["q"] for f in brief.composer_facts(_offers("Yoga"))}
+
+
+def test_the_look_follows_the_focus():
+    from apps.core.onboarding.wizard_catalog import recommended_style
+
+    def look(answers):
+        return recommended_style(answers["niche"], "", brief.also_niches(answers))
+
+    assert look(_offers("Yoga, Nutrition", "Mostly yoga")) == "journal"
+    assert look(_offers("Yoga, Nutrition", "Mostly nutrition")) == "tavola"
+    # equal: a look that suits both beats one that suits one...
+    assert look(_offers("Yoga, Meditation", "They're equal")) == "nocturne"
+    assert look(_offers("Yoga, Meditation", "Mostly yoga")) == "journal"
+    # ...and with none that does, the one she named first
+    assert look(_offers("Yoga, Nutrition", "They're equal")) == "journal"
+    assert look(_offers("Nutrition, Yoga", "They're equal")) == "tavola"

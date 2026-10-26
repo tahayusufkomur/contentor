@@ -1322,3 +1322,130 @@ def test_her_words_are_never_cut_or_split(styled):
     given = sc.coach_given(styled)
     assert given["proof"] == {"quotes": [], "numbers": [], "press": []}  # too long for the section: left out
     assert sc.given_families(given) == frozenset()
+
+
+# ── several disciplines: equal or one main focus ────────────────────────────
+
+
+def _said(tenant, teaches, focus=None):
+    """The tenant's answers as the interview stores them: what she offers and her answer to the focus question."""
+    from apps.tenant_config import interview_brief
+
+    answers = {"style": "journal"}
+    interview_brief.apply_fact(answers, "teaches", teaches)
+    if focus:
+        assert interview_brief.apply_fact(answers, "discipline_focus", focus)
+    tenant.wizard_state = {"flow": "interview", "answers": answers}
+    tenant.save(update_fields=["wizard_state"])
+
+
+_FIND_PHOTO = sc._find_photo
+
+
+def _compose_home(tenant, monkeypatch, teaches, focus=None):
+    """(the home hero, [(topic, first query) of each photo searched for, in page order]), copy and photos as the
+    composer writes them without the AI."""
+    _said(tenant, teaches, focus)
+    monkeypatch.setattr(sc.ai_compose, "compose_available", lambda: False)
+    shown = []
+
+    def spy(queries, aspect, used, ctx, *args, **kwargs):
+        shown.append((ctx["topic"], queries[0]))
+        return _FIND_PHOTO(queries, aspect, used, ctx, *args, **kwargs)
+
+    monkeypatch.setattr(sc, "_find_photo", spy)
+    return sc.compose_page(tenant, "home")[0], shown
+
+
+@pytest.mark.django_db
+def test_equal_and_a_main_focus_compose_noticeably_different_sites(styled, monkeypatch, catalog):
+    single, single_shown = _compose_home(styled, monkeypatch, "Yoga")
+    equal, equal_shown = _compose_home(styled, monkeypatch, "Yoga, Nutrition", "They're equal")
+    yoga, yoga_shown = _compose_home(styled, monkeypatch, "Yoga, Nutrition", "Mostly yoga")
+    food, food_shown = _compose_home(styled, monkeypatch, "Yoga, Nutrition", "Mostly nutrition")
+
+    # One discipline: as ever (no focus asked, one topic, the niche's own headline).
+    assert single["headline"] == "Steadier breath, quieter mind"
+    assert {topic for topic, _ in single_shown} == {"yoga"}
+
+    # Equal: the hero names both, and the photos take turns, the hero's first two included.
+    assert equal["headline"] == "Yoga and nutrition, together"
+    assert equal["kicker"] == "Yoga and nutrition with Maya Laurent"
+    assert "I teach yoga and nutrition" in equal["subhead"]
+    assert [t for t, _ in equal_shown[:4]] == ["yoga", "nutrition", "yoga", "nutrition"]
+    assert abs(sum(t == "yoga" for t, _ in equal_shown) - sum(t == "nutrition" for t, _ in equal_shown)) <= 1
+
+    # A main focus leads: its headline, its hero photo and most of the page; the other one supports.
+    assert yoga["headline"] == "Steadier breath, quieter mind" and yoga["kicker"] == "Yoga with Maya Laurent"
+    assert yoga["subhead"].endswith("I also teach nutrition.")
+    assert yoga_shown[0][1].startswith("yoga ") and food_shown[0][1].startswith("nutrition ")
+    assert food["headline"] == "Real food, every night of the week" and food["subhead"].endswith("I also teach yoga.")
+    for shown, lead, other in ((yoga_shown, "yoga", "nutrition"), (food_shown, "nutrition", "yoga")):
+        topics = [t for t, _ in shown]
+        assert topics.count(lead) > len(topics) / 2 and other in topics[1:]
+        assert topics[0] == lead and topics[1] == lead  # the hero's photos are the main one's
+
+    # The same two disciplines, four different sites.
+    assert len({(h["headline"], h["subhead"]) for h in (single, equal, yoga, food)}) == 4
+    assert equal_shown != yoga_shown != food_shown
+
+
+@pytest.mark.django_db
+def test_the_models_see_the_focus_only_when_she_gave_one(styled, monkeypatch):
+    _said(styled, "Yoga")
+    assert "focus" not in sc._coach_data(styled, "Maya Laurent")
+    _said(styled, "Yoga, Nutrition")
+    assert "focus" not in sc._coach_data(styled, "Maya Laurent")  # asked, not yet answered: as before
+    _said(styled, "Yoga, Nutrition", "They're equal")
+    equal = sc._coach_data(styled, "Maya Laurent")
+    assert equal["focus"] == {"mode": "equal", "disciplines": ["yoga", "nutrition"]}
+    assert equal["topic"] == "yoga and nutrition"
+    _said(styled, "Yoga, Nutrition", "Mostly nutrition")
+    main = sc._coach_data(styled, "Maya Laurent")
+    assert main["focus"] == {
+        "mode": "primary",
+        "primary": "nutrition",
+        "secondary": ["yoga"],
+        "disciplines": ["nutrition", "yoga"],
+    }
+    assert main["topic"] == "nutrition" and main["niche"] == "cooking"
+
+    fake = FakeAI(plan={})
+    monkeypatch.setattr(sc.core_ai, "structured", fake)
+    sc.plan_site(styled, force=True)
+    sc.compose_page(styled, "home")
+
+    def coach_data(label):
+        lines = next(user for name, user in fake.calls if name == label).splitlines()
+        return json.loads(lines[next(n for n, line in enumerate(lines) if line.startswith("<<COACH_DATA")) + 1])
+
+    for label in ("contentor:compose-plan", "contentor:compose-page"):
+        assert coach_data(label)["focus"] == main["focus"]
+    assert 'Focus\n- When the coach data has a "focus"' in sc.PAGE_SYSTEM_PROMPT
+
+
+def test_a_photos_discipline_follows_the_focus():
+    def topics(focus, page, families):
+        ctx = sc._ctx("yoga", "Maya", "", "yoga and nutrition", focus=focus)
+        rest = 0
+        out = []
+        for n, family in enumerate(families):
+            out.append(sc._slot_topic(ctx, page, family, n, rest))
+            rest += family != "hero"
+        return out
+
+    flow = ["hero", "hero", "story", "benefits", "moments", "cta"]
+    equal = {"mode": "equal", "disciplines": ["yoga", "nutrition"]}
+    assert topics(equal, "home", flow) == ["yoga", "nutrition", "yoga", "nutrition", "yoga", "nutrition"]
+    assert topics(equal, "about", flow)[0] == "nutrition"  # an inner page does not always open on the same one
+    main = {"mode": "primary", "primary": "yoga", "secondary": ["nutrition"], "disciplines": ["yoga", "nutrition"]}
+    assert topics(main, "home", flow) == ["yoga", "yoga", "yoga", "yoga", "nutrition", "yoga"]
+    assert topics(main, "faq", ["hero"]) == ["yoga"]
+    assert sc._slot_topic(sc._ctx("yoga", "Maya", "", "yoga"), "home", "hero", 0, 0) == "yoga"  # one discipline
+
+
+def test_the_photos_of_every_discipline_are_allowed_and_the_generic_briefs_leave_the_name_to_each_photo():
+    ctx = sc._ctx("fitness", "Iron", "", "boxing", focus={"mode": "primary", "disciplines": ["boxing", "yoga"]})
+    assert {"boxing", "yoga"} <= ctx["allowed"]  # the supporting discipline's photos are never "off topic"
+    assert sc._generic_brief("hero", "image", ctx, "home")["subject"] == "instructor teaching a class"
+    assert "boxing" not in sc._queries(sc._generic_brief("hero", "image", ctx, "home"), {**ctx, "topic": "yoga"}, "")[0]

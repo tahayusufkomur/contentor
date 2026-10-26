@@ -223,9 +223,14 @@ def speaker(brand, description="", answers=None) -> str:
     return "I" if re.search(r"\b(i|i'm|my|me)\b", text) else "we"
 
 
-def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS, first_name="", said="") -> dict:
-    """``said``: "I" or "we" as _coach_data read it from her answers."""
+def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS, first_name="", said="", focus=None) -> dict:
+    """``said``: "I" or "we" as _coach_data read it from her answers. ``focus``: how her disciplines shape the
+    site (_coach_data["focus"]: mode "equal" | "primary", "disciplines" lead first, and for a main focus
+    "primary" and "secondary"), None for one discipline."""
+    from apps.tenant_config import interview_brief
+
     t = subject or topic(niche)
+    topics = tuple((focus or {}).get("disciplines") or ())
     solo = (said or speaker(brand, description)) == "I"
     # Buttons lead to her main offer: the courses, else the classes, else her story.
     primary = next(h for h in ("/courses", "/events", "/about") if h in links)
@@ -237,7 +242,12 @@ def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS, first_na
         "offering": {"/courses": "courses", "/events": "sessions"}.get(primary, "work"),
         "niche": str(niche or "general"),
         # Photo disciplines this coach's words allow (see ai_curate.off_topic).
-        "allowed": ai_curate.allowed_disciplines(t, str(description or "")),
+        "allowed": ai_curate.allowed_disciplines(t, *topics, str(description or "")),
+        # Several disciplines (empty for one): each photo shows one of them (_slot_topic); a main focus
+        # names the others beside it in the hero (``also``); with equal, ``topic`` already names them all.
+        "topics": topics,
+        "focus": (focus or {}).get("mode"),
+        "also": interview_brief.say_list((focus or {}).get("secondary") or ()),
         "brand": brand or "this studio",
         "topic": t,
         "Topic": t[:1].upper() + t[1:],
@@ -275,13 +285,19 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
             return _hero_intro(page_key, c)
         verb = "coach" if t == "coaching" else f"teach {t}"
         tail = " with clear guidance, patience and room for your questions."
+        headline = _HEADLINES.get(
+            c["niche"],
+            _fit(f"{c['Topic']} that fits your real life", HOME_HERO_HEADLINE_MAX, _HEADLINES["general"]),
+        )
+        subhead = f"I {verb}{tail}" if c["solo"] else _fit(f"At {brand} we {verb}{tail}", 180, f"We {verb}{tail}")
+        if c["focus"] == "equal":  # the topic names them all: the headline too, none of them a niche's line
+            headline = _fit(f"{c['Topic']}, together", HOME_HERO_HEADLINE_MAX, headline)
+        elif c["also"]:  # a main focus leads; the others support it
+            subhead = _fit(f"{subhead} {c['i'].capitalize()} also teach {c['also']}.", 180, subhead)
         return {
             "kicker": _fit(f"{c['Topic']} with {brand}", 40, c["Topic"]),
-            "headline": _HEADLINES.get(
-                c["niche"],
-                _fit(f"{c['Topic']} that fits your real life", HOME_HERO_HEADLINE_MAX, _HEADLINES["general"]),
-            ),
-            "subhead": f"I {verb}{tail}" if c["solo"] else _fit(f"At {brand} we {verb}{tail}", 180, f"We {verb}{tail}"),
+            "headline": headline,
+            "subhead": subhead,
             # One button, no second one and no meta line. With nothing to sell yet it asks, never About.
             "ctaLabel": c["primaryLabel"] if c["primary"] != "/about" else "Get in touch",
             "ctaHref": c["primary"] if c["primary"] != "/about" else "/contact",
@@ -888,6 +904,10 @@ One person stands for the coach. Brief a recognisable portrait of the coach for 
 (hero.image on home, story.image on other pages), and describe the same person every time: same gender, age range, \
 hair and clothing colour. Every other slot shows either students (different people are expected there) or a close \
 detail of practice: hands, feet, a back view, no recognisable face. Vary framing and moments across the site.
+When the coach data has a "focus", the coach offers several things. The site decides which of them each photo \
+shows and adds its name to the search, so name no practice or discipline in a brief: describe who is in frame, the \
+moment and the setting. In the layout, focus "equal" gives every discipline the same room; "primary" lets the main \
+discipline open the site and keeps the others in later, supporting sections.
 
 Also return
 - voice: one line on how the coach sounds, drawn from their own words.
@@ -938,7 +958,8 @@ def _generic_brief(family, slot, ctx, page_key) -> dict:
     # R2: the coach's portrait is hero.image on home and story.image elsewhere; the page's other one shows students.
     if (family, slot) == (("story", "image") if page_key == "home" else ("hero", "image")):
         subject = "students practising together in class"
-    return {"subject": f"{ctx['topic']} {subject}"[:BRIEF_FIELD_MAX], "action": "", "setting": "", "person": ""}
+    lead = "" if ctx.get("topics") else ctx["topic"]  # several disciplines: each photo's own, added by _queries
+    return {"subject": f"{lead} {subject}".strip()[:BRIEF_FIELD_MAX], "action": "", "setting": "", "person": ""}
 
 
 _GENERIC_SUBJECTS = {
@@ -1005,7 +1026,13 @@ def _plan_site(tenant, *, force=False) -> dict:
 
     coach = _coach_data(tenant, brand)
     ctx = _ctx(
-        coach["niche"], brand, coach["description"], coach["topic"], tuple(coach["links"]), said=coach["speaker"]
+        coach["niche"],
+        brand,
+        coach["description"],
+        coach["topic"],
+        tuple(coach["links"]),
+        said=coach["speaker"],
+        focus=coach.get("focus"),
     )
     raw, source = None, "fallback"
     if ai_compose.compose_available():
@@ -1108,6 +1135,7 @@ def _peer_assets(tenant, niche: str) -> frozenset[str]:
 
 def _style_and_brand(tenant) -> tuple[str, str]:
     from apps.core.onboarding.wizard_catalog import recommended_style
+    from apps.tenant_config import interview_brief
     from apps.tenant_config.models import TenantConfig
 
     with tenant_context(tenant):
@@ -1116,7 +1144,9 @@ def _style_and_brand(tenant) -> tuple[str, str]:
     if not style_id:
         answers = (tenant.wizard_state or {}).get("answers") or {}
         style_id = recommended_style(
-            answers.get("niche") or tenant.template_niche or "general", answers.get("tone") or ""
+            answers.get("niche") or tenant.template_niche or "general",
+            answers.get("tone") or "",
+            interview_brief.also_niches(answers),
         )
     if not style_id:
         raise ValueError(f"tenant {tenant.schema_name} has no site style")
@@ -1128,6 +1158,14 @@ def _coach_data(tenant, brand) -> dict:
 
     answers = interview_brief.answers_of(tenant)
     niche = answers.get("niche") or getattr(tenant, "template_niche", "") or "general"
+    # She offers several things and said how they weigh (interview_brief.focus_of): equal names them all in
+    # the topic, a main focus makes it the topic and lists the others as supporting. One discipline: no focus.
+    focus = interview_brief.focus_of(answers)
+    subject = (
+        interview_brief.say_list(focus["disciplines"])
+        if focus and focus["mode"] == "equal"
+        else interview_brief.subject_of(answers)
+    )
     followups = [
         {"q": str(item.get("q") or "").strip()[:200], "a": str(item.get("a") or "").strip()[:500]}
         for item in ((answers.get("description_followups") or {}).get("items") or [])
@@ -1136,7 +1174,7 @@ def _coach_data(tenant, brand) -> dict:
     return {
         "brand": brand,
         "niche": niche,
-        "topic": interview_brief.subject_of(answers) or topic(niche),
+        "topic": subject or topic(niche),
         "description": str(answers.get("description") or "").strip()[:500],
         # "I" or "we" on every page: her answer, else the guess from her name and words.
         "speaker": speaker(brand, answers.get("description"), answers),
@@ -1144,6 +1182,7 @@ def _coach_data(tenant, brand) -> dict:
         "goals": [str(g) for g in (answers.get("goals") or []) if isinstance(g, str)][:8],
         # The pages her site may link to (every Href field is one of them).
         "links": list(coach_links(answers)),
+        **({"focus": {k: v for k, v in focus.items() if k != "niches"}} if focus else {}),
         # The statement is made from it (GIVEN_FAMILIES); absent when she gave none.
         **({"belief": belief} if (belief := " ".join(str(answers.get("belief") or "").split())[:300]) else {}),
     }
@@ -1353,6 +1392,13 @@ someone else.
 their words: shorten it, never change what it says. Two words are welcome.
 - proof: write only its heading, short and fitting what the section holds. Its quotes, numbers and press are the \
 coach's own and are added for you.
+
+Focus
+- When the coach data has a "focus", the coach offers several things; never claim one they did not list. Mode \
+"equal": every discipline gets the same weight; the home hero's headline and subheadline name them all or speak of \
+them as one practice, and the other sections take them in turn. Mode "primary": the "primary" discipline leads and \
+alone opens the home hero and its headline; the "secondary" ones appear as support (a line in the hero subheadline, \
+a benefit, a step, an answer), never as the headline.
 
 Pages
 - Each page has one job, and its opening section (the hero, or the intro band on inner pages) says what THIS page \
@@ -1725,7 +1771,7 @@ def _pool_candidates(pools: dict, topic: str, orientation: str, used: set, place
     building in parallel run the identical query, so the client's Redis cache
     serves it to them: a whole site costs a handful of searches instead of
     several per slot."""
-    state = pools.setdefault((orientation, placement), {"images": [], "page": 0, "more": True})
+    state = pools.setdefault((topic, orientation, placement), {"images": [], "page": 0, "more": True})
     while True:
         fresh = [i for i in state["images"] if i.asset_id not in used]
         if fresh or not state["more"] or state["page"] >= POOL_PAGES:
@@ -1764,6 +1810,22 @@ def _ranked(images, query: str, ctx, wanted: str | None = None, allow_wrong: boo
         i for i in ai_curate.on_topic_first(images, ctx["topic"], ctx["allowed"]) if allow_wrong or rank[i.asset_id] < 2
     ]
     return sorted(kept, key=lambda i: (rank[i.asset_id], -overlap(i)))
+
+
+def _slot_topic(ctx, page_key, family, n_all, n_rest) -> str:
+    """The discipline one photo shows. One discipline: the site's topic, as ever. Equal: they take turns
+    through the site (``n_all``: the slot's place on its page; a page starts where its place in the site
+    puts it, so no discipline always opens). A main focus: every hero photo is the main one's, and the rest
+    (``n_rest``: the place among them) are the main one's twice, then each supporting one's in turn."""
+    topics = ctx.get("topics") or ()
+    if not topics:
+        return ctx["topic"]
+    if ctx.get("focus") == "equal":
+        return topics[(KNOWN_PAGE_KEYS.index(page_key) + n_all) % len(topics)]
+    if family == "hero":
+        return topics[0]
+    order = (topics[0], topics[0], *topics[1:])
+    return order[n_rest % len(order)]
 
 
 def _own_photo(queries, aspect, taken, wanted):
@@ -1836,8 +1898,8 @@ def _find_photo(queries, aspect, used, ctx, pools=None, wanted=None, own=False, 
     # Everything on topic is already placed: repeat a pool photo rather than leave
     # the slot empty — a fitting repeat before a fresh photo that would sit under the text.
     seen = {}
-    for (pool_orientation, _placement), state in pools.items():
-        if pool_orientation == orientation:
+    for (pool_topic, pool_orientation, _placement), state in pools.items():
+        if pool_orientation == orientation and pool_topic == ctx["topic"]:
             seen.update({i.asset_id: i for i in state["images"]})
     for image in _ranked(list(seen.values()), queries[0], ctx, wanted, allow_wrong=True):
         try:
@@ -1858,7 +1920,8 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
         logger.exception("peer photos unavailable for %s", tenant.schema_name)
         avoid = frozenset()
     placed = []
-    pools = {}  # (orientation, placement) -> shared candidate pages for this page build
+    pools = {}  # (topic, orientation, placement) -> shared candidate pages for this page build
+    n_all = n_rest = 0  # slots so far on this page, and those outside the hero (see _slot_topic)
     try:
         from apps.media import own_photos
 
@@ -1883,12 +1946,15 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
             if slot in skip:
                 continue
             brief = entry.get("images", {}).get(slot) or _generic_brief(family, slot, ctx, page_key)
+            shows = _slot_topic(ctx, page_key, family, n_all, n_rest)
+            n_all, n_rest = n_all + 1, n_rest + (family != "hero")
+            slot_ctx = ctx if shows == ctx["topic"] else {**ctx, "topic": shows}  # this photo's own discipline
             try:
                 image, photo = _find_photo(
-                    _queries(brief, ctx, photo_words),
+                    _queries(brief, slot_ctx, photo_words),
                     aspect,
                     used | set(placed),
-                    ctx,
+                    slot_ctx,
                     pools,
                     wanted_placement(style_id, family, slot),
                     own=own,
@@ -1940,7 +2006,14 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
     coach = _coach_data(tenant, brand)
     first_name = _coach_first_name(tenant)
     ctx = _ctx(
-        coach["niche"], brand, coach["description"], coach["topic"], tuple(coach["links"]), first_name, coach["speaker"]
+        coach["niche"],
+        brand,
+        coach["description"],
+        coach["topic"],
+        tuple(coach["links"]),
+        first_name,
+        coach["speaker"],
+        coach.get("focus"),
     )
     ctx["given"] = given  # her proof and clip ride the fallback fields the model never writes (_fill_page)
 
@@ -2087,7 +2160,11 @@ def site_style_for(answers) -> str:
         return ""
     if answers.get("style") in sections.enabled_styles():
         return answers["style"]
-    return recommended_style(answers.get("niche") or "general", answers.get("tone") or "")
+    from apps.tenant_config import interview_brief
+
+    return recommended_style(
+        answers.get("niche") or "general", answers.get("tone") or "", interview_brief.also_niches(answers)
+    )
 
 
 # ── config writes ────────────────────────────────────────────────────────────

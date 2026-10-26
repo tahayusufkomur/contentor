@@ -283,6 +283,8 @@ def default_question(field: brief.Field, answers, brand="") -> str:
             return f"What else do you offer besides {base.lower()}?"
         tiles = str((answers or {}).get("teaches") or "").split(",")
         return f"Which kinds of {brief.say_list(t.strip().lower() for t in tiles)} do you offer?"
+    if field.kind == "focus":
+        return f"Are {brief.disciplines_said(answers or {})} equally important, or is one your main focus?"
     if field.id == "teaches" and (bio := (answers or {}).get("bio_teaches")):
         # Her bio settles what the name only hints at; a name that says
         # something else is asked about first, before anything builds on it.
@@ -349,8 +351,8 @@ def _next_field(missing: list[brief.Field], turn: InterviewTurn | None, answers=
     # article): once started it runs to its review screen before anything else.
     # The specialty follows its broad answer straight away; so does the tone,
     # which ranks the looks right after it, and who students learn from, which
-    # the home page waits for.
-    if top.kind in brief.CARD_KINDS or top.group or top.kind in ("specialty", "tone", "teachers"):
+    # the home page waits for; and the focus, asked right after the several things she offers.
+    if top.kind in brief.CARD_KINDS or top.group or top.kind in ("specialty", "focus", "tone", "teachers"):
         return top
     begun = {f.group for f in brief.FIELDS if f.group and brief.is_settled(answers or {}, f.id)}
     if section := next((f for f in missing if f.group in begun), None):
@@ -420,6 +422,7 @@ def _code_owned(field: brief.Field | None) -> bool:
 NOTED_NAMES = {
     "teaches": "what you offer",
     "specialty": "your specialty",
+    "discipline_focus": "your main focus",
     "audience": "who you work with",
     "outcome": "what students get",
     "offers": "how you work",
@@ -868,7 +871,7 @@ def _refresh_turn(turn: dict, answers: dict, brand: str) -> dict:
     turn = {**turn, "help": brief.help_of(field, brand), **({"why": field.why} if field.why else {})}
     if field.id == "location":
         return {**turn, "prefill": prefill_for("location", answers)}
-    if field.kind not in ("price", "memberships", "access"):
+    if field.kind not in ("price", "memberships", "access", "focus"):
         return turn
     fresh = guide_for(field, answers=answers, brand=brand)
     return {

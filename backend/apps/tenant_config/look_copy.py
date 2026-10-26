@@ -36,7 +36,8 @@ coach's brand, the subject they teach, how the site speaks ("speaker"), and the 
 Write as this coach would, in English, using only what they told you. Never invent credentials,
 prices, numbers, testimonials or place names they did not give; where a fact is missing, write
 the general line a coach like them would say. Every word must fit this coach's subject: a boxing
-coach's copy never mentions yoga, and a language coach's copy never mentions a gym.
+coach's copy never mentions yoga, and a language coach's copy never mentions a gym. When the facts say they
+offer several things and how those weigh, follow it: equal ones share the words, a main focus leads them.
 
 Length limits: headlines under 60 characters; subheads, intros and texts under 160 characters;
 titles under 40 characters; the story body is two or three short paragraphs, each in <p> tags.

@@ -1163,3 +1163,24 @@ def test_picking_euro_in_setup_prices_events_and_courses_in_euro(client, tenant_
     finally:
         Tenant.objects.filter(pk=tenant_ctx.pk).update(billing_currency=was)
         tenant_ctx.billing_currency = was
+
+
+def test_two_disciplines_are_asked_which_leads_and_one_is_not(client, tenant_ctx, quiet):
+    assert client.post(URL, {"message": "Yoga, Nutrition"}, format="json").json()["guide"]["field"] == "specialty"
+    guide = client.post(URL, {"message": "Face yoga, Meal planning"}, format="json").json()["guide"]
+    assert guide["field"] == "discipline_focus" and guide["multi"] is False
+    assert guide["question"] == "Are yoga and nutrition equally important, or is one your main focus?"
+    assert guide["options"] == ["They're equal", "Mostly yoga", "Mostly nutrition"]
+    assert guide["why"] and guide["help"]["term"]
+    body = client.post(URL, {"message": "Mostly nutrition"}, format="json").json()
+    focus = _answers(tenant_ctx)["discipline_focus"]
+    assert focus == {"mode": "primary", "primary": "Nutrition", "secondary": ["Yoga"]}
+    assert _answers(tenant_ctx)["niche"] == "cooking" and body["guide"]["field"] == "audience"
+    assert "your main focus" not in body["guide"].get("noted", [])
+
+
+def test_one_discipline_goes_straight_on(client, tenant_ctx, quiet):
+    client.post(URL, {"message": "Yoga"}, format="json")
+    guide = client.post(URL, {"message": "Face yoga"}, format="json").json()["guide"]
+    assert guide["field"] == "audience"  # no focus question for one discipline
+    assert "discipline_focus" not in _answers(tenant_ctx)

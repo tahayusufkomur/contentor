@@ -42,6 +42,7 @@ FIXED_KINDS = (
     "currency",
     "access",
     "teachers",
+    "focus",
 )
 OFFERS = ("course", "live", "onsite", "articles", "community")
 OFFER_GOALS = {
@@ -806,6 +807,19 @@ FIELDS: tuple[Field, ...] = (
         multi=True,
         custom=True,
     ),
+    # Only when she offers several things: which of them leads her site (see focus_of).
+    Field(
+        "discipline_focus",
+        "Their main focus",
+        "Are these equally important, or is one your main focus?",  # interview.default_question names hers
+        kind="focus",
+        why="Your home page follows it: the look, the headline and the first photos.",
+        help=Help(
+            "What changes if I pick one?",
+            "Your main focus opens your home page, with its look, headline and first photos. The others still show"
+            " up, a little further down. If you say they're equal, each one gets the same room.",
+        ),
+    ),
     # Asked early: her photos are described in the background while she answers
     # the rest, and the home page is not built until she has said yes or no.
     Field(
@@ -1446,8 +1460,8 @@ def socials_summary(links: dict[str, str]) -> str:
 def coerce(field_id: str, raw):
     """What the coach said → the stored value, or None when it doesn't fit."""
     field = FIELD_BY_ID.get(field_id)
-    if field is None or field.kind in CARD_KINDS or field.kind == "access":
-        return None  # cards go through choose(); the ways in are read in apply_fact()
+    if field is None or field.kind in CARD_KINDS or field.kind in ("access", "focus"):
+        return None  # cards go through choose(); the ways in and the focus are read in apply_fact()
     if field.kind == "offers":
         return parse_offers(raw) or None
     if field.kind == "payments":
@@ -1487,6 +1501,8 @@ def subject_of(answers: dict) -> str:
     dance") for photo search and photo matching: their own first words, or
     the niche's when they name it ("yoga"). A niche alone would search a
     boxing coach's photos as "fitness", and "general" as "coaching"."""
+    if focus := focus_of(answers):
+        return focus["disciplines"][0]  # the one that leads; photo searches take a single subject
     niche = str(answers.get("niche") or "general").replace("_", " ")
     teaches = f"{answers.get('specialty') or ''} {answers.get('teaches') or ''}".lower()
     if niche != "general" and niche in teaches:
@@ -1532,11 +1548,111 @@ def niche_for(text) -> str:
     return jev.choose(text, "Which field does this coach teach?", _NICHE_MEANS) or "general"
 
 
+# ── several things offered: which one leads the site ─────────────────────────
+# How the design picked ONE of several disciplines before this: niche_for() took the first row of
+# _NICHE_WORDS that matched anywhere in "teaches" (so "Nutrition, Yoga" was a yoga site whatever she
+# ticked first), and subject_of() then named that niche as the topic of every hero line and photo
+# search. recommended_style(niche) chose the look, the composer's _HEADLINES / _ctx / photo queries
+# followed the topic. Now she says which leads (discipline_focus); focus_of() is what the composer reads.
+FOCUS_EQUAL = "They're equal"
+MAX_FOCUS = 7  # "They're equal" and one tile each fit the eight tiles a question shows
+
+
+def disciplines_of(answers: dict) -> list[str]:
+    """The separate things she offers ("Yoga", "Nutrition"): the comma-separated picks of her first
+    question, in the order she gave them. The kinds she picked of one of them (her specialty) stay inside it.
+    ponytail: commas only, so a typed "yoga and nutrition" counts as one; Jev could split it if that misfires."""
+    found: dict[str, str] = {}
+    for part in str(answers.get("teaches") or "").split(","):
+        part = part.strip()
+        if part and len(part.split()) <= 4:
+            found.setdefault(part.lower(), part)
+    return list(found.values())[:MAX_FOCUS]
+
+
+def disciplines_said(answers: dict) -> str:
+    """The disciplines as one phrase: "yoga and nutrition"."""
+    return say_list(_lower_first(n) for n in disciplines_of(answers))
+
+
+def _discipline_words(answers: dict, name: str) -> str:
+    """Her own words for one discipline: its name and the kinds of it she picked."""
+    tile = _tile_of(name)
+    labels = {k.lower() for k in SPECIALTIES[tile][1]} if tile else set()
+    kinds = [
+        k.strip()
+        for k in str(answers.get("specialty") or "").split(",")
+        if k.strip() and (k.strip().lower() in labels or (tile and _tile_of(k) == tile))
+    ]
+    return " ".join([name, *kinds])
+
+
+def _niche_and_subject(answers: dict, name: str) -> tuple[str, str]:
+    words = _discipline_words(answers, name)
+    niche = niche_for(words)
+    return niche, subject_of({"niche": niche, "teaches": words})
+
+
+def parse_focus(raw, answers: dict) -> dict | None:
+    """The stored discipline_focus from a tile ("They're equal", "Mostly yoga") or her own words:
+    {"mode": "equal"} or {"mode": "primary", "primary": name, "secondary": [the others]}."""
+    names, text = disciplines_of(answers), str(raw or "").strip().lower()
+    if len(names) < 2 or not text:
+        return None
+    if re.search(r"equal|both|same|balanc", text):
+        return {"mode": "equal"}
+    named = [n for n in names if n.lower() in text]
+    if len(named) != 1:
+        return None
+    return {"mode": "primary", "primary": named[0], "secondary": [n for n in names if n != named[0]]}
+
+
+def focus_of(answers: dict) -> dict | None:
+    """How her disciplines shape the site, as the composer reads it; None for one discipline, before she
+    has answered, or when her answer no longer fits what she offers. Subjects and niches are lead first (her
+    main one, else the first she gave): {"mode", "disciplines": [subject], "niches": [niche]} and, for a
+    main focus, "primary" (its subject) and "secondary" (the others')."""
+    names, saved = disciplines_of(answers), answers.get("discipline_focus")
+    if len(names) < 2 or not isinstance(saved, dict) or saved.get("mode") not in ("equal", "primary"):
+        return None
+    if saved["mode"] == "primary":
+        lead = next((n for n in names if n.lower() == str(saved.get("primary") or "").lower()), None)
+        if lead is None:
+            return None
+        names = [lead, *(n for n in names if n != lead)]
+    rows = [_niche_and_subject(answers, n) for n in names]
+    view = {"mode": saved["mode"], "disciplines": [s for _, s in rows], "niches": [n for n, _ in rows]}
+    if saved["mode"] == "primary":
+        view |= {"primary": rows[0][1], "secondary": [s for _, s in rows[1:]]}
+    return view
+
+
+def also_niches(answers: dict) -> tuple[str, ...]:
+    """The niches a look must also suit: the others' of disciplines she called equal."""
+    focus = focus_of(answers)
+    return tuple(focus["niches"][1:]) if focus and focus["mode"] == "equal" else ()
+
+
+def focus_sentence(answers: dict) -> str:
+    """Her answer in words, for the composer's facts ("Mostly yoga, with nutrition alongside")."""
+    focus = focus_of(answers)
+    if focus is None:
+        return ""
+    if focus["mode"] == "equal":
+        return f"{say_list(focus['disciplines']).capitalize()}, equally important"
+    return f"Mostly {focus['primary']}, with {say_list(focus['secondary'])} alongside"
+
+
 def _sync_legacy(answers: dict, field_id: str) -> None:
     """Keep the keys existing consumers read (CoachBrief, the composer,
     setup_items goals) in step with the brief."""
-    if field_id in ("teaches", "specialty"):
-        answers["niche"] = niche_for(f"{answers.get('specialty') or ''} {answers.get('teaches') or ''}")
+    if field_id in ("teaches", "specialty", "discipline_focus"):
+        focus = focus_of(answers)
+        answers["niche"] = (
+            focus["niches"][0]
+            if focus
+            else niche_for(f"{answers.get('specialty') or ''} {answers.get('teaches') or ''}")
+        )
     if field_id in ("teaches", "pitch"):
         answers["description"] = str(answers.get("pitch") or answers.get("teaches") or "")[:TEXT_MAX]
     if field_id == "offers":
@@ -1554,11 +1670,14 @@ def apply_fact(answers: dict, field_id: str, raw) -> bool:
         value = parse_memberships(raw, answers) or None
     elif field is not None and field.kind == "access":
         value = parse_access(raw, answers, field.group) or None
+    elif field is not None and field.kind == "focus":
+        value = parse_focus(raw, answers)
     else:
         value = coerce(field_id, raw)
     if value is None:
         return False
     if field_id == "teaches":
+        before = {d.lower() for d in disciplines_of(answers)}
         # Kinds picked on the first screen ("Belly dance, Hip hop", "Only face
         # yoga") are the specialty of their tile; "Face yoga and more" keeps the
         # kind and asks what else. Any other answer drops a stale specialty.
@@ -1575,6 +1694,8 @@ def apply_fact(answers: dict, field_id: str, raw) -> bool:
         value = f"{base}, {value}"
     answers[field_id] = value
     answers["delegated"] = [d for d in answers.get("delegated") or [] if d != field_id]
+    if field_id == "teaches" and before != {d.lower() for d in disciplines_of(answers)}:
+        answers.pop("discipline_focus", None)  # her answer was about other disciplines: asked again when several
     _sync_legacy(answers, field_id)
     return True
 
@@ -1609,6 +1730,7 @@ def required(answers: dict) -> list[Field]:
         # A price only for what is sold on its own: members-only or free needs none.
         and (f.kind != "price" or f.group not in ACCESS or BUY in access_of(answers, f.group))
         and (f.kind != "specialty" or specialties_for(answers))
+        and (f.kind != "focus" or len(disciplines_of(answers)) > 1)
         # The calendar shows whichever kind she did not skip.
         and (
             f.kind != "calendar"
@@ -1654,6 +1776,16 @@ def options_for(
         base = str(answers.get("specialty_base") or "").lower() if field.kind == "specialty" else ""
         rows = [(k, icon_of.get(t, "sparkles")) for k, t in _kinds_of(tiles) if k.lower() != base]
         return tuple(k for k, _ in rows), tuple(i for _, i in rows), ()
+    if field.kind == "focus":
+        names = disciplines_of(answers)
+        return (
+            (FOCUS_EQUAL, *(f"Mostly {_lower_first(n)}" for n in names)),
+            ("layers", *(icon_of.get(_tile_of(n) or "", "sparkles") for n in names)),
+            (
+                "Each gets the same room on your site",
+                *(f"{n[:1].upper()}{n[1:]} leads; the rest support it" for n in names),
+            ),
+        )
     if field.kind == "memberships":
         tiers = membership_tiles(answers)
         return (
@@ -1742,6 +1874,8 @@ def composer_facts(answers: dict) -> list[dict]:
             value = "free" if value == 0 else f"{value:g}"
         elif field.kind == "teachers":
             value = TEACHERS.get(value, (value,))[0]
+        elif field.kind == "focus" and not (value := focus_sentence(answers)):
+            continue
         out.append({"q": field.label, "a": str(value)[:TEXT_MAX]})
     return out
 

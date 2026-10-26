@@ -347,7 +347,7 @@ export function questionSteps(
 /** The interview in sections, in the order it asks them: progress reads by
  * section, so it never jumps the way a question count did. */
 export const SECTIONS: { label: string; fields: string[] }[] = [
-  { label: "You", fields: ["teaches", "specialty"] },
+  { label: "You", fields: ["teaches", "specialty", "discipline_focus"] },
   { label: "Students", fields: ["audience", "outcome"] },
   { label: "Offer", fields: ["offers", "teachers", "pitch", "difference"] },
   {

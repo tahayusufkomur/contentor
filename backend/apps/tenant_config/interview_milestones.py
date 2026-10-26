@@ -29,8 +29,9 @@ logger = logging.getLogger(__name__)
 PAGE_NEEDS = {
     # "photos": the page is built with her own photos, so it waits for them.
     # "teachers": every page says "I" or "we" as she answered it.
-    "home": ("teaches", "photos", "audience", "outcome", "offers", "teachers", "pitch"),
-    "about": ("teaches", "teachers", "story", "credentials", "tone"),
+    # "discipline_focus": the home page leads with the one she picked (asked only when she offers several).
+    "home": ("teaches", "discipline_focus", "photos", "audience", "outcome", "offers", "teachers", "pitch"),
+    "about": ("teaches", "discipline_focus", "teachers", "story", "credentials", "tone"),
     "contact": ("contact", "location"),
     "faq": (
         "offers",
@@ -125,16 +126,22 @@ def fire(tenant, answers: dict) -> list[str]:
     return fired_now
 
 
+def _recommended(answers: dict) -> str:
+    """The look the guide picks for her: her niche and tone, and the niches of disciplines she called equal."""
+    from apps.core.onboarding.wizard_catalog import recommended_style
+
+    return recommended_style(answers.get("niche") or "general", answers.get("tone") or "", brief.also_niches(answers))
+
+
 def _start(tenant, answers, key) -> None:
     from apps.core import tasks
-    from apps.core.onboarding.wizard_catalog import recommended_style
 
     from .setup_flow import start_page_build
 
     action, _, arg = key.partition(":")
     tenant_id = tenant.id
     if action == "style" and not brief.is_settled(answers, "site_style"):
-        apply_style(tenant, recommended_style(answers.get("niche") or "general", answers.get("tone") or ""))
+        apply_style(tenant, _recommended(answers))
     elif action == "page":
         start_page_build(tenant, arg)
     elif action == "rank":
@@ -689,7 +696,7 @@ def style_cards(answers: dict, tenant=None) -> dict:
 
     niche = answers.get("niche") or "general"
     tones = sections.tones_of(answers.get("tone"))
-    ranked = sections.rank_styles(niche, tones)
+    ranked = sections.rank_styles(niche, tones, brief.also_niches(answers))
     rank = {s["id"]: i for i, s in enumerate(ranked)}
     first = ranked[0]["id"] if ranked else ""
     looks = sorted(sections.looks(), key=lambda o: rank[o["style"]])
@@ -718,9 +725,10 @@ def style_reason(style: dict | None, niche: str, tones: list[str], answers: dict
     if not style:
         return ""
     matched = [t for t in tones if t in sections.tones_of_style(style)]
-    subject = brief.subject_of(answers)
+    focus = brief.focus_of(answers)
+    subject = brief.say_list(focus["disciplines"]) if focus and focus["mode"] == "equal" else brief.subject_of(answers)
     parts = []
-    if niche in (style.get("niches") or []) and subject:
+    if {niche, *brief.also_niches(answers)} & set(style.get("niches") or []) and subject:
         parts.append(f"made for {subject} creators")
     if matched:
         parts.append(f"it sounds {' and '.join(matched)}")
@@ -1220,7 +1228,6 @@ def apply_logo(tenant, answers: dict) -> None:
 def choose(tenant, answers: dict, field_id: str, value) -> None:
     """A tapped card or chip. Mutates ``answers``; the caller saves them."""
     from apps.core.models import CuratedLogo
-    from apps.core.onboarding.wizard_catalog import recommended_style
 
     from . import sections
 
@@ -1247,7 +1254,7 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         if not brief.delegate(answers, field_id):
             raise ChoiceError("unknown_field")
         if field_id == "site_style":
-            apply_style(tenant, recommended_style(answers.get("niche") or "general", answers.get("tone") or ""))
+            apply_style(tenant, _recommended(answers))
         elif field_id == "site_logo":
             answers["logo"] = {"mode": "wordmark", "curated_id": None}
             apply_logo(tenant, answers)

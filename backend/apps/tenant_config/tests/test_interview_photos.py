@@ -46,7 +46,8 @@ def said(tenant, **answers):
 
 def test_it_is_asked_right_after_what_she_teaches():
     ids = [f.id for f in brief.FIELDS]
-    assert ids.index("photos") == ids.index("specialty") + 1
+    # the focus question (only when she offers several things) sits between them
+    assert ids.index("photos") == ids.index("discipline_focus") + 1 == ids.index("specialty") + 2
     answers = {"teaches": "Chess"}  # no broad tile: no specialty question
     assert interview._next_field(brief.missing(answers), None, answers).id == "photos"
 

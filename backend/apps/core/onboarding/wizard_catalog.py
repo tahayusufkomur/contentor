@@ -104,13 +104,14 @@ def _layout_ids(page: str) -> set[str]:
     return {option["id"] for option in PAGE_LAYOUTS[page]}
 
 
-def recommended_style(niche: str, tone: str = "") -> str:
+def recommended_style(niche: str, tone: str = "", also: tuple[str, ...] = ()) -> str:
     """Best enabled site style for a niche and the tone asked for ("" when
     none is enabled) — mirrors rankStylesForNiche in
-    packages/shared/src/sections/styles/index.ts."""
+    packages/shared/src/sections/styles/index.ts. ``also``: the other niches of
+    disciplines she called equal (see sections.rank_styles)."""
     from apps.tenant_config import sections
 
-    ranked = sections.rank_styles(niche, sections.tones_of(tone))
+    ranked = sections.rank_styles(niche, sections.tones_of(tone), also)
     return ranked[0]["id"] if ranked else ""
 
 

@@ -133,21 +133,24 @@ def tones_of_style(style) -> set[str]:
     return {t.lower() for t in (style.get("tones") or []) + (style.get("tags") or [])}
 
 
-def rank_styles(niche, tones=()) -> list[dict]:
+def rank_styles(niche, tones=(), also=()) -> list[dict]:
     """Enabled styles best first: niche fit, then tone match; ties keep the
-    manifest order. A style with neither still ranks (the coach sees all)."""
+    manifest order. A style with neither still ranks (the coach sees all).
+    ``also``: the other niches of a coach whose disciplines are equal; a look
+    scores for each of them, so one that suits several beats one that suits one,
+    and a tie goes to the niche she named first."""
     tones = {t.lower() for t in tones}
 
     def score(s):
         listed = s.get("niches") or []
-        at = listed.index(niche) if niche in listed else None
+        fit = sum(
+            NICHE_WEIGHTS[min(listed.index(n), len(NICHE_WEIGHTS) - 1)] * (1 - k / 100)
+            for k, n in enumerate((niche, *also))
+            if n in listed
+        )
         moods = tones & {t.lower() for t in s.get("tags") or []}
         plain = tones & tones_of_style(s) - moods
-        return (
-            (NICHE_WEIGHTS[min(at, len(NICHE_WEIGHTS) - 1)] if at is not None else 0)
-            + MOOD_WEIGHT * len(moods)
-            + TONE_WEIGHT * len(plain)
-        )
+        return fit + MOOD_WEIGHT * len(moods) + TONE_WEIGHT * len(plain)
 
     return sorted(enabled_styles().values(), key=lambda s: -score(s))  # sorted() is stable
 
