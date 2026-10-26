@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { FileText } from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { BIO_GUIDE } from "@shared/lib/bio-guide";
 import { Button } from "@/components/ui/button";
 import {
   fileProblem,
@@ -10,6 +11,7 @@ import {
   shareErrorText,
   type ShareDoc,
 } from "@/lib/share-doc";
+import { BioHints, BioNudge } from "./bio-hints";
 
 /** A quiet way to hand over a bio, CV or old About page instead of answering
  * question by question: a file or pasted text, read as one turn that fills
@@ -66,9 +68,9 @@ export function SharePanel({
       }}
     >
       <p className="text-[14px] text-[var(--sf-graphite)]">
-        Add a PDF, text or Markdown file (up to 5 MB), or paste the text. I read
-        it once, fill in what it answers, and leave anything you have already
-        answered alone.
+        Add a PDF, text or Markdown file (up to 5 MB), or write or paste your
+        bio below. I read it once, fill in what it answers, and leave anything
+        you have already answered alone.
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <input
@@ -99,16 +101,28 @@ export function SharePanel({
         )}
       </div>
       {!file && (
-        <textarea
-          aria-label="Or paste text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          disabled={disabled || loading}
-          rows={4}
-          maxLength={20000}
-          placeholder="Or paste text here, like the About page of your old site"
-          className="block w-full resize-y rounded-xl border border-[var(--sf-line-strong)] bg-white px-3 py-2.5 text-[15px] leading-relaxed outline-none transition-[border-color,box-shadow] focus:border-[var(--sf-ink)] focus:shadow-[0_0_0_3px_var(--sf-brass-soft)] disabled:opacity-50"
-        />
+        <>
+          <div>
+            <label
+              htmlFor="setup-share-text"
+              className="mb-1 block text-[14px] font-medium text-[var(--sf-ink)]"
+            >
+              {BIO_GUIDE.label}
+            </label>
+            <BioHints />
+          </div>
+          <textarea
+            id="setup-share-text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            disabled={disabled || loading}
+            rows={6}
+            maxLength={20000}
+            placeholder={BIO_GUIDE.placeholder}
+            className="block w-full resize-y rounded-xl border border-[var(--sf-line-strong)] bg-white px-3 py-2.5 text-[15px] leading-relaxed outline-none transition-[border-color,box-shadow] focus:border-[var(--sf-ink)] focus:shadow-[0_0_0_3px_var(--sf-brass-soft)] disabled:opacity-50"
+          />
+          <BioNudge text={text} />
+        </>
       )}
       {error && (
         <p role="alert" className="text-[13.5px] text-destructive">

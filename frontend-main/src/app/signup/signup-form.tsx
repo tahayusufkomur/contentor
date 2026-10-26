@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   FileText,
+  Info,
   Mail,
   Pencil,
   Plus,
@@ -16,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { BIO_GUIDE, bioIsShort } from "@shared/lib/bio-guide";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -481,6 +483,7 @@ function AboutStep({
     useState<ExtractDocResponse["conflict"]>(null);
   const [hasAdded, setHasAdded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showExample, setShowExample] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -780,8 +783,34 @@ function AboutStep({
                   htmlFor="about-textarea"
                   className="text-[13px] font-medium text-foreground/80"
                 >
-                  {t("aboutOrPaste")}
+                  {BIO_GUIDE.label}
                 </Label>
+                <div className="text-[13px] leading-relaxed text-muted-foreground">
+                  <p>{BIO_GUIDE.why}</p>
+                  <ul className="mt-1 list-disc space-y-0.5 pl-5">
+                    {BIO_GUIDE.includes.map((point) => (
+                      <li key={point}>{point}</li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    aria-expanded={showExample}
+                    aria-controls="about-example"
+                    onClick={() => setShowExample((o) => !o)}
+                    className="-ml-1 mt-1 inline-flex min-h-9 items-center gap-1.5 rounded-full px-1 text-[13px] font-medium text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Info className="h-4 w-4 text-primary" aria-hidden />
+                    {BIO_GUIDE.exampleLink}
+                  </button>
+                  {showExample && (
+                    <p
+                      id="about-example"
+                      className="mt-1 rounded-xl border border-border bg-muted/30 p-3 text-[13px] leading-relaxed text-foreground motion-safe:animate-fade-in"
+                    >
+                      {BIO_GUIDE.example}
+                    </p>
+                  )}
+                </div>
                 <textarea
                   id="about-textarea"
                   value={text}
@@ -790,12 +819,20 @@ function AboutStep({
                     setError(null);
                   }}
                   maxLength={8000}
-                  rows={10}
-                  placeholder={t("aboutTextPlaceholder")}
-                  className="flex min-h-[240px] w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                  rows={6}
+                  placeholder={BIO_GUIDE.placeholder}
+                  className="flex min-h-[160px] w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
                 />
-                <div className="flex justify-end text-[11px] text-muted-foreground">
-                  <span>{text.length} / 8000</span>
+                <div className="flex items-start gap-3 text-[11px] text-muted-foreground">
+                  {bioIsShort(text) && (
+                    <p
+                      role="status"
+                      className="text-[13px] leading-relaxed text-foreground/80"
+                    >
+                      {BIO_GUIDE.nudge}
+                    </p>
+                  )}
+                  <span className="ml-auto shrink-0">{text.length} / 8000</span>
                 </div>
               </div>
             </div>
