@@ -8,7 +8,7 @@ import { NavLink } from "@/components/ui/nav-link";
 import type { TeamLine } from "@/lib/setup-flow";
 
 /** After publishing: one orchestrated moment: rings, the live address, the
- * team's hand-off, the way to the studio and to the site. CSS-only and
+ * team's hand-off, the way to the control panel and to the site. CSS-only and
  * motion-safe. */
 export function Celebration({
   brandName,
@@ -87,7 +87,7 @@ export function Celebration({
               onClick={() => onGo("/admin")}
               className="rounded-full px-8"
             >
-              Go to your studio
+              Go to your control panel
             </Button>
             <Button
               size="lg"
