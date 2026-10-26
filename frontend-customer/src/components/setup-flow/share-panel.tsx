@@ -5,6 +5,7 @@ import { FileText } from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { BIO_GUIDE } from "@shared/lib/bio-guide";
 import { Button } from "@/components/ui/button";
+import { ModalPortal } from "@/components/ui/modal-portal";
 import {
   fileProblem,
   SHARE_ACCEPT,
@@ -12,6 +13,7 @@ import {
   type ShareDoc,
 } from "@/lib/share-doc";
 import { BioHints, BioNudge } from "./bio-hints";
+import { BusyOverlay } from "./busy-overlay";
 
 /** A quiet way to hand over a bio, CV or old About page instead of answering
  * question by question: a file or pasted text, read as one turn that fills
@@ -61,6 +63,7 @@ export function SharePanel({
 
   return (
     <form
+      aria-busy={loading}
       className="mt-4 flex max-w-[720px] flex-col gap-3 rounded-2xl border border-[var(--sf-line)] bg-[var(--sf-paper)] p-4"
       onSubmit={(e) => {
         e.preventDefault();
@@ -156,6 +159,16 @@ export function SharePanel({
           Cancel
         </Button>
       </div>
+      {/* Reading takes a while and fills in the questions behind this one. */}
+      {loading && (
+        <ModalPortal>
+          <BusyOverlay
+            variant="screen"
+            message="Reading what you shared…"
+            hint="I fill in what it answers and leave anything you have already answered alone. This can take a little while."
+          />
+        </ModalPortal>
+      )}
     </form>
   );
 }

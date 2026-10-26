@@ -18,6 +18,7 @@ import {
 import { LogoMarkSvg, TintedMark } from "@/components/shared/logo-mark";
 import { uploadImage } from "@/components/owner/logo-uploader";
 import { Spinner } from "@/components/ui/spinner";
+import { StaleContainer } from "@/components/ui/stale-container";
 import { cn } from "@/lib/utils";
 import { BrowserFrame } from "./browser-frame";
 import {
@@ -750,80 +751,82 @@ export function LookCardsView({
   const markColor = look ? styleVars(look, shown.palette).primary : undefined;
   return (
     <div className="mt-8">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        {shown.options.map((o: LookOption, i) => (
+      <StaleContainer pending={loading}>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+          {shown.options.map((o: LookOption, i) => (
+            <CardButton
+              key={o.value}
+              picked={isPicked(o.value, o.label)}
+              disabled={disabled}
+              onClick={() => onPick(o.value, o.label)}
+              style={enter(i)}
+              className="p-3"
+            >
+              {o.mark ? (
+                <span
+                  className="flex aspect-square w-full items-center justify-center p-[16%]"
+                  style={{ color: markColor }}
+                >
+                  <LogoMarkSvg
+                    mark={o.mark}
+                    label={o.label}
+                    className="max-h-full w-full"
+                  />
+                </span>
+              ) : o.tint && o.image_url && markColor ? (
+                <span
+                  className="flex aspect-square w-full items-center justify-center p-[10%]"
+                  style={{ color: markColor }}
+                >
+                  <TintedMark
+                    src={o.image_url}
+                    gain={o.tint}
+                    label={o.label}
+                    className="h-full w-full"
+                  />
+                </span>
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={o.image_url}
+                  alt={o.label}
+                  className="mx-auto aspect-square w-full rounded-lg object-contain"
+                />
+              )}
+              {/* Her name under the mark: the lockup her header will show. */}
+              <span
+                className="mt-2 block truncate text-center text-[13px] font-semibold"
+                style={{ color: shown.brand ? markColor : undefined }}
+                title={o.label}
+              >
+                {shown.brand || o.label}
+              </span>
+            </CardButton>
+          ))}
           <CardButton
-            key={o.value}
-            picked={isPicked(o.value, o.label)}
+            picked={isPicked("wordmark", WORDMARK)}
             disabled={disabled}
-            onClick={() => onPick(o.value, o.label)}
-            style={enter(i)}
+            onClick={() => onPick("wordmark", WORDMARK)}
+            style={enter(shown.options.length)}
             className="p-3"
           >
-            {o.mark ? (
-              <span
-                className="flex aspect-square w-full items-center justify-center p-[16%]"
-                style={{ color: markColor }}
-              >
-                <LogoMarkSvg
-                  mark={o.mark}
-                  label={o.label}
-                  className="max-h-full w-full"
-                />
-              </span>
-            ) : o.tint && o.image_url && markColor ? (
-              <span
-                className="flex aspect-square w-full items-center justify-center p-[10%]"
-                style={{ color: markColor }}
-              >
-                <TintedMark
-                  src={o.image_url}
-                  gain={o.tint}
-                  label={o.label}
-                  className="h-full w-full"
-                />
-              </span>
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={o.image_url}
-                alt={o.label}
-                className="mx-auto aspect-square w-full rounded-lg object-contain"
-              />
-            )}
-            {/* Her name under the mark: the lockup her header will show. */}
-            <span
-              className="mt-2 block truncate text-center text-[13px] font-semibold"
-              style={{ color: shown.brand ? markColor : undefined }}
-              title={o.label}
-            >
-              {shown.brand || o.label}
+            <span className="flex aspect-square w-full items-center justify-center rounded-lg bg-[var(--sf-tint)]">
+              <Type className="size-8 text-[var(--sf-graphite)]" aria-hidden />
+            </span>
+            <span className="mt-2 block text-center text-[13px]">
+              Just my name
             </span>
           </CardButton>
-        ))}
-        <CardButton
-          picked={isPicked("wordmark", WORDMARK)}
-          disabled={disabled}
-          onClick={() => onPick("wordmark", WORDMARK)}
-          style={enter(shown.options.length)}
-          className="p-3"
-        >
-          <span className="flex aspect-square w-full items-center justify-center rounded-lg bg-[var(--sf-tint)]">
-            <Type className="size-8 text-[var(--sf-graphite)]" aria-hidden />
-          </span>
-          <span className="mt-2 block text-center text-[13px]">
-            Just my name
-          </span>
-        </CardButton>
-        <UploadTile
-          picked={
-            chosen ? chosen.startsWith("upload:") : isPicked("", UPLOADED)
-          }
-          disabled={disabled}
-          onPick={onPick}
-          style={enter(shown.options.length + 1)}
-        />
-      </div>
+          <UploadTile
+            picked={
+              chosen ? chosen.startsWith("upload:") : isPicked("", UPLOADED)
+            }
+            disabled={disabled}
+            onPick={onPick}
+            style={enter(shown.options.length + 1)}
+          />
+        </div>
+      </StaleContainer>
       {shown.more && (
         <Button
           variant="ghost"

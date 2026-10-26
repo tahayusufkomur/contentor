@@ -296,7 +296,7 @@ function Flow({
     setReloadKey((k) => k + 1);
   }, [flow.page_builds, iv.draft_status, golive]);
 
-  const { run: undo } = useAsyncAction(
+  const { run: undo, loading: undoing } = useAsyncAction(
     async (auditId: number) => {
       await undoCopilotAction(auditId);
       announceSiteUpdated();
@@ -473,6 +473,13 @@ function Flow({
       }
       pickedBlock={picked?.selection.block_id}
       flashBlock={flash}
+      busy={
+        sending
+          ? "Making that change…"
+          : undoing
+            ? "Undoing that change…"
+            : null
+      }
       overlay={
         composing && currentPage ? (
           <Composing

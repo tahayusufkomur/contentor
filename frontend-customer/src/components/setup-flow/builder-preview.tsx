@@ -20,6 +20,7 @@ import type {
   ReviewKind,
 } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
+import { BusyOverlay } from "./busy-overlay";
 
 /** What the preview is built from: every answer so far (the live question's
  * unsent pick included), the drafted item once there is one, and a photo of
@@ -157,6 +158,9 @@ function ItemCard({
           >
             {price}
           </span>
+        )}
+        {picking && (
+          <BusyOverlay variant="compact" message="Changing the cover…" />
         )}
       </div>
       {covers.length > 1 && (

@@ -8,6 +8,7 @@ import { buildSelectionPayload } from "@/lib/copilot/selection";
 import type { SelectionPayload } from "@/lib/copilot/types";
 import { cn } from "@/lib/utils";
 import { embedSrc } from "@/lib/setup-flow";
+import { BusyOverlay } from "./busy-overlay";
 
 export type Device = "desktop" | "phone";
 
@@ -28,6 +29,7 @@ export function BrowserFrame({
   pickedBlock,
   flashBlock,
   overlay,
+  busy,
 }: {
   host: string;
   path: string | null;
@@ -45,6 +47,8 @@ export function BrowserFrame({
   flashBlock?: string | null;
   /** Rendered instead of the page (composing, retry). */
   overlay?: ReactNode;
+  /** A change is being made to the site: said over the page, which stays put. */
+  busy?: string | null;
 }) {
   const boxRef = useRef<HTMLDivElement | null>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
@@ -125,6 +129,13 @@ export function BrowserFrame({
                 flashBlock={flashBlock}
               />
             ))}
+          {busy && (
+            <BusyOverlay
+              variant="compact"
+              message={busy}
+              className="bg-[rgb(251_250_247/0.5)] backdrop-blur-none"
+            />
+          )}
         </div>
       </div>
     </div>

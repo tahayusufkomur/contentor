@@ -18,8 +18,9 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { formatPrice } from "@/lib/interview";
 import type { ReviewCard, ReviewItem, ReviewKind } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
+import { BusyOverlay, WorkSteps } from "./busy-overlay";
 
-const NOUN: Record<ReviewKind, string> = {
+export const NOUN: Record<ReviewKind, string> = {
   course: "course",
   event: "live session",
   onsite: "in-person event",
@@ -33,18 +34,22 @@ const DRAFTING: Record<ReviewKind, string[]> = {
 /** The interview's first course or class, shown as it was drafted: cover
  * (with a few others to choose from), title, description, price, and the
  * curriculum or the date. While it drafts, a page-shaped skeleton and the
- * steps it is going through; while it is redrafted, the draft it replaces.
+ * steps it is going through; while it is redrafted, the draft it replaces
+ * stays under a cover that says it is being rewritten (``changing``: the
+ * coach's change is still being read, before the rewrite starts).
  * ``delay`` (ms) is when it springs in. */
 export function DraftReview({
   card,
   delay,
   disabled,
+  changing = false,
   onCover,
   onRetry,
 }: {
   card: ReviewCard;
   delay: number;
   disabled: boolean;
+  changing?: boolean;
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
   /** Start a draft over that has been building for far too long. */
   onRetry: () => void;
@@ -119,6 +124,7 @@ export function DraftReview({
       enter={enter}
       disabled={disabled}
       redrafting={card.status === "building"}
+      changing={changing}
       onCover={onCover}
     />
   );
@@ -137,18 +143,7 @@ function Drafting({ kind, style }: { kind: ReviewKind; style: CSSProperties }) {
           <Spinner size="sm" className="text-[var(--sf-brass)]" />
           Drafting your first {NOUN[kind]}…
         </p>
-        <ol className="space-y-2.5">
-          {DRAFTING[kind].map((label, i) => (
-            <li
-              key={label}
-              style={{ animationDelay: `${i * 0.6}s` }}
-              className="flex items-center gap-2.5 text-[14px] text-[var(--sf-graphite)] motion-safe:animate-[sf-glow_1.8s_ease-in-out_infinite]"
-            >
-              <span className="size-1.5 rounded-full bg-[var(--sf-brass)]" />
-              {label}
-            </li>
-          ))}
-        </ol>
+        <WorkSteps steps={DRAFTING[kind]} />
         <Skeleton className="mt-2 h-7 w-4/5" />
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-11/12" />
@@ -166,6 +161,7 @@ function Drafted({
   enter,
   disabled,
   redrafting,
+  changing,
   onCover,
 }: {
   kind: ReviewKind;
@@ -173,8 +169,21 @@ function Drafted({
   enter: (i: number) => CSSProperties;
   disabled: boolean;
   redrafting: boolean;
+  changing: boolean;
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
 }) {
+  const working = redrafting || changing;
+  // A change on its way: bring the card into view so the cover over it is
+  // seen, even when she sent it from the box far below.
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!working) return;
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    root.current?.scrollIntoView({
+      block: "nearest",
+      behavior: calm ? "auto" : "smooth",
+    });
+  }, [working]);
   const [picking, setPicking] = useState<string | null>(null);
   const { run: pick } = useAsyncAction(
     async (asset: string) => {
@@ -199,11 +208,9 @@ function Drafted({
   const coverKey = item.covers.find((c) => c.current)?.value || item.cover_url;
   return (
     <div
-      aria-busy={redrafting}
-      className={cn(
-        "mt-8 grid gap-6 transition-opacity duration-300 lg:grid-cols-[1.1fr_1fr] lg:gap-10",
-        redrafting && "opacity-60",
-      )}
+      ref={root}
+      aria-busy={working}
+      className="relative mt-8 grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-10"
     >
       <div
         key={coverKey}
@@ -227,6 +234,9 @@ function Drafted({
           <span className="absolute left-3 top-3 rounded-full bg-[rgb(20_18_16/0.72)] px-3 py-1 text-[13px] font-semibold text-white backdrop-blur">
             {price}
           </span>
+          {picking && (
+            <BusyOverlay variant="compact" message="Changing the cover…" />
+          )}
         </div>
         {item.covers.length > 1 && (
           <div className="mt-3">
@@ -241,7 +251,7 @@ function Drafted({
                   aria-pressed={c.current}
                   aria-label={c.current ? "Current cover" : "Use this cover"}
                   disabled={
-                    disabled || redrafting || c.current || picking !== null
+                    disabled || working || c.current || picking !== null
                   }
                   onClick={() => pick(c.value)}
                   className={cn(
@@ -270,15 +280,6 @@ function Drafted({
       </div>
 
       <div className="min-w-0">
-        {redrafting && (
-          <p
-            role="status"
-            className="mb-3 flex items-center gap-2 text-[14px] text-[var(--sf-graphite)]"
-          >
-            <Spinner size="sm" className="text-[var(--sf-brass)]" />
-            Redrafting…
-          </p>
-        )}
         <p
           style={enter(1)}
           className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[var(--sf-brass)] motion-safe:animate-[sf-rise_.5s_ease-out_both]"
@@ -372,6 +373,17 @@ function Drafted({
           </ol>
         )}
       </div>
+      {working && (
+        <BusyOverlay
+          message={
+            redrafting
+              ? `Rewriting your ${NOUN[kind]} with your changes…`
+              : "Reading your changes…"
+          }
+          steps={redrafting ? DRAFTING[kind].slice(0, -1) : undefined}
+          hint={redrafting ? "Usually ready in under a minute." : undefined}
+        />
+      )}
     </div>
   );
 }

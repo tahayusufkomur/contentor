@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { clientFetch } from "@/lib/api-client";
 import { BASE_DOMAIN } from "@/lib/constants";
 import { ApiError } from "@/types/api";
+import { BusyOverlay } from "./busy-overlay";
 
 const signOutUrl = (message: string) =>
   `/login?toast=${encodeURIComponent(message)}&toast_type=info`;
@@ -59,7 +60,7 @@ export function SetupMenu({ email, slug }: { email: string; slug: string }) {
         ),
     },
   );
-  const { run: finishLater } = useAsyncAction(
+  const { run: finishLater, loading: finishing } = useAsyncAction(
     async () => {
       if (email)
         await clientFetch("/api/v1/auth/magic-link/", {
@@ -75,7 +76,7 @@ export function SetupMenu({ email, slug }: { email: string; slug: string }) {
     },
     { errorToast: "Couldn’t send your link. Try again." },
   );
-  const { run: signOut } = useAsyncAction(async () => {
+  const { run: signOut, loading: signingOut } = useAsyncAction(async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     navigate(signOutUrl("Everything is saved. Log in any time to continue."));
   });
@@ -117,6 +118,19 @@ export function SetupMenu({ email, slug }: { email: string; slug: string }) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      {(finishing || signingOut) && (
+        <ModalPortal>
+          <BusyOverlay
+            variant="screen"
+            message={finishing ? "Saving your place…" : "Signing you out…"}
+            hint={
+              finishing
+                ? "Emailing you a link to pick up where you left off."
+                : undefined
+            }
+          />
+        </ModalPortal>
+      )}
       {cancelling && (
         <ModalPortal>
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">

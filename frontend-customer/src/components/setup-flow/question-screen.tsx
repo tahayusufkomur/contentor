@@ -46,7 +46,8 @@ import { cn } from "@/lib/utils";
 import { AnswerBox } from "./answer-box";
 import { BuilderPreview, type BuilderData } from "./builder-preview";
 import { DemoHint, StarterDemo } from "./demo-hint";
-import { DraftReview } from "./draft-review";
+import { BusyOverlay } from "./busy-overlay";
+import { DraftReview, NOUN } from "./draft-review";
 import { LookCardsView } from "./look-cards";
 import { OwnOptionCard } from "./own-option-card";
 import { QuestionHelp } from "./question-help";
@@ -54,7 +55,6 @@ import { SchedulePicker } from "./schedule-picker";
 import { SharePanel } from "./share-panel";
 import { SocialsPicker } from "./socials-picker";
 import { StarterCard } from "./starter-card";
-import { SHELL_TOKENS } from "./tokens";
 
 export type { StepDraft };
 
@@ -263,8 +263,12 @@ export function QuestionScreen({
         ? textOf(ticked[0])
         : ticked[0]);
 
+  // On a review a message (not the "Looks good" pick) is a change to the
+  // draft: the card says so from the moment it is sent.
+  const [changing, setChanging] = useState(false);
   const send = (req: TurnRequest) => {
     if (sending) return;
+    if (review) setChanging(!req.choice);
     onSend(live || !step.field ? req : { ...req, field: step.field });
   };
   const setTicked = (next: (t: string[]) => string[]) =>
@@ -474,6 +478,7 @@ export function QuestionScreen({
                   card={review}
                   delay={answersAt}
                   disabled={sending}
+                  changing={sending && changing}
                   onCover={onCover}
                   onRetry={() =>
                     send({ message: "Draft it again from scratch" })
@@ -502,29 +507,19 @@ export function QuestionScreen({
                   covers the screen. */}
               {looks && sending && (
                 <ModalPortal>
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    style={{
-                      ...SHELL_TOKENS,
-                      backgroundColor: "rgb(251 250 247 / 0.85)", // --sf-paper
-                    }}
-                    className="sf-shell fixed inset-0 z-40 flex items-center justify-center px-6 backdrop-blur-sm motion-safe:animate-fade-in"
-                  >
-                    <div className="flex max-w-md flex-col items-center gap-4 text-center">
-                      <Spinner size="lg" className="text-[var(--sf-brass)]" />
-                      <p className="text-[24px] font-semibold leading-tight tracking-[-0.02em] text-[var(--sf-ink)]">
-                        {draft.card?.label
-                          ? `Applying ${draft.card.label}…`
-                          : "Applying your pick…"}
-                      </p>
-                      <p className="text-[15px] leading-relaxed text-[var(--sf-graphite)]">
-                        {slow
-                          ? "Still working. Your site is being built at the same time, so this can take a little longer."
-                          : "Your site updates while I get the next question ready."}
-                      </p>
-                    </div>
-                  </div>
+                  <BusyOverlay
+                    variant="screen"
+                    message={
+                      draft.card?.label
+                        ? `Applying ${draft.card.label}…`
+                        : "Applying your pick…"
+                    }
+                    hint={
+                      slow
+                        ? "Still working. Your site is being built at the same time, so this can take a little longer."
+                        : "Your site updates while I get the next question ready."
+                    }
+                  />
                 </ModalPortal>
               )}
 
@@ -759,7 +754,9 @@ export function QuestionScreen({
                     <Spinner size="sm" className="text-[var(--sf-brass)]" />
                     {slow
                       ? "Still thinking. Your site is being built at the same time, so this can take a little longer."
-                      : "Thinking…"}
+                      : review && changing
+                        ? "Reading your changes…"
+                        : "Thinking…"}
                   </p>
                 ) : (
                   <>
@@ -796,6 +793,17 @@ export function QuestionScreen({
                                   ? `Continue with ${ticked.length}`
                                   : "Continue"}
                       </Button>
+                    )}
+                    {/* The button waits for the rewrite: say what for. */}
+                    {review?.status === "building" && review.item && !note && (
+                      <p className="flex items-center gap-2 text-[14px] text-[var(--sf-graphite)]">
+                        <Spinner
+                          aria-hidden
+                          size="sm"
+                          className="text-[var(--sf-brass)]"
+                        />
+                        Rewriting your {NOUN[review.kind]}…
+                      </p>
                     )}
                     {/* On every question that takes several answers (starter
                         cards are picked one by one, not all at once). */}
