@@ -71,10 +71,8 @@ class ChoiceError(Exception):
 
 def _due(tenant, answers) -> list[str]:
     offers = set(answers.get("offers") or [])
-    # The slide examples don't wait for the site: due even before the home page's early return.
-    examples = ["slides:examples"] if brief.settled(answers, ("teaches", "audience")) else []
     if not brief.settled(answers, PAGE_NEEDS["home"]):
-        return examples
+        return []
     due = ["style:auto", "page:home", "rank:logos"]
     due += [f"page:{p}" for p in ("about", "contact", "faq") if brief.settled(answers, PAGE_NEEDS[p])]
     # Her email templates wear the email style she picks; they wait for it.
@@ -94,7 +92,7 @@ def _due(tenant, answers) -> list[str]:
         wanted = kind not in skipped and (kind not in DRAFT_OFFERS or offers.intersection(DRAFT_OFFERS[kind]))
         if wanted and brief.settled(answers, needs):
             due.append(f"draft:{kind}")
-    return due + examples
+    return due
 
 
 def fire(tenant, answers: dict) -> list[str]:
@@ -146,8 +144,6 @@ def _start(tenant, answers, key) -> None:
             transaction.on_commit(lambda: tasks.rank_curated_logos.delay(tenant_id))
     elif action == "plan":
         create_memberships(tenant, answers)
-    elif action == "slides":
-        transaction.on_commit(lambda: tasks.write_setup_slides.delay(tenant_id))
     elif action == "emails":
         from apps.email_campaigns.tasks import build_starter_emails
 

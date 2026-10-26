@@ -217,12 +217,12 @@
     "src/types/course.ts": ["02-courses", "33-focus-course"],
     "src/components/student/video-player.tsx": ["02-courses"],
     "src/components/setup-flow": ["01-signup-onboarding"],
-    "src/components/setup-flow/concept-slides.tsx": [
+    "src/components/setup-flow/question-help.tsx": [
       "01-signup-onboarding",
       "14-navbar-layouts",
       "27-nav-stage-gating"
     ],
-    "src/components/setup-flow/slide-pictures.tsx": [
+    "src/components/setup-flow/help-pictures.tsx": [
       "01-signup-onboarding",
       "14-navbar-layouts",
       "27-nav-stage-gating"

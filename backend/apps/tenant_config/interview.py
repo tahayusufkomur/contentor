@@ -13,7 +13,6 @@ from django.utils import timezone
 from pydantic import BaseModel
 
 from . import interview_brief as brief
-from . import interview_slides as slides
 from .models import TenantConfig
 
 logger = logging.getLogger(__name__)
@@ -178,6 +177,7 @@ GUIDE_KEYS = (
     "socials",
     "starter",
     "why",
+    "help",
     "contact",
     "address",
     "prefill",
@@ -213,6 +213,7 @@ def guide_for(
             "socials": False,
             "starter": False,
             "why": "",
+            "help": None,
             "contact": False,
             "address": False,
             "prefill": {},
@@ -258,6 +259,8 @@ def guide_for(
         "starter": field.starter,
         # One line under the question: why it matters (a price: its currency).
         "why": field.why or (brief.currency_note() if field.kind == "price" else ""),
+        # What its ⓘ opens, and the example under it.
+        "help": brief.help_of(field, brand),
         # The ways ticked take their details (an email address, a number).
         "contact": field.kind == "contact",
         # The answer is a place and its street address, each in its own box.
@@ -742,7 +745,6 @@ def run_turn(
 
     setup_flow._update_flow(tenant, mutate)
     guide["cards"] = milestones.cards_for(tenant, answers, guide["field"])
-    slides.attach(guide, answers, TenantConfig.objects.first().setup_flow["interview"], brand)
     return {"coach_text": text, "guide": guide, "edit": edit, "fired": fired, "state": setup_flow.state_body(tenant)}
 
 
@@ -862,6 +864,8 @@ def _refresh_turn(turn: dict, answers: dict, brand: str) -> dict:
         return turn
     if turn.get("role") != "guide" or field is None:
         return turn
+    # Code-owned copy: a transcript older than it, or than an edit of it, still reads the current words.
+    turn = {**turn, "help": brief.help_of(field, brand), **({"why": field.why} if field.why else {})}
     if field.id == "location":
         return {**turn, "prefill": prefill_for("location", answers)}
     if field.kind not in ("price", "memberships", "access"):
@@ -901,7 +905,6 @@ def interview_state(tenant, flow: dict) -> dict:
     guide.update(membership_prices(guide["field"], answers))  # hers now, also on a question gone back to
     _apply_prefills_to_guide(guide, brief.FIELD_BY_ID.get(guide["field"] or ""), tenant, answers)
     guide["cards"] = milestones.cards_for(tenant, answers, guide["field"])
-    slides.attach(guide, answers, iv, brand)
     fired = list(iv.get("fired") or [])
     # Fresh cards for look questions already behind the coach, so going back
     # shows them again (logo previews are presigned: never stored).

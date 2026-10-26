@@ -27,6 +27,7 @@ import type {
 import { UploadCancelled, uploadPhoto } from "@/lib/upload";
 import { cn } from "@/lib/utils";
 import type { Photo } from "@/types/photo";
+import { QuestionHelp } from "./question-help";
 
 /** A photo on this screen: one she added before, or one on its way up. */
 interface Item extends Omit<OwnPhoto, "id"> {
@@ -245,6 +246,7 @@ export function PhotosScreen({
               {step.why}
             </p>
           )}
+          <QuestionHelp help={step.help} />
 
           <div
             className="mt-8 grid gap-8 motion-safe:animate-[sf-rise_.6s_ease-out_both] lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)] lg:items-start lg:gap-12"

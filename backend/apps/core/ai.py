@@ -295,7 +295,6 @@ _AGENTC_BACKGROUND_LABELS = (
     "contentor:compose",
     "contentor:interview-ahead",
     "contentor:focus-ahead",
-    "contentor:setup-slides",
     "contentor:reels-ahead",
 )
 

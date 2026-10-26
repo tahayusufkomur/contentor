@@ -78,19 +78,18 @@ test("signup lands in /setup and the interview ends in a published site", async 
   await page.reload();
 
   await page.waitForURL(/e2e-studio-[\w-]+\.localhost\/setup/, { timeout: 120_000 });
-  // The opening slide is the team's introductions: skip it once (the skip
-  // path), and the slide is gone. Whatever slides follow are passed with Next.
+  // No slides: the wizard opens on its first question, which explains itself
+  // in place. Its ⓘ opens a short explanation, and closes again.
   const guideAtStart = page.getByRole("region", { name: "Your setup guide" });
-  const intro = guideAtStart.getByRole("button", { name: "Skip the introductions" });
-  await expect(intro).toBeVisible({ timeout: 30_000 });
-  await intro.click();
-  await expect(intro).toHaveCount(0);
-  const openingSlide = guideAtStart.locator('[aria-roledescription="slide"]');
-  while (await openingSlide.isVisible()) {
-    await openingSlide.getByRole("button").last().click();
-    await page.waitForTimeout(500);
-  }
   await expect(page.getByText("What do you offer?")).toBeVisible({ timeout: 30_000 });
+  await expect(guideAtStart.locator('[aria-roledescription="slide"]')).toHaveCount(0);
+  const teamHelp = guideAtStart.getByRole("button", { name: "Who's on my team?" });
+  await expect(teamHelp).toHaveAttribute("aria-expanded", "false");
+  await teamHelp.click();
+  await expect(teamHelp).toHaveAttribute("aria-expanded", "true");
+  await expect(guideAtStart.getByText(/comes with a small team/)).toBeVisible();
+  await teamHelp.click();
+  await expect(guideAtStart.getByText(/comes with a small team/)).toHaveCount(0);
 
   // First answer typed; then "Pick for me" where the guide may decide, the
   // first tile (and Continue) where only the coach knows, a typed answer
@@ -117,9 +116,6 @@ test("signup lands in /setup and the interview ends in a published site", async 
   const looksGood = guide.getByRole("button", { name: "Looks good, continue" });
   const draftFailed = guide.getByText(/I couldn’t draft your/);
   const goLive = guide.getByRole("button", { name: "Go live", exact: true });
-  // The team's slides come before a new concept's question: Next is the last
-  // button in the slide; the opening slide's skip is covered once, below.
-  const slide = guide.locator('[aria-roledescription="slide"]');
   // Before going live each built page is looked over and approved, one by one.
   const pageOk = guide.getByRole("button", { name: "This page looks good" });
   // The first payments tile is a paid one, and a trial cannot sell; the spec
@@ -155,13 +151,9 @@ test("signup lands in /setup and the interview ends in a published site", async 
     await busy.waitFor({ state: "visible", timeout: 3_000 }).catch(() => {});
     // Every busy line gone (a change and a page build can show at once).
     await expect(busy).toHaveCount(0, { timeout: 300_000 });
-    await action.first().or(slide).first().waitFor({ state: "visible", timeout: 20_000 }).catch(() => {});
+    await action.first().waitFor({ state: "visible", timeout: 20_000 }).catch(() => {});
     await keepLook.waitFor({ state: "visible", timeout: 2_000 }).catch(() => {});
     if (await keepLook.isVisible()) await keepLook.click();
-    if (await slide.isVisible()) {
-      await slide.getByRole("button").last().click();
-      continue;
-    }
     if (await pageOk.isVisible()) {
       // Enabled once that page is built.
       await expect(pageOk).toBeEnabled({ timeout: 300_000 });

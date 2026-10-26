@@ -49,6 +49,7 @@ import { DemoHint, StarterDemo } from "./demo-hint";
 import { DraftReview } from "./draft-review";
 import { LookCardsView } from "./look-cards";
 import { OwnOptionCard } from "./own-option-card";
+import { QuestionHelp } from "./question-help";
 import { SchedulePicker } from "./schedule-picker";
 import { SharePanel } from "./share-panel";
 import { SocialsPicker } from "./socials-picker";
@@ -466,6 +467,7 @@ export function QuestionScreen({
                   {step.why}
                 </p>
               )}
+              <QuestionHelp help={step.help} />
 
               {review && (
                 <DraftReview

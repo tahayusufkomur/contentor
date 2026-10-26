@@ -107,8 +107,6 @@ export interface SetupFlowApi {
   /** A bio, CV or old About page: read as one turn that fills what it answers. */
   importDoc: (doc: ShareDoc, field?: string) => Promise<TurnResponse>;
   logos: (page: number) => Promise<LookCards>;
-  /** Records that a slide was passed (seen, or skipped). */
-  slide: (key: string, skipped: boolean) => Promise<void>;
   cover: (kind: ReviewKind, asset: string) => Promise<ReviewCard>;
   golive: () => Promise<GoLiveState>;
   goliveAction: (action: "publish" | "sell_later") => Promise<GoLiveState>;
@@ -139,9 +137,6 @@ export const setupFlowApi: SetupFlowApi = {
     });
   },
   logos: (page) => clientFetch<LookCards>(`${BASE}/logos/?page=${page}`),
-  slide: async (key, skipped) => {
-    await clientFetch(`${BASE}/slide/`, post({ key, skipped }));
-  },
   cover: (kind, asset) =>
     clientFetch<ReviewCard>(`${BASE}/cover/`, post({ kind, asset })),
   golive: () => clientFetch<GoLiveState>(`${BASE}/golive/`),
@@ -366,20 +361,18 @@ export const isReview = (c: GuideCards | null | undefined): c is ReviewCard =>
 export const isPhotos = (c: GuideCards | null | undefined): c is PhotoCards =>
   c?.kind === "photos";
 
-/** A concept slide a specialist presents before the question that uses it.
- *  `picture` is built from the coach's answers; its shape depends on `key`
- *  (backend interview_slides._picture). */
-export interface Slide {
-  key: string;
-  by: SpecialistKey;
-  /** The presenter's first slide: say what they look after. */
-  first: boolean;
-  chapter: string;
-  title: string;
-  body: string;
-  /** The Next button's label. */
-  next: string;
-  picture: Record<string, unknown>;
+/** What a question explains in place (backend interview_brief.help_of): an
+ *  example under it, and an ⓘ that opens `tip` and a drawing. Any part can be
+ *  empty; the ⓘ button (`term`) shows only when there is a tip or a picture. */
+export interface GuideHelp {
+  term: string;
+  tip: string;
+  /** "e.g." line under the question; already in her currency and studio name. */
+  example: string;
+  /** Which drawing (components/setup-flow/help-pictures.tsx). */
+  picture: string;
+  /** Her currency sign, for the prices the drawing shows. */
+  sign: string;
 }
 
 export interface GuideTurn {
@@ -416,8 +409,8 @@ export interface GuideTurn {
   /** One line under the question: why it matters. */
   why?: string;
   cards?: GuideCards | null;
-  /** Slides due before this question: only on the live guide, never in replayed turns. */
-  slides?: Slide[];
+  /** Explains the question's unclear terms in place (see GuideHelp). */
+  help?: GuideHelp | null;
   /** Work this turn just started ("I'm starting on your About page now."). */
   status?: string;
   /** Who is doing that work (a specialist); only with ``status``. */

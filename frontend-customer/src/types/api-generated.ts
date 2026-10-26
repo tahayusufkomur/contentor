@@ -1360,23 +1360,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/admin/setup-flow/slide/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** @description The coach passed a concept slide (``skipped`` when she skipped it rather than read on). */
-    post: operations["v1_admin_setup_flow_slide_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/v1/admin/setup-flow/turn/": {
     parameters: {
       query?: never;
@@ -13153,24 +13136,6 @@ export interface operations {
     };
   };
   v1_admin_setup_flow_logos_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_admin_setup_flow_slide_create: {
     parameters: {
       query?: never;
       header?: never;

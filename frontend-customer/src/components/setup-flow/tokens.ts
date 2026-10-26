@@ -66,6 +66,7 @@ export const SHELL_CSS = `
 @keyframes sf-glow { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
 @keyframes sf-ring { 0% { opacity: .55; transform: scale(.55); } 100% { opacity: 0; transform: scale(2.6); } }
 @keyframes sf-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
+@keyframes sf-help-wave { 0%, 100% { opacity: .4; transform: translateY(3px); } 18%, 72% { opacity: 1; transform: none; } }
 @keyframes sf-slide-next { from { opacity: 0; transform: translateX(48px); } to { opacity: 1; transform: none; } }
 @keyframes sf-slide-back { from { opacity: 0; transform: translateX(-48px); } to { opacity: 1; transform: none; } }
 @keyframes sf-leave-next { to { opacity: 0; transform: translateX(-72px) scale(0.985); filter: blur(8px); } }

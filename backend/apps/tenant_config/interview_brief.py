@@ -12,7 +12,7 @@ goals, style, logo) — ``apply_fact`` keeps those in sync.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from itertools import zip_longest
 
 from django.db import transaction
@@ -729,6 +729,17 @@ def _tile_of_kinds(raw) -> tuple[str, str] | None:
 
 
 @dataclass(frozen=True)
+class Help:
+    """What a question explains in place: an example line under it, and an ⓘ that opens a short
+    explanation with an optional drawing. Words rule: never teacher, coach or instructor."""
+
+    term: str = ""  # the ⓘ button's words ("What's a membership?"); with ``tip`` or ``picture``
+    tip: str = ""  # what the ⓘ opens: one or two plain sentences
+    example: str = ""  # shown under the question: "$" is her currency sign, "{brand}" her studio name
+    picture: str = ""  # a drawing the client has (team, site, look, pay, membership, access, course, live, inbox)
+
+
+@dataclass(frozen=True)
 class Field:
     id: str
     label: str
@@ -747,7 +758,18 @@ class Field:
     delegable: bool = False  # the guide may decide it for the coach ("You decide")
     starter: bool = False  # options are sentence starters the coach finishes inline in their card, never answers as-is
     why: str = ""  # one line under the question: why it matters
+    help: Help | None = None  # explains the question's unclear terms in place (see Help)
 
+
+SCHEDULE_WHY = (
+    "Run it once, or every week on the days and times you choose, like Mondays and Wednesdays at 9:00"
+    " and Saturdays at 10:00."
+)
+ACCESS_HELP = Help(
+    'What does "who can open it" mean?',
+    "Anything you make can be free, sold on its own, part of a membership, or several of these at once.",
+    picture="access",
+)
 
 FIELDS: tuple[Field, ...] = (
     Field(
@@ -768,6 +790,13 @@ FIELDS: tuple[Field, ...] = (
         icons=("flower-2", "person-standing", "dumbbell", "music", "brain", "salad", "compass", "briefcase"),
         multi=True,
         custom=True,
+        help=Help(
+            "Who's on my team?",
+            "Your site comes with a small team. They build your pages, take care of payments and help new"
+            " students find you, so you can spend your time making great content. You'll meet each of them"
+            " as we set up your site.",
+            picture="team",
+        ),
     ),
     Field(
         "specialty",
@@ -786,6 +815,12 @@ FIELDS: tuple[Field, ...] = (
         kind="photos",  # the screen takes the uploads; the answer is "own" or "stock"
         why="Your own photos make the site yours. Without them I pick photos that fit what you do."
         " Either way you can swap any photo later.",
+        help=Help(
+            "How is my site built?",
+            "Every answer goes into your pages: Home, About, Contact and FAQ. I start building as soon as I know"
+            " enough, and you can change anything later.",
+            picture="site",
+        ),
     ),
     Field(
         "audience",
@@ -821,7 +856,7 @@ FIELDS: tuple[Field, ...] = (
         "How will you work with your students?",
         ("Digital content", "Live online sessions", "In-person sessions", "Articles", "Community"),
         kind="offers",
-        why="This decides which pages I build and what I ask you next.",
+        why="Pick as many as fit. This decides which pages I build and what I ask you next.",
         multi=True,
         icons=("book-open", "video", "map-pin", "newspaper", "users"),
         details=(
@@ -842,7 +877,14 @@ FIELDS: tuple[Field, ...] = (
         why='Your site speaks as "I" or "we" to match.',
         icons=("user-round", "sprout", "users"),
     ),
-    Field("pitch", "One-line pitch", "If someone asked what you do, what would you say in one sentence?"),
+    Field(
+        "pitch",
+        "One-line pitch",
+        "If someone asked what you do, what would you say in one sentence?",
+        why="It's the first thing new visitors read on your home page. Articles and your social accounts bring more"
+        " people to it.",
+        help=Help(example="{brand}: calm, strong and simple, for people with busy lives."),
+    ),
     Field(
         "difference",
         "What makes their approach theirs",
@@ -873,7 +915,20 @@ FIELDS: tuple[Field, ...] = (
         icons=("heart", "zap", "leaf", "graduation-cap", "smile", "crown", "feather", "flame"),
         hints=TONE_HINTS[""],
     ),
-    Field("site_style", "Site style", "Which look feels most like you?", kind="style", delegable=True),
+    Field(
+        "site_style",
+        "Site style",
+        "Which look feels most like you?",
+        kind="style",
+        delegable=True,
+        why="A look is how your whole site feels. You can change it any time, and your words stay put.",
+        help=Help(
+            "What does a look change?",
+            "It sets the fonts, the colours and the layout of every page, in light and dark."
+            " Your logo sits on top of it.",
+            picture="look",
+        ),
+    ),
     # Sentence starters: picked as cards, finished inline in the card, several may combine.
     Field(
         "story",
@@ -934,6 +989,11 @@ FIELDS: tuple[Field, ...] = (
         ("One-time course purchases", "Monthly membership", "Pay per session or event", "Free for now"),
         kind="payments",
         why="Free stays free. You can change prices any time.",
+        help=Help(
+            "How can students pay?",
+            "Most creators mix the ways. Here's what three students might pay over three months.",
+            picture="pay",
+        ),
         multi=True,
         alone="Free for now",
         icons=("book-open", "repeat", "ticket", "gift"),
@@ -949,7 +1009,14 @@ FIELDS: tuple[Field, ...] = (
         "Memberships offered",
         "A membership can cover everything, or one thing you offer. Which ones fit your students?",
         kind="memberships",  # options come from membership_tiles()
-        why="Each one is its own monthly subscription. You choose what each one unlocks as we build.",
+        why="A membership is a monthly pass: students pay one price a month and get what it covers while they pay."
+        " One can cover everything you offer, or a few can each cover one thing.",
+        help=Help(
+            "How do memberships work?",
+            "Each one is its own monthly subscription. You choose what each one unlocks as we build.",
+            "The Club, $19 a month, covers every live session.",
+            picture="membership",
+        ),
         multi=True,
         custom=True,  # a membership of her own: she names it and prices it
         pays=("membership",),
@@ -962,6 +1029,14 @@ FIELDS: tuple[Field, ...] = (
         needs=("course",),
         group="course",
         delegable=True,
+        why="A course is your know-how, recorded once. Students buy it, follow it at their own pace and keep it."
+        " I draft the outline; you record the videos.",
+        help=Help(
+            "How does a course work?",
+            "It's made of modules, like weeks or chapters, and lessons: the videos inside them.",
+            "A 4-week beginner course for $49.",
+            picture="course",
+        ),
     ),
     Field(
         "course_access",
@@ -975,6 +1050,7 @@ FIELDS: tuple[Field, ...] = (
         alone=FREE_ACCESS,
         delegable=True,
         why=ACCESS_WHY,
+        help=ACCESS_HELP,
     ),
     Field(
         "course_price",
@@ -1002,6 +1078,13 @@ FIELDS: tuple[Field, ...] = (
         needs=("live",),
         group="event",
         delegable=True,
+        why="A live session happens at a set time: a group class or a 1-1 call.",
+        help=Help(
+            "How do live sessions work?",
+            "Students sign up on your site and join the video call from it.",
+            "A Tuesday evening class for complete beginners.",
+            picture="live",
+        ),
     ),
     Field(
         "live_when",
@@ -1014,6 +1097,7 @@ FIELDS: tuple[Field, ...] = (
         hints=("Set days and times, week after week", "A single session on one date"),
         group="event",
         delegable=True,
+        why=SCHEDULE_WHY,
     ),
     Field(
         "event_access",
@@ -1027,6 +1111,7 @@ FIELDS: tuple[Field, ...] = (
         alone=FREE_ACCESS,
         delegable=True,
         why=ACCESS_WHY,
+        help=ACCESS_HELP,
     ),
     Field(
         "event_price",
@@ -1055,6 +1140,8 @@ FIELDS: tuple[Field, ...] = (
         needs=("onsite",),
         group="onsite",
         delegable=True,
+        why="An in-person event lives on your site too: students see the place and the times, and sign up online.",
+        help=Help(example="A weekend workshop at your usual place."),
     ),
     Field(
         "onsite_when",
@@ -1067,6 +1154,7 @@ FIELDS: tuple[Field, ...] = (
         hints=("Set days and times, week after week", "A single session on one date"),
         group="onsite",
         delegable=True,
+        why=SCHEDULE_WHY,
     ),
     Field(
         "location",
@@ -1089,6 +1177,7 @@ FIELDS: tuple[Field, ...] = (
         alone=FREE_ACCESS,
         delegable=True,
         why=ACCESS_WHY,
+        help=ACCESS_HELP,
     ),
     Field(
         "onsite_price",
@@ -1146,6 +1235,13 @@ FIELDS: tuple[Field, ...] = (
         kind="contact",
         multi=True,
         icons=("mail", "instagram", "message-circle", "phone", "pen-line"),
+        why="Messages from your site land in your inbox, and session reminders go out on their own.",
+        help=Help(
+            "What happens when a student writes to me?",
+            "Their message lands in your inbox in your control panel, and you reply from there. If you run a community,"
+            " that's also where your students talk to each other.",
+            picture="inbox",
+        ),
     ),
     # Her look, name and mark are set by now: each card is the email her students would get.
     Field(
@@ -1599,6 +1695,16 @@ def details_for(field: Field, answers: dict) -> dict[str, str]:
         detail = {BUY: BUY_DETAIL, FREE: FREE_DETAIL}
         return {label: detail.get(i, MEMBER_DETAIL) for i, label, *_ in access_options(answers, field.group)}
     return dict(zip(field.options, field.details, strict=False)) if field.details else {}
+
+
+def help_of(field: Field, brand: str = "") -> dict | None:
+    """What the question's ⓘ opens, as the client reads it: ``Help`` with her currency sign
+    (``sign``, for the drawings) and her studio name filled into the example."""
+    if field.help is None:
+        return None
+    sign = currency_sign()
+    example = field.help.example.replace("$", sign).replace("{brand}", brand or "Your studio")
+    return {**asdict(field.help), "example": example, "sign": sign}
 
 
 def is_settled(answers: dict, field_id: str) -> bool:

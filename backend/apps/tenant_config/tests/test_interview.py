@@ -714,7 +714,7 @@ def test_offers_and_payments_say_why_they_matter():
 
     assert "pages" in interview.guide_for(brief.FIELD_BY_ID["offers"])["why"]
     assert interview.guide_for(brief.FIELD_BY_ID["payments"])["why"]
-    assert interview.guide_for(brief.FIELD_BY_ID["pitch"], options=["x"], icons=[])["why"] == ""
+    assert interview.guide_for(brief.FIELD_BY_ID["audience"], options=["x"], icons=[])["why"] == ""
     assert "why" in interview.GUIDE_KEYS
 
 
