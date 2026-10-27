@@ -21,9 +21,12 @@ export function middleware(request: NextRequest) {
   // Expose the path so the root layout can let auth routes bypass the publish gate.
   headers.set("x-pathname", request.nextUrl.pathname);
   // The /setup preview iframe: the (public) layout drops the owner chrome
-  // and the /setup redirect for these requests.
-  if (request.nextUrl.searchParams.get("embed") === "1") {
-    headers.set("x-embed", "1");
+  // and the /setup redirect for these requests. ?embed=edit is the same frame
+  // holding the full editor, which the layout mounts for an owner/coach only.
+  // Taken from the query alone, never from an incoming header.
+  const embed = request.nextUrl.searchParams.get("embed");
+  if (embed === "1" || embed === "edit") {
+    headers.set("x-embed", embed);
   } else {
     headers.delete("x-embed");
   }

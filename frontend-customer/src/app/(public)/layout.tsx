@@ -29,10 +29,14 @@ export default async function PublicLayout({
   ]);
   const isAdmin = user?.role === "owner" || user?.role === "coach";
   // ?embed=1 (middleware → x-embed): the /setup preview iframe. Plain site,
-  // no owner chrome, no redirect back to /setup.
-  const embed = hdrs.get("x-embed") === "1";
+  // no owner chrome, no redirect back to /setup. ?embed=edit is the same
+  // frame with the full editor, for an owner/coach only — anyone else just
+  // gets the plain preview.
+  const embed = hdrs.get("x-embed");
+  const editing = embed === "edit" && isAdmin;
   if (isAdmin && !embed && (await setupFlowActive(slug))) redirect("/setup");
-  const config = isAdmin && !embed ? await fetchTenantConfig(slug) : null;
+  const config =
+    isAdmin && (!embed || editing) ? await fetchTenantConfig(slug) : null;
 
   // Public endpoint: a tenant with no active plans hides Pricing/Subscribe.
   let hasSubscription = false;
@@ -79,7 +83,11 @@ export default async function PublicLayout({
   );
 
   if (isAdmin && config) {
-    return <EditSidebar initialConfig={config}>{content}</EditSidebar>;
+    return (
+      <EditSidebar initialConfig={config} embedded={editing}>
+        {content}
+      </EditSidebar>
+    );
   }
 
   return content;

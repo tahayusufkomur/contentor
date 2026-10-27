@@ -25,6 +25,7 @@ import {
   sectionOf,
   priceOk,
   stageIndex,
+  type ReviewPage,
 } from "@/lib/interview";
 import {
   isPhotos,
@@ -44,6 +45,7 @@ import type { ShareDoc } from "@/lib/share-doc";
 import { ApiError } from "@/types/api";
 import { cn } from "@/lib/utils";
 import { BrowserFrame, Composing, type Device } from "./browser-frame";
+import { PageEditor } from "./page-editor";
 import { GoLivePanel } from "./golive-panel";
 import { Celebration } from "./launch";
 import { mockSetupFlowApi } from "./mock";
@@ -226,6 +228,9 @@ function Flow({
     label: string;
   } | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  // The page under review open in the site's editor (held as opened: a poll
+  // that moves the review on must not reload the frame under her hands).
+  const [editing, setEditing] = useState<ReviewPage | null>(null);
   useEffect(() => {
     setPicked(null);
     setFlash(null);
@@ -806,6 +811,7 @@ function Flow({
                 shown: focus.path === path,
                 approving,
                 onApprove: () => void approve(focus.key),
+                onEdit: () => setEditing(focus),
                 onShow: (p) => setPath(p.path),
                 picked: picked
                   ? { ...picked, onClear: () => setPicked(null) }
@@ -818,6 +824,21 @@ function Flow({
           narrow && tab !== "guide" ? "hidden" : "flex flex-1 lg:flex-none",
         )}
       />
+      {editing && (
+        <PageEditor
+          path={editing.path}
+          label={pageLabel(editing.key)}
+          onDone={(to) => {
+            setEditing(null);
+            // The editor may have moved to another page: the review follows.
+            if (pages.some((p) => p.path === to)) setPath(to);
+            // The preview is a copy loaded earlier: show the edited page, and
+            // pick up anything the editor changed beside it.
+            setReloadKey((k) => k + 1);
+            void refresh();
+          }}
+        />
+      )}
     </div>
   );
 }

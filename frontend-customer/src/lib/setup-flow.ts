@@ -169,9 +169,10 @@ export const BLOCKERS: Record<string, { label: string; step: string }> = {
 };
 
 /** iframe src for a public path, flagged so the site renders without the
- * owner chrome and without the /setup redirect. */
-export function embedSrc(path: string): string {
-  return `${path}${path.includes("?") ? "&" : "?"}embed=1`;
+ * owner chrome and without the /setup redirect. ``"edit"`` opens it in the
+ * full editor instead (owner/coach only; the review step's "Edit this page"). */
+export function embedSrc(path: string, mode: "1" | "edit" = "1"): string {
+  return `${path}${path.includes("?") ? "&" : "?"}embed=${mode}`;
 }
 
 /** A refused answer (the server's 400 detail code), in the coach's words. */

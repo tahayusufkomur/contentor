@@ -285,7 +285,7 @@ function LivePage({
 }
 
 /** A page-shaped skeleton: nav, hero, a row of cards. */
-function PageSkeleton({ className }: { className?: string }) {
+export function PageSkeleton({ className }: { className?: string }) {
   return (
     <div
       aria-hidden

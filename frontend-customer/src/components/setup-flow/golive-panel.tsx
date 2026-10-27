@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowRight, Check, Eye, MousePointerClick, X } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Eye,
+  MousePointerClick,
+  Pencil,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import type { SelectionPayload } from "@/lib/copilot/types";
@@ -24,6 +31,8 @@ export interface PageReviewProps {
   shown: boolean;
   approving: boolean;
   onApprove: () => void;
+  /** Open the page in the site's editor. */
+  onEdit: () => void;
   /** Show another page in the preview. */
   onShow: (page: ReviewPage) => void;
   /** The part of the page she tapped in the preview: the change is to it. */
@@ -201,6 +210,7 @@ function PageReview({
   shown,
   approving,
   onApprove,
+  onEdit,
   onShow,
   sending,
 }: PageReviewProps & { sending: boolean }) {
@@ -216,8 +226,8 @@ function PageReview({
       </h1>
       <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--sf-graphite)]">
         Look it over. Tap any part of it to change just that part, or tell me
-        below what to change on the page. Approve it and we&rsquo;ll go to the
-        next one.
+        below what to change on the page. Or open the editor and change anything
+        yourself. Approve it and we&rsquo;ll go to the next one.
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-2">
         {!shown ? (
@@ -238,6 +248,18 @@ function PageReview({
             className="rounded-full px-5"
           >
             This page looks good
+          </Button>
+        )}
+        {shown && (
+          <Button
+            variant="outline"
+            onClick={onEdit}
+            // The editor saves every page at once: not while one is still being written.
+            disabled={sending || pages.some((p) => p.building)}
+            className="rounded-full px-5"
+          >
+            <Pencil aria-hidden />
+            Edit this page
           </Button>
         )}
         {focus.building && (

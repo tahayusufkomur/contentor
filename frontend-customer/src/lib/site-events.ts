@@ -12,6 +12,14 @@ export function announceSiteUpdated(): void {
   }
 }
 
+/** The editor opened in the setup review's frame (/page?embed=edit) puts this
+ * on its own window, so the review (same origin) can have every edit saved
+ * before it closes the frame. ``path`` is the page the editor ended on. */
+export const EMBEDDED_EDITOR = "contentorEmbeddedEditor";
+export interface EmbeddedEditorApi {
+  finish: () => Promise<{ ok: boolean; path: string }>;
+}
+
 /** Window event carrying what the assistant just applied ({kind, id}), or
  * {kind: "undo:<kind>", id} when one of its changes was taken back, so the
  * admin page showing that record or list can reload it. */

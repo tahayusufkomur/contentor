@@ -26,7 +26,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { announceSiteUpdated, SITE_UPDATED_EVENT } from "@/lib/site-events";
+import {
+  announceSiteUpdated,
+  EMBEDDED_EDITOR,
+  SITE_UPDATED_EVENT,
+  type EmbeddedEditorApi,
+} from "@/lib/site-events";
+import { embedSrc } from "@/lib/setup-flow";
 import { clientFetch } from "@/lib/api-client";
 import { siteLook, styleFontsHref } from "@/lib/site-styles";
 import { Spinner } from "@/components/ui/spinner";
@@ -58,13 +64,22 @@ const SITE_SECTIONS: {
 const DEBOUNCE_MS = 800;
 const SIDEBAR_WIDTH = 380;
 const EDIT_MODE_KEY = "contentor:edit-mode";
+// Embedded below this width the page shows first, the panel behind its edge tab.
+const PHONE_WIDTH = 768;
 
 interface EditSidebarProps {
   initialConfig: TenantConfig;
+  /** Opened in the setup review's frame (?embed=edit): always editing, the
+   * frame's host closes it, and it stays on the page's own editable routes. */
+  embedded?: boolean;
   children: React.ReactNode;
 }
 
-export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
+export function EditSidebar({
+  initialConfig,
+  embedded = false,
+  children,
+}: EditSidebarProps) {
   const router = useRouter();
   const navigate = useNavigate();
   const pathname = usePathname();
@@ -73,10 +88,11 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
   // except for a coach who hasn't finished onboarding — they land straight in
   // the editor. A returning coach's last choice is restored from localStorage
   // after mount (kept out of the initial state to avoid an SSR hydration gap).
-  const [editMode, setEditMode] = useState(!initialConfig.onboarding_completed);
-  const [open, setOpen] = useState(!initialConfig.onboarding_completed);
+  const startsEditing = embedded || !initialConfig.onboarding_completed;
+  const [editMode, setEditMode] = useState(startsEditing);
+  const [open, setOpen] = useState(startsEditing);
   const [mode, setMode] = useState<Mode>(
-    initialConfig.onboarding_completed ? "pages" : "site",
+    embedded || initialConfig.onboarding_completed ? "pages" : "site",
   );
   const [expanded, setExpanded] = useState<Set<SiteSection>>(
     () => new Set<SiteSection>(["brand"]),
@@ -126,10 +142,11 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
   // single-flight guard would silently drop a flush-on-navigate call that
   // arrives while an earlier debounced call for older edits is still in
   // flight, losing the coach's latest changes.
-  const persistConfig = useCallback(
+  const persistNow = useCallback(
     async (nextConfig: TenantConfig) => {
       pendingConfigRef.current = null;
       setSaving(true);
+      let ok = false;
       try {
         const { id, ...payload } = nextConfig;
         void id;
@@ -152,6 +169,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
+        ok = res.ok;
         if (res.ok) {
           router.refresh();
           void refreshSetupStatus();
@@ -161,8 +179,24 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
       } finally {
         setSaving(false);
       }
+      // Not saved: keep it for the next flush (an edit queued since includes it).
+      if (!ok && !pendingConfigRef.current)
+        pendingConfigRef.current = nextConfig;
+      return ok;
     },
     [router],
+  );
+  // Saves still on their way, so a host that closes the editor can wait for
+  // them (closing the frame would cancel a request in flight).
+  const inflightRef = useRef(new Set<Promise<boolean>>());
+  const persistConfig = useCallback(
+    (nextConfig: TenantConfig) => {
+      const save = persistNow(nextConfig);
+      inflightRef.current.add(save);
+      void save.finally(() => inflightRef.current.delete(save));
+      return save;
+    },
+    [persistNow],
   );
 
   // Every change autosaves (debounced). Mark onboarding complete on first save.
@@ -209,19 +243,72 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
     if (pendingConfigRef.current) persistConfig(pendingConfigRef.current);
   }, [persistConfig]);
 
+  // Save everything now, pending edits and saves in flight, and say whether it all went through.
+  const flushAndWait = useCallback(async () => {
+    flushPending();
+    const saves = await Promise.all([...inflightRef.current]);
+    return saves.every(Boolean);
+  }, [flushPending]);
+
+  // Embedded, every move keeps ?embed=edit: without it the next render of the
+  // layout would send the owner back to /setup, inside the frame.
   const goToPage = (route: string) => {
     if (route === pathname) return;
     flushPending();
-    navigate(route);
+    navigate(embedded ? embedSrc(route, "edit") : route);
   };
+
+  // Embedded: the review step reaches in (same origin) to save before it
+  // closes the editor, and gets the page the editor ended on.
+  useEffect(() => {
+    if (!embedded) return;
+    const host = window as unknown as Record<string, EmbeddedEditorApi>;
+    host[EMBEDDED_EDITOR] = {
+      finish: async () => ({
+        ok: await flushAndWait(),
+        path: window.location.pathname,
+      }),
+    };
+    return () => {
+      delete host[EMBEDDED_EDITOR];
+    };
+  }, [embedded, flushAndWait]);
+
+  // Embedded: a link never leaves the frame's editor. One to another of the
+  // site's editable pages moves there; any other (login, a course) is ignored;
+  // in-page anchors scroll as usual.
+  const goRef = useRef(goToPage);
+  goRef.current = goToPage;
+  useEffect(() => {
+    if (!embedded) return;
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as Element | null)?.closest?.("a[href]");
+      if (!(a instanceof HTMLAnchorElement) || a.closest("aside")) return;
+      const to = new URL(a.href, window.location.href);
+      const here = window.location;
+      if (to.origin === here.origin && to.pathname === here.pathname && to.hash)
+        return;
+      e.preventDefault();
+      if (to.origin === here.origin && pageKeyForPath(to.pathname))
+        goRef.current(to.pathname);
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [embedded]);
+
+  // Embedded on a phone the panel starts closed (and a tapped section does not
+  // open it): it would cover the page it edits.
+  useEffect(() => {
+    if (embedded && window.innerWidth < PHONE_WIDTH) setOpen(false);
+  }, [embedded]);
 
   // Restore the coach's last edit-mode choice after mount (skipped for a coach
   // still onboarding, who always starts in the editor).
   useEffect(() => {
-    if (!initialConfig.onboarding_completed) return;
+    if (embedded || !initialConfig.onboarding_completed) return;
     const saved = localStorage.getItem(EDIT_MODE_KEY);
     if (saved !== null) setEditMode(saved === "1");
-  }, [initialConfig.onboarding_completed]);
+  }, [embedded, initialConfig.onboarding_completed]);
 
   // Deep links into the editor. It is the only home for design settings now
   // (the standalone /admin/design page is gone), so every old entry point —
@@ -322,7 +409,8 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
             <SelectionSync
               onBlockSelected={() => {
                 setMode("pages");
-                setOpen(true);
+                if (!(embedded && window.innerWidth < PHONE_WIDTH))
+                  setOpen(true);
               }}
             />
             <div className="relative flex min-h-screen">
@@ -346,13 +434,15 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                     </div>
                     <div className="flex items-center gap-1">
                       <UndoRedoControls />
-                      <button
-                        onClick={() => toggleEditMode(false)}
-                        className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                        title="Exit edit mode — preview your site"
-                      >
-                        <Eye className="h-4 w-4" /> Done
-                      </button>
+                      {!embedded && (
+                        <button
+                          onClick={() => toggleEditMode(false)}
+                          className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                          title="Exit edit mode — preview your site"
+                        >
+                          <Eye className="h-4 w-4" /> Done
+                        </button>
+                      )}
                       <button
                         onClick={() => setOpen(false)}
                         className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -364,7 +454,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                   </div>
 
                   {/* Always-on setup progress: same panel as /admin */}
-                  <SetupSidebarRow minWidth={SIDEBAR_WIDTH} />
+                  {!embedded && <SetupSidebarRow minWidth={SIDEBAR_WIDTH} />}
 
                   {/* Mode tabs — Site settings vs Page content */}
                   <div
@@ -531,7 +621,7 @@ export function EditSidebar({ initialConfig, children }: EditSidebarProps) {
                 <TenantContext.Provider value={config}>
                   {children}
                 </TenantContext.Provider>
-                {!config.is_published && <SetupAssistantBubble />}
+                {!embedded && !config.is_published && <SetupAssistantBubble />}
               </div>
             </div>
           </CanvasDndProvider>
