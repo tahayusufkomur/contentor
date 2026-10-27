@@ -820,6 +820,32 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/admin/events/{kind}/{id}/trial/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description The free trial of the weekly class this session belongs to (apps.live.series.set_trial).
+     *
+     *     GET -> {on, available, session_id, session_at}; PUT {"on": true|false} turns it on or off and answers the same.
+     */
+    get: operations["v1_admin_events_trial_retrieve"];
+    /**
+     * @description The free trial of the weekly class this session belongs to (apps.live.series.set_trial).
+     *
+     *     GET -> {on, available, session_id, session_at}; PUT {"on": true|false} turns it on or off and answers the same.
+     */
+    put: operations["v1_admin_events_trial_update"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/admin/focus/": {
     parameters: {
       query?: never;
@@ -1354,6 +1380,23 @@ export interface paths {
     get: operations["v1_admin_setup_flow_logos_retrieve"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/admin/setup-flow/trial/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description The free trial of the interview's first class: its first session free for everyone, on or off. */
+    post: operations["v1_admin_setup_flow_trial_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -12383,6 +12426,48 @@ export interface operations {
       };
     };
   };
+  v1_admin_events_trial_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+        kind: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_events_trial_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+        kind: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_admin_focus_retrieve: {
     parameters: {
       query?: never;
@@ -13136,6 +13221,24 @@ export interface operations {
     };
   };
   v1_admin_setup_flow_logos_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_admin_setup_flow_trial_create: {
     parameters: {
       query?: never;
       header?: never;

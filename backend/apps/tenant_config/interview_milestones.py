@@ -13,9 +13,11 @@ import json
 import logging
 import re
 import uuid
+from contextlib import suppress
 
 from django.core.cache import cache
 from django.db import transaction
+from django.utils import timezone
 from django_tenants.utils import schema_context
 
 from . import interview_brief as brief
@@ -472,6 +474,11 @@ def expand_class_series(tenant, kind: str = "event") -> int:
     from apps.live import series
 
     added = series.expand(first, picked, TenantConfig.objects.first().timezone)
+    # Her free trial goes on the first session still to come only now the copies are made: they were
+    # copied with the real ways, so none of them is free.
+    if answers.get(f"{EVENT_KEYS[kind]}_trial"):
+        with suppress(series.TrialError):  # the class turned free or has a single session since she asked
+            series.set_trial(first, True)
 
     def mutate(_config, flow):
         flow["interview"] = {**(flow.get("interview") or {}), flag: True}
@@ -950,10 +957,51 @@ def review_card(tenant, kind: str) -> dict:
         picked = brief.answers_of(tenant).get(f"{EVENT_KEYS[kind]}_schedule")
         if isinstance(picked, dict) and picked.get("mode") == "recurring":
             detail["repeats"] = schedule.summary(picked)
+        # Whether she can make the first session a free trial, and has.
+        detail["trial"] = {
+            "offered": _trial_offered(tenant, kind, item),
+            "on": bool(brief.answers_of(tenant).get(f"{EVENT_KEYS[kind]}_trial")),
+        }
     others = [i for i in _cover_images(tenant, kind, item) if i.asset_id != current][: COVERS - 1]
     covers = [{"value": current, "url": detail["cover_url"], "current": True}] if detail["cover_url"] else []
     covers += [{"value": i.asset_id, "url": i.preview_url, "current": False} for i in others]
     return {**card, "item": {**detail, "covers": covers}}
+
+
+def _trial_offered(tenant, kind: str, row) -> bool:
+    """The first session can be a free trial: a weekly class that is sold or in a subscription, with more
+    than one session still to come."""
+    picked = brief.answers_of(tenant).get(f"{EVENT_KEYS[kind]}_schedule")
+    sold = row.is_trial or row.pricing_type != "free"  # a trial session reads free: its ways are what count
+    if not (isinstance(picked, dict) and picked.get("mode") == "recurring") or not sold:
+        return False
+    now = timezone.now()
+    return sum(d > now for d in schedule.occurrences(picked, TenantConfig.objects.first().timezone)) > 1
+
+
+def set_trial(tenant, kind: str, on: bool) -> dict:
+    """The coach turned "Make the first session a free trial?" on or off on a class's review screen. Her answer
+    is kept (``live_trial`` / ``onsite_trial``) and goes on the first session when the series is made
+    (``expand_class_series``); a series already made takes it at once."""
+    from apps.live import series
+
+    flow = TenantConfig.objects.first().setup_flow or {}
+    item = _draft_row(flow, kind) if kind in EVENT_KEYS else None
+    if item is None:
+        raise ChoiceError("no_draft")
+    if on and not _trial_offered(tenant, kind, item):
+        raise ChoiceError("trial_unavailable")
+    answers = brief.answers_of(tenant)
+    before = dict(answers)
+    answers[f"{EVENT_KEYS[kind]}_trial"] = on
+    brief.save_answers(tenant, answers, before)
+    made = "series_expanded" if kind == "event" else f"series_expanded_{kind}"
+    if (flow.get("interview") or {}).get(made):
+        try:
+            series.set_trial(item, on)
+        except series.TrialError as error:
+            raise ChoiceError("trial_unavailable") from error
+    return review_card(tenant, kind)
 
 
 def set_cover(tenant, kind: str, asset_id: str) -> dict:

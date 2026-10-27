@@ -23,7 +23,7 @@ const card = (over: Partial<ReviewCard>): ReviewCard => ({
   item,
   ...over,
 });
-const render = (c: ReviewCard, changing = false) =>
+const render = (c: ReviewCard, changing = false, withTrial = false) =>
   renderToStaticMarkup(
     createElement(DraftReview, {
       card: c,
@@ -31,6 +31,7 @@ const render = (c: ReviewCard, changing = false) =>
       disabled: false,
       changing,
       onCover: async () => undefined,
+      ...(withTrial && { onTrial: async () => undefined }),
       onRetry: () => undefined,
     }),
   );
@@ -82,6 +83,63 @@ describe("DraftReview while it updates", () => {
     const html = render(card({ status: "building", item: null }));
     expect(html).toContain("Drafting your first course…");
     expect(html).not.toContain("Rewriting");
+  });
+});
+
+describe("DraftReview's free trial switch", () => {
+  const weekly = (trial?: { offered: boolean; on: boolean }) =>
+    card({
+      kind: "event",
+      item: {
+        ...item,
+        modules: undefined,
+        when: "2030-01-08T18:30:00Z",
+        repeats: "Tuesdays at 6:30 PM",
+        event_kind: "live",
+        trial,
+      },
+    });
+  const switchOf = (html: string) =>
+    html.match(/<button[^>]*role="switch"[^>]*>/)?.[0] ?? "";
+
+  it("asks whether the first session should be a free trial, off to begin with", () => {
+    const html = render(weekly({ offered: true, on: false }), false, true);
+    expect(html).toContain("Make the first session a free trial?");
+    expect(switchOf(html)).toContain('aria-checked="false"');
+    expect(html).not.toContain("First session is a free trial");
+  });
+
+  it("explains what a trial class is behind an ⓘ that starts closed", () => {
+    const html = render(weekly({ offered: true, on: false }), false, true);
+    expect(html).toContain("What is a free trial class?");
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).not.toContain("lets someone try what you teach");
+    // Her own price in the example, in her currency.
+    expect(html).toContain("Each session costs €49");
+  });
+
+  it("shows the switch on, and says so beside the date, once she turned it on", () => {
+    const html = render(weekly({ offered: true, on: true }), false, true);
+    expect(switchOf(html)).toContain('aria-checked="true"');
+    expect(html).toContain("First session is a free trial");
+  });
+
+  it("is not there for a one-time, free or course draft, or without a way to answer", () => {
+    expect(
+      render(weekly({ offered: false, on: false }), false, true),
+    ).not.toContain("free trial?");
+    expect(render(weekly(undefined), false, true)).not.toContain("free trial?");
+    expect(render(weekly({ offered: true, on: false }))).not.toContain(
+      "free trial?",
+    );
+    expect(render(card({}), false, true)).not.toContain("free trial?");
+  });
+
+  it("never calls the creator a teacher, coach or instructor", () => {
+    const html = render(weekly({ offered: true, on: false }), false, true);
+    expect(html.match(/free trial\?[\s\S]*/i)?.[0]).not.toMatch(
+      /teacher|coach|instructor/i,
+    );
   });
 });
 

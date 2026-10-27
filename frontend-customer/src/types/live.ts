@@ -10,6 +10,8 @@ export interface LiveClass {
   status: string;
   pricing_type: "free" | "paid" | "subscription";
   price: string;
+  /** The free first session of a weekly class: wears a "Free trial" label. */
+  is_trial?: boolean;
   thumbnail_url: string;
   thumbnail_signed_url: string | null;
   recording_url: string | null;
@@ -40,6 +42,8 @@ export interface LiveStream {
   status: string;
   pricing_type: "free" | "paid";
   price: string;
+  /** The free first session of a weekly class: wears a "Free trial" label. */
+  is_trial?: boolean;
   thumbnail_url: string;
   thumbnail_signed_url: string | null;
   recording_url: string | null;
@@ -95,6 +99,8 @@ export interface OnsiteEvent {
   max_capacity: number | null;
   pricing_type: "free" | "paid" | "subscription";
   price: string;
+  /** The free first session of a weekly class: wears a "Free trial" label. */
+  is_trial?: boolean;
   thumbnail_signed_url: string | null;
   scheduled_at: string | null;
   started_at: string | null;
@@ -121,6 +127,8 @@ export interface CalendarEvent {
   status: string;
   pricing_type: "free" | "paid" | "subscription";
   price: string;
+  /** The free first session of a weekly class: wears a "Free trial" label. */
+  is_trial?: boolean;
   scheduled_at: string;
   started_at: string | null;
   ended_at: string | null;

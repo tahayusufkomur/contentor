@@ -163,6 +163,11 @@ export function EventDetailClient({
             <CardContent className="p-6 space-y-4">
               {/* Price */}
               <div className="text-center">
+                {event.is_trial && (
+                  <Badge variant="success" className="mb-2">
+                    Free trial
+                  </Badge>
+                )}
                 <p className="font-display text-3xl font-bold">
                   {event.pricing_type === "free"
                     ? "Free"

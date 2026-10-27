@@ -20,6 +20,8 @@ export interface EventRow {
   computed_status?: string;
   pricing_type: string;
   price: string;
+  /** The free first session of a weekly class (Zoom has none). */
+  is_trial?: boolean;
   scheduled_at: string | null;
   created_at: string;
   /** The kept cover its series wears; null or absent when it has none. */

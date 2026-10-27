@@ -111,6 +111,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
             "status",
             "pricing_type",
             "price",
+            "is_trial",
             "thumbnail_url",
             "thumbnail_id",
             "thumbnail_signed_url",
@@ -134,6 +135,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
             "id",
             "instructor",
             "status",
+            "is_trial",
             "room_name",
             "recording_url",
             "recording_id",
@@ -222,6 +224,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
             "status",
             "pricing_type",
             "price",
+            "is_trial",
             "thumbnail_url",
             "thumbnail_id",
             "thumbnail_signed_url",
@@ -245,6 +248,7 @@ class LiveStreamSerializer(serializers.ModelSerializer):
             "id",
             "instructor",
             "status",
+            "is_trial",
             "room_name",
             "recording_url",
             "recording_id",
@@ -397,6 +401,7 @@ class OnsiteEventSerializer(serializers.ModelSerializer):
             "max_capacity",
             "pricing_type",
             "price",
+            "is_trial",
             "scheduled_at",
             "started_at",
             "ended_at",
@@ -406,7 +411,7 @@ class OnsiteEventSerializer(serializers.ModelSerializer):
             "filter_options",
             "tags",
         ]
-        read_only_fields = ["id", "instructor", "started_at", "ended_at", "created_at"]
+        read_only_fields = ["id", "instructor", "is_trial", "started_at", "ended_at", "created_at"]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -451,6 +456,8 @@ class CalendarEventSerializer(serializers.Serializer):
     status = serializers.CharField()
     pricing_type = serializers.CharField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    # The free first session of a weekly class: wears a "Free trial" label (apps.live.series.set_trial).
+    is_trial = serializers.BooleanField(default=False)
     scheduled_at = serializers.DateTimeField()
     started_at = serializers.DateTimeField(allow_null=True)
     ended_at = serializers.DateTimeField(allow_null=True)

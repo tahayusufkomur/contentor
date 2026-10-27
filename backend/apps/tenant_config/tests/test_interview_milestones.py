@@ -1499,3 +1499,129 @@ def test_the_look_copy_speaks_as_she_answered_who_students_learn_from(tenant_ctx
         look_copy.for_tenant(tenant_ctx, answers)
     assert json.loads(calls[0]["user"])["speaker"] == speaker  # no answer: "I", as before
     assert 'Use "I"' not in calls[0]["system"]
+
+
+# ── the free trial of a weekly class ─────────────────────────────────────────
+
+# 7 Jan 2030 is a Monday: Tue 8, Thu 10, Tue 15, Thu 17 (the 21st ends it).
+WEEKLY = {"mode": "recurring", "start": "2030-01-07", "end": "2030-01-21", "days": [2, 4], "times": ["18:30"]}
+
+
+def _weekly_draft(tenant_ctx, owner, *, price="19", schedule=WEEKLY):
+    """Her first live class, drafted from a weekly schedule and sold at ``price`` (0: free)."""
+    from apps.billing import ways
+    from apps.core.curated_images import client as curated_client
+    from apps.core.models import Tenant
+    from apps.live.models import LiveClass
+
+    answers = {**HOME, "offers": ["course", "live"], "live_topic": "Pads", "live_schedule": schedule}
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    tenant_ctx.refresh_from_db()
+    with mock.patch("apps.core.copilot.content._give_cover"):
+        setup_flow.create_fallback_draft(tenant_ctx, owner, "event", answers)
+    ms.apply_schedule(tenant_ctx)
+    ms._set_draft_status(tenant_ctx, "event", "ready")
+    first = LiveClass.objects.get()
+    sold = {"free": None, "buy": {"price": price, "window": None}, "plans": []}
+    ways.set_ways(first, sold if Decimal(price) else {"free": {"window": None}, "buy": None, "plans": []})
+    cards = mock.patch("apps.core.curated_images.client.search", return_value=curated_client.SearchPage([], 1, False))
+    return first, cards
+
+
+def test_the_review_offers_a_free_trial_for_a_sold_weekly_class_and_keeps_her_answer(tenant_ctx, config, owner):
+    first, cards = _weekly_draft(tenant_ctx, owner)
+    with cards:
+        assert ms.review_card(tenant_ctx, "event")["item"]["trial"] == {"offered": True, "on": False}
+        card = ms.set_trial(tenant_ctx, "event", True)
+        assert card["item"]["trial"] == {"offered": True, "on": True}
+        assert brief.answers_of(tenant_ctx)["live_trial"] is True
+        assert ms.set_trial(tenant_ctx, "event", False)["item"]["trial"]["on"] is False
+    first.refresh_from_db()
+    assert (first.is_trial, first.pricing_type) == (False, "paid")  # a draft is not changed by the answer
+
+
+def test_the_free_trial_is_not_offered_for_a_free_or_one_time_class(tenant_ctx, config, owner):
+    first, cards = _weekly_draft(tenant_ctx, owner, price="0")
+    with cards:
+        assert ms.review_card(tenant_ctx, "event")["item"]["trial"]["offered"] is False
+        with pytest.raises(ms.ChoiceError, match="trial_unavailable"):
+            ms.set_trial(tenant_ctx, "event", True)
+    assert "live_trial" not in brief.answers_of(tenant_ctx)
+
+
+def test_the_one_time_class_has_no_free_trial_to_offer(tenant_ctx, config, owner):
+    once = {"mode": "once", "at": "2030-01-08T18:30"}
+    first, cards = _weekly_draft(tenant_ctx, owner, schedule=once)
+    with cards:
+        assert ms.review_card(tenant_ctx, "event")["item"]["trial"]["offered"] is False
+
+
+def test_her_free_trial_goes_on_the_first_session_when_the_series_is_made_and_survives_the_expand(
+    tenant_ctx, config, owner
+):
+    from apps.live.models import LiveClass
+
+    first, cards = _weekly_draft(tenant_ctx, owner)
+    with cards:
+        ms.set_trial(tenant_ctx, "event", True)
+    assert ms.expand_class_series(tenant_ctx) == 3
+    assert ms.expand_class_series(tenant_ctx) == 0  # once
+    rows = list(LiveClass.objects.order_by("scheduled_at"))
+    assert [(r.is_trial, r.pricing_type, r.price) for r in rows] == [
+        (True, "free", 0),
+        (False, "paid", Decimal("19.00")),
+        (False, "paid", Decimal("19.00")),
+        (False, "paid", Decimal("19.00")),
+    ]
+    assert rows[0].pk == first.pk
+
+
+def test_without_her_asking_every_session_is_sold_as_before(tenant_ctx, config, owner):
+    from apps.live.models import LiveClass
+
+    first, cards = _weekly_draft(tenant_ctx, owner)
+    assert ms.expand_class_series(tenant_ctx) == 3
+    assert {(r.is_trial, r.pricing_type, r.price) for r in LiveClass.objects.all()} == {
+        (False, "paid", Decimal("19.00"))
+    }
+
+
+def test_a_trial_asked_for_before_the_class_turned_free_is_dropped_quietly(tenant_ctx, config, owner):
+    from apps.billing import ways
+    from apps.live.models import LiveClass
+
+    first, cards = _weekly_draft(tenant_ctx, owner)
+    with cards:
+        ms.set_trial(tenant_ctx, "event", True)
+    ways.set_ways(first, {"free": {"window": None}, "buy": None, "plans": []})
+    assert ms.expand_class_series(tenant_ctx) == 3
+    assert not LiveClass.objects.filter(is_trial=True).exists()
+
+
+def test_a_trial_asked_for_after_the_series_is_made_goes_on_at_once(tenant_ctx, config, owner):
+    from apps.live.models import LiveClass
+
+    first, cards = _weekly_draft(tenant_ctx, owner)
+    assert ms.expand_class_series(tenant_ctx) == 3
+    with cards:
+        ms.set_trial(tenant_ctx, "event", True)
+    assert list(LiveClass.objects.filter(is_trial=True).values_list("pk", flat=True)) == [first.pk]
+    with cards:
+        ms.set_trial(tenant_ctx, "event", False)
+    assert not LiveClass.objects.filter(is_trial=True).exists()
+    assert LiveClass.objects.get(pk=first.pk).price == Decimal("19.00")
+
+
+def test_the_trial_endpoint_turns_her_answer_on_and_off(tenant_ctx, config, owner):
+    from rest_framework.test import APIClient
+
+    first, cards = _weekly_draft(tenant_ctx, owner)
+    client = APIClient(HTTP_HOST="shared-test.localhost")
+    client.force_authenticate(user=owner)
+    url = "/api/v1/admin/setup-flow/trial/"
+    with cards:
+        on = client.post(url, {"kind": "event", "on": True}, format="json")
+        assert on.status_code == 200 and on.json()["item"]["trial"] == {"offered": True, "on": True}
+        off = client.post(url, {"kind": "event", "on": False}, format="json")
+        assert off.json()["item"]["trial"]["on"] is False
+        assert client.post(url, {"kind": "course", "on": True}, format="json").status_code == 400

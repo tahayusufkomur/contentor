@@ -153,6 +153,20 @@ def setup_flow_cover(request):
     return Response(card)
 
 
+@api_view(["POST"])
+@permission_classes([IsCoachOrOwner])
+def setup_flow_trial(request):
+    """The free trial of the interview's first class: its first session free for everyone, on or off."""
+    if (over := _setup_over()) is not None:
+        return over
+    data = _data(request)
+    try:
+        card = interview_milestones.set_trial(connection.tenant, str(data.get("kind") or ""), data.get("on") is True)
+    except interview_milestones.ChoiceError as exc:
+        return Response({"detail": str(exc)}, status=400)
+    return Response(card)
+
+
 @api_view(["GET", "POST"])
 @permission_classes([IsCoachOrOwner])
 def setup_flow_golive(request):

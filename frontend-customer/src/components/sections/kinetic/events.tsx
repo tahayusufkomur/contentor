@@ -129,7 +129,7 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
                                 : "bg-accent px-1.5 py-1 text-accent-foreground",
                             )}
                           >
-                            Free
+                            {e.is_trial ? "Free trial" : "Free"}
                           </span>
                         )}
                       </span>

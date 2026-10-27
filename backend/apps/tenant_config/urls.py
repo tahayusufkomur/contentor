@@ -25,6 +25,7 @@ from .setup_flow_views import (
     setup_flow_import,
     setup_flow_logos,
     setup_flow_state,
+    setup_flow_trial,
     setup_flow_turn,
 )
 from .views import (
@@ -56,6 +57,7 @@ urlpatterns = [
     path("setup-flow/logos/", setup_flow_logos, name="setup-flow-logos"),
     path("setup-flow/golive/", setup_flow_golive, name="setup-flow-golive"),
     path("setup-flow/cover/", setup_flow_cover, name="setup-flow-cover"),
+    path("setup-flow/trial/", setup_flow_trial, name="setup-flow-trial"),
     path("setup-flow/cancel/", setup_flow_cancel, name="setup-flow-cancel"),
     path("demo-content/", demo_content, name="demo-content"),
     path("demo-content/erase/", erase_demo_content, name="demo-content-erase"),

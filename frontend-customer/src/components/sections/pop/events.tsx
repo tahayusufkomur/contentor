@@ -113,7 +113,7 @@ export function EventsTickets({ block, data, editable }: SectionProps) {
                         {e.location && <span>{e.location}</span>}
                         {e.pricing_type === "free" && (
                           <span className="rounded-full border-2 border-[color:var(--pop-ink)] bg-[var(--accent)] px-2.5 py-0.5 text-[0.75rem] text-[color:var(--foreground)]">
-                            Free
+                            {e.is_trial ? "Free trial" : "Free"}
                           </span>
                         )}
                       </p>

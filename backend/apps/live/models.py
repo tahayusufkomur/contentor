@@ -28,7 +28,21 @@ class _EventStatusMixin:
         return None
 
 
-class LiveClass(_EventStatusMixin, models.Model):
+class _TrialFields(models.Model):
+    """The free trial of a weekly class (apps.live.series.set_trial): its first session is free for everyone.
+    ``is_trial`` marks that one session; ``trial_ways`` keeps the ways in it had (billing.ways.ways_of's shape),
+    which ``billing.ways`` reads and writes in place of the session's own while it is a trial. Zoom sessions
+    are free only, so they carry neither."""
+
+    # In the database too: code without this field still inserts sessions.
+    is_trial = models.BooleanField(default=False, db_default=False)
+    trial_ways = models.JSONField(null=True, blank=True, editable=False)
+
+    class Meta:
+        abstract = True
+
+
+class LiveClass(_EventStatusMixin, _TrialFields):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, default="")
     instructor = models.ForeignKey(
@@ -104,7 +118,7 @@ class LiveClass(_EventStatusMixin, models.Model):
         super().save(*args, **kwargs)
 
 
-class LiveStream(_EventStatusMixin, models.Model):
+class LiveStream(_EventStatusMixin, _TrialFields):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, default="")
     instructor = models.ForeignKey(
@@ -235,7 +249,7 @@ class ZoomClass(_EventStatusMixin, models.Model):
         return self._computed_ended_at()
 
 
-class OnsiteEvent(_EventStatusMixin, models.Model):
+class OnsiteEvent(_EventStatusMixin, _TrialFields):
     """In-person / on-site live event."""
 
     title = models.CharField(max_length=200)

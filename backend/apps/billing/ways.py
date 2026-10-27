@@ -81,7 +81,23 @@ def _window_of(row) -> dict | None:
     return {k: v.isoformat() if isinstance(v, date) else v for k, v in out.items()} or None
 
 
+def _trial_ways(item) -> dict | None:
+    """The ways a free-trial session goes back to (apps.live.series.set_trial), or None for any other item.
+    While it is a trial its own columns say "free for everyone"; ``ways_of`` and ``set_ways`` speak for the
+    ways it keeps instead, so a copy, an edit or an undo of the series' ways never sees or writes the free one.
+    A subscription that was deleted since is left out."""
+    if not getattr(item, "is_trial", False) or not item.trial_ways:
+        return None
+    kept = item.trial_ways
+    live = set(
+        SubscriptionPlan.objects.filter(pk__in=[p["plan_id"] for p in kept["plans"]]).values_list("pk", flat=True)
+    )
+    return {**kept, "plans": [p for p in kept["plans"] if p["plan_id"] in live]}
+
+
 def ways_of(item) -> dict:
+    if (kept := _trial_ways(item)) is not None:
+        return kept
     ctype = ContentType.objects.get_for_model(item)
     windows = {w.way: w for w in AccessWindow.objects.filter(content_type=ctype, object_id=item.pk)}
     links = SubscriptionPlanAccess.objects.filter(content_type=ctype, object_id=item.pk).order_by("pk")
@@ -215,8 +231,11 @@ def _clean(item, ways: dict, actor) -> dict:
             raise WaysError("owner_only", "Only the owner can change a bundle's terms.")
         ctype = ContentType.objects.get_for_model(item)
         linked = SubscriptionPlanAccess.objects.filter(content_type=ctype, object_id=item.pk)
+        was = {link.plan_id: _window_of(link) for link in linked}
+        if (kept := _trial_ways(item)) is not None:  # a trial session's own links are gone: its kept ways count
+            was = {p["plan_id"]: p["window"] for p in kept["plans"]}
         # A plan's window is live for every member, so it is the owner's too (Ruling 18).
-        if {link.plan_id: _window_of(link) for link in linked} != {p["plan_id"]: p["window"] for p in out["plans"]}:
+        if was != {p["plan_id"]: p["window"] for p in out["plans"]}:
             raise WaysError("owner_only", "Only the owner can change which subscriptions include this.")
     return out
 
@@ -236,10 +255,20 @@ def _window_fields(window: dict | None) -> dict:
     }
 
 
-def set_ways(item, ways: dict, *, actor=None) -> dict:
+def set_ways(item, ways: dict, *, actor=None, raw: bool = False) -> dict:
+    """Write the item's ways. On a free-trial session they are the ways it goes back to when the trial ends:
+    its own stay free. ``raw`` writes the columns whatever it is (only ``apps.live.series.set_trial`` does)."""
     clean = _clean(item, ways, actor)  # validate's checks, keeping the normalised values
-    ctype = ContentType.objects.get_for_model(item)
     free, buy, plans = clean["free"], clean["buy"], clean["plans"]
+    if getattr(item, "is_trial", False) and not raw:
+        item.trial_ways = {
+            "free": free and {"window": free["window"]},
+            "buy": buy and {"price": f"{buy['price']:.2f}", "window": buy["window"]},
+            "plans": plans,
+        }
+        item.save(update_fields=["trial_ways"])
+        return ways_of(item)
+    ctype = ContentType.objects.get_for_model(item)
     with transaction.atomic():
         wanted = {way: s["window"] for way, s in (("free", free), ("buy", buy)) if s and s["window"]}
         AccessWindow.objects.filter(content_type=ctype, object_id=item.pk).exclude(way__in=wanted).delete()

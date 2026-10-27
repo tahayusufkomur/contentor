@@ -108,6 +108,7 @@ export interface SetupFlowApi {
   importDoc: (doc: ShareDoc, field?: string) => Promise<TurnResponse>;
   logos: (page: number) => Promise<LookCards>;
   cover: (kind: ReviewKind, asset: string) => Promise<ReviewCard>;
+  trial: (kind: ReviewKind, on: boolean) => Promise<ReviewCard>;
   golive: () => Promise<GoLiveState>;
   goliveAction: (action: "publish" | "sell_later") => Promise<GoLiveState>;
 }
@@ -139,6 +140,8 @@ export const setupFlowApi: SetupFlowApi = {
   logos: (page) => clientFetch<LookCards>(`${BASE}/logos/?page=${page}`),
   cover: (kind, asset) =>
     clientFetch<ReviewCard>(`${BASE}/cover/`, post({ kind, asset })),
+  trial: (kind, on) =>
+    clientFetch<ReviewCard>(`${BASE}/trial/`, post({ kind, on })),
   golive: () => clientFetch<GoLiveState>(`${BASE}/golive/`),
   goliveAction: (action) =>
     clientFetch<GoLiveState>(`${BASE}/golive/`, post({ action })),
@@ -178,6 +181,8 @@ const CHOICE_ERRORS: Record<string, string> = {
   invalid_schedule: "Pick at least one day and a time for the session.",
   unknown_logo: "That logo isn’t available any more. Pick another one.",
   unknown_style: "That look isn’t available any more. Pick another one.",
+  trial_unavailable:
+    "A free trial needs a weekly class with a price and at least two sessions.",
 };
 
 export function turnErrorText(err: unknown): string {
@@ -311,6 +316,9 @@ export interface ReviewItem {
   location?: string;
   /** The street address of an in-person class. */
   address?: string;
+  /** A weekly class that is sold: whether its first session can be a free
+   *  trial (`offered`), and whether she made it one (`on`). */
+  trial?: { offered: boolean; on: boolean };
 }
 
 /** The review screen of a draft: still drafting, drafted, or failed. */

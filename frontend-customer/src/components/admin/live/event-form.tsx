@@ -32,6 +32,7 @@ import { ApiError } from "@/types/api";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 import { toLocalDatetimeValue } from "./shared";
+import { TrialSetting } from "./trial-setting";
 import {
   EVENT_KINDS,
   KIND_ORDER,
@@ -101,12 +102,15 @@ export function EventForm({
   onSaved,
   onCancel,
   onCreated,
+  onTrialChanged,
   focus,
 }: {
   /** Omitted: a new event. */
   event?: EventRow;
   onSaved: () => void;
   onCancel: () => void;
+  /** Her series' free trial was turned on or off from this form. */
+  onTrialChanged?: () => void;
   /** Create mode: the new row's id and kind (before onSaved). */
   onCreated?: (id: number, kind: EventKind) => void;
   /** Focus mode: the record the copy run writes ("<kind>:<id>"), that run,
@@ -542,6 +546,13 @@ export function EventForm({
             <p role="alert" className="text-xs text-destructive">
               {access.error}
             </p>
+          )}
+          {event && (
+            <TrialSetting
+              kind={event.kind}
+              id={event.id}
+              onChanged={onTrialChanged}
+            />
           )}
 
           {has("max_capacity") && detailsShown && (

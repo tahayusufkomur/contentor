@@ -732,6 +732,10 @@ function Flow({
                 await api.cover(kind, asset);
                 await refresh();
               }}
+              onTrial={async (kind, on) => {
+                await api.trial(kind, on);
+                await refresh();
+              }}
               onNext={goNext}
               dir={dir}
             />

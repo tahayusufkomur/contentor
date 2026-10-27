@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import {
   CalendarDays,
   Check,
+  Gift,
   ImageOff,
   MapPin,
   Repeat,
@@ -14,11 +15,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { formatPrice } from "@/lib/interview";
-import type { ReviewCard, ReviewItem, ReviewKind } from "@/lib/setup-flow";
+import {
+  turnErrorText,
+  type ReviewCard,
+  type ReviewItem,
+  type ReviewKind,
+} from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { BusyOverlay, WorkSteps } from "./busy-overlay";
+import { QuestionHelp } from "./question-help";
 
 export const NOUN: Record<ReviewKind, string> = {
   course: "course",
@@ -44,6 +53,7 @@ export function DraftReview({
   disabled,
   changing = false,
   onCover,
+  onTrial,
   onRetry,
 }: {
   card: ReviewCard;
@@ -51,6 +61,9 @@ export function DraftReview({
   disabled: boolean;
   changing?: boolean;
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
+  /** Turn the first session's free trial on or off; without it the review
+   *  shows no trial switch. */
+  onTrial?: (kind: ReviewKind, on: boolean) => Promise<unknown>;
   /** Start a draft over that has been building for far too long. */
   onRetry: () => void;
 }) {
@@ -126,6 +139,7 @@ export function DraftReview({
       redrafting={card.status === "building"}
       changing={changing}
       onCover={onCover}
+      onTrial={onTrial}
     />
   );
 }
@@ -163,6 +177,7 @@ function Drafted({
   redrafting,
   changing,
   onCover,
+  onTrial,
 }: {
   kind: ReviewKind;
   item: ReviewItem;
@@ -171,6 +186,7 @@ function Drafted({
   redrafting: boolean;
   changing: boolean;
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
+  onTrial?: (kind: ReviewKind, on: boolean) => Promise<unknown>;
 }) {
   const working = redrafting || changing;
   // A change on its way: bring the card into view so the cover over it is
@@ -315,6 +331,12 @@ function Drafted({
                 Repeats: {item.repeats}
               </Chip>
             )}
+            {item.trial?.on && (
+              <Chip>
+                <Gift className="size-4" aria-hidden />
+                First session is a free trial
+              </Chip>
+            )}
             <Chip>
               {item.event_kind === "onsite" ? (
                 <MapPin className="size-4" aria-hidden />
@@ -349,6 +371,15 @@ function Drafted({
         >
           {item.description}
         </p>
+        {onTrial && item.trial?.offered && (
+          <FreeTrial
+            kind={kind}
+            item={item}
+            style={enter(3)}
+            disabled={disabled || working}
+            onTrial={onTrial}
+          />
+        )}
         {!!item.modules?.length && (
           <ol className="mt-5 space-y-2">
             {item.modules.map((m, i) => (
@@ -393,5 +424,80 @@ function Chip({ children }: { children: React.ReactNode }) {
     <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--sf-line)] bg-white px-3 py-1">
       {children}
     </span>
+  );
+}
+
+/** "Make the first session a free trial?": an optional switch under a weekly
+ * class (off unless she turns it on), with the ⓘ that says what a trial is. */
+function FreeTrial({
+  kind,
+  item,
+  style,
+  disabled,
+  onTrial,
+}: {
+  kind: ReviewKind;
+  item: ReviewItem;
+  style: CSSProperties;
+  disabled: boolean;
+  onTrial: (kind: ReviewKind, on: boolean) => Promise<unknown>;
+}) {
+  // The switch follows her tap at once; the card catches up when it reloads.
+  const [asked, setAsked] = useState<boolean | null>(null);
+  const on = asked ?? !!item.trial?.on;
+  const { run: toggle, loading } = useAsyncAction(
+    async (next: boolean) => {
+      setAsked(next);
+      try {
+        await onTrial(kind, next);
+      } finally {
+        setAsked(null);
+      }
+    },
+    { onError: (err) => toast.error(turnErrorText(err)) },
+  );
+  const price = item.price
+    ? formatPrice(
+        Math.round(parseFloat(item.price) * 100),
+        item.currency,
+      ).replace(/[.,]00$/, "")
+    : "";
+  return (
+    <div
+      style={style}
+      className="mt-4 max-w-[60ch] rounded-2xl border border-[var(--sf-line)] bg-white px-4 py-3 motion-safe:animate-[sf-rise_.5s_ease-out_both]"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p
+            id="free-trial-label"
+            className="text-[15px] font-medium text-[var(--sf-ink)]"
+          >
+            Make the first session a free trial?
+          </p>
+          <p className="mt-0.5 text-[13.5px] leading-snug text-[var(--sf-graphite)]">
+            Anyone can join it for free. Every other session keeps its price.
+          </p>
+        </div>
+        <Switch
+          aria-labelledby="free-trial-label"
+          checked={on}
+          disabled={disabled || loading}
+          onCheckedChange={(next) => toggle(next)}
+          className="mt-0.5"
+        />
+      </div>
+      <QuestionHelp
+        help={{
+          term: "What is a free trial class?",
+          tip: "A trial class lets someone try what you teach before they pay. Only your first session is free, and anyone can join it. Every session after it is sold at your usual price. You can turn it off any time.",
+          example: price
+            ? `Each session costs ${price}. The first one is a free trial, and every other session is still ${price}.`
+            : "",
+          picture: "",
+          sign: "",
+        }}
+      />
+    </div>
   );
 }

@@ -186,12 +186,18 @@ export const EventsList = forwardRef<MediaBrowserHandle>(
                 </span>
               </TableCell>
               <TableCell>
-                <PricingBadge
-                  pricingType={event.pricing_type}
-                  price={event.price}
-                  currency={currency}
-                  labels={{ free: t("free"), membersOnly: t("membersOnly") }}
-                />
+                {event.is_trial ? (
+                  <span className="whitespace-nowrap rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                    {t("trial")}
+                  </span>
+                ) : (
+                  <PricingBadge
+                    pricingType={event.pricing_type}
+                    price={event.price}
+                    currency={currency}
+                    labels={{ free: t("free"), membersOnly: t("membersOnly") }}
+                  />
+                )}
               </TableCell>
               <TableCell>
                 <RowActions
@@ -210,6 +216,7 @@ export const EventsList = forwardRef<MediaBrowserHandle>(
                 <EventForm
                   event={event}
                   onCancel={() => setEditing(null)}
+                  onTrialChanged={() => browserRef.current?.refresh()}
                   onSaved={() => {
                     setEditing(null);
                     browserRef.current?.refresh();

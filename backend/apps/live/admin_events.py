@@ -10,12 +10,16 @@ from collections import defaultdict
 from datetime import timedelta
 
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
 
 from apps.core.pagination import StandardPagination, apply_tag_filter
 from apps.core.permissions import IsCoachOrOwner
 
+from . import series
 from .models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 from .serializers import LiveClassSerializer, LiveStreamSerializer, OnsiteEventSerializer, ZoomClassSerializer
 
@@ -91,3 +95,24 @@ def admin_events(request):
                 "computed_status": event.computed_status,
             }
     return paginator.get_paginated_response([rows[kind, pk] for _value, pk, kind in page if (kind, pk) in rows])
+
+
+@api_view(["GET", "PUT"])
+@permission_classes([IsCoachOrOwner])
+def event_trial(request, kind, pk):
+    """The free trial of the weekly class this session belongs to (apps.live.series.set_trial).
+
+    GET -> {on, available, session_id, session_at}; PUT {"on": true|false} turns it on or off and answers the same.
+    """
+    if kind not in KINDS:
+        return Response({"detail": "Unknown kind of event."}, status=status.HTTP_404_NOT_FOUND)
+    row = get_object_or_404(KINDS[kind][0], pk=pk)
+    if request.method == "PUT":
+        on = request.data.get("on") if isinstance(request.data, dict) else None
+        if not isinstance(on, bool):
+            return Response({"detail": "Say whether the trial is on or off."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            series.set_trial(row, on)
+        except series.TrialError as error:
+            return Response({"detail": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(series.trial_state(row))

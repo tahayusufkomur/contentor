@@ -27,6 +27,7 @@ interface LiveClass {
   status: string;
   pricing_type: "free" | "paid" | "subscription";
   price: string;
+  is_trial?: boolean;
   recording_url: string;
   recording_signed_url: string | null;
   scheduled_at: string | null;
@@ -196,7 +197,7 @@ export default function LiveClassesPage() {
                       </span>
                       {lc.pricing_type === "free" ? (
                         <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                          Free
+                          {lc.is_trial ? "Free trial" : "Free"}
                         </span>
                       ) : (
                         <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">

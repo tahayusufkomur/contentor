@@ -287,6 +287,13 @@ export const mockSetupFlowApi: SetupFlowApi = {
       ? card
       : ({ kind, status: "ready", item: null } as ReviewCard);
   },
+  // The dev mock drafts no weekly class, so there is no trial to turn on.
+  trial: async (kind) => {
+    const card = cardsFor(`${kind}_review`);
+    return isReview(card)
+      ? card
+      : ({ kind, status: "ready", item: null } as ReviewCard);
+  },
   golive: () => setupFlowApi.golive(),
   goliveAction: async (action) => {
     if (action === "publish") s.published = true;

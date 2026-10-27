@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from .admin_events import admin_events
+from .admin_events import admin_events, event_trial
 from .content_calendar import coach_content_calendar
 
 urlpatterns = [
@@ -41,4 +41,5 @@ content_calendar_patterns = [
 
 admin_events_patterns = [
     path("", admin_events, name="admin-events"),
+    path("<str:kind>/<int:pk>/trial/", event_trial, name="admin-event-trial"),
 ]

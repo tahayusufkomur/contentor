@@ -78,6 +78,7 @@ export function QuestionScreen({
   onShare,
   onMoreLogos,
   onCover,
+  onTrial,
   onNext,
   dir,
 }: {
@@ -102,6 +103,8 @@ export function QuestionScreen({
   dir: "next" | "back";
   onMoreLogos: (page: number) => Promise<LookCards>;
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
+  /** Turn the first session's free trial on or off (a class's review). */
+  onTrial?: (kind: ReviewKind, on: boolean) => Promise<unknown>;
   /** Move on to the next question without answering this one again. */
   onNext: () => void;
 }) {
@@ -480,6 +483,7 @@ export function QuestionScreen({
                   disabled={sending}
                   changing={sending && changing}
                   onCover={onCover}
+                  onTrial={onTrial}
                   onRetry={() =>
                     send({ message: "Draft it again from scratch" })
                   }

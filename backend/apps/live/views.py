@@ -456,6 +456,7 @@ def _to_calendar_event(obj, event_type, ctx, thumbnail_url=None):
         "status": obj.computed_status,
         "pricing_type": obj.pricing_type,
         "price": obj.price,
+        "is_trial": getattr(obj, "is_trial", False),
         "scheduled_at": obj.scheduled_at,
         "started_at": obj.started_at,
         "ended_at": obj.computed_ended_at,
