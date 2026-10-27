@@ -193,6 +193,7 @@ def test_a_buyer_sees_when_their_access_ends(service, student, course):
 def test_a_free_window_opens_it_to_everyone_until_it_closes(service, student, course, zone):
     zone("UTC")
     free_window(course, {"closes_on": "2026-10-26"})
+    student = joined(student, NOW)  # a free window opens at joining: before it closes, whatever today is
     visitor = AnonymousUser()
     with at(datetime(2026, 10, 26, 23, 59, 59, tzinfo=UTC)):
         assert service.get_access_info(visitor, course).has_access
@@ -219,6 +220,7 @@ def test_first_days_after_joining_is_free_for_new_students(service, student, cou
 def test_a_calendar_close_ends_at_the_end_of_that_day_in_the_creators_zone(service, student, course, zone):
     zone("Europe/Istanbul")  # UTC+3: 23:59:59 on the 26th is 20:59:59 UTC
     free_window(course, {"closes_on": "2026-10-26"})
+    student = joined(student, NOW)  # a free window opens at joining: before it closes, whatever today is
     with at(datetime(2026, 10, 26, 20, 59, 59, tzinfo=UTC)):
         assert service.get_access_info(student, course).has_access
     with at(datetime(2026, 10, 26, 21, 0, 0, tzinfo=UTC)):
