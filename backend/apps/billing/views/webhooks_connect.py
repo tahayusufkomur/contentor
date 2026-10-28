@@ -79,34 +79,37 @@ def _handle_marketplace_checkout_completed(event):
         from apps.billing.providers import connect
 
         receipt_url = connect.retrieve_receipt_url(account_id=event["account"], payment_intent_id=provider_payment_id)
-    _set_receipt_language(event, session, metadata)
-    with tenant_context(tenant):
-        from apps.billing.models import Payment
-        from apps.billing.views.payments import grant_access_for_payment
+    # After the grant, however it ends: a slow Stripe call must never delay access.
+    try:
+        with tenant_context(tenant):
+            from apps.billing.models import Payment
+            from apps.billing.views.payments import grant_access_for_payment
 
-        payment = Payment.objects.filter(pk=int(payment_id)).first()
-        if payment is None:
-            logger.warning("marketplace payment %s not found in tenant=%s", payment_id, tenant.slug)
-            return
-        newly_paid = payment.status != "completed"
-        if newly_paid:
-            payment.status = "completed"
-            payment.provider = "stripe"
-            payment.provider_payment_id = provider_payment_id
-            if receipt_url:
-                payment.metadata = {**(payment.metadata or {}), "receipt_url": receipt_url}
-            payment.save(update_fields=["status", "provider", "provider_payment_id", "metadata"])
-        grant_access_for_payment(payment)
-        if newly_paid:
-            from apps.notifications import transactional
+            payment = Payment.objects.filter(pk=int(payment_id)).first()
+            if payment is None:
+                logger.warning("marketplace payment %s not found in tenant=%s", payment_id, tenant.slug)
+                return
+            newly_paid = payment.status != "completed"
+            if newly_paid:
+                payment.status = "completed"
+                payment.provider = "stripe"
+                payment.provider_payment_id = provider_payment_id
+                if receipt_url:
+                    payment.metadata = {**(payment.metadata or {}), "receipt_url": receipt_url}
+                payment.save(update_fields=["status", "provider", "provider_payment_id", "metadata"])
+            grant_access_for_payment(payment)
+            if newly_paid:
+                from apps.notifications import transactional
 
-            transactional.purchase_done(payment)
-        logger.info(
-            "marketplace payment completed tenant=%s payment=%s amount=%s",
-            tenant.slug,
-            payment_id,
-            getattr(payment, "amount", "?"),
-        )
+                transactional.purchase_done(payment)
+            logger.info(
+                "marketplace payment completed tenant=%s payment=%s amount=%s",
+                tenant.slug,
+                payment_id,
+                getattr(payment, "amount", "?"),
+            )
+    finally:
+        _set_receipt_language(event, session, metadata)
 
 
 def _handle_marketplace_charge_reversed(event, tenant):

@@ -102,6 +102,7 @@ class StripeProvider(PaymentProvider):
                 code="PRICE_NOT_AVAILABLE",
             )
 
+        locale = languages.resolve(locale)  # a language that is not enabled is English
         normalized_locale = locale if locale in _SUPPORTED_STRIPE_LOCALES else "en"
 
         metadata = {

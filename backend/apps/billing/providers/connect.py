@@ -335,8 +335,8 @@ def set_customer_locale(*, account_id: str, customer_id: str, stripe_locale: str
     stripe = _client()
     try:
         stripe.Customer.modify(customer_id, preferred_locales=[stripe_locale], stripe_account=account_id)
-    except Exception:  # noqa: BLE001 — a receipt's language is never worth failing the webhook
-        logger.warning("could not set preferred locale for %s", customer_id)
+    except stripe.StripeError:  # a receipt's language is never worth failing the webhook
+        logger.warning("could not set preferred locale: account=%s customer=%s", account_id, customer_id, exc_info=True)
 
 
 def retrieve_account_status(*, account_id: str) -> ConnectAccountStatus:
