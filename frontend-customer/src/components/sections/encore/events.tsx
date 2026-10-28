@@ -76,7 +76,7 @@ export function EventsTourDates({ block, data, editable }: SectionProps) {
                   </span>
                   <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-col sm:items-end sm:justify-center sm:text-right">
                     <span className={cn(LABEL, NUM, "text-muted-foreground")}>
-                      {eventPriceLabel(e, locale)}
+                      {eventPriceLabel(e, locale, t)}
                     </span>
                     <span className="encore-link inline-flex items-center gap-2 text-[0.9rem] font-semibold sm:mt-1">
                       {t("encore.tickets")}

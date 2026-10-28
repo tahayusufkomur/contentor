@@ -114,7 +114,7 @@ export function EventsPlaydates({ block, data, editable }: SectionProps) {
                 {/* Price & Booking action */}
                 <div className="flex items-center justify-between gap-4 border-t border-[color-mix(in_oklch,var(--border)_60%,transparent)] pt-4 sm:flex-col sm:items-end sm:border-0 sm:pt-0">
                   <span className="font-display text-[1.15rem] font-bold text-primary">
-                    {eventPriceLabel(e, locale)}
+                    {eventPriceLabel(e, locale, t)}
                   </span>
                   <span className="inline-flex items-center gap-1.5 font-display text-[0.92rem] font-bold text-foreground transition-colors group-hover:text-primary">
                     <span>{t("rows.saveSpot")}</span>

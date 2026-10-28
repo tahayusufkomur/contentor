@@ -70,7 +70,7 @@ export function EventsSessions({ block, data, editable }: SectionProps) {
                   </div>
 
                   <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:justify-center">
-                    <PriceTag price={eventPriceLabel(e, locale)} />
+                    <PriceTag price={eventPriceLabel(e, locale, t)} />
                     <span className="workshop-hand inline-flex items-center gap-1.5 text-[1.1rem] font-bold text-accent transition-transform motion-safe:group-hover:translate-x-1">
                       <span>{t("workshop.reserveBench")}</span>
                       <HandArrow className="h-3 w-4" />

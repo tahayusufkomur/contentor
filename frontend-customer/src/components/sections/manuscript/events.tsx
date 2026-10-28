@@ -66,7 +66,7 @@ export function EventsReadings({ block, data, editable }: SectionProps) {
 
                     <div className="flex flex-col sm:items-end sm:text-right">
                       <span className="manuscript-small-caps text-xs font-semibold text-accent">
-                        {eventPriceLabel(e, locale)}
+                        {eventPriceLabel(e, locale, t)}
                       </span>
                       <span className="manuscript-link mt-1 inline-flex items-center gap-1.5 text-[0.92rem] font-medium text-foreground group-hover:text-accent">
                         <span>{t("manuscript.reserveSeat")}</span>

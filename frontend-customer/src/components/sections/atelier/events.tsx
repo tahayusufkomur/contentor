@@ -68,7 +68,7 @@ export function EventsMasterclasses({ block, data, editable }: SectionProps) {
 
                   <div className="flex flex-col sm:items-end sm:text-right">
                     <span className={cn(LABEL, "text-foreground")}>
-                      {eventPriceLabel(e, locale)}
+                      {eventPriceLabel(e, locale, t)}
                     </span>
                     <span className="atelier-link mt-2 inline-flex items-center gap-1.5 text-[0.88rem] font-medium text-muted-foreground group-hover:text-primary">
                       <span>{t("event.reserveSpot")}</span>
