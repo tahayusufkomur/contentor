@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun, Sunset, type LucideIcon } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -19,11 +20,16 @@ interface ThemeToggleProps {
   modes?: string[];
 }
 
-const MODE_META: Record<string, { icon: LucideIcon; label: string }> = {
-  light: { icon: Sun, label: "Light" },
-  dim: { icon: Sunset, label: "Dim" },
-  dark: { icon: Moon, label: "Dark" },
+// The words are `common.ui.theme.<mode>` (name) and `.<mode>Mode` (as a label).
+const MODE_META: Record<string, { icon: LucideIcon }> = {
+  light: { icon: Sun },
+  dim: { icon: Sunset },
+  dark: { icon: Moon },
 };
+const MODES = ["light", "dim", "dark"] as const;
+type Mode = (typeof MODES)[number];
+const asMode = (m: string): Mode =>
+  (MODES as readonly string[]).includes(m) ? (m as Mode) : "light";
 
 export function ThemeToggle({
   collapsed = false,
@@ -31,6 +37,7 @@ export function ThemeToggle({
   className,
   modes = ["light", "dark"],
 }: ThemeToggleProps) {
+  const t = useTranslations("common");
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -45,9 +52,10 @@ export function ThemeToggle({
     const current = mounted && resolvedTheme ? resolvedTheme : modes[0];
     const currentIndex = modes.indexOf(current);
     const next = modes[(currentIndex + 1) % modes.length] ?? modes[0];
-    const meta = MODE_META[current] ?? MODE_META.light;
-    const nextMeta = MODE_META[next] ?? MODE_META.light;
-    const Icon = meta.icon;
+    const Icon = (MODE_META[current] ?? MODE_META.light).icon;
+    const name = t(`ui.theme.${asMode(current)}`);
+    const nextName = t(`ui.theme.${asMode(next)}`);
+    const nextMode = t(`ui.theme.${asMode(next)}Mode`);
 
     return (
       <Button
@@ -59,11 +67,15 @@ export function ThemeToggle({
           className,
         )}
         onClick={() => mounted && setTheme(next)}
-        aria-label={`Theme: ${meta.label}. Switch to ${nextMeta.label} mode`}
-        title={`Theme: ${meta.label} — click for ${nextMeta.label}`}
+        aria-label={t("ui.theme.cycleAria", { current: name, next: nextMode })}
+        title={t("ui.theme.cycleTitle", { current: name, next: nextName })}
       >
         <Icon className="h-4 w-4 transition-all" />
-        {!iconOnly && <span className="text-sm">{meta.label} mode</span>}
+        {!iconOnly && (
+          <span className="text-sm">
+            {t(`ui.theme.${asMode(current)}Mode`)}
+          </span>
+        )}
       </Button>
     );
   }
@@ -81,13 +93,15 @@ export function ThemeToggle({
         className,
       )}
       onClick={() => mounted && setTheme(isDark ? "light" : "dark")}
-      aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+      aria-label={
+        isDark ? t("ui.theme.switchToLight") : t("ui.theme.switchToDark")
+      }
     >
       <span className="relative h-4 w-4">
         <Sun className="absolute inset-0 h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
         <Moon className="absolute inset-0 h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
       </span>
-      {!iconOnly && <span className="text-sm">Dark mode</span>}
+      {!iconOnly && <span className="text-sm">{t("ui.theme.darkMode")}</span>}
     </Button>
   );
 }

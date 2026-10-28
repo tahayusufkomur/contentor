@@ -73,5 +73,40 @@
       "harassment": "Harassment",
       "other": "Something else"
     }
+  },
+  "ui": {
+    "loading": "Loading",
+    "somethingWrong": "Something went wrong",
+    "tryAgain": "Try again",
+    "loadFailed": "Failed to load this page. Please try again.",
+    "playVideo": "Play video",
+    "pauseVideo": "Pause video",
+    "theme": {
+      "light": "Light",
+      "dim": "Dim",
+      "dark": "Dark",
+      "lightMode": "Light mode",
+      "dimMode": "Dim mode",
+      "darkMode": "Dark mode",
+      "cycleAria": "Theme: {current}. Switch to {next}",
+      "cycleTitle": "Theme: {current} — click for {next}",
+      "switchToLight": "Switch to light mode",
+      "switchToDark": "Switch to dark mode"
+    }
+  },
+  "checkout": {
+    "dialog": "Checkout",
+    "close": "Close",
+    "loading": "Loading checkout",
+    "today": "Today",
+    "everyMonthAfter": "Every month after",
+    "renews": "It renews on its own. Cancel any time from Billing.",
+    "trialStarts": "{days, plural, one {Nothing to pay. Your # free day starts now.} other {Nothing to pay. Your # free days start now.}}",
+    "untilDate": "Until {date}",
+    "tryEverything": "Try everything. Cancel from Billing and you pay nothing.",
+    "startsAt": "{name} starts at {price} a month.",
+    "startsAtFallback": "{name} starts at its monthly price.",
+    "beginsAt": "{name} begins at {price} a month.",
+    "beginsAtFallback": "{name} begins at its monthly price."
   }
 }

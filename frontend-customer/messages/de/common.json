@@ -73,5 +73,40 @@
       "harassment": "Belästigung",
       "other": "Etwas anderes"
     }
+  },
+  "ui": {
+    "loading": "Wird geladen",
+    "somethingWrong": "Etwas ist schiefgelaufen",
+    "tryAgain": "Erneut versuchen",
+    "loadFailed": "Diese Seite konnte nicht geladen werden. Bitte versuch es erneut.",
+    "playVideo": "Video abspielen",
+    "pauseVideo": "Video pausieren",
+    "theme": {
+      "light": "Hell",
+      "dim": "Gedimmt",
+      "dark": "Dunkel",
+      "lightMode": "Heller Modus",
+      "dimMode": "Gedimmter Modus",
+      "darkMode": "Dunkelmodus",
+      "cycleAria": "Design: {current}. Zu {next} wechseln",
+      "cycleTitle": "Design: {current} — klicken für {next}",
+      "switchToLight": "Zum Hellmodus wechseln",
+      "switchToDark": "Zum Dunkelmodus wechseln"
+    }
+  },
+  "checkout": {
+    "dialog": "Kasse",
+    "close": "Schließen",
+    "loading": "Kasse wird geladen",
+    "today": "Heute",
+    "everyMonthAfter": "Danach jeden Monat",
+    "renews": "Es verlängert sich automatisch. Kündige jederzeit unter Abrechnung.",
+    "trialStarts": "{days, plural, one {Nichts zu zahlen. Dein # kostenloser Tag beginnt jetzt.} other {Nichts zu zahlen. Deine # kostenlosen Tage beginnen jetzt.}}",
+    "untilDate": "Bis {date}",
+    "tryEverything": "Probiere alles aus. Kündige unter Abrechnung und du zahlst nichts.",
+    "startsAt": "{name} startet ab {price} im Monat.",
+    "startsAtFallback": "{name} startet zum monatlichen Preis.",
+    "beginsAt": "{name} beginnt ab {price} im Monat.",
+    "beginsAtFallback": "{name} beginnt zum monatlichen Preis."
   }
 }

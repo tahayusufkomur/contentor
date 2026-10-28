@@ -720,5 +720,8 @@
     "accessEnds": "Twój dostęp kończy się {date}",
     "opensForYou": "Dostępne dla ciebie od {date}",
     "accessEnded": "Twój dostęp wygasł {date}"
+  },
+  "footer": {
+    "builtWith": "Zbudowano za pomocą <brand>Contentor</brand>"
   }
 }

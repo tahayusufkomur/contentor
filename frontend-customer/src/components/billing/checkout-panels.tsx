@@ -9,6 +9,7 @@ import {
 import { imageUrl } from "@/components/sections/kit";
 import { LogoMarkSvg } from "@/components/shared/logo-mark";
 import { useTenant } from "@/hooks/use-tenant";
+import { useTranslations } from "next-intl";
 
 /** The home hero's first photo: the coach's own picture of her teaching. */
 function useSitePhoto(): string | null {
@@ -43,9 +44,10 @@ export function StudentCheckoutAside({
   photo?: string | null;
   steps: CheckoutStep[];
 }) {
+  const t = useTranslations("site");
   const config = useTenant();
   const sitePhoto = useSitePhoto();
-  const name = config?.brand_name || "Checkout";
+  const name = config?.brand_name || t("checkout.title");
   return (
     <CheckoutAside
       photo={photo || sitePhoto}

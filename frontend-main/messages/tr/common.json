@@ -21,5 +21,40 @@
     "privacy": "Gizlilik",
     "terms": "Koşullar",
     "copyright": "© {year} Contentor. Tüm hakları saklıdır."
+  },
+  "ui": {
+    "loading": "Yükleniyor",
+    "somethingWrong": "Bir şeyler ters gitti",
+    "tryAgain": "Tekrar dene",
+    "loadFailed": "Bu sayfa yüklenemedi. Lütfen tekrar dene.",
+    "playVideo": "Videoyu oynat",
+    "pauseVideo": "Videoyu duraklat",
+    "theme": {
+      "light": "Açık",
+      "dim": "Loş",
+      "dark": "Koyu",
+      "lightMode": "Açık mod",
+      "dimMode": "Loş mod",
+      "darkMode": "Koyu mod",
+      "cycleAria": "Tema: {current}. Şuna geç: {next}",
+      "cycleTitle": "Tema: {current} — {next} için tıkla",
+      "switchToLight": "Açık moda geç",
+      "switchToDark": "Koyu moda geç"
+    }
+  },
+  "checkout": {
+    "dialog": "Ödeme",
+    "close": "Kapat",
+    "loading": "Ödeme yükleniyor",
+    "today": "Bugün",
+    "everyMonthAfter": "Sonrasında her ay",
+    "renews": "Kendiliğinden yenilenir. İstediğin zaman Faturalandırma'dan iptal edebilirsin.",
+    "trialStarts": "{days, plural, one {Ödeyeceğin bir şey yok. # günlük ücretsiz deneme süren şimdi başlıyor.} other {Ödeyeceğin bir şey yok. # günlük ücretsiz deneme süren şimdi başlıyor.}}",
+    "untilDate": "{date} tarihine kadar",
+    "tryEverything": "Her şeyi dene. Faturalandırma'dan iptal edersen hiçbir şey ödemezsin.",
+    "startsAt": "{name} ayda {price} ile başlar.",
+    "startsAtFallback": "{name} aylık fiyatıyla başlar.",
+    "beginsAt": "{name} ayda {price} fiyatla başlar.",
+    "beginsAtFallback": "{name} kendi aylık fiyatıyla başlar."
   }
 }

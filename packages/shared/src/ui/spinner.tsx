@@ -2,6 +2,7 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { LoadingLabel } from "./loading-label";
 
 const spinnerVariants = cva("animate-spin", {
   variants: {
@@ -18,7 +19,7 @@ export interface SpinnerProps
   extends
     React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof spinnerVariants> {
-  /** Screen-reader text. */
+  /** Screen-reader text; "Loading" in the reader's language when omitted. */
   label?: string;
   /** Center in a min-h-[50vh] block (standalone page/section loads). */
   center?: boolean;
@@ -27,7 +28,7 @@ export interface SpinnerProps
 export function Spinner({
   className,
   size,
-  label = "Loading",
+  label,
   center = false,
   ...props
 }: SpinnerProps) {
@@ -48,7 +49,7 @@ export function Spinner({
         strokeWidth={3}
         className={spinnerVariants({ size })}
       />
-      <span className="sr-only">{label}</span>
+      <span className="sr-only">{label ?? <LoadingLabel />}</span>
     </span>
   );
 }

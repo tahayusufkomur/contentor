@@ -1,4 +1,6 @@
+import { useId } from "react";
 import { cn } from "../lib/utils";
+import { LoadingLabel } from "./loading-label";
 
 /** 3px bar. Shared by NavigationProgress (viewport top) and StaleContainer
  *  (container top edge) so the app has one "work in progress" visual, and by
@@ -9,22 +11,29 @@ import { cn } from "../lib/utils";
 export function ProgressLine({
   className,
   value,
-  label = "Loading",
+  label,
 }: {
   className?: string;
   value?: number;
   label?: string;
 }) {
   const determinate = typeof value === "number";
+  const labelId = useId();
   return (
     <div
       role="progressbar"
       aria-label={label}
+      aria-labelledby={label ? undefined : labelId}
       aria-valuemin={determinate ? 0 : undefined}
       aria-valuemax={determinate ? 100 : undefined}
       aria-valuenow={determinate ? Math.round(value * 100) : undefined}
       className={cn("h-[3px] w-full overflow-hidden bg-muted", className)}
     >
+      {!label && (
+        <span id={labelId} hidden>
+          <LoadingLabel />
+        </span>
+      )}
       {determinate ? (
         <div
           className="h-full w-full origin-left bg-primary"

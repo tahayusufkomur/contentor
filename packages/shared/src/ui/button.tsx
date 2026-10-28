@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { LoadingLabel } from "./loading-label";
 
 const buttonVariants = cva(
   "relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 motion-safe:active:scale-[0.98] [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-invalid:border-destructive aria-invalid:ring-destructive",
@@ -113,7 +114,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                   strokeWidth={3}
                   aria-hidden="true"
                 />
-                <span className="sr-only">Loading</span>
+                <span className="sr-only">
+                  <LoadingLabel />
+                </span>
               </span>
               <span
                 aria-hidden="true"

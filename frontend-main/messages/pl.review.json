@@ -443,6 +443,122 @@
     "src": "ab481a79",
     "reviewed": false
   },
+  "common.ui.loading": {
+    "src": "8f26c652",
+    "reviewed": false
+  },
+  "common.ui.somethingWrong": {
+    "src": "8d886c0b",
+    "reviewed": false
+  },
+  "common.ui.tryAgain": {
+    "src": "042c862e",
+    "reviewed": false
+  },
+  "common.ui.loadFailed": {
+    "src": "46f75524",
+    "reviewed": false
+  },
+  "common.ui.playVideo": {
+    "src": "4ef474a5",
+    "reviewed": false
+  },
+  "common.ui.pauseVideo": {
+    "src": "386beace",
+    "reviewed": false
+  },
+  "common.ui.theme.light": {
+    "src": "a36ef8ab",
+    "reviewed": false
+  },
+  "common.ui.theme.dim": {
+    "src": "04d6677c",
+    "reviewed": false
+  },
+  "common.ui.theme.dark": {
+    "src": "ae1ef014",
+    "reviewed": false
+  },
+  "common.ui.theme.lightMode": {
+    "src": "3d3791aa",
+    "reviewed": false
+  },
+  "common.ui.theme.dimMode": {
+    "src": "fc6fd137",
+    "reviewed": false
+  },
+  "common.ui.theme.darkMode": {
+    "src": "9cf83d1f",
+    "reviewed": false
+  },
+  "common.ui.theme.cycleAria": {
+    "src": "85cec255",
+    "reviewed": false
+  },
+  "common.ui.theme.cycleTitle": {
+    "src": "2c2520f9",
+    "reviewed": false
+  },
+  "common.ui.theme.switchToLight": {
+    "src": "fc450912",
+    "reviewed": false
+  },
+  "common.ui.theme.switchToDark": {
+    "src": "c29220f9",
+    "reviewed": false
+  },
+  "common.checkout.dialog": {
+    "src": "3ac8e9e5",
+    "reviewed": false
+  },
+  "common.checkout.close": {
+    "src": "bbfa773e",
+    "reviewed": false
+  },
+  "common.checkout.loading": {
+    "src": "dea092e7",
+    "reviewed": false
+  },
+  "common.checkout.today": {
+    "src": "24345a14",
+    "reviewed": false
+  },
+  "common.checkout.everyMonthAfter": {
+    "src": "08c03b88",
+    "reviewed": false
+  },
+  "common.checkout.renews": {
+    "src": "9bc57f70",
+    "reviewed": false
+  },
+  "common.checkout.trialStarts": {
+    "src": "2d66f48a",
+    "reviewed": false
+  },
+  "common.checkout.untilDate": {
+    "src": "5a3981a1",
+    "reviewed": false
+  },
+  "common.checkout.tryEverything": {
+    "src": "13c250cf",
+    "reviewed": false
+  },
+  "common.checkout.startsAt": {
+    "src": "272e705d",
+    "reviewed": false
+  },
+  "common.checkout.startsAtFallback": {
+    "src": "c667c841",
+    "reviewed": false
+  },
+  "common.checkout.beginsAt": {
+    "src": "b469003f",
+    "reviewed": false
+  },
+  "common.checkout.beginsAtFallback": {
+    "src": "81a853c0",
+    "reviewed": false
+  },
   "marketing.hero.pill": {
     "src": "daf41f1e",
     "reviewed": false

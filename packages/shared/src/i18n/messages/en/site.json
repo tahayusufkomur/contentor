@@ -720,5 +720,8 @@
     "accessEnds": "Your access ends on {date}",
     "opensForYou": "Opens for you on {date}",
     "accessEnded": "Your access ended on {date}"
+  },
+  "footer": {
+    "builtWith": "Built with <brand>Contentor</brand>"
   }
 }

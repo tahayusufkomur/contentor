@@ -21,5 +21,40 @@
     "privacy": "Prywatność",
     "terms": "Regulamin",
     "copyright": "© {year} Contentor. Wszelkie prawa zastrzeżone."
+  },
+  "ui": {
+    "loading": "Ładowanie",
+    "somethingWrong": "Coś poszło nie tak",
+    "tryAgain": "Spróbuj ponownie",
+    "loadFailed": "Nie udało się załadować tej strony. Spróbuj ponownie.",
+    "playVideo": "Odtwórz wideo",
+    "pauseVideo": "Wstrzymaj wideo",
+    "theme": {
+      "light": "Jasny",
+      "dim": "Przyciemniony",
+      "dark": "Ciemny",
+      "lightMode": "Tryb jasny",
+      "dimMode": "Tryb przyciemniony",
+      "darkMode": "Tryb ciemny",
+      "cycleAria": "Motyw: {current}. Przełącz na {next}",
+      "cycleTitle": "Motyw: {current} — kliknij, aby przełączyć na {next}",
+      "switchToLight": "Przełącz na tryb jasny",
+      "switchToDark": "Przełącz na tryb ciemny"
+    }
+  },
+  "checkout": {
+    "dialog": "Płatność",
+    "close": "Zamknij",
+    "loading": "Ładowanie płatności",
+    "today": "Dzisiaj",
+    "everyMonthAfter": "Potem co miesiąc",
+    "renews": "Odnawia się automatycznie. Anuluj w dowolnym momencie w Rozliczeniach.",
+    "trialStarts": "{days, plural, one {Nic do zapłaty. Twój # darmowy dzień zaczyna się teraz.} few {Nic do zapłaty. Twoje # darmowe dni zaczynają się teraz.} many {Nic do zapłaty. Twoje # darmowych dni zaczyna się teraz.} other {Nic do zapłaty. Twoje # darmowych dni zaczyna się teraz.}}",
+    "untilDate": "Do {date}",
+    "tryEverything": "Wypróbuj wszystko. Anuluj w Rozliczeniach, a nic nie zapłacisz.",
+    "startsAt": "{name} zaczyna się od {price} miesięcznie.",
+    "startsAtFallback": "{name} zaczyna się od swojej ceny miesięcznej.",
+    "beginsAt": "{name} rozpoczyna się od {price} miesięcznie.",
+    "beginsAtFallback": "{name} rozpoczyna się od swojej ceny miesięcznej."
   }
 }

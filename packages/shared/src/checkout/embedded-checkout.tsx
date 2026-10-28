@@ -11,7 +11,10 @@ import { formatPlanName, formatPlanPrice } from "../lib/format-plan-price";
 import { APEX, Mark } from "../ui/contentor-brand";
 import { ModalPortal } from "../ui/modal-portal";
 import { Spinner } from "../ui/spinner";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+
+/** The product's name: a brand, the same in every language. */
+const BRAND = "Contentor";
 
 /** What a checkout endpoint answers: an embedded session (mounted here) or,
  *  while the server has no publishable key, Stripe's hosted page to go to.
@@ -36,6 +39,7 @@ export function EmbeddedCheckoutOverlay({
   aside: ReactNode;
   onClose: () => void;
 }) {
+  const t = useTranslations("common");
   const { publishable_key = "", stripe_account } = session;
   const stripe = useMemo(
     () =>
@@ -50,7 +54,7 @@ export function EmbeddedCheckoutOverlay({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Checkout"
+        aria-label={t("checkout.dialog")}
         className="fixed inset-0 z-[150] overflow-y-auto bg-white text-neutral-900 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]"
       >
         {aside}
@@ -63,12 +67,12 @@ export function EmbeddedCheckoutOverlay({
             className="fixed right-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm text-neutral-600 shadow-sm hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900"
           >
             <X className="h-4 w-4" aria-hidden />
-            Close
+            {t("checkout.close")}
           </button>
           <div className="relative mx-auto max-w-[480px]">
             {/* Stripe's form paints over this once it has loaded. */}
             <Spinner
-              label="Loading checkout"
+              label={t("checkout.loading")}
               className="absolute left-1/2 top-24 -translate-x-1/2 text-neutral-400"
             />
             <EmbeddedCheckoutProvider
@@ -186,6 +190,7 @@ export function PlanCheckoutAside({
   plan: PlanTerms;
 }) {
   const locale = useLocale();
+  const t = useTranslations("common");
   return (
     <CheckoutAside
       photo={photo}
@@ -195,28 +200,37 @@ export function PlanCheckoutAside({
       mark={
         <span className="inline-flex items-center gap-2 font-semibold tracking-tight">
           <Mark className="size-5" />
-          Contentor
+          {BRAND}
         </span>
       }
       title={title}
-      steps={planSteps(plan, locale)}
+      steps={planSteps(plan, locale, t)}
     />
   );
 }
 
 /** A trial is free today and starts on its last day unless cancelled; a
  *  plan without one is charged today. */
-function planSteps(plan: PlanTerms, locale: string): CheckoutStep[] {
+function planSteps(
+  plan: PlanTerms,
+  locale: string,
+  t: ReturnType<typeof useTranslations<"common">>,
+): CheckoutStep[] {
   const name = formatPlanName(plan.name);
+  // With a price: "{name} starts at $9 a month."; without, the plan's own price.
   const price = plan.amount_cents
-    ? `${formatPlanPrice(plan.currency, plan.amount_cents, locale)} a month`
-    : "its monthly price";
+    ? formatPlanPrice(plan.currency, plan.amount_cents, locale)
+    : null;
+  const starts = (key: "startsAt" | "beginsAt") =>
+    price === null
+      ? t(`checkout.${key}Fallback`, { name })
+      : t(`checkout.${key}`, { name, price });
   if (!plan.trial_days) {
     return [
-      { when: "Today", what: `${name} starts at ${price}.` },
+      { when: t("checkout.today"), what: starts("startsAt") },
       {
-        when: "Every month after",
-        what: "It renews on its own. Cancel any time from Billing.",
+        when: t("checkout.everyMonthAfter"),
+        what: t("checkout.renews"),
       },
     ];
   }
@@ -225,13 +239,13 @@ function planSteps(plan: PlanTerms, locale: string): CheckoutStep[] {
   ).toLocaleDateString(locale, { month: "long", day: "numeric" });
   return [
     {
-      when: "Today",
-      what: `Nothing to pay. Your ${plan.trial_days} free days start now.`,
+      when: t("checkout.today"),
+      what: t("checkout.trialStarts", { days: plan.trial_days }),
     },
     {
-      when: `Until ${date}`,
-      what: "Try everything. Cancel from Billing and you pay nothing.",
+      when: t("checkout.untilDate", { date }),
+      what: t("checkout.tryEverything"),
     },
-    { when: date, what: `${name} begins at ${price}.` },
+    { when: date, what: starts("beginsAt") },
   ];
 }

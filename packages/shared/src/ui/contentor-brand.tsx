@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { BASE_DOMAIN } from "../lib/constants";
 import { cn } from "../lib/utils";
 
@@ -61,6 +62,7 @@ export const APEX =
  * external link, so a plain anchor: it leaves the coach's site for the apex.
  */
 export function ContentorBadge({ className }: { className?: string }) {
+  const t = useTranslations("site");
   return (
     <a
       href={`${APEX}/?ref=badge`}
@@ -73,8 +75,11 @@ export function ContentorBadge({ className }: { className?: string }) {
     >
       <Mark className="size-4" />
       <span>
-        Built with{" "}
-        <span className="font-semibold text-foreground">Contentor</span>
+        {t.rich("footer.builtWith", {
+          brand: (chunks) => (
+            <span className="font-semibold text-foreground">{chunks}</span>
+          ),
+        })}
       </span>
     </a>
   );

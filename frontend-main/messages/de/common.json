@@ -21,5 +21,40 @@
     "privacy": "Datenschutz",
     "terms": "AGB",
     "copyright": "© {year} Contentor. Alle Rechte vorbehalten."
+  },
+  "ui": {
+    "loading": "Wird geladen",
+    "somethingWrong": "Etwas ist schiefgelaufen",
+    "tryAgain": "Erneut versuchen",
+    "loadFailed": "Diese Seite konnte nicht geladen werden. Bitte versuch es erneut.",
+    "playVideo": "Video abspielen",
+    "pauseVideo": "Video pausieren",
+    "theme": {
+      "light": "Hell",
+      "dim": "Gedimmt",
+      "dark": "Dunkel",
+      "lightMode": "Heller Modus",
+      "dimMode": "Gedimmter Modus",
+      "darkMode": "Dunkler Modus",
+      "cycleAria": "Design: {current}. Zu {next} wechseln",
+      "cycleTitle": "Design: {current} – klicken für {next}",
+      "switchToLight": "Zum hellen Modus wechseln",
+      "switchToDark": "Zum dunklen Modus wechseln"
+    }
+  },
+  "checkout": {
+    "dialog": "Kasse",
+    "close": "Schließen",
+    "loading": "Kasse wird geladen",
+    "today": "Heute",
+    "everyMonthAfter": "Danach monatlich",
+    "renews": "Die Verlängerung erfolgt automatisch. Du kannst jederzeit unter Abrechnung kündigen.",
+    "trialStarts": "{days, plural, one {Nichts zu bezahlen. Dein # kostenloser Tag beginnt jetzt.} other {Nichts zu bezahlen. Deine # kostenlosen Tage beginnen jetzt.}}",
+    "untilDate": "Bis {date}",
+    "tryEverything": "Probier alles aus. Kündige unter Abrechnung und du zahlst nichts.",
+    "startsAt": "{name} startet ab {price} pro Monat.",
+    "startsAtFallback": "{name} startet zum monatlichen Preis.",
+    "beginsAt": "{name} beginnt ab {price} pro Monat.",
+    "beginsAtFallback": "{name} beginnt zum monatlichen Preis."
   }
 }

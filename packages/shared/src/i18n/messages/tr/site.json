@@ -720,5 +720,8 @@
     "accessEnds": "Erişimin {date} tarihinde sona eriyor",
     "opensForYou": "{date} tarihinde senin için açılıyor",
     "accessEnded": "Erişimin {date} tarihinde sona erdi"
+  },
+  "footer": {
+    "builtWith": "<brand>Contentor</brand> ile oluşturuldu"
   }
 }

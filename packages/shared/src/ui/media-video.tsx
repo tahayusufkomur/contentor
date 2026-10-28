@@ -8,6 +8,7 @@ import {
   type PointerEvent,
 } from "react";
 import { Pause, Play } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "../lib/utils";
 
 export interface MediaVideoProps {
@@ -65,6 +66,7 @@ export function MediaVideo({
   playOn = "view",
   className,
 }: MediaVideoProps) {
+  const t = useTranslations("common");
   const video = useRef<HTMLVideoElement>(null);
   const [wanted, setWanted] = useState(false); // user, idle or hover asked for the file
   const [playing, setPlaying] = useState(false);
@@ -252,7 +254,7 @@ export function MediaVideo({
         <button
           type="button"
           onClick={toggle}
-          aria-label={playing ? "Pause video" : "Play video"}
+          aria-label={playing ? t("ui.pauseVideo") : t("ui.playVideo")}
           className="absolute bottom-3 right-3 inline-flex size-8 items-center justify-center rounded-full bg-background text-foreground backdrop-blur-sm transition-colors hover:bg-muted"
         >
           {playing ? (

@@ -2255,6 +2255,10 @@
     "src": "6894e3cf",
     "reviewed": false
   },
+  "site.footer.builtWith": {
+    "src": "2356313d",
+    "reviewed": false
+  },
   "studio.plan.perMonth": {
     "src": "e9e0ceb5",
     "reviewed": false
