@@ -326,6 +326,7 @@ const NEW_PLAN = KIND_ROUTES.membership?.newHref ?? "/admin/store/plans/new";
 function PlansTab() {
   const locale = useLocale();
   const t = useTranslations("admin.store.plans");
+  const tPlan = useTranslations("studio.plan");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -411,7 +412,7 @@ function PlansTab() {
                     <td className="px-4 py-3 font-medium">{p.name}</td>
                     <td className="px-4 py-3">
                       {formatMoney(p.price, p.currency, locale)}
-                      {billingIntervalSuffix(p.billing_interval_months)}
+                      {billingIntervalSuffix(p.billing_interval_months, tPlan)}
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant={p.is_active ? "success" : "secondary"}>

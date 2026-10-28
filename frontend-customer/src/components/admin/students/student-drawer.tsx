@@ -28,7 +28,7 @@ import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { formatMoney } from "@/lib/format";
 import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export interface StudentDetail {
   id: number;
@@ -87,6 +87,7 @@ export function StudentDrawer({
   onRefresh,
 }: StudentDrawerProps) {
   const locale = useLocale();
+  const tPlan = useTranslations("studio.plan");
   const [activeTab, setActiveTab] = useState<"overview" | "actions">(
     "overview",
   );
@@ -237,6 +238,7 @@ export function StudentDrawer({
                           ) +
                           billingIntervalSuffix(
                             student.subscription.interval_months,
+                            tPlan,
                           )
                         : "Free"}
                     </span>

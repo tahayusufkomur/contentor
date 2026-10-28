@@ -20,7 +20,7 @@ import {
 } from "@/lib/access/terms";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface EnrollButtonProps {
   course: CourseDetail;
@@ -216,6 +216,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
 
 function PlanSubscribeButton({ plan }: { plan: UnlockPlanOption }) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const router = useRouter();
   const navigate = useNavigate();
 
@@ -253,7 +254,9 @@ function PlanSubscribeButton({ plan }: { plan: UnlockPlanOption }) {
       >
         <Zap className="h-4 w-4" />
         {plan.name} — {formatMoney(plan.price, plan.currency, locale)}
-        {billingIntervalSuffix(plan.billing_interval_months)}
+        {billingIntervalSuffix(plan.billing_interval_months, (k, v) =>
+          t(`plan.${k}`, v),
+        )}
       </Button>
       <p className="text-center text-xs text-muted-foreground">
         {planTerms(plan.window, locale)}

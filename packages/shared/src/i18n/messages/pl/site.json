@@ -89,7 +89,11 @@
     "seeIncluded": "Zobacz, co zawiera",
     "whatsIncluded": "Co zawiera",
     "includes": "Zawiera",
-    "about": "Informacje"
+    "about": "Informacje",
+    "perMonth": "/mies.",
+    "perYear": "/rok",
+    "perYears": "{count, plural, one {/# rok} few {/# lata} many {/# lat} other {/# roku}}",
+    "perMonths": "{count, plural, one {/# mies.} few {/# mies.} many {/# mies.} other {/# mies.}}"
   },
   "table": {
     "lessons": "Lekcje",

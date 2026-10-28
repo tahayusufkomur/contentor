@@ -69,7 +69,10 @@ export function PricingOfferings({ block, data, editable }: SectionProps) {
                           {formatMoney(plan.price, plan.currency, locale)}
                         </span>
                         <span className="ml-2 text-[0.9rem] uppercase tracking-[0.1em] text-muted-foreground">
-                          {billingIntervalSuffix(plan.billing_interval_months)}
+                          {billingIntervalSuffix(
+                            plan.billing_interval_months,
+                            (k, v) => t(`plan.${k}`, v),
+                          )}
                         </span>
                       </p>
                     </div>

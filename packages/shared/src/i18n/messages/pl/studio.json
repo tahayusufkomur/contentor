@@ -1,1 +1,8 @@
-{}
+{
+  "plan": {
+    "perMonth": "/mies.",
+    "perYear": "/rok",
+    "perYears": "{count, plural, one {/# rok} few {/# lata} many {/# lat} other {/# roku}}",
+    "perMonths": "{count, plural, one {/# mies.} few {/# mies.} many {/# mies.} other {/# mies.}}"
+  }
+}

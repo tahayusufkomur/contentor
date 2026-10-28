@@ -16,7 +16,7 @@ import {
   type CheckoutStart,
 } from "@shared/checkout/embedded-checkout";
 import { StudentCheckoutAside } from "@/components/billing/checkout-panels";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface SubscribeButtonProps {
   planId: number;
@@ -43,6 +43,7 @@ export function SubscribeButton({
   label,
 }: SubscribeButtonProps) {
   const locale = useLocale();
+  const tSite = useTranslations("site");
   const router = useRouter();
   const navigate = useNavigate();
   const [session, setSession] = useState<
@@ -100,7 +101,7 @@ export function SubscribeButton({
               steps={[
                 {
                   when: "Now",
-                  what: `Pay ${formatMoney(price, currency, locale)}${billingIntervalSuffix(intervalMonths)} securely with Stripe.`,
+                  what: `Pay ${formatMoney(price, currency, locale)}${billingIntervalSuffix(intervalMonths, (k, v) => tSite(`plan.${k}`, v))} securely with Stripe.`,
                 },
                 {
                   when: "Right after",
@@ -126,7 +127,9 @@ export function SubscribeButton({
           <>
             <Zap className="mr-2 h-4 w-4" />
             Subscribe — {formatMoney(price, currency, locale)}
-            {billingIntervalSuffix(intervalMonths)}
+            {billingIntervalSuffix(intervalMonths, (k, v) =>
+              tSite(`plan.${k}`, v),
+            )}
           </>
         )}
       </Button>

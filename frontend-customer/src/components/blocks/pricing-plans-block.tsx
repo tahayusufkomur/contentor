@@ -15,10 +15,11 @@ import type { SubscriptionPlan } from "@/types/billing";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { formatMoney } from "@/lib/format";
 import type { BlockComponentProps } from "@/lib/blocks/types";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export function PricingPlansBlock({ data, dynamicData }: BlockComponentProps) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const plans: SubscriptionPlan[] = dynamicData ?? [];
   const gridClass =
     data.layout === "compact"
@@ -77,7 +78,10 @@ export function PricingPlansBlock({ data, dynamicData }: BlockComponentProps) {
                       {formatMoney(plan.price, plan.currency, locale)}
                     </span>
                     <span className="text-muted-foreground">
-                      {billingIntervalSuffix(plan.billing_interval_months)}
+                      {billingIntervalSuffix(
+                        plan.billing_interval_months,
+                        (k, v) => t(`plan.${k}`, v),
+                      )}
                     </span>
                   </div>
 

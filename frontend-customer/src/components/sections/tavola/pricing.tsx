@@ -56,7 +56,10 @@ export function PricingMenu({ block, data, editable }: SectionProps) {
                       <span className="font-display text-[1.6rem] text-foreground">
                         {formatMoney(plan.price, plan.currency, locale)}
                         <span className="ml-2 font-sans text-[0.9rem] text-muted-foreground">
-                          {billingIntervalSuffix(plan.billing_interval_months)}
+                          {billingIntervalSuffix(
+                            plan.billing_interval_months,
+                            (k, v) => t(`plan.${k}`, v),
+                          )}
                         </span>
                       </span>
                     }

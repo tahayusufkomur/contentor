@@ -100,7 +100,10 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
                       )}
                     </span>
                     <span className={cn(LABEL, "pb-2")}>
-                      {billingIntervalSuffix(p.billing_interval_months)}
+                      {billingIntervalSuffix(
+                        p.billing_interval_months,
+                        (k, v) => t(`plan.${k}`, v),
+                      )}
                     </span>
                   </p>
 

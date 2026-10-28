@@ -38,7 +38,9 @@ function Plan({ plan, solo }: { plan: SubscriptionPlan; solo: boolean }) {
           </span>
           <span className="text-[clamp(4rem,2.6rem+4vw,6rem)]">{amount}</span>
           <span className="ml-2 self-end pb-[0.4em] text-[1rem] tracking-normal text-muted-foreground">
-            {billingIntervalSuffix(plan.billing_interval_months)}
+            {billingIntervalSuffix(plan.billing_interval_months, (k, v) =>
+              t(`plan.${k}`, v),
+            )}
           </span>
         </p>
         {!!plan.item_count && (

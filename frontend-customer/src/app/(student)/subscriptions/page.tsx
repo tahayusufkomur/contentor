@@ -17,7 +17,7 @@ import { clientFetch } from "@/lib/api-client";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { formatMoney } from "@/lib/format";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface MySubscription {
   id: number;
@@ -61,6 +61,7 @@ function formatDate(iso: string | null, locale: string) {
 
 export default function SubscriptionsPage() {
   const locale = useLocale();
+  const tSite = useTranslations("site");
   const searchParams = useSearchParams();
   const [subs, setSubs] = useState<MySubscription[]>([]);
   const [plans, setPlans] = useState<PlanOption[]>([]);
@@ -148,7 +149,10 @@ export default function SubscriptionsPage() {
                       sub.billing_currency,
                       locale,
                     )}
-                    {billingIntervalSuffix(sub.billing_interval_months)}
+                    {billingIntervalSuffix(
+                      sub.billing_interval_months,
+                      (k, v) => tSite(`plan.${k}`, v),
+                    )}
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -196,6 +200,7 @@ function SubscriptionRowActions({
   onChanged: () => Promise<void>;
 }) {
   const locale = useLocale();
+  const tSite = useTranslations("site");
   const { run: cancel, loading: cancelling } = useAsyncAction(
     async () => {
       await clientFetch(`/api/v1/billing/subscriptions/${sub.id}/cancel/`, {
@@ -256,7 +261,9 @@ function SubscriptionRowActions({
             {otherPlans.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name} — {formatMoney(p.price, p.currency, locale)}
-                {billingIntervalSuffix(p.billing_interval_months)}
+                {billingIntervalSuffix(p.billing_interval_months, (k, v) =>
+                  tSite(`plan.${k}`, v),
+                )}
               </option>
             ))}
           </select>

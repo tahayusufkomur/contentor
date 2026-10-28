@@ -77,7 +77,9 @@ export function PricingColorcards({ block, data, editable }: SectionProps) {
                     {formatMoney(p.price, p.currency, locale)}
                   </span>
                   <span className="pop-mono text-base text-muted-foreground">
-                    {billingIntervalSuffix(p.billing_interval_months)}
+                    {billingIntervalSuffix(p.billing_interval_months, (k, v) =>
+                      t(`plan.${k}`, v),
+                    )}
                   </span>
                 </p>
                 {p.description && (

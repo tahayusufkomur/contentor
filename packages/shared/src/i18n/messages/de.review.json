@@ -279,6 +279,22 @@
     "src": "6b21fb79",
     "reviewed": false
   },
+  "site.plan.perMonth": {
+    "src": "e9e0ceb5",
+    "reviewed": false
+  },
+  "site.plan.perYear": {
+    "src": "22ed4564",
+    "reviewed": false
+  },
+  "site.plan.perYears": {
+    "src": "cfca4b7c",
+    "reviewed": false
+  },
+  "site.plan.perMonths": {
+    "src": "518a5dca",
+    "reviewed": false
+  },
   "site.table.lessons": {
     "src": "cb9ce97b",
     "reviewed": false
@@ -1297,6 +1313,22 @@
   },
   "site.terminal.open": {
     "src": "5fc7e38b",
+    "reviewed": false
+  },
+  "studio.plan.perMonth": {
+    "src": "e9e0ceb5",
+    "reviewed": false
+  },
+  "studio.plan.perYear": {
+    "src": "22ed4564",
+    "reviewed": false
+  },
+  "studio.plan.perYears": {
+    "src": "cfca4b7c",
+    "reviewed": false
+  },
+  "studio.plan.perMonths": {
+    "src": "518a5dca",
     "reviewed": false
   }
 }

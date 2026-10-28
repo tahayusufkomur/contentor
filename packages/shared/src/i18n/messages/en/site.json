@@ -89,7 +89,11 @@
     "seeIncluded": "See what’s included",
     "whatsIncluded": "What’s included",
     "includes": "Includes",
-    "about": "About"
+    "about": "About",
+    "perMonth": "/mo",
+    "perYear": "/yr",
+    "perYears": "{count, plural, one {/# yr} other {/# yr}}",
+    "perMonths": "{count, plural, one {/# mo} other {/# mo}}"
   },
   "table": {
     "lessons": "Lessons",

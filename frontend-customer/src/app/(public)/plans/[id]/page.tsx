@@ -22,7 +22,7 @@ import {
 import type { SubscriptionPlanDetail, PlanAccessItem } from "@/types/billing";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { formatMoney } from "@/lib/format";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 const TYPE_CONFIG: Record<
   string,
@@ -61,6 +61,7 @@ export default async function PlanDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const locale = await getLocale();
+  const t = await getTranslations("site");
   const { id } = await params;
   let plan: SubscriptionPlanDetail | null = null;
   try {
@@ -185,7 +186,10 @@ export default async function PlanDetailPage({
                 <p className="font-display text-3xl font-bold tabular-nums">
                   {formatMoney(plan.price, plan.currency, locale)}
                   <span className="text-lg font-normal text-muted-foreground">
-                    {billingIntervalSuffix(plan.billing_interval_months)}
+                    {billingIntervalSuffix(
+                      plan.billing_interval_months,
+                      (k, v) => t(`plan.${k}`, v),
+                    )}
                   </span>
                 </p>
               </div>

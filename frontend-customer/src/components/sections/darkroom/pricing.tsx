@@ -59,7 +59,10 @@ export function PricingEditions({ block, data, editable }: SectionProps) {
                     {formatMoney(plan.price, plan.currency, locale)}
                   </p>
                   <p className={cn(LABEL, "mt-2 text-muted-foreground")}>
-                    {billingIntervalSuffix(plan.billing_interval_months)}
+                    {billingIntervalSuffix(
+                      plan.billing_interval_months,
+                      (k, v) => t(`plan.${k}`, v),
+                    )}
                   </p>
                 </div>
                 <div className="flex flex-col items-start lg:col-span-3 lg:items-end lg:justify-self-end lg:text-right">

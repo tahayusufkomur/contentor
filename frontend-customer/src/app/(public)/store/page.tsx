@@ -34,7 +34,7 @@ import type { StoreItem, SubscriptionPlan } from "@/types/billing";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { formatMoney } from "@/lib/format";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 type FilterType =
   | "all"
@@ -243,6 +243,7 @@ interface StorePlanCardProps {
 
 function StorePlanCard({ plan, onSubscribed }: StorePlanCardProps) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const navigate = useNavigate();
 
   const { run: handleSubscribe, loading: subscribing } = useAsyncAction(
@@ -285,7 +286,9 @@ function StorePlanCard({ plan, onSubscribed }: StorePlanCardProps) {
         <p className="text-2xl font-bold tabular-nums">
           {formatMoney(plan.price, plan.currency, locale)}
           <span className="text-sm font-normal text-muted-foreground">
-            {billingIntervalSuffix(plan.billing_interval_months)}
+            {billingIntervalSuffix(plan.billing_interval_months, (k, v) =>
+              t(`plan.${k}`, v),
+            )}
           </span>
         </p>
         <Button

@@ -1,1 +1,8 @@
-{}
+{
+  "plan": {
+    "perMonth": "/ay",
+    "perYear": "/yıl",
+    "perYears": "{count, plural, one {/# yıl} other {/# yıl}}",
+    "perMonths": "{count, plural, one {/# ay} other {/# ay}}"
+  }
+}

@@ -89,7 +89,11 @@
     "seeIncluded": "Nelerin dahil olduğunu gör",
     "whatsIncluded": "Neler dahil",
     "includes": "Dahil olanlar",
-    "about": "Hakkında"
+    "about": "Hakkında",
+    "perMonth": "/ay",
+    "perYear": "/yıl",
+    "perYears": "{count, plural, one {/# yıl} other {/# yıl}}",
+    "perMonths": "{count, plural, one {/# ay} other {/# ay}}"
   },
   "table": {
     "lessons": "Dersler",

@@ -51,7 +51,10 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                 <div className={cn(LABEL, "flex items-center justify-between")}>
                   <span>{pad2(i)}</span>
                   <span>
-                    {billingIntervalSuffix(plan.billing_interval_months)}
+                    {billingIntervalSuffix(
+                      plan.billing_interval_months,
+                      (k, v) => t(`plan.${k}`, v),
+                    )}
                   </span>
                 </div>
 

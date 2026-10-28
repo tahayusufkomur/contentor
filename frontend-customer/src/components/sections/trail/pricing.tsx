@@ -24,7 +24,9 @@ function Plan({ plan, i }: { plan: SubscriptionPlan; i: number }) {
           {formatMoney(plan.price, plan.currency, locale)}
         </p>
         <p className={cn(LABEL, "mt-2 text-muted-foreground")}>
-          {billingIntervalSuffix(plan.billing_interval_months)}
+          {billingIntervalSuffix(plan.billing_interval_months, (k, v) =>
+            t(`plan.${k}`, v),
+          )}
         </p>
       </div>
       {!!plan.item_count && (

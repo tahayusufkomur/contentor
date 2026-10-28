@@ -81,7 +81,10 @@ export function PricingTable({ block, data, editable }: SectionProps) {
                         {amount}
                       </span>
                       <span className="ml-2 text-[0.95rem] tracking-normal text-muted-foreground">
-                        {billingIntervalSuffix(p.billing_interval_months)}
+                        {billingIntervalSuffix(
+                          p.billing_interval_months,
+                          (k, v) => t(`plan.${k}`, v),
+                        )}
                       </span>
                     </div>
                   </div>
@@ -174,7 +177,10 @@ export function PricingTable({ block, data, editable }: SectionProps) {
                       </span>
                       <span className={cn(NUM, "text-[3rem]")}>{amount}</span>
                       <span className="ml-2 text-[0.9rem] tracking-normal text-muted-foreground">
-                        {billingIntervalSuffix(p.billing_interval_months)}
+                        {billingIntervalSuffix(
+                          p.billing_interval_months,
+                          (k, v) => t(`plan.${k}`, v),
+                        )}
                       </span>
                     </div>
 

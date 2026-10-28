@@ -55,13 +55,16 @@ function Action({ plan }: { plan: SubscriptionPlan }) {
 
 function Price({ plan }: { plan: SubscriptionPlan }) {
   const locale = useLocale();
+  const t = useTranslations("site");
   return (
     <p className="flex flex-wrap items-baseline gap-x-2">
       <span className="swiss-step tabular-nums">
         {formatMoney(plan.price, plan.currency, locale)}
       </span>
       <span className="swiss-mono text-muted-foreground">
-        {billingIntervalSuffix(plan.billing_interval_months)}
+        {billingIntervalSuffix(plan.billing_interval_months, (k, v) =>
+          t(`plan.${k}`, v),
+        )}
       </span>
     </p>
   );

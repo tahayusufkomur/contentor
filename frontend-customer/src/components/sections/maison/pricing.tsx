@@ -59,7 +59,9 @@ export function PricingAppointment({ block, data, editable }: SectionProps) {
                   {formatMoney(p.price, p.currency, locale)}
                 </p>
                 <p className={cn(LABEL, "mt-3 text-muted-foreground")}>
-                  {billingIntervalSuffix(p.billing_interval_months)}
+                  {billingIntervalSuffix(p.billing_interval_months, (k, v) =>
+                    t(`plan.${k}`, v),
+                  )}
                 </p>
                 {Boolean(p.item_count) && (
                   <p className={cn(LABEL, "mt-4 text-foreground")}>
