@@ -11,6 +11,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from apps.core.languages import in_site_language
 from apps.core.models import TenantUsage
 from apps.core.permissions import IsCoachOrOwner
 
@@ -292,6 +293,7 @@ def recipient_count(request):
 
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
+@in_site_language  # her students' language, not hers: the test is the email as they will get it
 def campaign_test(request, pk: int):
     """The email, as her students will get it, to her own inbox."""
     from .tasks import send_one

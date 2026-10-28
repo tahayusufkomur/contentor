@@ -12,6 +12,9 @@ import re
 
 from django.conf import settings
 from django.utils.html import strip_tags
+from django.utils.translation import override
+
+from apps.core import languages
 
 from . import catalog, images, render
 
@@ -88,7 +91,7 @@ def kit(tenant, cfg=None) -> dict:
         ],
         # The place she gave for her in-person sessions, her business address.
         "address": str(answers.get("address") or "")[:200],
-        "language": (cfg.default_locale if cfg else "") or "en",
+        "language": languages.resolve(cfg.default_locale if cfg else None),
     }
 
 
@@ -200,11 +203,13 @@ def resolve(design: dict, kit_: dict, found: dict | None = None) -> tuple[dict, 
 def build(design: dict, tenant=None, *, subject: str = "", preheader: str = "", kit_: dict | None = None):
     """-> (html, text, warnings): the email as sent, with {{FirstName}}/{{UnsubscribeUrl}} left for
     ``render.personalize``. ``tenant`` None: no catalog (the platform's emails)."""
-    kit_ = kit_ or kit(tenant)
-    found = catalog.find(refs_in(design), tenant) if tenant is not None else {}
-    resolved, warnings = resolve(design, kit_, found)
-    email = render.render(resolved, kit=kit_, subject=subject, preheader=preheader)
-    return email, to_text(resolved, kit_), warnings
+    # Students read it in the site's language; the platform's own emails (no tenant) are English.
+    with override(languages.site_language(tenant) if tenant is not None else languages.DEFAULT):
+        kit_ = kit_ or kit(tenant)
+        found = catalog.find(refs_in(design), tenant) if tenant is not None else {}
+        resolved, warnings = resolve(design, kit_, found)
+        email = render.render(resolved, kit=kit_, subject=subject, preheader=preheader)
+        return email, to_text(resolved, kit_), warnings
 
 
 def to_text(design: dict, kit_: dict) -> str:

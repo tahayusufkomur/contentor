@@ -1,3 +1,5 @@
+from django.utils.translation import gettext as _
+
 from apps.tenant_config.models import TenantConfig
 
 
@@ -15,7 +17,7 @@ def live_reminder_payload(title: str, url: str = "/live-classes") -> dict:
     b = _brand()
     return {
         "title": b["brand"],
-        "body": f"Starting soon: {title}",
+        "body": _("Starting soon: %(title)s") % {"title": title},
         "icon": b["icon"],
         "url": url,
         "tag": "live-reminder",
@@ -24,7 +26,13 @@ def live_reminder_payload(title: str, url: str = "/live-classes") -> dict:
 
 def new_content_payload(title: str, url: str) -> dict:
     b = _brand()
-    return {"title": b["brand"], "body": f"New: {title}", "icon": b["icon"], "url": url, "tag": "new-content"}
+    return {
+        "title": b["brand"],
+        "body": _("New: %(title)s") % {"title": title},
+        "icon": b["icon"],
+        "url": url,
+        "tag": "new-content",
+    }
 
 
 def strip_to_text(html: str) -> str:

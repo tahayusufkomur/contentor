@@ -3,9 +3,12 @@ import logging
 from celery import shared_task
 from django.db.models import F
 from django.utils import timezone
+from django.utils.translation import gettext as _
+from django.utils.translation import override
 from django_tenants.utils import get_tenant_model, tenant_context
 
 from apps.core.email import send_email
+from apps.core.languages import site_language
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +75,7 @@ def _with_unsubscribe(html: str, link: str, brand: str) -> str:
     footer = (
         '<p style="margin:24px auto;max-width:600px;text-align:center;font-family:Arial,Helvetica,sans-serif;'
         f'font-size:12px;line-height:18px;color:#8a8a8a">{escape(brand)} · '
-        f'<a href="{escape(link)}" style="color:#8a8a8a;text-decoration:underline">Unsubscribe</a></p>'
+        f'<a href="{escape(link)}" style="color:#8a8a8a;text-decoration:underline">{escape(_("Unsubscribe"))}</a></p>'
     )
     head, body_end, tail = html.rpartition("</body>")
     return f"{head}{footer}{body_end}{tail}" if body_end else html + footer
@@ -81,7 +84,7 @@ def _with_unsubscribe(html: str, link: str, brand: str) -> str:
 def first_name(name: str, email: str = "") -> str:
     """What {{FirstName}} reads: the first word of her student's name, else a warm stand-in."""
     words = (name or "").split()
-    return words[0] if words else "there"
+    return words[0] if words else _("there")
 
 
 def campaign_html(campaign, tenant) -> tuple[str, str]:
@@ -100,7 +103,9 @@ def _from(campaign, tenant) -> tuple[str, str]:
     cfg = TenantConfig.objects.first()
     brand_name = (cfg.brand_name if cfg else "") or tenant.name
     coach = (campaign.sender.name or campaign.sender.email) if campaign.sender else ""
-    return (f"{coach} via {brand_name}" if coach else brand_name), sending_identity(tenant)[0]
+    return (
+        _("%(coach)s via %(brand)s") % {"coach": coach, "brand": brand_name} if coach else brand_name
+    ), sending_identity(tenant)[0]
 
 
 def send_one(campaign, tenant, *, to, name="", subject="", unsubscribe="", html=None, text=None, sender=None) -> bool:
@@ -113,7 +118,7 @@ def send_one(campaign, tenant, *, to, name="", subject="", unsubscribe="", html=
         html, text = campaign_html(campaign, tenant)
     values = {
         "FirstName": first_name(name, to),
-        "Name": name or "there",
+        "Name": name or _("there"),
         "UnsubscribeUrl": unsubscribe or site_of(tenant),
     }
     from_name, from_email = sender or _from(campaign, tenant)
@@ -175,7 +180,7 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
         if tenant.plan and tenant.plan.max_campaign_emails:
             remaining_quota = max(tenant.plan.max_campaign_emails - usage.emails_sent, 0)
 
-        with tenant_context(tenant):
+        with tenant_context(tenant), override(site_language()):  # students read it in the site's language
             from apps.email_campaigns.models import CampaignRecipient, CampaignStatus, EmailCampaign, RecipientStatus
             from apps.notifications.email_render import unsubscribe_url
 

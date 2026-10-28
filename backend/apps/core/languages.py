@@ -4,10 +4,12 @@ The list is packages/shared/src/i18n/locales.json (synced copy in apps/core/i18n
 ENABLED_LOCALES decides which of them the public sees; anything else resolves to English.
 """
 
+import functools
 import json
 from pathlib import Path
 
 from django.conf import settings
+from django.utils import translation
 from django_tenants.utils import get_public_schema_name, schema_context
 
 _DATA = json.loads((Path(__file__).parent / "i18n" / "locales.json").read_text(encoding="utf-8"))
@@ -43,6 +45,18 @@ def site_language(tenant=None) -> str:
     from apps.tenant_config.models import TenantConfig
 
     return resolve(TenantConfig.objects.values_list("default_locale", flat=True).first())
+
+
+def in_site_language(fn):
+    """Run `fn` under the site's language: for what students are sent from a task, a webhook or a studio
+    request (whose own language is the creator's)."""
+
+    @functools.wraps(fn)
+    def run(*args, **kwargs):
+        with translation.override(site_language()):
+            return fn(*args, **kwargs)
+
+    return run
 
 
 def creator_language(user=None) -> str:

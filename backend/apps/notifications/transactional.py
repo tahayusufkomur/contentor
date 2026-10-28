@@ -17,7 +17,12 @@ from dataclasses import asdict, dataclass
 
 from django.core.cache import cache
 from django.db import connection, transaction
+from django.utils.formats import date_format, number_format
 from django.utils.html import escape
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
+
+from apps.core.languages import in_site_language, site_language
 
 logger = logging.getLogger(__name__)
 
@@ -241,7 +246,7 @@ def blocks(kit: dict, style: str, email: Email, *, picture=("", ""), offer=None)
         body.append(
             block(
                 "item",
-                {"_item": offer, "layout": "row", "showSummary": False, "buttonText": "Take a look"},
+                {"_item": offer, "layout": "row", "showSummary": False, "buttonText": _("Take a look")},
                 {
                     "padding": _pad(12, side, 12),
                     "backgroundColor": c["surface"],
@@ -260,7 +265,7 @@ def blocks(kit: dict, style: str, email: Email, *, picture=("", ""), offer=None)
 
     small = f'<a href="{escape(kit["site"])}">{escape(kit["host"])}</a>'
     if email.unsubscribe:
-        small += f' · <a href="{escape(email.unsubscribe)}">Unsubscribe</a>'
+        small += f' · <a href="{escape(email.unsubscribe)}">{escape(_("Unsubscribe"))}</a>'
     if style == "letter":
         footer.append(block("divider", {}, {"lineColor": c["border"], "spacing": 8}))
         footer.append(text(f"<p>{escape(kit['name'])}</p><p>{small}</p>", c["mutedForeground"], _pad(8, side, 40), 13))
@@ -328,7 +333,7 @@ def fallback_html(kit: dict, email: Email) -> str:
         )
     if email.note:
         parts.append(f'<p style="font-size:13px;color:{muted}">{escape(email.note)}</p>')
-    unsub = f' · <a href="{escape(email.unsubscribe)}">Unsubscribe</a>' if email.unsubscribe else ""
+    unsub = f' · <a href="{escape(email.unsubscribe)}">{escape(_("Unsubscribe"))}</a>' if email.unsubscribe else ""
     parts.append(
         f'<p style="font-size:12px;color:{muted};margin-top:32px">'
         f"{escape(kit['name'])} · {escape(kit['host'])}{unsub}</p>"
@@ -349,7 +354,7 @@ def plain_text(email: Email) -> str:
     if email.note:
         out += ["", email.note]
     if email.unsubscribe:
-        out += ["", f"Unsubscribe: {email.unsubscribe}"]
+        out += ["", f"{_('Unsubscribe')}: {email.unsubscribe}"]
     return "\n".join(out) + "\n"
 
 
@@ -376,6 +381,7 @@ def render(email: Email, tenant, *, style: str = "", cfg=None, picture=("", ""),
         return fallback_html(kit, email)
 
 
+@in_site_language
 def send(to: str, email: Email, tenant, *, html: str = "") -> bool:
     from apps.core.email import send_email
     from apps.mailbox.identity import sending_identity
@@ -413,6 +419,7 @@ def deliver(to: str, email: Email) -> None:
     transaction.on_commit(lambda: send_transactional.delay(schema, to, payload))
 
 
+@in_site_language
 def previews(tenant) -> list[dict]:
     """The three styles with a sample email in each, for the setup question: her welcome with her photo
     and one of her offers, so each card shows a whole email. Cached: the screen re-opens, and her look,
@@ -425,7 +432,7 @@ def previews(tenant) -> list[dict]:
     picture, offer = _site_photo(tenant, cfg), _offer(tenant, cfg)
     # A lasting picture link is signed again every second: what it points at names it, not when.
     inputs = _SIGNED_AT.sub(r"\1/", repr((kit, sample, picture, offer)))
-    key = f"tx-previews:{tenant.schema_name}:{hashlib.sha256(inputs.encode()).hexdigest()}"
+    key = f"tx-previews:{tenant.schema_name}:{site_language()}:{hashlib.sha256(inputs.encode()).hexdigest()}"
     cached = cache.get(key)
     if cached is None:
         cached = [
@@ -454,6 +461,7 @@ def _quiet(hook):
     email fails, the error is logged and the payment or change goes on."""
 
     @functools.wraps(hook)
+    @in_site_language
     def run(*args, **kwargs):
         try:
             hook(*args, **kwargs)
@@ -576,6 +584,7 @@ def comment_replied(comment) -> None:
 ENDING_DAYS = 3
 
 
+@in_site_language
 def access_ending_soon() -> None:
     """Access with an end date (a coach's grant for N days, a purchase with a time limit) ending
     in about ENDING_DAYS days. Run daily: each run covers the next day-wide slice, and a key per
@@ -613,8 +622,12 @@ def access_ending_soon() -> None:
 
 def _per(sub) -> str:
     months = sub.plan.billing_interval_months or 1
-    every = {1: "month", 12: "year"}.get(months, f"{months} months")
-    return f"{money(sub.billing_amount, sub.billing_currency)} / {every}"
+    price = {"price": money(sub.billing_amount, sub.billing_currency)}
+    if months == 1:
+        return _("%(price)s / month") % price
+    if months == 12:
+        return _("%(price)s / year") % price
+    return ngettext("%(price)s / %(count)d month", "%(price)s / %(count)d months", months) % {**price, "count": months}
 
 
 @_quiet
@@ -660,7 +673,8 @@ class TenantConfigDefaults:
 
 
 def money(amount, currency: str) -> str:
-    return f"{float(amount):.2f}".removesuffix(".00") + f" {str(currency or '').upper()}"
+    value = round(float(amount), 2)
+    return f"{number_format(value, decimal_pos=0 if value == int(value) else 2)} {str(currency or '').upper()}"
 
 
 def when(moment) -> str:
@@ -674,184 +688,211 @@ def when(moment) -> str:
 def day(moment) -> str:
     from apps.email_campaigns.catalog import zone_of
 
-    local = moment.astimezone(zone_of(_config() or TenantConfigDefaults))
-    return f"{local.day} {local:%B %Y}"
+    return date_format(moment.astimezone(zone_of(_config() or TenantConfigDefaults)), "j E Y")
 
 
+@in_site_language
 def sign_in(brand: str, link: str, code: str, minutes: int) -> Email:
     return Email(
-        subject=f"Your sign-in link for {brand}",
-        heading="Sign in",
-        lines=(f"Tap the button to sign in to {brand}. The link works for {minutes} minutes.",),
-        button="Sign in",
+        subject=_("Your sign-in link for %(brand)s") % {"brand": brand},
+        heading=_("Sign in"),
+        lines=(
+            ngettext(
+                "Tap the button to sign in to %(brand)s. The link works for %(minutes)d minute.",
+                "Tap the button to sign in to %(brand)s. The link works for %(minutes)d minutes.",
+                minutes,
+            )
+            % {"brand": brand, "minutes": minutes},
+        ),
+        button=_("Sign in"),
         link=link,
         code=f"{code[:3]} {code[3:]}" if code else "",
-        note=(
-            ("Using the app? Enter the code above on the sign-in screen. " if code else "")
-            + "If you didn't ask for this, you can ignore this email."
+        note=" ".join(
+            (
+                *((_("Using the app? Enter the code above on the sign-in screen."),) if code else ()),
+                _("If you didn't ask for this, you can ignore this email."),
+            )
         ),
     )
 
 
 def welcome(brand: str, site: str, pitch: str = "") -> Email:
     return Email(
-        subject=f"Welcome to {brand}",
-        heading=f"Welcome to {brand}",
+        subject=_("Welcome to %(brand)s") % {"brand": brand},
+        heading=_("Welcome to %(brand)s") % {"brand": brand},
         lines=tuple(
             x
-            for x in (pitch, "Your account is ready. Everything you join or buy waits for you in your dashboard.")
+            for x in (pitch, _("Your account is ready. Everything you join or buy waits for you in your dashboard."))
             if x
         ),
-        button="Go to your dashboard",
+        button=_("Go to your dashboard"),
         link=f"{site}/dashboard",
     )
 
 
 def purchase(brand: str, site: str, items: list, total: str, receipt_url: str = "", access_until: str = "") -> Email:
-    rows = [*items, ("Total", total)]
+    rows = [*items, (_("Total"), total)]
     if access_until:
-        rows.append(("Yours until", access_until))
+        rows.append((_("Yours until"), access_until))
     return Email(
-        subject=f"Your order from {brand}",
-        heading="Thank you for your order",
-        lines=("Payment received. It's all ready for you.",),
+        subject=_("Your order from %(brand)s") % {"brand": brand},
+        heading=_("Thank you for your order"),
+        lines=(_("Payment received. It's all ready for you."),),
         rows=tuple(rows),
-        button="Open your dashboard",
+        button=_("Open your dashboard"),
         link=f"{site}/dashboard",
-        note=f"Your receipt: {receipt_url}" if receipt_url else "Your orders are listed under Orders in your account.",
+        note=(
+            _("Your receipt: %(url)s") % {"url": receipt_url}
+            if receipt_url
+            else _("Your orders are listed under Orders in your account.")
+        ),
     )
 
 
 def access_given(brand: str, site: str, title: str, until: str = "") -> Email:
     return Email(
-        subject=f"You're in: {title}",
-        heading=f"You're in: {title}",
-        lines=(f"{title} from {brand} is now in your dashboard.", f"It's yours until {until}." if until else ""),
-        button="Start now",
+        subject=_("You're in: %(title)s") % {"title": title},
+        heading=_("You're in: %(title)s") % {"title": title},
+        lines=(
+            _("%(title)s from %(brand)s is now in your dashboard.") % {"title": title, "brand": brand},
+            _("It's yours until %(until)s.") % {"until": until} if until else "",
+        ),
+        button=_("Start now"),
         link=f"{site}/dashboard",
     )
 
 
 def membership_started(brand: str, site: str, plan: str, price: str, renews: str) -> Email:
     return Email(
-        subject=f"Welcome to {plan}",
-        heading=f"Welcome to {plan}",
-        lines=(f"Your {brand} membership is active. Everything it includes is open to you now.",),
-        rows=(("Membership", plan), ("Price", price), ("Renews on", renews)),
-        button="Open your dashboard",
+        subject=_("Welcome to %(plan)s") % {"plan": plan},
+        heading=_("Welcome to %(plan)s") % {"plan": plan},
+        lines=(
+            _("Your %(brand)s membership is active. Everything it includes is open to you now.") % {"brand": brand},
+        ),
+        rows=((_("Membership"), plan), (_("Price"), price), (_("Renews on"), renews)),
+        button=_("Open your dashboard"),
         link=f"{site}/dashboard",
-        note="Manage or cancel it any time under Subscriptions in your account.",
+        note=_("Manage or cancel it any time under Subscriptions in your account."),
     )
 
 
 def membership_renewed(brand: str, site: str, plan: str, amount: str, next_on: str, invoice_url: str = "") -> Email:
     return Email(
-        subject=f"{plan}: payment received",
-        heading="Your membership renewed",
-        lines=(f"Thanks for staying with {brand}.",),
-        rows=(("Membership", plan), ("Paid", amount), ("Next renewal", next_on)),
-        button="View invoice" if invoice_url else "Your subscriptions",
+        subject=_("%(plan)s: payment received") % {"plan": plan},
+        heading=_("Your membership renewed"),
+        lines=(_("Thanks for staying with %(brand)s.") % {"brand": brand},),
+        rows=((_("Membership"), plan), (_("Paid"), amount), (_("Next renewal"), next_on)),
+        button=_("View invoice") if invoice_url else _("Your subscriptions"),
         link=invoice_url or f"{site}/subscriptions",
     )
 
 
 def payment_failed(brand: str, site: str, plan: str, amount: str, invoice_url: str = "") -> Email:
     return Email(
-        subject=f"{plan}: your payment didn't go through",
-        heading="Your payment didn't go through",
+        subject=_("%(plan)s: your payment didn't go through") % {"plan": plan},
+        heading=_("Your payment didn't go through"),
         lines=(
-            f"We couldn't take {amount} for your {plan} membership with {brand}.",
-            "Update your card to keep your access. Your bank will try again in a few days.",
+            _("We couldn't take %(amount)s for your %(plan)s membership with %(brand)s.")
+            % {"amount": amount, "plan": plan, "brand": brand},
+            _("Update your card to keep your access. Your bank will try again in a few days."),
         ),
-        button="Update payment",
+        button=_("Update payment"),
         link=invoice_url or f"{site}/subscriptions",
     )
 
 
 def membership_cancelled(brand: str, site: str, plan: str, until: str) -> Email:
     return Email(
-        subject=f"{plan} is cancelled",
-        heading="Your membership is cancelled",
+        subject=_("%(plan)s is cancelled") % {"plan": plan},
+        heading=_("Your membership is cancelled"),
         lines=(
-            f"You keep everything in {plan} until {until}. After that it won't renew.",
-            "Changed your mind? You can restart it from your account before then.",
+            _("You keep everything in %(plan)s until %(until)s. After that it won't renew.")
+            % {"plan": plan, "until": until},
+            _("Changed your mind? You can restart it from your account before then."),
         ),
-        button="Your subscriptions",
+        button=_("Your subscriptions"),
         link=f"{site}/subscriptions",
     )
 
 
 def membership_ended(brand: str, site: str, plan: str) -> Email:
     return Email(
-        subject=f"Your {plan} membership has ended",
-        heading="Your membership has ended",
-        lines=(f"Your {plan} membership with {brand} has ended. You're welcome back any time.",),
-        button="See memberships",
+        subject=_("Your %(plan)s membership has ended") % {"plan": plan},
+        heading=_("Your membership has ended"),
+        lines=(
+            _("Your %(plan)s membership with %(brand)s has ended. You're welcome back any time.")
+            % {"plan": plan, "brand": brand},
+        ),
+        button=_("See memberships"),
         link=f"{site}/plans",
     )
 
 
 def refund(brand: str, site: str, items: list, amount: str) -> Email:
     return Email(
-        subject=f"Your refund from {brand}",
-        heading="Your refund is on its way",
-        lines=("Your bank usually shows it within 5 to 10 days.",),
-        rows=(*items, ("Refunded", amount)),
-        button="Your orders",
+        subject=_("Your refund from %(brand)s") % {"brand": brand},
+        heading=_("Your refund is on its way"),
+        lines=(_("Your bank usually shows it within 5 to 10 days."),),
+        rows=(*items, (_("Refunded"), amount)),
+        button=_("Your orders"),
         link=f"{site}/orders",
     )
 
 
 def access_ending(brand: str, site: str, title: str, ends: str) -> Email:
     return Email(
-        subject=f"{title}: your access ends {ends}",
-        heading="Your access ends soon",
-        lines=(f"Your access to {title} from {brand} ends on {ends}. Make the most of it.",),
-        button="Continue",
+        subject=_("%(title)s: your access ends %(ends)s") % {"title": title, "ends": ends},
+        heading=_("Your access ends soon"),
+        lines=(
+            _("Your access to %(title)s from %(brand)s ends on %(ends)s. Make the most of it.")
+            % {"title": title, "brand": brand, "ends": ends},
+        ),
+        button=_("Continue"),
         link=f"{site}/dashboard",
     )
 
 
 def class_reminder(title: str, at: str, link: str) -> Email:
     return Email(
-        subject=f"Starting soon: {title}",
-        heading=f"{title} starts soon",
-        rows=(("When", at),),
-        button="Join",
+        subject=_("Starting soon: %(title)s") % {"title": title},
+        heading=_("%(title)s starts soon") % {"title": title},
+        rows=((_("When"), at),),
+        button=_("Join"),
         link=link,
     )
 
 
 def class_changed(title: str, at: str, link: str) -> Email:
     return Email(
-        subject=f"New time: {title}",
-        heading=f"{title} has a new time",
-        lines=("Your place is kept. Here's the new time:",),
-        rows=(("When", at),),
-        button="See details",
+        subject=_("New time: %(title)s") % {"title": title},
+        heading=_("%(title)s has a new time") % {"title": title},
+        lines=(_("Your place is kept. Here's the new time:"),),
+        rows=((_("When"), at),),
+        button=_("See details"),
         link=link,
     )
 
 
 def class_cancelled(brand: str, site: str, title: str, at: str) -> Email:
     return Email(
-        subject=f"Cancelled: {title}",
-        heading=f"{title} is cancelled",
+        subject=_("Cancelled: %(title)s") % {"title": title},
+        heading=_("%(title)s is cancelled") % {"title": title},
         lines=(
-            f"{brand} cancelled {title} on {at}. Sorry for the change.",
-            "Questions about your ticket? Reply to this email.",
+            _("%(brand)s cancelled %(title)s on %(at)s. Sorry for the change.")
+            % {"brand": brand, "title": title, "at": at},
+            _("Questions about your ticket? Reply to this email."),
         ),
-        button="See what's on",
+        button=_("See what's on"),
         link=f"{site}/events",
     )
 
 
 def comment_reply(post: str, who: str, excerpt: str, link: str, unsubscribe: str) -> Email:
     return Email(
-        subject=f"{who} replied to your post",
-        heading=f"{who} replied to your post",
-        lines=(f"On “{post}”:", f"“{excerpt}”"),
-        button="Reply",
+        subject=_("%(who)s replied to your post") % {"who": who},
+        heading=_("%(who)s replied to your post") % {"who": who},
+        lines=(_("On “%(post)s”:") % {"post": post}, f"“{excerpt}”"),
+        button=_("Reply"),
         link=link,
         unsubscribe=unsubscribe,
     )

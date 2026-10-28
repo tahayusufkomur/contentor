@@ -180,7 +180,7 @@ msgid "yoga"
 msgstr "Yoga"
 
 #: apps/core/onboarding/compose.py apps/core/tasks.py
-#: apps/tenant_config/defaults.py
+#: apps/notifications/transactional.py apps/tenant_config/defaults.py
 #, fuzzy, python-format
 msgid "Welcome to %(brand)s"
 msgstr "Willkommen bei %(brand)s"
@@ -364,9 +364,62 @@ msgid "us"
 msgstr "uns"
 
 #: apps/email_campaigns/catalog.py
+#, python-format, fuzzy
+msgid "%(city)s time"
+msgstr "Ortszeit %(city)s"
+
+#: apps/email_campaigns/catalog.py
 #, fuzzy
 msgid "Free"
 msgstr "Kostenlos"
+
+#: apps/email_campaigns/catalog.py
+#, python-format, fuzzy
+msgid "or with %(plan)s"
+msgstr "oder mit %(plan)s"
+
+#: apps/email_campaigns/catalog.py
+#, python-format, fuzzy
+msgid "Included in %(plan)s"
+msgstr "In %(plan)s enthalten"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "or with a membership"
+msgstr "oder mit einer Mitgliedschaft"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Included in membership"
+msgstr "In der Mitgliedschaft enthalten"
+
+#: apps/email_campaigns/catalog.py
+#, python-format, fuzzy
+msgid "%(price)s a month"
+msgstr "%(price)s pro Monat"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy, python-format
+msgid "%(price)s a year"
+msgstr "%(price)s pro Jahr"
+
+#: apps/email_campaigns/catalog.py
+#, python-format, fuzzy
+msgid "%(price)s every %(count)d month"
+msgid_plural "%(price)s every %(count)d months"
+msgstr[0] "%(price)s pro %(count)d Monat"
+msgstr[1] "%(price)s alle %(count)d Monate"
+
+#: apps/email_campaigns/render.py
+#, fuzzy
+msgid "Click here"
+msgstr "Hier klicken"
+
+#: apps/email_campaigns/render.py apps/email_campaigns/tasks.py
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Unsubscribe"
+msgstr "Abbestellen"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -409,7 +462,7 @@ msgstr "Lesen"
 msgid "Save your spot"
 msgstr "Sichere dir deinen Platz"
 
-#: apps/email_campaigns/starters.py
+#: apps/email_campaigns/starters.py apps/notifications/transactional.py
 #, fuzzy
 msgid "Take a look"
 msgstr "Schau mal rein"
@@ -536,6 +589,36 @@ msgstr "Persönliche Nachricht"
 msgid "Something I wanted to share with you."
 msgstr "Etwas, das ich mit dir teilen wollte."
 
+#: apps/email_campaigns/tasks.py
+#, fuzzy
+msgid "there"
+msgstr "du"
+
+#: apps/email_campaigns/tasks.py
+#, fuzzy, python-format
+msgid "%(coach)s via %(brand)s"
+msgstr "%(coach)s über %(brand)s"
+
+#: apps/notifications/email_render.py
+#, fuzzy
+msgid "News"
+msgstr "Neuigkeiten"
+
+#: apps/notifications/email_render.py
+#, fuzzy
+msgid "Open"
+msgstr "Öffnen"
+
+#: apps/notifications/payloads.py apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "Starting soon: %(title)s"
+msgstr "Beginnt bald: %(title)s"
+
+#: apps/notifications/payloads.py
+#, python-format, fuzzy
+msgid "New: %(title)s"
+msgstr "Neu: %(title)s"
+
 #: apps/notifications/templates_builtin.py
 #, fuzzy, python-format
 msgid "Welcome to %(brand)s! 🎉"
@@ -628,6 +711,420 @@ msgid ""
 msgstr ""
 "<p>Hier ist ein Update zu unserem kommenden Zeitplan. Danke für deine "
 "Flexibilität!</p>"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(price)s / month"
+msgstr "%(price)s / Monat"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(price)s / year"
+msgstr "%(price)s / Jahr"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(price)s / %(count)d month"
+msgid_plural "%(price)s / %(count)d months"
+msgstr[0] "%(price)s / %(count)d Monat"
+msgstr[1] "%(price)s / %(count)d Monate"
+
+#: apps/notifications/transactional.py
+#, fuzzy, python-format
+msgid "Your sign-in link for %(brand)s"
+msgstr "Dein Anmeldelink für %(brand)s"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Sign in"
+msgstr "Anmelden"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid ""
+"Tap the button to sign in to %(brand)s. The link works for %(minutes)d "
+"minute."
+msgid_plural ""
+"Tap the button to sign in to %(brand)s. The link works for %(minutes)d "
+"minutes."
+msgstr[0] ""
+"Tippe auf die Schaltfläche, um dich bei %(brand)s anzumelden. Der Link ist "
+"%(minutes)d Minute lang gültig."
+msgstr[1] ""
+"Tippe auf die Schaltfläche, um dich bei %(brand)s anzumelden. Der Link ist "
+"%(minutes)d Minuten lang gültig."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Using the app? Enter the code above on the sign-in screen."
+msgstr "Du nutzt die App? Gib den Code oben auf dem Anmeldebildschirm ein."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "If you didn't ask for this, you can ignore this email."
+msgstr ""
+"Wenn du das nicht angefordert hast, kannst du diese E-Mail ignorieren."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid ""
+"Your account is ready. Everything you join or buy waits for you in your "
+"dashboard."
+msgstr ""
+"Dein Konto ist bereit. Alles, dem du beitrittst oder was du kaufst, wartet "
+"in deinem Dashboard auf dich."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Go to your dashboard"
+msgstr "Zu deinem Dashboard"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Total"
+msgstr "Gesamt"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Yours until"
+msgstr "Dein Zugang bis"
+
+#: apps/notifications/transactional.py
+#, fuzzy, python-format
+msgid "Your order from %(brand)s"
+msgstr "Deine Bestellung bei %(brand)s"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Thank you for your order"
+msgstr "Danke für deine Bestellung"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Payment received. It's all ready for you."
+msgstr "Zahlung erhalten. Alles ist für dich bereit."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Open your dashboard"
+msgstr "Öffne dein Dashboard"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "Your receipt: %(url)s"
+msgstr "Dein Beleg: %(url)s"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your orders are listed under Orders in your account."
+msgstr "Deine Bestellungen findest du in deinem Konto unter Bestellungen."
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "You're in: %(title)s"
+msgstr "Du bist dabei: %(title)s"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(title)s from %(brand)s is now in your dashboard."
+msgstr "%(title)s von %(brand)s ist jetzt in deinem Dashboard."
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "It's yours until %(until)s."
+msgstr "Du hast Zugang bis %(until)s."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Start now"
+msgstr "Jetzt starten"
+
+#: apps/notifications/transactional.py
+#, fuzzy, python-format
+msgid "Welcome to %(plan)s"
+msgstr "Willkommen bei %(plan)s"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid ""
+"Your %(brand)s membership is active. Everything it includes is open to you "
+"now."
+msgstr ""
+"Deine Mitgliedschaft bei %(brand)s ist aktiv. Alles, was sie umfasst, steht "
+"dir jetzt offen."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Membership"
+msgstr "Mitgliedschaft"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Price"
+msgstr "Preis"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Renews on"
+msgstr "Verlängert sich am"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Manage or cancel it any time under Subscriptions in your account."
+msgstr ""
+"Du kannst sie jederzeit in deinem Konto unter Abonnements verwalten oder "
+"kündigen."
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(plan)s: payment received"
+msgstr "%(plan)s: Zahlung erhalten"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your membership renewed"
+msgstr "Deine Mitgliedschaft wurde verlängert"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "Thanks for staying with %(brand)s."
+msgstr "Danke, dass du %(brand)s treu bleibst."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Paid"
+msgstr "Bezahlt"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Next renewal"
+msgstr "Nächste Verlängerung"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "View invoice"
+msgstr "Rechnung ansehen"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your subscriptions"
+msgstr "Deine Abonnements"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(plan)s: your payment didn't go through"
+msgstr "%(plan)s: Deine Zahlung ist nicht durchgegangen"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your payment didn't go through"
+msgstr "Deine Zahlung ist nicht durchgegangen"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid ""
+"We couldn't take %(amount)s for your %(plan)s membership with %(brand)s."
+msgstr ""
+"Wir konnten %(amount)s für deine Mitgliedschaft %(plan)s bei %(brand)s nicht"
+" abbuchen."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid ""
+"Update your card to keep your access. Your bank will try again in a few "
+"days."
+msgstr ""
+"Aktualisiere deine Karte, damit du deinen Zugang behältst. Deine Bank "
+"versucht es in ein paar Tagen erneut."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Update payment"
+msgstr "Zahlung aktualisieren"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(plan)s is cancelled"
+msgstr "%(plan)s ist gekündigt"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your membership is cancelled"
+msgstr "Deine Mitgliedschaft ist gekündigt"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid ""
+"You keep everything in %(plan)s until %(until)s. After that it won't renew."
+msgstr ""
+"Du behältst alles in %(plan)s bis %(until)s. Danach wird sie nicht "
+"verlängert."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Changed your mind? You can restart it from your account before then."
+msgstr ""
+"Du hast es dir anders überlegt? Bis dahin kannst du sie in deinem Konto "
+"wieder aktivieren."
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "Your %(plan)s membership has ended"
+msgstr "Deine Mitgliedschaft %(plan)s ist beendet"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your membership has ended"
+msgstr "Deine Mitgliedschaft ist beendet"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid ""
+"Your %(plan)s membership with %(brand)s has ended. You're welcome back any "
+"time."
+msgstr ""
+"Deine Mitgliedschaft %(plan)s bei %(brand)s ist beendet. Du bist jederzeit "
+"wieder willkommen."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "See memberships"
+msgstr "Mitgliedschaften ansehen"
+
+#: apps/notifications/transactional.py
+#, fuzzy, python-format
+msgid "Your refund from %(brand)s"
+msgstr "Deine Rückerstattung von %(brand)s"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your refund is on its way"
+msgstr "Deine Rückerstattung ist unterwegs"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your bank usually shows it within 5 to 10 days."
+msgstr "Deine Bank zeigt sie normalerweise innerhalb von 5 bis 10 Tagen an."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Refunded"
+msgstr "Erstattet"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your orders"
+msgstr "Deine Bestellungen"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(title)s: your access ends %(ends)s"
+msgstr "%(title)s: Dein Zugang endet am %(ends)s"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your access ends soon"
+msgstr "Dein Zugang endet bald"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid ""
+"Your access to %(title)s from %(brand)s ends on %(ends)s. Make the most of "
+"it."
+msgstr ""
+"Dein Zugang zu %(title)s von %(brand)s endet am %(ends)s. Mach das Beste "
+"daraus."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Continue"
+msgstr "Weiter"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(title)s starts soon"
+msgstr "%(title)s beginnt bald"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "When"
+msgstr "Wann"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Join"
+msgstr "Teilnehmen"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "New time: %(title)s"
+msgstr "Neuer Termin: %(title)s"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(title)s has a new time"
+msgstr "%(title)s hat einen neuen Termin"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your place is kept. Here's the new time:"
+msgstr "Dein Platz bleibt reserviert. Hier ist der neue Termin:"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "See details"
+msgstr "Details ansehen"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "Cancelled: %(title)s"
+msgstr "Abgesagt: %(title)s"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(title)s is cancelled"
+msgstr "%(title)s ist abgesagt"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(brand)s cancelled %(title)s on %(at)s. Sorry for the change."
+msgstr ""
+"%(brand)s hat %(title)s am %(at)s abgesagt. Entschuldige die Änderung."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Questions about your ticket? Reply to this email."
+msgstr "Fragen? Antworte einfach auf diese E-Mail."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "See what's on"
+msgstr "Sieh dir das Programm an"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(who)s replied to your post"
+msgstr "%(who)s hat auf deinen Beitrag geantwortet"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "On “%(post)s”:"
+msgstr "Zu „%(post)s“:"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Reply"
+msgstr "Antworten"
+
+#: apps/notifications/views.py
+#, fuzzy
+msgid "Invalid or expired link."
+msgstr "Ungültiger oder abgelaufener Link."
+
+#: apps/notifications/views.py
+#, fuzzy
+msgid "You've been unsubscribed from these emails."
+msgstr "Du hast diese E-Mails abbestellt."
 
 #: apps/tenant_config/defaults.py
 #, fuzzy

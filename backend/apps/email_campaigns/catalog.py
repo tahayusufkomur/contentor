@@ -11,8 +11,10 @@ from zoneinfo import ZoneInfo
 
 from django.db.models import F
 from django.utils import timezone
+from django.utils.formats import date_format
 from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 
 from . import images
 
@@ -46,15 +48,14 @@ def zone_of(cfg) -> ZoneInfo:
 
 def when(moment, zone) -> str:
     """ "Tuesday 5 November 2030, 18:00 (Europe/Berlin)": her wall clock, so nobody converts."""
-    local = moment.astimezone(zone)
-    return f"{local:%A} {local.day} {local:%B %Y, %H:%M} ({zone.key})"
+    return f"{date_format(moment.astimezone(zone), 'l j E Y, H:i')} ({zone.key})"
 
 
 def short_when(moment, zone) -> str:
     """ "Tue 5 Nov, 18:00 Berlin time": an event's date on its card."""
-    local = moment.astimezone(zone)
+    at = date_format(moment.astimezone(zone), "D j M, H:i")
     city = zone.key.rsplit("/", 1)[-1].replace("_", " ")
-    return f"{local:%a} {local.day} {local:%b}, {local:%H:%M}" + (f" {city} time" if city != "UTC" else " UTC")
+    return f"{at} " + (_("%(city)s time") % {"city": city} if city != "UTC" else "UTC")
 
 
 def _item(ref, kind, title, url, *, summary="", image="", meta="", label=""):
@@ -90,9 +91,9 @@ def _price(obj) -> str:
         ids = [p["plan_id"] for p in ways["plans"]]
         names = list(dict.fromkeys(SubscriptionPlan.objects.filter(pk__in=ids).values_list("name", flat=True)))
         if len(names) == 1:
-            parts.append(("or with " if parts else "Included in ") + names[0])
+            parts.append((_("or with %(plan)s") if parts else _("Included in %(plan)s")) % {"plan": names[0]})
         elif names:
-            parts.append("or with a membership" if parts else "Included in membership")
+            parts.append(_("or with a membership") if parts else _("Included in membership"))
     return " · ".join(parts)
 
 
@@ -153,14 +154,23 @@ def _post(p, site):
 def _plan(p, site):
     from apps.tenant_config.interview_brief import money
 
-    every = {1: "a month", 12: "a year"}.get(p.billing_interval_months, f"every {p.billing_interval_months} months")
+    months, price = p.billing_interval_months, {"price": money(p.price)}
+    if months == 1:
+        every = _("%(price)s a month") % price
+    elif months == 12:
+        every = _("%(price)s a year") % price
+    else:
+        every = ngettext("%(price)s every %(count)d month", "%(price)s every %(count)d months", months) % {
+            **price,
+            "count": months,
+        }
     return _item(
         f"plan:{p.id}",
         "plan",
         p.name,
         f"{site}/plans/{p.id}",
         summary=p.description,
-        meta=f"{money(p.price)} {every}",
+        meta=every,
         label="Membership",
     )
 

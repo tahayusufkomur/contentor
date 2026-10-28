@@ -12,6 +12,7 @@ import html as html_module
 import re
 
 from django.templatetags.static import static
+from django.utils.translation import gettext as _
 
 from .images import with_aspect
 
@@ -527,7 +528,7 @@ def _render_button_block(block, ctx):
     extra = f" letter-spacing: {_float(style.get('letterSpacing'))}px;" if style.get("letterSpacing") else ""
     extra += f" text-transform: {transform};" if transform else ""
     button = _button_html(
-        html_module.escape(data.get("text") or "Click here"),
+        html_module.escape(data.get("text") or _("Click here")),
         html_module.escape(data.get("url") or "#"),
         bg=bg,
         color=_color(style.get("color"), "#ffffff"),
@@ -1306,7 +1307,7 @@ def _render_brand_footer(block, ctx):
         rows.append(f'<tr><td style="padding-top: 8px;">{note}</td></tr>')
     rows.append(
         f'{_UNSUB_START}<tr><td style="padding-top: 8px;"><a href="{{{{UnsubscribeUrl}}}}" target="_blank" '
-        f'style="{link_style}">Unsubscribe</a></td></tr>{_UNSUB_END}'
+        f'style="{link_style}">{html_module.escape(_("Unsubscribe"))}</a></td></tr>{_UNSUB_END}'
     )
     padding = _padding_str(style.get("padding") or {"top": 24, "right": 32, "bottom": 32, "left": 32})
     return f"""<tr>

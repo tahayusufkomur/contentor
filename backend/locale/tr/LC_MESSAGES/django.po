@@ -180,7 +180,7 @@ msgid "yoga"
 msgstr "yoga"
 
 #: apps/core/onboarding/compose.py apps/core/tasks.py
-#: apps/tenant_config/defaults.py
+#: apps/notifications/transactional.py apps/tenant_config/defaults.py
 #, fuzzy, python-format
 msgid "Welcome to %(brand)s"
 msgstr "%(brand)s dünyasına hoş geldin"
@@ -363,9 +363,62 @@ msgid "us"
 msgstr "biz"
 
 #: apps/email_campaigns/catalog.py
+#, python-format, fuzzy
+msgid "%(city)s time"
+msgstr "%(city)s saati"
+
+#: apps/email_campaigns/catalog.py
 #, fuzzy
 msgid "Free"
 msgstr "Ücretsiz"
+
+#: apps/email_campaigns/catalog.py
+#, python-format, fuzzy
+msgid "or with %(plan)s"
+msgstr "veya %(plan)s ile"
+
+#: apps/email_campaigns/catalog.py
+#, python-format, fuzzy
+msgid "Included in %(plan)s"
+msgstr "%(plan)s kapsamında"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "or with a membership"
+msgstr "veya bir üyelikle"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Included in membership"
+msgstr "Üyeliğe dahil"
+
+#: apps/email_campaigns/catalog.py
+#, python-format, fuzzy
+msgid "%(price)s a month"
+msgstr "aylık %(price)s"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy, python-format
+msgid "%(price)s a year"
+msgstr "yıllık %(price)s"
+
+#: apps/email_campaigns/catalog.py
+#, python-format, fuzzy
+msgid "%(price)s every %(count)d month"
+msgid_plural "%(price)s every %(count)d months"
+msgstr[0] "%(count)d ayda bir %(price)s"
+msgstr[1] "%(count)d ayda bir %(price)s"
+
+#: apps/email_campaigns/render.py
+#, fuzzy
+msgid "Click here"
+msgstr "Buraya tıkla"
+
+#: apps/email_campaigns/render.py apps/email_campaigns/tasks.py
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Unsubscribe"
+msgstr "Abonelikten çık"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -408,7 +461,7 @@ msgstr "Oku"
 msgid "Save your spot"
 msgstr "Yerini ayırt"
 
-#: apps/email_campaigns/starters.py
+#: apps/email_campaigns/starters.py apps/notifications/transactional.py
 #, fuzzy
 msgid "Take a look"
 msgstr "Göz at"
@@ -532,6 +585,36 @@ msgstr "Kişisel not"
 msgid "Something I wanted to share with you."
 msgstr "Seninle paylaşmak istediğim bir şey."
 
+#: apps/email_campaigns/tasks.py
+#, fuzzy
+msgid "there"
+msgstr "dostum"
+
+#: apps/email_campaigns/tasks.py
+#, fuzzy, python-format
+msgid "%(coach)s via %(brand)s"
+msgstr "%(brand)s üzerinden %(coach)s"
+
+#: apps/notifications/email_render.py
+#, fuzzy
+msgid "News"
+msgstr "Haberler"
+
+#: apps/notifications/email_render.py
+#, fuzzy
+msgid "Open"
+msgstr "Aç"
+
+#: apps/notifications/payloads.py apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "Starting soon: %(title)s"
+msgstr "Yakında başlıyor: %(title)s"
+
+#: apps/notifications/payloads.py
+#, python-format, fuzzy
+msgid "New: %(title)s"
+msgstr "Yeni: %(title)s"
+
 #: apps/notifications/templates_builtin.py
 #, fuzzy, python-format
 msgid "Welcome to %(brand)s! 🎉"
@@ -623,6 +706,416 @@ msgid ""
 msgstr ""
 "<p>Yaklaşan programımızla ilgili bir güncelleme var. Esnekliğin için "
 "teşekkürler!</p>"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(price)s / month"
+msgstr "%(price)s / ay"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(price)s / year"
+msgstr "%(price)s / yıl"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(price)s / %(count)d month"
+msgid_plural "%(price)s / %(count)d months"
+msgstr[0] "%(price)s / %(count)d ay"
+msgstr[1] "%(price)s / %(count)d ay"
+
+#: apps/notifications/transactional.py
+#, fuzzy, python-format
+msgid "Your sign-in link for %(brand)s"
+msgstr "%(brand)s giriş bağlantın"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Sign in"
+msgstr "Giriş yap"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid ""
+"Tap the button to sign in to %(brand)s. The link works for %(minutes)d "
+"minute."
+msgid_plural ""
+"Tap the button to sign in to %(brand)s. The link works for %(minutes)d "
+"minutes."
+msgstr[0] ""
+"%(brand)s hesabına giriş yapmak için düğmeye dokun. Bağlantı %(minutes)d "
+"dakika boyunca geçerli."
+msgstr[1] ""
+"%(brand)s hesabına giriş yapmak için düğmeye dokun. Bağlantı %(minutes)d "
+"dakika boyunca geçerli."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Using the app? Enter the code above on the sign-in screen."
+msgstr "Uygulamayı mı kullanıyorsun? Giriş ekranında yukarıdaki kodu gir."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "If you didn't ask for this, you can ignore this email."
+msgstr "Bunu sen istemediysen bu e-postayı yok sayabilirsin."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid ""
+"Your account is ready. Everything you join or buy waits for you in your "
+"dashboard."
+msgstr ""
+"Hesabın hazır. Katıldığın veya satın aldığın her şey panelinde seni "
+"bekliyor."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Go to your dashboard"
+msgstr "Paneline git"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Total"
+msgstr "Toplam"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Yours until"
+msgstr "Erişim bitişi"
+
+#: apps/notifications/transactional.py
+#, fuzzy, python-format
+msgid "Your order from %(brand)s"
+msgstr "%(brand)s siparişin"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Thank you for your order"
+msgstr "Siparişin için teşekkürler"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Payment received. It's all ready for you."
+msgstr "Ödeme alındı. Her şey senin için hazır."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Open your dashboard"
+msgstr "Panelini aç"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "Your receipt: %(url)s"
+msgstr "Makbuzun: %(url)s"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your orders are listed under Orders in your account."
+msgstr "Siparişlerin, hesabındaki Siparişler bölümünde listelenir."
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "You're in: %(title)s"
+msgstr "Kaydın tamam: %(title)s"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(title)s from %(brand)s is now in your dashboard."
+msgstr "%(brand)s tarafından sunulan %(title)s artık panelinde."
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "It's yours until %(until)s."
+msgstr "%(until)s tarihine kadar senin."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Start now"
+msgstr "Şimdi başla"
+
+#: apps/notifications/transactional.py
+#, fuzzy, python-format
+msgid "Welcome to %(plan)s"
+msgstr "%(plan)s üyeliğine hoş geldin"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid ""
+"Your %(brand)s membership is active. Everything it includes is open to you "
+"now."
+msgstr "%(brand)s üyeliğin aktif. Kapsadığı her şey artık sana açık."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Membership"
+msgstr "Üyelik"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Price"
+msgstr "Fiyat"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Renews on"
+msgstr "Yenilenme tarihi"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Manage or cancel it any time under Subscriptions in your account."
+msgstr ""
+"İstediğin zaman hesabındaki Abonelikler bölümünden yönetebilir veya iptal "
+"edebilirsin."
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(plan)s: payment received"
+msgstr "%(plan)s: ödeme alındı"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your membership renewed"
+msgstr "Üyeliğin yenilendi"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "Thanks for staying with %(brand)s."
+msgstr "%(brand)s ile kaldığın için teşekkürler."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Paid"
+msgstr "Ödendi"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Next renewal"
+msgstr "Sonraki yenileme"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "View invoice"
+msgstr "Faturayı görüntüle"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your subscriptions"
+msgstr "Aboneliklerin"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(plan)s: your payment didn't go through"
+msgstr "%(plan)s: ödemen gerçekleşmedi"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your payment didn't go through"
+msgstr "Ödemen gerçekleşmedi"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid ""
+"We couldn't take %(amount)s for your %(plan)s membership with %(brand)s."
+msgstr ""
+"%(brand)s üzerindeki %(plan)s üyeliğin için %(amount)s tahsil edemedik."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid ""
+"Update your card to keep your access. Your bank will try again in a few "
+"days."
+msgstr ""
+"Erişimini korumak için kartını güncelle. Bankan birkaç gün içinde tekrar "
+"deneyecek."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Update payment"
+msgstr "Ödemeyi güncelle"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(plan)s is cancelled"
+msgstr "%(plan)s iptal edildi"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your membership is cancelled"
+msgstr "Üyeliğin iptal edildi"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid ""
+"You keep everything in %(plan)s until %(until)s. After that it won't renew."
+msgstr ""
+"%(until)s tarihine kadar %(plan)s içindeki her şeye erişimin sürüyor. "
+"Sonrasında yenilenmeyecek."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Changed your mind? You can restart it from your account before then."
+msgstr ""
+"Fikrini mi değiştirdin? O zamana kadar hesabından yeniden başlatabilirsin."
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "Your %(plan)s membership has ended"
+msgstr "%(plan)s üyeliğin sona erdi"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your membership has ended"
+msgstr "Üyeliğin sona erdi"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid ""
+"Your %(plan)s membership with %(brand)s has ended. You're welcome back any "
+"time."
+msgstr ""
+"%(brand)s üzerindeki %(plan)s üyeliğin sona erdi. İstediğin zaman geri "
+"dönebilirsin."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "See memberships"
+msgstr "Üyelikleri gör"
+
+#: apps/notifications/transactional.py
+#, fuzzy, python-format
+msgid "Your refund from %(brand)s"
+msgstr "%(brand)s iaden"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your refund is on its way"
+msgstr "İaden yolda"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your bank usually shows it within 5 to 10 days."
+msgstr "Bankan bunu genellikle 5 ila 10 gün içinde gösterir."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Refunded"
+msgstr "İade edildi"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your orders"
+msgstr "Siparişlerin"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(title)s: your access ends %(ends)s"
+msgstr "%(title)s: erişimin sona eriyor (%(ends)s)"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your access ends soon"
+msgstr "Erişimin yakında sona eriyor"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid ""
+"Your access to %(title)s from %(brand)s ends on %(ends)s. Make the most of "
+"it."
+msgstr ""
+"%(brand)s tarafından sunulan %(title)s içeriğine erişimin %(ends)s tarihinde"
+" sona eriyor. Bundan en iyi şekilde yararlan."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Continue"
+msgstr "Devam et"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(title)s starts soon"
+msgstr "%(title)s yakında başlıyor"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "When"
+msgstr "Ne zaman"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Join"
+msgstr "Katıl"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "New time: %(title)s"
+msgstr "Yeni saat: %(title)s"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(title)s has a new time"
+msgstr "%(title)s için yeni bir saat belirlendi"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Your place is kept. Here's the new time:"
+msgstr "Yerin korunuyor. İşte yeni saat:"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "See details"
+msgstr "Ayrıntıları gör"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "Cancelled: %(title)s"
+msgstr "İptal edildi: %(title)s"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(title)s is cancelled"
+msgstr "%(title)s iptal edildi"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(brand)s cancelled %(title)s on %(at)s. Sorry for the change."
+msgstr ""
+"%(brand)s, %(at)s tarihli %(title)s etkinliğini iptal etti. Değişiklik için "
+"üzgünüz."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Questions about your ticket? Reply to this email."
+msgstr "Soruların mı var? Bu e-postayı yanıtlaman yeterli."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "See what's on"
+msgstr "Programa göz at"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "%(who)s replied to your post"
+msgstr "%(who)s gönderine yanıt verdi"
+
+#: apps/notifications/transactional.py
+#, python-format, fuzzy
+msgid "On “%(post)s”:"
+msgstr "“%(post)s” gönderisinde:"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Reply"
+msgstr "Yanıtla"
+
+#: apps/notifications/views.py
+#, fuzzy
+msgid "Invalid or expired link."
+msgstr "Geçersiz veya süresi dolmuş bağlantı."
+
+#: apps/notifications/views.py
+#, fuzzy
+msgid "You've been unsubscribed from these emails."
+msgstr "Bu e-postaların aboneliğinden çıkarıldın."
 
 #: apps/tenant_config/defaults.py
 #, fuzzy

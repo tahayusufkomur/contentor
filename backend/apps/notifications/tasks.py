@@ -3,8 +3,10 @@ from datetime import timedelta
 
 from celery import shared_task
 from django.utils import timezone
+from django.utils.translation import override
 from django_tenants.utils import get_tenant_model, tenant_context
 
+from apps.core.languages import in_site_language, site_language
 from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
 from .models import LiveReminderLog
@@ -22,6 +24,7 @@ _LIVE_MODELS = (LiveClass, LiveStream, ZoomClass, OnsiteEvent)
 _WINDOW_MINUTES = 15
 
 
+@in_site_language
 def _send_reminders_for_current_tenant() -> None:
     now = timezone.now()
     horizon = now + timedelta(minutes=_WINDOW_MINUTES)
@@ -85,7 +88,7 @@ def fanout_new_content(course_id: int, schema_name: str) -> None:
         tenant = tenant_model.objects.get(schema_name=schema_name)
     except tenant_model.DoesNotExist:
         return
-    with tenant_context(tenant):
+    with tenant_context(tenant), override(site_language()):
         course = Course.objects.filter(pk=course_id).first()
         if not course:
             return
@@ -101,7 +104,7 @@ def fanout_announcement(announcement_id: int, schema_name: str) -> None:
         tenant = tenant_model.objects.get(schema_name=schema_name)
     except tenant_model.DoesNotExist:
         return
-    with tenant_context(tenant):
+    with tenant_context(tenant), override(site_language()):
         # Atomic claim: only one worker can transition scheduled -> sent.
         # A concurrent/duplicate dispatch (slow fanout re-enqueued by beat)
         # claims 0 rows and returns without re-sending.
@@ -137,6 +140,7 @@ def dispatch_due_recurrences() -> None:
                 logger.exception("recurrence dispatch failed for %s", tenant.schema_name)
 
 
+@in_site_language
 def _dispatch_recurrences_for_current_tenant() -> None:
     from apps.tenant_config.models import TenantConfig
 

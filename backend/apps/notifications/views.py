@@ -1,6 +1,9 @@
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils import timezone
+from django.utils.html import format_html
+from django.utils.translation import get_language
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -9,6 +12,8 @@ from rest_framework.decorators import (
 )
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+
+from apps.core.languages import in_site_language
 
 from . import email_render
 from .models import AnnouncementRecipient, EmailOptOut, PushSubscription
@@ -25,14 +30,30 @@ def vapid_key(request):
 @api_view(["GET", "POST"])  # POST: a mail client's one-click unsubscribe (RFC 8058, List-Unsubscribe-Post)
 @authentication_classes([])
 @permission_classes([AllowAny])
+@in_site_language
 def email_unsubscribe(request):
     data = email_render.decode_unsubscribe(request.GET.get("t", ""))
     if not data:
-        return HttpResponse("Invalid or expired link.", status=400)
+        return _page(_("Invalid or expired link."), 400)
     email = (data.get("email") or "").strip().lower()
     if email:
         EmailOptOut.objects.get_or_create(email=email, defaults={"user_id": data.get("user_id")})
-    return HttpResponse("You've been unsubscribed from these emails.", status=200)
+    return _page(_("You've been unsubscribed from these emails."), 200)
+
+
+def _page(message: str, status: int) -> HttpResponse:
+    """A minimal page in the site's language: what a student sees after tapping Unsubscribe."""
+    return HttpResponse(
+        format_html(
+            '<!doctype html><html lang="{}"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width, initial-scale=1"><title>{}</title></head>'
+            "<body><p>{}</p></body></html>",
+            get_language(),
+            message,
+            message,
+        ),
+        status=status,
+    )
 
 
 @api_view(["POST"])

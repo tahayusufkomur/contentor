@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core import signing
+from django.utils.translation import gettext as _
 
 from apps.core.models import Domain
 from apps.tenant_config.defaults import sanitize_rich_text
@@ -37,10 +38,10 @@ def announcement_email(announcement, base_url: str, unsubscribe: str):
     from .transactional import Email
 
     return Email(
-        subject=announcement.title or "News",
+        subject=announcement.title or _("News"),
         heading=announcement.title,
         body_html=sanitize_rich_text(announcement.body or ""),
-        button="Open" if announcement.link else "",
+        button=_("Open") if announcement.link else "",
         link=_abs(base_url, announcement.link) if announcement.link else "",
         unsubscribe=unsubscribe,
     )
