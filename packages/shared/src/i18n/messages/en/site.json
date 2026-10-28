@@ -352,12 +352,11 @@
     "studioLocation": "Studio Location",
     "sessionHours": "Session Hours",
     "emptyCoursesText": "Publish a course and it joins this list automatically.",
-    "reserveSpot": "RESERVE SPOT",
     "emptyEventsText": "Schedule a live studio session or workshop and it appears here.",
     "momentsReel": "Moments reel",
-    "seeIncludedSessions": "SEE INCLUDED SESSIONS",
+    "seeIncludedSessions": "See included sessions",
     "emptyPlansText": "Create a pass under Billing and it appears here automatically.",
     "sessionsIncluded": "{count, plural, one {# course/session included} other {# courses/sessions included}}",
-    "viewFullTimetable": "VIEW FULL TIMETABLE"
+    "viewFullTimetable": "View full timetable"
   }
 }

@@ -373,12 +373,11 @@
     "studioLocation": "Stüdyo Konumu",
     "sessionHours": "Oturum Saatleri",
     "emptyCoursesText": "Bir kurs yayınla, otomatik olarak bu listeye eklensin.",
-    "reserveSpot": "YERİNİ AYIRT",
     "emptyEventsText": "Canlı bir stüdyo oturumu ya da atölye planla, burada görünsün.",
     "momentsReel": "Anlar akışı",
-    "seeIncludedSessions": "DAHİL OLAN OTURUMLARI GÖR",
+    "seeIncludedSessions": "Dahil olan oturumları gör",
     "emptyPlansText": "Faturalandırma bölümünde bir geçiş paketi oluştur, otomatik olarak burada görünsün.",
     "sessionsIncluded": "{count, plural, one {# kurs/oturum dahil} other {# kurs/oturum dahil}}",
-    "viewFullTimetable": "TÜM PROGRAMI GÖR"
+    "viewFullTimetable": "Tüm programı görüntüle"
   }
 }

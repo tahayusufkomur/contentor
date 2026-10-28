@@ -373,12 +373,11 @@
     "studioLocation": "Studio-Standort",
     "sessionHours": "Session-Zeiten",
     "emptyCoursesText": "Veröffentliche einen Kurs und er wird automatisch in diese Liste aufgenommen.",
-    "reserveSpot": "PLATZ RESERVIEREN",
     "emptyEventsText": "Plane eine Live-Studio-Session oder einen Workshop und er erscheint hier.",
     "momentsReel": "Momente-Reel",
-    "seeIncludedSessions": "ENTHALTENE SESSIONS ANSEHEN",
+    "seeIncludedSessions": "Enthaltene Sessions ansehen",
     "emptyPlansText": "Erstelle einen Pass unter Abrechnung und er erscheint hier automatisch.",
     "sessionsIncluded": "{count, plural, one {# Kurs/Session enthalten} other {# Kurse/Sessions enthalten}}",
-    "viewFullTimetable": "VOLLSTÄNDIGEN STUNDENPLAN ANSEHEN"
+    "viewFullTimetable": "Vollständigen Stundenplan ansehen"
   }
 }

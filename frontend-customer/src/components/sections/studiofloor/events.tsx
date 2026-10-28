@@ -83,7 +83,7 @@ export function EventsSchedule({ block, data, editable }: SectionProps) {
                   {/* Action */}
                   <div className="flex items-center justify-end border-t border-border/60 pt-3 md:border-0 md:pt-0">
                     <span className="studiofloor-link inline-flex items-center gap-2 studiofloor-display text-[0.92rem] font-extrabold italic group-hover:text-accent">
-                      <span>{t("studiofloor.reserveSpot")}</span>
+                      <span>{t("event.reserveSpot")}</span>
                       <Arrow />
                     </span>
                   </div>

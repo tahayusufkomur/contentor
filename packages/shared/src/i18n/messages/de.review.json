@@ -1203,10 +1203,6 @@
     "src": "48a0fec6",
     "reviewed": false
   },
-  "site.studiofloor.reserveSpot": {
-    "src": "f8667ba5",
-    "reviewed": false
-  },
   "site.studiofloor.emptyEventsText": {
     "src": "14700853",
     "reviewed": false
@@ -1216,7 +1212,7 @@
     "reviewed": false
   },
   "site.studiofloor.seeIncludedSessions": {
-    "src": "d422d177",
+    "src": "3ac25e46",
     "reviewed": false
   },
   "site.studiofloor.emptyPlansText": {
@@ -1228,7 +1224,7 @@
     "reviewed": false
   },
   "site.studiofloor.viewFullTimetable": {
-    "src": "2341c2a7",
+    "src": "5da4ff6a",
     "reviewed": false
   }
 }

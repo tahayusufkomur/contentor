@@ -373,12 +373,11 @@
     "studioLocation": "Lokalizacja Studia",
     "sessionHours": "Godziny Sesji",
     "emptyCoursesText": "Opublikuj kurs, a automatycznie pojawi się na tej liście.",
-    "reserveSpot": "ZAREZERWUJ MIEJSCE",
     "emptyEventsText": "Zaplanuj sesję na żywo w studiu lub warsztat, a pojawi się tutaj.",
     "momentsReel": "Rolka chwil",
-    "seeIncludedSessions": "ZOBACZ SESJE W PAKIECIE",
+    "seeIncludedSessions": "Zobacz sesje w pakiecie",
     "emptyPlansText": "Utwórz karnet w sekcji Rozliczenia, a automatycznie pojawi się tutaj.",
     "sessionsIncluded": "{count, plural, one {# kurs/sesja w pakiecie} few {# kursy/sesje w pakiecie} many {# kursów/sesji w pakiecie} other {# kursu/sesji w pakiecie}}",
-    "viewFullTimetable": "ZOBACZ PEŁNY HARMONOGRAM"
+    "viewFullTimetable": "Zobacz pełny harmonogram"
   }
 }
