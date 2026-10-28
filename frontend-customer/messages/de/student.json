@@ -144,7 +144,7 @@
     "verifying": "Wird verifiziert...",
     "welcomeBack": "Willkommen zurück!",
     "welcomeTo": "Willkommen bei {brand}!",
-    "yourSite": "deiner Website"
+    "welcomeToYourSite": "Willkommen auf deiner Seite!"
   },
   "dashboard": {
     "title": "Meine Kurse",
@@ -270,8 +270,8 @@
       "notFound": "Live-Session nicht gefunden",
       "connecting": "Verbindung zur Live-Session wird hergestellt",
       "connectingDots": "Verbindung zur Live-Session wird hergestellt...",
-      "notStarted": "Diese Stunde hat noch nicht begonnen. Schau wieder vorbei, wenn der Creator live geht.",
-      "ended": "Diese Stunde ist beendet.",
+      "notStarted": "Diese Session hat noch nicht begonnen. Schau wieder vorbei, wenn der Creator live geht.",
+      "ended": "Diese Session ist beendet.",
       "connectFailed": "Verbindung zur Live-Session fehlgeschlagen.",
       "left": "Du hast die Session verlassen",
       "endedFrame": "Die Session ist beendet",

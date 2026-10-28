@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { clientFetch } from "@/lib/api-client";
@@ -40,6 +40,9 @@ export default function LiveFrame({ basePath, kind }: LiveFrameProps) {
   const [join, setJoin] = useState<JoinResponse | null>(null);
   const [error, setError] = useState("");
   const [ended, setEnded] = useState<Ended | null>(null);
+  // A new `t` (messages refreshed) must not refetch.
+  const tRef = useRef(t);
+  tRef.current = t;
 
   useEffect(() => {
     clientFetch<JoinResponse>(`${basePath}/token/`, { method: "POST" })
@@ -48,10 +51,10 @@ export default function LiveFrame({ basePath, kind }: LiveFrameProps) {
         setError(
           err instanceof ApiError && err.status === 409
             ? err.message
-            : t(`${kind}.connectFailed`),
+            : tRef.current(`${kind}.connectFailed`),
         ),
       );
-  }, [basePath, t, kind]);
+  }, [basePath, kind]);
 
   useEffect(() => {
     if (!join) return;

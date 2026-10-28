@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Search,
   BookOpen,
@@ -93,6 +93,9 @@ export default function StorePage() {
   const [searchInput, setSearchInput] = useState("");
   const [addingIds, setAddingIds] = useState<Set<number>>(new Set());
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  // A new `t` (messages refreshed) must not refetch the list.
+  const tRef = useRef(t);
+  tRef.current = t;
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -105,12 +108,12 @@ export default function StorePage() {
       const data = await clientFetch<StoreItem[]>(url);
       setItems(data);
     } catch {
-      toast.error(t("store.loadFailed"));
+      toast.error(tRef.current("store.loadFailed"));
       setItems([]);
     } finally {
       setLoading(false);
     }
-  }, [filter, search, t]);
+  }, [filter, search]);
 
   useEffect(() => {
     fetchItems();

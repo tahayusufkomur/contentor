@@ -48,13 +48,13 @@
     "loading": "Ödeme yükleniyor",
     "today": "Bugün",
     "everyMonthAfter": "Sonrasında her ay",
-    "renews": "Kendiliğinden yenilenir. İstediğin zaman Faturalandırma'dan iptal edebilirsin.",
+    "renews": "Kendiliğinden yenilenir. İstediğin zaman Faturalandırma bölümünden iptal edebilirsin.",
     "trialStarts": "{days, plural, one {Ödeyeceğin bir şey yok. # günlük ücretsiz deneme süren şimdi başlıyor.} other {Ödeyeceğin bir şey yok. # günlük ücretsiz deneme süren şimdi başlıyor.}}",
     "untilDate": "{date} tarihine kadar",
-    "tryEverything": "Her şeyi dene. Faturalandırma'dan iptal edersen hiçbir şey ödemezsin.",
-    "startsAt": "{name} ayda {price} ile başlar.",
-    "startsAtFallback": "{name} aylık fiyatıyla başlar.",
-    "beginsAt": "{name} ayda {price} fiyatla başlar.",
-    "beginsAtFallback": "{name} kendi aylık fiyatıyla başlar."
+    "tryEverything": "Her şeyi dene. Faturalandırma bölümünden iptal edersen hiçbir şey ödemezsin.",
+    "startsAt": "{name} aylık {price} ücretle başlar.",
+    "startsAtFallback": "{name} aylık ücretiyle başlar.",
+    "beginsAt": "{name} aylık {price} ücretle başlıyor.",
+    "beginsAtFallback": "{name} aylık ücretiyle başlıyor."
   }
 }

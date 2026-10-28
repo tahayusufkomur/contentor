@@ -597,7 +597,8 @@
     "loggedOut": "Du wurdest abgemeldet",
     "footer": "Fußzeile",
     "pages": "Seiten",
-    "follow": "Folgen"
+    "follow": "Folgen",
+    "loginToContinue": "Bitte melde dich an, um fortzufahren"
   },
   "blockEmpty": {
     "video": {

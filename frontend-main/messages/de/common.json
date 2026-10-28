@@ -37,7 +37,7 @@
       "dimMode": "Gedimmter Modus",
       "darkMode": "Dunkler Modus",
       "cycleAria": "Design: {current}. Zu {next} wechseln",
-      "cycleTitle": "Design: {current} – klicken für {next}",
+      "cycleTitle": "Design: {current} — klicken für {next}",
       "switchToLight": "Zum hellen Modus wechseln",
       "switchToDark": "Zum dunklen Modus wechseln"
     }

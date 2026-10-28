@@ -89,24 +89,24 @@
       "dimMode": "Tryb przyciemniony",
       "darkMode": "Tryb ciemny",
       "cycleAria": "Motyw: {current}. Przełącz na {next}",
-      "cycleTitle": "Motyw: {current} — kliknij, aby włączyć {next}",
+      "cycleTitle": "Motyw: {current} — kliknij, aby przełączyć na {next}",
       "switchToLight": "Przełącz na tryb jasny",
       "switchToDark": "Przełącz na tryb ciemny"
     }
   },
   "checkout": {
-    "dialog": "Kasa",
+    "dialog": "Płatność",
     "close": "Zamknij",
-    "loading": "Ładowanie kasy",
+    "loading": "Ładowanie płatności",
     "today": "Dzisiaj",
     "everyMonthAfter": "Potem co miesiąc",
     "renews": "Odnawia się automatycznie. Anuluj w dowolnym momencie w Rozliczeniach.",
     "trialStarts": "{days, plural, one {Nic do zapłaty. Twój # darmowy dzień zaczyna się teraz.} few {Nic do zapłaty. Twoje # darmowe dni zaczynają się teraz.} many {Nic do zapłaty. Twoje # darmowych dni zaczyna się teraz.} other {Nic do zapłaty. Twoje # darmowych dni zaczyna się teraz.}}",
     "untilDate": "Do {date}",
-    "tryEverything": "Wypróbuj wszystko. Anuluj w Rozliczeniach i nic nie płacisz.",
+    "tryEverything": "Wypróbuj wszystko. Anuluj w Rozliczeniach, a nic nie zapłacisz.",
     "startsAt": "{name} zaczyna się od {price} miesięcznie.",
-    "startsAtFallback": "{name} zaczyna się od swojej miesięcznej ceny.",
+    "startsAtFallback": "{name} zaczyna się od swojej ceny miesięcznej.",
     "beginsAt": "{name} rozpoczyna się od {price} miesięcznie.",
-    "beginsAtFallback": "{name} rozpoczyna się od swojej miesięcznej ceny."
+    "beginsAtFallback": "{name} rozpoczyna się od swojej ceny miesięcznej."
   }
 }

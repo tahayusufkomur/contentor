@@ -87,11 +87,11 @@
       "dark": "Koyu",
       "lightMode": "Açık mod",
       "dimMode": "Loş mod",
-      "darkMode": "Karanlık mod",
+      "darkMode": "Koyu mod",
       "cycleAria": "Tema: {current}. Şuna geç: {next}",
       "cycleTitle": "Tema: {current} — {next} için tıkla",
       "switchToLight": "Açık moda geç",
-      "switchToDark": "Karanlık moda geç"
+      "switchToDark": "Koyu moda geç"
     }
   },
   "checkout": {
@@ -101,7 +101,7 @@
     "today": "Bugün",
     "everyMonthAfter": "Sonrasında her ay",
     "renews": "Kendiliğinden yenilenir. İstediğin zaman Faturalandırma bölümünden iptal edebilirsin.",
-    "trialStarts": "{days, plural, one {Ödenecek bir şey yok. # ücretsiz günün şimdi başlıyor.} other {Ödenecek bir şey yok. # ücretsiz günün şimdi başlıyor.}}",
+    "trialStarts": "{days, plural, one {Ödeyeceğin bir şey yok. # günlük ücretsiz deneme süren şimdi başlıyor.} other {Ödeyeceğin bir şey yok. # günlük ücretsiz deneme süren şimdi başlıyor.}}",
     "untilDate": "{date} tarihine kadar",
     "tryEverything": "Her şeyi dene. Faturalandırma bölümünden iptal edersen hiçbir şey ödemezsin.",
     "startsAt": "{name} aylık {price} ücretle başlar.",

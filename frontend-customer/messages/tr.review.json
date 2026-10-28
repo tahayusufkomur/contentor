@@ -6587,8 +6587,8 @@
     "src": "9eb4dabf",
     "reviewed": false
   },
-  "student.callback.yourSite": {
-    "src": "615d7c33",
+  "student.callback.welcomeToYourSite": {
+    "src": "154a53bf",
     "reviewed": false
   },
   "student.dashboard.title": {
@@ -6992,11 +6992,11 @@
     "reviewed": false
   },
   "student.live.session.notStarted": {
-    "src": "83ad34e9",
+    "src": "b6d97b29",
     "reviewed": false
   },
   "student.live.session.ended": {
-    "src": "b1829580",
+    "src": "19a644b2",
     "reviewed": false
   },
   "student.live.session.connectFailed": {

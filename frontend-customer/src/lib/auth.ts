@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { COOKIE_NAME, DJANGO_API_URL } from "@/lib/constants";
 import { headers } from "next/headers";
 import type { User } from "@/types/auth";
@@ -50,7 +51,13 @@ export async function getAuthUser(): Promise<User | null> {
 
 export async function requireAuth(): Promise<User> {
   const user = await getAuthUser();
-  if (!user) redirect("/login?toast=Please+log+in+to+continue&toast_type=info");
+  if (!user) {
+    // The site's language, whichever surface sent them here.
+    const t = await getTranslations("site");
+    redirect(
+      `/login?toast=${encodeURIComponent(t("nav.loginToContinue"))}&toast_type=info`,
+    );
+  }
   return user;
 }
 

@@ -597,7 +597,8 @@
     "loggedOut": "Oturumun kapatıldı",
     "footer": "Alt bilgi",
     "pages": "Sayfalar",
-    "follow": "Takip et"
+    "follow": "Takip et",
+    "loginToContinue": "Devam etmek için lütfen giriş yap"
   },
   "blockEmpty": {
     "video": {

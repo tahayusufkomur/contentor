@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createTranslator } from "next-intl";
 import site from "@shared/i18n/messages/en/site.json";
+import plSite from "@shared/i18n/messages/pl/site.json";
 import {
   freeTerms as freeTermsIn,
   planTerms as planTermsIn,
@@ -126,5 +127,23 @@ describe("stateLine", () => {
   it("is empty when there is nothing to say", () => {
     expect(stateLine(info({}), NOW)).toBe("");
     expect(stateLine(info({ has_access: true }), NOW)).toBe("");
+  });
+});
+
+// A span arrives as a finished string ("3 miesiące"), so no phrase may put it
+// after a preposition that needs another case.
+describe("free terms in Polish", () => {
+  const pl = createTranslator({
+    locale: "pl",
+    messages: { site: plSite },
+    namespace: "site",
+  });
+  it("keeps the span in the case it is written in", () => {
+    expect(freeTermsIn({ closes_after_days: 365 }, "pl", pl)).toBe(
+      "Bezpłatnie przez 1 rok od dołączenia",
+    );
+    expect(freeTermsIn({ opens_after_days: 90 }, "pl", pl)).toBe(
+      "Bezpłatnie, gdy minie 3 miesiące od dołączenia",
+    );
   });
 });

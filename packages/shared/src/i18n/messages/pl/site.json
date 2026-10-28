@@ -597,7 +597,8 @@
     "loggedOut": "Wylogowano cię",
     "footer": "Stopka",
     "pages": "Strony",
-    "follow": "Obserwuj"
+    "follow": "Obserwuj",
+    "loginToContinue": "Zaloguj się, aby kontynuować"
   },
   "blockEmpty": {
     "video": {
@@ -712,11 +713,11 @@
     "planNowUntilDate": "Dostępne od razu, do {closes}",
     "freeAfterThenUntil": "Za darmo: zaczyna się {opens} po dołączeniu, kończy się {closes} po dołączeniu",
     "freeFromThenUntil": "Za darmo od {opens}, kończy się {closes} po dołączeniu",
-    "freeFirst": "Bezpłatnie przez pierwsze {closes}",
+    "freeFirst": "Bezpłatnie przez {closes} od dołączenia",
     "freeBetween": "Bezpłatnie {opens} – {closes}",
     "freeUntil": "Bezpłatnie do {closes}",
     "freeFrom": "Bezpłatnie od {opens}",
-    "freeAfter": "Bezpłatnie po {opens} od dołączenia",
+    "freeAfter": "Bezpłatnie, gdy minie {opens} od dołączenia",
     "accessEnds": "Twój dostęp kończy się {date}",
     "opensForYou": "Dostępne dla ciebie od {date}",
     "accessEnded": "Twój dostęp wygasł {date}"

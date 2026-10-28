@@ -144,7 +144,7 @@
     "verifying": "Doğrulanıyor...",
     "welcomeBack": "Tekrar hoş geldin!",
     "welcomeTo": "{brand} sitesine hoş geldin!",
-    "yourSite": "siten"
+    "welcomeToYourSite": "Sitene hoş geldin!"
   },
   "dashboard": {
     "title": "Kurslarım",
@@ -270,8 +270,8 @@
       "notFound": "Canlı oturum bulunamadı",
       "connecting": "Canlı oturuma bağlanılıyor",
       "connectingDots": "Canlı oturuma bağlanılıyor...",
-      "notStarted": "Bu ders henüz başlamadı. İçerik üreticisi yayına geçtiğinde tekrar bak.",
-      "ended": "Bu ders sona erdi.",
+      "notStarted": "Bu oturum henüz başlamadı. İçerik üreticisi yayına başladığında tekrar bak.",
+      "ended": "Bu oturum sona erdi.",
       "connectFailed": "Canlı oturuma bağlanılamadı.",
       "left": "Oturumdan ayrıldın",
       "endedFrame": "Oturum sona erdi",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Spinner } from "@/components/ui/spinner";
@@ -23,9 +23,13 @@ export default function LiveStreamClient({ streamId }: LiveStreamClientProps) {
   const [stream, setStream] = useState<StreamData | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  // A new `t` (messages refreshed) must not refetch.
+  const tRef = useRef(t);
+  tRef.current = t;
 
   useEffect(() => {
     async function init() {
+      const t = tRef.current;
       try {
         const res = await fetch(`/api/v1/live-streams/${streamId}/`, {
           credentials: "same-origin",
@@ -44,7 +48,7 @@ export default function LiveStreamClient({ streamId }: LiveStreamClientProps) {
       }
     }
     init();
-  }, [streamId, t]);
+  }, [streamId]);
 
   if (loading) {
     return (

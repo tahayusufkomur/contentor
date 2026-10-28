@@ -87,11 +87,11 @@
       "dark": "Dunkel",
       "lightMode": "Heller Modus",
       "dimMode": "Gedimmter Modus",
-      "darkMode": "Dunkelmodus",
+      "darkMode": "Dunkler Modus",
       "cycleAria": "Design: {current}. Zu {next} wechseln",
       "cycleTitle": "Design: {current} — klicken für {next}",
-      "switchToLight": "Zum Hellmodus wechseln",
-      "switchToDark": "Zum Dunkelmodus wechseln"
+      "switchToLight": "Zum hellen Modus wechseln",
+      "switchToDark": "Zum dunklen Modus wechseln"
     }
   },
   "checkout": {
@@ -99,14 +99,14 @@
     "close": "Schließen",
     "loading": "Kasse wird geladen",
     "today": "Heute",
-    "everyMonthAfter": "Danach jeden Monat",
-    "renews": "Es verlängert sich automatisch. Kündige jederzeit unter Abrechnung.",
-    "trialStarts": "{days, plural, one {Nichts zu zahlen. Dein # kostenloser Tag beginnt jetzt.} other {Nichts zu zahlen. Deine # kostenlosen Tage beginnen jetzt.}}",
+    "everyMonthAfter": "Danach monatlich",
+    "renews": "Die Verlängerung erfolgt automatisch. Du kannst jederzeit unter Abrechnung kündigen.",
+    "trialStarts": "{days, plural, one {Nichts zu bezahlen. Dein # kostenloser Tag beginnt jetzt.} other {Nichts zu bezahlen. Deine # kostenlosen Tage beginnen jetzt.}}",
     "untilDate": "Bis {date}",
-    "tryEverything": "Probiere alles aus. Kündige unter Abrechnung und du zahlst nichts.",
-    "startsAt": "{name} startet ab {price} im Monat.",
+    "tryEverything": "Probier alles aus. Kündige unter Abrechnung und du zahlst nichts.",
+    "startsAt": "{name} startet ab {price} pro Monat.",
     "startsAtFallback": "{name} startet zum monatlichen Preis.",
-    "beginsAt": "{name} beginnt ab {price} im Monat.",
+    "beginsAt": "{name} beginnt ab {price} pro Monat.",
     "beginsAtFallback": "{name} beginnt zum monatlichen Preis."
   }
 }

@@ -144,7 +144,7 @@
     "verifying": "Weryfikowanie...",
     "welcomeBack": "Witaj ponownie!",
     "welcomeTo": "Witaj w {brand}!",
-    "yourSite": "twojej witrynie"
+    "welcomeToYourSite": "Witaj na swojej stronie!"
   },
   "dashboard": {
     "title": "Moje kursy",
@@ -270,8 +270,8 @@
       "notFound": "Nie znaleziono sesji na żywo",
       "connecting": "Łączenie z sesją na żywo",
       "connectingDots": "Łączenie z sesją na żywo...",
-      "notStarted": "Te zajęcia jeszcze się nie rozpoczęły. Wróć, gdy twórca zacznie nadawać.",
-      "ended": "Te zajęcia się zakończyły.",
+      "notStarted": "Ta sesja jeszcze się nie rozpoczęła. Wróć, gdy twórca rozpocznie transmisję.",
+      "ended": "Ta sesja się zakończyła.",
       "connectFailed": "Nie udało się połączyć z sesją na żywo.",
       "left": "Nie jesteś już w sesji",
       "endedFrame": "Sesja się zakończyła",

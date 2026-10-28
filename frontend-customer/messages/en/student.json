@@ -144,7 +144,7 @@
     "verifying": "Verifying...",
     "welcomeBack": "Welcome back!",
     "welcomeTo": "Welcome to {brand}!",
-    "yourSite": "your site"
+    "welcomeToYourSite": "Welcome to your site!"
   },
   "dashboard": {
     "title": "My Courses",
@@ -270,8 +270,8 @@
       "notFound": "Live session not found",
       "connecting": "Connecting to live session",
       "connectingDots": "Connecting to live session...",
-      "notStarted": "This class hasn't started yet. Check back when the creator goes live.",
-      "ended": "This class has ended.",
+      "notStarted": "This session hasn't started yet. Check back when the creator goes live.",
+      "ended": "This session has ended.",
       "connectFailed": "Failed to connect to the live session.",
       "left": "You left the session",
       "endedFrame": "The session has ended",

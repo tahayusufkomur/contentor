@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useNavigate } from "@shared/navigation/navigation-provider";
@@ -12,8 +12,12 @@ export default function CallbackPage() {
   const searchParams = useSearchParams();
   const brand = useTenant()?.brand_name;
   const [error, setError] = useState("");
+  // The token is single-use: a new `t` (messages refreshed) must not rerun the effect.
+  const tRef = useRef(t);
+  tRef.current = t;
 
   useEffect(() => {
+    const t = tRef.current;
     const token = searchParams.get("token");
     const source = searchParams.get("source");
     if (!token) {
@@ -70,14 +74,16 @@ export default function CallbackPage() {
         // A first visit is greeted as one; "Welcome back!" on day one read as a bug.
         const greeting =
           data.created === true
-            ? t("welcomeTo", { brand: brand || t("yourSite") })
+            ? brand
+              ? t("welcomeTo", { brand })
+              : t("welcomeToYourSite")
             : t("welcomeBack");
         navigate(
           `${dest}${dest.includes("?") ? "&" : "?"}toast=${encodeURIComponent(greeting)}&toast_type=success`,
         );
       })
       .catch(() => setError(t("networkError")));
-  }, [searchParams, navigate, brand, t]);
+  }, [searchParams, navigate, brand]);
 
   if (error) {
     return (

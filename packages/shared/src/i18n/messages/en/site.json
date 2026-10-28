@@ -597,7 +597,8 @@
     "loggedOut": "You've been logged out",
     "footer": "Footer",
     "pages": "Pages",
-    "follow": "Follow"
+    "follow": "Follow",
+    "loginToContinue": "Please log in to continue"
   },
   "blockEmpty": {
     "video": {
