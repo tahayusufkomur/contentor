@@ -13,7 +13,7 @@ export function FaqNotes({ block, editable }: SectionProps) {
   const items = itemsOf<QA>(block, "items");
 
   return (
-    <Section tone="paper" label={str(block.heading) || t("manuscript.notes")}>
+    <Section tone="paper" label={str(block.heading) || t("sectionLabel.notes")}>
       <div className={WRAP}>
         <div className="grid gap-y-12 lg:grid-cols-12 lg:gap-x-12">
           {/* Header */}

@@ -1,10 +1,12 @@
 import { cn } from "@/lib/utils";
 import { Img, Txt, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
-import { Kicker, PopButton, PopSection, WRAP, str } from "./ui";
+import { CTA_LABEL, Kicker, PopButton, PopSection, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Chartreuse band crossed by a plum ribbon that runs the button text. */
 export function CtaMarquee({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const label = str(block.ctaLabel);
   const withImage = Boolean(imageUrl(block.image));
   const run = Array.from({ length: 8 }, () => label);
@@ -66,7 +68,7 @@ export function CtaMarquee({ block, editable }: SectionProps) {
             editable={editable}
             as="h2"
             className="pop-display mt-6 text-[clamp(2.75rem,1.2rem+4.8vw,6rem)]"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
           />
           <Txt
             block={block}
@@ -82,7 +84,7 @@ export function CtaMarquee({ block, editable }: SectionProps) {
             <PopButton
               block={block}
               editable={editable}
-              label="ctaLabel"
+              label={CTA_LABEL}
               href="ctaHref"
               className="!min-h-[4rem] !px-9 !text-[1.1875rem]"
             />

@@ -11,7 +11,7 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, H3, Opener, Section, WindowChrome, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 function getCronExpression(iso: string) {
   const d = new Date(iso);
@@ -25,6 +25,7 @@ function getCronExpression(iso: string) {
 
 /** Live events and scheduled classes structured as crontab daemon schedule entries. */
 export function EventsCron({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
@@ -32,7 +33,11 @@ export function EventsCron({ block, data, editable }: SectionProps) {
   return (
     <Section
       tone="console"
-      label={typeof block.heading === "string" ? block.heading : "Events"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.events")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -69,7 +74,7 @@ export function EventsCron({ block, data, editable }: SectionProps) {
                           <p className="font-mono text-xs text-muted-foreground">
                             <LocalWhen iso={e.scheduled_at} />
                             {e.type !== "onsite_event"
-                              ? " · Online, live"
+                              ? ` · ${t("event.onlineLive")}`
                               : e.location && ` · ${e.location}`}
                           </p>
                         </div>
@@ -77,11 +82,11 @@ export function EventsCron({ block, data, editable }: SectionProps) {
 
                       <div className="flex items-center justify-between gap-6 pl-0 sm:justify-end">
                         <span className="font-mono text-xs font-bold text-primary">
-                          {eventPriceLabel(e, locale)}
+                          {eventPriceLabel(e, locale, t)}
                         </span>
 
                         <span className="terminal-link inline-flex items-center gap-1.5 font-mono text-xs font-bold">
-                          <span>[ Reserve ]</span>
+                          <span>[ {t("event.reserve")} ]</span>
                           <Arrow />
                         </span>
                       </div>
@@ -95,8 +100,8 @@ export function EventsCron({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No upcoming events scheduled"
-              text="Schedule a live session or event and it appears here."
+              title={t("terminal.emptyEventsTitle")}
+              text={t("empty.sessions.text")}
             />
           </div>
         )}
@@ -112,10 +117,10 @@ export function EventsCron({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "Full calendar"
+                t("cta.fullCalendar")
               )}
               <Arrow />
             </SmartLink>

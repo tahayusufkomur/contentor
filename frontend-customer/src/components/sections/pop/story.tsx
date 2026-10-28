@@ -1,11 +1,13 @@
 import { cn } from "@/lib/utils";
 import { Img, Rich, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
-import { Kicker, PopButton, PopSection, WRAP, str } from "./ui";
+import { CTA_LABEL, Kicker, PopButton, PopSection, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Lilac block: tilted portrait with the signature as a name sticker, an
  *  optional setting photo pinned over its corner, story on the right. */
 export function StorySticker({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const withSetting = Boolean(imageUrl(block.image2));
   return (
@@ -45,7 +47,7 @@ export function StorySticker({ block, editable }: SectionProps) {
               editable={editable}
               as="p"
               className="pop-sticker pop-wiggle pop-h3 absolute -top-1 left-3 bg-[var(--pop-pink)] px-5 py-2.5 text-xl [--pop-tilt:-7deg] md:text-2xl"
-              placeholder="Your name"
+              placeholder={t("placeholder.yourName")}
             />
           )}
         </div>
@@ -58,7 +60,7 @@ export function StorySticker({ block, editable }: SectionProps) {
             editable={editable}
             as="h2"
             className="pop-display pop-h2 mt-6"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
           />
           <Rich
             block={block}
@@ -71,7 +73,7 @@ export function StorySticker({ block, editable }: SectionProps) {
               <PopButton
                 block={block}
                 editable={editable}
-                label="ctaLabel"
+                label={CTA_LABEL}
                 href="ctaHref"
                 tone="paper"
               />

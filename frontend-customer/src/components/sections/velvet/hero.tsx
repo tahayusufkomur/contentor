@@ -15,6 +15,7 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 const delay = (ms: number) =>
   ({ "--velvet-delay": `${ms}ms` }) as CSSProperties;
@@ -24,6 +25,7 @@ function Actions({
   editable,
   className,
 }: SectionProps & { className?: string }) {
+  const t = useTranslations("site");
   const primary = has(block, "ctaLabel", editable);
   const secondary = has(block, "secondaryLabel", editable);
   if (!primary && !secondary) return null;
@@ -35,7 +37,7 @@ function Actions({
             block={block}
             field="ctaLabel"
             editable={editable}
-            placeholder="Button text"
+            placeholder={t("placeholder.buttonText")}
           />
         </SmartLink>
       )}
@@ -49,7 +51,7 @@ function Actions({
               block={block}
               field="secondaryLabel"
               editable={editable}
-              placeholder="Second button"
+              placeholder={t("placeholder.secondButton")}
             />
             <Arrow />
           </SmartLink>
@@ -65,6 +67,7 @@ function Actions({
  *  over the faded edge. The detail print is a small framed card in the
  *  photograph's corner. */
 export function HeroPortrait({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   return (
@@ -106,7 +109,7 @@ export function HeroPortrait({ block, editable }: SectionProps) {
                   field="headline"
                   editable={editable}
                   as="h1"
-                  placeholder="Headline"
+                  placeholder={t("placeholder.headline")}
                   className={cn(
                     H1,
                     "max-w-[14ch] text-[clamp(3rem,1.3rem+4.9vw,6.4rem)] leading-[0.98]",
@@ -124,7 +127,7 @@ export function HeroPortrait({ block, editable }: SectionProps) {
                   field="subhead"
                   editable={editable}
                   as="p"
-                  placeholder="Subheadline"
+                  placeholder={t("placeholder.subheadline")}
                   className="block max-w-[42ch] text-pretty text-[1.1rem] leading-[1.7] text-muted-foreground md:text-[1.18rem]"
                 />
               </div>
@@ -145,7 +148,7 @@ export function HeroPortrait({ block, editable }: SectionProps) {
                     block={block}
                     field="meta"
                     editable={editable}
-                    placeholder="Small line"
+                    placeholder={t("placeholder.smallLine")}
                   />
                 </p>
               )}
@@ -160,6 +163,7 @@ export function HeroPortrait({ block, editable }: SectionProps) {
 /** Inner-page title: the kicker, a soft serif title and its dek on the
  *  left, an optional arched portrait on the right with its own small halo. */
 export function HeroIntro({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   return (
@@ -180,7 +184,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
             field="headline"
             editable={editable}
             as="h1"
-            placeholder="Page title"
+            placeholder={t("placeholder.pageTitle")}
             className="velvet-it mt-5 block max-w-[16ch] text-balance break-words font-display text-[clamp(2.5rem,1.5rem+3.9vw,5.4rem)] font-normal leading-[1.02] tracking-[-0.012em]"
           />
           <Txt
@@ -188,7 +192,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
             field="subhead"
             editable={editable}
             as="p"
-            placeholder="Subheadline"
+            placeholder={t("placeholder.subheadline")}
             className="mt-7 block max-w-[46ch] text-pretty text-[1.125rem] leading-[1.6] text-muted-foreground"
           />
           <Actions block={block} editable={editable} className="mt-9" />

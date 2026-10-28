@@ -2,15 +2,17 @@ import { cn } from "@/lib/utils";
 import { Txt, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, Section, WRAP, pad2, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type QA = { q?: string; a?: string };
 
 /** Frequently asked questions presented with didactic numbering and quiet disclosures. */
 export function FaqDidactics({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<QA>(block, "items");
 
   return (
-    <Section label={str(block.heading) || "Questions"}>
+    <Section label={str(block.heading) || t("sectionLabel.questions")}>
       <div
         className={cn(
           WRAP,
@@ -25,7 +27,7 @@ export function FaqDidactics({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(
                 H2,
                 "mt-3 block text-[clamp(1.7rem,1.3rem+1.6vw,2.8rem)] leading-[1.05]",
@@ -36,7 +38,7 @@ export function FaqDidactics({ block, editable }: SectionProps) {
               field="intro"
               editable={editable}
               as="p"
-              placeholder="Intro"
+              placeholder={t("placeholder.intro")}
               className="mt-6 block max-w-[36ch] text-pretty text-[1rem] leading-[1.6] text-muted-foreground"
             />
           </div>

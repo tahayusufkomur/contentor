@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { FILL, Kicker, PopSection, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
@@ -9,6 +10,7 @@ const DOT: (keyof typeof FILL)[] = ["berry", "lime", "lilac", "pink"];
 
 /** Big numbered circles joined by a squiggle (the steps are a sequence). */
 export function HowItWorksCircles({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const withImage = Boolean(imageUrl(block.image));
   const four = steps.length >= 4;
@@ -33,7 +35,7 @@ export function HowItWorksCircles({ block, editable }: SectionProps) {
               editable={editable}
               as="h2"
               className="pop-display pop-h2 mt-6"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
             />
             <Txt
               block={block}

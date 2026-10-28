@@ -12,11 +12,13 @@ import {
   pad2,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** Step-by-step methodology structured as a vertical Git commit pipeline. */
 export function HowItWorksPipeline({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -47,7 +49,9 @@ export function HowItWorksPipeline({ block, editable }: SectionProps) {
                   "text-[1.25rem] leading-snug md:text-[1.4rem]",
                 )}
               >
-                <span className="sr-only">{`Step ${i + 1}: `}</span>
+                <span className="sr-only">
+                  {t("step.labelColon", { number: i + 1 })}{" "}
+                </span>
                 {s.title}
               </h3>
 
@@ -75,7 +79,7 @@ export function HowItWorksPipeline({ block, editable }: SectionProps) {
                 field="heading"
                 editable={editable}
                 as="h2"
-                placeholder="Heading"
+                placeholder={t("placeholder.heading")}
                 className={cn(H2, "mt-3 block max-w-[20ch]")}
               />
               <Txt
@@ -83,7 +87,7 @@ export function HowItWorksPipeline({ block, editable }: SectionProps) {
                 field="intro"
                 editable={editable}
                 as="p"
-                placeholder="Intro"
+                placeholder={t("placeholder.intro")}
                 className="mt-6 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
               />
 

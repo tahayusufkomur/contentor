@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { FILL, Kicker, PopSection, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Item = { title?: string; text?: string };
 
@@ -65,6 +66,7 @@ function spans(n: number, withImage: boolean) {
 
 /** Bento of colour tiles in different sizes, all ink-outlined. */
 export function BenefitsBento({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<Item>(block, "items");
   const withImage = Boolean(imageUrl(block.image));
   const cls = spans(items.length, withImage);
@@ -80,7 +82,7 @@ export function BenefitsBento({ block, editable }: SectionProps) {
               editable={editable}
               as="h2"
               className="pop-display pop-h2 mt-6"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
             />
           </div>
           <Txt

@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { EditableContext } from "@/lib/blocks/types";
 import type { Block } from "@/types/tenant";
@@ -94,6 +94,7 @@ export function Kicker({
   fill?: keyof typeof FILL;
   className?: string;
 }) {
+  const t = useTranslations("site");
   return (
     <Txt
       block={block}
@@ -101,10 +102,14 @@ export function Kicker({
       editable={editable}
       as="p"
       className={cn("pop-kicker", FILL[fill], className)}
-      placeholder="Kicker"
+      placeholder={t("placeholder.kicker")}
     />
   );
 }
+
+/** Block field names the hero, story and band buttons read their label from. */
+export const CTA_LABEL = "ctaLabel";
+export const SECONDARY_LABEL = "secondaryLabel";
 
 /** A pill button for a block's label/link field pair. Nothing when the label
  *  is empty on the public site. */
@@ -125,6 +130,7 @@ export function PopButton({
   tone?: "primary" | "paper" | "ink";
   className?: string;
 }) {
+  const t = useTranslations("site");
   if (!has(block, label, editable)) return null;
   const link =
     (href && typeof block[href] === "string" && block[href]) ||
@@ -139,7 +145,7 @@ export function PopButton({
         block={block}
         field={label}
         editable={editable}
-        placeholder="Button text"
+        placeholder={t("placeholder.buttonText")}
       />
     </SmartLink>
   );

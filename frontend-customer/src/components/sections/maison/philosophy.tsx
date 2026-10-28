@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, LABEL, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Size the quote to its length: a short line gets poster scale, a long one stays readable. */
 function quoteSize(len: number) {
@@ -14,11 +15,12 @@ function quoteSize(len: number) {
 
 /** The maxim: a high-contrast italic statement centred on the black band. */
 export function PhilosophyMaxim({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="black" label="Philosophy">
+    <Section tone="black" label={t("sectionLabel.philosophy")}>
       <div className={cn(WRAP, "flex flex-col items-center text-center")}>
         <Kicker block={block} editable={editable} />
         <Txt
@@ -26,7 +28,7 @@ export function PhilosophyMaxim({ block, editable }: SectionProps) {
           field="statement"
           editable={editable}
           as="p"
-          placeholder="Statement"
+          placeholder={t("placeholder.statement")}
           className={cn(
             "maison-opsz mt-8 block text-balance break-words font-display font-normal italic tracking-[-0.01em]",
             quoteSize(statement.length),
@@ -38,7 +40,7 @@ export function PhilosophyMaxim({ block, editable }: SectionProps) {
               block={block}
               field="attribution"
               editable={editable}
-              placeholder="Attribution"
+              placeholder={t("placeholder.attribution")}
             />
           </p>
         )}

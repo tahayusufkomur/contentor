@@ -32,6 +32,8 @@ export const sections: Partial<StyleSections> = {
   events: { tickets: EventsTickets, rows: EventsRows },
 };
 
+const LABEL = "pop-mono";
+
 /** Pop's StyleKit: what AI-built sections (components/cx) render with. */
 export const kit = defineKit({
   id: "pop",
@@ -39,7 +41,7 @@ export const kit = defineKit({
   display: "pop-display pop-h1",
   h2: "pop-display pop-h2",
   h3: "pop-h3",
-  label: "pop-mono",
+  label: LABEL,
   button: {
     primary: "pop-btn pop-btn-primary",
     ghost: "pop-btn pop-btn-paper",

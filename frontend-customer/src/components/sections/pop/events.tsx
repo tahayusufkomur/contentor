@@ -10,7 +10,7 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { FILL, Kicker, PopSection, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const STUB: (keyof typeof FILL)[] = ["berry", "lime", "pink", "lilac"];
 
@@ -26,6 +26,7 @@ function dateParts(iso: string, locale: string) {
 
 /** Ticket stubs: a colour date block, a perforated fold, the details. */
 export function EventsTickets({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events = Array.isArray(data) ? (data as CalendarEvent[]) : [];
   if (!events.length && !editable) return null;
@@ -41,7 +42,7 @@ export function EventsTickets({ block, data, editable }: SectionProps) {
               editable={editable}
               as="h2"
               className="pop-display pop-h2 mt-6"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
             />
             <Txt
               block={block}
@@ -58,10 +59,10 @@ export function EventsTickets({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "Full calendar"
+                t("cta.fullCalendar")
               )}
             </SmartLink>
           )}
@@ -71,8 +72,8 @@ export function EventsTickets({ block, data, editable }: SectionProps) {
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No upcoming events"
-              text="Scheduled live sessions appear here automatically."
+              title={t("pop.emptyEventsTitle")}
+              text={t("pop.emptyEventsText")}
             />
           </div>
         ) : (
@@ -115,7 +116,9 @@ export function EventsTickets({ block, data, editable }: SectionProps) {
                         {e.location && <span>{e.location}</span>}
                         {e.pricing_type === "free" && (
                           <span className="rounded-full border-2 border-[color:var(--pop-ink)] bg-[var(--accent)] px-2.5 py-0.5 text-[0.75rem] text-[color:var(--foreground)]">
-                            {e.is_trial ? "Free trial" : "Free"}
+                            {e.is_trial
+                              ? t("price.freeTrial")
+                              : t("price.free")}
                           </span>
                         )}
                       </p>

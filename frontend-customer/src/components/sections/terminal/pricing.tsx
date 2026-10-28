@@ -10,10 +10,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { H3, Opener, Section, WindowChrome, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Membership subscription plans presented as machine config manifests. */
 export function PricingPlans({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
@@ -22,7 +23,11 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
   return (
     <Section
       tone="console"
-      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.pricing")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -75,8 +80,7 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
 
                       {!!plan.item_count && (
                         <p className="mt-4 font-mono text-xs font-semibold text-primary">
-                          {plan.item_count}{" "}
-                          {plan.item_count === 1 ? "item" : "items"} included
+                          {t("plan.itemsIncluded", { count: plan.item_count })}
                         </p>
                       )}
 
@@ -90,7 +94,7 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
                     <div className="mt-8 pt-6 border-t border-border/60">
                       {plan.is_subscribed ? (
                         <p className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius)] border-2 border-primary font-mono text-[0.95rem] font-bold text-primary">
-                          Subscribed
+                          {t("plan.subscribed")}
                         </p>
                       ) : (
                         <SubscribeButton
@@ -107,7 +111,7 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
                         href={`/plans/${plan.id}`}
                         className="terminal-link mt-4 block w-fit font-mono text-[0.85rem] font-semibold"
                       >
-                        See what&rsquo;s included
+                        {t("plan.seeIncluded")}
                       </SmartLink>
                     </div>
                   </WindowChrome>
@@ -119,8 +123,8 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a plan under Billing and it appears here automatically."
+              title={t("empty.plans.title")}
+              text={t("terminal.emptyPlansText")}
             />
           </div>
         )}

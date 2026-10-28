@@ -1,9 +1,11 @@
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { BTN_ON_BLACK, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** The introduction: an invitation set on the black band with an outlined button. */
 export function CtaIntroduction({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -26,7 +28,7 @@ export function CtaIntroduction({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className="maison-opsz mt-7 block max-w-[16ch] text-balance break-words font-display text-[clamp(2.2rem,1.4rem+3.2vw,5rem)] font-normal leading-[1.0]"
           />
           <Txt
@@ -34,7 +36,7 @@ export function CtaIntroduction({ block, editable }: SectionProps) {
             field="text"
             editable={editable}
             as="p"
-            placeholder="Text"
+            placeholder={t("placeholder.text")}
             className="mt-7 block max-w-[40ch] text-pretty font-light text-[1.02rem] leading-[1.8] text-muted-foreground"
           />
           {has(block, "ctaLabel", editable) && (
@@ -44,7 +46,7 @@ export function CtaIntroduction({ block, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               </SmartLink>
             </div>

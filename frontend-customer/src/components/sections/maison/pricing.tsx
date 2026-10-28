@@ -10,10 +10,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { BTN, H3, LABEL, NUM, Opener, Section, WRAP, roman } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** The appointment: subscription plans set as ruled pedestals with roman numbering. */
 export function PricingAppointment({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
@@ -21,7 +22,11 @@ export function PricingAppointment({ block, data, editable }: SectionProps) {
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.pricing")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -58,7 +63,7 @@ export function PricingAppointment({ block, data, editable }: SectionProps) {
                 </p>
                 {Boolean(p.item_count) && (
                   <p className={cn(LABEL, "mt-4 text-foreground")}>
-                    {p.item_count} {p.item_count === 1 ? "piece" : "pieces"}
+                    {t("maison.pieces", { count: p.item_count ?? 0 })}
                   </p>
                 )}
                 {p.description && (
@@ -68,7 +73,9 @@ export function PricingAppointment({ block, data, editable }: SectionProps) {
                 )}
                 <div className="mt-auto flex w-full flex-col items-center pt-9">
                   {p.is_subscribed ? (
-                    <p className={cn(BTN, "pointer-events-none")}>Subscribed</p>
+                    <p className={cn(BTN, "pointer-events-none")}>
+                      {t("plan.subscribed")}
+                    </p>
                   ) : (
                     <SubscribeButton
                       planId={p.id}
@@ -86,7 +93,7 @@ export function PricingAppointment({ block, data, editable }: SectionProps) {
                       "maison-link mt-5 text-muted-foreground",
                     )}
                   >
-                    What&rsquo;s included
+                    {t("plan.whatsIncluded")}
                   </SmartLink>
                 </div>
               </li>
@@ -96,8 +103,8 @@ export function PricingAppointment({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a plan under Billing and it appears here."
+              title={t("empty.plans.title")}
+              text={t("empty.plans.text")}
             />
           </div>
         )}

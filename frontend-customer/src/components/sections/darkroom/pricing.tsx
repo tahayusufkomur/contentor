@@ -9,17 +9,22 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { H3, LABEL, LINK, Opener, Plate, Section, WRAP, pad2 } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Membership plans presented as numbered editions on a ruled gallery wall. */
 export function PricingEditions({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.pricing")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -45,8 +50,7 @@ export function PricingEditions({ block, data, editable }: SectionProps) {
                   )}
                   {Boolean(plan.item_count) && (
                     <p className={cn(LABEL, "mt-4 text-muted-foreground")}>
-                      {plan.item_count}{" "}
-                      {plan.item_count === 1 ? "item" : "items"} included
+                      {t("plan.itemsIncluded", { count: plan.item_count ?? 0 })}
                     </p>
                   )}
                 </div>
@@ -61,7 +65,7 @@ export function PricingEditions({ block, data, editable }: SectionProps) {
                 <div className="flex flex-col items-start lg:col-span-3 lg:items-end lg:justify-self-end lg:text-right">
                   {plan.is_subscribed ? (
                     <p className="darkroom-mono inline-flex min-h-12 items-center border border-foreground px-5 text-[0.75rem] uppercase tracking-[0.1em]">
-                      Subscribed
+                      {t("plan.subscribed")}
                     </p>
                   ) : (
                     <SubscribeButton
@@ -77,7 +81,7 @@ export function PricingEditions({ block, data, editable }: SectionProps) {
                     href={`/plans/${plan.id}`}
                     className={cn(LINK, "mt-4")}
                   >
-                    What&rsquo;s included
+                    {t("plan.whatsIncluded")}
                   </SmartLink>
                 </div>
               </li>
@@ -87,8 +91,8 @@ export function PricingEditions({ block, data, editable }: SectionProps) {
           <div className="mt-14 md:mt-20">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a plan under Billing and it appears here."
+              title={t("empty.plans.title")}
+              text={t("empty.plans.text")}
             />
           </div>
         )}

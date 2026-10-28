@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, H2, Kicker, Section, WindowChrome, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Coach story rendered as an open-source README.md file in a code editor window
  *  with line numbers, metadata tags, and developer photos. */
 export function StoryReadme({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
 
@@ -56,7 +58,7 @@ export function StoryReadme({ block, editable }: SectionProps) {
                   field="heading"
                   editable={editable}
                   as="h2"
-                  placeholder="Heading"
+                  placeholder={t("placeholder.heading")}
                   className={cn(H2, "block max-w-[20ch]")}
                 />
               </div>
@@ -76,7 +78,7 @@ export function StoryReadme({ block, editable }: SectionProps) {
                     block={block}
                     field="signature"
                     editable={editable}
-                    placeholder="Your name"
+                    placeholder={t("placeholder.yourName")}
                     className="font-bold"
                   />
                 </div>
@@ -98,7 +100,7 @@ export function StoryReadme({ block, editable }: SectionProps) {
                       block={block}
                       field="ctaLabel"
                       editable={editable}
-                      placeholder="Link text"
+                      placeholder={t("placeholder.linkText")}
                     />
                     <span
                       className="text-muted-foreground select-none"

@@ -11,18 +11,23 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, BTN_GHOST, CHIP, H3, Opener, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Upcoming events as evening cards with local time chips and reserve
  *  links. */
 export function EventsEvenings({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Events"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.events")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -52,10 +57,10 @@ export function EventsEvenings({ block, data, editable }: SectionProps) {
                     </span>
                   )}
                   <span className="text-[0.95rem] font-semibold text-primary">
-                    {eventPriceLabel(e, locale)}
+                    {eventPriceLabel(e, locale, t)}
                   </span>
                   <span className="velvet-link inline-flex items-center gap-2 text-[0.9rem] font-medium">
-                    <span>Reserve</span>
+                    <span>{t("event.reserve")}</span>
                     <Arrow />
                   </span>
                 </SmartLink>
@@ -66,8 +71,8 @@ export function EventsEvenings({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No upcoming sessions"
-              text="Schedule a live session or event and it appears here."
+              title={t("empty.sessions.title")}
+              text={t("empty.sessions.text")}
             />
           </div>
         )}
@@ -80,10 +85,10 @@ export function EventsEvenings({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "Full calendar"
+                t("cta.fullCalendar")
               )}
             </SmartLink>
           </div>

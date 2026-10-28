@@ -7,7 +7,7 @@ import { EVENT_TYPE_CONFIG } from "@/lib/event-colors";
 import { formatTime } from "@/lib/calendar-utils";
 import { eventPriceLabel } from "@/components/sections/kit";
 import type { CalendarEvent } from "@/types/live";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -25,6 +25,7 @@ export function EventCard({
   timezone = "UTC",
 }: EventCardProps) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const config = EVENT_TYPE_CONFIG[event.type];
   const isLive = event.status === "live" || event.status === "ongoing";
   const isPast = event.status === "ended";
@@ -106,7 +107,7 @@ export function EventCard({
             )}
           </div>
           <span className="text-xs font-semibold text-muted-foreground">
-            {eventPriceLabel(event, locale)}
+            {eventPriceLabel(event, locale, t)}
           </span>
         </div>
       </div>

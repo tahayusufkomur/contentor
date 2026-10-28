@@ -3,7 +3,17 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { TILE_ASPECT, heroPhotos, tileStyle } from "../collage";
-import { Kicker, PopButton, PopSection, RingBadge, WRAP, str } from "./ui";
+import {
+  CTA_LABEL,
+  SECONDARY_LABEL,
+  Kicker,
+  PopButton,
+  PopSection,
+  RingBadge,
+  WRAP,
+  str,
+} from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Where the first two stickers sit on a phone: the first photo big (the
  *  photograph carries the screen), the second a small sticker over its
@@ -20,6 +30,7 @@ const PHONE_TILES = [
  *  notebook, the headline slapped across them on a lime strip, the `meta`
  *  line on the spinning badge. */
 export function HeroCluster({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const meta = str(block.meta);
   const photos = heroPhotos(block, editable);
@@ -88,7 +99,7 @@ export function HeroCluster({ block, editable }: SectionProps) {
             field="headline"
             editable={editable}
             as="h1"
-            placeholder="Headline"
+            placeholder={t("placeholder.headline")}
             className={cn(
               "pop-display relative z-10 inline-block max-w-[88%] -rotate-2 self-end justify-self-center border-2 border-[color:var(--pop-ink)] bg-[var(--accent)] px-5 py-2 shadow-[8px_8px_0_var(--pop-ink)] sm:self-center md:px-8 md:py-4",
               alt.length > 36
@@ -115,14 +126,14 @@ export function HeroCluster({ block, editable }: SectionProps) {
           <PopButton
             block={block}
             editable={editable}
-            label="ctaLabel"
+            label={CTA_LABEL}
             href="ctaHref"
           />
           <div className={editable ? "contents" : "hidden sm:contents"}>
             <PopButton
               block={block}
               editable={editable}
-              label="secondaryLabel"
+              label={SECONDARY_LABEL}
               href="secondaryHref"
               tone="paper"
             />
@@ -135,7 +146,7 @@ export function HeroCluster({ block, editable }: SectionProps) {
             editable={editable}
             as="p"
             className="pop-mono mt-6 text-sm text-muted-foreground"
-            placeholder="Small line (shown on the badge)"
+            placeholder={t("placeholder.smallLineBadge")}
           />
         )}
       </div>
@@ -146,6 +157,7 @@ export function HeroCluster({ block, editable }: SectionProps) {
 /** Poster hero: a giant headline that ends in an inline photo, a tilted
  *  portrait on a berry colour block, and the `meta` line on a spinning badge. */
 export function HeroBigname({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const meta = str(block.meta);
   return (
@@ -175,7 +187,7 @@ export function HeroBigname({ block, editable }: SectionProps) {
               editable={editable}
               as="h1"
               className="inline"
-              placeholder="Headline"
+              placeholder={t("placeholder.headline")}
             />
             {imageUrl(block.image2) && (
               <Img value={block.image2} className="pop-inline-photo" />
@@ -192,13 +204,13 @@ export function HeroBigname({ block, editable }: SectionProps) {
             <PopButton
               block={block}
               editable={editable}
-              label="ctaLabel"
+              label={CTA_LABEL}
               href="ctaHref"
             />
             <PopButton
               block={block}
               editable={editable}
-              label="secondaryLabel"
+              label={SECONDARY_LABEL}
               href="secondaryHref"
               tone="paper"
             />
@@ -210,7 +222,7 @@ export function HeroBigname({ block, editable }: SectionProps) {
               editable={editable}
               as="p"
               className="pop-mono mt-6 text-sm text-muted-foreground"
-              placeholder="Small line (shown on the badge)"
+              placeholder={t("placeholder.smallLineBadge")}
             />
           )}
         </div>
@@ -243,6 +255,7 @@ export function HeroBigname({ block, editable }: SectionProps) {
 
 /** Compact page-title band for inner pages. */
 export function HeroIntro({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const withImage = Boolean(imageUrl(block.image));
   return (
@@ -265,7 +278,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
             editable={editable}
             as="h1"
             className="pop-display mt-6 text-[clamp(2.75rem,1.2rem+4.6vw,6rem)]"
-            placeholder="Page title"
+            placeholder={t("placeholder.pageTitle")}
           />
           <Txt
             block={block}
@@ -279,7 +292,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               <PopButton
                 block={block}
                 editable={editable}
-                label="ctaLabel"
+                label={CTA_LABEL}
                 href="ctaHref"
               />
             </div>

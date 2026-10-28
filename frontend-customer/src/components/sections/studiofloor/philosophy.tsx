@@ -93,7 +93,7 @@ export function PhilosophyMirror({ block, editable }: SectionProps) {
             <div className="relative overflow-hidden rounded-[var(--radius)] border border-primary/40 shadow-[0_0_32px_color-mix(in_oklch,var(--primary)_25%,transparent)]">
               <Img
                 value={block.image}
-                alt={statement.slice(0, 100) || t("manuscript.atmosphere")}
+                alt={statement.slice(0, 100) || t("photo.atmosphere")}
                 className="aspect-[16/9] w-full"
               />
               <div

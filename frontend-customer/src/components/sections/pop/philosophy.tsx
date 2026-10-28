@@ -2,9 +2,11 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, PopSection, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Plum block; the statement is set on chartreuse highlighter slabs. */
 export function PhilosophyHighlight({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const withImage = Boolean(imageUrl(block.image));
   const size =
@@ -47,7 +49,7 @@ export function PhilosophyHighlight({ block, editable }: SectionProps) {
                 field="statement"
                 editable={editable}
                 className="pop-mark"
-                placeholder="Statement"
+                placeholder={t("placeholder.statement")}
               />
             </p>
           </blockquote>

@@ -1,9 +1,11 @@
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, BTN_ON_INK, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Call-to-action on ink background with a bordered card. */
 export function CtaEnrol({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -15,7 +17,7 @@ export function CtaEnrol({ block, editable }: SectionProps) {
         field="heading"
         editable={editable}
         as="h2"
-        placeholder="Heading"
+        placeholder={t("placeholder.heading")}
         className="mt-4 block max-w-[18ch] text-balance break-words font-display text-[clamp(2.1rem,1.5rem+2.6vw,4rem)] font-semibold leading-[1.06]"
       />
       <Txt
@@ -23,7 +25,7 @@ export function CtaEnrol({ block, editable }: SectionProps) {
         field="text"
         editable={editable}
         as="p"
-        placeholder="Text"
+        placeholder={t("placeholder.text")}
         className="mt-6 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
       />
       {has(block, "ctaLabel", editable) && (
@@ -33,7 +35,7 @@ export function CtaEnrol({ block, editable }: SectionProps) {
               block={block}
               field="ctaLabel"
               editable={editable}
-              placeholder="Button text"
+              placeholder={t("placeholder.buttonText")}
             />
             <Arrow />
           </SmartLink>

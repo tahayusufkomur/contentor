@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { Caption, FRAME, Opener, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
@@ -29,6 +30,7 @@ const SPREADS: Record<number, [place: string, aspect: string][]> = {
 
 /** Editorial spread: framed plates of mixed proportions and drops. */
 export function MomentsEditorial({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHead =
@@ -36,7 +38,7 @@ export function MomentsEditorial({ block, editable }: SectionProps) {
   const showCaption = has(block, "caption", editable);
 
   return (
-    <Section label={alt || "Moments"}>
+    <Section label={alt || t("sectionLabel.moments")}>
       <div className={WRAP}>
         {(showHead || showCaption) && (
           <Opener
@@ -48,7 +50,7 @@ export function MomentsEditorial({ block, editable }: SectionProps) {
         )}
 
         <ul
-          aria-label={alt || "Photos"}
+          aria-label={alt || t("sectionLabel.photos")}
           className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-12 md:items-start md:gap-x-10 md:gap-y-20"
         >
           {photos.map((p, i) => {

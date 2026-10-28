@@ -134,7 +134,7 @@ export function CoursesPaths({ block, data, editable }: SectionProps) {
                       className="font-display text-[1.1rem] font-medium tracking-[0.04em] text-primary"
                     />
                     <span className="inline-flex items-center gap-1.5 font-display text-[0.78rem] uppercase tracking-[0.14em] text-foreground transition-transform duration-300 motion-safe:group-hover:translate-x-1">
-                      <span>{t("dojo.begin")}</span>
+                      <span>{t("cta.begin")}</span>
                       <StarGlyph className="size-2.5 text-primary" />
                     </span>
                   </div>

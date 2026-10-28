@@ -19,7 +19,7 @@ import {
   Play,
   CheckCircle2,
 } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface LiveClass {
   id: number;
@@ -73,6 +73,7 @@ function formatDate(dateStr: string, locale: string) {
 
 export default function LiveClassesPage() {
   const locale = useLocale();
+  const t = useTranslations("site");
   const [classes, setClasses] = useState<LiveClass[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -210,6 +211,7 @@ export default function LiveClassesPage() {
                               currency: lc.access_info?.currency ?? undefined,
                             },
                             locale,
+                            t,
                           )}
                         </span>
                       )}

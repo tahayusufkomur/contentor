@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { ARCH, Halo, Kicker, LABEL, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Size the quote to its length: a short line gets poster scale, a long one
  *  stays readable. */
@@ -16,11 +17,12 @@ function quoteSize(len: number) {
 /** A quiet philosophy statement sized to its length, with an optional arched
  *  atmosphere print below. */
 export function PhilosophyWhisper({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="surface" label="Philosophy">
+    <Section tone="surface" label={t("sectionLabel.philosophy")}>
       <div className={cn(WRAP, "flex flex-col items-center text-center")}>
         <figure className="flex flex-col items-center text-center">
           <Kicker block={block} editable={editable} />
@@ -30,7 +32,7 @@ export function PhilosophyWhisper({ block, editable }: SectionProps) {
               field="statement"
               editable={editable}
               as="p"
-              placeholder="Statement"
+              placeholder={t("placeholder.statement")}
               className={cn(
                 "nocturne-soft mt-6 block text-balance break-words font-display font-light tracking-[-0.01em]",
                 quoteSize(statement.length),
@@ -44,7 +46,7 @@ export function PhilosophyWhisper({ block, editable }: SectionProps) {
                 block={block}
                 field="attribution"
                 editable={editable}
-                placeholder="Attribution"
+                placeholder={t("placeholder.attribution")}
                 className={LABEL}
               />
             </figcaption>

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { Block } from "@/types/tenant";
 import type { EditableContext } from "@/lib/blocks/types";
 import { Txt, has } from "../kit";
+import { useTranslations } from "next-intl";
 
 /** Inner measure every terminal section aligns to. */
 export const WRAP = "mx-auto w-full max-w-[78rem] px-5 md:px-8";
@@ -108,6 +109,7 @@ export function Kicker({
   editable?: EditableContext;
   className?: string;
 }) {
+  const t = useTranslations("site");
   if (!has(block, "kicker", editable)) return null;
   return (
     <p
@@ -124,7 +126,7 @@ export function Kicker({
         field="kicker"
         editable={editable}
         as="span"
-        placeholder="kicker"
+        placeholder={t("placeholder.kicker")}
         className="text-foreground"
       />
     </p>
@@ -156,6 +158,7 @@ export function Opener({
   field?: string | null;
   className?: string;
 }) {
+  const t = useTranslations("site");
   return (
     <div className={cn("grid gap-y-6 lg:grid-cols-12 lg:gap-x-10", className)}>
       <div className="lg:col-span-7">
@@ -165,7 +168,7 @@ export function Opener({
           field="heading"
           editable={editable}
           as="h2"
-          placeholder="Heading"
+          placeholder={t("placeholder.heading")}
           className={cn(H2, "mt-3 block max-w-[20ch]")}
         />
       </div>
@@ -176,7 +179,7 @@ export function Opener({
             field={field}
             editable={editable}
             as="p"
-            placeholder="Intro"
+            placeholder={t("placeholder.intro")}
             className="block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
           />
         </div>

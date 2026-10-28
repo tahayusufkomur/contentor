@@ -4,13 +4,14 @@ import type { SubscriptionPlan } from "@/types/billing";
 import { EmptyHint, SubscribeButton, Txt, billingIntervalSuffix } from "../kit";
 import type { SectionProps } from "../types";
 import { FILL, Kicker, PopSection, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const CARD: (keyof typeof FILL)[] = ["lime", "pink", "sun"];
 const TILT = ["-rotate-1", "rotate-1", "-rotate-[0.5deg]"];
 
 /** Each plan its own colour card with a giant price. */
 export function PricingColorcards({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans = Array.isArray(data) ? (data as SubscriptionPlan[]) : [];
   if (!plans.length && !editable) return null;
@@ -36,7 +37,7 @@ export function PricingColorcards({ block, data, editable }: SectionProps) {
             editable={editable}
             as="h2"
             className="pop-display pop-h2 mt-6"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
           />
           <Txt
             block={block}
@@ -51,8 +52,8 @@ export function PricingColorcards({ block, data, editable }: SectionProps) {
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No plans yet"
-              text="Create a membership plan and it shows up here."
+              title={t("pop.emptyPlansTitle")}
+              text={t("pop.emptyPlansText")}
             />
           </div>
         ) : (
@@ -90,7 +91,7 @@ export function PricingColorcards({ block, data, editable }: SectionProps) {
                   price={p.price}
                   currency={p.currency}
                   intervalMonths={p.billing_interval_months}
-                  label="Subscribe"
+                  label={t("plan.subscribe")}
                   className="mt-8 h-auto min-h-[3.25rem] w-full whitespace-normal rounded-full border-2 border-[color:var(--foreground)] bg-[var(--foreground)] px-6 text-base font-semibold text-[color:var(--background)] shadow-[4px_4px_0_var(--primary)] hover:bg-[var(--foreground)]"
                 />
               </li>

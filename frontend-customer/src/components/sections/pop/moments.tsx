@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, PopSection, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
@@ -10,6 +11,7 @@ const TILT = ["-4deg", "3deg", "-2deg", "4.5deg", "-3deg", "2deg"];
 
 /** Berry block with a loose row of taped polaroids. */
 export function MomentsPolaroids({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const heading = str(block.heading);
   const size =
@@ -39,7 +41,7 @@ export function MomentsPolaroids({ block, editable }: SectionProps) {
             editable={editable}
             as="h2"
             className="pop-display pop-h2 mt-6"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
           />
           <Txt
             block={block}

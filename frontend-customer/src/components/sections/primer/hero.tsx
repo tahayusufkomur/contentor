@@ -13,6 +13,7 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 const delay = (ms: number) =>
   ({ "--primer-delay": `${ms}ms` }) as CSSProperties;
@@ -22,6 +23,7 @@ function Actions({
   editable,
   className,
 }: SectionProps & { className?: string }) {
+  const t = useTranslations("site");
   const primary = has(block, "ctaLabel", editable);
   const secondary = has(block, "secondaryLabel", editable);
   if (!primary && !secondary) return null;
@@ -33,7 +35,7 @@ function Actions({
             block={block}
             field="ctaLabel"
             editable={editable}
-            placeholder="Button text"
+            placeholder={t("placeholder.buttonText")}
           />
           <Arrow />
         </SmartLink>
@@ -47,7 +49,7 @@ function Actions({
             block={block}
             field="secondaryLabel"
             editable={editable}
-            placeholder="Second button"
+            placeholder={t("placeholder.secondButton")}
           />
         </SmartLink>
       )}
@@ -62,6 +64,7 @@ function Actions({
  *  on the photograph and the title and the button are written right under
  *  it; the second print waits for a wider screen. */
 export function HeroTitlePage({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   return (
@@ -82,7 +85,7 @@ export function HeroTitlePage({ block, editable }: SectionProps) {
                 field="headline"
                 editable={editable}
                 as="h1"
-                placeholder="Headline"
+                placeholder={t("placeholder.headline")}
                 className={cn(
                   H1,
                   alt.length <= 28
@@ -97,7 +100,7 @@ export function HeroTitlePage({ block, editable }: SectionProps) {
                 field="subhead"
                 editable={editable}
                 as="p"
-                placeholder="Subheadline"
+                placeholder={t("placeholder.subheadline")}
                 className="block max-w-[44ch] text-pretty text-[1.125rem] leading-[1.65] text-muted-foreground md:text-[1.2rem]"
               />
             </div>
@@ -110,7 +113,7 @@ export function HeroTitlePage({ block, editable }: SectionProps) {
                   block={block}
                   field="meta"
                   editable={editable}
-                  placeholder="Small line"
+                  placeholder={t("placeholder.smallLine")}
                 />
               </p>
             )}
@@ -150,6 +153,7 @@ export function HeroTitlePage({ block, editable }: SectionProps) {
 /** Inner-page title: ruled paper, the unit label, a large serif title with
  *  its dek, and an optional small print taped to the right. */
 export function HeroIntro({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   return (
@@ -167,7 +171,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="headline"
               editable={editable}
               as="h1"
-              placeholder="Page title"
+              placeholder={t("placeholder.pageTitle")}
               className="mt-5 block max-w-[18ch] text-balance break-words font-display text-[clamp(2.4rem,1.5rem+3.6vw,5.2rem)] font-semibold leading-[1.04] tracking-[-0.015em]"
             />
             <Txt
@@ -175,7 +179,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="subhead"
               editable={editable}
               as="p"
-              placeholder="Subheadline"
+              placeholder={t("placeholder.subheadline")}
               className="mt-7 block max-w-[46ch] text-pretty text-[1.125rem] leading-[1.65] text-muted-foreground"
             />
             {has(block, "meta", editable) && (
@@ -184,7 +188,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
                   block={block}
                   field="meta"
                   editable={editable}
-                  placeholder="Small line"
+                  placeholder={t("placeholder.smallLine")}
                 />
               </p>
             )}

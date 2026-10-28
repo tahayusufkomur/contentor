@@ -67,7 +67,7 @@ export function EventsTable({ block, data, editable }: SectionProps) {
             aria-hidden="true"
             className={`${row} swiss-mono hidden pb-3 text-muted-foreground md:grid`}
           >
-            <span className="col-span-3">{t("encore.date")}</span>
+            <span className="col-span-3">{t("table.date")}</span>
             <span className="col-span-5">{t("table.session")}</span>
             <span className="col-span-2">{t("table.where")}</span>
             <span className="col-span-2 text-right">{t("table.price")}</span>

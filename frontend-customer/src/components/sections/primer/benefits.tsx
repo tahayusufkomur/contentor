@@ -2,18 +2,20 @@ import { cn } from "@/lib/utils";
 import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { Check, H3, LABEL, Opener, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Item = { title?: string; text?: string };
 
 /** Learning outcomes presented as an exercise checklist with ticked boxes. */
 export function BenefitsOutcomes({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<Item>(block, "items");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   const checklist = (
     <>
-      <p className={cn(LABEL, "text-accent")}>By the end you can</p>
+      <p className={cn(LABEL, "text-accent")}>{t("primer.byTheEnd")}</p>
       <ul className="mt-4 border-t border-border">
         {items.map((it, i) => (
           <li

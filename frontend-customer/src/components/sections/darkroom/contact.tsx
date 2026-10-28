@@ -2,18 +2,20 @@ import { cn } from "@/lib/utils";
 import { ContactForm, Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, LABEL, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Studio hours and contact details with minimalist hairline form inputs. */
 export function ContactHours({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showForm = block.showForm !== false;
   const email = str(block.email);
 
   const rows: { field: string; label: string }[] = [
-    { field: "email", label: "Email" },
-    { field: "location", label: "Studio" },
-    { field: "hours", label: "Hours" },
+    { field: "email", label: t("contact.email") },
+    { field: "location", label: t("contact.studio") },
+    { field: "hours", label: t("contact.hours") },
   ].filter((r) => has(block, r.field, editable));
 
   return (
@@ -31,7 +33,7 @@ export function ContactHours({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(
               H2,
               "mt-3 block max-w-[18ch] text-[clamp(1.8rem,1.35rem+1.8vw,3rem)] leading-[1.05]",
@@ -42,7 +44,7 @@ export function ContactHours({ block, editable }: SectionProps) {
             field="text"
             editable={editable}
             as="p"
-            placeholder="Text"
+            placeholder={t("placeholder.text")}
             className="mt-6 block max-w-[46ch] text-pretty text-[1rem] leading-[1.65] text-muted-foreground"
           />
 

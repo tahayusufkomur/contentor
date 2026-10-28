@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import type { Block } from "@/types/tenant";
 import type { EditableContext } from "@/lib/blocks/types";
 import { Txt, has } from "../kit";
+import { useTranslations } from "next-intl";
 
 /** Inner measure every velvet section aligns to (narrow: a private room). */
 export const WRAP = "mx-auto w-full max-w-[78rem] px-5 md:px-8";
@@ -88,6 +89,7 @@ export function Kicker({
   editable?: EditableContext;
   className?: string;
 }) {
+  const t = useTranslations("site");
   if (!has(block, "kicker", editable)) return null;
   return (
     <Txt
@@ -95,7 +97,7 @@ export function Kicker({
       field="kicker"
       editable={editable}
       as="p"
-      placeholder="Kicker"
+      placeholder={t("placeholder.kicker")}
       className={cn(LABEL, className)}
     />
   );
@@ -116,6 +118,7 @@ export function Opener({
   align?: "center" | "left";
   className?: string;
 }) {
+  const t = useTranslations("site");
   const centred = align === "center";
   return (
     <div
@@ -131,7 +134,7 @@ export function Opener({
         field="heading"
         editable={editable}
         as="h2"
-        placeholder="Heading"
+        placeholder={t("placeholder.heading")}
         className={cn(H2, "mt-4 block max-w-[18ch]")}
       />
       {field && (
@@ -140,7 +143,7 @@ export function Opener({
           field={field}
           editable={editable}
           as="p"
-          placeholder="Intro"
+          placeholder={t("placeholder.intro")}
           className="mt-6 block max-w-[46ch] text-pretty text-[1.0625rem] leading-[1.65] text-muted-foreground"
         />
       )}

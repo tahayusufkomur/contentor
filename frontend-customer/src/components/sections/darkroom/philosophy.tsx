@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, LABEL, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 function statementSize(len: number) {
   if (len <= 60)
@@ -13,11 +14,12 @@ function statementSize(len: number) {
 
 /** Philosophy wall text on a neutral gallery surface with optional atmosphere photo above. */
 export function PhilosophyWallText({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="surface" label="Philosophy">
+    <Section tone="surface" label={t("sectionLabel.philosophy")}>
       <div className={WRAP}>
         {showImage && (
           <Img
@@ -36,7 +38,7 @@ export function PhilosophyWallText({ block, editable }: SectionProps) {
                 field="attribution"
                 editable={editable}
                 as="p"
-                placeholder="Attribution"
+                placeholder={t("placeholder.attribution")}
                 className={cn(LABEL, "mt-3 block text-muted-foreground")}
               />
             )}
@@ -47,7 +49,7 @@ export function PhilosophyWallText({ block, editable }: SectionProps) {
               field="statement"
               editable={editable}
               as="p"
-              placeholder="Statement"
+              placeholder={t("placeholder.statement")}
               className={cn(
                 "block max-w-[40ch] text-balance break-words font-normal text-foreground",
                 statementSize(statement.length),

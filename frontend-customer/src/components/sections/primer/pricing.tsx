@@ -9,17 +9,22 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { H3, LABEL, Opener, Section, WRAP, str } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Term fees and membership tiers set out as structured ledger rows. */
 export function PricingTermFees({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.pricing")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -54,15 +59,14 @@ export function PricingTermFees({ block, data, editable }: SectionProps) {
                 <div className="lg:col-span-2">
                   {!!plan.item_count && (
                     <p className={cn(LABEL, "text-primary")}>
-                      {plan.item_count}{" "}
-                      {plan.item_count === 1 ? "item" : "items"}
+                      {t("plan.items", { count: plan.item_count })}
                     </p>
                   )}
                 </div>
                 <div className="lg:col-span-3">
                   {plan.is_subscribed ? (
                     <p className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius)] border-2 border-primary font-bold text-primary">
-                      Subscribed
+                      {t("plan.subscribed")}
                     </p>
                   ) : (
                     <SubscribeButton
@@ -78,7 +82,7 @@ export function PricingTermFees({ block, data, editable }: SectionProps) {
                     href={`/plans/${plan.id}`}
                     className="primer-link mt-4 block w-fit text-[0.9rem] font-bold"
                   >
-                    See what&rsquo;s included
+                    {t("plan.seeIncluded")}
                   </SmartLink>
                 </div>
               </li>
@@ -88,8 +92,8 @@ export function PricingTermFees({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a plan under Billing and it appears here."
+              title={t("empty.plans.title")}
+              text={t("empty.plans.text")}
             />
           </div>
         )}

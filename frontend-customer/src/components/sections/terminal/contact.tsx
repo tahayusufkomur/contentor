@@ -2,22 +2,24 @@ import { cn } from "@/lib/utils";
 import { ContactForm, Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, LABEL, Section, WindowChrome, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Contact section styled like filing a new issue on a software issue tracker. */
 export function ContactIssue({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showForm = block.showForm !== false;
   const email = str(block.email);
 
   const metaRows: { field: string; label: string }[] = [
-    { field: "email", label: "Email" },
-    { field: "location", label: "Location" },
-    { field: "hours", label: "Hours" },
+    { field: "email", label: t("contact.email") },
+    { field: "location", label: t("contact.location") },
+    { field: "hours", label: t("contact.hours") },
   ].filter((r) => has(block, r.field, editable));
 
   return (
-    <Section tone="console" label={alt || "Contact"}>
+    <Section tone="console" label={alt || t("sectionLabel.contact")}>
       <div className={WRAP}>
         <WindowChrome bodyClassName="p-6 sm:p-10 md:p-12">
           <div className="grid gap-y-12 lg:grid-cols-12 lg:gap-x-12">
@@ -33,7 +35,7 @@ export function ContactIssue({ block, editable }: SectionProps) {
                 field="heading"
                 editable={editable}
                 as="h2"
-                placeholder="Heading"
+                placeholder={t("placeholder.heading")}
                 className={cn(
                   H2,
                   "mt-4 block max-w-[18ch] text-[clamp(1.85rem,1.35rem+1.8vw,3rem)] leading-[1.08]",
@@ -44,7 +46,7 @@ export function ContactIssue({ block, editable }: SectionProps) {
                 field="text"
                 editable={editable}
                 as="p"
-                placeholder="Text"
+                placeholder={t("placeholder.text")}
                 className="mt-6 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
               />
 

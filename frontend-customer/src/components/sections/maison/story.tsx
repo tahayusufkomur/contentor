@@ -12,9 +12,11 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** The atelier: a framed portrait signed in caption type on the left, the story in light Jost on the right. */
 export function StoryAtelier({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
 
   return (
@@ -39,7 +41,7 @@ export function StoryAtelier({ block, editable }: SectionProps) {
                 block={block}
                 field="signature"
                 editable={editable}
-                placeholder="Signature"
+                placeholder={t("placeholder.signature")}
               />
             </Caption>
           )}
@@ -52,7 +54,7 @@ export function StoryAtelier({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(H2, "mt-6 max-w-[16ch]")}
           />
           <div className="mt-8 h-px w-10 bg-foreground" aria-hidden="true" />
@@ -74,7 +76,7 @@ export function StoryAtelier({ block, editable }: SectionProps) {
                 block={block}
                 field="ctaLabel"
                 editable={editable}
-                placeholder="Link text"
+                placeholder={t("placeholder.linkText")}
               />
               <Arrow />
             </SmartLink>

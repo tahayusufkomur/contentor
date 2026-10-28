@@ -13,12 +13,14 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 function Actions({
   block,
   editable,
   className,
 }: SectionProps & { className?: string }) {
+  const t = useTranslations("site");
   const primary = has(block, "ctaLabel", editable);
   const secondary = has(block, "secondaryLabel", editable);
   if (!primary && !secondary) return null;
@@ -30,7 +32,7 @@ function Actions({
             block={block}
             field="ctaLabel"
             editable={editable}
-            placeholder="Button text"
+            placeholder={t("placeholder.buttonText")}
           />
           <Arrow />
         </SmartLink>
@@ -44,7 +46,7 @@ function Actions({
             block={block}
             field="secondaryLabel"
             editable={editable}
-            placeholder="Second button"
+            placeholder={t("placeholder.secondButton")}
           />
         </SmartLink>
       )}
@@ -57,6 +59,7 @@ function Actions({
  *  window opens the page, the prompt and the button sit right under it, and
  *  the detail window waits for a wide screen. */
 export function HeroPrompt({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const hasImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
@@ -90,7 +93,7 @@ export function HeroPrompt({ block, editable }: SectionProps) {
                   field="headline"
                   editable={editable}
                   as="span"
-                  placeholder="Headline"
+                  placeholder={t("placeholder.headline")}
                 />
                 <Cursor />
               </h1>
@@ -101,7 +104,7 @@ export function HeroPrompt({ block, editable }: SectionProps) {
               field="subhead"
               editable={editable}
               as="p"
-              placeholder="Subheadline"
+              placeholder={t("placeholder.subheadline")}
               className="mt-4 block max-w-[48ch] text-pretty text-[1.125rem] leading-[1.65] text-muted-foreground sm:mt-6 md:text-[1.2rem]"
             />
 
@@ -117,7 +120,7 @@ export function HeroPrompt({ block, editable }: SectionProps) {
                   block={block}
                   field="meta"
                   editable={editable}
-                  placeholder="Small line"
+                  placeholder={t("placeholder.smallLine")}
                 />
               </p>
             )}
@@ -171,6 +174,7 @@ export function HeroPrompt({ block, editable }: SectionProps) {
 /** Inner-page compact header: monospace kicker, prompt title with cursor,
  *  dek, and optional side preview window. */
 export function HeroIntro({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -190,7 +194,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
                 field="headline"
                 editable={editable}
                 as="span"
-                placeholder="Page title"
+                placeholder={t("placeholder.pageTitle")}
               />
               <Cursor />
             </h1>
@@ -199,7 +203,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="subhead"
               editable={editable}
               as="p"
-              placeholder="Subheadline"
+              placeholder={t("placeholder.subheadline")}
               className="mt-6 block max-w-[48ch] text-pretty text-[1.125rem] leading-[1.65] text-muted-foreground"
             />
             {has(block, "meta", editable) && (
@@ -214,7 +218,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
                   block={block}
                   field="meta"
                   editable={editable}
-                  placeholder="Small line"
+                  placeholder={t("placeholder.smallLine")}
                 />
               </p>
             )}

@@ -2,15 +2,20 @@ import { cn } from "@/lib/utils";
 import { Txt, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, Section, WRAP, pad2, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type QA = { q?: string; a?: string };
 
 /** Course FAQ formatted as a UNIX manual page (man page) with expandable flags. */
 export function FaqMan({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<QA>(block, "items");
 
   return (
-    <Section tone="console" label={str(block.heading) || "Questions"}>
+    <Section
+      tone="console"
+      label={str(block.heading) || t("sectionLabel.questions")}
+    >
       <div className={cn(WRAP, "grid gap-y-12 lg:grid-cols-12 lg:gap-x-12")}>
         {/* Left column: the heading */}
         <div className="lg:col-span-5">
@@ -21,7 +26,7 @@ export function FaqMan({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(
                 H2,
                 "mt-4 block text-[clamp(1.8rem,1.4rem+1.8vw,3.2rem)] leading-[1.08]",
@@ -34,7 +39,7 @@ export function FaqMan({ block, editable }: SectionProps) {
                   field="intro"
                   editable={editable}
                   as="p"
-                  placeholder="Intro"
+                  placeholder={t("placeholder.intro")}
                   className="block max-w-[38ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
                 />
               </div>

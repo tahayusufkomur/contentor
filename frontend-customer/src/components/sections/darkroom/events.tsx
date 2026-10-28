@@ -11,17 +11,22 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, H3, LABEL, LINK, Opener, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Exhibition openings and live sessions listed on ruled gallery rows. */
 export function EventsOpenings({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Events"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.events")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -64,10 +69,10 @@ export function EventsOpenings({ block, data, editable }: SectionProps) {
                         "darkroom-tnum text-muted-foreground",
                       )}
                     >
-                      {eventPriceLabel(e, locale)}
+                      {eventPriceLabel(e, locale, t)}
                     </span>
                     <span className={cn(LINK, "group-hover:border-b-accent")}>
-                      Reserve
+                      {t("event.reserve")}
                       <Arrow />
                     </span>
                   </span>
@@ -79,8 +84,8 @@ export function EventsOpenings({ block, data, editable }: SectionProps) {
           <div className="mt-14 md:mt-20">
             <EmptyHint
               editable={editable}
-              title="No upcoming sessions"
-              text="Schedule a live session or event and it appears here."
+              title={t("empty.sessions.title")}
+              text={t("empty.sessions.text")}
             />
           </div>
         )}
@@ -93,10 +98,10 @@ export function EventsOpenings({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "Full calendar"
+                t("cta.fullCalendar")
               )}
               <Arrow />
             </SmartLink>

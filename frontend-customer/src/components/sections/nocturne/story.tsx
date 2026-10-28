@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has } from "../kit";
 import type { SectionProps } from "../types";
 import { ARCH, Arrow, H2, Halo, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** An evening letter: arched portrait with warm halo and detail circle on the
  *  left, soft serif story and signature on the right. */
 export function StoryEvening({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
 
   return (
@@ -38,7 +40,7 @@ export function StoryEvening({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(H2, "mt-4 block max-w-[18ch]")}
           />
           <Rich
@@ -53,7 +55,7 @@ export function StoryEvening({ block, editable }: SectionProps) {
               field="signature"
               editable={editable}
               as="p"
-              placeholder="Your name"
+              placeholder={t("placeholder.yourName")}
               className="nocturne-soft mt-8 block font-display text-[1.8rem] leading-none text-primary"
             />
           )}
@@ -66,7 +68,7 @@ export function StoryEvening({ block, editable }: SectionProps) {
                 block={block}
                 field="ctaLabel"
                 editable={editable}
-                placeholder="Link text"
+                placeholder={t("placeholder.linkText")}
               />
               <Arrow />
             </SmartLink>

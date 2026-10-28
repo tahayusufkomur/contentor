@@ -2,11 +2,13 @@ import { cn } from "@/lib/utils";
 import { Img, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { Opener, Plate, Section, WRAP, pad2, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
 /** A rhythmically spaced gallery wall of uncropped prints and plate labels. */
 export function MomentsGrid({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHeader =
@@ -15,7 +17,7 @@ export function MomentsGrid({ block, editable }: SectionProps) {
     has(block, "caption", editable);
 
   return (
-    <Section label={alt || "Moments"}>
+    <Section label={alt || t("sectionLabel.moments")}>
       <div className={WRAP}>
         {showHeader && (
           <div className="mb-14 md:mb-20">

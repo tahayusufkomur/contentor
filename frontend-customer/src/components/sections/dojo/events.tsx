@@ -59,7 +59,7 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
                       <p className="mt-1 text-[0.9rem] text-muted-foreground">
                         {e.type === "onsite_event"
                           ? e.location
-                          : t("dojo.onlineLiveStream")}
+                          : t("event.onlineLiveStream")}
                       </p>
                     )}
                   </div>

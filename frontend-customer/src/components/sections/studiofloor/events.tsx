@@ -69,7 +69,7 @@ export function EventsSchedule({ block, data, editable }: SectionProps) {
                           <span>
                             {e.type === "onsite_event"
                               ? e.location
-                              : t("dojo.onlineLiveStream")}
+                              : t("event.onlineLiveStream")}
                           </span>
                           <span aria-hidden="true">·</span>
                         </>

@@ -24,7 +24,8 @@
     "smallLineLocationFormat": "Kısa satır (ör. konum veya format)",
     "smallLineFormatAges": "Kısa satır (ör. format veya yaş grubu)",
     "email": "sen@stüdyon.com",
-    "emailExample": "sen@ornek.com"
+    "emailExample": "sen@ornek.com",
+    "signature": "İmza"
   },
   "empty": {
     "courses": {
@@ -50,7 +51,8 @@
     "contact": "İletişim",
     "philosophy": "Felsefe",
     "benefits": "Avantajlar",
-    "howItWorks": "Nasıl çalışır"
+    "howItWorks": "Nasıl çalışır",
+    "notes": "Notlar"
   },
   "contact": {
     "email": "E-posta",
@@ -76,7 +78,8 @@
     "book": "Rezervasyon yap",
     "inPerson": "Yüz yüze",
     "onlineLive": "Çevrim içi, canlı",
-    "reserveSpot": "Yer ayırt"
+    "reserveSpot": "Yer ayırt",
+    "onlineLiveStream": "Çevrim İçi Canlı Yayın"
   },
   "plan": {
     "subscribe": "Abone ol",
@@ -95,11 +98,13 @@
     "when": "Ne zaman",
     "session": "Oturum",
     "where": "Nerede",
-    "fee": "Ücret"
+    "fee": "Ücret",
+    "date": "Tarih"
   },
   "cta": {
     "allCourses": "Tüm kurslar",
-    "fullCalendar": "Tüm takvim"
+    "fullCalendar": "Tüm takvim",
+    "begin": "Başla"
   },
   "step": {
     "label": "Adım {number}",
@@ -147,10 +152,8 @@
     "trainingHours": "Antrenman Saatleri",
     "inquiries": "Bilgi Talepleri",
     "messageSensei": "Sensei'ye Doğrudan Mesaj",
-    "begin": "Başla",
     "tatamiEntry": "Tatami Girişi",
     "reserveSpot": "Yer Ayırt",
-    "onlineLiveStream": "Çevrim İçi Canlı Yayın",
     "allCourses": "Tüm kurslar & müfredat",
     "fullCalendar": "Tüm antrenman takvimi",
     "emptyCoursesText": "Bir kurs yayınla, burada kuşağa göre sıralanmış olarak görünsün.",
@@ -213,11 +216,9 @@
     "emptyEventsTitle": "Planlanmış yaklaşan okuma yok",
     "emptyEventsText": "Canlı bir kolokyum ya da atölye planladığında programda otomatik olarak görünür.",
     "viewProgramme": "Tüm programı gör",
-    "notes": "Notlar",
     "authorLocation": "Yazar / Konum",
     "process": "Süreç",
     "galleryOfPlates": "Levha Galerisi",
-    "atmosphere": "Atmosfer",
     "subscriptions": "Abonelikler",
     "orderOfSubscription": "Abonelik Siparişi",
     "subscriptionTerms": "Abonelik koşullarını gör",
@@ -272,7 +273,6 @@
   },
   "encore": {
     "venue": "Mekân",
-    "date": "Tarih",
     "show": "Gösteri",
     "online": "Çevrimiçi",
     "tickets": "Biletler",
@@ -363,8 +363,6 @@
     "basecamp": "Ana kamp",
     "join": "Katıl",
     "itemsIncluded": "{count, plural, one {öğe dahil} other {öğe dahil}}",
-    "lessons": "ders",
-    "price": "fiyat",
     "allRoutes": "Tüm rotalar",
     "allMeetups": "Tüm buluşmalar"
   },
@@ -379,5 +377,35 @@
     "emptyPlansText": "Faturalandırma bölümünde bir geçiş paketi oluştur, otomatik olarak burada görünsün.",
     "sessionsIncluded": "{count, plural, one {# kurs/oturum dahil} other {# kurs/oturum dahil}}",
     "viewFullTimetable": "Tüm programı görüntüle"
+  },
+  "photo": {
+    "atmosphere": "Atmosfer"
+  },
+  "maison": {
+    "allSalons": "Tüm salonlar",
+    "atelier": "Atölye",
+    "emptyEventsTitle": "Yaklaşan salon yok",
+    "emptyEventsText": "Bir salon ya da etkinlik planla, burada görünsün.",
+    "look": "Görünüm {numeral}",
+    "pieces": "{count, plural, one {# parça} other {# parça}}",
+    "requestSeat": "Yer talep et",
+    "theCollection": "Koleksiyon"
+  },
+  "pop": {
+    "emptyCoursesTitle": "Henüz kurs yok",
+    "emptyCoursesText": "Yayınlanan kurslar burada otomatik olarak görünür.",
+    "emptyEventsTitle": "Yaklaşan etkinlik yok",
+    "emptyEventsText": "Planlanan canlı oturumlar burada otomatik olarak görünür.",
+    "emptyPlansTitle": "Henüz plan yok",
+    "emptyPlansText": "Bir üyelik planı oluştur, burada görünsün."
+  },
+  "primer": {
+    "byTheEnd": "Sonunda şunları yapabileceksin",
+    "classroom": "Sınıf"
+  },
+  "terminal": {
+    "emptyEventsTitle": "Planlanmış yaklaşan etkinlik yok",
+    "emptyPlansText": "Faturalandırma bölümünde bir plan oluştur, burada otomatik olarak görünsün.",
+    "open": "açık"
   }
 }

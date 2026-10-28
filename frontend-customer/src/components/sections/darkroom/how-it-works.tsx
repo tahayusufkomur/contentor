@@ -14,11 +14,13 @@ import {
   pad2,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** Steps laid out as a photographer's contact sheet with darkroom frame counters. */
 export function HowItWorksContactSheet({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -35,7 +37,7 @@ export function HowItWorksContactSheet({ block, editable }: SectionProps) {
                 field="heading"
                 editable={editable}
                 as="h2"
-                placeholder="Heading"
+                placeholder={t("placeholder.heading")}
                 className={cn(H2, "mt-3 block max-w-[20ch]")}
               />
               <Txt
@@ -43,7 +45,7 @@ export function HowItWorksContactSheet({ block, editable }: SectionProps) {
                 field="intro"
                 editable={editable}
                 as="p"
-                placeholder="Intro"
+                placeholder={t("placeholder.intro")}
                 className="mt-6 block max-w-[44ch] text-pretty text-[1rem] leading-[1.6] text-muted-foreground"
               />
             </div>

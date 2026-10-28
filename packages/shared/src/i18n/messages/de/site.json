@@ -24,7 +24,8 @@
     "smallLineLocationFormat": "Kleine Zeile (z. B. Ort oder Format)",
     "smallLineFormatAges": "Kleine Zeile (z. B. Format oder Altersgruppe)",
     "email": "du@deinstudio.de",
-    "emailExample": "du@beispiel.de"
+    "emailExample": "du@beispiel.de",
+    "signature": "Signatur"
   },
   "empty": {
     "courses": {
@@ -50,7 +51,8 @@
     "contact": "Kontakt",
     "philosophy": "Philosophie",
     "benefits": "Vorteile",
-    "howItWorks": "So funktioniert's"
+    "howItWorks": "So funktioniert's",
+    "notes": "Anmerkungen"
   },
   "contact": {
     "email": "E-Mail",
@@ -76,7 +78,8 @@
     "book": "Buchen",
     "inPerson": "Vor Ort",
     "onlineLive": "Online, live",
-    "reserveSpot": "Platz reservieren"
+    "reserveSpot": "Platz reservieren",
+    "onlineLiveStream": "Online-Livestream"
   },
   "plan": {
     "subscribe": "Abonnieren",
@@ -95,11 +98,13 @@
     "when": "Wann",
     "session": "Session",
     "where": "Wo",
-    "fee": "Gebühr"
+    "fee": "Gebühr",
+    "date": "Datum"
   },
   "cta": {
     "allCourses": "Alle Kurse",
-    "fullCalendar": "Vollständiger Kalender"
+    "fullCalendar": "Vollständiger Kalender",
+    "begin": "Beginnen"
   },
   "step": {
     "label": "Schritt {number}",
@@ -147,10 +152,8 @@
     "trainingHours": "Trainingszeiten",
     "inquiries": "Anfragen",
     "messageSensei": "Direktnachricht an den Sensei",
-    "begin": "Beginnen",
     "tatamiEntry": "Zutritt zur Tatami",
     "reserveSpot": "Platz reservieren",
-    "onlineLiveStream": "Online-Livestream",
     "allCourses": "Alle Kurse & Lehrplan",
     "fullCalendar": "Vollständiger Trainingskalender",
     "emptyCoursesText": "Veröffentliche einen Kurs, dann erscheint er hier nach Gürtelfarbe geordnet.",
@@ -213,11 +216,9 @@
     "emptyEventsTitle": "Keine anstehenden Lesungen geplant",
     "emptyEventsText": "Plane ein Live-Kolloquium oder einen Workshop und es erscheint automatisch im Programm.",
     "viewProgramme": "Gesamtes Programm ansehen",
-    "notes": "Anmerkungen",
     "authorLocation": "Autor / Ort",
     "process": "Ablauf",
     "galleryOfPlates": "Bildtafeln",
-    "atmosphere": "Atmosphäre",
     "subscriptions": "Abonnements",
     "orderOfSubscription": "Abonnementübersicht",
     "subscriptionTerms": "Abonnementbedingungen ansehen",
@@ -272,7 +273,6 @@
   },
   "encore": {
     "venue": "Veranstaltungsort",
-    "date": "Datum",
     "show": "Show",
     "online": "Online",
     "tickets": "Tickets",
@@ -363,8 +363,6 @@
     "basecamp": "Basislager",
     "join": "Beitreten",
     "itemsIncluded": "{count, plural, one {Element enthalten} other {Elemente enthalten}}",
-    "lessons": "Lektionen",
-    "price": "Preis",
     "allRoutes": "Alle Routen",
     "allMeetups": "Alle Treffen"
   },
@@ -379,5 +377,35 @@
     "emptyPlansText": "Erstelle einen Pass unter Abrechnung und er erscheint hier automatisch.",
     "sessionsIncluded": "{count, plural, one {# Kurs/Session enthalten} other {# Kurse/Sessions enthalten}}",
     "viewFullTimetable": "Vollständigen Stundenplan ansehen"
+  },
+  "photo": {
+    "atmosphere": "Atmosphäre"
+  },
+  "maison": {
+    "allSalons": "Alle Salons",
+    "atelier": "Atelier",
+    "emptyEventsTitle": "Keine anstehenden Salons",
+    "emptyEventsText": "Plane einen Salon oder eine Veranstaltung, dann erscheint sie hier.",
+    "look": "Look {numeral}",
+    "pieces": "{count, plural, one {# Teil} other {# Teile}}",
+    "requestSeat": "Platz anfragen",
+    "theCollection": "Die Kollektion"
+  },
+  "pop": {
+    "emptyCoursesTitle": "Noch keine Kurse",
+    "emptyCoursesText": "Veröffentlichte Kurse erscheinen hier automatisch.",
+    "emptyEventsTitle": "Keine anstehenden Veranstaltungen",
+    "emptyEventsText": "Geplante Live-Sessions erscheinen hier automatisch.",
+    "emptyPlansTitle": "Noch keine Tarife",
+    "emptyPlansText": "Erstelle einen Mitgliedschaftstarif, dann erscheint er hier."
+  },
+  "primer": {
+    "byTheEnd": "Am Ende kannst du",
+    "classroom": "Klassenzimmer"
+  },
+  "terminal": {
+    "emptyEventsTitle": "Keine anstehenden Veranstaltungen geplant",
+    "emptyPlansText": "Erstelle unter Abrechnung einen Tarif, dann erscheint er hier automatisch.",
+    "open": "offen"
   }
 }

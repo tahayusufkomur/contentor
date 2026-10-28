@@ -10,10 +10,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { CHIP, H3, Opener, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Membership plans as soft night cards with amber prices and pill actions. */
 export function PricingMembership({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
@@ -21,7 +22,11 @@ export function PricingMembership({ block, data, editable }: SectionProps) {
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.pricing")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -56,8 +61,7 @@ export function PricingMembership({ block, data, editable }: SectionProps) {
                 </p>
                 {!!plan.item_count && (
                   <p className={cn(CHIP, "mt-5 self-start")}>
-                    {plan.item_count} {plan.item_count === 1 ? "item" : "items"}{" "}
-                    included
+                    {t("plan.itemsIncluded", { count: plan.item_count })}
                   </p>
                 )}
                 {plan.description && (
@@ -68,7 +72,7 @@ export function PricingMembership({ block, data, editable }: SectionProps) {
                 <div className="mt-auto pt-8">
                   {plan.is_subscribed ? (
                     <p className="inline-flex min-h-12 w-full items-center justify-center rounded-[2px] border border-border text-[0.76rem] font-medium uppercase tracking-[0.22em]">
-                      Subscribed
+                      {t("plan.subscribed")}
                     </p>
                   ) : (
                     <SubscribeButton
@@ -84,7 +88,7 @@ export function PricingMembership({ block, data, editable }: SectionProps) {
                     href={`/plans/${plan.id}`}
                     className="velvet-link mt-4 block w-fit text-[0.9rem]"
                   >
-                    See what&rsquo;s included
+                    {t("plan.seeIncluded")}
                   </SmartLink>
                 </div>
               </li>
@@ -94,8 +98,8 @@ export function PricingMembership({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a plan under Billing and it appears here."
+              title={t("empty.plans.title")}
+              text={t("empty.plans.text")}
             />
           </div>
         )}

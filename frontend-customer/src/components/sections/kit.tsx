@@ -8,8 +8,7 @@
  * styles differ in layout and look, never in behaviour.
  */
 import type { ReactNode } from "react";
-import { createTranslator, useLocale, useTranslations } from "next-intl";
-import siteEn from "@shared/i18n/messages/en/site.json";
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { InlineText } from "@/components/blocks/inline-text";
 import { EditableBody } from "@/components/blocks/editable-body";
@@ -248,19 +247,12 @@ export const hasCover = (c: Course) =>
 /** The `site` translator a section hands to the helpers below. */
 export type SiteT = ReturnType<typeof useTranslations<"site">>;
 
-// A helper called without `t` speaks English. Every section passes its own.
-const english: SiteT = createTranslator({
-  locale: "en",
-  messages: { site: siteEn },
-  namespace: "site",
-});
-
 /** Plain-text price in the tenant currency: "€49", "Free", "Included in
  *  membership", or "Owned" for a student who already has it. */
 export function coursePriceLabel(
   course: Course,
   locale: string,
-  t: SiteT = english,
+  t: SiteT,
 ): string {
   const a = course.access_info;
   if (a?.has_access && a.access_reason !== "free") return t("price.owned");
@@ -322,7 +314,7 @@ export function EmptyHint({
 export function eventPriceLabel(
   e: Pick<CalendarEvent, "pricing_type" | "price" | "currency" | "is_trial">,
   locale: string,
-  t: SiteT = english,
+  t: SiteT,
 ): string {
   if (e.is_trial) return t("price.freeTrial");
   if (e.pricing_type === "subscription") return t("price.membersOnly");

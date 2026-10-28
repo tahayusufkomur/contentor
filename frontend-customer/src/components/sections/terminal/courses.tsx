@@ -12,9 +12,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, H3, Opener, Section, WindowChrome, WRAP, pad2 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Course catalogue formatted as an interactive filesystem directory tree. */
 export function CoursesModules({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
@@ -22,7 +24,11 @@ export function CoursesModules({ block, data, editable }: SectionProps) {
   return (
     <Section
       tone="console"
-      label={typeof block.heading === "string" ? block.heading : "Courses"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.courses")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -82,8 +88,7 @@ export function CoursesModules({ block, data, editable }: SectionProps) {
                         <div className="flex items-center justify-between gap-6 pl-8 sm:justify-end sm:pl-0">
                           {c.lesson_count ? (
                             <span className="font-mono text-xs text-accent">
-                              {c.lesson_count}{" "}
-                              {c.lesson_count === 1 ? "lesson" : "lessons"}
+                              {t("course.lessons", { count: c.lesson_count })}
                             </span>
                           ) : null}
 
@@ -96,7 +101,7 @@ export function CoursesModules({ block, data, editable }: SectionProps) {
                             className="hidden font-mono text-xs text-primary opacity-0 transition-opacity motion-safe:group-hover:opacity-100 sm:inline"
                             aria-hidden="true"
                           >
-                            open &gt;
+                            {t("terminal.open")} &gt;
                           </span>
                         </div>
                       </SmartLink>
@@ -110,8 +115,8 @@ export function CoursesModules({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No published courses yet"
-              text="Publish a course and it appears here automatically."
+              title={t("empty.courses.title")}
+              text={t("empty.courses.text")}
             />
           </div>
         )}
@@ -127,10 +132,10 @@ export function CoursesModules({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "All courses"
+                t("cta.allCourses")
               )}
               <Arrow />
             </SmartLink>

@@ -16,7 +16,7 @@ import {
   weekdayNames,
 } from "@/lib/calendar-utils";
 import type { CalendarEvent } from "@/types/live";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const MAX_VISIBLE_EVENTS = 2;
 
@@ -258,6 +258,7 @@ interface DetailEventCardProps {
 
 function DetailEventCard({ event, timezone, showDate }: DetailEventCardProps) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const config = EVENT_TYPE_CONFIG[event.type];
   const timeStr = formatTime(event.scheduled_at, locale, timezone);
   const endStr = event.ended_at
@@ -300,7 +301,7 @@ function DetailEventCard({ event, timezone, showDate }: DetailEventCardProps) {
                   : "text-muted-foreground",
               )}
             >
-              {eventPriceLabel(event, locale)}
+              {eventPriceLabel(event, locale, t)}
             </span>
           </div>
 

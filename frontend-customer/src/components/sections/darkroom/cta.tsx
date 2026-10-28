@@ -2,9 +2,11 @@ import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { BTN_ON_BLACK, Dot, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** An invitation to a private view set against a pure black gallery band. */
 export function CtaPrivateView({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -32,7 +34,7 @@ export function CtaPrivateView({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className="mt-5 block max-w-[18ch] text-balance break-words hyphens-auto font-display text-[clamp(2rem,1.4rem+2.6vw,4rem)] font-bold leading-[1.02] tracking-[-0.02em]"
           />
           <Txt
@@ -40,7 +42,7 @@ export function CtaPrivateView({ block, editable }: SectionProps) {
             field="text"
             editable={editable}
             as="p"
-            placeholder="Text"
+            placeholder={t("placeholder.text")}
             className="mt-6 block max-w-[44ch] text-pretty text-[1rem] leading-[1.65] text-muted-foreground"
           />
           {has(block, "ctaLabel", editable) && (
@@ -50,7 +52,7 @@ export function CtaPrivateView({ block, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               </SmartLink>
             </div>

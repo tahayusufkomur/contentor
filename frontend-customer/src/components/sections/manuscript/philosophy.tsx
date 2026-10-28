@@ -66,7 +66,7 @@ export function PhilosophyEpigraph({ block, editable }: SectionProps) {
             <div className="manuscript-plate">
               <Img
                 value={block.image}
-                alt={statement.slice(0, 100) || t("manuscript.atmosphere")}
+                alt={statement.slice(0, 100) || t("photo.atmosphere")}
                 className="aspect-[16/9] w-full"
               />
             </div>

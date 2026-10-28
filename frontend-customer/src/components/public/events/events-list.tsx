@@ -8,7 +8,7 @@ import { formatDateHeader, formatTime } from "@/lib/calendar-utils";
 import { eventItem } from "@/lib/covers/items";
 import { eventPriceLabel } from "@/components/sections/kit";
 import type { CalendarEvent, CalendarEventType } from "@/types/live";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const TYPE_META: Record<
   CalendarEventType,
@@ -28,6 +28,7 @@ export function EventsList({
   isCoach: boolean;
 }) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const config = useTenant();
   const tz = config?.timezone || "UTC";
 
@@ -100,7 +101,7 @@ export function EventsList({
                       </span>
                       <span>{formatTime(event.scheduled_at, locale, tz)}</span>
                       <span className="ml-auto font-medium text-foreground">
-                        {eventPriceLabel(event, locale)}
+                        {eventPriceLabel(event, locale, t)}
                       </span>
                     </div>
                     <h3 className="font-medium leading-snug group-hover:text-primary">

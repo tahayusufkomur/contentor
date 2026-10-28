@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, Page, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Size the quote to its length: a short line gets poster scale, a long one stays readable. */
 function quoteSize(len: number) {
@@ -14,11 +15,12 @@ function quoteSize(len: number) {
 
 /** Philosophy statement written large across ruled paper with an attribution margin note. */
 export function PhilosophyMarginNote({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="ruled" label="Philosophy">
+    <Section tone="ruled" label={t("sectionLabel.philosophy")}>
       <div className={WRAP}>
         <Page>
           <Kicker block={block} editable={editable} />
@@ -27,7 +29,7 @@ export function PhilosophyMarginNote({ block, editable }: SectionProps) {
             field="statement"
             editable={editable}
             as="p"
-            placeholder="Statement"
+            placeholder={t("placeholder.statement")}
             className={cn(
               "mt-6 block text-balance break-words font-display font-semibold tracking-[-0.015em]",
               quoteSize(statement.length),
@@ -40,7 +42,7 @@ export function PhilosophyMarginNote({ block, editable }: SectionProps) {
                 block={block}
                 field="attribution"
                 editable={editable}
-                placeholder="Attribution"
+                placeholder={t("placeholder.attribution")}
               />
             </p>
           )}

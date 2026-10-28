@@ -11,17 +11,22 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, H3, LABEL, Opener, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Term dates and live session schedule listed as courier timetable entries. */
 export function EventsTermDates({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Events"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.events")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -54,10 +59,10 @@ export function EventsTermDates({ block, data, editable }: SectionProps) {
                   </div>
                   <div className="flex flex-col sm:items-end sm:text-right">
                     <span className={cn(LABEL, "text-primary")}>
-                      {eventPriceLabel(e, locale)}
+                      {eventPriceLabel(e, locale, t)}
                     </span>
                     <span className="primer-link mt-1 inline-flex items-center gap-2 font-bold group-hover:text-accent">
-                      <span>Reserve</span>
+                      <span>{t("event.reserve")}</span>
                       <Arrow />
                     </span>
                   </div>
@@ -69,8 +74,8 @@ export function EventsTermDates({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No upcoming sessions"
-              text="Schedule a live session or event and it appears here."
+              title={t("empty.sessions.title")}
+              text={t("empty.sessions.text")}
             />
           </div>
         )}
@@ -86,10 +91,10 @@ export function EventsTermDates({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "Full calendar"
+                t("cta.fullCalendar")
               )}
               <Arrow />
             </SmartLink>

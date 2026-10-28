@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Txt, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { FILL, Kicker, PopSection, WRAP } from "./ui";
+import { useTranslations } from "next-intl";
 
 type QA = { q?: string; a?: string };
 
@@ -37,6 +38,7 @@ function Tail({ className, fill }: { className: string; fill: string }) {
 /** FAQ as a conversation: question bubbles on the left, the answer replies
  *  from the right when opened. */
 export function FaqBubbles({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<QA>(block, "items");
   return (
     <PopSection bg="var(--background)" className="py-20 md:py-28">
@@ -49,7 +51,7 @@ export function FaqBubbles({ block, editable }: SectionProps) {
             editable={editable}
             as="h2"
             className="pop-display pop-h2 mt-6"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
           />
           <Txt
             block={block}

@@ -83,7 +83,7 @@ export function CoursesRoutes({ block, data, editable }: SectionProps) {
                     <div className="mt-auto grid grid-cols-2 gap-4 border-t border-border pt-5">
                       <Stat
                         value={c.lesson_count ? `${c.lesson_count}` : "—"}
-                        label={t("trail.lessons")}
+                        label={t("table.lessons")}
                       />
                       <Stat
                         value={
@@ -93,7 +93,7 @@ export function CoursesRoutes({ block, data, editable }: SectionProps) {
                             className="trail-price"
                           />
                         }
-                        label={t("trail.price")}
+                        label={t("table.price")}
                       />
                     </div>
                   </div>

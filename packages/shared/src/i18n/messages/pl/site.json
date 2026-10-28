@@ -24,7 +24,8 @@
     "smallLineLocationFormat": "Krótka linijka (np. miejsce lub forma)",
     "smallLineFormatAges": "Krótka linijka (np. forma lub wiek)",
     "email": "ty@twojestudio.pl",
-    "emailExample": "ty@przyklad.pl"
+    "emailExample": "ty@przyklad.pl",
+    "signature": "Podpis"
   },
   "empty": {
     "courses": {
@@ -50,7 +51,8 @@
     "contact": "Kontakt",
     "philosophy": "Filozofia",
     "benefits": "Korzyści",
-    "howItWorks": "Jak to działa"
+    "howItWorks": "Jak to działa",
+    "notes": "Notatki"
   },
   "contact": {
     "email": "E-mail",
@@ -76,7 +78,8 @@
     "book": "Zapisz się",
     "inPerson": "Stacjonarnie",
     "onlineLive": "Online, na żywo",
-    "reserveSpot": "Zarezerwuj miejsce"
+    "reserveSpot": "Zarezerwuj miejsce",
+    "onlineLiveStream": "Transmisja na żywo online"
   },
   "plan": {
     "subscribe": "Subskrybuj",
@@ -95,11 +98,13 @@
     "when": "Kiedy",
     "session": "Sesja",
     "where": "Gdzie",
-    "fee": "Opłata"
+    "fee": "Opłata",
+    "date": "Data"
   },
   "cta": {
     "allCourses": "Wszystkie kursy",
-    "fullCalendar": "Pełny kalendarz"
+    "fullCalendar": "Pełny kalendarz",
+    "begin": "Zacznij"
   },
   "step": {
     "label": "Krok {number}",
@@ -147,10 +152,8 @@
     "trainingHours": "Godziny treningów",
     "inquiries": "Zapytania",
     "messageSensei": "Wiadomość prywatna do Senseia",
-    "begin": "Zacznij",
     "tatamiEntry": "Wejście na tatami",
     "reserveSpot": "Zarezerwuj miejsce",
-    "onlineLiveStream": "Transmisja na żywo online",
     "allCourses": "Wszystkie kursy i program",
     "fullCalendar": "Pełny kalendarz treningów",
     "emptyCoursesText": "Opublikuj kurs, a pojawi się tutaj uszeregowany według pasów.",
@@ -213,11 +216,9 @@
     "emptyEventsTitle": "Brak zaplanowanych odczytów",
     "emptyEventsText": "Zaplanuj kolokwium na żywo lub warsztat, a pojawi się automatycznie w programie.",
     "viewProgramme": "Zobacz pełny program",
-    "notes": "Notatki",
     "authorLocation": "Autor / Miejsce",
     "process": "Proces",
     "galleryOfPlates": "Galeria rycin",
-    "atmosphere": "Atmosfera",
     "subscriptions": "Subskrypcje",
     "orderOfSubscription": "Formularz subskrypcji",
     "subscriptionTerms": "Zobacz warunki subskrypcji",
@@ -272,7 +273,6 @@
   },
   "encore": {
     "venue": "Miejsce",
-    "date": "Data",
     "show": "Występ",
     "online": "Online",
     "tickets": "Bilety",
@@ -363,8 +363,6 @@
     "basecamp": "Baza",
     "join": "Dołącz",
     "itemsIncluded": "{count, plural, one {pozycja w pakiecie} few {pozycje w pakiecie} many {pozycji w pakiecie} other {pozycji w pakiecie}}",
-    "lessons": "lekcje",
-    "price": "cena",
     "allRoutes": "Wszystkie trasy",
     "allMeetups": "Wszystkie spotkania"
   },
@@ -379,5 +377,35 @@
     "emptyPlansText": "Utwórz karnet w sekcji Rozliczenia, a automatycznie pojawi się tutaj.",
     "sessionsIncluded": "{count, plural, one {# kurs/sesja w pakiecie} few {# kursy/sesje w pakiecie} many {# kursów/sesji w pakiecie} other {# kursu/sesji w pakiecie}}",
     "viewFullTimetable": "Zobacz pełny harmonogram"
+  },
+  "photo": {
+    "atmosphere": "Atmosfera"
+  },
+  "maison": {
+    "allSalons": "Wszystkie salony",
+    "atelier": "Atelier",
+    "emptyEventsTitle": "Brak nadchodzących salonów",
+    "emptyEventsText": "Zaplanuj salon lub wydarzenie, a pojawi się tutaj.",
+    "look": "Stylizacja {numeral}",
+    "pieces": "{count, plural, one {# element} few {# elementy} many {# elementów} other {# elementu}}",
+    "requestSeat": "Poproś o miejsce",
+    "theCollection": "Kolekcja"
+  },
+  "pop": {
+    "emptyCoursesTitle": "Nie ma jeszcze kursów",
+    "emptyCoursesText": "Opublikowane kursy pojawiają się tutaj automatycznie.",
+    "emptyEventsTitle": "Brak nadchodzących wydarzeń",
+    "emptyEventsText": "Zaplanowane sesje na żywo pojawiają się tutaj automatycznie.",
+    "emptyPlansTitle": "Nie ma jeszcze planów",
+    "emptyPlansText": "Utwórz plan członkostwa, a pojawi się tutaj."
+  },
+  "primer": {
+    "byTheEnd": "Na koniec będziesz umieć",
+    "classroom": "Sala lekcyjna"
+  },
+  "terminal": {
+    "emptyEventsTitle": "Brak zaplanowanych nadchodzących wydarzeń",
+    "emptyPlansText": "Utwórz plan w sekcji Rozliczenia, a pojawi się tutaj automatycznie.",
+    "open": "otwarte"
   }
 }

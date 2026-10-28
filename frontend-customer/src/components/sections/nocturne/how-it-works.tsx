@@ -2,12 +2,14 @@ import { cn } from "@/lib/utils";
 import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { ARCH, H3, Halo, LABEL, Opener, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** How it works as an evening wind-down timeline, with an optional arched
  *  photo. */
 export function HowItWorksWindDown({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -44,10 +46,12 @@ export function HowItWorksWindDown({ block, editable }: SectionProps) {
                   </div>
                   <div className="min-w-0">
                     <p aria-hidden="true" className={LABEL}>
-                      Step {i + 1}
+                      {t("step.label", { number: i + 1 })}
                     </p>
                     <h3 className={cn(H3, "mt-2 text-[1.35rem] leading-snug")}>
-                      <span className="sr-only">{`Step ${i + 1}: `}</span>
+                      <span className="sr-only">
+                        {t("step.labelColon", { number: i + 1 })}{" "}
+                      </span>
                       {s.title}
                     </h3>
                     <p className="mt-2 max-w-[40ch] text-[0.98rem] leading-[1.65] text-muted-foreground">

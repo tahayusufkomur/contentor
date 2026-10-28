@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { createTranslator } from "next-intl";
+import site from "@shared/i18n/messages/en/site.json";
 
 import type { CalendarEvent } from "@/types/live";
 import { eventPriceLabel as eventPriceLabelIn } from "../kit";
@@ -18,8 +20,14 @@ const liveClass = (over: Partial<Priced> = {}): Priced => ({
   ...over,
 });
 
+const t = createTranslator({
+  locale: "en",
+  messages: { site },
+  namespace: "site",
+});
+
 const eventPriceLabel = (e: Parameters<typeof eventPriceLabelIn>[0]) =>
-  eventPriceLabelIn(e, "en");
+  eventPriceLabelIn(e, "en", t);
 
 describe("eventPriceLabel on a live class", () => {
   it("prints the tenant's currency, never a hard-coded dollar", () => {

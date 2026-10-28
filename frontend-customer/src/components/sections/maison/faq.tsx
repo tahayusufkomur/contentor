@@ -2,15 +2,17 @@ import { cn } from "@/lib/utils";
 import { Txt, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, Section, WRAP, roman, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type QA = { q?: string; a?: string };
 
 /** Notes: questions listed with roman numerals; the numeral goes italic on open. */
 export function FaqNotes({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<QA>(block, "items");
 
   return (
-    <Section label={str(block.heading) || "Notes"}>
+    <Section label={str(block.heading) || t("sectionLabel.notes")}>
       <div className={cn(WRAP, "grid gap-y-12 lg:grid-cols-12 lg:gap-x-12")}>
         <div className="lg:col-span-4">
           <div className="lg:sticky lg:top-24">
@@ -20,7 +22,7 @@ export function FaqNotes({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(
                 H2,
                 "mt-5 block text-[clamp(1.8rem,1.4rem+1.8vw,3.2rem)] leading-[1.02]",
@@ -31,7 +33,7 @@ export function FaqNotes({ block, editable }: SectionProps) {
               field="intro"
               editable={editable}
               as="p"
-              placeholder="Intro"
+              placeholder={t("placeholder.intro")}
               className="mt-7 block max-w-[34ch] text-pretty font-light text-[1rem] leading-[1.7] text-muted-foreground"
             />
           </div>

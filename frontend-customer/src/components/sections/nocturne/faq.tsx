@@ -1,16 +1,18 @@
 import { itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { Opener, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type QA = { q?: string; a?: string };
 
 /** Frequently asked questions in soft night pills that open with rotating
  *  chevrons. */
 export function FaqSoft({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<QA>(block, "items");
 
   return (
-    <Section label={str(block.heading) || "Questions"}>
+    <Section label={str(block.heading) || t("sectionLabel.questions")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
         <div className="mx-auto mt-14 max-w-[46rem] nocturne-faq space-y-3">

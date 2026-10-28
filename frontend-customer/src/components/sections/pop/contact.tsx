@@ -2,17 +2,19 @@ import { cn } from "@/lib/utils";
 import { ContactForm, Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, PopSection, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** A postcard: message side on the left, the photo as a perforated stamp and
  *  the form on the right, split by a dashed fold. */
 export function ContactPostcard({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const showForm = block.showForm !== false;
   const withImage = Boolean(imageUrl(block.image));
   const email = str(block.email);
   const details = [
-    { field: "email", label: "Email" },
-    { field: "location", label: "Where" },
-    { field: "hours", label: "When" },
+    { field: "email", label: t("contact.email") },
+    { field: "location", label: t("table.where") },
+    { field: "hours", label: t("table.when") },
   ].filter((d) => has(block, d.field, editable));
   const twoSides = showForm || withImage;
   return (
@@ -32,7 +34,7 @@ export function ContactPostcard({ block, editable }: SectionProps) {
               editable={editable}
               as="h2"
               className="pop-display mt-6 text-[clamp(2.5rem,1.5rem+3.4vw,4.75rem)]"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
             />
             <Txt
               block={block}

@@ -3,9 +3,11 @@ import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { makeStoryLetter } from "../story-layouts";
 import { Arrow, H2, Kicker, Page, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Coach foreword on ruled exercise-book paper with tilted prints and signature. */
 export function StoryForeword({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
 
@@ -35,7 +37,7 @@ export function StoryForeword({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(H2, "mt-4 block max-w-[18ch]")}
             />
             <Rich
@@ -51,7 +53,7 @@ export function StoryForeword({ block, editable }: SectionProps) {
                   block={block}
                   field="signature"
                   editable={editable}
-                  placeholder="Your name"
+                  placeholder={t("placeholder.yourName")}
                 />
               </p>
             )}
@@ -64,7 +66,7 @@ export function StoryForeword({ block, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Link text"
+                  placeholder={t("placeholder.linkText")}
                 />
                 <Arrow />
               </SmartLink>

@@ -16,11 +16,13 @@ import {
   pad2,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** Step-by-step process laid out as numbered classroom steps on ruled paper. */
 export function HowItWorksLessonPlan({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -38,7 +40,7 @@ export function HowItWorksLessonPlan({ block, editable }: SectionProps) {
                   field="heading"
                   editable={editable}
                   as="h2"
-                  placeholder="Heading"
+                  placeholder={t("placeholder.heading")}
                   className={cn(H2, "mt-3 block max-w-[20ch]")}
                 />
                 <Txt
@@ -46,7 +48,7 @@ export function HowItWorksLessonPlan({ block, editable }: SectionProps) {
                   field="intro"
                   editable={editable}
                   as="p"
-                  placeholder="Intro"
+                  placeholder={t("placeholder.intro")}
                   className="mt-6 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
                 />
               </div>
@@ -76,7 +78,9 @@ export function HowItWorksLessonPlan({ block, editable }: SectionProps) {
                 <div className="mt-3 flex items-start gap-3">
                   <Check className="mt-2" />
                   <h3 className={cn(H3, "text-[1.3rem] leading-snug")}>
-                    <span className="sr-only">{`Step ${i + 1}: `}</span>
+                    <span className="sr-only">
+                      {t("step.labelColon", { number: i + 1 })}{" "}
+                    </span>
                     {s.title}
                   </h3>
                 </div>
@@ -94,6 +98,8 @@ export function HowItWorksLessonPlan({ block, editable }: SectionProps) {
   );
 }
 
+const STEP_TEXT = "text-[0.98rem] leading-[1.7] text-muted-foreground";
+
 /** The lesson as a timeline down the exercise-book page: a Courier-numbered
  *  margin dot per step on a red rail. */
 export const HowItWorksSyllabus = makeHowTimeline({
@@ -102,7 +108,7 @@ export const HowItWorksSyllabus = makeHowTimeline({
   wrap: WRAP,
   Opener,
   h3: H3,
-  text: "text-[0.98rem] leading-[1.7] text-muted-foreground",
+  text: STEP_TEXT,
   dot: "primer-courier border-2 border-accent bg-background text-accent",
   rail: "before:bg-accent/40",
   photo: "primer-print rotate-[1.5deg]",

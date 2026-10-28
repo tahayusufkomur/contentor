@@ -89,7 +89,7 @@ export function CoursesBelts({ block, data, editable }: SectionProps) {
                         className="dojo-price font-display text-[1.15rem] font-bold text-foreground"
                       />
                       <span className="inline-flex items-center gap-1.5 text-[0.85rem] font-bold text-foreground group-hover:text-accent transition-colors">
-                        <span>{t("dojo.begin")}</span>
+                        <span>{t("cta.begin")}</span>
                         <Arrow />
                       </span>
                     </div>

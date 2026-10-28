@@ -2,9 +2,11 @@ import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, H2, Kicker, LABEL, LINK, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** The artist statement: a large portrait on the left with an optional setting print, and a clean label column on the right. */
 export function StoryStatement({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
 
@@ -34,7 +36,7 @@ export function StoryStatement({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(H2, "mt-3 block max-w-[18ch]")}
           />
           <div className="mt-8 h-px w-12 bg-foreground" aria-hidden="true" />
@@ -50,7 +52,7 @@ export function StoryStatement({ block, editable }: SectionProps) {
               field="signature"
               editable={editable}
               as="p"
-              placeholder="Your name"
+              placeholder={t("placeholder.yourName")}
               className={cn(LABEL, "mt-10 block text-foreground")}
             />
           )}
@@ -61,7 +63,7 @@ export function StoryStatement({ block, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Link text"
+                  placeholder={t("placeholder.linkText")}
                 />
                 <Arrow />
               </SmartLink>

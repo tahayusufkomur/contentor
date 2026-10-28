@@ -99,6 +99,10 @@
     "src": "50e2b46e",
     "reviewed": false
   },
+  "site.placeholder.signature": {
+    "src": "2f32be1d",
+    "reviewed": false
+  },
   "site.empty.courses.title": {
     "src": "90c6b12b",
     "reviewed": false
@@ -161,6 +165,10 @@
   },
   "site.sectionLabel.howItWorks": {
     "src": "1dd6a17c",
+    "reviewed": false
+  },
+  "site.sectionLabel.notes": {
+    "src": "70440046",
     "reviewed": false
   },
   "site.contact.email": {
@@ -235,6 +243,10 @@
     "src": "f3825067",
     "reviewed": false
   },
+  "site.event.onlineLiveStream": {
+    "src": "74e43c30",
+    "reviewed": false
+  },
   "site.plan.subscribe": {
     "src": "d6981f74",
     "reviewed": false
@@ -295,12 +307,20 @@
     "src": "c6e89c9c",
     "reviewed": false
   },
+  "site.table.date": {
+    "src": "eb9a4bc1",
+    "reviewed": false
+  },
   "site.cta.allCourses": {
     "src": "3664267e",
     "reviewed": false
   },
   "site.cta.fullCalendar": {
     "src": "e355219e",
+    "reviewed": false
+  },
+  "site.cta.begin": {
+    "src": "c3651ab2",
     "reviewed": false
   },
   "site.step.label": {
@@ -451,20 +471,12 @@
     "src": "9bd2c4c9",
     "reviewed": false
   },
-  "site.dojo.begin": {
-    "src": "c3651ab2",
-    "reviewed": false
-  },
   "site.dojo.tatamiEntry": {
     "src": "3dd26da8",
     "reviewed": false
   },
   "site.dojo.reserveSpot": {
     "src": "d5090b9f",
-    "reviewed": false
-  },
-  "site.dojo.onlineLiveStream": {
-    "src": "74e43c30",
     "reviewed": false
   },
   "site.dojo.allCourses": {
@@ -635,10 +647,6 @@
     "src": "2dfc5c6b",
     "reviewed": false
   },
-  "site.manuscript.notes": {
-    "src": "70440046",
-    "reviewed": false
-  },
   "site.manuscript.authorLocation": {
     "src": "6508f287",
     "reviewed": false
@@ -649,10 +657,6 @@
   },
   "site.manuscript.galleryOfPlates": {
     "src": "1c633384",
-    "reviewed": false
-  },
-  "site.manuscript.atmosphere": {
-    "src": "22102637",
     "reviewed": false
   },
   "site.manuscript.subscriptions": {
@@ -845,10 +849,6 @@
   },
   "site.encore.venue": {
     "src": "67cd4061",
-    "reviewed": false
-  },
-  "site.encore.date": {
-    "src": "eb9a4bc1",
     "reviewed": false
   },
   "site.encore.show": {
@@ -1171,14 +1171,6 @@
     "src": "765eb9ad",
     "reviewed": false
   },
-  "site.trail.lessons": {
-    "src": "b0647dfe",
-    "reviewed": false
-  },
-  "site.trail.price": {
-    "src": "2097c337",
-    "reviewed": false
-  },
   "site.trail.allRoutes": {
     "src": "29a9dd7c",
     "reviewed": false
@@ -1225,6 +1217,86 @@
   },
   "site.studiofloor.viewFullTimetable": {
     "src": "5da4ff6a",
+    "reviewed": false
+  },
+  "site.photo.atmosphere": {
+    "src": "22102637",
+    "reviewed": false
+  },
+  "site.maison.allSalons": {
+    "src": "6a2035af",
+    "reviewed": false
+  },
+  "site.maison.atelier": {
+    "src": "e105f808",
+    "reviewed": false
+  },
+  "site.maison.emptyEventsTitle": {
+    "src": "1c77241a",
+    "reviewed": false
+  },
+  "site.maison.emptyEventsText": {
+    "src": "9b88eeee",
+    "reviewed": false
+  },
+  "site.maison.look": {
+    "src": "341a66cc",
+    "reviewed": false
+  },
+  "site.maison.pieces": {
+    "src": "bfdc4d23",
+    "reviewed": false
+  },
+  "site.maison.requestSeat": {
+    "src": "c6462a2f",
+    "reviewed": false
+  },
+  "site.maison.theCollection": {
+    "src": "3e91c233",
+    "reviewed": false
+  },
+  "site.pop.emptyCoursesTitle": {
+    "src": "3dc1ad78",
+    "reviewed": false
+  },
+  "site.pop.emptyCoursesText": {
+    "src": "9275eb23",
+    "reviewed": false
+  },
+  "site.pop.emptyEventsTitle": {
+    "src": "b488b5ca",
+    "reviewed": false
+  },
+  "site.pop.emptyEventsText": {
+    "src": "92d0fde2",
+    "reviewed": false
+  },
+  "site.pop.emptyPlansTitle": {
+    "src": "abfc6931",
+    "reviewed": false
+  },
+  "site.pop.emptyPlansText": {
+    "src": "30f3b38f",
+    "reviewed": false
+  },
+  "site.primer.byTheEnd": {
+    "src": "17ea80ad",
+    "reviewed": false
+  },
+  "site.primer.classroom": {
+    "src": "958c43ff",
+    "reviewed": false
+  },
+  "site.terminal.emptyEventsTitle": {
+    "src": "ee1409f8",
+    "reviewed": false
+  },
+  "site.terminal.emptyPlansText": {
+    "src": "9b111453",
+    "reviewed": false
+  },
+  "site.terminal.open": {
+    "src": "5fc7e38b",
     "reviewed": false
   }
 }

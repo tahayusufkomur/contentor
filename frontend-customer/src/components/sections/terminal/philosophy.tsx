@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, Section, WindowChrome, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 function statementSize(len: number) {
   if (len <= 60)
@@ -13,11 +14,12 @@ function statementSize(len: number) {
 
 /** Core philosophy and guiding principles formatted as an executable docblock. */
 export function PhilosophyPrinciples({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="console" label="Philosophy">
+    <Section tone="console" label={t("sectionLabel.philosophy")}>
       <div className={WRAP}>
         <WindowChrome bodyClassName="p-6 sm:p-10 md:p-12 font-mono">
           <div className="text-muted-foreground select-none text-lg">
@@ -39,7 +41,7 @@ export function PhilosophyPrinciples({ block, editable }: SectionProps) {
                 field="statement"
                 editable={editable}
                 as="p"
-                placeholder="Statement"
+                placeholder={t("placeholder.statement")}
                 className={cn(
                   "block text-balance break-words font-display font-bold tracking-[-0.03em] text-foreground",
                   statementSize(statement.length),
@@ -58,7 +60,7 @@ export function PhilosophyPrinciples({ block, editable }: SectionProps) {
                 block={block}
                 field="attribution"
                 editable={editable}
-                placeholder="Attribution"
+                placeholder={t("placeholder.attribution")}
                 className="font-bold"
               />
             </div>

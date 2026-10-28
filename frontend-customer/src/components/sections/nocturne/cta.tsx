@@ -1,9 +1,11 @@
 import { Img, SmartLink, Txt, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { BTN_ON_CREAM, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** The lamp: the one daylight band on the dark page, calling the visitor in. */
 export function CtaLamp({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -24,7 +26,7 @@ export function CtaLamp({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className="nocturne-soft mt-4 block max-w-[18ch] text-balance break-words font-display text-[clamp(2.2rem,1.5rem+2.8vw,4.3rem)] font-normal leading-[1.04]"
           />
           <Txt
@@ -32,7 +34,7 @@ export function CtaLamp({ block, editable }: SectionProps) {
             field="text"
             editable={editable}
             as="p"
-            placeholder="Text"
+            placeholder={t("placeholder.text")}
             className="mt-6 block max-w-[44ch] text-pretty text-[1.0625rem] leading-[1.65] text-muted-foreground"
           />
           <div className="mt-9">
@@ -41,7 +43,7 @@ export function CtaLamp({ block, editable }: SectionProps) {
                 block={block}
                 field="ctaLabel"
                 editable={editable}
-                placeholder="Button text"
+                placeholder={t("placeholder.buttonText")}
               />
             </SmartLink>
           </div>

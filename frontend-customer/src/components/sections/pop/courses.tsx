@@ -12,12 +12,14 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, PopSection, WRAP } from "./ui";
+import { useTranslations } from "next-intl";
 
 const BAND = ["bg-[var(--accent)]", "bg-[var(--card)]", "bg-[var(--pop-sun)]"];
 
 /** Trading cards: a colour frame around the cover, the price as a tilted
  *  sticker, title and description on paper. */
 export function CoursesCards({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const courses = (Array.isArray(data) ? (data as Course[]) : []).slice(
     0,
     block.limit === "6" ? 6 : 3,
@@ -36,7 +38,7 @@ export function CoursesCards({ block, data, editable }: SectionProps) {
               editable={editable}
               as="h2"
               className="pop-display pop-h2 mt-6"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
             />
             <Txt
               block={block}
@@ -53,10 +55,10 @@ export function CoursesCards({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "All courses"
+                t("cta.allCourses")
               )}
             </SmartLink>
           )}
@@ -66,8 +68,8 @@ export function CoursesCards({ block, data, editable }: SectionProps) {
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No courses yet"
-              text="Published courses appear here automatically."
+              title={t("pop.emptyCoursesTitle")}
+              text={t("pop.emptyCoursesText")}
             />
           </div>
         ) : (
@@ -117,8 +119,7 @@ export function CoursesCards({ block, data, editable }: SectionProps) {
                     {typeof c.lesson_count === "number" &&
                       c.lesson_count > 0 && (
                         <p className="pop-mono text-[0.8125rem] text-muted-foreground">
-                          {c.lesson_count}{" "}
-                          {c.lesson_count === 1 ? "lesson" : "lessons"}
+                          {t("course.lessons", { count: c.lesson_count })}
                         </p>
                       )}
                     <h3

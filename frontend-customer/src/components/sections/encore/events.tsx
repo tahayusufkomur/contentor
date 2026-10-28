@@ -40,7 +40,7 @@ export function EventsTourDates({ block, data, editable }: SectionProps) {
                 "hidden grid-cols-[10rem_minmax(0,1fr)_9rem_6rem] items-center gap-x-6 border-b border-foreground py-3 text-muted-foreground sm:grid",
               )}
             >
-              <span>{t("encore.date")}</span>
+              <span>{t("table.date")}</span>
               <span>{t("encore.show")}</span>
               <span>{t("encore.venue")}</span>
               <span />

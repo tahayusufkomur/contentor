@@ -2,11 +2,13 @@ import { cn } from "@/lib/utils";
 import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { FRAME, H3, Opener, Section, WRAP, roman, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** Fittings: steps set as ruled rows with roman numerals and wide measures. */
 export function HowItWorksFittings({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -51,7 +53,9 @@ export function HowItWorksFittings({ block, editable }: SectionProps) {
                   "text-[1.4rem] leading-tight md:col-span-4 md:text-[1.6rem]",
                 )}
               >
-                <span className="sr-only">{`Step ${i + 1}: `}</span>
+                <span className="sr-only">
+                  {t("step.labelColon", { number: i + 1 })}{" "}
+                </span>
                 {s.title}
               </h3>
               <p className="max-w-[44ch] font-light text-[1rem] leading-[1.75] text-muted-foreground md:col-span-6">

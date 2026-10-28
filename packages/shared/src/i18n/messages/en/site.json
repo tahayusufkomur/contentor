@@ -24,7 +24,8 @@
     "smallLineLocationFormat": "Small line (e.g. location or format)",
     "smallLineFormatAges": "Small line (e.g. format or ages)",
     "email": "you@yourstudio.com",
-    "emailExample": "you@example.com"
+    "emailExample": "you@example.com",
+    "signature": "Signature"
   },
   "empty": {
     "courses": {
@@ -50,7 +51,8 @@
     "contact": "Contact",
     "philosophy": "Philosophy",
     "benefits": "Benefits",
-    "howItWorks": "How it works"
+    "howItWorks": "How it works",
+    "notes": "Notes"
   },
   "contact": {
     "email": "Email",
@@ -76,7 +78,8 @@
     "book": "Book",
     "inPerson": "In person",
     "onlineLive": "Online, live",
-    "reserveSpot": "Reserve spot"
+    "reserveSpot": "Reserve spot",
+    "onlineLiveStream": "Online Live Stream"
   },
   "plan": {
     "subscribe": "Subscribe",
@@ -95,11 +98,13 @@
     "when": "When",
     "session": "Session",
     "where": "Where",
-    "fee": "Fee"
+    "fee": "Fee",
+    "date": "Date"
   },
   "cta": {
     "allCourses": "All courses",
-    "fullCalendar": "Full calendar"
+    "fullCalendar": "Full calendar",
+    "begin": "Begin"
   },
   "step": {
     "label": "Step {number}",
@@ -147,10 +152,8 @@
     "trainingHours": "Training Hours",
     "inquiries": "Inquiries",
     "messageSensei": "Direct Message to Sensei",
-    "begin": "Begin",
     "tatamiEntry": "Tatami Entry",
     "reserveSpot": "Reserve Spot",
-    "onlineLiveStream": "Online Live Stream",
     "allCourses": "All courses & syllabus",
     "fullCalendar": "Full training calendar",
     "emptyCoursesText": "Publish a course and it appears here ranked by belt.",
@@ -192,11 +195,9 @@
     "emptyEventsTitle": "No upcoming readings scheduled",
     "emptyEventsText": "Schedule a live colloquium or workshop and it appears in the programme automatically.",
     "viewProgramme": "View full programme",
-    "notes": "Notes",
     "authorLocation": "Author / Location",
     "process": "Process",
     "galleryOfPlates": "Gallery of Plates",
-    "atmosphere": "Atmosphere",
     "subscriptions": "Subscriptions",
     "orderOfSubscription": "Order of Subscription",
     "subscriptionTerms": "See subscription terms",
@@ -251,7 +252,6 @@
   },
   "encore": {
     "venue": "Venue",
-    "date": "Date",
     "show": "Show",
     "online": "Online",
     "tickets": "Tickets",
@@ -342,8 +342,6 @@
     "basecamp": "Basecamp",
     "join": "Join",
     "itemsIncluded": "{count, plural, one {item included} other {items included}}",
-    "lessons": "lessons",
-    "price": "price",
     "allRoutes": "All routes",
     "allMeetups": "All meetups"
   },
@@ -358,5 +356,35 @@
     "emptyPlansText": "Create a pass under Billing and it appears here automatically.",
     "sessionsIncluded": "{count, plural, one {# course/session included} other {# courses/sessions included}}",
     "viewFullTimetable": "View full timetable"
+  },
+  "photo": {
+    "atmosphere": "Atmosphere"
+  },
+  "maison": {
+    "allSalons": "All salons",
+    "atelier": "Atelier",
+    "emptyEventsTitle": "No upcoming salons",
+    "emptyEventsText": "Schedule a salon or event and it appears here.",
+    "look": "Look {numeral}",
+    "pieces": "{count, plural, one {# piece} other {# pieces}}",
+    "requestSeat": "Request a seat",
+    "theCollection": "The collection"
+  },
+  "pop": {
+    "emptyCoursesTitle": "No courses yet",
+    "emptyCoursesText": "Published courses appear here automatically.",
+    "emptyEventsTitle": "No upcoming events",
+    "emptyEventsText": "Scheduled live sessions appear here automatically.",
+    "emptyPlansTitle": "No plans yet",
+    "emptyPlansText": "Create a membership plan and it shows up here."
+  },
+  "primer": {
+    "byTheEnd": "By the end you can",
+    "classroom": "Classroom"
+  },
+  "terminal": {
+    "emptyEventsTitle": "No upcoming events scheduled",
+    "emptyPlansText": "Create a plan under Billing and it appears here automatically.",
+    "open": "open"
   }
 }
