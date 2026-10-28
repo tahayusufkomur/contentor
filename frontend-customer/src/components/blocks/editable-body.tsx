@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { RichHtml } from "./rich-html";
 import type { EditableContext } from "@/lib/blocks/types";
@@ -23,6 +24,7 @@ export function EditableBody({
   className,
   placeholder,
 }: EditableBodyProps) {
+  const t = useTranslations("site");
   const openEditor = editable?.onEditRichText;
   if (!openEditor) {
     return <RichHtml html={value} className={className} />;
@@ -33,7 +35,7 @@ export function EditableBody({
       data-rich-body="true"
       role="button"
       tabIndex={0}
-      title="Click to edit text"
+      title={t("editor.clickToEdit")}
       onClick={() => openEditor(field, value || "")}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -50,7 +52,7 @@ export function EditableBody({
         <RichHtml html={value} />
       ) : (
         <span className="text-muted-foreground">
-          {placeholder || "Click to add text"}
+          {placeholder || t("placeholder.clickToAddText")}
         </span>
       )}
     </div>

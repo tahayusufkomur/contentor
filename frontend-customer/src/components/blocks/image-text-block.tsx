@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { InlineText } from "./inline-text";
 import { EditableBody } from "./editable-body";
@@ -5,6 +6,7 @@ import { headingClasses } from "@/lib/blocks/style";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
 export function ImageTextBlock({ data, editable }: BlockComponentProps) {
+  const t = useTranslations("site");
   const img = data.image?.url as string | undefined;
   const layout = data.layout || "split";
   const imageLeft = data.imagePosition === "left";
@@ -25,7 +27,7 @@ export function ImageTextBlock({ data, editable }: BlockComponentProps) {
           value={data.heading}
           field="heading"
           editable={editable}
-          placeholder="Heading"
+          placeholder={t("placeholder.heading")}
         />
       )}
       {(data.body || editable) && (
@@ -34,7 +36,7 @@ export function ImageTextBlock({ data, editable }: BlockComponentProps) {
           value={data.body}
           field="body"
           editable={editable}
-          placeholder="Click to add text"
+          placeholder={t("placeholder.clickToAddText")}
         />
       )}
     </div>

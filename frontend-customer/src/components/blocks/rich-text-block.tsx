@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { InlineText } from "./inline-text";
 import { EditableBody } from "./editable-body";
@@ -5,6 +6,7 @@ import { headingClasses } from "@/lib/blocks/style";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
 export function RichTextBlock({ data, editable }: BlockComponentProps) {
+  const t = useTranslations("site");
   if (!editable && !data.heading && !data.body) return null;
   const level = data.headingLevel || "h2";
   const layout = data.layout || "standard";
@@ -20,7 +22,7 @@ export function RichTextBlock({ data, editable }: BlockComponentProps) {
             value={data.heading}
             field="heading"
             editable={editable}
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
           />
         )}
         {(data.body || editable) && (
@@ -29,7 +31,7 @@ export function RichTextBlock({ data, editable }: BlockComponentProps) {
             value={data.body}
             field="body"
             editable={editable}
-            placeholder="Click to add text"
+            placeholder={t("placeholder.clickToAddText")}
           />
         )}
       </div>

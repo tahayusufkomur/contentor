@@ -25,7 +25,12 @@
     "smallLineFormatAges": "Small line (e.g. format or ages)",
     "email": "you@yourstudio.com",
     "emailExample": "you@example.com",
-    "signature": "Signature"
+    "signature": "Signature",
+    "clickToAddText": "Click to add text",
+    "callToAction": "Your call to action",
+    "yourHeadline": "Your headline",
+    "addSubheadline": "Add a subheadline",
+    "announcement": "Announcement"
   },
   "empty": {
     "courses": {
@@ -59,19 +64,36 @@
     "studio": "Studio",
     "office": "Office",
     "location": "Location",
-    "hours": "Hours"
+    "hours": "Hours",
+    "name": "Name",
+    "message": "Message",
+    "messagePlaceholder": "How can we help?",
+    "sending": "Sending…",
+    "send": "Send message",
+    "thanks": "Thanks! We'll be in touch soon.",
+    "error": "Something went wrong. Please try again."
   },
   "course": {
     "label": "Course",
     "lessons": "{count, plural, one {# lesson} other {# lessons}}",
-    "view": "View course"
+    "view": "View course",
+    "notFound": "Course not found",
+    "notFoundText": "The course you are looking for does not exist or has been removed.",
+    "byInstructor": "By {name}",
+    "totalDuration": "{duration} total",
+    "modules": "{count, plural, one {# module} other {# modules}}",
+    "curriculum": "Curriculum",
+    "moduleTitle": "Module {number}: {title}",
+    "freePreview": "Free Preview"
   },
   "price": {
     "free": "Free",
     "freeTrial": "Free trial",
     "membersOnly": "Members only",
     "owned": "Owned",
-    "includedInMembership": "Included in membership"
+    "includedInMembership": "Included in membership",
+    "buyFor": "Buy for {price}",
+    "includedInSubscription": "Included in subscription"
   },
   "event": {
     "reserve": "Reserve",
@@ -93,7 +115,16 @@
     "perMonth": "/mo",
     "perYear": "/yr",
     "perYears": "{count, plural, one {/# yr} other {/# yr}}",
-    "perMonths": "{count, plural, one {/# mo} other {/# mo}}"
+    "perMonths": "{count, plural, one {/# mo} other {/# mo}}",
+    "notFound": "Plan not found",
+    "notFoundText": "This plan does not exist or is no longer available.",
+    "allPlans": "All plans",
+    "whatsIncludedHeading": "What's Included",
+    "noItems": "No content has been added to this plan yet.",
+    "loginToSubscribe": "You need to log in to subscribe",
+    "subscriptionFailed": "Subscription failed.",
+    "bestValue": "Best Value",
+    "viewIncluded": "View included content"
   },
   "table": {
     "lessons": "Lessons",
@@ -390,5 +421,215 @@
     "emptyEventsTitle": "No upcoming events scheduled",
     "emptyPlansText": "Create a plan under Billing and it appears here automatically.",
     "open": "open"
+  },
+  "catalog": {
+    "paid": "Paid",
+    "myCourses": "My Courses",
+    "searchCourses": "Search courses...",
+    "noCourses": "No courses found",
+    "adjustSearch": "Try adjusting your search or filters.",
+    "noneYet": "No courses available yet. Check back soon!"
+  },
+  "filter": {
+    "all": "All"
+  },
+  "cart": {
+    "added": "Added to cart"
+  },
+  "enroll": {
+    "continueLearning": "Continue Learning",
+    "startLearning": "Start Learning",
+    "starting": "Starting…",
+    "enrolling": "Enrolling…",
+    "free": "Enroll for Free",
+    "addToCart": "Add to Cart",
+    "orBundle": "Or get it in a bundle",
+    "orSubscribe": "Or subscribe for access",
+    "viewAllPlans": "View all plans",
+    "comingSoon": "Coming soon",
+    "subscribed": "Subscribed! You now have access."
+  },
+  "eventType": {
+    "liveSession": "Live Session",
+    "liveStream": "Live Stream",
+    "onsiteEvent": "On-site Event",
+    "inPersonEvent": "In-Person Event"
+  },
+  "eventKind": {
+    "liveSession": "Live session",
+    "livestream": "Livestream",
+    "zoom": "Zoom"
+  },
+  "calendar": {
+    "noUpcoming": "No upcoming events",
+    "checkBack": "Check back later for new sessions and events.",
+    "more": "+{count} more",
+    "noEvents": "No events scheduled",
+    "comingUpNext": "Coming up next",
+    "today": "Today",
+    "selectedDay": "Selected Day",
+    "loadFailed": "Couldn't load events for this range.",
+    "month": "Month",
+    "agenda": "Agenda",
+    "live": "Live",
+    "text": "Browse upcoming live sessions, streams, and events.",
+    "listView": "List view →",
+    "upcomingEvents": "Upcoming Events"
+  },
+  "events": {
+    "noneScheduled": "No upcoming events scheduled.",
+    "scheduleFirst": "Schedule your first live session →"
+  },
+  "eventPage": {
+    "liveNow": "Live Now",
+    "ended": "Ended",
+    "upcoming": "Upcoming",
+    "hasEnded": "This event has ended.",
+    "signInToJoin": "Sign in to join",
+    "freeSignIn": "This event is free. Sign in to participate.",
+    "membersSignIn": "This event is for members. Sign in to join.",
+    "purchaseSignIn": "Sign in to purchase or subscribe for access.",
+    "canAttend": "You can attend this event.",
+    "canAttendAddress": "You can attend this event. The address is in the details.",
+    "joinNow": "Join Now",
+    "haveAccess": "You have access to this event.",
+    "notStarted": "The event hasn't started yet. Come back when it's live to join!",
+    "subscribeForAccess": "Subscribe for Access",
+    "getAccess": "Get Access",
+    "purchaseOrSubscribeLive": "Purchase or subscribe to join this live event.",
+    "subscribeLive": "Subscribe to join this live event.",
+    "getAccessNow": "Get access now so you're ready when it starts.",
+    "notFound": "Event not found",
+    "notFoundText": "The event you are looking for does not exist or has been removed."
+  },
+  "page": {
+    "home": "Home",
+    "about": "About",
+    "courses": "Courses",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "events": "Events",
+    "plans": "Plans",
+    "blog": "Blog",
+    "community": "Community",
+    "calendar": "Calendar",
+    "blogWithBrand": "Blog — {brand}"
+  },
+  "duration": {
+    "hoursMinutes": "{hours}h {minutes}m",
+    "minutes": "{minutes}m"
+  },
+  "blog": {
+    "noPosts": "No posts yet.",
+    "contents": "📖 Contents",
+    "tableOfContents": "Table of contents",
+    "readTime": "⏱️ {minutes} min read",
+    "writtenBy": "✍️ Written by",
+    "shareArticle": "📢 Share this article",
+    "moreArticles": "📚 More articles",
+    "shareOnX": "🐦 Share on X"
+  },
+  "eventsPage": {
+    "title": "Upcoming events",
+    "text": "Live sessions, streams, and in-person events over the next 90 days.",
+    "viewCalendar": "View as calendar →"
+  },
+  "itemType": {
+    "download": "Download",
+    "bundle": "Bundle",
+    "event": "Event"
+  },
+  "store": {
+    "title": "Store",
+    "text": "Browse courses, downloads, live sessions, and bundles.",
+    "searchItems": "Search items...",
+    "subscriptionPlans": "Subscription Plans",
+    "noItems": "No items found",
+    "noItemsText": "Try adjusting your search or filter to find what you're looking for.",
+    "loadFailed": "Failed to load store items",
+    "addedToCart": "\"{title}\" added to cart",
+    "subscribed": "Subscribed! You now have access to plan content.",
+    "alreadySubscribed": "You're already subscribed to this plan",
+    "filter": {
+      "courses": "Courses",
+      "downloads": "Downloads",
+      "liveSessions": "Live Sessions",
+      "liveStreams": "Live Streams",
+      "inPersonEvents": "In-Person Events",
+      "bundles": "Bundles"
+    },
+    "browse": "Browse store"
+  },
+  "nav": {
+    "installApp": "Install app",
+    "creatorStudio": "Creator studio",
+    "dashboard": "Dashboard",
+    "signOut": "Sign Out",
+    "signIn": "Sign In",
+    "toggle": "Toggle navigation",
+    "brandFallback": "Welcome",
+    "loggedOut": "You've been logged out",
+    "footer": "Footer",
+    "pages": "Pages",
+    "follow": "Follow"
+  },
+  "blockEmpty": {
+    "video": {
+      "title": "No video yet",
+      "text": "Paste a YouTube or Vimeo link, or pick a library video, on the left."
+    },
+    "logos": {
+      "title": "No logos yet",
+      "text": "Add logos from the editor panel on the left."
+    },
+    "stats": {
+      "title": "No stats yet",
+      "text": "Add your first stat from the editor panel on the left."
+    },
+    "faq": {
+      "title": "No questions yet",
+      "text": "Add your first question from the editor panel on the left."
+    },
+    "events": {
+      "title": "Your events will appear here",
+      "text": "Schedule an event and it'll show up automatically."
+    },
+    "store": {
+      "title": "Your products will appear here",
+      "text": "Add a course, download or session and it'll appear here."
+    },
+    "testimonials": {
+      "title": "No testimonials yet",
+      "text": "Add your first testimonial from the editor panel on the left."
+    },
+    "gallery": {
+      "title": "No images yet",
+      "text": "Add images from the editor panel on the left."
+    },
+    "plans": {
+      "title": "No plans available",
+      "text": "There are no subscription plans available right now. Check back later!"
+    },
+    "page": "This page has no content yet."
+  },
+  "editor": {
+    "clickToEdit": "Click to edit text"
+  },
+  "gallery": {
+    "enlargeCaption": "Enlarge: {caption}",
+    "enlarge": "Enlarge image",
+    "close": "Close",
+    "previous": "Previous image",
+    "next": "Next image"
+  },
+  "testimonial": {
+    "rated": "Rated {rating} out of 5"
+  },
+  "banner": {
+    "dismiss": "Dismiss announcement"
+  },
+  "block": {
+    "video": "Video"
   }
 }

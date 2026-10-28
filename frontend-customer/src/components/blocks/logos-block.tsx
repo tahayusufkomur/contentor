@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Building2 } from "lucide-react";
 import { BlockPlaceholder } from "./block-placeholder";
 import type { BlockComponentProps } from "@/lib/blocks/types";
@@ -11,6 +12,7 @@ const LOGO_IMG =
   "h-10 w-auto opacity-70 grayscale transition hover:opacity-100 hover:grayscale-0";
 
 export function LogosBlock({ data, editable }: BlockComponentProps) {
+  const t = useTranslations("site");
   const items: LogoItem[] = (data.items ?? []).filter(
     (it: LogoItem) => it?.image?.url,
   );
@@ -18,8 +20,8 @@ export function LogosBlock({ data, editable }: BlockComponentProps) {
     return editable ? (
       <BlockPlaceholder
         icon={Building2}
-        title="No logos yet"
-        description="Add logos from the editor panel on the left."
+        title={t("blockEmpty.logos.title")}
+        description={t("blockEmpty.logos.text")}
       />
     ) : null;
   const layout = data.layout || "row";

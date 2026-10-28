@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { NavLink } from "@/components/ui/nav-link";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { Button } from "@/components/ui/button";
@@ -35,13 +36,8 @@ const VALID_LAYOUTS: ReadonlySet<string> = new Set([
   "pill",
 ]);
 
-const FALLBACK_LINKS: NavLinkType[] = [
-  { label: "Courses", href: "/courses" },
-  { label: "Events", href: "/events" },
-  { label: "About", href: "/about" },
-];
-
 function Brand({ config }: { config: TenantConfig | null }) {
+  const t = useTranslations("site");
   const layout = config?.navbar_config?.layout ?? "classic";
   // Curated marks carry no wordmark, so the header pairs them with the brand
   // name; "stacked" puts the name under the mark (two-line lockup) and
@@ -74,7 +70,7 @@ function Brand({ config }: { config: TenantConfig | null }) {
       )}
       {showBrandName(config) && (
         <span className={`font-display ${stacked ? "text-sm" : ""}`}>
-          {config?.brand_name || "Welcome"}
+          {config?.brand_name || t("nav.brandFallback")}
         </span>
       )}
     </NavLink>
@@ -127,6 +123,7 @@ function AuthCluster({
   onSignOut: () => void;
   dashboardHref: string;
 }) {
+  const t = useTranslations("site");
   return (
     <div className="flex items-center gap-3">
       {user ? (
@@ -136,8 +133,8 @@ function AuthCluster({
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {user.role === "owner" || user.role === "coach"
-              ? "Creator studio"
-              : "Dashboard"}
+              ? t("nav.creatorStudio")
+              : t("nav.dashboard")}
           </NavLink>
           <AnnouncementBell />
           {!compact && (
@@ -154,11 +151,14 @@ function AuthCluster({
             >
               <Link
                 href="/plans"
-                title={hasSubscription ? "Plans" : "Subscribe"}
-                aria-label={hasSubscription ? "Plans" : "Subscribe"}
+                title={hasSubscription ? t("page.plans") : t("plan.subscribe")}
+                aria-label={
+                  hasSubscription ? t("page.plans") : t("plan.subscribe")
+                }
               >
                 <Zap className="h-4 w-4" />
-                {!compact && (hasSubscription ? "Plans" : "Subscribe")}
+                {!compact &&
+                  (hasSubscription ? t("page.plans") : t("plan.subscribe"))}
               </Link>
             </Button>
           )}
@@ -168,10 +168,10 @@ function AuthCluster({
             onClick={onSignOut}
             disabled={signingOut}
             className="gap-1.5"
-            title="Sign Out"
+            title={t("nav.signOut")}
           >
             <LogOut className="h-4 w-4" />
-            {!compact && "Sign Out"}
+            {!compact && t("nav.signOut")}
           </Button>
         </>
       ) : (
@@ -183,7 +183,7 @@ function AuthCluster({
               size="sm"
               className="font-normal text-muted-foreground hover:text-foreground"
             >
-              <Link href="/login">Sign In</Link>
+              <Link href="/login">{t("nav.signIn")}</Link>
             </Button>
           )}
           {cta && (
@@ -216,6 +216,7 @@ export function PublicHeader({
   /** Which pages have something behind them (absent: show every link). */
   menu?: SiteMenu;
 }) {
+  const t = useTranslations("site");
   const config = useTenant();
   const router = useRouter();
   const pathname = usePathname();
@@ -239,8 +240,13 @@ export function PublicHeader({
     pathname === "/";
 
   const isStaff = user?.role === "owner" || user?.role === "coach";
+  const fallbackLinks: NavLinkType[] = [
+    { label: t("page.courses"), href: "/courses" },
+    { label: t("page.events"), href: "/events" },
+    { label: t("page.about"), href: "/about" },
+  ];
   const navLinks = headerNavLinks(
-    navbar?.links?.length ? navbar.links : FALLBACK_LINKS,
+    navbar?.links?.length ? navbar.links : fallbackLinks,
     plansEnabled,
     isStaff ? undefined : menu,
     Boolean(user) && !isStaff,
@@ -251,13 +257,17 @@ export function PublicHeader({
     user && communityEnabled
       ? [
           ...navLinks,
-          { label: "Community", href: "/community", dot: communityUnread },
+          {
+            label: t("page.community"),
+            href: "/community",
+            dot: communityUnread,
+          },
         ]
       : navLinks;
   // Blog only appears once the coach has published at least one post (or kept it in custom_links).
   const fullNavLinks: (NavLinkType & { dot?: boolean })[] =
     blogEnabled && !withCommunity.some((l) => l.href === "/blog")
-      ? [...withCommunity, { label: "Blog", href: "/blog" }]
+      ? [...withCommunity, { label: t("page.blog"), href: "/blog" }]
       : withCommunity;
   const showLogin = navbar?.show_login !== false;
   const cta = resolveHeaderCta(navbar?.cta, plansEnabled, menu);
@@ -273,7 +283,9 @@ export function PublicHeader({
   const handleSignOut = async () => {
     setSigningOut(true);
     await fetch("/api/auth/logout", { method: "POST" });
-    navigate("/login?toast=You've+been+logged+out&toast_type=info");
+    navigate(
+      `/login?toast=${encodeURIComponent(t("nav.loggedOut"))}&toast_type=info`,
+    );
     router.refresh();
   };
 
@@ -305,7 +317,7 @@ export function PublicHeader({
     <button
       className={burgerCls}
       onClick={() => setMobileOpen(!mobileOpen)}
-      aria-label="Toggle navigation"
+      aria-label={t("nav.toggle")}
     >
       {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
     </button>
@@ -331,7 +343,7 @@ export function PublicHeader({
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             onClick={() => setMobileOpen(false)}
           >
-            Install app
+            {t("nav.installApp")}
           </NavLink>
         )}
         {user ? (
@@ -342,8 +354,8 @@ export function PublicHeader({
               onClick={() => setMobileOpen(false)}
             >
               {user.role === "owner" || user.role === "coach"
-                ? "Creator studio"
-                : "Dashboard"}
+                ? t("nav.creatorStudio")
+                : t("nav.dashboard")}
             </NavLink>
             {authProps.showSubscribe && (
               <Button
@@ -354,7 +366,7 @@ export function PublicHeader({
               >
                 <Link href="/plans" onClick={() => setMobileOpen(false)}>
                   <Zap className="h-4 w-4" />
-                  {hasSubscription ? "Plans" : "Subscribe"}
+                  {hasSubscription ? t("page.plans") : t("plan.subscribe")}
                 </Link>
               </Button>
             )}
@@ -372,7 +384,7 @@ export function PublicHeader({
               className="w-full justify-start gap-1.5"
             >
               <LogOut className="h-4 w-4" />
-              Sign Out
+              {t("nav.signOut")}
             </Button>
           </>
         ) : (
@@ -380,7 +392,7 @@ export function PublicHeader({
             {showLogin && (
               <Button asChild variant="ghost" size="sm" className="w-full">
                 <Link href="/login" onClick={() => setMobileOpen(false)}>
-                  Sign In
+                  {t("nav.signIn")}
                 </Link>
               </Button>
             )}

@@ -1,13 +1,17 @@
+import { getTranslations } from "next-intl/server";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { fetchDynamicData } from "@/lib/blocks/fetch-dynamic-data";
 import { PageView } from "@/components/blocks/page-view";
-import { PAGE_LABELS } from "@/lib/blocks/pages";
 
-export const metadata = { title: "FAQ" };
+export async function generateMetadata() {
+  const t = await getTranslations("site");
+  return { title: t("page.faq") };
+}
 
 export const dynamic = "force-dynamic";
 
 export default async function FaqPage() {
+  const t = await getTranslations("site");
   const slug = await getTenantSlug();
   const config = await fetchTenantConfig(slug);
   const blocks = config?.pages?.faq?.blocks ?? [];
@@ -17,7 +21,7 @@ export default async function FaqPage() {
       pageKey="faq"
       blocks={blocks}
       dynamicData={dynamicData}
-      pageTitle={PAGE_LABELS.faq}
+      pageTitle={t("page.faq")}
     />
   );
 }

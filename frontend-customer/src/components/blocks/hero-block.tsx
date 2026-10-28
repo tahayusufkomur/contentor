@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -20,6 +21,7 @@ const LIGHT_SCRIM: Record<string, string> = {
 };
 
 export function HeroBlock({ data, editable }: BlockComponentProps) {
+  const t = useTranslations("site");
   const bg = data.bgImage?.url as string | undefined;
   const layout =
     data.layout === "split" || data.layout === "minimal"
@@ -59,7 +61,7 @@ export function HeroBlock({ data, editable }: BlockComponentProps) {
       value={data.heading}
       field="heading"
       editable={editable}
-      placeholder="Your headline"
+      placeholder={t("placeholder.yourHeadline")}
     />
   );
   const subheading = (data.subheading || editable) && (
@@ -69,7 +71,7 @@ export function HeroBlock({ data, editable }: BlockComponentProps) {
       value={data.subheading}
       field="subheading"
       editable={editable}
-      placeholder="Add a subheadline"
+      placeholder={t("placeholder.addSubheadline")}
     />
   );
   const button = data.ctaText && data.ctaHref && (

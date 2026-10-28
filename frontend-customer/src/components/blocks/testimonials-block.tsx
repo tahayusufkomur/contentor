@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Quote, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BlockPlaceholder } from "./block-placeholder";
@@ -36,10 +37,14 @@ function Avatar({
 }
 
 function Stars({ rating }: { rating?: string }) {
+  const t = useTranslations("site");
   const n = Number(rating) || 0;
   if (n < 1) return null;
   return (
-    <div className="flex gap-0.5" aria-label={`Rated ${n} out of 5`}>
+    <div
+      className="flex gap-0.5"
+      aria-label={t("testimonial.rated", { rating: n })}
+    >
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
@@ -67,13 +72,14 @@ function NameLine({ item }: { item: TestimonialItem }) {
 }
 
 export function TestimonialsBlock({ data, editable }: BlockComponentProps) {
+  const t = useTranslations("site");
   const items: TestimonialItem[] = data.items ?? [];
   if (!items.length)
     return editable ? (
       <BlockPlaceholder
         icon={Quote}
-        title="No testimonials yet"
-        description="Add your first testimonial from the editor panel on the left."
+        title={t("blockEmpty.testimonials.title")}
+        description={t("blockEmpty.testimonials.text")}
       />
     ) : null;
   const layout = data.layout || "cards";

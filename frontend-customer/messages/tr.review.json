@@ -5711,6 +5711,14 @@
     "src": "933689cd",
     "reviewed": false
   },
+  "pwa.guide.metaDescription": {
+    "src": "dc37d777",
+    "reviewed": false
+  },
+  "pwa.manifestDescription": {
+    "src": "80954f1a",
+    "reviewed": false
+  },
   "student.home.welcome": {
     "src": "b807833e",
     "reviewed": false

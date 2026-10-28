@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { BarChart3 } from "lucide-react";
 import { BlockPlaceholder } from "./block-placeholder";
 import type { BlockComponentProps } from "@/lib/blocks/types";
@@ -8,6 +9,7 @@ interface StatItem {
 }
 
 export function StatsBlock({ data, editable }: BlockComponentProps) {
+  const t = useTranslations("site");
   const items: StatItem[] = (data.items ?? []).filter(
     (it: StatItem) => it?.value || it?.label,
   );
@@ -15,8 +17,8 @@ export function StatsBlock({ data, editable }: BlockComponentProps) {
     return editable ? (
       <BlockPlaceholder
         icon={BarChart3}
-        title="No stats yet"
-        description="Add your first stat from the editor panel on the left."
+        title={t("blockEmpty.stats.title")}
+        description={t("blockEmpty.stats.text")}
       />
     ) : null;
   const layout = data.layout || "cards";

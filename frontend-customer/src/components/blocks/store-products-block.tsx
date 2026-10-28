@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,20 +10,27 @@ import { BlockPlaceholder } from "./block-placeholder";
 import type { StoreItem } from "@/types/billing";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
-const TYPE_LABELS: Record<string, string> = {
-  course: "Course",
-  download: "Download",
-  live_class: "Live Session",
-  live_stream: "Live Stream",
-  onsite_event: "In-Person Event",
-  bundle: "Bundle",
-};
+const TYPE_LABELS = {
+  course: "course.label",
+  download: "itemType.download",
+  live_class: "eventType.liveSession",
+  live_stream: "eventType.liveStream",
+  onsite_event: "eventType.inPersonEvent",
+  bundle: "itemType.bundle",
+} as const;
+
+const typeLabel = (
+  t: (key: (typeof TYPE_LABELS)[keyof typeof TYPE_LABELS]) => string,
+  type: string,
+) =>
+  type in TYPE_LABELS ? t(TYPE_LABELS[type as keyof typeof TYPE_LABELS]) : type;
 
 export function StoreProductsBlock({
   data,
   dynamicData,
   editable,
 }: BlockComponentProps) {
+  const t = useTranslations("site");
   let items: StoreItem[] = dynamicData ?? [];
   const limit = Number(data.limit) || 8;
   items = items.slice(0, limit);
@@ -30,8 +38,8 @@ export function StoreProductsBlock({
     return editable ? (
       <BlockPlaceholder
         icon={ShoppingBag}
-        title="Your products will appear here"
-        description="Add a course, download or session and it'll appear here."
+        title={t("blockEmpty.store.title")}
+        description={t("blockEmpty.store.text")}
       />
     ) : null;
   const layout = data.layout || "grid";
@@ -45,7 +53,7 @@ export function StoreProductsBlock({
       )}
       <Button asChild variant="ghost" size="sm" className="gap-1">
         <Link href="/store">
-          Browse store
+          {t("store.browse")}
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </Button>
@@ -88,7 +96,7 @@ export function StoreProductsBlock({
                     )}
                     <div className="min-w-0 flex-1">
                       <Badge variant="secondary" className="text-xs">
-                        {TYPE_LABELS[item.type] ?? item.type}
+                        {typeLabel(t, item.type)}
                       </Badge>
                       <h3 className="mt-1 font-semibold leading-snug line-clamp-1">
                         {item.title}
@@ -143,7 +151,7 @@ export function StoreProductsBlock({
                 )}
                 <CardContent className="space-y-3 p-4">
                   <Badge variant="secondary" className="text-xs">
-                    {TYPE_LABELS[item.type] ?? item.type}
+                    {typeLabel(t, item.type)}
                   </Badge>
                   <h3 className="font-semibold leading-snug line-clamp-2">
                     {item.title}

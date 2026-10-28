@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import {
   CourseCard,
@@ -45,6 +46,7 @@ export function CourseCatalogClient({
   showMeta = true,
   filterGroupIds = [],
 }: CourseCatalogClientProps) {
+  const t = useTranslations("site");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [facetSel, setFacetSel] = useState<FacetSelection>({});
@@ -79,11 +81,11 @@ export function CourseCatalogClient({
   );
 
   const filters: { label: string; value: Filter }[] = [
-    { label: "All", value: "all" },
-    { label: "Free", value: "free" },
-    { label: "Paid", value: "paid" },
+    { label: t("filter.all"), value: "all" },
+    { label: t("price.free"), value: "free" },
+    { label: t("catalog.paid"), value: "paid" },
     ...(hasAccessible
-      ? [{ label: "My Courses", value: "accessible" as Filter }]
+      ? [{ label: t("catalog.myCourses"), value: "accessible" as Filter }]
       : []),
   ];
 
@@ -96,7 +98,7 @@ export function CourseCatalogClient({
             <div className="relative max-w-sm flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search courses..."
+                placeholder={t("catalog.searchCourses")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
@@ -133,11 +135,9 @@ export function CourseCatalogClient({
       {filtered.length === 0 ? (
         <EmptyState
           icon={BookOpen}
-          title="No courses found"
+          title={t("catalog.noCourses")}
           description={
-            search.trim()
-              ? "Try adjusting your search or filters."
-              : "No courses available yet. Check back soon!"
+            search.trim() ? t("catalog.adjustSearch") : t("catalog.noneYet")
           }
         />
       ) : (

@@ -32,6 +32,8 @@
     "androidInstallButton": "Installieren",
     "desktopNote": "Klicke am Computer auf das Installationssymbol in der Adressleiste deines Browsers.",
     "installedTitle": "Alles erledigt!",
-    "installedBody": "Die App ist auf deinem Gerät installiert."
-  }
+    "installedBody": "Die App ist auf deinem Gerät installiert.",
+    "metaDescription": "Schritt-für-Schritt-Anleitung, um diese App auf deinem Handy zu installieren."
+  },
+  "manifestDescription": "Plattform für Content-Creator"
 }

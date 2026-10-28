@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, X } from "lucide-react";
@@ -8,6 +9,7 @@ import { InlineText } from "./inline-text";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
 export function BannerBlock({ data, editable }: BlockComponentProps) {
+  const t = useTranslations("site");
   const dismissible = !!data.dismissible;
   const storageKey = `contentor:banner-dismissed:${data.id}`;
   const [dismissed, setDismissed] = useState(false);
@@ -41,7 +43,7 @@ export function BannerBlock({ data, editable }: BlockComponentProps) {
         value={data.text}
         field="text"
         editable={editable}
-        placeholder="Announcement"
+        placeholder={t("placeholder.announcement")}
       />
       {data.linkText && data.linkHref && (
         <Link
@@ -59,7 +61,7 @@ export function BannerBlock({ data, editable }: BlockComponentProps) {
     <button
       type="button"
       onClick={handleDismiss}
-      aria-label="Dismiss announcement"
+      aria-label={t("banner.dismiss")}
       className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <X className="h-4 w-4" />

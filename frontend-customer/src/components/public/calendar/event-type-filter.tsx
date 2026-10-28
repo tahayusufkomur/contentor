@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { EVENT_TYPE_CONFIG } from "@/lib/event-colors";
 import type { CalendarEventType } from "@/types/live";
@@ -19,6 +20,7 @@ export function EventTypeFilter({
   activeTypes,
   onToggle,
 }: EventTypeFilterProps) {
+  const t = useTranslations("site");
   return (
     <div className="flex flex-wrap gap-2">
       {ALL_TYPES.map((type) => {
@@ -36,7 +38,7 @@ export function EventTypeFilter({
             )}
           >
             <span className={cn("h-2 w-2 rounded-full", config.dotClass)} />
-            {config.label}
+            {t(config.labelKey)}
           </button>
         );
       })}

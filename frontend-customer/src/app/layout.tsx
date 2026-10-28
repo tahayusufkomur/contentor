@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { cookies, headers } from "next/headers";
 import { IntlProvider } from "@/i18n/provider";
 import { getLocale, getMessages } from "next-intl/server";
+import { ogLocale, resolveLocale } from "@shared/i18n/locales";
 
 import { InstallPrompt } from "@/components/shared/install-prompt";
 import { PreviewGate } from "@/components/shared/preview-gate";
@@ -109,6 +110,8 @@ export async function generateMetadata(): Promise<Metadata> {
     // Inner pages set `title: "About"` and render "About · <Brand>".
     title: { default: name, template: `%s · ${name}` },
     description,
+    // Link previews: the site's language, not the creator's.
+    openGraph: { locale: ogLocale(resolveLocale(config?.default_locale)) },
     appleWebApp: {
       capable: true,
       statusBarStyle: "default",

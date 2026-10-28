@@ -32,6 +32,8 @@
     "androidInstallButton": "Yükle",
     "desktopNote": "Bilgisayarda, tarayıcının adres çubuğundaki yükleme simgesine tıkla.",
     "installedTitle": "Her şey hazır!",
-    "installedBody": "Uygulama cihazına yüklendi."
-  }
+    "installedBody": "Uygulama cihazına yüklendi.",
+    "metaDescription": "Bu uygulamayı telefonuna yüklemek için adım adım rehber."
+  },
+  "manifestDescription": "İçerik üreticisi platformu"
 }

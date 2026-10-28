@@ -28,6 +28,7 @@ interface EnrollButtonProps {
 
 export function EnrollButton({ course }: EnrollButtonProps) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const navigate = useNavigate();
 
   const opts = course.unlock_options;
@@ -54,7 +55,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
       type: "course",
       image: course.thumbnail_signed_url || course.thumbnail_url,
     });
-    toast.success("Added to cart", { description: course.title });
+    toast.success(t("cart.added"), { description: course.title });
   }
 
   function handleBuyNow() {
@@ -71,7 +72,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
           onClick={() => navigate(`/learn/${course.slug}`)}
         >
           <Play className="h-4 w-4" />
-          Continue Learning
+          {t("enroll.continueLearning")}
         </Button>
         {stateNote}
       </div>
@@ -86,10 +87,10 @@ export function EnrollButton({ course }: EnrollButtonProps) {
           className="w-full gap-2"
           onClick={handleEnroll}
           loading={enrolling}
-          loadingText="Starting…"
+          loadingText={t("enroll.starting")}
         >
           <Play className="h-4 w-4" />
-          Start Learning
+          {t("enroll.startLearning")}
         </Button>
         {stateNote}
       </div>
@@ -103,9 +104,9 @@ export function EnrollButton({ course }: EnrollButtonProps) {
         className="w-full gap-2"
         onClick={handleEnroll}
         loading={enrolling}
-        loadingText="Enrolling…"
+        loadingText={t("enroll.enrolling")}
       >
-        Enroll for Free
+        {t("enroll.free")}
       </Button>
     );
   }
@@ -136,8 +137,13 @@ export function EnrollButton({ course }: EnrollButtonProps) {
         <div className="flex flex-col gap-2">
           <Button className="w-full gap-2" onClick={handleBuyNow}>
             <ShoppingCart className="h-4 w-4" />
-            Buy for{" "}
-            {formatMoney(opts.purchase!.price, opts.purchase!.currency, locale)}
+            {t("price.buyFor", {
+              price: formatMoney(
+                opts.purchase!.price,
+                opts.purchase!.currency,
+                locale,
+              ),
+            })}
           </Button>
           <p className="text-center text-xs text-muted-foreground">
             {purchaseTerms(opts.purchase!.window, locale)}
@@ -147,7 +153,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
             variant="outline"
             onClick={handleAddToCart}
           >
-            Add to Cart
+            {t("enroll.addToCart")}
           </Button>
         </div>
       )}
@@ -158,7 +164,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
           {sectionCount > 1 && <Separator className="my-1" />}
           <div className="flex flex-col gap-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Or get it in a bundle
+              {t("enroll.orBundle")}
             </p>
             {opts.bundles!.map((bundle) => (
               <Button
@@ -174,7 +180,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
                     currency: bundle.currency,
                     type: "bundle",
                   });
-                  toast.success("Added to cart", { description: bundle.name });
+                  toast.success(t("cart.added"), { description: bundle.name });
                 }}
               >
                 <Package className="h-4 w-4" />
@@ -192,13 +198,13 @@ export function EnrollButton({ course }: EnrollButtonProps) {
           {sectionCount > 1 && <Separator className="my-1" />}
           <div className="flex flex-col gap-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Or subscribe for access
+              {t("enroll.orSubscribe")}
             </p>
             {opts.plans!.map((plan) => (
               <PlanSubscribeButton key={plan.id} plan={plan} />
             ))}
             <Button variant="ghost" size="sm" className="w-full" asChild>
-              <NavLink href="/plans">View all plans</NavLink>
+              <NavLink href="/plans">{t("enroll.viewAllPlans")}</NavLink>
             </Button>
           </div>
         </>
@@ -207,7 +213,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
       {/* Fallback if no options */}
       {sectionCount === 0 && !waiting && !opts?.free && (
         <Button className="w-full" disabled>
-          Coming soon
+          {t("enroll.comingSoon")}
         </Button>
       )}
     </div>
@@ -226,19 +232,19 @@ function PlanSubscribeButton({ plan }: { plan: UnlockPlanOption }) {
         method: "POST",
         body: JSON.stringify({ plan_id: plan.id }),
       });
-      toast.success("Subscribed! You now have access.");
+      toast.success(t("enroll.subscribed"));
       router.refresh();
     },
     {
       onError: (err) => {
         if (err instanceof ApiError && err.status === 403) {
           navigate(
-            "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+            `/login?toast=${encodeURIComponent(t("plan.loginToSubscribe"))}&toast_type=info`,
           );
           return;
         }
         toast.error(
-          err instanceof Error ? err.message : "Subscription failed.",
+          err instanceof Error ? err.message : t("plan.subscriptionFailed"),
         );
       },
     },

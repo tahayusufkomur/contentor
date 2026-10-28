@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { CalendarDays } from "lucide-react";
 import { EventsCatalogClient } from "@/components/public/events-catalog-client";
 import { BlockPlaceholder } from "./block-placeholder";
@@ -9,6 +10,7 @@ export function UpcomingEventsBlock({
   dynamicData,
   editable,
 }: BlockComponentProps) {
+  const t = useTranslations("site");
   let events: CalendarEvent[] = dynamicData ?? [];
   const limit = Number(data.limit) || 6;
   events = events.slice(0, limit);
@@ -16,8 +18,8 @@ export function UpcomingEventsBlock({
     return editable ? (
       <BlockPlaceholder
         icon={CalendarDays}
-        title="Your events will appear here"
-        description="Schedule an event and it'll show up automatically."
+        title={t("blockEmpty.events.title")}
+        description={t("blockEmpty.events.text")}
       />
     ) : null;
   const layout = data.layout || "grid";

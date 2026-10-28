@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays, MapPin } from "lucide-react";
@@ -18,12 +18,18 @@ import { formatEventWhen } from "@/lib/calendar-utils";
 import { eventItem } from "@/lib/covers/items";
 import type { CalendarEvent } from "@/types/live";
 
-const TYPE_LABELS: Record<string, string> = {
-  live_class: "Live Session",
-  live_stream: "Live Stream",
-  onsite_event: "Event",
-  zoom_class: "Live Session",
-};
+const TYPE_LABELS = {
+  live_class: "eventType.liveSession",
+  live_stream: "eventType.liveStream",
+  onsite_event: "itemType.event",
+  zoom_class: "eventType.liveSession",
+} as const;
+
+const typeLabel = (
+  t: (key: (typeof TYPE_LABELS)[keyof typeof TYPE_LABELS]) => string,
+  type: string,
+) =>
+  type in TYPE_LABELS ? t(TYPE_LABELS[type as keyof typeof TYPE_LABELS]) : type;
 
 interface EventsCatalogClientProps {
   events: CalendarEvent[];
@@ -39,6 +45,7 @@ export function EventsCatalogClient({
   showCovers = true,
 }: EventsCatalogClientProps) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const tz = useTenant()?.timezone || "UTC";
   const fmtWhen = (dateStr: string) => formatEventWhen(dateStr, locale, tz);
   const [facetSel, setFacetSel] = useState<FacetSelection>({});
@@ -89,7 +96,7 @@ export function EventsCatalogClient({
                         )
                       ))}
                     <Badge variant="secondary" className="text-xs">
-                      {TYPE_LABELS[event.type] ?? event.type}
+                      {typeLabel(t, event.type)}
                     </Badge>
                     <span className="flex-1 font-semibold leading-snug">
                       {event.title}
@@ -144,7 +151,7 @@ export function EventsCatalogClient({
                   ))}
                 <CardContent className="space-y-3 p-5">
                   <Badge variant="secondary" className="text-xs">
-                    {TYPE_LABELS[event.type] ?? event.type}
+                    {typeLabel(t, event.type)}
                   </Badge>
                   <h3 className="font-semibold leading-snug line-clamp-2">
                     {event.title}

@@ -32,6 +32,8 @@
     "androidInstallButton": "Zainstaluj",
     "desktopNote": "Na komputerze kliknij ikonę instalacji na pasku adresu przeglądarki.",
     "installedTitle": "Wszystko gotowe!",
-    "installedBody": "Aplikacja jest zainstalowana na twoim urządzeniu."
-  }
+    "installedBody": "Aplikacja jest zainstalowana na twoim urządzeniu.",
+    "metaDescription": "Przewodnik krok po kroku, jak zainstalować tę aplikację na telefonie."
+  },
+  "manifestDescription": "Platforma dla twórców treści"
 }

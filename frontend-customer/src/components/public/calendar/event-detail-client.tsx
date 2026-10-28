@@ -29,7 +29,7 @@ import { eventItem } from "@/lib/covers/items";
 import { EVENT_TYPE_CONFIG } from "@/lib/event-colors";
 import { formatTime } from "@/lib/calendar-utils";
 import type { CalendarEventDetail } from "@/types/live";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface EventDetailClientProps {
   event: CalendarEventDetail;
@@ -47,19 +47,20 @@ function formatFullDate(dateStr: string, tz: string, locale: string): string {
 }
 
 function EventStatusBadge({ status }: { status: string }) {
+  const t = useTranslations("site");
   switch (status) {
     case "live":
     case "ongoing":
       return (
         <Badge variant="destructive" className="gap-1">
           <Radio className="h-3 w-3 animate-pulse" />
-          Live Now
+          {t("eventPage.liveNow")}
         </Badge>
       );
     case "ended":
-      return <Badge variant="secondary">Ended</Badge>;
+      return <Badge variant="secondary">{t("eventPage.ended")}</Badge>;
     case "scheduled":
-      return <Badge variant="outline">Upcoming</Badge>;
+      return <Badge variant="outline">{t("eventPage.upcoming")}</Badge>;
     default:
       return null;
   }
@@ -70,6 +71,7 @@ export function EventDetailClient({
   isLoggedIn,
 }: EventDetailClientProps) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const tenantConfig = useTenant();
   const tz = tenantConfig?.timezone || "UTC";
   const config = EVENT_TYPE_CONFIG[event.type];
@@ -121,7 +123,7 @@ export function EventDetailClient({
                   config.bgClass,
                 )}
               >
-                {config.label}
+                {t(config.labelKey)}
               </span>
               <EventStatusBadge status={event.status} />
             </div>
@@ -169,14 +171,14 @@ export function EventDetailClient({
               <div className="text-center">
                 {event.is_trial && (
                   <Badge variant="success" className="mb-2">
-                    Free trial
+                    {t("price.freeTrial")}
                   </Badge>
                 )}
                 <p className="font-display text-3xl font-bold">
                   {event.pricing_type === "free"
-                    ? "Free"
+                    ? t("price.free")
                     : event.pricing_type === "subscription"
-                      ? "Members only"
+                      ? t("price.membersOnly")
                       : formatMoney(
                           access.price || event.price,
                           access.currency || event.currency || "USD",
@@ -225,11 +227,12 @@ function EventAction({
   isScheduled: boolean;
 }) {
   const locale = useLocale();
+  const t = useTranslations("site");
   // Event ended — no action
   if (isEnded) {
     return (
       <p className="text-center text-sm text-muted-foreground">
-        This event has ended.
+        {t("eventPage.hasEnded")}
       </p>
     );
   }
@@ -241,15 +244,15 @@ function EventAction({
         <Button asChild size="lg" className="w-full gap-2">
           <NavLink href="/login">
             <LogIn className="h-4 w-4" />
-            Sign in to join
+            {t("eventPage.signInToJoin")}
           </NavLink>
         </Button>
         <p className="text-center text-xs text-muted-foreground">
           {event.pricing_type === "free"
-            ? "This event is free. Sign in to participate."
+            ? t("eventPage.freeSignIn")
             : event.pricing_type === "subscription"
-              ? "This event is for members. Sign in to join."
-              : "Sign in to purchase or subscribe for access."}
+              ? t("eventPage.membersSignIn")
+              : t("eventPage.purchaseSignIn")}
         </p>
       </div>
     );
@@ -261,8 +264,9 @@ function EventAction({
     if (event.type === "onsite_event") {
       return (
         <p className="text-center text-sm text-muted-foreground">
-          You can attend this event.
-          {event.address ? " The address is in the details." : ""}
+          {event.address
+            ? t("eventPage.canAttendAddress")
+            : t("eventPage.canAttend")}
         </p>
       );
     }
@@ -275,7 +279,7 @@ function EventAction({
         <Button asChild size="lg" className="w-full gap-2">
           <NavLink href={joinHref}>
             <Video className="h-4 w-4" />
-            Join Now
+            {t("eventPage.joinNow")}
           </NavLink>
         </Button>
       );
@@ -283,11 +287,10 @@ function EventAction({
     return (
       <div className="space-y-3 text-center">
         <p className="text-sm text-muted-foreground">
-          You have access to this event.
+          {t("eventPage.haveAccess")}
         </p>
         <p className="text-sm font-medium text-foreground">
-          The event hasn&apos;t started yet. Come back when it&apos;s live to
-          join!
+          {t("eventPage.notStarted")}
         </p>
       </div>
     );
@@ -311,12 +314,15 @@ function EventAction({
           <Button size="lg" className="w-full gap-2" asChild>
             <NavLink href="/store">
               <ShoppingCart className="h-4 w-4" />
-              Buy for{" "}
-              {formatMoney(
-                opts?.purchase?.price ?? event.price,
-                opts?.purchase?.currency || event.access_info.currency || "USD",
-                locale,
-              )}
+              {t("price.buyFor", {
+                price: formatMoney(
+                  opts?.purchase?.price ?? event.price,
+                  opts?.purchase?.currency ||
+                    event.access_info.currency ||
+                    "USD",
+                  locale,
+                ),
+              })}
             </NavLink>
           </Button>
           <p className="text-center text-xs text-muted-foreground">
@@ -334,7 +340,7 @@ function EventAction({
           >
             <NavLink href="/plans">
               <Zap className="h-4 w-4" />
-              Subscribe for Access
+              {t("eventPage.subscribeForAccess")}
             </NavLink>
           </Button>
           {opts?.plans?.map((plan) => (
@@ -351,16 +357,16 @@ function EventAction({
         <Button size="lg" className="w-full gap-2" asChild>
           <NavLink href="/plans">
             <Zap className="h-4 w-4" />
-            Get Access
+            {t("eventPage.getAccess")}
           </NavLink>
         </Button>
       )}
       <p className="text-center text-xs text-muted-foreground">
         {isLive
           ? unlockMethods.includes("purchase")
-            ? "Purchase or subscribe to join this live event."
-            : "Subscribe to join this live event."
-          : "Get access now so you're ready when it starts."}
+            ? t("eventPage.purchaseOrSubscribeLive")
+            : t("eventPage.subscribeLive")
+          : t("eventPage.getAccessNow")}
       </p>
     </div>
   );

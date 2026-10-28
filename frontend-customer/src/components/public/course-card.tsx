@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
 import type { Course } from "@/types/course";
@@ -31,6 +32,7 @@ export function CourseCard({
   showPrice = true,
   showMeta = true,
 }: CourseCardProps) {
+  const t = useTranslations("site");
   // Covers set via the Photo FK (admin upload, copilot set_course_cover)
   // arrive as thumbnail_signed_url with the legacy thumbnail_url empty —
   // the gate must accept either source, like the admin list does.
@@ -66,7 +68,7 @@ export function CourseCard({
       {course.lesson_count !== undefined && (
         <span className="flex items-center gap-1">
           <BookOpen className="h-3.5 w-3.5" />
-          {course.lesson_count} lesson{course.lesson_count !== 1 ? "s" : ""}
+          {t("course.lessons", { count: course.lesson_count })}
         </span>
       )}
     </div>

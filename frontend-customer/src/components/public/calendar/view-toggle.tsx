@@ -1,13 +1,14 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 type CalendarView = "month" | "agenda";
 
-const VIEWS: { value: CalendarView; label: string }[] = [
-  { value: "month", label: "Month" },
-  { value: "agenda", label: "Agenda" },
-];
+const VIEWS = [
+  { value: "month", labelKey: "calendar.month" },
+  { value: "agenda", labelKey: "calendar.agenda" },
+] as const satisfies readonly { value: CalendarView; labelKey: string }[];
 
 interface ViewToggleProps {
   view: CalendarView;
@@ -15,6 +16,7 @@ interface ViewToggleProps {
 }
 
 export function ViewToggle({ view, onChange }: ViewToggleProps) {
+  const t = useTranslations("site");
   return (
     <div className="inline-flex rounded-lg bg-muted p-1">
       {VIEWS.map((v) => (
@@ -28,7 +30,7 @@ export function ViewToggle({ view, onChange }: ViewToggleProps) {
               : "text-muted-foreground hover:text-foreground",
           )}
         >
-          {v.label}
+          {t(v.labelKey)}
         </button>
       ))}
     </div>

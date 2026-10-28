@@ -45,15 +45,15 @@ type FilterType =
   | "onsite_event"
   | "bundle";
 
-const FILTER_BUTTONS: { value: FilterType; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "course", label: "Courses" },
-  { value: "download", label: "Downloads" },
-  { value: "live_class", label: "Live Sessions" },
-  { value: "live_stream", label: "Live Streams" },
-  { value: "onsite_event", label: "In-Person Events" },
-  { value: "bundle", label: "Bundles" },
-];
+const FILTER_BUTTONS = [
+  { value: "all", labelKey: "filter.all" },
+  { value: "course", labelKey: "store.filter.courses" },
+  { value: "download", labelKey: "store.filter.downloads" },
+  { value: "live_class", labelKey: "store.filter.liveSessions" },
+  { value: "live_stream", labelKey: "store.filter.liveStreams" },
+  { value: "onsite_event", labelKey: "store.filter.inPersonEvents" },
+  { value: "bundle", labelKey: "store.filter.bundles" },
+] as const satisfies readonly { value: FilterType; labelKey: string }[];
 
 function StoreCardSkeleton() {
   return (
@@ -85,6 +85,7 @@ function getContentType(type: string): string {
 
 export default function StorePage() {
   const router = useRouter();
+  const t = useTranslations("site");
   const [items, setItems] = useState<StoreItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>("all");
@@ -104,12 +105,12 @@ export default function StorePage() {
       const data = await clientFetch<StoreItem[]>(url);
       setItems(data);
     } catch {
-      toast.error("Failed to load store items");
+      toast.error(t("store.loadFailed"));
       setItems([]);
     } finally {
       setLoading(false);
     }
-  }, [filter, search]);
+  }, [filter, search, t]);
 
   useEffect(() => {
     fetchItems();
@@ -137,7 +138,7 @@ export default function StorePage() {
       type: item.type,
       image: item.thumbnail_url,
     });
-    toast.success(`"${item.title}" added to cart`);
+    toast.success(t("store.addedToCart", { title: item.title }));
     setAddingIds((prev) => {
       const next = new Set(prev);
       next.delete(item.id);
@@ -149,17 +150,15 @@ export default function StorePage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-3xl font-bold tracking-tight">
-          Store
+          {t("store.title")}
         </h1>
-        <p className="mt-1 text-muted-foreground">
-          Browse courses, downloads, live sessions, and bundles.
-        </p>
+        <p className="mt-1 text-muted-foreground">{t("store.text")}</p>
       </div>
 
       {/* Search */}
       <form onSubmit={handleSearch} className="flex gap-2 max-w-md">
         <Input
-          placeholder="Search items..."
+          placeholder={t("store.searchItems")}
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           className="flex-1"
@@ -171,14 +170,14 @@ export default function StorePage() {
 
       {/* Filter buttons */}
       <div className="flex flex-wrap gap-2">
-        {FILTER_BUTTONS.map(({ value, label }) => (
+        {FILTER_BUTTONS.map(({ value, labelKey }) => (
           <Button
             key={value}
             variant={filter === value ? "default" : "outline"}
             size="sm"
             onClick={() => setFilter(value)}
           >
-            {label}
+            {t(labelKey)}
           </Button>
         ))}
       </div>
@@ -186,7 +185,9 @@ export default function StorePage() {
       {/* Subscription Plans */}
       {plans.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-xl font-semibold">Subscription Plans</h2>
+          <h2 className="text-xl font-semibold">
+            {t("store.subscriptionPlans")}
+          </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {plans.map((plan) => (
               <StorePlanCard
@@ -216,8 +217,8 @@ export default function StorePage() {
         {items.length === 0 ? (
           <EmptyState
             icon={Tag}
-            title="No items found"
-            description="Try adjusting your search or filter to find what you're looking for."
+            title={t("store.noItems")}
+            description={t("store.noItemsText")}
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -252,23 +253,23 @@ function StorePlanCard({ plan, onSubscribed }: StorePlanCardProps) {
         method: "POST",
         body: JSON.stringify({ plan_id: plan.id }),
       });
-      toast.success("Subscribed! You now have access to plan content.");
+      toast.success(t("store.subscribed"));
       onSubscribed();
     },
     {
       onError: (err) => {
         if (err instanceof ApiError && err.status === 403) {
           navigate(
-            "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+            `/login?toast=${encodeURIComponent(t("plan.loginToSubscribe"))}&toast_type=info`,
           );
           return;
         }
         if (err instanceof ApiError && err.status === 400) {
-          toast.info("You're already subscribed to this plan");
+          toast.info(t("store.alreadySubscribed"));
           return;
         }
         toast.error(
-          err instanceof Error ? err.message : "Subscription failed.",
+          err instanceof Error ? err.message : t("plan.subscriptionFailed"),
         );
       },
     },
@@ -297,7 +298,7 @@ function StorePlanCard({ plan, onSubscribed }: StorePlanCardProps) {
           onClick={handleSubscribe}
         >
           <Lock className="h-4 w-4" />
-          Subscribe
+          {t("plan.subscribe")}
         </Button>
       </CardContent>
     </Card>

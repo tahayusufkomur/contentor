@@ -25,7 +25,12 @@
     "smallLineFormatAges": "Krótka linijka (np. forma lub wiek)",
     "email": "ty@twojestudio.pl",
     "emailExample": "ty@przyklad.pl",
-    "signature": "Podpis"
+    "signature": "Podpis",
+    "clickToAddText": "Kliknij, aby dodać tekst",
+    "callToAction": "Twoje wezwanie do działania",
+    "yourHeadline": "Twój nagłówek",
+    "addSubheadline": "Dodaj podtytuł",
+    "announcement": "Ogłoszenie"
   },
   "empty": {
     "courses": {
@@ -59,19 +64,36 @@
     "studio": "Studio",
     "office": "Biuro",
     "location": "Lokalizacja",
-    "hours": "Godziny"
+    "hours": "Godziny",
+    "name": "Imię i nazwisko",
+    "message": "Wiadomość",
+    "messagePlaceholder": "Jak możemy pomóc?",
+    "sending": "Wysyłanie…",
+    "send": "Wyślij wiadomość",
+    "thanks": "Dzięki! Wkrótce się odezwiemy.",
+    "error": "Coś poszło nie tak. Spróbuj ponownie."
   },
   "course": {
     "label": "Kurs",
     "lessons": "{count, plural, one {# lekcja} few {# lekcje} many {# lekcji} other {# lekcji}}",
-    "view": "Zobacz kurs"
+    "view": "Zobacz kurs",
+    "notFound": "Nie znaleziono kursu",
+    "notFoundText": "Kurs, którego szukasz, nie istnieje lub został usunięty.",
+    "byInstructor": "Autor: {name}",
+    "totalDuration": "Łącznie {duration}",
+    "modules": "{count, plural, one {# moduł} few {# moduły} many {# modułów} other {# modułu}}",
+    "curriculum": "Program kursu",
+    "moduleTitle": "Moduł {number}: {title}",
+    "freePreview": "Bezpłatny podgląd"
   },
   "price": {
     "free": "Bezpłatnie",
     "freeTrial": "Bezpłatny okres próbny",
     "membersOnly": "Tylko dla członków",
     "owned": "Kupione",
-    "includedInMembership": "W ramach członkostwa"
+    "includedInMembership": "W ramach członkostwa",
+    "buyFor": "Kup za {price}",
+    "includedInSubscription": "W ramach subskrypcji"
   },
   "event": {
     "reserve": "Zarezerwuj",
@@ -93,7 +115,16 @@
     "perMonth": "/mies.",
     "perYear": "/rok",
     "perYears": "{count, plural, one {/# rok} few {/# lata} many {/# lat} other {/# roku}}",
-    "perMonths": "{count, plural, one {/# mies.} few {/# mies.} many {/# mies.} other {/# mies.}}"
+    "perMonths": "{count, plural, one {/# mies.} few {/# mies.} many {/# mies.} other {/# mies.}}",
+    "notFound": "Nie znaleziono planu",
+    "notFoundText": "Ten plan nie istnieje lub nie jest już dostępny.",
+    "allPlans": "Wszystkie plany",
+    "whatsIncludedHeading": "Co zawiera",
+    "noItems": "Do tego planu nie dodano jeszcze żadnych treści.",
+    "loginToSubscribe": "Musisz się zalogować, aby wykupić subskrypcję",
+    "subscriptionFailed": "Nie udało się wykupić subskrypcji.",
+    "bestValue": "Najlepsza oferta",
+    "viewIncluded": "Zobacz zawarte treści"
   },
   "table": {
     "lessons": "Lekcje",
@@ -411,5 +442,215 @@
     "emptyEventsTitle": "Brak zaplanowanych nadchodzących wydarzeń",
     "emptyPlansText": "Utwórz plan w sekcji Rozliczenia, a pojawi się tutaj automatycznie.",
     "open": "otwarte"
+  },
+  "catalog": {
+    "paid": "Płatne",
+    "myCourses": "Moje kursy",
+    "searchCourses": "Szukaj kursów...",
+    "noCourses": "Nie znaleziono kursów",
+    "adjustSearch": "Spróbuj zmienić wyszukiwanie lub filtry.",
+    "noneYet": "Nie ma jeszcze dostępnych kursów. Zajrzyj wkrótce!"
+  },
+  "filter": {
+    "all": "Wszystkie"
+  },
+  "cart": {
+    "added": "Dodano do koszyka"
+  },
+  "enroll": {
+    "continueLearning": "Kontynuuj naukę",
+    "startLearning": "Rozpocznij naukę",
+    "starting": "Rozpoczynanie…",
+    "enrolling": "Zapisywanie…",
+    "free": "Zapisz się za darmo",
+    "addToCart": "Dodaj do koszyka",
+    "orBundle": "Albo kup w pakiecie",
+    "orSubscribe": "Albo wykup subskrypcję, aby uzyskać dostęp",
+    "viewAllPlans": "Zobacz wszystkie plany",
+    "comingSoon": "Już wkrótce",
+    "subscribed": "Subskrypcja aktywna! Masz już dostęp."
+  },
+  "eventType": {
+    "liveSession": "Sesja na żywo",
+    "liveStream": "Transmisja na żywo",
+    "onsiteEvent": "Wydarzenie na miejscu",
+    "inPersonEvent": "Wydarzenie stacjonarne"
+  },
+  "eventKind": {
+    "liveSession": "Sesja na żywo",
+    "livestream": "Transmisja na żywo",
+    "zoom": "Zoom"
+  },
+  "calendar": {
+    "noUpcoming": "Brak nadchodzących wydarzeń",
+    "checkBack": "Zajrzyj później, aby zobaczyć nowe sesje i wydarzenia.",
+    "more": "+{count} więcej",
+    "noEvents": "Brak zaplanowanych wydarzeń",
+    "comingUpNext": "Najbliższe wydarzenia",
+    "today": "Dzisiaj",
+    "selectedDay": "Wybrany dzień",
+    "loadFailed": "Nie udało się wczytać wydarzeń z tego zakresu.",
+    "month": "Miesiąc",
+    "agenda": "Harmonogram",
+    "live": "Na żywo",
+    "text": "Przeglądaj nadchodzące sesje na żywo, transmisje i wydarzenia.",
+    "listView": "Widok listy →",
+    "upcomingEvents": "Nadchodzące wydarzenia"
+  },
+  "events": {
+    "noneScheduled": "Brak zaplanowanych nadchodzących wydarzeń.",
+    "scheduleFirst": "Zaplanuj swoją pierwszą sesję na żywo →"
+  },
+  "eventPage": {
+    "liveNow": "Teraz na żywo",
+    "ended": "Zakończone",
+    "upcoming": "Nadchodzące",
+    "hasEnded": "To wydarzenie już się zakończyło.",
+    "signInToJoin": "Zaloguj się, aby dołączyć",
+    "freeSignIn": "To wydarzenie jest bezpłatne. Zaloguj się, aby wziąć udział.",
+    "membersSignIn": "To wydarzenie jest dla członków. Zaloguj się, aby dołączyć.",
+    "purchaseSignIn": "Zaloguj się, aby kupić dostęp lub wykupić subskrypcję.",
+    "canAttend": "Możesz wziąć udział w tym wydarzeniu.",
+    "canAttendAddress": "Możesz wziąć udział w tym wydarzeniu. Adres znajdziesz w szczegółach.",
+    "joinNow": "Dołącz teraz",
+    "haveAccess": "Masz dostęp do tego wydarzenia.",
+    "notStarted": "Wydarzenie jeszcze się nie rozpoczęło. Wróć, gdy będzie trwać, aby dołączyć!",
+    "subscribeForAccess": "Subskrybuj, aby uzyskać dostęp",
+    "getAccess": "Uzyskaj dostęp",
+    "purchaseOrSubscribeLive": "Kup dostęp lub wykup subskrypcję, aby dołączyć do tego wydarzenia na żywo.",
+    "subscribeLive": "Wykup subskrypcję, aby dołączyć do tego wydarzenia na żywo.",
+    "getAccessNow": "Uzyskaj dostęp już teraz, aby wszystko było gotowe, gdy się zacznie.",
+    "notFound": "Nie znaleziono wydarzenia",
+    "notFoundText": "Wydarzenie, którego szukasz, nie istnieje lub zostało usunięte."
+  },
+  "page": {
+    "home": "Strona główna",
+    "about": "Informacje",
+    "courses": "Kursy",
+    "pricing": "Cennik",
+    "faq": "FAQ",
+    "contact": "Kontakt",
+    "events": "Wydarzenia",
+    "plans": "Plany",
+    "blog": "Blog",
+    "community": "Społeczność",
+    "calendar": "Kalendarz",
+    "blogWithBrand": "Blog — {brand}"
+  },
+  "duration": {
+    "hoursMinutes": "{hours} godz. {minutes} min",
+    "minutes": "{minutes} min"
+  },
+  "blog": {
+    "noPosts": "Nie ma jeszcze wpisów.",
+    "contents": "📖 Spis treści",
+    "tableOfContents": "Spis treści",
+    "readTime": "⏱️ {minutes} min czytania",
+    "writtenBy": "✍️ Autor",
+    "shareArticle": "📢 Udostępnij ten artykuł",
+    "moreArticles": "📚 Więcej artykułów",
+    "shareOnX": "🐦 Udostępnij na X"
+  },
+  "eventsPage": {
+    "title": "Nadchodzące wydarzenia",
+    "text": "Sesje na żywo, transmisje i wydarzenia stacjonarne w ciągu najbliższych 90 dni.",
+    "viewCalendar": "Pokaż jako kalendarz →"
+  },
+  "itemType": {
+    "download": "Plik do pobrania",
+    "bundle": "Pakiet",
+    "event": "Wydarzenie"
+  },
+  "store": {
+    "title": "Sklep",
+    "text": "Przeglądaj kursy, pliki do pobrania, sesje na żywo i pakiety.",
+    "searchItems": "Szukaj pozycji...",
+    "subscriptionPlans": "Plany subskrypcji",
+    "noItems": "Nie znaleziono pozycji",
+    "noItemsText": "Spróbuj zmienić wyszukiwanie lub filtr, aby znaleźć to, czego szukasz.",
+    "loadFailed": "Nie udało się wczytać pozycji sklepu",
+    "addedToCart": "„{title}” dodano do koszyka",
+    "subscribed": "Subskrypcja aktywna! Masz teraz dostęp do treści planu.",
+    "alreadySubscribed": "Już subskrybujesz ten plan",
+    "filter": {
+      "courses": "Kursy",
+      "downloads": "Pliki do pobrania",
+      "liveSessions": "Sesje na żywo",
+      "liveStreams": "Transmisje na żywo",
+      "inPersonEvents": "Wydarzenia stacjonarne",
+      "bundles": "Pakiety"
+    },
+    "browse": "Przeglądaj sklep"
+  },
+  "nav": {
+    "installApp": "Zainstaluj aplikację",
+    "creatorStudio": "Studio twórcy",
+    "dashboard": "Panel",
+    "signOut": "Wyloguj się",
+    "signIn": "Zaloguj się",
+    "toggle": "Przełącz nawigację",
+    "brandFallback": "Witaj",
+    "loggedOut": "Wylogowano cię",
+    "footer": "Stopka",
+    "pages": "Strony",
+    "follow": "Obserwuj"
+  },
+  "blockEmpty": {
+    "video": {
+      "title": "Nie ma jeszcze filmu",
+      "text": "Wklej link do YouTube lub Vimeo albo wybierz film z biblioteki po lewej."
+    },
+    "logos": {
+      "title": "Nie ma jeszcze logo",
+      "text": "Dodaj logo w panelu edytora po lewej."
+    },
+    "stats": {
+      "title": "Nie ma jeszcze statystyk",
+      "text": "Dodaj pierwszą statystykę w panelu edytora po lewej."
+    },
+    "faq": {
+      "title": "Nie ma jeszcze pytań",
+      "text": "Dodaj pierwsze pytanie w panelu edytora po lewej."
+    },
+    "events": {
+      "title": "Tutaj pojawią się twoje wydarzenia",
+      "text": "Zaplanuj wydarzenie, a pojawi się tutaj automatycznie."
+    },
+    "store": {
+      "title": "Tutaj pojawią się twoje produkty",
+      "text": "Dodaj kurs, plik do pobrania lub sesję, a pojawią się tutaj."
+    },
+    "testimonials": {
+      "title": "Brak opinii",
+      "text": "Dodaj pierwszą opinię w panelu edytora po lewej stronie."
+    },
+    "gallery": {
+      "title": "Brak zdjęć",
+      "text": "Dodaj zdjęcia w panelu edytora po lewej stronie."
+    },
+    "plans": {
+      "title": "Brak dostępnych planów",
+      "text": "Obecnie nie ma dostępnych planów subskrypcji. Zajrzyj tu później!"
+    },
+    "page": "Ta strona nie ma jeszcze treści."
+  },
+  "editor": {
+    "clickToEdit": "Kliknij, aby edytować tekst"
+  },
+  "gallery": {
+    "enlargeCaption": "Powiększ: {caption}",
+    "enlarge": "Powiększ zdjęcie",
+    "close": "Zamknij",
+    "previous": "Poprzednie zdjęcie",
+    "next": "Następne zdjęcie"
+  },
+  "testimonial": {
+    "rated": "Ocena: {rating} na 5"
+  },
+  "banner": {
+    "dismiss": "Zamknij ogłoszenie"
+  },
+  "block": {
+    "video": "Wideo"
   }
 }

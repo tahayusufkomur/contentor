@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { ContentorBadge } from "@shared/ui/contentor-brand";
 
@@ -38,6 +39,7 @@ export function PublicFooter({
   plansEnabled?: boolean;
   menu?: SiteMenu;
 } = {}) {
+  const t = useTranslations("site");
   const config = useTenant();
   if (!config) return null;
   const layout = footerLayout(config.navbar_config?.footer_layout);
@@ -58,7 +60,7 @@ export function PublicFooter({
   );
   const nav = links.length > 0 && (
     <nav
-      aria-label="Footer"
+      aria-label={t("nav.footer")}
       className={cn(
         "flex gap-x-5 gap-y-2",
         column ? "flex-col" : "flex-wrap",
@@ -141,7 +143,7 @@ export function PublicFooter({
             {nav && (
               <div>
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-foreground">
-                  Pages
+                  {t("nav.pages")}
                 </p>
                 {nav}
               </div>
@@ -149,7 +151,7 @@ export function PublicFooter({
             {socials && (
               <div>
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-foreground">
-                  Follow
+                  {t("nav.follow")}
                 </p>
                 {socials}
               </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { Images, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { BlockPlaceholder } from "./block-placeholder";
@@ -11,6 +12,7 @@ interface GalleryItem {
 }
 
 export function GalleryBlock({ data, editable }: BlockComponentProps) {
+  const t = useTranslations("site");
   const items: GalleryItem[] = (data.items ?? []).filter(
     (it: GalleryItem) => it?.image?.url,
   );
@@ -42,8 +44,8 @@ export function GalleryBlock({ data, editable }: BlockComponentProps) {
     return editable ? (
       <BlockPlaceholder
         icon={Images}
-        title="No images yet"
-        description="Add images from the editor panel on the left."
+        title={t("blockEmpty.gallery.title")}
+        description={t("blockEmpty.gallery.text")}
       />
     ) : null;
 
@@ -59,7 +61,11 @@ export function GalleryBlock({ data, editable }: BlockComponentProps) {
     <button
       type="button"
       onClick={() => setLightbox(i)}
-      aria-label={item.caption ? `Enlarge: ${item.caption}` : "Enlarge image"}
+      aria-label={
+        item.caption
+          ? t("gallery.enlargeCaption", { caption: item.caption })
+          : t("gallery.enlarge")
+      }
       className="block w-full cursor-zoom-in"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -137,7 +143,7 @@ export function GalleryBlock({ data, editable }: BlockComponentProps) {
         >
           <button
             type="button"
-            aria-label="Close"
+            aria-label={t("gallery.close")}
             onClick={close}
             className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
           >
@@ -146,7 +152,7 @@ export function GalleryBlock({ data, editable }: BlockComponentProps) {
           {items.length > 1 && (
             <button
               type="button"
-              aria-label="Previous image"
+              aria-label={t("gallery.previous")}
               onClick={(e) => {
                 e.stopPropagation();
                 step(-1);
@@ -172,7 +178,7 @@ export function GalleryBlock({ data, editable }: BlockComponentProps) {
           {items.length > 1 && (
             <button
               type="button"
-              aria-label="Next image"
+              aria-label={t("gallery.next")}
               onClick={(e) => {
                 e.stopPropagation();
                 step(1);

@@ -13,7 +13,7 @@ import { EventTypeFilter } from "./event-type-filter";
 import { CalendarMonthView } from "./calendar-month-view";
 import { CalendarAgendaView } from "./calendar-agenda-view";
 import type { CalendarEvent, CalendarEventType } from "@/types/live";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 type View = "month" | "agenda";
 
@@ -29,6 +29,7 @@ export function CalendarClient({
   initialDate,
 }: CalendarClientProps) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const router = useRouter();
   const searchParams = useSearchParams();
   const tenantConfig = useTenant();
@@ -65,7 +66,7 @@ export function CalendarClient({
       setEvents(data);
     } catch {
       // keep existing events on error
-      toast.error("Couldn't load events for this range.");
+      toast.error(t("calendar.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -124,7 +125,9 @@ export function CalendarClient({
   );
 
   const title =
-    view === "month" ? formatMonthYear(currentDate, locale) : "Upcoming Events";
+    view === "month"
+      ? formatMonthYear(currentDate, locale)
+      : t("calendar.upcomingEvents");
 
   return (
     <div className="space-y-4">
@@ -146,7 +149,7 @@ export function CalendarClient({
             onClick={goToday}
             className="text-xs"
           >
-            Today
+            {t("calendar.today")}
           </Button>
         </div>
         <ViewToggle view={view} onChange={handleViewChange} />

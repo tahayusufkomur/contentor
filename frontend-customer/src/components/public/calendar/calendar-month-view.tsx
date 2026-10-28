@@ -36,6 +36,7 @@ export function CalendarMonthView({
   timezone,
 }: CalendarMonthViewProps) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const gridDates = getMonthGridDates(
     currentDate.getFullYear(),
@@ -157,7 +158,7 @@ export function CalendarMonthView({
                   })}
                   {overflow > 0 && (
                     <span className="text-[10px] font-bold text-foreground pl-1.5 mt-0.5">
-                      +{overflow} more
+                      {t("calendar.more", { count: overflow })}
                     </span>
                   )}
                 </div>
@@ -189,7 +190,9 @@ export function CalendarMonthView({
           {/* Header */}
           <div className="mb-5">
             <p className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-1">
-              {isToday(selectedDate) ? "Today" : "Selected Day"}
+              {isToday(selectedDate)
+                ? t("calendar.today")
+                : t("calendar.selectedDay")}
             </p>
             <h3 className="font-display text-xl font-bold tracking-tight text-foreground">
               {selectedDateLabel}
@@ -214,7 +217,7 @@ export function CalendarMonthView({
                   <CalendarDays className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <p className="text-sm font-medium text-foreground">
-                  No events scheduled
+                  {t("calendar.noEvents")}
                 </p>
               </div>
 
@@ -224,7 +227,7 @@ export function CalendarMonthView({
                   <div className="flex items-center gap-3 mb-4">
                     <div className="h-px flex-1 bg-border" />
                     <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                      Coming up next
+                      {t("calendar.comingUpNext")}
                     </span>
                     <div className="h-px flex-1 bg-border" />
                   </div>
@@ -291,7 +294,7 @@ function DetailEventCard({ event, timezone, showDate }: DetailEventCardProps) {
                 config.bgClass,
               )}
             >
-              {config.label}
+              {t(config.labelKey)}
             </span>
             <span
               className={cn(

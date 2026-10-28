@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createTranslator } from "next-intl";
+import site from "@shared/i18n/messages/en/site.json";
 
 import type { BlogPostPublic } from "@/lib/blog-public";
 import type { Course } from "@/types/course";
@@ -8,6 +10,12 @@ const tenant = vi.hoisted(() => ({ config: null as unknown }));
 vi.mock("next/headers", () => ({
   headers: () => new Headers({ host: "mara.localhost" }),
 }));
+const t = createTranslator({
+  locale: "en",
+  messages: { site },
+  namespace: "site",
+});
+vi.mock("next-intl/server", () => ({ getTranslations: async () => t }));
 vi.mock("@/lib/tenant", () => ({
   getTenantSlug: async () => "mara",
   fetchTenantConfig: async () => tenant.config,
@@ -59,7 +67,7 @@ const config = (over: Partial<TenantConfig> = {}) =>
 describe("sitePages", () => {
   it("keeps home, the coach's pages and links; drops external, private and empty ones", () => {
     expect(
-      sitePages(config(), false, { courses: true, events: false }, true),
+      sitePages(config(), false, { courses: true, events: false }, true, t),
     ).toEqual([
       { href: "/", label: "Home" },
       { href: "/courses", label: "Courses" },
@@ -69,7 +77,7 @@ describe("sitePages", () => {
   });
 
   it("keeps the coach's own label for a page she links", () => {
-    const pages = sitePages(config(), true, undefined, false);
+    const pages = sitePages(config(), true, undefined, false, t);
     expect(pages).toContainEqual({ href: "/events", label: "Live classes" });
     expect(pages.map((p) => p.href)).toEqual([
       "/",
@@ -123,7 +131,7 @@ describe("sitemapEntries", () => {
 
 describe("llmsTxt", () => {
   it("names the coach, says what she teaches, links her pages and courses", () => {
-    expect(llmsTxt(index())).toBe(
+    expect(llmsTxt(index(), t)).toBe(
       [
         "# Mara Lindqvist",
         "> Slow vinyasa and yin for desk workers.",
@@ -136,7 +144,7 @@ describe("llmsTxt", () => {
 
   it("falls back to the home hero without a meta description", () => {
     expect(
-      llmsTxt(index({ config: config({ meta_description: "" }) })),
+      llmsTxt(index({ config: config({ meta_description: "" }) }), t),
     ).toContain("> 45-minute classes.\n\nStiff from sitting? Start here.\n\n");
   });
 });

@@ -47,8 +47,8 @@ export function PricingPlansBlock({ data, dynamicData }: BlockComponentProps) {
         {plans.length === 0 ? (
           <EmptyState
             icon={CreditCard}
-            title="No plans available"
-            description="There are no subscription plans available right now. Check back later!"
+            title={t("blockEmpty.plans.title")}
+            description={t("blockEmpty.plans.text")}
           />
         ) : (
           <div className={gridClass}>
@@ -61,7 +61,7 @@ export function PricingPlansBlock({ data, dynamicData }: BlockComponentProps) {
               >
                 {i === plans.length - 1 && (
                   <Badge className="absolute right-3 top-3" variant="default">
-                    Best Value
+                    {t("plan.bestValue")}
                   </Badge>
                 )}
                 <CardHeader className="pb-2">
@@ -89,8 +89,7 @@ export function PricingPlansBlock({ data, dynamicData }: BlockComponentProps) {
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Package className="h-4 w-4" />
                       <span>
-                        {plan.item_count} item{plan.item_count !== 1 ? "s" : ""}{" "}
-                        included
+                        {t("plan.itemsIncluded", { count: plan.item_count })}
                       </span>
                     </div>
                   )}
@@ -99,7 +98,7 @@ export function PricingPlansBlock({ data, dynamicData }: BlockComponentProps) {
                     {plan.is_subscribed ? (
                       <Button className="w-full" variant="outline" disabled>
                         <CreditCard className="mr-2 h-4 w-4" />
-                        Subscribed
+                        {t("plan.subscribed")}
                       </Button>
                     ) : (
                       <SubscribeButton
@@ -118,7 +117,7 @@ export function PricingPlansBlock({ data, dynamicData }: BlockComponentProps) {
                       asChild
                     >
                       <Link href={`/plans/${plan.id}`}>
-                        View included content
+                        {t("plan.viewIncluded")}
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     </Button>

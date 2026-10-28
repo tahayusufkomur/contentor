@@ -12,12 +12,19 @@ import { useLocale, useTranslations } from "next-intl";
 
 const TYPE_META: Record<
   CalendarEventType,
-  { label: string; icon: React.ComponentType<{ className?: string }> }
+  {
+    labelKey:
+      | "eventKind.liveSession"
+      | "eventKind.livestream"
+      | "eventKind.zoom"
+      | "event.inPerson";
+    icon: React.ComponentType<{ className?: string }>;
+  }
 > = {
-  live_class: { label: "Live session", icon: Video },
-  live_stream: { label: "Livestream", icon: Radio },
-  zoom_class: { label: "Zoom", icon: Video },
-  onsite_event: { label: "In person", icon: MapPin },
+  live_class: { labelKey: "eventKind.liveSession", icon: Video },
+  live_stream: { labelKey: "eventKind.livestream", icon: Radio },
+  zoom_class: { labelKey: "eventKind.zoom", icon: Video },
+  onsite_event: { labelKey: "event.inPerson", icon: MapPin },
 };
 
 export function EventsList({
@@ -36,13 +43,13 @@ export function EventsList({
     return (
       <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
         <CalendarDays className="h-8 w-8 text-muted-foreground" />
-        <p className="text-muted-foreground">No upcoming events scheduled.</p>
+        <p className="text-muted-foreground">{t("events.noneScheduled")}</p>
         {isCoach && (
           <Link
             href="/admin/live"
             className="text-sm font-medium text-primary hover:underline"
           >
-            Schedule your first live session →
+            {t("events.scheduleFirst")}
           </Link>
         )}
       </div>
@@ -97,7 +104,7 @@ export function EventsList({
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 font-medium text-accent-foreground">
                         <meta.icon className="h-3 w-3" />
-                        {meta.label}
+                        {t(meta.labelKey)}
                       </span>
                       <span>{formatTime(event.scheduled_at, locale, tz)}</span>
                       <span className="ml-auto font-medium text-foreground">

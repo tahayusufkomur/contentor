@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 import { ChevronDown, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ interface FaqItem {
 }
 
 export function FaqBlock({ data, editable }: BlockComponentProps) {
+  const t = useTranslations("site");
   const [open, setOpen] = useState<number | null>(null);
   const baseId = useId();
   const items: FaqItem[] = (data.items ?? []).filter((it: FaqItem) => it?.q);
@@ -20,8 +22,8 @@ export function FaqBlock({ data, editable }: BlockComponentProps) {
     return editable ? (
       <BlockPlaceholder
         icon={HelpCircle}
-        title="No questions yet"
-        description="Add your first question from the editor panel on the left."
+        title={t("blockEmpty.faq.title")}
+        description={t("blockEmpty.faq.text")}
       />
     ) : null;
 

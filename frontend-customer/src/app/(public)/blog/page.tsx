@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { fetchPublishedPosts } from "@/lib/blog-public";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -10,23 +10,25 @@ export async function generateMetadata() {
   const slug = await getTenantSlug();
   const config = await fetchTenantConfig(slug);
   const brand = config?.brand_name ?? "";
+  const t = await getTranslations("site");
   return {
-    title: brand ? `Blog — ${brand}` : "Blog",
+    title: brand ? t("page.blogWithBrand", { brand }) : t("page.blog"),
     description: config?.meta_description ?? "",
   };
 }
 
 export default async function BlogIndexPage() {
   const locale = await getLocale();
+  const t = await getTranslations("site");
   const posts = await fetchPublishedPosts();
 
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-8 font-display text-3xl font-bold tracking-tight">
-        Blog
+        {t("page.blog")}
       </h1>
       {posts.length === 0 && (
-        <p className="text-muted-foreground">No posts yet.</p>
+        <p className="text-muted-foreground">{t("blog.noPosts")}</p>
       )}
       <ul className="space-y-8">
         {posts.map((post) => (

@@ -32,6 +32,8 @@
     "androidInstallButton": "Install",
     "desktopNote": "On a computer, click the install icon in your browser’s address bar.",
     "installedTitle": "You’re all set!",
-    "installedBody": "The app is installed on your device."
-  }
+    "installedBody": "The app is installed on your device.",
+    "metaDescription": "Step-by-step guide to install this app on your phone."
+  },
+  "manifestDescription": "Content creator platform"
 }

@@ -25,7 +25,12 @@
     "smallLineFormatAges": "Kısa satır (ör. format veya yaş grubu)",
     "email": "sen@stüdyon.com",
     "emailExample": "sen@ornek.com",
-    "signature": "İmza"
+    "signature": "İmza",
+    "clickToAddText": "Metin eklemek için tıkla",
+    "callToAction": "Harekete geçirici mesajın",
+    "yourHeadline": "Başlığın",
+    "addSubheadline": "Alt başlık ekle",
+    "announcement": "Duyuru"
   },
   "empty": {
     "courses": {
@@ -59,19 +64,36 @@
     "studio": "Stüdyo",
     "office": "Ofis",
     "location": "Konum",
-    "hours": "Saatler"
+    "hours": "Saatler",
+    "name": "Ad",
+    "message": "Mesaj",
+    "messagePlaceholder": "Sana nasıl yardımcı olabiliriz?",
+    "sending": "Gönderiliyor…",
+    "send": "Mesaj gönder",
+    "thanks": "Teşekkürler! Yakında seninle iletişime geçeceğiz.",
+    "error": "Bir şeyler ters gitti. Lütfen tekrar dene."
   },
   "course": {
     "label": "Kurs",
     "lessons": "{count, plural, one {# ders} other {# ders}}",
-    "view": "Kursu görüntüle"
+    "view": "Kursu görüntüle",
+    "notFound": "Kurs bulunamadı",
+    "notFoundText": "Aradığın kurs mevcut değil ya da kaldırılmış.",
+    "byInstructor": "{name} tarafından",
+    "totalDuration": "Toplam {duration}",
+    "modules": "{count, plural, one {# modül} other {# modül}}",
+    "curriculum": "Müfredat",
+    "moduleTitle": "Modül {number}: {title}",
+    "freePreview": "Ücretsiz Önizleme"
   },
   "price": {
     "free": "Ücretsiz",
     "freeTrial": "Ücretsiz deneme",
     "membersOnly": "Yalnızca üyeler",
     "owned": "Satın alındı",
-    "includedInMembership": "Üyeliğe dahil"
+    "includedInMembership": "Üyeliğe dahil",
+    "buyFor": "{price} karşılığında satın al",
+    "includedInSubscription": "Aboneliğe dahil"
   },
   "event": {
     "reserve": "Yer ayırt",
@@ -93,7 +115,16 @@
     "perMonth": "/ay",
     "perYear": "/yıl",
     "perYears": "{count, plural, one {/# yıl} other {/# yıl}}",
-    "perMonths": "{count, plural, one {/# ay} other {/# ay}}"
+    "perMonths": "{count, plural, one {/# ay} other {/# ay}}",
+    "notFound": "Plan bulunamadı",
+    "notFoundText": "Bu plan mevcut değil ya da artık kullanılamıyor.",
+    "allPlans": "Tüm planlar",
+    "whatsIncludedHeading": "Neler Dahil",
+    "noItems": "Bu plana henüz içerik eklenmedi.",
+    "loginToSubscribe": "Abone olmak için giriş yapman gerekiyor",
+    "subscriptionFailed": "Abonelik başarısız oldu.",
+    "bestValue": "En Avantajlı",
+    "viewIncluded": "Dahil olan içeriği gör"
   },
   "table": {
     "lessons": "Dersler",
@@ -411,5 +442,215 @@
     "emptyEventsTitle": "Planlanmış yaklaşan etkinlik yok",
     "emptyPlansText": "Faturalandırma bölümünde bir plan oluştur, burada otomatik olarak görünsün.",
     "open": "açık"
+  },
+  "catalog": {
+    "paid": "Ücretli",
+    "myCourses": "Kurslarım",
+    "searchCourses": "Kurslarda ara...",
+    "noCourses": "Kurs bulunamadı",
+    "adjustSearch": "Aramanı veya filtrelerini değiştirmeyi dene.",
+    "noneYet": "Henüz kurs yok. Yakında tekrar göz at!"
+  },
+  "filter": {
+    "all": "Tümü"
+  },
+  "cart": {
+    "added": "Sepete eklendi"
+  },
+  "enroll": {
+    "continueLearning": "Öğrenmeye Devam Et",
+    "startLearning": "Öğrenmeye Başla",
+    "starting": "Başlatılıyor…",
+    "enrolling": "Kaydediliyor…",
+    "free": "Ücretsiz Kaydol",
+    "addToCart": "Sepete Ekle",
+    "orBundle": "Ya da bir paketle edin",
+    "orSubscribe": "Ya da erişim için abone ol",
+    "viewAllPlans": "Tüm planları gör",
+    "comingSoon": "Çok yakında",
+    "subscribed": "Abone oldun! Artık erişimin var."
+  },
+  "eventType": {
+    "liveSession": "Canlı Oturum",
+    "liveStream": "Canlı Yayın",
+    "onsiteEvent": "Yerinde Etkinlik",
+    "inPersonEvent": "Yüz Yüze Etkinlik"
+  },
+  "eventKind": {
+    "liveSession": "Canlı oturum",
+    "livestream": "Canlı yayın",
+    "zoom": "Zoom"
+  },
+  "calendar": {
+    "noUpcoming": "Yaklaşan etkinlik yok",
+    "checkBack": "Yeni oturumlar ve etkinlikler için daha sonra tekrar göz at.",
+    "more": "+{count} tane daha",
+    "noEvents": "Planlanmış etkinlik yok",
+    "comingUpNext": "Sıradaki",
+    "today": "Bugün",
+    "selectedDay": "Seçilen Gün",
+    "loadFailed": "Bu tarih aralığındaki etkinlikler yüklenemedi.",
+    "month": "Ay",
+    "agenda": "Ajanda",
+    "live": "Canlı",
+    "text": "Yaklaşan canlı oturumlara, canlı yayınlara ve etkinliklere göz at.",
+    "listView": "Liste görünümü →",
+    "upcomingEvents": "Yaklaşan Etkinlikler"
+  },
+  "events": {
+    "noneScheduled": "Planlanmış yaklaşan etkinlik yok.",
+    "scheduleFirst": "İlk canlı oturumunu planla →"
+  },
+  "eventPage": {
+    "liveNow": "Şu An Canlı",
+    "ended": "Sona erdi",
+    "upcoming": "Yaklaşan",
+    "hasEnded": "Bu etkinlik sona erdi.",
+    "signInToJoin": "Katılmak için giriş yap",
+    "freeSignIn": "Bu etkinlik ücretsiz. Katılmak için giriş yap.",
+    "membersSignIn": "Bu etkinlik üyelere özel. Katılmak için giriş yap.",
+    "purchaseSignIn": "Erişim için satın almak ya da abone olmak üzere giriş yap.",
+    "canAttend": "Bu etkinliğe katılabilirsin.",
+    "canAttendAddress": "Bu etkinliğe katılabilirsin. Adres ayrıntılarda yer alıyor.",
+    "joinNow": "Hemen Katıl",
+    "haveAccess": "Bu etkinliğe erişimin var.",
+    "notStarted": "Etkinlik henüz başlamadı. Katılmak için yayına girdiğinde geri gel!",
+    "subscribeForAccess": "Erişim İçin Abone Ol",
+    "getAccess": "Erişim Al",
+    "purchaseOrSubscribeLive": "Bu canlı etkinliğe katılmak için satın al ya da abone ol.",
+    "subscribeLive": "Bu canlı etkinliğe katılmak için abone ol.",
+    "getAccessNow": "Başladığında hazır olmak için erişimini şimdi al.",
+    "notFound": "Etkinlik bulunamadı",
+    "notFoundText": "Aradığın etkinlik mevcut değil ya da kaldırılmış."
+  },
+  "page": {
+    "home": "Ana Sayfa",
+    "about": "Hakkında",
+    "courses": "Kurslar",
+    "pricing": "Fiyatlandırma",
+    "faq": "SSS",
+    "contact": "İletişim",
+    "events": "Etkinlikler",
+    "plans": "Planlar",
+    "blog": "Blog",
+    "community": "Topluluk",
+    "calendar": "Takvim",
+    "blogWithBrand": "Blog — {brand}"
+  },
+  "duration": {
+    "hoursMinutes": "{hours} sa {minutes} dk",
+    "minutes": "{minutes} dk"
+  },
+  "blog": {
+    "noPosts": "Henüz yazı yok.",
+    "contents": "📖 İçindekiler",
+    "tableOfContents": "İçindekiler",
+    "readTime": "⏱️ {minutes} dk okuma",
+    "writtenBy": "✍️ Yazar",
+    "shareArticle": "📢 Bu yazıyı paylaş",
+    "moreArticles": "📚 Diğer yazılar",
+    "shareOnX": "🐦 X'te paylaş"
+  },
+  "eventsPage": {
+    "title": "Yaklaşan etkinlikler",
+    "text": "Önümüzdeki 90 gün içindeki canlı oturumlar, canlı yayınlar ve yüz yüze etkinlikler.",
+    "viewCalendar": "Takvim olarak görüntüle →"
+  },
+  "itemType": {
+    "download": "İndirilebilir dosya",
+    "bundle": "Paket",
+    "event": "Etkinlik"
+  },
+  "store": {
+    "title": "Mağaza",
+    "text": "Kurslara, indirilebilir dosyalara, canlı oturumlara ve paketlere göz at.",
+    "searchItems": "Ürünlerde ara...",
+    "subscriptionPlans": "Abonelik Planları",
+    "noItems": "Ürün bulunamadı",
+    "noItemsText": "Aradığını bulmak için aramanı veya filtreni değiştirmeyi dene.",
+    "loadFailed": "Mağaza ürünleri yüklenemedi",
+    "addedToCart": "\"{title}\" sepete eklendi",
+    "subscribed": "Abone oldun! Artık plan içeriğine erişebilirsin.",
+    "alreadySubscribed": "Bu plana zaten abonesin",
+    "filter": {
+      "courses": "Kurslar",
+      "downloads": "İndirilebilir Dosyalar",
+      "liveSessions": "Canlı Oturumlar",
+      "liveStreams": "Canlı Yayınlar",
+      "inPersonEvents": "Yüz Yüze Etkinlikler",
+      "bundles": "Paketler"
+    },
+    "browse": "Mağazaya göz at"
+  },
+  "nav": {
+    "installApp": "Uygulamayı yükle",
+    "creatorStudio": "Creator stüdyosu",
+    "dashboard": "Panel",
+    "signOut": "Çıkış Yap",
+    "signIn": "Giriş Yap",
+    "toggle": "Menüyü aç/kapat",
+    "brandFallback": "Hoş geldin",
+    "loggedOut": "Oturumun kapatıldı",
+    "footer": "Alt bilgi",
+    "pages": "Sayfalar",
+    "follow": "Takip et"
+  },
+  "blockEmpty": {
+    "video": {
+      "title": "Henüz video yok",
+      "text": "Soldan bir YouTube veya Vimeo bağlantısı yapıştır ya da kütüphaneden bir video seç."
+    },
+    "logos": {
+      "title": "Henüz logo yok",
+      "text": "Soldaki düzenleyici panelinden logo ekle."
+    },
+    "stats": {
+      "title": "Henüz istatistik yok",
+      "text": "İlk istatistiğini soldaki düzenleyici panelinden ekle."
+    },
+    "faq": {
+      "title": "Henüz soru yok",
+      "text": "İlk sorunu soldaki düzenleyici panelinden ekle."
+    },
+    "events": {
+      "title": "Etkinliklerin burada görünecek",
+      "text": "Bir etkinlik planla, burada otomatik olarak görünsün."
+    },
+    "store": {
+      "title": "Ürünlerin burada görünecek",
+      "text": "Bir kurs, indirilebilir dosya veya oturum ekle, burada görünsün."
+    },
+    "testimonials": {
+      "title": "Henüz yorum yok",
+      "text": "İlk yorumunu soldaki düzenleyici panelinden ekle."
+    },
+    "gallery": {
+      "title": "Henüz görsel yok",
+      "text": "Soldaki düzenleyici panelinden görsel ekle."
+    },
+    "plans": {
+      "title": "Kullanılabilir plan yok",
+      "text": "Şu anda kullanılabilir abonelik planı yok. Daha sonra tekrar bak!"
+    },
+    "page": "Bu sayfada henüz içerik yok."
+  },
+  "editor": {
+    "clickToEdit": "Metni düzenlemek için tıkla"
+  },
+  "gallery": {
+    "enlargeCaption": "Büyüt: {caption}",
+    "enlarge": "Görseli büyüt",
+    "close": "Kapat",
+    "previous": "Önceki görsel",
+    "next": "Sonraki görsel"
+  },
+  "testimonial": {
+    "rated": "5 üzerinden {rating} puan"
+  },
+  "banner": {
+    "dismiss": "Duyuruyu kapat"
+  },
+  "block": {
+    "video": "Video"
   }
 }

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { BlockRenderer } from "./block-renderer";
 import { pageWrapperClass } from "@/lib/blocks/section-defs";
 import type { Block } from "@/types/tenant";
@@ -18,6 +19,7 @@ export function PageRenderer({
   pageTitle,
   styleId,
 }: PageRendererProps) {
+  const t = useTranslations("site");
   const visible = blocks.filter((b) => b.enabled !== false);
   const firstIsHero =
     visible[0]?.type === "hero" || visible[0]?.type === "section.hero";
@@ -28,7 +30,7 @@ export function PageRenderer({
       {pageTitle && !firstIsHero && <h1 className="sr-only">{pageTitle}</h1>}
       {visible.length === 0 ? (
         <div className="px-4 py-24 text-center text-sm text-muted-foreground">
-          This page has no content yet.
+          {t("blockEmpty.page")}
         </div>
       ) : (
         blocks.map((block) => (

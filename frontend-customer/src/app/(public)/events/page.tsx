@@ -1,20 +1,24 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { serverFetch } from "@/lib/api-server";
 import { getAuthUser } from "@/lib/auth";
 import { EventsList } from "@/components/public/events/events-list";
 import { PageView } from "@/components/blocks/page-view";
 import { fetchDynamicData } from "@/lib/blocks/fetch-dynamic-data";
-import { PAGE_LABELS } from "@/lib/blocks/pages";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import type { CalendarEvent } from "@/types/live";
 
-export const metadata = { title: "Events" };
+export async function generateMetadata() {
+  const t = await getTranslations("site");
+  return { title: t("page.events") };
+}
 
 const isoDate = (d: Date) => d.toISOString().split("T")[0];
 
 export default async function EventsPage() {
+  const t = await getTranslations("site");
   // A composed Events page (built in the site's style during setup) wins;
   // tenants without one keep the plain list below.
   const config = await fetchTenantConfig(await getTenantSlug());
@@ -25,7 +29,7 @@ export default async function EventsPage() {
         pageKey="events"
         blocks={blocks}
         dynamicData={await fetchDynamicData(blocks)}
-        pageTitle={PAGE_LABELS.events}
+        pageTitle={t("page.events")}
       />
     );
 
@@ -51,17 +55,15 @@ export default async function EventsPage() {
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight">
-            Upcoming events
+            {t("eventsPage.title")}
           </h1>
-          <p className="mt-1 text-muted-foreground">
-            Live sessions, streams, and in-person events over the next 90 days.
-          </p>
+          <p className="mt-1 text-muted-foreground">{t("eventsPage.text")}</p>
         </div>
         <Link
           href="/calendar"
           className="text-sm font-medium text-primary hover:underline"
         >
-          View as calendar →
+          {t("eventsPage.viewCalendar")}
         </Link>
       </div>
       <EventsList events={events} isCoach={isCoach} />

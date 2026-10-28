@@ -79,13 +79,13 @@ export function EventCard({
               config.bgClass,
             )}
           >
-            {config.label}
+            {t(config.labelKey)}
           </span>
           {isLive && (
             <div className="flex items-center gap-1.5">
               <Radio className="h-3 w-3 text-destructive animate-pulse" />
               <span className="text-[10px] font-bold text-destructive uppercase">
-                Live
+                {t("calendar.live")}
               </span>
             </div>
           )}

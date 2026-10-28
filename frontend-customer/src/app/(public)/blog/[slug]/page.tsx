@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { ogLocale, resolveLocale } from "@shared/i18n/locales";
 
 import { NavLink } from "@/components/ui/nav-link";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
@@ -70,6 +71,7 @@ export async function generateMetadata({
   const post =
     (await fetchPublishedPost(slug)) ?? (await fetchOwnerPreviewPost(slug));
   if (!post) return {};
+  const config = await fetchTenantConfig(await getTenantSlug());
   return {
     title: post.title,
     description: post.meta_description || post.excerpt,
@@ -78,6 +80,7 @@ export async function generateMetadata({
       title: post.title,
       description: post.meta_description || post.excerpt,
       type: "article",
+      locale: ogLocale(resolveLocale(config?.default_locale)),
     },
   };
 }
@@ -109,7 +112,15 @@ function TitleCard({ title }: { title: string }) {
   );
 }
 
-function Contents({ headings }: { headings: Heading[] }) {
+function Contents({
+  headings,
+  title,
+  ariaLabel,
+}: {
+  headings: Heading[];
+  title: string;
+  ariaLabel: string;
+}) {
   const links = (
     <ul className="flex flex-col gap-0.5 text-sm">
       {headings.map((h) => (
@@ -129,12 +140,12 @@ function Contents({ headings }: { headings: Heading[] }) {
   );
   const label = (
     <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-      📖 Contents
+      {title}
     </span>
   );
   return (
     <nav
-      aria-label="Table of contents"
+      aria-label={ariaLabel}
       className="mb-8 rounded-[var(--radius)] border bg-muted/20 lg:sticky lg:top-24 lg:order-1 lg:mb-0 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:p-5"
     >
       <details className="lg:hidden">
@@ -161,6 +172,7 @@ export default async function BlogPostPage({
 }) {
   const { slug } = await params;
   const locale = await getLocale();
+  const t = await getTranslations("site");
   const tenantSlug = await getTenantSlug();
   const [published, config, posts, hdrs] = await Promise.all([
     fetchPublishedPost(slug),
@@ -172,7 +184,7 @@ export default async function BlogPostPage({
   const post = published ?? (await fetchOwnerPreviewPost(slug));
   if (!post) notFound();
 
-  const brand = config?.brand_name || "Blog";
+  const brand = config?.brand_name || t("page.blog");
   // Server-sanitized (nh3) before persisting — see apps/blog/ai.py
   // render_body(). This is the only place body_html is trusted.
   const { html, headings } = withAnchors(post.body_html ?? "");
@@ -187,7 +199,7 @@ export default async function BlogPostPage({
   const title = encodeURIComponent(post.title);
   const shares = [
     [
-      "🐦 Share on X",
+      t("blog.shareOnX"),
       `https://twitter.com/intent/tweet?text=${title}&url=${url}`,
     ],
     [
@@ -259,7 +271,7 @@ export default async function BlogPostPage({
                 📅 {longDate(post.published_at, locale)}
               </time>
             )}
-            <span>⏱️ {minutes} min read</span>
+            <span>{t("blog.readTime", { minutes })}</span>
           </div>
         </header>
       </div>
@@ -271,7 +283,13 @@ export default async function BlogPostPage({
             : ""
         }
       >
-        {headings.length > 0 && <Contents headings={headings} />}
+        {headings.length > 0 && (
+          <Contents
+            headings={headings}
+            title={t("blog.contents")}
+            ariaLabel={t("blog.tableOfContents")}
+          />
+        )}
         <div className="mx-auto w-full max-w-3xl lg:order-2">
           <div
             className={PROSE}
@@ -295,7 +313,9 @@ export default async function BlogPostPage({
               </span>
               <div className="flex flex-col gap-1.5">
                 <p className="text-sm">
-                  <span className="text-muted-foreground">✍️ Written by </span>
+                  <span className="text-muted-foreground">
+                    {t("blog.writtenBy")}{" "}
+                  </span>
                   <NavLink
                     href="/"
                     className="font-semibold transition-colors hover:text-primary"
@@ -314,7 +334,7 @@ export default async function BlogPostPage({
 
           <div className="mt-10">
             <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              📢 Share this article
+              {t("blog.shareArticle")}
             </p>
             <div className="flex flex-wrap gap-2">
               {shares.map(([label, href]) => (
@@ -333,7 +353,9 @@ export default async function BlogPostPage({
 
           {more.length > 0 && (
             <div className="mt-16 border-t pt-10">
-              <h2 className="mb-6 text-base font-semibold">📚 More articles</h2>
+              <h2 className="mb-6 text-base font-semibold">
+                {t("blog.moreArticles")}
+              </h2>
               <div className="flex flex-col gap-5">
                 {more.map((p) => (
                   <div key={p.slug} className="group flex flex-col gap-1">

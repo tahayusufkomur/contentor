@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Video } from "lucide-react";
 import { BlockPlaceholder } from "./block-placeholder";
@@ -12,13 +13,14 @@ function toEmbedUrl(url: string): string | null {
 }
 
 export function VideoBlock({ data, editable }: BlockComponentProps) {
+  const t = useTranslations("site");
   const url = data.video?.url as string | undefined;
   if (!url)
     return editable ? (
       <BlockPlaceholder
         icon={Video}
-        title="No video yet"
-        description="Paste a YouTube or Vimeo link, or pick a library video, on the left."
+        title={t("blockEmpty.video.title")}
+        description={t("blockEmpty.video.text")}
       />
     ) : null;
   const embed = toEmbedUrl(url);
@@ -43,7 +45,7 @@ export function VideoBlock({ data, editable }: BlockComponentProps) {
           {embed ? (
             <iframe
               src={embed}
-              title={data.heading || "Video"}
+              title={data.heading || t("block.video")}
               className="h-full w-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen

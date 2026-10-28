@@ -27,30 +27,35 @@ import { getLocale, getTranslations } from "next-intl/server";
 const TYPE_CONFIG: Record<
   string,
   {
-    label: string;
+    labelKey:
+      | "course.label"
+      | "eventType.liveSession"
+      | "eventType.liveStream"
+      | "eventType.inPersonEvent"
+      | "itemType.download";
     icon: typeof BookOpen;
     href?: (item: PlanAccessItem) => string;
   }
 > = {
   course: {
-    label: "Course",
+    labelKey: "course.label",
     icon: BookOpen,
     href: (item) => `/courses/${item.slug}`,
   },
   liveclass: {
-    label: "Live Session",
+    labelKey: "eventType.liveSession",
     icon: Radio,
   },
   livestream: {
-    label: "Live Stream",
+    labelKey: "eventType.liveStream",
     icon: Tv,
   },
   onsiteevent: {
-    label: "In-Person Event",
+    labelKey: "eventType.inPersonEvent",
     icon: MapPin,
   },
   download: {
-    label: "Download",
+    labelKey: "itemType.download",
     icon: Download,
   },
 };
@@ -76,10 +81,8 @@ export default async function PlanDetailPage({
     return (
       <div className="flex flex-col items-center py-20 text-center">
         <CreditCard className="mb-4 h-12 w-12 text-muted-foreground/50" />
-        <h1 className="text-2xl font-bold">Plan not found</h1>
-        <p className="mt-2 text-muted-foreground">
-          This plan does not exist or is no longer available.
-        </p>
+        <h1 className="text-2xl font-bold">{t("plan.notFound")}</h1>
+        <p className="mt-2 text-muted-foreground">{t("plan.notFoundText")}</p>
       </div>
     );
   }
@@ -92,7 +95,7 @@ export default async function PlanDetailPage({
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        All plans
+        {t("plan.allPlans")}
       </Link>
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -112,21 +115,16 @@ export default async function PlanDetailPage({
           {/* Included content */}
           <div>
             <h2 className="mb-4 font-display text-2xl font-bold tracking-tight">
-              What&apos;s Included
+              {t("plan.whatsIncludedHeading")}
             </h2>
             {plan.items.length === 0 ? (
-              <p className="text-muted-foreground">
-                No content has been added to this plan yet.
-              </p>
+              <p className="text-muted-foreground">{t("plan.noItems")}</p>
             ) : (
               <div className="space-y-3">
                 {plan.items.map((item) => {
-                  const config = TYPE_CONFIG[item.type] ?? {
-                    label: item.type,
-                    icon: Package,
-                  };
-                  const Icon = config.icon;
-                  const linkHref = config.href?.(item);
+                  const config = TYPE_CONFIG[item.type];
+                  const Icon = config?.icon ?? Package;
+                  const linkHref = config?.href?.(item);
 
                   const content = (
                     <Card
@@ -157,7 +155,7 @@ export default async function PlanDetailPage({
                             {item.title}
                           </h3>
                           <Badge variant="secondary" className="mt-1 text-xs">
-                            {config.label}
+                            {config ? t(config.labelKey) : item.type}
                           </Badge>
                         </div>
                       </CardContent>
@@ -196,7 +194,7 @@ export default async function PlanDetailPage({
               {plan.is_subscribed ? (
                 <Button className="w-full" variant="outline" disabled>
                   <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Subscribed
+                  {t("plan.subscribed")}
                 </Button>
               ) : (
                 <SubscribeButton
@@ -213,8 +211,7 @@ export default async function PlanDetailPage({
                 <div className="flex items-center gap-2">
                   <Package className="h-4 w-4" />
                   <span>
-                    {plan.items.length} item{plan.items.length !== 1 ? "s" : ""}{" "}
-                    included
+                    {t("plan.itemsIncluded", { count: plan.items.length })}
                   </span>
                 </div>
               </div>

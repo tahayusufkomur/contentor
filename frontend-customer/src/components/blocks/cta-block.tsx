@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -5,6 +6,7 @@ import { InlineText } from "./inline-text";
 import type { BlockComponentProps } from "@/lib/blocks/types";
 
 export function CtaBlock({ data, editable }: BlockComponentProps) {
+  const t = useTranslations("site");
   if (!editable && !data.heading) return null;
   const layout = data.layout || "centered";
 
@@ -39,7 +41,7 @@ export function CtaBlock({ data, editable }: BlockComponentProps) {
             value={data.heading}
             field="heading"
             editable={editable}
-            placeholder="Your call to action"
+            placeholder={t("placeholder.callToAction")}
           />
           {buttons && <div className="shrink-0">{buttons}</div>}
         </div>
@@ -58,7 +60,7 @@ export function CtaBlock({ data, editable }: BlockComponentProps) {
             value={data.heading}
             field="heading"
             editable={editable}
-            placeholder="Your call to action"
+            placeholder={t("placeholder.callToAction")}
           />
           {buttons && <div className="shrink-0">{buttons}</div>}
         </div>
@@ -76,7 +78,7 @@ export function CtaBlock({ data, editable }: BlockComponentProps) {
           value={data.heading}
           field="heading"
           editable={editable}
-          placeholder="Your call to action"
+          placeholder={t("placeholder.callToAction")}
         />
         {buttons && <div className="mt-8 flex justify-center">{buttons}</div>}
       </div>

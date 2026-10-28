@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { Suspense } from "react";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { serverFetch } from "@/lib/api-server";
 import { getDateRangeParams } from "@/lib/calendar-utils";
 import { CalendarClient } from "@/components/public/calendar/calendar-client";
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default async function CalendarPage({ searchParams }: Props) {
+  const t = await getTranslations("site");
   const params = await searchParams;
   // Open the way the coach laid the calendar out, unless a view was asked for.
   const config = params.view
@@ -37,17 +39,15 @@ export default async function CalendarPage({ searchParams }: Props) {
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight">
-            Calendar
+            {t("page.calendar")}
           </h1>
-          <p className="mt-1 text-muted-foreground">
-            Browse upcoming live sessions, streams, and events.
-          </p>
+          <p className="mt-1 text-muted-foreground">{t("calendar.text")}</p>
         </div>
         <Link
           href="/events"
           className="text-sm font-medium text-primary hover:underline"
         >
-          List view →
+          {t("calendar.listView")}
         </Link>
       </div>
 

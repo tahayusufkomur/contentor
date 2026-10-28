@@ -5,7 +5,9 @@
 import type { MetadataRoute } from "next";
 import { headers } from "next/headers";
 
-import { PAGE_LABELS, PAGE_ROUTES } from "@/lib/blocks/pages";
+import { getTranslations } from "next-intl/server";
+
+import { PAGE_ROUTES } from "@/lib/blocks/pages";
 import type { BlogPostPublic } from "@/lib/blog-public";
 import { BASE_DOMAIN, DJANGO_API_URL } from "@/lib/constants";
 import { visibleNavLinks, type SiteMenu } from "@/lib/navbar";
@@ -35,6 +37,10 @@ export const PRIVATE_PATHS = [
 // A plain internal path. Next writes sitemap URLs into the XML unescaped, and
 // a nav link may be external or carry a query or fragment.
 const PAGE_PATH = /^\/[\w/-]*$/;
+
+/** The `site` translator, as far as this file needs it: page names for the
+ *  labels and the "Pages" heading of llms.txt. */
+export type PageT = (key: `page.${PageKey | "blog"}` | "nav.pages") => string;
 
 export interface PublicSite {
   /** The host the crawler asked for, so every URL stays on it. */
@@ -80,6 +86,7 @@ export async function fetchSiteIndex(): Promise<SiteIndex | null> {
   const site = await fetchPublicSite();
   if (!site) return null;
   const domain = new URL(site.origin).hostname;
+  const t = await getTranslations("site");
   const allPosts = async () => {
     const posts: BlogPostPublic[] = [];
     // ponytail: the public list pages 12 posts at a time; 50 pages (600 posts)
@@ -108,6 +115,7 @@ export async function fetchSiteIndex(): Promise<SiteIndex | null> {
       plans ? plans.length > 0 : true,
       menu ?? undefined,
       posts.length > 0,
+      t,
     ),
     courses: courses ?? [],
     posts,
@@ -121,17 +129,18 @@ export function sitePages(
   plansEnabled: boolean,
   menu: SiteMenu | undefined,
   hasPosts: boolean,
+  t: PageT,
 ): NavLink[] {
   const built = (Object.keys(PAGE_ROUTES) as PageKey[])
     .filter((key) =>
       config.pages?.[key]?.blocks?.some((b) => b.enabled !== false),
     )
-    .map((key) => ({ href: PAGE_ROUTES[key], label: PAGE_LABELS[key] }));
+    .map((key) => ({ href: PAGE_ROUTES[key], label: t(`page.${key}`) }));
   const candidates = [
-    { href: "/", label: "Home" },
+    { href: "/", label: t("page.home") },
     ...(config.navbar_config?.links ?? []),
     ...built,
-    ...(hasPosts ? [{ href: "/blog", label: "Blog" }] : []),
+    ...(hasPosts ? [{ href: "/blog", label: t("page.blog") }] : []),
   ].filter(
     ({ href }) =>
       PAGE_PATH.test(href) && !PRIVATE_PATHS.some((p) => href.startsWith(p)),
@@ -173,7 +182,10 @@ const clip = (s: string) => (s.length > 200 ? `${s.slice(0, 199)}…` : s);
 
 /** llms.txt (llmstxt.org): who the coach is, what she teaches, and where
  *  her pages and courses are. */
-export function llmsTxt({ origin, config, pages, courses }: SiteIndex): string {
+export function llmsTxt(
+  { origin, config, pages, courses }: SiteIndex,
+  t: PageT,
+): string {
   const hero = config.pages?.home?.blocks?.find(
     (b) => b.enabled !== false && b.type.includes("hero"),
   );
@@ -189,11 +201,11 @@ export function llmsTxt({ origin, config, pages, courses }: SiteIndex): string {
     summary && `> ${summary}`,
     details.join(" "),
     section(
-      "Pages",
+      t("nav.pages"),
       pages.map((p) => `- [${p.label}](${origin}${p.href})`),
     ),
     section(
-      "Courses",
+      t("page.courses"),
       courses.map((c) => {
         const about = clip(flat(c.description));
         return `- [${flat(c.title)}](${origin}/courses/${c.slug})${about && `: ${about}`}`;

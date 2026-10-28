@@ -4,7 +4,7 @@ import { CalendarOff } from "lucide-react";
 import { groupEventsByDate, formatDateHeader } from "@/lib/calendar-utils";
 import { EventCard } from "./event-card";
 import type { CalendarEvent } from "@/types/live";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface CalendarAgendaViewProps {
   events: CalendarEvent[];
@@ -16,6 +16,7 @@ export function CalendarAgendaView({
   timezone,
 }: CalendarAgendaViewProps) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const grouped = groupEventsByDate(events, timezone);
   const sortedKeys = Array.from(grouped.keys()).sort();
 
@@ -23,8 +24,8 @@ export function CalendarAgendaView({
     return (
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
         <CalendarOff className="h-12 w-12 mb-4 opacity-40" />
-        <p className="text-lg font-semibold">No upcoming events</p>
-        <p className="text-sm">Check back later for new sessions and events.</p>
+        <p className="text-lg font-semibold">{t("calendar.noUpcoming")}</p>
+        <p className="text-sm">{t("calendar.checkBack")}</p>
       </div>
     );
   }

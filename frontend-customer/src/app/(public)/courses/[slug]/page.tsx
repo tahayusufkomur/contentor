@@ -10,7 +10,7 @@ import { courseItem } from "@/lib/covers/items";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { BookOpen, Clock, Lock, Play, User } from "lucide-react";
 import type { CourseDetail, Module } from "@/types/course";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 function getTotalDuration(modules: Module[]): number {
   return modules.reduce(
@@ -19,11 +19,13 @@ function getTotalDuration(modules: Module[]): number {
   );
 }
 
-function formatTotalDuration(seconds: number): string {
+type SiteT = Awaited<ReturnType<typeof getTranslations<"site">>>;
+
+function formatTotalDuration(seconds: number, t: SiteT): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
+  if (hours > 0) return t("duration.hoursMinutes", { hours, minutes });
+  return t("duration.minutes", { minutes });
 }
 
 export default async function CourseDetailPage({
@@ -32,6 +34,7 @@ export default async function CourseDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const locale = await getLocale();
+  const t = await getTranslations("site");
   const { slug } = await params;
   let course: CourseDetail | null = null;
   try {
@@ -44,10 +47,8 @@ export default async function CourseDetailPage({
     return (
       <div className="flex flex-col items-center py-20 text-center">
         <BookOpen className="mb-4 h-12 w-12 text-muted-foreground/50" />
-        <h1 className="text-2xl font-bold">Course not found</h1>
-        <p className="mt-2 text-muted-foreground">
-          The course you are looking for does not exist or has been removed.
-        </p>
+        <h1 className="text-2xl font-bold">{t("course.notFound")}</h1>
+        <p className="mt-2 text-muted-foreground">{t("course.notFoundText")}</p>
       </div>
     );
   }
@@ -98,7 +99,7 @@ export default async function CourseDetailPage({
                 <User className="h-4 w-4 text-muted-foreground" />
               </div>
               <span className="text-muted-foreground">
-                By {course.instructor_name}
+                {t("course.byInstructor", { name: course.instructor_name })}
               </span>
             </div>
             <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
@@ -114,9 +115,9 @@ export default async function CourseDetailPage({
               <div className="text-center">
                 <p className="font-display text-3xl font-bold">
                   {course.pricing_type === "free"
-                    ? "Free"
+                    ? t("price.free")
                     : course.pricing_type === "subscription"
-                      ? "Included in subscription"
+                      ? t("price.includedInSubscription")
                       : formatMoney(
                           course.access_info?.price ?? course.price,
                           course.access_info?.currency ||
@@ -131,21 +132,22 @@ export default async function CourseDetailPage({
               <div className="space-y-3 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  <span>
-                    {totalLessons} lesson{totalLessons !== 1 ? "s" : ""}
-                  </span>
+                  <span>{t("course.lessons", { count: totalLessons })}</span>
                 </div>
                 {totalDuration > 0 && (
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4" />
-                    <span>{formatTotalDuration(totalDuration)} total</span>
+                    <span>
+                      {t("course.totalDuration", {
+                        duration: formatTotalDuration(totalDuration, t),
+                      })}
+                    </span>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
                   <Play className="h-4 w-4" />
                   <span>
-                    {course.modules.length} module
-                    {course.modules.length !== 1 ? "s" : ""}
+                    {t("course.modules", { count: course.modules.length })}
                   </span>
                 </div>
               </div>
@@ -157,7 +159,7 @@ export default async function CourseDetailPage({
       {/* Curriculum */}
       <div>
         <h2 className="mb-4 font-display text-2xl font-bold tracking-tight">
-          Curriculum
+          {t("course.curriculum")}
         </h2>
         <div className="space-y-3">
           {course.modules.map((mod: Module) => (
@@ -167,11 +169,13 @@ export default async function CourseDetailPage({
             >
               <div className="bg-primary/5 px-4 py-3">
                 <h3 className="font-display font-semibold">
-                  Module {mod.order}: {mod.title}
+                  {t("course.moduleTitle", {
+                    number: mod.order,
+                    title: mod.title,
+                  })}
                 </h3>
                 <p className="mt-0.5 text-xs text-foreground">
-                  {mod.lessons.length} lesson
-                  {mod.lessons.length !== 1 ? "s" : ""}
+                  {t("course.lessons", { count: mod.lessons.length })}
                 </p>
               </div>
               <div className="divide-y">
@@ -189,7 +193,7 @@ export default async function CourseDetailPage({
                       <span className="text-sm">{lesson.title}</span>
                       {lesson.is_free_preview && (
                         <Badge variant="success" className="text-[10px]">
-                          Free Preview
+                          {t("course.freePreview")}
                         </Badge>
                       )}
                     </div>

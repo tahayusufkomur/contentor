@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 // Theme-aware install-step illustrations. Colors reference the app's OKLCH design
 // tokens DIRECTLY as `var(--token)` (the tokens are full oklch() colors, so they
@@ -277,6 +278,7 @@ export function IosConfirmStep({
   label: string;
   className?: string;
 }) {
+  const t = useTranslations("common");
   return (
     <PhoneFrame className={className}>
       <rect
@@ -305,7 +307,7 @@ export function IosConfirmStep({
         fill="var(--muted-foreground)"
         opacity="0.7"
       >
-        Cancel
+        {t("actions.cancel")}
       </text>
       <rect x="82" y="47" width="26" height="14" rx="7" fill="var(--primary)" />
       <text
@@ -519,6 +521,7 @@ export function AndroidConfirmStep({
   label: string;
   className?: string;
 }) {
+  const t = useTranslations("common");
   return (
     <PhoneFrame className={className}>
       <rect
@@ -566,7 +569,7 @@ export function AndroidConfirmStep({
         fill="var(--muted-foreground)"
         opacity="0.6"
       >
-        Cancel
+        {t("actions.cancel")}
       </text>
       <rect
         x="70"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,9 +29,10 @@ export function ContactForm({
   /** Replaces the default success panel classes. */
   successClassName?: string;
 }) {
+  const t = useTranslations("site");
   const [sent, setSent] = useState(false);
   const [website, setWebsite] = useState(""); // honeypot
-  const thanks = successMessage || "Thanks! We'll be in touch soon.";
+  const thanks = successMessage || t("contact.thanks");
 
   const { run: handleSubmit, loading: submitting } = useAsyncAction(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -51,7 +53,7 @@ export function ContactForm({
       toast.success(thanks);
       form.reset();
     },
-    { errorToast: "Something went wrong. Please try again." },
+    { errorToast: t("contact.error") },
   );
 
   if (sent) {
@@ -71,34 +73,34 @@ export function ContactForm({
   return (
     <form onSubmit={handleSubmit} className={cn("space-y-4", className)}>
       <div className="space-y-1.5">
-        <Label htmlFor="contact-name">Name</Label>
+        <Label htmlFor="contact-name">{t("contact.name")}</Label>
         <Input
           id="contact-name"
           name="name"
           required
-          placeholder="Your name"
+          placeholder={t("placeholder.yourName")}
           className={inputClassName}
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="contact-email">Email</Label>
+        <Label htmlFor="contact-email">{t("contact.email")}</Label>
         <Input
           id="contact-email"
           name="email"
           type="email"
           required
-          placeholder="you@example.com"
+          placeholder={t("placeholder.emailExample")}
           className={inputClassName}
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="contact-message">Message</Label>
+        <Label htmlFor="contact-message">{t("contact.message")}</Label>
         <textarea
           id="contact-message"
           name="message"
           required
           rows={5}
-          placeholder="How can we help?"
+          placeholder={t("contact.messagePlaceholder")}
           className={cn(
             "w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
             inputClassName,
@@ -119,9 +121,9 @@ export function ContactForm({
         type="submit"
         className={cn("w-full gap-2", buttonClassName)}
         loading={submitting}
-        loadingText="Sending…"
+        loadingText={t("contact.sending")}
       >
-        {submitLabel || "Send message"}
+        {submitLabel || t("contact.send")}
       </Button>
     </form>
   );
