@@ -36,6 +36,25 @@ def languages() -> list[str]:
     return [entry["code"] for entry in data["locales"] if entry["code"] != data["default"]]
 
 
+def tokens(text: str):
+    """What a translation must keep: ICU argument names, tags and printf placeholders (twin of the command's)."""
+    text = re.sub(r"(?:\b(?:zero|one|two|few|many|other)|=\d+)\s*\{", "[", text)  # a plural branch is text
+    return (
+        sorted(set(re.findall(r"\{\s*(\w+)\s*[,}]", text))),
+        sorted(re.findall(r"</?\w+\s*/?>", text)),
+        sorted(re.findall(r"%\(\w+\)[sd]|%[sd]", text)),
+    )
+
+
+def problem(english: str, translation: str) -> str | None:
+    """Why `translation` can't be accepted for `english`, or None."""
+    if not translation.strip():
+        return "the translation is empty"
+    if tokens(english) != tokens(translation):
+        return "its placeholders or tags differ from the English"
+    return None
+
+
 def digest(text: str) -> str:
     return hashlib.sha1(text.encode("utf-8")).hexdigest()[:8]
 
@@ -220,9 +239,10 @@ def read_csv(path) -> list[dict]:
         return list(csv.DictReader(handle))
 
 
-def import_rows(lang: str, rows: list[dict]) -> list[dict]:
-    """Apply the JSON rows (the reviewed value, reviewed: true) -> the `backend:` rows for the .po files."""
-    stores, backend = {}, []
+def import_rows(lang: str, rows: list[dict]):
+    """Apply the JSON rows (the reviewed value, reviewed: true) -> (the `backend:` rows for the .po files,
+    [(key, reason)] of rows refused). A refused row leaves its key as it was."""
+    stores, backend, refused = {}, [], []
     for row in rows:
         root, _, key = row["key"].partition(":")
         if root == "backend":
@@ -230,13 +250,17 @@ def import_rows(lang: str, rows: list[dict]) -> list[dict]:
             continue
         store = stores.get(root) or stores.setdefault(root, Store(root, lang))
         if key not in store.en_flat:
-            print(f"translate: unknown key {row['key']!r}", file=sys.stderr)
+            refused.append((row["key"], "no such key"))
+            continue
+        reason = problem(store.en_flat[key], row["translation"])
+        if reason:
+            refused.append((row["key"], reason))
             continue
         store.values[key] = row["translation"]
         store.review[key] = {"src": store.review.get(key, {}).get("src", digest(store.en_flat[key])), "reviewed": True}
     for store in stores.values():
         store.save()
-    return backend
+    return backend, refused
 
 
 def _docker_po(flag: str, lang: str, stdin: str | None = None) -> subprocess.CompletedProcess:
@@ -300,12 +324,30 @@ def self_test() -> int:
         rows = export_rows("tr", ["m"])
         assert [r["key"] for r in rows] == ["m:ns.four"], rows
         rows[0]["translation"] = "Dort"
-        assert import_rows("tr", rows + [{"key": "backend:Save", "translation": "Kaydet"}]) == [
-            {"key": "backend:Save", "translation": "Kaydet"}
-        ]
+        backend, refused = import_rows("tr", rows + [{"key": "backend:Save", "translation": "Kaydet"}])
+        assert backend == [{"key": "backend:Save", "translation": "Kaydet"}] and refused == []
         assert _read(ROOT / "m/tr/ns.json")["four"] == "Dort"
         assert _read(ROOT / "m/tr.review.json")["ns.four"]["reviewed"] is True
         assert export_rows("tr", ["m"]) == []
+
+        # a blank cell and a lost {count} are refused and change nothing
+        _write(ROOT / "m/en/ns.json", {"one": "One", "four": "Four", "n": "{count} lessons <b>now</b>"})
+        draft_language("tr", ["m"], False, drafter)
+        before = (_read(ROOT / "m/tr/ns.json"), _read(ROOT / "m/tr.review.json"))
+        _, refused = import_rows(
+            "tr",
+            [
+                {"key": "m:ns.one", "translation": "  "},
+                {"key": "m:ns.n", "translation": "dersler <b>simdi</b>"},
+                {"key": "m:ns.n", "translation": "{count} ders simdi"},
+                {"key": "m:ns.nope", "translation": "x"},
+            ],
+        )
+        assert [k for k, _ in refused] == ["m:ns.one", "m:ns.n", "m:ns.n", "m:ns.nope"], refused
+        assert "empty" in refused[0][1] and "placeholders" in refused[1][1]
+        assert (_read(ROOT / "m/tr/ns.json"), _read(ROOT / "m/tr.review.json")) == before
+        assert import_rows("tr", [{"key": "m:ns.n", "translation": "{count} ders <b>simdi</b>"}])[1] == []
+        assert _read(ROOT / "m/tr.review.json")["ns.n"]["reviewed"] is True
     ROOT = saved_root
 
     # a CSV round trip with commas, quotes and newlines
@@ -348,12 +390,15 @@ def main(argv: list[str]) -> int:
         if lang not in languages():
             print("translate: say which language with --to", file=sys.stderr)
             return 1
-        backend = import_rows(lang, read_csv(args.file))
+        backend, refused = import_rows(lang, read_csv(args.file))
+        for key, reason in refused:
+            print(f"translate: skipped {key!r}: {reason}", file=sys.stderr)
+        code = 1 if refused else 0
         if backend:
             proc = _docker_po("--import", lang, "\n".join(json.dumps(r) for r in backend))
             print(proc.stderr.strip(), file=sys.stderr)
-            return proc.returncode
-        return 0
+            code = code or proc.returncode
+        return code
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--to", choices=languages())

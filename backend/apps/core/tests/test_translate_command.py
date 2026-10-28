@@ -4,11 +4,12 @@ from decimal import Decimal
 
 import polib
 import pytest
-from django.core.management import call_command
+from django.core.management import CommandError, call_command
 
 from apps.core import languages
 from apps.core.management.commands import translate as cmd
 
+PLURAL_ROW = cmd.PLURAL_SEP.join(["%(count)d rzecz", "%(count)d rzeczy"])  # three are needed
 PLURALS = {
     "tr": "nplurals=1; plural=0;",
     "de": "nplurals=2; plural=(n != 1);",
@@ -155,3 +156,32 @@ def test_a_one_word_plural_branch_is_not_an_argument():
     english = {"en": "{count, plural, one {Continue} other {Continue with #}}"}
     assert cmd._ok(english, "{count, plural, one {Devam et} other {# ile devam et}}")
     assert not cmd._ok(english, "{total, plural, one {Devam et} other {# ile devam et}}")
+
+
+def test_import_refuses_blank_and_broken_rows_but_takes_the_rest(locale, tmp_path, monkeypatch):
+    path = _write(
+        tmp_path,
+        "pl",
+        polib.POEntry(msgid="Hello %(name)s", msgstr="Czesc", flags=["fuzzy"]),
+        polib.POEntry(msgid="Save", msgstr="Zapis", flags=["fuzzy"]),
+        polib.POEntry(msgid="Done", msgstr="Gotowe", flags=["fuzzy"]),
+        polib.POEntry(
+            msgid="%(count)d item", msgid_plural="%(count)d items", msgstr_plural={0: "", 1: "", 2: ""}, flags=["fuzzy"]
+        ),
+    )
+    rows = [
+        {"key": "backend:Hello %(name)s", "translation": "Czesc"},
+        {"key": "backend:Save", "translation": " "},
+        {"key": "backend:Done", "translation": "Zrobione"},
+        {"key": "backend:%(count)d item", "translation": PLURAL_ROW},
+    ]
+    monkeypatch.setattr("sys.stdin", io.StringIO("\n".join(json.dumps(r) for r in rows)))
+    err = io.StringIO()
+    with pytest.raises(CommandError, match="3 row"):
+        call_command("translate", import_lang="pl", stderr=err)
+    entries = _read(path)
+    assert "fuzzy" in entries["Hello %(name)s"].flags and "fuzzy" in entries["Save"].flags
+    assert entries["Save"].msgstr == "Zapis"
+    assert "fuzzy" in entries["%(count)d item"].flags  # two forms of three: refused
+    assert entries["Done"].msgstr == "Zrobione" and "fuzzy" not in entries["Done"].flags
+    assert "'backend:Save'" in err.getvalue() and locale == [["pl"]]

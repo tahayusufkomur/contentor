@@ -94,7 +94,7 @@
         "a": "Evet. Starter 14 gün boyunca ücretsiz. Siteni oluştururken bir kart eklersin; deneme bitmeden iptal etmezsen ilk ödeme deneme sona erdiğinde alınır. Deneme süresince Starter'daki her şey çalışır, yalnızca satış yapamazsın; satış, planın başladığında açılır."
       },
       "payments": {
-        "q": "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
+        "q": "Hangi ödeme yöntemlerini kabul ediyor musun?",
         "a": "Stripe tarafından işlenen tüm yaygın kredi ve banka kartlarını kabul ediyoruz. Öğrencilerinden gelen ödemeler doğrudan kendi Stripe hesabına gider — paranı asla biz tutmayız."
       },
       "limits": {

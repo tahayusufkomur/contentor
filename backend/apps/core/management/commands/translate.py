@@ -218,21 +218,45 @@ def _export(lang: str, stdout) -> None:
         stdout.write(json.dumps(row, ensure_ascii=False))
 
 
-def _import(lang: str, lines, stderr) -> None:
+def _plural_problem(entry, forms: list[str], nplurals: int):
+    if len(forms) != nplurals:
+        return f"needs {nplurals} forms joined by {PLURAL_SEP.strip()!r}, got {len(forms)}"
+    if not all(form.strip() for form in forms):
+        return "a form is empty"
+    allowed = _tokens(entry.msgid_plural)
+    for form in forms:
+        args, tags, printf = _tokens(form)
+        if not (args <= allowed[0] and set(tags) <= set(allowed[1]) and set(printf) <= set(allowed[2])):
+            return "a form has placeholders or tags the English does not"
+    return None
+
+
+def _import(lang: str, lines, stderr) -> int:
+    """Take reviewed rows into the .po -> the number of rows refused (blank, or placeholders lost)."""
     path = _po_path(lang)
     po = polib.pofile(str(path))
+    nplurals, _form_of = _plural_forms(po)
     by_key = {_entry_key(entry): entry for entry in po}
-    count = 0
+    count = refused = 0
     for line in lines:
         if not line.strip():
             continue
         row = json.loads(line)
         entry = by_key.get(row["key"])
         if entry is None:
-            stderr.write(f"translate: no such entry: {row['key']!r}")
+            stderr.write(f"translate: skipped {row['key']!r}: no such entry")
+            refused += 1
             continue
         if entry.msgid_plural:
             forms = row["translation"].split(PLURAL_SEP)
+            reason = _plural_problem(entry, forms, nplurals)
+        else:
+            reason = None if _ok({"en": entry.msgid}, row["translation"]) else "empty, or placeholders/tags differ"
+        if reason:
+            stderr.write(f"translate: skipped {row['key']!r}: {reason}")
+            refused += 1
+            continue
+        if entry.msgid_plural:
             entry.msgstr_plural = dict(enumerate(forms))
         else:
             entry.msgstr = row["translation"]
@@ -241,6 +265,7 @@ def _import(lang: str, lines, stderr) -> None:
         count += 1
     po.save()
     stderr.write(f"translate: {lang}.po took {count} reviewed text(s)")
+    return refused
 
 
 class Command(BaseCommand):
@@ -273,7 +298,9 @@ class Command(BaseCommand):
         elif options["export"]:
             _export(options["export"], self.stdout)
         elif options["import_lang"]:
-            _import(options["import_lang"], sys.stdin.read().splitlines(), self.stderr)
+            refused = _import(options["import_lang"], sys.stdin.read().splitlines(), self.stderr)
             _compile([options["import_lang"]])
+            if refused:
+                raise CommandError(f"{refused} row(s) skipped")
         else:
             raise CommandError("give one of --draft, --po, --export, --import")
