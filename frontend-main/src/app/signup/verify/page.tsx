@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import type auth from "../../../../messages/en/auth.json";
 import {
   AlertCircle,
   CheckCircle2,
@@ -285,7 +286,8 @@ export default function SignupVerifyPage() {
   }
 
   if (state === "expired") {
-    const r = (key: string) => t(`verify.resume.${key}`);
+    const r = (key: keyof typeof auth.signup.verify.resume) =>
+      t(`verify.resume.${key}`);
     if (resumeState === "sent" || resumeState === "closed") {
       return (
         <SignupFrame

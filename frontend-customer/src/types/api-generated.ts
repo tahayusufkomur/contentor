@@ -10201,6 +10201,14 @@ export interface components {
       | "live"
       | "failed"
       | "lapsed";
+    /**
+     * @description * `en` - English
+     *     * `tr` - Turkish
+     *     * `de` - German
+     *     * `pl` - Polish
+     * @enum {string}
+     */
+    DefaultLocaleEnum: "en" | "tr" | "de" | "pl";
     DomainSubscriptionAdmin: {
       readonly id: number;
       readonly tenant: number;
@@ -11105,6 +11113,15 @@ export interface components {
       pages?: unknown;
       page_templates?: unknown;
       timezone?: string;
+      /**
+       * @description Default UI language for this tenant. Coach-configurable.
+       *
+       *     * `en` - English
+       *     * `tr` - Turkish
+       *     * `de` - German
+       *     * `pl` - Polish
+       */
+      readonly default_locale?: components["schemas"]["DefaultLocaleEnum"];
       onboarding_completed?: boolean;
     };
     PatchedUserAdmin: {
@@ -11449,6 +11466,15 @@ export interface components {
       pages?: unknown;
       page_templates?: unknown;
       timezone?: string;
+      /**
+       * @description Default UI language for this tenant. Coach-configurable.
+       *
+       *     * `en` - English
+       *     * `tr` - Turkish
+       *     * `de` - German
+       *     * `pl` - Polish
+       */
+      readonly default_locale: components["schemas"]["DefaultLocaleEnum"];
       onboarding_completed?: boolean;
     };
     UserAdmin: {

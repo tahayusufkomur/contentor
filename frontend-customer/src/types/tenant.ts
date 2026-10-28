@@ -207,6 +207,8 @@ export interface TenantConfig {
   /** Coach-saved page templates ("my templates"). */
   page_templates?: PageTemplate[];
   timezone: string;
+  /** The site's language (read-only here; the creator picks it in settings). */
+  default_locale: string;
   onboarding_completed: boolean;
   tenant_name?: string;
   tenant_slug?: string;

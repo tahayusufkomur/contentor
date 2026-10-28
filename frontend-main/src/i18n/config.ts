@@ -1,8 +1,9 @@
-// Locale resolution. English is the only locale; the shape stays so one can be added back.
+// Locale list: @shared/i18n/locales. The superadmin panel (/admin) stays English.
+import { DEFAULT_LOCALE, LOCALES } from "@shared/i18n/locales";
 
-export const locales = ["en"] as const;
-export type Locale = (typeof locales)[number];
-export const defaultLocale: Locale = "en";
+export const locales = LOCALES;
+export type Locale = string;
+export const defaultLocale: Locale = DEFAULT_LOCALE;
 
 const APEX_HOSTS = ["contentor.app", "localhost"];
 

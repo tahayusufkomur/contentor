@@ -1,16 +1,18 @@
-// Locale resolution for the tenant-facing portal. English is the only locale;
-// a stale `user-locale` cookie (e.g. "tr") falls back to it.
+// Locale resolution for the tenant-facing portal; the list lives in @shared.
+import {
+  DEFAULT_LOCALE,
+  LOCALES,
+  resolveLocale as resolve,
+} from "@shared/i18n/locales";
 
-export const locales = ["en"] as const;
-export type Locale = (typeof locales)[number];
-export const defaultLocale: Locale = "en";
+export const locales = LOCALES;
+export type Locale = string;
+export const defaultLocale: Locale = DEFAULT_LOCALE;
 
 export function isValidLocale(
   value: string | undefined | null,
 ): value is Locale {
-  return value === "en";
+  return resolve(value) === value;
 }
 
-export function resolveLocale(cookieLocale: string | undefined | null): Locale {
-  return isValidLocale(cookieLocale) ? cookieLocale : defaultLocale;
-}
+export const resolveLocale = resolve;

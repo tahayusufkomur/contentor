@@ -214,11 +214,12 @@ class TenantConfigSerializer(serializers.ModelSerializer):
             "pages",
             "page_templates",
             "timezone",
+            "default_locale",
             "onboarding_completed",
         ]
         # The look changes through config/look/ (apply_style), which restyles
         # the pages with it; the editor's autosave sends the whole config.
-        read_only_fields = ["style", "palette"]
+        read_only_fields = ["style", "palette", "default_locale"]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
