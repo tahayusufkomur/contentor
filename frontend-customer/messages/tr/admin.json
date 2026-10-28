@@ -1,0 +1,1733 @@
+{
+  "title": "Creator stüdyosu",
+  "viewSite": "Siteyi görüntüle",
+  "welcome": {
+    "morning": "Günaydın",
+    "afternoon": "İyi günler",
+    "evening": "İyi akşamlar",
+    "hello": "Merhaba",
+    "withName": "{greeting}, {name}",
+    "overview": "İşte sitene genel bir bakış.",
+    "whatsLeft": "Siteni yayına almak için kalan adımlar burada.",
+    "look": "{look} · {palette}"
+  },
+  "badges": {
+    "ai": "YZ",
+    "aiTooltip": "YZ destekli özellik"
+  },
+  "nav": {
+    "sections": {
+      "teach": "Oluştur",
+      "students": "Öğrenciler",
+      "reachOut": "İletişim",
+      "money": "Para",
+      "site": "Site",
+      "settings": "Ayarlar"
+    },
+    "items": {
+      "home": "Ana sayfa",
+      "courses": "Kurslar",
+      "liveEvents": "Oturumlar ve etkinlikler",
+      "downloads": "İndirilebilir dosyalar",
+      "students": "Kişiler",
+      "communityFeed": "Topluluk",
+      "inbox": "Gelen kutusu",
+      "blog": "Blog",
+      "payouts": "Ödemeler",
+      "store": "Mağaza",
+      "editSite": "Siteyi düzenle",
+      "design": "Tasarım",
+      "assistant": "Öğrenci asistanı",
+      "settings": "Genel",
+      "plan": "Planın",
+      "media": "Medya",
+      "studio": "Fotoğraf stüdyosu",
+      "messages": "Mesajlar",
+      "reels": "Reels",
+      "videoStudio": "Video stüdyosu"
+    },
+    "more": "+ {count} daha"
+  },
+  "reels": {
+    "subtitle": "Videolarından kısa dikey klipler; Instagram Reels, TikTok ve YouTube Shorts için altyazılı ve çerçevelenmiş.",
+    "untitled": "Adsız Reels videosu",
+    "none": "Henüz Reels videon yok. Başlamak için yukarıdaki fikirlerden birini kullan.",
+    "yours": "Reels videoların",
+    "ideas": {
+      "title": "Fikirler",
+      "description": "Yüklediğin her video, yayılabilecek anlar için taranır: insanların paylaştığı anlar, komik anlar, güçlü kancalar. Her birinin kapağı önceden tasarlanmış olarak gelir. Beğendiklerini kullan.",
+      "find": "Fikir bul",
+      "more": "Daha fazla fikir bul",
+      "none": "Bu video için henüz fikir yok.",
+      "label": "Reels fikri",
+      "use": "Bu fikri kullan",
+      "using": "Açılıyor…",
+      "dismiss": "Bu olmasın",
+      "dismissed": "Fikir kaldırıldı"
+    },
+    "kinds": {
+      "send": "İnsanlar bunu paylaşır",
+      "funny": "Komik",
+      "hook": "Güçlü kanca",
+      "insight": "Kaydetmeye değer"
+    },
+    "found": "{count, plural, one {# yeni fikir} other {# yeni fikir}} hazır.",
+    "failed": "Bu videoda hiç fikir bulunamadı.",
+    "score": "Kanca {score}/10",
+    "status": {
+      "idea": "Fikir",
+      "draft": "Taslak",
+      "rendering": "Video hazırlanıyor",
+      "ready": "Hazır",
+      "failed": "Başarısız",
+      "changed": "Değiştirildi"
+    },
+    "empty": {
+      "title": "Henüz video yok",
+      "description": "Bir ders, bir konuşma ya da bir canlı oturum kaydı yükle, sonra ondan Reels videoları oluşturmak için geri gel.",
+      "action": "Video yükle"
+    },
+    "make": {
+      "video": "Video",
+      "pick": "Bir video seç",
+      "starting": "Başlatılıyor…",
+      "unavailable": "Bu, transkripti olmayan örnek bir video. Reel oluşturmak için kendi videolarından birini yükle.",
+      "noSpeech": "Bu videoda konuşma bulunamadı, bu yüzden altyazı eklenecek bir şey yok.",
+      "noRender": "Video dosyası oluşturma bu sitede henüz açık değil: yine de reel bulup düzenleyebilirsin."
+    },
+    "search": {
+      "transcribing": "Yazıya dökülüyor…",
+      "picking": "Anlar bulunuyor…",
+      "framing": "Kadrajlanıyor…",
+      "covering": "Kapaklar seçiliyor…",
+      "transcribingHint": "Önce videodaki her kelime yazıya dökülüyor. Uzun bir video birkaç dakika sürer.",
+      "pickingHint": "Transkriptte dikkat çeken ve tek başına anlam taşıyan anlar aranıyor.",
+      "framingHint": "Kadrajda nerede olduğun bulunuyor, böylece klip seni hep görüş alanında tutar.",
+      "coveringHint": "Her kapak için en iyi göründüğün kareler seçiliyor."
+    },
+    "preview": {
+      "label": "Reel önizlemesi",
+      "play": "Oynat",
+      "pause": "Duraklat",
+      "seek": "Reelde bir noktaya atla",
+      "mute": "Sesi kapat",
+      "unmute": "Sesi aç"
+    },
+    "editor": {
+      "back": "Tüm reeller",
+      "from": "Kaynak: {video}",
+      "length": "{length} uzunluğunda",
+      "saving": "Kaydediliyor…",
+      "make": "Videoyu oluştur",
+      "makeAgain": "Yeniden oluştur",
+      "tryAgain": "Tekrar dene",
+      "making": "Video oluşturuluyor…",
+      "download": "İndir",
+      "downloadCover": "Kapak",
+      "openStudio": "Stüdyoda aç",
+      "makeHint": "Önizleme canlı: doğru göründüğünde videoyu oluştur.",
+      "makingHint": "Bu yaklaşık bir dakika sürer. Düzenlemeye devam edebilirsin.",
+      "staleHint": "Videosu oluşturulduktan sonra reelde değişiklik yaptın.",
+      "readyHint": "Paylaşmaya hazır. Gönderinin kapak görseli için kapağı da indir.",
+      "noRender": "Video dosyası oluşturma bu sitede henüz açık değil.",
+      "made": "Reel videon indirilmeye hazır.",
+      "notMade": "Video oluşturulamadı. Tekrar dene.",
+      "theFile": "Video dosyasını oynat",
+      "cover": "Kapak",
+      "coverHint": "Reelin ilk saniyesi ve kapak olarak paylaşacağın görsel.",
+      "hook": "Kanca",
+      "hookHint": "Bir kelimeyi öne çıkarmak için onu *yıldız* içine al.",
+      "design": "Tasarım",
+      "designs": {
+        "editorial": "Editoryal",
+        "bold": "Cesur",
+        "poster": "Afiş",
+        "series": "Seri"
+      },
+      "frame": "Kare",
+      "frameAt": "{at} anındaki kare",
+      "ourPick": "Bizim seçimimiz",
+      "noFrames": "Henüz kare yok: video servisi bu anı inceledikten sonra kapak görünecek.",
+      "label": "Seri etiketi",
+      "labelPlaceholder": "Mobilite",
+      "openWithCover": "Reel'i kapağıyla başlat",
+      "clip": "Klip",
+      "clipHint": "Klibi orada başlatmak ya da bitirmek için bir kelimeye tıkla.",
+      "start": "Başlangıç",
+      "end": "Bitiş",
+      "captions": "Altyazılar",
+      "styles": {
+        "bold": "Kalın",
+        "clean": "Sade",
+        "brand": "Senin görünümün"
+      },
+      "language": "Altyazı dili",
+      "asSpoken": "Konuşulduğu gibi",
+      "languages": {
+        "en": "İngilizce",
+        "de": "Almanca",
+        "es": "İspanyolca",
+        "fr": "Fransızca",
+        "it": "İtalyanca",
+        "nl": "Felemenkçe",
+        "pl": "Lehçe",
+        "pt": "Portekizce",
+        "tr": "Türkçe"
+      },
+      "framing": "Kadraj",
+      "layouts": {
+        "auto": "Beni takip et",
+        "autoHint": "Yüzünü kadrajda tutar",
+        "center": "Orta",
+        "centerHint": "Karenin ortası",
+        "fit": "Tüm kare",
+        "fitHint": "Slaytlar ve ekranlar için"
+      },
+      "extras": "Ekstralar",
+      "cuts": "Duraklamaları kes",
+      "progress": "İlerleme çubuğu",
+      "cleanAudio": "Sesi temizle",
+      "cutaways": "Klibin üzerinde fotoğraflar",
+      "noIdeas": "Bu an için fotoğraf fikri yok",
+      "endCard": "Siten ve QR koduyla bitiş kartı",
+      "endText": "Bitiş kartı satırı",
+      "post": "Gönderi metni",
+      "postHint": "Reel'i paylaşırken altına yapıştıracağın metin.",
+      "copy": "Kopyala",
+      "copied": "Kopyalandı",
+      "notCopied": "Kopyalanamadı. Metni seçip kopyala.",
+      "delete": "Reel'i sil",
+      "deleteSure": "Bu reel ve videosu silinsin mi?",
+      "keep": "Kalsın",
+      "deleted": "Reel silindi",
+      "madeByTeam": "Pazarlama Uzmanın tarafından hazırlandı"
+    },
+    "studio": {
+      "subtitle": "Bir reel'i zaman çizelgesinde kendin düzenle: kırp, istediğin anı çıkar, bir altyazıyı yeniden yaz, altyazıları ve görüntüyü taşı, her şeyi geri al.",
+      "noneTitle": "Henüz düzenlenecek reel yok",
+      "none": "Önce Reels'teki fikirlerden birini kullan, sonra burada aç.",
+      "toReels": "Reels'e git",
+      "back": "Stüdyodaki tüm reel'ler",
+      "timeline": "Zaman çizelgesi",
+      "panelsLabel": "Stüdyo panelleri",
+      "panels": {
+        "words": "Kelimeler",
+        "cover": "Kapak",
+        "captions": "Altyazılar",
+        "frame": "Kadraj",
+        "extras": "Ekstralar",
+        "post": "Gönderi"
+      },
+      "tracks": {
+        "cover": "Kapak",
+        "video": "Video",
+        "captions": "Altyazılar",
+        "photos": "Fotoğraflar",
+        "end": "Bitiş kartı"
+      },
+      "piece": "{from} ile {to} arası klip",
+      "cut": "Senin çıkardığın bölüm",
+      "pauseCut": "Reel'in atladığı bir duraklama",
+      "trimStart": "Reel'in başladığı yer: sürükle ya da ok tuşlarını kullan",
+      "trimEnd": "Reel'in bittiği yer: sürükle ya da ok tuşlarını kullan",
+      "photoAt": "{at} konumunda fotoğraf: taşımak için sürükle",
+      "play": "Oynat",
+      "pause": "Duraklat",
+      "undo": "Geri al",
+      "redo": "Yinele",
+      "split": "Oynatma imlecinden böl",
+      "cutOut": "Çıkar",
+      "putBack": "Geri koy",
+      "remove": "Kaldır",
+      "zoomIn": "Yakınlaştır",
+      "zoomOut": "Uzaklaştır",
+      "zoom": "Zaman çizelgesi yakınlaştırması",
+      "fit": "Reel'i sığdır",
+      "stageHint": "Altyazıları yukarı ya da aşağı, görüntüyü yana sürükle. Oynatmak ya da duraklatmak için tıkla.",
+      "frame": {
+        "dragHint": "Ya da görüntüyü oynatıcıda yana sürükle: bıraktığın yerde kalır.",
+        "reset": "Ortaya döndür"
+      },
+      "captions": {
+        "dragHint": "Ya da onları oynatıcıda yukarı veya aşağı sürükle.",
+        "size": "Boyut",
+        "position": "Yükseklik",
+        "reset": "Stilin varsayılanına dön",
+        "group": "Bu altyazının kelimeleri",
+        "groupHint": "Transkriptin yanlış yazdığı kelimeleri yeniden yaz."
+      },
+      "words": {
+        "hint": "Bir kelimeye gitmek için ona tıkla. Aradaki kelimeleri seçmek için başka bir kelimeye Shift tuşuyla tıkla. Bir kelimeyi yeniden yazmak için ona çift tıkla.",
+        "selected": "{count, plural, one {# kelime} other {# kelime}} seçildi",
+        "cutOut": "Çıkar",
+        "putBack": "Geri koy",
+        "startHere": "Buradan başlat",
+        "endHere": "Burada bitir",
+        "retype": "Yeniden yaz"
+      }
+    }
+  },
+  "store": {
+    "subtitle": "Öğrencilerinin senden satın alabilecekleri.",
+    "tabs": {
+      "products": "Ürünler",
+      "bundles": "Paketler",
+      "plans": "Üyelikler",
+      "payments": "Ödemeler"
+    },
+    "bundles": {
+      "draft": "Taslak",
+      "new": "Yeni paket",
+      "name": "Ad",
+      "description": "Açıklama",
+      "items": "Paket içeriği",
+      "itemsHint": "Öğrencilerin tek fiyata birlikte aldıkları.",
+      "publish": "Yayınla",
+      "publishing": "Yayınlanıyor…",
+      "published": "Yayınlandı. Öğrenciler artık mağazandan satın alabilir.",
+      "draftHint": "Taslak, sen yayınlayana kadar öğrencilerden gizli kalır."
+    },
+    "plans": {
+      "new": "Yeni üyelik",
+      "edit": "Üyeliği düzenle",
+      "back": "Üyeliklere dön",
+      "formSubtitle": "Seçtiğin içeriğe erişim açan yinelenen bir ücret.",
+      "details": "Ayrıntılar",
+      "name": "Ad",
+      "namePlaceholder": "ör. Stüdyo kartı",
+      "description": "Açıklama",
+      "descriptionPlaceholder": "Üyelerin neler alacağı",
+      "price": "Fiyat ({currency})",
+      "cycle": "Faturalandırma",
+      "monthly": "Her ay",
+      "yearly": "Her yıl",
+      "custom": "Birkaç ayda bir",
+      "months": "Ödemeler arasındaki ay sayısı",
+      "onSale": "Satışta",
+      "onSaleHint": "Yeni kayıtları durdurmak için kapat. Mevcut üyeler üyeliklerini korur.",
+      "priceChangeHint": "Yeni fiyat veya dönem yeni üyeler için geçerli olur. Mevcut üyeler katıldıkları koşulları korur.",
+      "access": "Üyelerin erişebileceği içerikler",
+      "accessHint": "Bu üyeliğin kapsadığı kurslar, indirilebilir dosyalar, canlı oturumlar ve canlı yayınlar.",
+      "create": "Üyelik oluştur",
+      "save": "Üyeliği kaydet",
+      "saving": "Kaydediliyor…",
+      "cancel": "İptal",
+      "created": "Üyelik oluşturuldu.",
+      "saved": "Üyelik kaydedildi.",
+      "saveError": "Üyelik kaydedilemedi. Alanları kontrol edip tekrar dene.",
+      "empty": "Henüz üyelik yok",
+      "emptyHint": "Üyelik, öğrencilerden belirli aralıklarla ücret alır ve seçtiğin içeriğe erişim açar.",
+      "on": "Satışta",
+      "off": "Kapalı",
+      "editRow": "Düzenle"
+    },
+    "payments": {
+      "empty": "Henüz ödeme yok",
+      "emptyHint": "Bir öğrenci bir şey satın aldığında veya bir üyelik yenilendiğinde burada görünür.",
+      "date": "Tarih",
+      "student": "Öğrenci",
+      "what": "Ödeme konusu",
+      "amount": "Tutar",
+      "status": "Durum",
+      "membershipCharge": "Üyelik ücreti",
+      "receipt": "Makbuz",
+      "more": "Daha fazla yükle",
+      "loading": "Yükleniyor…",
+      "refundHint": "Bir ödemeyi iade etmek için öğrenciyi aç.",
+      "statuses": {
+        "pending": "Beklemede",
+        "completed": "Ödendi",
+        "failed": "Başarısız",
+        "refunded": "İade edildi",
+        "partially_refunded": "Kısmen iade edildi"
+      }
+    }
+  },
+  "plan": {
+    "subtitle": "Contentor'a ne ödediğin ve bunun neleri kapsadığı."
+  },
+  "palette": {
+    "placeholder": "Sayfalarda ara…",
+    "create": "Oluştur",
+    "newCourse": "Yeni kurs",
+    "empty": "Bu adda bir sayfa yok.",
+    "askAssistant": "Asistana sor: “{query}”",
+    "newMessage": "Yeni mesaj"
+  },
+  "settingsHub": {
+    "title": "Diğer ayarlar",
+    "brand": "Site adı, logo ve görünüm",
+    "menu": "Site menüsü ve üst bilgi butonu",
+    "community": "Topluluğu açma veya kapatma ve karşılama mesajı",
+    "assistant": "Öğrencilerinin gördüğü asistan",
+    "autopilot": "Blog otomatik pilotu",
+    "payouts": "Ödemeleri nasıl alırsın",
+    "plan": "Contentor planın"
+  },
+  "dock": {
+    "title": "Ekibin",
+    "close": "Asistanı kapat",
+    "tabs": {
+      "assistant": "Ekip",
+      "setup": "Kurulum",
+      "help": "Yardım",
+      "history": "Geçmiş"
+    },
+    "noChangesYet": "Henüz değişiklik yok — asistanının uyguladığı her şey burada görünecek.",
+    "placeholder": "Bir kurs, bir canlı oturum ya da sitende bir değişiklik iste…",
+    "startersTitle": "Bu sayfada dene",
+    "undo": "Geri al",
+    "undoing": "Geri alınıyor…",
+    "undone": "Geri alındı",
+    "undoneToast": "Geri alındı",
+    "undoRefused": "O zamandan beri değiştirildi, yayınlandı ya da kaldırıldı; bu yüzden olduğu gibi bırakıldı.",
+    "starters": {
+      "home": [
+        "Sırada ne yapmalıyım?",
+        "Bu hafta nasıl geçti?",
+        "Yeniliklerle ilgili bir duyuru taslağı hazırla"
+      ],
+      "courses": [
+        "Sırada ekleyebileceğim bir kurs öner",
+        "Kapağı olmayan kurslara kapak ekle",
+        "Hangi kurslar hâlâ taslak?"
+      ],
+      "course": [
+        "Bu kursa bir modül ekle",
+        "Bu kursun açıklamasını yeniden yaz",
+        "Bu kursa yeni bir kapak ver",
+        "Bu kurs yayınlanmaya hazır mı?"
+      ],
+      "events": [
+        "Önümüzdeki 4 hafta için haftalık bir ders planla",
+        "Yaklaşan etkinliklerime kapak ekle",
+        "Takvimimde sırada ne var?"
+      ],
+      "blog": [
+        "Öğrencilerim için üç yazı fikri öner",
+        "En yeni kursum hakkında bir yazı taslağı hazırla",
+        "Hangi yazılar hâlâ taslak?"
+      ],
+      "announcements": [
+        "Bir sonraki dersim hakkında bir duyuru taslağı hazırla",
+        "Yeni öğrenciler için bir hoş geldin mesajı taslağı hazırla",
+        "En yeni kursum hakkında bir hatırlatma taslağı hazırla"
+      ],
+      "students": [
+        "Bu hafta kaç öğrenci katıldı?",
+        "Yeni öğrenciler için bir hoş geldin mesajı taslağı hazırla",
+        "Bana daha fazla öğrenci ne kazandırır?"
+      ],
+      "money": [
+        "Ödememi nasıl alırım?",
+        "Planım neleri içeriyor?",
+        "Bir kurs için ne kadar ücret almalıyım?"
+      ],
+      "media": [
+        "Kapağı olmayan kurslara kapak ekle",
+        "Yaklaşan etkinliklerime kapak ekle",
+        "Ana sayfama yeni bir fotoğraf koy"
+      ]
+    },
+    "undoFailed": "Bu işe yaramadı. Lütfen tekrar dene.",
+    "you": "Sen"
+  },
+  "team": {
+    "label": "Ekibin",
+    "picked": "Onları sen seçtin",
+    "answersIn": "Önce {section} bölümünde yanıtlar",
+    "ask": "{name} ile konuş…",
+    "specialists": {
+      "designer": {
+        "name": "Tasarımcı",
+        "job": "Siten, görünümün, logon ve fotoğrafların"
+      },
+      "content": {
+        "name": "İçerik Üretim Uzmanı",
+        "job": "Kurslar, canlı oturumlar ve indirilebilir dosyalar"
+      },
+      "marketing": {
+        "name": "Pazarlama Uzmanı",
+        "job": "Makaleler, kampanyalar ve arama"
+      },
+      "community": {
+        "name": "Topluluk yöneticisi",
+        "job": "Öğrenciler, topluluk ve gelen kutusu"
+      },
+      "finance": {
+        "name": "Finans Stratejisti",
+        "job": "Fiyatlar, üyelikler, satışlar ve ödemeler"
+      },
+      "assistant": {
+        "name": "Asistan",
+        "job": "Karşılama masası: doğru uzmanı bulur"
+      }
+    },
+    "starters": {
+      "designer": [
+        "Ana sayfamı daha sıcak hissettir",
+        "Kurslarıma birbiriyle uyumlu kapaklar yap",
+        "Siteme daha sakin bir görünüm dene"
+      ],
+      "content": [
+        "Bir fikirden kurs taslağı hazırla",
+        "Önümüzdeki 4 hafta için haftalık bir ders planla",
+        "Hangi kurslar hâlâ taslak?"
+      ],
+      "marketing": [
+        "Öğrencilerim için üç makale fikri öner",
+        "En yeni kursum hakkında bir makale yaz",
+        "Google'ın sitem için gösterdiği metni iyileştir"
+      ],
+      "community": [
+        "Bu hafta kaç öğrenci katıldı?",
+        "Son zamanlarda kimler sessizleşti?",
+        "Yeni öğrenciler için bir karşılama mesajı taslağı hazırla"
+      ],
+      "finance": [
+        "Bu ay satışlar nasıl gitti?",
+        "Bir sonraki kursum için ne kadar fiyat belirlemeliyim?",
+        "Ödememi nasıl alırım?"
+      ],
+      "assistant": [
+        "Sırada ne yapmalıyım?",
+        "Ekibimde kim ne yapıyor?",
+        "Bu hafta nasıl geçti?"
+      ]
+    },
+    "ready": "Senin için hazır",
+    "readyToast": "{name} işini bitirdi.",
+    "failedToast": "{name} bunu tamamlayamadı.",
+    "open": "Aç"
+  },
+  "assistant": {
+    "title": "Site asistanı",
+    "subtitle": "Sitende, içeriğine dayanarak soruları yanıtlayan ve uygun olanı öneren bir sohbet yardımcısı.",
+    "enable": "Asistanı sitemde göster",
+    "enableHint": "Bu açıkken ziyaretçiler ve öğrenciler sitende bir sohbet balonu görür.",
+    "enableFailed": "Bu değiştirilemedi. Lütfen tekrar dene.",
+    "upsellTitle": "Öğrencilerin için bir site asistanı edin",
+    "upsellBody": "Asistan öğrencilerinin sorularını yanıtlar ve kurslarını önerir — ücretli planlara dahildir.",
+    "upsellCta": "Planları gör",
+    "greetingLabel": "Karşılama mesajı",
+    "greetingHint": "Ziyaretçilerin gördüğü ilk mesaj.",
+    "greetingPlaceholder": "Merhaba! Kurslarımızla ilgili bana her şeyi sorabilirsin.",
+    "suggestionsLabel": "Önerilen sorular (en fazla 3)",
+    "suggestionPlaceholder": "ör. Nasıl başlarım?",
+    "save": "Kaydet",
+    "saved": "Kaydedildi.",
+    "saveFailed": "Kaydedilemedi. Lütfen tekrar dene.",
+    "usage": "Bu ay {cap} sorudan {used} tanesi kullanıldı",
+    "knowledgeTitle": "Asistanını eğit",
+    "knowledgeHint": "Öğrencilerinin sorduğu sorulara yanıtlar ekle. Asistan yalnızca buraya yazdıklarını ve yayınlanmış içeriğini kullanır.",
+    "knowledgeAdd": "Kayıt ekle",
+    "knowledgeCancel": "İptal",
+    "knowledgeSave": "Kaydı kaydet",
+    "knowledgeLimit": "{max} kayıt sınırına ulaştın.",
+    "knowledgeEmpty": "Asistanına henüz hiçbir şey öğretmedin.",
+    "knowledgeSaveFailed": "Bu kayıt kaydedilemedi. Lütfen tekrar dene.",
+    "knowledgeDeleteFailed": "Bu kayıt silinemedi. Lütfen tekrar dene.",
+    "entryTitle": "Konu veya soru",
+    "entryTitlePlaceholder": "ör. İadeler",
+    "entryContent": "Yanıt",
+    "entryContentPlaceholder": "Asistan ne söylemeli?",
+    "entryEnabled": "Etkin",
+    "delete": "Sil",
+    "deleteConfirm": "Bu kayıt silinsin mi? Asistan onu hemen kullanmayı bırakır.",
+    "transcriptsTitle": "Son konuşmalar",
+    "transcriptsHint": "Ziyaretçilerin ve öğrencilerin ne sorduğu ve asistanın ne yanıt verdiği.",
+    "transcriptSourceSite": "Site asistanı",
+    "transcriptSourceHelp": "Contentor'a sor",
+    "transcriptPreviewBadge": "Senin önizlemen",
+    "ratingUp": "Ziyaretçi bunu faydalı olarak işaretledi.",
+    "ratingDown": "Ziyaretçi bunu faydalı değil olarak işaretledi.",
+    "addToKnowledge": "Bilgilere ekle",
+    "showMore": "Daha fazla göster",
+    "showLess": "Daha az göster",
+    "loadMore": "Daha fazla yükle",
+    "loadFailed": "Yüklenemedi. Lütfen tekrar dene.",
+    "previewTitle": "Kendin dene",
+    "previewHint": "Yanıtları burada test et — asistan kapalıyken bile çalışır ve aylık soru hakkından düşmez.",
+    "previewPlaceholder": "Bir soru sor…",
+    "previewSend": "Gönder",
+    "previewThinking": "Düşünüyor…",
+    "previewError": "Bir şeyler ters gitti — lütfen tekrar dene.",
+    "empty": "Henüz konuşma yok.",
+    "convTitle": "Konuşmalar",
+    "convHint": "Ziyaretçilerin asistanına neler sorduğunu izle — bir insanın yanıtı daha iyi olacaksa devreye gir.",
+    "convVisitor": "Ziyaretçi",
+    "convLive": "Sohbet ediyorsun",
+    "convWantsHuman": "Bir insanla görüşmek istiyor",
+    "convEmpty": "Henüz konuşma yok — biri asistanınla konuştuğu anda burada görünürler.",
+    "takeOver": "Devral",
+    "release": "Asistana geri bırak",
+    "replyPlaceholder": "Yanıtını yaz…",
+    "replySend": "Gönder",
+    "agentJoined": "{name} sohbete katıldı",
+    "assistantResumed": "Asistan geri döndü",
+    "humanRequestedLine": "Bir insanla konuşmak istedi",
+    "linksTitle": "Bağlantılar",
+    "linksHint": "Asistanın insanları yönlendirebileceği yerler — rezervasyon sayfan, Instagram, WhatsApp…",
+    "linkLabel": "Ad",
+    "linkUrl": "Adres",
+    "linkNote": "Ne zaman önerilsin",
+    "linkAdd": "Bağlantı ekle",
+    "linkLimit": "En fazla 20 bağlantı ekleyebilirsin.",
+    "linksEmpty": "Henüz bağlantı yok.",
+    "handoff": "Ziyaretçiler seni isteyebilsin",
+    "handoffHint": "\"Bir insanla konuş\" düğmesi gösterir; biri bu düğmeye dokunduğunda sana e-posta gelir."
+  },
+  "blog": {
+    "title": "Blog",
+    "untitled": "Başlıksız yazı",
+    "empty": "Henüz yazı yok. Kendin yaz ya da taslağı yapay zekâ hazırlasın.",
+    "newPost": "Yeni yazı",
+    "writeWithAi": "Yapay zekâyla yaz",
+    "creditsLeft": "Bu ay {limit} yapay zekâ yazısından {remaining} tane kaldı",
+    "aiBadge": "YZ",
+    "draft": "Taslak",
+    "published": "Yayında",
+    "deleteConfirm": "Bu yazı silinsin mi? Bu işlem geri alınamaz.",
+    "upgradeTitle": "Yapay zekâyla blog yazma ücretli bir özelliktir",
+    "upgradeBody": "Starter (ayda 5 yapay zekâ yazısı) ya da Pro (ayda 30 yapay zekâ yazısı) planına geç, Contentor senin için yazsın.",
+    "upgrade": "Planı yükselt",
+    "editorSave": "Kaydet",
+    "editorPublish": "Yayınla",
+    "editorUnpublish": "Yayından kaldır",
+    "notReadyTitle": "Önce bir başlık ver",
+    "notReadyBody": "Önce bir şeyler yaz",
+    "editorAdvanced": "Gelişmiş",
+    "editorSlug": "URL kısa adı",
+    "editorTags": "Etiketler",
+    "editorExcerpt": "Özet",
+    "editorMeta": "Meta açıklaması",
+    "viewOnSite": "Sitede görüntüle",
+    "regenerate": "Yeniden oluştur",
+    "regenerateConfirm": "Bu yazı sıfırdan yeniden oluşturulsun mu? Bu işlem 1 yapay zekâ kredisi kullanır ve mevcut metnin yerine geçer.",
+    "generateTitle": "Yapay zekâ ile yaz",
+    "topicYourOwn": "Ya da kendi konun",
+    "instructionsPlaceholder": "Özellikle değinmesini istediğin bir şey var mı?",
+    "generating": "Yazın hazırlanıyor — bu yaklaşık yarım dakika sürer…",
+    "phasePreparing": "Markan ve fotoğrafların inceleniyor",
+    "phaseDrafting": "Yazı hazırlanıyor",
+    "phaseRendering": "Biçimlendiriliyor ve görseller seçiliyor",
+    "cancelKeepsCredit": "İptal etsen de 1 kredi kullanılır.",
+    "cancelled": "Oluşturma iptal edildi — kredi kullanıldı.",
+    "errQuota": "Bu ayki yapay zekâ yazı hakkın doldu.",
+    "errBudget": "Yapay zekâ ile yazma geçici olarak kullanılamıyor.",
+    "errGeneric": "Bir şeyler ters gitti — kredin kullanılmadı.",
+    "autopilotTitle": "Otomatik pilot",
+    "autopilotHint": "Contentor senin için bir konu seçer ve belirlediğin aralıklarla yazar.",
+    "autopilotReview": "Taslak olarak kaydet ve bana bildir — önerilen",
+    "autopilotPublish": "Otomatik olarak yayınla",
+    "nextRun": "Sonraki yazı: {date}",
+    "frequencyWeekly": "Haftalık",
+    "frequencyMonthly": "Aylık",
+    "coverLabel": "Kapak görseli",
+    "coverChange": "Kapağı değiştir",
+    "coverChoose": "Kapak seç",
+    "coverRemove": "Kaldır",
+    "libraryTab": "Fotoğraf kitaplığı",
+    "libraryUpload": "Yükle",
+    "libraryUploadFailed": "Fotoğraf yüklenemedi. Lütfen tekrar dene.",
+    "librarySearch": "Görsel ara…",
+    "libraryEmpty": "Görsel bulunamadı.",
+    "libraryMore": "Daha fazla göster",
+    "kindPhotos": "Fotoğraflar",
+    "kindSpot": "İllüstrasyonlar",
+    "kindTexture": "Dokular",
+    "kindDivider": "Ayırıcılar",
+    "kindIcon": "Simgeler",
+    "inlineImages": "Metin içi görseller",
+    "inlineAdd": "Görsel ekle",
+    "inlineHeadingPrompt": "Hangi bölümün altına eklensin?",
+    "inlineNoHeadings": "Metin içi görsel yerleştirmek için birkaç bölüm başlığı (H2) ekle."
+  },
+  "inbox": {
+    "title": "Gelen kutusu",
+    "newMessage": "Yeni mesaj",
+    "noConversations": "Henüz konuşma yok.",
+    "selectConversation": "Bir konuşma seç",
+    "selectConversationDescription": "Okumak için listeden bir konuşma seç.",
+    "replyPlaceholder": "Bir yanıt yaz…",
+    "composeTo": "Alıcı",
+    "composeSubject": "Konu",
+    "composeMessage": "Mesaj",
+    "composeToPlaceholder": "ogrenci@example.com",
+    "composeSubjectPlaceholder": "Konu ne?",
+    "composeBodyPlaceholder": "Mesajını yaz…",
+    "send": "Gönder",
+    "cancel": "İptal",
+    "archive": "Arşivle",
+    "markSpam": "Spam olarak işaretle",
+    "delete": "Sil",
+    "deleteTitle": "Konuşma silinsin mi?",
+    "deleteDescription": "Bu işlem konuşmanın tamamını kaldırır. Geri alamazsın.",
+    "upsellBanner": "Öğrencilerinden yanıt alabilmek için özel bir alan adı ekle.",
+    "sentSuccess": "Mesaj gönderildi.",
+    "replySuccess": "Yanıt gönderildi.",
+    "archiveSuccess": "Konuşma arşivlendi.",
+    "spamSuccess": "Spam olarak işaretlendi.",
+    "deleteSuccess": "Konuşma silindi.",
+    "loadError": "Gelen kutusu yüklenemedi.",
+    "loadConvError": "Bu konuşma yüklenemedi.",
+    "sendError": "Mesaj gönderilemedi. Lütfen tekrar dene.",
+    "replyError": "Yanıt gönderilemedi. Lütfen tekrar dene.",
+    "archiveError": "Arşivlenemedi. Lütfen tekrar dene.",
+    "spamError": "Spam olarak işaretlenemedi. Lütfen tekrar dene.",
+    "deleteError": "Silinemedi. Lütfen tekrar dene.",
+    "fillFields": "Lütfen tüm alanları doldur."
+  },
+  "setup": {
+    "title": "Siteni yayına al",
+    "progressLabel": "{total} adımdan {done} tanesi tamamlandı",
+    "bubbleLabel": "Kurulum rehberi",
+    "openFull": "Kurulum rehberini aç",
+    "dismiss": "Rehberi gizle",
+    "show": "Kurulum rehberini göster",
+    "niceToHave": "Olsa iyi olur",
+    "markDone": "Tamamlandı olarak işaretle",
+    "markUndone": "Tamamlanmadı olarak işaretle",
+    "celebrateTitle": "Yayındasın! 🎉",
+    "celebrateBody": "Her şey hazır. Siteni öğrencilerinle paylaş!",
+    "copyLink": "Site bağlantını kopyala",
+    "copied": "Bağlantı kopyalandı!",
+    "groups": {
+      "site": "Siten",
+      "content": "İçeriğin",
+      "business": "Ödeme alma",
+      "live": "Yayına geç",
+      "extras": "Olsa iyi olur"
+    },
+    "items": {
+      "page_home": {
+        "title": "Ana sayfa",
+        "description": "Ziyaretçilerin ilk gördüğü şeyi kendine göre düzenle."
+      },
+      "page_about": {
+        "title": "Hakkında sayfası",
+        "description": "Hikâyeni kendi sözlerinle anlat."
+      },
+      "page_courses": {
+        "title": "Kurslar sayfası",
+        "description": "Kurslarının nasıl sunulduğunu kontrol et."
+      },
+      "page_pricing": {
+        "title": "Fiyatlandırma sayfası",
+        "description": "Öğrencilerinin göreceği planları gözden geçir."
+      },
+      "page_faq": {
+        "title": "SSS sayfası",
+        "description": "Öğrencilerin en çok sorduğu soruları yanıtla."
+      },
+      "page_contact": {
+        "title": "İletişim sayfası",
+        "description": "Öğrencilerin sana ulaşabildiğinden emin ol."
+      },
+      "look": {
+        "title": "Görünümünü seç",
+        "description": "Görünümünü ve logonu seç."
+      },
+      "first_course": {
+        "title": "İlk kursunu oluştur",
+        "description": "Örnekleri kendine ait bir şeyle değiştir."
+      },
+      "course_lessons": {
+        "title": "Kursunu tamamla",
+        "description": "Her derse bir video veya metin ekle, ardından kursu yayınla."
+      },
+      "demo_cleanup": {
+        "title": "Demo içeriği kaldır",
+        "description": "Örnek kursları, fotoğrafları ve videoları temizle."
+      },
+      "payouts": {
+        "title": "Nasıl ödeme alacağını ayarla",
+        "description": "Öğrencilerin senden satın alabilmesi için ödeme alma hesabını bağla."
+      },
+      "start_selling": {
+        "title": "Planını başlat",
+        "description": "Fiyatların kaydedildi. Bir plan ve ödeme alma hesabıyla, beklettiğin içerikler kendiliğinden satışa çıkar."
+      },
+      "publish": {
+        "title": "Siteni yayınla",
+        "description": "Dünyaya açılmaya hazır olduğunda düğmeye bas."
+      },
+      "first_download": {
+        "title": "İndirilebilir dosya ekle",
+        "description": "Bir çalışma kâğıdı, plan ya da rehber paylaş."
+      },
+      "first_live": {
+        "title": "Canlı oturum planla",
+        "description": "İlk canlı oturumunu takvime ekle."
+      },
+      "first_announcement": {
+        "title": "Duyuru gönder",
+        "description": "Öğrencilerine merhaba de."
+      },
+      "first_blog_post": {
+        "title": "İlk blog yazını yaz",
+        "description": "Bir makale paylaş — ilk yazı yayınlandığında sitende Blog bölümü görünür."
+      },
+      "first_community_post": {
+        "title": "Topluluğunda merhaba de",
+        "description": "Yeni üyeler hareketli bir ortama gelsin diye bir hoş geldin mesajı paylaş."
+      },
+      "share_site": {
+        "title": "Siteni paylaş",
+        "description": "Bağlantını kopyala ve öğrencilerine gönder."
+      },
+      "studio_email": {
+        "title": "Sitenin e-posta adresini seç",
+        "description": "Öğrenci yazışmaları için kendi adresini al."
+      }
+    },
+    "demoBadge": "Demo",
+    "erase": {
+      "title": "Demo içerik kaldırılsın mı?",
+      "body": "Bu işlem, sitenle birlikte gelen örnek içeriği kaldırır:",
+      "countCourses": "{count} kurs",
+      "countDownloads": "{count} indirilebilir dosya",
+      "countLive": "{count} canlı oturum",
+      "countPlans": "{count} plan",
+      "countBundles": "{count} paket",
+      "countVideos": "{count} video",
+      "countPhotos": "{count} fotoğraf",
+      "keepNote": "Düzenlediğin her şey korunacak.",
+      "confirm": "Demo içeriği kaldır",
+      "cancel": "İptal",
+      "success": "Demo içerik kaldırıldı",
+      "error": "Bir şeyler ters gitti — hiçbir şey kaldırılmadı. Lütfen tekrar dene."
+    },
+    "tabs": {
+      "checklist": "Kurulum",
+      "help": "Yardım"
+    },
+    "help": {
+      "title": "Contentor'a sor",
+      "bubbleLabel": "Yardım sohbetini aç",
+      "intro": "Contentor siten hakkında bana her şeyi sorabilirsin — kurulumunu biliyorum.",
+      "placeholder": "Bir soru sor…",
+      "send": "Gönder",
+      "thinking": "Düşünüyor…",
+      "error": "Bir şeyler ters gitti — lütfen tekrar dene.",
+      "unavailable": "Yardım sohbeti şu anda kullanılamıyor. Bize support@contentor.app adresinden ulaşabilirsin.",
+      "quota": "Bu ayki yardım sohbeti hakkını kullandın. Bu arada bize support@contentor.app adresinden ulaşabilirsin.",
+      "suggestPayouts": "Ödemelerimi nasıl alırım?",
+      "suggestPublish": "Öğrenciler sitemi nasıl bulur?",
+      "suggestStudents": "Öğrenciler nasıl giriş yapar?",
+      "suggestPlans": "Planlarda neler var?",
+      "rateUp": "Faydalı",
+      "rateDown": "Faydalı değil",
+      "talkToHuman": "Bir insanla konuş",
+      "humanRequestedLine": "Bir insanla konuşmak istedin — Contentor ekibine haber verildi.",
+      "agentJoined": "{name} sohbete katıldı",
+      "assistantResumed": "Asistan geri döndü",
+      "humanModeNotice": "{name} ile sohbet ediyorsun"
+    },
+    "titleLive": "Kurulumu tamamla",
+    "titleSelling": "Satışa başla",
+    "heldIntro": "Fiyatları korunarak satışa çıkmayı bekleyenler:"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "languageAndRegion": "Dil ve bölge",
+    "defaultLocaleLabel": "Öğrenciler için varsayılan dil",
+    "defaultLocaleDescription": "Yeni öğrenciler ilk ziyaretlerinde bu dili kullanır. Her öğrenci kendi tercihini değiştirebilir.",
+    "saved": "Kaydedildi.",
+    "saveFailed": "Kaydedilemedi. Lütfen tekrar dene."
+  },
+  "subscription": {
+    "title": "Abonelik",
+    "plan": "Plan",
+    "currency": "Para birimi",
+    "nextBillingDate": "Sonraki fatura tarihi",
+    "provider": "Sağlayıcı",
+    "freeNotice": "Ücretsiz plan: 10 öğrenci, 1 GB, yalnızca ücretsiz içerik. Kurs satmak ve canlı oturumlar düzenlemek için planını yükselt.",
+    "cancelsOn": "Abonelik {date} tarihinde iptal edilecek.",
+    "checkoutCanceled": "Ödeme iptal edildi. Planın değiştirilmedi.",
+    "noData": "Abonelik bilgisi yok.",
+    "error": "Abonelik yüklenemedi. Lütfen tekrar dene.",
+    "status": {
+      "free": "Ücretsiz",
+      "none": "Plan yok",
+      "incomplete": "Hazırlanıyor",
+      "trialing": "Ücretsiz deneme",
+      "active": "Aktif",
+      "past_due": "Ödemesi gecikmiş",
+      "canceled": "İptal edildi"
+    },
+    "trialEnds": "Deneme bitişi",
+    "trialNotice": "Ücretsiz deneme süren {date} tarihinde bitiyor. Öncesinde iptal etmezsen o tarihte kartından ücret alınır. Satış, planın başladığında açılır.",
+    "noneNotice": "Henüz bir planın yok, bu yüzden siten ziyaretçilerden gizleniyor. Oluşturduğun her şey saklanıyor: geri getirmek için aşağıdan bir plan seç.",
+    "startNow": "Planımı şimdi başlat",
+    "starting": "Planın başlatılıyor…",
+    "startNowFailed": "Kartından henüz ücret alınamadı. Bankanla kontrol et ve tekrar dene.",
+    "cancelTrial": "Denemeyi iptal et",
+    "cancelPlan": "Planı iptal et",
+    "keepPlan": "Planımı koru",
+    "confirmCancelTrial": "Denemeni iptal etmek istiyor musun? Senden ücret alınmaz ve deneme {date} tarihinde sona erer.",
+    "confirmCancelPlan": "Planını iptal etmek istiyor musun? Planın {date} tarihine kadar etkin kalır.",
+    "actionError": "Planın güncellenemedi. Tekrar dene.",
+    "changePlan": {
+      "title": "Planı değiştir",
+      "currentPlan": "Mevcut plan",
+      "upgradeTo": "{plan} planına yükselt",
+      "choose": "{plan} planını seç",
+      "startTrial": "{days} günlük ücretsiz denemeyi başlat",
+      "trialNote": "{days} gün ücretsiz, ardından aylık faturalandırılır. Bu süre bitmeden istediğin zaman iptal edebilirsin.",
+      "switchViaSupport": "Geçiş için destekle iletişime geç",
+      "downgrade": "Alt plana geçmek için destekle iletişime geç",
+      "comingSoonInCurrency": "Yakında {currency} ile",
+      "processing": "İşleniyor...",
+      "error": "Ödeme başlatılamadı. Lütfen tekrar dene.",
+      "limits": {
+        "students": "{n} öğrenci",
+        "storage": "{n} GB depolama",
+        "streamingHours": "Ayda {n} saat yayın",
+        "campaignEmails": "Ayda {n} kampanya e-postası",
+        "sell": "Ücretli içerik sat ve Stripe üzerinden ödeme al",
+        "live": "Canlı oturumlar",
+        "fee": "Satışlarda %{n} işlem ücreti",
+        "aiBlog": "Ayda {n} yapay zekâ blog yazısı"
+      }
+    }
+  },
+  "describe": {
+    "course": {
+      "label": "Bir kursu anlat, asistan taslağını hazırlasın",
+      "placeholder": "ör. koşucular için nefes üzerine 4 haftalık başlangıç kursu"
+    },
+    "event": {
+      "label": "Bir oturumu ya da seriyi anlat, asistan planlasın",
+      "placeholder": "ör. 6 hafta boyunca her salı 18:00'de canlı akış dersi"
+    },
+    "submit": "Taslağını hazırla",
+    "working": "Taslak hazırlanıyor…",
+    "wait": "Asistan taslağı hazırlıyor. Bu birkaç saniye sürer.",
+    "resting": "Asistan şu anda dinleniyor. Yine de elle oluşturabilirsin.",
+    "failed": "Bu işe yaramadı. Tekrar dene ya da elle oluştur."
+  },
+  "media": {
+    "subtitle": "Sitende, kurslarında ve gönderilerinde kullandığın fotoğraflar ve videolar.",
+    "photos": "Fotoğraflar",
+    "videos": "Videolar",
+    "mine": "Fotoğraflarım",
+    "contentor": "Contentor fotoğrafları",
+    "emptyMine": "Henüz kendi fotoğrafın yok. Eklemek için yukarıya birkaç tane bırak.",
+    "emptyContentor": "Henüz Contentor fotoğrafı yok. Siten için kütüphaneden seçilen fotoğraflar burada görünür.",
+    "shape": {
+      "label": "Şekil",
+      "any": "Tüm şekiller",
+      "landscape": "Yatay",
+      "portrait": "Dikey",
+      "square": "Kare"
+    },
+    "delete": "Sil",
+    "confirmDelete": "“{title}” silinsin mi? Bu işlem geri alınamaz.",
+    "upload": {
+      "prompt": "Fotoğrafları ve videoları buraya bırak ya da <browse>dosya seç</browse>",
+      "hint": "Aynı anda birden fazla dosya yükleyebilirsin. Videolar parça parça yüklenir, böylece uzun bir video bağlantı kopsa da yarıda kalmaz.",
+      "pick": "Yüklenecek fotoğrafları ve videoları seç",
+      "dropAnywhere": "Yüklemek için bırak",
+      "queue": "Yüklemeler ({count})",
+      "clear": "Bitenleri temizle",
+      "waiting": "Bekliyor",
+      "done": "Tamamlandı",
+      "error": "Başarısız",
+      "failed": "{name} yüklenemedi.",
+      "refused": "Buraya yalnızca fotoğraf ve video yüklenebilir. Atlananlar: {names}",
+      "cancel": "{name} dosyasının yüklemesini iptal et"
+    }
+  },
+  "studio": {
+    "subtitle": "Öğrencilerinin her kurs, oturum ve etkinlik için gördüğü kapağı tasarla.",
+    "design": "Kapak tasarla",
+    "saveFirst": "Önce değişikliklerini kaydet.",
+    "continue": "Devam et",
+    "editCopy": "Bir kopyasını düzenle",
+    "state": {
+      "designed": "Tasarlandı",
+      "photo": "Fotoğraf",
+      "none": "Kapak yok",
+      "draft": "Taslak bekliyor"
+    },
+    "sessions": "{count, plural, one {# oturum} other {# oturum}}",
+    "notPublished": "Yayınlanmadı",
+    "empty": {
+      "title": "Henüz kapak eklenecek bir şey yok",
+      "description": "Bir kurs ya da oturum ekle, sonra kapağını tasarlamak için geri gel.",
+      "action": "Yeni kurs"
+    },
+    "size": {
+      "card": "Kart",
+      "wide": "Geniş",
+      "banner": "Afiş",
+      "post": "Gönderi",
+      "portrait": "Dikey",
+      "story": "Hikâye"
+    },
+    "previews": {
+      "label": "Kapağın {size} önizlemesi",
+      "show": "{size} boyutunu göster"
+    },
+    "strip": {
+      "heading": "Diğer kapakların"
+    },
+    "rail": {
+      "label": "Stüdyo araçları",
+      "layouts": "Düzenler",
+      "photos": "Fotoğraflar",
+      "text": "Metin",
+      "elements": "Öğeler",
+      "brand": "Marka",
+      "uploads": "Yüklemeler",
+      "generate": "Yeni fotoğraf",
+      "edit": "Fotoğrafı düzenle"
+    },
+    "bar": {
+      "size": "Kapak boyutu",
+      "social": "Sosyal medya boyutu"
+    },
+    "drawers": {
+      "full": "Bir kapağa en fazla {count} katman eklenebilir. Yenisini eklemek için birini sil.",
+      "text": {
+        "heading": "Metin ekle",
+        "add": {
+          "title": "Başlık ekle",
+          "subtitle": "Alt başlık ekle",
+          "line": "Bir satır metin ekle"
+        },
+        "new": {
+          "title": "Başlığın",
+          "subtitle": "Alt başlığın",
+          "line": "Metnin"
+        }
+      },
+      "elements": {
+        "shapes": "Şekiller",
+        "newBadge": "Senin sözlerin",
+        "icons": "Simgeler",
+        "qr": "QR kodu",
+        "qrAdd": "Bu sayfanın QR kodunu ekle"
+      },
+      "brand": {
+        "colours": "Renkler",
+        "changes": "Bunlar {target} değiştirir.",
+        "target": {
+          "panel": "renk panelini",
+          "label": "etiketi",
+          "title": "başlığı",
+          "subtitle": "alt başlık",
+          "badge": "rozet",
+          "text": "seçili metin",
+          "shape": "seçili şekil",
+          "icon": "seçili simge",
+          "qr": "QR kodunun kareleri"
+        },
+        "fonts": "Yazı tipleri",
+        "fontFor": {
+          "display": "Başlıklar",
+          "body": "Metin"
+        },
+        "fontsHint": "Yazı tipini değiştirmek için kapakta bir metin seç.",
+        "fromPhoto": "Fotoğrafından"
+      },
+      "uploads": {
+        "heading": "Yüklemeler",
+        "drop": "Fotoğrafı buraya bırak",
+        "hint": "Kendi fotoğraflarının arasına eklenir ve kapağa yerleşir.",
+        "choose": "Fotoğraf seç",
+        "notAPhoto": "Bu dosya bir fotoğraf değil."
+      },
+      "photo": {
+        "none": "Düzenlemek için kapağa bir fotoğraf ekle.",
+        "filters": "Filtreler",
+        "grades": {
+          "none": "Orijinal",
+          "site": "Siten",
+          "mono": "Siyah beyaz",
+          "soft": "Yumuşak",
+          "tint": "Tonlu",
+          "vivid": "Canlı",
+          "duo": "Çift ton",
+          "duo-accent": "Çift ton, vurgu"
+        },
+        "adjust": "Ayarla",
+        "warmth": "Sıcaklık",
+        "cool": "Soğuk",
+        "warm": "Sıcak",
+        "blur": "Bulanıklık",
+        "sharp": "Keskin",
+        "soft": "Yumuşak",
+        "frame": "Çerçeve",
+        "masks": {
+          "none": "Kare",
+          "rounded": "Yuvarlatılmış",
+          "circle": "Daire",
+          "arch": "Kemer",
+          "blob": "Damla"
+        },
+        "tools": "Fotoğraf araçları",
+        "cutout": "Arka planı kaldır",
+        "cutoutHint": "Ücretsiz. Yaklaşık 20 saniye sürer ve kapak Dekupe olarak değişir. Fotoğrafın Medya'da kalır.",
+        "expand": "{size} boyutuna sığacak şekilde genişlet",
+        "costs": "{count, plural, one {Bu ayki son yeni fotoğraf hakkını kullanır.} other {Bu ay kalan # yeni fotoğraf hakkından 1 tanesini kullanır.}}",
+        "usedUp": "Bu ayki yeni fotoğraf haklarını kullandın.",
+        "failed": "Bu fotoğraf değiştirilemedi. Tekrar dene.",
+        "erase": "Çıkar",
+        "eraseLabel": "Ne çıkarılsın?",
+        "erasePlaceholder": "Masadaki kahve fincanı",
+        "change": "Değiştir",
+        "changeLabel": "Ne değişsin?",
+        "changePlaceholder": "Arkamda sıcak bir akşam ışığı",
+        "toolsOff": "Fotoğraf araçları bu sitede henüz açık değil.",
+        "tooMany": "Bu saat içinde çok fazla arka plan işlendi. Daha sonra tekrar dene."
+      },
+      "layouts": {
+        "styles": "Bu kapak için dört stil",
+        "show": "Bana dört stil göster",
+        "more": "Dört tane daha",
+        "drawing": "Dört stil çiziliyor…",
+        "failed": "Stiller çizilemedi. Tekrar dene."
+      }
+    },
+    "editor": {
+      "courseCover": "Kurs kapağı",
+      "downloadCover": "İndirilebilir dosya kapağı",
+      "coverLine": "{cover} · {notice}",
+      "eventCover": "{kind} kapağı, bu başlığı taşıyan tüm oturumlarda ortak kullanılır",
+      "untitled": "Başlıksız",
+      "waiting": "Sen bu kapağı seçene kadar {target} şu anki kapağını korur.",
+      "isKept": "{title} şu anda bu kapağı kullanıyor. Değiştirmek için bir kopyasını düzenle.",
+      "replaced": "Bu kapağın yerini daha yeni bir kapak aldı. Tekrar kullanmak için bir kopyasını düzenle.",
+      "gone": "Bu kapağın ait olduğu kurs ya da etkinlik artık yok, bu yüzden seçilemez.",
+      "controls": "Kapak kontrolleri",
+      "saving": "Kaydediliyor…",
+      "saved": "Kaydedildi",
+      "saveFailed": "Kaydedilemedi.",
+      "leftUnsaved": "Bu kapakta yaptığın son değişiklikler kaydedilmedi.",
+      "retry": "Tekrar dene",
+      "undo": "Geri al",
+      "redo": "Yinele",
+      "discard": "Vazgeç",
+      "discardTitle": "Bu taslaktan vazgeçilsin mi?",
+      "discardBody": "{title} şu anki kapağını korur.",
+      "discardCancel": "Düzenlemeye devam et",
+      "keep": {
+        "course": "Kursta kullan",
+        "download": "İndirilebilir dosyada kullan",
+        "event": "Etkinlikte kullan"
+      },
+      "kept": "Kaydedildi. {title} artık bu kapağı kullanıyor.",
+      "waitForPhoto": "Fotoğrafın tamamlanmasını bekle",
+      "notFound": "Bu kapak artık burada değil."
+    },
+    "controls": {
+      "words": "Metin",
+      "label": "Etiket",
+      "labelPlaceholder": {
+        "course": "örn. 4 haftalık kurs",
+        "download": "örn. Ücretsiz rehber",
+        "event": "örn. Canlı oturum"
+      },
+      "title": "Başlık",
+      "titleHint": "{target} başlığını kullanmak için boş bırak.",
+      "subtitle": "Alt başlık",
+      "subtitlePlaceholder": "örn. Yeni başlayanlar için sabah yogası",
+      "photo": "Fotoğraf",
+      "layout": "Yerleşim",
+      "set": "Senin setin",
+      "setHint": "En son kaydettiğin kapak gibi.",
+      "layouts": {
+        "panel": "Renk paneli",
+        "full": "Tam fotoğraf",
+        "title": "Yalnızca başlık",
+        "band": "Renk şeridi",
+        "framed": "Çerçeveli fotoğraf",
+        "photo": "Yalnızca fotoğraf",
+        "cutout": "Dekupe"
+      },
+      "colour": "Renk",
+      "custom": "Özel renk",
+      "colourHint": "Görünümünden gelen renkler onunla birlikte değişir. Özel bir renk olduğu gibi kalır.",
+      "paint": {
+        "primary": "Ana renk",
+        "accent": "Vurgu",
+        "ink": "Metin",
+        "paper": "Arka plan",
+        "surface": "Yüzey",
+        "inverse": "Koyu",
+        "inverse-ink": "Koyu üzerinde metin",
+        "primary-light": "Ana renk, daha açık",
+        "primary-dark": "Ana renk, daha koyu",
+        "accent-light": "Vurgu, daha açık",
+        "accent-dark": "Vurgu, daha koyu",
+        "white": "Beyaz",
+        "black": "Siyah"
+      },
+      "badge": "Rozet",
+      "badgeShows": "Göster",
+      "badgeDeleted": "Kapaktan silindi",
+      "badges": {
+        "none": "Yok",
+        "new": "Yeni",
+        "date": "Sonraki tarih",
+        "live": "Canlı",
+        "text": "Kendi metnin"
+      },
+      "badgeWords": "Rozet metni",
+      "badgeWordsPlaceholder": "örn. Pazartesi başlıyor",
+      "logo": "Logo",
+      "showLogo": "Logonu göster",
+      "noLogo": "Henüz bir logo eklemedin.",
+      "size": "Boyut",
+      "suggest": "Öner",
+      "suggestMore": "Üç tane daha",
+      "suggesting": "Düşünüyor…",
+      "suggestFailed": "Hiç öneri gelmedi. Tekrar dene."
+    },
+    "photos": {
+      "yours": "Seninkiler",
+      "contentor": "Contentor",
+      "new": "Yeni",
+      "search": "Fotoğraf ara",
+      "upload": "Yükle",
+      "uploadFailed": "Bu fotoğraf yüklenemedi.",
+      "emptyYours": "Henüz bir fotoğraf yüklemedin.",
+      "noMatch": "Fotoğraflarından hiçbiri eşleşmiyor.",
+      "emptyLibrary": "Fotoğraf bulunamadı. Başka kelimeler dene.",
+      "inUse": "{title} üzerinde kullanılıyor",
+      "more": "Daha fazla fotoğraf",
+      "failed": "Fotoğraflar yüklenemedi.",
+      "retry": "Tekrar dene",
+      "pickFailed": "Bu fotoğraf kullanılamadı. Başka birini dene.",
+      "describe": "Fotoğrafı tarif et",
+      "describePlaceholder": "A woman stretching on a porch at sunrise, warm light",
+      "left": "{count, plural, one {Bu ay # yeni fotoğraf hakkın kaldı} other {Bu ay # yeni fotoğraf hakkın kaldı}}",
+      "used": "Bu ayki yeni fotoğraf haklarını kullandın.",
+      "make": "Oluştur",
+      "making": "Fotoğrafın oluşturuluyor…",
+      "wait": "Fotoğrafın hâlâ hazırlanıyor. Yaklaşık bir dakika sürer.",
+      "takes": "Yeni bir fotoğrafın hazırlanması yaklaşık bir dakika sürer.",
+      "makeFailed": "Bu fotoğraf oluşturulamadı. Başka kelimeler dene."
+    },
+    "canvas": {
+      "label": "Kapak tuvali",
+      "hint": "Düzenlemek için bir katmana tıkla. Taşımak için sürükle, boyutunu değiştirmek için tutamaçları kullan ve yazı yazmak için kelimelere çift tıkla.",
+      "editWords": "Kapaktaki kelimeler"
+    },
+    "toolbar": {
+      "label": "Katman araçları",
+      "layer": {
+        "photo": "Fotoğraf",
+        "panel": "Renk",
+        "label": "Etiket",
+        "title": "Başlık",
+        "subtitle": "Alt başlık",
+        "logo": "Logo",
+        "badge": "Rozet",
+        "text": "Metin",
+        "shape": "Şekil",
+        "icon": "Simge",
+        "qr": "QR kodu"
+      },
+      "font": "Yazı tipi",
+      "fonts": {
+        "display": "Başlık",
+        "body": "Gövde metni"
+      },
+      "weight": "Kalınlık",
+      "weights": {
+        "400": "Normal",
+        "500": "Orta",
+        "600": "Yarı kalın",
+        "700": "Kalın",
+        "800": "Ekstra kalın"
+      },
+      "upper": "Büyük harf",
+      "align": "Hizala",
+      "aligns": {
+        "left": "Sol",
+        "center": "Orta",
+        "right": "Sağ"
+      },
+      "size": "Boyut",
+      "tracking": "Harf aralığı",
+      "leading": "Satır aralığı",
+      "colour": "Renk",
+      "automatic": "Otomatik",
+      "focusX": "Yatay odak",
+      "focusY": "Dikey odak",
+      "zoom": "Yakınlaştır",
+      "brightness": "Parlaklık",
+      "contrast": "Kontrast",
+      "saturation": "Doygunluk",
+      "darken": "Koyulaştır",
+      "badgeWords": "Rozet kelimeleri",
+      "fill": "Dolgu",
+      "shape": "Şekil",
+      "shapes": {
+        "rect": "Dikdörtgen",
+        "circle": "Daire",
+        "arch": "Kemer",
+        "line": "Çizgi",
+        "pill": "Hap",
+        "star": "Yıldız",
+        "burst": "Patlama",
+        "arrow": "Ok"
+      },
+      "opacity": "Opaklık",
+      "logoColour": "Logo rengi",
+      "logoColours": {
+        "auto": "Otomatik",
+        "white": "Beyaz",
+        "black": "Siyah",
+        "original": "Orijinal"
+      },
+      "forward": "Öne getir",
+      "back": "Geriye gönder",
+      "duplicate": "Çoğalt",
+      "delete": "Sil",
+      "effect": "Efekt",
+      "effects": {
+        "none": "Efekt yok",
+        "lift": "Kaldır",
+        "shadow": "Gölge",
+        "outline": "Dış çizgi",
+        "highlight": "Vurgu",
+        "label": "Efektler"
+      },
+      "effectColour": "Efekt rengi",
+      "markWord": "Bir kelimeyi renklendir",
+      "markNone": "Kelime yok",
+      "markColour": "Kelime rengi",
+      "flip": "Çevir",
+      "editPhoto": "Fotoğrafı düzenle",
+      "icon": "Simge",
+      "qrLink": "Bağlantı",
+      "qrSquares": "Karelerin rengi",
+      "qrGround": "Karelerin arkasındaki renk",
+      "icons": {
+        "calendar": "Takvim",
+        "clock": "Saat",
+        "map-pin": "Konum",
+        "video": "Video",
+        "mic": "Mikrofon",
+        "users": "Kişiler",
+        "user": "Kişi",
+        "heart": "Kalp",
+        "star": "Yıldız",
+        "sparkles": "Pırıltılar",
+        "sun": "Güneş",
+        "moon": "Ay",
+        "leaf": "Yaprak",
+        "flower": "Çiçek",
+        "mountain": "Dağ",
+        "waves": "Dalgalar",
+        "flame": "Alev",
+        "zap": "Şimşek",
+        "check": "Onay işareti",
+        "circle-check": "Daire içinde onay işareti",
+        "play": "Oynat",
+        "gift": "Hediye",
+        "award": "Ödül",
+        "trophy": "Kupa",
+        "target": "Hedef",
+        "book-open": "Kitap",
+        "graduation-cap": "Mezuniyet kepi",
+        "pen-tool": "Kalem",
+        "palette": "Palet",
+        "camera": "Kamera",
+        "music": "Müzik",
+        "dumbbell": "Dambıl",
+        "brain": "Beyin",
+        "coffee": "Kahve",
+        "smile": "Gülümseme",
+        "globe": "Dünya",
+        "mail": "Posta",
+        "phone": "Telefon",
+        "arrow-right": "Ok",
+        "chevron-right": "Köşeli ok"
+      }
+    },
+    "download": {
+      "label": "İndir",
+      "making": "Dosya hazırlanıyor…",
+      "failed": "Dosya oluşturulamadı. Tekrar dene.",
+      "jpeg": "JPG olarak (daha küçük dosya)",
+      "for": {
+        "card": "Sitendeki kartlar",
+        "wide": "YouTube küçük resmi",
+        "banner": "Başlık görseli",
+        "post": "Kare gönderi",
+        "portrait": "Dikey gönderi",
+        "story": "Hikâye"
+      }
+    }
+  },
+  "messages": {
+    "subtitle": "Öğrencilerine uygulamada ve e-postayla ilettiklerin.",
+    "new": "Yeni mesaj",
+    "design": "E-posta tasarla",
+    "newSubtitle": "Öğrencilerinin uygulamasında görünür, istersen e-postayla da gönderilebilir. Tasarımlı bir düzen için bunun yerine <design>bir e-posta tasarla</design>.",
+    "back": "Mesajlara dön",
+    "draftGone": "Bu taslak artık yok.",
+    "designedTemplates": "Tasarımlı e-posta şablonları",
+    "tabs": {
+      "sent": "Gönderilen & planlanan",
+      "repeating": "Tekrarlanan",
+      "templates": "Şablonlar"
+    },
+    "empty": "Henüz hiçbir şey gönderilmedi",
+    "emptyHint": "Mesajın öğrencilerine uygulamada ulaşır; kutuyu işaretlersen e-postayla da gider.",
+    "emailDown": "Tasarımlı e-postalar şu anda yüklenemedi. Aşağıdaki mesajlar eksiksiz; e-postalar bir sonraki ziyaretinde yeniden görünecek.",
+    "untitled": "Başlıksız",
+    "review": "İncele & gönder",
+    "removeError": "Bu işlem olmadı. Lütfen tekrar dene.",
+    "channel": {
+      "app": "Uygulamada",
+      "appEmail": "Uygulamada ve e-postayla",
+      "email": "Tasarımlı e-posta"
+    },
+    "status": {
+      "draft": "Taslak",
+      "scheduled": "Planlandı",
+      "sending": "Gönderiliyor",
+      "sent": "Gönderildi",
+      "partial": "Kısmen gönderildi",
+      "failed": "Başarısız"
+    },
+    "detail": {
+      "draft": "henüz gönderilmedi",
+      "scheduled": "{when} gönderilecek",
+      "sending": "yolda",
+      "announcement": "{recipients, plural, one {# öğrenci} other {# öğrenci}} · {reached} kişi okudu",
+      "email": "{recipients} kişiden {reached} kişiye teslim edildi{failed, plural, =0 {} one { · # başarısız} other { · # başarısız}}"
+    },
+    "action": {
+      "cancel": "İptal et",
+      "delete": "Sil",
+      "discard": "Sil"
+    },
+    "confirm": {
+      "cancel": "“{title}” iptal edilsin mi? Gönderilmeyecek.",
+      "delete": "“{title}” silinsin mi? Öğrencilerinin uygulamasından da kaldırılır.",
+      "discard": "“{title}” taslağı silinsin mi?"
+    },
+    "done": {
+      "cancel": "İptal edildi.",
+      "delete": "Silindi.",
+      "discard": "Taslak silindi."
+    },
+    "compose": {
+      "alsoEmail": "Kendi markanla e-posta olarak da gönder",
+      "saveError": "Mesajın şu anda kaydedilemedi. Yazdıkların hâlâ burada.",
+      "loadError": "Bu mesaj yüklenemedi.",
+      "audience": {
+        "title": "Kimlere gidecek",
+        "narrow": "Yalnızca bazı öğrenciler",
+        "app": "Uygulamanı yükleyenler",
+        "browser": "Web sitesini kullananlar",
+        "ios": "iPhone veya iPad",
+        "android": "Android",
+        "desktop": "Bilgisayar",
+        "push": "Telefon bildirimleri açık"
+      },
+      "preview": {
+        "caption": "Telefonda nasıl görünür",
+        "date": "9 Haziran Salı",
+        "title": "Başlığın",
+        "body": "Mesajın",
+        "now": "şimdi"
+      }
+    }
+  },
+  "events": {
+    "subtitle": "Canlı oturumlar, canlı yayınlar, Zoom oturumları ve yüz yüze etkinlikler tek bir yerde.",
+    "new": "Yeni oturum veya etkinlik",
+    "editing": "Düzenleniyor: {title}",
+    "locked": "Canlı oturumlar ve canlı yayınlar için ücretli bir plan gerekir. Zoom oturumları ve yüz yüze etkinlikler her zaman ücretsizdir.",
+    "upgrade": "Planları gör",
+    "linkMissing": "Bu oturum veya etkinlik bulunamadı. Silinmiş olabilir.",
+    "views": {
+      "list": "Liste",
+      "calendar": "Takvim"
+    },
+    "whenFilter": "Göster",
+    "upcoming": "Yaklaşan",
+    "past": "Geçmiş",
+    "empty": "Yaklaşan bir şey yok. Bir oturum veya etkinlik oluştur ya da yukarıda birini tarif et.",
+    "emptyPast": "Henüz geçmişte bir şey yok.",
+    "sort": {
+      "date": "Tarihe göre",
+      "newest": "En son eklenen",
+      "nameAZ": "Ad A-Z",
+      "nameZA": "Ad Z-A"
+    },
+    "col": {
+      "status": "Durum",
+      "title": "Başlık",
+      "when": "Ne zaman",
+      "where": "Nerede",
+      "price": "Fiyat",
+      "actions": "İşlemler"
+    },
+    "status": {
+      "draft": "Taslak",
+      "scheduled": "Planlandı",
+      "live": "Canlı",
+      "ended": "Sona erdi"
+    },
+    "kinds": {
+      "live": {
+        "label": "Canlı oturum",
+        "hint": "Doğrudan tarayıcıda, bir video odasında grup dersi ya da birebir görüşme. Ek yazılım gerekmez.",
+        "titlePlaceholder": "örn. Cuma akış oturumu"
+      },
+      "stream": {
+        "label": "Canlı yayın",
+        "hint": "Sen yayın yaparsın; öğrenciler izler ve sohbet eder.",
+        "titlePlaceholder": "örn. Haftalık Soru-Cevap"
+      },
+      "zoom": {
+        "label": "Zoom",
+        "hint": "Öğrenciler senin Zoom bağlantınla katılır.",
+        "titlePlaceholder": "örn. Grup koçluğu oturumu"
+      },
+      "onsite": {
+        "label": "Yüz yüze",
+        "hint": "Öğrencilerin geldiği bir mekânda.",
+        "titlePlaceholder": "örn. Hafta sonu atölyesi"
+      }
+    },
+    "where": "Nerede gerçekleşiyor",
+    "title": "Başlık",
+    "description": "Açıklama",
+    "when": "Ne zaman",
+    "whenHint": "Öğrencilerinin görmediği bir taslak olarak kalması için boş bırak.",
+    "timesIn": "Saatler {zone} saat dilimine göredir.",
+    "cover": "Kapak",
+    "coverHint": "“{title}” adlı her oturum bu kapağı kullanır.",
+    "zoomLink": "Zoom bağlantısı",
+    "location": "Mekân",
+    "locationPlaceholder": "örn. Stüdyo A, Şehir merkezi",
+    "address": "Adres",
+    "capacity": "Kontenjan",
+    "capacityPlaceholder": "Sınırsız",
+    "access": "Erişim",
+    "free": "Ücretsiz",
+    "paid": "Ücretli",
+    "membersOnly": "Yalnızca üyeler",
+    "price": "Fiyat ({currency})",
+    "record": "Otomatik olarak kaydet",
+    "watermark": "Filigran",
+    "watermarkHint": "Ekran kaydını caydırmak için öğrenciler videonun üzerinde kendi adlarını görür.",
+    "whiteboard": "Beyaz tahta",
+    "whiteboardHint": "Excalidraw'dan kaydedilmiş bir tahta (.excalidraw dosyası). Oturumda açtığında beyaz tahtada olur.",
+    "whiteboardAttached": "Tahta eklendi",
+    "whiteboardRemove": "Kaldır",
+    "whiteboardFailed": "Tahta yüklenemedi.",
+    "filters": "Filtreler",
+    "tags": "Etiketler",
+    "create": "Oluştur",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor…",
+    "cancel": "İptal",
+    "created": "Oluşturuldu.",
+    "saved": "Kaydedildi.",
+    "saveError": "Kaydedilemedi. Alanları kontrol edip tekrar dene.",
+    "accessNotSaved": "Kaydedildi, ancak kişilerin nasıl erişeceği kaydedilmedi.",
+    "trial": "Ücretsiz deneme",
+    "trialTitle": "İlk oturum ücretsiz deneme olsun mu?",
+    "trialHint": "İlk oturuma herkes ücretsiz katılabilir. Diğer tüm oturumlar fiyatını korur.",
+    "trialOn": "Ücretsiz oturum: {when}. Diğer tüm oturumlar fiyatını korur.",
+    "trialHelpTerm": "Ücretsiz deneme dersi nedir?",
+    "trialHelp": "Deneme dersi, birinin ödeme yapmadan önce öğrettiklerini denemesini sağlar. Yalnızca ilk oturum ücretsizdir ve herkes katılabilir. Sonraki tüm oturumlar normal fiyatından satılır. İstediğin zaman kapatabilirsin; o oturum yeniden kendi fiyatına döner.",
+    "trialTurnedOn": "Tamam. İlk oturum artık ücretsiz deneme.",
+    "trialTurnedOff": "Tamam. İlk oturum yeniden kendi fiyatında.",
+    "trialError": "Ücretsiz deneme değiştirilemedi. Lütfen tekrar dene.",
+    "held": "Taslak: öğrencilerin bunu henüz görmüyor. Yayınladığında yaklaşan tüm oturumları görünür.",
+    "heldPast": "Önce ileri bir tarih seç.",
+    "publish": "Yayınla",
+    "publishing": "Yayınlanıyor…",
+    "published": "Yayınlandı. Öğrencilerin artık görebilir.",
+    "notPublished": "Kaydedildi, ancak hâlâ taslak.",
+    "edit": "Düzenle",
+    "goLive": "Canlı yayına geç",
+    "starting": "Başlatılıyor…",
+    "join": "Katıl",
+    "end": "Bitir",
+    "ending": "Bitiriliyor…",
+    "stopped": "Bitti.",
+    "startError": "Başlatılamadı. Lütfen tekrar dene.",
+    "stopError": "Bitirilemedi. Lütfen tekrar dene.",
+    "openZoom": "Zoom'u aç",
+    "deleted": "{count, plural, one {# öğe silindi} other {# öğe silindi}}.",
+    "deleteRefused": "{count, plural, one {# öğe silinemedi} other {# öğe silinemedi}}. Bir oturumu veya etkinliği yalnızca site sahibi silebilir."
+  },
+  "focus": {
+    "startIt": "Başlat",
+    "makeWithMe": "Hadi birlikte oluşturalım, her seferinde bir soru.",
+    "kinds": {
+      "course": {
+        "new": "Yeni kurs",
+        "continue": "Kursuna devam et: {title}",
+        "fillMyself": "Kendim doldurayım"
+      },
+      "event": {
+        "new": "Yeni oturum veya etkinlik",
+        "continue": "Oturumuna devam et: {title}",
+        "fillMyself": "Kendim doldurayım"
+      },
+      "message": {
+        "new": "Yeni mesaj",
+        "continue": "Mesajına devam et: {title}",
+        "fillMyself": "Kendim yazayım",
+        "tick": "E-postayla da gönder",
+        "writing": "Mesajın yazılıyor…",
+        "thinking": "Mesajın üzerinde düşünülüyor…"
+      },
+      "download": {
+        "new": "Yeni indirilebilir dosya",
+        "continue": "İndirilebilir dosyana devam et: {title}",
+        "fillMyself": "Kendim doldurayım",
+        "drop": "Dosyanı buraya bırak ya da bir dosya seç",
+        "fileNotAnswered": "Dosyan sayfada, ama rehber onu gözden kaçırdı.",
+        "thinking": "İndirilebilir dosyan üzerinde düşünülüyor…"
+      },
+      "membership": {
+        "new": "Yeni üyelik",
+        "continue": "Üyeliğine devam et: {title}",
+        "fillMyself": "Kendim doldurayım",
+        "thinking": "Üyeliğin üzerinde düşünülüyor…",
+        "writing": "Ad ve açıklama yazılıyor…",
+        "handOver": {
+          "access": "{name} burada: hadi fiyatını belirleyelim."
+        }
+      },
+      "bundle": {
+        "new": "Yeni paket",
+        "continue": "Paketine devam et: {title}",
+        "tooFew": "Bir paket için sattığın en az iki ürün gerekir. Önce ikisine fiyat ver.",
+        "fillMyself": "Kendim doldurayım",
+        "thinking": "Paketin üzerine düşünüyorum…",
+        "writing": "Ad ve açıklama yazılıyor…",
+        "handOver": {
+          "access": "{name} hazır: şimdi fiyatını belirleyelim."
+        }
+      },
+      "post": {
+        "new": "Yeni gönderi",
+        "continue": "Gönderine devam et: {title}",
+        "fillMyself": "Kendim yazacağım",
+        "writing": "Gönderin yazılıyor…",
+        "copyFailed": "Gönderi oluşturulamadı.",
+        "thinking": "Gönderinin üzerine düşünüyorum…",
+        "refused": {
+          "upgrade_required": "Gönderilerini senin yerine yazmak ücretli planlarda var. Kendin yaz ya da planını yükselt.",
+          "quota_exhausted": "Bu ayki yapay zekâ gönderi hakkın bitti. Kendin yaz ya da daha fazlası için planını yükselt.",
+          "disabled": "Yapay zekâ ile yazma şu anda kullanılamıyor. Kendin yaz.",
+          "budget": "Yapay zekâ ile yazma şu anda kullanılamıyor. Kendin yaz."
+        }
+      }
+    },
+    "youDecide": "Sen karar ver",
+    "justDraft": "Sadece taslağını çıkar",
+    "ownIdea": "Kendi fikrim…",
+    "selectAll": "Tümünü seç",
+    "deselectAll": "Tüm seçimleri kaldır",
+    "pickSome": "Uyanların hepsini seç",
+    "continueWith": "{count, plural, one {Devam et} other {# ile devam et}}",
+    "addTimeLimit": "Süre sınırı ekle",
+    "answerPlaceholder": "Ya da kendi sözlerinle anlat…",
+    "changePlaceholder": "Ya da neyin değişeceğini söyle…",
+    "writingOutline": "Ana hatların yazılıyor…",
+    "outlineFailed": "Ana hatlar oluşturulamadı.",
+    "writingCopy": "Başlık ve açıklama yazılıyor…",
+    "copyFailed": "Başlık ve açıklama oluşturulamadı.",
+    "looksGood": "İyi görünüyor, devam et",
+    "tryAgain": "Tekrar dene",
+    "stop": "Durdur",
+    "startSelling": "Satışa başla",
+    "published": "Yayınlandı. Öğrenciler artık onu sitende bulabilir.",
+    "kept": "Taslak olarak kaydedildi.",
+    "saveLeave": "Kaydet ve çık",
+    "allDetails": "Tüm ayrıntılar",
+    "writing": "yazılıyor",
+    "progress": "Adım {done}/{total}",
+    "outlineSoon": "Modüllerin ve derslerin yazıldıkça burada görünür.",
+    "readingDetails": "Bilgilerini okuyorum…",
+    "thinking": "Kursun üzerine düşünüyorum…",
+    "writingDescriptions": "ders açıklamaları yazılıyor",
+    "descriptionCount": "{done} / {total}",
+    "descriptionsNote": "Her dersin videosu için kısa bir açıklama yazılıyor. İstediğini sayfada düzenleyebilirsin.",
+    "descriptionsFailed": "Bazı ders açıklamaları oluşturulamadı.",
+    "cover": "Kapak",
+    "drafting": "kapak taslakları hazırlanıyor",
+    "coverStyle": {
+      "full": "Fotoğraf, üzerinde başlık",
+      "panel": "Fotoğraf ve renk paneli",
+      "title": "Yalnızca başlık",
+      "band": "Fotoğraf, üzerinde şerit",
+      "framed": "Çerçeveli fotoğraf",
+      "photo": "Yalnızca fotoğraf"
+    },
+    "yours": "Seninki",
+    "upload": "Yükle",
+    "makingPhoto": "Fotoğrafın hazırlanıyor…",
+    "photoFailed": "Fotoğrafın oluşturulamadı. Buradan birini seç ya da kendi fotoğrafını yükle.",
+    "photoUnavailable": "Bu fotoğraf kullanılamadı. Başka birini seç.",
+    "useCover": "Bu kapağı kullan",
+    "moreStyles": "Dört stil daha",
+    "draftCovers": "Dört kapak taslağı hazırla",
+    "morePhotos": "Daha fazla fotoğraf",
+    "editCover": "Ben düzenlerim",
+    "later": "Sonra",
+    "once": "Bir kez",
+    "weekly": "Haftalık",
+    "useSchedule": "Bu saati kullan",
+    "coverPlaceholder": "Ya da anlat: daha aydınlık, ayakta çalışma masasında bir adam…",
+    "tellStudents": "Öğrencilerime haber ver",
+    "schedule": "Zamanla",
+    "notNow": "Şimdi değil",
+    "sendsAt": "Gönderim: {when}",
+    "writingAnnouncement": "Duyurun yazılıyor…",
+    "announcementFailed": "Duyuruyu yazamadım.",
+    "handOver": {
+      "cover": "Ben {name}: hadi kapağını hazırlayalım.",
+      "access": "Ben {name}: hadi öğrencilerin buna nasıl erişeceğine karar verelim.",
+      "finish": "Ben {name}: hadi bunu yayına çıkaralım."
+    }
+  },
+  "downloads": {
+    "upload": "Dosya Yükle",
+    "new": "Yeni indirilebilir dosya",
+    "edit": "İndirilebilir dosyayı düzenle",
+    "back": "İndirilebilir dosyalara dön",
+    "title": "Başlık",
+    "titlePlaceholder": "ör. Kurs Çalışma Kitabı",
+    "description": "Açıklama",
+    "descriptionPlaceholder": "İçinde ne olduğunu bir iki satırla anlat.",
+    "cover": "Kapak",
+    "file": "Dosya",
+    "choose": "Bir dosya seç ya da buraya bırak",
+    "replace": "Değiştirmek için başka bir dosya seç ya da buraya bırak",
+    "titleFirst": "Önce bir başlık ver.",
+    "uploaded": "Dosya yüklendi",
+    "uploadFailed": "Dosya yüklenemedi. Tekrar dene.",
+    "progress": "%{pct} yüklendi",
+    "tags": "Etiketler",
+    "create": "Oluştur",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor…",
+    "created": "İndirilebilir dosya oluşturuldu",
+    "saved": "İndirilebilir dosya kaydedildi",
+    "saveError": "İndirilebilir dosya kaydedilemedi",
+    "accessNotSaved": "Kaydedildi, ancak öğrencilerin dosyaya nasıl erişeceği kaydedilmedi.",
+    "draft": "Taslak",
+    "publish": "Yayınla",
+    "publishing": "Yayınlanıyor…",
+    "published": "Yayınlandı. Öğrenciler artık onu sitende bulabilir.",
+    "publishError": "İndirilebilir dosya yayınlanamadı."
+  }
+}

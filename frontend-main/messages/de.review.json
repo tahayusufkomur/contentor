@@ -1,0 +1,1314 @@
+{
+  "auth.signup.title": {
+    "src": "4046b581",
+    "reviewed": false
+  },
+  "auth.signup.subtitle": {
+    "src": "2828a8ff",
+    "reviewed": false
+  },
+  "auth.signup.contactStepHeading": {
+    "src": "4046b581",
+    "reviewed": false
+  },
+  "auth.signup.contactStepSubhead": {
+    "src": "c50f3796",
+    "reviewed": false
+  },
+  "auth.signup.emailLabel": {
+    "src": "84add5b2",
+    "reviewed": false
+  },
+  "auth.signup.emailPlaceholder": {
+    "src": "50e2b46e",
+    "reviewed": false
+  },
+  "auth.signup.nameLabel": {
+    "src": "ab42293e",
+    "reviewed": false
+  },
+  "auth.signup.namePlaceholder": {
+    "src": "cac7bbb6",
+    "reviewed": false
+  },
+  "auth.signup.submit": {
+    "src": "2e026239",
+    "reviewed": false
+  },
+  "auth.signup.submitting": {
+    "src": "8c9d3bd3",
+    "reviewed": false
+  },
+  "auth.signup.alreadyHaveAccount": {
+    "src": "8559034a",
+    "reviewed": false
+  },
+  "auth.signup.signIn": {
+    "src": "ada2e9e9",
+    "reviewed": false
+  },
+  "auth.signup.verifyTitle": {
+    "src": "fab9f405",
+    "reviewed": false
+  },
+  "auth.signup.verifyDescription": {
+    "src": "1a756c28",
+    "reviewed": false
+  },
+  "auth.signup.spamHint": {
+    "src": "0d28948c",
+    "reviewed": false
+  },
+  "auth.signup.resend": {
+    "src": "55ea7b3e",
+    "reviewed": false
+  },
+  "auth.signup.resendIn": {
+    "src": "77d3c50c",
+    "reviewed": false
+  },
+  "auth.signup.resent": {
+    "src": "901be3e4",
+    "reviewed": false
+  },
+  "auth.signup.useDifferentEmail": {
+    "src": "9725dd78",
+    "reviewed": false
+  },
+  "auth.signup.errors.required": {
+    "src": "15f25d70",
+    "reviewed": false
+  },
+  "auth.signup.errors.generic": {
+    "src": "9a3ea059",
+    "reviewed": false
+  },
+  "auth.signup.errors.invalidEmail": {
+    "src": "d2306dd8",
+    "reviewed": false
+  },
+  "auth.signup.verify.verifyingEyebrow": {
+    "src": "03128bed",
+    "reviewed": false
+  },
+  "auth.signup.verify.verifyingTitle": {
+    "src": "e4ec1b0e",
+    "reviewed": false
+  },
+  "auth.signup.verify.verifyingSubtitle": {
+    "src": "232efeac",
+    "reviewed": false
+  },
+  "auth.signup.verify.provisioningEyebrow": {
+    "src": "5a9f0a4a",
+    "reviewed": false
+  },
+  "auth.signup.verify.provisioningTitle": {
+    "src": "b9aadf8a",
+    "reviewed": false
+  },
+  "auth.signup.verify.provisioningSubtitle": {
+    "src": "3ab358e1",
+    "reviewed": false
+  },
+  "auth.signup.verify.creating": {
+    "src": "c3296abc",
+    "reviewed": false
+  },
+  "auth.signup.verify.card.eyebrow": {
+    "src": "22357ca6",
+    "reviewed": false
+  },
+  "auth.signup.verify.card.title": {
+    "src": "44e6273e",
+    "reviewed": false
+  },
+  "auth.signup.verify.card.subtitle": {
+    "src": "aa3f076d",
+    "reviewed": false
+  },
+  "auth.signup.verify.card.terms": {
+    "src": "b3db6d58",
+    "reviewed": false
+  },
+  "auth.signup.verify.card.cta": {
+    "src": "2718b636",
+    "reviewed": false
+  },
+  "auth.signup.verify.card.opening": {
+    "src": "4b149ef5",
+    "reviewed": false
+  },
+  "auth.signup.verify.card.failed": {
+    "src": "f7f761aa",
+    "reviewed": false
+  },
+  "auth.signup.verify.card.asideTitle": {
+    "src": "0ab18d12",
+    "reviewed": false
+  },
+  "auth.signup.verify.readyEyebrow": {
+    "src": "20c7c552",
+    "reviewed": false
+  },
+  "auth.signup.verify.readyTitle": {
+    "src": "d902aea4",
+    "reviewed": false
+  },
+  "auth.signup.verify.readySubtitle": {
+    "src": "3bc6479d",
+    "reviewed": false
+  },
+  "auth.signup.verify.openCta": {
+    "src": "cba02e8a",
+    "reviewed": false
+  },
+  "auth.signup.verify.errorEyebrow": {
+    "src": "7f2f6a15",
+    "reviewed": false
+  },
+  "auth.signup.verify.errorTitle": {
+    "src": "8d886c0b",
+    "reviewed": false
+  },
+  "auth.signup.verify.tryAgain": {
+    "src": "042c862e",
+    "reviewed": false
+  },
+  "auth.signup.verify.errors.noToken": {
+    "src": "4cee7398",
+    "reviewed": false
+  },
+  "auth.signup.verify.errors.verificationFailed": {
+    "src": "a1be6216",
+    "reviewed": false
+  },
+  "auth.signup.verify.errors.network": {
+    "src": "781947d6",
+    "reviewed": false
+  },
+  "auth.signup.verify.errors.setupFailed": {
+    "src": "6fd01c27",
+    "reviewed": false
+  },
+  "auth.signup.verify.errors.slow": {
+    "src": "1093ba64",
+    "reviewed": false
+  },
+  "auth.signup.verify.resume.eyebrow": {
+    "src": "b807833e",
+    "reviewed": false
+  },
+  "auth.signup.verify.resume.title": {
+    "src": "4b8fc1f3",
+    "reviewed": false
+  },
+  "auth.signup.verify.resume.subtitle": {
+    "src": "4d21b4dc",
+    "reviewed": false
+  },
+  "auth.signup.verify.resume.resend": {
+    "src": "29178557",
+    "reviewed": false
+  },
+  "auth.signup.verify.resume.sending": {
+    "src": "cf765512",
+    "reviewed": false
+  },
+  "auth.signup.verify.resume.sentTitle": {
+    "src": "e0049700",
+    "reviewed": false
+  },
+  "auth.signup.verify.resume.sentSubtitle": {
+    "src": "4aee6e73",
+    "reviewed": false
+  },
+  "auth.signup.verify.resume.closedTitle": {
+    "src": "14bb15e1",
+    "reviewed": false
+  },
+  "auth.signup.verify.resume.closedSubtitle": {
+    "src": "9100522a",
+    "reviewed": false
+  },
+  "auth.signup.verify.resume.closedCta": {
+    "src": "376d0e54",
+    "reviewed": false
+  },
+  "auth.signup.verify.resume.failed": {
+    "src": "82d78e6e",
+    "reviewed": false
+  },
+  "auth.signup.verify.resume.startOver": {
+    "src": "51dd91dc",
+    "reviewed": false
+  },
+  "auth.signup.authTitle": {
+    "src": "46f633e7",
+    "reviewed": false
+  },
+  "auth.signup.authSubtitle": {
+    "src": "7d983804",
+    "reviewed": false
+  },
+  "auth.signup.authSubmit": {
+    "src": "94ccbb20",
+    "reviewed": false
+  },
+  "auth.signup.authSubmitting": {
+    "src": "94d7d8ee",
+    "reviewed": false
+  },
+  "auth.signup.back": {
+    "src": "b52b36b7",
+    "reviewed": false
+  },
+  "auth.signup.stages.label": {
+    "src": "44a680df",
+    "reviewed": false
+  },
+  "auth.signup.stages.account": {
+    "src": "85dfa32c",
+    "reviewed": false
+  },
+  "auth.signup.stages.site": {
+    "src": "6dacd5ef",
+    "reviewed": false
+  },
+  "auth.signup.stages.live": {
+    "src": "b8d1bae4",
+    "reviewed": false
+  },
+  "auth.login.title": {
+    "src": "7c39b5a1",
+    "reviewed": false
+  },
+  "auth.login.subtitle": {
+    "src": "11478b74",
+    "reviewed": false
+  },
+  "auth.login.emailLabel": {
+    "src": "84add5b2",
+    "reviewed": false
+  },
+  "auth.login.submit": {
+    "src": "b262534c",
+    "reviewed": false
+  },
+  "auth.login.submitting": {
+    "src": "cf765512",
+    "reviewed": false
+  },
+  "auth.login.checkInbox": {
+    "src": "ba7ebeca",
+    "reviewed": false
+  },
+  "auth.login.googleCta": {
+    "src": "ccc5b0ed",
+    "reviewed": false
+  },
+  "auth.login.or": {
+    "src": "1758356d",
+    "reviewed": false
+  },
+  "auth.login.noAccount": {
+    "src": "f838dc11",
+    "reviewed": false
+  },
+  "auth.login.createAccount": {
+    "src": "7dbf3de2",
+    "reviewed": false
+  },
+  "auth.login.googleErrors.generic": {
+    "src": "9a3ea059",
+    "reviewed": false
+  },
+  "auth.login.googleErrors.googleDenied": {
+    "src": "219408b7",
+    "reviewed": false
+  },
+  "auth.login.googleErrors.invalidRequest": {
+    "src": "4b44a2ec",
+    "reviewed": false
+  },
+  "auth.login.googleErrors.invalidState": {
+    "src": "8ea398cc",
+    "reviewed": false
+  },
+  "auth.login.googleErrors.tenantMismatch": {
+    "src": "c9891dd5",
+    "reviewed": false
+  },
+  "auth.login.googleErrors.tokenExchangeFailed": {
+    "src": "bd198ffc",
+    "reviewed": false
+  },
+  "auth.login.googleErrors.userinfoFailed": {
+    "src": "97a5828f",
+    "reviewed": false
+  },
+  "auth.login.googleErrors.noEmail": {
+    "src": "fc2dbdba",
+    "reviewed": false
+  },
+  "auth.callback.verifying": {
+    "src": "10d0636f",
+    "reviewed": false
+  },
+  "auth.callback.errorTitle": {
+    "src": "41d8fe44",
+    "reviewed": false
+  },
+  "auth.callback.errorDescription": {
+    "src": "cd8fcea5",
+    "reviewed": false
+  },
+  "auth.callback.retry": {
+    "src": "e3e4fbd5",
+    "reviewed": false
+  },
+  "common.nav.howItWorks": {
+    "src": "1dd6a17c",
+    "reviewed": false
+  },
+  "common.nav.whoFor": {
+    "src": "380adc20",
+    "reviewed": false
+  },
+  "common.nav.pricing": {
+    "src": "a0d9bbad",
+    "reviewed": false
+  },
+  "common.nav.blog": {
+    "src": "0b9d2b23",
+    "reviewed": false
+  },
+  "common.nav.faq": {
+    "src": "03688ba6",
+    "reviewed": false
+  },
+  "common.nav.signIn": {
+    "src": "ada2e9e9",
+    "reviewed": false
+  },
+  "common.nav.getStarted": {
+    "src": "90e40d50",
+    "reviewed": false
+  },
+  "common.nav.signOut": {
+    "src": "dc1649a1",
+    "reviewed": false
+  },
+  "common.nav.dashboard": {
+    "src": "d87f47b4",
+    "reviewed": false
+  },
+  "common.nav.myPlatforms": {
+    "src": "ddc99e27",
+    "reviewed": false
+  },
+  "common.footer.tagline": {
+    "src": "a8f65db3",
+    "reviewed": false
+  },
+  "common.footer.product": {
+    "src": "dd3b86d1",
+    "reviewed": false
+  },
+  "common.footer.company": {
+    "src": "7a199499",
+    "reviewed": false
+  },
+  "common.footer.legal": {
+    "src": "902c91d9",
+    "reviewed": false
+  },
+  "common.footer.about": {
+    "src": "6b21fb79",
+    "reviewed": false
+  },
+  "common.footer.contact": {
+    "src": "b37456c4",
+    "reviewed": false
+  },
+  "common.footer.privacy": {
+    "src": "cf01481f",
+    "reviewed": false
+  },
+  "common.footer.terms": {
+    "src": "a55a275a",
+    "reviewed": false
+  },
+  "common.footer.copyright": {
+    "src": "ab481a79",
+    "reviewed": false
+  },
+  "marketing.hero.pill": {
+    "src": "daf41f1e",
+    "reviewed": false
+  },
+  "marketing.hero.title": {
+    "src": "69924f8f",
+    "reviewed": false
+  },
+  "marketing.hero.lead": {
+    "src": "2691a28a",
+    "reviewed": false
+  },
+  "marketing.hero.cta": {
+    "src": "a1db3a80",
+    "reviewed": false
+  },
+  "marketing.hero.secondary": {
+    "src": "589cfaee",
+    "reviewed": false
+  },
+  "marketing.hero.trust.trial": {
+    "src": "17f75a69",
+    "reviewed": false
+  },
+  "marketing.hero.trust.cancel": {
+    "src": "4cdffd51",
+    "reviewed": false
+  },
+  "marketing.hero.trust.time": {
+    "src": "75a5f393",
+    "reviewed": false
+  },
+  "marketing.hero.you": {
+    "src": "905cb326",
+    "reviewed": false
+  },
+  "marketing.hero.youText": {
+    "src": "f554be96",
+    "reviewed": false
+  },
+  "marketing.hero.onIt": {
+    "src": "443df943",
+    "reviewed": false
+  },
+  "marketing.hero.done": {
+    "src": "e5fd9cfe",
+    "reviewed": false
+  },
+  "marketing.hero.roles.designer": {
+    "src": "19829890",
+    "reviewed": false
+  },
+  "marketing.hero.roles.marketer": {
+    "src": "31d1eed5",
+    "reviewed": false
+  },
+  "marketing.hero.roles.producer": {
+    "src": "23172f01",
+    "reviewed": false
+  },
+  "marketing.hero.roles.community": {
+    "src": "fb3e2418",
+    "reviewed": false
+  },
+  "marketing.hero.roles.assistant": {
+    "src": "8c208765",
+    "reviewed": false
+  },
+  "marketing.hero.roles.cashier": {
+    "src": "0fa4d9a3",
+    "reviewed": false
+  },
+  "marketing.for.title": {
+    "src": "824926bb",
+    "reviewed": false
+  },
+  "marketing.for.lead": {
+    "src": "e986d3c8",
+    "reviewed": false
+  },
+  "marketing.for.galleryLabel": {
+    "src": "9d8c2b61",
+    "reviewed": false
+  },
+  "marketing.for.renderAlt": {
+    "src": "216687d2",
+    "reviewed": false
+  },
+  "marketing.for.niches.journal": {
+    "src": "e51c21dd",
+    "reviewed": false
+  },
+  "marketing.for.niches.kinetic": {
+    "src": "a73ef4da",
+    "reviewed": false
+  },
+  "marketing.for.niches.encore": {
+    "src": "f3f12d4d",
+    "reviewed": false
+  },
+  "marketing.for.niches.studiofloor": {
+    "src": "08aa79d6",
+    "reviewed": false
+  },
+  "marketing.for.niches.tavola": {
+    "src": "ec6bb13b",
+    "reviewed": false
+  },
+  "marketing.for.niches.primer": {
+    "src": "105679ce",
+    "reviewed": false
+  },
+  "marketing.for.niches.dojo": {
+    "src": "6f4c65ad",
+    "reviewed": false
+  },
+  "marketing.for.niches.workshop": {
+    "src": "e57cb0f2",
+    "reviewed": false
+  },
+  "marketing.for.niches.atelier": {
+    "src": "7b59304b",
+    "reviewed": false
+  },
+  "marketing.for.niches.sprout": {
+    "src": "1108b721",
+    "reviewed": false
+  },
+  "marketing.for.niches.trail": {
+    "src": "6aab9f9e",
+    "reviewed": false
+  },
+  "marketing.for.niches.nocturne": {
+    "src": "f976596e",
+    "reviewed": false
+  },
+  "marketing.team.eyebrow": {
+    "src": "589cfaee",
+    "reviewed": false
+  },
+  "marketing.team.title": {
+    "src": "99b9ba95",
+    "reviewed": false
+  },
+  "marketing.team.lead": {
+    "src": "87c5e5c9",
+    "reviewed": false
+  },
+  "marketing.team.tabsLabel": {
+    "src": "80b3016c",
+    "reviewed": false
+  },
+  "marketing.team.roles.designer.name": {
+    "src": "639dcae8",
+    "reviewed": false
+  },
+  "marketing.team.roles.designer.title": {
+    "src": "d84472ed",
+    "reviewed": false
+  },
+  "marketing.team.roles.designer.text": {
+    "src": "ee2ee556",
+    "reviewed": false
+  },
+  "marketing.team.roles.designer.tools": {
+    "src": "cbe5d9e4",
+    "reviewed": false
+  },
+  "marketing.team.roles.designer.sceneLabel": {
+    "src": "5b29d9d8",
+    "reviewed": false
+  },
+  "marketing.team.roles.marketer.name": {
+    "src": "ae6fec06",
+    "reviewed": false
+  },
+  "marketing.team.roles.marketer.title": {
+    "src": "ae65325c",
+    "reviewed": false
+  },
+  "marketing.team.roles.marketer.text": {
+    "src": "36258c9f",
+    "reviewed": false
+  },
+  "marketing.team.roles.marketer.tools": {
+    "src": "629567e0",
+    "reviewed": false
+  },
+  "marketing.team.roles.marketer.sceneLabel": {
+    "src": "aac9a592",
+    "reviewed": false
+  },
+  "marketing.team.roles.producer.name": {
+    "src": "cc1aa38c",
+    "reviewed": false
+  },
+  "marketing.team.roles.producer.title": {
+    "src": "44df897d",
+    "reviewed": false
+  },
+  "marketing.team.roles.producer.text": {
+    "src": "bb3e96e2",
+    "reviewed": false
+  },
+  "marketing.team.roles.producer.tools": {
+    "src": "d4c16cb4",
+    "reviewed": false
+  },
+  "marketing.team.roles.producer.sceneLabel": {
+    "src": "d4bb2e29",
+    "reviewed": false
+  },
+  "marketing.team.roles.producer.live": {
+    "src": "fb07e828",
+    "reviewed": false
+  },
+  "marketing.team.roles.producer.devices.laptop": {
+    "src": "d884a820",
+    "reviewed": false
+  },
+  "marketing.team.roles.producer.devices.tablet": {
+    "src": "f54772f1",
+    "reviewed": false
+  },
+  "marketing.team.roles.producer.devices.phone": {
+    "src": "84db3b74",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.name": {
+    "src": "9c08e79c",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.title": {
+    "src": "b783ee0c",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.text": {
+    "src": "67a35548",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.tools": {
+    "src": "946969a9",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.sceneLabel": {
+    "src": "3b8ce34e",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.scene.sent": {
+    "src": "4ceda238",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.scene.from": {
+    "src": "14ca6714",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.scene.now": {
+    "src": "c9bc849a",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.scene.title": {
+    "src": "ba6dbb91",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.scene.body": {
+    "src": "d7478d23",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.scene.channels.push": {
+    "src": "8f7f57b5",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.scene.channels.email": {
+    "src": "84add5b2",
+    "reviewed": false
+  },
+  "marketing.team.roles.community.scene.channels.app": {
+    "src": "31aa22ec",
+    "reviewed": false
+  },
+  "marketing.team.roles.assistant.name": {
+    "src": "8010d1f4",
+    "reviewed": false
+  },
+  "marketing.team.roles.assistant.title": {
+    "src": "981cdf74",
+    "reviewed": false
+  },
+  "marketing.team.roles.assistant.text": {
+    "src": "fc2b3e38",
+    "reviewed": false
+  },
+  "marketing.team.roles.assistant.tools": {
+    "src": "8dcfc337",
+    "reviewed": false
+  },
+  "marketing.team.roles.assistant.sceneLabel": {
+    "src": "0ebfd8bc",
+    "reviewed": false
+  },
+  "marketing.team.roles.cashier.name": {
+    "src": "f1f62fb0",
+    "reviewed": false
+  },
+  "marketing.team.roles.cashier.title": {
+    "src": "c0754060",
+    "reviewed": false
+  },
+  "marketing.team.roles.cashier.text": {
+    "src": "c78f8814",
+    "reviewed": false
+  },
+  "marketing.team.roles.cashier.tools": {
+    "src": "2382c8fb",
+    "reviewed": false
+  },
+  "marketing.team.roles.cashier.sceneLabel": {
+    "src": "4b79d9c1",
+    "reviewed": false
+  },
+  "marketing.team.roles.cashier.scene.today": {
+    "src": "24345a14",
+    "reviewed": false
+  },
+  "marketing.team.roles.cashier.scene.received": {
+    "src": "2608ccfb",
+    "reviewed": false
+  },
+  "marketing.team.roles.cashier.scene.now": {
+    "src": "c9bc849a",
+    "reviewed": false
+  },
+  "marketing.team.roles.cashier.scene.ago": {
+    "src": "61da5f60",
+    "reviewed": false
+  },
+  "marketing.team.roles.cashier.scene.from": {
+    "src": "efb1489b",
+    "reviewed": false
+  },
+  "marketing.earnings.eyebrow": {
+    "src": "d4ce5943",
+    "reviewed": false
+  },
+  "marketing.earnings.title": {
+    "src": "6b23dc68",
+    "reviewed": false
+  },
+  "marketing.earnings.lead": {
+    "src": "c46532c2",
+    "reviewed": false
+  },
+  "marketing.earnings.students": {
+    "src": "a08911eb",
+    "reviewed": false
+  },
+  "marketing.earnings.price": {
+    "src": "cff264e0",
+    "reviewed": false
+  },
+  "marketing.earnings.plan": {
+    "src": "b96ddaab",
+    "reviewed": false
+  },
+  "marketing.earnings.plans.starter": {
+    "src": "438226dc",
+    "reviewed": false
+  },
+  "marketing.earnings.plans.pro": {
+    "src": "66d0c5e6",
+    "reviewed": false
+  },
+  "marketing.earnings.keep": {
+    "src": "e91e044f",
+    "reviewed": false
+  },
+  "marketing.earnings.yearly": {
+    "src": "9c253a6f",
+    "reviewed": false
+  },
+  "marketing.earnings.gross": {
+    "src": "e3928236",
+    "reviewed": false
+  },
+  "marketing.earnings.fee": {
+    "src": "395e7277",
+    "reviewed": false
+  },
+  "marketing.earnings.planCost": {
+    "src": "b96ddaab",
+    "reviewed": false
+  },
+  "marketing.earnings.note": {
+    "src": "322a6bba",
+    "reviewed": false
+  },
+  "marketing.earnings.fallback": {
+    "src": "6494adc4",
+    "reviewed": false
+  },
+  "marketing.earnings.cta": {
+    "src": "a1db3a80",
+    "reviewed": false
+  },
+  "marketing.earnings.ctaNote": {
+    "src": "92950318",
+    "reviewed": false
+  },
+  "marketing.founder.eyebrow": {
+    "src": "1dc3001a",
+    "reviewed": false
+  },
+  "marketing.founder.title": {
+    "src": "6c0d8674",
+    "reviewed": false
+  },
+  "marketing.founder.text": {
+    "src": "fa11a49e",
+    "reviewed": false
+  },
+  "marketing.founder.signature": {
+    "src": "dfb81745",
+    "reviewed": false
+  },
+  "marketing.founder.offer.title": {
+    "src": "c30719ce",
+    "reviewed": false
+  },
+  "marketing.founder.offer.text": {
+    "src": "d65b557d",
+    "reviewed": false
+  },
+  "marketing.founder.offer.perks.concierge.title": {
+    "src": "90b33b69",
+    "reviewed": false
+  },
+  "marketing.founder.offer.perks.concierge.text": {
+    "src": "e4145cce",
+    "reviewed": false
+  },
+  "marketing.founder.offer.perks.discount.title": {
+    "src": "f85a9c19",
+    "reviewed": false
+  },
+  "marketing.founder.offer.perks.discount.text": {
+    "src": "13cf408e",
+    "reviewed": false
+  },
+  "marketing.founder.offer.perks.migration.title": {
+    "src": "7730454c",
+    "reviewed": false
+  },
+  "marketing.founder.offer.perks.migration.text": {
+    "src": "4c9e8ef4",
+    "reviewed": false
+  },
+  "marketing.founder.offer.perks.featured.title": {
+    "src": "afabd747",
+    "reviewed": false
+  },
+  "marketing.founder.offer.perks.featured.text": {
+    "src": "ec5446db",
+    "reviewed": false
+  },
+  "marketing.founder.offer.cta": {
+    "src": "1d5abc1f",
+    "reviewed": false
+  },
+  "marketing.founder.offer.note": {
+    "src": "8e9503eb",
+    "reviewed": false
+  },
+  "marketing.start.pricing.title": {
+    "src": "8997283e",
+    "reviewed": false
+  },
+  "marketing.start.pricing.text": {
+    "src": "4471415f",
+    "reviewed": false
+  },
+  "marketing.start.pricing.cta": {
+    "src": "25b4512c",
+    "reviewed": false
+  },
+  "marketing.start.faq.title": {
+    "src": "40567a5d",
+    "reviewed": false
+  },
+  "marketing.start.faq.items.trial.q": {
+    "src": "4a0f2cb2",
+    "reviewed": false
+  },
+  "marketing.start.faq.items.trial.a": {
+    "src": "978517f1",
+    "reviewed": false
+  },
+  "marketing.start.faq.items.technical.q": {
+    "src": "b5cf8a4c",
+    "reviewed": false
+  },
+  "marketing.start.faq.items.technical.a": {
+    "src": "ba54886e",
+    "reviewed": false
+  },
+  "marketing.start.faq.items.payments.q": {
+    "src": "4d6031e4",
+    "reviewed": false
+  },
+  "marketing.start.faq.items.payments.a": {
+    "src": "65e68754",
+    "reviewed": false
+  },
+  "marketing.start.faq.items.customDomain.q": {
+    "src": "02d1b5cb",
+    "reviewed": false
+  },
+  "marketing.start.faq.items.customDomain.a": {
+    "src": "a13ba158",
+    "reviewed": false
+  },
+  "marketing.start.faq.items.migration.q": {
+    "src": "bd258284",
+    "reviewed": false
+  },
+  "marketing.start.faq.items.migration.a": {
+    "src": "f6c991a6",
+    "reviewed": false
+  },
+  "marketing.start.faq.items.contract.q": {
+    "src": "4dd34685",
+    "reviewed": false
+  },
+  "marketing.start.faq.items.contract.a": {
+    "src": "7f6bf1c1",
+    "reviewed": false
+  },
+  "marketing.start.cta.title": {
+    "src": "ce5c2863",
+    "reviewed": false
+  },
+  "marketing.start.cta.text": {
+    "src": "e9e6e4e8",
+    "reviewed": false
+  },
+  "marketing.start.cta.button": {
+    "src": "a1db3a80",
+    "reviewed": false
+  },
+  "marketing.start.cta.note": {
+    "src": "92950318",
+    "reviewed": false
+  },
+  "marketing.helpBot.title": {
+    "src": "c64bbc9b",
+    "reviewed": false
+  },
+  "marketing.helpBot.bubbleLabel": {
+    "src": "bebfaf96",
+    "reviewed": false
+  },
+  "marketing.helpBot.close": {
+    "src": "bbfa773e",
+    "reviewed": false
+  },
+  "marketing.helpBot.intro": {
+    "src": "5ed915b6",
+    "reviewed": false
+  },
+  "marketing.helpBot.placeholder": {
+    "src": "05665c93",
+    "reviewed": false
+  },
+  "marketing.helpBot.send": {
+    "src": "9bc2575c",
+    "reviewed": false
+  },
+  "marketing.helpBot.thinking": {
+    "src": "a60d9c9c",
+    "reviewed": false
+  },
+  "marketing.helpBot.error": {
+    "src": "6f7b7820",
+    "reviewed": false
+  },
+  "marketing.helpBot.suggestPrice": {
+    "src": "cceb661d",
+    "reviewed": false
+  },
+  "marketing.helpBot.suggestPayouts": {
+    "src": "7dbaacf1",
+    "reviewed": false
+  },
+  "marketing.helpBot.suggestDomain": {
+    "src": "02d1b5cb",
+    "reviewed": false
+  },
+  "marketing.helpBot.rateUp": {
+    "src": "45e36dd9",
+    "reviewed": false
+  },
+  "marketing.helpBot.rateDown": {
+    "src": "85efce01",
+    "reviewed": false
+  },
+  "marketing.helpBot.talkToHuman": {
+    "src": "4a3d9c40",
+    "reviewed": false
+  },
+  "marketing.helpBot.humanRequestedLine": {
+    "src": "2ef00ae8",
+    "reviewed": false
+  },
+  "marketing.helpBot.agentJoined": {
+    "src": "243c6f20",
+    "reviewed": false
+  },
+  "marketing.helpBot.assistantResumed": {
+    "src": "b4d00c71",
+    "reviewed": false
+  },
+  "marketing.helpBot.humanModeNotice": {
+    "src": "c8d88979",
+    "reviewed": false
+  },
+  "pricing.title": {
+    "src": "b2348e42",
+    "reviewed": false
+  },
+  "pricing.subtitle": {
+    "src": "240aade2",
+    "reviewed": false
+  },
+  "pricing.popular": {
+    "src": "9bc2c5b3",
+    "reviewed": false
+  },
+  "pricing.cta": {
+    "src": "bd2cb051",
+    "reviewed": false
+  },
+  "pricing.ctaProcessing": {
+    "src": "272bc02e",
+    "reviewed": false
+  },
+  "pricing.errors.priceNotAvailable": {
+    "src": "71f3c1c5",
+    "reviewed": false
+  },
+  "pricing.errors.generic": {
+    "src": "2cca535b",
+    "reviewed": false
+  },
+  "pricing.periods.monthly": {
+    "src": "ab0cc392",
+    "reviewed": false
+  },
+  "pricing.plans.starter.name": {
+    "src": "438226dc",
+    "reviewed": false
+  },
+  "pricing.plans.starter.price": {
+    "src": "d9399cc1",
+    "reviewed": false
+  },
+  "pricing.plans.starter.period": {
+    "src": "ab0cc392",
+    "reviewed": false
+  },
+  "pricing.plans.starter.description": {
+    "src": "710b63d7",
+    "reviewed": false
+  },
+  "pricing.plans.starter.features.students": {
+    "src": "c54eca46",
+    "reviewed": false
+  },
+  "pricing.plans.starter.features.storage": {
+    "src": "c9667eec",
+    "reviewed": false
+  },
+  "pricing.plans.starter.features.courseBuilder": {
+    "src": "236ff45c",
+    "reviewed": false
+  },
+  "pricing.plans.starter.features.live": {
+    "src": "5c4b8c7b",
+    "reviewed": false
+  },
+  "pricing.plans.starter.features.branding": {
+    "src": "438ee422",
+    "reviewed": false
+  },
+  "pricing.plans.starter.features.campaigns": {
+    "src": "05928f10",
+    "reviewed": false
+  },
+  "pricing.plans.starter.features.fee": {
+    "src": "3edc26b8",
+    "reviewed": false
+  },
+  "pricing.plans.starter.features.domain": {
+    "src": "0354c889",
+    "reviewed": false
+  },
+  "pricing.plans.starter.trial": {
+    "src": "7b0d94ac",
+    "reviewed": false
+  },
+  "pricing.plans.pro.name": {
+    "src": "66d0c5e6",
+    "reviewed": false
+  },
+  "pricing.plans.pro.price": {
+    "src": "5be96dad",
+    "reviewed": false
+  },
+  "pricing.plans.pro.period": {
+    "src": "ab0cc392",
+    "reviewed": false
+  },
+  "pricing.plans.pro.description": {
+    "src": "f34a99d9",
+    "reviewed": false
+  },
+  "pricing.plans.pro.features.students": {
+    "src": "e7d087f2",
+    "reviewed": false
+  },
+  "pricing.plans.pro.features.storage": {
+    "src": "eb36dec4",
+    "reviewed": false
+  },
+  "pricing.plans.pro.features.courseBuilder": {
+    "src": "236ff45c",
+    "reviewed": false
+  },
+  "pricing.plans.pro.features.live": {
+    "src": "ff8e4203",
+    "reviewed": false
+  },
+  "pricing.plans.pro.features.domain": {
+    "src": "0354c889",
+    "reviewed": false
+  },
+  "pricing.plans.pro.features.campaigns": {
+    "src": "cb6f4361",
+    "reviewed": false
+  },
+  "pricing.plans.pro.features.fee": {
+    "src": "d8a39296",
+    "reviewed": false
+  },
+  "pricing.plans.pro.features.support": {
+    "src": "585b6c79",
+    "reviewed": false
+  },
+  "pricing.plans.pro.features.branding": {
+    "src": "438ee422",
+    "reviewed": false
+  },
+  "pricing.features.students": {
+    "src": "fcfac3ef",
+    "reviewed": false
+  },
+  "pricing.features.storage": {
+    "src": "9e092dda",
+    "reviewed": false
+  },
+  "pricing.features.courseBuilder": {
+    "src": "41090645",
+    "reviewed": false
+  },
+  "pricing.features.live": {
+    "src": "5c4b8c7b",
+    "reviewed": false
+  },
+  "pricing.features.campaigns": {
+    "src": "60c1520e",
+    "reviewed": false
+  },
+  "pricing.features.branding": {
+    "src": "438ee422",
+    "reviewed": false
+  },
+  "pricing.features.domain": {
+    "src": "0354c889",
+    "reviewed": false
+  },
+  "pricing.features.fee": {
+    "src": "b85c6224",
+    "reviewed": false
+  },
+  "pricing.features.support": {
+    "src": "f32d5a3b",
+    "reviewed": false
+  },
+  "pricing.compare.included": {
+    "src": "261645c5",
+    "reviewed": false
+  },
+  "pricing.compare.notIncluded": {
+    "src": "1c482b1a",
+    "reviewed": false
+  },
+  "pricing.faq.title": {
+    "src": "af90cef8",
+    "reviewed": false
+  },
+  "pricing.faq.items.switch.q": {
+    "src": "b2d8eace",
+    "reviewed": false
+  },
+  "pricing.faq.items.switch.a": {
+    "src": "1f6511ed",
+    "reviewed": false
+  },
+  "pricing.faq.items.trial.q": {
+    "src": "afe198ec",
+    "reviewed": false
+  },
+  "pricing.faq.items.trial.a": {
+    "src": "007386fe",
+    "reviewed": false
+  },
+  "pricing.faq.items.payments.q": {
+    "src": "ba0b3cf3",
+    "reviewed": false
+  },
+  "pricing.faq.items.payments.a": {
+    "src": "197112cc",
+    "reviewed": false
+  },
+  "pricing.faq.items.limits.q": {
+    "src": "f7bd8387",
+    "reviewed": false
+  },
+  "pricing.faq.items.limits.a": {
+    "src": "ecffd37b",
+    "reviewed": false
+  },
+  "pricing.cta2.title": {
+    "src": "ef37e179",
+    "reviewed": false
+  },
+  "pricing.cta2.subtitle": {
+    "src": "b59d970d",
+    "reviewed": false
+  },
+  "pricing.cta2.button": {
+    "src": "a1db3a80",
+    "reviewed": false
+  },
+  "pricing.cta2.trustNote": {
+    "src": "92950318",
+    "reviewed": false
+  },
+  "pricing.comingSoon": {
+    "src": "0e9ef14c",
+    "reviewed": false
+  },
+  "pricing.comingSoonNote": {
+    "src": "a2ba6a60",
+    "reviewed": false
+  },
+  "pricing.trialCta": {
+    "src": "a1db3a80",
+    "reviewed": false
+  }
+}

@@ -11,50 +11,62 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: apps/accounts/views.py
+#, fuzzy
 msgid "If an account exists, a magic link has been sent."
-msgstr ""
+msgstr "Falls ein Konto existiert, wurde ein Magic Link gesendet."
 
 #: apps/accounts/views.py apps/core/onboarding/recovery.py
 #: apps/core/onboarding/views.py
+#, fuzzy
 msgid "Invalid or expired token"
-msgstr ""
+msgstr "Ungültiger oder abgelaufener Token"
 
 #: apps/accounts/views.py
+#, fuzzy
 msgid "Token not valid for this tenant"
-msgstr ""
+msgstr "Token für diesen Mandanten nicht gültig"
 
 #: apps/accounts/views.py
+#, fuzzy
 msgid "Unsupported locale"
-msgstr ""
+msgstr "Nicht unterstützte Spracheinstellung"
 
 #: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
+#, fuzzy
 msgid "Token required"
-msgstr ""
+msgstr "Token erforderlich"
 
 #: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
+#, fuzzy
 msgid "Tenant not found"
-msgstr ""
+msgstr "Mandant nicht gefunden"
 
 #: apps/core/onboarding/site_name.py
+#, fuzzy
 msgid "Brand name already taken"
-msgstr ""
+msgstr "Markenname bereits vergeben"
 
 #: apps/core/onboarding/site_name.py
+#, fuzzy
 msgid "Please use letters or numbers in your brand name"
-msgstr ""
+msgstr "Bitte verwende Buchstaben oder Zahlen in deinem Markennamen"
 
 #: apps/core/onboarding/views.py
+#, fuzzy
 msgid "Verification email sent. Check your inbox."
-msgstr ""
+msgstr "Bestätigungs-E-Mail gesendet. Sieh in deinem Posteingang nach."
 
 #: apps/core/onboarding/views.py
+#, fuzzy
 msgid "Brand name is required"
-msgstr ""
+msgstr "Markenname ist erforderlich"
 
 #: apps/core/onboarding/views.py
+#, fuzzy
 msgid "Permission denied."
-msgstr ""
+msgstr "Zugriff verweigert."
 
 #: apps/core/onboarding/views.py
+#, fuzzy
 msgid "slug parameter required"
-msgstr ""
+msgstr "slug-Parameter erforderlich"

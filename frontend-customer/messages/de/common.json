@@ -1,0 +1,24 @@
+{
+  "actions": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "back": "Zurück",
+    "next": "Weiter",
+    "submit": "Absenden",
+    "confirm": "Bestätigen",
+    "loading": "Wird geladen…",
+    "loadMore": "Mehr laden"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "courses": "Kurse",
+    "downloads": "Downloads",
+    "live": "Live",
+    "email": "E-Mail",
+    "settings": "Einstellungen",
+    "billing": "Abrechnung",
+    "signOut": "Abmelden"
+  }
+}

@@ -1,0 +1,234 @@
+{
+  "hero": {
+    "pill": "<b>Kurucu içerik üreticileri</b>: kurulumunu birebir biz yapıyoruz",
+    "title": "Uzman sensin. <accent>Bütün ekibin biziz.</accent>",
+    "lead": "Contentor arkanda duran bir ekip gibi çalışır. Siteni kurar, öğrenci getirir, onların geri gelmesini sağlar ve ödemelerini almanı sağlar.",
+    "cta": "Ücretsiz denemeyi başlat",
+    "secondary": "Ekibinle tanış",
+    "trust": {
+      "trial": "14 gün ücretsiz",
+      "cancel": "İstediğin zaman iptal et",
+      "time": "Bir öğleden sonrada yayında"
+    },
+    "you": "Sen",
+    "youText": "sadece üret",
+    "onIt": "işin başında",
+    "done": "tamam",
+    "roles": {
+      "designer": "Siteni, görünümünü ve logonu oluşturur",
+      "marketer": "Makaleler yazar, kampanyalar gönderir",
+      "producer": "Kurslarının taslağını hazırlar, canlı oturumları yürütür",
+      "community": "Öğrencilere anlık bildirim ve e-postayla hatırlatır",
+      "assistant": "Öğrencileri gece gündüz yanıtlar",
+      "cashier": "Fiyat önerir, ödemeni Stripe üzerinden yapar"
+    }
+  },
+  "for": {
+    "title": "İçerik üreticileri için yapıldı.",
+    "lead": "Yoga, güç antrenmanı, müzik, diller, yemek ve daha fazlası. Her alanın kendine özel bir görünümü var, sen de onu kendine göre şekillendirirsin.",
+    "galleryLabel": "Koçluk alanları ve görünümleri",
+    "renderAlt": "{look} görünümünde bir içerik üreticisi sitesinin telefon önizlemesi",
+    "niches": {
+      "journal": "Yoga içerik üreticileri",
+      "kinetic": "Güç antrenmanı içerik üreticileri",
+      "encore": "Müzik içerik üreticileri",
+      "studiofloor": "Dans içerik üreticileri",
+      "tavola": "Yemek içerik üreticileri",
+      "primer": "Dil içerik üreticileri",
+      "dojo": "Dövüş sanatları içerik üreticileri",
+      "workshop": "Sanat içerik üreticileri",
+      "atelier": "Makyaj sanatçıları",
+      "sprout": "Ebeveynlik içerik üreticileri",
+      "trail": "Doğa rehberleri",
+      "nocturne": "Sağlıklı yaşam içerik üreticileri"
+    }
+  },
+  "team": {
+    "eyebrow": "Ekibinle tanış",
+    "title": "İşe alman gereken herkes zaten iş başında.",
+    "lead": "Tek platformda altı uzman. Birini seç, nasıl çalıştığını izle.",
+    "tabsLabel": "Ekibin",
+    "roles": {
+      "designer": {
+        "name": "Tasarımcı",
+        "title": "Alanına özel bir site, tek bir öğleden sonrada.",
+        "text": "Birkaç basit soruyu yanıtla. Ana sayfan, kursların, programın, görünümün ve logon kendiliğinden oluşur; istediğin her şeyi istemen yeterli, değiştirilir.",
+        "tools": "Kurulum görüşmesi · Alanına özel görünümler · Logo stüdyosu · Kendi fotoğrafların",
+        "sceneLabel": "Bir içerik üreticisi kurulum sorularını yanıtlıyor, bir görünüm seçiyor ve sitesi oluşuyor"
+      },
+      "marketer": {
+        "name": "Pazarlama Uzmanı",
+        "title": "Sen üretirken yeni öğrenciler seni bulur.",
+        "text": "Öğrencilerinin Google'da ve ChatGPT'de aradıklarına yanıt veren makaleler ve bir kez yazdığın, kendiliğinden gönderilen kampanyalar.",
+        "tools": "Otomatik pilotta makaleler · Aramaya hazır sayfalar · E-posta kampanyaları · Kendi alan adın",
+        "sceneLabel": "Bir öğrenci önce Google'a, sonra ChatGPT'ye online yoga soruyor; ikisi de Mara'nın sitesini gösteriyor"
+      },
+      "producer": {
+        "name": "İçerik Üretim Uzmanı",
+        "title": "Tek bir cümleden bir kursa, ardından canlı yayına geç.",
+        "text": "Bir kursu anlat, taslağı ders ders kendiliğinden oluşsun. Ardından kendi sitenden canlı yayına geç: öğrenciler dizüstü bilgisayardan, tabletten ya da telefondan katılır.",
+        "tools": "Kurs taslakları · Grup ya da birebir canlı oturumlar · Yüz yüze etkinlikler · Takvimin",
+        "sceneLabel": "Lena, Hannah ve Priya, Mara'nın canlı oturumunu dizüstü bilgisayardan, tabletten ve telefondan takip ediyor",
+        "live": "Mara canlı yayında",
+        "devices": {
+          "laptop": "Lena, dizüstü bilgisayarında",
+          "tablet": "Hannah, bir tablette",
+          "phone": "Priya, telefonunda"
+        }
+      },
+      "community": {
+        "name": "Topluluk yöneticisi",
+        "title": "Tekrar tekrar geri gelen öğrenciler.",
+        "text": "Her oturumdan önce her öğrenciye bir hatırlatma gider: telefonuna anlık bildirim, bir e-posta ve uygulamasında bir not. Aradaki zamanlarda da topluluğun konuşmaya devam eder.",
+        "tools": "Anlık bildirim hatırlatmaları · E-posta · Topluluk · Öğrencilerin telefonundaki uygulaman",
+        "sceneLabel": "Mara'dan gelen tek bir hatırlatma, öğrencilerine anlık bildirim, e-posta ve uygulamada not olarak ulaşıyor",
+        "scene": {
+          "sent": "Bir kez gönderildi, her yere ulaştı",
+          "from": "Mara Lindqvist",
+          "now": "şimdi",
+          "title": "Sabah akışı birazdan başlıyor",
+          "body": "Katılmak için dokun. Matta görüşürüz.",
+          "channels": {
+            "push": "Bildirim",
+            "email": "E-posta",
+            "app": "Uygulamada"
+          }
+        }
+      },
+      "assistant": {
+        "name": "Asistan",
+        "title": "Sen uyurken siten öğrencilere yanıt verir.",
+        "text": "Sitendeki asistan soruları yanıtlar ve öğrencileri doğru kursa yönlendirir. Stüdyonda ise her isteği doğru uzmana iletir.",
+        "tools": "Site asistanı · Stüdyonda yardım · Resepsiyonun",
+        "sceneLabel": "Gece bir öğrenci Mara'nın asistanından yardım istiyor, önerdiği kursu satın alıyor ve ödeme Mara'nın sessize alınmış telefonuna ulaşıyor"
+      },
+      "cashier": {
+        "name": "Finans Stratejisti",
+        "title": "Satan fiyatlar, ödemeler doğrudan sana.",
+        "text": "Fiyat önermek için kendi satışlarını inceler, ardından ödemeler senin adınla doğrudan Stripe hesabına gider. Paranı asla biz tutmayız.",
+        "tools": "Fiyat önerileri · Üyelikler · Stripe ödemeleri · Makbuzlarda senin adın",
+        "sceneLabel": "Mara'nın öğrencilerinden gelen ödemeler art arda Stripe hesabına düşüyor",
+        "scene": {
+          "today": "Bugün",
+          "received": "Ödeme alındı",
+          "now": "şimdi",
+          "ago": "{minutes} dk önce",
+          "from": "{name} tarafından · {item}"
+        }
+      }
+    }
+  },
+  "earnings": {
+    "eyebrow": "Ne kadar kazanabilirsin",
+    "title": "Kendi hesabını yap.",
+    "lead": "Senin öğrencilerin, senin fiyatın. Ücretimiz ve planın düşüldükten sonra sana ulaşan tutar bu.",
+    "students": "Ödeme yapan öğrenciler",
+    "price": "Aylık fiyat",
+    "plan": "Planın",
+    "plans": {
+      "starter": "Starter",
+      "pro": "Pro"
+    },
+    "keep": "Her ay sana kalan",
+    "yearly": "Yılda {amount}",
+    "gross": "Öğrencilerinin ödediği",
+    "fee": "Ücretimiz (%{pct})",
+    "planCost": "Planın",
+    "note": "Stripe'ın kendi kart ücreti hariç. Bir tahmin, söz değil.",
+    "fallback": "Planlara ve ücretlerine göz at",
+    "cta": "Ücretsiz denemeyi başlat",
+    "ctaNote": "14 gün ücretsiz. İstediğin zaman iptal et."
+  },
+  "founder": {
+    "eyebrow": "Ekibinin arkasındaki kişi",
+    "title": "Kurulumunu bizzat ben yapacağım.",
+    "text": "Ben Görkem. Berlin'de yüz yogası öğretiyorum ve canlı dersleri, programları ve üyeleriyle kendi online stüdyomu yönetiyorum; bu yüzden araçların nerede engel olduğunu biliyorum. Kurucu içerik üreticisi olarak katılırsan beni yanında bulursun: siteni, kurslarını ve ödemelerini seninle birlikte, birebir kuruyorum ve takıldığın her an bana mesaj atabilirsin.",
+    "signature": "Görkem Hancı, Contentor'un kurucusu",
+    "offer": {
+      "title": "Kurucu içerik üreticileri",
+      "text": "İlk 20 içerik üreticimiz için:",
+      "perks": {
+        "concierge": {
+          "title": "Seninle birebir kurulum",
+          "text": "Siteni, kurslarını ve ödemelerini birlikte kurduğumuz bir görüşme. İçeriği sen getir."
+        },
+        "discount": {
+          "title": "12 ay boyunca %50 indirim",
+          "text": "İlk yılının tamamında Starter veya Pro için kurucu fiyatlandırması."
+        },
+        "migration": {
+          "title": "Birebir destekli taşıma",
+          "text": "Başka bir platformdan mı geliyorsun? Kurslarını ve öğrencilerini taşımana ücretsiz yardım ediyoruz."
+        },
+        "featured": {
+          "title": "Bu sayfada öne çıkarılma",
+          "text": "Siten, kurucu içerik üreticisi olarak burada, her ziyaretçinin önünde sergilenir."
+        }
+      },
+      "cta": "Kurucu yerini ayırt",
+      "note": "20 içerik üreticisiyle sınırlı. Dolunca, bitti."
+    }
+  },
+  "start": {
+    "pricing": {
+      "title": "Starter'ı 14 gün ücretsiz dene.",
+      "text": "Hiçbir şey ödemeden siteni kur, öğrencilerini davet et ve canlı oturumlar düzenle. Satış, planın başladığında açılır. İlk ücretlendirmeden önce istediğin zaman iptal et.",
+      "cta": "Tüm planları karşılaştır"
+    },
+    "faq": {
+      "title": "Sorular ve yanıtlar",
+      "items": {
+        "trial": {
+          "q": "Ücretsiz deneme nasıl işliyor?",
+          "a": "Starter 14 gün ücretsiz. Siteni oluştururken bir kart eklersin ve ilk ücret deneme süresi bittiğinde alınır; tabii öncesinde Creator stüdyondan tek tıkla iptal etmezsen. Starter'daki her şey satış dışında çalışır: ücretli kurslar planın başladığında açılır ya da hemen satış yapmak için planını erken başlat."
+        },
+        "technical": {
+          "q": "Teknik bilgiye ihtiyacım var mı?",
+          "a": "Hiç gerek yok. Birkaç basit soruyu yanıtlarsın ya da asistana kendi kelimelerinle sorarsın. Kod yok, asla."
+        },
+        "payments": {
+          "q": "Ödemeler nasıl işliyor?",
+          "a": "Satış, planın başladığında başlar. Doğrudan Stripe ile entegre çalışıyoruz: ödemeler, küçük bir işlem ücreti (Starter'da %8, Pro'da %6) düşüldükten sonra doğrudan kendi Stripe hesabına gider; yani paranı asla biz tutmayız. Tek seferlik kurslar ya da yinelenen abonelikler satabilirsin."
+        },
+        "customDomain": {
+          "q": "Kendi alan adımı kullanabilir miyim?",
+          "a": "Evet — Pro planında kendi özel alan adını bağlayabilirsin. Ayrıca tüm ücretli planlarda platformun tamamen senin markanla çalışır: öğrencilerin Contentor'u hiçbir zaman görmez."
+        },
+        "migration": {
+          "q": "Başka bir platformdan geçiş yapabilir miyim?",
+          "a": "Evet. Çoğu içerik üreticisi kurslarını oluşturucumuzla yeniden hazırlar ve öğrencilerini bir gün içinde e-postayla davet eder. Kurucu içerik üreticisi olarak geçişinde sana bizzat yardım edeceğiz — birebir ve ücretsiz."
+        },
+        "contract": {
+          "q": "Uzun vadeli bir sözleşme var mı?",
+          "a": "Sözleşme yok, taahhüt yok. Planlar aylıktır ve Creator stüdyondan istediğin zaman iptal edebilirsin."
+        }
+      }
+    },
+    "cta": {
+      "title": "Sen hazır olduğunda ekibin de hazır.",
+      "text": "Siten, öğrencilerin ve ödemelerin, ilk günden itibaren emin ellerde.",
+      "button": "Ücretsiz denemeyi başlat",
+      "note": "14 gün boyunca ücretsiz. İstediğin zaman iptal et."
+    }
+  },
+  "helpBot": {
+    "title": "Contentor'a sor",
+    "bubbleLabel": "Yardım sohbetini aç",
+    "close": "Kapat",
+    "intro": "Contentor hakkında soruların mı var? Çekinmeden sor — fiyatlar, ödemeler, özellikler, aklına ne gelirse.",
+    "placeholder": "Bir soru sor…",
+    "send": "Gönder",
+    "thinking": "Düşünüyor…",
+    "error": "Bir şeyler ters gitti — lütfen tekrar dene.",
+    "suggestPrice": "Contentor'un ücreti ne kadar?",
+    "suggestPayouts": "Ödemeler nasıl işliyor?",
+    "suggestDomain": "Kendi alan adımı kullanabilir miyim?",
+    "rateUp": "Faydalı",
+    "rateDown": "Faydalı değil",
+    "talkToHuman": "Bir insanla konuş",
+    "humanRequestedLine": "Bir insanla görüşmek istedin — bize haber verildi, birazdan burada olacağız.",
+    "agentJoined": "{name} sohbete katıldı",
+    "assistantResumed": "Asistan geri döndü",
+    "humanModeNotice": "{name} ile sohbet ediyorsun"
+  }
+}

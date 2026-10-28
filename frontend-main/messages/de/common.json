@@ -1,0 +1,25 @@
+{
+  "nav": {
+    "howItWorks": "So funktioniert's",
+    "whoFor": "Für wen es ist",
+    "pricing": "Preise",
+    "blog": "Blog",
+    "faq": "FAQ",
+    "signIn": "Anmelden",
+    "getStarted": "Jetzt starten",
+    "signOut": "Abmelden",
+    "dashboard": "Dashboard",
+    "myPlatforms": "Meine Plattformen"
+  },
+  "footer": {
+    "tagline": "Die Plattform, mit der Content-Creator ihr Fachwissen zu Geld machen.",
+    "product": "Produkt",
+    "company": "Unternehmen",
+    "legal": "Rechtliches",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "privacy": "Datenschutz",
+    "terms": "AGB",
+    "copyright": "© {year} Contentor. Alle Rechte vorbehalten."
+  }
+}

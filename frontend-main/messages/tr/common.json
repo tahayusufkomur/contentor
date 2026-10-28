@@ -1,0 +1,25 @@
+{
+  "nav": {
+    "howItWorks": "Nasıl çalışır",
+    "whoFor": "Kimler için",
+    "pricing": "Fiyatlandırma",
+    "blog": "Blog",
+    "faq": "SSS",
+    "signIn": "Giriş yap",
+    "getStarted": "Hemen başla",
+    "signOut": "Çıkış yap",
+    "dashboard": "Panel",
+    "myPlatforms": "Platformlarım"
+  },
+  "footer": {
+    "tagline": "İçerik üreticilerinin uzmanlıklarından gelir elde etmesini sağlayan platform.",
+    "product": "Ürün",
+    "company": "Şirket",
+    "legal": "Yasal",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "privacy": "Gizlilik",
+    "terms": "Koşullar",
+    "copyright": "© {year} Contentor. Tüm hakları saklıdır."
+  }
+}

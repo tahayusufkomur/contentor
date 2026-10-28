@@ -1,0 +1,115 @@
+{
+  "title": "Proste, przejrzyste ceny",
+  "subtitle": "Wypróbuj plan Starter za darmo przez 14 dni. Bez ukrytych opłat, a zrezygnować możesz w każdej chwili.",
+  "popular": "Popularny",
+  "cta": "Rozpocznij",
+  "ctaProcessing": "Przetwarzanie...",
+  "errors": {
+    "priceNotAvailable": "Ceny w twojej walucie nie są jeszcze dostępne. Skontaktuj się z pomocą techniczną.",
+    "generic": "Coś poszło nie tak podczas przechodzenia do płatności. Spróbuj ponownie."
+  },
+  "periods": {
+    "monthly": "/miesiąc"
+  },
+  "plans": {
+    "starter": {
+      "name": "Starter",
+      "price": "$19.90",
+      "period": "/miesiąc",
+      "description": "Dla rozwijających się twórców, którzy są gotowi skalować swój biznes.",
+      "features": {
+        "students": "Do 100 uczestników",
+        "storage": "100 GB miejsca na dane",
+        "courseBuilder": "Zaawansowany kreator kursów",
+        "live": "Sesje na żywo",
+        "branding": "Własny branding",
+        "campaigns": "Kampanie e-mailowe (1000/mies.)",
+        "fee": "8% opłaty transakcyjnej",
+        "domain": "Własna domena"
+      },
+      "included": [
+        "students",
+        "storage",
+        "courseBuilder",
+        "live",
+        "branding",
+        "campaigns",
+        "fee"
+      ],
+      "trial": "Za darmo przez 14 dni"
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "$49.90",
+      "period": "/miesiąc",
+      "description": "Dla rozwiniętych firm, które potrzebują wszystkiego.",
+      "features": {
+        "students": "Do 500 uczestników",
+        "storage": "500 GB miejsca na dane",
+        "courseBuilder": "Zaawansowany kreator kursów",
+        "live": "Sesje i transmisje na żywo",
+        "domain": "Własna domena",
+        "campaigns": "Kampanie e-mailowe (5000/mies.)",
+        "fee": "6% opłaty transakcyjnej",
+        "support": "Priorytetowe wsparcie",
+        "branding": "Własny branding"
+      },
+      "included": [
+        "students",
+        "storage",
+        "courseBuilder",
+        "live",
+        "branding",
+        "domain",
+        "campaigns",
+        "fee",
+        "support"
+      ]
+    }
+  },
+  "features": {
+    "students": "Uczestnicy",
+    "storage": "Miejsce na dane",
+    "courseBuilder": "Kreator kursów",
+    "live": "Sesje na żywo",
+    "campaigns": "Kampanie e-mailowe",
+    "branding": "Własny branding",
+    "domain": "Własna domena",
+    "fee": "Opłata transakcyjna",
+    "support": "Wsparcie"
+  },
+  "compare": {
+    "included": "{plan}: {feature} w pakiecie",
+    "notIncluded": "{plan}: {feature} poza pakietem"
+  },
+  "faq": {
+    "title": "Najczęściej zadawane pytania",
+    "items": {
+      "switch": {
+        "q": "Czy mogę zmienić plan?",
+        "a": "Tak. Napisz do nas, a zmienimy twój plan i proporcjonalnie przeliczymy płatność. Możesz zrezygnować w dowolnym momencie w Studiu twórcy."
+      },
+      "trial": {
+        "q": "Czy jest darmowy okres próbny?",
+        "a": "Tak. Plan Starter jest bezpłatny przez 14 dni. Kartę dodajesz podczas tworzenia swojej strony, a pierwsza płatność zostanie pobrana po zakończeniu okresu próbnego, chyba że wcześniej zrezygnujesz. W okresie próbnym działa wszystko, co oferuje Starter, z wyjątkiem sprzedaży, która zostanie odblokowana, gdy zacznie się twój plan."
+      },
+      "payments": {
+        "q": "Jakie metody płatności akceptujecie?",
+        "a": "Wszystkie popularne karty kredytowe i debetowe, obsługiwane przez Stripe. Płatności od twoich uczestników trafiają bezpośrednio na twoje własne konto Stripe — nigdy nie przechowujemy twoich pieniędzy."
+      },
+      "limits": {
+        "q": "Co się stanie, jeśli przekroczę limity mojego planu?",
+        "a": "Powiadomimy cię, gdy zbliżysz się do swoich limitów. W każdej chwili możesz przejść na wyższy plan, aby zyskać więcej miejsca bez utraty danych."
+      }
+    }
+  },
+  "cta2": {
+    "title": "Zaczynamy?",
+    "subtitle": "Rozpocznij bezpłatny okres próbny już dziś i rozwijaj się razem z nami jako twórca-założyciel.",
+    "button": "Wypróbuj za darmo",
+    "trustNote": "Za darmo przez 14 dni. Zrezygnuj w dowolnym momencie."
+  },
+  "comingSoon": "Ceny w twojej walucie już wkrótce",
+  "comingSoonNote": "Kończymy ustalanie cen lokalnych. Zajrzyj tu wkrótce.",
+  "trialCta": "Wypróbuj za darmo"
+}

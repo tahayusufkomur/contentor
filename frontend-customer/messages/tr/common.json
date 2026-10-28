@@ -1,0 +1,24 @@
+{
+  "actions": {
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "back": "Geri",
+    "next": "İleri",
+    "submit": "Gönder",
+    "confirm": "Onayla",
+    "loading": "Yükleniyor…",
+    "loadMore": "Daha fazla yükle"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "courses": "Kurslar",
+    "downloads": "İndirilebilir dosyalar",
+    "live": "Canlı",
+    "email": "E-posta",
+    "settings": "Ayarlar",
+    "billing": "Faturalandırma",
+    "signOut": "Çıkış yap"
+  }
+}

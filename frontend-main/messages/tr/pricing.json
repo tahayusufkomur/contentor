@@ -1,0 +1,115 @@
+{
+  "title": "Basit, şeffaf fiyatlandırma",
+  "subtitle": "Starter'ı 14 gün boyunca ücretsiz dene. Gizli ücret yok ve istediğin zaman iptal edebilirsin.",
+  "popular": "Popüler",
+  "cta": "Hemen Başla",
+  "ctaProcessing": "İşleniyor...",
+  "errors": {
+    "priceNotAvailable": "Senin para biriminde fiyatlandırma henüz yok. Lütfen destek ekibiyle iletişime geç.",
+    "generic": "Ödeme başlatılırken bir şeyler ters gitti. Lütfen tekrar dene."
+  },
+  "periods": {
+    "monthly": "/ay"
+  },
+  "plans": {
+    "starter": {
+      "name": "Starter",
+      "price": "$19.90",
+      "period": "/ay",
+      "description": "Büyüyen ve işini büyütmeye hazır içerik üreticileri için.",
+      "features": {
+        "students": "100 öğrenciye kadar",
+        "storage": "100 GB depolama alanı",
+        "courseBuilder": "Gelişmiş kurs oluşturucu",
+        "live": "Canlı oturumlar",
+        "branding": "Özel marka kimliği",
+        "campaigns": "E-posta kampanyaları (ayda 1.000)",
+        "fee": "%8 işlem ücreti",
+        "domain": "Özel alan adı"
+      },
+      "included": [
+        "students",
+        "storage",
+        "courseBuilder",
+        "live",
+        "branding",
+        "campaigns",
+        "fee"
+      ],
+      "trial": "14 gün ücretsiz"
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "$49.90",
+      "period": "/ay",
+      "description": "Her şeye ihtiyaç duyan, yerleşik işletmeler için.",
+      "features": {
+        "students": "500 öğrenciye kadar",
+        "storage": "500 GB depolama alanı",
+        "courseBuilder": "Gelişmiş kurs oluşturucu",
+        "live": "Canlı oturumlar ve canlı yayın",
+        "domain": "Özel alan adı",
+        "campaigns": "E-posta kampanyaları (ayda 5.000)",
+        "fee": "%6 işlem ücreti",
+        "support": "Öncelikli destek",
+        "branding": "Özel marka kimliği"
+      },
+      "included": [
+        "students",
+        "storage",
+        "courseBuilder",
+        "live",
+        "branding",
+        "domain",
+        "campaigns",
+        "fee",
+        "support"
+      ]
+    }
+  },
+  "features": {
+    "students": "Öğrenciler",
+    "storage": "Depolama alanı",
+    "courseBuilder": "Kurs oluşturucu",
+    "live": "Canlı oturumlar",
+    "campaigns": "E-posta kampanyaları",
+    "branding": "Özel marka kimliği",
+    "domain": "Özel alan adı",
+    "fee": "İşlem ücreti",
+    "support": "Destek"
+  },
+  "compare": {
+    "included": "{plan}: {feature} dahil",
+    "notIncluded": "{plan}: {feature} dahil değil"
+  },
+  "faq": {
+    "title": "Sıkça sorulan sorular",
+    "items": {
+      "switch": {
+        "q": "Planımı değiştirebilir miyim?",
+        "a": "Evet. Bize yaz, planını değiştirelim; ücret kalan süreye göre orantılı hesaplanır. Creator stüdyondan istediğin zaman iptal edebilirsin."
+      },
+      "trial": {
+        "q": "Ücretsiz deneme var mı?",
+        "a": "Evet. Starter 14 gün boyunca ücretsiz. Siteni oluştururken bir kart eklersin; deneme bitmeden iptal etmezsen ilk ödeme deneme sona erdiğinde alınır. Deneme süresince Starter'daki her şey çalışır, yalnızca satış yapamazsın; satış, planın başladığında açılır."
+      },
+      "payments": {
+        "q": "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
+        "a": "Stripe tarafından işlenen tüm yaygın kredi ve banka kartlarını kabul ediyoruz. Öğrencilerinden gelen ödemeler doğrudan kendi Stripe hesabına gider — paranı asla biz tutmayız."
+      },
+      "limits": {
+        "q": "Plan limitlerimi aşarsam ne olur?",
+        "a": "Limitlerine yaklaştığında seni bilgilendireceğiz. Hiçbir veri kaybetmeden daha fazla kapasite için istediğin zaman planını yükseltebilirsin."
+      }
+    }
+  },
+  "cta2": {
+    "title": "Başlamaya hazır mısın?",
+    "subtitle": "Ücretsiz denemeni bugün başlat ve kurucu içerik üreticisi olarak bizimle birlikte büyü.",
+    "button": "Ücretsiz denemeyi başlat",
+    "trustNote": "14 gün ücretsiz. İstediğin zaman iptal et."
+  },
+  "comingSoon": "Kendi para biriminde fiyatlandırma çok yakında",
+  "comingSoonNote": "Yerel fiyatlandırmayı tamamlıyoruz. Lütfen kısa süre sonra tekrar göz at.",
+  "trialCta": "Ücretsiz denemeyi başlat"
+}

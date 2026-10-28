@@ -1,0 +1,24 @@
+{
+  "actions": {
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "edit": "Edytuj",
+    "back": "Wstecz",
+    "next": "Dalej",
+    "submit": "Wyślij",
+    "confirm": "Potwierdź",
+    "loading": "Ładowanie…",
+    "loadMore": "Załaduj więcej"
+  },
+  "nav": {
+    "dashboard": "Pulpit",
+    "courses": "Kursy",
+    "downloads": "Pliki do pobrania",
+    "live": "Na żywo",
+    "email": "E-mail",
+    "settings": "Ustawienia",
+    "billing": "Płatności",
+    "signOut": "Wyloguj się"
+  }
+}

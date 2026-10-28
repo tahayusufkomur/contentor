@@ -1,0 +1,234 @@
+{
+  "hero": {
+    "pill": "<b>Twórcy-założyciele</b>: konfigurujemy wszystko z tobą, jeden na jeden",
+    "title": "To ty jesteś ekspertem. <accent>My jesteśmy całym twoim zespołem.</accent>",
+    "lead": "Contentor działa jak zespół, który stoi za tobą. Buduje twoją stronę, przyciąga uczestników, sprawia, że wracają, i dba o to, żebyś dostawał zapłatę.",
+    "cta": "Rozpocznij darmowy okres próbny",
+    "secondary": "Poznaj swój zespół",
+    "trust": {
+      "trial": "14 dni za darmo",
+      "cancel": "Zrezygnuj w dowolnym momencie",
+      "time": "Gotowe w jedno popołudnie"
+    },
+    "you": "Ty",
+    "youText": "po prostu twórz",
+    "onIt": "w trakcie",
+    "done": "gotowe",
+    "roles": {
+      "designer": "Buduje twoją stronę, wygląd i logo",
+      "marketer": "Pisze artykuły, wysyła kampanie",
+      "producer": "Przygotowuje twoje kursy, prowadzi sesje na żywo",
+      "community": "Przypomina uczestnikom przez powiadomienia push i e-mail",
+      "assistant": "Odpowiada uczestnikom dniem i nocą",
+      "cashier": "Proponuje ceny, wypłaca ci pieniądze przez Stripe"
+    }
+  },
+  "for": {
+    "title": "Stworzone dla twórców.",
+    "lead": "Joga, trening siłowy, muzyka, języki, gotowanie i nie tylko. Każda dziedzina dostaje wygląd stworzony specjalnie dla niej, a ty nadajesz mu własny charakter.",
+    "galleryLabel": "Specjalizacje coachingowe i ich wygląd",
+    "renderAlt": "Podgląd strony twórcy na telefonie, wygląd {look}",
+    "niches": {
+      "journal": "Twórcy treści o jodze",
+      "kinetic": "Twórcy treningów siłowych",
+      "encore": "Twórcy muzyczni",
+      "studiofloor": "Twórcy treści tanecznych",
+      "tavola": "Twórcy kulinarni",
+      "primer": "Twórcy kursów językowych",
+      "dojo": "Twórcy treści o sztukach walki",
+      "workshop": "Twórcy treści artystycznych",
+      "atelier": "Wizażyści",
+      "sprout": "Twórcy treści o rodzicielstwie",
+      "trail": "Przewodnicy outdoorowi",
+      "nocturne": "Twórcy treści wellness"
+    }
+  },
+  "team": {
+    "eyebrow": "Poznaj swój zespół",
+    "title": "Wszyscy, których trzeba by zatrudnić, już są w pracy.",
+    "lead": "Sześciu specjalistów na jednej platformie. Wybierz kogoś, by zobaczyć, jak pracuje.",
+    "tabsLabel": "Twój zespół",
+    "roles": {
+      "designer": {
+        "name": "Projektant",
+        "title": "Strona stworzona dla twojej dziedziny w jedno popołudnie.",
+        "text": "Odpowiedz na kilka prostych pytań. Twoja strona główna, kursy, harmonogram, wygląd i logo tworzą się same, a wszystko możesz zmienić, po prostu o to prosząc.",
+        "tools": "Wywiad konfiguracyjny · Wygląd dla twojej dziedziny · Studio logo · Twoje własne zdjęcia",
+        "sceneLabel": "Twórczyni odpowiada na pytania konfiguracyjne, wybiera wygląd, a jej strona tworzy się sama"
+      },
+      "marketer": {
+        "name": "Specjalista ds. marketingu",
+        "title": "Nowi uczestnicy znajdują cię, gdy ty tworzysz.",
+        "text": "Artykuły odpowiadające na to, czego twoi uczestnicy szukają w Google i w ChatGPT, oraz kampanie, które piszesz raz, a wysyłają się same.",
+        "tools": "Artykuły na autopilocie · Strony gotowe na wyszukiwarki · Kampanie e-mailowe · Twoja własna domena",
+        "sceneLabel": "Uczestnik pyta Google, a potem ChatGPT o jogę online; oba wskazują stronę Mary"
+      },
+      "producer": {
+        "name": "Specjalista ds. tworzenia treści",
+        "title": "Od jednego zdania do kursu, a potem na żywo.",
+        "text": "Opisz kurs, a jego konspekt powstanie sam, lekcja po lekcji. Potem nadawaj na żywo z własnej strony: uczestnicy dołączają z laptopa, tabletu lub telefonu.",
+        "tools": "Szkice kursów · Sesje na żywo, grupowe lub indywidualne · Wydarzenia stacjonarne · Twój kalendarz",
+        "sceneLabel": "Lena, Hannah i Priya śledzą sesję na żywo Mary na laptopie, tablecie i telefonie",
+        "live": "Mara nadaje na żywo",
+        "devices": {
+          "laptop": "Lena, na swoim laptopie",
+          "tablet": "Hannah, na tablecie",
+          "phone": "Priya, na swoim telefonie"
+        }
+      },
+      "community": {
+        "name": "Menedżer społeczności",
+        "title": "Uczestnicy, którzy wciąż wracają.",
+        "text": "Przed każdą sesją każdy uczestnik dostaje przypomnienie: powiadomienie push na telefonie, e-mail i wiadomość w aplikacji. Pomiędzy sesjami twoja społeczność nie przestaje rozmawiać.",
+        "tools": "Przypomnienia push · E-mail · Społeczność · Twoja aplikacja na ich telefonie",
+        "sceneLabel": "Jedno przypomnienie od Mary dociera jako powiadomienie push, e-mail i wiadomość w aplikacji jej uczestników",
+        "scene": {
+          "sent": "Wysłane raz, wszędzie",
+          "from": "Mara Lindqvist",
+          "now": "teraz",
+          "title": "Poranny flow już niedługo",
+          "body": "Stuknij, aby dołączyć. Do zobaczenia na macie.",
+          "channels": {
+            "push": "Push",
+            "email": "E-mail",
+            "app": "W aplikacji"
+          }
+        }
+      },
+      "assistant": {
+        "name": "Asystent",
+        "title": "Twoja strona odpowiada uczestnikom, gdy śpisz.",
+        "text": "Asystent na twojej stronie odpowiada na pytania i kieruje uczestników do właściwego kursu. W twoim studiu przekazuje każdą prośbę właściwemu specjaliście.",
+        "tools": "Asystent strony · Pomoc w twoim studiu · Twoja recepcja",
+        "sceneLabel": "W nocy uczestnik prosi asystenta Mary o pomoc, kupuje zaproponowany kurs, a płatność dociera na wyciszony telefon Mary"
+      },
+      "cashier": {
+        "name": "Strateg finansowy",
+        "title": "Ceny, które sprzedają, a pieniądze prosto do ciebie.",
+        "text": "Analizuje twoją sprzedaż, by zaproponować ceny, a płatności trafiają prosto na twoje konto Stripe, na twoje nazwisko. Nigdy nie przetrzymujemy twoich pieniędzy.",
+        "tools": "Porady cenowe · Członkostwa · Wypłaty Stripe · Twoje nazwisko na rachunkach",
+        "sceneLabel": "Płatności od uczestników Mary wpływają na jej konto Stripe jedna po drugiej",
+        "scene": {
+          "today": "Dzisiaj",
+          "received": "Otrzymano płatność",
+          "now": "teraz",
+          "ago": "{minutes} min temu",
+          "from": "od {name} · {item}"
+        }
+      }
+    }
+  },
+  "earnings": {
+    "eyebrow": "Ile możesz zarobić",
+    "title": "Zrób własne wyliczenia.",
+    "lead": "Twoi uczestnicy, twoja cena. Tyle trafia do ciebie po potrąceniu naszej prowizji i kosztu twojego planu.",
+    "students": "Płacący uczestnicy",
+    "price": "Cena miesięczna",
+    "plan": "Twój plan",
+    "plans": {
+      "starter": "Starter",
+      "pro": "Pro"
+    },
+    "keep": "Co miesiąc zostaje ci",
+    "yearly": "{amount} rocznie",
+    "gross": "Twoi uczestnicy płacą",
+    "fee": "Nasza opłata ({pct}%)",
+    "planCost": "Twój plan",
+    "note": "Bez opłaty Stripe za płatność kartą. To szacunek, nie obietnica.",
+    "fallback": "Zobacz plany i ich opłaty",
+    "cta": "Rozpocznij bezpłatny okres próbny",
+    "ctaNote": "Za darmo przez 14 dni. Zrezygnuj w dowolnym momencie."
+  },
+  "founder": {
+    "eyebrow": "Osoba stojąca za twoim zespołem",
+    "title": "Osobiście pomogę ci wystartować.",
+    "text": "Jestem Görkem. Uczę jogi twarzy w Berlinie i prowadzę własne studio online z zajęciami na żywo, programami i członkami, więc wiem, gdzie narzędzia przeszkadzają. Dołącz jako twórca-założyciel, a dostaniesz mnie: razem z tobą, indywidualnie, skonfiguruję twoją stronę, kursy i płatności, a gdy utkniesz, możesz do mnie napisać w każdej chwili.",
+    "signature": "Görkem Hancı, założyciel Contentor",
+    "offer": {
+      "title": "Twórcy-założyciele",
+      "text": "Dla naszych pierwszych 20 twórców:",
+      "perks": {
+        "concierge": {
+          "title": "Konfiguracja razem z tobą, indywidualnie",
+          "text": "Rozmowa, podczas której razem budujemy twoją stronę, kursy i płatności. Ty przynosisz treści."
+        },
+        "discount": {
+          "title": "50% zniżki przez 12 miesięcy",
+          "text": "Ceny dla założycieli w planie Starter lub Pro przez cały pierwszy rok."
+        },
+        "migration": {
+          "title": "Przeprowadzka z naszą pomocą",
+          "text": "Przechodzisz z innej platformy? Pomożemy ci przenieść kursy i uczestników, za darmo."
+        },
+        "featured": {
+          "title": "Wyróżnienie na tej stronie",
+          "text": "Twoja strona pokazana tutaj jako strona twórcy-założyciela, na oczach każdego odwiedzającego."
+        }
+      },
+      "cta": "Zajmij miejsce założyciela",
+      "note": "Tylko dla 20 twórców. Gdy miejsca się skończą, to koniec."
+    }
+  },
+  "start": {
+    "pricing": {
+      "title": "Wypróbuj plan Starter za darmo przez 14 dni.",
+      "text": "Zbuduj swoją stronę, zaproś uczestników i prowadź sesje na żywo, zanim cokolwiek zapłacisz. Sprzedaż ruszy, gdy zacznie się twój plan. Zrezygnuj w dowolnym momencie przed pierwszym obciążeniem.",
+      "cta": "Porównaj wszystkie plany"
+    },
+    "faq": {
+      "title": "Odpowiedzi na pytania",
+      "items": {
+        "trial": {
+          "q": "Jak działa bezpłatny okres próbny?",
+          "a": "Plan Starter jest bezpłatny przez 14 dni. Kartę dodajesz podczas tworzenia strony, a pierwsze obciążenie nastąpi po zakończeniu okresu próbnego, chyba że wcześniej zrezygnujesz jednym kliknięciem w Studiu twórcy. W planie Starter działa wszystko oprócz sprzedaży: płatne kursy otwierają się, gdy zacznie się twój plan, możesz też uruchomić go wcześniej, aby od razu sprzedawać."
+        },
+        "technical": {
+          "q": "Czy potrzebuję umiejętności technicznych?",
+          "a": "Wcale nie. Odpowiadasz na kilka prostych pytań albo prosisz asystenta własnymi słowami. Żadnego kodu, nigdy."
+        },
+        "payments": {
+          "q": "Jak działają płatności?",
+          "a": "Sprzedaż rusza wraz z twoim planem. Integrujemy się bezpośrednio ze Stripe: płatności trafiają prosto na twoje własne konto Stripe, pomniejszone o niewielką opłatę transakcyjną (8% w planie Starter, 6% w planie Pro), więc nigdy nie przechowujemy twoich pieniędzy. Możesz sprzedawać kursy z jednorazową płatnością lub subskrypcje cykliczne."
+        },
+        "customDomain": {
+          "q": "Czy mogę używać własnej domeny?",
+          "a": "Tak — w planie Pro możesz podłączyć własną domenę. A w każdym płatnym planie twoja platforma działa w pełni pod twoją marką: twoi uczestnicy nigdy nie zobaczą nazwy Contentor."
+        },
+        "migration": {
+          "q": "Czy mogę przenieść się z innej platformy?",
+          "a": "Tak. Większość twórców w ciągu jednego dnia odtwarza swoje kursy w naszym kreatorze i zaprasza uczestników e-mailem. Jako twórca-założyciel możesz liczyć na naszą osobistą pomoc w przeprowadzce — konkretną i bezpłatną."
+        },
+        "contract": {
+          "q": "Czy obowiązuje długoterminowa umowa?",
+          "a": "Bez umów i bez zobowiązań. Plany rozliczane są co miesiąc, a zrezygnować możesz w dowolnym momencie w Studiu twórcy."
+        }
+      }
+    },
+    "cta": {
+      "title": "Twój zespół jest gotowy, kiedy tylko zechcesz.",
+      "text": "Twoja strona, twoi uczestnicy i twoje płatności pod opieką od pierwszego dnia.",
+      "button": "Rozpocznij darmowy okres próbny",
+      "note": "Bezpłatnie przez 14 dni. Możesz zrezygnować w każdej chwili."
+    }
+  },
+  "helpBot": {
+    "title": "Zapytaj Contentor",
+    "bubbleLabel": "Otwórz czat pomocy",
+    "close": "Zamknij",
+    "intro": "Masz pytania o Contentor? Pytaj śmiało — o ceny, wypłaty, funkcje, o cokolwiek.",
+    "placeholder": "Zadaj pytanie…",
+    "send": "Wyślij",
+    "thinking": "Myślę…",
+    "error": "Coś poszło nie tak — spróbuj ponownie.",
+    "suggestPrice": "Ile kosztuje Contentor?",
+    "suggestPayouts": "Jak działają wypłaty?",
+    "suggestDomain": "Czy mogę używać własnej domeny?",
+    "rateUp": "Pomocne",
+    "rateDown": "Niepomocne",
+    "talkToHuman": "Porozmawiaj z człowiekiem",
+    "humanRequestedLine": "Prośba o rozmowę z człowiekiem została wysłana — dostaliśmy powiadomienie i zaraz tu dołączymy.",
+    "agentJoined": "{name} dołącza do czatu",
+    "assistantResumed": "Asystent wrócił",
+    "humanModeNotice": "Rozmawiasz z: {name}"
+  }
+}

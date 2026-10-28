@@ -1,0 +1,115 @@
+{
+  "title": "Einfache, transparente Preise",
+  "subtitle": "Teste Starter 14 Tage kostenlos. Keine versteckten Gebühren, und du kannst jederzeit kündigen.",
+  "popular": "Beliebt",
+  "cta": "Jetzt starten",
+  "ctaProcessing": "Wird verarbeitet...",
+  "errors": {
+    "priceNotAvailable": "Preise in deiner Währung sind noch nicht verfügbar. Bitte wende dich an den Support.",
+    "generic": "Beim Starten des Bezahlvorgangs ist etwas schiefgelaufen. Bitte versuch es noch einmal."
+  },
+  "periods": {
+    "monthly": "/Monat"
+  },
+  "plans": {
+    "starter": {
+      "name": "Starter",
+      "price": "$19.90",
+      "period": "/Monat",
+      "description": "Für wachsende Creator, die bereit sind, ihr Geschäft auszubauen.",
+      "features": {
+        "students": "Bis zu 100 Teilnehmer",
+        "storage": "100 GB Speicherplatz",
+        "courseBuilder": "Erweiterter Kurseditor",
+        "live": "Live-Sessions",
+        "branding": "Eigenes Branding",
+        "campaigns": "E-Mail-Kampagnen (1.000/Monat)",
+        "fee": "8 % Transaktionsgebühr",
+        "domain": "Eigene Domain"
+      },
+      "included": [
+        "students",
+        "storage",
+        "courseBuilder",
+        "live",
+        "branding",
+        "campaigns",
+        "fee"
+      ],
+      "trial": "14 Tage kostenlos"
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "49,90 $",
+      "period": "/Monat",
+      "description": "Für etablierte Unternehmen, die alles brauchen.",
+      "features": {
+        "students": "Bis zu 500 Teilnehmer",
+        "storage": "500 GB Speicherplatz",
+        "courseBuilder": "Erweiterter Kurseditor",
+        "live": "Live-Sessions & Streaming",
+        "domain": "Eigene Domain",
+        "campaigns": "E-Mail-Kampagnen (5.000/Monat)",
+        "fee": "6 % Transaktionsgebühr",
+        "support": "Priorisierter Support",
+        "branding": "Eigenes Branding"
+      },
+      "included": [
+        "students",
+        "storage",
+        "courseBuilder",
+        "live",
+        "branding",
+        "domain",
+        "campaigns",
+        "fee",
+        "support"
+      ]
+    }
+  },
+  "features": {
+    "students": "Teilnehmer",
+    "storage": "Speicherplatz",
+    "courseBuilder": "Kurseditor",
+    "live": "Live-Sessions",
+    "campaigns": "E-Mail-Kampagnen",
+    "branding": "Eigenes Branding",
+    "domain": "Eigene Domain",
+    "fee": "Transaktionsgebühr",
+    "support": "Support"
+  },
+  "compare": {
+    "included": "{plan}: {feature} inklusive",
+    "notIncluded": "{plan}: {feature} nicht inklusive"
+  },
+  "faq": {
+    "title": "Häufig gestellte Fragen",
+    "items": {
+      "switch": {
+        "q": "Kann ich den Tarif wechseln?",
+        "a": "Ja. Schreib uns und wir stellen deinen Tarif um, die Abrechnung erfolgt anteilig. Du kannst jederzeit in deinem Creator-Studio kündigen."
+      },
+      "trial": {
+        "q": "Gibt es eine kostenlose Testphase?",
+        "a": "Ja. Starter ist 14 Tage lang kostenlos. Du hinterlegst eine Karte, wenn du deine Website erstellst, und die erste Abbuchung erfolgt am Ende der Testphase, sofern du nicht vorher kündigst. Während der Testphase funktioniert alles aus Starter außer dem Verkaufen, das freigeschaltet wird, sobald dein Tarif beginnt."
+      },
+      "payments": {
+        "q": "Welche Zahlungsmethoden akzeptiert ihr?",
+        "a": "Alle gängigen Kredit- und Debitkarten, abgewickelt über Stripe. Zahlungen deiner Teilnehmer gehen direkt auf dein eigenes Stripe-Konto — wir verwahren dein Geld nie."
+      },
+      "limits": {
+        "q": "Was passiert, wenn ich die Limits meines Tarifs überschreite?",
+        "a": "Wir benachrichtigen dich, wenn du dich deinen Limits näherst. Du kannst jederzeit upgraden, um mehr Kapazität zu erhalten, ohne Daten zu verlieren."
+      }
+    }
+  },
+  "cta2": {
+    "title": "Bereit loszulegen?",
+    "subtitle": "Starte noch heute deine kostenlose Testphase und wachse mit uns als Gründungs-Creator.",
+    "button": "Kostenlos testen",
+    "trustNote": "14 Tage kostenlos. Jederzeit kündbar."
+  },
+  "comingSoon": "Preise in deiner Währung folgen in Kürze",
+  "comingSoonNote": "Wir stellen gerade die lokalen Preise fertig. Schau bald wieder vorbei.",
+  "trialCta": "Kostenlos testen"
+}

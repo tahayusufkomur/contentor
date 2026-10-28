@@ -1,0 +1,1733 @@
+{
+  "title": "Studio twórcy",
+  "viewSite": "Zobacz witrynę",
+  "welcome": {
+    "morning": "Dzień dobry",
+    "afternoon": "Dzień dobry",
+    "evening": "Dobry wieczór",
+    "hello": "Cześć",
+    "withName": "{greeting}, {name}",
+    "overview": "Oto przegląd twojej witryny.",
+    "whatsLeft": "Oto, co zostało do uruchomienia twojej witryny.",
+    "look": "{look} · {palette}"
+  },
+  "badges": {
+    "ai": "AI",
+    "aiTooltip": "Funkcja oparta na AI"
+  },
+  "nav": {
+    "sections": {
+      "teach": "Twórz",
+      "students": "Uczestnicy",
+      "reachOut": "Kontakt",
+      "money": "Finanse",
+      "site": "Witryna",
+      "settings": "Ustawienia"
+    },
+    "items": {
+      "home": "Start",
+      "courses": "Kursy",
+      "liveEvents": "Sesje i wydarzenia",
+      "downloads": "Pliki do pobrania",
+      "students": "Osoby",
+      "communityFeed": "Społeczność",
+      "inbox": "Skrzynka odbiorcza",
+      "blog": "Blog",
+      "payouts": "Wypłaty",
+      "store": "Sklep",
+      "editSite": "Edytuj witrynę",
+      "design": "Wygląd",
+      "assistant": "Asystent uczestników",
+      "settings": "Ogólne",
+      "plan": "Twój plan",
+      "media": "Multimedia",
+      "studio": "Studio zdjęć",
+      "messages": "Wiadomości",
+      "reels": "Rolki",
+      "videoStudio": "Studio wideo"
+    },
+    "more": "+ {count} więcej"
+  },
+  "reels": {
+    "subtitle": "Krótkie pionowe klipy z twoich filmów, z napisami i w kadrze dopasowanym do Instagram Reels, TikTok i YouTube Shorts.",
+    "untitled": "Rolka bez tytułu",
+    "none": "Nie masz jeszcze rolek. Wybierz jeden z pomysłów powyżej, aby zacząć.",
+    "yours": "Twoje rolki",
+    "ideas": {
+      "title": "Pomysły",
+      "description": "W każdym przesłanym filmie wyszukujemy momenty, które mogą się rozejść: takie, które ludzie przesyłają dalej, zabawne i z mocnym haczykiem. Każdy z nich ma już gotową okładkę. Wykorzystaj te, które ci się podobają.",
+      "find": "Znajdź pomysły",
+      "more": "Znajdź więcej pomysłów",
+      "none": "Nie ma jeszcze pomysłów dla tego filmu.",
+      "label": "Pomysł na rolkę",
+      "use": "Użyj tego pomysłu",
+      "using": "Otwieranie…",
+      "dismiss": "Nie ten",
+      "dismissed": "Pomysł usunięty"
+    },
+    "kinds": {
+      "send": "Ludzie przesyłają to dalej",
+      "funny": "Zabawne",
+      "hook": "Mocny haczyk",
+      "insight": "Warte zapisania"
+    },
+    "found": "{count, plural, one {# nowy pomysł jest gotowy} few {# nowe pomysły są gotowe} many {# nowych pomysłów jest gotowych} other {# nowego pomysłu jest gotowe}}.",
+    "failed": "Nie udało się znaleźć żadnych pomysłów w tym filmie.",
+    "score": "Haczyk {score}/10",
+    "status": {
+      "idea": "Pomysł",
+      "draft": "Wersja robocza",
+      "rendering": "Tworzenie wideo",
+      "ready": "Gotowe",
+      "failed": "Nieudane",
+      "changed": "Zmieniono"
+    },
+    "empty": {
+      "title": "Nie masz jeszcze filmów",
+      "description": "Prześlij lekcję, wykład lub nagranie sesji na żywo, a potem wróć, aby zrobić z niego rolki.",
+      "action": "Prześlij film"
+    },
+    "make": {
+      "video": "Film",
+      "pick": "Wybierz film",
+      "starting": "Rozpoczynanie…",
+      "unavailable": "To przykładowy film bez transkrypcji. Prześlij własny film, aby tworzyć rolki.",
+      "noSpeech": "W tym filmie nie wykryto mowy, więc nie ma czego opatrzyć napisami.",
+      "noRender": "Tworzenie plików wideo nie jest jeszcze włączone dla tej witryny: nadal możesz wyszukiwać i edytować rolki."
+    },
+    "search": {
+      "transcribing": "Transkrybowanie…",
+      "picking": "Szukanie momentów…",
+      "framing": "Kadrowanie…",
+      "covering": "Wybieranie okładek…",
+      "transcribingHint": "Najpierw spisujemy każde słowo z filmu. Długi film zajmuje kilka minut.",
+      "pickingHint": "Czytamy transkrypcję w poszukiwaniu momentów, które przyciągają uwagę i bronią się same.",
+      "framingHint": "Sprawdzamy, gdzie jesteś w kadrze, aby klip cały czas cię pokazywał.",
+      "coveringHint": "Wybieramy klatki, na których wyglądasz najlepiej, dla każdej okładki."
+    },
+    "preview": {
+      "label": "Podgląd rolki",
+      "play": "Odtwórz",
+      "pause": "Wstrzymaj",
+      "seek": "Przejdź do miejsca w rolce",
+      "mute": "Wycisz",
+      "unmute": "Wyłącz wyciszenie"
+    },
+    "editor": {
+      "back": "Wszystkie rolki",
+      "from": "Z filmu {video}",
+      "length": "Długość: {length}",
+      "saving": "Zapisywanie…",
+      "make": "Utwórz film",
+      "makeAgain": "Utwórz go ponownie",
+      "tryAgain": "Spróbuj ponownie",
+      "making": "Tworzenie filmu…",
+      "download": "Pobierz",
+      "downloadCover": "Okładka",
+      "openStudio": "Otwórz w studiu",
+      "makeHint": "Podgląd działa na żywo: utwórz film, gdy wszystko będzie wyglądać dobrze.",
+      "makingHint": "To potrwa około minuty. Możesz dalej edytować.",
+      "staleHint": "Od utworzenia filmu w rolce zaszły zmiany.",
+      "readyHint": "Gotowe do publikacji. Pobierz też okładkę, aby użyć jej jako zdjęcia okładki posta.",
+      "noRender": "Tworzenie plików wideo nie jest jeszcze włączone dla tej witryny.",
+      "made": "Twoja rolka jest gotowa do pobrania.",
+      "notMade": "Nie udało się utworzyć filmu. Spróbuj ponownie.",
+      "theFile": "Odtwórz plik wideo",
+      "cover": "Okładka",
+      "coverHint": "Pierwsza sekunda rolki i zdjęcie, które publikujesz jako jej okładkę.",
+      "hook": "Haczyk",
+      "hookHint": "Otocz słowo *gwiazdkami*, aby je wyróżnić.",
+      "design": "Projekt",
+      "designs": {
+        "editorial": "Magazynowy",
+        "bold": "Wyrazisty",
+        "poster": "Plakat",
+        "series": "Seria"
+      },
+      "frame": "Klatka",
+      "frameAt": "Klatka z {at}",
+      "ourPick": "Nasz wybór",
+      "noFrames": "Brak klatek: okładka pojawi się, gdy usługa wideo przeanalizuje ten moment.",
+      "label": "Etykieta serii",
+      "labelPlaceholder": "Mobilność",
+      "openWithCover": "Zacznij rolkę od okładki",
+      "clip": "Klip",
+      "clipHint": "Kliknij słowo, aby od niego zacząć lub na nim zakończyć klip.",
+      "start": "Początek",
+      "end": "Koniec",
+      "captions": "Napisy",
+      "styles": {
+        "bold": "Wyraziste",
+        "clean": "Minimalistyczne",
+        "brand": "Twój wygląd"
+      },
+      "language": "Język napisów",
+      "asSpoken": "Jak w nagraniu",
+      "languages": {
+        "en": "Angielski",
+        "de": "Niemiecki",
+        "es": "Hiszpański",
+        "fr": "Francuski",
+        "it": "Włoski",
+        "nl": "Niderlandzki",
+        "pl": "Polski",
+        "pt": "Portugalski",
+        "tr": "Turecki"
+      },
+      "framing": "Kadrowanie",
+      "layouts": {
+        "auto": "Podążaj za mną",
+        "autoHint": "Twoja twarz zawsze w kadrze",
+        "center": "Środek",
+        "centerHint": "Środek kadru",
+        "fit": "Cały kadr",
+        "fitHint": "Do slajdów i ekranów"
+      },
+      "extras": "Dodatki",
+      "cuts": "Wytnij pauzy",
+      "progress": "Pasek postępu",
+      "cleanAudio": "Oczyść dźwięk",
+      "cutaways": "Zdjęcia na klipie",
+      "noIdeas": "Brak pomysłów na zdjęcia do tego momentu",
+      "endCard": "Plansza końcowa z adresem twojej strony i jej kodem QR",
+      "endText": "Tekst planszy końcowej",
+      "post": "Tekst posta",
+      "postHint": "To, co wklejasz pod rolką, gdy ją publikujesz.",
+      "copy": "Kopiuj",
+      "copied": "Skopiowano",
+      "notCopied": "Nie udało się skopiować. Zaznacz tekst i skopiuj go.",
+      "delete": "Usuń rolkę",
+      "deleteSure": "Usunąć tę rolkę i jej wideo?",
+      "keep": "Zachowaj",
+      "deleted": "Rolka usunięta",
+      "madeByTeam": "Przygotowane przez twojego specjalistę ds. marketingu"
+    },
+    "studio": {
+      "subtitle": "Edytuj rolkę samodzielnie na osi czasu: przytnij ją, wytnij dowolny moment, popraw napis, przesuń napisy i obraz oraz cofnij każdą zmianę.",
+      "noneTitle": "Nie masz jeszcze rolek do edycji",
+      "none": "Najpierw wykorzystaj jeden z pomysłów w sekcji Rolki, a potem otwórz go tutaj.",
+      "toReels": "Przejdź do Rolek",
+      "back": "Wszystkie rolki w studiu",
+      "timeline": "Oś czasu",
+      "panelsLabel": "Panele studia",
+      "panels": {
+        "words": "Tekst",
+        "cover": "Okładka",
+        "captions": "Napisy",
+        "frame": "Kadr",
+        "extras": "Dodatki",
+        "post": "Post"
+      },
+      "tracks": {
+        "cover": "Okładka",
+        "video": "Wideo",
+        "captions": "Napisy",
+        "photos": "Zdjęcia",
+        "end": "Plansza końcowa"
+      },
+      "piece": "Klip od {from} do {to}",
+      "cut": "Wycięte przez ciebie",
+      "pauseCut": "Pauza pomijana w rolce",
+      "trimStart": "Początek rolki: przeciągnij go lub użyj klawiszy strzałek",
+      "trimEnd": "Koniec rolki: przeciągnij go lub użyj klawiszy strzałek",
+      "photoAt": "Zdjęcie w {at}: przeciągnij, aby je przesunąć",
+      "play": "Odtwórz",
+      "pause": "Wstrzymaj",
+      "undo": "Cofnij",
+      "redo": "Ponów",
+      "split": "Podziel w miejscu głowicy",
+      "cutOut": "Wytnij",
+      "putBack": "Przywróć",
+      "remove": "Usuń",
+      "zoomIn": "Powiększ",
+      "zoomOut": "Pomniejsz",
+      "zoom": "Powiększenie osi czasu",
+      "fit": "Dopasuj rolkę",
+      "stageHint": "Przeciągnij napisy w górę lub w dół, a obraz na boki. Kliknij, aby odtworzyć lub wstrzymać.",
+      "frame": {
+        "dragHint": "Możesz też przeciągnąć obraz na boki w odtwarzaczu: zostanie tam, gdzie go zostawisz.",
+        "reset": "Wróć na środek"
+      },
+      "captions": {
+        "dragHint": "Możesz też przeciągnąć je w górę lub w dół w odtwarzaczu.",
+        "size": "Rozmiar",
+        "position": "Wysokość",
+        "reset": "Przywróć ustawienia stylu",
+        "group": "Słowa tego napisu",
+        "groupHint": "Popraw każde słowo, które transkrypcja zapisała błędnie."
+      },
+      "words": {
+        "hint": "Kliknij słowo, aby do niego przejść. Kliknij inne z wciśniętym klawiszem Shift, aby zaznaczyć słowa pomiędzy nimi. Kliknij dwukrotnie słowo, aby wpisać je ponownie.",
+        "selected": "Zaznaczono: {count, plural, one {# słowo} few {# słowa} many {# słów} other {# słowa}}",
+        "cutOut": "Wytnij",
+        "putBack": "Przywróć",
+        "startHere": "Zacznij tutaj",
+        "endHere": "Zakończ tutaj",
+        "retype": "Wpisz ponownie"
+      }
+    }
+  },
+  "store": {
+    "subtitle": "Co uczestnicy mogą u ciebie kupić.",
+    "tabs": {
+      "products": "Produkty",
+      "bundles": "Pakiety",
+      "plans": "Członkostwa",
+      "payments": "Płatności"
+    },
+    "bundles": {
+      "draft": "Wersja robocza",
+      "new": "Nowy pakiet",
+      "name": "Nazwa",
+      "description": "Opis",
+      "items": "Zawartość pakietu",
+      "itemsHint": "Co uczestnicy dostają razem w jednej cenie.",
+      "publish": "Opublikuj",
+      "publishing": "Publikowanie…",
+      "published": "Opublikowano. Uczestnicy mogą go już kupić w twoim sklepie.",
+      "draftHint": "Wersja robocza jest ukryta przed uczestnikami, dopóki jej nie opublikujesz."
+    },
+    "plans": {
+      "new": "Nowe członkostwo",
+      "edit": "Edytuj członkostwo",
+      "back": "Wróć do członkostw",
+      "formSubtitle": "Cykliczna opłata, która odblokowuje wybrane przez ciebie treści.",
+      "details": "Szczegóły",
+      "name": "Nazwa",
+      "namePlaceholder": "np. Karnet studyjny",
+      "description": "Opis",
+      "descriptionPlaceholder": "Co otrzymują członkowie",
+      "price": "Cena ({currency})",
+      "cycle": "Rozliczenie",
+      "monthly": "Co miesiąc",
+      "yearly": "Co rok",
+      "custom": "Co kilka miesięcy",
+      "months": "Liczba miesięcy między płatnościami",
+      "onSale": "W sprzedaży",
+      "onSaleHint": "Wyłącz, aby wstrzymać nowe zapisy. Obecni członkowie zachowają swoje członkostwo.",
+      "priceChangeHint": "Nowa cena lub cykl obowiązuje nowych członków. Obecni członkowie zachowują warunki, na jakich dołączyli.",
+      "access": "Do czego członkowie mają dostęp",
+      "accessHint": "Kursy, pliki do pobrania, sesje na żywo i transmisje objęte tym członkostwem.",
+      "create": "Utwórz członkostwo",
+      "save": "Zapisz członkostwo",
+      "saving": "Zapisywanie…",
+      "cancel": "Anuluj",
+      "created": "Utworzono członkostwo.",
+      "saved": "Zapisano członkostwo.",
+      "saveError": "Nie udało się zapisać członkostwa. Sprawdź pola i spróbuj ponownie.",
+      "empty": "Nie masz jeszcze członkostw",
+      "emptyHint": "Członkostwo pobiera od uczestników cykliczne opłaty i odblokowuje wybrane przez ciebie treści.",
+      "on": "W sprzedaży",
+      "off": "Wyłączone",
+      "editRow": "Edytuj"
+    },
+    "payments": {
+      "empty": "Nie ma jeszcze płatności",
+      "emptyHint": "Gdy uczestnik coś kupi lub członkostwo się odnowi, zobaczysz to tutaj.",
+      "date": "Data",
+      "student": "Uczestnik",
+      "what": "Za co",
+      "amount": "Kwota",
+      "status": "Status",
+      "membershipCharge": "Opłata za członkostwo",
+      "receipt": "Potwierdzenie",
+      "more": "Załaduj więcej",
+      "loading": "Ładowanie…",
+      "refundHint": "Aby zwrócić płatność, otwórz profil uczestnika.",
+      "statuses": {
+        "pending": "Oczekuje",
+        "completed": "Opłacono",
+        "failed": "Nieudana",
+        "refunded": "Zwrócono",
+        "partially_refunded": "Zwrócono częściowo"
+      }
+    }
+  },
+  "plan": {
+    "subtitle": "Ile płacisz Contentor i co obejmuje Twój plan."
+  },
+  "palette": {
+    "placeholder": "Szukaj stron…",
+    "create": "Utwórz",
+    "newCourse": "Nowy kurs",
+    "empty": "Brak strony o tej nazwie.",
+    "askAssistant": "Zapytaj asystenta: „{query}”",
+    "newMessage": "Nowa wiadomość"
+  },
+  "settingsHub": {
+    "title": "Więcej ustawień",
+    "brand": "Nazwa strony, logo i wygląd",
+    "menu": "Menu strony i przycisk w nagłówku",
+    "community": "Włączanie i wyłączanie społeczności oraz wiadomość powitalna",
+    "assistant": "Asystent widoczny dla Twoich uczestników",
+    "autopilot": "Autopilot bloga",
+    "payouts": "Jak otrzymujesz wypłaty",
+    "plan": "Twój plan Contentor"
+  },
+  "dock": {
+    "title": "Twój zespół",
+    "close": "Zamknij asystenta",
+    "tabs": {
+      "assistant": "Zespół",
+      "setup": "Konfiguracja",
+      "help": "Pomoc",
+      "history": "Historia"
+    },
+    "noChangesYet": "Nie ma jeszcze zmian — tutaj pojawi się wszystko, co wprowadzi Twój asystent.",
+    "placeholder": "Poproś o kurs, sesję na żywo, zmianę na stronie…",
+    "startersTitle": "Wypróbuj na tej stronie",
+    "undo": "Cofnij",
+    "undoing": "Cofanie…",
+    "undone": "Cofnięto",
+    "undoneToast": "Wycofano",
+    "undoRefused": "Od tego czasu zostało zmienione, opublikowane lub usunięte, więc pozostawiono je bez zmian.",
+    "starters": {
+      "home": [
+        "Co mam teraz zrobić?",
+        "Jak minął ten tydzień?",
+        "Przygotuj szkic ogłoszenia o nowościach"
+      ],
+      "courses": [
+        "Zaproponuj kolejny kurs do dodania",
+        "Dodaj okładki do kursów, które ich nie mają",
+        "Które kursy są wciąż szkicami?"
+      ],
+      "course": [
+        "Dodaj moduł do tego kursu",
+        "Napisz od nowa opis tego kursu",
+        "Dodaj nową okładkę do tego kursu",
+        "Czy ten kurs jest gotowy do publikacji?"
+      ],
+      "events": [
+        "Zaplanuj cotygodniowe zajęcia na najbliższe 4 tygodnie",
+        "Dodaj okładki do moich nadchodzących wydarzeń",
+        "Co mam najbliżej w kalendarzu?"
+      ],
+      "blog": [
+        "Zaproponuj trzy pomysły na posty dla moich uczestników",
+        "Przygotuj szkic posta o moim najnowszym kursie",
+        "Które posty są wciąż szkicami?"
+      ],
+      "announcements": [
+        "Przygotuj szkic ogłoszenia o moich najbliższych zajęciach",
+        "Przygotuj szkic powitania dla nowych uczestników",
+        "Przygotuj szkic przypomnienia o moim najnowszym kursie"
+      ],
+      "students": [
+        "Ilu uczestników dołączyło w tym tygodniu?",
+        "Przygotuj szkic powitania dla nowych uczestników",
+        "Co przyciągnie do mnie więcej uczestników?"
+      ],
+      "money": [
+        "Jak otrzymuję wypłaty?",
+        "Co obejmuje mój plan?",
+        "Jaką cenę ustalić za kurs?"
+      ],
+      "media": [
+        "Dodaj okładki do kursów, które ich nie mają",
+        "Dodaj okładki do moich nadchodzących wydarzeń",
+        "Dodaj nowe zdjęcie na moją stronę główną"
+      ]
+    },
+    "undoFailed": "Nie udało się. Spróbuj ponownie.",
+    "you": "Ty"
+  },
+  "team": {
+    "label": "Twój zespół",
+    "picked": "Twój wybór",
+    "answersIn": "Odpowiada najpierw w sekcji {section}",
+    "ask": "Zapytaj: {name}…",
+    "specialists": {
+      "designer": {
+        "name": "Projektant",
+        "job": "Twoja witryna, wygląd, logo i zdjęcia"
+      },
+      "content": {
+        "name": "Specjalista ds. tworzenia treści",
+        "job": "Kursy, sesje na żywo i pliki do pobrania"
+      },
+      "marketing": {
+        "name": "Specjalista ds. marketingu",
+        "job": "Artykuły, kampanie i wyszukiwarki"
+      },
+      "community": {
+        "name": "Menedżer społeczności",
+        "job": "Uczestnicy, społeczność i skrzynka odbiorcza"
+      },
+      "finance": {
+        "name": "Strateg Finansowy",
+        "job": "Ceny, członkostwa, sprzedaż i wypłaty"
+      },
+      "assistant": {
+        "name": "Asystent",
+        "job": "Recepcja: znajduje odpowiedniego specjalistę"
+      }
+    },
+    "starters": {
+      "designer": [
+        "Spraw, żeby moja strona główna była cieplejsza",
+        "Daj moim kursom pasujące okładki",
+        "Wypróbuj spokojniejszy wygląd mojej witryny"
+      ],
+      "content": [
+        "Przygotuj szkic kursu na podstawie pomysłu",
+        "Zaplanuj cotygodniowe zajęcia na najbliższe 4 tygodnie",
+        "Które kursy są wciąż szkicami?"
+      ],
+      "marketing": [
+        "Zaproponuj trzy pomysły na artykuły dla moich uczestników",
+        "Napisz artykuł o moim najnowszym kursie",
+        "Popraw tekst, który Google wyświetla dla mojej witryny"
+      ],
+      "community": [
+        "Ilu uczestników dołączyło w tym tygodniu?",
+        "Kto ostatnio przestał się odzywać?",
+        "Przygotuj szkic powitania dla nowych uczestników"
+      ],
+      "finance": [
+        "Jak poszła sprzedaż w tym miesiącu?",
+        "Ile powinienem brać za mój następny kurs?",
+        "Jak otrzymam wypłatę?"
+      ],
+      "assistant": [
+        "Co powinienem zrobić teraz?",
+        "Kto w moim zespole czym się zajmuje?",
+        "Jak minął ten tydzień?"
+      ]
+    },
+    "ready": "Gotowe dla ciebie",
+    "readyToast": "{name}: gotowe.",
+    "failedToast": "{name}: nie udało się tego dokończyć.",
+    "open": "Otwórz"
+  },
+  "assistant": {
+    "title": "Asystent witryny",
+    "subtitle": "Czat na twojej witrynie, który odpowiada na podstawie twoich treści i poleca to, co pasuje.",
+    "enable": "Pokaż asystenta na mojej witrynie",
+    "enableHint": "Gdy ta opcja jest włączona, odwiedzający i uczestnicy widzą dymek czatu na twojej witrynie.",
+    "enableFailed": "Nie udało się tego zmienić. Spróbuj ponownie.",
+    "upsellTitle": "Zdobądź asystenta witryny dla swoich uczestników",
+    "upsellBody": "Asystent odpowiada na pytania twoich uczestników i poleca twoje kursy — w ramach płatnych planów.",
+    "upsellCta": "Zobacz plany",
+    "greetingLabel": "Powitanie",
+    "greetingHint": "Pierwsza wiadomość, którą widzą odwiedzający.",
+    "greetingPlaceholder": "Cześć! Zapytaj mnie o cokolwiek na temat naszych kursów.",
+    "suggestionsLabel": "Sugerowane pytania (maks. 3)",
+    "suggestionPlaceholder": "np. Jak zacząć?",
+    "save": "Zapisz",
+    "saved": "Zapisano.",
+    "saveFailed": "Nie udało się zapisać. Spróbuj ponownie.",
+    "usage": "Wykorzystane pytania w tym miesiącu: {used} z {cap}",
+    "knowledgeTitle": "Naucz swojego asystenta",
+    "knowledgeHint": "Dodaj odpowiedzi na pytania, które zadają twoi uczestnicy. Asystent korzysta tylko z tego, co tu napiszesz, i z twoich opublikowanych treści.",
+    "knowledgeAdd": "Dodaj wpis",
+    "knowledgeCancel": "Anuluj",
+    "knowledgeSave": "Zapisz wpis",
+    "knowledgeLimit": "Osiągnięto limit wpisów ({max}).",
+    "knowledgeEmpty": "Nie nauczyłeś jeszcze swojego asystenta niczego.",
+    "knowledgeSaveFailed": "Nie udało się zapisać tego wpisu. Spróbuj ponownie.",
+    "knowledgeDeleteFailed": "Nie udało się usunąć tego wpisu. Spróbuj ponownie.",
+    "entryTitle": "Temat lub pytanie",
+    "entryTitlePlaceholder": "np. Zwroty",
+    "entryContent": "Odpowiedź",
+    "entryContentPlaceholder": "Co ma powiedzieć asystent?",
+    "entryEnabled": "Aktywny",
+    "delete": "Usuń",
+    "deleteConfirm": "Usunąć ten wpis? Asystent od razu przestanie z niego korzystać.",
+    "transcriptsTitle": "Ostatnie rozmowy",
+    "transcriptsHint": "O co pytali odwiedzający i uczestnicy oraz co odpowiedział asystent.",
+    "transcriptSourceSite": "Asystent strony",
+    "transcriptSourceHelp": "Zapytaj Contentor",
+    "transcriptPreviewBadge": "Twój podgląd",
+    "ratingUp": "Odwiedzający oznaczył to jako pomocne.",
+    "ratingDown": "Odwiedzający oznaczył to jako niepomocne.",
+    "addToKnowledge": "Dodaj do wiedzy",
+    "showMore": "Pokaż więcej",
+    "showLess": "Pokaż mniej",
+    "loadMore": "Wczytaj więcej",
+    "loadFailed": "Nie udało się wczytać. Spróbuj ponownie.",
+    "previewTitle": "Wypróbuj sam",
+    "previewHint": "Testuj tu odpowiedzi — działa to nawet wtedy, gdy asystent jest wyłączony, i nie zużywa twoich miesięcznych pytań.",
+    "previewPlaceholder": "Zadaj pytanie…",
+    "previewSend": "Wyślij",
+    "previewThinking": "Myślę…",
+    "previewError": "Coś poszło nie tak — spróbuj ponownie.",
+    "empty": "Brak rozmów.",
+    "convTitle": "Rozmowy",
+    "convHint": "Sprawdzaj, o co odwiedzający pytają twojego asystenta, i włącz się, gdy lepiej odpowie człowiek.",
+    "convVisitor": "Odwiedzający",
+    "convLive": "Czatujesz",
+    "convWantsHuman": "Chce rozmawiać z człowiekiem",
+    "convEmpty": "Brak rozmów. Pojawią się, gdy tylko ktoś zacznie rozmawiać z twoim asystentem.",
+    "takeOver": "Przejmij",
+    "release": "Oddaj asystentowi",
+    "replyPlaceholder": "Napisz odpowiedź…",
+    "replySend": "Wyślij",
+    "agentJoined": "{name} dołącza do czatu",
+    "assistantResumed": "Asystent wrócił",
+    "humanRequestedLine": "Prośba o rozmowę z człowiekiem",
+    "linksTitle": "Linki",
+    "linksHint": "Miejsca, do których asystent może kierować ludzi: twoja strona rezerwacji, Instagram, WhatsApp…",
+    "linkLabel": "Nazwa",
+    "linkUrl": "Adres",
+    "linkNote": "Kiedy go proponować",
+    "linkAdd": "Dodaj link",
+    "linkLimit": "Możesz dodać maksymalnie 20 linków.",
+    "linksEmpty": "Brak linków.",
+    "handoff": "Pozwól odwiedzającym poprosić o ciebie",
+    "handoffHint": "Wyświetla przycisk „Porozmawiaj z człowiekiem”. Gdy ktoś go kliknie, dostaniesz e-mail."
+  },
+  "blog": {
+    "title": "Blog",
+    "untitled": "Wpis bez tytułu",
+    "empty": "Brak wpisów. Napisz go sam lub pozwól, by AI przygotowało szkic za ciebie.",
+    "newPost": "Nowy wpis",
+    "writeWithAi": "Napisz z AI",
+    "creditsLeft": "Wpisy AI pozostałe w tym miesiącu: {remaining} z {limit}",
+    "aiBadge": "AI",
+    "draft": "Szkic",
+    "published": "Opublikowany",
+    "deleteConfirm": "Usunąć ten wpis? Tej operacji nie można cofnąć.",
+    "upgradeTitle": "Pisanie wpisów z AI to funkcja płatna",
+    "upgradeBody": "Przejdź na plan Starter (5 wpisów AI miesięcznie) lub Pro (30 wpisów AI miesięcznie) i pozwól, by Contentor pisał za ciebie.",
+    "upgrade": "Zmień plan",
+    "editorSave": "Zapisz",
+    "editorPublish": "Opublikuj",
+    "editorUnpublish": "Cofnij publikację",
+    "notReadyTitle": "Najpierw nadaj tytuł",
+    "notReadyBody": "Najpierw coś napisz",
+    "editorAdvanced": "Zaawansowane",
+    "editorSlug": "Końcówka adresu URL",
+    "editorTags": "Tagi",
+    "editorExcerpt": "Zajawka",
+    "editorMeta": "Opis meta",
+    "viewOnSite": "Zobacz na stronie",
+    "regenerate": "Wygeneruj ponownie",
+    "regenerateConfirm": "Wygenerować ten wpis od nowa? To zużyje 1 kredyt AI i zastąpi obecny tekst.",
+    "generateTitle": "Napisz z AI",
+    "topicYourOwn": "Albo własny temat",
+    "instructionsPlaceholder": "Chcesz, żeby wpis poruszył coś konkretnego?",
+    "generating": "Piszemy twój wpis — to potrwa około pół minuty…",
+    "phasePreparing": "Poznajemy twoją markę i zdjęcia",
+    "phaseDrafting": "Piszemy wpis",
+    "phaseRendering": "Formatujemy i dobieramy obrazy",
+    "cancelKeepsCredit": "Anulowanie też zużywa 1 kredyt.",
+    "cancelled": "Generowanie anulowane — kredyt został zużyty.",
+    "errQuota": "Wykorzystałeś limit wpisów AI w tym miesiącu.",
+    "errBudget": "Pisanie z AI jest chwilowo niedostępne.",
+    "errGeneric": "Coś poszło nie tak — twój kredyt nie został zużyty.",
+    "autopilotTitle": "Autopilot",
+    "autopilotHint": "Contentor wybiera temat i pisze za ciebie według harmonogramu.",
+    "autopilotReview": "Zapisz jako wersję roboczą i powiadom mnie — zalecane",
+    "autopilotPublish": "Publikuj automatycznie",
+    "nextRun": "Następny wpis: {date}",
+    "frequencyWeekly": "Co tydzień",
+    "frequencyMonthly": "Co miesiąc",
+    "coverLabel": "Obraz okładki",
+    "coverChange": "Zmień okładkę",
+    "coverChoose": "Wybierz okładkę",
+    "coverRemove": "Usuń",
+    "libraryTab": "Biblioteka zdjęć",
+    "libraryUpload": "Prześlij",
+    "libraryUploadFailed": "Nie udało się przesłać zdjęcia. Spróbuj ponownie.",
+    "librarySearch": "Szukaj obrazów…",
+    "libraryEmpty": "Nie znaleziono obrazów.",
+    "libraryMore": "Pokaż więcej",
+    "kindPhotos": "Zdjęcia",
+    "kindSpot": "Ilustracje",
+    "kindTexture": "Tekstury",
+    "kindDivider": "Separatory",
+    "kindIcon": "Ikony",
+    "inlineImages": "Obrazy w treści",
+    "inlineAdd": "Dodaj obraz",
+    "inlineHeadingPrompt": "Pod którą sekcją wstawić?",
+    "inlineNoHeadings": "Dodaj nagłówki sekcji (H2), aby umieszczać obrazy w treści."
+  },
+  "inbox": {
+    "title": "Skrzynka odbiorcza",
+    "newMessage": "Nowa wiadomość",
+    "noConversations": "Nie masz jeszcze żadnych rozmów.",
+    "selectConversation": "Wybierz rozmowę",
+    "selectConversationDescription": "Wybierz rozmowę z listy, aby ją przeczytać.",
+    "replyPlaceholder": "Napisz odpowiedź…",
+    "composeTo": "Do",
+    "composeSubject": "Temat",
+    "composeMessage": "Wiadomość",
+    "composeToPlaceholder": "uczestnik@example.com",
+    "composeSubjectPlaceholder": "Czego to dotyczy?",
+    "composeBodyPlaceholder": "Napisz wiadomość…",
+    "send": "Wyślij",
+    "cancel": "Anuluj",
+    "archive": "Archiwizuj",
+    "markSpam": "Oznacz jako spam",
+    "delete": "Usuń",
+    "deleteTitle": "Usunąć rozmowę?",
+    "deleteDescription": "Spowoduje to usunięcie całego wątku. Tej operacji nie można cofnąć.",
+    "upsellBanner": "Dodaj własną domenę, aby otrzymywać odpowiedzi od swoich uczestników.",
+    "sentSuccess": "Wiadomość została wysłana.",
+    "replySuccess": "Odpowiedź została wysłana.",
+    "archiveSuccess": "Rozmowa została zarchiwizowana.",
+    "spamSuccess": "Oznaczono jako spam.",
+    "deleteSuccess": "Rozmowa została usunięta.",
+    "loadError": "Nie udało się wczytać skrzynki odbiorczej.",
+    "loadConvError": "Nie udało się wczytać tej rozmowy.",
+    "sendError": "Nie udało się wysłać wiadomości. Spróbuj ponownie.",
+    "replyError": "Nie udało się wysłać odpowiedzi. Spróbuj ponownie.",
+    "archiveError": "Nie udało się zarchiwizować. Spróbuj ponownie.",
+    "spamError": "Nie udało się oznaczyć jako spam. Spróbuj ponownie.",
+    "deleteError": "Nie udało się usunąć. Spróbuj ponownie.",
+    "fillFields": "Wypełnij wszystkie pola."
+  },
+  "setup": {
+    "title": "Uruchom swoją witrynę",
+    "progressLabel": "Ukończono {done} z {total}",
+    "bubbleLabel": "Przewodnik konfiguracji",
+    "openFull": "Otwórz przewodnik konfiguracji",
+    "dismiss": "Ukryj przewodnik",
+    "show": "Pokaż przewodnik konfiguracji",
+    "niceToHave": "Warto dodać",
+    "markDone": "Oznacz jako ukończone",
+    "markUndone": "Oznacz jako nieukończone",
+    "celebrateTitle": "Twoja witryna działa! 🎉",
+    "celebrateBody": "Wszystko gotowe. Udostępnij swoją witrynę uczestnikom!",
+    "copyLink": "Skopiuj link do swojej witryny",
+    "copied": "Link skopiowany!",
+    "groups": {
+      "site": "Twoja witryna",
+      "content": "Twoje treści",
+      "business": "Płatności",
+      "live": "Uruchomienie",
+      "extras": "Warto dodać"
+    },
+    "items": {
+      "page_home": {
+        "title": "Strona główna",
+        "description": "Spraw, by to, co odwiedzający widzą jako pierwsze, było naprawdę twoje."
+      },
+      "page_about": {
+        "title": "Strona „O mnie”",
+        "description": "Opowiedz swoją historię własnymi słowami."
+      },
+      "page_courses": {
+        "title": "Strona kursów",
+        "description": "Sprawdź, jak prezentują się twoje kursy."
+      },
+      "page_pricing": {
+        "title": "Strona z cennikiem",
+        "description": "Przejrzyj plany, które zobaczą twoi uczestnicy."
+      },
+      "page_faq": {
+        "title": "Strona FAQ",
+        "description": "Odpowiedz na pytania, które uczestnicy zadają najczęściej."
+      },
+      "page_contact": {
+        "title": "Strona kontaktowa",
+        "description": "Upewnij się, że uczestnicy mogą się z tobą skontaktować."
+      },
+      "look": {
+        "title": "Wybierz swój wygląd",
+        "description": "Wybierz wygląd i logo."
+      },
+      "first_course": {
+        "title": "Utwórz swój pierwszy kurs",
+        "description": "Zastąp przykłady czymś własnym."
+      },
+      "course_lessons": {
+        "title": "Dokończ swój kurs",
+        "description": "Dodaj wideo lub tekst do każdej lekcji, a potem opublikuj kurs."
+      },
+      "demo_cleanup": {
+        "title": "Usuń treści demonstracyjne",
+        "description": "Usuń przykładowe kursy, zdjęcia i filmy."
+      },
+      "payouts": {
+        "title": "Ustaw, jak otrzymujesz płatności",
+        "description": "Podłącz wypłaty, aby uczestnicy mogli u ciebie kupować."
+      },
+      "start_selling": {
+        "title": "Rozpocznij swój plan",
+        "description": "Twoje ceny są zapisane. Gdy będziesz mieć plan i wypłaty, wstrzymane produkty same trafią do sprzedaży."
+      },
+      "publish": {
+        "title": "Opublikuj swoją stronę",
+        "description": "Włącz przełącznik, kiedy zechcesz pokazać się światu."
+      },
+      "first_download": {
+        "title": "Dodaj plik do pobrania",
+        "description": "Udostępnij arkusz ćwiczeń, plan lub poradnik."
+      },
+      "first_live": {
+        "title": "Zaplanuj sesję na żywo",
+        "description": "Wpisz swoją pierwszą sesję na żywo do kalendarza."
+      },
+      "first_announcement": {
+        "title": "Wyślij ogłoszenie",
+        "description": "Przywitaj się ze swoimi uczestnikami."
+      },
+      "first_blog_post": {
+        "title": "Napisz swój pierwszy wpis na blogu",
+        "description": "Udostępnij artykuł — sekcja Blog pojawi się na twojej stronie po opublikowaniu pierwszego wpisu."
+      },
+      "first_community_post": {
+        "title": "Przywitaj się w swojej społeczności",
+        "description": "Opublikuj wiadomość powitalną, aby nowi członkowie trafiali do aktywnego miejsca."
+      },
+      "share_site": {
+        "title": "Udostępnij swoją stronę",
+        "description": "Skopiuj link i wyślij go swoim uczestnikom."
+      },
+      "studio_email": {
+        "title": "Wybierz adres e-mail swojej strony",
+        "description": "Zdobądź własny adres do korespondencji z uczestnikami."
+      }
+    },
+    "demoBadge": "Demo",
+    "erase": {
+      "title": "Usunąć treści demonstracyjne?",
+      "body": "To usunie przykładowe treści dodane do twojej strony na start:",
+      "countCourses": "Kursy: {count}",
+      "countDownloads": "Pliki do pobrania: {count}",
+      "countLive": "Sesje na żywo: {count}",
+      "countPlans": "Plany: {count}",
+      "countBundles": "Pakiety: {count}",
+      "countVideos": "Filmy: {count}",
+      "countPhotos": "Zdjęcia: {count}",
+      "keepNote": "Wszystkie edytowane przez ciebie elementy zostaną zachowane.",
+      "confirm": "Usuń treści demonstracyjne",
+      "cancel": "Anuluj",
+      "success": "Treści demonstracyjne usunięte",
+      "error": "Coś poszło nie tak — nic nie zostało usunięte. Spróbuj ponownie."
+    },
+    "tabs": {
+      "checklist": "Konfiguracja",
+      "help": "Pomoc"
+    },
+    "help": {
+      "title": "Zapytaj Contentor",
+      "bubbleLabel": "Otwórz czat pomocy",
+      "intro": "Zapytaj mnie o cokolwiek dotyczącego twojej strony Contentor — znam twoją konfigurację.",
+      "placeholder": "Zadaj pytanie…",
+      "send": "Wyślij",
+      "thinking": "Myślę…",
+      "error": "Coś poszło nie tak — spróbuj ponownie.",
+      "unavailable": "Czat pomocy jest teraz niedostępny. Możesz napisać do nas na support@contentor.app.",
+      "quota": "Limit czatu pomocy na ten miesiąc został wykorzystany. W międzyczasie napisz do nas na support@contentor.app.",
+      "suggestPayouts": "Jak otrzymam wypłatę?",
+      "suggestPublish": "Jak uczestnicy znajdą moją stronę?",
+      "suggestStudents": "Jak uczestnicy się logują?",
+      "suggestPlans": "Co zawierają plany?",
+      "rateUp": "Pomocne",
+      "rateDown": "Niepomocne",
+      "talkToHuman": "Porozmawiaj z człowiekiem",
+      "humanRequestedLine": "Poproszono o rozmowę z człowiekiem — zespół Contentor otrzymał powiadomienie.",
+      "agentJoined": "{name} dołącza do czatu",
+      "assistantResumed": "Asystent wrócił",
+      "humanModeNotice": "Rozmawiasz z: {name}"
+    },
+    "titleLive": "Dokończ konfigurację",
+    "titleSelling": "Zacznij sprzedawać",
+    "heldIntro": "Czeka na rozpoczęcie sprzedaży, z zachowaniem twoich cen:"
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "languageAndRegion": "Język i region",
+    "defaultLocaleLabel": "Domyślny język dla uczestników",
+    "defaultLocaleDescription": "Nowi uczestnicy otrzymują ten język przy pierwszej wizycie. Każdy uczestnik może zmienić swoje ustawienie.",
+    "saved": "Zapisano.",
+    "saveFailed": "Nie udało się zapisać. Spróbuj ponownie."
+  },
+  "subscription": {
+    "title": "Subskrypcja",
+    "plan": "Plan",
+    "currency": "Waluta",
+    "nextBillingDate": "Data następnej płatności",
+    "provider": "Dostawca",
+    "freeNotice": "Plan darmowy: 10 uczestników, 1 GB, tylko darmowe treści. Przejdź na wyższy plan, aby sprzedawać kursy i prowadzić sesje na żywo.",
+    "cancelsOn": "Subskrypcja zostanie anulowana dnia {date}.",
+    "checkoutCanceled": "Płatność została anulowana. Twój plan nie został zmieniony.",
+    "noData": "Brak danych subskrypcji.",
+    "error": "Nie udało się wczytać subskrypcji. Spróbuj ponownie.",
+    "status": {
+      "free": "Bezpłatna",
+      "none": "Brak planu",
+      "incomplete": "W przygotowaniu",
+      "trialing": "Okres próbny",
+      "active": "Aktywna",
+      "past_due": "Zaległa płatność",
+      "canceled": "Anulowany"
+    },
+    "trialEnds": "Koniec okresu próbnego",
+    "trialNotice": "Twój bezpłatny okres próbny kończy się {date}. Wtedy obciążymy twoją kartę, chyba że wcześniej anulujesz. Sprzedaż ruszy, gdy zacznie się twój plan.",
+    "noneNotice": "Nie masz jeszcze planu, więc twoja strona jest ukryta przed odwiedzającymi. Cała twoja praca jest zachowana: wybierz plan poniżej, aby ją przywrócić.",
+    "startNow": "Uruchom mój plan teraz",
+    "starting": "Uruchamiamy twój plan…",
+    "startNowFailed": "Nie udało się jeszcze obciążyć twojej karty. Sprawdź to w swoim banku i spróbuj ponownie.",
+    "cancelTrial": "Anuluj okres próbny",
+    "cancelPlan": "Anuluj plan",
+    "keepPlan": "Zachowaj mój plan",
+    "confirmCancelTrial": "Anulować okres próbny? Nie pobierzemy żadnej opłaty, a okres próbny skończy się {date}.",
+    "confirmCancelPlan": "Anulować plan? Pozostanie aktywny do {date}.",
+    "actionError": "Nie udało się zaktualizować planu. Spróbuj ponownie.",
+    "changePlan": {
+      "title": "Zmień plan",
+      "currentPlan": "Obecny plan",
+      "upgradeTo": "Przejdź na {plan}",
+      "choose": "Wybierz {plan}",
+      "startTrial": "Rozpocznij {days}-dniowy bezpłatny okres próbny",
+      "trialNote": "Za darmo przez {days} dni, potem płatność co miesiąc. Możesz anulować w każdej chwili przed jego końcem.",
+      "switchViaSupport": "Skontaktuj się z pomocą, aby zmienić plan",
+      "downgrade": "Skontaktuj się z pomocą, aby przejść na niższy plan",
+      "comingSoonInCurrency": "Wkrótce dostępne w {currency}",
+      "processing": "Przetwarzanie...",
+      "error": "Nie udało się rozpocząć płatności. Spróbuj ponownie.",
+      "limits": {
+        "students": "Do {n} uczestników",
+        "storage": "{n} GB przestrzeni dyskowej",
+        "streamingHours": "{n} godz. transmisji/mies.",
+        "campaignEmails": "Do {n} e-maili w kampaniach/mies.",
+        "sell": "Sprzedawaj płatne treści i otrzymuj płatności przez Stripe",
+        "live": "Sesje na żywo",
+        "fee": "{n}% opłaty transakcyjnej od sprzedaży",
+        "aiBlog": "Do {n} wpisów na blogu z AI/mies."
+      }
+    }
+  },
+  "describe": {
+    "course": {
+      "label": "Opisz kurs, a asystent przygotuje jego szkic",
+      "placeholder": "np. 4-tygodniowy kurs oddychania dla początkujących biegaczy"
+    },
+    "event": {
+      "label": "Opisz sesję lub serię, a asystent ją zaplanuje",
+      "placeholder": "np. zajęcia flow na żywo w każdy wtorek o 18:00 przez 6 tygodni"
+    },
+    "submit": "Przygotuj szkic",
+    "working": "Tworzenie szkicu…",
+    "wait": "Asystent przygotowuje szkic. To potrwa kilka sekund.",
+    "resting": "Asystent teraz odpoczywa. Nadal możesz utworzyć to ręcznie.",
+    "failed": "Nie udało się. Spróbuj ponownie albo utwórz to ręcznie."
+  },
+  "media": {
+    "subtitle": "Zdjęcia i filmy, których używasz na swojej stronie, w kursach i w postach.",
+    "photos": "Zdjęcia",
+    "videos": "Filmy",
+    "mine": "Moje zdjęcia",
+    "contentor": "Zdjęcia Contentor",
+    "emptyMine": "Nie masz jeszcze własnych zdjęć. Upuść je powyżej, aby je dodać.",
+    "emptyContentor": "Nie ma jeszcze zdjęć Contentor. Tutaj pojawią się zdjęcia wybrane z biblioteki dla twojej strony.",
+    "shape": {
+      "label": "Kształt",
+      "any": "Dowolny kształt",
+      "landscape": "Poziomy",
+      "portrait": "Pionowy",
+      "square": "Kwadratowy"
+    },
+    "delete": "Usuń",
+    "confirmDelete": "Usunąć „{title}”? Tego nie można cofnąć.",
+    "upload": {
+      "prompt": "Upuść tutaj zdjęcia i filmy albo <browse>wybierz pliki</browse>",
+      "hint": "Możesz dodać kilka naraz. Film przesyła się w częściach, więc nawet długi przetrwa zerwanie połączenia.",
+      "pick": "Wybierz zdjęcia i filmy do przesłania",
+      "dropAnywhere": "Upuść, aby przesłać",
+      "queue": "Przesyłanie ({count})",
+      "clear": "Wyczyść zakończone",
+      "waiting": "Oczekuje",
+      "done": "Gotowe",
+      "error": "Błąd",
+      "failed": "Nie udało się przesłać pliku {name}.",
+      "refused": "Tutaj można dodawać tylko zdjęcia i filmy. Pominięto: {names}",
+      "cancel": "Anuluj przesyłanie pliku {name}"
+    }
+  },
+  "studio": {
+    "subtitle": "Zaprojektuj okładkę, którą uczestnicy widzą przy każdym kursie, sesji i wydarzeniu.",
+    "design": "Zaprojektuj okładkę",
+    "saveFirst": "Najpierw zapisz zmiany.",
+    "continue": "Kontynuuj",
+    "editCopy": "Edytuj kopię",
+    "state": {
+      "designed": "Zaprojektowana",
+      "photo": "Zdjęcie",
+      "none": "Brak okładki",
+      "draft": "Szkic czeka"
+    },
+    "sessions": "{count, plural, one {# sesja} few {# sesje} many {# sesji} other {# sesji}}",
+    "notPublished": "Nieopublikowane",
+    "empty": {
+      "title": "Nie masz jeszcze nic, do czego można dodać okładkę",
+      "description": "Dodaj kurs lub sesję, a potem wróć, aby zaprojektować okładkę.",
+      "action": "Nowy kurs"
+    },
+    "size": {
+      "card": "Karta",
+      "wide": "Szeroki",
+      "banner": "Baner",
+      "post": "Post",
+      "portrait": "Pionowy",
+      "story": "Relacja"
+    },
+    "previews": {
+      "label": "Podgląd okładki w rozmiarze {size}",
+      "show": "Pokaż rozmiar {size}"
+    },
+    "strip": {
+      "heading": "Twoje pozostałe okładki"
+    },
+    "rail": {
+      "label": "Narzędzia studia",
+      "layouts": "Układy",
+      "photos": "Zdjęcia",
+      "text": "Tekst",
+      "elements": "Elementy",
+      "brand": "Marka",
+      "uploads": "Przesłane",
+      "generate": "Nowe zdjęcie",
+      "edit": "Edytuj zdjęcie"
+    },
+    "bar": {
+      "size": "Rozmiar okładki",
+      "social": "Rozmiar do mediów społecznościowych"
+    },
+    "drawers": {
+      "full": "Limit dodanych warstw na okładce to {count}. Usuń jedną, aby dodać kolejną.",
+      "text": {
+        "heading": "Dodaj tekst",
+        "add": {
+          "title": "Dodaj tytuł",
+          "subtitle": "Dodaj podtytuł",
+          "line": "Dodaj wiersz tekstu"
+        },
+        "new": {
+          "title": "Twój tytuł",
+          "subtitle": "Twój podtytuł",
+          "line": "Twój tekst"
+        }
+      },
+      "elements": {
+        "shapes": "Kształty",
+        "newBadge": "Twoje słowa",
+        "icons": "Ikony",
+        "qr": "Kod QR",
+        "qrAdd": "Dodaj kod QR tej strony"
+      },
+      "brand": {
+        "colours": "Kolory",
+        "changes": "Te kolory zmieniają {target}.",
+        "target": {
+          "panel": "panel koloru",
+          "label": "etykietę",
+          "title": "tytuł",
+          "subtitle": "podtytuł",
+          "badge": "plakietka",
+          "text": "zaznaczony tekst",
+          "shape": "zaznaczony kształt",
+          "icon": "zaznaczona ikona",
+          "qr": "kwadraty kodu QR"
+        },
+        "fonts": "Czcionki",
+        "fontFor": {
+          "display": "Tytuły",
+          "body": "Tekst"
+        },
+        "fontsHint": "Zaznacz tekst na okładce, aby zmienić jego czcionkę.",
+        "fromPhoto": "Z twojego zdjęcia"
+      },
+      "uploads": {
+        "heading": "Przesłane pliki",
+        "drop": "Upuść tutaj zdjęcie",
+        "hint": "Trafi do twoich zdjęć i na okładkę.",
+        "choose": "Wybierz zdjęcie",
+        "notAPhoto": "Ten plik nie jest zdjęciem."
+      },
+      "photo": {
+        "none": "Dodaj zdjęcie do okładki, aby je edytować.",
+        "filters": "Filtry",
+        "grades": {
+          "none": "Oryginał",
+          "site": "Twoja strona",
+          "mono": "Czarno-biały",
+          "soft": "Delikatny",
+          "tint": "Zabarwiony",
+          "vivid": "Żywy",
+          "duo": "Duoton",
+          "duo-accent": "Duoton, akcent"
+        },
+        "adjust": "Dostosuj",
+        "warmth": "Ciepło",
+        "cool": "Zimny",
+        "warm": "Ciepły",
+        "blur": "Rozmycie",
+        "sharp": "Ostry",
+        "soft": "Miękki",
+        "frame": "Ramka",
+        "masks": {
+          "none": "Kwadrat",
+          "rounded": "Zaokrąglony",
+          "circle": "Koło",
+          "arch": "Łuk",
+          "blob": "Plama"
+        },
+        "tools": "Narzędzia do zdjęć",
+        "cutout": "Usuń tło",
+        "cutoutHint": "Za darmo. Trwa około 20 sekund, a okładka zmieni się na Wycięcie. Twoje zdjęcie zostanie w Mediach.",
+        "expand": "Rozszerz do formatu {size}",
+        "costs": "{count, plural, one {Zużywa ostatnie nowe zdjęcie, które zostało ci w tym miesiącu.} few {Zużywa 1 z # nowych zdjęć, które zostały ci w tym miesiącu.} many {Zużywa 1 z # nowych zdjęć, które zostały ci w tym miesiącu.} other {Zużywa 1 z # nowych zdjęć, które zostały ci w tym miesiącu.}}",
+        "usedUp": "Nowe zdjęcia na ten miesiąc są już wykorzystane.",
+        "failed": "Nie udało się zmienić tego zdjęcia. Spróbuj ponownie.",
+        "erase": "Usuń to",
+        "eraseLabel": "Co usunąć?",
+        "erasePlaceholder": "Kubek kawy na stole",
+        "change": "Zmień to",
+        "changeLabel": "Co zmienić?",
+        "changePlaceholder": "Ciepłe wieczorne światło za mną",
+        "toolsOff": "Narzędzia do zdjęć nie są jeszcze włączone dla tej witryny.",
+        "tooMany": "To sporo teł jak na jedną godzinę. Spróbuj ponownie później."
+      },
+      "layouts": {
+        "styles": "Cztery style dla tej okładki",
+        "show": "Pokaż mi cztery style",
+        "more": "Cztery kolejne",
+        "drawing": "Rysuję cztery style…",
+        "failed": "Nie udało się narysować stylów. Spróbuj ponownie."
+      }
+    },
+    "editor": {
+      "courseCover": "Okładka kursu",
+      "downloadCover": "Okładka pliku do pobrania",
+      "coverLine": "{cover} · {notice}",
+      "eventCover": "{kind} – okładka wspólna dla wszystkich sesji o tym tytule",
+      "untitled": "Bez tytułu",
+      "waiting": "Dopóki nie zachowasz tej okładki, {target} będzie mieć dotychczasową.",
+      "isKept": "Tej okładki używa teraz {title}. Aby ją zmienić, edytuj kopię.",
+      "replaced": "Tę okładkę zastąpiła nowsza. Aby znów jej użyć, edytuj kopię.",
+      "gone": "Kurs lub wydarzenie, do którego należała ta okładka, już nie istnieje, więc nie można jej zachować.",
+      "controls": "Ustawienia okładki",
+      "saving": "Zapisywanie…",
+      "saved": "Zapisano",
+      "saveFailed": "Nie udało się zapisać.",
+      "leftUnsaved": "Ostatnie zmiany w tej okładce nie zostały zapisane.",
+      "retry": "Spróbuj ponownie",
+      "undo": "Cofnij",
+      "redo": "Ponów",
+      "discard": "Odrzuć",
+      "discardTitle": "Odrzucić ten szkic?",
+      "discardBody": "{title} zachowa obecną okładkę.",
+      "discardCancel": "Edytuj dalej",
+      "keep": {
+        "course": "Zachowaj dla kursu",
+        "download": "Zachowaj dla pliku do pobrania",
+        "event": "Zachowaj dla wydarzenia"
+      },
+      "kept": "Zachowano. {title} ma teraz tę okładkę.",
+      "waitForPhoto": "Poczekaj, aż zdjęcie będzie gotowe",
+      "notFound": "Tej okładki już tu nie ma."
+    },
+    "controls": {
+      "words": "Tekst",
+      "label": "Etykieta",
+      "labelPlaceholder": {
+        "course": "np. 4-tygodniowy kurs",
+        "download": "np. Darmowy poradnik",
+        "event": "np. Sesja na żywo"
+      },
+      "title": "Tytuł",
+      "titleHint": "Zostaw puste, aby użyć tytułu z: {target}.",
+      "subtitle": "Podtytuł",
+      "subtitlePlaceholder": "np. Poranna joga dla początkujących",
+      "photo": "Zdjęcie",
+      "layout": "Układ",
+      "set": "Twój zestaw",
+      "setHint": "Jak ostatnio zachowana okładka.",
+      "layouts": {
+        "panel": "Kolorowy panel",
+        "full": "Pełne zdjęcie",
+        "title": "Sam tytuł",
+        "band": "Kolorowy pas",
+        "framed": "Zdjęcie w ramce",
+        "photo": "Samo zdjęcie",
+        "cutout": "Wycięcie"
+      },
+      "colour": "Kolor",
+      "custom": "Własny kolor",
+      "colourHint": "Kolory z twojego wyglądu zmieniają się razem z nim. Własny kolor pozostaje bez zmian.",
+      "paint": {
+        "primary": "Kolor główny",
+        "accent": "Akcent",
+        "ink": "Tekst",
+        "paper": "Tło",
+        "surface": "Powierzchnia",
+        "inverse": "Ciemny",
+        "inverse-ink": "Tekst na ciemnym",
+        "primary-light": "Kolor główny, jaśniejszy",
+        "primary-dark": "Kolor główny, ciemniejszy",
+        "accent-light": "Akcent, jaśniejszy",
+        "accent-dark": "Akcent, ciemniejszy",
+        "white": "Biały",
+        "black": "Czarny"
+      },
+      "badge": "Plakietka",
+      "badgeShows": "Pokaż",
+      "badgeDeleted": "Usunięto z okładki",
+      "badges": {
+        "none": "Brak",
+        "new": "Nowość",
+        "date": "Najbliższy termin",
+        "live": "Na żywo",
+        "text": "Własny tekst"
+      },
+      "badgeWords": "Tekst plakietki",
+      "badgeWordsPlaceholder": "np. Start w poniedziałek",
+      "logo": "Logo",
+      "showLogo": "Pokaż swoje logo",
+      "noLogo": "Nie masz jeszcze dodanego logo.",
+      "size": "Rozmiar",
+      "suggest": "Zaproponuj",
+      "suggestMore": "Jeszcze trzy",
+      "suggesting": "Myślę…",
+      "suggestFailed": "Nie otrzymano żadnych propozycji. Spróbuj ponownie."
+    },
+    "photos": {
+      "yours": "Twoje",
+      "contentor": "Contentor",
+      "new": "Nowe",
+      "search": "Szukaj zdjęć",
+      "upload": "Prześlij",
+      "uploadFailed": "Nie udało się przesłać tego zdjęcia.",
+      "emptyYours": "Nie masz jeszcze przesłanych zdjęć.",
+      "noMatch": "Żadne z twoich zdjęć nie pasuje.",
+      "emptyLibrary": "Nie znaleziono zdjęć. Spróbuj innych słów.",
+      "inUse": "Używane w: {title}",
+      "more": "Więcej zdjęć",
+      "failed": "Nie udało się wczytać zdjęć.",
+      "retry": "Spróbuj ponownie",
+      "pickFailed": "Nie można użyć tego zdjęcia. Wybierz inne.",
+      "describe": "Opisz zdjęcie",
+      "describePlaceholder": "A woman stretching on a porch at sunrise, warm light",
+      "left": "{count, plural, one {W tym miesiącu zostało # nowe zdjęcie} few {W tym miesiącu zostały # nowe zdjęcia} many {W tym miesiącu zostało # nowych zdjęć} other {W tym miesiącu zostało # nowego zdjęcia}}",
+      "used": "Wykorzystano już nowe zdjęcia na ten miesiąc.",
+      "make": "Utwórz",
+      "making": "Tworzę twoje zdjęcie…",
+      "wait": "Nadal tworzymy twoje zdjęcie. To potrwa około minuty.",
+      "takes": "Nowe zdjęcie powstaje w około minutę.",
+      "makeFailed": "Nie udało się utworzyć tego zdjęcia. Spróbuj innych słów."
+    },
+    "canvas": {
+      "label": "Obszar okładki",
+      "hint": "Kliknij warstwę, aby ją edytować. Przeciągnij, aby ją przesunąć, użyj uchwytów, aby zmienić jej rozmiar, i kliknij dwukrotnie tekst, aby pisać.",
+      "editWords": "Tekst na okładce"
+    },
+    "toolbar": {
+      "label": "Narzędzia warstw",
+      "layer": {
+        "photo": "Zdjęcie",
+        "panel": "Kolor",
+        "label": "Etykieta",
+        "title": "Tytuł",
+        "subtitle": "Podtytuł",
+        "logo": "Logo",
+        "badge": "Plakietka",
+        "text": "Tekst",
+        "shape": "Kształt",
+        "icon": "Ikona",
+        "qr": "Kod QR"
+      },
+      "font": "Czcionka",
+      "fonts": {
+        "display": "Nagłówek",
+        "body": "Treść"
+      },
+      "weight": "Grubość",
+      "weights": {
+        "400": "Normalna",
+        "500": "Średnia",
+        "600": "Półgruba",
+        "700": "Gruba",
+        "800": "Bardzo gruba"
+      },
+      "upper": "Wielkie litery",
+      "align": "Wyrównanie",
+      "aligns": {
+        "left": "Do lewej",
+        "center": "Do środka",
+        "right": "Do prawej"
+      },
+      "size": "Rozmiar",
+      "tracking": "Odstęp między literami",
+      "leading": "Interlinia",
+      "colour": "Kolor",
+      "automatic": "Automatycznie",
+      "focusX": "Punkt skupienia w poziomie",
+      "focusY": "Punkt skupienia w pionie",
+      "zoom": "Powiększenie",
+      "brightness": "Jasność",
+      "contrast": "Kontrast",
+      "saturation": "Nasycenie",
+      "darken": "Przyciemnienie",
+      "badgeWords": "Tekst plakietki",
+      "fill": "Wypełnienie",
+      "shape": "Kształt",
+      "shapes": {
+        "rect": "Prostokąt",
+        "circle": "Koło",
+        "arch": "Łuk",
+        "line": "Linia",
+        "pill": "Pigułka",
+        "star": "Gwiazda",
+        "burst": "Rozbłysk",
+        "arrow": "Strzałka"
+      },
+      "opacity": "Krycie",
+      "logoColour": "Kolor logo",
+      "logoColours": {
+        "auto": "Automatyczny",
+        "white": "Biały",
+        "black": "Czarny",
+        "original": "Oryginalny"
+      },
+      "forward": "Przesuń do przodu",
+      "back": "Przesuń do tyłu",
+      "duplicate": "Duplikuj",
+      "delete": "Usuń",
+      "effect": "Efekt",
+      "effects": {
+        "none": "Bez efektu",
+        "lift": "Uniesienie",
+        "shadow": "Cień",
+        "outline": "Obrys",
+        "highlight": "Wyróżnienie",
+        "label": "Efekty"
+      },
+      "effectColour": "Kolor efektu",
+      "markWord": "Pokoloruj słowo",
+      "markNone": "Bez słowa",
+      "markColour": "Kolor słowa",
+      "flip": "Odbij",
+      "editPhoto": "Edytuj zdjęcie",
+      "icon": "Ikona",
+      "qrLink": "Link",
+      "qrSquares": "Kolor kwadratów",
+      "qrGround": "Kolor tła pod kwadratami",
+      "icons": {
+        "calendar": "Kalendarz",
+        "clock": "Zegar",
+        "map-pin": "Miejsce",
+        "video": "Wideo",
+        "mic": "Mikrofon",
+        "users": "Ludzie",
+        "user": "Osoba",
+        "heart": "Serce",
+        "star": "Gwiazda",
+        "sparkles": "Iskierki",
+        "sun": "Słońce",
+        "moon": "Księżyc",
+        "leaf": "Liść",
+        "flower": "Kwiat",
+        "mountain": "Góra",
+        "waves": "Fale",
+        "flame": "Płomień",
+        "zap": "Błyskawica",
+        "check": "Ptaszek",
+        "circle-check": "Ptaszek w kółku",
+        "play": "Odtwórz",
+        "gift": "Prezent",
+        "award": "Odznaczenie",
+        "trophy": "Puchar",
+        "target": "Tarcza strzelnicza",
+        "book-open": "Książka",
+        "graduation-cap": "Biret",
+        "pen-tool": "Pióro",
+        "palette": "Paleta",
+        "camera": "Aparat",
+        "music": "Muzyka",
+        "dumbbell": "Hantel",
+        "brain": "Mózg",
+        "coffee": "Kawa",
+        "smile": "Uśmiech",
+        "globe": "Globus",
+        "mail": "Poczta",
+        "phone": "Telefon",
+        "arrow-right": "Strzałka",
+        "chevron-right": "Szewron"
+      }
+    },
+    "download": {
+      "label": "Pobierz",
+      "making": "Tworzenie pliku…",
+      "failed": "Nie udało się utworzyć tego pliku. Spróbuj ponownie.",
+      "jpeg": "Jako JPG (mniejszy plik)",
+      "for": {
+        "card": "Karty na twojej stronie",
+        "wide": "Miniatura na YouTube",
+        "banner": "Obraz nagłówka",
+        "post": "Kwadratowy post",
+        "portrait": "Pionowy post",
+        "story": "Relacja"
+      }
+    }
+  },
+  "messages": {
+    "subtitle": "To, co przekazujesz swoim uczestnikom w aplikacji i e-mailem.",
+    "new": "Nowa wiadomość",
+    "design": "Zaprojektuj e-mail",
+    "newSubtitle": "Pojawia się w aplikacji twoich uczestników i może też trafić do nich e-mailem. Jeśli zależy ci na zaprojektowanym układzie, <design>zaprojektuj e-mail</design>.",
+    "back": "Wróć do wiadomości",
+    "draftGone": "Tej wersji roboczej już nie ma.",
+    "designedTemplates": "Szablony zaprojektowanych e-maili",
+    "tabs": {
+      "sent": "Wysłane i zaplanowane",
+      "repeating": "Cykliczne",
+      "templates": "Szablony"
+    },
+    "empty": "Nic jeszcze nie wysłano",
+    "emptyHint": "Wiadomość trafia do twoich uczestników w aplikacji, a jeśli zaznaczysz pole – także e-mailem.",
+    "emailDown": "Nie udało się teraz wczytać zaprojektowanych e-maili. Poniższe wiadomości są kompletne; e-maile pojawią się ponownie przy następnej wizycie.",
+    "untitled": "Bez tytułu",
+    "review": "Sprawdź i wyślij",
+    "removeError": "Nie udało się. Spróbuj ponownie.",
+    "channel": {
+      "app": "W aplikacji",
+      "appEmail": "W aplikacji i e-mailem",
+      "email": "Zaprojektowany e-mail"
+    },
+    "status": {
+      "draft": "Wersja robocza",
+      "scheduled": "Zaplanowano",
+      "sending": "Wysyłanie",
+      "sent": "Wysłano",
+      "partial": "Wysłano częściowo",
+      "failed": "Nie powiodło się"
+    },
+    "detail": {
+      "draft": "jeszcze nie wysłano",
+      "scheduled": "wysyłka {when}",
+      "sending": "w drodze",
+      "announcement": "{recipients, plural, one {# uczestnik} few {# uczestników} many {# uczestników} other {# uczestnika}} · przeczytało: {reached}",
+      "email": "Dostarczono {reached} z {recipients}{failed, plural, =0 {} one { · nie dostarczono: #} few { · nie dostarczono: #} many { · nie dostarczono: #} other { · nie dostarczono: #}}"
+    },
+    "action": {
+      "cancel": "Anuluj",
+      "delete": "Usuń",
+      "discard": "Usuń"
+    },
+    "confirm": {
+      "cancel": "Anulować „{title}”? Wiadomość nie zostanie wysłana.",
+      "delete": "Usunąć „{title}”? Zniknie też z aplikacji twoich uczestników.",
+      "discard": "Usunąć wersję roboczą „{title}”?"
+    },
+    "done": {
+      "cancel": "Anulowano.",
+      "delete": "Usunięto.",
+      "discard": "Wersja robocza usunięta."
+    },
+    "compose": {
+      "alsoEmail": "Wyślij ją też jako e-mail z twoją marką",
+      "saveError": "Nie udało się teraz zapisać twojej wiadomości. Wpisany tekst nadal tu jest.",
+      "loadError": "Nie udało się wczytać tej wiadomości.",
+      "audience": {
+        "title": "Kto ją dostanie",
+        "narrow": "Tylko niektórzy uczestnicy",
+        "app": "Mają zainstalowaną twoją aplikację",
+        "browser": "Korzystają ze strony internetowej",
+        "ios": "iPhone lub iPad",
+        "android": "Android",
+        "desktop": "Komputer",
+        "push": "Mają włączone powiadomienia na telefonie"
+      },
+      "preview": {
+        "caption": "Jak to wygląda na telefonie",
+        "date": "Wtorek, 9 czerwca",
+        "title": "Twój tytuł",
+        "body": "Twoja wiadomość",
+        "now": "teraz"
+      }
+    }
+  },
+  "events": {
+    "subtitle": "Sesje na żywo, transmisje na żywo, sesje Zoom i wydarzenia stacjonarne w jednym miejscu.",
+    "new": "Nowa sesja lub wydarzenie",
+    "editing": "Edycja: {title}",
+    "locked": "Sesje na żywo i transmisje na żywo wymagają płatnego planu. Sesje Zoom i wydarzenia stacjonarne są zawsze bezpłatne.",
+    "upgrade": "Zobacz plany",
+    "linkMissing": "Nie znaleziono tej sesji ani wydarzenia. Mogły zostać usunięte.",
+    "views": {
+      "list": "Lista",
+      "calendar": "Kalendarz"
+    },
+    "whenFilter": "Pokaż",
+    "upcoming": "Nadchodzące",
+    "past": "Minione",
+    "empty": "Nic nie jest zaplanowane. Utwórz sesję lub wydarzenie albo opisz je powyżej.",
+    "emptyPast": "Nie ma jeszcze nic minionego.",
+    "sort": {
+      "date": "Według daty",
+      "newest": "Ostatnio dodane",
+      "nameAZ": "Nazwa A-Z",
+      "nameZA": "Nazwa Z-A"
+    },
+    "col": {
+      "status": "Status",
+      "title": "Tytuł",
+      "when": "Kiedy",
+      "where": "Gdzie",
+      "price": "Cena",
+      "actions": "Akcje"
+    },
+    "status": {
+      "draft": "Wersja robocza",
+      "scheduled": "Zaplanowane",
+      "live": "Na żywo",
+      "ended": "Zakończone"
+    },
+    "kinds": {
+      "live": {
+        "label": "Sesja na żywo",
+        "hint": "Zajęcia grupowe lub rozmowa 1-1 w pokoju wideo, prosto w przeglądarce. Bez dodatkowego oprogramowania.",
+        "titlePlaceholder": "np. Piątkowa sesja flow"
+      },
+      "stream": {
+        "label": "Transmisja na żywo",
+        "hint": "Ty prowadzisz transmisję; uczestnicy oglądają i piszą na czacie.",
+        "titlePlaceholder": "np. Cotygodniowa sesja pytań i odpowiedzi"
+      },
+      "zoom": {
+        "label": "Zoom",
+        "hint": "Uczestnicy dołączają przez twój link do Zooma.",
+        "titlePlaceholder": "np. Grupowa sesja coachingowa"
+      },
+      "onsite": {
+        "label": "Stacjonarnie",
+        "hint": "W miejscu, do którego przychodzą uczestnicy.",
+        "titlePlaceholder": "np. Warsztaty weekendowe"
+      }
+    },
+    "where": "Gdzie się odbywa",
+    "title": "Tytuł",
+    "description": "Opis",
+    "when": "Kiedy",
+    "whenHint": "Zostaw puste, aby zachować to jako wersję roboczą, której twoi uczestnicy nie widzą.",
+    "timesIn": "Godziny podano w strefie {zone}.",
+    "cover": "Okładka",
+    "coverHint": "Każda sesja o nazwie „{title}” ma tę okładkę.",
+    "zoomLink": "Link do Zooma",
+    "location": "Miejsce",
+    "locationPlaceholder": "np. Studio A, centrum",
+    "address": "Adres",
+    "capacity": "Liczba miejsc",
+    "capacityPlaceholder": "Bez limitu",
+    "access": "Dostęp",
+    "free": "Bezpłatny",
+    "paid": "Płatny",
+    "membersOnly": "Tylko dla członków",
+    "price": "Cena ({currency})",
+    "record": "Nagrywaj automatycznie",
+    "watermark": "Znak wodny",
+    "watermarkHint": "Uczestnicy widzą na wideo swoje imię i nazwisko, co zniechęca do nagrywania ekranu.",
+    "whiteboard": "Tablica",
+    "whiteboardHint": "Tablica zapisana w Excalidraw (plik .excalidraw). Pojawi się na tablicy, gdy otworzysz ją w trakcie sesji.",
+    "whiteboardAttached": "Tablica dołączona",
+    "whiteboardRemove": "Usuń",
+    "whiteboardFailed": "Nie udało się przesłać tablicy.",
+    "filters": "Filtry",
+    "tags": "Tagi",
+    "create": "Utwórz",
+    "save": "Zapisz",
+    "saving": "Zapisywanie…",
+    "cancel": "Anuluj",
+    "created": "Utworzono.",
+    "saved": "Zapisano.",
+    "saveError": "Nie udało się zapisać. Sprawdź pola i spróbuj ponownie.",
+    "accessNotSaved": "Zapisano, ale sposób uzyskania dostępu nie został zapisany.",
+    "trial": "Bezpłatne zajęcia próbne",
+    "trialTitle": "Ustawić pierwszą sesję jako bezpłatne zajęcia próbne?",
+    "trialHint": "Każdy może dołączyć do pierwszej sesji za darmo. Pozostałe sesje zachowują swoją cenę.",
+    "trialOn": "Bezpłatna sesja odbędzie się {when}. Pozostałe sesje zachowują swoją cenę.",
+    "trialHelpTerm": "Czym są bezpłatne zajęcia próbne?",
+    "trialHelp": "Zajęcia próbne pozwalają komuś wypróbować to, czego uczysz, zanim zapłaci. Bezpłatna jest tylko pierwsza sesja i każdy może do niej dołączyć. Każda kolejna sesja jest sprzedawana w twojej zwykłej cenie. Możesz to wyłączyć w dowolnym momencie, a ta sesja wróci do swojej ceny.",
+    "trialTurnedOn": "Gotowe. Pierwsza sesja to bezpłatne zajęcia próbne.",
+    "trialTurnedOff": "Gotowe. Pierwsza sesja wróciła do swojej ceny.",
+    "trialError": "Nie udało się zmienić bezpłatnych zajęć próbnych. Spróbuj ponownie.",
+    "held": "Wersja robocza: twoi uczestnicy jeszcze tego nie widzą. Publikacja pokaże wszystkie nadchodzące sesje.",
+    "heldPast": "Najpierw wybierz przyszłą datę.",
+    "publish": "Opublikuj",
+    "publishing": "Publikowanie…",
+    "published": "Opublikowano. Twoi uczestnicy już to widzą.",
+    "notPublished": "Zapisano, ale to wciąż wersja robocza.",
+    "edit": "Edytuj",
+    "goLive": "Rozpocznij transmisję",
+    "starting": "Uruchamianie…",
+    "join": "Dołącz",
+    "end": "Zakończ",
+    "ending": "Kończenie…",
+    "stopped": "Zakończono.",
+    "startError": "Nie udało się uruchomić. Spróbuj ponownie.",
+    "stopError": "Nie udało się zakończyć. Spróbuj ponownie.",
+    "openZoom": "Otwórz Zoom",
+    "deleted": "{count, plural, one {# pozycja usunięta} few {# pozycje usunięte} many {# pozycji usuniętych} other {# pozycji usuniętych}}.",
+    "deleteRefused": "{count, plural, one {# pozycja nie mogła zostać usunięta} few {# pozycje nie mogły zostać usunięte} many {# pozycji nie mogło zostać usuniętych} other {# pozycji nie mogło zostać usuniętych}}. Tylko właściciel witryny może usunąć sesję lub wydarzenie."
+  },
+  "focus": {
+    "startIt": "Rozpocznij",
+    "makeWithMe": "Zróbmy to razem, pytanie po pytaniu.",
+    "kinds": {
+      "course": {
+        "new": "Nowy kurs",
+        "continue": "Kontynuuj swój kurs: {title}",
+        "fillMyself": "Wypełnię samodzielnie"
+      },
+      "event": {
+        "new": "Nowa sesja lub wydarzenie",
+        "continue": "Kontynuuj swoją sesję: {title}",
+        "fillMyself": "Wypełnię samodzielnie"
+      },
+      "message": {
+        "new": "Nowa wiadomość",
+        "continue": "Kontynuuj swoją wiadomość: {title}",
+        "fillMyself": "Napiszę samodzielnie",
+        "tick": "Również e-mailem",
+        "writing": "Piszę twoją wiadomość…",
+        "thinking": "Zastanawiam się nad twoją wiadomością…"
+      },
+      "download": {
+        "new": "Nowy plik do pobrania",
+        "continue": "Kontynuuj swój plik do pobrania: {title}",
+        "fillMyself": "Wypełnię samodzielnie",
+        "drop": "Upuść tutaj plik albo wybierz go",
+        "fileNotAnswered": "Twój plik jest na stronie, ale przewodnik go pominął.",
+        "thinking": "Zastanawiam się nad twoim plikiem do pobrania…"
+      },
+      "membership": {
+        "new": "Nowe członkostwo",
+        "continue": "Kontynuuj swoje członkostwo: {title}",
+        "fillMyself": "Wypełnię samodzielnie",
+        "thinking": "Zastanawiam się nad twoim członkostwem…",
+        "writing": "Piszę nazwę i opis…",
+        "handOver": {
+          "access": "Mamy {name}: ustalmy cenę."
+        }
+      },
+      "bundle": {
+        "new": "Nowy pakiet",
+        "continue": "Kontynuuj swój pakiet: {title}",
+        "tooFew": "Pakiet musi zawierać co najmniej dwie pozycje, które sprzedajesz. Najpierw ustal cenę dla dwóch z nich.",
+        "fillMyself": "Wypełnię samodzielnie",
+        "thinking": "Zastanawiam się nad twoim pakietem…",
+        "writing": "Piszę nazwę i opis…",
+        "handOver": {
+          "access": "Oto {name}: ustalmy jego cenę."
+        }
+      },
+      "post": {
+        "new": "Nowy post",
+        "continue": "Kontynuuj swój post: {title}",
+        "fillMyself": "Napiszę go samodzielnie",
+        "writing": "Piszę twój post…",
+        "copyFailed": "Nie udało się przygotować posta.",
+        "thinking": "Zastanawiam się nad twoim postem…",
+        "refused": {
+          "upgrade_required": "Pisanie postów za ciebie jest dostępne w płatnym planie. Napisz post samodzielnie lub przejdź na wyższy plan.",
+          "quota_exhausted": "Limit postów AI na ten miesiąc został wyczerpany. Napisz post samodzielnie lub przejdź na wyższy plan, aby mieć ich więcej.",
+          "disabled": "Pisanie z AI jest teraz niedostępne. Napisz post samodzielnie.",
+          "budget": "Pisanie z AI jest teraz niedostępne. Napisz post samodzielnie."
+        }
+      }
+    },
+    "youDecide": "Ty decydujesz",
+    "justDraft": "Po prostu przygotuj szkic",
+    "ownIdea": "Mój własny pomysł…",
+    "selectAll": "Zaznacz wszystko",
+    "deselectAll": "Odznacz wszystko",
+    "pickSome": "Wybierz wszystkie pasujące",
+    "continueWith": "{count, plural, one {Kontynuuj} few {Kontynuuj z #} many {Kontynuuj z #} other {Kontynuuj z #}}",
+    "addTimeLimit": "Dodaj limit czasu",
+    "answerPlaceholder": "Albo powiedz to po swojemu…",
+    "changePlaceholder": "Albo powiedz, co zmienić…",
+    "writingOutline": "Piszę twój konspekt…",
+    "outlineFailed": "Nie udało się przygotować konspektu.",
+    "writingCopy": "Piszę tytuł i opis…",
+    "copyFailed": "Nie udało się przygotować tytułu i opisu.",
+    "looksGood": "Wygląda dobrze, dalej",
+    "tryAgain": "Spróbuj ponownie",
+    "stop": "Zatrzymaj",
+    "startSelling": "Zacznij sprzedawać",
+    "published": "Opublikowano. Uczestnicy mogą już to znaleźć na twojej stronie.",
+    "kept": "Zapisano jako szkic.",
+    "saveLeave": "Zapisz i wyjdź",
+    "allDetails": "Wszystkie szczegóły",
+    "writing": "pisanie",
+    "progress": "Krok {done} z {total}",
+    "outlineSoon": "Twoje moduły i lekcje pojawią się tutaj, gdy tylko zostaną napisane.",
+    "readingDetails": "Czytam podane szczegóły…",
+    "thinking": "Zastanawiam się nad twoim kursem…",
+    "writingDescriptions": "piszę opisy lekcji",
+    "descriptionCount": "{done} z {total}",
+    "descriptionsNote": "Piszę krótki opis do filmu każdej lekcji. Każdy z nich możesz edytować na stronie.",
+    "descriptionsFailed": "Części opisów lekcji nie udało się przygotować.",
+    "cover": "Okładka",
+    "drafting": "przygotowuję projekty okładek",
+    "coverStyle": {
+      "full": "Zdjęcie z tytułem na wierzchu",
+      "panel": "Zdjęcie i kolorowy panel",
+      "title": "Tylko tytuł",
+      "band": "Zdjęcie z pasem w poprzek",
+      "framed": "Zdjęcie w ramce",
+      "photo": "Tylko zdjęcie"
+    },
+    "yours": "Twoje",
+    "upload": "Prześlij",
+    "makingPhoto": "Tworzę Twoje zdjęcie…",
+    "photoFailed": "Nie udało się utworzyć Twojego zdjęcia. Wybierz jedno z tych tutaj lub prześlij własne.",
+    "photoUnavailable": "Nie można użyć tego zdjęcia. Wybierz inne.",
+    "useCover": "Użyj tej okładki",
+    "moreStyles": "Cztery kolejne style",
+    "draftCovers": "Przygotuj cztery projekty okładek",
+    "morePhotos": "Więcej zdjęć",
+    "editCover": "Edytuję ją",
+    "later": "Później",
+    "once": "Jednorazowo",
+    "weekly": "Co tydzień",
+    "useSchedule": "Użyj tego terminu",
+    "coverPlaceholder": "Albo powiedz: jaśniej, mężczyzna przy biurku do pracy na stojąco…",
+    "tellStudents": "Powiadom moich uczestników",
+    "schedule": "Zaplanuj",
+    "notNow": "Nie teraz",
+    "sendsAt": "Wysyłka {when}",
+    "writingAnnouncement": "Piszę Twoje ogłoszenie…",
+    "announcementFailed": "Nie udało mi się napisać ogłoszenia.",
+    "handOver": {
+      "cover": "Tu {name}: przygotujmy Twoją okładkę.",
+      "access": "Tu {name}: zdecydujmy, jak uczestnicy uzyskają do tego dostęp.",
+      "finish": "Tu {name}: pokażmy to światu."
+    }
+  },
+  "downloads": {
+    "upload": "Prześlij plik",
+    "new": "Nowy plik do pobrania",
+    "edit": "Edytuj plik do pobrania",
+    "back": "Wróć do plików do pobrania",
+    "title": "Tytuł",
+    "titlePlaceholder": "np. Zeszyt ćwiczeń do kursu",
+    "description": "Opis",
+    "descriptionPlaceholder": "Co zawiera, w jednym lub dwóch zdaniach.",
+    "cover": "Okładka",
+    "file": "Plik",
+    "choose": "Wybierz plik lub upuść go tutaj",
+    "replace": "Wybierz inny plik lub upuść go tutaj, aby go zastąpić",
+    "titleFirst": "Najpierw nadaj mu tytuł.",
+    "uploaded": "Plik przesłany",
+    "uploadFailed": "Nie udało się przesłać pliku. Spróbuj ponownie.",
+    "progress": "Przesłano {pct}%",
+    "tags": "Tagi",
+    "create": "Utwórz",
+    "save": "Zapisz",
+    "saving": "Zapisywanie…",
+    "created": "Plik do pobrania utworzony",
+    "saved": "Plik do pobrania zapisany",
+    "saveError": "Nie udało się zapisać pliku do pobrania",
+    "accessNotSaved": "Zapisano, ale nie zapisano sposobu, w jaki uczestnicy go otrzymają.",
+    "draft": "Wersja robocza",
+    "publish": "Opublikuj",
+    "publishing": "Publikowanie…",
+    "published": "Opublikowano. Uczestnicy mogą go teraz znaleźć na twojej stronie.",
+    "publishError": "Nie udało się opublikować pliku do pobrania."
+  }
+}

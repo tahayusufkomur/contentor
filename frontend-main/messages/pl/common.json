@@ -1,0 +1,25 @@
+{
+  "nav": {
+    "howItWorks": "Jak to działa",
+    "whoFor": "Dla kogo",
+    "pricing": "Cennik",
+    "blog": "Blog",
+    "faq": "FAQ",
+    "signIn": "Zaloguj się",
+    "getStarted": "Zacznij teraz",
+    "signOut": "Wyloguj się",
+    "dashboard": "Panel",
+    "myPlatforms": "Moje platformy"
+  },
+  "footer": {
+    "tagline": "Platforma, na której twórcy treści zarabiają na swojej wiedzy.",
+    "product": "Produkt",
+    "company": "Firma",
+    "legal": "Informacje prawne",
+    "about": "O nas",
+    "contact": "Kontakt",
+    "privacy": "Prywatność",
+    "terms": "Regulamin",
+    "copyright": "© {year} Contentor. Wszelkie prawa zastrzeżone."
+  }
+}

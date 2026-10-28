@@ -11,50 +11,62 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
 #: apps/accounts/views.py
+#, fuzzy
 msgid "If an account exists, a magic link has been sent."
-msgstr ""
+msgstr "Jeśli konto istnieje, magiczny link został wysłany."
 
 #: apps/accounts/views.py apps/core/onboarding/recovery.py
 #: apps/core/onboarding/views.py
+#, fuzzy
 msgid "Invalid or expired token"
-msgstr ""
+msgstr "Nieprawidłowy lub wygasły token"
 
 #: apps/accounts/views.py
+#, fuzzy
 msgid "Token not valid for this tenant"
-msgstr ""
+msgstr "Token nie jest ważny dla tej witryny"
 
 #: apps/accounts/views.py
+#, fuzzy
 msgid "Unsupported locale"
-msgstr ""
+msgstr "Nieobsługiwany język"
 
 #: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
+#, fuzzy
 msgid "Token required"
-msgstr ""
+msgstr "Wymagany token"
 
 #: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
+#, fuzzy
 msgid "Tenant not found"
-msgstr ""
+msgstr "Nie znaleziono witryny"
 
 #: apps/core/onboarding/site_name.py
+#, fuzzy
 msgid "Brand name already taken"
-msgstr ""
+msgstr "Nazwa marki jest już zajęta"
 
 #: apps/core/onboarding/site_name.py
+#, fuzzy
 msgid "Please use letters or numbers in your brand name"
-msgstr ""
+msgstr "Użyj liter lub cyfr w nazwie marki"
 
 #: apps/core/onboarding/views.py
+#, fuzzy
 msgid "Verification email sent. Check your inbox."
-msgstr ""
+msgstr "Wysłano e-mail weryfikacyjny. Sprawdź skrzynkę odbiorczą."
 
 #: apps/core/onboarding/views.py
+#, fuzzy
 msgid "Brand name is required"
-msgstr ""
+msgstr "Nazwa marki jest wymagana"
 
 #: apps/core/onboarding/views.py
+#, fuzzy
 msgid "Permission denied."
-msgstr ""
+msgstr "Brak uprawnień."
 
 #: apps/core/onboarding/views.py
+#, fuzzy
 msgid "slug parameter required"
-msgstr ""
+msgstr "wymagany parametr slug"

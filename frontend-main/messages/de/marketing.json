@@ -1,0 +1,234 @@
+{
+  "hero": {
+    "pill": "<b>Gründungs-Creator</b>: Wir richten alles persönlich mit dir ein",
+    "title": "Du bist der Experte. <accent>Wir sind dein ganzes Team.</accent>",
+    "lead": "Contentor arbeitet wie ein Team hinter dir. Es baut deine Website, gewinnt Teilnehmer, sorgt dafür, dass sie wiederkommen, und dass du bezahlt wirst.",
+    "cta": "Kostenlos testen",
+    "secondary": "Lerne dein Team kennen",
+    "trust": {
+      "trial": "14 Tage kostenlos",
+      "cancel": "Jederzeit kündbar",
+      "time": "An einem Nachmittag online"
+    },
+    "you": "Du",
+    "youText": "einfach erschaffen",
+    "onIt": "ist dran",
+    "done": "erledigt",
+    "roles": {
+      "designer": "Baut deine Website, deinen Look und dein Logo",
+      "marketer": "Schreibt Artikel, verschickt Kampagnen",
+      "producer": "Entwirft deine Kurse, leitet Live-Sessions",
+      "community": "Erinnert Teilnehmer per Push und E-Mail",
+      "assistant": "Antwortet Teilnehmern, Tag und Nacht",
+      "cashier": "Schlägt Preise vor, zahlt dich über Stripe aus"
+    }
+  },
+  "for": {
+    "title": "Gemacht für Creator.",
+    "lead": "Yoga, Kraftsport, Musik, Sprachen, Kochen und mehr. Jedes Handwerk bekommt einen eigenen Look, und du machst ihn zu deinem.",
+    "galleryLabel": "Coaching-Nischen und ihre Looks",
+    "renderAlt": "Handyvorschau einer Creator-Website im Look {look}",
+    "niches": {
+      "journal": "Yoga-Creator",
+      "kinetic": "Kraftsport-Creator",
+      "encore": "Musik-Creator",
+      "studiofloor": "Tanz-Creator",
+      "tavola": "Koch-Creator",
+      "primer": "Sprach-Creator",
+      "dojo": "Kampfsport-Creator",
+      "workshop": "Kunst-Creator",
+      "atelier": "Make-up-Artists",
+      "sprout": "Familien-Creator",
+      "trail": "Outdoor-Guides",
+      "nocturne": "Wellness-Creator"
+    }
+  },
+  "team": {
+    "eyebrow": "Lerne dein Team kennen",
+    "title": "Alle, die du einstellen müsstest, sind schon bei der Arbeit.",
+    "lead": "Sechs Spezialisten auf einer Plattform. Wähle einen aus und sieh ihm bei der Arbeit zu.",
+    "tabsLabel": "Dein Team",
+    "roles": {
+      "designer": {
+        "name": "Designer",
+        "title": "Eine Website für dein Handwerk, an einem Nachmittag.",
+        "text": "Beantworte ein paar einfache Fragen. Deine Startseite, deine Kurse, dein Zeitplan, dein Look und dein Logo entstehen von selbst, und du kannst alles ändern, indem du einfach fragst.",
+        "tools": "Einrichtungsinterview · Looks für dein Handwerk · Logo-Studio · Deine eigenen Fotos",
+        "sceneLabel": "Eine Creatorin beantwortet die Einrichtungsfragen, wählt einen Look und ihre Website entsteht"
+      },
+      "marketer": {
+        "name": "Marketing-Spezialist",
+        "title": "Neue Teilnehmer finden dich, während du erschaffst.",
+        "text": "Artikel, die beantworten, wonach deine Teilnehmer bei Google und in ChatGPT suchen, und Kampagnen, die du einmal schreibst und die sich von selbst versenden.",
+        "tools": "Artikel auf Autopilot · Suchoptimierte Seiten · E-Mail-Kampagnen · Deine eigene Domain",
+        "sceneLabel": "Ein Teilnehmer fragt Google, dann ChatGPT, nach Online-Yoga; beide verweisen auf Maras Website"
+      },
+      "producer": {
+        "name": "Spezialist für Content-Erstellung",
+        "title": "Von einem Satz zum Kurs, dann live gehen.",
+        "text": "Beschreibe einen Kurs, und seine Gliederung entsteht von selbst, Lektion für Lektion. Dann gehst du live auf deiner eigenen Website: Teilnehmer sind per Laptop, Tablet oder Smartphone dabei.",
+        "tools": "Kursentwürfe · Live-Sessions, in der Gruppe oder eins zu eins · Präsenzveranstaltungen · Dein Kalender",
+        "sceneLabel": "Lena, Hannah und Priya verfolgen Maras Live-Session auf einem Laptop, einem Tablet und einem Smartphone",
+        "live": "Mara ist live",
+        "devices": {
+          "laptop": "Lena, an ihrem Laptop",
+          "tablet": "Hannah, auf einem Tablet",
+          "phone": "Priya, auf ihrem Smartphone"
+        }
+      },
+      "community": {
+        "name": "Community-Manager",
+        "title": "Teilnehmer, die immer wiederkommen.",
+        "text": "Vor jeder Session bekommt jeder Teilnehmer eine Erinnerung: eine Push-Nachricht aufs Smartphone, eine E-Mail und einen Hinweis in seiner App. Dazwischen bleibt deine Community im Gespräch.",
+        "tools": "Push-Erinnerungen · E-Mail · Community · Deine App auf ihrem Smartphone",
+        "sceneLabel": "Eine Erinnerung von Mara kommt als Push-Nachricht, als E-Mail und als Hinweis in der App ihrer Teilnehmer an",
+        "scene": {
+          "sent": "Einmal gesendet, überall angekommen",
+          "from": "Mara Lindqvist",
+          "now": "jetzt",
+          "title": "Morning Flow beginnt gleich",
+          "body": "Tippe, um teilzunehmen. Wir sehen uns auf der Matte.",
+          "channels": {
+            "push": "Push",
+            "email": "E-Mail",
+            "app": "In der App"
+          }
+        }
+      },
+      "assistant": {
+        "name": "Assistent",
+        "title": "Deine Website antwortet Teilnehmern, während du schläfst.",
+        "text": "Der Assistent auf deiner Website beantwortet Fragen und führt Teilnehmer zum passenden Kurs. In deinem Studio leitet er jede Anfrage an den richtigen Spezialisten weiter.",
+        "tools": "Website-Assistent · Hilfe in deinem Studio · Dein Empfang",
+        "sceneLabel": "Nachts bittet ein Teilnehmer Maras Assistenten um Hilfe, kauft den vorgeschlagenen Kurs, und die Zahlung erreicht Maras stummgeschaltetes Smartphone"
+      },
+      "cashier": {
+        "name": "Finanzstratege",
+        "title": "Preise, die verkaufen, direkt an dich ausgezahlt.",
+        "text": "Er wertet deine eigenen Verkäufe aus, um Preise vorzuschlagen, und Zahlungen gehen direkt auf dein Stripe-Konto, unter deinem Namen. Wir halten dein Geld nie zurück.",
+        "tools": "Preisberatung · Mitgliedschaften · Stripe-Auszahlungen · Dein Name auf Belegen",
+        "sceneLabel": "Zahlungen von Maras Teilnehmern gehen nacheinander auf ihrem Stripe-Konto ein",
+        "scene": {
+          "today": "Heute",
+          "received": "Zahlung erhalten",
+          "now": "jetzt",
+          "ago": "vor {minutes} Min.",
+          "from": "von {name} · {item}"
+        }
+      }
+    }
+  },
+  "earnings": {
+    "eyebrow": "Was du verdienen könntest",
+    "title": "Rechne selbst nach.",
+    "lead": "Deine Teilnehmer, dein Preis. So viel kommt nach unserer Gebühr und deinem Tarif bei dir an.",
+    "students": "Zahlende Teilnehmer",
+    "price": "Monatlicher Preis",
+    "plan": "Dein Tarif",
+    "plans": {
+      "starter": "Starter",
+      "pro": "Pro"
+    },
+    "keep": "Dir bleiben jeden Monat",
+    "yearly": "{amount} pro Jahr",
+    "gross": "Deine Teilnehmer zahlen",
+    "fee": "Unsere Gebühr ({pct}%)",
+    "planCost": "Dein Tarif",
+    "note": "Vor der Kartengebühr von Stripe. Eine Schätzung, kein Versprechen.",
+    "fallback": "Sieh dir die Tarife und ihre Gebühren an",
+    "cta": "Kostenlose Testphase starten",
+    "ctaNote": "14 Tage kostenlos. Jederzeit kündbar."
+  },
+  "founder": {
+    "eyebrow": "Die Person hinter deinem Team",
+    "title": "Ich richte alles persönlich mit dir ein.",
+    "text": "Ich bin Görkem. Ich unterrichte Face Yoga in Berlin und betreibe mein eigenes Online-Studio mit Live-Kursen, Programmen und Mitgliedern – ich weiß also, wo die Tools im Weg stehen. Wenn du als Gründungs-Creator dabei bist, bekommst du mich: Ich richte deine Website, deine Kurse und deine Zahlungen gemeinsam mit dir ein, eins zu eins, und du kannst mir jederzeit schreiben, wenn du nicht weiterkommst.",
+    "signature": "Görkem Hancı, hat Contentor gegründet",
+    "offer": {
+      "title": "Gründungs-Creator",
+      "text": "Für unsere ersten 20 Creator:",
+      "perks": {
+        "concierge": {
+          "title": "Persönlich mit dir eingerichtet, eins zu eins",
+          "text": "Ein Call, in dem wir gemeinsam deine Website, deine Kurse und deine Zahlungen aufsetzen. Du bringst die Inhalte mit."
+        },
+        "discount": {
+          "title": "50 % Rabatt für 12 Monate",
+          "text": "Gründungspreise für Starter oder Pro – dein ganzes erstes Jahr lang."
+        },
+        "migration": {
+          "title": "Ein Umzug mit Unterstützung",
+          "text": "Du kommst von einer anderen Plattform? Wir helfen dir kostenlos, deine Kurse und Teilnehmer umzuziehen."
+        },
+        "featured": {
+          "title": "Vorgestellt auf dieser Seite",
+          "text": "Deine Website wird hier als Gründungs-Creator gezeigt – vor allen Besuchern."
+        }
+      },
+      "cta": "Sichere dir einen Gründungsplatz",
+      "note": "Begrenzt auf 20 Creator. Weg ist weg."
+    }
+  },
+  "start": {
+    "pricing": {
+      "title": "Teste Starter 14 Tage kostenlos.",
+      "text": "Bau deine Website auf, lade Teilnehmer ein und halte Live-Sessions ab, bevor du etwas bezahlst. Der Verkauf startet, sobald dein Tarif beginnt. Kündige jederzeit vor der ersten Abbuchung.",
+      "cta": "Alle Tarife vergleichen"
+    },
+    "faq": {
+      "title": "Fragen und Antworten",
+      "items": {
+        "trial": {
+          "q": "Wie funktioniert die kostenlose Testphase?",
+          "a": "Starter ist 14 Tage kostenlos. Du hinterlegst eine Karte, wenn du deine Website erstellst, und die erste Abbuchung erfolgt am Ende der Testphase – es sei denn, du kündigst vorher mit einem Klick in deinem Creator-Studio. In Starter funktioniert alles außer dem Verkauf: Bezahlte Kurse werden freigeschaltet, sobald dein Tarif beginnt, oder du startest ihn früher, um sofort zu verkaufen."
+        },
+        "technical": {
+          "q": "Brauche ich technische Kenntnisse?",
+          "a": "Überhaupt nicht. Du beantwortest ein paar einfache Fragen oder fragst den Assistenten in deinen eigenen Worten. Kein Code, niemals."
+        },
+        "payments": {
+          "q": "Wie funktionieren Zahlungen?",
+          "a": "Der Verkauf startet, sobald dein Tarif beginnt. Wir sind direkt mit Stripe verbunden: Zahlungen gehen direkt auf dein eigenes Stripe-Konto, abzüglich einer kleinen Transaktionsgebühr (8 % bei Starter, 6 % bei Pro) – wir verwahren dein Geld also nie. Du kannst Kurse einmalig verkaufen oder wiederkehrende Abos anbieten."
+        },
+        "customDomain": {
+          "q": "Kann ich meine eigene Domain nutzen?",
+          "a": "Ja — im Pro-Tarif kannst du deine eigene Domain verbinden. Und in jedem kostenpflichtigen Tarif läuft deine Plattform komplett unter deiner Marke: Deine Teilnehmer sehen Contentor nie."
+        },
+        "migration": {
+          "q": "Kann ich von einer anderen Plattform umziehen?",
+          "a": "Ja. Die meisten Creator bauen ihre Kurse mit unserem Baukasten nach und laden ihre Teilnehmer innerhalb eines Tages per E-Mail ein. Als Gründungs-Creator bekommst du beim Umzug persönliche Unterstützung von uns — tatkräftig und kostenlos."
+        },
+        "contract": {
+          "q": "Gibt es eine lange Vertragslaufzeit?",
+          "a": "Keine Verträge und keine Verpflichtungen. Die Tarife laufen monatlich, und du kannst jederzeit in deinem Creator-Studio kündigen."
+        }
+      }
+    },
+    "cta": {
+      "title": "Dein Team ist bereit, wann immer du es bist.",
+      "text": "Deine Website, deine Teilnehmer und deine Zahlungen, vom ersten Tag an in guten Händen.",
+      "button": "Kostenlose Testphase starten",
+      "note": "14 Tage kostenlos. Jederzeit kündbar."
+    }
+  },
+  "helpBot": {
+    "title": "Frag Contentor",
+    "bubbleLabel": "Hilfe-Chat öffnen",
+    "close": "Schließen",
+    "intro": "Fragen zu Contentor? Frag einfach — Preise, Auszahlungen, Funktionen, alles.",
+    "placeholder": "Stell eine Frage…",
+    "send": "Senden",
+    "thinking": "Denke nach…",
+    "error": "Etwas ist schiefgelaufen — bitte versuch es noch einmal.",
+    "suggestPrice": "Was kostet Contentor?",
+    "suggestPayouts": "Wie funktionieren Auszahlungen?",
+    "suggestDomain": "Kann ich meine eigene Domain nutzen?",
+    "rateUp": "Hilfreich",
+    "rateDown": "Nicht hilfreich",
+    "talkToHuman": "Mit einem Menschen sprechen",
+    "humanRequestedLine": "Du hast nach einem Menschen gefragt — wir wurden benachrichtigt und melden uns gleich hier.",
+    "agentJoined": "{name} ist dem Chat beigetreten",
+    "assistantResumed": "Der Assistent ist zurück",
+    "humanModeNotice": "Du chattest mit {name}"
+  }
+}
