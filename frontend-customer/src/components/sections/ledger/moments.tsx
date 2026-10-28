@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { Fig, Opener, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
@@ -38,6 +39,7 @@ const SPREADS: Record<number, [place: string, aspect: string][]> = {
 /** Moments as numbered figures: a grid of framed plates with mono captions
  *  and running head opener. */
 export function MomentsFigures({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHead =
@@ -45,7 +47,7 @@ export function MomentsFigures({ block, editable }: SectionProps) {
   const showCaption = has(block, "caption", editable);
 
   return (
-    <Section label={alt || "Moments"}>
+    <Section label={alt || t("sectionLabel.moments")}>
       <div className={WRAP}>
         {(showHead || showCaption) && (
           <Opener
@@ -57,7 +59,7 @@ export function MomentsFigures({ block, editable }: SectionProps) {
         )}
 
         <ul
-          aria-label={alt || "Moments"}
+          aria-label={alt || t("sectionLabel.moments")}
           className="grid grid-cols-2 gap-4 md:grid-cols-12 md:gap-x-8 md:gap-y-12"
         >
           {photos.map((p, i) => {

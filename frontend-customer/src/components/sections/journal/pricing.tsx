@@ -11,9 +11,10 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, LABEL, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 function Plan({ plan, solo }: { plan: SubscriptionPlan; solo: boolean }) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const { symbol, amount } = formatMoneyParts(
     plan.price,
@@ -42,8 +43,7 @@ function Plan({ plan, solo }: { plan: SubscriptionPlan; solo: boolean }) {
         </p>
         {!!plan.item_count && (
           <p className={cn(LABEL, "mt-6 text-foreground")}>
-            {plan.item_count} {plan.item_count === 1 ? "item" : "items"}{" "}
-            included
+            {t("plan.itemsIncluded", { count: plan.item_count })}
           </p>
         )}
         {plan.description && (
@@ -55,7 +55,7 @@ function Plan({ plan, solo }: { plan: SubscriptionPlan; solo: boolean }) {
       <div className={cn("mt-auto pt-10", solo && "md:col-span-5 md:pt-0")}>
         {plan.is_subscribed ? (
           <p className="inline-flex min-h-12 items-center rounded-full border border-border px-7 text-[0.95rem] font-medium">
-            Subscribed
+            {t("plan.subscribed")}
           </p>
         ) : (
           <SubscribeButton
@@ -71,7 +71,7 @@ function Plan({ plan, solo }: { plan: SubscriptionPlan; solo: boolean }) {
           href={`/plans/${plan.id}`}
           className="journal-link mt-5 block w-fit text-[0.9rem] font-medium text-muted-foreground hover:text-foreground"
         >
-          See what&rsquo;s included
+          {t("plan.seeIncluded")}
         </SmartLink>
       </div>
     </li>
@@ -81,13 +81,18 @@ function Plan({ plan, solo }: { plan: SubscriptionPlan; solo: boolean }) {
 /** Plans as ruled columns of type: italic name, a big light price, one action
  *  each. No badges, no invented "most popular". */
 export function PricingColumns({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
   const solo = plans.length === 1;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.pricing")
+      }
     >
       <div className={WRAP}>
         <div className="grid gap-y-8 lg:grid-cols-12 lg:gap-x-10">
@@ -98,7 +103,7 @@ export function PricingColumns({ block, data, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(H2, "mt-5 block max-w-[18ch]")}
             />
           </div>
@@ -107,7 +112,7 @@ export function PricingColumns({ block, data, editable }: SectionProps) {
             field="intro"
             editable={editable}
             as="p"
-            placeholder="Intro"
+            placeholder={t("placeholder.intro")}
             className="block max-w-[44ch] self-end text-pretty text-[1.0625rem] leading-[1.65] text-muted-foreground lg:col-span-4 lg:col-start-9"
           />
         </div>
@@ -127,8 +132,8 @@ export function PricingColumns({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a plan under Billing and it appears here."
+              title={t("empty.plans.title")}
+              text={t("empty.plans.text")}
             />
           </div>
         )}

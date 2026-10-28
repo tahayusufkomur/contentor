@@ -1,1 +1,195 @@
-{}
+{
+  "placeholder": {
+    "heading": "Überschrift",
+    "headline": "Schlagzeile",
+    "subheadline": "Unterzeile",
+    "pageTitle": "Seitentitel",
+    "kicker": "Dachzeile",
+    "intro": "Einleitung",
+    "text": "Text",
+    "caption": "Bildunterschrift",
+    "label": "Beschriftung",
+    "masthead": "Kopfzeile",
+    "statement": "Leitsatz",
+    "statementLine": "Ein Satz, an den du glaubst",
+    "attribution": "Quellenangabe",
+    "yourName": "Dein Name",
+    "creatorName": "Name des Creators",
+    "buttonText": "Button-Text",
+    "secondButton": "Zweiter Button",
+    "linkText": "Linktext",
+    "smallLine": "Kleine Zeile",
+    "smallLineBadge": "Kleine Zeile (wird auf dem Badge angezeigt)",
+    "smallLineLocationLevel": "Kleine Zeile (Ort / Niveau)",
+    "smallLineLocationFormat": "Kleine Zeile (z. B. Ort oder Format)",
+    "smallLineFormatAges": "Kleine Zeile (z. B. Format oder Altersgruppe)",
+    "email": "du@deinstudio.de",
+    "emailExample": "du@beispiel.de"
+  },
+  "empty": {
+    "courses": {
+      "title": "Noch keine veröffentlichten Kurse",
+      "text": "Veröffentliche einen Kurs und er erscheint hier automatisch."
+    },
+    "plans": {
+      "title": "Noch keine Mitgliedschaftstarife",
+      "text": "Erstelle unter Abrechnung einen Tarif und er erscheint hier."
+    },
+    "sessions": {
+      "title": "Keine anstehenden Sessions",
+      "text": "Plane eine Live-Session oder Veranstaltung und sie erscheint hier."
+    }
+  },
+  "sectionLabel": {
+    "courses": "Kurse",
+    "events": "Veranstaltungen",
+    "pricing": "Preise",
+    "questions": "Fragen",
+    "moments": "Momente",
+    "photos": "Fotos",
+    "contact": "Kontakt",
+    "philosophy": "Philosophie"
+  },
+  "contact": {
+    "email": "E-Mail",
+    "studio": "Studio",
+    "office": "Büro",
+    "location": "Standort",
+    "hours": "Öffnungszeiten"
+  },
+  "course": {
+    "label": "Kurs",
+    "lessons": "{count, plural, one {# Lektion} other {# Lektionen}}",
+    "view": "Kurs ansehen"
+  },
+  "price": {
+    "free": "Kostenlos",
+    "freeTrial": "Kostenlose Testphase",
+    "membersOnly": "Nur für Mitglieder",
+    "owned": "Erworben",
+    "includedInMembership": "In der Mitgliedschaft enthalten"
+  },
+  "event": {
+    "reserve": "Reservieren",
+    "book": "Buchen",
+    "inPerson": "Vor Ort",
+    "onlineLive": "Online, live"
+  },
+  "plan": {
+    "subscribe": "Abonnieren",
+    "subscribed": "Abonniert",
+    "items": "{count, plural, one {# Inhalt} other {# Inhalte}}",
+    "itemsIncluded": "{count, plural, one {# Inhalt enthalten} other {# Inhalte enthalten}}",
+    "seeIncluded": "Ansehen, was enthalten ist",
+    "whatsIncluded": "Das ist enthalten",
+    "includes": "Enthält",
+    "about": "Info"
+  },
+  "table": {
+    "lessons": "Lektionen",
+    "price": "Preis",
+    "plan": "Tarif",
+    "when": "Wann",
+    "session": "Session",
+    "where": "Wo",
+    "fee": "Gebühr"
+  },
+  "cta": {
+    "allCourses": "Alle Kurse",
+    "fullCalendar": "Vollständiger Kalender"
+  },
+  "step": {
+    "label": "Schritt {number}"
+  },
+  "rows": {
+    "emptyCoursesText": "Veröffentliche einen Kurs, und er eröffnet diese Seite wie ein Film.",
+    "emptyEventsTitle": "Noch keine anstehenden Veranstaltungen",
+    "emptyEventsText": "Plane eine Session, und die nächste eröffnet diese Seite.",
+    "moreCourses": "Weitere Kurse",
+    "comingUp": "Demnächst",
+    "startCourse": "Kurs starten",
+    "saveSpot": "Sichere dir deinen Platz"
+  },
+  "neutral": {
+    "proofEmptyTitle": "Noch nichts zu zeigen",
+    "proofEmptyText": "Dieser Abschnitt bleibt verborgen, bis du Worte eines Kunden, eine Zahl oder den Namen eines Mediums hinzufügst.",
+    "inThePress": "In der Presse",
+    "playVideo": "Video abspielen",
+    "pauseVideo": "Video pausieren",
+    "clipLabel": "Ein kurzer Clip",
+    "noClipTitle": "Noch kein Clip",
+    "noClipText": "Wähle links im Bereich einen Clip aus.",
+    "linkNoLoopTitle": "Dieser Link kann nicht in Schleife laufen",
+    "linkNoLoopText": "Ein Seitenlink (YouTube, Vimeo) kann hier nicht abgespielt werden. Wähle einen Clip aus deiner Mediathek oder verlinke eine Videodatei."
+  },
+  "kinetic": {
+    "emptyCoursesText": "Veröffentliche einen Kurs, dann erscheint er hier als Posterkarte.",
+    "emptyEventsTitle": "Keine anstehenden Live-Sessions",
+    "emptyEventsText": "Plane eine Live-Session oder Veranstaltung, dann erscheint sie hier im Zeitplan.",
+    "emptyPlansText": "Erstelle unter „Abrechnung“ einen Abo-Tarif, dann erscheint er hier als Ticket."
+  },
+  "dojo": {
+    "sectionBenefits": "Disziplinen",
+    "sectionContact": "Dojo-Kontakt & Standort",
+    "sectionEvents": "Trainingsplan & Veranstaltungen",
+    "sectionFaq": "Dojo-Etikette",
+    "sectionPath": "Der Weg",
+    "sectionMoments": "Trainingsmomente",
+    "sectionPricing": "Mitgliedsbeiträge",
+    "sectionStory": "Linie",
+    "sectionCta": "Tritt dem Dojo bei",
+    "discipline": "Disziplin {number}",
+    "location": "Dojo-Standort",
+    "trainingHours": "Trainingszeiten",
+    "inquiries": "Anfragen",
+    "messageSensei": "Direktnachricht an den Sensei",
+    "begin": "Beginnen",
+    "tatamiEntry": "Zutritt zur Tatami",
+    "reserveSpot": "Platz reservieren",
+    "onlineLiveStream": "Online-Livestream",
+    "allCourses": "Alle Kurse & Lehrplan",
+    "fullCalendar": "Vollständiger Trainingskalender",
+    "emptyCoursesText": "Veröffentliche einen Kurs, dann erscheint er hier nach Gürtelfarbe geordnet.",
+    "emptyEventsTitle": "Keine anstehenden Sessions geplant",
+    "emptyEventsText": "Plane eine Live-Trainingssession oder eine Gürtelprüfung, dann erscheint sie im Trainingsplan.",
+    "tier": "Stufe {number}",
+    "planItems": "{count, plural, one {# Kurs & Session} other {# Kurse & Sessions}}",
+    "activeMembership": "Aktive Mitgliedschaft",
+    "duesPolicy": "Beitragsregelung & Leistungen",
+    "stepGrade": "{grade} · Stufe {number}",
+    "belts": {
+      "white": {
+        "rank": "6. Kyu (Weiß)",
+        "grade": "6."
+      },
+      "yellow": {
+        "rank": "5. Kyu (Gelb)",
+        "grade": "5."
+      },
+      "orange": {
+        "rank": "4. Kyu (Orange)",
+        "grade": "4."
+      },
+      "green": {
+        "rank": "3. Kyu (Grün)",
+        "grade": "3."
+      },
+      "blue": {
+        "rank": "2. Kyu (Blau)",
+        "grade": "2."
+      },
+      "brown": {
+        "rank": "1. Kyu (Braun)",
+        "grade": "1."
+      },
+      "black": {
+        "rank": "1. Dan (Schwarz)",
+        "grade": "1."
+      }
+    }
+  },
+  "ledger": {
+    "from": "Von",
+    "re": "Betreff"
+  }
+}

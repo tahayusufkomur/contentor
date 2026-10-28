@@ -1,1 +1,174 @@
-{}
+{
+  "placeholder": {
+    "heading": "Heading",
+    "headline": "Headline",
+    "subheadline": "Subheadline",
+    "pageTitle": "Page title",
+    "kicker": "Kicker",
+    "intro": "Intro",
+    "text": "Text",
+    "caption": "Caption",
+    "label": "Label",
+    "masthead": "Masthead",
+    "statement": "Statement",
+    "statementLine": "One line you believe",
+    "attribution": "Attribution",
+    "yourName": "Your name",
+    "creatorName": "Creator name",
+    "buttonText": "Button text",
+    "secondButton": "Second button",
+    "linkText": "Link text",
+    "smallLine": "Small line",
+    "smallLineBadge": "Small line (shown on the badge)",
+    "smallLineLocationLevel": "Small line (location / level)",
+    "smallLineLocationFormat": "Small line (e.g. location or format)",
+    "smallLineFormatAges": "Small line (e.g. format or ages)",
+    "email": "you@yourstudio.com",
+    "emailExample": "you@example.com"
+  },
+  "empty": {
+    "courses": {
+      "title": "No published courses yet",
+      "text": "Publish a course and it appears here automatically."
+    },
+    "plans": {
+      "title": "No membership plans yet",
+      "text": "Create a plan under Billing and it appears here."
+    },
+    "sessions": {
+      "title": "No upcoming sessions",
+      "text": "Schedule a live session or event and it appears here."
+    }
+  },
+  "sectionLabel": {
+    "courses": "Courses",
+    "events": "Events",
+    "pricing": "Pricing",
+    "questions": "Questions",
+    "moments": "Moments",
+    "photos": "Photos",
+    "contact": "Contact",
+    "philosophy": "Philosophy"
+  },
+  "contact": {
+    "email": "Email",
+    "studio": "Studio",
+    "office": "Office",
+    "location": "Location",
+    "hours": "Hours"
+  },
+  "course": {
+    "label": "Course",
+    "lessons": "{count, plural, one {# lesson} other {# lessons}}",
+    "view": "View course"
+  },
+  "price": {
+    "free": "Free",
+    "freeTrial": "Free trial",
+    "membersOnly": "Members only",
+    "owned": "Owned",
+    "includedInMembership": "Included in membership"
+  },
+  "event": {
+    "reserve": "Reserve",
+    "book": "Book",
+    "inPerson": "In person",
+    "onlineLive": "Online, live"
+  },
+  "plan": {
+    "subscribe": "Subscribe",
+    "subscribed": "Subscribed",
+    "items": "{count, plural, one {# item} other {# items}}",
+    "itemsIncluded": "{count, plural, one {# item included} other {# items included}}",
+    "seeIncluded": "See what’s included",
+    "whatsIncluded": "What’s included",
+    "includes": "Includes",
+    "about": "About"
+  },
+  "table": {
+    "lessons": "Lessons",
+    "price": "Price",
+    "plan": "Plan",
+    "when": "When",
+    "session": "Session",
+    "where": "Where",
+    "fee": "Fee"
+  },
+  "cta": {
+    "allCourses": "All courses",
+    "fullCalendar": "Full calendar"
+  },
+  "step": {
+    "label": "Step {number}"
+  },
+  "rows": {
+    "emptyCoursesText": "Publish a course and it leads this page like a film.",
+    "emptyEventsTitle": "No upcoming events yet",
+    "emptyEventsText": "Schedule a session and the next one leads this page.",
+    "moreCourses": "More courses",
+    "comingUp": "Coming up",
+    "startCourse": "Start the course",
+    "saveSpot": "Save your spot"
+  },
+  "neutral": {
+    "proofEmptyTitle": "Nothing to show yet",
+    "proofEmptyText": "This section stays hidden until you add a client's words, a number or a press name.",
+    "inThePress": "In the press",
+    "playVideo": "Play video",
+    "pauseVideo": "Pause video",
+    "clipLabel": "A short clip",
+    "noClipTitle": "No clip yet",
+    "noClipText": "Pick a clip in the panel on the left.",
+    "linkNoLoopTitle": "This link cannot loop",
+    "linkNoLoopText": "A page link (YouTube, Vimeo) cannot play here. Pick a clip from your library, or link to a video file."
+  },
+  "kinetic": {
+    "emptyCoursesText": "Publish a course and it appears here as a poster card.",
+    "emptyEventsTitle": "No upcoming live sessions",
+    "emptyEventsText": "Schedule a live session or event and it appears here in the timetable.",
+    "emptyPlansText": "Create a subscription plan in Billing and it shows up here as a ticket."
+  },
+  "dojo": {
+    "sectionBenefits": "Disciplines",
+    "sectionContact": "Dojo Contact & Location",
+    "sectionEvents": "Timetable & Events",
+    "sectionFaq": "Dojo Etiquette",
+    "sectionPath": "The Path",
+    "sectionMoments": "Training Moments",
+    "sectionPricing": "Membership Dues",
+    "sectionStory": "Lineage",
+    "sectionCta": "Join the Dojo",
+    "discipline": "Discipline {number}",
+    "location": "Dojo Location",
+    "trainingHours": "Training Hours",
+    "inquiries": "Inquiries",
+    "messageSensei": "Direct Message to Sensei",
+    "begin": "Begin",
+    "tatamiEntry": "Tatami Entry",
+    "reserveSpot": "Reserve Spot",
+    "onlineLiveStream": "Online Live Stream",
+    "allCourses": "All courses & syllabus",
+    "fullCalendar": "Full training calendar",
+    "emptyCoursesText": "Publish a course and it appears here ranked by belt.",
+    "emptyEventsTitle": "No upcoming sessions scheduled",
+    "emptyEventsText": "Schedule a live training session or grading and it appears in the timetable.",
+    "tier": "Tier {number}",
+    "planItems": "{count, plural, one {# course & session} other {# courses & sessions}}",
+    "activeMembership": "Active Membership",
+    "duesPolicy": "Dues policy & inclusions",
+    "stepGrade": "{grade} · Step {number}",
+    "belts": {
+      "white": { "rank": "6th Kyu (White)", "grade": "6th" },
+      "yellow": { "rank": "5th Kyu (Yellow)", "grade": "5th" },
+      "orange": { "rank": "4th Kyu (Orange)", "grade": "4th" },
+      "green": { "rank": "3rd Kyu (Green)", "grade": "3rd" },
+      "blue": { "rank": "2nd Kyu (Blue)", "grade": "2nd" },
+      "brown": { "rank": "1st Kyu (Brown)", "grade": "1st" },
+      "black": { "rank": "1st Dan (Black)", "grade": "1st" }
+    }
+  },
+  "ledger": {
+    "from": "From",
+    "re": "Re"
+  }
+}

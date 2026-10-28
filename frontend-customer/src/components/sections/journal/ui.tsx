@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Txt } from "../kit";
 import type { SectionProps } from "../types";
+import { useTranslations } from "next-intl";
 
 /** Inner measure every journal section aligns to. */
 export const WRAP = "mx-auto w-full max-w-[82rem] px-5 md:px-8";
@@ -67,13 +68,14 @@ export function Kicker({
   editable,
   className,
 }: Pick<SectionProps, "block" | "editable"> & { className?: string }) {
+  const t = useTranslations("site");
   return (
     <Txt
       block={block}
       field="kicker"
       editable={editable}
       as="p"
-      placeholder="Kicker"
+      placeholder={t("placeholder.kicker")}
       className={cn(
         "journal-kicker font-display text-[1.125rem] italic leading-snug text-accent md:text-[1.2rem]",
         className,

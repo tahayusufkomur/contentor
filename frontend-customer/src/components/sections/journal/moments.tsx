@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
@@ -25,6 +26,7 @@ const FOUR: typeof SPREAD = [
 ];
 
 export function MomentsSpread({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHead =
@@ -35,7 +37,7 @@ export function MomentsSpread({ block, editable }: SectionProps) {
     four && i < 4 ? FOUR[i] : SPREAD[(four ? i - 4 : i) % SPREAD.length];
 
   return (
-    <Section label={alt || "Moments"}>
+    <Section label={alt || t("sectionLabel.moments")}>
       <div className={WRAP}>
         {(showHead || showCaption) && (
           <div className="mb-12 grid gap-y-6 md:mb-16 lg:grid-cols-12 lg:gap-x-10">
@@ -46,7 +48,7 @@ export function MomentsSpread({ block, editable }: SectionProps) {
                 field="heading"
                 editable={editable}
                 as="h2"
-                placeholder="Heading"
+                placeholder={t("placeholder.heading")}
                 className={cn(H2, "mt-5 block max-w-[18ch]")}
               />
             </div>
@@ -55,7 +57,7 @@ export function MomentsSpread({ block, editable }: SectionProps) {
               field="caption"
               editable={editable}
               as="p"
-              placeholder="Caption"
+              placeholder={t("placeholder.caption")}
               className="block max-w-[40ch] self-end text-pretty font-display text-[1.2rem] italic leading-[1.5] text-muted-foreground lg:col-span-4 lg:col-start-9"
             />
           </div>
@@ -63,7 +65,7 @@ export function MomentsSpread({ block, editable }: SectionProps) {
 
         <ul
           tabIndex={0}
-          aria-label={alt || "Photos"}
+          aria-label={alt || t("sectionLabel.photos")}
           className="journal-strip -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pb-2 md:mx-0 md:grid md:snap-none md:grid-cols-12 md:items-start md:gap-x-8 md:gap-y-16 md:overflow-visible md:px-0 lg:gap-x-10"
         >
           {photos.map((p, i) => (

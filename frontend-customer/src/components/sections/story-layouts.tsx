@@ -4,6 +4,7 @@ import type { Block } from "@/types/tenant";
 import type { EditableContext } from "@/lib/blocks/types";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "./kit";
 import type { SectionComponent } from "./types";
+import { useTranslations } from "next-intl";
 
 type Part = ComponentType<{
   block: Block;
@@ -56,6 +57,7 @@ function Closing({
   editable?: EditableContext;
   center?: boolean;
 }) {
+  const t = useTranslations("site");
   return (
     <>
       {has(block, "signature", editable) && (
@@ -71,7 +73,7 @@ function Closing({
             block={block}
             field="signature"
             editable={editable}
-            placeholder="Your name"
+            placeholder={t("placeholder.yourName")}
           />
         </p>
       )}
@@ -85,7 +87,7 @@ function Closing({
               block={block}
               field="ctaLabel"
               editable={editable}
-              placeholder="Link text"
+              placeholder={t("placeholder.linkText")}
             />
             <k.LinkIcon />
           </SmartLink>
@@ -99,6 +101,7 @@ function Closing({
  *  words, signed. */
 export function makeStoryLetter(k: StoryKit): SectionComponent {
   return function StoryLetter({ block, editable }) {
+    const t = useTranslations("site");
     const alt = String(block.heading ?? "");
     const Frame = k.Frame ?? Plain;
     return (
@@ -126,7 +129,7 @@ export function makeStoryLetter(k: StoryKit): SectionComponent {
                 field="heading"
                 editable={editable}
                 as="h2"
-                placeholder="Heading"
+                placeholder={t("placeholder.heading")}
                 className={cn(k.h2, "mt-4 block", k.center && "mx-auto")}
               />
               <Rich
@@ -153,6 +156,7 @@ export function makeStoryLetter(k: StoryKit): SectionComponent {
  *  page, then the story in two columns beside a small portrait. */
 export function makeStoryPull(k: StoryKit): SectionComponent {
   return function StoryPull({ block, editable }) {
+    const t = useTranslations("site");
     const alt = String(block.heading ?? "");
     const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
     return (
@@ -173,7 +177,7 @@ export function makeStoryPull(k: StoryKit): SectionComponent {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(
               k.h2,
               "mt-2 block max-w-[26ch]",

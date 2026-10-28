@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Img, Txt, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
@@ -7,6 +8,7 @@ type Step = { title?: string; text?: string };
 
 /** A 4px track with square nodes; each step hangs off it. */
 export function HowItWorksTrack({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const withImage = Boolean(imageUrl(block.image));
   const cols =
@@ -63,7 +65,9 @@ export function HowItWorksTrack({ block, editable }: SectionProps) {
                     i === steps.length - 1 ? "bg-primary" : "bg-foreground",
                   )}
                 />
-                <p className={cn(LABEL, "text-primary")}>Step {pad2(i)}</p>
+                <p className={cn(LABEL, "text-primary")}>
+                  {t("step.label", { number: pad2(i) })}
+                </p>
                 <h3
                   className={cn(
                     DISPLAY,

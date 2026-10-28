@@ -2,16 +2,18 @@ import { cn } from "@/lib/utils";
 import { Txt, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Ref, RunningHead, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type QA = { q?: string; a?: string };
 
 /** FAQ formatted as an appendix: sticky title column with running head,
  *  lettered clauses A-Z that highlight oxblood when open. */
 export function FaqAppendix({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<QA>(block, "items");
 
   return (
-    <Section label={str(block.heading) || "Questions"}>
+    <Section label={str(block.heading) || t("sectionLabel.questions")}>
       <div className={cn(WRAP, "grid gap-y-12 lg:grid-cols-12 lg:gap-x-10")}>
         <div className="lg:col-span-4">
           <div className="lg:sticky lg:top-24">
@@ -21,7 +23,7 @@ export function FaqAppendix({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(
                 H2,
                 "mt-6 block text-[clamp(2.1rem,1.6rem+1.9vw,3.4rem)] leading-[1.06]",
@@ -32,7 +34,7 @@ export function FaqAppendix({ block, editable }: SectionProps) {
               field="intro"
               editable={editable}
               as="p"
-              placeholder="Intro"
+              placeholder={t("placeholder.intro")}
               className="mt-7 block max-w-[36ch] text-pretty text-[1.0625rem] leading-[1.65] text-muted-foreground"
             />
           </div>

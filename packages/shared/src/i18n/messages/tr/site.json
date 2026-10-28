@@ -1,1 +1,195 @@
-{}
+{
+  "placeholder": {
+    "heading": "Başlık",
+    "headline": "Ana başlık",
+    "subheadline": "Alt başlık",
+    "pageTitle": "Sayfa başlığı",
+    "kicker": "Üst başlık",
+    "intro": "Giriş",
+    "text": "Metin",
+    "caption": "Açıklama",
+    "label": "Etiket",
+    "masthead": "Künye",
+    "statement": "Bildiri",
+    "statementLine": "İnandığın tek bir cümle",
+    "attribution": "Kaynak",
+    "yourName": "Adın",
+    "creatorName": "İçerik üreticisi adı",
+    "buttonText": "Buton metni",
+    "secondButton": "İkinci buton",
+    "linkText": "Bağlantı metni",
+    "smallLine": "Kısa satır",
+    "smallLineBadge": "Kısa satır (rozette gösterilir)",
+    "smallLineLocationLevel": "Kısa satır (konum / seviye)",
+    "smallLineLocationFormat": "Kısa satır (ör. konum veya format)",
+    "smallLineFormatAges": "Kısa satır (ör. format veya yaş grubu)",
+    "email": "sen@stüdyon.com",
+    "emailExample": "sen@ornek.com"
+  },
+  "empty": {
+    "courses": {
+      "title": "Henüz yayınlanmış kurs yok",
+      "text": "Bir kurs yayınla, burada otomatik olarak görünsün."
+    },
+    "plans": {
+      "title": "Henüz üyelik planı yok",
+      "text": "Faturalandırma bölümünde bir plan oluştur, burada görünsün."
+    },
+    "sessions": {
+      "title": "Yaklaşan oturum yok",
+      "text": "Bir canlı oturum veya etkinlik planla, burada görünsün."
+    }
+  },
+  "sectionLabel": {
+    "courses": "Kurslar",
+    "events": "Etkinlikler",
+    "pricing": "Fiyatlandırma",
+    "questions": "Sorular",
+    "moments": "Anlar",
+    "photos": "Fotoğraflar",
+    "contact": "İletişim",
+    "philosophy": "Felsefe"
+  },
+  "contact": {
+    "email": "E-posta",
+    "studio": "Stüdyo",
+    "office": "Ofis",
+    "location": "Konum",
+    "hours": "Saatler"
+  },
+  "course": {
+    "label": "Kurs",
+    "lessons": "{count, plural, one {# ders} other {# ders}}",
+    "view": "Kursu görüntüle"
+  },
+  "price": {
+    "free": "Ücretsiz",
+    "freeTrial": "Ücretsiz deneme",
+    "membersOnly": "Yalnızca üyeler",
+    "owned": "Satın alındı",
+    "includedInMembership": "Üyeliğe dahil"
+  },
+  "event": {
+    "reserve": "Yer ayırt",
+    "book": "Rezervasyon yap",
+    "inPerson": "Yüz yüze",
+    "onlineLive": "Çevrim içi, canlı"
+  },
+  "plan": {
+    "subscribe": "Abone ol",
+    "subscribed": "Abone olundu",
+    "items": "{count, plural, one {# öğe} other {# öğe}}",
+    "itemsIncluded": "{count, plural, one {# öğe dahil} other {# öğe dahil}}",
+    "seeIncluded": "Nelerin dahil olduğunu gör",
+    "whatsIncluded": "Neler dahil",
+    "includes": "Dahil olanlar",
+    "about": "Hakkında"
+  },
+  "table": {
+    "lessons": "Dersler",
+    "price": "Fiyat",
+    "plan": "Plan",
+    "when": "Ne zaman",
+    "session": "Oturum",
+    "where": "Nerede",
+    "fee": "Ücret"
+  },
+  "cta": {
+    "allCourses": "Tüm kurslar",
+    "fullCalendar": "Tüm takvim"
+  },
+  "step": {
+    "label": "Adım {number}"
+  },
+  "rows": {
+    "emptyCoursesText": "Bir kurs yayınla, bu sayfanın başında bir film gibi yer alsın.",
+    "emptyEventsTitle": "Henüz yaklaşan etkinlik yok",
+    "emptyEventsText": "Bir oturum planla, sıradaki oturum bu sayfanın başında yer alsın.",
+    "moreCourses": "Diğer kurslar",
+    "comingUp": "Yaklaşanlar",
+    "startCourse": "Kursa başla",
+    "saveSpot": "Yerini ayırt"
+  },
+  "neutral": {
+    "proofEmptyTitle": "Henüz gösterilecek bir şey yok",
+    "proofEmptyText": "Bir müşteri yorumu, bir rakam ya da bir basın adı ekleyene kadar bu bölüm gizli kalır.",
+    "inThePress": "Basında",
+    "playVideo": "Videoyu oynat",
+    "pauseVideo": "Videoyu duraklat",
+    "clipLabel": "Kısa bir klip",
+    "noClipTitle": "Henüz klip yok",
+    "noClipText": "Soldaki panelden bir klip seç.",
+    "linkNoLoopTitle": "Bu bağlantı döngüde oynatılamaz",
+    "linkNoLoopText": "Bir sayfa bağlantısı (YouTube, Vimeo) burada oynatılamaz. Kitaplığından bir klip seç ya da bir video dosyasına bağlantı ver."
+  },
+  "kinetic": {
+    "emptyCoursesText": "Bir kurs yayınla, burada poster kartı olarak görünsün.",
+    "emptyEventsTitle": "Yaklaşan canlı oturum yok",
+    "emptyEventsText": "Bir canlı oturum ya da etkinlik planla, burada ders programında görünsün.",
+    "emptyPlansText": "Faturalandırma bölümünde bir abonelik planı oluştur, burada bilet olarak görünsün."
+  },
+  "dojo": {
+    "sectionBenefits": "Disiplinler",
+    "sectionContact": "Dojo İletişim & Konum",
+    "sectionEvents": "Ders Programı & Etkinlikler",
+    "sectionFaq": "Dojo Adabı",
+    "sectionPath": "Yol",
+    "sectionMoments": "Antrenman Anları",
+    "sectionPricing": "Üyelik Aidatları",
+    "sectionStory": "Silsile",
+    "sectionCta": "Dojo'ya Katıl",
+    "discipline": "Disiplin {number}",
+    "location": "Dojo Konumu",
+    "trainingHours": "Antrenman Saatleri",
+    "inquiries": "Bilgi Talepleri",
+    "messageSensei": "Sensei'ye Doğrudan Mesaj",
+    "begin": "Başla",
+    "tatamiEntry": "Tatami Girişi",
+    "reserveSpot": "Yer Ayırt",
+    "onlineLiveStream": "Çevrim İçi Canlı Yayın",
+    "allCourses": "Tüm kurslar & müfredat",
+    "fullCalendar": "Tüm antrenman takvimi",
+    "emptyCoursesText": "Bir kurs yayınla, burada kuşağa göre sıralanmış olarak görünsün.",
+    "emptyEventsTitle": "Planlanmış yaklaşan oturum yok",
+    "emptyEventsText": "Canlı bir antrenman oturumu ya da kuşak sınavı planla, ders programında görünsün.",
+    "tier": "Seviye {number}",
+    "planItems": "{count, plural, one {# kurs & oturum} other {# kurs & oturum}}",
+    "activeMembership": "Aktif Üyelik",
+    "duesPolicy": "Aidat politikası & kapsam",
+    "stepGrade": "{grade} · Adım {number}",
+    "belts": {
+      "white": {
+        "rank": "6. Kyu (Beyaz)",
+        "grade": "6."
+      },
+      "yellow": {
+        "rank": "5. Kyu (Sarı)",
+        "grade": "5."
+      },
+      "orange": {
+        "rank": "4. Kyu (Turuncu)",
+        "grade": "4."
+      },
+      "green": {
+        "rank": "3. Kyu (Yeşil)",
+        "grade": "3."
+      },
+      "blue": {
+        "rank": "2. Kyu (Mavi)",
+        "grade": "2."
+      },
+      "brown": {
+        "rank": "1. Kyu (Kahverengi)",
+        "grade": "1."
+      },
+      "black": {
+        "rank": "1. Dan (Siyah)",
+        "grade": "1."
+      }
+    }
+  },
+  "ledger": {
+    "from": "Kimden",
+    "re": "Konu"
+  }
+}

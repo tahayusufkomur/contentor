@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, Seal, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Size the creed according to text length. */
 function creedSize(len: number) {
@@ -15,11 +16,12 @@ function creedSize(len: number) {
 /** Philosophy creed: monumental centered creed flanked by vertical rules,
  *  grounded by the red seal stamp. */
 export function PhilosophyCreed({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section label="Philosophy">
+    <Section label={t("sectionLabel.philosophy")}>
       <div className={WRAP}>
         <div className="relative mx-auto max-w-5xl">
           {/* Vertical rules on desktop flanking the creed */}
@@ -40,7 +42,7 @@ export function PhilosophyCreed({ block, editable }: SectionProps) {
               field="statement"
               editable={editable}
               as="p"
-              placeholder="Statement"
+              placeholder={t("placeholder.statement")}
               className={cn(
                 "mt-8 block text-balance break-words font-display font-extrabold tracking-[-0.02em] text-foreground",
                 creedSize(statement.length),
@@ -54,7 +56,7 @@ export function PhilosophyCreed({ block, editable }: SectionProps) {
                   block={block}
                   field="attribution"
                   editable={editable}
-                  placeholder="Attribution"
+                  placeholder={t("placeholder.attribution")}
                 />
               </p>
             )}

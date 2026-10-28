@@ -21,6 +21,7 @@ vi.mock("@/components/ui/nav-link", async () => {
 
 import type { CxSpec } from "@shared/cx/types";
 import { STYLE_KITS } from "@/components/sections/all-styles";
+import { withIntl } from "@/components/sections/__tests__/with-intl";
 import type { EditableContext } from "@/lib/blocks/types";
 import type { Block } from "@/types/tenant";
 import { CxBlock } from "../cx-block";
@@ -29,7 +30,7 @@ import { ITINERARY_SPEC, itineraryBlock } from "./fixtures";
 const EDITABLE: EditableContext = { onTextChange: () => {} };
 const html = (block: Block, styleId: string, editable?: EditableContext) =>
   renderToStaticMarkup(
-    createElement(CxBlock, { data: block, styleId, editable }),
+    withIntl(createElement(CxBlock, { data: block, styleId, editable })),
   );
 
 describe("SpecRenderer", () => {

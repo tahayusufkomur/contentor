@@ -2,12 +2,14 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, H3, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Item = { title?: string; text?: string };
 
 /** Benefits as a contents page: hairline rows, a serif title on the left and
  *  its one-line gloss on the right. No icons, no cards. */
 export function BenefitsContents({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<Item>(block, "items");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -43,7 +45,7 @@ export function BenefitsContents({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(H2, "mt-5 block max-w-[18ch]")}
             />
           </div>
@@ -52,7 +54,7 @@ export function BenefitsContents({ block, editable }: SectionProps) {
             field="intro"
             editable={editable}
             as="p"
-            placeholder="Intro"
+            placeholder={t("placeholder.intro")}
             className="block max-w-[44ch] self-end text-pretty text-[1.0625rem] leading-[1.65] text-muted-foreground lg:col-span-4 lg:col-start-9"
           />
         </div>

@@ -24,15 +24,17 @@ import {
   pad2,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Courses as a dossier table: numbered rows between hairlines with framed
  *  thumbnails, lesson counts in mono, and plain-figure prices. */
 export function CoursesDossier({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
 
-  const alt = str(block.heading) || "Courses";
+  const alt = str(block.heading) || t("sectionLabel.courses");
 
   return (
     <Section label={alt}>
@@ -50,9 +52,9 @@ export function CoursesDossier({ block, data, editable }: SectionProps) {
               )}
             >
               <span aria-hidden="true" />
-              <span>Course</span>
-              <span>Lessons</span>
-              <span className="text-right">Price</span>
+              <span>{t("course.label")}</span>
+              <span>{t("table.lessons")}</span>
+              <span className="text-right">{t("table.price")}</span>
             </div>
 
             <ul className="border-b border-border sm:border-b-0">
@@ -85,7 +87,7 @@ export function CoursesDossier({ block, data, editable }: SectionProps) {
                     <div className="col-start-2 mt-3 flex items-center justify-between sm:hidden">
                       <span className={cn(LABEL, NUM, "ledger-dim")}>
                         {c.lesson_count
-                          ? `${c.lesson_count} ${c.lesson_count === 1 ? "lesson" : "lessons"}`
+                          ? t("course.lessons", { count: c.lesson_count })
                           : ""}
                       </span>
                       <CoursePrice
@@ -98,7 +100,7 @@ export function CoursesDossier({ block, data, editable }: SectionProps) {
                       className={cn(LABEL, NUM, "ledger-dim hidden sm:block")}
                     >
                       {c.lesson_count
-                        ? `${c.lesson_count} ${c.lesson_count === 1 ? "lesson" : "lessons"}`
+                        ? t("course.lessons", { count: c.lesson_count })
                         : "—"}
                     </span>
 
@@ -117,8 +119,8 @@ export function CoursesDossier({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No published courses yet"
-              text="Publish a course and it appears here automatically."
+              title={t("empty.courses.title")}
+              text={t("empty.courses.text")}
             />
           </div>
         )}
@@ -135,10 +137,10 @@ export function CoursesDossier({ block, data, editable }: SectionProps) {
                     block={block}
                     field="ctaLabel"
                     editable={editable}
-                    placeholder="Button text"
+                    placeholder={t("placeholder.buttonText")}
                   />
                 ) : (
-                  "All courses"
+                  t("cta.allCourses")
                 )}
               </span>
               <Arrow />

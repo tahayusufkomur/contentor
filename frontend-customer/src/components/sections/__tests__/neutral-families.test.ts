@@ -10,6 +10,7 @@ import {
   sectionDefaultData,
 } from "@/lib/blocks/section-defs";
 import type { Block } from "@/types/tenant";
+import { withIntl } from "./with-intl";
 
 const FAMILIES = ["proof", "statement", "video"] as const;
 const editable = { onTextChange: () => {} };
@@ -19,7 +20,9 @@ function render(family: string, fields: Partial<Block>, edit = false) {
   if (!Comp) throw new Error(`no ${family} layout`);
   const block = { id: "b", type: `section.${family}`, ...fields } as Block;
   return renderToStaticMarkup(
-    createElement(Comp, { block, editable: edit ? editable : undefined }),
+    withIntl(
+      createElement(Comp, { block, editable: edit ? editable : undefined }),
+    ),
   );
 }
 

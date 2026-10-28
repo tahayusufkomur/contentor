@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export type PlayChoice = "auto" | "play" | "pause";
 
@@ -32,6 +33,7 @@ export function LoopVideo({
   label: string;
   className?: string;
 }) {
+  const t = useTranslations("site");
   const ref = useRef<HTMLVideoElement>(null);
   const [visible, setVisible] = useState(false);
   // Until the browser says otherwise, assume reduced motion: never start by itself.
@@ -99,7 +101,7 @@ export function LoopVideo({
           if (playing) el.pause();
           else el.play().catch(() => setPlaying(false));
         }}
-        aria-label={playing ? "Pause video" : "Play video"}
+        aria-label={playing ? t("neutral.pauseVideo") : t("neutral.playVideo")}
         className="absolute bottom-3 right-3 inline-flex size-11 items-center justify-center rounded-full bg-[color-mix(in_oklch,var(--background)_88%,transparent)] text-foreground shadow-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {playing ? (

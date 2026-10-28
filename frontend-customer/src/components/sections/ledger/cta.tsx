@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, BTN_ON_NAVY, Fig, RunningHead, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** The navy band: running head, light serif invitation, a form-like signature
  *  line, and a bone button. */
 export function CtaSignature({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showCta = has(block, "ctaLabel", editable);
@@ -17,7 +19,7 @@ export function CtaSignature({ block, editable }: SectionProps) {
         field="heading"
         editable={editable}
         as="h2"
-        placeholder="Heading"
+        placeholder={t("placeholder.heading")}
         className={cn(
           "block text-balance break-words font-display font-normal tracking-[-0.018em]",
           "text-[clamp(2.25rem,1.5rem+2.7vw,4.25rem)] leading-[1.04] max-w-[18ch]",
@@ -28,7 +30,7 @@ export function CtaSignature({ block, editable }: SectionProps) {
         field="text"
         editable={editable}
         as="p"
-        placeholder="Text"
+        placeholder={t("placeholder.text")}
         className="mt-6 block max-w-[44ch] text-pretty text-[1.0625rem] leading-[1.65] text-muted-foreground"
       />
       <div className="mt-10 flex flex-wrap items-end gap-8">
@@ -38,7 +40,7 @@ export function CtaSignature({ block, editable }: SectionProps) {
               block={block}
               field="ctaLabel"
               editable={editable}
-              placeholder="Button text"
+              placeholder={t("placeholder.buttonText")}
             />
             <Arrow />
           </SmartLink>

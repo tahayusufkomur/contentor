@@ -9,10 +9,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { BeltStripe, H3, LABEL, Opener, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Dojo dues and membership plans formatted as a ruled registry table. */
 export function PricingDues({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
@@ -20,7 +21,9 @@ export function PricingDues({ block, data, editable }: SectionProps) {
   return (
     <Section
       label={
-        typeof block.heading === "string" ? block.heading : "Membership Dues"
+        typeof block.heading === "string"
+          ? block.heading
+          : t("dojo.sectionPricing")
       }
     >
       <div className={WRAP}>
@@ -37,7 +40,7 @@ export function PricingDues({ block, data, editable }: SectionProps) {
                   <div className="flex items-center gap-3">
                     <BeltStripe index={i} className="h-1 w-6" />
                     <span className={cn(LABEL, "text-accent")}>
-                      Tier {i + 1}
+                      {t("dojo.tier", { number: i + 1 })}
                     </span>
                   </div>
                   <h3
@@ -60,10 +63,7 @@ export function PricingDues({ block, data, editable }: SectionProps) {
                     <p className="inline-flex items-center gap-2 text-[0.85rem] font-semibold text-foreground">
                       <span className="size-1.5 rounded-full bg-accent" />
                       <span>
-                        {plan.item_count}{" "}
-                        {plan.item_count === 1
-                          ? "course & session"
-                          : "courses & sessions"}
+                        {t("dojo.planItems", { count: plan.item_count })}
                       </span>
                     </p>
                   )}
@@ -82,7 +82,7 @@ export function PricingDues({ block, data, editable }: SectionProps) {
                   <div className="w-full sm:w-auto lg:w-full max-w-xs">
                     {plan.is_subscribed ? (
                       <p className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius)] border border-primary font-bold text-[0.9rem] tracking-[0.04em] text-primary">
-                        Active Membership
+                        {t("dojo.activeMembership")}
                       </p>
                     ) : (
                       <SubscribeButton
@@ -98,7 +98,7 @@ export function PricingDues({ block, data, editable }: SectionProps) {
                       href={`/plans/${plan.id}`}
                       className="dojo-link mt-3 block text-center lg:text-right text-[0.85rem] font-semibold text-muted-foreground"
                     >
-                      Dues policy & inclusions
+                      {t("dojo.duesPolicy")}
                     </SmartLink>
                   </div>
                 </div>
@@ -109,8 +109,8 @@ export function PricingDues({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a plan under Billing and it appears here."
+              title={t("empty.plans.title")}
+              text={t("empty.plans.text")}
             />
           </div>
         )}

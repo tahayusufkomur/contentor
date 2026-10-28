@@ -13,6 +13,7 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 const delay = (ms: number) =>
   ({ "--ledger-delay": `${ms}ms` }) as CSSProperties;
@@ -22,6 +23,7 @@ function Actions({
   editable,
   className,
 }: SectionProps & { className?: string }) {
+  const t = useTranslations("site");
   const primary = has(block, "ctaLabel", editable);
   const secondary = has(block, "secondaryLabel", editable);
   if (!primary && !secondary) return null;
@@ -33,7 +35,7 @@ function Actions({
             block={block}
             field="ctaLabel"
             editable={editable}
-            placeholder="Button text"
+            placeholder={t("placeholder.buttonText")}
           />
           <Arrow />
         </SmartLink>
@@ -47,7 +49,7 @@ function Actions({
             block={block}
             field="secondaryLabel"
             editable={editable}
-            placeholder="Second button"
+            placeholder={t("placeholder.secondButton")}
           />
         </SmartLink>
       )}
@@ -60,6 +62,7 @@ function Actions({
  *  light serif, the dek and actions beneath, and the portrait on the right
  *  as a framed plate with its figure number. */
 export function HeroStatement({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showMeta = has(block, "meta", editable);
   const showKicker = has(block, "kicker", editable);
@@ -85,14 +88,14 @@ export function HeroStatement({ block, editable }: SectionProps) {
                 field="kicker"
                 editable={editable}
                 as="span"
-                placeholder="Kicker"
+                placeholder={t("placeholder.kicker")}
               />
               <Txt
                 block={block}
                 field="meta"
                 editable={editable}
                 as="span"
-                placeholder="Small line"
+                placeholder={t("placeholder.smallLine")}
                 className="ledger-dim normal-case tracking-[0.04em]"
               />
             </div>
@@ -107,7 +110,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
                 field="headline"
                 editable={editable}
                 as="h1"
-                placeholder="Headline"
+                placeholder={t("placeholder.headline")}
                 className={cn(
                   H1,
                   alt.length <= 30
@@ -125,7 +128,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
                 field="subhead"
                 editable={editable}
                 as="p"
-                placeholder="Subheadline"
+                placeholder={t("placeholder.subheadline")}
                 className="block max-w-[42ch] text-pretty text-[1.125rem] leading-[1.6] text-muted-foreground lg:col-span-5"
               />
               <Actions
@@ -157,6 +160,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
 /** Inner-page title: the running head, a large serif title with its dek, an
  *  optional small plate on the right. */
 export function HeroIntro({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showMeta = has(block, "meta", editable);
@@ -179,14 +183,14 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="kicker"
               editable={editable}
               as="span"
-              placeholder="Kicker"
+              placeholder={t("placeholder.kicker")}
             />
             <Txt
               block={block}
               field="meta"
               editable={editable}
               as="span"
-              placeholder="Small line"
+              placeholder={t("placeholder.smallLine")}
               className="ledger-dim normal-case tracking-[0.04em]"
             />
           </div>
@@ -198,7 +202,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="headline"
               editable={editable}
               as="h1"
-              placeholder="Page title"
+              placeholder={t("placeholder.pageTitle")}
               className="block max-w-[18ch] text-balance break-words font-display text-[clamp(2.6rem,1.5rem+4vw,5.6rem)] font-normal leading-[1.0] tracking-[-0.015em]"
             />
             <Txt
@@ -206,7 +210,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="subhead"
               editable={editable}
               as="p"
-              placeholder="Subheadline"
+              placeholder={t("placeholder.subheadline")}
               className="mt-7 block max-w-[46ch] text-pretty text-[1.125rem] leading-[1.6] text-muted-foreground"
             />
             <Actions block={block} editable={editable} className="mt-9" />

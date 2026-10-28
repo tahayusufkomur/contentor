@@ -2,19 +2,21 @@ import { cn } from "@/lib/utils";
 import { ContactForm, Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, LABEL, RULE, RunningHead, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Contact formatted as letterhead correspondence: running head, small framed
  *  portrait, facts in a ruled ledger, and an ink-ruled form. */
 export function ContactLetterhead({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showForm = block.showForm !== false;
   const email = str(block.email);
 
   const rows: { field: string; label: string }[] = [
-    { field: "email", label: "Email" },
-    { field: "location", label: "Office" },
-    { field: "hours", label: "Hours" },
+    { field: "email", label: t("contact.email") },
+    { field: "location", label: t("contact.office") },
+    { field: "hours", label: t("contact.hours") },
   ].filter((r) => has(block, r.field, editable));
 
   return (
@@ -29,7 +31,7 @@ export function ContactLetterhead({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(
                 H2,
                 "block max-w-[17ch] text-[clamp(2.1rem,1.5rem+2.1vw,3.6rem)] leading-[1.06]",
@@ -40,7 +42,7 @@ export function ContactLetterhead({ block, editable }: SectionProps) {
               field="text"
               editable={editable}
               as="p"
-              placeholder="Text"
+              placeholder={t("placeholder.text")}
               className="mt-6 block max-w-[46ch] text-pretty text-[1.0625rem] leading-[1.65] text-muted-foreground"
             />
 

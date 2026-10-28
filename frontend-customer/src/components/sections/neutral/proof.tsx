@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { EmptyHint, Txt, has, itemsOf } from "../kit";
 import type { StyleKit } from "../kit-contract";
 import type { SectionProps } from "../types";
+import { useTranslations } from "next-intl";
 
 type Quote = { quote?: string; name?: string };
 type Figure = { value?: string; label?: string };
@@ -17,6 +18,7 @@ export function ProofNeutral({
   editable,
   kit,
 }: SectionProps & { kit: StyleKit }) {
+  const t = useTranslations("site");
   const quotes = itemsOf<Quote>(block, "quotes").filter((q) => filled(q.quote));
   const numbers = itemsOf<Figure>(block, "numbers").filter(
     (n) => filled(n.value) && filled(n.label),
@@ -34,7 +36,7 @@ export function ProofNeutral({
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(kit.h2, "block max-w-[22ch]")}
           />
         )}
@@ -42,8 +44,8 @@ export function ProofNeutral({
           <div className="mt-10">
             <EmptyHint
               editable={editable}
-              title="Nothing to show yet"
-              text="This section stays hidden until you add a client's words, a number or a press name."
+              title={t("neutral.proofEmptyTitle")}
+              text={t("neutral.proofEmptyText")}
             />
           </div>
         )}
@@ -96,7 +98,7 @@ export function ProofNeutral({
         {press.length > 0 && (
           <div className="mt-14 flex flex-wrap items-baseline gap-x-8 gap-y-3">
             <p className={cn(kit.label, "text-muted-foreground")}>
-              In the press
+              {t("neutral.inThePress")}
             </p>
             <ul className="contents">
               {press.map((p, i) => (

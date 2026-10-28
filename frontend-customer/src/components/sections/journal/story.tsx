@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, H2, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** A letter from the coach: portrait with a setting print laid under it, a
  *  60ch column opening on a rubricated drop cap, signed in italic. */
 export function StoryLetter({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
   return (
@@ -38,7 +40,7 @@ export function StoryLetter({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(H2, "mt-5 block max-w-[17ch]")}
           />
           <div className="mt-10 h-px w-16 bg-foreground" aria-hidden="true" />
@@ -54,7 +56,7 @@ export function StoryLetter({ block, editable }: SectionProps) {
               field="signature"
               editable={editable}
               as="p"
-              placeholder="Your name"
+              placeholder={t("placeholder.yourName")}
               className="mt-10 block font-display text-[2rem] font-light italic leading-none tracking-[-0.01em]"
             />
           )}
@@ -68,7 +70,7 @@ export function StoryLetter({ block, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Link text"
+                  placeholder={t("placeholder.linkText")}
                 />
               </span>
               <Arrow />

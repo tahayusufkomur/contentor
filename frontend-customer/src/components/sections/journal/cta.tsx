@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, PILL_ON_MOSS, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** The moss band: the page's one colour block. A serif invitation and a paper
  *  pill; with a photo, the print sits beside it like a facing page. */
 export function CtaBand({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -17,7 +19,7 @@ export function CtaBand({ block, editable }: SectionProps) {
         field="heading"
         editable={editable}
         as="h2"
-        placeholder="Heading"
+        placeholder={t("placeholder.heading")}
         className={cn(
           "mt-5 block text-balance break-words font-display font-light tracking-[-0.02em]",
           "text-[clamp(2.25rem,1.5rem+2.7vw,4.25rem)] leading-[1.06]",
@@ -29,7 +31,7 @@ export function CtaBand({ block, editable }: SectionProps) {
         field="text"
         editable={editable}
         as="p"
-        placeholder="Text"
+        placeholder={t("placeholder.text")}
         className={cn(
           "journal-moss-muted mt-7 block max-w-[44ch] text-pretty text-[1.0625rem] leading-[1.65]",
           !showImage && "mx-auto",
@@ -41,7 +43,7 @@ export function CtaBand({ block, editable }: SectionProps) {
             block={block}
             field="ctaLabel"
             editable={editable}
-            placeholder="Button text"
+            placeholder={t("placeholder.buttonText")}
           />
         </SmartLink>
       </div>

@@ -15,6 +15,7 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 const delay = (ms: number) => ({ "--dojo-delay": `${ms}ms` }) as CSSProperties;
 
@@ -23,6 +24,7 @@ function Actions({
   editable,
   className,
 }: SectionProps & { className?: string }) {
+  const t = useTranslations("site");
   const primary = has(block, "ctaLabel", editable);
   const secondary = has(block, "secondaryLabel", editable);
   if (!primary && !secondary) return null;
@@ -34,7 +36,7 @@ function Actions({
             block={block}
             field="ctaLabel"
             editable={editable}
-            placeholder="Button text"
+            placeholder={t("placeholder.buttonText")}
           />
           <Arrow />
         </SmartLink>
@@ -48,7 +50,7 @@ function Actions({
             block={block}
             field="secondaryLabel"
             editable={editable}
-            placeholder="Second button"
+            placeholder={t("placeholder.secondButton")}
           />
         </SmartLink>
       )}
@@ -62,6 +64,7 @@ function Actions({
  *  On a phone the first photo takes the whole row, tall, so it fills the first
  *  screen under the button; the others follow in a pair. */
 export function HeroHall({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const photos = heroPhotos(block, editable).slice(0, 3);
   const showMeta = has(block, "meta", editable);
@@ -84,7 +87,7 @@ export function HeroHall({ block, editable }: SectionProps) {
                 field="headline"
                 editable={editable}
                 as="h1"
-                placeholder="Headline"
+                placeholder={t("placeholder.headline")}
                 className={cn(
                   H1,
                   "mx-auto block",
@@ -100,7 +103,7 @@ export function HeroHall({ block, editable }: SectionProps) {
                 field="subhead"
                 editable={editable}
                 as="p"
-                placeholder="Subheadline"
+                placeholder={t("placeholder.subheadline")}
                 className="mx-auto block max-w-[46ch] text-pretty text-[1.125rem] leading-[1.68] text-muted-foreground md:text-[1.2rem]"
               />
             </div>
@@ -116,7 +119,7 @@ export function HeroHall({ block, editable }: SectionProps) {
                   block={block}
                   field="meta"
                   editable={editable}
-                  placeholder="Small line"
+                  placeholder={t("placeholder.smallLine")}
                 />
               </p>
             )}
@@ -173,6 +176,7 @@ export function HeroHall({ block, editable }: SectionProps) {
 /** Signature Dojo hero: rice paper background with Enso circle, disciplined
  *  high-contrast headlines, red seal, and sharp photographic portraits. */
 export function HeroBanner({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   const showMeta = has(block, "meta", editable);
@@ -193,7 +197,7 @@ export function HeroBanner({ block, editable }: SectionProps) {
                   field="headline"
                   editable={editable}
                   as="h1"
-                  placeholder="Headline"
+                  placeholder={t("placeholder.headline")}
                   className={cn(
                     H1,
                     alt.length <= 26
@@ -208,7 +212,7 @@ export function HeroBanner({ block, editable }: SectionProps) {
                   field="subhead"
                   editable={editable}
                   as="p"
-                  placeholder="Subheadline"
+                  placeholder={t("placeholder.subheadline")}
                   className="block max-w-[44ch] text-pretty text-[1.125rem] leading-[1.68] text-muted-foreground md:text-[1.2rem]"
                 />
               </div>
@@ -227,7 +231,7 @@ export function HeroBanner({ block, editable }: SectionProps) {
                       block={block}
                       field="meta"
                       editable={editable}
-                      placeholder="Small line"
+                      placeholder={t("placeholder.smallLine")}
                     />
                   </p>
                 </div>
@@ -270,6 +274,7 @@ export function HeroBanner({ block, editable }: SectionProps) {
 /** Inner-page title: kicker with red seal, bold Mincho title, dek, and
  *  an optional sharp print to the right. */
 export function HeroIntro({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showMeta = has(block, "meta", editable);
@@ -288,7 +293,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="headline"
               editable={editable}
               as="h1"
-              placeholder="Page title"
+              placeholder={t("placeholder.pageTitle")}
               className="mt-4 block max-w-[18ch] text-balance break-words font-display text-[clamp(2.4rem,1.5rem+3.8vw,5.4rem)] font-extrabold leading-[1.02] tracking-[-0.02em]"
             />
             <Txt
@@ -296,7 +301,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="subhead"
               editable={editable}
               as="p"
-              placeholder="Subheadline"
+              placeholder={t("placeholder.subheadline")}
               className="mt-6 block max-w-[46ch] text-pretty text-[1.125rem] leading-[1.68] text-muted-foreground"
             />
             {showMeta && (
@@ -311,7 +316,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
                     block={block}
                     field="meta"
                     editable={editable}
-                    placeholder="Small line"
+                    placeholder={t("placeholder.smallLine")}
                   />
                 </p>
               </div>

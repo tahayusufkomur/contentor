@@ -4,11 +4,12 @@ import type { SubscriptionPlan } from "@/types/billing";
 import { EmptyHint, SubscribeButton, Txt, billingIntervalSuffix } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, DISPLAY, H2, Kicker, LABEL, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Ticket cards: notched corner, perforation, giant condensed price. The
  *  middle of three is printed in volt. */
 export function PricingTickets({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans = Array.isArray(data) ? (data as SubscriptionPlan[]) : [];
   if (!plans.length && !editable) return null;
@@ -41,8 +42,8 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a subscription plan in Billing and it shows up here as a ticket."
+              title={t("empty.plans.title")}
+              text={t("kinetic.emptyPlansText")}
             />
           </div>
         ) : (
@@ -124,8 +125,7 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
                         >
                           +
                         </span>
-                        {p.item_count} item{p.item_count === 1 ? "" : "s"}{" "}
-                        included
+                        {t("plan.itemsIncluded", { count: p.item_count })}
                       </p>
                     ) : null}
                     {p.is_subscribed ? (
@@ -135,7 +135,7 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
                           "flex h-14 items-center justify-center border-2 border-current text-[0.8rem]",
                         )}
                       >
-                        Subscribed
+                        {t("plan.subscribed")}
                       </p>
                     ) : (
                       <SubscribeButton
@@ -146,7 +146,7 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
                         intervalMonths={p.billing_interval_months}
                         label={
                           <>
-                            Subscribe
+                            {t("plan.subscribe")}
                             <Arrow />
                           </>
                         }

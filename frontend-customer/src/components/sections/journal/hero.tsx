@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { H1, Kicker, PILL, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 const delay = (ms: number) =>
   ({ "--journal-delay": `${ms}ms` }) as CSSProperties;
@@ -12,6 +13,7 @@ function Actions({
   editable,
   className,
 }: SectionProps & { className?: string }) {
+  const t = useTranslations("site");
   const primary = has(block, "ctaLabel", editable);
   const secondary = has(block, "secondaryLabel", editable);
   if (!primary && !secondary) return null;
@@ -25,7 +27,7 @@ function Actions({
             block={block}
             field="ctaLabel"
             editable={editable}
-            placeholder="Button text"
+            placeholder={t("placeholder.buttonText")}
           />
         </SmartLink>
       )}
@@ -39,7 +41,7 @@ function Actions({
               block={block}
               field="secondaryLabel"
               editable={editable}
-              placeholder="Second button"
+              placeholder={t("placeholder.secondButton")}
             />
           </SmartLink>
         </div>
@@ -53,6 +55,7 @@ function Actions({
  *  as a small round inset), and a ruled column of coverlines: the claim, the
  *  dek, the way in. */
 export function HeroCover({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const masthead = str(block.kicker);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
@@ -69,7 +72,7 @@ export function HeroCover({ block, editable }: SectionProps) {
               field="kicker"
               editable={editable}
               as="p"
-              placeholder="Masthead"
+              placeholder={t("placeholder.masthead")}
               className={cn(
                 "block font-display font-light italic",
                 masthead.length <= 22
@@ -88,7 +91,7 @@ export function HeroCover({ block, editable }: SectionProps) {
                   block={block}
                   field="meta"
                   editable={editable}
-                  placeholder="Small line"
+                  placeholder={t("placeholder.smallLine")}
                 />
               </p>
             )}
@@ -123,7 +126,7 @@ export function HeroCover({ block, editable }: SectionProps) {
               field="headline"
               editable={editable}
               as="h1"
-              placeholder="Headline"
+              placeholder={t("placeholder.headline")}
               className={cn(
                 H1,
                 "block",
@@ -139,7 +142,7 @@ export function HeroCover({ block, editable }: SectionProps) {
                   field="subhead"
                   editable={editable}
                   as="p"
-                  placeholder="Subheadline"
+                  placeholder={t("placeholder.subheadline")}
                   className="block text-pretty text-[1rem] leading-[1.55] text-muted-foreground sm:text-[1.05rem] sm:leading-[1.6] md:text-[1.12rem]"
                 />
               </div>
@@ -159,6 +162,7 @@ export function HeroCover({ block, editable }: SectionProps) {
 /** Opening spread: a light serif headline set big against a tall, uncropped
  *  portrait with a caption, and a detail print laid over its corner. */
 export function HeroEditorial({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   return (
@@ -179,7 +183,7 @@ export function HeroEditorial({ block, editable }: SectionProps) {
               field="headline"
               editable={editable}
               as="h1"
-              placeholder="Headline"
+              placeholder={t("placeholder.headline")}
               className={cn(
                 H1,
                 alt.length <= 28
@@ -197,7 +201,7 @@ export function HeroEditorial({ block, editable }: SectionProps) {
               field="subhead"
               editable={editable}
               as="p"
-              placeholder="Subheadline"
+              placeholder={t("placeholder.subheadline")}
               className="block max-w-[40ch] text-pretty text-[1.125rem] leading-[1.6] text-muted-foreground md:text-[1.2rem]"
             />
             <Actions block={block} editable={editable} className="mt-9" />
@@ -238,7 +242,7 @@ export function HeroEditorial({ block, editable }: SectionProps) {
                 block={block}
                 field="meta"
                 editable={editable}
-                placeholder="Small line"
+                placeholder={t("placeholder.smallLine")}
               />
             </figcaption>
           )}
@@ -251,6 +255,7 @@ export function HeroEditorial({ block, editable }: SectionProps) {
 /** Inner-page title band: kicker, a large serif title and its dek, with an
  *  optional small portrait set to the right like a column photo. */
 export function HeroIntro({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   return (
@@ -271,7 +276,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
             field="headline"
             editable={editable}
             as="h1"
-            placeholder="Page title"
+            placeholder={t("placeholder.pageTitle")}
             className="mt-5 block max-w-[18ch] text-balance break-words font-display text-[clamp(2.6rem,1.6rem+3.9vw,5.4rem)] font-light leading-[1.03] tracking-[-0.02em]"
           />
           <Txt
@@ -279,7 +284,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
             field="subhead"
             editable={editable}
             as="p"
-            placeholder="Subheadline"
+            placeholder={t("placeholder.subheadline")}
             className="mt-7 block max-w-[46ch] text-pretty text-[1.125rem] leading-[1.6] text-muted-foreground"
           />
           <Actions block={block} editable={editable} className="mt-9" />
@@ -298,7 +303,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
                   block={block}
                   field="meta"
                   editable={editable}
-                  placeholder="Small line"
+                  placeholder={t("placeholder.smallLine")}
                 />
               </figcaption>
             )}

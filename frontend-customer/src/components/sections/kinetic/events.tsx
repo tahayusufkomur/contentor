@@ -10,7 +10,7 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, BTN, BtnBody, DISPLAY, H2, Kicker, LABEL, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 function day(iso: string, locale: string) {
   const d = new Date(iso);
@@ -23,6 +23,7 @@ function day(iso: string, locale: string) {
 
 /** Gym timetable: day, time, class, place, book. The next class is in volt. */
 export function EventsTimetable({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events = Array.isArray(data) ? (data as CalendarEvent[]) : [];
   if (!events.length && !editable) return null;
@@ -54,7 +55,7 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
                 {has(block, "ctaLabel", editable) ? (
                   <Txt block={block} field="ctaLabel" editable={editable} />
                 ) : (
-                  "Full calendar"
+                  t("cta.fullCalendar")
                 )}
               </BtnBody>
             </SmartLink>
@@ -65,8 +66,8 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No upcoming live sessions"
-              text="Schedule a live session or event and it appears here in the timetable."
+              title={t("kinetic.emptyEventsTitle")}
+              text={t("kinetic.emptyEventsText")}
             />
           </div>
         ) : (
@@ -131,7 +132,9 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
                                 : "bg-accent px-1.5 py-1 text-accent-foreground",
                             )}
                           >
-                            {e.is_trial ? "Free trial" : "Free"}
+                            {e.is_trial
+                              ? t("price.freeTrial")
+                              : t("price.free")}
                           </span>
                         )}
                       </span>
@@ -145,7 +148,9 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
                           : "bg-primary text-primary-foreground group-hover:bg-foreground group-hover:text-background",
                       )}
                     >
-                      <span className="sr-only sm:not-sr-only">Book</span>
+                      <span className="sr-only sm:not-sr-only">
+                        {t("event.book")}
+                      </span>
                       <Arrow className="size-4" />
                     </span>
                   </SmartLink>

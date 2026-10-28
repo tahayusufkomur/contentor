@@ -8,7 +8,8 @@
  * styles differ in layout and look, never in behaviour.
  */
 import type { ReactNode } from "react";
-import { useLocale } from "next-intl";
+import { createTranslator, useLocale, useTranslations } from "next-intl";
+import siteEn from "@shared/i18n/messages/en/site.json";
 import { cn } from "@/lib/utils";
 import { InlineText } from "@/components/blocks/inline-text";
 import { EditableBody } from "@/components/blocks/editable-body";
@@ -244,14 +245,28 @@ export const eventCover = (
 export const hasCover = (c: Course) =>
   Boolean(c.cover_design || courseImage(c));
 
+/** The `site` translator a section hands to the helpers below. */
+export type SiteT = ReturnType<typeof useTranslations<"site">>;
+
+// A helper called without `t` speaks English. Every section passes its own.
+const english: SiteT = createTranslator({
+  locale: "en",
+  messages: { site: siteEn },
+  namespace: "site",
+});
+
 /** Plain-text price in the tenant currency: "€49", "Free", "Included in
  *  membership", or "Owned" for a student who already has it. */
-export function coursePriceLabel(course: Course, locale: string): string {
+export function coursePriceLabel(
+  course: Course,
+  locale: string,
+  t: SiteT = english,
+): string {
   const a = course.access_info;
-  if (a?.has_access && a.access_reason !== "free") return "Owned";
+  if (a?.has_access && a.access_reason !== "free") return t("price.owned");
   const type = a?.pricing_type ?? course.pricing_type;
-  if (type === "free") return "Free";
-  if (type === "subscription") return "Included in membership";
+  if (type === "free") return t("price.free");
+  if (type === "subscription") return t("price.includedInMembership");
   const price = a?.price ?? course.price;
   return price ? formatMoney(price, a?.currency || "USD", locale) : "";
 }
@@ -267,9 +282,10 @@ export function CoursePrice({
   plain?: boolean;
 }) {
   const locale = useLocale();
+  const t = useTranslations("site");
   if (plain)
     return (
-      <span className={className}>{coursePriceLabel(course, locale)}</span>
+      <span className={className}>{coursePriceLabel(course, locale, t)}</span>
     );
   return (
     <span className={className}>
@@ -306,10 +322,11 @@ export function EmptyHint({
 export function eventPriceLabel(
   e: Pick<CalendarEvent, "pricing_type" | "price" | "currency" | "is_trial">,
   locale: string,
+  t: SiteT = english,
 ): string {
-  if (e.is_trial) return "Free trial";
-  if (e.pricing_type === "subscription") return "Members only";
-  if (e.pricing_type !== "paid" || !Number(e.price)) return "Free";
+  if (e.is_trial) return t("price.freeTrial");
+  if (e.pricing_type === "subscription") return t("price.membersOnly");
+  if (e.pricing_type !== "paid" || !Number(e.price)) return t("price.free");
   return formatMoney(e.price, e.currency || "USD", locale);
 }
 

@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, LABEL, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Size the quote to its length: a short line gets poster scale, a long one
  *  stays readable. */
@@ -16,10 +17,11 @@ function quoteSize(len: number) {
 /** A full-width pull quote with the opening mark hung in the margin, set on
  *  the greige stock, with an optional wide atmosphere print beneath. */
 export function PhilosophyPullquote({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   return (
-    <Section tone="surface" label="Philosophy">
+    <Section tone="surface" label={t("sectionLabel.philosophy")}>
       <div className={WRAP}>
         <figure className="lg:pl-[8.333%]">
           <Kicker block={block} editable={editable} className="mb-8" />
@@ -35,7 +37,7 @@ export function PhilosophyPullquote({ block, editable }: SectionProps) {
               field="statement"
               editable={editable}
               as="p"
-              placeholder="Statement"
+              placeholder={t("placeholder.statement")}
               className={cn(
                 "block text-balance break-words font-display font-light tracking-[-0.02em]",
                 quoteSize(statement.length),
@@ -49,7 +51,7 @@ export function PhilosophyPullquote({ block, editable }: SectionProps) {
                 block={block}
                 field="attribution"
                 editable={editable}
-                placeholder="Attribution"
+                placeholder={t("placeholder.attribution")}
                 className={LABEL}
               />
             </figcaption>

@@ -12,14 +12,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, H2, H3, Kicker, LABEL, Section, WRAP } from "./ui";
-
-const lessons = (c: Course) =>
-  c.lesson_count
-    ? `${c.lesson_count} ${c.lesson_count === 1 ? "lesson" : "lessons"}`
-    : "";
+import { useTranslations } from "next-intl";
 
 /** Meta line under a cover: lesson count left, price right, on one hairline. */
 function Meta({ course, className }: { course: Course; className?: string }) {
+  const t = useTranslations("site");
   return (
     <div
       className={cn(
@@ -27,7 +24,11 @@ function Meta({ course, className }: { course: Course; className?: string }) {
         className,
       )}
     >
-      <span className={LABEL}>{lessons(course)}</span>
+      <span className={LABEL}>
+        {course.lesson_count
+          ? t("course.lessons", { count: course.lesson_count })
+          : ""}
+      </span>
       <CoursePrice
         course={course}
         className="journal-price journal-lnum font-display text-[1.15rem] text-foreground"
@@ -38,6 +39,7 @@ function Meta({ course, className }: { course: Course; className?: string }) {
 
 /** The lead course, set as a cover story. */
 function Lead({ course }: { course: Course }) {
+  const t = useTranslations("site");
   return (
     <SmartLink
       href={courseHref(course)}
@@ -64,7 +66,7 @@ function Lead({ course }: { course: Course }) {
           </p>
         )}
         <span className="mt-8 inline-flex items-center gap-3 text-[0.95rem] font-medium">
-          <span className="journal-link">View course</span>
+          <span className="journal-link">{t("course.view")}</span>
           <Arrow />
         </span>
       </div>
@@ -111,6 +113,7 @@ function span(i: number, n: number) {
 
 /** The course catalogue as a magazine issue: a cover story, then the rest. */
 export function CoursesIssue({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
@@ -119,7 +122,11 @@ export function CoursesIssue({ block, data, editable }: SectionProps) {
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Courses"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.courses")
+      }
     >
       <div className={WRAP}>
         <div className="grid gap-y-8 lg:grid-cols-12 lg:gap-x-10">
@@ -130,7 +137,7 @@ export function CoursesIssue({ block, data, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(H2, "mt-5 block max-w-[18ch]")}
             />
           </div>
@@ -140,7 +147,7 @@ export function CoursesIssue({ block, data, editable }: SectionProps) {
               field="intro"
               editable={editable}
               as="p"
-              placeholder="Intro"
+              placeholder={t("placeholder.intro")}
               className="block max-w-[44ch] text-pretty text-[1.0625rem] leading-[1.65] text-muted-foreground"
             />
           </div>
@@ -150,8 +157,8 @@ export function CoursesIssue({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No published courses yet"
-              text="Publish a course and it appears here automatically."
+              title={t("empty.courses.title")}
+              text={t("empty.courses.text")}
             />
           </div>
         ) : (
@@ -186,10 +193,10 @@ export function CoursesIssue({ block, data, editable }: SectionProps) {
                     block={block}
                     field="ctaLabel"
                     editable={editable}
-                    placeholder="Button text"
+                    placeholder={t("placeholder.buttonText")}
                   />
                 ) : (
-                  "All courses"
+                  t("cta.allCourses")
                 )}
               </span>
               <Arrow />

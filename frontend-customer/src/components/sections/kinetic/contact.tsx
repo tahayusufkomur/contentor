@@ -2,9 +2,11 @@ import { cn } from "@/lib/utils";
 import { ContactForm, Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, DISPLAY, H2, Kicker, LABEL, WRAP } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** The email address as giant condensed type that is itself the link. */
 export function ContactBigmail({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const email = typeof block.email === "string" ? block.email.trim() : "";
   const showForm = block.showForm !== false;
   const withImage = Boolean(imageUrl(block.image));
@@ -44,7 +46,7 @@ export function ContactBigmail({ block, editable }: SectionProps) {
               block={block}
               field="email"
               editable={editable}
-              placeholder="you@yourstudio.com"
+              placeholder={t("placeholder.email")}
               className={cn(
                 DISPLAY,
                 "min-w-0 normal-case [overflow-wrap:anywhere] transition-colors group-hover:text-primary",
@@ -76,7 +78,9 @@ export function ContactBigmail({ block, editable }: SectionProps) {
                 )}
               >
                 <dt className={cn(LABEL, "text-primary")}>
-                  {f === "location" ? "Location" : "Hours"}
+                  {f === "location"
+                    ? t("contact.location")
+                    : t("contact.hours")}
                 </dt>
                 <dd>
                   <Txt

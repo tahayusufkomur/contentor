@@ -10,7 +10,7 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, H2, Kicker, LABEL, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 function dateParts(iso: string, locale: string) {
   const d = new Date(iso);
@@ -25,6 +25,7 @@ function dateParts(iso: string, locale: string) {
 /** Upcoming sessions printed like a concert programme: the date as a large
  *  serif figure, then the title, time and place on one ruled line. */
 export function EventsProgramme({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
@@ -32,7 +33,11 @@ export function EventsProgramme({ block, data, editable }: SectionProps) {
   return (
     <Section
       tone="surface"
-      label={typeof block.heading === "string" ? block.heading : "Events"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.events")
+      }
     >
       <div className={WRAP}>
         <div className="grid gap-y-8 lg:grid-cols-12 lg:gap-x-10">
@@ -43,7 +48,7 @@ export function EventsProgramme({ block, data, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(H2, "mt-5 block max-w-[18ch]")}
             />
           </div>
@@ -52,7 +57,7 @@ export function EventsProgramme({ block, data, editable }: SectionProps) {
             field="intro"
             editable={editable}
             as="p"
-            placeholder="Intro"
+            placeholder={t("placeholder.intro")}
             className="block max-w-[44ch] self-end text-pretty text-[1.0625rem] leading-[1.65] text-muted-foreground lg:col-span-4 lg:col-start-9"
           />
         </div>
@@ -95,7 +100,7 @@ export function EventsProgramme({ block, data, editable }: SectionProps) {
                       </span>
                     </span>
                     <span className="col-start-2 mt-5 inline-flex items-center gap-3 text-[0.95rem] font-medium sm:col-start-3 sm:mt-0">
-                      <span className="journal-link">Reserve</span>
+                      <span className="journal-link">{t("event.reserve")}</span>
                       <Arrow />
                     </span>
                   </SmartLink>
@@ -107,8 +112,8 @@ export function EventsProgramme({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No upcoming sessions"
-              text="Schedule a live session or event and it appears here."
+              title={t("empty.sessions.title")}
+              text={t("empty.sessions.text")}
             />
           </div>
         )}
@@ -125,10 +130,10 @@ export function EventsProgramme({ block, data, editable }: SectionProps) {
                     block={block}
                     field="ctaLabel"
                     editable={editable}
-                    placeholder="Button text"
+                    placeholder={t("placeholder.buttonText")}
                   />
                 ) : (
-                  "Full calendar"
+                  t("cta.fullCalendar")
                 )}
               </span>
               <Arrow />

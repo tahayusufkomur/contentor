@@ -24,6 +24,7 @@ import { SITE_STYLES } from "@shared/sections/styles";
 import type { Block } from "@/types/tenant";
 import { STYLE_KITS } from "../all-styles";
 import { DEFAULT_KIT, type KitTone } from "../kit-contract";
+import { withIntl } from "./with-intl";
 
 const TONES: KitTone[] = ["base", "surface", "inverse"];
 const BLOCK: Block = {
@@ -62,7 +63,9 @@ describe("StyleKit contract", () => {
   it("each kit's Opener renders the heading", () => {
     for (const kit of ALL()) {
       expect(
-        renderToStaticMarkup(createElement(kit.Opener, { block: BLOCK })),
+        renderToStaticMarkup(
+          withIntl(createElement(kit.Opener, { block: BLOCK })),
+        ),
         kit.id,
       ).toContain("Heading words");
     }

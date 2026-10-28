@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import type { EditableContext } from "@/lib/blocks/types";
 import type { Block } from "@/types/tenant";
 import { Txt, has } from "./kit";
+import { useTranslations } from "next-intl";
 
 export type KitTone = "base" | "surface" | "inverse";
 export type OrnamentSlot = "divider" | "glyph";
@@ -83,6 +84,7 @@ const DEFAULT_MEDIA: Record<MediaTreatment, string> = {
 
 function makeKicker(label: string): BlockPart {
   return function KitKicker({ block, editable, className }) {
+    const t = useTranslations("site");
     if (!has(block, "kicker", editable)) return null;
     return (
       <Txt
@@ -90,7 +92,7 @@ function makeKicker(label: string): BlockPart {
         field="kicker"
         editable={editable}
         as="p"
-        placeholder="Kicker"
+        placeholder={t("placeholder.kicker")}
         className={cn(label, "text-muted-foreground", className)}
       />
     );
@@ -99,6 +101,7 @@ function makeKicker(label: string): BlockPart {
 
 function makeOpener(Kicker: BlockPart, h2: string): BlockPart {
   return function KitOpener({ block, editable, className }) {
+    const t = useTranslations("site");
     return (
       <div className={cn("flex flex-col", className)}>
         <Kicker block={block} editable={editable} />
@@ -107,7 +110,7 @@ function makeOpener(Kicker: BlockPart, h2: string): BlockPart {
           field="heading"
           editable={editable}
           as="h2"
-          placeholder="Heading"
+          placeholder={t("placeholder.heading")}
           className={cn(h2, "mt-4 block max-w-[22ch]")}
         />
         {has(block, "intro", editable) && (
@@ -116,7 +119,7 @@ function makeOpener(Kicker: BlockPart, h2: string): BlockPart {
             field="intro"
             editable={editable}
             as="p"
-            placeholder="Intro"
+            placeholder={t("placeholder.intro")}
             className="mt-6 block max-w-[52ch] text-pretty text-lg/relaxed text-muted-foreground"
           />
         )}

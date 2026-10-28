@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Txt, has } from "../kit";
 import type { StyleKit } from "../kit-contract";
 import type { SectionProps } from "../types";
+import { useTranslations } from "next-intl";
 
 /** Width of one character of display type, in em: a generous average, so the
  *  longest word of the line always fits a phone's width. */
@@ -27,6 +28,7 @@ export function StatementNeutral({
   editable,
   kit,
 }: SectionProps & { kit: StyleKit }) {
+  const t = useTranslations("site");
   const statement = typeof block.statement === "string" ? block.statement : "";
   if (!statement && !editable) return null;
   return (
@@ -38,7 +40,7 @@ export function StatementNeutral({
             field="statement"
             editable={editable}
             as="p"
-            placeholder="One line you believe"
+            placeholder={t("placeholder.statementLine")}
             // `!`: some kits set their display size and caps in CSS classes
             // (grid's swiss-h1, pop's pop-h1, studiofloor's uppercase face).
             className={cn(
@@ -54,7 +56,7 @@ export function StatementNeutral({
             field="attribution"
             editable={editable}
             as="p"
-            placeholder="Your name"
+            placeholder={t("placeholder.yourName")}
             // The band's own ink: some kits colour their label voice, too faint on the inverse band.
             className={cn(
               kit.label,

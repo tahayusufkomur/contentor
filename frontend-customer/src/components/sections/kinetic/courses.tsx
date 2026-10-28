@@ -12,15 +12,13 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, BTN, BtnBody, DISPLAY, H2, Kicker, LABEL, WRAP } from "./ui";
-
-function lessons(c: Course) {
-  return c.lesson_count
-    ? `${c.lesson_count} lesson${c.lesson_count === 1 ? "" : "s"}`
-    : null;
-}
+import { useTranslations } from "next-intl";
 
 function MetaBar({ course }: { course: Course }) {
-  const count = lessons(course);
+  const t = useTranslations("site");
+  const count = course.lesson_count
+    ? t("course.lessons", { count: course.lesson_count })
+    : null;
   return (
     <div
       className={cn(
@@ -112,6 +110,7 @@ function Feature({ course }: { course: Course }) {
 /** Poster cards: greyscale 4:5 photos that light up on hover, caps titles
  *  over the image and a black meta bar. */
 export function CoursesPosters({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = block.limit === "6" ? 6 : 3;
   const courses = (Array.isArray(data) ? (data as Course[]) : []).slice(
     0,
@@ -146,7 +145,7 @@ export function CoursesPosters({ block, data, editable }: SectionProps) {
                 {has(block, "ctaLabel", editable) ? (
                   <Txt block={block} field="ctaLabel" editable={editable} />
                 ) : (
-                  "All courses"
+                  t("cta.allCourses")
                 )}
               </BtnBody>
             </SmartLink>
@@ -157,8 +156,8 @@ export function CoursesPosters({ block, data, editable }: SectionProps) {
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No published courses yet"
-              text="Publish a course and it appears here as a poster card."
+              title={t("empty.courses.title")}
+              text={t("kinetic.emptyCoursesText")}
             />
           </div>
         ) : courses.length === 1 ? (

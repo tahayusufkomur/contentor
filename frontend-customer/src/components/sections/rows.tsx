@@ -18,7 +18,7 @@ import {
 import type { ImageValue } from "./kit";
 import { LocalWhen } from "./local-time";
 import type { SectionProps } from "./types";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 // "rows": the streaming-service layout, shared by every style and drawn in
 // its own tokens (inverse band, display font, radius, primary). The first
@@ -184,6 +184,7 @@ const count = (block: SectionProps["block"]) => (block.limit === "6" ? 12 : 6);
 /** Courses as a streaming catalogue: the first course as a billboard, the
  *  rest in a sideways row. */
 export function CoursesRows(props: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const { block, data, editable } = props;
   const courses = (Array.isArray(data) ? (data as Course[]) : []).slice(
@@ -193,16 +194,14 @@ export function CoursesRows(props: SectionProps) {
   if (!courses.length && !editable) return null;
   const [lead, ...rest] = courses;
   const lessons = (c: Course) =>
-    c.lesson_count
-      ? `${c.lesson_count} lesson${c.lesson_count === 1 ? "" : "s"}`
-      : "";
+    c.lesson_count ? t("course.lessons", { count: c.lesson_count }) : "";
   return (
     <Shell {...props}>
       {!lead ? (
         <EmptyHint
           editable={editable}
-          title="No published courses yet"
-          text="Publish a course and it leads this page like a film."
+          title={t("empty.courses.title")}
+          text={t("rows.emptyCoursesText")}
         />
       ) : (
         <>
@@ -211,13 +210,13 @@ export function CoursesRows(props: SectionProps) {
             image={courseCover(lead, "bare")}
             title={lead.title}
             description={lead.description}
-            action="Start the course"
+            action={t("rows.startCourse")}
             meta={
               <>
                 <span
                   className={cn(PILL, "bg-primary text-primary-foreground")}
                 >
-                  {coursePriceLabel(lead, locale) || "Course"}
+                  {coursePriceLabel(lead, locale, t) || t("course.label")}
                 </span>
                 {lessons(lead) && (
                   <span
@@ -233,14 +232,14 @@ export function CoursesRows(props: SectionProps) {
             }
           />
           {rest.length > 0 && (
-            <Row label="More courses">
+            <Row label={t("rows.moreCourses")}>
               {rest.map((c) => (
                 <Tile
                   key={c.id}
                   href={courseHref(c)}
                   image={courseCover(c, "bare")}
                   title={c.title}
-                  meta={[coursePriceLabel(c, locale), lessons(c)]
+                  meta={[coursePriceLabel(c, locale, t), lessons(c)]
                     .filter(Boolean)
                     .join(" · ")}
                 />
@@ -256,6 +255,7 @@ export function CoursesRows(props: SectionProps) {
 /** Upcoming classes and events as a streaming lineup: the next one as a
  *  billboard with its date, the rest in a sideways row. */
 export function EventsRows(props: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const { block, data, editable } = props;
   const events = (Array.isArray(data) ? (data as CalendarEvent[]) : []).slice(
@@ -269,8 +269,8 @@ export function EventsRows(props: SectionProps) {
       {!next ? (
         <EmptyHint
           editable={editable}
-          title="No upcoming events yet"
-          text="Schedule a session and the next one leads this page."
+          title={t("rows.emptyEventsTitle")}
+          text={t("rows.emptyEventsText")}
         />
       ) : (
         <>
@@ -279,7 +279,7 @@ export function EventsRows(props: SectionProps) {
             image={eventCover(next, "bare")}
             title={next.title}
             description={next.description}
-            action="Save your spot"
+            action={t("rows.saveSpot")}
             meta={
               <>
                 <span
@@ -294,15 +294,15 @@ export function EventsRows(props: SectionProps) {
                   )}
                 >
                   {next.type === "onsite_event"
-                    ? next.location || "In person"
-                    : "Online, live"}{" "}
-                  · {eventPriceLabel(next, locale)}
+                    ? next.location || t("event.inPerson")
+                    : t("event.onlineLive")}{" "}
+                  · {eventPriceLabel(next, locale, t)}
                 </span>
               </>
             }
           />
           {rest.length > 0 && (
-            <Row label="Coming up">
+            <Row label={t("rows.comingUp")}>
               {rest.map((e) => (
                 <Tile
                   key={`${e.type}:${e.id}`}
@@ -312,7 +312,7 @@ export function EventsRows(props: SectionProps) {
                   meta={
                     <>
                       <LocalWhen iso={e.scheduled_at} /> ·{" "}
-                      {eventPriceLabel(e, locale)}
+                      {eventPriceLabel(e, locale, t)}
                     </>
                   }
                 />

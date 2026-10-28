@@ -11,16 +11,17 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, LABEL, NUM, Opener, RULE, Section, WRAP, str } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Events formatted as an agenda table: running head, tabular when/session/where/fee
  *  columns, and reserve links with hairlines. */
 export function EventsAgenda({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
-  const alt = str(block.heading) || "Events";
+  const alt = str(block.heading) || t("sectionLabel.events");
 
   return (
     <Section label={alt}>
@@ -37,10 +38,10 @@ export function EventsAgenda({ block, data, editable }: SectionProps) {
                 "ledger-dim",
               )}
             >
-              <span>When</span>
-              <span>Session</span>
-              <span>Where</span>
-              <span className="text-right">Fee</span>
+              <span>{t("table.when")}</span>
+              <span>{t("table.session")}</span>
+              <span>{t("table.where")}</span>
+              <span className="text-right">{t("table.fee")}</span>
             </div>
 
             <ul className="border-b border-border sm:border-b-0">
@@ -71,16 +72,18 @@ export function EventsAgenda({ block, data, editable }: SectionProps) {
 
                     <div className="text-[0.95rem] text-muted-foreground">
                       {e.type === "onsite_event"
-                        ? e.location || "In person"
-                        : "Online, live"}
+                        ? e.location || t("event.inPerson")
+                        : t("event.onlineLive")}
                     </div>
 
                     <div className="flex items-center justify-between sm:flex-col sm:items-end sm:justify-center">
                       <span className={cn(NUM, "font-display text-[1.15rem]")}>
-                        {eventPriceLabel(e, locale)}
+                        {eventPriceLabel(e, locale, t)}
                       </span>
                       <span className="inline-flex items-center gap-2 text-[0.85rem] font-medium sm:mt-1">
-                        <span className="ledger-link">Reserve</span>
+                        <span className="ledger-link">
+                          {t("event.reserve")}
+                        </span>
                         <Arrow />
                       </span>
                     </div>
@@ -93,8 +96,8 @@ export function EventsAgenda({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No upcoming sessions"
-              text="Schedule a live session or event and it appears here."
+              title={t("empty.sessions.title")}
+              text={t("empty.sessions.text")}
             />
           </div>
         )}
@@ -111,10 +114,10 @@ export function EventsAgenda({ block, data, editable }: SectionProps) {
                     block={block}
                     field="ctaLabel"
                     editable={editable}
-                    placeholder="Button text"
+                    placeholder={t("placeholder.buttonText")}
                   />
                 ) : (
-                  "Full calendar"
+                  t("cta.fullCalendar")
                 )}
               </span>
               <Arrow />

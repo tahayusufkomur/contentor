@@ -2,16 +2,18 @@ import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, H2, Kicker, LABEL, Seal, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Coach lineage and story: martial lineage records and portrait alongside
  *  philosophical narrative with red seal signature. */
 export function StoryLineage({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
   const sig = str(block.signature);
 
   return (
-    <Section label={alt || "Lineage"}>
+    <Section label={alt || t("dojo.sectionStory")}>
       <div className={WRAP}>
         <div className="grid gap-y-12 lg:grid-cols-12 lg:gap-x-14">
           <div className="lg:col-span-5">
@@ -44,7 +46,7 @@ export function StoryLineage({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(H2, "mt-4 block max-w-[18ch]")}
             />
             <Rich
@@ -63,7 +65,7 @@ export function StoryLineage({ block, editable }: SectionProps) {
                     field="signature"
                     editable={editable}
                     as="p"
-                    placeholder="Your name"
+                    placeholder={t("placeholder.yourName")}
                     className="font-display text-[1.2rem] font-extrabold tracking-tight text-foreground"
                   />
                 </div>
@@ -80,7 +82,7 @@ export function StoryLineage({ block, editable }: SectionProps) {
                     block={block}
                     field="ctaLabel"
                     editable={editable}
-                    placeholder="Link text"
+                    placeholder={t("placeholder.linkText")}
                   />
                   <Arrow />
                 </SmartLink>

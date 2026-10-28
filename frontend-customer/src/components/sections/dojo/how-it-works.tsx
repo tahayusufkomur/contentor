@@ -11,20 +11,22 @@ import {
   WRAP,
   beltColor,
   beltInk,
-  beltRank,
+  beltGrade,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** Step-by-step path laid out with belt-coloured nodes (horizontal on desktop, vertical on mobile). */
 export function HowItWorksPath({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section label={alt || "The Path"}>
+    <Section label={alt || t("dojo.sectionPath")}>
       <div className={WRAP}>
         {showImage ? (
           <div className="grid gap-y-10 lg:grid-cols-12 lg:items-center lg:gap-x-12">
@@ -35,7 +37,7 @@ export function HowItWorksPath({ block, editable }: SectionProps) {
                 field="heading"
                 editable={editable}
                 as="h2"
-                placeholder="Heading"
+                placeholder={t("placeholder.heading")}
                 className={cn(H2, "mt-3.5 block max-w-[20ch]")}
               />
               <Txt
@@ -43,7 +45,7 @@ export function HowItWorksPath({ block, editable }: SectionProps) {
                 field="intro"
                 editable={editable}
                 as="p"
-                placeholder="Intro"
+                placeholder={t("placeholder.intro")}
                 className="mt-6 block max-w-[46ch] text-pretty text-[1.05rem] leading-[1.68] text-muted-foreground"
               />
             </div>
@@ -90,7 +92,10 @@ export function HowItWorksPath({ block, editable }: SectionProps) {
                     </span>
                   </div>
                   <p className={cn(LABEL, "mt-5 text-accent")}>
-                    {beltRank(i).split(" ")[0]} · Step {i + 1}
+                    {t("dojo.stepGrade", {
+                      grade: beltGrade(i, t),
+                      number: i + 1,
+                    })}
                   </p>
                   <h3
                     className={cn(
@@ -126,7 +131,10 @@ export function HowItWorksPath({ block, editable }: SectionProps) {
                   {i + 1}
                 </span>
                 <p className={cn(LABEL, "text-accent")}>
-                  {beltRank(i).split(" ")[0]} · Step {i + 1}
+                  {t("dojo.stepGrade", {
+                    grade: beltGrade(i, t),
+                    number: i + 1,
+                  })}
                 </p>
                 <h3
                   className={cn(

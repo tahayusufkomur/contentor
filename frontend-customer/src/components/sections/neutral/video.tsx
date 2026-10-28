@@ -3,6 +3,7 @@ import { EmptyHint, Txt, has } from "../kit";
 import type { StyleKit } from "../kit-contract";
 import type { SectionProps } from "../types";
 import { LoopVideo } from "./loop-video";
+import { useTranslations } from "next-intl";
 
 /** A video field: `url` and `poster` are signed on read from `video_id`. */
 type VideoValue = {
@@ -26,6 +27,7 @@ export function VideoNeutral({
   editable,
   kit,
 }: SectionProps & { kit: StyleKit }) {
+  const t = useTranslations("site");
   const value = (block.video ?? {}) as VideoValue;
   const src = clipSrc(value);
   if (!src && !editable) return null;
@@ -52,7 +54,7 @@ export function VideoNeutral({
                 field="heading"
                 editable={editable}
                 as="h2"
-                placeholder="Heading"
+                placeholder={t("placeholder.heading")}
                 className={cn(kit.h2, "block max-w-[22ch]")}
               />
             )}
@@ -62,7 +64,7 @@ export function VideoNeutral({
                 field="caption"
                 editable={editable}
                 as="p"
-                placeholder="Caption"
+                placeholder={t("placeholder.caption")}
                 className="block max-w-[46ch] text-pretty text-lg/relaxed text-muted-foreground"
               />
             )}
@@ -72,7 +74,7 @@ export function VideoNeutral({
           <LoopVideo
             src={src}
             poster={value.poster ?? undefined}
-            label={heading || "A short clip"}
+            label={heading || t("neutral.clipLabel")}
             className={cn(
               "w-full",
               wide
@@ -86,11 +88,13 @@ export function VideoNeutral({
         ) : (
           <EmptyHint
             editable={editable}
-            title={value.url ? "This link cannot loop" : "No clip yet"}
-            text={
+            title={
               value.url
-                ? "A page link (YouTube, Vimeo) cannot play here. Pick a clip from your library, or link to a video file."
-                : "Pick a clip in the panel on the left."
+                ? t("neutral.linkNoLoopTitle")
+                : t("neutral.noClipTitle")
+            }
+            text={
+              value.url ? t("neutral.linkNoLoopText") : t("neutral.noClipText")
             }
           />
         )}

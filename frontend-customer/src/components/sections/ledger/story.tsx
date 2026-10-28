@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, Fig, H2, LABEL, RunningHead, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** A memorandum: running head, framed portrait with setting print beneath,
  *  header table with From and Re hairlines, and a ruled body. */
 export function StoryMemo({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
   const showSignature = has(block, "signature", editable);
@@ -37,24 +39,28 @@ export function StoryMemo({ block, editable }: SectionProps) {
             <div className="border-b border-border">
               {showSignature && (
                 <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] items-baseline gap-x-4 border-t border-border py-2.5">
-                  <span className={cn(LABEL, "ledger-dim")}>From</span>
+                  <span className={cn(LABEL, "ledger-dim")}>
+                    {t("ledger.from")}
+                  </span>
                   <Txt
                     block={block}
                     field="signature"
                     editable={editable}
-                    placeholder="Your name"
+                    placeholder={t("placeholder.yourName")}
                     className={LABEL}
                   />
                 </div>
               )}
               <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] items-baseline gap-x-4 border-t border-border py-3">
-                <span className={cn(LABEL, "ledger-dim")}>Re</span>
+                <span className={cn(LABEL, "ledger-dim")}>
+                  {t("ledger.re")}
+                </span>
                 <Txt
                   block={block}
                   field="heading"
                   editable={editable}
                   as="h2"
-                  placeholder="Heading"
+                  placeholder={t("placeholder.heading")}
                   className={cn(
                     H2,
                     "block text-[1.6rem] leading-[1.15] md:text-[2.2rem]",
@@ -81,7 +87,7 @@ export function StoryMemo({ block, editable }: SectionProps) {
                       block={block}
                       field="ctaLabel"
                       editable={editable}
-                      placeholder="Link text"
+                      placeholder={t("placeholder.linkText")}
                     />
                   </span>
                   <Arrow />

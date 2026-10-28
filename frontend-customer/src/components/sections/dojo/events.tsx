@@ -11,10 +11,11 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, H3, LABEL, Opener, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Dojo timetable: scheduled training sessions and gradings in a ruled table. */
 export function EventsTimetable({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
@@ -22,7 +23,9 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
   return (
     <Section
       label={
-        typeof block.heading === "string" ? block.heading : "Timetable & Events"
+        typeof block.heading === "string"
+          ? block.heading
+          : t("dojo.sectionEvents")
       }
     >
       <div className={WRAP}>
@@ -56,17 +59,17 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
                       <p className="mt-1 text-[0.9rem] text-muted-foreground">
                         {e.type === "onsite_event"
                           ? e.location
-                          : "Online Live Stream"}
+                          : t("dojo.onlineLiveStream")}
                       </p>
                     )}
                   </div>
 
                   <div className="flex flex-col sm:items-end sm:text-right">
                     <span className={cn(LABEL, "text-foreground font-bold")}>
-                      {eventPriceLabel(e, locale)}
+                      {eventPriceLabel(e, locale, t)}
                     </span>
                     <span className="dojo-link mt-1.5 inline-flex items-center gap-2 text-[0.88rem] font-bold text-accent">
-                      <span>Reserve Spot</span>
+                      <span>{t("dojo.reserveSpot")}</span>
                       <Arrow />
                     </span>
                   </div>
@@ -78,8 +81,8 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No upcoming sessions scheduled"
-              text="Schedule a live training session or grading and it appears in the timetable."
+              title={t("dojo.emptyEventsTitle")}
+              text={t("dojo.emptyEventsText")}
             />
           </div>
         )}
@@ -95,10 +98,10 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "Full training calendar"
+                t("dojo.fullCalendar")
               )}
               <Arrow />
             </SmartLink>

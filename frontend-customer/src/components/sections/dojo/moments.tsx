@@ -2,11 +2,13 @@ import { cn } from "@/lib/utils";
 import { Img, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { Opener, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
 /** Asymmetric training collage with one tall and one wide focal photo. */
 export function MomentsTraining({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHead =
@@ -14,7 +16,7 @@ export function MomentsTraining({ block, editable }: SectionProps) {
   const showCaption = has(block, "caption", editable);
 
   return (
-    <Section label={alt || "Training Moments"}>
+    <Section label={alt || t("dojo.sectionMoments")}>
       <div className={WRAP}>
         {(showHead || showCaption) && (
           <Opener

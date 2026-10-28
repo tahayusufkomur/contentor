@@ -2,11 +2,13 @@ import { cn } from "@/lib/utils";
 import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H3, LABEL, Opener, Section, WRAP, pad2, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Item = { title?: string; text?: string };
 
 /** Dojo disciplines: learning pillars set out with hard rules and discipline rank numbering. */
 export function BenefitsDisciplines({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<Item>(block, "items");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -21,7 +23,7 @@ export function BenefitsDisciplines({ block, editable }: SectionProps) {
           <div>
             <div className="flex items-center justify-between border-b border-border/50 pb-3">
               <span className={cn(LABEL, "text-accent")}>
-                Discipline {pad2(i)}
+                {t("dojo.discipline", { number: pad2(i) })}
               </span>
               <span
                 aria-hidden="true"
@@ -50,7 +52,7 @@ export function BenefitsDisciplines({ block, editable }: SectionProps) {
   );
 
   return (
-    <Section label={alt || "Disciplines"}>
+    <Section label={alt || t("dojo.sectionBenefits")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
 
@@ -75,7 +77,7 @@ export function BenefitsDisciplines({ block, editable }: SectionProps) {
                     <div>
                       <div className="flex items-center justify-between border-b border-border/50 pb-3">
                         <span className={cn(LABEL, "text-accent")}>
-                          Discipline {pad2(i)}
+                          {t("dojo.discipline", { number: pad2(i) })}
                         </span>
                         <span
                           aria-hidden="true"

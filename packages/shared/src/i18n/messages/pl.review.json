@@ -1,1 +1,558 @@
-{}
+{
+  "site.placeholder.heading": {
+    "src": "a3089b7f",
+    "reviewed": false
+  },
+  "site.placeholder.headline": {
+    "src": "442250df",
+    "reviewed": false
+  },
+  "site.placeholder.subheadline": {
+    "src": "a3109be1",
+    "reviewed": false
+  },
+  "site.placeholder.pageTitle": {
+    "src": "015b7398",
+    "reviewed": false
+  },
+  "site.placeholder.kicker": {
+    "src": "4a31bf61",
+    "reviewed": false
+  },
+  "site.placeholder.intro": {
+    "src": "b4e6a310",
+    "reviewed": false
+  },
+  "site.placeholder.text": {
+    "src": "c3328c39",
+    "reviewed": false
+  },
+  "site.placeholder.caption": {
+    "src": "3428d97e",
+    "reviewed": false
+  },
+  "site.placeholder.label": {
+    "src": "74341e3c",
+    "reviewed": false
+  },
+  "site.placeholder.masthead": {
+    "src": "8ff9880f",
+    "reviewed": false
+  },
+  "site.placeholder.statement": {
+    "src": "a72ca256",
+    "reviewed": false
+  },
+  "site.placeholder.statementLine": {
+    "src": "961e5e44",
+    "reviewed": false
+  },
+  "site.placeholder.attribution": {
+    "src": "a4d81396",
+    "reviewed": false
+  },
+  "site.placeholder.yourName": {
+    "src": "ab42293e",
+    "reviewed": false
+  },
+  "site.placeholder.creatorName": {
+    "src": "43d7f3ec",
+    "reviewed": false
+  },
+  "site.placeholder.buttonText": {
+    "src": "2c1bff44",
+    "reviewed": false
+  },
+  "site.placeholder.secondButton": {
+    "src": "3066e7ed",
+    "reviewed": false
+  },
+  "site.placeholder.linkText": {
+    "src": "502f872d",
+    "reviewed": false
+  },
+  "site.placeholder.smallLine": {
+    "src": "7353041d",
+    "reviewed": false
+  },
+  "site.placeholder.smallLineBadge": {
+    "src": "6157b5cd",
+    "reviewed": false
+  },
+  "site.placeholder.smallLineLocationLevel": {
+    "src": "abca885e",
+    "reviewed": false
+  },
+  "site.placeholder.smallLineLocationFormat": {
+    "src": "73d85d95",
+    "reviewed": false
+  },
+  "site.placeholder.smallLineFormatAges": {
+    "src": "0e347734",
+    "reviewed": false
+  },
+  "site.placeholder.email": {
+    "src": "e67b76aa",
+    "reviewed": false
+  },
+  "site.placeholder.emailExample": {
+    "src": "50e2b46e",
+    "reviewed": false
+  },
+  "site.empty.courses.title": {
+    "src": "90c6b12b",
+    "reviewed": false
+  },
+  "site.empty.courses.text": {
+    "src": "7db8b939",
+    "reviewed": false
+  },
+  "site.empty.plans.title": {
+    "src": "ffb66f2e",
+    "reviewed": false
+  },
+  "site.empty.plans.text": {
+    "src": "738d168d",
+    "reviewed": false
+  },
+  "site.empty.sessions.title": {
+    "src": "a63be500",
+    "reviewed": false
+  },
+  "site.empty.sessions.text": {
+    "src": "731a4e77",
+    "reviewed": false
+  },
+  "site.sectionLabel.courses": {
+    "src": "a16536d7",
+    "reviewed": false
+  },
+  "site.sectionLabel.events": {
+    "src": "c5497bca",
+    "reviewed": false
+  },
+  "site.sectionLabel.pricing": {
+    "src": "a0d9bbad",
+    "reviewed": false
+  },
+  "site.sectionLabel.questions": {
+    "src": "9a1fc173",
+    "reviewed": false
+  },
+  "site.sectionLabel.moments": {
+    "src": "ed0cbe45",
+    "reviewed": false
+  },
+  "site.sectionLabel.photos": {
+    "src": "c8b2e864",
+    "reviewed": false
+  },
+  "site.sectionLabel.contact": {
+    "src": "b37456c4",
+    "reviewed": false
+  },
+  "site.sectionLabel.philosophy": {
+    "src": "496e9438",
+    "reviewed": false
+  },
+  "site.contact.email": {
+    "src": "84add5b2",
+    "reviewed": false
+  },
+  "site.contact.studio": {
+    "src": "5b23bd71",
+    "reviewed": false
+  },
+  "site.contact.office": {
+    "src": "6c3a72ea",
+    "reviewed": false
+  },
+  "site.contact.location": {
+    "src": "d219c681",
+    "reviewed": false
+  },
+  "site.contact.hours": {
+    "src": "9e25a34e",
+    "reviewed": false
+  },
+  "site.course.label": {
+    "src": "d82b56ca",
+    "reviewed": false
+  },
+  "site.course.lessons": {
+    "src": "21d81695",
+    "reviewed": false
+  },
+  "site.course.view": {
+    "src": "3d9c195c",
+    "reviewed": false
+  },
+  "site.price.free": {
+    "src": "75f52718",
+    "reviewed": false
+  },
+  "site.price.freeTrial": {
+    "src": "22357ca6",
+    "reviewed": false
+  },
+  "site.price.membersOnly": {
+    "src": "625ddbab",
+    "reviewed": false
+  },
+  "site.price.owned": {
+    "src": "b62ff5cc",
+    "reviewed": false
+  },
+  "site.price.includedInMembership": {
+    "src": "0d0052e7",
+    "reviewed": false
+  },
+  "site.event.reserve": {
+    "src": "187579e3",
+    "reviewed": false
+  },
+  "site.event.book": {
+    "src": "f69f2330",
+    "reviewed": false
+  },
+  "site.event.inPerson": {
+    "src": "fb95e850",
+    "reviewed": false
+  },
+  "site.event.onlineLive": {
+    "src": "1ef6804c",
+    "reviewed": false
+  },
+  "site.plan.subscribe": {
+    "src": "d6981f74",
+    "reviewed": false
+  },
+  "site.plan.subscribed": {
+    "src": "dd1242a8",
+    "reviewed": false
+  },
+  "site.plan.items": {
+    "src": "f34cfa9c",
+    "reviewed": false
+  },
+  "site.plan.itemsIncluded": {
+    "src": "41ca7e6c",
+    "reviewed": false
+  },
+  "site.plan.seeIncluded": {
+    "src": "15e96563",
+    "reviewed": false
+  },
+  "site.plan.whatsIncluded": {
+    "src": "0c0f4265",
+    "reviewed": false
+  },
+  "site.plan.includes": {
+    "src": "db54974f",
+    "reviewed": false
+  },
+  "site.plan.about": {
+    "src": "6b21fb79",
+    "reviewed": false
+  },
+  "site.table.lessons": {
+    "src": "cb9ce97b",
+    "reviewed": false
+  },
+  "site.table.price": {
+    "src": "3e8248e3",
+    "reviewed": false
+  },
+  "site.table.plan": {
+    "src": "ae2f98a0",
+    "reviewed": false
+  },
+  "site.table.when": {
+    "src": "769bb19e",
+    "reviewed": false
+  },
+  "site.table.session": {
+    "src": "f7f1997c",
+    "reviewed": false
+  },
+  "site.table.where": {
+    "src": "525f61b6",
+    "reviewed": false
+  },
+  "site.table.fee": {
+    "src": "c6e89c9c",
+    "reviewed": false
+  },
+  "site.cta.allCourses": {
+    "src": "3664267e",
+    "reviewed": false
+  },
+  "site.cta.fullCalendar": {
+    "src": "e355219e",
+    "reviewed": false
+  },
+  "site.step.label": {
+    "src": "4dc54f80",
+    "reviewed": false
+  },
+  "site.rows.emptyCoursesText": {
+    "src": "e4bdee8c",
+    "reviewed": false
+  },
+  "site.rows.emptyEventsTitle": {
+    "src": "bcb0d132",
+    "reviewed": false
+  },
+  "site.rows.emptyEventsText": {
+    "src": "c70e687b",
+    "reviewed": false
+  },
+  "site.rows.moreCourses": {
+    "src": "91afcd4c",
+    "reviewed": false
+  },
+  "site.rows.comingUp": {
+    "src": "f582e20e",
+    "reviewed": false
+  },
+  "site.rows.startCourse": {
+    "src": "4ee83113",
+    "reviewed": false
+  },
+  "site.rows.saveSpot": {
+    "src": "b8d5fb19",
+    "reviewed": false
+  },
+  "site.neutral.proofEmptyTitle": {
+    "src": "95f8d609",
+    "reviewed": false
+  },
+  "site.neutral.proofEmptyText": {
+    "src": "d2fb87e1",
+    "reviewed": false
+  },
+  "site.neutral.inThePress": {
+    "src": "1afbd031",
+    "reviewed": false
+  },
+  "site.neutral.playVideo": {
+    "src": "4ef474a5",
+    "reviewed": false
+  },
+  "site.neutral.pauseVideo": {
+    "src": "386beace",
+    "reviewed": false
+  },
+  "site.neutral.clipLabel": {
+    "src": "0be610e5",
+    "reviewed": false
+  },
+  "site.neutral.noClipTitle": {
+    "src": "d96b5217",
+    "reviewed": false
+  },
+  "site.neutral.noClipText": {
+    "src": "2baad556",
+    "reviewed": false
+  },
+  "site.neutral.linkNoLoopTitle": {
+    "src": "80111524",
+    "reviewed": false
+  },
+  "site.neutral.linkNoLoopText": {
+    "src": "5db790bc",
+    "reviewed": false
+  },
+  "site.kinetic.emptyCoursesText": {
+    "src": "53d2d2ba",
+    "reviewed": false
+  },
+  "site.kinetic.emptyEventsTitle": {
+    "src": "2a72cc65",
+    "reviewed": false
+  },
+  "site.kinetic.emptyEventsText": {
+    "src": "c5567407",
+    "reviewed": false
+  },
+  "site.kinetic.emptyPlansText": {
+    "src": "f8e8141c",
+    "reviewed": false
+  },
+  "site.dojo.sectionBenefits": {
+    "src": "3ed4ae57",
+    "reviewed": false
+  },
+  "site.dojo.sectionContact": {
+    "src": "707da09e",
+    "reviewed": false
+  },
+  "site.dojo.sectionEvents": {
+    "src": "d227d551",
+    "reviewed": false
+  },
+  "site.dojo.sectionFaq": {
+    "src": "fbd8a5f2",
+    "reviewed": false
+  },
+  "site.dojo.sectionPath": {
+    "src": "ce59c636",
+    "reviewed": false
+  },
+  "site.dojo.sectionMoments": {
+    "src": "e8a60384",
+    "reviewed": false
+  },
+  "site.dojo.sectionPricing": {
+    "src": "8ef2ba2b",
+    "reviewed": false
+  },
+  "site.dojo.sectionStory": {
+    "src": "f696463b",
+    "reviewed": false
+  },
+  "site.dojo.sectionCta": {
+    "src": "eed51598",
+    "reviewed": false
+  },
+  "site.dojo.discipline": {
+    "src": "fdb41a6e",
+    "reviewed": false
+  },
+  "site.dojo.location": {
+    "src": "e882ced6",
+    "reviewed": false
+  },
+  "site.dojo.trainingHours": {
+    "src": "d701c796",
+    "reviewed": false
+  },
+  "site.dojo.inquiries": {
+    "src": "703e5afb",
+    "reviewed": false
+  },
+  "site.dojo.messageSensei": {
+    "src": "9bd2c4c9",
+    "reviewed": false
+  },
+  "site.dojo.begin": {
+    "src": "c3651ab2",
+    "reviewed": false
+  },
+  "site.dojo.tatamiEntry": {
+    "src": "3dd26da8",
+    "reviewed": false
+  },
+  "site.dojo.reserveSpot": {
+    "src": "d5090b9f",
+    "reviewed": false
+  },
+  "site.dojo.onlineLiveStream": {
+    "src": "74e43c30",
+    "reviewed": false
+  },
+  "site.dojo.allCourses": {
+    "src": "46454f31",
+    "reviewed": false
+  },
+  "site.dojo.fullCalendar": {
+    "src": "053bec83",
+    "reviewed": false
+  },
+  "site.dojo.emptyCoursesText": {
+    "src": "c79a4285",
+    "reviewed": false
+  },
+  "site.dojo.emptyEventsTitle": {
+    "src": "3b747e31",
+    "reviewed": false
+  },
+  "site.dojo.emptyEventsText": {
+    "src": "6386ac94",
+    "reviewed": false
+  },
+  "site.dojo.tier": {
+    "src": "e9009770",
+    "reviewed": false
+  },
+  "site.dojo.planItems": {
+    "src": "0fbc59e9",
+    "reviewed": false
+  },
+  "site.dojo.activeMembership": {
+    "src": "2ddd1656",
+    "reviewed": false
+  },
+  "site.dojo.duesPolicy": {
+    "src": "32f60a11",
+    "reviewed": false
+  },
+  "site.dojo.stepGrade": {
+    "src": "75331292",
+    "reviewed": false
+  },
+  "site.dojo.belts.white.rank": {
+    "src": "626f61c0",
+    "reviewed": false
+  },
+  "site.dojo.belts.white.grade": {
+    "src": "5633922c",
+    "reviewed": false
+  },
+  "site.dojo.belts.yellow.rank": {
+    "src": "9c89ad01",
+    "reviewed": false
+  },
+  "site.dojo.belts.yellow.grade": {
+    "src": "e1769479",
+    "reviewed": false
+  },
+  "site.dojo.belts.orange.rank": {
+    "src": "1d9d9f90",
+    "reviewed": false
+  },
+  "site.dojo.belts.orange.grade": {
+    "src": "e1e535b6",
+    "reviewed": false
+  },
+  "site.dojo.belts.green.rank": {
+    "src": "0c4fbd55",
+    "reviewed": false
+  },
+  "site.dojo.belts.green.grade": {
+    "src": "a1207799",
+    "reviewed": false
+  },
+  "site.dojo.belts.blue.rank": {
+    "src": "5f9cc384",
+    "reviewed": false
+  },
+  "site.dojo.belts.blue.grade": {
+    "src": "008413d5",
+    "reviewed": false
+  },
+  "site.dojo.belts.brown.rank": {
+    "src": "c7c9bef0",
+    "reviewed": false
+  },
+  "site.dojo.belts.brown.grade": {
+    "src": "efc920c5",
+    "reviewed": false
+  },
+  "site.dojo.belts.black.rank": {
+    "src": "4d2252ff",
+    "reviewed": false
+  },
+  "site.dojo.belts.black.grade": {
+    "src": "efc920c5",
+    "reviewed": false
+  },
+  "site.ledger.from": {
+    "src": "3f66052a",
+    "reviewed": false
+  },
+  "site.ledger.re": {
+    "src": "e39422d2",
+    "reviewed": false
+  }
+}

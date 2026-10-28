@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Fig, LABEL, RunningHead, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Size the statement to its length: short lines get poster scale, longer ones
  *  stay measured. */
@@ -16,11 +17,12 @@ function quoteSize(len: number) {
 /** A core principle set on bone surface: running head, section mark in oxblood,
  *  light serif statement, and an optional wide framed plate below. */
 export function PhilosophyPrinciples({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="surface" label="Philosophy">
+    <Section tone="surface" label={t("sectionLabel.philosophy")}>
       <div className={WRAP}>
         <RunningHead block={block} editable={editable} />
 
@@ -31,7 +33,7 @@ export function PhilosophyPrinciples({ block, editable }: SectionProps) {
               field="statement"
               editable={editable}
               as="p"
-              placeholder="Statement"
+              placeholder={t("placeholder.statement")}
               className={cn(
                 "block text-balance break-words font-display font-normal tracking-[-0.015em]",
                 quoteSize(statement.length),
@@ -45,7 +47,7 @@ export function PhilosophyPrinciples({ block, editable }: SectionProps) {
                 block={block}
                 field="attribution"
                 editable={editable}
-                placeholder="Attribution"
+                placeholder={t("placeholder.attribution")}
                 className={LABEL}
               />
             </figcaption>

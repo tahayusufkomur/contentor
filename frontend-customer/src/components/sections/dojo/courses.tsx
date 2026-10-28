@@ -21,16 +21,22 @@ import {
   WRAP,
   beltRank,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Courses catalogue formatted as a ranked progression of belt levels. */
 export function CoursesBelts({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Courses"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.courses")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -46,12 +52,11 @@ export function CoursesBelts({ block, data, editable }: SectionProps) {
                   <BeltStripe index={i} className="h-1.5" />
                   <div className="flex items-center justify-between border-b border-border/60 px-5 py-3">
                     <span className={cn(LABEL, "text-accent")}>
-                      {beltRank(i)}
+                      {beltRank(i, t)}
                     </span>
                     {c.lesson_count ? (
                       <span className="dojo-tnum text-[0.78rem] font-medium text-muted-foreground">
-                        {c.lesson_count}{" "}
-                        {c.lesson_count === 1 ? "lesson" : "lessons"}
+                        {t("course.lessons", { count: c.lesson_count })}
                       </span>
                     ) : null}
                   </div>
@@ -84,7 +89,7 @@ export function CoursesBelts({ block, data, editable }: SectionProps) {
                         className="dojo-price font-display text-[1.15rem] font-bold text-foreground"
                       />
                       <span className="inline-flex items-center gap-1.5 text-[0.85rem] font-bold text-foreground group-hover:text-accent transition-colors">
-                        <span>Begin</span>
+                        <span>{t("dojo.begin")}</span>
                         <Arrow />
                       </span>
                     </div>
@@ -97,8 +102,8 @@ export function CoursesBelts({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No published courses yet"
-              text="Publish a course and it appears here ranked by belt."
+              title={t("empty.courses.title")}
+              text={t("dojo.emptyCoursesText")}
             />
           </div>
         )}
@@ -114,10 +119,10 @@ export function CoursesBelts({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "All courses & syllabus"
+                t("dojo.allCourses")
               )}
               <Arrow />
             </SmartLink>

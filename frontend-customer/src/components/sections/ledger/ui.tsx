@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { Block } from "@/types/tenant";
 import type { EditableContext } from "@/lib/blocks/types";
 import { Txt, has } from "../kit";
+import { useTranslations } from "next-intl";
 
 /** Inner measure every ledger section aligns to. */
 export const WRAP = "mx-auto w-full max-w-[80rem] px-5 md:px-8";
@@ -183,6 +184,7 @@ export function Opener({
   right?: ReactNode;
   className?: string;
 }) {
+  const t = useTranslations("site");
   return (
     <div className={className}>
       <RunningHead block={block} editable={editable} right={right} />
@@ -192,7 +194,7 @@ export function Opener({
           field="heading"
           editable={editable}
           as="h2"
-          placeholder="Heading"
+          placeholder={t("placeholder.heading")}
           className={cn(H2, "block max-w-[18ch] lg:col-span-7")}
         />
         {field && (
@@ -201,7 +203,7 @@ export function Opener({
             field={field}
             editable={editable}
             as="p"
-            placeholder="Intro"
+            placeholder={t("placeholder.intro")}
             className="block max-w-[44ch] self-end text-pretty text-[1.0625rem] leading-[1.65] text-muted-foreground lg:col-span-4 lg:col-start-9"
           />
         )}

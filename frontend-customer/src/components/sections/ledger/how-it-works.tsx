@@ -3,12 +3,14 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { Fig, H2, H3, Ref, RULE, RunningHead, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** Steps formatted as quarters: running head, tick marks with mono Q-labels
  *  and vertical hairlines, and ruled columns. */
 export function HowItWorksQuarters({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -25,7 +27,7 @@ export function HowItWorksQuarters({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(H2, "block max-w-[18ch]")}
             />
             <Txt
@@ -33,7 +35,7 @@ export function HowItWorksQuarters({ block, editable }: SectionProps) {
               field="intro"
               editable={editable}
               as="p"
-              placeholder="Intro"
+              placeholder={t("placeholder.intro")}
               className="mt-7 block max-w-[44ch] text-pretty text-[1.0625rem] leading-[1.65] text-muted-foreground"
             />
           </div>

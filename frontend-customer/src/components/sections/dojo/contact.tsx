@@ -2,22 +2,24 @@ import { cn } from "@/lib/utils";
 import { ContactForm, Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, LABEL, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Dojo location, training hours, and inquiry form with hard ruled dividers. */
 export function ContactDojoinfo({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showForm = block.showForm !== false;
   const email = str(block.email);
 
   const rows: { field: string; label: string }[] = [
-    { field: "location", label: "Dojo Location" },
-    { field: "hours", label: "Training Hours" },
-    { field: "email", label: "Inquiries" },
+    { field: "location", label: t("dojo.location") },
+    { field: "hours", label: t("dojo.trainingHours") },
+    { field: "email", label: t("dojo.inquiries") },
   ].filter((r) => has(block, r.field, editable));
 
   return (
-    <Section label={alt || "Dojo Contact & Location"}>
+    <Section label={alt || t("dojo.sectionContact")}>
       <div className={cn(WRAP, "grid gap-y-14 lg:grid-cols-12 lg:gap-x-14")}>
         <div className={showForm ? "lg:col-span-5" : "lg:col-span-7"}>
           <Kicker block={block} editable={editable} />
@@ -26,7 +28,7 @@ export function ContactDojoinfo({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(
               H2,
               "mt-4 block max-w-[18ch] text-[clamp(1.9rem,1.4rem+2vw,3.3rem)] leading-[1.06]",
@@ -37,7 +39,7 @@ export function ContactDojoinfo({ block, editable }: SectionProps) {
             field="text"
             editable={editable}
             as="p"
-            placeholder="Text"
+            placeholder={t("placeholder.text")}
             className="mt-6 block max-w-[46ch] text-pretty text-[1.05rem] leading-[1.68] text-muted-foreground"
           />
 
@@ -85,7 +87,7 @@ export function ContactDojoinfo({ block, editable }: SectionProps) {
           <div className="lg:col-span-6 lg:col-start-7">
             <div className="border border-border bg-background p-6 sm:p-10">
               <p className={cn(LABEL, "mb-6 text-foreground")}>
-                Direct Message to Sensei
+                {t("dojo.messageSensei")}
               </p>
               <ContactForm
                 className="dojo-form space-y-7"
