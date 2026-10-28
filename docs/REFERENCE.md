@@ -621,7 +621,7 @@ drafts so the coach reviews before going live. `available_niches()` auto-discove
 
 ## 10. Frontend architecture
 
-Two App-Router apps. Both: `next-intl`, host-based locale (no `/en/` URL prefix),
+Two App-Router apps. Both: `next-intl`, locale per route (no `/en/` URL prefix: the site's language, but `/admin` and `/setup` follow the creator),
 Tailwind, Radix, `sonner` toasts, JWT in the `contentor_access_token` cookie, and a
 `next.config` rewrite of `/api/v1/*` to Django so the browser needs no CORS.
 

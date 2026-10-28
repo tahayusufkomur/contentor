@@ -1,3 +1,17 @@
+## Text and languages (en, tr, de, pl)
+
+Enforced by `scripts/check-i18n.mjs` and `manage.py i18n_check` in `make lint`. Never hard-code text a person reads; English is the source.
+
+- **Namespaces by reader:** `site` (visitors and students, section kits, block placeholders) and `studio` (creator-facing shared components) live in `packages/shared/src/i18n/messages`; `admin`, `student`, `pwa`, `common` in `frontend-customer/messages`; `marketing`, `pricing`, `auth`, `common` in `frontend-main/messages`.
+- **Keys** are camelCase and name the meaning (`emptyCourses`, not `noPublishedCoursesYet`); a repeated placeholder shares one key. Never glue sentence pieces; one key per sentence.
+- **Counts** are ICU: `{count, plural, one {# course} other {# courses}}`; never `n === 1 ? …`. Variables are `{name}`.
+- **Dates, numbers, money:** `useFormatter()` / `getFormatter()` or `lib/format.ts` with the active locale; never `"en-US"`, never `undefined`. Upper-case with CSS or `toLocaleUpperCase(locale)`.
+- **Backend:** `from django.utils.translation import gettext as _` (`gettext_lazy` at module level, `ngettext`, `pgettext`), literals only with `%(name)s`, never an f-string. Rename throwaway `_` targets (`x, _created = …`). Outside a request (Celery, emails, AI, beat) wrap the work in `translation.override(site_language())` for students or `override(creator_language(user))` for the creator (`apps.core.languages`).
+- **AI:** `apps.core.ai` calls take `language=`: the site language for what visitors read, the creator's for what the creator reads. Pix4Less queries and image prompts stay English.
+- **Never** list the locale codes in code: use `packages/shared/src/i18n/locales` and `apps.core.languages` (`# not-site-locales` marks a list of something else).
+- **After adding or changing English, run `make translate`** (drafts `tr`, `de`, `pl`, marked unreviewed). After removing hard-coded text, lower the ratchets: `node scripts/check-i18n.mjs --update` and `docker compose exec -T django python manage.py i18n_check --update`.
+- Voice is informal (`du`, `ty`, `sen`); terms follow `docs/GLOSSARY.md` (creator, platform, live session).
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 

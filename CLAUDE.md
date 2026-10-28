@@ -92,6 +92,20 @@ Enforced by `scripts/check-loading-patterns.mjs` in `make lint` — following th
 - Overlays that fetch open immediately with a skeleton body; never hold an overlay closed while fetching.
 - Internal navigation: `<NavLink>` (never raw `next/link`) and `useNavigate()` (never `router.push`) — they drive the top progress bar. `useTransition`'s `isPending` is NOT a usable navigation signal in the App Router; `NavigationProvider` derives `isNavigating` from a pending href cleared on route commit.
 
+## Text and languages (en, tr, de, pl)
+
+Enforced by `scripts/check-i18n.mjs` and `manage.py i18n_check` in `make lint`. Never hard-code text a person reads; English is the source.
+
+- **Namespaces by reader:** `site` (visitors and students, section kits, block placeholders) and `studio` (creator-facing shared components) live in `packages/shared/src/i18n/messages`; `admin`, `student`, `pwa`, `common` in `frontend-customer/messages`; `marketing`, `pricing`, `auth`, `common` in `frontend-main/messages`.
+- **Keys** are camelCase and name the meaning (`emptyCourses`, not `noPublishedCoursesYet`); a repeated placeholder shares one key. Never glue sentence pieces; one key per sentence.
+- **Counts** are ICU: `{count, plural, one {# course} other {# courses}}`; never `n === 1 ? …`. Variables are `{name}`.
+- **Dates, numbers, money:** `useFormatter()` / `getFormatter()` or `lib/format.ts` with the active locale; never `"en-US"`, never `undefined`. Upper-case with CSS or `toLocaleUpperCase(locale)`.
+- **Backend:** `from django.utils.translation import gettext as _` (`gettext_lazy` at module level, `ngettext`, `pgettext`), literals only with `%(name)s`, never an f-string. Rename throwaway `_` targets (`x, _created = …`). Outside a request (Celery, emails, AI, beat) wrap the work in `translation.override(site_language())` for students or `override(creator_language(user))` for the creator (`apps.core.languages`).
+- **AI:** `apps.core.ai` calls take `language=`: the site language for what visitors read, the creator's for what the creator reads. Pix4Less queries and image prompts stay English.
+- **Never** list the locale codes in code: use `packages/shared/src/i18n/locales` and `apps.core.languages` (`# not-site-locales` marks a list of something else).
+- **After adding or changing English, run `make translate`** (drafts `tr`, `de`, `pl`, marked unreviewed). After removing hard-coded text, lower the ratchets: `node scripts/check-i18n.mjs --update` and `docker compose exec -T django python manage.py i18n_check --update`.
+- Voice is informal (`du`, `ty`, `sen`); terms follow `docs/GLOSSARY.md` (creator, platform, live session).
+
 ## Deploy (home server)
 
 Prod = two mini PCs (Debian) on the home LAN behind Cloudflare, run by the fleet tooling in `~/ws/home-server/` (runbook: its `docs/LOAD-BALANCING.md`; picture: the "Two-server setup" frame in `docs/diagrams/contentor.excalidraw`, the one canvas for all contentor diagrams, opened with the `diagrams` command). A Cloudflare load balancer spreads `contentor.app`, `tr.` and `*.contentor.app` (tenant subdomains) over one tunnel per node, sticky per browser. `acemagic` (192.168.178.76) is the active node and holds all state (`postgres`, `redis`, plus the `celery-beat` and `vector` singletons); `prodesk` (192.168.178.72) runs only the app tier, which reaches acemagic's Postgres and Redis under the same hostnames over an encrypted Swarm overlay, and keeps a streaming Postgres standby. If the active node dies, the fleet agents promote the standby, but only while armed (`make failover-status` in `~/ws/home-server`). LiveCraft and the AI hub (`agent-container-hub`) run on acemagic only, outside failover.

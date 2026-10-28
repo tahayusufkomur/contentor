@@ -32,7 +32,7 @@ import type {
 // The fields of a reel the reel editor and the video studio both show, each change saved at once (use-reel).
 
 // The caption languages the server translates into (backend/apps/reels/moments.py LANGUAGES).
-const LANGUAGES = ["en", "de", "es", "fr", "it", "nl", "pl", "pt", "tr"];
+const LANGUAGES = ["en", "de", "es", "fr", "it", "nl", "pl", "pt", "tr"]; // not-site-locales
 const STYLES: ReelStyle[] = ["bold", "clean", "brand"];
 const LAYOUTS: ReelLayout[] = ["auto", "center", "fit"];
 

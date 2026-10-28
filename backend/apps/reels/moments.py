@@ -30,7 +30,7 @@ MAX_SENTENCES = 3000  # ~3 hours of talk
 LEAD, TAIL = 0.12, 0.3  # kept before a moment's first word and after its last
 LABEL = "contentor:reels"
 KINDS = ("send", "funny", "hook", "insight")
-LANGUAGES = {
+LANGUAGES = {  # not-site-locales: the caption languages
     "en": "English",
     "de": "German",
     "es": "Spanish",

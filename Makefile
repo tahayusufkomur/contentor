@@ -135,10 +135,14 @@ typecheck: ## Typecheck both Next.js apps (tsc --noEmit; covers packages/shared 
 typecheck-backend: ## Advisory mypy run (config in backend/pyproject.toml; not yet a gate)
 	-docker compose exec django mypy apps --config-file pyproject.toml
 
-lint: ## Run all linters via pre-commit, then loading-pattern check, selector self-test, section-manifest sync check, and TS typecheck
+lint: ## Run all linters via pre-commit, then loading-pattern check, i18n checks, selector self-test, section-manifest sync check, and TS typecheck
 	pre-commit run --all-files
 	python3 scripts/sync_sections.py --check
 	node scripts/check-loading-patterns.mjs
+	node scripts/check-i18n.mjs
+	node scripts/check-i18n.mjs --self-test
+	python3 scripts/translate.py --self-test
+	docker compose exec -T django python manage.py i18n_check
 	python3 scripts/select_tests.py --self-test
 	@$(MAKE) typecheck
 
