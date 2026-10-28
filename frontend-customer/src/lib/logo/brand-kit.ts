@@ -10,7 +10,12 @@
 // fails the kit degrades to PNGs-only (spec rule) — never a broken SVG.
 import JSZip from "jszip";
 import { parse as parseFont, type Font } from "opentype.js";
-import { imageToDataUrl, svgToPngBlob, type FontSpec } from "@/lib/logo/export";
+import {
+  imageToDataUrl,
+  subsetsFor,
+  svgToPngBlob,
+  type FontSpec,
+} from "@/lib/logo/export";
 import type { Fill, LogoRecipe, MarkFill } from "@/types/logo";
 
 /** WCAG-ish relative luminance of a #rrggbb hex, 0..1. */
@@ -80,13 +85,7 @@ export function fontsourceUrl(
   return `https://cdn.jsdelivr.net/fontsource/fonts/${slug}@latest/${subset}-${weight}-normal.ttf`;
 }
 
-/** Fontsource subsets a string needs: Turkish/Polish letters (U+0100-024F,
- * U+1E00-1EFF) live in latin-ext; Latin-1 accents (German) are in latin. */
-export function subsetsFor(text: string): string[] {
-  return /[\u0100-\u024F\u1E00-\u1EFF]/.test(text)
-    ? ["latin", "latin-ext"]
-    : ["latin"];
-}
+export { subsetsFor };
 
 const fontCache = new Map<string, Promise<Font>>();
 

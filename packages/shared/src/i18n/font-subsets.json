@@ -1,4 +1,5 @@
 {
+  "_source": "Generated 2026-10-28 from https://fonts.google.com/metadata/fonts (familyMetadataList[].subsets, minus 'menu'); families = site style display/body/googleQuery + LOGO_FONTS + Hanken Grotesk (setup) + Anton (reel cover).",
   "Albert Sans": [
     "latin",
     "latin-ext"
@@ -17,6 +18,11 @@
     "cyrillic-ext",
     "greek",
     "greek-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Anton": [
     "latin",
     "latin-ext",
     "vietnamese"
@@ -76,6 +82,14 @@
     "latin-ext",
     "vietnamese"
   ],
+  "Courier Prime": [
+    "latin",
+    "latin-ext"
+  ],
+  "DM Mono": [
+    "latin",
+    "latin-ext"
+  ],
   "DM Sans": [
     "latin",
     "latin-ext"
@@ -95,6 +109,11 @@
     "vietnamese"
   ],
   "Figtree": [
+    "latin",
+    "latin-ext"
+  ],
+  "Fragment Mono": [
+    "cyrillic-ext",
     "latin",
     "latin-ext"
   ],
@@ -132,6 +151,13 @@
   "Host Grotesk": [
     "latin",
     "latin-ext"
+  ],
+  "IBM Plex Mono": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
   ],
   "IBM Plex Sans": [
     "cyrillic",
@@ -298,6 +324,11 @@
     "vietnamese"
   ],
   "Space Grotesk": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Space Mono": [
     "latin",
     "latin-ext",
     "vietnamese"

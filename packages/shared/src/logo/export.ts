@@ -66,8 +66,22 @@ export async function imageToDataUrl(url: string): Promise<string> {
 // time. Failures aren't cached.
 const fontCssCache = new Map<string, Promise<string>>();
 
-function fontFaceCss(fontFamily: string, weight: number): Promise<string> {
-  const key = `${fontFamily}:${weight}`;
+/** Google Fonts subsets a string needs: Turkish/Polish letters (U+0100-024F,
+ * U+1E00-1EFF) live in latin-ext; Latin-1 accents (German) are in latin. */
+export function subsetsFor(text: string): string[] {
+  return /[\u0100-\u024F\u1E00-\u1EFF]/.test(text)
+    ? ["latin", "latin-ext"]
+    : ["latin"];
+}
+
+/** `withExt`: also embed the latin-ext face (only when the text needs it).
+ * An ext download that fails degrades to latin only. */
+export function fontFaceCss(
+  fontFamily: string,
+  weight: number,
+  withExt = false,
+): Promise<string> {
+  const key = `${fontFamily}:${weight}:${withExt}`;
   let cached = fontCssCache.get(key);
   if (!cached) {
     cached = (async () => {
@@ -82,20 +96,22 @@ function fontFaceCss(fontFamily: string, weight: number): Promise<string> {
       // unicode-range so each file only answers for its own letters. Latin
       // goes last: it wins the few overlapping code points (U+0131), as in
       // Google's own css.
-      const extBlock = blocks.find((block) =>
-        /unicode-range:\s*U\+0100-/i.test(block),
-      );
+      const extBlock = withExt
+        ? blocks.find((block) => /unicode-range:\s*U\+0100-/i.test(block))
+        : undefined;
 
-      const faces = await Promise.all(
-        [extBlock, latinBlock].map(async (block) => {
-          const url = block?.match(/src:\s*url\((https:[^)]+)\)/)?.[1];
-          if (!block || !url) return "";
-          const range = block.match(/unicode-range:\s*([^;]+);/i)?.[1];
-          const fontData = await imageToDataUrl(url);
-          return `@font-face{font-family:'${fontFamily}';font-weight:${weight};src:url(${fontData});${range ? `unicode-range:${range};` : ""}}`;
-        }),
-      );
-      return faces.join("");
+      const face = async (block: string | undefined) => {
+        const url = block?.match(/src:\s*url\((https:[^)]+)\)/)?.[1];
+        if (!block || !url) return "";
+        const range = block.match(/unicode-range:\s*([^;]+);/i)?.[1];
+        const fontData = await imageToDataUrl(url);
+        return `@font-face{font-family:'${fontFamily}';font-weight:${weight};src:url(${fontData});${range ? `unicode-range:${range};` : ""}}`;
+      };
+      const [ext, latin] = await Promise.all([
+        face(extBlock).catch(() => ""),
+        face(latinBlock),
+      ]);
+      return ext + latin;
     })();
     cached.catch(() => fontCssCache.delete(key));
     fontCssCache.set(key, cached);
@@ -152,13 +168,21 @@ export async function svgToPngBlob(
     }
   }
 
+  const withExt = subsetsFor(
+    Array.from(svg.querySelectorAll("text"), (t) => t.textContent ?? "").join(
+      "",
+    ),
+  ).includes("latin-ext");
+
   // Inline every (family, weight) webfont the recipe uses so <text> renders
   // with the chosen families. Fails open: a missing/unreachable font
   // degrades to the <text> element's own `sans-serif` fallback rather than
   // failing the export.
   try {
     const css = (
-      await Promise.all(unique.map((f) => fontFaceCss(f.family, f.weight)))
+      await Promise.all(
+        unique.map((f) => fontFaceCss(f.family, f.weight, withExt)),
+      )
     ).join("");
     if (css) {
       const style = document.createElementNS(

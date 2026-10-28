@@ -14,16 +14,38 @@ const styleFamilies = readdirSync(stylesDir)
   .filter((f) => f.endsWith(".json"))
   .flatMap((f) => {
     const { fonts } = JSON.parse(readFileSync(path.join(stylesDir, f), "utf8"));
-    return [fonts.display, fonts.body] as string[];
+    // googleQuery is what the page actually loads (it holds a third, mono
+    // family for some styles), so it is the source of truth with display/body.
+    const loaded = [...fonts.googleQuery.matchAll(/family=([^:&]+)/g)].map(
+      (m) => (m[1] as string).replace(/\+/g, " "),
+    );
+    return [fonts.display, fonts.body, ...loaded] as string[];
   });
+// The reel cover loads its heavy face from Google too.
+const reelCoverFamilies = [
+  ...readFileSync(
+    path.resolve(__dirname, "../../components/reels/reel-cover.tsx"),
+    "utf8",
+  ).matchAll(/fonts\.googleapis\.com\/css2\?family=([^:&"]+)/g),
+].map((m) => (m[1] as string).replace(/\+/g, " "));
 
-const table = fontSubsets as Record<string, string[]>;
+const table = fontSubsets as unknown as Record<string, string[]>;
 const needed = [...new Set(locales.locales.flatMap((l) => l.subsets))];
 
 describe("font-subsets.json", () => {
   const families = [
-    ...new Set([...styleFamilies, ...LOGO_FONT_FAMILIES, "Hanken Grotesk"]),
+    ...new Set([
+      ...styleFamilies,
+      ...reelCoverFamilies,
+      ...LOGO_FONT_FAMILIES,
+      "Hanken Grotesk",
+    ]),
   ];
+
+  it("reads the mono families a style loads through googleQuery", () => {
+    expect(families).toContain("IBM Plex Mono");
+    expect(families).toContain("Anton");
+  });
 
   it.each(families)(
     "%s is listed and covers every locale's subsets",
