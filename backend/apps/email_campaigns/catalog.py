@@ -12,6 +12,7 @@ from zoneinfo import ZoneInfo
 from django.db.models import F
 from django.utils import timezone
 from django.utils.html import strip_tags
+from django.utils.translation import gettext as _
 
 from . import images
 
@@ -82,7 +83,7 @@ def _price(obj) -> str:
         return ""
     parts = []
     if ways.get("free"):
-        parts.append("Free")
+        parts.append(_("Free"))
     if ways.get("buy"):
         parts.append(money(ways["buy"]["price"]))
     if ways.get("plans"):

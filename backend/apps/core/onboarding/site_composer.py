@@ -41,12 +41,15 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db import connection, transaction
 from django.utils import timezone
+from django.utils.translation import gettext as _
+from django.utils.translation import override
 from django_tenants.utils import tenant_context
 from pydantic import BaseModel, Field, create_model
 
 from apps.core import ai as core_ai
 from apps.core.curated_images import cache as curated_cache
 from apps.core.curated_images import client as curated_client
+from apps.core.languages import site_language
 from apps.core.onboarding import ai_compose, ai_curate
 from apps.tenant_config import sections
 from apps.tenant_config.defaults import KNOWN_PAGE_KEYS
@@ -976,13 +979,27 @@ _GENERIC_SUBJECTS = {
 }
 
 
-def _default_ideas(ctx) -> dict:
+def _default_ideas(ctx, language="en") -> dict:
+    """The fallback idea titles, in the site's ``language`` (what she sees are drafts for her site)."""
     t, T = ctx["topic"], ctx["Topic"]  # noqa: N806
-    return {
-        "course_ideas": [f"{T} foundations", f"Your first four weeks of {t}", f"{T} for complete beginners"],
-        "event_ideas": [f"Live {t} session", f"{T} questions, answered live", f"Beginners' {t} workshop"],
-        "post_ideas": [ctx["why"], f"What to expect from your first {t} session", f"Three {t} questions I hear"],
-    }
+    with override(language):
+        return {
+            "course_ideas": [
+                _("%(Topic)s foundations") % {"Topic": T},
+                _("Your first four weeks of %(topic)s") % {"topic": t},
+                _("%(Topic)s for complete beginners") % {"Topic": T},
+            ],
+            "event_ideas": [
+                _("Live %(topic)s session") % {"topic": t},
+                _("%(Topic)s questions, answered live") % {"Topic": T},
+                _("Beginners' %(topic)s workshop") % {"topic": t},
+            ],
+            "post_ideas": [
+                ctx["why"],
+                _("What to expect from your first %(topic)s session") % {"topic": t},
+                _("Three %(topic)s questions I hear") % {"topic": t},
+            ],
+        }
 
 
 PLAN_LOCK_SECONDS = 360  # longer than a plan run with its wait for a free hub account (apps.core.ai)
@@ -1066,7 +1083,7 @@ def _plan_site(tenant, *, force=False) -> dict:
         for entry in entries:
             for slot in _slot_specs(entry["family"]):
                 entry["images"].setdefault(slot, _generic_brief(entry["family"], slot, ctx, page))
-    ideas = _default_ideas(ctx)
+    ideas = _default_ideas(ctx, site_language(tenant))
     for key in ideas:
         got = [" ".join(str(x).split())[:IDEA_MAX] for x in (getattr(raw, key, None) or []) if str(x).strip()]
         plan[key] = got[:3] or ideas[key]

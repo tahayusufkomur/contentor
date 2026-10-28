@@ -1,6 +1,8 @@
 import logging
 
 from celery import shared_task
+from django.utils.translation import gettext as _
+from django.utils.translation import override
 from django_tenants.utils import tenant_context
 
 logger = logging.getLogger(__name__)
@@ -21,57 +23,60 @@ def _set_provisioning_stage(tenant, stage):
         )
 
 
-def _create_default_config(tenant, preferred_locale):
-    """Create the tenant's default TenantConfig (called once per tenant schema)."""
+def _create_default_config(tenant, site_locale):
+    """Create the tenant's default TenantConfig (called once per tenant schema).
+    What it writes onto the site is in ``site_locale``."""
+    from apps.core.languages import resolve
     from apps.tenant_config.defaults import default_pages
     from apps.tenant_config.models import TenantConfig
 
-    TenantConfig.objects.create(
-        brand_name=tenant.name,
-        default_locale=preferred_locale,
-        pages=default_pages(tenant.name),
-        enabled_modules=[
-            "courses",
-            "live",
-            "community",
-            "downloads",
-            "billing",
-            "campaigns",
-            "analytics",
-            "pages",
-        ],
-        navbar_config={
-            "links": [
-                {"label": "Courses", "href": "/courses"},
-                {"label": "Events", "href": "/events"},
-                {"label": "About", "href": "/about"},
+    with override(resolve(site_locale)):
+        TenantConfig.objects.create(
+            brand_name=tenant.name,
+            default_locale=site_locale,
+            pages=default_pages(tenant.name),
+            enabled_modules=[
+                "courses",
+                "live",
+                "community",
+                "downloads",
+                "billing",
+                "campaigns",
+                "analytics",
+                "pages",
             ],
-            "cta": {"text": "Get Started", "href": "/courses"},
-            "show_login": True,
-            "layout": "classic",
-        },
-        landing_sections={
-            "hero": {
-                "enabled": True,
-                "headline": f"Welcome to {tenant.name}",
-                "subheadline": "Explore our courses and start learning today.",
-                "cta_text": "Browse Courses",
-                "cta_href": "/courses",
-                "bg_image_url": None,
+            navbar_config={
+                "links": [
+                    {"label": _("Courses"), "href": "/courses"},
+                    {"label": _("Events"), "href": "/events"},
+                    {"label": _("About"), "href": "/about"},
+                ],
+                "cta": {"text": _("Get Started"), "href": "/courses"},
+                "show_login": True,
+                "layout": "classic",
             },
-            "about": {"enabled": False, "heading": "About Me", "body": "", "image_url": None},
-            "courses": {"enabled": True, "heading": "Featured Courses"},
-            "testimonials": {"enabled": False, "heading": "What students say", "items": []},
-            "faq": {"enabled": False, "heading": "FAQ", "items": []},
-            "cta": {
-                "enabled": True,
-                "heading": "Ready to start learning?",
-                "button_text": "Join Now",
-                "button_href": "/courses",
+            landing_sections={
+                "hero": {
+                    "enabled": True,
+                    "headline": _("Welcome to %(brand)s") % {"brand": tenant.name},
+                    "subheadline": _("Explore our courses and start learning today."),
+                    "cta_text": _("Browse Courses"),
+                    "cta_href": "/courses",
+                    "bg_image_url": None,
+                },
+                "about": {"enabled": False, "heading": _("About Me"), "body": "", "image_url": None},
+                "courses": {"enabled": True, "heading": _("Featured Courses")},
+                "testimonials": {"enabled": False, "heading": _("What students say"), "items": []},
+                "faq": {"enabled": False, "heading": _("FAQ"), "items": []},
+                "cta": {
+                    "enabled": True,
+                    "heading": _("Ready to start learning?"),
+                    "button_text": _("Join Now"),
+                    "button_href": "/courses",
+                },
             },
-        },
-        onboarding_completed=False,
-    )
+            onboarding_completed=False,
+        )
 
 
 def _apply_wizard_answers(tenant, answers, preferred_locale):

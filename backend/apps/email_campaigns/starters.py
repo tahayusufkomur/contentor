@@ -6,6 +6,11 @@ new look later re-skins them. Deterministic: no AI, no paid images, instant.
 
 import itertools
 
+from django.utils.translation import gettext as _
+from django.utils.translation import override
+
+from apps.core.languages import site_language
+
 from . import images
 from .models import EmailTemplate, TemplateCategory, TemplateSource
 
@@ -157,7 +162,7 @@ def _greeting_and(ids, *paragraphs, top=4):
     """ "Hi {{FirstName}}," then her paragraphs, as one text block."""
     from django.utils.html import escape
 
-    html = "<p>Hi {{FirstName}},</p>" + "".join(f"<p>{escape(p)}</p>" for p in paragraphs if p)
+    html = "<p>" + _("Hi {{FirstName}},") + "</p>" + "".join(f"<p>{escape(p)}</p>" for p in paragraphs if p)
     return {
         "id": ids(),
         "type": "text",
@@ -236,7 +241,7 @@ def _item(ids, ref, button, layout="card", style="branded"):
 
 def _sign_off(ids, owner_name):
     first = (owner_name or "").split()[0] if owner_name else ""
-    return _text(ids, ["Until soon,", first], top=8, bottom=28)
+    return _text(ids, [_("Until soon,"), first], top=8, bottom=28)
 
 
 # ── what she told us ───────────────────────────────────────────────────────────────────────────
@@ -290,7 +295,9 @@ def _joined(answer: str) -> str:
     """ "More confidence, Less stress" -> "more confidence and less stress" (her tiles, as words)."""
     parts = [p.strip() for p in str(answer or "").split(",") if p.strip()]
     parts = [p[0].lower() + p[1:] for p in parts][:3]
-    return f"{', '.join(parts[:-1])} and {parts[-1]}" if len(parts) > 1 else "".join(parts)
+    if len(parts) < 2:
+        return "".join(parts)
+    return _("%(first)s and %(last)s") % {"first": ", ".join(parts[:-1]), "last": parts[-1]}
 
 
 def _has(kind_qs) -> bool:
@@ -310,22 +317,23 @@ def _newsletter(f) -> dict:
         src = images.with_aspect(f["photo"][0], "3:2")
         body.append(_image(ids, src, f["photo"][1] or f["brand"], full=style != "letter"))
     body += [
-        _heading(ids, f"What's new at {f['brand']}", top=28),
+        _heading(ids, _("What's new at %(brand)s") % {"brand": f["brand"]}, top=28),
         _greeting_and(
             ids,
-            f["pitch"] or f"Here's what's been happening at {f['brand']}, and what's coming up next.",
-            "A few things I'd love you to see this month:",
+            f["pitch"]
+            or _("Here's what's been happening at %(brand)s, and what's coming up next.") % {"brand": f["brand"]},
+            _("A few things I'd love you to see this month:"),
         ),
-        _item(ids, "latest:post", "Read it", layout="row", style=style),
-        _item(ids, "next:event", "Save your spot", layout="row", style=style),
-        _item(ids, "latest:course", "Take a look", layout="row", style=style),
+        _item(ids, "latest:post", _("Read it"), layout="row", style=style),
+        _item(ids, "next:event", _("Save your spot"), layout="row", style=style),
+        _item(ids, "latest:course", _("Take a look"), layout="row", style=style),
         _sign_off(ids, f["owner"]),
     ]
     return {
-        "name": "Newsletter",
+        "name": _("Newsletter"),
         "category": TemplateCategory.NEWSLETTER,
-        "subject": f"News from {f['brand']}",
-        "preheader": "What's new, and what's coming up.",
+        "subject": _("News from %(brand)s") % {"brand": f["brand"]},
+        "preheader": _("What's new, and what's coming up."),
         "design": _design(style, ids, body),
     }
 
@@ -334,21 +342,21 @@ def _launch(f) -> dict:
     ids, style = _Ids(), f["style"]
     outcome = _joined(f["outcome"])
     body = [
-        _heading(ids, "Something new for you", size=34, top=32),
+        _heading(ids, _("Something new for you"), size=34, top=32),
         _greeting_and(
             ids,
-            "I've been working on something, and it's ready.",
-            f"It's made to bring you {outcome}." if outcome else "",
+            _("I've been working on something, and it's ready."),
+            _("It's made to bring you %(outcome)s.") % {"outcome": outcome} if outcome else "",
         ),
-        _item(ids, "latest:course", "See what's inside", layout="card", style=style),
-        _text(ids, ["Questions? Just reply to this email."], top=12, bottom=4, size=15, color="brand:muted"),
+        _item(ids, "latest:course", _("See what's inside"), layout="card", style=style),
+        _text(ids, [_("Questions? Just reply to this email.")], top=12, bottom=4, size=15, color="brand:muted"),
         _sign_off(ids, f["owner"]),
     ]
     return {
-        "name": "New offer",
+        "name": _("New offer"),
         "category": TemplateCategory.LAUNCH,
-        "subject": f"Something new from {f['brand']}",
-        "preheader": "It's ready, and I made it with you in mind.",
+        "subject": _("Something new from %(brand)s") % {"brand": f["brand"]},
+        "preheader": _("It's ready, and I made it with you in mind."),
         "design": _design(style, ids, body),
     }
 
@@ -356,20 +364,25 @@ def _launch(f) -> dict:
 def _invite(f) -> dict:
     ids, style = _Ids(), f["style"]
     body = [
-        _heading(ids, "Join me", size=34, top=32),
-        _greeting_and(ids, "I'd love to see you at my next session. Here are the details:"),
-        _item(ids, "next:event", "Save your spot", layout="card", style=style),
+        _heading(ids, _("Join me"), size=34, top=32),
+        _greeting_and(ids, _("I'd love to see you at my next session. Here are the details:")),
+        _item(ids, "next:event", _("Save your spot"), layout="card", style=style),
         _text(
-            ids, ["Can't make this one? There are more on my calendar."], top=12, bottom=0, size=15, color="brand:muted"
+            ids,
+            [_("Can't make this one? There are more on my calendar.")],
+            top=12,
+            bottom=0,
+            size=15,
+            color="brand:muted",
         ),
-        _button(ids, "See all sessions", "/events", style, top=16),
+        _button(ids, _("See all sessions"), "/events", style, top=16),
         _sign_off(ids, f["owner"]),
     ]
     return {
-        "name": "Session invitation",
+        "name": _("Session invitation"),
         "category": TemplateCategory.EVENT,
-        "subject": "Join me live",
-        "preheader": "Here are the details of my next session.",
+        "subject": _("Join me live"),
+        "preheader": _("Here are the details of my next session."),
         "design": _design(style, ids, body),
     }
 
@@ -378,13 +391,15 @@ def _note(f) -> dict:
     ids, style = _Ids(), f["style"]
     first = f["owner"].split()[0] if f["owner"] else f["brand"]
     body = [
-        _heading(ids, f"A note from {first}", size=26, top=28),
+        _heading(ids, _("A note from %(name)s") % {"name": first}, size=26, top=28),
         _greeting_and(
             ids,
-            "I wanted to write to you personally.",
+            _("I wanted to write to you personally."),
             f["pitch"],
-            "Write your note here. Tell them what's on your mind, what you're working on, "
-            "or what you'd love them to try.",
+            _(
+                "Write your note here. Tell them what's on your mind, what you're working on, "
+                "or what you'd love them to try."
+            ),
         ),
         {
             "id": ids(),
@@ -412,10 +427,10 @@ def _note(f) -> dict:
         },
     ]
     return {
-        "name": "Personal note",
+        "name": _("Personal note"),
         "category": TemplateCategory.NOTE,
-        "subject": f"A note from {first}",
-        "preheader": "Something I wanted to share with you.",
+        "subject": _("A note from %(name)s") % {"name": first},
+        "preheader": _("Something I wanted to share with you."),
         "design": _design(style, ids, body),
     }
 
@@ -454,6 +469,8 @@ def ensure(tenant) -> list[EmailTemplate]:
     _update_flow(tenant, mutate)
     if not claimed:  # another request made them a moment ago
         return []
+    with override(site_language()):  # what students will read is in the site's language
+        made = recipes(tenant)
     return [
         EmailTemplate.objects.create(
             name=r["name"],
@@ -463,7 +480,7 @@ def ensure(tenant) -> list[EmailTemplate]:
             preheader=r["preheader"][:255],
             source=TemplateSource.STARTER,
         )
-        for r in recipes(tenant)
+        for r in made
     ]
 
 
@@ -490,6 +507,8 @@ def compose(
     import copy
 
     ids = _Ids()
+    with override(site_language()):
+        take_a_look = _("Take a look")
     base = copy.deepcopy(template_design) if template_design else blank_design(style)
     for region in ("header", "body", "footer"):
         base.setdefault(region, {"blocks": []})
@@ -523,7 +542,7 @@ def compose(
             block["style"] = _text(ids, ["x"])["style"]
         body.append(block)
     for ref in list(refs)[:4]:
-        block = dressed(_item(ids, ref, "Take a look", layout="card" if len(refs) == 1 else "row", style=style), "item")
+        block = dressed(_item(ids, ref, take_a_look, layout="card" if len(refs) == 1 else "row", style=style), "item")
         block["id"] = fresh()
         body.append(block)
     if button_text and button_url:

@@ -7,41 +7,44 @@ Pure dict-in/dict-out; ``apply_wizard_logo`` (Task 8) is this module's only
 model-touching function.
 
 The strings below are tenant CONTENT (coach-editable after provisioning),
-not UI chrome — that's why they live here and not in a frontend message
-catalog. TR needs native review, same caveat as the signup email strings.
+not UI chrome. They are written in the site's language (``locale``); the lazy
+entries are turned into text inside ``override`` so they never evaluate in
+whatever language happens to be active.
 """
 
 from __future__ import annotations
 
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy, override
+
+from apps.core.languages import resolve
 from apps.tenant_config.defaults import header_cta
 
 from . import wizard_catalog
 
 COPY = {
-    "en": {
-        "nav_courses": "Courses",
-        "nav_events": "Events",
-        "nav_store": "Store",
-        "nav_pricing": "Pricing",
-        "nav_about": "About",
-        "nav_faq": "FAQ",
-        "featured_courses": "Featured Courses",
-        "all_courses": "All Courses",
-        "events_heading": "Upcoming Events",
-        "store_heading": "Downloads & Resources",
-        "faq_heading": "Frequently asked questions",
-        "cta_heading": "Ready to start learning?",
-        "cta_button": "Join Now",
-        "plans_heading": "Plans & Pricing",
-        "plans_subheading": "Choose a plan that fits your goals.",
-        "about_heading": "About",
-        "intro_heading": "Welcome",
-        "intro_body": "Take a look around and find what fits you.",
-        "contact_heading": "Get in touch",
-        "contact_intro": "Have a question? Send us a message.",
-        "contact_submit": "Send message",
-        "contact_success": "Thanks! We'll get back to you soon.",
-    },
+    "nav_courses": gettext_lazy("Courses"),
+    "nav_events": gettext_lazy("Events"),
+    "nav_store": gettext_lazy("Store"),
+    "nav_pricing": gettext_lazy("Pricing"),
+    "nav_about": gettext_lazy("About"),
+    "nav_faq": gettext_lazy("FAQ"),
+    "featured_courses": gettext_lazy("Featured Courses"),
+    "all_courses": gettext_lazy("All Courses"),
+    "events_heading": gettext_lazy("Upcoming Events"),
+    "store_heading": gettext_lazy("Downloads & Resources"),
+    "faq_heading": gettext_lazy("Frequently asked questions"),
+    "cta_heading": gettext_lazy("Ready to start learning?"),
+    "cta_button": gettext_lazy("Join Now"),
+    "plans_heading": gettext_lazy("Plans & Pricing"),
+    "plans_subheading": gettext_lazy("Choose a plan that fits your goals."),
+    "about_heading": gettext_lazy("About"),
+    "intro_heading": gettext_lazy("Welcome"),
+    "intro_body": gettext_lazy("Take a look around and find what fits you."),
+    "contact_heading": gettext_lazy("Get in touch"),
+    "contact_intro": gettext_lazy("Have a question? Send us a message."),
+    "contact_submit": gettext_lazy("Send message"),
+    "contact_success": gettext_lazy("Thanks! We'll get back to you soon."),
 }
 
 # courses/billing/pages/analytics are platform core — always on (the setup
@@ -56,19 +59,18 @@ GOAL_MODULES = {
 }
 
 
-def _t(locale: str) -> dict:
-    return COPY["en"]
-
-
 def _img(url=None, photo_id=None) -> dict:
     return {"url": url or None, "photo_id": str(photo_id) if photo_id else None}
 
 
 def build_config_overrides(answers: dict, *, brand_name: str, landing_sections: dict, locale: str = "en") -> dict:
-    answers = answers or {}
-    sections = landing_sections or {}
+    with override(resolve(locale)):
+        copy = {key: str(text) for key, text in COPY.items()}
+        return _overrides(answers or {}, brand_name, landing_sections or {}, copy)
+
+
+def _overrides(answers, brand_name, sections, copy) -> dict:
     goals = [g for g in (answers.get("goals") or []) if g in wizard_catalog.GOALS]
-    copy = _t(locale)
 
     links = [{"label": copy["nav_courses"], "href": "/courses"}]
     if "run_live_classes" in goals or "in_person_events" in goals:
@@ -103,7 +105,7 @@ def _hero(answers, brand_name, sections) -> dict:
     hero = sections.get("hero") or {}
     style = answers.get("hero_style") or "centered"
     bg = _img() if style == "minimal" else _img(hero.get("bg_image_url"), hero.get("bg_image_photo_id"))
-    welcome = f"Welcome to {brand_name}" if brand_name else "Welcome"
+    welcome = _("Welcome to %(brand)s") % {"brand": brand_name} if brand_name else _("Welcome")
     return {
         "id": "blk_hero",
         "type": "hero",
@@ -126,8 +128,11 @@ def _about_body(answers, brand_name) -> str:
     if description:
         return description
     niche = (answers.get("niche") or "").replace("_", " ")
-    topic = f"{niche} classes" if niche and niche != "general" else "classes"
-    return f"{brand_name or 'We'} offers {topic} you can follow from anywhere."
+    topic = _("%(niche)s classes") % {"niche": niche} if niche and niche != "general" else _("classes")
+    return _("%(brand)s offers %(topic)s you can follow from anywhere.") % {
+        "brand": brand_name or _("We"),
+        "topic": topic,
+    }
 
 
 def _about_image_text(answers, brand_name, sections, copy, block_id="blk_about") -> dict:
@@ -372,7 +377,8 @@ def apply_wizard_logo(config, answers, tenant) -> None:
 
         photo = Photo.objects.filter(s3_key=image_key).first()
         if photo is None:
-            photo = Photo.objects.create(s3_key=image_key, title="Logo")
+            with override(resolve(config.default_locale)):
+                photo = Photo.objects.create(s3_key=image_key, title=_("Logo"))
     else:
         return
     config.logo = photo

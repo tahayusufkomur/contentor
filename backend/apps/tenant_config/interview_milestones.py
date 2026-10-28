@@ -18,7 +18,10 @@ from contextlib import suppress
 from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext, gettext_lazy, override
 from django_tenants.utils import schema_context
+
+from apps.core.languages import site_language
 
 from . import interview_brief as brief
 from . import interview_schedule as schedule
@@ -164,15 +167,21 @@ def _start(tenant, answers, key) -> None:
 
 # Header links the interview adds, in the order they sit in the nav.
 NAV = (
-    ("/courses", "Courses"),
-    ("/events", "Events"),
-    ("/calendar", "Calendar"),
-    ("/plans", "Pricing"),
-    ("/blog", "Blog"),
-    ("/about", "About"),
-    ("/contact", "Contact"),
-    ("/faq", "FAQ"),
+    ("/courses", gettext_lazy("Courses")),
+    ("/events", gettext_lazy("Events")),
+    ("/calendar", gettext_lazy("Calendar")),
+    ("/plans", gettext_lazy("Pricing")),
+    ("/blog", gettext_lazy("Blog")),
+    ("/about", gettext_lazy("About")),
+    ("/contact", gettext_lazy("Contact")),
+    ("/faq", gettext_lazy("FAQ")),
 )
+
+
+def _nav() -> tuple:
+    """NAV with its labels as text in the site's language: they are written onto the site's header."""
+    with override(site_language()):
+        return tuple((href, str(label)) for href, label in NAV)
 
 
 def available_nav_links(answers: dict, current_links: list[dict]) -> list[dict]:
@@ -191,7 +200,7 @@ def available_nav_links(answers: dict, current_links: list[dict]) -> list[dict]:
         allowed.add("/plans")
     if "articles" in offers:
         allowed.add("/blog")
-    return [{"label": label, "href": href} for href, label in NAV if href in allowed]
+    return [{"label": label, "href": href} for href, label in _nav() if href in allowed]
 
 
 def sync_site(tenant, answers: dict) -> None:
@@ -243,17 +252,18 @@ def sync_site(tenant, answers: dict) -> None:
         retarget = cta.get("href") == "/courses" and offers and "course" not in offers
         default_cta_href = "/events" if runs_classes and "course" not in offers else "/courses"
         cta_override = {}
-        if "navbar_show_cta" in answers:
-            if not answers["navbar_show_cta"]:
-                cta_override = {"cta": None}
-            elif not cta:
-                cta_override = {"cta": header_cta([default_cta_href])}
-        elif retarget:
-            # The label follows the link while it is a default ("Start a course", the legacy
-            # "Get Started"); her own words keep their text and only the link moves.
-            led = header_cta(["/events"] if runs_classes else [])
-            her_words = cta.get("text") not in ("Get Started", header_cta(["/courses"])["text"])
-            cta_override = {"cta": {**cta, "href": led["href"]} if her_words else led}
+        with override(site_language()):  # a default label is written, and recognised, in the site's language
+            if "navbar_show_cta" in answers:
+                if not answers["navbar_show_cta"]:
+                    cta_override = {"cta": None}
+                elif not cta:
+                    cta_override = {"cta": header_cta([default_cta_href])}
+            elif retarget:
+                # The label follows the link while it is a default ("Start a course", the legacy
+                # "Get Started"); her own words keep their text and only the link moves.
+                led = header_cta(["/events"] if runs_classes else [])
+                her_words = cta.get("text") not in (gettext("Get Started"), header_cta(["/courses"])["text"])
+                cta_override = {"cta": {**cta, "href": led["href"]} if her_words else led}
         show_social_override = (
             {"show_social": bool(answers["navbar_show_social"])}
             if "navbar_show_social" in answers
@@ -283,10 +293,11 @@ def sync_site(tenant, answers: dict) -> None:
             and all(nav.get(k) == v for k, v in extra.items())
         ):
             return
+        labels = dict(_nav())
         for href in missing:
             before = order[: order.index(href)]
             at = next((i + 1 for i in range(len(links) - 1, -1, -1) if links[i].get("href") in before), 0)
-            links.insert(at, {"label": dict(NAV)[href], "href": href})
+            links.insert(at, {"label": labels[href], "href": href})
         cfg.navbar_config = {**nav, "links": links, **extra}
         cfg.enabled_modules = enabled
         cfg.social_links = social
@@ -574,7 +585,11 @@ def sync_memberships(tenant, answers: dict) -> None:
 
     picked = brief.memberships_of(answers)
     made = dict(((TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}).get("plans") or {})
-    teaches = str(answers.get("teaches") or "everything I teach").lower()
+    # The description is what a student reads: the site's language, whoever is setting it up.
+    with override(site_language()):
+        teaches = str(answers.get("teaches") or "").lower() or gettext("everything I teach")
+        cancel = gettext("Cancel any time.")
+        perks_for = gettext("%(perks)s, for %(teaches)s.")
     plans = {}
     for m in picked:
         price = Decimal(f"{brief.tier_price(answers, m['id']):.2f}")
@@ -583,9 +598,13 @@ def sync_memberships(tenant, answers: dict) -> None:
             plans[m["id"]] = pk
             continue
         perks = ", ".join(p.lower() for p in m["perks"])
-        about = f"{m['blurb']} {perks[:1].upper()}{perks[1:]}, for {teaches}." if perks else m["blurb"]
+        about = (
+            f"{m['blurb']} " + perks_for % {"perks": f"{perks[:1].upper()}{perks[1:]}", "teaches": teaches}
+            if perks
+            else m["blurb"]
+        )
         plans[m["id"]] = SubscriptionPlan.objects.create(
-            name=m["label"][:100], description=f"{about} Cancel any time.", price=price, billing_interval_months=1
+            name=m["label"][:100], description=f"{about} {cancel}", price=price, billing_interval_months=1
         ).pk
     SubscriptionPlan.objects.filter(pk__in=made.values(), subscriptions__isnull=True).delete()
 
@@ -1455,7 +1474,7 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
             if "logo_layout" in picked:
                 answers["navbar_logo"] = picked["logo_layout"]  # written to the header by sync_site
             if isinstance(picked.get("links"), list):
-                known = dict(NAV)
+                known = dict(_nav())
                 cfg = TenantConfig.objects.first()
                 for existing in ((cfg.navbar_config if cfg else None) or {}).get("links") or []:
                     if existing.get("href") and existing.get("label"):

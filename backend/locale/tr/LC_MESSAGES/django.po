@@ -31,6 +31,150 @@ msgstr "Belirteç bu site için geçerli değil"
 msgid "Unsupported locale"
 msgstr "Desteklenmeyen dil"
 
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Courses"
+msgstr "Kurslar"
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Events"
+msgstr "Etkinlikler"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "Store"
+msgstr "Mağaza"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Pricing"
+msgstr "Fiyatlandırma"
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/defaults.py apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "About"
+msgstr "Hakkında"
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "FAQ"
+msgstr "SSS"
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Featured Courses"
+msgstr "Öne Çıkan Kurslar"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "All Courses"
+msgstr "Tüm Kurslar"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "Upcoming Events"
+msgstr "Yaklaşan Etkinlikler"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "Downloads & Resources"
+msgstr "İndirilebilir Dosyalar & Kaynaklar"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Frequently asked questions"
+msgstr "Sık sorulan sorular"
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Ready to start learning?"
+msgstr "Öğrenmeye başlamaya hazır mısın?"
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Join Now"
+msgstr "Hemen Katıl"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Plans & Pricing"
+msgstr "Planlar & Fiyatlandırma"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Choose a plan that fits your goals."
+msgstr "Hedeflerine uygun bir plan seç."
+
+#: apps/core/onboarding/compose.py apps/notifications/templates_builtin.py
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Welcome"
+msgstr "Hoş geldin"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "Take a look around and find what fits you."
+msgstr "Etrafa bir göz at ve sana uygun olanı bul."
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Get in touch"
+msgstr "Bize ulaş"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Have a question? Send us a message."
+msgstr "Bir sorun mu var? Bize mesaj gönder."
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Send message"
+msgstr "Mesaj gönder"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Thanks! We'll get back to you soon."
+msgstr "Teşekkürler! En kısa sürede sana dönüş yapacağız."
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/defaults.py
+#, fuzzy, python-format
+msgid "Welcome to %(brand)s"
+msgstr "%(brand)s dünyasına hoş geldin"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy, python-format
+msgid "%(niche)s classes"
+msgstr "%(niche)s dersleri"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "classes"
+msgstr "dersler"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy, python-format
+msgid "%(brand)s offers %(topic)s you can follow from anywhere."
+msgstr "%(brand)s, her yerden takip edebileceğin %(topic)s sunuyor."
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "We"
+msgstr "Biz"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "Logo"
+msgstr "Logo"
+
 #: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
 #, fuzzy
 msgid "Token required"
@@ -40,6 +184,46 @@ msgstr "Belirteç gerekli"
 #, fuzzy
 msgid "Tenant not found"
 msgstr "Site bulunamadı"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "%(Topic)s foundations"
+msgstr "%(Topic)s temelleri"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "Your first four weeks of %(topic)s"
+msgstr "%(topic)s ile ilk dört haftan"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "%(Topic)s for complete beginners"
+msgstr "Yeni başlayanlar için %(Topic)s"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "Live %(topic)s session"
+msgstr "Canlı %(topic)s oturumu"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "%(Topic)s questions, answered live"
+msgstr "%(Topic)s sorularına canlı yanıtlar"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "Beginners' %(topic)s workshop"
+msgstr "Yeni başlayanlar için %(topic)s atölyesi"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "What to expect from your first %(topic)s session"
+msgstr "İlk %(topic)s oturumundan neler beklemelisin"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "Three %(topic)s questions I hear"
+msgstr "Sık duyduğum üç %(topic)s sorusu"
 
 #: apps/core/onboarding/site_name.py
 #, fuzzy
@@ -70,3 +254,337 @@ msgstr "İzin reddedildi."
 #, fuzzy
 msgid "slug parameter required"
 msgstr "slug parametresi gerekli"
+
+#: apps/core/tasks.py apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Get Started"
+msgstr "Hemen Başla"
+
+#: apps/core/tasks.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Explore our courses and start learning today."
+msgstr "Kurslarımızı keşfet ve bugün öğrenmeye başla."
+
+#: apps/core/tasks.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Browse Courses"
+msgstr "Kurslara Göz At"
+
+#: apps/core/tasks.py
+#, fuzzy
+msgid "About Me"
+msgstr "Hakkımda"
+
+#: apps/core/tasks.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "What students say"
+msgstr "Öğrenciler ne diyor"
+
+#: apps/core/tests/test_starter_content_language.py
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgctxt "the brand, when the site has none"
+msgid "us"
+msgstr "biz"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Free"
+msgstr "Ücretsiz"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Hi {{FirstName}},"
+msgstr "Merhaba {{FirstName}},"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Until soon,"
+msgstr "Görüşmek üzere,"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "%(first)s and %(last)s"
+msgstr "%(first)s ve %(last)s"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "What's new at %(brand)s"
+msgstr "%(brand)s dünyasında neler yeni"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "Here's what's been happening at %(brand)s, and what's coming up next."
+msgstr ""
+"İşte %(brand)s dünyasında son zamanlarda olanlar ve sırada bekleyenler."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "A few things I'd love you to see this month:"
+msgstr "Bu ay görmeni çok istediğim birkaç şey:"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Read it"
+msgstr "Oku"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Save your spot"
+msgstr "Yerini ayırt"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Take a look"
+msgstr "Göz at"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Newsletter"
+msgstr "Bülten"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "News from %(brand)s"
+msgstr "%(brand)s dünyasından haberler"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "What's new, and what's coming up."
+msgstr "Neler yeni, neler geliyor."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Something new for you"
+msgstr "Sana özel yeni bir şey"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "I've been working on something, and it's ready."
+msgstr "Bir şey üzerinde çalışıyordum ve artık hazır."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "It's made to bring you %(outcome)s."
+msgstr "Sana %(outcome)s kazandırmak için hazırlandı."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "See what's inside"
+msgstr "İçinde neler olduğunu gör"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Questions? Just reply to this email."
+msgstr "Soruların mı var? Bu e-postayı yanıtlaman yeterli."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "New offer"
+msgstr "Yeni teklif"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "Something new from %(brand)s"
+msgstr "%(brand)s dünyasından yeni bir şey"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "It's ready, and I made it with you in mind."
+msgstr "Hazır ve onu seni düşünerek hazırladım."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Join me"
+msgstr "Bana katıl"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "I'd love to see you at my next session. Here are the details:"
+msgstr "Bir sonraki oturumumda seni görmeyi çok isterim. İşte ayrıntılar:"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Can't make this one? There are more on my calendar."
+msgstr "Buna katılamıyor musun? Takvimimde başka oturumlar da var."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "See all sessions"
+msgstr "Tüm oturumları gör"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Session invitation"
+msgstr "Oturum daveti"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Join me live"
+msgstr "Canlı oturumda bana katıl"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Here are the details of my next session."
+msgstr "İşte bir sonraki oturumumun ayrıntıları."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "A note from %(name)s"
+msgstr "%(name)s tarafından bir not"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "I wanted to write to you personally."
+msgstr "Sana kişisel olarak yazmak istedim."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid ""
+"Write your note here. Tell them what's on your mind, what you're working on,"
+" or what you'd love them to try."
+msgstr ""
+"Notunu buraya yaz. Aklından geçenleri, üzerinde çalıştığın şeyi ya da "
+"denemelerini çok istediğin şeyi anlat."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Personal note"
+msgstr "Kişisel not"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Something I wanted to share with you."
+msgstr "Seninle paylaşmak istediğim bir şey."
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy, python-format
+msgid "Welcome to %(brand)s! 🎉"
+msgstr "%(brand)s dünyasına hoş geldin! 🎉"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid ""
+"<p>We're so glad you're here. Take a look around and start exploring.</p>"
+msgstr ""
+"<p>Burada olmana çok sevindik. Etrafa bir göz at ve keşfetmeye başla.</p>"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "New course live"
+msgstr "Yeni kurs yayında"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "A new course just dropped"
+msgstr "Yeni bir kurs yayınlandı"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy, python-format
+msgid "<p>Fresh content is ready for you at %(brand)s. Jump in!</p>"
+msgstr ""
+"<p>%(brand)s dünyasında yeni içerikler seni bekliyor. Hemen başla!</p>"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "Live session reminder"
+msgstr "Canlı oturum hatırlatıcısı"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "Live session coming up"
+msgstr "Canlı oturum yaklaşıyor"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "<p>Don't forget — we go live soon. See you there!</p>"
+msgstr "<p>Unutma, birazdan canlı yayındayız. Orada görüşürüz!</p>"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "Promo / sale"
+msgstr "Promosyon / indirim"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "A little something for you"
+msgstr "Sana küçük bir sürpriz"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy, python-format
+msgid "<p>For a limited time, enjoy a special offer at %(brand)s.</p>"
+msgstr "<p>Sınırlı bir süre için %(brand)s sana özel bir teklif sunuyor.</p>"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "We miss you"
+msgstr "Seni özledik"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "We miss you 💛"
+msgstr "Seni özledik 💛"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "<p>It's been a while — come back and pick up where you left off.</p>"
+msgstr "<p>Epey zaman oldu. Geri gel ve kaldığın yerden devam et.</p>"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "Schedule change"
+msgstr "Program değişikliği"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "A quick schedule update"
+msgstr "Kısa bir program güncellemesi"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid ""
+"<p>Here's an update to our upcoming schedule. Thanks for your "
+"flexibility!</p>"
+msgstr ""
+"<p>Yaklaşan programımızla ilgili bir güncelleme var. Esnekliğin için "
+"teşekkürler!</p>"
+
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Start a course"
+msgstr "Bir kursa başla"
+
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Book a session"
+msgstr "Oturum ayırt"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Calendar"
+msgstr "Takvim"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Blog"
+msgstr "Blog"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Contact"
+msgstr "İletişim"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "everything I teach"
+msgstr "öğrettiğim her şey"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Cancel any time."
+msgstr "İstediğin zaman iptal et."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy, python-format
+msgid "%(perks)s, for %(teaches)s."
+msgstr "%(perks)s, %(teaches)s için."

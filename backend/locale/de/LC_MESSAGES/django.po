@@ -31,6 +31,151 @@ msgstr "Token für diesen Mandanten nicht gültig"
 msgid "Unsupported locale"
 msgstr "Nicht unterstützte Spracheinstellung"
 
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Courses"
+msgstr "Kurse"
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Events"
+msgstr "Veranstaltungen"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "Store"
+msgstr "Shop"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Pricing"
+msgstr "Preise"
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/defaults.py apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "About"
+msgstr "Über"
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "FAQ"
+msgstr "FAQ"
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Featured Courses"
+msgstr "Ausgewählte Kurse"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "All Courses"
+msgstr "Alle Kurse"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "Upcoming Events"
+msgstr "Kommende Veranstaltungen"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "Downloads & Resources"
+msgstr "Downloads & Ressourcen"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Frequently asked questions"
+msgstr "Häufig gestellte Fragen"
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Ready to start learning?"
+msgstr "Bereit, mit dem Lernen zu beginnen?"
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Join Now"
+msgstr "Jetzt beitreten"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Plans & Pricing"
+msgstr "Tarife & Preise"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Choose a plan that fits your goals."
+msgstr "Wähle einen Tarif, der zu deinen Zielen passt."
+
+#: apps/core/onboarding/compose.py apps/notifications/templates_builtin.py
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Welcome"
+msgstr "Willkommen"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "Take a look around and find what fits you."
+msgstr "Schau dich um und finde, was zu dir passt."
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Get in touch"
+msgstr "Kontakt aufnehmen"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Have a question? Send us a message."
+msgstr "Du hast eine Frage? Schreib uns eine Nachricht."
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Send message"
+msgstr "Nachricht senden"
+
+#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Thanks! We'll get back to you soon."
+msgstr "Danke! Wir melden uns bald bei dir."
+
+#: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/defaults.py
+#, fuzzy, python-format
+msgid "Welcome to %(brand)s"
+msgstr "Willkommen bei %(brand)s"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy, python-format
+msgid "%(niche)s classes"
+msgstr "%(niche)s-Kurse"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "classes"
+msgstr "Kurse"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy, python-format
+msgid "%(brand)s offers %(topic)s you can follow from anywhere."
+msgstr ""
+"%(brand)s bietet %(topic)s, an denen du von überall aus teilnehmen kannst."
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "We"
+msgstr "Wir"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "Logo"
+msgstr "Logo"
+
 #: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
 #, fuzzy
 msgid "Token required"
@@ -40,6 +185,46 @@ msgstr "Token erforderlich"
 #, fuzzy
 msgid "Tenant not found"
 msgstr "Mandant nicht gefunden"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "%(Topic)s foundations"
+msgstr "%(Topic)s: Grundlagen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "Your first four weeks of %(topic)s"
+msgstr "Deine ersten vier Wochen %(topic)s"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "%(Topic)s for complete beginners"
+msgstr "%(Topic)s für absolute Anfänger"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "Live %(topic)s session"
+msgstr "Live-Session zu %(topic)s"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "%(Topic)s questions, answered live"
+msgstr "Fragen zu %(Topic)s, live beantwortet"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "Beginners' %(topic)s workshop"
+msgstr "Workshop zu %(topic)s für Einsteiger"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "What to expect from your first %(topic)s session"
+msgstr "Was dich in deiner ersten Session zu %(topic)s erwartet"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "Three %(topic)s questions I hear"
+msgstr "Drei Fragen zu %(topic)s, die ich oft höre"
 
 #: apps/core/onboarding/site_name.py
 #, fuzzy
@@ -70,3 +255,341 @@ msgstr "Zugriff verweigert."
 #, fuzzy
 msgid "slug parameter required"
 msgstr "slug-Parameter erforderlich"
+
+#: apps/core/tasks.py apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Get Started"
+msgstr "Jetzt starten"
+
+#: apps/core/tasks.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Explore our courses and start learning today."
+msgstr "Entdecke unsere Kurse und fang noch heute an zu lernen."
+
+#: apps/core/tasks.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Browse Courses"
+msgstr "Kurse ansehen"
+
+#: apps/core/tasks.py
+#, fuzzy
+msgid "About Me"
+msgstr "Über mich"
+
+#: apps/core/tasks.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "What students say"
+msgstr "Was Teilnehmer sagen"
+
+#: apps/core/tests/test_starter_content_language.py
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgctxt "the brand, when the site has none"
+msgid "us"
+msgstr "uns"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Free"
+msgstr "Kostenlos"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Hi {{FirstName}},"
+msgstr "Hallo {{FirstName}},"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Until soon,"
+msgstr "Bis bald,"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "%(first)s and %(last)s"
+msgstr "%(first)s und %(last)s"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "What's new at %(brand)s"
+msgstr "Neues bei %(brand)s"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "Here's what's been happening at %(brand)s, and what's coming up next."
+msgstr ""
+"Das ist bei %(brand)s in letzter Zeit passiert, und das kommt als Nächstes."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "A few things I'd love you to see this month:"
+msgstr "Ein paar Dinge, die ich dir diesen Monat gern zeigen möchte:"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Read it"
+msgstr "Lesen"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Save your spot"
+msgstr "Sichere dir deinen Platz"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Take a look"
+msgstr "Schau mal rein"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Newsletter"
+msgstr "Newsletter"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "News from %(brand)s"
+msgstr "Neuigkeiten von %(brand)s"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "What's new, and what's coming up."
+msgstr "Was es Neues gibt und was als Nächstes kommt."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Something new for you"
+msgstr "Etwas Neues für dich"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "I've been working on something, and it's ready."
+msgstr "Ich habe an etwas gearbeitet, und jetzt ist es fertig."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "It's made to bring you %(outcome)s."
+msgstr "Es soll dir %(outcome)s bringen."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "See what's inside"
+msgstr "Sieh dir an, was drin ist"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Questions? Just reply to this email."
+msgstr "Fragen? Antworte einfach auf diese E-Mail."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "New offer"
+msgstr "Neues Angebot"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "Something new from %(brand)s"
+msgstr "Etwas Neues von %(brand)s"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "It's ready, and I made it with you in mind."
+msgstr "Es ist fertig, und ich habe es speziell für dich gemacht."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Join me"
+msgstr "Sei dabei"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "I'd love to see you at my next session. Here are the details:"
+msgstr ""
+"Ich würde mich freuen, dich bei meiner nächsten Session zu sehen. Hier sind "
+"die Details:"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Can't make this one? There are more on my calendar."
+msgstr ""
+"Du kannst diesmal nicht? In meinem Kalender stehen noch weitere Termine."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "See all sessions"
+msgstr "Alle Sessions ansehen"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Session invitation"
+msgstr "Einladung zur Session"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Join me live"
+msgstr "Sei live dabei"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Here are the details of my next session."
+msgstr "Hier sind die Details zu meiner nächsten Session."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy, python-format
+msgid "A note from %(name)s"
+msgstr "Eine Nachricht von %(name)s"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "I wanted to write to you personally."
+msgstr "Ich wollte dir persönlich schreiben."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid ""
+"Write your note here. Tell them what's on your mind, what you're working on,"
+" or what you'd love them to try."
+msgstr ""
+"Schreib deine Nachricht hier. Erzähl ihnen, was dich beschäftigt, woran du "
+"arbeitest oder was sie unbedingt ausprobieren sollten."
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Personal note"
+msgstr "Persönliche Nachricht"
+
+#: apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Something I wanted to share with you."
+msgstr "Etwas, das ich mit dir teilen wollte."
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy, python-format
+msgid "Welcome to %(brand)s! 🎉"
+msgstr "Willkommen bei %(brand)s! 🎉"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid ""
+"<p>We're so glad you're here. Take a look around and start exploring.</p>"
+msgstr "<p>Schön, dass du da bist. Schau dich um und entdecke alles.</p>"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "New course live"
+msgstr "Neuer Kurs online"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "A new course just dropped"
+msgstr "Ein neuer Kurs ist gerade erschienen"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy, python-format
+msgid "<p>Fresh content is ready for you at %(brand)s. Jump in!</p>"
+msgstr "<p>Bei %(brand)s warten neue Inhalte auf dich. Leg los!</p>"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "Live session reminder"
+msgstr "Erinnerung an Live-Session"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "Live session coming up"
+msgstr "Live-Session steht bevor"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "<p>Don't forget — we go live soon. See you there!</p>"
+msgstr "<p>Nicht vergessen – wir gehen bald live. Bis gleich!</p>"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "Promo / sale"
+msgstr "Aktion / Sale"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "A little something for you"
+msgstr "Eine kleine Aufmerksamkeit für dich"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy, python-format
+msgid "<p>For a limited time, enjoy a special offer at %(brand)s.</p>"
+msgstr ""
+"<p>Nur für kurze Zeit: Sichere dir ein besonderes Angebot bei %(brand)s.</p>"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "We miss you"
+msgstr "Wir vermissen dich"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "We miss you 💛"
+msgstr "Wir vermissen dich 💛"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "<p>It's been a while — come back and pick up where you left off.</p>"
+msgstr ""
+"<p>Es ist schon eine Weile her – komm zurück und mach da weiter, wo du "
+"aufgehört hast.</p>"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "Schedule change"
+msgstr "Terminänderung"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid "A quick schedule update"
+msgstr "Ein kurzes Update zum Zeitplan"
+
+#: apps/notifications/templates_builtin.py
+#, fuzzy
+msgid ""
+"<p>Here's an update to our upcoming schedule. Thanks for your "
+"flexibility!</p>"
+msgstr ""
+"<p>Hier ist ein Update zu unserem kommenden Zeitplan. Danke für deine "
+"Flexibilität!</p>"
+
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Start a course"
+msgstr "Kurs starten"
+
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Book a session"
+msgstr "Session buchen"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Calendar"
+msgstr "Kalender"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Blog"
+msgstr "Blog"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Contact"
+msgstr "Kontakt"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "everything I teach"
+msgstr "alles, was ich unterrichte"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Cancel any time."
+msgstr "Jederzeit kündbar."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy, python-format
+msgid "%(perks)s, for %(teaches)s."
+msgstr "%(perks)s, für %(teaches)s."

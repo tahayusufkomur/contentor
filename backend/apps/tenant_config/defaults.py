@@ -26,6 +26,8 @@ safely from migrations, serializers, and the seed commands alike.
 
 from __future__ import annotations
 
+from django.utils.translation import gettext as _
+
 from .sections import SECTION_TYPES
 
 # Fixed set of buildable pages. ``pricing`` renders at the /plans route on the
@@ -189,10 +191,10 @@ def header_cta(links):
     """
     links = set(links)
     if "/courses" in links:
-        return {"text": "Start a course", "href": "/courses"}
+        return {"text": _("Start a course"), "href": "/courses"}
     if "/events" in links:
-        return {"text": "Book a session", "href": "/events"}
-    return {"text": "Get in touch", "href": "/contact"}
+        return {"text": _("Book a session"), "href": "/events"}
+    return {"text": _("Get in touch"), "href": "/contact"}
 
 
 def _image(url=None, photo_id=None):
@@ -210,7 +212,7 @@ def default_pages(brand_name: str = "") -> dict:
     Block ids are deterministic and unique within a page; the frontend assigns
     ``crypto.randomUUID()`` ids only to blocks the coach adds later.
     """
-    welcome = f"Welcome to {brand_name}" if brand_name else "Welcome"
+    welcome = _("Welcome to %(brand)s") % {"brand": brand_name} if brand_name else _("Welcome")
     return {
         "home": {
             "blocks": [
@@ -219,8 +221,8 @@ def default_pages(brand_name: str = "") -> dict:
                     "type": "hero",
                     "enabled": True,
                     "heading": welcome,
-                    "subheading": "Explore our courses and start learning today.",
-                    "ctaText": "Browse Courses",
+                    "subheading": _("Explore our courses and start learning today."),
+                    "ctaText": _("Browse Courses"),
                     "ctaHref": "/courses",
                     "bgImage": _image(),
                 },
@@ -228,7 +230,7 @@ def default_pages(brand_name: str = "") -> dict:
                     "id": "blk_about",
                     "type": "imageText",
                     "enabled": False,
-                    "heading": "About",
+                    "heading": _("About"),
                     "body": "",
                     "image": _image(),
                     "imagePosition": "right",
@@ -237,21 +239,21 @@ def default_pages(brand_name: str = "") -> dict:
                     "id": "blk_courses",
                     "type": "courseGrid",
                     "enabled": True,
-                    "heading": "Featured Courses",
+                    "heading": _("Featured Courses"),
                 },
                 {
                     "id": "blk_testimonials",
                     "type": "testimonials",
                     "enabled": False,
-                    "heading": "What students say",
+                    "heading": _("What students say"),
                     "items": [],
                 },
                 {
                     "id": "blk_cta",
                     "type": "cta",
                     "enabled": True,
-                    "heading": "Ready to start learning?",
-                    "buttonText": "Join Now",
+                    "heading": _("Ready to start learning?"),
+                    "buttonText": _("Join Now"),
                     "buttonHref": "/courses",
                 },
             ]
@@ -262,7 +264,7 @@ def default_pages(brand_name: str = "") -> dict:
                     "id": "blk_about_intro",
                     "type": "richText",
                     "enabled": True,
-                    "heading": "About",
+                    "heading": _("About"),
                     "body": "",
                 },
                 {
@@ -282,7 +284,7 @@ def default_pages(brand_name: str = "") -> dict:
                     "id": "blk_courses_grid",
                     "type": "courseGrid",
                     "enabled": True,
-                    "heading": "All Courses",
+                    "heading": _("All Courses"),
                 },
             ]
         },
@@ -292,8 +294,8 @@ def default_pages(brand_name: str = "") -> dict:
                     "id": "blk_pricing_plans",
                     "type": "pricingPlans",
                     "enabled": True,
-                    "heading": "Plans & Pricing",
-                    "subheading": "Choose a plan that fits your goals.",
+                    "heading": _("Plans & Pricing"),
+                    "subheading": _("Choose a plan that fits your goals."),
                 },
             ]
         },
@@ -303,7 +305,7 @@ def default_pages(brand_name: str = "") -> dict:
                     "id": "blk_faq",
                     "type": "faq",
                     "enabled": True,
-                    "heading": "Frequently asked questions",
+                    "heading": _("Frequently asked questions"),
                     "items": [],
                 },
             ]
@@ -314,10 +316,10 @@ def default_pages(brand_name: str = "") -> dict:
                     "id": "blk_contact",
                     "type": "contact",
                     "enabled": True,
-                    "heading": "Get in touch",
-                    "intro": "Have a question? Send us a message.",
-                    "submitLabel": "Send message",
-                    "successMessage": "Thanks! We'll get back to you soon.",
+                    "heading": _("Get in touch"),
+                    "intro": _("Have a question? Send us a message."),
+                    "submitLabel": _("Send message"),
+                    "successMessage": _("Thanks! We'll get back to you soon."),
                 },
             ]
         },
