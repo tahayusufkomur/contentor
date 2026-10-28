@@ -5,13 +5,13 @@ from urllib.parse import urlencode
 
 from django.conf import settings
 from django.utils import timezone
-from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
+from apps.core.slugs import slugify
 from apps.core.throttling import BrandNameCheckThrottle
 
 from ..models import Domain, Tenant

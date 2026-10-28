@@ -6,7 +6,6 @@ import logging
 from decimal import Decimal
 
 from django.conf import settings
-from django.utils.text import slugify
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -14,6 +13,7 @@ from rest_framework.response import Response
 
 from apps.core.models import PlatformBlogPost
 from apps.core.permissions import IsSuperUser
+from apps.core.slugs import slugify
 
 from . import ai
 from .serializers import PlatformBlogPostSerializer

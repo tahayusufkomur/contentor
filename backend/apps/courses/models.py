@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
-from django.utils.text import slugify
+
+from apps.core.slugs import slugify
 
 # A lesson with nothing for a student yet: no video, and no text of hers. Text
 # the AI drafted (``drafted_html``) and she has not touched does not count.

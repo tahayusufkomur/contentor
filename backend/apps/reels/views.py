@@ -8,13 +8,13 @@ import uuid
 from django.conf import settings
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
-from django.utils.text import slugify
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.core.permissions import IsCoachOrOwner
+from apps.core.slugs import slugify
 from apps.core.storage import generate_presigned_download_url, get_s3_client, is_signable_key, sign_if_s3_key
 from apps.courses.models import Video
 

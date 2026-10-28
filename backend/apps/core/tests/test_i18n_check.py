@@ -6,6 +6,7 @@ from apps.core.management.commands.i18n_check import (
     locale_lists,
     ratchet,
     ratchet_counts,
+    slugify_imports,
     updated,
 )
 
@@ -128,3 +129,11 @@ def test_locale_lists():
     assert not locale_lists('X = ("en", "xx")\n', "apps/a.py", CODES)
     assert not locale_lists('X = ["en", "tr"]  # not-site-locales\n', "apps/a.py", CODES)
     assert not locale_lists('X = [\n    "en",\n    "tr",  # not-site-locales\n]\n', "apps/a.py", CODES)
+
+
+def test_slugify_comes_from_apps_core_slugs():
+    assert slugify_imports("from django.utils.text import slugify\n", "apps/a.py")
+    assert slugify_imports("from django.utils.text import capfirst, slugify as s\n", "apps/a.py")
+    assert slugify_imports("from django.utils import text\nx = text.slugify('a')\n", "apps/a.py")
+    assert not slugify_imports("from django.utils.text import capfirst\n", "apps/a.py")
+    assert not slugify_imports("from apps.core.slugs import slugify\n", "apps/a.py")

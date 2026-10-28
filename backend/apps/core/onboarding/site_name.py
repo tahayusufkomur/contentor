@@ -8,10 +8,10 @@ import secrets
 from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.utils.functional import Promise
-from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.constants import RESERVED_SLUGS, SITE_PLACEHOLDER_PREFIX
+from apps.core.slugs import legacy_slugify, slugify
 
 # Tenant.name until the creator names the site.
 PLACEHOLDER_NAME = "New site"
@@ -43,8 +43,12 @@ def token_tenant(payload: dict):
 
     if site := payload.get("site"):
         return Tenant.objects.filter(schema_name=site).first()
-    slug = slugify(payload.get("brand_name") or "")[:63]
-    return Tenant.objects.filter(slug=slug, region=payload.get("region", "global")).first() if slug else None
+    brand = payload.get("brand_name") or ""
+    # Both spellings: sites made before the new slugify still hold the old one (it dropped ı, ł, ß).
+    for slug in dict.fromkeys((slugify(brand)[:63], legacy_slugify(brand)[:63])):
+        if slug and (tenant := Tenant.objects.filter(slug=slug, region=payload.get("region", "global")).first()):
+            return tenant
+    return None
 
 
 PROBLEMS: dict[str, Promise] = {

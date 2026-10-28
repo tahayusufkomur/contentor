@@ -1,8 +1,12 @@
 /** A brand name as the site's address slug, the way the server makes it
- * (Django's slugify, cut at 63): accents dropped, anything but letters,
- * digits, "_" and "-" removed, spaces and runs of "-" as one "-". */
+ * (apps.core.slugs.slugify, cut at 63): ı ł ß written as i l ss, accents
+ * folded, anything but letters, digits, "_" and "-" removed, spaces and runs
+ * of "-" as one "-". */
+const UNFOLDABLE: Record<string, string> = { ı: "i", ł: "l", Ł: "l", ß: "ss" };
+
 export function siteSlug(brand: string): string {
   return brand
+    .replace(/[ıłŁß]/g, (c) => UNFOLDABLE[c])
     .normalize("NFKD")
     .replace(/[^\x00-\x7f]/g, "")
     .toLowerCase()

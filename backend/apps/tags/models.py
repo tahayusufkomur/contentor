@@ -1,5 +1,6 @@
 from django.db import models
-from django.utils.text import slugify
+
+from apps.core.slugs import slugify
 
 # The content types a tag can belong to. Each is its own free-text pool
 # ("per content type"); the four event models all share the "event" pool.

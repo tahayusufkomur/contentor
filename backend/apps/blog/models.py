@@ -6,7 +6,8 @@ import html
 from django.conf import settings
 from django.db import models
 from django.utils.html import strip_tags
-from django.utils.text import slugify
+
+from apps.core.slugs import slugify
 
 MAX_SLUG_LEN = 60
 

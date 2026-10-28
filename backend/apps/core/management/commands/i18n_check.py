@@ -8,6 +8,8 @@
    language's django.po, with the same placeholders. A non-literal argument or an f-string is an error.
 3. Locale lists: no list or tuple holds two or more locale codes, except `languages.py`, migrations, tests and
    lines marked `# not-site-locales`.
+4. Slugs: `django.utils.text.slugify` is imported only in `apps/core/slugs.py` (it drops ı, ł and ß); everyone else
+   uses `apps.core.slugs.slugify`.
 
 Spec: docs/superpowers/specs/2026-10-28-four-languages-design.md.
 """
@@ -281,6 +283,34 @@ def locale_list_problems(base: Path, codes) -> list[str]:
     return problems
 
 
+# --- 4. slugify ---
+
+SLUGS_MODULE = "apps/core/slugs.py"
+
+
+def slugify_imports(source: str, rel: str) -> list[str]:
+    problems = []
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.ImportFrom) and node.module == "django.utils.text":
+            bad = any(alias.name == "slugify" for alias in node.names)
+        elif isinstance(node, ast.Attribute) and node.attr == "slugify":
+            bad = ast.unparse(node.value) in ("text", "django.utils.text")
+        else:
+            continue
+        if bad:
+            problems.append(f"{rel}:{node.lineno}: import slugify from apps.core.slugs, not django.utils.text")
+    return problems
+
+
+def slugify_problems(base: Path) -> list[str]:
+    return [
+        problem
+        for path, rel in source_files(base, ("apps", "config"))
+        if rel != SLUGS_MODULE
+        for problem in slugify_imports(path.read_text(encoding="utf-8"), rel)
+    ]
+
+
 class Command(BaseCommand):
     help = "The i18n guards of make lint: hard-coded strings, .po coverage and locale lists (see the module docstring)."
     requires_system_checks = []
@@ -318,6 +348,9 @@ class Command(BaseCommand):
         lists = locale_list_problems(base, languages.CODES)
         if lists:
             failures.append("i18n: locale lists:\n  " + "\n  ".join(lists))
+        slugs = slugify_problems(base)
+        if slugs:
+            failures.append("i18n: slugify:\n  " + "\n  ".join(slugs))
         if failures:
             raise CommandError("\n\n".join(failures))
         self.stdout.write(f"i18n_check OK ({sum(counts.values())} hard-coded texts left in {len(counts)} files)")

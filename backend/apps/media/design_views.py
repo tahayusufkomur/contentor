@@ -8,7 +8,6 @@ from django.db import connection, transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.utils.text import slugify
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
@@ -17,6 +16,7 @@ from rest_framework.response import Response
 from apps.core.copilot import content
 from apps.core.curated_images.views import generation_allowance
 from apps.core.permissions import IsCoachOrOwner
+from apps.core.slugs import slugify
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.courses.models import Course
 from apps.downloads.models import DownloadFile

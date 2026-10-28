@@ -10,8 +10,8 @@ announces it (G16); no price."""
 import re
 
 from django.db import connection
-from django.utils.text import slugify
 
+from apps.core.slugs import slugify
 from apps.tenant_config.interview_brief import Field
 
 from .. import analysis

@@ -66,3 +66,13 @@ def test_a_name_that_cannot_be_an_address_is_refused(tenant, name, why):
 def test_sites_named_at_signup_keep_their_folder(restore_public):
     named = Tenant(schema_name="glow_studio", slug="glow-studio")
     assert storage_folder(named) == "glow-studio"
+
+
+def test_legacy_token_finds_a_site_named_with_the_old_slug(tenant):
+    # A token minted before the `site` claim finds its site by the address its brand name made. "Işık Yoga"
+    # made "isk-yoga" then, and "isik-yoga" now; both find the site, and the new one wins when both exist.
+    Tenant.objects.filter(pk=tenant.pk).update(slug="isk-yoga")
+    assert site_name.token_tenant({"brand_name": "Işık Yoga"}).pk == tenant.pk
+    Tenant.objects.filter(pk=tenant.pk).update(slug="isik-yoga")
+    assert site_name.token_tenant({"brand_name": "Işık Yoga"}).pk == tenant.pk
+    assert site_name.token_tenant({"brand_name": "Other Yoga"}) is None

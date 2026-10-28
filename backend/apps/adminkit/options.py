@@ -11,7 +11,8 @@ from __future__ import annotations
 import re
 
 from django.db import models
-from django.utils.text import slugify
+
+from apps.core.slugs import slugify
 
 
 class TagChoiceFilter:

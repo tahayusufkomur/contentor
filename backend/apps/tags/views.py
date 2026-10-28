@@ -1,10 +1,10 @@
 from django.shortcuts import get_object_or_404
-from django.utils.text import slugify
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from apps.core.permissions import IsCoachOrOwner
+from apps.core.slugs import slugify
 
 from .models import SCOPE_VALUES, Tag
 from .serializers import TagSerializer
