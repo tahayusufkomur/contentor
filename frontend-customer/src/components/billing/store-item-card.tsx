@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatMoney } from "@/lib/format";
 import type { StoreItem } from "@/types/billing";
+import { useLocale } from "next-intl";
 
 const TYPE_LABELS: Record<string, string> = {
   course: "Course",
@@ -27,6 +28,7 @@ export function StoreItemCard({
   adding,
   onAddToCart,
 }: StoreItemCardProps) {
+  const locale = useLocale();
   const isOwned = item.access_info?.has_access;
   const isBundle = item.type === "bundle";
 
@@ -81,7 +83,7 @@ export function StoreItemCard({
             <span>{item.item_count} items</span>
             {item.original_price && (
               <span className="line-through ml-1">
-                {formatMoney(item.original_price, item.currency)}
+                {formatMoney(item.original_price, item.currency, locale)}
               </span>
             )}
           </div>
@@ -100,7 +102,7 @@ export function StoreItemCard({
               onClick={() => onAddToCart(item)}
             >
               <ShoppingCart className="h-3.5 w-3.5" />
-              Add to Cart — {formatMoney(item.price, item.currency)}
+              Add to Cart — {formatMoney(item.price, item.currency, locale)}
             </Button>
           )}
         </div>

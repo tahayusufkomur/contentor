@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { earnings, type PaidPlan, type PlanTerms } from "@/lib/earnings";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +62,7 @@ export function EarningsCalculator({
   terms: Record<PaidPlan, PlanTerms>;
   currency: string;
 }) {
+  const locale = useLocale();
   const t = useTranslations("marketing.earnings");
   const [students, setStudents] = useState(40);
   const [price, setPrice] = useState(29);
@@ -70,7 +71,7 @@ export function EarningsCalculator({
   // Totals round to whole units; `exact` shows a plan's price as pricing does ($19.90).
   const money = (n: number, exact = false) => {
     try {
-      return new Intl.NumberFormat("en-US", {
+      return new Intl.NumberFormat(locale, {
         style: "currency",
         currency,
         minimumFractionDigits: exact && !Number.isInteger(n) ? 2 : 0,

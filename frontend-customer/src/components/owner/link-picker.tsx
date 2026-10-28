@@ -16,6 +16,7 @@ import { ModalPortal } from "@/components/ui/modal-portal";
 import { Spinner } from "@/components/ui/spinner";
 import type { Course } from "@/types/course";
 import type { CalendarEvent } from "@/types/live";
+import { useLocale } from "next-intl";
 
 interface LinkTarget {
   label: string;
@@ -56,6 +57,7 @@ export function LinkPickerModal({
   onPick: (href: string, label?: string) => void;
   onClose: () => void;
 }) {
+  const locale = useLocale();
   const [tab, setTab] = useState<Tab>("pages");
   const [courses, setCourses] = useState<LinkTarget[] | null>(null);
   const [events, setEvents] = useState<LinkTarget[] | null>(null);
@@ -95,7 +97,7 @@ export function LinkPickerModal({
             es.map((e) => ({
               label: e.title,
               href: `/calendar/${e.type}/${e.id}`,
-              sub: new Date(e.scheduled_at).toLocaleDateString(),
+              sub: new Date(e.scheduled_at).toLocaleDateString(locale),
             })),
           ),
         )

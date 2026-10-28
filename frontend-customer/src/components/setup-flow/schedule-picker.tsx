@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { scheduleSummary } from "@/lib/interview";
 import type { Schedule, ScheduleMode, ScheduleSlot } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
+import { useLocale } from "next-intl";
 
 // Monday first, as a weekly timetable reads.
 const DAYS: [number, string][] = [
@@ -40,11 +41,12 @@ export function SchedulePicker({
   disabled: boolean;
   className?: string;
 }) {
+  const locale = useLocale();
   const set = (patch: Partial<Schedule>) => onChange({ ...value, ...patch });
   const slots = value.slots?.length ? value.slots : [NEW_SLOT];
   const setSlot = (i: number, patch: Partial<ScheduleSlot>) =>
     set({ slots: slots.map((sl, j) => (j === i ? { ...sl, ...patch } : sl)) });
-  const summary = scheduleSummary(mode, value);
+  const summary = scheduleSummary(mode, value, locale);
   const ready = slots.every(
     (sl) => sl.days.length > 0 && sl.times.some(Boolean),
   );

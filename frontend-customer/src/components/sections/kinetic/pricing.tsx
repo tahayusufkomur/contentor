@@ -4,10 +4,12 @@ import type { SubscriptionPlan } from "@/types/billing";
 import { EmptyHint, SubscribeButton, Txt, billingIntervalSuffix } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, DISPLAY, H2, Kicker, LABEL, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Ticket cards: notched corner, perforation, giant condensed price. The
  *  middle of three is printed in volt. */
 export function PricingTickets({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans = Array.isArray(data) ? (data as SubscriptionPlan[]) : [];
   if (!plans.length && !editable) return null;
   const featured = plans.length === 3 ? 1 : -1;
@@ -56,9 +58,11 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
           >
             {plans.map((p, i) => {
               const hot = i === featured;
-              const [whole, cents] = formatMoney(p.price, p.currency).split(
-                /(?=[.,]\d{2}$)/,
-              );
+              const [whole, cents] = formatMoney(
+                p.price,
+                p.currency,
+                locale,
+              ).split(/(?=[.,]\d{2}$)/);
               return (
                 <li
                   key={p.id}

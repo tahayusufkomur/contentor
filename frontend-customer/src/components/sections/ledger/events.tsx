@@ -11,10 +11,12 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, LABEL, NUM, Opener, RULE, Section, WRAP, str } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Events formatted as an agenda table: running head, tabular when/session/where/fee
  *  columns, and reserve links with hairlines. */
 export function EventsAgenda({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -75,7 +77,7 @@ export function EventsAgenda({ block, data, editable }: SectionProps) {
 
                     <div className="flex items-center justify-between sm:flex-col sm:items-end sm:justify-center">
                       <span className={cn(NUM, "font-display text-[1.15rem]")}>
-                        {eventPriceLabel(e)}
+                        {eventPriceLabel(e, locale)}
                       </span>
                       <span className="inline-flex items-center gap-2 text-[0.85rem] font-medium sm:mt-1">
                         <span className="ledger-link">Reserve</span>

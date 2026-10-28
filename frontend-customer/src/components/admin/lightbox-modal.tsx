@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatFileSize, formatDate, formatDuration } from "@/lib/format";
+import { useLocale } from "next-intl";
 
 export interface MediaItemPayload {
   id: number | string;
@@ -34,6 +35,7 @@ interface LightboxModalProps {
 }
 
 export function LightboxModal({ item, onClose }: LightboxModalProps) {
+  const locale = useLocale();
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
 
@@ -129,7 +131,7 @@ export function LightboxModal({ item, onClose }: LightboxModalProps) {
               {item.created_at && (
                 <div className="flex items-center gap-2">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>Uploaded: {formatDate(item.created_at)}</span>
+                  <span>Uploaded: {formatDate(item.created_at, locale)}</span>
                 </div>
               )}
             </div>

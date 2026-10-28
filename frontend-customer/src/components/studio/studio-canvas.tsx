@@ -21,7 +21,7 @@ import {
   type MouseEvent,
   type PointerEvent,
 } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { CoverArt } from "@/components/covers/cover-art";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -145,10 +145,13 @@ export function layerWords(
   recipe: CoverRecipe,
   item: CoverItem,
   id: string,
+  locale: string,
 ): string {
   const extra = recipe.extras.find((e) => e.id === id);
   if (extra) return "text" in extra ? extra.text : "";
-  return isWordsPart(id) ? resolveWords(recipe, item, new Date())[id] : "";
+  return isWordsPart(id)
+    ? resolveWords(recipe, item, new Date(), locale)[id]
+    : "";
 }
 
 /** Words as the cover keeps them: on one line, trimmed. A browser types a non-breaking space for a
@@ -368,6 +371,7 @@ export function StudioCanvas({
   generating = false,
   disabled = false,
 }: StudioCanvasProps) {
+  const locale = useLocale();
   const t = useTranslations("admin.studio");
   const canvas = useRef<HTMLDivElement>(null);
   const overlay = useRef<HTMLDivElement>(null);
@@ -632,7 +636,7 @@ export function StudioCanvas({
     onSelect(layer);
     setTyping({
       id: layer,
-      was: layerWords(recipe, item, layer),
+      was: layerWords(recipe, item, layer, locale),
       box: fraction(words.getBoundingClientRect(), surface()),
       style: {
         justifyContent: css.justifyContent,

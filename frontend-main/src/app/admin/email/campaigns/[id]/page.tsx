@@ -135,12 +135,12 @@ export default function CampaignDetailPage() {
             )}
             <div className="flex justify-between border-b py-2">
               <span className="text-muted-foreground">Created</span>
-              <span>{new Date(campaign.created_at).toLocaleString()}</span>
+              <span>{new Date(campaign.created_at).toLocaleString("en")}</span>
             </div>
             {campaign.sent_at && (
               <div className="flex justify-between border-b py-2">
                 <span className="text-muted-foreground">Completed</span>
-                <span>{new Date(campaign.sent_at).toLocaleString()}</span>
+                <span>{new Date(campaign.sent_at).toLocaleString("en")}</span>
               </div>
             )}
           </div>
@@ -197,7 +197,7 @@ export default function CampaignDetailPage() {
                     </span>
                   </td>
                   <td className="py-2">
-                    {r.sent_at ? new Date(r.sent_at).toLocaleString() : "—"}
+                    {r.sent_at ? new Date(r.sent_at).toLocaleString("en") : "—"}
                   </td>
                   <td className="py-2 text-red-600">{r.error_message || ""}</td>
                 </tr>

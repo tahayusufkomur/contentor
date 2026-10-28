@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Clapperboard,
@@ -64,6 +64,7 @@ const SORT_OPTIONS = [
 /** The video half of the media library. `refreshSignal` changes when the
  *  page's uploader lands a video. */
 export function VideosView({ refreshSignal }: { refreshSignal: number }) {
+  const locale = useLocale();
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [previewItem, setPreviewItem] = useState<MediaItemPayload | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -280,7 +281,7 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
             <TableCell>
               {video.file_size > 0 ? formatFileSize(video.file_size) : "---"}
             </TableCell>
-            <TableCell>{formatDate(video.created_at)}</TableCell>
+            <TableCell>{formatDate(video.created_at, locale)}</TableCell>
             <TableCell>
               <Badge variant={video.video_signed_url ? "success" : "secondary"}>
                 {video.video_signed_url ? "Uploaded" : "No video"}

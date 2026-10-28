@@ -1,6 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { weekdayNames } from "@/lib/calendar-utils";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -52,7 +53,6 @@ const PLATFORMS: ("ios" | "android" | "desktop")[] = [
   "android",
   "desktop",
 ];
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 /** Focus mode saves a moment after she stops typing. */
 const SAVE_AFTER_MS = 800;
@@ -81,6 +81,7 @@ export default function AnnouncementCompose({
   // Focus mode edits the row itself; the review path (a copy that is sent as
   // a new message, the draft deleted) belongs to the plain composer.
   const reviewDraft = focus ? null : reviewDraftProp;
+  const locale = useLocale();
   const tr = useTranslations("admin.messages.compose");
   const tf = useTranslations("admin.focus");
   const editor = useRichEditor();
@@ -661,7 +662,7 @@ export default function AnnouncementCompose({
 
                   {freq === "weekly" && (
                     <div className="flex flex-wrap gap-1">
-                      {WEEKDAYS.map((d, i) => (
+                      {weekdayNames(locale, "short").map((d, i) => (
                         <button
                           key={d}
                           type="button"

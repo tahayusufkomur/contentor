@@ -11,9 +11,11 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, H3, LABEL, Opener, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Term dates and live session schedule listed as courier timetable entries. */
 export function EventsTermDates({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -52,7 +54,7 @@ export function EventsTermDates({ block, data, editable }: SectionProps) {
                   </div>
                   <div className="flex flex-col sm:items-end sm:text-right">
                     <span className={cn(LABEL, "text-primary")}>
-                      {eventPriceLabel(e)}
+                      {eventPriceLabel(e, locale)}
                     </span>
                     <span className="primer-link mt-1 inline-flex items-center gap-2 font-bold group-hover:text-accent">
                       <span>Reserve</span>

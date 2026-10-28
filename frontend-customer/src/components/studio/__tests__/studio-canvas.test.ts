@@ -4,7 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it, vi } from "vitest";
 import {
   editsInPlace,
-  layerWords,
+  layerWords as layerWordsIn,
   StudioCanvas,
   textEdit,
   type StudioCanvasProps,
@@ -17,6 +17,8 @@ import type { CoverItem, CoverRecipe, Extra, Frame } from "@/types/design";
 import adminMessages from "../../../../messages/en/admin.json";
 
 const messages = { admin: adminMessages };
+const layerWords = (r: CoverRecipe, i: CoverItem, id: string) =>
+  layerWordsIn(r, i, id, "en");
 // createElement wants children among the props of this provider's own type; pass them as arguments.
 const Intl = NextIntlClientProvider as React.FC<{
   locale: string;

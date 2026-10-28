@@ -1,9 +1,19 @@
 import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkup as renderBare } from "react-dom/server";
+import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it } from "vitest";
 import type { ReviewCard, ReviewItem } from "@/lib/setup-flow";
 import { BusyOverlay } from "../busy-overlay";
 import { DraftReview } from "../draft-review";
+
+// useLocale needs a provider; the components under test read no messages.
+// createElement wants children among this provider's props; pass them as arguments.
+const Intl = NextIntlClientProvider as React.FC<{
+  locale: string;
+  children?: React.ReactNode;
+}>;
+const renderToStaticMarkup = (el: Parameters<typeof renderBare>[0]) =>
+  renderBare(createElement(Intl, { locale: "en" }, el));
 
 const item: ReviewItem = {
   title: "Yoga for desk workers",

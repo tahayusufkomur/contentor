@@ -10,10 +10,12 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { HAIR, LABEL, NUM, Opener, RULE, Section, WRAP, str } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Pricing as an annual report comparison table: CSS grid with row headers,
  *  lining tabular prices, hairlines, and square subscribe actions. */
 export function PricingTable({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
@@ -57,6 +59,7 @@ export function PricingTable({ block, data, editable }: SectionProps) {
                 const { symbol, amount } = formatMoneyParts(
                   p.price,
                   p.currency,
+                  locale,
                 );
                 return (
                   <div key={`price-${p.id}`} className={cn(HAIR, "py-6")}>
@@ -153,6 +156,7 @@ export function PricingTable({ block, data, editable }: SectionProps) {
                 const { symbol, amount } = formatMoneyParts(
                   p.price,
                   p.currency,
+                  locale,
                 );
                 return (
                   <li key={p.id} className="border-b border-border py-8">

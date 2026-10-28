@@ -18,6 +18,7 @@ import {
 import type { ImageValue } from "./kit";
 import { LocalWhen } from "./local-time";
 import type { SectionProps } from "./types";
+import { useLocale } from "next-intl";
 
 // "rows": the streaming-service layout, shared by every style and drawn in
 // its own tokens (inverse band, display font, radius, primary). The first
@@ -183,6 +184,7 @@ const count = (block: SectionProps["block"]) => (block.limit === "6" ? 12 : 6);
 /** Courses as a streaming catalogue: the first course as a billboard, the
  *  rest in a sideways row. */
 export function CoursesRows(props: SectionProps) {
+  const locale = useLocale();
   const { block, data, editable } = props;
   const courses = (Array.isArray(data) ? (data as Course[]) : []).slice(
     0,
@@ -215,7 +217,7 @@ export function CoursesRows(props: SectionProps) {
                 <span
                   className={cn(PILL, "bg-primary text-primary-foreground")}
                 >
-                  {coursePriceLabel(lead) || "Course"}
+                  {coursePriceLabel(lead, locale) || "Course"}
                 </span>
                 {lessons(lead) && (
                   <span
@@ -238,7 +240,7 @@ export function CoursesRows(props: SectionProps) {
                   href={courseHref(c)}
                   image={courseCover(c, "bare")}
                   title={c.title}
-                  meta={[coursePriceLabel(c), lessons(c)]
+                  meta={[coursePriceLabel(c, locale), lessons(c)]
                     .filter(Boolean)
                     .join(" · ")}
                 />
@@ -254,6 +256,7 @@ export function CoursesRows(props: SectionProps) {
 /** Upcoming classes and events as a streaming lineup: the next one as a
  *  billboard with its date, the rest in a sideways row. */
 export function EventsRows(props: SectionProps) {
+  const locale = useLocale();
   const { block, data, editable } = props;
   const events = (Array.isArray(data) ? (data as CalendarEvent[]) : []).slice(
     0,
@@ -293,7 +296,7 @@ export function EventsRows(props: SectionProps) {
                   {next.type === "onsite_event"
                     ? next.location || "In person"
                     : "Online, live"}{" "}
-                  · {eventPriceLabel(next)}
+                  · {eventPriceLabel(next, locale)}
                 </span>
               </>
             }
@@ -308,7 +311,8 @@ export function EventsRows(props: SectionProps) {
                   title={e.title}
                   meta={
                     <>
-                      <LocalWhen iso={e.scheduled_at} /> · {eventPriceLabel(e)}
+                      <LocalWhen iso={e.scheduled_at} /> ·{" "}
+                      {eventPriceLabel(e, locale)}
                     </>
                   }
                 />

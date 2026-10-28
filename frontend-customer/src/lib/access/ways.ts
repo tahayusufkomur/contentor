@@ -68,8 +68,8 @@ export function formatDay(iso: string): string {
   return `${d} ${MON[m - 1]} ${y}`;
 }
 
-function money(amount: string, currency: string): string {
-  return `${currencySymbol(currency)}${Number(amount).toFixed(2)}`.replace(
+function money(amount: string, currency: string, locale: string): string {
+  return `${currencySymbol(currency, locale)}${Number(amount).toFixed(2)}`.replace(
     /\.00$/,
     "",
   );
@@ -111,6 +111,7 @@ export function describe(
   ways: Ways,
   plans: AccessPayload["plans"],
   currency: string,
+  locale: string,
 ): string {
   const parts: string[] = [];
   if (ways.free) {
@@ -130,7 +131,7 @@ export function describe(
       (s) => `until ${s} after purchase`,
     );
     parts.push(
-      `${money(ways.buy.price, currency)} once` +
+      `${money(ways.buy.price, currency, locale)} once` +
         (c.length ? ` ${c.join(", ")}` : ", theirs to keep"),
     );
   }
@@ -158,7 +159,7 @@ export function describe(
     );
   }
   const text = parts.join("; ");
-  return `${text.charAt(0).toUpperCase()}${text.slice(1)}.`;
+  return `${text.charAt(0).toLocaleUpperCase(locale)}${text.slice(1)}.`;
 }
 
 export function buyPill(w: Window | null): string {

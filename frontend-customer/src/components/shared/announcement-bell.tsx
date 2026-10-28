@@ -6,8 +6,10 @@ import { toast } from "sonner";
 import { Bell } from "lucide-react";
 
 import { FeedItem, getFeed, markRead } from "@/lib/announcements";
+import { useLocale } from "next-intl";
 
 export default function AnnouncementBell() {
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<FeedItem[]>([]);
   const [unread, setUnread] = useState(0);
@@ -75,7 +77,7 @@ export default function AnnouncementBell() {
                 dangerouslySetInnerHTML={{ __html: item.body }}
               />
               <div className="text-[10px] text-muted-foreground">
-                {new Date(item.created_at).toLocaleString()}
+                {new Date(item.created_at).toLocaleString(locale)}
               </div>
             </button>
           ))}

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import Link from "next/link";
 import { Newspaper, Sparkles } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,7 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 
 export default function BlogListPage() {
+  const locale = useLocale();
   const t = useTranslations("admin");
   const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPostAdmin[] | null>(null);
@@ -123,7 +124,9 @@ export default function BlogListPage() {
                   {post.source !== "manual" && (
                     <Badge variant="brand">{t("blog.aiBadge")}</Badge>
                   )}
-                  <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                  <span>
+                    {new Date(post.created_at).toLocaleDateString(locale)}
+                  </span>
                 </div>
               </div>
               <DeletePostButton postId={post.id} onDeleted={load} />

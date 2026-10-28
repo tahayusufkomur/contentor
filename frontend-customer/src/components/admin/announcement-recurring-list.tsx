@@ -13,22 +13,14 @@ import {
   listRecurring,
   patchRecurring,
 } from "@/lib/announcements";
+import { useLocale } from "next-intl";
+import { weekdayNames } from "@/lib/calendar-utils";
 
-const WEEKDAYS = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
-
-function summary(r: RecurringAnnouncement): string {
+function summary(r: RecurringAnnouncement, locale: string): string {
   const t = r.send_time?.slice(0, 5);
   if (r.frequency === "daily") return `Daily at ${t}`;
   if (r.frequency === "weekly")
-    return `Every ${WEEKDAYS[r.weekday ?? 0]} at ${t}`;
+    return `Every ${weekdayNames(locale, "long")[r.weekday ?? 0]} at ${t}`;
   return `Monthly on day ${r.day_of_month} at ${t}`;
 }
 
@@ -73,6 +65,7 @@ function RecurringRow({
   item: RecurringAnnouncement;
   onChanged: () => void;
 }) {
+  const locale = useLocale();
   const { run: toggle, loading: toggling } = useAsyncAction(
     async () => {
       await patchRecurring(item.id, { is_active: !item.is_active });
@@ -97,13 +90,13 @@ function RecurringRow({
         <div className="font-medium">{item.title}</div>
         <div className="text-xs text-muted-foreground">
           <Repeat className="mr-1 inline h-3 w-3 align-[-2px]" />
-          {summary(item)}
+          {summary(item, locale)}
           {item.is_active ? (
             <>
               {" "}
               · next:{" "}
               {item.next_run_at
-                ? new Date(item.next_run_at).toLocaleString()
+                ? new Date(item.next_run_at).toLocaleString(locale)
                 : "—"}
             </>
           ) : (

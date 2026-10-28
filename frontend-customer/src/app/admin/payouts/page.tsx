@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -245,9 +245,9 @@ interface Earnings {
   > | null;
 }
 
-function money(amount: string | number, currency: string) {
+function money(amount: string | number, currency: string, locale: string) {
   try {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
       currency,
     }).format(Number(amount));
@@ -257,6 +257,7 @@ function money(amount: string | number, currency: string) {
 }
 
 function EarningsCard() {
+  const locale = useLocale();
   const [data, setData] = useState<Earnings | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -281,14 +282,23 @@ function EarningsCard() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Stat label="Net payout" value={money(data.net_payout, cur)} />
+          <Stat
+            label="Net payout"
+            value={money(data.net_payout, cur, locale)}
+          />
           <Stat
             label="Gross sales"
-            value={money(data.gross_sales, cur)}
+            value={money(data.gross_sales, cur, locale)}
             sub={`${data.sales_count} sales`}
           />
-          <Stat label="Platform fees" value={money(data.platform_fees, cur)} />
-          <Stat label="Refunded" value={money(data.refunded_total, cur)} />
+          <Stat
+            label="Platform fees"
+            value={money(data.platform_fees, cur, locale)}
+          />
+          <Stat
+            label="Refunded"
+            value={money(data.refunded_total, cur, locale)}
+          />
         </div>
         {data.stripe_balance && (
           <>
@@ -297,13 +307,13 @@ function EarningsCard() {
               <span className="text-muted-foreground">
                 On the way to your bank:{" "}
                 <span className="font-medium text-foreground">
-                  {money((pending ?? 0) / 100, cur)}
+                  {money((pending ?? 0) / 100, cur, locale)}
                 </span>
               </span>
               <span className="text-muted-foreground">
                 Available:{" "}
                 <span className="font-medium text-foreground">
-                  {money((available ?? 0) / 100, cur)}
+                  {money((available ?? 0) / 100, cur, locale)}
                 </span>
               </span>
             </div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useNavigation } from "@shared/navigation/navigation-provider";
 import { defaultActiveMatch } from "@shared/navigation/navigation-state";
 import { NavLink } from "@/components/ui/nav-link";
@@ -23,6 +23,7 @@ interface MobileHeaderProps {
 }
 
 export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
+  const locale = useLocale();
   const t = useTranslations("admin");
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -102,7 +103,7 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
                       .map((w) => w[0])
                       .join("")
                       .slice(0, 2)
-                      .toUpperCase()}
+                      .toLocaleUpperCase(locale)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">

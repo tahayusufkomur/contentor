@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { fetchPublishedPosts } from "@/lib/blog-public";
+import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export async function generateMetadata() {
 }
 
 export default async function BlogIndexPage() {
+  const locale = await getLocale();
   const posts = await fetchPublishedPosts();
 
   return (
@@ -46,7 +48,7 @@ export default async function BlogIndexPage() {
                 className="text-sm text-muted-foreground"
                 dateTime={post.published_at}
               >
-                {new Date(post.published_at).toLocaleDateString()}
+                {new Date(post.published_at).toLocaleDateString(locale)}
               </time>
             </Link>
           </li>

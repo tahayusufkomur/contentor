@@ -4,12 +4,14 @@ import type { SubscriptionPlan } from "@/types/billing";
 import { EmptyHint, SubscribeButton, Txt, billingIntervalSuffix } from "../kit";
 import type { SectionProps } from "../types";
 import { FILL, Kicker, PopSection, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 const CARD: (keyof typeof FILL)[] = ["lime", "pink", "sun"];
 const TILT = ["-rotate-1", "rotate-1", "-rotate-[0.5deg]"];
 
 /** Each plan its own colour card with a giant price. */
 export function PricingColorcards({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans = Array.isArray(data) ? (data as SubscriptionPlan[]) : [];
   if (!plans.length && !editable) return null;
   const cols =
@@ -71,7 +73,7 @@ export function PricingColorcards({ block, data, editable }: SectionProps) {
                 </h3>
                 <p className="mt-8 flex flex-wrap items-baseline gap-x-2">
                   <span className="pop-display text-[clamp(3.75rem,2.5rem+3vw,5.5rem)] !leading-[0.85]">
-                    {formatMoney(p.price, p.currency)}
+                    {formatMoney(p.price, p.currency, locale)}
                   </span>
                   <span className="pop-mono text-base text-muted-foreground">
                     {billingIntervalSuffix(p.billing_interval_months)}

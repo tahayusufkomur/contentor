@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { BookOpen, ExternalLink, Pencil, Plus } from "lucide-react";
@@ -56,6 +56,7 @@ const courseFields: FieldConfig<Course>[] = [
 ];
 
 export default function AdminCoursesPage() {
+  const locale = useLocale();
   const t = useTranslations("admin");
   const navigate = useNavigate();
   const currency = useTenantCurrency();
@@ -219,7 +220,7 @@ export default function AdminCoursesPage() {
                   {course.pricing_type === "free"
                     ? "Free"
                     : course.pricing_type === "paid"
-                      ? formatMoney(course.price, currency)
+                      ? formatMoney(course.price, currency, locale)
                       : "Subscription"}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
@@ -247,7 +248,7 @@ export default function AdminCoursesPage() {
                 {course.pricing_type === "free"
                   ? "Free"
                   : course.pricing_type === "paid"
-                    ? formatMoney(course.price, currency)
+                    ? formatMoney(course.price, currency, locale)
                     : "Subscription"}
               </Badge>
             </TableCell>

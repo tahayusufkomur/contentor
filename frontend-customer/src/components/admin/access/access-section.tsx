@@ -27,6 +27,7 @@ import {
 import { currencySymbol } from "@/lib/format";
 import { KIND_ROUTES } from "@/lib/focus/kinds";
 import { cn } from "@/lib/utils";
+import { useLocale } from "next-intl";
 
 const NEW_PLAN_HREF = "/admin/store/plans/new";
 
@@ -35,10 +36,14 @@ const hasWindow = (w: Window | null) => !!w && Object.keys(w).length > 0;
 /** "49", "19.50": the amount with no ".00". */
 const amount = (price: string) => Number(price).toFixed(2).replace(/\.00$/, "");
 
-function planPrice(p: AccessPayload["plans"][number], currency: string) {
+function planPrice(
+  p: AccessPayload["plans"][number],
+  currency: string,
+  locale: string,
+) {
   const m = p.billing_interval_months;
   const every = m === 1 ? "month" : m === 12 ? "year" : `${m} months`;
-  return `${currencySymbol(currency)}${amount(p.price)}/${every}`;
+  return `${currencySymbol(currency, locale)}${amount(p.price)}/${every}`;
 }
 
 /** One way: its tick box, title, a right-hand control, and its body. */
@@ -162,6 +167,7 @@ function Loaded({
   onProblems?: (problems: Problems) => void;
   quietZeroPrice?: boolean;
 }) {
+  const locale = useLocale();
   // The In subscriptions box can be ticked before any plan is: a draft.
   const [plansDraft, setPlansDraft] = useState(false);
   const [refused, setRefused] = useState(false);
@@ -178,7 +184,7 @@ function Loaded({
   const onlyBuy = payload.allowed.length === 1 && has("buy");
   const onlyFree = payload.allowed.length === 1 && has("free");
   const currency = payload.currency;
-  const symbol = currencySymbol(currency);
+  const symbol = currencySymbol(currency, locale);
 
   // Only the ways this kind allows (the payload for a new item carries Free
   // for every kind). A kind with a single way always has it.
@@ -422,7 +428,7 @@ function Loaded({
                             {plan.name}
                           </Label>
                           <span className="text-xs text-muted-foreground">
-                            · {planPrice(plan, currency)}
+                            · {planPrice(plan, currency, locale)}
                           </span>
                           {!plan.is_active && (
                             <Badge variant="outline" className="text-[11px]">
@@ -531,7 +537,7 @@ function Loaded({
           </span>
           <span className="text-sm">
             {count > 0
-              ? describe(shown, payload.plans, currency)
+              ? describe(shown, payload.plans, currency, locale)
               : "Nothing ticked yet."}
           </span>
         </div>

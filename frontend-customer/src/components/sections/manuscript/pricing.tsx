@@ -9,10 +9,12 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { DoubleRule, H3, Opener, RunningHead, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Membership tiers set out as a formal subscription order form with
  *  double-ruled borders, hollow radio seals, and typographic prices. */
 export function PricingSubscriptions({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
@@ -71,7 +73,7 @@ export function PricingSubscriptions({ block, data, editable }: SectionProps) {
                     <div className="lg:col-span-3 lg:text-right">
                       <div className="flex items-baseline lg:justify-end">
                         <span className="font-display text-[2.2rem] font-light leading-none text-foreground">
-                          {formatMoney(plan.price, plan.currency)}
+                          {formatMoney(plan.price, plan.currency, locale)}
                         </span>
                         <span className="ml-2 font-display text-[0.95rem] italic text-muted-foreground">
                           {billingIntervalSuffix(plan.billing_interval_months)}

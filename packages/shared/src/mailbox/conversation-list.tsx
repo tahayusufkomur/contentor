@@ -14,8 +14,9 @@ import { Spinner } from "../ui/spinner";
 import type { ConversationListItem } from "@/lib/mailbox";
 
 import type { Folder } from "./folder-rail";
+import { useLocale } from "next-intl";
 
-function relativeTime(iso: string | null): string {
+function relativeTime(iso: string | null, locale: string): string {
   if (!iso) return "";
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60_000);
@@ -25,7 +26,7 @@ function relativeTime(iso: string | null): string {
   if (hrs < 24) return `${hrs}h`;
   const days = Math.floor(hrs / 24);
   if (days < 7) return `${days}d`;
-  return new Date(iso).toLocaleDateString(undefined, {
+  return new Date(iso).toLocaleDateString(locale, {
     month: "short",
     day: "numeric",
   });
@@ -77,6 +78,7 @@ export default function ConversationList({
   onSpam: (id: number, spam: boolean) => void;
   onDelete: (id: number) => void;
 }) {
+  const locale = useLocale();
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center py-16">
@@ -133,7 +135,7 @@ export default function ConversationList({
 
               {/* date ↔ hover actions swap */}
               <span className="shrink-0 text-xs text-muted-foreground group-hover:hidden">
-                {relativeTime(c.last_message_at)}
+                {relativeTime(c.last_message_at, locale)}
               </span>
               <div className="hidden shrink-0 items-center group-hover:flex">
                 {folder === "inbox" ? (

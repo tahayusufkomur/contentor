@@ -20,13 +20,13 @@ import {
   WRAP,
   getSproutTint,
 } from "./ui";
+import { useLocale } from "next-intl";
 
 function DateLeaf({ iso }: { iso: string }) {
+  const locale = useLocale();
   const d = new Date(iso);
   const isValid = !Number.isNaN(d.getTime());
-  const month = isValid
-    ? d.toLocaleDateString(undefined, { month: "short" })
-    : "";
+  const month = isValid ? d.toLocaleDateString(locale, { month: "short" }) : "";
   const day = isValid ? d.getDate() : "";
 
   return (
@@ -43,6 +43,7 @@ function DateLeaf({ iso }: { iso: string }) {
 
 /** Upcoming playdates, workshops, and family sessions with calendar-leaf date bubbles. */
 export function EventsPlaydates({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -109,7 +110,7 @@ export function EventsPlaydates({ block, data, editable }: SectionProps) {
                 {/* Price & Booking action */}
                 <div className="flex items-center justify-between gap-4 border-t border-[color-mix(in_oklch,var(--border)_60%,transparent)] pt-4 sm:flex-col sm:items-end sm:border-0 sm:pt-0">
                   <span className="font-display text-[1.15rem] font-bold text-primary">
-                    {eventPriceLabel(e)}
+                    {eventPriceLabel(e, locale)}
                   </span>
                   <span className="inline-flex items-center gap-1.5 font-display text-[0.92rem] font-bold text-foreground transition-colors group-hover:text-primary">
                     <span>Save your spot</span>

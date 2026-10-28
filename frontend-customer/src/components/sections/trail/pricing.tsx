@@ -10,15 +10,17 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { CARD, H3, LABEL, Opener, Section, Stat, WRAP, pad2 } from "./ui";
+import { useLocale } from "next-intl";
 
 function Plan({ plan, i }: { plan: SubscriptionPlan; i: number }) {
+  const locale = useLocale();
   return (
     <li className={cn(CARD, "flex flex-col p-7")}>
       <p className={cn(LABEL, "text-primary")}>{pad2(i)}</p>
       <h3 className={cn(H3, "mt-3 text-[1.5rem]")}>{plan.name}</h3>
       <div className="mt-5">
         <p className="trail-tnum font-display text-[2.6rem] font-bold leading-none">
-          {formatMoney(plan.price, plan.currency)}
+          {formatMoney(plan.price, plan.currency, locale)}
         </p>
         <p className={cn(LABEL, "mt-2 text-muted-foreground")}>
           {billingIntervalSuffix(plan.billing_interval_months)}

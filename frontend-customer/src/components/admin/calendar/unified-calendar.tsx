@@ -30,8 +30,10 @@ import {
   isSameDay,
   isToday,
   toDateKey,
+  weekdayNames,
 } from "@/lib/calendar-utils";
 import { listContentCalendar } from "@/lib/content-calendar-api";
+import { useLocale } from "next-intl";
 
 export type EventCategory = "all" | "live" | "email" | "blog";
 
@@ -86,13 +88,13 @@ const CATEGORY_STYLES = {
   },
 };
 
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
 interface UnifiedCalendarProps {
   initialItems?: UnifiedCalendarItem[];
 }
 
 export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
+  const locale = useLocale();
+  const weekdays = weekdayNames(locale, "short");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
   const [selectedCategory, setSelectedCategory] =
@@ -203,7 +205,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
     return map;
   }, [filteredItems]);
 
-  const monthLabel = currentDate.toLocaleString("default", {
+  const monthLabel = currentDate.toLocaleString(locale, {
     month: "long",
     year: "numeric",
   });
@@ -392,7 +394,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
           <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
             {/* Days Header */}
             <div className="grid grid-cols-7 border-b bg-muted/60 text-center text-xs font-semibold text-muted-foreground py-2.5">
-              {WEEKDAYS.map((day) => (
+              {weekdays.map((day) => (
                 <div key={day}>{day}</div>
               ))}
             </div>
@@ -443,7 +445,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                         const Icon = style.icon;
                         const eventTime = new Date(
                           item.scheduledAt,
-                        ).toLocaleTimeString([], {
+                        ).toLocaleTimeString(locale, {
                           hour: "2-digit",
                           minute: "2-digit",
                         });
@@ -512,17 +514,14 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4" />
                 <span>
-                  {new Date(selectedItem.scheduledAt).toLocaleString(
-                    "default",
-                    {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    },
-                  )}
+                  {new Date(selectedItem.scheduledAt).toLocaleString(locale, {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </span>
               </div>
 

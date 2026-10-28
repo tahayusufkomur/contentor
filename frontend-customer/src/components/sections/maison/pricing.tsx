@@ -10,9 +10,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { BTN, H3, LABEL, NUM, Opener, Section, WRAP, roman } from "./ui";
+import { useLocale } from "next-intl";
 
 /** The appointment: subscription plans set as ruled pedestals with roman numbering. */
 export function PricingAppointment({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
   const solo = plans.length === 1;
@@ -49,7 +51,7 @@ export function PricingAppointment({ block, data, editable }: SectionProps) {
                     "maison-opsz mt-6 font-display text-[3rem] leading-none",
                   )}
                 >
-                  {formatMoney(p.price, p.currency)}
+                  {formatMoney(p.price, p.currency, locale)}
                 </p>
                 <p className={cn(LABEL, "mt-3 text-muted-foreground")}>
                   {billingIntervalSuffix(p.billing_interval_months)}

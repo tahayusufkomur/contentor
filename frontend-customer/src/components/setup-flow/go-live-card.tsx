@@ -28,6 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ApiError } from "@/types/api";
 import { PayoutsCard } from "./payouts-card";
+import { useLocale } from "next-intl";
 
 /** The last stretch: a paid plan and Stripe only when the coach sells, one
  * way out of both ("go live now, sell later" keeps her prices), then
@@ -41,6 +42,7 @@ export function GoLiveCard({
   api: SetupFlowApi;
   onPublished: (team: TeamLine[]) => void;
 }) {
+  const locale = useLocale();
   const [state, setState] = useState<GoLiveState | null>(null);
   const [payoutsReady, setPayoutsReady] = useState(false);
   const [session, setSession] = useState<
@@ -215,10 +217,14 @@ export function GoLiveCard({
   const planName = (plan: { name: string }) =>
     plan.name.charAt(0).toUpperCase() + plan.name.slice(1);
   const day = (date: Date) =>
-    date.toLocaleDateString(undefined, { month: "long", day: "numeric" });
+    date.toLocaleDateString(locale, { month: "long", day: "numeric" });
 
   if (state.needs_plan && state.plan && state.plan.trial_days > 0) {
-    const price = formatPrice(state.plan.amount_cents, state.plan.currency);
+    const price = formatPrice(
+      state.plan.amount_cents,
+      state.plan.currency,
+      locale,
+    );
     const days = state.plan.trial_days;
     const firstCharge = day(new Date(Date.now() + days * 86_400_000));
     return shell(
@@ -246,7 +252,11 @@ export function GoLiveCard({
   }
 
   if (state.needs_start && state.plan) {
-    const price = formatPrice(state.plan.amount_cents, state.plan.currency);
+    const price = formatPrice(
+      state.plan.amount_cents,
+      state.plan.currency,
+      locale,
+    );
     const ends = state.trial_end ? ` on ${day(new Date(state.trial_end))}` : "";
     return shell(
       <>
@@ -275,7 +285,11 @@ export function GoLiveCard({
   }
 
   if (state.needs_plan && state.plan) {
-    const price = formatPrice(state.plan.amount_cents, state.plan.currency);
+    const price = formatPrice(
+      state.plan.amount_cents,
+      state.plan.currency,
+      locale,
+    );
     const name = planName(state.plan);
     return shell(
       <>

@@ -31,13 +31,14 @@ import {
   unbanMember,
 } from "@/lib/community-admin";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useLocale } from "next-intl";
 
-function stateBadge(m: ModerationMember) {
+function stateBadge(m: ModerationMember, locale: string) {
   if (m.is_banned) return <Badge variant="destructive">Banned</Badge>;
   if (m.muted_until && new Date(m.muted_until) > new Date())
     return (
       <Badge variant="outline">
-        Muted until {new Date(m.muted_until).toLocaleDateString()}
+        Muted until {new Date(m.muted_until).toLocaleDateString(locale)}
       </Badge>
     );
   if (m.requires_approval)
@@ -56,6 +57,7 @@ function MemberRow({
   member: ModerationMember;
   onAction: () => void;
 }) {
+  const locale = useLocale();
   const { run: act, loading: busy } = useAsyncAction(
     async (action: () => Promise<void>, message: string) => {
       await action();
@@ -75,7 +77,7 @@ function MemberRow({
         <div className="text-xs text-muted-foreground">{member.email}</div>
       </TableCell>
       <TableCell>{member.post_count}</TableCell>
-      <TableCell>{stateBadge(member)}</TableCell>
+      <TableCell>{stateBadge(member, locale)}</TableCell>
       <TableCell>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

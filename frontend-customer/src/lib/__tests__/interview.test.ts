@@ -65,8 +65,8 @@ describe("landedPage", () => {
 
 describe("formatPrice", () => {
   it("formats cents in the plan currency", () => {
-    expect(formatPrice(1990, "usd")).toBe("$19.90");
-    expect(formatPrice(null, "eur")).toBe("");
+    expect(formatPrice(1990, "usd", "en")).toBe("$19.90");
+    expect(formatPrice(null, "eur", "en")).toBe("");
   });
 });
 

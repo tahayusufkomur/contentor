@@ -10,6 +10,7 @@ import { getMyTenants, type MyTenant } from "@/lib/tenants";
 import { PublishControls } from "@/components/dashboard/publish-controls";
 import { PlatformCardDomainCta } from "@/components/dashboard/platform-card-domain-cta";
 import { DeletePlatform } from "@/components/dashboard/delete-platform";
+import { useLocale } from "next-intl";
 
 /** Status as a coloured dot and a word (spec 5.5). Token colours only:
  * chart-2 is the system's green, marketing-accent its brass. */
@@ -25,6 +26,7 @@ const STATUS: Record<
 };
 
 function PlatformCard({ tenant }: { tenant: MyTenant }) {
+  const locale = useLocale();
   // Fallback: an unknown backend value must never 500 the dashboard.
   const status = STATUS[tenant.provisioning_status] ?? STATUS.pending;
   const isReady = tenant.provisioning_status === "ready" && tenant.is_active;
@@ -34,7 +36,9 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
       <div className="flex items-start justify-between gap-3">
         <Monogram
           size={48}
-          label={(tenant.name || tenant.slug || "C").charAt(0).toUpperCase()}
+          label={(tenant.name || tenant.slug || "C")
+            .charAt(0)
+            .toLocaleUpperCase(locale)}
         />
         <span className="inline-flex items-center gap-1.5 text-caption text-muted-foreground">
           <span aria-hidden className={`size-2 rounded-full ${status.dot}`} />
@@ -57,7 +61,7 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
         </span>
         <span className="inline-flex items-center gap-1">
           <Clock className="size-3" />
-          {new Date(tenant.created_at).toLocaleDateString(undefined, {
+          {new Date(tenant.created_at).toLocaleDateString(locale, {
             year: "numeric",
             month: "short",
             day: "numeric",

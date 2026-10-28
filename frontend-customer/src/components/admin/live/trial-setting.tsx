@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useState } from "react";
 import { Info } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,6 +35,7 @@ export function TrialSetting({
   id: number;
   onChanged?: () => void;
 }) {
+  const locale = useLocale();
   const t = useTranslations("admin.events");
   const url = `/api/v1/admin/events/${kind}/${id}/trial/`;
   const [trial, setTrial] = useState<Trial | null>(null);
@@ -94,7 +95,7 @@ export function TrialSetting({
           </p>
           <p className="text-xs text-muted-foreground">
             {trial.on && trial.session_at
-              ? t("trialOn", { when: formatDate(trial.session_at) })
+              ? t("trialOn", { when: formatDate(trial.session_at, locale) })
               : t("trialHint")}
           </p>
         </div>

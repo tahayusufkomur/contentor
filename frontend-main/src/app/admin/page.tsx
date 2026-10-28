@@ -307,7 +307,7 @@ export default function AdminDashboardPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">
-                      {new Date(tenant.created_at).toLocaleDateString()}
+                      {new Date(tenant.created_at).toLocaleDateString("en")}
                     </TableCell>
                   </TableRow>
                 ))}

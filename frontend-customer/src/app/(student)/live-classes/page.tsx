@@ -19,6 +19,7 @@ import {
   Play,
   CheckCircle2,
 } from "lucide-react";
+import { useLocale } from "next-intl";
 
 interface LiveClass {
   id: number;
@@ -60,8 +61,8 @@ const statusConfig: Record<
   },
 };
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString(undefined, {
+function formatDate(dateStr: string, locale: string) {
+  return new Date(dateStr).toLocaleDateString(locale, {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -71,6 +72,7 @@ function formatDate(dateStr: string) {
 }
 
 export default function LiveClassesPage() {
+  const locale = useLocale();
   const [classes, setClasses] = useState<LiveClass[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -201,11 +203,14 @@ export default function LiveClassesPage() {
                         </span>
                       ) : (
                         <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                          {eventPriceLabel({
-                            pricing_type: lc.pricing_type,
-                            price: lc.price,
-                            currency: lc.access_info?.currency ?? undefined,
-                          })}
+                          {eventPriceLabel(
+                            {
+                              pricing_type: lc.pricing_type,
+                              price: lc.price,
+                              currency: lc.access_info?.currency ?? undefined,
+                            },
+                            locale,
+                          )}
                         </span>
                       )}
                     </div>
@@ -218,7 +223,7 @@ export default function LiveClassesPage() {
                     {lc.scheduled_at && (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Clock className="h-3.5 w-3.5" />
-                        {formatDate(lc.scheduled_at)}
+                        {formatDate(lc.scheduled_at, locale)}
                       </div>
                     )}
                   </CardContent>
@@ -259,7 +264,7 @@ export default function LiveClassesPage() {
                     {lc.ended_at && (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Clock className="h-3.5 w-3.5" />
-                        {formatDate(lc.ended_at)}
+                        {formatDate(lc.ended_at, locale)}
                       </div>
                     )}
                     {(lc.recording_signed_url || lc.recording_url) && (

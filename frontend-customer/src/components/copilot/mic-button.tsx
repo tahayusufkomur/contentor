@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Mic } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ogLocale, resolveLocale } from "@shared/i18n/locales";
 
 // The bits of the Web Speech API we use; TS's DOM lib doesn't ship them.
 interface Recognition {
@@ -20,6 +21,13 @@ interface Recognition {
   start: () => void;
   stop: () => void;
   abort: () => void;
+}
+
+/** The creator speaks their own language, whatever language the page is in
+ *  (the copilot also sits on the public site). `user-locale` is readable. */
+function dictationLang(): string {
+  const cookie = document.cookie.match(/(?:^|; )user-locale=([^;]*)/)?.[1];
+  return ogLocale(resolveLocale(cookie)).replace("_", "-");
 }
 
 function recognitionCtor(): (new () => Recognition) | undefined {
@@ -65,7 +73,7 @@ export function MicButton({
     const Ctor = recognitionCtor();
     if (!Ctor) return;
     const rec = new Ctor();
-    rec.lang = "en-US";
+    rec.lang = dictationLang();
     rec.continuous = true;
     rec.interimResults = true;
     rec.onresult = (e) => {

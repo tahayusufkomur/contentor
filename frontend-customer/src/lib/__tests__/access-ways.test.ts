@@ -30,11 +30,16 @@ const none: Ways = { free: null, buy: null, plans: [] };
 
 suite("describe", () => {
   it("says it in plain words", () => {
-    expect(describe({ ...none, free: { window: null } }, plans, "EUR")).toBe(
-      "Free for everyone.",
-    );
     expect(
-      describe({ ...none, buy: { price: "29", window: null } }, plans, "EUR"),
+      describe({ ...none, free: { window: null } }, plans, "EUR", "en"),
+    ).toBe("Free for everyone.");
+    expect(
+      describe(
+        { ...none, buy: { price: "29", window: null } },
+        plans,
+        "EUR",
+        "en",
+      ),
     ).toBe("€29 once, theirs to keep.");
     expect(
       describe(
@@ -48,6 +53,7 @@ suite("describe", () => {
         },
         plans,
         "EUR",
+        "en",
       ),
     ).toBe(
       "€49 once with 1 year of access; in Gold and Silver after 1 month of membership.",
@@ -61,6 +67,7 @@ suite("describe", () => {
         },
         plans,
         "EUR",
+        "en",
       ),
     ).toBe("Free until 26 Oct 2026; €29 once, theirs to keep.");
     expect(
@@ -68,19 +75,26 @@ suite("describe", () => {
         { ...none, plans: [{ plan_id: 1, window: null }] },
         plans,
         "EUR",
+        "en",
       ),
     ).toBe("In Gold.");
   });
 
   it("keeps cents, relative free windows and a delayed buy", () => {
     expect(
-      describe({ ...none, buy: { price: "4.50", window: null } }, plans, "EUR"),
+      describe(
+        { ...none, buy: { price: "4.50", window: null } },
+        plans,
+        "EUR",
+        "en",
+      ),
     ).toBe("€4.50 once, theirs to keep.");
     expect(
       describe(
         { ...none, free: { window: { closes_after_days: 7 } } },
         plans,
         "EUR",
+        "en",
       ),
     ).toBe("Free for 1 week after joining.");
     expect(
@@ -88,12 +102,18 @@ suite("describe", () => {
         { ...none, buy: { price: "9", window: { opens_after_days: 14 } } },
         plans,
         "EUR",
+        "en",
       ),
     ).toBe("€9 once opening 2 weeks after purchase.");
     // The same sentence as the backend once both ends are spans.
     const both = { opens_after_days: 30, closes_after_days: 90 };
     expect(
-      describe({ ...none, buy: { price: "49", window: both } }, plans, "EUR"),
+      describe(
+        { ...none, buy: { price: "49", window: both } },
+        plans,
+        "EUR",
+        "en",
+      ),
     ).toBe(
       "€49 once opening 1 month after purchase, until 3 months after purchase.",
     );

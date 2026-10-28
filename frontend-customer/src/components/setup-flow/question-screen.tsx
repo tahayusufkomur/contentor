@@ -53,6 +53,7 @@ import { QuestionHelp } from "./question-help";
 import { SchedulePicker } from "./schedule-picker";
 import { SocialsPicker } from "./socials-picker";
 import { StarterCard } from "./starter-card";
+import { useLocale } from "next-intl";
 
 export type { StepDraft };
 
@@ -102,6 +103,7 @@ export function QuestionScreen({
   /** Move on to the next question without answering this one again. */
   onNext: () => void;
 }) {
+  const locale = useLocale();
   const multi = !!step.multi && step.options.length > 1;
   const prefill = live ? prefilledPicks(step) : { tiles: [], own: [] };
   // Own options: the ones sent with the answer, plus any added but not sent.
@@ -311,7 +313,7 @@ export function QuestionScreen({
     const pick: TurnRequest =
       sched && field
         ? {
-            message: scheduleSummary(mode, sched),
+            message: scheduleSummary(mode, sched, locale),
             choice: {
               field,
               value: JSON.stringify({ mode, ...sched }),

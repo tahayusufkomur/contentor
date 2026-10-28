@@ -26,6 +26,7 @@ import {
 } from "./primitives";
 import { Spinner } from "../ui/spinner";
 import { useAsyncAction } from "../hooks/use-async-action";
+import { useLocale } from "next-intl";
 
 function isFkValue(value: RowValue): value is FkValue {
   return (
@@ -52,6 +53,7 @@ export function CellValue({
   column: ColumnSchema;
   value: RowValue | undefined;
 }) {
+  const locale = useLocale();
   if (value === null || value === undefined || value === "") {
     return <span className="text-muted-foreground">—</span>;
   }
@@ -86,13 +88,13 @@ export function CellValue({
     case "datetime":
       return (
         <span className="text-muted-foreground">
-          {new Date(String(value)).toLocaleString()}
+          {new Date(String(value)).toLocaleString(locale)}
         </span>
       );
     case "date":
       return (
         <span className="text-muted-foreground">
-          {new Date(String(value)).toLocaleDateString()}
+          {new Date(String(value)).toLocaleDateString(locale)}
         </span>
       );
     case "decimal":

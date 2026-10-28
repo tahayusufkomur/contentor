@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { EditableContext } from "@/lib/blocks/types";
 import type { Block } from "@/types/tenant";
@@ -157,7 +158,8 @@ export function RingBadge({
   uid: string;
   className?: string;
 }) {
-  const unit = `${text.toUpperCase()}  ✦  `;
+  const locale = useLocale();
+  const unit = `${text.toLocaleUpperCase(locale)}  ✦  `;
   const reps = Math.max(1, Math.floor(52 / unit.length));
   const ring = unit.repeat(reps);
   const fontSize = Math.min(17, Math.max(11, 490 / (0.6 * ring.length)));

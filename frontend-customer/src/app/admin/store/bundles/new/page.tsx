@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { FocusStart } from "@/components/focus/focus-start";
@@ -97,6 +97,7 @@ function BundleSlots() {
 }
 
 function PlainNewBundle() {
+  const locale = useLocale();
   useEffect(() => {
     clearActiveCreation(0); // from the focus screen's "Fill it in myself"
   }, []);
@@ -218,7 +219,7 @@ function PlainNewBundle() {
             <div className="space-y-2 sm:max-w-xs">
               <Label>Original Price (sum of items)</Label>
               <div className="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
-                {formatMoney(originalPrice, currency)}
+                {formatMoney(originalPrice, currency, locale)}
               </div>
             </div>
           </CardContent>

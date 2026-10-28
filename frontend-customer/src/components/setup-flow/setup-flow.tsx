@@ -56,6 +56,7 @@ import { QuestionScreen, type StepDraft } from "./question-screen";
 import { SetupMenu } from "./setup-menu";
 import { SetupSkeleton } from "./skeleton";
 import { SHELL_CSS, SHELL_TOKENS } from "./tokens";
+import { useLocale } from "next-intl";
 
 type Stages = [string, string, string];
 const PAGE_STAGES: Stages = [
@@ -189,6 +190,7 @@ function Flow({
   email: string;
   host: string;
 }) {
+  const locale = useLocale();
   const narrow = useNarrow();
   const iv = flow.interview;
   // The live guide keeps what only a turn's reply carries (the status line).
@@ -528,6 +530,7 @@ function Flow({
           ? scheduleSummary(
               draft.ticked[0] === "One-time" ? "once" : "recurring",
               draft.schedule,
+              locale,
             )
           : undefined
         : draft.ticked?.length

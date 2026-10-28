@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import type auth from "../../../../messages/en/auth.json";
 import {
   AlertCircle,
@@ -58,6 +58,7 @@ function StateIcon({
  * back here), build the site, then hand the coach straight to their own
  * /setup — the whole onboarding happens there. */
 export default function SignupVerifyPage() {
+  const locale = useLocale();
   const t = useTranslations("auth.signup");
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -243,11 +244,11 @@ export default function SignupVerifyPage() {
           <p className="mt-6 text-center text-[14px] text-muted-foreground">
             {t("verify.card.terms", {
               plan: formatPlanName(plan.name),
-              date: firstCharge.toLocaleDateString(undefined, {
+              date: firstCharge.toLocaleDateString(locale, {
                 month: "long",
                 day: "numeric",
               }),
-              price: formatPlanPrice(plan.currency, plan.amount_cents),
+              price: formatPlanPrice(plan.currency, plan.amount_cents, locale),
             })}
           </p>
         ) : null}

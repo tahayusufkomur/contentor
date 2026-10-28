@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { CalendarEvent } from "@/types/live";
-import { eventPriceLabel } from "../kit";
+import { eventPriceLabel as eventPriceLabelIn } from "../kit";
 
 type Priced = Pick<
   CalendarEvent,
@@ -17,6 +17,9 @@ const liveClass = (over: Partial<Priced> = {}): Priced => ({
   currency: "EUR",
   ...over,
 });
+
+const eventPriceLabel = (e: Parameters<typeof eventPriceLabelIn>[0]) =>
+  eventPriceLabelIn(e, "en");
 
 describe("eventPriceLabel on a live class", () => {
   it("prints the tenant's currency, never a hard-coded dollar", () => {

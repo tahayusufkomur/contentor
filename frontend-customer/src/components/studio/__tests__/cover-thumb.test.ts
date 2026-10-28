@@ -1,10 +1,20 @@
 import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkup as renderBare } from "react-dom/server";
+import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it } from "vitest";
 import { CoverThumb } from "@/components/studio/cover-thumb";
 import { defaultRecipe } from "@/lib/covers/recipe";
 import { targetItem } from "@/lib/covers/targets";
 import type { BadgeKind, CoverDesign, DesignTarget } from "@/types/design";
+
+// useLocale needs a provider; the components under test read no messages.
+// createElement wants children among this provider's props; pass them as arguments.
+const Intl = NextIntlClientProvider as React.FC<{
+  locale: string;
+  children?: React.ReactNode;
+}>;
+const renderToStaticMarkup = (el: Parameters<typeof renderBare>[0]) =>
+  renderBare(createElement(Intl, { locale: "en" }, el));
 
 const DAY = 86_400_000;
 const daysFromNow = (days: number) =>

@@ -11,9 +11,11 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, BTN, H3, LABEL, NUM, Opener, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Events tour dates: upcoming dates laid out like a tour poster lineup with date, title, venue and ticket links. */
 export function EventsTourDates({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -67,7 +69,7 @@ export function EventsTourDates({ block, data, editable }: SectionProps) {
                   </span>
                   <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-col sm:items-end sm:justify-center sm:text-right">
                     <span className={cn(LABEL, NUM, "text-muted-foreground")}>
-                      {eventPriceLabel(e)}
+                      {eventPriceLabel(e, locale)}
                     </span>
                     <span className="encore-link inline-flex items-center gap-2 text-[0.9rem] font-semibold sm:mt-1">
                       Tickets

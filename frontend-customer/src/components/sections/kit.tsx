@@ -8,6 +8,7 @@
  * styles differ in layout and look, never in behaviour.
  */
 import type { ReactNode } from "react";
+import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { InlineText } from "@/components/blocks/inline-text";
 import { EditableBody } from "@/components/blocks/editable-body";
@@ -245,14 +246,14 @@ export const hasCover = (c: Course) =>
 
 /** Plain-text price in the tenant currency: "€49", "Free", "Included in
  *  membership", or "Owned" for a student who already has it. */
-export function coursePriceLabel(course: Course): string {
+export function coursePriceLabel(course: Course, locale: string): string {
   const a = course.access_info;
   if (a?.has_access && a.access_reason !== "free") return "Owned";
   const type = a?.pricing_type ?? course.pricing_type;
   if (type === "free") return "Free";
   if (type === "subscription") return "Included in membership";
   const price = a?.price ?? course.price;
-  return price ? formatMoney(price, a?.currency || "USD") : "";
+  return price ? formatMoney(price, a?.currency || "USD", locale) : "";
 }
 
 /** The course's price: a themed badge, or plain text with `plain`. */
@@ -265,8 +266,11 @@ export function CoursePrice({
   className?: string;
   plain?: boolean;
 }) {
+  const locale = useLocale();
   if (plain)
-    return <span className={className}>{coursePriceLabel(course)}</span>;
+    return (
+      <span className={className}>{coursePriceLabel(course, locale)}</span>
+    );
   return (
     <span className={className}>
       <PriceBadge
@@ -301,27 +305,28 @@ export function EmptyHint({
 /** "Free", "Free trial", "Members only" or the event price in the tenant currency ("€25"). */
 export function eventPriceLabel(
   e: Pick<CalendarEvent, "pricing_type" | "price" | "currency" | "is_trial">,
+  locale: string,
 ): string {
   if (e.is_trial) return "Free trial";
   if (e.pricing_type === "subscription") return "Members only";
   if (e.pricing_type !== "paid" || !Number(e.price)) return "Free";
-  return formatMoney(e.price, e.currency || "USD");
+  return formatMoney(e.price, e.currency || "USD", locale);
 }
 
-export function formatEventDate(iso: string) {
+export function formatEventDate(iso: string, locale: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString(undefined, {
+  return d.toLocaleDateString(locale, {
     weekday: "short",
     month: "short",
     day: "numeric",
   });
 }
 
-export function formatEventTime(iso: string) {
+export function formatEventTime(iso: string, locale: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleTimeString(undefined, {
+  return d.toLocaleTimeString(locale, {
     hour: "numeric",
     minute: "2-digit",
   });

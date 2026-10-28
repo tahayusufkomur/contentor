@@ -11,9 +11,11 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { H3, HandArrow, Opener, PriceTag, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Workshop sessions and live studio classes listed as ticket stubs with perforated dashed borders. */
 export function EventsSessions({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -63,7 +65,7 @@ export function EventsSessions({ block, data, editable }: SectionProps) {
                   </div>
 
                   <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:justify-center">
-                    <PriceTag price={eventPriceLabel(e)} />
+                    <PriceTag price={eventPriceLabel(e, locale)} />
                     <span className="workshop-hand inline-flex items-center gap-1.5 text-[1.1rem] font-bold text-accent transition-transform motion-safe:group-hover:translate-x-1">
                       <span>Reserve bench</span>
                       <HandArrow className="h-3 w-4" />

@@ -1,5 +1,6 @@
 import { Clock, Radio, CheckCircle2 } from "lucide-react";
 import { formatMoney } from "@/lib/format";
+import { useLocale } from "next-intl";
 
 // ─── Small pieces the events list and form share ───────────────────
 
@@ -52,6 +53,7 @@ export function PricingBadge({
   currency: string;
   labels: { free: string; membersOnly: string };
 }) {
+  const locale = useLocale();
   if (pricingType === "free") {
     return (
       <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
@@ -63,15 +65,15 @@ export function PricingBadge({
     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
       {pricingType === "subscription"
         ? labels.membersOnly
-        : formatMoney(price, currency)}
+        : formatMoney(price, currency, locale)}
     </span>
   );
 }
 
-export function formatDate(iso: string | null): string {
+export function formatDate(iso: string | null, locale: string): string {
   if (!iso) return "—";
   const d = new Date(iso);
-  return d.toLocaleDateString(undefined, {
+  return d.toLocaleDateString(locale, {
     month: "short",
     day: "numeric",
     year: "numeric",

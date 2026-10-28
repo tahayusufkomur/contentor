@@ -25,6 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { normalizeDesign } from "@shared/email/editor";
+import { useLocale } from "next-intl";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,7 @@ const RECIPIENT_STATUS_COLORS: Record<string, string> = {
 };
 
 export default function CampaignDetailPage() {
+  const locale = useLocale();
   const params = useParams();
   const campaignId = Number(params.id);
   const router = useRouter();
@@ -162,7 +164,7 @@ export default function CampaignDetailPage() {
                         <p className="mr-2 text-sm text-muted-foreground">
                           Goes out{" "}
                           {new Date(campaign.scheduled_at).toLocaleString(
-                            undefined,
+                            locale,
                             { dateStyle: "medium", timeStyle: "short" },
                           )}
                         </p>
@@ -226,13 +228,15 @@ export default function CampaignDetailPage() {
                   <div className="flex justify-between border-b py-2">
                     <span className="text-muted-foreground">Created</span>
                     <span>
-                      {new Date(campaign.created_at).toLocaleString()}
+                      {new Date(campaign.created_at).toLocaleString(locale)}
                     </span>
                   </div>
                   {campaign.sent_at && (
                     <div className="flex justify-between border-b py-2">
                       <span className="text-muted-foreground">Completed</span>
-                      <span>{new Date(campaign.sent_at).toLocaleString()}</span>
+                      <span>
+                        {new Date(campaign.sent_at).toLocaleString(locale)}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -293,7 +297,7 @@ export default function CampaignDetailPage() {
                         </td>
                         <td className="py-2">
                           {r.sent_at
-                            ? new Date(r.sent_at).toLocaleString()
+                            ? new Date(r.sent_at).toLocaleString(locale)
                             : "—"}
                         </td>
                         <td className="py-2 text-destructive">

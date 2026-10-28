@@ -18,6 +18,7 @@ import { type ModeratorHooks, timeAgo } from "./post-card";
 import { ReactionBar } from "./reaction-bar";
 import { ReportDialog } from "./report-dialog";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useLocale } from "next-intl";
 
 export function CommentSection({
   post,
@@ -123,6 +124,7 @@ function CommentRow({
   onDeleted: (id: number) => void;
   onReport: (id: number) => void;
 }) {
+  const locale = useLocale();
   const { run: removeOwn } = useAsyncAction(
     async () => {
       await deleteComment(comment.id);
@@ -136,7 +138,7 @@ function CommentRow({
       <Avatar className="h-7 w-7">
         <AvatarImage src={comment.author.avatar} alt="" />
         <AvatarFallback>
-          {comment.author.display_name.slice(0, 2).toUpperCase()}
+          {comment.author.display_name.slice(0, 2).toLocaleUpperCase(locale)}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1 rounded-lg bg-muted/50 px-3 py-2">
@@ -148,7 +150,7 @@ function CommentRow({
             </Badge>
           )}
           <span className="text-muted-foreground">
-            {timeAgo(comment.created_at)}
+            {timeAgo(comment.created_at, locale)}
           </span>
         </div>
         <div className="mt-0.5 text-sm">

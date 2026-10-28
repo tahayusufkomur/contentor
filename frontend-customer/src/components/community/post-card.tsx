@@ -25,6 +25,7 @@ import { ImageGrid } from "./image-grid";
 import { Linkify } from "./linkify";
 import { ReactionBar } from "./reaction-bar";
 import { ReportDialog } from "./report-dialog";
+import { useLocale } from "next-intl";
 
 export interface ModeratorHooks {
   pin: (post: CommunityPost) => Promise<void>;
@@ -34,13 +35,13 @@ export interface ModeratorHooks {
   removeComment: (comment: CommunityComment) => Promise<void>;
 }
 
-export function timeAgo(iso: string): string {
+export function timeAgo(iso: string, locale: string): string {
   const s = Math.max(1, (Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 60) return "just now";
   if (s < 3600) return `${Math.floor(s / 60)}m`;
   if (s < 86400) return `${Math.floor(s / 3600)}h`;
   if (s < 604800) return `${Math.floor(s / 86400)}d`;
-  return new Date(iso).toLocaleDateString();
+  return new Date(iso).toLocaleDateString(locale);
 }
 
 export function PostCard({
@@ -54,6 +55,7 @@ export function PostCard({
   onChanged: () => void;
   moderator: ModeratorHooks | null;
 }) {
+  const locale = useLocale();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(post.body);
   const [reporting, setReporting] = useState(false);
@@ -85,7 +87,7 @@ export function PostCard({
           <Avatar className="h-9 w-9">
             <AvatarImage src={post.author.avatar} alt="" />
             <AvatarFallback>
-              {post.author.display_name.slice(0, 2).toUpperCase()}
+              {post.author.display_name.slice(0, 2).toLocaleUpperCase(locale)}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
@@ -98,7 +100,7 @@ export function PostCard({
                 <Pin className="h-3.5 w-3.5 text-muted-foreground" />
               )}
               <span className="text-xs text-muted-foreground">
-                {timeAgo(post.created_at)}
+                {timeAgo(post.created_at, locale)}
                 {post.edited_at ? " · edited" : ""}
               </span>
               {post.status === "pending" && (

@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { BusyOverlay, WorkSteps } from "./busy-overlay";
 import { QuestionHelp } from "./question-help";
+import { useLocale } from "next-intl";
 
 export const NOUN: Record<ReviewKind, string> = {
   course: "course",
@@ -188,6 +189,7 @@ function Drafted({
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
   onTrial?: (kind: ReviewKind, on: boolean) => Promise<unknown>;
 }) {
+  const locale = useLocale();
   const working = redrafting || changing;
   // A change on its way: bring the card into view so the cover over it is
   // seen, even when she sent it from the box far below.
@@ -216,6 +218,7 @@ function Drafted({
     ? formatPrice(
         Math.round(parseFloat(item.price) * 100),
         item.currency,
+        locale,
       ).replace(/[.,]00$/, "")
     : item.members?.length
       ? "Members only"
@@ -317,7 +320,7 @@ function Drafted({
           >
             <Chip>
               <CalendarDays className="size-4" aria-hidden />
-              {new Intl.DateTimeFormat(undefined, {
+              {new Intl.DateTimeFormat(locale, {
                 weekday: "long",
                 day: "numeric",
                 month: "long",
@@ -442,6 +445,7 @@ function FreeTrial({
   disabled: boolean;
   onTrial: (kind: ReviewKind, on: boolean) => Promise<unknown>;
 }) {
+  const locale = useLocale();
   // The switch follows her tap at once; the card catches up when it reloads.
   const [asked, setAsked] = useState<boolean | null>(null);
   const on = asked ?? !!item.trial?.on;
@@ -460,6 +464,7 @@ function FreeTrial({
     ? formatPrice(
         Math.round(parseFloat(item.price) * 100),
         item.currency,
+        locale,
       ).replace(/[.,]00$/, "")
     : "";
   return (

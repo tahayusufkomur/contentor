@@ -11,6 +11,7 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, H3, Opener, Section, WindowChrome, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 function getCronExpression(iso: string) {
   const d = new Date(iso);
@@ -24,6 +25,7 @@ function getCronExpression(iso: string) {
 
 /** Live events and scheduled classes structured as crontab daemon schedule entries. */
 export function EventsCron({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -75,7 +77,7 @@ export function EventsCron({ block, data, editable }: SectionProps) {
 
                       <div className="flex items-center justify-between gap-6 pl-0 sm:justify-end">
                         <span className="font-mono text-xs font-bold text-primary">
-                          {eventPriceLabel(e)}
+                          {eventPriceLabel(e, locale)}
                         </span>
 
                         <span className="terminal-link inline-flex items-center gap-1.5 font-mono text-xs font-bold">

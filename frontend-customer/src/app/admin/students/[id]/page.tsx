@@ -15,6 +15,7 @@ import { SkeletonList } from "@/components/ui/skeletons";
 import { clientFetch } from "@/lib/api-client";
 import { formatMoney } from "@/lib/format";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useLocale } from "next-intl";
 
 export const dynamic = "force-dynamic";
 
@@ -46,10 +47,10 @@ const STATUS_VARIANT: Record<
   failed: "destructive",
 };
 
-function formatDate(iso: string | null) {
+function formatDate(iso: string | null, locale: string) {
   if (!iso) return "";
   try {
-    return new Date(iso).toLocaleDateString(undefined, {
+    return new Date(iso).toLocaleDateString(locale, {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -60,6 +61,7 @@ function formatDate(iso: string | null) {
 }
 
 export default function StudentPaymentsPage() {
+  const locale = useLocale();
   const params = useParams();
   const studentId = params.id as string;
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -121,14 +123,14 @@ export default function StudentPaymentsPage() {
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-base capitalize">
                       {p.payment_type.replace("_", " ")} ·{" "}
-                      {formatMoney(p.amount, p.currency)}
+                      {formatMoney(p.amount, p.currency, locale)}
                     </CardTitle>
                     <div className="flex items-center gap-2">
                       <Badge variant={STATUS_VARIANT[p.status] ?? "secondary"}>
                         {p.status.replace("_", " ")}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        {formatDate(p.created_at)}
+                        {formatDate(p.created_at, locale)}
                       </span>
                     </div>
                   </div>
@@ -146,7 +148,7 @@ export default function StudentPaymentsPage() {
                         <span className="text-sm">{item.title}</span>
                         <div className="flex items-center gap-3">
                           <span className="text-sm tabular-nums text-muted-foreground">
-                            {formatMoney(item.item_price, p.currency)}
+                            {formatMoney(item.item_price, p.currency, locale)}
                           </span>
                           {item.is_refunded ? (
                             <Badge variant="secondary">Refunded</Badge>

@@ -11,6 +11,7 @@ import { formatPlanName, formatPlanPrice } from "../lib/format-plan-price";
 import { APEX, Mark } from "../ui/contentor-brand";
 import { ModalPortal } from "../ui/modal-portal";
 import { Spinner } from "../ui/spinner";
+import { useLocale } from "next-intl";
 
 /** What a checkout endpoint answers: an embedded session (mounted here) or,
  *  while the server has no publishable key, Stripe's hosted page to go to.
@@ -184,6 +185,7 @@ export function PlanCheckoutAside({
   title: string;
   plan: PlanTerms;
 }) {
+  const locale = useLocale();
   return (
     <CheckoutAside
       photo={photo}
@@ -197,17 +199,17 @@ export function PlanCheckoutAside({
         </span>
       }
       title={title}
-      steps={planSteps(plan)}
+      steps={planSteps(plan, locale)}
     />
   );
 }
 
 /** A trial is free today and starts on its last day unless cancelled; a
  *  plan without one is charged today. */
-function planSteps(plan: PlanTerms): CheckoutStep[] {
+function planSteps(plan: PlanTerms, locale: string): CheckoutStep[] {
   const name = formatPlanName(plan.name);
   const price = plan.amount_cents
-    ? `${formatPlanPrice(plan.currency, plan.amount_cents)} a month`
+    ? `${formatPlanPrice(plan.currency, plan.amount_cents, locale)} a month`
     : "its monthly price";
   if (!plan.trial_days) {
     return [
@@ -220,7 +222,7 @@ function planSteps(plan: PlanTerms): CheckoutStep[] {
   }
   const date = new Date(
     Date.now() + plan.trial_days * 86_400_000,
-  ).toLocaleDateString(undefined, { month: "long", day: "numeric" });
+  ).toLocaleDateString(locale, { month: "long", day: "numeric" });
   return [
     {
       when: "Today",

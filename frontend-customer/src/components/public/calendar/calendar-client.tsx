@@ -13,6 +13,7 @@ import { EventTypeFilter } from "./event-type-filter";
 import { CalendarMonthView } from "./calendar-month-view";
 import { CalendarAgendaView } from "./calendar-agenda-view";
 import type { CalendarEvent, CalendarEventType } from "@/types/live";
+import { useLocale } from "next-intl";
 
 type View = "month" | "agenda";
 
@@ -27,6 +28,7 @@ export function CalendarClient({
   initialView,
   initialDate,
 }: CalendarClientProps) {
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const tenantConfig = useTenant();
@@ -122,7 +124,7 @@ export function CalendarClient({
   );
 
   const title =
-    view === "month" ? formatMonthYear(currentDate) : "Upcoming Events";
+    view === "month" ? formatMonthYear(currentDate, locale) : "Upcoming Events";
 
   return (
     <div className="space-y-4">

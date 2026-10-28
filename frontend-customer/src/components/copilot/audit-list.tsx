@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,7 @@ function AuditRow({
   entry: CopilotAuditEntry;
   onUndone: () => void;
 }) {
+  const locale = useLocale();
   const t = useTranslations("admin");
   const router = useRouter();
   const { run: undo, loading } = useAsyncAction(
@@ -94,7 +95,7 @@ function AuditRow({
           dateTime={entry.created_at}
           className="text-xs text-muted-foreground"
         >
-          {new Date(entry.created_at).toLocaleString()}
+          {new Date(entry.created_at).toLocaleString(locale)}
           {entry.undone ? ` · ${t("dock.undone")}` : ""}
         </time>
       </span>

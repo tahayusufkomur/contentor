@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Image as ImageIcon,
@@ -47,6 +47,7 @@ const SORT_OPTIONS = [
 /** The photo half of the media library. `refreshSignal` changes when the
  *  page's uploader lands a photo. */
 export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
+  const locale = useLocale();
   const browserRef = useRef<MediaBrowserHandle>(null);
   const seenSignal = useRef(refreshSignal);
   useEffect(() => {
@@ -283,7 +284,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
               <DemoBadge type="photos" id={photo.id} />
             </TableCell>
             <TableCell>{formatFileSize(photo.file_size)}</TableCell>
-            <TableCell>{formatDate(photo.created_at)}</TableCell>
+            <TableCell>{formatDate(photo.created_at, locale)}</TableCell>
             <TableCell>
               <div className="flex items-center gap-1">
                 {photo.signed_url && (

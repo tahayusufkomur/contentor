@@ -151,7 +151,7 @@ export default function TenantDetailPage() {
     },
     {
       label: "Created",
-      value: new Date(tenant.created_at).toLocaleString(),
+      value: new Date(tenant.created_at).toLocaleString("en"),
       icon: Calendar,
     },
   ];
@@ -285,7 +285,7 @@ export default function TenantDetailPage() {
                       renews{" "}
                       {new Date(
                         tenant.platform_subscription.current_period_end,
-                      ).toLocaleDateString()}
+                      ).toLocaleDateString("en")}
                     </p>
                   )}
                 </div>

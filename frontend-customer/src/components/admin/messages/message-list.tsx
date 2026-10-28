@@ -2,7 +2,7 @@
 
 import { dyn } from "@/i18n/dynamic";
 import { useCallback, useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Bell, Mail, Megaphone } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,8 +29,8 @@ const STATUS_VARIANT: Record<
   failed: "warning",
 };
 
-const when = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, {
+const when = (iso: string, locale: string) =>
+  new Date(iso).toLocaleString(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   });
@@ -105,6 +105,7 @@ export function MessageList() {
 }
 
 function Row({ row, onChanged }: { row: MessageRow; onChanged: () => void }) {
+  const locale = useLocale();
   const t = useTranslations("admin.messages");
   const Icon = row.kind === "email" ? Mail : Bell;
   // A scheduled message is cancelled; a sent announcement is deleted, which
@@ -138,7 +139,7 @@ function Row({ row, onChanged }: { row: MessageRow; onChanged: () => void }) {
     row.status === "draft"
       ? t("detail.draft")
       : row.status === "scheduled"
-        ? t("detail.scheduled", { when: when(row.at) })
+        ? t("detail.scheduled", { when: when(row.at, locale) })
         : row.status === "sending"
           ? t("detail.sending")
           : row.kind === "email"
@@ -170,7 +171,7 @@ function Row({ row, onChanged }: { row: MessageRow; onChanged: () => void }) {
         <p className="text-xs text-muted-foreground">
           {t(`channel.${row.channel}`)} · {detail}
           {row.status !== "scheduled" && row.status !== "draft" && (
-            <> · {when(row.at)}</>
+            <> · {when(row.at, locale)}</>
           )}
         </p>
       </div>

@@ -16,7 +16,7 @@ import {
   nearestGenerationAspect,
   nearestSize,
   panelPaint,
-  resolveWords,
+  resolveWords as resolveWordsIn,
   sizeAspect,
 } from "@/lib/covers/recipe";
 import {
@@ -35,7 +35,10 @@ import {
   TEXT_MAX,
   WEIGHTS,
 } from "@/types/design";
-import type { CoverRecipe, Frame } from "@/types/design";
+import type { CoverItem, CoverRecipe, Frame } from "@/types/design";
+
+const resolveWords = (r: CoverRecipe, i: CoverItem, n: Date) =>
+  resolveWordsIn(r, i, n, "en");
 
 const CARDS: CoverAspect[] = ["3/4", "4/5", "1/1", "4/3", "3/2", "16/10"];
 const DAY = 86_400_000;

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkup as renderBare } from "react-dom/server";
+import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it, vi } from "vitest";
 
 // NavLink needs the Next app router and Link a router context; plain anchors are enough here.
@@ -45,6 +46,15 @@ import { Img, courseCover, eventCover } from "../kit";
 import { CoursesPosters } from "../kinetic/courses";
 import { CoursesRows, EventsRows } from "../rows";
 import { CoursesPaths } from "../sanctum/courses";
+
+// useLocale needs a provider; the components under test read no messages.
+// createElement wants children among this provider's props; pass them as arguments.
+const Intl = NextIntlClientProvider as React.FC<{
+  locale: string;
+  children?: React.ReactNode;
+}>;
+const renderToStaticMarkup = (el: Parameters<typeof renderBare>[0]) =>
+  renderBare(createElement(Intl, { locale: "en" }, el));
 
 const PHOTO = "11111111-1111-4111-8111-111111111111";
 const PHOTO_URL = "https://cdn.test/photo.jpg";

@@ -20,12 +20,14 @@ import {
 } from "@/lib/access/terms";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
+import { useLocale } from "next-intl";
 
 interface EnrollButtonProps {
   course: CourseDetail;
 }
 
 export function EnrollButton({ course }: EnrollButtonProps) {
+  const locale = useLocale();
   const navigate = useNavigate();
 
   const opts = course.unlock_options;
@@ -134,7 +136,8 @@ export function EnrollButton({ course }: EnrollButtonProps) {
         <div className="flex flex-col gap-2">
           <Button className="w-full gap-2" onClick={handleBuyNow}>
             <ShoppingCart className="h-4 w-4" />
-            Buy for {formatMoney(opts.purchase!.price, opts.purchase!.currency)}
+            Buy for{" "}
+            {formatMoney(opts.purchase!.price, opts.purchase!.currency, locale)}
           </Button>
           <p className="text-center text-xs text-muted-foreground">
             {purchaseTerms(opts.purchase!.window)}
@@ -175,7 +178,8 @@ export function EnrollButton({ course }: EnrollButtonProps) {
                 }}
               >
                 <Package className="h-4 w-4" />
-                {bundle.name} — {formatMoney(bundle.price, bundle.currency)}
+                {bundle.name} —{" "}
+                {formatMoney(bundle.price, bundle.currency, locale)}
               </Button>
             ))}
           </div>
@@ -211,6 +215,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
 }
 
 function PlanSubscribeButton({ plan }: { plan: UnlockPlanOption }) {
+  const locale = useLocale();
   const router = useRouter();
   const navigate = useNavigate();
 
@@ -247,7 +252,7 @@ function PlanSubscribeButton({ plan }: { plan: UnlockPlanOption }) {
         onClick={handleSubscribe}
       >
         <Zap className="h-4 w-4" />
-        {plan.name} — {formatMoney(plan.price, plan.currency)}
+        {plan.name} — {formatMoney(plan.price, plan.currency, locale)}
         {billingIntervalSuffix(plan.billing_interval_months)}
       </Button>
       <p className="text-center text-xs text-muted-foreground">

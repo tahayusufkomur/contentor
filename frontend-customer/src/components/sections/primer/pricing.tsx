@@ -9,9 +9,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { H3, LABEL, Opener, Section, WRAP, str } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Term fees and membership tiers set out as structured ledger rows. */
 export function PricingTermFees({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
@@ -42,7 +44,7 @@ export function PricingTermFees({ block, data, editable }: SectionProps) {
                 <div className="lg:col-span-3">
                   <p className="flex items-baseline">
                     <span className="font-display text-[2.4rem] font-semibold leading-none">
-                      {formatMoney(plan.price, plan.currency)}
+                      {formatMoney(plan.price, plan.currency, locale)}
                     </span>
                     <span className="ml-2 text-[0.95rem] text-muted-foreground">
                       {billingIntervalSuffix(plan.billing_interval_months)}

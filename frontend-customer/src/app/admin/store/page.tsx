@@ -4,7 +4,7 @@ import { dyn } from "@/i18n/dynamic";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Package, Plus, Receipt, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -101,6 +101,7 @@ function TableSkeletonRows({
 }
 
 function ProductsTab() {
+  const locale = useLocale();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -184,7 +185,7 @@ function ProductsTab() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    {formatMoney(p.price, p.currency)}
+                    {formatMoney(p.price, p.currency, locale)}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {p.sales_count ?? 0}
@@ -203,6 +204,7 @@ function ProductsTab() {
 const NEW_BUNDLE = KIND_ROUTES.bundle?.newHref ?? "/admin/store/bundles/new";
 
 function BundlesTab() {
+  const locale = useLocale();
   const t = useTranslations("admin.store.bundles");
   const [bundles, setBundles] = useState<BundleListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -288,7 +290,7 @@ function BundlesTab() {
                   <tr key={b.id} className="border-b last:border-0">
                     <td className="px-4 py-3 font-medium">{b.name}</td>
                     <td className="px-4 py-3">
-                      {formatMoney(b.price, b.currency)}
+                      {formatMoney(b.price, b.currency, locale)}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {b.item_count}
@@ -322,6 +324,7 @@ function BundlesTab() {
 const NEW_PLAN = KIND_ROUTES.membership?.newHref ?? "/admin/store/plans/new";
 
 function PlansTab() {
+  const locale = useLocale();
   const t = useTranslations("admin.store.plans");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -407,7 +410,7 @@ function PlansTab() {
                   <tr key={p.id} className="border-b last:border-0">
                     <td className="px-4 py-3 font-medium">{p.name}</td>
                     <td className="px-4 py-3">
-                      {formatMoney(p.price, p.currency)}
+                      {formatMoney(p.price, p.currency, locale)}
                       {billingIntervalSuffix(p.billing_interval_months)}
                     </td>
                     <td className="px-4 py-3">
@@ -467,6 +470,7 @@ const SALES_PAGE = 20;
 /** Everything students paid her, newest first. Refunds are made from the
  *  student's own page, which each row links to. */
 function SalesTab() {
+  const locale = useLocale();
   const t = useTranslations("admin.store.payments");
   const [sales, setSales] = useState<Sale[]>([]);
   const [total, setTotal] = useState(0);
@@ -552,7 +556,7 @@ function SalesTab() {
                 {sales.map((sale) => (
                   <tr key={sale.id} className="border-b last:border-0">
                     <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                      {formatDate(sale.created_at)}
+                      {formatDate(sale.created_at, locale)}
                     </td>
                     <td className="px-4 py-3">
                       <NavLink
@@ -568,7 +572,7 @@ function SalesTab() {
                         : t("membershipCharge")}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 tabular-nums">
-                      {formatMoney(sale.amount, sale.currency)}
+                      {formatMoney(sale.amount, sale.currency, locale)}
                     </td>
                     <td className="px-4 py-3">
                       <Badge

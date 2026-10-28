@@ -12,6 +12,7 @@ import MessageEditor, {
   type MessageEditorHandle,
   type OutgoingDraft,
 } from "./message-editor";
+import { useLocale } from "next-intl";
 
 function HeaderAction({
   label,
@@ -48,6 +49,7 @@ function MessageCard({
   index: number;
   expandedDefault: boolean;
 }) {
+  const locale = useLocale();
   const [expanded, setExpanded] = useState(expandedDefault);
   const isOutbound = msg.direction === "outbound";
   const sender = isOutbound ? "You" : msg.from_email;
@@ -59,7 +61,7 @@ function MessageCard({
   const accent = isOutbound
     ? "border-l-primary"
     : "border-l-muted-foreground/40";
-  const when = new Date(msg.created_at).toLocaleString(undefined, {
+  const when = new Date(msg.created_at).toLocaleString(locale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",

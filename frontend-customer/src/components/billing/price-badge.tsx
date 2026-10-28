@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { stateLine } from "@/lib/access/terms";
 import { formatMoney } from "@/lib/format";
 import type { AccessInfo } from "@/types/billing";
+import { useLocale } from "next-intl";
 
 interface PriceBadgeProps {
   accessInfo?: AccessInfo;
@@ -22,6 +23,7 @@ export function PriceBadge(props: PriceBadgeProps) {
 }
 
 function PricePill({ accessInfo, price, pricingType }: PriceBadgeProps) {
+  const locale = useLocale();
   if (accessInfo?.has_access && accessInfo.access_reason !== "free") {
     return <Badge variant="success">Owned</Badge>;
   }
@@ -40,7 +42,7 @@ function PricePill({ accessInfo, price, pricingType }: PriceBadgeProps) {
   if (effectivePricingType === "paid" && effectivePrice) {
     return (
       <Badge variant="default">
-        {formatMoney(effectivePrice, accessInfo?.currency || "USD")}
+        {formatMoney(effectivePrice, accessInfo?.currency || "USD", locale)}
       </Badge>
     );
   }

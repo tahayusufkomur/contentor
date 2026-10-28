@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,18 +20,14 @@ import {
   getAutopilot,
   updateAutopilot,
 } from "@/lib/blog-api";
-
-const WEEKDAYS = [
-  { value: 0, label: "Mon" },
-  { value: 1, label: "Tue" },
-  { value: 2, label: "Wed" },
-  { value: 3, label: "Thu" },
-  { value: 4, label: "Fri" },
-  { value: 5, label: "Sat" },
-  { value: 6, label: "Sun" },
-];
+import { weekdayNames } from "@/lib/calendar-utils";
 
 export function AutopilotCard({ eligible }: { eligible: boolean }) {
+  const locale = useLocale();
+  const weekdays = weekdayNames(locale, "short").map((label, value) => ({
+    value,
+    label,
+  }));
   const t = useTranslations("admin");
   const [settings, setSettings] = useState<AutopilotSettings | null>(null);
 
@@ -101,7 +97,7 @@ export function AutopilotCard({ eligible }: { eligible: boolean }) {
 
             {settings.frequency === "weekly" ? (
               <div className="flex gap-1">
-                {WEEKDAYS.map((d) => (
+                {weekdays.map((d) => (
                   <button
                     key={d.value}
                     type="button"
@@ -166,7 +162,7 @@ export function AutopilotCard({ eligible }: { eligible: boolean }) {
           {settings.next_run_at && (
             <p className="text-xs text-muted-foreground">
               {t("blog.nextRun", {
-                date: new Date(settings.next_run_at).toLocaleString(),
+                date: new Date(settings.next_run_at).toLocaleString(locale),
               })}
             </p>
           )}

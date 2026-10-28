@@ -9,10 +9,12 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, H3, Opener, PILL, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Membership and class passes styled as playful ticket-stub cards with
  *  cutout notches. The raised card carries no label: no plan is flagged popular. */
 export function PricingTickets({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
@@ -98,7 +100,7 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
                   <div>
                     <div className="flex items-baseline">
                       <span className="font-display text-[2.6rem] font-bold leading-none text-foreground">
-                        {formatMoney(plan.price, plan.currency)}
+                        {formatMoney(plan.price, plan.currency, locale)}
                       </span>
                       <span className="ml-2 text-[0.95rem] font-semibold text-muted-foreground">
                         {billingIntervalSuffix(plan.billing_interval_months)}

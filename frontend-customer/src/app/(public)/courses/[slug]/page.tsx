@@ -10,6 +10,7 @@ import { courseItem } from "@/lib/covers/items";
 import { formatDuration, formatMoney } from "@/lib/format";
 import { BookOpen, Clock, Lock, Play, User } from "lucide-react";
 import type { CourseDetail, Module } from "@/types/course";
+import { getLocale } from "next-intl/server";
 
 function getTotalDuration(modules: Module[]): number {
   return modules.reduce(
@@ -30,6 +31,7 @@ export default async function CourseDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const locale = await getLocale();
   const { slug } = await params;
   let course: CourseDetail | null = null;
   try {
@@ -120,6 +122,7 @@ export default async function CourseDetailPage({
                           course.access_info?.currency ||
                             course.unlock_options?.purchase?.currency ||
                             "USD",
+                          locale,
                         )}
                 </p>
               </div>

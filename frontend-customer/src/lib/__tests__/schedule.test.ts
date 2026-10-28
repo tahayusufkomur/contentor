@@ -13,13 +13,13 @@ describe("class schedules", () => {
   };
 
   it("reads a weekly timetable back, Monday first", () => {
-    expect(scheduleSummary("recurring", weekly)).toBe(
+    expect(scheduleSummary("recurring", weekly, "en")).toBe(
       "Tuesdays and Thursdays at 6:30 PM, from 12 Oct to 7 Dec 2026",
     );
-    expect(scheduleSummary("recurring", { ...weekly, end: undefined })).toBe(
-      "Tuesdays and Thursdays at 6:30 PM, from 12 Oct 2026",
-    );
-    expect(scheduleSummary("once", { at: "2026-10-13T18:30" })).toBe(
+    expect(
+      scheduleSummary("recurring", { ...weekly, end: undefined }, "en"),
+    ).toBe("Tuesdays and Thursdays at 6:30 PM, from 12 Oct 2026");
+    expect(scheduleSummary("once", { at: "2026-10-13T18:30" }, "en")).toBe(
       "Tuesday 13 Oct 2026 at 6:30 PM",
     );
   });
@@ -32,7 +32,7 @@ describe("class schedules", () => {
         { days: [6], times: ["09:00"] },
       ],
     };
-    expect(scheduleSummary("recurring", twice)).toBe(
+    expect(scheduleSummary("recurring", twice, "en")).toBe(
       "Tuesdays and Thursdays at 6:30 PM; Saturdays at 9:00 AM, from 12 Oct to 7 Dec 2026",
     );
   });

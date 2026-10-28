@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 
 /** Mara's real catalogue (seed_footage_coach): her courses and membership at
@@ -35,6 +35,7 @@ export function PaymentFeed({
   label: string;
   currency: string;
 }) {
+  const locale = useLocale();
   const t = useTranslations("marketing.team.roles.cashier.scene");
   const [tick, setTick] = useState(0);
   useEffect(() => {
@@ -48,7 +49,7 @@ export function PaymentFeed({
   for (let k = 0; k <= newest; k++) total += amountOf(k);
   const money = (n: number, cents = true) => {
     try {
-      return new Intl.NumberFormat("en-US", {
+      return new Intl.NumberFormat(locale, {
         style: "currency",
         currency,
         minimumFractionDigits: cents ? 2 : 0,

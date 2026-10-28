@@ -28,6 +28,7 @@ import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { formatMoney } from "@/lib/format";
 import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useLocale } from "next-intl";
 
 export interface StudentDetail {
   id: number;
@@ -61,19 +62,19 @@ interface StudentDrawerProps {
   onRefresh?: () => void;
 }
 
-function getInitials(name: string) {
+function getInitials(name: string, locale: string) {
   if (!name) return "ST";
   return name
     .split(" ")
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase();
+    .toLocaleUpperCase(locale);
 }
 
-function formatDate(dateStr: string) {
+function formatDate(dateStr: string, locale: string) {
   if (!dateStr) return "N/A";
-  return new Date(dateStr).toLocaleDateString(undefined, {
+  return new Date(dateStr).toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -85,6 +86,7 @@ export function StudentDrawer({
   onClose,
   onRefresh,
 }: StudentDrawerProps) {
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState<"overview" | "actions">(
     "overview",
   );
@@ -161,7 +163,7 @@ export function StudentDrawer({
             <Avatar className="h-14 w-14 border-2 border-primary/20 shrink-0">
               <AvatarImage src={student.avatar_url} />
               <AvatarFallback className="text-lg font-bold bg-primary/10 text-primary">
-                {getInitials(student.name || student.email)}
+                {getInitials(student.name || student.email, locale)}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
@@ -173,7 +175,7 @@ export function StudentDrawer({
                 {student.email}
               </p>
               <p className="text-[11px] text-muted-foreground mt-1">
-                Joined {formatDate(student.date_joined)}
+                Joined {formatDate(student.date_joined, locale)}
               </p>
             </div>
           </div>
@@ -231,6 +233,7 @@ export function StudentDrawer({
                         ? formatMoney(
                             student.subscription.amount,
                             student.subscription.currency,
+                            locale,
                           ) +
                           billingIntervalSuffix(
                             student.subscription.interval_months,

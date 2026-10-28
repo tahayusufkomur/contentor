@@ -26,12 +26,14 @@ import { cn } from "@/lib/utils";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { normalizeDesign } from "@shared/email/editor";
+import { useLocale } from "next-intl";
 
 const isFilter = (f: unknown): f is RecipientFilter =>
   !!f && typeof f === "object" && "type" in f;
 
 /** The last step: who gets it and when, with the email as they will see it. */
 export default function SendEmailPage() {
+  const locale = useLocale();
   const { id } = useParams<{ id: string }>();
   const campaignId = Number(id);
   const navigate = useNavigate();
@@ -99,7 +101,7 @@ export default function SendEmailPage() {
       });
       toast.success(
         scheduledIso
-          ? `Scheduled for ${new Date(scheduledIso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.`
+          ? `Scheduled for ${new Date(scheduledIso).toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" })}.`
           : "Your email is on its way.",
       );
       setLeaving(true);

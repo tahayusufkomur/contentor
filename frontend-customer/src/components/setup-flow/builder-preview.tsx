@@ -21,6 +21,7 @@ import type {
 } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
 import { BusyOverlay } from "./busy-overlay";
+import { useLocale } from "next-intl";
 
 /** What the preview is built from: every answer so far (the live question's
  * unsent pick included), the drafted item once there is one, and a photo of
@@ -86,6 +87,7 @@ function ItemCard({
   disabled: boolean;
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
 }) {
+  const locale = useLocale();
   const item = data.review?.status === "ready" ? data.review.item : null;
   const a = data.answers;
   const topic =
@@ -113,7 +115,11 @@ function ItemCard({
         ? "Free"
         : priceText
       : item?.price
-        ? formatPrice(Math.round(parseFloat(item.price) * 100), item.currency)
+        ? formatPrice(
+            Math.round(parseFloat(item.price) * 100),
+            item.currency,
+            locale,
+          )
         : null);
   const [picking, setPicking] = useState<string | null>(null);
   const { run: pick } = useAsyncAction(
@@ -210,7 +216,7 @@ function ItemCard({
           <Chip>
             <CalendarDays className="size-3.5" aria-hidden />
             {item?.when
-              ? new Intl.DateTimeFormat(undefined, {
+              ? new Intl.DateTimeFormat(locale, {
                   weekday: "long",
                   hour: "numeric",
                   minute: "2-digit",

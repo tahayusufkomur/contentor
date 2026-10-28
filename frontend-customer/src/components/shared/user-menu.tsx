@@ -7,6 +7,7 @@ import { ChevronUp, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "@/types/auth";
+import { useLocale } from "next-intl";
 
 export function UserMenu({
   user,
@@ -15,6 +16,7 @@ export function UserMenu({
   user: User;
   collapsed?: boolean;
 }) {
+  const locale = useLocale();
   const router = useRouter();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -25,7 +27,7 @@ export function UserMenu({
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase();
+    .toLocaleUpperCase(locale);
 
   async function handleSignOut() {
     setSigningOut(true);

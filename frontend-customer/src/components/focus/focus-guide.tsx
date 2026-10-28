@@ -3,7 +3,7 @@
 import { dyn } from "@/i18n/dynamic";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Check } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 
 import { openRunChat } from "@/components/copilot/runs-watcher";
@@ -964,6 +964,7 @@ function AnnounceStep({
   onDecide: (schedule: boolean) => void;
   onRetry: () => void;
 }) {
+  const locale = useLocale();
   const t = useTranslations("admin");
   const [choice, setChoice] = useState<boolean | null>(null);
   const decide = (schedule: boolean) => {
@@ -1006,7 +1007,7 @@ function AnnounceStep({
           {announcement.send_at && (
             <p className="text-xs text-muted-foreground">
               {t("focus.sendsAt", {
-                when: new Date(announcement.send_at).toLocaleString(undefined, {
+                when: new Date(announcement.send_at).toLocaleString(locale, {
                   dateStyle: "full",
                   timeStyle: "short",
                   timeZone: announcement.zone ?? undefined,

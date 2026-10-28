@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,7 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
+  const locale = useLocale();
   const t = useTranslations("admin");
   const user = useAdminUser();
   const config = useTenant();
@@ -79,19 +80,19 @@ export default function AdminDashboard() {
   const statCards = [
     {
       title: "Students",
-      value: stats.students.toLocaleString(),
+      value: stats.students.toLocaleString(locale),
       icon: Users,
       description: "Total enrolled",
     },
     {
       title: "Courses",
-      value: stats.courses.toLocaleString(),
+      value: stats.courses.toLocaleString(locale),
       icon: BookOpen,
       description: "Published & draft",
     },
     {
       title: "Revenue",
-      value: formatMoney(stats.revenue, currency),
+      value: formatMoney(stats.revenue, currency, locale),
       icon: DollarSign,
       description: "All time",
     },

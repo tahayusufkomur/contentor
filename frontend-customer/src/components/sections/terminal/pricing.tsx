@@ -10,9 +10,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { H3, Opener, Section, WindowChrome, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Membership subscription plans presented as machine config manifests. */
 export function PricingPlans({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
   const solo = plans.length === 1;
@@ -64,7 +66,7 @@ export function PricingPlans({ block, data, editable }: SectionProps) {
 
                       <div className="mt-5 flex items-baseline">
                         <span className="font-display text-[2.5rem] font-bold leading-none text-foreground sm:text-[2.8rem]">
-                          {formatMoney(plan.price, plan.currency)}
+                          {formatMoney(plan.price, plan.currency, locale)}
                         </span>
                         <span className="ml-2 font-mono text-sm text-muted-foreground">
                           {billingIntervalSuffix(plan.billing_interval_months)}

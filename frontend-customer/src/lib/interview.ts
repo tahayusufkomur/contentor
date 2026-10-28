@@ -244,9 +244,13 @@ export function priceOk(raw: string): boolean {
   return n > 0 && n <= 9999;
 }
 
-export function formatPrice(cents: number | null, currency: string): string {
+export function formatPrice(
+  cents: number | null,
+  currency: string,
+  locale: string,
+): string {
   if (cents == null) return "";
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: currency.toUpperCase(),
   }).format(cents / 100);
@@ -482,12 +486,20 @@ const list = (xs: string[]) =>
     : (xs[0] ?? "");
 /** Local time from "YYYY-MM-DD" (midnight) or "YYYY-MM-DDTHH:MM". */
 const local = (s: string) => new Date(s.length === 10 ? `${s}T00:00` : s);
-const fmtDate = (s: string, year: boolean) =>
-  new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    ...(year ? { year: "numeric" } : {}),
-  }).format(local(s));
+// "12 Oct 2026": the sentence is built day-month-year in every language, only
+// the month's name follows the locale.
+const fmtDate = (s: string, year: boolean, locale: string) => {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat(locale, {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })
+      .formatToParts(local(s))
+      .map((x) => [x.type, x.value]),
+  );
+  return `${p.day} ${p.month}${year ? ` ${p.year}` : ""}`;
+};
 const fmtTime = (t: string) => {
   const [h, m] = t.split(":").map(Number);
   return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
@@ -538,13 +550,17 @@ export function timeZones(current: string): string[] {
 /** The schedule as the coach would say it: "Tuesdays and Thursdays at
  * 6:30 PM, from 12 Oct to 7 Dec 2026", or "Tuesday 13 Oct 2026 at 6:30 PM".
  * Each slot reads as its own clause: "Mondays at 9:00 AM; Fridays at 6:00 PM". */
-export function scheduleSummary(mode: ScheduleMode, s: Schedule): string {
+export function scheduleSummary(
+  mode: ScheduleMode,
+  s: Schedule,
+  locale: string,
+): string {
   if (mode === "once") {
     if (!s.at) return "";
-    const day = new Intl.DateTimeFormat("en-GB", { weekday: "long" }).format(
+    const day = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(
       local(s.at),
     );
-    return `${day} ${fmtDate(s.at, true)} at ${fmtTime(s.at.slice(11, 16))}`;
+    return `${day} ${fmtDate(s.at, true, locale)} at ${fmtTime(s.at.slice(11, 16))}`;
   }
   const when = (s.slots ?? [])
     .filter(slotReady)
@@ -561,8 +577,8 @@ export function scheduleSummary(mode: ScheduleMode, s: Schedule): string {
   const span = !s.start
     ? ""
     : s.end
-      ? `from ${fmtDate(s.start, false)} to ${fmtDate(s.end, true)}`
-      : `from ${fmtDate(s.start, true)}`;
+      ? `from ${fmtDate(s.start, false, locale)} to ${fmtDate(s.end, true, locale)}`
+      : `from ${fmtDate(s.start, true, locale)}`;
   return [when, span].filter(Boolean).join(", ");
 }
 

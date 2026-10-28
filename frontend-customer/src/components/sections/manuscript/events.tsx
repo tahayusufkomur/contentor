@@ -11,10 +11,12 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, DoubleRule, H3, Opener, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Programme of readings, colloquia, and live sessions set out as a literary
  *  calendar with small-caps dates and reserve actions. */
 export function EventsReadings({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -63,7 +65,7 @@ export function EventsReadings({ block, data, editable }: SectionProps) {
 
                     <div className="flex flex-col sm:items-end sm:text-right">
                       <span className="manuscript-small-caps text-xs font-semibold text-accent">
-                        {eventPriceLabel(e)}
+                        {eventPriceLabel(e, locale)}
                       </span>
                       <span className="manuscript-link mt-1 inline-flex items-center gap-1.5 text-[0.92rem] font-medium text-foreground group-hover:text-accent">
                         <span>Reserve a seat</span>

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import { ArrowRight } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,7 @@ import { parseAnswer, systemLine } from "./format-answer";
 const LIST_POLL_MS = 10_000;
 const THREAD_POLL_MS = 3_000;
 
-function relativeTime(iso: string): string {
+function relativeTime(iso: string, locale: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60_000);
   if (mins < 1) return "now";
@@ -45,7 +45,7 @@ function relativeTime(iso: string): string {
   if (hrs < 24) return `${hrs}h`;
   const days = Math.floor(hrs / 24);
   if (days < 7) return `${days}d`;
-  return new Date(iso).toLocaleDateString(undefined, {
+  return new Date(iso).toLocaleDateString(locale, {
     month: "short",
     day: "numeric",
   });
@@ -71,6 +71,7 @@ export function ConversationsCard({
 }: {
   onAddToKnowledge: (question: string) => void;
 }) {
+  const locale = useLocale();
   const t = useTranslations("admin");
   const [rows, setRows] = useState<ConversationRow[]>([]);
   const [page, setPage] = useState(1);
@@ -368,7 +369,7 @@ export function ConversationsCard({
                         </p>
                       </div>
                       <div className="shrink-0 text-right text-xs text-muted-foreground">
-                        <div>{relativeTime(row.updated_at)}</div>
+                        <div>{relativeTime(row.updated_at, locale)}</div>
                         <div>{row.message_count}</div>
                       </div>
                     </button>

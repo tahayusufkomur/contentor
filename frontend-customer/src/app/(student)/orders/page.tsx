@@ -12,6 +12,7 @@ import { SkeletonList } from "@/components/ui/skeletons";
 import { EmptyState } from "@/components/shared/empty-state";
 import { clientFetch } from "@/lib/api-client";
 import { formatMoney } from "@/lib/format";
+import { useLocale } from "next-intl";
 
 interface OrderItem {
   id: number;
@@ -38,10 +39,10 @@ const STATUS_VARIANT: Record<string, "success" | "warning" | "secondary"> = {
   pending: "secondary",
 };
 
-function formatDate(iso: string | null) {
+function formatDate(iso: string | null, locale: string) {
   if (!iso) return "";
   try {
-    return new Date(iso).toLocaleDateString(undefined, {
+    return new Date(iso).toLocaleDateString(locale, {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -52,6 +53,7 @@ function formatDate(iso: string | null) {
 }
 
 export default function OrdersPage() {
+  const locale = useLocale();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -113,14 +115,14 @@ export default function OrdersPage() {
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base capitalize">
                     {o.payment_type.replace("_", " ")} ·{" "}
-                    {formatMoney(o.amount, o.currency)}
+                    {formatMoney(o.amount, o.currency, locale)}
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <Badge variant={STATUS_VARIANT[o.status] ?? "secondary"}>
                       {o.status.replace("_", " ")}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      {formatDate(o.created_at)}
+                      {formatDate(o.created_at, locale)}
                     </span>
                   </div>
                 </div>
@@ -141,7 +143,7 @@ export default function OrdersPage() {
                       {item.title}
                     </span>
                     <span className="tabular-nums text-muted-foreground">
-                      {formatMoney(item.item_price, o.currency)}
+                      {formatMoney(item.item_price, o.currency, locale)}
                     </span>
                   </p>
                 ))}

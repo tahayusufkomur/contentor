@@ -10,20 +10,22 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, H2, Kicker, LABEL, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
-function dateParts(iso: string) {
+function dateParts(iso: string, locale: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
   return {
     day: d.getDate(),
-    month: d.toLocaleDateString(undefined, { month: "short" }),
-    weekday: d.toLocaleDateString(undefined, { weekday: "long" }),
+    month: d.toLocaleDateString(locale, { month: "short" }),
+    weekday: d.toLocaleDateString(locale, { weekday: "long" }),
   };
 }
 
 /** Upcoming sessions printed like a concert programme: the date as a large
  *  serif figure, then the title, time and place on one ruled line. */
 export function EventsProgramme({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -58,7 +60,7 @@ export function EventsProgramme({ block, data, editable }: SectionProps) {
         {events.length ? (
           <ol className="mt-14 border-y border-foreground md:mt-20">
             {events.map((e) => {
-              const d = dateParts(e.scheduled_at);
+              const d = dateParts(e.scheduled_at, locale);
               return (
                 <li
                   key={`${e.type}-${e.id}`}
@@ -82,7 +84,8 @@ export function EventsProgramme({ block, data, editable }: SectionProps) {
                       </span>
                       <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[0.975rem] text-muted-foreground">
                         <span>
-                          {d?.weekday}, {formatEventTime(e.scheduled_at)}
+                          {d?.weekday},{" "}
+                          {formatEventTime(e.scheduled_at, locale)}
                         </span>
                         {e.location && (
                           <span className="font-display italic">

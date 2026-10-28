@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 
+import { resolveLocale } from "@shared/i18n/locales";
 import { lookPrimaryHex } from "@/lib/site-styles";
 import { BASE_DOMAIN, DJANGO_API_URL } from "@/lib/constants";
 import {
@@ -75,7 +76,7 @@ export async function GET(request: Request): Promise<Response> {
         fontWeight: 700,
       }}
     >
-      {brand.charAt(0).toUpperCase()}
+      {brand.charAt(0).toLocaleUpperCase(resolveLocale(config?.default_locale))}
     </div>
   );
 

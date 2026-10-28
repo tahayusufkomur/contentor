@@ -78,9 +78,14 @@ export function includedFeatures(
 }
 
 /** A limit of 0 means "unlimited" across the platform plan model. */
-function limitText(value: number, unit: string, plural: string): string {
+function limitText(
+  value: number,
+  unit: string,
+  plural: string,
+  locale: string,
+): string {
   if (value <= 0) return `Unlimited ${plural}`;
-  return `${value.toLocaleString()} ${unit}`;
+  return `${value.toLocaleString(locale)} ${unit}`;
 }
 
 /** Quantitative labels come from the live plan record; descriptive ones
@@ -88,20 +93,21 @@ function limitText(value: number, unit: string, plural: string): string {
 export function dynamicFeatureLabel(
   featureKey: string,
   plan: PlanSummary,
+  locale: string,
 ): string | null {
   switch (featureKey) {
     case "students":
       return plan.max_students <= 0
         ? "Unlimited students"
-        : `Up to ${plan.max_students.toLocaleString()} students`;
+        : `Up to ${plan.max_students.toLocaleString(locale)} students`;
     case "storage":
-      return limitText(plan.max_storage_gb, "GB storage", "storage");
+      return limitText(plan.max_storage_gb, "GB storage", "storage", locale);
     case "fee":
       return `${Number(plan.transaction_fee_pct)}% transaction fee`;
     case "campaigns":
       return plan.max_campaign_emails <= 0
         ? "Email campaigns"
-        : `Email campaigns (${plan.max_campaign_emails.toLocaleString()}/mo)`;
+        : `Email campaigns (${plan.max_campaign_emails.toLocaleString(locale)}/mo)`;
     default:
       return null;
   }
@@ -115,9 +121,10 @@ export function featureCell(
   included: Set<string>,
   plan: PlanSummary | null,
   localeLabel: () => string,
+  locale: string,
 ): Cell {
   if (!included.has(featureKey)) return { kind: "no" };
   if (!TEXT_FEATURES.has(featureKey)) return { kind: "yes" };
-  const dynamic = plan ? dynamicFeatureLabel(featureKey, plan) : null;
+  const dynamic = plan ? dynamicFeatureLabel(featureKey, plan, locale) : null;
   return { kind: "text", label: dynamic ?? localeLabel() };
 }

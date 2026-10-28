@@ -2,7 +2,7 @@
 
 import { looseT } from "@/i18n/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   ChevronLeft,
   ImagePlus,
@@ -168,7 +168,7 @@ function AttachedPhotoChip({
   );
 }
 
-function relativeTime(iso: string): string {
+function relativeTime(iso: string, locale: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60_000);
   if (mins < 1) return "now";
@@ -177,7 +177,7 @@ function relativeTime(iso: string): string {
   if (hrs < 24) return `${hrs}h`;
   const days = Math.floor(hrs / 24);
   if (days < 7) return `${days}d`;
-  return new Date(iso).toLocaleDateString(undefined, {
+  return new Date(iso).toLocaleDateString(locale, {
     month: "short",
     day: "numeric",
   });
@@ -188,6 +188,7 @@ function relativeTime(iso: string): string {
  * server-side (CopilotChat); the old localStorage transcript is imported as
  * the first chat on first open. */
 export function CopilotBubble({ docked = false }: { docked?: boolean }) {
+  const locale = useLocale();
   const t = useTranslations("student.copilot");
   const tAdmin = useTranslations("admin");
   const dock = useAssistantDock();
@@ -766,7 +767,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
                     {c.title || t("untitledChat")}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {relativeTime(c.updated_at)}
+                    {relativeTime(c.updated_at, locale)}
                   </span>
                 </button>
                 <button

@@ -2,10 +2,11 @@
 export function formatPlanPrice(
   currency: string,
   amountCents: number | null,
+  locale: string,
 ): string {
   const amount = (amountCents ?? 0) / 100;
   try {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
       currency,
       minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,

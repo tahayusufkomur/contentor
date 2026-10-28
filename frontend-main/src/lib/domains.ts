@@ -113,9 +113,13 @@ export async function removeDomain(
   }
 }
 
-export function formatPrice(minor: number, currency: string): string {
+export function formatPrice(
+  minor: number,
+  currency: string,
+  locale: string,
+): string {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
       currency,
     }).format(minor / 100);

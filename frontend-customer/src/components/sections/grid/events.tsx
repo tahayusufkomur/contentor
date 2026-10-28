@@ -9,18 +9,24 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Head, Sheet, row, textLink } from "./ui";
+import { useLocale } from "next-intl";
 
 const dayOf = (iso: string) => {
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? "" : String(d.getDate()).padStart(2, "0");
 };
-const part = (iso: string, opts: Intl.DateTimeFormatOptions) => {
+const part = (
+  iso: string,
+  opts: Intl.DateTimeFormatOptions,
+  locale: string,
+) => {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, opts);
+  return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString(locale, opts);
 };
 
 /** Upcoming sessions as a timetable; each row inverts to cobalt on hover. */
 export function EventsTable({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events = (data ?? []) as CalendarEvent[];
   if (!events.length && !editable) return null;
 
@@ -81,10 +87,10 @@ export function EventsTable({ block, data, editable }: SectionProps) {
                     </span>
                     <span className="swiss-mono text-muted-foreground group-hover:text-primary-foreground">
                       <span className="block text-foreground group-hover:text-primary-foreground">
-                        {part(e.scheduled_at, { month: "short" })}
+                        {part(e.scheduled_at, { month: "short" }, locale)}
                       </span>
-                      {part(e.scheduled_at, { weekday: "short" })}{" "}
-                      {formatEventTime(e.scheduled_at)}
+                      {part(e.scheduled_at, { weekday: "short" }, locale)}{" "}
+                      {formatEventTime(e.scheduled_at, locale)}
                     </span>
                   </span>
                   <span className="swiss-h3 col-span-12 text-balance md:col-span-5">
@@ -94,7 +100,7 @@ export function EventsTable({ block, data, editable }: SectionProps) {
                     {e.location}
                   </span>
                   <span className="swiss-mono col-span-6 text-right tabular-nums md:col-span-2">
-                    {eventPriceLabel(e)}
+                    {eventPriceLabel(e, locale)}
                   </span>
                 </SmartLink>
               </li>

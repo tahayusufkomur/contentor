@@ -9,9 +9,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Diamond, Divider, H3, LABEL, Opener, Section, WRAP, str } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Membership and tiered packages presented as a refined atelier treatment menu. */
 export function PricingMenu({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
@@ -56,7 +58,7 @@ export function PricingMenu({ block, data, editable }: SectionProps) {
                     <div className="flex flex-col md:col-span-5 md:items-end md:text-right">
                       <p className="flex items-baseline md:justify-end">
                         <span className="font-display text-[2.25rem] font-medium leading-none sm:text-[2.6rem]">
-                          {formatMoney(plan.price, plan.currency)}
+                          {formatMoney(plan.price, plan.currency, locale)}
                         </span>
                         <span className="ml-2 text-[0.9rem] text-muted-foreground">
                           {billingIntervalSuffix(plan.billing_interval_months)}

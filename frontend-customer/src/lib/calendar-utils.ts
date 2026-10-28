@@ -94,16 +94,35 @@ export function getDateRangeParams(
   return { from: toDateKey(grid[0]), to: toDateKey(grid[grid.length - 1]) };
 }
 
-export function formatMonthYear(date: Date): string {
-  return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+export function formatMonthYear(date: Date, locale: string): string {
+  return date.toLocaleDateString(locale, { month: "long", year: "numeric" });
+}
+
+/** Weekday names in the locale, Monday first (the calendar grid's order). */
+export function weekdayNames(
+  locale: string,
+  width: "short" | "long",
+): string[] {
+  const fmt = new Intl.DateTimeFormat(locale, {
+    weekday: width,
+    timeZone: "UTC",
+  });
+  // 2024-01-01 was a Monday.
+  return Array.from({ length: 7 }, (_, i) =>
+    fmt.format(new Date(Date.UTC(2024, 0, 1 + i))),
+  );
 }
 
 /**
  * Format a time string using an explicit IANA timezone.
  * Both server and client will produce the same result.
  */
-export function formatTime(dateStr: string, tz: string = "UTC"): string {
-  return new Date(dateStr).toLocaleTimeString("en-US", {
+export function formatTime(
+  dateStr: string,
+  locale: string,
+  tz: string = "UTC",
+): string {
+  return new Date(dateStr).toLocaleTimeString(locale, {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
@@ -130,15 +149,21 @@ export function formatEventWhen(
   });
 }
 
-export function formatDateHeader(dateStr: string): string {
+export function formatDateHeader(dateStr: string, locale: string): string {
   const date = new Date(dateStr + "T00:00:00");
   const today = new Date();
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  if (isSameDay(date, today)) return "Today";
-  if (isSameDay(date, tomorrow)) return "Tomorrow";
-  return date.toLocaleDateString("en-US", {
+  const relative = (days: number) => {
+    const word = new Intl.RelativeTimeFormat(locale, {
+      numeric: "auto",
+    }).format(days, "day");
+    return word.charAt(0).toLocaleUpperCase(locale) + word.slice(1);
+  };
+  if (isSameDay(date, today)) return relative(0);
+  if (isSameDay(date, tomorrow)) return relative(1);
+  return date.toLocaleDateString(locale, {
     weekday: "short",
     month: "short",
     day: "numeric",

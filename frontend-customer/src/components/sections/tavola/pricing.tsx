@@ -9,9 +9,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { CARD, LABEL, Leader, Opener, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Membership plans presented as a trattoria prix-fixe menu with dotted price lines. */
 export function PricingMenu({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
@@ -47,7 +49,7 @@ export function PricingMenu({ block, data, editable }: SectionProps) {
                     }
                     value={
                       <span className="font-display text-[1.6rem] text-foreground">
-                        {formatMoney(plan.price, plan.currency)}
+                        {formatMoney(plan.price, plan.currency, locale)}
                         <span className="ml-2 font-sans text-[0.9rem] text-muted-foreground">
                           {billingIntervalSuffix(plan.billing_interval_months)}
                         </span>

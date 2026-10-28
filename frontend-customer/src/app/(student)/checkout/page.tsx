@@ -20,6 +20,7 @@ import {
 } from "@shared/checkout/embedded-checkout";
 import { StudentCheckoutAside } from "@/components/billing/checkout-panels";
 import { useNavigate } from "@shared/navigation/navigation-provider";
+import { useLocale } from "next-intl";
 
 interface PaymentInitializeResponse extends CheckoutStart {
   payment_id: number;
@@ -27,6 +28,7 @@ interface PaymentInitializeResponse extends CheckoutStart {
 }
 
 export default function CheckoutPage() {
+  const locale = useLocale();
   const navigate = useNavigate();
   const searchParams = useSearchParams();
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -52,11 +54,11 @@ export default function CheckoutPage() {
     0,
   );
   // All items on a tenant are priced in the tenant's single charge currency.
-  const cartCurrency = cart.find((item) => item.currency)?.currency;
+  const cartCurrency = cart.find((item) => item.currency)?.currency ?? "USD";
   const itemPrice = (item: CartItem) =>
-    formatMoney(item.price, item.currency || cartCurrency);
+    formatMoney(item.price, item.currency || cartCurrency, locale);
   // toFixed(2) drops float noise, so a whole total still reads "$20".
-  const totalLabel = formatMoney(total.toFixed(2), cartCurrency);
+  const totalLabel = formatMoney(total.toFixed(2), cartCurrency, locale);
 
   const { run: handlePay, loading: paying } = useAsyncAction(
     async () => {

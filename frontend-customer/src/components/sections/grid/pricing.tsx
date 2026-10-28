@@ -9,6 +9,7 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Head, Sheet, row, textLink } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Subscribe button squared off; the price is already in the table. */
 const subscribeCls =
@@ -51,10 +52,11 @@ function Action({ plan }: { plan: SubscriptionPlan }) {
 }
 
 function Price({ plan }: { plan: SubscriptionPlan }) {
+  const locale = useLocale();
   return (
     <p className="flex flex-wrap items-baseline gap-x-2">
       <span className="swiss-step tabular-nums">
-        {formatMoney(plan.price, plan.currency)}
+        {formatMoney(plan.price, plan.currency, locale)}
       </span>
       <span className="swiss-mono text-muted-foreground">
         {billingIntervalSuffix(plan.billing_interval_months)}

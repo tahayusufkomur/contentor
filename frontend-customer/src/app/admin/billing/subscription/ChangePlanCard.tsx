@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Check } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,7 @@ function sortPlans(plans: PlatformPlanSummary[]): PlatformPlanSummary[] {
  * downgrades; bundling it here would balloon scope.
  */
 export function ChangePlanCard() {
+  const locale = useLocale();
   const t = useTranslations("admin.subscription.changePlan");
   const tRoot = useTranslations("admin.subscription");
   const [subscription, setSubscription] =
@@ -192,6 +193,7 @@ export function ChangePlanCard() {
                         {formatPlanPrice(
                           currency,
                           priceEntry?.amount_cents ?? null,
+                          locale,
                         )}
                       </span>
                       <span className="text-sm text-muted-foreground">/mo</span>

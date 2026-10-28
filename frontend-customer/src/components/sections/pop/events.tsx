@@ -10,21 +10,23 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { FILL, Kicker, PopSection, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 const STUB: (keyof typeof FILL)[] = ["berry", "lime", "pink", "lilac"];
 
-function dateParts(iso: string) {
+function dateParts(iso: string, locale: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
   return {
-    day: d.toLocaleDateString("en", { day: "numeric" }),
-    month: d.toLocaleDateString("en", { month: "short" }),
-    weekday: d.toLocaleDateString("en", { weekday: "short" }),
+    day: d.toLocaleDateString(locale, { day: "numeric" }),
+    month: d.toLocaleDateString(locale, { month: "short" }),
+    weekday: d.toLocaleDateString(locale, { weekday: "short" }),
   };
 }
 
 /** Ticket stubs: a colour date block, a perforated fold, the details. */
 export function EventsTickets({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events = Array.isArray(data) ? (data as CalendarEvent[]) : [];
   if (!events.length && !editable) return null;
   return (
@@ -76,7 +78,7 @@ export function EventsTickets({ block, data, editable }: SectionProps) {
         ) : (
           <ul className="mt-14 grid gap-7 md:mt-16 lg:grid-cols-2">
             {events.map((e, i) => {
-              const d = dateParts(e.scheduled_at);
+              const d = dateParts(e.scheduled_at, locale);
               const fill = STUB[i % STUB.length];
               return (
                 <li key={`${e.type}-${e.id}`}>
@@ -109,7 +111,7 @@ export function EventsTickets({ block, data, editable }: SectionProps) {
                         {e.title}
                       </h3>
                       <p className="pop-mono flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.875rem] text-muted-foreground">
-                        <span>{formatEventTime(e.scheduled_at)}</span>
+                        <span>{formatEventTime(e.scheduled_at, locale)}</span>
                         {e.location && <span>{e.location}</span>}
                         {e.pricing_type === "free" && (
                           <span className="rounded-full border-2 border-[color:var(--pop-ink)] bg-[var(--accent)] px-2.5 py-0.5 text-[0.75rem] text-[color:var(--foreground)]">

@@ -15,8 +15,10 @@ import type { SubscriptionPlan } from "@/types/billing";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { formatMoney } from "@/lib/format";
 import type { BlockComponentProps } from "@/lib/blocks/types";
+import { useLocale } from "next-intl";
 
 export function PricingPlansBlock({ data, dynamicData }: BlockComponentProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = dynamicData ?? [];
   const gridClass =
     data.layout === "compact"
@@ -72,7 +74,7 @@ export function PricingPlansBlock({ data, dynamicData }: BlockComponentProps) {
                 <CardContent className="flex flex-1 flex-col space-y-5 pt-2">
                   <div>
                     <span className="font-display text-4xl font-bold tabular-nums">
-                      {formatMoney(plan.price, plan.currency)}
+                      {formatMoney(plan.price, plan.currency, locale)}
                     </span>
                     <span className="text-muted-foreground">
                       {billingIntervalSuffix(plan.billing_interval_months)}

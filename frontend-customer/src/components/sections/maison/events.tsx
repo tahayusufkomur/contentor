@@ -11,9 +11,11 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, BTN, H3, LABEL, NUM, Opener, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Salons: upcoming calendar sessions set as ruled lines with client-side local times. */
 export function EventsSalons({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -46,7 +48,9 @@ export function EventsSalons({ block, data, editable }: SectionProps) {
                     )}
                   </span>
                   <span className="flex flex-col items-start sm:items-end sm:text-right">
-                    <span className={cn(LABEL, NUM)}>{eventPriceLabel(e)}</span>
+                    <span className={cn(LABEL, NUM)}>
+                      {eventPriceLabel(e, locale)}
+                    </span>
                     <span
                       className={cn(
                         LABEL,

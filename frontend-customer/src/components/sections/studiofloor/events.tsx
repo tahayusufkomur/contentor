@@ -11,10 +11,12 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, CHIP, H3, Opener, Section, WRAP, str } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Upcoming live classes and studio workshops arranged as a timetable
  *  schedule with date blocks, time chips, prices, and reservation links. */
 export function EventsSchedule({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -68,7 +70,7 @@ export function EventsSchedule({ block, data, editable }: SectionProps) {
                         </>
                       )}
                       <span className="studiofloor-display font-extrabold italic text-primary">
-                        {eventPriceLabel(e)}
+                        {eventPriceLabel(e, locale)}
                       </span>
                     </div>
                   </div>

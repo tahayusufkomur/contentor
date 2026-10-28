@@ -9,9 +9,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { H3, LABEL, LINK, Opener, Plate, Section, WRAP, pad2 } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Membership plans presented as numbered editions on a ruled gallery wall. */
 export function PricingEditions({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
@@ -50,7 +52,7 @@ export function PricingEditions({ block, data, editable }: SectionProps) {
                 </div>
                 <div className="lg:col-span-2">
                   <p className="font-display text-[2.2rem] font-bold leading-none tracking-[-0.02em]">
-                    {formatMoney(plan.price, plan.currency)}
+                    {formatMoney(plan.price, plan.currency, locale)}
                   </p>
                   <p className={cn(LABEL, "mt-2 text-muted-foreground")}>
                     {billingIntervalSuffix(plan.billing_interval_months)}

@@ -259,13 +259,14 @@ export function resolveWords(
   recipe: CoverRecipe,
   item: CoverItem,
   now: Date,
+  locale: string,
 ): { label: string; title: string; subtitle: string; badge: string | null } {
   const { words, badge } = recipe;
   return {
     label: words.label,
     title: words.title ?? item.title,
     subtitle: words.subtitle,
-    badge: badgeText(badge, item, now),
+    badge: badgeText(badge, item, now, locale),
   };
 }
 
@@ -273,6 +274,7 @@ function badgeText(
   badge: CoverRecipe["badge"],
   item: CoverItem,
   now: Date,
+  locale: string,
 ): string | null {
   switch (badge.kind) {
     case "new":
@@ -285,7 +287,7 @@ function badgeText(
       // (a server render and the browser can then print different days near midnight).
       const start = item.startsAt ? new Date(item.startsAt) : null;
       return start && start >= now
-        ? start.toLocaleDateString("en-US", {
+        ? start.toLocaleDateString(locale, {
             month: "short",
             day: "numeric",
             timeZone: item.timeZone || undefined,

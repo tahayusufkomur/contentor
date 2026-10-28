@@ -6,6 +6,7 @@ import { BlogCover } from "@/components/blog/blog-cover";
 import { ReadingProgress } from "@/components/blog/reading-progress";
 import { getAuthUser } from "@/lib/auth";
 import { fetchPlatformPost } from "@/lib/platform-blog";
+import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default async function PlatformBlogPostPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const locale = await getLocale();
   const { slug } = await params;
   const [user, post] = await Promise.all([
     getAuthUser(),
@@ -68,7 +70,7 @@ export default async function PlatformBlogPostPage({
               className="text-caption text-muted-foreground"
               dateTime={post.published_at}
             >
-              {new Date(post.published_at).toLocaleDateString()}
+              {new Date(post.published_at).toLocaleDateString(locale)}
             </time>
             <h1 className="mt-3 text-display-2 text-balance text-foreground">
               {post.title}

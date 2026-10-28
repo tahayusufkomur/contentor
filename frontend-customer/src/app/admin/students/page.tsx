@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -42,17 +42,17 @@ interface Student {
   overall_progress?: number;
 }
 
-function getInitials(name: string) {
+function getInitials(name: string, locale: string) {
   return name
     .split(" ")
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase();
+    .toLocaleUpperCase(locale);
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString(undefined, {
+function formatDate(dateStr: string, locale: string) {
+  return new Date(dateStr).toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -67,6 +67,7 @@ const SORT_OPTIONS = [
 ];
 
 export default function StudentsPage() {
+  const locale = useLocale();
   const t = useTranslations("admin");
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [selectedStudent, setSelectedStudent] = useState<StudentDetail | null>(
@@ -157,7 +158,7 @@ export default function StudentsPage() {
                 <Avatar className="h-9 w-9 border border-primary/20">
                   <AvatarImage src={student.avatar_url} />
                   <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
-                    {getInitials(student.name || student.email)}
+                    {getInitials(student.name || student.email, locale)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
@@ -219,11 +220,13 @@ export default function StudentsPage() {
             </TableCell>
 
             <TableCell className="text-muted-foreground text-xs">
-              {formatDate(student.date_joined)}
+              {formatDate(student.date_joined, locale)}
             </TableCell>
 
             <TableCell className="text-muted-foreground text-xs">
-              {student.last_login ? formatDate(student.last_login) : "Never"}
+              {student.last_login
+                ? formatDate(student.last_login, locale)
+                : "Never"}
             </TableCell>
 
             <TableCell>

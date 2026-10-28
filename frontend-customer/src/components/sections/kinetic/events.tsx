@@ -10,18 +10,20 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, BTN, BtnBody, DISPLAY, H2, Kicker, LABEL, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
-function day(iso: string) {
+function day(iso: string, locale: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return { wd: "", md: "" };
   return {
-    wd: d.toLocaleDateString(undefined, { weekday: "short" }),
-    md: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+    wd: d.toLocaleDateString(locale, { weekday: "short" }),
+    md: d.toLocaleDateString(locale, { month: "short", day: "numeric" }),
   };
 }
 
 /** Gym timetable: day, time, class, place, book. The next class is in volt. */
 export function EventsTimetable({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events = Array.isArray(data) ? (data as CalendarEvent[]) : [];
   if (!events.length && !editable) return null;
 
@@ -70,7 +72,7 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
         ) : (
           <ol className="mt-12 border-t-[3px] border-foreground md:mt-16">
             {events.map((e, i) => {
-              const { wd, md } = day(e.scheduled_at);
+              const { wd, md } = day(e.scheduled_at, locale);
               const next = i === 0;
               return (
                 <li
@@ -103,7 +105,7 @@ export function EventsTimetable({ block, data, editable }: SectionProps) {
                         "text-[1.6rem] tabular-nums md:text-[2rem] sm:[line-height:1]",
                       )}
                     >
-                      {formatEventTime(e.scheduled_at)}
+                      {formatEventTime(e.scheduled_at, locale)}
                     </span>
                     <span className="col-start-2 min-w-0 sm:col-start-auto">
                       <span

@@ -1,4 +1,5 @@
 import type { PlatformBlogPost } from "@/lib/platform-blog";
+import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface BlogCoverProps {
@@ -18,6 +19,7 @@ export function BlogCover({
   priority = false,
   className,
 }: BlogCoverProps) {
+  const locale = useLocale();
   return (
     <div
       className={cn(
@@ -37,7 +39,7 @@ export function BlogCover({
       ) : (
         <div aria-hidden className="absolute inset-0 p-6 md:p-8">
           <span className="select-none text-display text-border">
-            {post.title.trim().charAt(0).toUpperCase() || "C"}
+            {post.title.trim().charAt(0).toLocaleUpperCase(locale) || "C"}
           </span>
           <span className="absolute bottom-6 left-6 text-eyebrow text-muted-foreground md:bottom-8 md:left-8">
             {post.tags[0] ?? "Blog"}

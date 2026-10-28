@@ -10,9 +10,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { CHIP, H3, Opener, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Membership plans as soft night cards with amber prices and pill actions. */
 export function PricingStays({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
   const solo = plans.length === 1;
@@ -46,7 +48,7 @@ export function PricingStays({ block, data, editable }: SectionProps) {
                 </h3>
                 <p className="mt-5 flex items-baseline">
                   <span className="nocturne-soft font-display text-[3rem] leading-none text-primary">
-                    {formatMoney(plan.price, plan.currency)}
+                    {formatMoney(plan.price, plan.currency, locale)}
                   </span>
                   <span className="ml-2 text-[0.95rem] text-muted-foreground">
                     {billingIntervalSuffix(plan.billing_interval_months)}

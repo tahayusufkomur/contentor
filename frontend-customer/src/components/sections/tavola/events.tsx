@@ -11,9 +11,11 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, BTN_GHOST, CARD, H3, LABEL, Opener, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Live sessions and tastings presented as an upcoming schedule card with dotted rows. */
 export function EventsTastings({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -64,7 +66,9 @@ export function EventsTastings({ block, data, editable }: SectionProps) {
                       )}
                     </span>
                     <span className="flex flex-col sm:items-end sm:text-right">
-                      <span className="font-bold">{eventPriceLabel(e)}</span>
+                      <span className="font-bold">
+                        {eventPriceLabel(e, locale)}
+                      </span>
                       <span className="tavola-link mt-1 inline-flex items-center gap-2 text-[0.9rem] font-bold">
                         Reserve
                         <Arrow />

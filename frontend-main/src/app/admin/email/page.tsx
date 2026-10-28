@@ -202,7 +202,7 @@ export default function PlatformEmailDashboardPage() {
                     {c.success_count}/{c.recipient_count}
                   </td>
                   <td className="py-3">
-                    {new Date(c.created_at).toLocaleDateString()}
+                    {new Date(c.created_at).toLocaleDateString("en")}
                   </td>
                 </tr>
               ))}

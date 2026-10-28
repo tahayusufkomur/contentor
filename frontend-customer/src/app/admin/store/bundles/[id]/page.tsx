@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { WorkingTag } from "@/components/focus/working-tag";
@@ -125,6 +125,7 @@ const { isHers, isWriting, layOver } = ownership(OWN_TIDY);
  *  asks one question at a time and the page fills in; outside it, a draft
  *  shows its badge and Publish once it is ready. */
 export default function EditBundlePage() {
+  const locale = useLocale();
   const t = useTranslations("admin.store.bundles");
   const tf = useTranslations("admin.focus");
   const navigate = useNavigate();
@@ -552,7 +553,7 @@ export default function EditBundlePage() {
                 <div className="space-y-2 sm:max-w-xs">
                   <Label>Original Price (sum of items)</Label>
                   <div className="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
-                    {formatMoney(originalPrice, currency)}
+                    {formatMoney(originalPrice, currency, locale)}
                   </div>
                 </div>
               </div>

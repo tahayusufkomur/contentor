@@ -5,8 +5,8 @@ export function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString(undefined, {
+export function formatDate(dateStr: string, locale: string): string {
+  return new Date(dateStr).toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -21,10 +21,14 @@ export function formatDuration(seconds: number): string {
 }
 
 /** "$19.90" / "€19.90" — whole amounts drop the cents. */
-export function formatMoney(amount: number | string, currency = "USD"): string {
+export function formatMoney(
+  amount: number | string,
+  currency: string,
+  locale: string,
+): string {
   const n = Number(amount);
   try {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
       currency,
       minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
@@ -38,9 +42,10 @@ export function formatMoney(amount: number | string, currency = "USD"): string {
 /** formatMoney split for prices that set the symbol small: "€29" → { symbol: "€", amount: "29" }. */
 export function formatMoneyParts(
   amount: number | string,
-  currency = "USD",
+  currency: string,
+  locale: string,
 ): { symbol: string; amount: string } {
-  const text = formatMoney(amount, currency);
+  const text = formatMoney(amount, currency, locale);
   const m = text.match(/^(\D*?)\s*(\d.*)$/);
   return m
     ? { symbol: m[1], amount: m[2] }
@@ -48,10 +53,10 @@ export function formatMoneyParts(
 }
 
 /** Just the symbol ("$", "€") for an input prefix. */
-export function currencySymbol(currency = "USD"): string {
+export function currencySymbol(currency: string, locale: string): string {
   try {
     return (
-      new Intl.NumberFormat("en-US", { style: "currency", currency })
+      new Intl.NumberFormat(locale, { style: "currency", currency })
         .formatToParts(0)
         .find((p) => p.type === "currency")?.value ?? currency
     );

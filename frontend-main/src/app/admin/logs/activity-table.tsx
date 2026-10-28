@@ -49,7 +49,7 @@ export function ActivityTable({
         {rows.map((r) => (
           <tr key={r.id} className="border-b align-top hover:bg-muted/50">
             <td className="py-2 pr-2 font-mono text-xs text-muted-foreground">
-              {new Date(r.ts).toLocaleString(undefined, {
+              {new Date(r.ts).toLocaleString("en", {
                 month: "short",
                 day: "2-digit",
                 hour: "2-digit",

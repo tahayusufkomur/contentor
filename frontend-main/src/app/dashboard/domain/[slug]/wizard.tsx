@@ -16,6 +16,7 @@ import {
   type DomainResult,
   type RegistrantContact,
 } from "@/lib/domains";
+import { useLocale } from "next-intl";
 
 type Phase =
   | "loading"
@@ -36,6 +37,7 @@ export function DomainWizard({
   defaultEmail: string;
   defaultName: string;
 }) {
+  const locale = useLocale();
   const params = useSearchParams();
   const [phase, setPhase] = useState<Phase>("loading");
   const [picked, setPicked] = useState<DomainResult | null>(null);
@@ -138,7 +140,7 @@ export function DomainWizard({
         <p className="text-sm text-muted-foreground">
           Registering{" "}
           <span className="font-medium text-foreground">{picked.domain}</span> —{" "}
-          {formatPrice(picked.price_minor, picked.currency)} / year.
+          {formatPrice(picked.price_minor, picked.currency, locale)} / year.
         </p>
         <RegistrantForm
           defaultEmail={defaultEmail}

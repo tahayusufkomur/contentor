@@ -1,10 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
-  featureCell,
+  featureCell as featureCellIn,
   includedFeatures,
   planKeyFromName,
   type PlanSummary,
 } from "@/lib/pricing-matrix";
+
+const featureCell = (
+  ...a: Parameters<typeof featureCellIn> extends [...infer R, string]
+    ? R
+    : never
+) => featureCellIn(...a, "en");
 
 const plan = (over: Partial<PlanSummary> = {}): PlanSummary => ({
   id: 1,

@@ -45,6 +45,7 @@ import type {
 import styles from "./cover-art.module.css";
 import { COVER_ICONS } from "./cover-icons";
 import { QrCode } from "./cover-qr";
+import { useLocale } from "next-intl";
 
 export interface CoverArtProps {
   design: CoverDesign;
@@ -920,6 +921,7 @@ export function CoverArt({
   className,
   now = new Date(),
 }: CoverArtProps) {
+  const locale = useLocale();
   const { recipe } = design;
   const { style: look, paletteId } = parseLook(design.look);
   const palette = coverPalette(look, paletteId);
@@ -929,7 +931,7 @@ export function CoverArt({
     recipe,
     look,
     palette,
-    words: resolveWords(recipe, item, now),
+    words: resolveWords(recipe, item, now, locale),
     bare: mode === "bare",
     photoClassName,
     priority,

@@ -1,5 +1,5 @@
 import { Check, ChevronDown, Minus } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/ui/nav-link";
@@ -77,6 +77,7 @@ function CellView({
 // Phase 1.5 to keep scope tight — `ChangePlanCard` on the tenant subdomain
 // covers the existing-coach upgrade path for now.
 export default async function PricingPage() {
+  const locale = await getLocale();
   const user = await getAuthUser();
   const t = await getTranslations("pricing");
   const plansData = await fetchPlans();
@@ -102,7 +103,7 @@ export default async function PricingPage() {
     if (!plan) return t(`plans.${key}.price`);
     return plan.amount_cents == null
       ? null
-      : formatPlanPrice(plan.currency, plan.amount_cents);
+      : formatPlanPrice(plan.currency, plan.amount_cents, locale);
   };
 
   return (
@@ -218,6 +219,7 @@ export default async function PricingPage() {
                           included[key],
                           planByKey[key] ?? null,
                           () => t(`plans.${key}.features.${feature}`),
+                          locale,
                         )}
                         plan={t(`plans.${key}.name`)}
                         included={t("compare.included", {

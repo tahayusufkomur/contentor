@@ -18,9 +18,11 @@ import {
   WRAP,
   WashiTape,
 } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Workshop kit boxes with dashed seams, washi tape labels, and display pricing. */
 export function PricingKits({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
   const solo = plans.length === 1;
@@ -70,7 +72,7 @@ export function PricingKits({ block, data, editable }: SectionProps) {
 
                 <div className="mt-6 flex items-baseline">
                   <span className="font-display text-[2.8rem] font-bold leading-none text-foreground">
-                    {formatMoney(plan.price, plan.currency)}
+                    {formatMoney(plan.price, plan.currency, locale)}
                   </span>
                   <span className="ml-2 text-[0.95rem] text-muted-foreground">
                     {billingIntervalSuffix(plan.billing_interval_months)}

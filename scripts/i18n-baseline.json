@@ -59,7 +59,6 @@
   "frontend-customer/src/components/admin/announcement-recurring-list.tsx": 7,
   "frontend-customer/src/components/admin/announcement-templates-list.tsx": 4,
   "frontend-customer/src/components/admin/assistant/links-card.tsx": 1,
-  "frontend-customer/src/components/admin/blog/autopilot-card.tsx": 7,
   "frontend-customer/src/components/admin/blog/generate-dialog.tsx": 1,
   "frontend-customer/src/components/admin/blog/post-editor.tsx": 7,
   "frontend-customer/src/components/admin/calendar/unified-calendar.tsx": 23,

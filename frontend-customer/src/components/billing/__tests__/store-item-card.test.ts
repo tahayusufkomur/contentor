@@ -1,11 +1,21 @@
 import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { renderToStaticMarkup as renderBare } from "react-dom/server";
+import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it } from "vitest";
 
 import { StoreItemCard } from "@/components/billing/store-item-card";
 import { defaultRecipe } from "@/lib/covers/recipe";
 import type { StoreItem } from "@/types/billing";
 import type { CoverDesign } from "@/types/design";
+
+// useLocale needs a provider; the components under test read no messages.
+// createElement wants children among this provider's props; pass them as arguments.
+const Intl = NextIntlClientProvider as React.FC<{
+  locale: string;
+  children?: React.ReactNode;
+}>;
+const renderToStaticMarkup = (el: Parameters<typeof renderBare>[0]) =>
+  renderBare(createElement(Intl, { locale: "en" }, el));
 
 const PHOTO = "11111111-1111-4111-8111-111111111111";
 const DESIGN_URL = "https://cdn.test/design.jpg";

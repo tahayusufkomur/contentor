@@ -21,9 +21,11 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Upcoming masterclasses, workshops and live sessions styled as formal invitations. */
 export function EventsMasterclasses({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -65,7 +67,7 @@ export function EventsMasterclasses({ block, data, editable }: SectionProps) {
 
                   <div className="flex flex-col sm:items-end sm:text-right">
                     <span className={cn(LABEL, "text-foreground")}>
-                      {eventPriceLabel(e)}
+                      {eventPriceLabel(e, locale)}
                     </span>
                     <span className="atelier-link mt-2 inline-flex items-center gap-1.5 text-[0.88rem] font-medium text-muted-foreground group-hover:text-primary">
                       <span>Reserve spot</span>

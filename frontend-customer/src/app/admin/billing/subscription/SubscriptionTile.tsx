@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +66,7 @@ export function SubscriptionTile({
   showCanceledNotice = false,
   onLive,
 }: Props) {
+  const locale = useLocale();
   const t = useTranslations("admin.subscription");
   const [state, setState] = useState<PlatformSubscriptionState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -144,7 +145,7 @@ export function SubscriptionTile({
   // Stripe-billed plans only: a granted plan has nothing to cancel here.
   const selfServe =
     state?.provider === "stripe" || state?.provider === "bypass";
-  const end = formatDate(state?.current_period_end);
+  const end = formatDate(state?.current_period_end, locale);
 
   return (
     <div className="space-y-4">

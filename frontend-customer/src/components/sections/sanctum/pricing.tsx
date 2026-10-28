@@ -9,9 +9,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { H3, LABEL, Opener, Section, StarGlyph, WRAP, str } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Pricing "offerings": Stacked arch-topped sanctuary offering tiers with a glow on the middle tier (a glow, no label: no plan is flagged popular). */
 export function PricingOfferings({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
@@ -60,7 +62,7 @@ export function PricingOfferings({ block, data, editable }: SectionProps) {
                     <div className="mt-8 border-y border-[color-mix(in_oklch,var(--primary)_20%,transparent)] py-6">
                       <p className="flex items-baseline justify-center">
                         <span className="font-display text-[2.6rem] font-medium leading-none text-primary">
-                          {formatMoney(plan.price, plan.currency)}
+                          {formatMoney(plan.price, plan.currency, locale)}
                         </span>
                         <span className="ml-2 text-[0.9rem] uppercase tracking-[0.1em] text-muted-foreground">
                           {billingIntervalSuffix(plan.billing_interval_months)}

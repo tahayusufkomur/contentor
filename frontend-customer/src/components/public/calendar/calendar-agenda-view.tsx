@@ -4,6 +4,7 @@ import { CalendarOff } from "lucide-react";
 import { groupEventsByDate, formatDateHeader } from "@/lib/calendar-utils";
 import { EventCard } from "./event-card";
 import type { CalendarEvent } from "@/types/live";
+import { useLocale } from "next-intl";
 
 interface CalendarAgendaViewProps {
   events: CalendarEvent[];
@@ -14,6 +15,7 @@ export function CalendarAgendaView({
   events,
   timezone,
 }: CalendarAgendaViewProps) {
+  const locale = useLocale();
   const grouped = groupEventsByDate(events, timezone);
   const sortedKeys = Array.from(grouped.keys()).sort();
 
@@ -31,9 +33,9 @@ export function CalendarAgendaView({
     <div className="space-y-8">
       {sortedKeys.map((dateKey) => {
         const dayEvents = grouped.get(dateKey)!;
-        const header = formatDateHeader(dateKey);
+        const header = formatDateHeader(dateKey, locale);
         const date = new Date(dateKey + "T00:00:00");
-        const weekday = date.toLocaleDateString("en-US", {
+        const weekday = date.toLocaleDateString(locale, {
           weekday: "long",
           month: "short",
           day: "numeric",

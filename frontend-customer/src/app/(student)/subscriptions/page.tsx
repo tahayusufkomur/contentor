@@ -17,6 +17,7 @@ import { clientFetch } from "@/lib/api-client";
 import { billingIntervalSuffix } from "@/lib/billing-interval";
 import { formatMoney } from "@/lib/format";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useLocale } from "next-intl";
 
 interface MySubscription {
   id: number;
@@ -45,10 +46,10 @@ const STATUS_VARIANT: Record<string, "success" | "warning" | "secondary"> = {
   expired: "secondary",
 };
 
-function formatDate(iso: string | null) {
+function formatDate(iso: string | null, locale: string) {
   if (!iso) return "—";
   try {
-    return new Date(iso).toLocaleDateString(undefined, {
+    return new Date(iso).toLocaleDateString(locale, {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -59,6 +60,7 @@ function formatDate(iso: string | null) {
 }
 
 export default function SubscriptionsPage() {
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const [subs, setSubs] = useState<MySubscription[]>([]);
   const [plans, setPlans] = useState<PlanOption[]>([]);
@@ -141,7 +143,11 @@ export default function SubscriptionsPage() {
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {formatMoney(sub.billing_amount, sub.billing_currency)}
+                    {formatMoney(
+                      sub.billing_amount,
+                      sub.billing_currency,
+                      locale,
+                    )}
                     {billingIntervalSuffix(sub.billing_interval_months)}
                   </p>
                 </CardHeader>
@@ -150,7 +156,7 @@ export default function SubscriptionsPage() {
                     <CalendarClock className="h-4 w-4" />
                     {sub.cancel_at_period_end ? "Cancels on " : "Renews on "}
                     <span className="font-medium text-foreground">
-                      {formatDate(sub.current_period_end)}
+                      {formatDate(sub.current_period_end, locale)}
                     </span>
                   </p>
                   {sub.pending_plan_name && (
@@ -189,6 +195,7 @@ function SubscriptionRowActions({
   otherPlans: PlanOption[];
   onChanged: () => Promise<void>;
 }) {
+  const locale = useLocale();
   const { run: cancel, loading: cancelling } = useAsyncAction(
     async () => {
       await clientFetch(`/api/v1/billing/subscriptions/${sub.id}/cancel/`, {
@@ -248,7 +255,7 @@ function SubscriptionRowActions({
             </option>
             {otherPlans.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name} — {formatMoney(p.price, p.currency)}
+                {p.name} — {formatMoney(p.price, p.currency, locale)}
                 {billingIntervalSuffix(p.billing_interval_months)}
               </option>
             ))}

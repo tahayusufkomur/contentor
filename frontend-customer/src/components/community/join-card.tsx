@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { updateCommunityMe, uploadCommunityImage } from "@/lib/community";
 import type { CommunityMe } from "@/types/community";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useLocale } from "next-intl";
 
 export function JoinCard({
   me,
@@ -17,6 +18,7 @@ export function JoinCard({
   me: CommunityMe;
   onDone: (updated: CommunityMe) => void;
 }) {
+  const locale = useLocale();
   const [name, setName] = useState(me.display_name);
   const [avatarKey, setAvatarKey] = useState(me.avatar_key);
   const [preview, setPreview] = useState(me.avatar);
@@ -64,7 +66,7 @@ export function JoinCard({
           <Avatar className="h-20 w-20">
             <AvatarImage src={preview} alt="" />
             <AvatarFallback>
-              {(name || "?").slice(0, 2).toUpperCase()}
+              {(name || "?").slice(0, 2).toLocaleUpperCase(locale)}
             </AvatarFallback>
           </Avatar>
           <span className="absolute bottom-0 right-0 rounded-full bg-primary p-1.5 text-primary-foreground">

@@ -11,9 +11,11 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, BTN_GHOST, H3, LABEL, NUM, Opener, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Upcoming meetups as a trail itinerary: client-local timestamps, blaze location pips, and prices. */
 export function EventsMeetups({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -51,7 +53,7 @@ export function EventsMeetups({ block, data, editable }: SectionProps) {
                   </span>
                   <span className="flex flex-col sm:items-end">
                     <span className={cn(NUM, "font-semibold")}>
-                      {eventPriceLabel(e)}
+                      {eventPriceLabel(e, locale)}
                     </span>
                     <span className="trail-link mt-1 inline-flex items-center gap-2 text-[0.9rem] font-semibold">
                       <span>Join</span>

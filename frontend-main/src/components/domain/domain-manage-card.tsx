@@ -10,6 +10,7 @@ import {
   formatPrice,
   type CustomDomainStatus,
 } from "@/lib/domains";
+import { useLocale } from "next-intl";
 
 export function DomainManageCard({
   slug,
@@ -22,6 +23,7 @@ export function DomainManageCard({
   domain: CustomDomainStatus;
   onRemoved: () => void;
 }) {
+  const locale = useLocale();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,12 +51,12 @@ export function DomainManageCard({
       <dl className="grid grid-cols-2 gap-2 text-sm">
         <dt className="text-muted-foreground">Yearly price</dt>
         <dd className="text-right">
-          {formatPrice(domain.price_minor, domain.currency)}
+          {formatPrice(domain.price_minor, domain.currency, locale)}
         </dd>
         <dt className="text-muted-foreground">Renews</dt>
         <dd className="text-right">
           {domain.expires_at
-            ? new Date(domain.expires_at).toLocaleDateString()
+            ? new Date(domain.expires_at).toLocaleDateString(locale)
             : "—"}
         </dd>
       </dl>

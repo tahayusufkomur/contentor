@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { getLocale } from "next-intl/server";
 
 import { NavLink } from "@/components/ui/nav-link";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
@@ -53,8 +54,8 @@ function withAnchors(html: string): { html: string; headings: Heading[] } {
   return { html: out, headings };
 }
 
-const longDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-US", {
+const longDate = (iso: string, locale: string) =>
+  new Date(iso).toLocaleDateString(locale, {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -159,6 +160,7 @@ export default async function BlogPostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const locale = await getLocale();
   const tenantSlug = await getTenantSlug();
   const [published, config, posts, hdrs] = await Promise.all([
     fetchPublishedPost(slug),
@@ -254,7 +256,7 @@ export default async function BlogPostPage({
             </NavLink>
             {post.published_at && (
               <time dateTime={post.published_at}>
-                📅 {longDate(post.published_at)}
+                📅 {longDate(post.published_at, locale)}
               </time>
             )}
             <span>⏱️ {minutes} min read</span>
@@ -288,7 +290,7 @@ export default async function BlogPostPage({
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  brand.slice(0, 1).toUpperCase()
+                  brand.slice(0, 1).toLocaleUpperCase(locale)
                 )}
               </span>
               <div className="flex flex-col gap-1.5">
@@ -339,7 +341,7 @@ export default async function BlogPostPage({
                       {p.tags?.[0] && <span className={CHIP}>{p.tags[0]}</span>}
                       {p.published_at && (
                         <span className="text-xs text-muted-foreground">
-                          {longDate(p.published_at)}
+                          {longDate(p.published_at, locale)}
                         </span>
                       )}
                     </div>

@@ -4,6 +4,7 @@ import { NavLink } from "@/components/ui/nav-link";
 import { BlogCover } from "@/components/blog/blog-cover";
 import { getAuthUser } from "@/lib/auth";
 import { fetchPlatformPosts } from "@/lib/platform-blog";
+import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +14,11 @@ export const metadata = {
     "Guides and ideas for creators building an online business with Contentor.",
 };
 
-const formatDate = (iso: string) => new Date(iso).toLocaleDateString();
+const formatDate = (iso: string, locale: string) =>
+  new Date(iso).toLocaleDateString(locale);
 
 export default async function PlatformBlogIndexPage() {
+  const locale = await getLocale();
   const [user, posts] = await Promise.all([
     getAuthUser(),
     fetchPlatformPosts(),
@@ -48,7 +51,7 @@ export default async function PlatformBlogIndexPage() {
                 className="text-caption text-muted-foreground"
                 dateTime={latest.published_at}
               >
-                {formatDate(latest.published_at)}
+                {formatDate(latest.published_at, locale)}
               </time>
               <h2 className="mt-3 text-display-2 text-balance text-foreground decoration-1 underline-offset-8 group-hover:underline">
                 {latest.title}
@@ -70,7 +73,7 @@ export default async function PlatformBlogIndexPage() {
                     className="mt-5 block text-caption text-muted-foreground"
                     dateTime={post.published_at}
                   >
-                    {formatDate(post.published_at)}
+                    {formatDate(post.published_at, locale)}
                   </time>
                   <h3 className="mt-2 text-title-2 text-balance text-foreground decoration-1 underline-offset-4 group-hover:underline">
                     {post.title}

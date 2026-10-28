@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { searchDomains, formatPrice, type DomainResult } from "@/lib/domains";
+import { useLocale } from "next-intl";
 
 function ResultRow({
   r,
@@ -15,13 +16,14 @@ function ResultRow({
   r: DomainResult;
   onPick: (d: DomainResult) => void;
 }) {
+  const locale = useLocale();
   return (
     <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
       <div className="min-w-0">
         <p className="truncate font-medium">{r.domain}</p>
         <p className="text-xs text-muted-foreground">
           {r.available
-            ? `${formatPrice(r.price_minor, r.currency)} / year`
+            ? `${formatPrice(r.price_minor, r.currency, locale)} / year`
             : "Taken"}
         </p>
       </div>

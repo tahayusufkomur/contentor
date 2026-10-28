@@ -19,9 +19,11 @@ import {
   StarGlyph,
   WRAP,
 } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Events "gatherings": Ceremonial live gatherings with moon-phase glyphs per alignment date. */
 export function EventsGatherings({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -70,7 +72,7 @@ export function EventsGatherings({ block, data, editable }: SectionProps) {
                   {/* Price & Action */}
                   <div className="flex items-center gap-6 sm:justify-end">
                     <span className="font-display text-[1rem] uppercase tracking-[0.1em] text-foreground">
-                      {eventPriceLabel(e)}
+                      {eventPriceLabel(e, locale)}
                     </span>
                     <span className="inline-flex items-center gap-1.5 font-display text-[0.8rem] uppercase tracking-[0.14em] text-primary transition-transform duration-300 motion-safe:group-hover:translate-x-1">
                       <span>Reserve</span>

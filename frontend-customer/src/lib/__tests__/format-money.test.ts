@@ -3,19 +3,19 @@ import { formatMoney, formatMoneyParts } from "../format";
 
 describe("formatMoneyParts", () => {
   it("splits what formatMoney prints into symbol and amount", () => {
-    expect(formatMoney("29.00", "EUR")).toBe("€29");
-    expect(formatMoneyParts("29.00", "EUR")).toEqual({
+    expect(formatMoney("29.00", "EUR", "en")).toBe("€29");
+    expect(formatMoneyParts("29.00", "EUR", "en")).toEqual({
       symbol: "€",
       amount: "29",
     });
-    expect(formatMoneyParts("1299.5", "USD")).toEqual({
+    expect(formatMoneyParts("1299.5", "USD", "en")).toEqual({
       symbol: "$",
       amount: "1,299.50",
     });
   });
 
   it("keeps a code-style symbol apart from the figure", () => {
-    const { symbol, amount } = formatMoneyParts("49", "TRY");
+    const { symbol, amount } = formatMoneyParts("49", "TRY", "en");
     expect(symbol).toBe("TRY");
     expect(amount).toBe("49");
   });

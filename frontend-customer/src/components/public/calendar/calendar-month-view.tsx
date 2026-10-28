@@ -13,10 +13,11 @@ import {
   toDateKey,
   groupEventsByDate,
   formatTime,
+  weekdayNames,
 } from "@/lib/calendar-utils";
 import type { CalendarEvent } from "@/types/live";
+import { useLocale } from "next-intl";
 
-const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MAX_VISIBLE_EVENTS = 2;
 
 interface CalendarMonthViewProps {
@@ -34,6 +35,7 @@ export function CalendarMonthView({
   currentDate,
   timezone,
 }: CalendarMonthViewProps) {
+  const locale = useLocale();
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const gridDates = getMonthGridDates(
     currentDate.getFullYear(),
@@ -59,7 +61,7 @@ export function CalendarMonthView({
       .slice(0, 3);
   }, [events, selectedDate, selectedEvents.length]);
 
-  const selectedDateLabel = selectedDate.toLocaleDateString("en-US", {
+  const selectedDateLabel = selectedDate.toLocaleDateString(locale, {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -71,7 +73,7 @@ export function CalendarMonthView({
       <div className="md:w-[72%] md:border-r border-border flex flex-col">
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b border-border">
-          {DAY_NAMES.map((day) => (
+          {weekdayNames(locale, "short").map((day) => (
             <div
               key={day}
               className="p-2 md:p-3 text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
@@ -147,7 +149,7 @@ export function CalendarMonthView({
                         )}
                       >
                         <span className="font-semibold text-foreground">
-                          {formatTime(event.scheduled_at, timezone)}
+                          {formatTime(event.scheduled_at, locale, timezone)}
                         </span>{" "}
                         <span className="text-foreground">{event.title}</span>
                       </div>
@@ -255,13 +257,16 @@ interface DetailEventCardProps {
 }
 
 function DetailEventCard({ event, timezone, showDate }: DetailEventCardProps) {
+  const locale = useLocale();
   const config = EVENT_TYPE_CONFIG[event.type];
-  const timeStr = formatTime(event.scheduled_at, timezone);
-  const endStr = event.ended_at ? formatTime(event.ended_at, timezone) : null;
+  const timeStr = formatTime(event.scheduled_at, locale, timezone);
+  const endStr = event.ended_at
+    ? formatTime(event.ended_at, locale, timezone)
+    : null;
   const href = getEventHref(event);
 
   const dateLabel = showDate
-    ? new Date(event.scheduled_at).toLocaleDateString("en-US", {
+    ? new Date(event.scheduled_at).toLocaleDateString(locale, {
         weekday: "short",
         month: "short",
         day: "numeric",
@@ -295,7 +300,7 @@ function DetailEventCard({ event, timezone, showDate }: DetailEventCardProps) {
                   : "text-muted-foreground",
               )}
             >
-              {eventPriceLabel(event)}
+              {eventPriceLabel(event, locale)}
             </span>
           </div>
 

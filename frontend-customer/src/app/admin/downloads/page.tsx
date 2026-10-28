@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useCallback, useRef, useState } from "react";
 import { Download, ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -44,6 +44,7 @@ const ACCESS_BADGE_VARIANT: Record<string, "success" | "default" | "warning"> =
   };
 
 export default function AdminDownloadsPage() {
+  const locale = useLocale();
   const t = useTranslations("admin");
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
@@ -169,7 +170,7 @@ export default function AdminDownloadsPage() {
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span>{formatFileSize(dl.file_size)}</span>
-                  <span>{formatDate(dl.created_at)}</span>
+                  <span>{formatDate(dl.created_at, locale)}</span>
                 </div>
               </div>
             </NavLink>
@@ -208,7 +209,7 @@ export default function AdminDownloadsPage() {
                     : "Subscription"}
               </Badge>
             </TableCell>
-            <TableCell>{formatDate(dl.created_at)}</TableCell>
+            <TableCell>{formatDate(dl.created_at, locale)}</TableCell>
             <TableCell>
               <DownloadRowActions
                 download={dl}

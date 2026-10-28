@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCtaSection } from "@/components/landing/final-cta-section";
 import { NavLink } from "@/components/ui/nav-link";
@@ -11,12 +11,13 @@ import { fetchPlans } from "@/lib/plans-server";
  * `live={false}` is that names-only render, the Suspense fallback the page
  * streams first. */
 async function PricingTeaser({ live = true }: { live?: boolean }) {
+  const locale = await getLocale();
   const [t, tp, plans] = await Promise.all([
     getTranslations("marketing.start.pricing"),
     getTranslations("pricing.plans"),
     live ? fetchPlans() : null,
   ]);
-  const rows = teaserRows(plans);
+  const rows = teaserRows(plans, locale);
   return (
     <section
       aria-labelledby="teaser-title"

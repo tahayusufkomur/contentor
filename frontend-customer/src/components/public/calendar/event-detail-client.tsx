@@ -29,14 +29,15 @@ import { eventItem } from "@/lib/covers/items";
 import { EVENT_TYPE_CONFIG } from "@/lib/event-colors";
 import { formatTime } from "@/lib/calendar-utils";
 import type { CalendarEventDetail } from "@/types/live";
+import { useLocale } from "next-intl";
 
 interface EventDetailClientProps {
   event: CalendarEventDetail;
   isLoggedIn: boolean;
 }
 
-function formatFullDate(dateStr: string, tz: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
+function formatFullDate(dateStr: string, tz: string, locale: string): string {
+  return new Date(dateStr).toLocaleDateString(locale, {
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -68,6 +69,7 @@ export function EventDetailClient({
   event,
   isLoggedIn,
 }: EventDetailClientProps) {
+  const locale = useLocale();
   const tenantConfig = useTenant();
   const tz = tenantConfig?.timezone || "UTC";
   const config = EVENT_TYPE_CONFIG[event.type];
@@ -137,13 +139,15 @@ export function EventDetailClient({
           <div className="space-y-3">
             <div className="flex items-center gap-3 text-muted-foreground">
               <Calendar className="h-5 w-5 shrink-0" />
-              <span>{formatFullDate(event.scheduled_at, tz)}</span>
+              <span>{formatFullDate(event.scheduled_at, tz, locale)}</span>
             </div>
             <div className="flex items-center gap-3 text-muted-foreground">
               <Clock className="h-5 w-5 shrink-0" />
               <span>
-                {formatTime(event.scheduled_at, tz)}
-                {event.ended_at ? ` — ${formatTime(event.ended_at, tz)}` : ""}
+                {formatTime(event.scheduled_at, locale, tz)}
+                {event.ended_at
+                  ? ` — ${formatTime(event.ended_at, locale, tz)}`
+                  : ""}
               </span>
             </div>
             {(event.location || event.address) && (
@@ -176,6 +180,7 @@ export function EventDetailClient({
                       : formatMoney(
                           access.price || event.price,
                           access.currency || event.currency || "USD",
+                          locale,
                         )}
                 </p>
               </div>
@@ -219,6 +224,7 @@ function EventAction({
   isEnded: boolean;
   isScheduled: boolean;
 }) {
+  const locale = useLocale();
   // Event ended — no action
   if (isEnded) {
     return (
@@ -308,9 +314,8 @@ function EventAction({
               Buy for{" "}
               {formatMoney(
                 opts?.purchase?.price ?? event.price,
-                opts?.purchase?.currency ||
-                  event.access_info.currency ||
-                  undefined,
+                opts?.purchase?.currency || event.access_info.currency || "USD",
+                locale,
               )}
             </NavLink>
           </Button>

@@ -40,6 +40,7 @@ export function planKeyFromName(name: string): PlanKey | null {
  * teaser then shows the name alone (spec 5.4 ch. 8; never a crash). */
 export function teaserRows(
   data: PlansResponse | null,
+  locale: string,
 ): { key: PlanKey; price: string | null }[] {
   const byKey = new Map<PlanKey, PlanSummary>();
   for (const p of data?.plans ?? []) {
@@ -50,7 +51,7 @@ export function teaserRows(
     const p = byKey.get(key);
     return {
       key,
-      price: p ? formatPlanPrice(p.currency, p.amount_cents) : null,
+      price: p ? formatPlanPrice(p.currency, p.amount_cents, locale) : null,
     };
   });
 }

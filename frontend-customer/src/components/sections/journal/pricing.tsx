@@ -11,9 +11,15 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, LABEL, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 function Plan({ plan, solo }: { plan: SubscriptionPlan; solo: boolean }) {
-  const { symbol, amount } = formatMoneyParts(plan.price, plan.currency);
+  const locale = useLocale();
+  const { symbol, amount } = formatMoneyParts(
+    plan.price,
+    plan.currency,
+    locale,
+  );
   return (
     <li
       className={cn(

@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
 import { formatMoney } from "@/lib/format";
 import { useTenantCurrency } from "@/lib/setup-assistant";
+import { useLocale } from "next-intl";
 
 export interface SelectedItem {
   content_type: string;
@@ -86,6 +87,7 @@ export function ContentPicker({
   onChange,
   products: given,
 }: ContentPickerProps) {
+  const locale = useLocale();
   const currency = useTenantCurrency();
   const [fetched, setFetched] = useState<Product[]>([]);
   const [loading, setLoading] = useState(!given);
@@ -257,7 +259,7 @@ export function ContentPicker({
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
                   {product.pricing_type === "subscription"
                     ? "Members only"
-                    : formatMoney(product.price, currency)}
+                    : formatMoney(product.price, currency, locale)}
                 </span>
               </label>
             );

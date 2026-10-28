@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { CalendarDays, ExternalLink, Pencil, Play, Square } from "lucide-react";
 import { toast } from "sonner";
 
@@ -44,6 +44,7 @@ const rowKey = (event: EventRow) => `${event.kind}-${event.id}`;
 /** Every class and event in one list, whatever it runs on. */
 export const EventsList = forwardRef<MediaBrowserHandle>(
   function EventsList(_props, ref) {
+    const locale = useLocale();
     const t = useTranslations("admin.events");
     const currency = useTenantCurrency();
     const browserRef = useRef<MediaBrowserHandle>(null);
@@ -180,7 +181,7 @@ export const EventsList = forwardRef<MediaBrowserHandle>(
                 </div>
               </TableCell>
               <TableCell className="whitespace-nowrap">
-                {formatDate(event.scheduled_at)}
+                {formatDate(event.scheduled_at, locale)}
               </TableCell>
               <TableCell>
                 <span className="inline-flex items-center gap-1.5 text-sm">

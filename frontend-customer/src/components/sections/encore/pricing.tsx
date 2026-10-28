@@ -10,9 +10,11 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { BOX, H2, LABEL, Opener, Section, WRAP, pad2 } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Pricing passes: membership tiers styled as backstage passes with bold rates, interval tags and box frames. */
 export function PricingPasses({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
@@ -58,7 +60,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                 </h3>
 
                 <p className="encore-tnum mt-6 font-display text-[2.4rem] font-bold leading-none">
-                  {formatMoney(plan.price, plan.currency)}
+                  {formatMoney(plan.price, plan.currency, locale)}
                 </p>
 
                 {!!plan.item_count && (

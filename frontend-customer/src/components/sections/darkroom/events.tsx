@@ -11,9 +11,11 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, H3, LABEL, LINK, Opener, Section, WRAP } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Exhibition openings and live sessions listed on ruled gallery rows. */
 export function EventsOpenings({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
@@ -62,7 +64,7 @@ export function EventsOpenings({ block, data, editable }: SectionProps) {
                         "darkroom-tnum text-muted-foreground",
                       )}
                     >
-                      {eventPriceLabel(e)}
+                      {eventPriceLabel(e, locale)}
                     </span>
                     <span className={cn(LINK, "group-hover:border-b-accent")}>
                       Reserve

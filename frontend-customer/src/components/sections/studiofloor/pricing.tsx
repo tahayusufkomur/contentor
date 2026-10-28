@@ -10,10 +10,12 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { CHIP, H3, Opener, Section, WRAP, pad2 } from "./ui";
+import { useLocale } from "next-intl";
 
 /** Membership plans designed as dance studio access passes / tickets with
  *  notched sides, perforated dividers, and neon price tags. */
 export function PricingPasses({ block, data, editable }: SectionProps) {
+  const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
   const solo = plans.length === 1;
@@ -67,7 +69,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
 
                     <p className="mt-5 flex items-baseline">
                       <span className="studiofloor-display text-[2.8rem] font-extrabold italic leading-none text-primary">
-                        {formatMoney(plan.price, plan.currency)}
+                        {formatMoney(plan.price, plan.currency, locale)}
                       </span>
                       <span className="ml-2 studiofloor-display text-[0.88rem] font-bold text-muted-foreground">
                         {billingIntervalSuffix(plan.billing_interval_months)}

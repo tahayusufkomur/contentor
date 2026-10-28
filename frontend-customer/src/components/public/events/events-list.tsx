@@ -8,6 +8,7 @@ import { formatDateHeader, formatTime } from "@/lib/calendar-utils";
 import { eventItem } from "@/lib/covers/items";
 import { eventPriceLabel } from "@/components/sections/kit";
 import type { CalendarEvent, CalendarEventType } from "@/types/live";
+import { useLocale } from "next-intl";
 
 const TYPE_META: Record<
   CalendarEventType,
@@ -26,6 +27,7 @@ export function EventsList({
   events: CalendarEvent[];
   isCoach: boolean;
 }) {
+  const locale = useLocale();
   const config = useTenant();
   const tz = config?.timezone || "UTC";
 
@@ -61,7 +63,7 @@ export function EventsList({
       {[...groups.entries()].map(([dateKey, dayEvents]) => (
         <section key={dateKey}>
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {formatDateHeader(dateKey)}
+            {formatDateHeader(dateKey, locale)}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {dayEvents.map((event) => {
@@ -96,9 +98,9 @@ export function EventsList({
                         <meta.icon className="h-3 w-3" />
                         {meta.label}
                       </span>
-                      <span>{formatTime(event.scheduled_at, tz)}</span>
+                      <span>{formatTime(event.scheduled_at, locale, tz)}</span>
                       <span className="ml-auto font-medium text-foreground">
-                        {eventPriceLabel(event)}
+                        {eventPriceLabel(event, locale)}
                       </span>
                     </div>
                     <h3 className="font-medium leading-snug group-hover:text-primary">
