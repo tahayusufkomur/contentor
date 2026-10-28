@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { SitePreview } from "@shared/i18n/site-preview";
 import { LookFonts } from "@/components/covers/look-fonts";
 import { parseLook } from "@/lib/covers/palette";
 import {
@@ -289,7 +290,7 @@ export function ReelCover({
         className,
       )}
     >
-      {drawn}
+      <SitePreview>{drawn}</SitePreview>
     </div>
   );
 }

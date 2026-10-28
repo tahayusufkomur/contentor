@@ -22,6 +22,7 @@ import {
   type PointerEvent,
 } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { useSiteLocale } from "@shared/i18n/site-preview";
 import { CoverArt } from "@/components/covers/cover-art";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -371,7 +372,8 @@ export function StudioCanvas({
   generating = false,
   disabled = false,
 }: StudioCanvasProps) {
-  const locale = useLocale();
+  const own = useLocale();
+  const locale = useSiteLocale() ?? own;
   const t = useTranslations("admin.studio");
   const canvas = useRef<HTMLDivElement>(null);
   const overlay = useRef<HTMLDivElement>(null);

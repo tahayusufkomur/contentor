@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { SurfaceIntl } from "@/i18n/surface-provider";
+import { StudioSiteLocale, SurfaceIntl } from "@/i18n/surface-provider";
 import { requireAuth, requireRole } from "@/lib/auth";
 import { getTenantSlug } from "@/lib/tenant";
 import { setupFlowActive, sitePaused } from "@/app/setup/gate";
@@ -20,9 +20,11 @@ export default async function AdminLayout({
   if (await setupFlowActive(slug)) redirect("/setup");
   return (
     <SurfaceIntl>
-      <AdminShell user={user}>
-        {(await sitePaused(slug)) ? <PausedPlanPicker /> : children}
-      </AdminShell>
+      <StudioSiteLocale>
+        <AdminShell user={user}>
+          {(await sitePaused(slug)) ? <PausedPlanPicker /> : children}
+        </AdminShell>
+      </StudioSiteLocale>
     </SurfaceIntl>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import { SitePreview } from "@shared/i18n/site-preview";
 import { styleRecipe, type FamilyId } from "@shared/sections/types";
 import { fixtureBlock, fixtureData } from "@/components/sections/fixtures";
 import { STYLE_SECTIONS } from "@/components/sections/registry";
@@ -167,42 +168,44 @@ export function LookTile({
       }
     >
       {w > 0 && (
-        <div style={pageStyle}>
-          {items.map(({ family, variant }, n) => {
-            const Comp = variant ? layouts[family]?.[variant] : undefined;
-            if (!Comp || !variant) return null;
-            // Each section starts at a different photo, so they don't repeat.
-            const from = { i: n * 2 };
-            const block = fill(
-              withCopy(
-                fixtureBlock(family, `${styleId}.${variant}`, size),
-                copy?.[family],
-              ),
-              photos,
-              words,
-              from,
-            );
-            if (family === "hero") {
-              if (brandName) block.kicker = brandName;
-              if (headline) block.headline = headline;
-              if (body) block.subhead = body;
-              block.ctaHref = "";
-              block.secondaryHref = "";
-            }
-            return (
-              <Comp
-                key={`${family}-${variant}-${n}`}
-                block={block}
-                data={fill(
-                  withCourses(fixtureData(family, size), copy?.courses),
-                  photos,
-                  words,
-                  from,
-                )}
-              />
-            );
-          })}
-        </div>
+        <SitePreview>
+          <div style={pageStyle}>
+            {items.map(({ family, variant }, n) => {
+              const Comp = variant ? layouts[family]?.[variant] : undefined;
+              if (!Comp || !variant) return null;
+              // Each section starts at a different photo, so they don't repeat.
+              const from = { i: n * 2 };
+              const block = fill(
+                withCopy(
+                  fixtureBlock(family, `${styleId}.${variant}`, size),
+                  copy?.[family],
+                ),
+                photos,
+                words,
+                from,
+              );
+              if (family === "hero") {
+                if (brandName) block.kicker = brandName;
+                if (headline) block.headline = headline;
+                if (body) block.subhead = body;
+                block.ctaHref = "";
+                block.secondaryHref = "";
+              }
+              return (
+                <Comp
+                  key={`${family}-${variant}-${n}`}
+                  block={block}
+                  data={fill(
+                    withCourses(fixtureData(family, size), copy?.courses),
+                    photos,
+                    words,
+                    from,
+                  )}
+                />
+              );
+            })}
+          </div>
+        </SitePreview>
       )}
     </div>
   );

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Fragment, useState } from "react";
 
+import { SitePreview } from "../../../i18n/site-preview";
 import { cn } from "../../../lib/utils";
 import {
   BrandFooterView,
@@ -175,7 +176,9 @@ function BlockShell({ block, region }: { block: Block; region: RegionKey }) {
         />
       )}
       <div style={frameCss(block)}>
-        <BlockView block={block} selected={selected} region={region} />
+        <SitePreview>
+          <BlockView block={block} selected={selected} region={region} />
+        </SitePreview>
       </div>
     </div>
   );
