@@ -32,19 +32,25 @@ export type AccessPayload = {
 };
 
 /** Days in the largest exact unit: months are 30 days, a year 365. */
-export function spanText(days: number): string {
+export function spanParts(days: number): {
+  unit: "year" | "month" | "week" | "day";
+  count: number;
+} {
   for (const [size, unit] of [
     [365, "year"],
     [30, "month"],
     [7, "week"],
     [1, "day"],
   ] as const) {
-    if (days % size === 0) {
-      const n = days / size;
-      return `${n} ${unit}${n === 1 ? "" : "s"}`;
-    }
+    if (days % size === 0) return { unit, count: days / size };
   }
-  return `${days} days`;
+  return { unit: "day", count: days };
+}
+
+/** The creator's English span ("3 months"); students read `site.access.span*`. */
+export function spanText(days: number): string {
+  const { unit, count } = spanParts(days);
+  return `${count} ${unit}${count === 1 ? "" : "s"}`;
 }
 
 /** An ISO date as "26 Oct 2026" (day, month, year in every language). */

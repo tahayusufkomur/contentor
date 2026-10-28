@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/format";
 import { CheckCircle2, Circle, Clock, ListRestart } from "lucide-react";
@@ -22,6 +23,8 @@ export function LessonSidebar({
   autoPlay,
   onAutoPlayChange,
 }: LessonSidebarProps) {
+  const t = useTranslations("student.lesson");
+  const tSite = useTranslations("site");
   return (
     <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
       <div className="border-b px-4 py-3">
@@ -29,7 +32,9 @@ export function LessonSidebar({
           <div>
             <h3 className="font-semibold">{course.title}</h3>
             <p className="text-xs text-muted-foreground">
-              {course.modules.reduce((a, m) => a + m.lessons.length, 0)} lessons
+              {tSite("course.lessons", {
+                count: course.modules.reduce((a, m) => a + m.lessons.length, 0),
+              })}
             </p>
           </div>
           {onAutoPlayChange && (
@@ -41,10 +46,10 @@ export function LessonSidebar({
                   ? "bg-primary/10 text-foreground"
                   : "bg-muted text-muted-foreground hover:text-foreground",
               )}
-              title={autoPlay ? "Auto-play is on" : "Auto-play is off"}
+              title={autoPlay ? t("autoPlayOn") : t("autoPlayOff")}
             >
               <ListRestart className="h-3 w-3" />
-              Auto
+              {t("auto")}
             </button>
           )}
         </div>
@@ -54,7 +59,7 @@ export function LessonSidebar({
           <div key={mod.id}>
             <div className="bg-muted/40 px-4 py-2">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Module {mod.order}: {mod.title}
+                {t("module", { order: mod.order, title: mod.title })}
               </p>
             </div>
             <div className="divide-y">

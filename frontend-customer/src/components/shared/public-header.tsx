@@ -270,7 +270,7 @@ export function PublicHeader({
       ? [...withCommunity, { label: t("page.blog"), href: "/blog" }]
       : withCommunity;
   const showLogin = navbar?.show_login !== false;
-  const cta = resolveHeaderCta(navbar?.cta, plansEnabled, menu);
+  const cta = resolveHeaderCta(navbar?.cta, plansEnabled, t, menu);
 
   useEffect(() => {
     if (!transparent) return;

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Lock } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -18,6 +19,7 @@ export function PreviewGate({
   hasPassword: withPassword,
   paused,
 }: PreviewGateProps) {
+  const t = useTranslations("site");
   const hasPassword = withPassword && !paused;
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
@@ -48,14 +50,14 @@ export function PreviewGate({
         </div>
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight">
-            {brandName || "Coming soon"}
+            {brandName || t("preview.comingSoon")}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {paused
-              ? "This site is taking a short break. Check back soon."
+              ? t("preview.paused")
               : hasPassword
-                ? "This site is launching soon. Enter the preview password to take a look."
-                : "This site is launching soon. Check back shortly."}
+                ? t("preview.launchingGated")
+                : t("preview.launching")}
           </p>
         </div>
 
@@ -65,12 +67,12 @@ export function PreviewGate({
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Preview password"
+              placeholder={t("preview.field")}
               autoFocus
             />
             {error && (
               <p className="text-xs text-destructive">
-                Incorrect password. Try again.
+                {t("preview.incorrect")}
               </p>
             )}
             <Button
@@ -78,9 +80,9 @@ export function PreviewGate({
               className="w-full gap-2"
               disabled={!password}
               loading={submitting}
-              loadingText="Checking…"
+              loadingText={t("preview.checking")}
             >
-              Enter site
+              {t("preview.enter")}
             </Button>
           </form>
         )}
@@ -89,7 +91,7 @@ export function PreviewGate({
           href="/login"
           className="inline-block text-xs text-muted-foreground underline-offset-4 hover:underline"
         >
-          Site owner? Log in to preview
+          {t("preview.ownerLogin")}
         </a>
       </div>
     </div>

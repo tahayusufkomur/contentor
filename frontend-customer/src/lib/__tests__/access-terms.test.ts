@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { createTranslator } from "next-intl";
+import site from "@shared/i18n/messages/en/site.json";
 import {
   freeTerms as freeTermsIn,
   planTerms as planTermsIn,
@@ -8,10 +10,15 @@ import {
 import type { AccessInfo } from "@/types/billing";
 
 type Win = Parameters<typeof purchaseTermsIn>[0];
-const purchaseTerms = (w: Win) => purchaseTermsIn(w, "en");
-const planTerms = (w: Win) => planTermsIn(w, "en");
-const freeTerms = (w: Win) => freeTermsIn(w, "en");
-const stateLine = (i: AccessInfo, now?: number) => stateLineIn(i, "en", now);
+const t = createTranslator({
+  locale: "en",
+  messages: { site },
+  namespace: "site",
+});
+const purchaseTerms = (w: Win) => purchaseTermsIn(w, "en", t);
+const planTerms = (w: Win) => planTermsIn(w, "en", t);
+const freeTerms = (w: Win) => freeTermsIn(w, "en", t);
+const stateLine = (i: AccessInfo, now?: number) => stateLineIn(i, "en", t, now);
 
 const info = (over: Partial<AccessInfo>): AccessInfo => ({
   has_access: false,

@@ -19,8 +19,9 @@ import {
   type CheckoutStart,
 } from "@shared/checkout/embedded-checkout";
 import { StudentCheckoutAside } from "@/components/billing/checkout-panels";
+import { itemTypeLabel } from "@/components/billing/store-item-card";
 import { useNavigate } from "@shared/navigation/navigation-provider";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface PaymentInitializeResponse extends CheckoutStart {
   payment_id: number;
@@ -29,6 +30,8 @@ interface PaymentInitializeResponse extends CheckoutStart {
 
 export default function CheckoutPage() {
   const locale = useLocale();
+  const t = useTranslations("student.checkout");
+  const tSite = useTranslations("site");
   const navigate = useNavigate();
   const searchParams = useSearchParams();
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -39,14 +42,14 @@ export default function CheckoutPage() {
   useEffect(() => {
     setCart(getCart());
     if (searchParams.get("canceled")) {
-      toast.info("Checkout canceled — your cart is still here.");
+      toast.info(t("canceled"));
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   const handleRemove = (item: CartItem) => {
     removeFromCart(item.content_type, item.object_id);
     setCart(getCart());
-    toast.info(`"${item.title}" removed from cart`);
+    toast.info(t("removed", { title: item.title }));
   };
 
   const total = cart.reduce(
@@ -87,22 +90,18 @@ export default function CheckoutPage() {
       }
       // Bypass (dev/CI): payment already completed server-side.
       clearCart();
-      toast.success("Payment successful! Redirecting to dashboard...");
+      toast.success(t("paid"));
       navigate("/dashboard");
     },
     {
       onError: (err) => {
         if (err instanceof ApiError && err.status === 403) {
           navigate(
-            "/login?toast=You+need+to+log+in+to+purchase&toast_type=info",
+            `/login?toast=${encodeURIComponent(t("loginToPurchase"))}&toast_type=info`,
           );
           return;
         }
-        toast.error(
-          err instanceof Error
-            ? err.message
-            : "Payment failed. Please try again.",
-        );
+        toast.error(err instanceof Error ? err.message : t("payFailed"));
       },
     },
   );
@@ -112,14 +111,14 @@ export default function CheckoutPage() {
       <div className="space-y-6">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight">
-            Checkout
+            {tSite("checkout.title")}
           </h1>
         </div>
         <EmptyState
           icon={ShoppingCart}
-          title="Your cart is empty"
-          description="Add some items from the store before checking out."
-          action={{ label: "Go to Store", href: "/store" }}
+          title={t("emptyTitle")}
+          description={t("emptyText")}
+          action={{ label: t("goToStore"), href: "/store" }}
         />
       </div>
     );
@@ -136,17 +135,20 @@ export default function CheckoutPage() {
               title={
                 cart.length === 1
                   ? cart[0].title
-                  : `${cart[0].title} and ${cart.length - 1} more`
+                  : tSite("checkout.andMore", {
+                      title: cart[0].title,
+                      count: cart.length - 1,
+                    })
               }
               photo={cart.find((item) => item.image)?.image}
               steps={[
                 {
-                  when: "Now",
-                  what: `Pay ${totalLabel} securely with Stripe.`,
+                  when: tSite("checkout.now"),
+                  what: tSite("checkout.paySecurely", { amount: totalLabel }),
                 },
                 {
-                  when: "Right after",
-                  what: "It opens in your dashboard, ready to start.",
+                  when: tSite("checkout.rightAfter"),
+                  what: tSite("checkout.opensInDashboard"),
                 },
               ]}
             />
@@ -155,11 +157,9 @@ export default function CheckoutPage() {
       )}
       <div>
         <h1 className="font-display text-3xl font-bold tracking-tight">
-          Checkout
+          {tSite("checkout.title")}
         </h1>
-        <p className="mt-1 text-muted-foreground">
-          Review your items before payment.
-        </p>
+        <p className="mt-1 text-muted-foreground">{t("review")}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -171,7 +171,7 @@ export default function CheckoutPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold truncate">{item.title}</p>
                   <p className="text-sm text-muted-foreground capitalize">
-                    {item.type.replace("_", " ")}
+                    {itemTypeLabel(item.type, tSite)}
                   </p>
                 </div>
                 <div className="text-right flex items-center gap-3 shrink-0">
@@ -183,7 +183,7 @@ export default function CheckoutPage() {
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-destructive"
                     onClick={() => handleRemove(item)}
-                    aria-label={`Remove ${item.title}`}
+                    aria-label={t("remove", { title: item.title })}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -197,7 +197,7 @@ export default function CheckoutPage() {
         <div>
           <Card>
             <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
+              <CardTitle>{t("orderSummary")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {cart.map((item) => (
@@ -217,7 +217,7 @@ export default function CheckoutPage() {
               <Separator />
 
               <div className="flex justify-between font-semibold text-base">
-                <span>Total</span>
+                <span>{t("total")}</span>
                 <span className="tabular-nums">{totalLabel}</span>
               </div>
 
@@ -225,10 +225,10 @@ export default function CheckoutPage() {
                 className="w-full gap-2"
                 size="lg"
                 loading={paying}
-                loadingText="Processing…"
+                loadingText={t("processing")}
                 onClick={handlePay}
               >
-                Pay {totalLabel}
+                {t("pay", { total: totalLabel })}
               </Button>
             </CardContent>
           </Card>

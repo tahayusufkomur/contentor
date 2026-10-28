@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { clientFetch } from "@/lib/api-client";
 import { VideoPlayer } from "@/components/student/video-player";
 import { LessonSidebar } from "@/components/student/lesson-sidebar";
@@ -9,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseDetail, Lesson, Progress } from "@/types/course";
 
 export default function LearnPage() {
+  const t = useTranslations("student.learn");
   const params = useParams<{ slug: string }>();
   const router = useRouter();
   const [course, setCourse] = useState<CourseDetail | null>(null);
@@ -115,7 +117,7 @@ export default function LearnPage() {
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{course.title}</span>
-          <span>{overallProgress}% complete</span>
+          <span>{t("complete", { percent: overallProgress })}</span>
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div

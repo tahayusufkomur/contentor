@@ -50,6 +50,11 @@ export function SubscribeButton({
     (CheckoutStart & { client_secret: string }) | null
   >(null);
 
+  // "$9" plus its cycle ("/mo"): the suffix is the shared one, per language.
+  const priceLabel =
+    formatMoney(price, currency, locale) +
+    billingIntervalSuffix(intervalMonths, (k, v) => tSite(`plan.${k}`, v));
+
   const { run: handleSubscribe, loading } = useAsyncAction(
     async () => {
       const res = await clientFetch<CheckoutStart>(
@@ -67,23 +72,23 @@ export function SubscribeButton({
         return;
       }
       // Bypass: subscription is active immediately.
-      toast.success(`Subscribed to ${planName}!`);
+      toast.success(tSite("plan.subscribedTo", { plan: planName }));
       router.refresh();
     },
     {
       onError: (err) => {
         if (err instanceof ApiError && err.status === 403) {
           navigate(
-            "/login?toast=You+need+to+log+in+to+subscribe&toast_type=info",
+            `/login?toast=${encodeURIComponent(tSite("plan.loginToSubscribe"))}&toast_type=info`,
           );
           return;
         }
         if (err instanceof ApiError && err.status === 400) {
-          toast.info("You're already subscribed to this plan");
+          toast.info(tSite("store.alreadySubscribed"));
           return;
         }
         toast.error(
-          err instanceof Error ? err.message : "Subscription failed.",
+          err instanceof Error ? err.message : tSite("plan.subscriptionFailed"),
         );
       },
     },
@@ -100,16 +105,16 @@ export function SubscribeButton({
               title={planName}
               steps={[
                 {
-                  when: "Now",
-                  what: `Pay ${formatMoney(price, currency, locale)}${billingIntervalSuffix(intervalMonths, (k, v) => tSite(`plan.${k}`, v))} securely with Stripe.`,
+                  when: tSite("checkout.now"),
+                  what: tSite("checkout.paySecurely", { amount: priceLabel }),
                 },
                 {
-                  when: "Right after",
-                  what: `Everything in ${planName} opens in your account.`,
+                  when: tSite("checkout.rightAfter"),
+                  what: tSite("checkout.opensInPlan", { plan: planName }),
                 },
                 {
-                  when: "Any time",
-                  what: "Cancel from Subscriptions in your account.",
+                  when: tSite("checkout.anyTime"),
+                  what: tSite("checkout.cancelAnyTime"),
                 },
               ]}
             />
@@ -126,10 +131,7 @@ export function SubscribeButton({
         {label ?? (
           <>
             <Zap className="mr-2 h-4 w-4" />
-            Subscribe — {formatMoney(price, currency, locale)}
-            {billingIntervalSuffix(intervalMonths, (k, v) =>
-              tSite(`plan.${k}`, v),
-            )}
+            {tSite("plan.subscribeFor", { price: priceLabel })}
           </>
         )}
       </Button>

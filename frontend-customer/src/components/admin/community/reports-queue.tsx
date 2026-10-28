@@ -21,7 +21,7 @@ import {
 } from "@/lib/community-admin";
 import type { CommunityPost } from "@/types/community";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const REASON_LABELS: Record<string, string> = {
   spam: "Spam",
@@ -38,6 +38,7 @@ function ReportCard({
   onAction: () => void;
 }) {
   const locale = useLocale();
+  const tc = useTranslations("common");
   const [pendingAction, setPendingAction] = useState<"remove" | "keep" | null>(
     null,
   );
@@ -62,7 +63,7 @@ function ReportCard({
           </Badge>
           <span className="text-muted-foreground">
             Reported by {report.reporter.display_name} ·{" "}
-            {timeAgo(report.created_at, locale)}
+            {timeAgo(report.created_at, locale, tc)}
           </span>
         </div>
         {report.detail && (
@@ -115,6 +116,7 @@ function PendingPostCard({
   onAction: () => void;
 }) {
   const locale = useLocale();
+  const tc = useTranslations("common");
   const [pendingAction, setPendingAction] = useState<
     "approve" | "remove" | null
   >(null);
@@ -137,7 +139,7 @@ function PendingPostCard({
     <Card>
       <CardContent className="space-y-3 p-4">
         <div className="text-sm text-muted-foreground">
-          {post.author.display_name} · {timeAgo(post.created_at, locale)}
+          {post.author.display_name} · {timeAgo(post.created_at, locale, tc)}
         </div>
         <div className="rounded-lg border bg-muted/40 p-3 text-sm">
           <Linkify text={post.body} />

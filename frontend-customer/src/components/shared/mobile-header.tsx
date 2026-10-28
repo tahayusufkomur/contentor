@@ -25,6 +25,8 @@ interface MobileHeaderProps {
 export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
   const locale = useLocale();
   const t = useTranslations("admin");
+  const ts = useTranslations("admin.shell");
+  const tSite = useTranslations("site");
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const { navigate } = useNavigation();
@@ -36,7 +38,7 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
         <NavLink
           href="/admin"
           className="truncate text-caption font-semibold tracking-tight text-foreground transition-colors hover:text-muted-foreground"
-          title="Back to Creator studio"
+          title={ts("backToStudio")}
         >
           {title}
         </NavLink>
@@ -59,7 +61,7 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
             size="icon"
             className="h-8 w-8 rounded-full"
             onClick={() => setOpen(!open)}
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? ts("closeMenu") : ts("openMenu")}
             aria-expanded={open}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -110,7 +112,9 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
                   <p className="truncate text-caption font-medium">
                     {user.name || user.email}
                   </p>
-                  <p className="text-[11px] text-muted-foreground">Creator</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {ts("creator")}
+                  </p>
                 </div>
               </div>
               <ThemeToggle className="px-3 text-muted-foreground" />
@@ -119,7 +123,7 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
                   setSigningOut(true);
                   await fetch("/api/auth/logout", { method: "POST" });
                   navigate(
-                    "/login?toast=You've+been+logged+out&toast_type=info",
+                    `/login?toast=${encodeURIComponent(tSite("nav.loggedOut"))}&toast_type=info`,
                   );
                   router.refresh();
                 }}
@@ -127,7 +131,7 @@ export function MobileHeader({ title, sections, user }: MobileHeaderProps) {
                 className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-caption text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               >
                 <LogOut className="h-3.5 w-3.5" />
-                {signingOut ? "Signing out..." : "Sign out"}
+                {signingOut ? ts("signingOut") : ts("signOut")}
               </button>
             </div>
           )}

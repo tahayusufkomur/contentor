@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
@@ -45,6 +46,7 @@ export function AppSidebar({
   compact = false,
   children,
 }: AppSidebarProps) {
+  const t = useTranslations("admin.shell");
   const [collapsedByHand, setCollapsed] = useState(false);
   const collapsed = compact || collapsedByHand;
   return (
@@ -62,7 +64,7 @@ export function AppSidebar({
           <NavLink
             href="/admin"
             className="truncate text-caption font-semibold tracking-tight text-foreground transition-colors hover:text-muted-foreground"
-            title="Back to Creator studio"
+            title={t("backToStudio")}
           >
             {title}
           </NavLink>
@@ -73,7 +75,7 @@ export function AppSidebar({
             size="icon"
             className="ml-auto h-8 w-8 shrink-0 rounded-full"
             onClick={() => setCollapsed(!collapsed)}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? t("expandSidebar") : t("collapseSidebar")}
           >
             <ChevronLeft
               className={cn(

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { clearReaction, setReaction, type TargetKind } from "@/lib/community";
 import { REACTION_EMOJIS } from "@/types/community";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 const LONG_PRESS_MS = 450;
 
@@ -18,6 +19,7 @@ export function ReactionBar({
   count: number;
   mine: string | null;
 }) {
+  const t = useTranslations("common");
   const [current, setCurrent] = useState<string | null>(mine);
   const [total, setTotal] = useState(count);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -115,7 +117,7 @@ export function ReactionBar({
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={clearLongPressTimer}
-        aria-label="React"
+        aria-label={t("community.react")}
       >
         <span>{current ?? "❤️"}</span>
         <span>{total}</span>

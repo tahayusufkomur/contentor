@@ -311,6 +311,10 @@
     "src": "4d101a78",
     "reviewed": false
   },
+  "site.price.paid": {
+    "src": "dc9d4584",
+    "reviewed": false
+  },
   "site.event.reserve": {
     "src": "187579e3",
     "reviewed": false
@@ -417,6 +421,14 @@
   },
   "site.plan.viewIncluded": {
     "src": "9b11f6da",
+    "reviewed": false
+  },
+  "site.plan.subscribedTo": {
+    "src": "50a826c2",
+    "reviewed": false
+  },
+  "site.plan.subscribeFor": {
+    "src": "bf8f607e",
     "reviewed": false
   },
   "site.table.lessons": {
@@ -1867,6 +1879,10 @@
     "src": "8b59eb98",
     "reviewed": false
   },
+  "site.store.addToCart": {
+    "src": "38441910",
+    "reviewed": false
+  },
   "site.nav.installApp": {
     "src": "e5f79aa1",
     "reviewed": false
@@ -2021,6 +2037,222 @@
   },
   "site.block.video": {
     "src": "bc17c1f0",
+    "reviewed": false
+  },
+  "site.checkout.title": {
+    "src": "3ac8e9e5",
+    "reviewed": false
+  },
+  "site.checkout.andMore": {
+    "src": "29281b61",
+    "reviewed": false
+  },
+  "site.checkout.now": {
+    "src": "e3b82040",
+    "reviewed": false
+  },
+  "site.checkout.rightAfter": {
+    "src": "607f6d89",
+    "reviewed": false
+  },
+  "site.checkout.anyTime": {
+    "src": "d7854118",
+    "reviewed": false
+  },
+  "site.checkout.paySecurely": {
+    "src": "37e2f564",
+    "reviewed": false
+  },
+  "site.checkout.opensInDashboard": {
+    "src": "45b5c17a",
+    "reviewed": false
+  },
+  "site.checkout.opensInPlan": {
+    "src": "8fbc6ead",
+    "reviewed": false
+  },
+  "site.checkout.cancelAnyTime": {
+    "src": "8cb07a2a",
+    "reviewed": false
+  },
+  "site.announcements.loadError": {
+    "src": "2c364dae",
+    "reviewed": false
+  },
+  "site.announcements.label": {
+    "src": "06b01c44",
+    "reviewed": false
+  },
+  "site.announcements.empty": {
+    "src": "c32aa8cd",
+    "reviewed": false
+  },
+  "site.preview.comingSoon": {
+    "src": "e4115be2",
+    "reviewed": false
+  },
+  "site.preview.paused": {
+    "src": "46d33ac2",
+    "reviewed": false
+  },
+  "site.preview.launchingGated": {
+    "src": "1012f265",
+    "reviewed": false
+  },
+  "site.preview.launching": {
+    "src": "52ad6242",
+    "reviewed": false
+  },
+  "site.preview.field": {
+    "src": "6e598c2d",
+    "reviewed": false
+  },
+  "site.preview.incorrect": {
+    "src": "d8f714b3",
+    "reviewed": false
+  },
+  "site.preview.checking": {
+    "src": "820d6004",
+    "reviewed": false
+  },
+  "site.preview.enter": {
+    "src": "43fe972d",
+    "reviewed": false
+  },
+  "site.preview.ownerLogin": {
+    "src": "60cdc8d3",
+    "reviewed": false
+  },
+  "site.headerCta.startCourse": {
+    "src": "a8701f06",
+    "reviewed": false
+  },
+  "site.headerCta.bookSession": {
+    "src": "bf464a0e",
+    "reviewed": false
+  },
+  "site.headerCta.join": {
+    "src": "e0d73143",
+    "reviewed": false
+  },
+  "site.headerCta.getInTouch": {
+    "src": "c49bb4c2",
+    "reviewed": false
+  },
+  "site.access.spanYear": {
+    "src": "8c6f73cd",
+    "reviewed": false
+  },
+  "site.access.spanMonth": {
+    "src": "ee213746",
+    "reviewed": false
+  },
+  "site.access.spanWeek": {
+    "src": "c4341f00",
+    "reviewed": false
+  },
+  "site.access.spanDay": {
+    "src": "e7c9e031",
+    "reviewed": false
+  },
+  "site.access.opensOn": {
+    "src": "e67a54c8",
+    "reviewed": false
+  },
+  "site.access.opensAfterPurchase": {
+    "src": "cbe3d254",
+    "reviewed": false
+  },
+  "site.access.accessUntilAfterPurchase": {
+    "src": "9b3c4359",
+    "reviewed": false
+  },
+  "site.access.accessLength": {
+    "src": "691a4181",
+    "reviewed": false
+  },
+  "site.access.accessUntil": {
+    "src": "1a80c83a",
+    "reviewed": false
+  },
+  "site.access.lifetime": {
+    "src": "c5981cd0",
+    "reviewed": false
+  },
+  "site.access.includedNow": {
+    "src": "80d3f38e",
+    "reviewed": false
+  },
+  "site.access.planOpensAfter": {
+    "src": "765cdda9",
+    "reviewed": false
+  },
+  "site.access.planOpensAfterUntilInto": {
+    "src": "64bf2b44",
+    "reviewed": false
+  },
+  "site.access.planOpensAfterUntilDate": {
+    "src": "58941b55",
+    "reviewed": false
+  },
+  "site.access.planOpensOn": {
+    "src": "726321aa",
+    "reviewed": false
+  },
+  "site.access.planOpensOnUntilInto": {
+    "src": "9b059da0",
+    "reviewed": false
+  },
+  "site.access.planOpensOnUntilDate": {
+    "src": "7bc6428c",
+    "reviewed": false
+  },
+  "site.access.planNowFor": {
+    "src": "bc81b343",
+    "reviewed": false
+  },
+  "site.access.planNowUntilDate": {
+    "src": "52c693e7",
+    "reviewed": false
+  },
+  "site.access.freeAfterThenUntil": {
+    "src": "d31e37d2",
+    "reviewed": false
+  },
+  "site.access.freeFromThenUntil": {
+    "src": "df89e86a",
+    "reviewed": false
+  },
+  "site.access.freeFirst": {
+    "src": "fc9814d7",
+    "reviewed": false
+  },
+  "site.access.freeBetween": {
+    "src": "be314212",
+    "reviewed": false
+  },
+  "site.access.freeUntil": {
+    "src": "b7e8adab",
+    "reviewed": false
+  },
+  "site.access.freeFrom": {
+    "src": "ea8408b0",
+    "reviewed": false
+  },
+  "site.access.freeAfter": {
+    "src": "05c8d607",
+    "reviewed": false
+  },
+  "site.access.accessEnds": {
+    "src": "3df1345b",
+    "reviewed": false
+  },
+  "site.access.opensForYou": {
+    "src": "07e242d5",
+    "reviewed": false
+  },
+  "site.access.accessEnded": {
+    "src": "6894e3cf",
     "reviewed": false
   },
   "studio.plan.perMonth": {

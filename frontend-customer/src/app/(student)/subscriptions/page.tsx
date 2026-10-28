@@ -61,6 +61,7 @@ function formatDate(iso: string | null, locale: string) {
 
 export default function SubscriptionsPage() {
   const locale = useLocale();
+  const t = useTranslations("student.subscriptions");
   const tSite = useTranslations("site");
   const searchParams = useSearchParams();
   const [subs, setSubs] = useState<MySubscription[]>([]);
@@ -81,7 +82,7 @@ export default function SubscriptionsPage() {
   useEffect(() => {
     let cancelled = false;
     if (searchParams.get("sub") === "success") {
-      toast.success("Subscription started! It may take a moment to appear.");
+      toast.success(t("started"));
     }
     setLoading(true);
     setError(null);
@@ -95,7 +96,7 @@ export default function SubscriptionsPage() {
     return () => {
       cancelled = true;
     };
-  }, [load, searchParams, reloadKey]);
+  }, [load, searchParams, reloadKey, t]);
 
   const activeSubs = subs.filter((s) => s.status !== "expired");
 
@@ -114,19 +115,17 @@ export default function SubscriptionsPage() {
     >
       <div>
         <h1 className="font-display text-3xl font-bold tracking-tight">
-          My Subscriptions
+          {t("title")}
         </h1>
-        <p className="mt-1 text-muted-foreground">
-          Manage your active memberships.
-        </p>
+        <p className="mt-1 text-muted-foreground">{t("text")}</p>
       </div>
 
       {activeSubs.length === 0 ? (
         <EmptyState
           icon={CalendarClock}
-          title="No active subscriptions"
-          description="Browse membership plans to unlock content."
-          action={{ label: "View plans", href: "/plans" }}
+          title={t("emptyTitle")}
+          description={t("emptyText")}
+          action={{ label: t("viewPlans"), href: "/plans" }}
         />
       ) : (
         <div className="space-y-4">
@@ -137,10 +136,12 @@ export default function SubscriptionsPage() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-lg">
-                      {sub.plan_name ?? "Plan"}
+                      {sub.plan_name ?? t("planFallback")}
                     </CardTitle>
                     <Badge variant={STATUS_VARIANT[sub.status] ?? "secondary"}>
-                      {sub.status.replace("_", " ")}
+                      {t.has(`status.${sub.status}` as "status.active")
+                        ? t(`status.${sub.status}` as "status.active")
+                        : sub.status.replace("_", " ")}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -158,18 +159,28 @@ export default function SubscriptionsPage() {
                 <CardContent className="space-y-4">
                   <p className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CalendarClock className="h-4 w-4" />
-                    {sub.cancel_at_period_end ? "Cancels on " : "Renews on "}
-                    <span className="font-medium text-foreground">
-                      {formatDate(sub.current_period_end, locale)}
-                    </span>
+                    {t.rich(
+                      sub.cancel_at_period_end ? "cancelsOn" : "renewsOn",
+                      {
+                        date: formatDate(sub.current_period_end, locale),
+                        b: (chunks) => (
+                          <span className="font-medium text-foreground">
+                            {chunks}
+                          </span>
+                        ),
+                      },
+                    )}
                   </p>
                   {sub.pending_plan_name && (
                     <p className="text-sm text-muted-foreground">
-                      Switching to{" "}
-                      <span className="font-medium text-foreground">
-                        {sub.pending_plan_name}
-                      </span>{" "}
-                      next cycle.
+                      {t.rich("switchingTo", {
+                        name: sub.pending_plan_name,
+                        b: (chunks) => (
+                          <span className="font-medium text-foreground">
+                            {chunks}
+                          </span>
+                        ),
+                      })}
                     </p>
                   )}
 
@@ -200,16 +211,18 @@ function SubscriptionRowActions({
   onChanged: () => Promise<void>;
 }) {
   const locale = useLocale();
+  const t = useTranslations("student.subscriptions");
+  const tc = useTranslations("common");
   const tSite = useTranslations("site");
   const { run: cancel, loading: cancelling } = useAsyncAction(
     async () => {
       await clientFetch(`/api/v1/billing/subscriptions/${sub.id}/cancel/`, {
         method: "POST",
       });
-      toast.success("Subscription will cancel at the end of the period.");
+      toast.success(t("cancelled"));
       await onChanged();
     },
-    { errorToast: "Could not cancel. Please try again." },
+    { errorToast: t("cancelError") },
   );
 
   const { run: changePlan, loading: changingPlan } = useAsyncAction(
@@ -221,10 +234,10 @@ function SubscriptionRowActions({
           body: JSON.stringify({ plan_id: planId }),
         },
       );
-      toast.success("Plan change scheduled for your next billing cycle.");
+      toast.success(t("planChanged"));
       await onChanged();
     },
-    { errorToast: "Could not change plan. Please try again." },
+    { errorToast: t("changeError") },
   );
 
   const busy = cancelling || changingPlan;
@@ -239,7 +252,7 @@ function SubscriptionRowActions({
           loading={cancelling}
           disabled={changingPlan}
         >
-          <XCircle className="h-4 w-4" /> Cancel
+          <XCircle className="h-4 w-4" /> {tc("actions.cancel")}
         </Button>
       )}
       {otherPlans.length > 0 && !sub.pending_plan_name && (
@@ -253,17 +266,21 @@ function SubscriptionRowActions({
               const v = Number(e.target.value);
               if (v) changePlan(v);
             }}
-            aria-label="Change plan"
+            aria-label={t("changePlan")}
           >
             <option value="" disabled>
-              Change plan…
+              {t("changePlanOption")}
             </option>
             {otherPlans.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name} — {formatMoney(p.price, p.currency, locale)}
-                {billingIntervalSuffix(p.billing_interval_months, (k, v) =>
-                  tSite(`plan.${k}`, v),
-                )}
+                {t("planOption", {
+                  name: p.name,
+                  price:
+                    formatMoney(p.price, p.currency, locale) +
+                    billingIntervalSuffix(p.billing_interval_months, (k, v) =>
+                      tSite(`plan.${k}`, v),
+                    ),
+                })}
               </option>
             ))}
           </select>

@@ -12,7 +12,7 @@ import { SkeletonList } from "@/components/ui/skeletons";
 import { EmptyState } from "@/components/shared/empty-state";
 import { clientFetch } from "@/lib/api-client";
 import { formatMoney } from "@/lib/format";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface OrderItem {
   id: number;
@@ -39,6 +39,16 @@ const STATUS_VARIANT: Record<string, "success" | "warning" | "secondary"> = {
   pending: "secondary",
 };
 
+/** A stored enum value as the reader's words; a value we have no key for shows as stored. */
+function enumLabel(
+  t: ReturnType<typeof useTranslations<"student.orders">>,
+  group: "paymentType" | "status",
+  value: string,
+) {
+  const key = `${group}.${value}` as "status.completed";
+  return t.has(key) ? t(key) : value.replace("_", " ");
+}
+
 function formatDate(iso: string | null, locale: string) {
   if (!iso) return "";
   try {
@@ -54,6 +64,8 @@ function formatDate(iso: string | null, locale: string) {
 
 export default function OrdersPage() {
   const locale = useLocale();
+  const t = useTranslations("student.orders");
+  const tSite = useTranslations("site");
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -93,19 +105,17 @@ export default function OrdersPage() {
     >
       <div>
         <h1 className="font-display text-3xl font-bold tracking-tight">
-          Order History
+          {t("title")}
         </h1>
-        <p className="mt-1 text-muted-foreground">
-          Your purchases and receipts.
-        </p>
+        <p className="mt-1 text-muted-foreground">{t("text")}</p>
       </div>
 
       {orders.length === 0 ? (
         <EmptyState
           icon={ShoppingBag}
-          title="No orders yet"
-          description="Your purchases will appear here with their receipts."
-          action={{ label: "Browse store", href: "/store" }}
+          title={t("emptyTitle")}
+          description={t("emptyText")}
+          action={{ label: tSite("store.browse"), href: "/store" }}
         />
       ) : (
         <div className="space-y-4">
@@ -114,12 +124,12 @@ export default function OrdersPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base capitalize">
-                    {o.payment_type.replace("_", " ")} ·{" "}
+                    {enumLabel(t, "paymentType", o.payment_type)} ·{" "}
                     {formatMoney(o.amount, o.currency, locale)}
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <Badge variant={STATUS_VARIANT[o.status] ?? "secondary"}>
-                      {o.status.replace("_", " ")}
+                      {enumLabel(t, "status", o.status)}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
                       {formatDate(o.created_at, locale)}
@@ -156,7 +166,7 @@ export default function OrdersPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <Receipt className="h-4 w-4" /> View receipt
+                        <Receipt className="h-4 w-4" /> {t("receipt")}
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     </Button>

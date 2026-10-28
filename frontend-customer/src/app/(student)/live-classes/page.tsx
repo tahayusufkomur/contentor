@@ -41,20 +41,20 @@ interface LiveClass {
 
 const statusConfig: Record<
   string,
-  { label: string; color: string; icon: React.ReactNode }
+  { labelKey: string; color: string; icon: React.ReactNode }
 > = {
   scheduled: {
-    label: "Upcoming",
+    labelKey: "eventPage.upcoming",
     color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
     icon: <Calendar className="h-3 w-3" />,
   },
   live: {
-    label: "Live Now",
+    labelKey: "eventPage.liveNow",
     color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
     icon: <Radio className="h-3 w-3 animate-pulse" />,
   },
   ended: {
-    label: "Ended",
+    labelKey: "eventPage.ended",
     color:
       "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
     icon: <CheckCircle2 className="h-3 w-3" />,
@@ -74,6 +74,7 @@ function formatDate(dateStr: string, locale: string) {
 export default function LiveClassesPage() {
   const locale = useLocale();
   const t = useTranslations("site");
+  const ts = useTranslations("student.liveClasses");
   const [classes, setClasses] = useState<LiveClass[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -118,7 +119,7 @@ export default function LiveClassesPage() {
     >
       <div className="flex items-center gap-3">
         <Video className="h-7 w-7 text-primary" />
-        <h1 className="text-2xl font-bold tracking-tight">Live Sessions</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{ts("title")}</h1>
       </div>
 
       {/* Live now banner */}
@@ -132,7 +133,7 @@ export default function LiveClassesPage() {
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700 dark:bg-red-900/40 dark:text-red-400">
                   <Radio className="h-3 w-3 animate-pulse" />
-                  Live Now
+                  {t("eventPage.liveNow")}
                 </div>
                 <div>
                   <p className="font-semibold">{lc.title}</p>
@@ -146,7 +147,7 @@ export default function LiveClassesPage() {
               <Button asChild size="sm" className="gap-1.5">
                 <Link href={`/live/${lc.id}`}>
                   <Play className="h-3.5 w-3.5" />
-                  Join
+                  {ts("join")}
                 </Link>
               </Button>
             </div>
@@ -164,7 +165,7 @@ export default function LiveClassesPage() {
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          Upcoming ({upcoming.length})
+          {ts("upcomingTab", { count: upcoming.length })}
         </button>
         <button
           onClick={() => setTab("past")}
@@ -174,7 +175,7 @@ export default function LiveClassesPage() {
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          Past ({past.length})
+          {ts("pastTab", { count: past.length })}
         </button>
       </div>
 
@@ -183,8 +184,8 @@ export default function LiveClassesPage() {
           {upcoming.length === 0 ? (
             <EmptyState
               icon={Calendar}
-              title="No upcoming sessions"
-              description="There are no scheduled live sessions at the moment. Check back later!"
+              title={ts("emptyUpcomingTitle")}
+              description={ts("emptyUpcomingText")}
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -196,11 +197,14 @@ export default function LiveClassesPage() {
                         className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${statusConfig.scheduled.color}`}
                       >
                         {statusConfig.scheduled.icon}
-                        {statusConfig.scheduled.label}
+                        {t(
+                          statusConfig.scheduled
+                            .labelKey as "eventPage.upcoming",
+                        )}
                       </span>
                       {lc.pricing_type === "free" ? (
                         <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                          {lc.is_trial ? "Free trial" : "Free"}
+                          {lc.is_trial ? t("price.freeTrial") : t("price.free")}
                         </span>
                       ) : (
                         <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
@@ -241,8 +245,8 @@ export default function LiveClassesPage() {
           {past.length === 0 ? (
             <EmptyState
               icon={Video}
-              title="No past sessions"
-              description="No previous live sessions to show yet."
+              title={ts("emptyPastTitle")}
+              description={ts("emptyPastText")}
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -254,7 +258,7 @@ export default function LiveClassesPage() {
                         className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${statusConfig.ended.color}`}
                       >
                         {statusConfig.ended.icon}
-                        {statusConfig.ended.label}
+                        {t(statusConfig.ended.labelKey as "eventPage.ended")}
                       </span>
                     </div>
                     <h3 className="font-semibold">{lc.title}</h3>
@@ -281,7 +285,7 @@ export default function LiveClassesPage() {
                           target="_blank"
                         >
                           <Play className="h-3.5 w-3.5" />
-                          Watch Recording
+                          {ts("watchRecording")}
                         </Link>
                       </Button>
                     )}

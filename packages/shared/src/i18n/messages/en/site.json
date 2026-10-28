@@ -93,7 +93,8 @@
     "owned": "Owned",
     "includedInMembership": "Included in membership",
     "buyFor": "Buy for {price}",
-    "includedInSubscription": "Included in subscription"
+    "includedInSubscription": "Included in subscription",
+    "paid": "Paid"
   },
   "event": {
     "reserve": "Reserve",
@@ -124,7 +125,9 @@
     "loginToSubscribe": "You need to log in to subscribe",
     "subscriptionFailed": "Subscription failed.",
     "bestValue": "Best Value",
-    "viewIncluded": "View included content"
+    "viewIncluded": "View included content",
+    "subscribedTo": "Subscribed to {plan}!",
+    "subscribeFor": "Subscribe — {price}"
   },
   "table": {
     "lessons": "Lessons",
@@ -200,13 +203,34 @@
     "duesPolicy": "Dues policy & inclusions",
     "stepGrade": "{grade} · Step {number}",
     "belts": {
-      "white": { "rank": "6th Kyu (White)", "grade": "6th" },
-      "yellow": { "rank": "5th Kyu (Yellow)", "grade": "5th" },
-      "orange": { "rank": "4th Kyu (Orange)", "grade": "4th" },
-      "green": { "rank": "3rd Kyu (Green)", "grade": "3rd" },
-      "blue": { "rank": "2nd Kyu (Blue)", "grade": "2nd" },
-      "brown": { "rank": "1st Kyu (Brown)", "grade": "1st" },
-      "black": { "rank": "1st Dan (Black)", "grade": "1st" }
+      "white": {
+        "rank": "6th Kyu (White)",
+        "grade": "6th"
+      },
+      "yellow": {
+        "rank": "5th Kyu (Yellow)",
+        "grade": "5th"
+      },
+      "orange": {
+        "rank": "4th Kyu (Orange)",
+        "grade": "4th"
+      },
+      "green": {
+        "rank": "3rd Kyu (Green)",
+        "grade": "3rd"
+      },
+      "blue": {
+        "rank": "2nd Kyu (Blue)",
+        "grade": "2nd"
+      },
+      "brown": {
+        "rank": "1st Kyu (Brown)",
+        "grade": "1st"
+      },
+      "black": {
+        "rank": "1st Dan (Black)",
+        "grade": "1st"
+      }
     }
   },
   "ledger": {
@@ -559,7 +583,8 @@
       "inPersonEvents": "In-Person Events",
       "bundles": "Bundles"
     },
-    "browse": "Browse store"
+    "browse": "Browse store",
+    "addToCart": "Add to Cart — {price}"
   },
   "nav": {
     "installApp": "Install app",
@@ -631,5 +656,69 @@
   },
   "block": {
     "video": "Video"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "andMore": "{title} and {count} more",
+    "now": "Now",
+    "rightAfter": "Right after",
+    "anyTime": "Any time",
+    "paySecurely": "Pay {amount} securely with Stripe.",
+    "opensInDashboard": "It opens in your dashboard, ready to start.",
+    "opensInPlan": "Everything in {plan} opens in your account.",
+    "cancelAnyTime": "Cancel from Subscriptions in your account."
+  },
+  "announcements": {
+    "loadError": "Could not load announcements.",
+    "label": "Announcements",
+    "empty": "No announcements."
+  },
+  "preview": {
+    "comingSoon": "Coming soon",
+    "paused": "This site is taking a short break. Check back soon.",
+    "launchingGated": "This site is launching soon. Enter the preview password to take a look.",
+    "launching": "This site is launching soon. Check back shortly.",
+    "field": "Preview password",
+    "incorrect": "Incorrect password. Try again.",
+    "checking": "Checking…",
+    "enter": "Enter site",
+    "ownerLogin": "Site owner? Log in to preview"
+  },
+  "headerCta": {
+    "startCourse": "Start a course",
+    "bookSession": "Book a session",
+    "join": "Join",
+    "getInTouch": "Get in touch"
+  },
+  "access": {
+    "spanYear": "{count, plural, one {# year} other {# years}}",
+    "spanMonth": "{count, plural, one {# month} other {# months}}",
+    "spanWeek": "{count, plural, one {# week} other {# weeks}}",
+    "spanDay": "{count, plural, one {# day} other {# days}}",
+    "opensOn": "Opens {date}",
+    "opensAfterPurchase": "Opens {span} after purchase",
+    "accessUntilAfterPurchase": "Access until {span} after purchase",
+    "accessLength": "{span} of access",
+    "accessUntil": "Access until {date}",
+    "lifetime": "Lifetime access",
+    "includedNow": "Included right away",
+    "planOpensAfter": "Opens after {opens} of membership",
+    "planOpensAfterUntilInto": "Opens after {opens} of membership, until {closes} into membership",
+    "planOpensAfterUntilDate": "Opens after {opens} of membership, until {closes}",
+    "planOpensOn": "Opens {opens}",
+    "planOpensOnUntilInto": "Opens {opens}, until {closes} into membership",
+    "planOpensOnUntilDate": "Opens {opens}, until {closes}",
+    "planNowFor": "Included right away, for {closes}",
+    "planNowUntilDate": "Included right away, until {closes}",
+    "freeAfterThenUntil": "Free after {opens} of joining, until {closes} after joining",
+    "freeFromThenUntil": "Free from {opens}, until {closes} after joining",
+    "freeFirst": "Free for your first {closes}",
+    "freeBetween": "Free {opens} – {closes}",
+    "freeUntil": "Free until {closes}",
+    "freeFrom": "Free from {opens}",
+    "freeAfter": "Free after {opens} of joining",
+    "accessEnds": "Your access ends on {date}",
+    "opensForYou": "Opens for you on {date}",
+    "accessEnded": "Your access ended on {date}"
   }
 }

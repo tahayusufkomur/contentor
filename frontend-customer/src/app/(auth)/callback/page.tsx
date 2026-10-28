@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { useTenant } from "@/hooks/use-tenant";
 
 export default function CallbackPage() {
+  const t = useTranslations("student.callback");
   const navigate = useNavigate();
   const searchParams = useSearchParams();
   const brand = useTenant()?.brand_name;
@@ -15,7 +17,7 @@ export default function CallbackPage() {
     const token = searchParams.get("token");
     const source = searchParams.get("source");
     if (!token) {
-      setError("No token provided");
+      setError(t("noToken"));
       return;
     }
 
@@ -29,12 +31,14 @@ export default function CallbackPage() {
       })
         .then(async (res) => {
           if (!res.ok) {
-            setError("Authentication failed");
+            setError(t("authFailed"));
             return;
           }
-          navigate("/?toast=Welcome+back!&toast_type=success");
+          navigate(
+            `/?toast=${encodeURIComponent(t("welcomeBack"))}&toast_type=success`,
+          );
         })
-        .catch(() => setError("Network error"));
+        .catch(() => setError(t("networkError")));
       return;
     }
 
@@ -48,7 +52,7 @@ export default function CallbackPage() {
       .then(async (res) => {
         if (!res.ok) {
           const data = await res.json();
-          setError(data.detail || "Verification failed");
+          setError(data.detail || t("verificationFailed"));
           return;
         }
         const data = await res.json();
@@ -66,14 +70,14 @@ export default function CallbackPage() {
         // A first visit is greeted as one; "Welcome back!" on day one read as a bug.
         const greeting =
           data.created === true
-            ? `Welcome to ${brand || "your site"}!`
-            : "Welcome back!";
+            ? t("welcomeTo", { brand: brand || t("yourSite") })
+            : t("welcomeBack");
         navigate(
           `${dest}${dest.includes("?") ? "&" : "?"}toast=${encodeURIComponent(greeting)}&toast_type=success`,
         );
       })
-      .catch(() => setError("Network error"));
-  }, [searchParams, navigate, brand]);
+      .catch(() => setError(t("networkError")));
+  }, [searchParams, navigate, brand, t]);
 
   if (error) {
     return (
@@ -84,7 +88,7 @@ export default function CallbackPage() {
   }
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <p>Verifying...</p>
+      <p>{t("verifying")}</p>
     </div>
   );
 }

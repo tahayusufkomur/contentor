@@ -93,7 +93,8 @@
     "owned": "Erworben",
     "includedInMembership": "In der Mitgliedschaft enthalten",
     "buyFor": "Für {price} kaufen",
-    "includedInSubscription": "Im Abo enthalten"
+    "includedInSubscription": "Im Abo enthalten",
+    "paid": "Kostenpflichtig"
   },
   "event": {
     "reserve": "Reservieren",
@@ -124,7 +125,9 @@
     "loginToSubscribe": "Du musst dich anmelden, um ein Abo abzuschließen",
     "subscriptionFailed": "Abo fehlgeschlagen.",
     "bestValue": "Bestes Angebot",
-    "viewIncluded": "Enthaltene Inhalte ansehen"
+    "viewIncluded": "Enthaltene Inhalte ansehen",
+    "subscribedTo": "{plan} abonniert!",
+    "subscribeFor": "Abonnieren — {price}"
   },
   "table": {
     "lessons": "Lektionen",
@@ -580,7 +583,8 @@
       "inPersonEvents": "Präsenzveranstaltungen",
       "bundles": "Pakete"
     },
-    "browse": "Shop durchstöbern"
+    "browse": "Shop durchstöbern",
+    "addToCart": "In den Warenkorb — {price}"
   },
   "nav": {
     "installApp": "App installieren",
@@ -652,5 +656,69 @@
   },
   "block": {
     "video": "Video"
+  },
+  "checkout": {
+    "title": "Kasse",
+    "andMore": "{title} und {count} weitere",
+    "now": "Jetzt",
+    "rightAfter": "Direkt danach",
+    "anyTime": "Jederzeit",
+    "paySecurely": "Bezahle {amount} sicher mit Stripe.",
+    "opensInDashboard": "Es öffnet sich in deinem Dashboard und ist startklar.",
+    "opensInPlan": "Alles aus {plan} wird in deinem Konto freigeschaltet.",
+    "cancelAnyTime": "Kündige unter „Abonnements“ in deinem Konto."
+  },
+  "announcements": {
+    "loadError": "Ankündigungen konnten nicht geladen werden.",
+    "label": "Ankündigungen",
+    "empty": "Keine Ankündigungen."
+  },
+  "preview": {
+    "comingSoon": "Demnächst verfügbar",
+    "paused": "Diese Seite macht gerade eine kurze Pause. Schau bald wieder vorbei.",
+    "launchingGated": "Diese Seite startet bald. Gib das Vorschau-Passwort ein, um einen Blick darauf zu werfen.",
+    "launching": "Diese Seite startet bald. Schau in Kürze wieder vorbei.",
+    "field": "Vorschau-Passwort",
+    "incorrect": "Falsches Passwort. Versuch es noch einmal.",
+    "checking": "Wird geprüft…",
+    "enter": "Seite betreten",
+    "ownerLogin": "Inhaber der Seite? Melde dich an, um die Vorschau zu sehen"
+  },
+  "headerCta": {
+    "startCourse": "Kurs starten",
+    "bookSession": "Termin buchen",
+    "join": "Beitreten",
+    "getInTouch": "Kontakt aufnehmen"
+  },
+  "access": {
+    "spanYear": "{count, plural, one {# Jahr} other {# Jahre}}",
+    "spanMonth": "{count, plural, one {# Monat} other {# Monate}}",
+    "spanWeek": "{count, plural, one {# Woche} other {# Wochen}}",
+    "spanDay": "{count, plural, one {# Tag} other {# Tage}}",
+    "opensOn": "Öffnet am {date}",
+    "opensAfterPurchase": "Öffnet {span} nach dem Kauf",
+    "accessUntilAfterPurchase": "Zugang bis {span} nach dem Kauf",
+    "accessLength": "{span} Zugang",
+    "accessUntil": "Zugang bis {date}",
+    "lifetime": "Lebenslanger Zugang",
+    "includedNow": "Sofort enthalten",
+    "planOpensAfter": "Öffnet, wenn du {opens} Mitglied bist",
+    "planOpensAfterUntilInto": "Öffnet, wenn du {opens} Mitglied bist, bis {closes} nach Beginn deiner Mitgliedschaft",
+    "planOpensAfterUntilDate": "Öffnet, wenn du {opens} Mitglied bist, bis {closes}",
+    "planOpensOn": "Öffnet am {opens}",
+    "planOpensOnUntilInto": "Öffnet am {opens}, bis {closes} nach Beginn deiner Mitgliedschaft",
+    "planOpensOnUntilDate": "Öffnet am {opens}, bis {closes}",
+    "planNowFor": "Sofort enthalten, für {closes}",
+    "planNowUntilDate": "Sofort enthalten, bis {closes}",
+    "freeAfterThenUntil": "Kostenlos, sobald du {opens} dabei bist, bis {closes} nach deinem Beitritt",
+    "freeFromThenUntil": "Kostenlos ab {opens}, bis {closes} nach deinem Beitritt",
+    "freeFirst": "Kostenlos für {closes} ab deinem Beitritt",
+    "freeBetween": "Kostenlos {opens} – {closes}",
+    "freeUntil": "Kostenlos bis {closes}",
+    "freeFrom": "Kostenlos ab {opens}",
+    "freeAfter": "Kostenlos, sobald du {opens} dabei bist",
+    "accessEnds": "Dein Zugang endet am {date}",
+    "opensForYou": "Öffnet sich für dich am {date}",
+    "accessEnded": "Dein Zugang endete am {date}"
   }
 }

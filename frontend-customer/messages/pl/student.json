@@ -135,5 +135,169 @@
     "stopping": "Zatrzymywanie…",
     "stopped": "Zatrzymano. Nic więcej się nie zmieni.",
     "failed": "Nie udało się. Spróbuj ponownie."
+  },
+  "callback": {
+    "noToken": "Nie podano tokenu",
+    "authFailed": "Uwierzytelnianie nie powiodło się",
+    "networkError": "Błąd sieci",
+    "verificationFailed": "Weryfikacja nie powiodła się",
+    "verifying": "Weryfikowanie...",
+    "welcomeBack": "Witaj ponownie!",
+    "welcomeTo": "Witaj w {brand}!",
+    "yourSite": "twojej witrynie"
+  },
+  "dashboard": {
+    "title": "Moje kursy",
+    "orders": "Zamówienia",
+    "subscriptions": "Moje subskrypcje",
+    "emptyTitle": "Nie masz jeszcze kursów",
+    "emptyText": "Nie zapisałeś się jeszcze na żaden kurs. Przejrzyj nasz katalog i znajdź coś ciekawego.",
+    "browse": "Przeglądaj kursy",
+    "inYourPlan": "W twoim planie",
+    "progress": "Postęp"
+  },
+  "orders": {
+    "title": "Historia zamówień",
+    "text": "Twoje zakupy i paragony.",
+    "emptyTitle": "Nie masz jeszcze zamówień",
+    "emptyText": "Tutaj pojawią się twoje zakupy wraz z paragonami.",
+    "receipt": "Zobacz paragon",
+    "paymentType": {
+      "one_time": "jednorazowo",
+      "subscription": "subskrypcja",
+      "refund": "zwrot"
+    },
+    "status": {
+      "pending": "oczekujące",
+      "completed": "zrealizowane",
+      "failed": "nieudane",
+      "refunded": "zwrócone",
+      "partially_refunded": "częściowo zwrócone"
+    }
+  },
+  "subscriptions": {
+    "started": "Subskrypcja rozpoczęta! Może minąć chwila, zanim się pojawi.",
+    "title": "Moje subskrypcje",
+    "text": "Zarządzaj swoimi aktywnymi członkostwami.",
+    "emptyTitle": "Brak aktywnych subskrypcji",
+    "emptyText": "Przeglądaj plany członkostwa, aby odblokować treści.",
+    "viewPlans": "Zobacz plany",
+    "planFallback": "Plan",
+    "cancelsOn": "Zostanie anulowana <b>{date}</b>",
+    "renewsOn": "Odnawia się <b>{date}</b>",
+    "switchingTo": "Zmiana na <b>{name}</b> w następnym cyklu.",
+    "cancelled": "Subskrypcja zostanie anulowana na koniec okresu rozliczeniowego.",
+    "cancelError": "Nie udało się anulować. Spróbuj ponownie.",
+    "planChanged": "Zmiana planu zaplanowana na twój następny cykl rozliczeniowy.",
+    "changeError": "Nie udało się zmienić planu. Spróbuj ponownie.",
+    "changePlan": "Zmień plan",
+    "changePlanOption": "Zmień plan…",
+    "planOption": "{name} — {price}",
+    "status": {
+      "active": "aktywna",
+      "past_due": "zaległa płatność",
+      "expired": "wygasła"
+    }
+  },
+  "liveClasses": {
+    "title": "Sesje na żywo",
+    "join": "Dołącz",
+    "upcomingTab": "Nadchodzące ({count})",
+    "pastTab": "Minione ({count})",
+    "emptyUpcomingTitle": "Brak nadchodzących sesji",
+    "emptyUpcomingText": "Obecnie nie ma zaplanowanych sesji na żywo. Zajrzyj później!",
+    "emptyPastTitle": "Brak minionych sesji",
+    "emptyPastText": "Nie ma jeszcze wcześniejszych sesji na żywo do wyświetlenia.",
+    "watchRecording": "Obejrzyj nagranie"
+  },
+  "checkout": {
+    "canceled": "Płatność anulowana — twój koszyk wciąż tu jest.",
+    "removed": "\"{title}\" usunięto z koszyka",
+    "paid": "Płatność zakończona powodzeniem! Przekierowanie do panelu...",
+    "loginToPurchase": "Musisz się zalogować, aby dokonać zakupu",
+    "payFailed": "Płatność nie powiodła się. Spróbuj ponownie.",
+    "emptyTitle": "Twój koszyk jest pusty",
+    "emptyText": "Zanim przejdziesz do kasy, dodaj produkty ze sklepu.",
+    "goToStore": "Przejdź do sklepu",
+    "review": "Sprawdź swoje produkty przed płatnością.",
+    "remove": "Usuń {title}",
+    "orderSummary": "Podsumowanie zamówienia",
+    "total": "Razem",
+    "processing": "Przetwarzanie…",
+    "pay": "Zapłać {total}"
+  },
+  "checkoutSuccess": {
+    "confirmingLabel": "Potwierdzamy twoją płatność",
+    "confirming": "Potwierdzamy twoją płatność…",
+    "confirmingText": "To potrwa tylko chwilę. Nie zamykaj tej strony.",
+    "done": "Płatność zakończona!",
+    "doneText": "Twój zakup jest już odblokowany.",
+    "goToContent": "Przejdź do moich treści",
+    "pending": "Prawie gotowe",
+    "pendingText": "Twoja płatność jest przetwarzana. Twoje treści odblokują się automatycznie — zajrzyj do swojego panelu za minutę.",
+    "goToDashboard": "Przejdź do panelu"
+  },
+  "communityPage": {
+    "disabledTitle": "Społeczność jest niedostępna",
+    "disabledText": "Ta społeczność nie została jeszcze włączona.",
+    "bannedTitle": "Nie masz dostępu do społeczności",
+    "bannedText": "Moderator odebrał ci dostęp.",
+    "errorTitle": "Coś poszło nie tak",
+    "errorText": "Nie udało się teraz wczytać społeczności — odczekaj chwilę i spróbuj ponownie.",
+    "tryAgain": "Spróbuj ponownie",
+    "title": "Społeczność",
+    "introTitle": "Przedstaw się",
+    "introText": "Wybierz imię i zdjęcie, które zobaczą inni członkowie.",
+    "photoError": "Nie udało się przesłać zdjęcia — spróbuj mniejszego obrazu.",
+    "welcome": "Witaj w społeczności!",
+    "saveError": "Nie udało się zapisać twojego profilu.",
+    "choosePhoto": "Wybierz zdjęcie profilowe",
+    "displayName": "Wyświetlana nazwa",
+    "joining": "Dołączanie…",
+    "join": "Dołącz do społeczności"
+  },
+  "learn": {
+    "complete": "Ukończono {percent}%"
+  },
+  "live": {
+    "goBack": "Wróć",
+    "connectionError": "Błąd połączenia",
+    "removed": "Usunięto cię",
+    "connecting": "Łączenie",
+    "fakeVideo": "Obraz na żywo jest tu symulowany (brak LIVECRAFT_URL) — uruchom LiveCraft, aby wypróbować go naprawdę.",
+    "loginToJoin": "Musisz się zalogować, aby dołączyć",
+    "session": {
+      "notFound": "Nie znaleziono sesji na żywo",
+      "connecting": "Łączenie z sesją na żywo",
+      "connectingDots": "Łączenie z sesją na żywo...",
+      "notStarted": "Te zajęcia jeszcze się nie rozpoczęły. Wróć, gdy twórca zacznie nadawać.",
+      "ended": "Te zajęcia się zakończyły.",
+      "connectFailed": "Nie udało się połączyć z sesją na żywo.",
+      "left": "Nie jesteś już w sesji",
+      "endedFrame": "Sesja się zakończyła",
+      "frameTitle": "Sesja na żywo"
+    },
+    "stream": {
+      "notFound": "Nie znaleziono transmisji na żywo",
+      "connecting": "Łączenie z transmisją na żywo",
+      "connectingDots": "Łączenie z transmisją na żywo...",
+      "notStarted": "Ta transmisja jeszcze się nie rozpoczęła. Wróć, gdy prowadzący zacznie nadawać.",
+      "ended": "Ta transmisja się zakończyła.",
+      "connectFailed": "Nie udało się połączyć z transmisją na żywo.",
+      "left": "Nie oglądasz już transmisji",
+      "endedFrame": "Transmisja się zakończyła",
+      "frameTitle": "Transmisja na żywo"
+    }
+  },
+  "lesson": {
+    "auto": "Auto",
+    "autoPlayOn": "Autoodtwarzanie jest włączone",
+    "autoPlayOff": "Autoodtwarzanie jest wyłączone",
+    "module": "Moduł {order}: {title}",
+    "noVideo": "Brak wideo dla tej lekcji.",
+    "captions": "Napisy",
+    "completed": "Ukończono",
+    "markComplete": "Oznacz jako ukończone",
+    "transcript": "Transkrypcja"
   }
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Feed } from "@/components/community/feed";
@@ -14,6 +15,7 @@ import { ApiError } from "@/types/api";
 type Gate = "loading" | "disabled" | "banned" | "error" | "ok";
 
 export default function CommunityPage() {
+  const t = useTranslations("student.communityPage");
   const [gate, setGate] = useState<Gate>("loading");
   const [me, setMe] = useState<CommunityMe | null>(null);
   const [joined, setJoined] = useState(false);
@@ -61,8 +63,8 @@ export default function CommunityPage() {
     return (
       <EmptyState
         icon={Users}
-        title="Community isn't available"
-        description="This community hasn't been switched on yet."
+        title={t("disabledTitle")}
+        description={t("disabledText")}
       />
     );
   }
@@ -70,8 +72,8 @@ export default function CommunityPage() {
     return (
       <EmptyState
         icon={Users}
-        title="You can't access the community"
-        description="Your access has been removed by a moderator."
+        title={t("bannedTitle")}
+        description={t("bannedText")}
       />
     );
   }
@@ -79,10 +81,10 @@ export default function CommunityPage() {
     return (
       <EmptyState
         icon={Users}
-        title="Something went wrong"
-        description="We couldn't load the community just now — give it a moment and try again."
+        title={t("errorTitle")}
+        description={t("errorText")}
         action={{
-          label: "Try again",
+          label: t("tryAgain"),
           onClick: () => {
             setGate("loading");
             setAttempt((n) => n + 1);
@@ -96,7 +98,7 @@ export default function CommunityPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">Community</h1>
+      <h1 className="text-2xl font-bold">{t("title")}</h1>
       {needsJoin && me ? (
         <JoinCard
           me={me}

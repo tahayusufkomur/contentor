@@ -1729,5 +1729,16 @@
     "publishing": "Yayınlanıyor…",
     "published": "Yayınlandı. Öğrenciler artık onu sitende bulabilir.",
     "publishError": "İndirilebilir dosya yayınlanamadı."
+  },
+  "shell": {
+    "backToStudio": "Creator stüdyosuna dön",
+    "expandSidebar": "Kenar çubuğunu genişlet",
+    "collapseSidebar": "Kenar çubuğunu daralt",
+    "openMenu": "Menüyü aç",
+    "closeMenu": "Menüyü kapat",
+    "creator": "İçerik üreticisi",
+    "signOut": "Çıkış yap",
+    "signingOut": "Çıkış yapılıyor...",
+    "signOutTitle": "{name} — Çıkış yap"
   }
 }

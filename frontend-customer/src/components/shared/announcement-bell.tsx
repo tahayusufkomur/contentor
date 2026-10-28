@@ -6,10 +6,11 @@ import { toast } from "sonner";
 import { Bell } from "lucide-react";
 
 import { FeedItem, getFeed, markRead } from "@/lib/announcements";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function AnnouncementBell() {
   const locale = useLocale();
+  const t = useTranslations("site");
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<FeedItem[]>([]);
   const [unread, setUnread] = useState(0);
@@ -20,7 +21,7 @@ export default function AnnouncementBell() {
         setItems(r.items);
         setUnread(r.unread_count);
       })
-      .catch(() => toast.error("Could not load announcements."));
+      .catch(() => toast.error(t("announcements.loadError")));
 
   useEffect(() => {
     load();
@@ -48,7 +49,7 @@ export default function AnnouncementBell() {
       <button
         onClick={() => setOpen((o) => !o)}
         className="relative rounded-md p-2"
-        aria-label="Announcements"
+        aria-label={t("announcements.label")}
       >
         <Bell className="h-5 w-5" />
         {unread > 0 && (
@@ -62,7 +63,7 @@ export default function AnnouncementBell() {
         <div className="absolute right-0 z-50 mt-2 max-h-96 w-80 overflow-auto rounded-xl border border-border bg-card p-2 shadow-lg">
           {items.length === 0 && (
             <p className="p-3 text-sm text-muted-foreground">
-              No announcements.
+              {t("announcements.empty")}
             </p>
           )}
           {items.map((item) => (

@@ -7,7 +7,7 @@ import { ChevronUp, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "@/types/auth";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export function UserMenu({
   user,
@@ -17,6 +17,8 @@ export function UserMenu({
   collapsed?: boolean;
 }) {
   const locale = useLocale();
+  const t = useTranslations("admin.shell");
+  const tSite = useTranslations("site");
   const router = useRouter();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -32,7 +34,9 @@ export function UserMenu({
   async function handleSignOut() {
     setSigningOut(true);
     await fetch("/api/auth/logout", { method: "POST" });
-    navigate("/login?toast=You've+been+logged+out&toast_type=info");
+    navigate(
+      `/login?toast=${encodeURIComponent(tSite("nav.loggedOut"))}&toast_type=info`,
+    );
     router.refresh();
   }
 
@@ -41,7 +45,7 @@ export function UserMenu({
       <button
         onClick={handleSignOut}
         disabled={signingOut}
-        title={`${user.name || user.email} — Sign out`}
+        title={t("signOutTitle", { name: user.name || user.email })}
         className="flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors w-full"
       >
         <Avatar className="h-7 w-7">
@@ -67,7 +71,7 @@ export function UserMenu({
             {user.name || user.email}
           </p>
           <p className="text-[11px] text-muted-foreground truncate leading-tight">
-            Creator
+            {t("creator")}
           </p>
         </div>
         <ChevronUp
@@ -86,7 +90,7 @@ export function UserMenu({
             className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
           >
             <LogOut className="h-3.5 w-3.5" />
-            {signingOut ? "Signing out..." : "Sign out"}
+            {signingOut ? t("signingOut") : t("signOut")}
           </button>
         </div>
       )}

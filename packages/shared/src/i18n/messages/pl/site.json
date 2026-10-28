@@ -93,7 +93,8 @@
     "owned": "Kupione",
     "includedInMembership": "W ramach członkostwa",
     "buyFor": "Kup za {price}",
-    "includedInSubscription": "W ramach subskrypcji"
+    "includedInSubscription": "W ramach subskrypcji",
+    "paid": "Płatne"
   },
   "event": {
     "reserve": "Zarezerwuj",
@@ -124,7 +125,9 @@
     "loginToSubscribe": "Musisz się zalogować, aby wykupić subskrypcję",
     "subscriptionFailed": "Nie udało się wykupić subskrypcji.",
     "bestValue": "Najlepsza oferta",
-    "viewIncluded": "Zobacz zawarte treści"
+    "viewIncluded": "Zobacz zawarte treści",
+    "subscribedTo": "Subskrybujesz plan {plan}!",
+    "subscribeFor": "Subskrybuj — {price}"
   },
   "table": {
     "lessons": "Lekcje",
@@ -580,7 +583,8 @@
       "inPersonEvents": "Wydarzenia stacjonarne",
       "bundles": "Pakiety"
     },
-    "browse": "Przeglądaj sklep"
+    "browse": "Przeglądaj sklep",
+    "addToCart": "Dodaj do koszyka — {price}"
   },
   "nav": {
     "installApp": "Zainstaluj aplikację",
@@ -652,5 +656,69 @@
   },
   "block": {
     "video": "Wideo"
+  },
+  "checkout": {
+    "title": "Płatność",
+    "andMore": "{title} i jeszcze {count}",
+    "now": "Teraz",
+    "rightAfter": "Zaraz potem",
+    "anyTime": "W dowolnym momencie",
+    "paySecurely": "Zapłać {amount} bezpiecznie przez Stripe.",
+    "opensInDashboard": "Znajdziesz to w swoim panelu, gotowe do startu.",
+    "opensInPlan": "Wszystko z planu {plan} będzie dostępne na twoim koncie.",
+    "cancelAnyTime": "Anuluj w sekcji Subskrypcje na swoim koncie."
+  },
+  "announcements": {
+    "loadError": "Nie udało się wczytać ogłoszeń.",
+    "label": "Ogłoszenia",
+    "empty": "Brak ogłoszeń."
+  },
+  "preview": {
+    "comingSoon": "Już wkrótce",
+    "paused": "Ta strona robi sobie krótką przerwę. Wróć tu wkrótce.",
+    "launchingGated": "Ta strona wkrótce wystartuje. Wpisz hasło podglądu, żeby ją zobaczyć.",
+    "launching": "Ta strona wkrótce wystartuje. Zajrzyj tu niedługo.",
+    "field": "Hasło podglądu",
+    "incorrect": "Nieprawidłowe hasło. Spróbuj ponownie.",
+    "checking": "Sprawdzanie…",
+    "enter": "Wejdź na stronę",
+    "ownerLogin": "Właściciel strony? Zaloguj się, aby zobaczyć podgląd"
+  },
+  "headerCta": {
+    "startCourse": "Rozpocznij kurs",
+    "bookSession": "Zarezerwuj sesję",
+    "join": "Dołącz",
+    "getInTouch": "Skontaktuj się"
+  },
+  "access": {
+    "spanYear": "{count, plural, one {# rok} few {# lata} many {# lat} other {# roku}}",
+    "spanMonth": "{count, plural, one {# miesiąc} few {# miesiące} many {# miesięcy} other {# miesiąca}}",
+    "spanWeek": "{count, plural, one {# tydzień} few {# tygodnie} many {# tygodni} other {# tygodnia}}",
+    "spanDay": "{count, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}",
+    "opensOn": "Otwiera się {date}",
+    "opensAfterPurchase": "Otwiera się {span} po zakupie",
+    "accessUntilAfterPurchase": "Dostęp kończy się {span} po zakupie",
+    "accessLength": "Dostęp przez {span}",
+    "accessUntil": "Dostęp do {date}",
+    "lifetime": "Dożywotni dostęp",
+    "includedNow": "Dostępne od razu",
+    "planOpensAfter": "Otwiera się {opens} po rozpoczęciu członkostwa",
+    "planOpensAfterUntilInto": "Otwiera się {opens} po rozpoczęciu członkostwa, kończy się {closes} po rozpoczęciu członkostwa",
+    "planOpensAfterUntilDate": "Otwiera się {opens} po rozpoczęciu członkostwa, dostępne do {closes}",
+    "planOpensOn": "Otwiera się {opens}",
+    "planOpensOnUntilInto": "Otwiera się {opens}, kończy się {closes} po rozpoczęciu członkostwa",
+    "planOpensOnUntilDate": "Otwiera się {opens}, dostępne do {closes}",
+    "planNowFor": "Dostępne od razu, przez {closes}",
+    "planNowUntilDate": "Dostępne od razu, do {closes}",
+    "freeAfterThenUntil": "Za darmo: zaczyna się {opens} po dołączeniu, kończy się {closes} po dołączeniu",
+    "freeFromThenUntil": "Za darmo od {opens}, kończy się {closes} po dołączeniu",
+    "freeFirst": "Bezpłatnie przez pierwsze {closes}",
+    "freeBetween": "Bezpłatnie {opens} – {closes}",
+    "freeUntil": "Bezpłatnie do {closes}",
+    "freeFrom": "Bezpłatnie od {opens}",
+    "freeAfter": "Bezpłatnie po {opens} od dołączenia",
+    "accessEnds": "Twój dostęp kończy się {date}",
+    "opensForYou": "Dostępne dla ciebie od {date}",
+    "accessEnded": "Twój dostęp wygasł {date}"
   }
 }

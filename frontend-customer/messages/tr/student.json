@@ -135,5 +135,169 @@
     "stopping": "Durduruluyor…",
     "stopped": "Durduruldu. Başka hiçbir şey değişmeyecek.",
     "failed": "Bu işe yaramadı. Tekrar dene."
+  },
+  "callback": {
+    "noToken": "Token sağlanmadı",
+    "authFailed": "Kimlik doğrulama başarısız oldu",
+    "networkError": "Ağ hatası",
+    "verificationFailed": "Doğrulama başarısız oldu",
+    "verifying": "Doğrulanıyor...",
+    "welcomeBack": "Tekrar hoş geldin!",
+    "welcomeTo": "{brand} sitesine hoş geldin!",
+    "yourSite": "siten"
+  },
+  "dashboard": {
+    "title": "Kurslarım",
+    "orders": "Siparişler",
+    "subscriptions": "Aboneliklerim",
+    "emptyTitle": "Henüz kurs yok",
+    "emptyText": "Henüz hiçbir kursa kaydolmadın. İlgini çekecek bir şey bulmak için kataloğumuza göz at.",
+    "browse": "Kurslara Göz At",
+    "inYourPlan": "Planına dahil",
+    "progress": "İlerleme"
+  },
+  "orders": {
+    "title": "Sipariş Geçmişi",
+    "text": "Satın aldıkların ve makbuzların.",
+    "emptyTitle": "Henüz sipariş yok",
+    "emptyText": "Satın aldıkların makbuzlarıyla birlikte burada görünecek.",
+    "receipt": "Makbuzu görüntüle",
+    "paymentType": {
+      "one_time": "tek seferlik",
+      "subscription": "abonelik",
+      "refund": "iade"
+    },
+    "status": {
+      "pending": "beklemede",
+      "completed": "tamamlandı",
+      "failed": "başarısız",
+      "refunded": "iade edildi",
+      "partially_refunded": "kısmen iade edildi"
+    }
+  },
+  "subscriptions": {
+    "started": "Abonelik başlatıldı! Görünmesi biraz zaman alabilir.",
+    "title": "Aboneliklerim",
+    "text": "Aktif üyeliklerini yönet.",
+    "emptyTitle": "Aktif abonelik yok",
+    "emptyText": "İçeriklerin kilidini açmak için üyelik planlarına göz at.",
+    "viewPlans": "Planları gör",
+    "planFallback": "Plan",
+    "cancelsOn": "<b>{date}</b> tarihinde iptal edilecek",
+    "renewsOn": "<b>{date}</b> tarihinde yenilenecek",
+    "switchingTo": "Bir sonraki dönemde <b>{name}</b> planına geçilecek.",
+    "cancelled": "Abonelik, dönem sonunda iptal edilecek.",
+    "cancelError": "İptal edilemedi. Lütfen tekrar dene.",
+    "planChanged": "Plan değişikliği, bir sonraki fatura döneminde geçerli olacak şekilde ayarlandı.",
+    "changeError": "Plan değiştirilemedi. Lütfen tekrar dene.",
+    "changePlan": "Planı değiştir",
+    "changePlanOption": "Planı değiştir…",
+    "planOption": "{name} — {price}",
+    "status": {
+      "active": "aktif",
+      "past_due": "ödemesi gecikmiş",
+      "expired": "süresi dolmuş"
+    }
+  },
+  "liveClasses": {
+    "title": "Canlı Oturumlar",
+    "join": "Katıl",
+    "upcomingTab": "Yaklaşan ({count})",
+    "pastTab": "Geçmiş ({count})",
+    "emptyUpcomingTitle": "Yaklaşan oturum yok",
+    "emptyUpcomingText": "Şu anda planlanmış canlı oturum yok. Daha sonra tekrar göz at!",
+    "emptyPastTitle": "Geçmiş oturum yok",
+    "emptyPastText": "Henüz gösterilecek geçmiş canlı oturum yok.",
+    "watchRecording": "Kaydı İzle"
+  },
+  "checkout": {
+    "canceled": "Ödeme iptal edildi — sepetin hâlâ burada.",
+    "removed": "\"{title}\" sepetten kaldırıldı",
+    "paid": "Ödeme başarılı! Panele yönlendiriliyorsun...",
+    "loginToPurchase": "Satın almak için giriş yapman gerekiyor",
+    "payFailed": "Ödeme başarısız oldu. Lütfen tekrar dene.",
+    "emptyTitle": "Sepetin boş",
+    "emptyText": "Ödemeye geçmeden önce mağazadan birkaç ürün ekle.",
+    "goToStore": "Mağazaya Git",
+    "review": "Ödemeden önce ürünlerini gözden geçir.",
+    "remove": "{title} öğesini kaldır",
+    "orderSummary": "Sipariş Özeti",
+    "total": "Toplam",
+    "processing": "İşleniyor…",
+    "pay": "{total} Öde"
+  },
+  "checkoutSuccess": {
+    "confirmingLabel": "Ödemen onaylanıyor",
+    "confirming": "Ödemen onaylanıyor…",
+    "confirmingText": "Bu yalnızca birkaç saniye sürer. Lütfen bu sayfayı kapatma.",
+    "done": "Ödeme tamamlandı!",
+    "doneText": "Satın aldığın içerik artık açık.",
+    "goToContent": "İçeriklerime git",
+    "pending": "Neredeyse tamam",
+    "pendingText": "Ödemen işleniyor. İçeriğin otomatik olarak açılacak — bir dakika sonra panelini kontrol et.",
+    "goToDashboard": "Panele git"
+  },
+  "communityPage": {
+    "disabledTitle": "Topluluk kullanılamıyor",
+    "disabledText": "Bu topluluk henüz etkinleştirilmedi.",
+    "bannedTitle": "Topluluğa erişemezsin",
+    "bannedText": "Erişimin bir moderatör tarafından kaldırıldı.",
+    "errorTitle": "Bir şeyler ters gitti",
+    "errorText": "Topluluğu şu anda yükleyemedik — biraz bekleyip tekrar dene.",
+    "tryAgain": "Tekrar dene",
+    "title": "Topluluk",
+    "introTitle": "Kendini tanıt",
+    "introText": "Diğer üyelerin göreceği adı ve fotoğrafı seç.",
+    "photoError": "Fotoğraf yüklenemedi — daha küçük bir görsel dene.",
+    "welcome": "Topluluğa hoş geldin!",
+    "saveError": "Profilin kaydedilemedi.",
+    "choosePhoto": "Profil fotoğrafı seç",
+    "displayName": "Görünen ad",
+    "joining": "Katılınıyor…",
+    "join": "Topluluğa katıl"
+  },
+  "learn": {
+    "complete": "%{percent} tamamlandı"
+  },
+  "live": {
+    "goBack": "Geri dön",
+    "connectionError": "Bağlantı hatası",
+    "removed": "Çıkarıldın",
+    "connecting": "Bağlanıyor",
+    "fakeVideo": "Canlı video burada taklit ediliyor (LIVECRAFT_URL ayarlanmamış) — gerçeğini denemek için LiveCraft'ı çalıştır.",
+    "loginToJoin": "Katılmak için giriş yapman gerekiyor",
+    "session": {
+      "notFound": "Canlı oturum bulunamadı",
+      "connecting": "Canlı oturuma bağlanılıyor",
+      "connectingDots": "Canlı oturuma bağlanılıyor...",
+      "notStarted": "Bu ders henüz başlamadı. İçerik üreticisi yayına geçtiğinde tekrar bak.",
+      "ended": "Bu ders sona erdi.",
+      "connectFailed": "Canlı oturuma bağlanılamadı.",
+      "left": "Oturumdan ayrıldın",
+      "endedFrame": "Oturum sona erdi",
+      "frameTitle": "Canlı oturum"
+    },
+    "stream": {
+      "notFound": "Canlı yayın bulunamadı",
+      "connecting": "Canlı yayına bağlanılıyor",
+      "connectingDots": "Canlı yayına bağlanılıyor...",
+      "notStarted": "Bu yayın henüz başlamadı. Yayıncı yayına geçtiğinde tekrar bak.",
+      "ended": "Bu yayın sona erdi.",
+      "connectFailed": "Canlı yayına bağlanılamadı.",
+      "left": "Yayından ayrıldın",
+      "endedFrame": "Yayın sona erdi",
+      "frameTitle": "Canlı yayın"
+    }
+  },
+  "lesson": {
+    "auto": "Otomatik",
+    "autoPlayOn": "Otomatik oynatma açık",
+    "autoPlayOff": "Otomatik oynatma kapalı",
+    "module": "Modül {order}: {title}",
+    "noVideo": "Bu ders için video yok.",
+    "captions": "Altyazılar",
+    "completed": "Tamamlandı",
+    "markComplete": "Tamamlandı Olarak İşaretle",
+    "transcript": "Transkript"
   }
 }

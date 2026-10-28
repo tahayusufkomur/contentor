@@ -1,25 +1,27 @@
 // The header button's label, split out of public-header.tsx so it is
 // unit-testable (the header itself has no component-test harness).
+import type { useTranslations } from "next-intl";
 import { visibleNavLinks, type SiteMenu } from "@/lib/navbar";
 
 type Cta = { text: string; href: string };
+type CtaT = ReturnType<typeof useTranslations<"site">>;
 
-/** What the legacy default "Get Started" says once it knows where it leads. */
-export const HEADER_CTA_BY_HREF: Record<string, string> = {
-  "/courses": "Start a course",
-  "/events": "Book a session",
-  "/calendar": "Book a session",
-  "/plans": "Join",
-  "/contact": "Get in touch",
+/** What the legacy default "Get Started" says once it knows where it leads
+ *  (a `site.headerCta.*` key). */
+const HEADER_CTA_BY_HREF: Record<string, string> = {
+  "/courses": "headerCta.startCourse",
+  "/events": "headerCta.bookSession",
+  "/calendar": "headerCta.bookSession",
+  "/plans": "headerCta.join",
+  "/contact": "headerCta.getInTouch",
 };
-
-const CONTACT: Cta = { text: "Get in touch", href: "/contact" };
 
 /** Only the untouched legacy default is relabelled; a button she wrote or
  * renamed keeps her words. */
-export function headerCtaLabel(cta: Cta): string {
-  return cta.text === "Get Started"
-    ? (HEADER_CTA_BY_HREF[cta.href] ?? cta.text)
+export function headerCtaLabel(cta: Cta, t: CtaT): string {
+  const key = HEADER_CTA_BY_HREF[cta.href];
+  return cta.text === "Get Started" && key
+    ? t(key as "headerCta.join")
     : cta.text;
 }
 
@@ -30,9 +32,11 @@ export function headerCtaLabel(cta: Cta): string {
 export function resolveHeaderCta(
   cta: Cta | null | undefined,
   plansEnabled: boolean,
+  t: CtaT,
   menu?: SiteMenu,
 ): Cta | null {
   if (!cta) return null;
-  if (visibleNavLinks([cta], plansEnabled, menu).length === 0) return CONTACT;
-  return { text: headerCtaLabel(cta), href: cta.href };
+  if (visibleNavLinks([cta], plansEnabled, menu).length === 0)
+    return { text: t("headerCta.getInTouch"), href: "/contact" };
+  return { text: headerCtaLabel(cta, t), href: cta.href };
 }

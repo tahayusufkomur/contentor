@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { clientFetch } from "@/lib/api-client";
 import { ApiError } from "@/types/api";
 import { Spinner } from "@/components/ui/spinner";
@@ -21,8 +22,8 @@ type Ended = "ended" | "left" | "removed";
 interface LiveFrameProps {
   /** e.g. `/api/v1/live/12` — we call `<base>/token/` and, for hosts, `<base>/stop/`. */
   basePath: string;
-  /** "class" | "stream" — used in status copy. */
-  noun: string;
+  /** Picks the status copy: `student.live.<kind>.*`. */
+  kind: "session" | "stream";
 }
 
 function FullScreen({ children }: { children: React.ReactNode }) {
@@ -33,7 +34,8 @@ function FullScreen({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function LiveFrame({ basePath, noun }: LiveFrameProps) {
+export default function LiveFrame({ basePath, kind }: LiveFrameProps) {
+  const t = useTranslations("student.live");
   const router = useRouter();
   const [join, setJoin] = useState<JoinResponse | null>(null);
   const [error, setError] = useState("");
@@ -46,10 +48,10 @@ export default function LiveFrame({ basePath, noun }: LiveFrameProps) {
         setError(
           err instanceof ApiError && err.status === 409
             ? err.message
-            : `Failed to connect to the live ${noun}.`,
+            : t(`${kind}.connectFailed`),
         ),
       );
-  }, [basePath, noun]);
+  }, [basePath, t, kind]);
 
   useEffect(() => {
     if (!join) return;
@@ -72,7 +74,7 @@ export default function LiveFrame({ basePath, noun }: LiveFrameProps) {
       onClick={() => router.back()}
       className="mt-4 text-sm text-blue-400 underline"
     >
-      Go back
+      {t("goBack")}
     </button>
   );
 
@@ -81,10 +83,10 @@ export default function LiveFrame({ basePath, noun }: LiveFrameProps) {
       <FullScreen>
         <h2 className="text-xl font-bold text-white">
           {ended === "removed"
-            ? "You were removed"
+            ? t("removed")
             : ended === "left"
-              ? `You left the ${noun}`
-              : `The ${noun} has ended`}
+              ? t(`${kind}.left`)
+              : t(`${kind}.endedFrame`)}
         </h2>
         {back}
       </FullScreen>
@@ -101,8 +103,8 @@ export default function LiveFrame({ basePath, noun }: LiveFrameProps) {
   if (!join) {
     return (
       <FullScreen>
-        <Spinner size="lg" className="text-white" label="Connecting" />
-        <p className="mt-4 text-zinc-400">Connecting to live {noun}...</p>
+        <Spinner size="lg" className="text-white" label={t("connecting")} />
+        <p className="mt-4 text-zinc-400">{t(`${kind}.connectingDots`)}</p>
       </FullScreen>
     );
   }
@@ -111,14 +113,13 @@ export default function LiveFrame({ basePath, noun }: LiveFrameProps) {
     <div className="relative h-screen bg-zinc-950">
       <iframe
         src={join.join_url}
-        title={`Live ${noun}`}
+        title={t(`${kind}.frameTitle`)}
         allow="camera; microphone; display-capture; fullscreen; autoplay"
         className="h-full w-full border-0"
       />
       {join.join_url.startsWith("about:blank") && (
         <p className="absolute inset-x-0 top-1/2 text-center text-sm text-zinc-400">
-          Live video is faked here (LIVECRAFT_URL unset) — run LiveCraft to try
-          it for real.
+          {t("fakeVideo")}
         </p>
       )}
     </div>

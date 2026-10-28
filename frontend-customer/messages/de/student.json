@@ -135,5 +135,169 @@
     "stopping": "Wird gestoppt…",
     "stopped": "Gestoppt. Es wird nichts weiter geändert.",
     "failed": "Das hat nicht geklappt. Versuche es noch einmal."
+  },
+  "callback": {
+    "noToken": "Kein Token angegeben",
+    "authFailed": "Authentifizierung fehlgeschlagen",
+    "networkError": "Netzwerkfehler",
+    "verificationFailed": "Verifizierung fehlgeschlagen",
+    "verifying": "Wird verifiziert...",
+    "welcomeBack": "Willkommen zurück!",
+    "welcomeTo": "Willkommen bei {brand}!",
+    "yourSite": "deiner Website"
+  },
+  "dashboard": {
+    "title": "Meine Kurse",
+    "orders": "Bestellungen",
+    "subscriptions": "Meine Abonnements",
+    "emptyTitle": "Noch keine Kurse",
+    "emptyText": "Du bist noch in keinem Kurs eingeschrieben. Stöbere in unserem Katalog, um etwas Interessantes zu finden.",
+    "browse": "Kurse durchsuchen",
+    "inYourPlan": "In deinem Tarif",
+    "progress": "Fortschritt"
+  },
+  "orders": {
+    "title": "Bestellverlauf",
+    "text": "Deine Käufe und Belege.",
+    "emptyTitle": "Noch keine Bestellungen",
+    "emptyText": "Deine Käufe erscheinen hier mit ihren Belegen.",
+    "receipt": "Beleg ansehen",
+    "paymentType": {
+      "one_time": "einmalig",
+      "subscription": "Abonnement",
+      "refund": "Erstattung"
+    },
+    "status": {
+      "pending": "ausstehend",
+      "completed": "abgeschlossen",
+      "failed": "fehlgeschlagen",
+      "refunded": "erstattet",
+      "partially_refunded": "teilweise erstattet"
+    }
+  },
+  "subscriptions": {
+    "started": "Abonnement gestartet! Es kann einen Moment dauern, bis es angezeigt wird.",
+    "title": "Meine Abonnements",
+    "text": "Verwalte deine aktiven Mitgliedschaften.",
+    "emptyTitle": "Keine aktiven Abonnements",
+    "emptyText": "Sieh dir die Mitgliedschaftstarife an, um Inhalte freizuschalten.",
+    "viewPlans": "Tarife ansehen",
+    "planFallback": "Tarif",
+    "cancelsOn": "Endet am <b>{date}</b>",
+    "renewsOn": "Verlängert sich am <b>{date}</b>",
+    "switchingTo": "Wechsel zu <b>{name}</b> im nächsten Abrechnungszeitraum.",
+    "cancelled": "Das Abonnement endet zum Ende des Abrechnungszeitraums.",
+    "cancelError": "Kündigung fehlgeschlagen. Bitte versuche es erneut.",
+    "planChanged": "Tarifwechsel für deinen nächsten Abrechnungszeitraum geplant.",
+    "changeError": "Tarif konnte nicht gewechselt werden. Bitte versuche es erneut.",
+    "changePlan": "Tarif wechseln",
+    "changePlanOption": "Tarif wechseln…",
+    "planOption": "{name} — {price}",
+    "status": {
+      "active": "aktiv",
+      "past_due": "überfällig",
+      "expired": "abgelaufen"
+    }
+  },
+  "liveClasses": {
+    "title": "Live-Sessions",
+    "join": "Teilnehmen",
+    "upcomingTab": "Anstehend ({count})",
+    "pastTab": "Vergangen ({count})",
+    "emptyUpcomingTitle": "Keine anstehenden Sessions",
+    "emptyUpcomingText": "Derzeit sind keine Live-Sessions geplant. Schau später noch mal vorbei!",
+    "emptyPastTitle": "Keine vergangenen Sessions",
+    "emptyPastText": "Noch keine vergangenen Live-Sessions vorhanden.",
+    "watchRecording": "Aufzeichnung ansehen"
+  },
+  "checkout": {
+    "canceled": "Bezahlvorgang abgebrochen — dein Warenkorb ist noch da.",
+    "removed": "„{title}“ aus dem Warenkorb entfernt",
+    "paid": "Zahlung erfolgreich! Weiterleitung zum Dashboard...",
+    "loginToPurchase": "Du musst dich anmelden, um etwas zu kaufen",
+    "payFailed": "Zahlung fehlgeschlagen. Bitte versuche es erneut.",
+    "emptyTitle": "Dein Warenkorb ist leer",
+    "emptyText": "Füge vor dem Bezahlen ein paar Artikel aus dem Shop hinzu.",
+    "goToStore": "Zum Shop",
+    "review": "Überprüfe deine Artikel vor der Zahlung.",
+    "remove": "{title} entfernen",
+    "orderSummary": "Bestellübersicht",
+    "total": "Gesamt",
+    "processing": "Wird verarbeitet…",
+    "pay": "{total} bezahlen"
+  },
+  "checkoutSuccess": {
+    "confirmingLabel": "Deine Zahlung wird bestätigt",
+    "confirming": "Deine Zahlung wird bestätigt…",
+    "confirmingText": "Das dauert nur einen Moment. Bitte schließe diese Seite nicht.",
+    "done": "Zahlung abgeschlossen!",
+    "doneText": "Dein Kauf ist jetzt freigeschaltet.",
+    "goToContent": "Zu meinen Inhalten",
+    "pending": "Fast geschafft",
+    "pendingText": "Deine Zahlung wird verarbeitet. Deine Inhalte werden automatisch freigeschaltet – schau in einer Minute in dein Dashboard.",
+    "goToDashboard": "Zum Dashboard"
+  },
+  "communityPage": {
+    "disabledTitle": "Community ist nicht verfügbar",
+    "disabledText": "Diese Community wurde noch nicht aktiviert.",
+    "bannedTitle": "Du hast keinen Zugriff auf die Community",
+    "bannedText": "Dein Zugriff wurde von einem Moderator entfernt.",
+    "errorTitle": "Etwas ist schiefgelaufen",
+    "errorText": "Wir konnten die Community gerade nicht laden – warte einen Moment und versuche es erneut.",
+    "tryAgain": "Erneut versuchen",
+    "title": "Community",
+    "introTitle": "Stell dich vor",
+    "introText": "Wähle den Namen und das Foto, die andere Mitglieder sehen.",
+    "photoError": "Foto-Upload fehlgeschlagen – versuche es mit einem kleineren Bild.",
+    "welcome": "Willkommen in der Community!",
+    "saveError": "Dein Profil konnte nicht gespeichert werden.",
+    "choosePhoto": "Profilfoto auswählen",
+    "displayName": "Anzeigename",
+    "joining": "Wird beigetreten…",
+    "join": "Der Community beitreten"
+  },
+  "learn": {
+    "complete": "{percent} % abgeschlossen"
+  },
+  "live": {
+    "goBack": "Zurück",
+    "connectionError": "Verbindungsfehler",
+    "removed": "Du wurdest entfernt",
+    "connecting": "Verbindung wird hergestellt",
+    "fakeVideo": "Das Live-Video wird hier nur simuliert (LIVECRAFT_URL nicht gesetzt) — starte LiveCraft, um es wirklich auszuprobieren.",
+    "loginToJoin": "Du musst dich anmelden, um teilzunehmen",
+    "session": {
+      "notFound": "Live-Session nicht gefunden",
+      "connecting": "Verbindung zur Live-Session wird hergestellt",
+      "connectingDots": "Verbindung zur Live-Session wird hergestellt...",
+      "notStarted": "Diese Stunde hat noch nicht begonnen. Schau wieder vorbei, wenn der Creator live geht.",
+      "ended": "Diese Stunde ist beendet.",
+      "connectFailed": "Verbindung zur Live-Session fehlgeschlagen.",
+      "left": "Du hast die Session verlassen",
+      "endedFrame": "Die Session ist beendet",
+      "frameTitle": "Live-Session"
+    },
+    "stream": {
+      "notFound": "Livestream nicht gefunden",
+      "connecting": "Verbindung zum Livestream wird hergestellt",
+      "connectingDots": "Verbindung zum Livestream wird hergestellt...",
+      "notStarted": "Dieser Stream hat noch nicht begonnen. Schau wieder vorbei, wenn der Gastgeber live geht.",
+      "ended": "Dieser Stream ist beendet.",
+      "connectFailed": "Verbindung zum Livestream fehlgeschlagen.",
+      "left": "Du hast den Stream verlassen",
+      "endedFrame": "Der Stream ist beendet",
+      "frameTitle": "Livestream"
+    }
+  },
+  "lesson": {
+    "auto": "Auto",
+    "autoPlayOn": "Automatische Wiedergabe ist an",
+    "autoPlayOff": "Automatische Wiedergabe ist aus",
+    "module": "Modul {order}: {title}",
+    "noVideo": "Für diese Lektion ist kein Video verfügbar.",
+    "captions": "Untertitel",
+    "completed": "Abgeschlossen",
+    "markComplete": "Als abgeschlossen markieren",
+    "transcript": "Transkript"
   }
 }

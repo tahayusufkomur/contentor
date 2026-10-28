@@ -18,7 +18,7 @@ import { type ModeratorHooks, timeAgo } from "./post-card";
 import { ReactionBar } from "./reaction-bar";
 import { ReportDialog } from "./report-dialog";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export function CommentSection({
   post,
@@ -29,6 +29,7 @@ export function CommentSection({
   me: CommunityMe;
   moderator: ModeratorHooks | null;
 }) {
+  const t = useTranslations("common");
   const [comments, setComments] = useState<CommunityComment[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -56,7 +57,7 @@ export function CommentSection({
       setComments((prev) => [...prev, comment]);
       setDraft("");
     },
-    { errorToast: "Couldn't add your comment." },
+    { errorToast: t("community.commentError") },
   );
 
   return (
@@ -75,12 +76,12 @@ export function CommentSection({
       ))}
       {hasMore && (
         <Button variant="ghost" size="sm" onClick={() => void load(page + 1)}>
-          Show more comments
+          {t("community.showMore")}
         </Button>
       )}
       <div className="flex gap-2">
         <Input
-          placeholder="Write a comment…"
+          placeholder={t("community.writeComment")}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           maxLength={5000}
@@ -97,7 +98,7 @@ export function CommentSection({
           loading={busy}
           disabled={!draft.trim()}
         >
-          Reply
+          {t("community.reply")}
         </Button>
       </div>
 
@@ -125,12 +126,13 @@ function CommentRow({
   onReport: (id: number) => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations("common");
   const { run: removeOwn } = useAsyncAction(
     async () => {
       await deleteComment(comment.id);
       onDeleted(comment.id);
     },
-    { errorToast: "Couldn't delete the comment." },
+    { errorToast: t("community.deleteCommentError") },
   );
 
   return (
@@ -146,11 +148,11 @@ function CommentRow({
           <span className="font-medium">{comment.author.display_name}</span>
           {comment.author.is_coach && (
             <Badge variant="secondary" className="h-4 px-1 text-[10px]">
-              Creator
+              {t("community.creator")}
             </Badge>
           )}
           <span className="text-muted-foreground">
-            {timeAgo(comment.created_at, locale)}
+            {timeAgo(comment.created_at, locale, t)}
           </span>
         </div>
         <div className="mt-0.5 text-sm">
@@ -168,7 +170,7 @@ function CommentRow({
               type="button"
               className="text-xs text-muted-foreground hover:text-destructive"
               onClick={() => void removeOwn()}
-              aria-label="Delete comment"
+              aria-label={t("community.deleteComment")}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
@@ -179,7 +181,7 @@ function CommentRow({
               className="text-xs text-muted-foreground hover:text-destructive"
               onClick={() => onReport(comment.id)}
             >
-              Report
+              {t("community.report")}
             </button>
           )}
           {moderator && comment.author.id !== me.id && (
@@ -188,7 +190,7 @@ function CommentRow({
               className="text-xs text-destructive"
               onClick={() => void moderator.removeComment(comment)}
             >
-              Remove
+              {t("community.remove")}
             </button>
           )}
         </div>

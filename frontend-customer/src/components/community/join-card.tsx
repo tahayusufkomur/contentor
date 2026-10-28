@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { updateCommunityMe, uploadCommunityImage } from "@/lib/community";
 import type { CommunityMe } from "@/types/community";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export function JoinCard({
   me,
@@ -19,6 +19,7 @@ export function JoinCard({
   onDone: (updated: CommunityMe) => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations("student.communityPage");
   const [name, setName] = useState(me.display_name);
   const [avatarKey, setAvatarKey] = useState(me.avatar_key);
   const [preview, setPreview] = useState(me.avatar);
@@ -30,7 +31,7 @@ export function JoinCard({
       setAvatarKey(key);
       setPreview(URL.createObjectURL(file));
     },
-    { errorToast: "Photo upload failed — try a smaller image." },
+    { errorToast: t("photoError") },
   );
 
   const { run: save, loading: saving } = useAsyncAction(
@@ -43,8 +44,8 @@ export function JoinCard({
       onDone(updated);
     },
     {
-      successToast: "Welcome to the community!",
-      errorToast: "Couldn't save your profile.",
+      successToast: t("welcome"),
+      errorToast: t("saveError"),
     },
   );
 
@@ -53,15 +54,13 @@ export function JoinCard({
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
-        <h2 className="text-lg font-semibold">Introduce yourself</h2>
-        <p className="text-sm text-muted-foreground">
-          Pick the name and photo other members will see.
-        </p>
+        <h2 className="text-lg font-semibold">{t("introTitle")}</h2>
+        <p className="text-sm text-muted-foreground">{t("introText")}</p>
         <button
           type="button"
           className="relative"
           onClick={() => fileRef.current?.click()}
-          aria-label="Choose profile photo"
+          aria-label={t("choosePhoto")}
         >
           <Avatar className="h-20 w-20">
             <AvatarImage src={preview} alt="" />
@@ -88,15 +87,15 @@ export function JoinCard({
           onChange={(e) => setName(e.target.value)}
           maxLength={150}
           className="max-w-xs text-center"
-          aria-label="Display name"
+          aria-label={t("displayName")}
         />
         <Button
           onClick={save}
           loading={saving}
-          loadingText="Joining…"
+          loadingText={t("joining")}
           disabled={busy || !name.trim()}
         >
-          Join the community
+          {t("join")}
         </Button>
       </CardContent>
     </Card>

@@ -25,7 +25,7 @@ import { ImageGrid } from "./image-grid";
 import { Linkify } from "./linkify";
 import { ReactionBar } from "./reaction-bar";
 import { ReportDialog } from "./report-dialog";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export interface ModeratorHooks {
   pin: (post: CommunityPost) => Promise<void>;
@@ -35,12 +35,14 @@ export interface ModeratorHooks {
   removeComment: (comment: CommunityComment) => Promise<void>;
 }
 
-export function timeAgo(iso: string, locale: string): string {
+type CommonT = ReturnType<typeof useTranslations<"common">>;
+
+export function timeAgo(iso: string, locale: string, t: CommonT): string {
   const s = Math.max(1, (Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 60) return "just now";
-  if (s < 3600) return `${Math.floor(s / 60)}m`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h`;
-  if (s < 604800) return `${Math.floor(s / 86400)}d`;
+  if (s < 60) return t("community.justNow");
+  if (s < 3600) return t("community.minutes", { count: Math.floor(s / 60) });
+  if (s < 86400) return t("community.hours", { count: Math.floor(s / 3600) });
+  if (s < 604800) return t("community.days", { count: Math.floor(s / 86400) });
   return new Date(iso).toLocaleDateString(locale);
 }
 
@@ -56,6 +58,7 @@ export function PostCard({
   moderator: ModeratorHooks | null;
 }) {
   const locale = useLocale();
+  const t = useTranslations("common");
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(post.body);
   const [reporting, setReporting] = useState(false);
@@ -68,16 +71,16 @@ export function PostCard({
       setEditing(false);
       onChanged();
     },
-    { errorToast: "Couldn't save the edit." },
+    { errorToast: t("community.saveEditError") },
   );
 
   const { run: removeOwn, loading: removing } = useAsyncAction(
     async () => {
-      if (!window.confirm("Delete this post? This can't be undone.")) return;
+      if (!window.confirm(t("community.confirmDelete"))) return;
       await deletePost(post.id);
       onChanged();
     },
-    { errorToast: "Couldn't delete the post." },
+    { errorToast: t("community.deletePostError") },
   );
 
   return (
@@ -94,23 +97,32 @@ export function PostCard({
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-medium">{post.author.display_name}</span>
               {post.author.is_coach && (
-                <Badge variant="secondary">Creator</Badge>
+                <Badge variant="secondary">{t("community.creator")}</Badge>
               )}
               {post.is_pinned && (
                 <Pin className="h-3.5 w-3.5 text-muted-foreground" />
               )}
               <span className="text-xs text-muted-foreground">
-                {timeAgo(post.created_at, locale)}
-                {post.edited_at ? " · edited" : ""}
+                {post.edited_at
+                  ? t("community.timeEdited", {
+                      time: timeAgo(post.created_at, locale, t),
+                    })
+                  : timeAgo(post.created_at, locale, t)}
               </span>
               {post.status === "pending" && (
-                <Badge variant="outline">Awaiting approval</Badge>
+                <Badge variant="outline">
+                  {t("community.awaitingApproval")}
+                </Badge>
               )}
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Post actions">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t("community.postActions")}
+              >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -118,20 +130,20 @@ export function PostCard({
               {isMine && (
                 <>
                   <DropdownMenuItem onClick={() => setEditing(true)}>
-                    Edit
+                    {t("actions.edit")}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive"
                     disabled={removing}
                     onClick={removeOwn}
                   >
-                    Delete
+                    {t("actions.delete")}
                   </DropdownMenuItem>
                 </>
               )}
               {!isMine && (
                 <DropdownMenuItem onClick={() => setReporting(true)}>
-                  Report
+                  {t("community.report")}
                 </DropdownMenuItem>
               )}
               {moderator && (
@@ -143,19 +155,19 @@ export function PostCard({
                         : moderator.pin(post)
                     }
                   >
-                    {post.is_pinned ? "Unpin" : "Pin"}
+                    {post.is_pinned ? t("community.unpin") : t("community.pin")}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive"
                     onClick={() => moderator.remove(post)}
                   >
-                    Remove post
+                    {t("community.removePost")}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive"
                     onClick={() => moderator.banAuthor(post)}
                   >
-                    Ban member
+                    {t("community.banMember")}
                   </DropdownMenuItem>
                 </>
               )}
@@ -176,9 +188,9 @@ export function PostCard({
                 onClick={saveEdit}
                 disabled={!draft.trim()}
                 loading={saving}
-                loadingText="Saving…"
+                loadingText={t("community.saving")}
               >
-                Save
+                {t("actions.save")}
               </Button>
               <Button
                 size="sm"
@@ -188,7 +200,7 @@ export function PostCard({
                   setEditing(false);
                 }}
               >
-                Cancel
+                {t("actions.cancel")}
               </Button>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Spinner } from "@/components/ui/spinner";
 import LiveClassRoom from "@/components/live/live-class-room";
 
@@ -19,6 +20,7 @@ interface LiveRoomClientProps {
 
 export default function LiveRoomClient({ liveClassId }: LiveRoomClientProps) {
   const router = useRouter();
+  const t = useTranslations("student.live");
   const [liveClass, setLiveClass] = useState<LiveClassData | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -30,7 +32,7 @@ export default function LiveRoomClient({ liveClassId }: LiveRoomClientProps) {
           credentials: "same-origin",
         });
         if (!res.ok) {
-          setError("Live session not found");
+          setError(t("session.notFound"));
           setLoading(false);
           return;
         }
@@ -38,20 +40,20 @@ export default function LiveRoomClient({ liveClassId }: LiveRoomClientProps) {
         setLiveClass(data);
         setLoading(false);
       } catch {
-        setError("Connection error");
+        setError(t("connectionError"));
         setLoading(false);
       }
     }
     init();
-  }, [liveClassId]);
+  }, [liveClassId, t]);
 
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <Spinner size="lg" label="Connecting to live session" />
+          <Spinner size="lg" label={t("session.connecting")} />
           <p className="mt-4 text-muted-foreground">
-            Connecting to live session...
+            {t("session.connectingDots")}
           </p>
         </div>
       </div>
@@ -67,7 +69,7 @@ export default function LiveRoomClient({ liveClassId }: LiveRoomClientProps) {
             onClick={() => router.back()}
             className="mt-4 text-sm text-primary underline"
           >
-            Go back
+            {t("goBack")}
           </button>
         </div>
       </div>
@@ -89,19 +91,16 @@ export default function LiveRoomClient({ liveClassId }: LiveRoomClientProps) {
           <div className="mt-6 rounded-lg border border-dashed p-8">
             {liveClass.status === "draft" ||
             liveClass.status === "scheduled" ? (
-              <p className="text-muted-foreground">
-                This class hasn&apos;t started yet. Check back when the creator
-                goes live.
-              </p>
+              <p className="text-muted-foreground">{t("session.notStarted")}</p>
             ) : (
-              <p className="text-muted-foreground">This class has ended.</p>
+              <p className="text-muted-foreground">{t("session.ended")}</p>
             )}
           </div>
           <button
             onClick={() => router.back()}
             className="mt-4 text-sm text-primary underline"
           >
-            Go back
+            {t("goBack")}
           </button>
         </div>
       </div>

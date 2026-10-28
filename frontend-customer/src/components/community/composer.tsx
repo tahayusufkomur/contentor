@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslations } from "next-intl";
 import { createPost, uploadCommunityImage } from "@/lib/community";
 import type { CommunityPost } from "@/types/community";
 import { ApiError } from "@/types/api";
@@ -18,6 +19,7 @@ export function Composer({
 }: {
   onPosted: (post: CommunityPost) => void;
 }) {
+  const t = useTranslations("common");
   const [body, setBody] = useState("");
   const [images, setImages] = useState<{ key: string; preview: string }[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -27,7 +29,7 @@ export function Composer({
       const room = MAX_IMAGES - images.length;
       const picked = Array.from(files).slice(0, room);
       if (files.length > room) {
-        toast.info(`Up to ${MAX_IMAGES} photos per post.`);
+        toast.info(t("community.maxPhotos", { count: MAX_IMAGES }));
       }
       for (const file of picked) {
         const key = await uploadCommunityImage(file);
@@ -37,7 +39,7 @@ export function Composer({
         ]);
       }
     },
-    { errorToast: "Photo upload failed." },
+    { errorToast: t("community.photoError") },
   );
 
   const { run: submit, loading: posting } = useAsyncAction(
@@ -49,18 +51,18 @@ export function Composer({
       setBody("");
       setImages([]);
       if (post.status === "pending") {
-        toast.info("Your post is waiting for a moderator's approval.");
+        toast.info(t("community.pendingApproval"));
       }
       onPosted(post);
     },
     {
       onError: (err) => {
         if (err instanceof ApiError && err.status === 429) {
-          toast.error("You're posting too fast — try again in a bit.");
+          toast.error(t("community.tooFast"));
         } else if (err instanceof ApiError && err.status === 403) {
-          toast.error("You can't post right now.");
+          toast.error(t("community.cantPost"));
         } else {
-          toast.error("Couldn't publish your post.");
+          toast.error(t("community.publishError"));
         }
       },
     },
@@ -72,7 +74,7 @@ export function Composer({
     <Card>
       <CardContent className="space-y-3 p-4">
         <Textarea
-          placeholder="Share something with the community…"
+          placeholder={t("community.sharePlaceholder")}
           value={body}
           onChange={(e) => setBody(e.target.value)}
           maxLength={10000}
@@ -90,7 +92,7 @@ export function Composer({
                 />
                 <button
                   type="button"
-                  aria-label="Remove photo"
+                  aria-label={t("community.removePhoto")}
                   className="absolute -right-1.5 -top-1.5 rounded-full bg-background shadow"
                   onClick={() =>
                     setImages((prev) => prev.filter((i) => i.key !== img.key))
@@ -110,7 +112,7 @@ export function Composer({
             disabled={busy || images.length >= MAX_IMAGES}
             onClick={() => fileRef.current?.click()}
           >
-            <ImagePlus className="mr-1.5 h-4 w-4" /> Photo
+            <ImagePlus className="mr-1.5 h-4 w-4" /> {t("community.photo")}
           </Button>
           <input
             ref={fileRef}
@@ -126,10 +128,10 @@ export function Composer({
           <Button
             onClick={submit}
             loading={posting}
-            loadingText="Posting…"
+            loadingText={t("community.posting")}
             disabled={busy || !body.trim()}
           >
-            Post
+            {t("community.post")}
           </Button>
         </div>
       </CardContent>

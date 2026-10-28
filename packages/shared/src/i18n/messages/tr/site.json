@@ -93,7 +93,8 @@
     "owned": "Satın alındı",
     "includedInMembership": "Üyeliğe dahil",
     "buyFor": "{price} karşılığında satın al",
-    "includedInSubscription": "Aboneliğe dahil"
+    "includedInSubscription": "Aboneliğe dahil",
+    "paid": "Ücretli"
   },
   "event": {
     "reserve": "Yer ayırt",
@@ -124,7 +125,9 @@
     "loginToSubscribe": "Abone olmak için giriş yapman gerekiyor",
     "subscriptionFailed": "Abonelik başarısız oldu.",
     "bestValue": "En Avantajlı",
-    "viewIncluded": "Dahil olan içeriği gör"
+    "viewIncluded": "Dahil olan içeriği gör",
+    "subscribedTo": "{plan} aboneliğin başladı!",
+    "subscribeFor": "Abone ol — {price}"
   },
   "table": {
     "lessons": "Dersler",
@@ -580,7 +583,8 @@
       "inPersonEvents": "Yüz Yüze Etkinlikler",
       "bundles": "Paketler"
     },
-    "browse": "Mağazaya göz at"
+    "browse": "Mağazaya göz at",
+    "addToCart": "Sepete Ekle — {price}"
   },
   "nav": {
     "installApp": "Uygulamayı yükle",
@@ -652,5 +656,69 @@
   },
   "block": {
     "video": "Video"
+  },
+  "checkout": {
+    "title": "Ödeme",
+    "andMore": "{title} ve {count} tane daha",
+    "now": "Şimdi",
+    "rightAfter": "Hemen ardından",
+    "anyTime": "İstediğin zaman",
+    "paySecurely": "{amount} tutarını Stripe ile güvenle öde.",
+    "opensInDashboard": "Panelinde açılır, başlamaya hazır.",
+    "opensInPlan": "{plan} içindeki her şey hesabında açılır.",
+    "cancelAnyTime": "Hesabındaki Abonelikler bölümünden iptal edebilirsin."
+  },
+  "announcements": {
+    "loadError": "Duyurular yüklenemedi.",
+    "label": "Duyurular",
+    "empty": "Duyuru yok."
+  },
+  "preview": {
+    "comingSoon": "Çok yakında",
+    "paused": "Bu site kısa bir mola veriyor. Yakında tekrar uğra.",
+    "launchingGated": "Bu site yakında açılıyor. Göz atmak için önizleme şifresini gir.",
+    "launching": "Bu site yakında açılıyor. Kısa süre sonra tekrar uğra.",
+    "field": "Önizleme şifresi",
+    "incorrect": "Şifre yanlış. Tekrar dene.",
+    "checking": "Kontrol ediliyor…",
+    "enter": "Siteye gir",
+    "ownerLogin": "Site sahibi misin? Önizlemek için giriş yap"
+  },
+  "headerCta": {
+    "startCourse": "Kursa başla",
+    "bookSession": "Oturum ayırt",
+    "join": "Katıl",
+    "getInTouch": "İletişime geç"
+  },
+  "access": {
+    "spanYear": "{count, plural, one {# yıl} other {# yıl}}",
+    "spanMonth": "{count, plural, one {# ay} other {# ay}}",
+    "spanWeek": "{count, plural, one {# hafta} other {# hafta}}",
+    "spanDay": "{count, plural, one {# gün} other {# gün}}",
+    "opensOn": "{date} tarihinde açılır",
+    "opensAfterPurchase": "Satın aldıktan {span} sonra açılır",
+    "accessUntilAfterPurchase": "Satın aldıktan {span} sonrasına kadar erişim",
+    "accessLength": "{span} boyunca erişim",
+    "accessUntil": "{date} tarihine kadar erişim",
+    "lifetime": "Ömür boyu erişim",
+    "includedNow": "Hemen dahil",
+    "planOpensAfter": "Üyeliğe başladıktan {opens} sonra açılır",
+    "planOpensAfterUntilInto": "Üyeliğe başladıktan {opens} sonra açılır, üyeliğin {closes} sonrasına kadar",
+    "planOpensAfterUntilDate": "Üyeliğe başladıktan {opens} sonra açılır, {closes} tarihine kadar",
+    "planOpensOn": "{opens} tarihinde açılır",
+    "planOpensOnUntilInto": "{opens} tarihinde açılır, üyeliğin {closes} sonrasına kadar",
+    "planOpensOnUntilDate": "{opens} tarihinde açılır, {closes} tarihine kadar",
+    "planNowFor": "Hemen dahil, {closes} boyunca",
+    "planNowUntilDate": "Hemen dahil, {closes} tarihine kadar",
+    "freeAfterThenUntil": "Katıldıktan {opens} sonra ücretsiz, katıldıktan {closes} sonrasına kadar",
+    "freeFromThenUntil": "{opens} tarihinden itibaren ücretsiz, katıldıktan {closes} sonrasına kadar",
+    "freeFirst": "İlk {closes} boyunca ücretsiz",
+    "freeBetween": "{opens} – {closes} arası ücretsiz",
+    "freeUntil": "{closes} tarihine kadar ücretsiz",
+    "freeFrom": "{opens} tarihinden itibaren ücretsiz",
+    "freeAfter": "Katıldıktan {opens} sonra ücretsiz",
+    "accessEnds": "Erişimin {date} tarihinde sona eriyor",
+    "opensForYou": "{date} tarihinde senin için açılıyor",
+    "accessEnded": "Erişimin {date} tarihinde sona erdi"
   }
 }

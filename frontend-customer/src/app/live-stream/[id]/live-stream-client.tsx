@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Spinner } from "@/components/ui/spinner";
 import LiveStreamRoom from "@/components/live-stream/live-stream-room";
 
@@ -18,6 +19,7 @@ interface LiveStreamClientProps {
 
 export default function LiveStreamClient({ streamId }: LiveStreamClientProps) {
   const router = useRouter();
+  const t = useTranslations("student.live");
   const [stream, setStream] = useState<StreamData | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -29,7 +31,7 @@ export default function LiveStreamClient({ streamId }: LiveStreamClientProps) {
           credentials: "same-origin",
         });
         if (!res.ok) {
-          setError("Live stream not found");
+          setError(t("stream.notFound"));
           setLoading(false);
           return;
         }
@@ -37,20 +39,20 @@ export default function LiveStreamClient({ streamId }: LiveStreamClientProps) {
         setStream(data);
         setLoading(false);
       } catch {
-        setError("Connection error");
+        setError(t("connectionError"));
         setLoading(false);
       }
     }
     init();
-  }, [streamId]);
+  }, [streamId, t]);
 
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <Spinner size="lg" label="Connecting to live stream" />
+          <Spinner size="lg" label={t("stream.connecting")} />
           <p className="mt-4 text-muted-foreground">
-            Connecting to live stream...
+            {t("stream.connectingDots")}
           </p>
         </div>
       </div>
@@ -66,7 +68,7 @@ export default function LiveStreamClient({ streamId }: LiveStreamClientProps) {
             onClick={() => router.back()}
             className="mt-4 text-sm text-primary underline"
           >
-            Go back
+            {t("goBack")}
           </button>
         </div>
       </div>
@@ -85,19 +87,16 @@ export default function LiveStreamClient({ streamId }: LiveStreamClientProps) {
           )}
           <div className="mt-6 rounded-lg border border-dashed p-8">
             {stream.status === "draft" || stream.status === "scheduled" ? (
-              <p className="text-muted-foreground">
-                This stream hasn&apos;t started yet. Check back when the host
-                goes live.
-              </p>
+              <p className="text-muted-foreground">{t("stream.notStarted")}</p>
             ) : (
-              <p className="text-muted-foreground">This stream has ended.</p>
+              <p className="text-muted-foreground">{t("stream.ended")}</p>
             )}
           </div>
           <button
             onClick={() => router.back()}
             className="mt-4 text-sm text-primary underline"
           >
-            Go back
+            {t("goBack")}
           </button>
         </div>
       </div>

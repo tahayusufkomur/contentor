@@ -15,10 +15,12 @@ import { courseItem } from "@/lib/covers/items";
 import { stateLine } from "@/lib/access/terms";
 import { BookOpen, GraduationCap, Play } from "lucide-react";
 import type { Course } from "@/types/course";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function DashboardPage() {
   const locale = useLocale();
+  const t = useTranslations("student.dashboard");
+  const tSite = useTranslations("site");
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -58,13 +60,13 @@ export default function DashboardPage() {
     >
       <div className="flex items-center gap-3">
         <GraduationCap className="h-7 w-7 text-primary" />
-        <h1 className="text-2xl font-bold tracking-tight">My Courses</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
         <div className="ml-auto flex items-center gap-1">
           <Button asChild variant="ghost" size="sm">
-            <NavLink href="/orders">Orders</NavLink>
+            <NavLink href="/orders">{t("orders")}</NavLink>
           </Button>
           <Button asChild variant="ghost" size="sm">
-            <NavLink href="/subscriptions">My subscriptions</NavLink>
+            <NavLink href="/subscriptions">{t("subscriptions")}</NavLink>
           </Button>
         </div>
       </div>
@@ -72,9 +74,9 @@ export default function DashboardPage() {
       {courses.length === 0 ? (
         <EmptyState
           icon={BookOpen}
-          title="No courses yet"
-          description="You have not enrolled in any courses yet. Browse our catalog to find something interesting."
-          action={{ label: "Browse Courses", href: "/courses" }}
+          title={t("emptyTitle")}
+          description={t("emptyText")}
+          action={{ label: t("browse"), href: "/courses" }}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -117,23 +119,23 @@ export default function DashboardPage() {
                       {course.title}
                     </h3>
                     {viaSubscription && (
-                      <Badge variant="secondary">In your plan</Badge>
+                      <Badge variant="secondary">{t("inYourPlan")}</Badge>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {course.instructor_name}
                   </p>
                   {course.access_info &&
-                    stateLine(course.access_info, locale) && (
+                    stateLine(course.access_info, locale, tSite) && (
                       <p className="text-xs text-muted-foreground">
-                        {stateLine(course.access_info, locale)}
+                        {stateLine(course.access_info, locale, tSite)}
                       </p>
                     )}
 
                   {/* Progress bar */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>Progress</span>
+                      <span>{t("progress")}</span>
                       <span>{progressPercent}%</span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
@@ -147,7 +149,7 @@ export default function DashboardPage() {
                   <Button asChild size="sm" className="w-full gap-2">
                     <NavLink href={`/learn/${course.slug}`}>
                       <Play className="h-3.5 w-3.5" />
-                      Continue Learning
+                      {tSite("enroll.continueLearning")}
                     </NavLink>
                   </Button>
                 </CardContent>

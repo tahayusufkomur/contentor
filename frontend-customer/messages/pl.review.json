@@ -5507,6 +5507,42 @@
     "src": "427c1bac",
     "reviewed": false
   },
+  "admin.shell.backToStudio": {
+    "src": "027d6f3e",
+    "reviewed": false
+  },
+  "admin.shell.expandSidebar": {
+    "src": "f462e889",
+    "reviewed": false
+  },
+  "admin.shell.collapseSidebar": {
+    "src": "9e687628",
+    "reviewed": false
+  },
+  "admin.shell.openMenu": {
+    "src": "197101e9",
+    "reviewed": false
+  },
+  "admin.shell.closeMenu": {
+    "src": "6c9fc990",
+    "reviewed": false
+  },
+  "admin.shell.creator": {
+    "src": "817b79b0",
+    "reviewed": false
+  },
+  "admin.shell.signOut": {
+    "src": "dc1649a1",
+    "reviewed": false
+  },
+  "admin.shell.signingOut": {
+    "src": "b9412f77",
+    "reviewed": false
+  },
+  "admin.shell.signOutTitle": {
+    "src": "4e8611c9",
+    "reviewed": false
+  },
   "common.actions.save": {
     "src": "efc007a3",
     "reviewed": false
@@ -5577,6 +5613,202 @@
   },
   "common.nav.signOut": {
     "src": "dc1649a1",
+    "reviewed": false
+  },
+  "common.community.justNow": {
+    "src": "a7f8e7cc",
+    "reviewed": false
+  },
+  "common.community.minutes": {
+    "src": "be206a61",
+    "reviewed": false
+  },
+  "common.community.hours": {
+    "src": "f03ede1c",
+    "reviewed": false
+  },
+  "common.community.days": {
+    "src": "bf1d74fd",
+    "reviewed": false
+  },
+  "common.community.creator": {
+    "src": "817b79b0",
+    "reviewed": false
+  },
+  "common.community.timeEdited": {
+    "src": "f2d11e33",
+    "reviewed": false
+  },
+  "common.community.awaitingApproval": {
+    "src": "d0a0d807",
+    "reviewed": false
+  },
+  "common.community.postActions": {
+    "src": "98af0bda",
+    "reviewed": false
+  },
+  "common.community.pin": {
+    "src": "9c918414",
+    "reviewed": false
+  },
+  "common.community.unpin": {
+    "src": "2eba6a03",
+    "reviewed": false
+  },
+  "common.community.removePost": {
+    "src": "4ee1b4b0",
+    "reviewed": false
+  },
+  "common.community.banMember": {
+    "src": "110f8bb2",
+    "reviewed": false
+  },
+  "common.community.report": {
+    "src": "ee45c303",
+    "reviewed": false
+  },
+  "common.community.remove": {
+    "src": "e963907d",
+    "reviewed": false
+  },
+  "common.community.saveEditError": {
+    "src": "9e2bfc1c",
+    "reviewed": false
+  },
+  "common.community.confirmDelete": {
+    "src": "7d2f30cb",
+    "reviewed": false
+  },
+  "common.community.deletePostError": {
+    "src": "abe1ccbb",
+    "reviewed": false
+  },
+  "common.community.saving": {
+    "src": "56a2285c",
+    "reviewed": false
+  },
+  "common.community.commentError": {
+    "src": "57613461",
+    "reviewed": false
+  },
+  "common.community.showMore": {
+    "src": "40805267",
+    "reviewed": false
+  },
+  "common.community.writeComment": {
+    "src": "ee6540eb",
+    "reviewed": false
+  },
+  "common.community.reply": {
+    "src": "6c2bb735",
+    "reviewed": false
+  },
+  "common.community.deleteCommentError": {
+    "src": "290d687b",
+    "reviewed": false
+  },
+  "common.community.deleteComment": {
+    "src": "4be7edcf",
+    "reviewed": false
+  },
+  "common.community.maxPhotos": {
+    "src": "86ea3d96",
+    "reviewed": false
+  },
+  "common.community.photoError": {
+    "src": "e55240aa",
+    "reviewed": false
+  },
+  "common.community.pendingApproval": {
+    "src": "046b395a",
+    "reviewed": false
+  },
+  "common.community.tooFast": {
+    "src": "a016ad00",
+    "reviewed": false
+  },
+  "common.community.cantPost": {
+    "src": "79463d0b",
+    "reviewed": false
+  },
+  "common.community.publishError": {
+    "src": "363bc5bc",
+    "reviewed": false
+  },
+  "common.community.sharePlaceholder": {
+    "src": "5e4a5cd2",
+    "reviewed": false
+  },
+  "common.community.removePhoto": {
+    "src": "c8f5eda8",
+    "reviewed": false
+  },
+  "common.community.photo": {
+    "src": "d01d9003",
+    "reviewed": false
+  },
+  "common.community.posting": {
+    "src": "20c00d70",
+    "reviewed": false
+  },
+  "common.community.post": {
+    "src": "7858ac3f",
+    "reviewed": false
+  },
+  "common.community.emptyTitle": {
+    "src": "dcd78ced",
+    "reviewed": false
+  },
+  "common.community.emptyText": {
+    "src": "5e0c6632",
+    "reviewed": false
+  },
+  "common.community.close": {
+    "src": "bbfa773e",
+    "reviewed": false
+  },
+  "common.community.react": {
+    "src": "4d1f996a",
+    "reviewed": false
+  },
+  "common.community.reportSent": {
+    "src": "6c4bacca",
+    "reviewed": false
+  },
+  "common.community.reportError": {
+    "src": "0587042b",
+    "reviewed": false
+  },
+  "common.community.reportPost": {
+    "src": "c221868a",
+    "reviewed": false
+  },
+  "common.community.reportComment": {
+    "src": "fbb1868b",
+    "reviewed": false
+  },
+  "common.community.reportDetail": {
+    "src": "0a112090",
+    "reviewed": false
+  },
+  "common.community.reporting": {
+    "src": "adbd903f",
+    "reviewed": false
+  },
+  "common.community.reasons.spam": {
+    "src": "d8628a52",
+    "reviewed": false
+  },
+  "common.community.reasons.inappropriate": {
+    "src": "62db8957",
+    "reviewed": false
+  },
+  "common.community.reasons.harassment": {
+    "src": "8fddd79e",
+    "reviewed": false
+  },
+  "common.community.reasons.other": {
+    "src": "48f88ac3",
     "reviewed": false
   },
   "pwa.installPrompt": {
@@ -6209,6 +6441,534 @@
   },
   "student.copilot.failed": {
     "src": "9ae914fa",
+    "reviewed": false
+  },
+  "student.callback.noToken": {
+    "src": "a1e2da0a",
+    "reviewed": false
+  },
+  "student.callback.authFailed": {
+    "src": "2db8daa6",
+    "reviewed": false
+  },
+  "student.callback.networkError": {
+    "src": "6cc153f0",
+    "reviewed": false
+  },
+  "student.callback.verificationFailed": {
+    "src": "e10d7e51",
+    "reviewed": false
+  },
+  "student.callback.verifying": {
+    "src": "bf6ea540",
+    "reviewed": false
+  },
+  "student.callback.welcomeBack": {
+    "src": "1c5b34d6",
+    "reviewed": false
+  },
+  "student.callback.welcomeTo": {
+    "src": "9eb4dabf",
+    "reviewed": false
+  },
+  "student.callback.yourSite": {
+    "src": "615d7c33",
+    "reviewed": false
+  },
+  "student.dashboard.title": {
+    "src": "ef8eb7e4",
+    "reviewed": false
+  },
+  "student.dashboard.orders": {
+    "src": "cded0933",
+    "reviewed": false
+  },
+  "student.dashboard.subscriptions": {
+    "src": "e77aa3b9",
+    "reviewed": false
+  },
+  "student.dashboard.emptyTitle": {
+    "src": "3dc1ad78",
+    "reviewed": false
+  },
+  "student.dashboard.emptyText": {
+    "src": "750118c3",
+    "reviewed": false
+  },
+  "student.dashboard.browse": {
+    "src": "513b240a",
+    "reviewed": false
+  },
+  "student.dashboard.inYourPlan": {
+    "src": "2b9e7b7e",
+    "reviewed": false
+  },
+  "student.dashboard.progress": {
+    "src": "1b90271d",
+    "reviewed": false
+  },
+  "student.orders.title": {
+    "src": "9c3f4c77",
+    "reviewed": false
+  },
+  "student.orders.text": {
+    "src": "7797cc37",
+    "reviewed": false
+  },
+  "student.orders.emptyTitle": {
+    "src": "9f61f6df",
+    "reviewed": false
+  },
+  "student.orders.emptyText": {
+    "src": "ff53fb6b",
+    "reviewed": false
+  },
+  "student.orders.receipt": {
+    "src": "3da41a8e",
+    "reviewed": false
+  },
+  "student.orders.paymentType.one_time": {
+    "src": "16332a79",
+    "reviewed": false
+  },
+  "student.orders.paymentType.subscription": {
+    "src": "dc917a77",
+    "reviewed": false
+  },
+  "student.orders.paymentType.refund": {
+    "src": "b51118f5",
+    "reviewed": false
+  },
+  "student.orders.status.pending": {
+    "src": "e2258693",
+    "reviewed": false
+  },
+  "student.orders.status.completed": {
+    "src": "231e564d",
+    "reviewed": false
+  },
+  "student.orders.status.failed": {
+    "src": "5f5f8758",
+    "reviewed": false
+  },
+  "student.orders.status.refunded": {
+    "src": "a994ad4d",
+    "reviewed": false
+  },
+  "student.orders.status.partially_refunded": {
+    "src": "6fef9070",
+    "reviewed": false
+  },
+  "student.subscriptions.started": {
+    "src": "10fbb530",
+    "reviewed": false
+  },
+  "student.subscriptions.title": {
+    "src": "075a188d",
+    "reviewed": false
+  },
+  "student.subscriptions.text": {
+    "src": "fb18b2a7",
+    "reviewed": false
+  },
+  "student.subscriptions.emptyTitle": {
+    "src": "2d237a17",
+    "reviewed": false
+  },
+  "student.subscriptions.emptyText": {
+    "src": "07d3339f",
+    "reviewed": false
+  },
+  "student.subscriptions.viewPlans": {
+    "src": "804787f9",
+    "reviewed": false
+  },
+  "student.subscriptions.planFallback": {
+    "src": "ae2f98a0",
+    "reviewed": false
+  },
+  "student.subscriptions.cancelsOn": {
+    "src": "cb352b61",
+    "reviewed": false
+  },
+  "student.subscriptions.renewsOn": {
+    "src": "12383cd6",
+    "reviewed": false
+  },
+  "student.subscriptions.switchingTo": {
+    "src": "472f4321",
+    "reviewed": false
+  },
+  "student.subscriptions.cancelled": {
+    "src": "33b01929",
+    "reviewed": false
+  },
+  "student.subscriptions.cancelError": {
+    "src": "2a4234f8",
+    "reviewed": false
+  },
+  "student.subscriptions.planChanged": {
+    "src": "31fd341b",
+    "reviewed": false
+  },
+  "student.subscriptions.changeError": {
+    "src": "98a83435",
+    "reviewed": false
+  },
+  "student.subscriptions.changePlan": {
+    "src": "5dccc310",
+    "reviewed": false
+  },
+  "student.subscriptions.changePlanOption": {
+    "src": "277fb378",
+    "reviewed": false
+  },
+  "student.subscriptions.planOption": {
+    "src": "4865cbbc",
+    "reviewed": false
+  },
+  "student.subscriptions.status.active": {
+    "src": "2bb6b986",
+    "reviewed": false
+  },
+  "student.subscriptions.status.past_due": {
+    "src": "67caaf5b",
+    "reviewed": false
+  },
+  "student.subscriptions.status.expired": {
+    "src": "45a6f9ad",
+    "reviewed": false
+  },
+  "student.liveClasses.title": {
+    "src": "245bab9a",
+    "reviewed": false
+  },
+  "student.liveClasses.join": {
+    "src": "e0d73143",
+    "reviewed": false
+  },
+  "student.liveClasses.upcomingTab": {
+    "src": "131ad237",
+    "reviewed": false
+  },
+  "student.liveClasses.pastTab": {
+    "src": "37a6f80c",
+    "reviewed": false
+  },
+  "student.liveClasses.emptyUpcomingTitle": {
+    "src": "a63be500",
+    "reviewed": false
+  },
+  "student.liveClasses.emptyUpcomingText": {
+    "src": "af1316d5",
+    "reviewed": false
+  },
+  "student.liveClasses.emptyPastTitle": {
+    "src": "3393b99d",
+    "reviewed": false
+  },
+  "student.liveClasses.emptyPastText": {
+    "src": "063df088",
+    "reviewed": false
+  },
+  "student.liveClasses.watchRecording": {
+    "src": "82192b78",
+    "reviewed": false
+  },
+  "student.checkout.canceled": {
+    "src": "9dbe30f4",
+    "reviewed": false
+  },
+  "student.checkout.removed": {
+    "src": "a6e263f6",
+    "reviewed": false
+  },
+  "student.checkout.paid": {
+    "src": "d80c5a9d",
+    "reviewed": false
+  },
+  "student.checkout.loginToPurchase": {
+    "src": "9cbe682c",
+    "reviewed": false
+  },
+  "student.checkout.payFailed": {
+    "src": "9bd9621b",
+    "reviewed": false
+  },
+  "student.checkout.emptyTitle": {
+    "src": "2303a3ae",
+    "reviewed": false
+  },
+  "student.checkout.emptyText": {
+    "src": "2d3498a9",
+    "reviewed": false
+  },
+  "student.checkout.goToStore": {
+    "src": "c073086a",
+    "reviewed": false
+  },
+  "student.checkout.review": {
+    "src": "988a4e4f",
+    "reviewed": false
+  },
+  "student.checkout.remove": {
+    "src": "846aee9f",
+    "reviewed": false
+  },
+  "student.checkout.orderSummary": {
+    "src": "c7df8a99",
+    "reviewed": false
+  },
+  "student.checkout.total": {
+    "src": "b25928c6",
+    "reviewed": false
+  },
+  "student.checkout.processing": {
+    "src": "93d17557",
+    "reviewed": false
+  },
+  "student.checkout.pay": {
+    "src": "0f859d7d",
+    "reviewed": false
+  },
+  "student.checkoutSuccess.confirmingLabel": {
+    "src": "3fc6f9c2",
+    "reviewed": false
+  },
+  "student.checkoutSuccess.confirming": {
+    "src": "572e7caf",
+    "reviewed": false
+  },
+  "student.checkoutSuccess.confirmingText": {
+    "src": "04fca525",
+    "reviewed": false
+  },
+  "student.checkoutSuccess.done": {
+    "src": "0195f233",
+    "reviewed": false
+  },
+  "student.checkoutSuccess.doneText": {
+    "src": "a9704080",
+    "reviewed": false
+  },
+  "student.checkoutSuccess.goToContent": {
+    "src": "02f1cb85",
+    "reviewed": false
+  },
+  "student.checkoutSuccess.pending": {
+    "src": "005287e2",
+    "reviewed": false
+  },
+  "student.checkoutSuccess.pendingText": {
+    "src": "91d3eac4",
+    "reviewed": false
+  },
+  "student.checkoutSuccess.goToDashboard": {
+    "src": "e5fa8758",
+    "reviewed": false
+  },
+  "student.communityPage.disabledTitle": {
+    "src": "9853d65e",
+    "reviewed": false
+  },
+  "student.communityPage.disabledText": {
+    "src": "f800710d",
+    "reviewed": false
+  },
+  "student.communityPage.bannedTitle": {
+    "src": "c64730d8",
+    "reviewed": false
+  },
+  "student.communityPage.bannedText": {
+    "src": "add305ac",
+    "reviewed": false
+  },
+  "student.communityPage.errorTitle": {
+    "src": "8d886c0b",
+    "reviewed": false
+  },
+  "student.communityPage.errorText": {
+    "src": "feacf6b3",
+    "reviewed": false
+  },
+  "student.communityPage.tryAgain": {
+    "src": "042c862e",
+    "reviewed": false
+  },
+  "student.communityPage.title": {
+    "src": "bfd58ee3",
+    "reviewed": false
+  },
+  "student.communityPage.introTitle": {
+    "src": "8712d826",
+    "reviewed": false
+  },
+  "student.communityPage.introText": {
+    "src": "adba948c",
+    "reviewed": false
+  },
+  "student.communityPage.photoError": {
+    "src": "7e5a16b4",
+    "reviewed": false
+  },
+  "student.communityPage.welcome": {
+    "src": "017d6550",
+    "reviewed": false
+  },
+  "student.communityPage.saveError": {
+    "src": "472f3dd0",
+    "reviewed": false
+  },
+  "student.communityPage.choosePhoto": {
+    "src": "e976bd16",
+    "reviewed": false
+  },
+  "student.communityPage.displayName": {
+    "src": "c7874aaa",
+    "reviewed": false
+  },
+  "student.communityPage.joining": {
+    "src": "f44c1e42",
+    "reviewed": false
+  },
+  "student.communityPage.join": {
+    "src": "4e22c112",
+    "reviewed": false
+  },
+  "student.learn.complete": {
+    "src": "5a63c7c8",
+    "reviewed": false
+  },
+  "student.live.goBack": {
+    "src": "e84712fb",
+    "reviewed": false
+  },
+  "student.live.connectionError": {
+    "src": "1dbb3521",
+    "reviewed": false
+  },
+  "student.live.removed": {
+    "src": "55d39c39",
+    "reviewed": false
+  },
+  "student.live.connecting": {
+    "src": "c1f3b71f",
+    "reviewed": false
+  },
+  "student.live.fakeVideo": {
+    "src": "4e2bf68c",
+    "reviewed": false
+  },
+  "student.live.loginToJoin": {
+    "src": "71e6f53d",
+    "reviewed": false
+  },
+  "student.live.session.notFound": {
+    "src": "b8a0842b",
+    "reviewed": false
+  },
+  "student.live.session.connecting": {
+    "src": "8faa3af6",
+    "reviewed": false
+  },
+  "student.live.session.connectingDots": {
+    "src": "96e68760",
+    "reviewed": false
+  },
+  "student.live.session.notStarted": {
+    "src": "83ad34e9",
+    "reviewed": false
+  },
+  "student.live.session.ended": {
+    "src": "b1829580",
+    "reviewed": false
+  },
+  "student.live.session.connectFailed": {
+    "src": "b013a26d",
+    "reviewed": false
+  },
+  "student.live.session.left": {
+    "src": "4cbcac56",
+    "reviewed": false
+  },
+  "student.live.session.endedFrame": {
+    "src": "6c431d9c",
+    "reviewed": false
+  },
+  "student.live.session.frameTitle": {
+    "src": "8f1dfa30",
+    "reviewed": false
+  },
+  "student.live.stream.notFound": {
+    "src": "ed94c75a",
+    "reviewed": false
+  },
+  "student.live.stream.connecting": {
+    "src": "ba4f29f2",
+    "reviewed": false
+  },
+  "student.live.stream.connectingDots": {
+    "src": "af4b9aaf",
+    "reviewed": false
+  },
+  "student.live.stream.notStarted": {
+    "src": "93efc776",
+    "reviewed": false
+  },
+  "student.live.stream.ended": {
+    "src": "4bc130d4",
+    "reviewed": false
+  },
+  "student.live.stream.connectFailed": {
+    "src": "a8ebf213",
+    "reviewed": false
+  },
+  "student.live.stream.left": {
+    "src": "518b389d",
+    "reviewed": false
+  },
+  "student.live.stream.endedFrame": {
+    "src": "8dcd99f5",
+    "reviewed": false
+  },
+  "student.live.stream.frameTitle": {
+    "src": "d65e4dee",
+    "reviewed": false
+  },
+  "student.lesson.auto": {
+    "src": "c614ba7c",
+    "reviewed": false
+  },
+  "student.lesson.autoPlayOn": {
+    "src": "0265c4dd",
+    "reviewed": false
+  },
+  "student.lesson.autoPlayOff": {
+    "src": "859a6b39",
+    "reviewed": false
+  },
+  "student.lesson.module": {
+    "src": "8f392722",
+    "reviewed": false
+  },
+  "student.lesson.noVideo": {
+    "src": "e45d481b",
+    "reviewed": false
+  },
+  "student.lesson.captions": {
+    "src": "1201f5be",
+    "reviewed": false
+  },
+  "student.lesson.completed": {
+    "src": "1798b3ba",
+    "reviewed": false
+  },
+  "student.lesson.markComplete": {
+    "src": "12dc4684",
+    "reviewed": false
+  },
+  "student.lesson.transcript": {
+    "src": "5bcd6022",
     "reviewed": false
   }
 }

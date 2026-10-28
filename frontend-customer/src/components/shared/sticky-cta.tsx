@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { buttonVariants } from "@/components/ui/button";
 import { NavLink } from "@/components/ui/nav-link";
@@ -23,9 +24,15 @@ export function StickyCta({
   plansEnabled?: boolean;
   menu?: SiteMenu;
 }) {
+  const t = useTranslations("site");
   const config = useTenant();
   const pathname = usePathname();
-  const cta = resolveHeaderCta(config?.navbar_config?.cta, plansEnabled, menu);
+  const cta = resolveHeaderCta(
+    config?.navbar_config?.cta,
+    plansEnabled,
+    t,
+    menu,
+  );
   const href = cta?.href;
   const [visible, setVisible] = useState(false);
   const barRef = useRef<HTMLDivElement | null>(null);

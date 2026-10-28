@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getAuthUser } from "@/lib/auth";
 import LiveRoomClient from "./live-room-client";
 
@@ -10,8 +11,12 @@ export default async function LiveRoomPage({
   params: { id: string };
 }) {
   const user = await getAuthUser();
-  if (!user)
-    redirect("/login?toast=You+need+to+log+in+to+join&toast_type=info");
+  if (!user) {
+    const t = await getTranslations("student.live");
+    redirect(
+      `/login?toast=${encodeURIComponent(t("loginToJoin"))}&toast_type=info`,
+    );
+  }
 
   return <LiveRoomClient liveClassId={params.id} />;
 }

@@ -6,16 +6,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatMoney } from "@/lib/format";
 import type { StoreItem } from "@/types/billing";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
-const TYPE_LABELS: Record<string, string> = {
-  course: "Course",
-  download: "Download",
-  live_class: "Live Session",
-  live_stream: "Live Stream",
-  onsite_event: "In-Person Event",
-  bundle: "Bundle",
-};
+const TYPE_LABEL_KEYS = {
+  course: "course.label",
+  download: "itemType.download",
+  live_class: "eventType.liveSession",
+  live_stream: "eventType.liveStream",
+  onsite_event: "eventType.inPersonEvent",
+  bundle: "itemType.bundle",
+} as const;
+
+/** A store item's kind in the reader's words; a kind we have no key for shows as stored. */
+export function itemTypeLabel(
+  type: string,
+  t: ReturnType<typeof useTranslations<"site">>,
+): string {
+  return type in TYPE_LABEL_KEYS
+    ? t(TYPE_LABEL_KEYS[type as keyof typeof TYPE_LABEL_KEYS])
+    : type.replace("_", " ");
+}
 
 interface StoreItemCardProps {
   item: StoreItem;
@@ -29,6 +39,7 @@ export function StoreItemCard({
   onAddToCart,
 }: StoreItemCardProps) {
   const locale = useLocale();
+  const t = useTranslations("site");
   const isOwned = item.access_info?.has_access;
   const isBundle = item.type === "bundle";
 
@@ -62,11 +73,11 @@ export function StoreItemCard({
         {/* Type badge */}
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-xs">
-            {TYPE_LABELS[item.type] ?? item.type}
+            {itemTypeLabel(item.type, t)}
           </Badge>
           {isOwned && (
             <Badge variant="success" className="text-xs">
-              Owned
+              {t("price.owned")}
             </Badge>
           )}
         </div>
@@ -80,7 +91,7 @@ export function StoreItemCard({
         {isBundle && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Package className="h-3.5 w-3.5" />
-            <span>{item.item_count} items</span>
+            <span>{t("plan.items", { count: item.item_count })}</span>
             {item.original_price && (
               <span className="line-through ml-1">
                 {formatMoney(item.original_price, item.currency, locale)}
@@ -102,7 +113,9 @@ export function StoreItemCard({
               onClick={() => onAddToCart(item)}
             >
               <ShoppingCart className="h-3.5 w-3.5" />
-              Add to Cart — {formatMoney(item.price, item.currency, locale)}
+              {t("store.addToCart", {
+                price: formatMoney(item.price, item.currency, locale),
+              })}
             </Button>
           )}
         </div>

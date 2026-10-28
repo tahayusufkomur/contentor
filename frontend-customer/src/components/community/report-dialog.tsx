@@ -9,6 +9,7 @@ import { reportTarget, type TargetKind } from "@/lib/community";
 import { REPORT_REASONS, type ReportReason } from "@/types/community";
 import { cn } from "@/lib/utils";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
+import { useTranslations } from "next-intl";
 
 export function ReportDialog({
   open,
@@ -21,6 +22,7 @@ export function ReportDialog({
   kind: TargetKind;
   id: number;
 }) {
+  const t = useTranslations("common");
   const [reason, setReason] = useState<ReportReason | null>(null);
   const [detail, setDetail] = useState("");
 
@@ -28,10 +30,10 @@ export function ReportDialog({
     async () => {
       if (!reason) return;
       await reportTarget(kind, id, reason, detail.trim());
-      toast.success("Thanks — a moderator will take a look.");
+      toast.success(t("community.reportSent"));
       onClose();
     },
-    { errorToast: "Couldn't send the report." },
+    { errorToast: t("community.reportError") },
   );
 
   if (!open) return null;
@@ -47,31 +49,33 @@ export function ReportDialog({
           onClick={(e) => e.stopPropagation()}
         >
           <h3 className="font-semibold">
-            Report this {kind === "posts" ? "post" : "comment"}
+            {kind === "posts"
+              ? t("community.reportPost")
+              : t("community.reportComment")}
           </h3>
           <div className="grid gap-2">
             {REPORT_REASONS.map((r) => (
               <button
-                key={r.value}
+                key={r}
                 type="button"
                 onClick={() => {
-                  setReason(r.value);
+                  setReason(r);
                   setDetail("");
                 }}
                 className={cn(
                   "rounded-lg border px-3 py-2 text-left text-sm",
-                  reason === r.value
+                  reason === r
                     ? "border-primary bg-primary/10"
                     : "border-border hover:bg-muted",
                 )}
               >
-                {r.label}
+                {t(`community.reasons.${r}`)}
               </button>
             ))}
           </div>
           {reason === "other" && (
             <Textarea
-              placeholder="Tell us more (optional)"
+              placeholder={t("community.reportDetail")}
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
               maxLength={2000}
@@ -80,15 +84,15 @@ export function ReportDialog({
           )}
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={onClose}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button
               onClick={submit}
               disabled={!reason}
               loading={busy}
-              loadingText="Reporting…"
+              loadingText={t("community.reporting")}
             >
-              Report
+              {t("community.report")}
             </Button>
           </div>
         </div>

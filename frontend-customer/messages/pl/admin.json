@@ -1729,5 +1729,16 @@
     "publishing": "Publikowanie…",
     "published": "Opublikowano. Uczestnicy mogą go teraz znaleźć na twojej stronie.",
     "publishError": "Nie udało się opublikować pliku do pobrania."
+  },
+  "shell": {
+    "backToStudio": "Wróć do Studia twórcy",
+    "expandSidebar": "Rozwiń pasek boczny",
+    "collapseSidebar": "Zwiń pasek boczny",
+    "openMenu": "Otwórz menu",
+    "closeMenu": "Zamknij menu",
+    "creator": "Twórca",
+    "signOut": "Wyloguj się",
+    "signingOut": "Wylogowywanie...",
+    "signOutTitle": "{name} — Wyloguj się"
   }
 }

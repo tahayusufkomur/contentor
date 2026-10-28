@@ -135,5 +135,169 @@
     "stopping": "Stopping…",
     "stopped": "Stopped. Nothing else will change.",
     "failed": "That didn't work. Try again."
+  },
+  "callback": {
+    "noToken": "No token provided",
+    "authFailed": "Authentication failed",
+    "networkError": "Network error",
+    "verificationFailed": "Verification failed",
+    "verifying": "Verifying...",
+    "welcomeBack": "Welcome back!",
+    "welcomeTo": "Welcome to {brand}!",
+    "yourSite": "your site"
+  },
+  "dashboard": {
+    "title": "My Courses",
+    "orders": "Orders",
+    "subscriptions": "My subscriptions",
+    "emptyTitle": "No courses yet",
+    "emptyText": "You have not enrolled in any courses yet. Browse our catalog to find something interesting.",
+    "browse": "Browse Courses",
+    "inYourPlan": "In your plan",
+    "progress": "Progress"
+  },
+  "orders": {
+    "title": "Order History",
+    "text": "Your purchases and receipts.",
+    "emptyTitle": "No orders yet",
+    "emptyText": "Your purchases will appear here with their receipts.",
+    "receipt": "View receipt",
+    "paymentType": {
+      "one_time": "one time",
+      "subscription": "subscription",
+      "refund": "refund"
+    },
+    "status": {
+      "pending": "pending",
+      "completed": "completed",
+      "failed": "failed",
+      "refunded": "refunded",
+      "partially_refunded": "partially refunded"
+    }
+  },
+  "subscriptions": {
+    "started": "Subscription started! It may take a moment to appear.",
+    "title": "My Subscriptions",
+    "text": "Manage your active memberships.",
+    "emptyTitle": "No active subscriptions",
+    "emptyText": "Browse membership plans to unlock content.",
+    "viewPlans": "View plans",
+    "planFallback": "Plan",
+    "cancelsOn": "Cancels on <b>{date}</b>",
+    "renewsOn": "Renews on <b>{date}</b>",
+    "switchingTo": "Switching to <b>{name}</b> next cycle.",
+    "cancelled": "Subscription will cancel at the end of the period.",
+    "cancelError": "Could not cancel. Please try again.",
+    "planChanged": "Plan change scheduled for your next billing cycle.",
+    "changeError": "Could not change plan. Please try again.",
+    "changePlan": "Change plan",
+    "changePlanOption": "Change plan…",
+    "planOption": "{name} — {price}",
+    "status": {
+      "active": "active",
+      "past_due": "past due",
+      "expired": "expired"
+    }
+  },
+  "liveClasses": {
+    "title": "Live Sessions",
+    "join": "Join",
+    "upcomingTab": "Upcoming ({count})",
+    "pastTab": "Past ({count})",
+    "emptyUpcomingTitle": "No upcoming sessions",
+    "emptyUpcomingText": "There are no scheduled live sessions at the moment. Check back later!",
+    "emptyPastTitle": "No past sessions",
+    "emptyPastText": "No previous live sessions to show yet.",
+    "watchRecording": "Watch Recording"
+  },
+  "checkout": {
+    "canceled": "Checkout canceled — your cart is still here.",
+    "removed": "\"{title}\" removed from cart",
+    "paid": "Payment successful! Redirecting to dashboard...",
+    "loginToPurchase": "You need to log in to purchase",
+    "payFailed": "Payment failed. Please try again.",
+    "emptyTitle": "Your cart is empty",
+    "emptyText": "Add some items from the store before checking out.",
+    "goToStore": "Go to Store",
+    "review": "Review your items before payment.",
+    "remove": "Remove {title}",
+    "orderSummary": "Order Summary",
+    "total": "Total",
+    "processing": "Processing…",
+    "pay": "Pay {total}"
+  },
+  "checkoutSuccess": {
+    "confirmingLabel": "Confirming your payment",
+    "confirming": "Confirming your payment…",
+    "confirmingText": "This only takes a moment. Please don't close this page.",
+    "done": "Payment complete!",
+    "doneText": "Your purchase is now unlocked.",
+    "goToContent": "Go to my content",
+    "pending": "Almost there",
+    "pendingText": "Your payment is processing. Your content will unlock automatically — check your dashboard in a minute.",
+    "goToDashboard": "Go to dashboard"
+  },
+  "communityPage": {
+    "disabledTitle": "Community isn't available",
+    "disabledText": "This community hasn't been switched on yet.",
+    "bannedTitle": "You can't access the community",
+    "bannedText": "Your access has been removed by a moderator.",
+    "errorTitle": "Something went wrong",
+    "errorText": "We couldn't load the community just now — give it a moment and try again.",
+    "tryAgain": "Try again",
+    "title": "Community",
+    "introTitle": "Introduce yourself",
+    "introText": "Pick the name and photo other members will see.",
+    "photoError": "Photo upload failed — try a smaller image.",
+    "welcome": "Welcome to the community!",
+    "saveError": "Couldn't save your profile.",
+    "choosePhoto": "Choose profile photo",
+    "displayName": "Display name",
+    "joining": "Joining…",
+    "join": "Join the community"
+  },
+  "learn": {
+    "complete": "{percent}% complete"
+  },
+  "live": {
+    "goBack": "Go back",
+    "connectionError": "Connection error",
+    "removed": "You were removed",
+    "connecting": "Connecting",
+    "fakeVideo": "Live video is faked here (LIVECRAFT_URL unset) — run LiveCraft to try it for real.",
+    "loginToJoin": "You need to log in to join",
+    "session": {
+      "notFound": "Live session not found",
+      "connecting": "Connecting to live session",
+      "connectingDots": "Connecting to live session...",
+      "notStarted": "This class hasn't started yet. Check back when the creator goes live.",
+      "ended": "This class has ended.",
+      "connectFailed": "Failed to connect to the live session.",
+      "left": "You left the session",
+      "endedFrame": "The session has ended",
+      "frameTitle": "Live session"
+    },
+    "stream": {
+      "notFound": "Live stream not found",
+      "connecting": "Connecting to live stream",
+      "connectingDots": "Connecting to live stream...",
+      "notStarted": "This stream hasn't started yet. Check back when the host goes live.",
+      "ended": "This stream has ended.",
+      "connectFailed": "Failed to connect to the live stream.",
+      "left": "You left the stream",
+      "endedFrame": "The stream has ended",
+      "frameTitle": "Live stream"
+    }
+  },
+  "lesson": {
+    "auto": "Auto",
+    "autoPlayOn": "Auto-play is on",
+    "autoPlayOff": "Auto-play is off",
+    "module": "Module {order}: {title}",
+    "noVideo": "No video available for this lesson.",
+    "captions": "Captions",
+    "completed": "Completed",
+    "markComplete": "Mark as Complete",
+    "transcript": "Transcript"
   }
 }

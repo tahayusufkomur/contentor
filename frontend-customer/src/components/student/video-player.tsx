@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useRef, useEffect, useCallback, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { clientFetch } from "@/lib/api-client";
@@ -22,6 +23,7 @@ export function VideoPlayer({
   onProgressUpdate,
   onLessonComplete,
 }: VideoPlayerProps) {
+  const t = useTranslations("student.lesson");
   const videoRef = useRef<HTMLVideoElement>(null);
   const trackRef = useRef<HTMLTrackElement>(null);
   const lastReportedRef = useRef(0);
@@ -117,9 +119,7 @@ export function VideoPlayer({
       <div className="flex aspect-video items-center justify-center bg-muted">
         <div className="text-center">
           <PlayCircle className="mx-auto h-12 w-12 text-muted-foreground/40" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            No video available for this lesson.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">{t("noVideo")}</p>
         </div>
       </div>
     );
@@ -139,7 +139,7 @@ export function VideoPlayer({
             kind="captions"
             src={lesson.captions_url}
             srcLang={lesson.captions_language || undefined}
-            label={languageName(lesson.captions_language)}
+            label={languageName(lesson.captions_language, t("captions"))}
             default
           />
         )}
@@ -148,7 +148,7 @@ export function VideoPlayer({
         {progress?.completed ? (
           <Badge variant="success" className="gap-1">
             <CheckCircle2 className="h-3 w-3" />
-            Completed
+            {t("completed")}
           </Badge>
         ) : (
           <Button
@@ -158,14 +158,14 @@ export function VideoPlayer({
             className="gap-2"
           >
             <CheckCircle2 className="h-4 w-4" />
-            Mark as Complete
+            {t("markComplete")}
           </Button>
         )}
       </div>
       {cues.length > 0 && (
         <details className="border-t px-4 py-3">
           <summary className="cursor-pointer text-sm font-medium">
-            Transcript
+            {t("transcript")}
           </summary>
           <p className="mt-3 max-h-72 overflow-y-auto text-sm leading-relaxed text-muted-foreground">
             {cues.map((cue) => (
@@ -187,8 +187,8 @@ export function VideoPlayer({
 }
 
 /** The language's own name ("Türkçe", "polski"), the same on server and client. */
-function languageName(code: string) {
-  if (!code) return "Captions";
+function languageName(code: string, fallback: string) {
+  if (!code) return fallback;
   try {
     return new Intl.DisplayNames([code], { type: "language" }).of(code) ?? code;
   } catch {

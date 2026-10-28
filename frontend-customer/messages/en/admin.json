@@ -1729,5 +1729,16 @@
     "publishing": "Publishing…",
     "published": "Published. Students can find it on your site now.",
     "publishError": "Could not publish the download."
+  },
+  "shell": {
+    "backToStudio": "Back to Creator studio",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "creator": "Creator",
+    "signOut": "Sign out",
+    "signingOut": "Signing out...",
+    "signOutTitle": "{name} — Sign out"
   }
 }

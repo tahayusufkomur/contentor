@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { CheckCircle2, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ const POLL_INTERVAL_MS = 2000;
 const MAX_POLLS = 15;
 
 function SuccessInner() {
+  const t = useTranslations("student.checkoutSuccess");
   const navigate = useNavigate();
   const searchParams = useSearchParams();
   const paymentId = searchParams.get("payment_id");
@@ -68,37 +70,32 @@ function SuccessInner() {
         <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
           {state === "polling" && (
             <>
-              <Spinner size="lg" label="Confirming your payment" />
-              <h1 className="text-xl font-semibold">
-                Confirming your payment…
-              </h1>
+              <Spinner size="lg" label={t("confirmingLabel")} />
+              <h1 className="text-xl font-semibold">{t("confirming")}</h1>
               <p className="text-sm text-muted-foreground">
-                This only takes a moment. Please don&apos;t close this page.
+                {t("confirmingText")}
               </p>
             </>
           )}
           {state === "done" && (
             <>
               <CheckCircle2 className="h-10 w-10 text-marketing-accent" />
-              <h1 className="text-xl font-semibold">Payment complete!</h1>
-              <p className="text-sm text-muted-foreground">
-                Your purchase is now unlocked.
-              </p>
+              <h1 className="text-xl font-semibold">{t("done")}</h1>
+              <p className="text-sm text-muted-foreground">{t("doneText")}</p>
               <Button onClick={() => navigate("/dashboard")}>
-                Go to my content
+                {t("goToContent")}
               </Button>
             </>
           )}
           {state === "pending" && (
             <>
               <Clock className="h-10 w-10 text-muted-foreground" />
-              <h1 className="text-xl font-semibold">Almost there</h1>
+              <h1 className="text-xl font-semibold">{t("pending")}</h1>
               <p className="text-sm text-muted-foreground">
-                Your payment is processing. Your content will unlock
-                automatically — check your dashboard in a minute.
+                {t("pendingText")}
               </p>
               <Button variant="outline" onClick={() => navigate("/dashboard")}>
-                Go to dashboard
+                {t("goToDashboard")}
               </Button>
             </>
           )}

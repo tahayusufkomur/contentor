@@ -1,13 +1,14 @@
 export const REACTION_EMOJIS = ["❤️", "👍", "🎉", "💪", "😂"] as const;
 export type ReactionEmoji = (typeof REACTION_EMOJIS)[number];
 
+/** The words for each reason are `common.community.reasons.<reason>`. */
 export const REPORT_REASONS = [
-  { value: "spam", label: "Spam" },
-  { value: "inappropriate", label: "Inappropriate content" },
-  { value: "harassment", label: "Harassment" },
-  { value: "other", label: "Something else" },
+  "spam",
+  "inappropriate",
+  "harassment",
+  "other",
 ] as const;
-export type ReportReason = (typeof REPORT_REASONS)[number]["value"];
+export type ReportReason = (typeof REPORT_REASONS)[number];
 
 export interface CommunityAuthor {
   id: number;

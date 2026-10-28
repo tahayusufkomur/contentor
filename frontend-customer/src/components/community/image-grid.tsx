@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ModalPortal } from "@/components/ui/modal-portal";
 
 export function ImageGrid({ images }: { images: string[] }) {
+  const t = useTranslations("common");
   const [open, setOpen] = useState<number | null>(null);
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export function ImageGrid({ images }: { images: string[] }) {
               type="button"
               onClick={() => setOpen(null)}
               className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white"
-              aria-label="Close"
+              aria-label={t("community.close")}
             >
               <X className="h-5 w-5" />
             </button>

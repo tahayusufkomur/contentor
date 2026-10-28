@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSquarePlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageState } from "@/components/ui/page-state";
@@ -18,6 +19,7 @@ export function Feed({
   me: CommunityMe;
   moderator: ModeratorHooks | null;
 }) {
+  const t = useTranslations("common");
   const [pinned, setPinned] = useState<CommunityPost[]>([]);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [welcome, setWelcome] = useState("");
@@ -97,8 +99,8 @@ export function Feed({
       {posts.length === 0 && pinned.length === 0 ? (
         <EmptyState
           icon={MessageSquarePlus}
-          title="Be the first to post"
-          description="Say hi and get the conversation going. 👋"
+          title={t("community.emptyTitle")}
+          description={t("community.emptyText")}
         />
       ) : (
         posts.map((post) => (
@@ -113,7 +115,7 @@ export function Feed({
       )}
       {next && (
         <Button variant="outline" className="w-full" onClick={loadMore}>
-          Load more
+          {t("actions.loadMore")}
         </Button>
       )}
     </PageState>
