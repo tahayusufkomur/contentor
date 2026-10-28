@@ -110,3 +110,22 @@ def test_session_claims_reads_header_then_cookie_and_never_raises(site):
     assert session_claims(request)["role"] == "owner"
     assert session_claims(rf.get("/", HTTP_AUTHORIZATION="Bearer nonsense")) is None
     assert session_claims(rf.get("/")) is None
+
+
+def test_a_site_without_its_config_table_answers_english(site):
+    """Half-provisioned or being torn down: the schema has no tenant_config table."""
+    from django.db import connection
+
+    with connection.cursor() as cursor:
+        cursor.execute("ALTER TABLE tenant_config_tenantconfig RENAME TO tenant_config_tenantconfig_gone")
+    try:
+        response = _get(HTTP_ACCEPT_LANGUAGE="de")
+    finally:
+        with connection.cursor() as cursor:
+            cursor.execute("ALTER TABLE tenant_config_tenantconfig_gone RENAME TO tenant_config_tenantconfig")
+    assert response.headers["Content-Language"] == "en"
+    assert response.status_code != 500
+
+
+def test_responses_vary_on_what_picks_the_language(site):
+    assert {"Accept-Language", "Cookie"} <= set(_get().headers["Vary"].replace(" ", "").split(","))
