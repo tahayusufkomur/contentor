@@ -31,6 +31,7 @@ PLURAL_SEP = " ||| "  # joins the forms of a plural entry in an export row
 
 class _Item(BaseModel):
     key: str
+    en: str
     text: str
 
 
@@ -42,7 +43,8 @@ _SYSTEM = (
     "You translate the interface text of Contentor, a platform where creators build and sell online courses, "
     "memberships and downloads, from English into {name}. The user message is a JSON list of items, each with a "
     "key, the English text (en) and where it appears (where; context only). Reply with one item per key: the same "
-    "key and text, the translation of en. Keep placeholders exactly as written: {{name}}, {{count}}, %(name)s. "
+    "key, the same en copied exactly as given, and text, the translation of that en. "
+    "Keep placeholders exactly as written: {{name}}, {{count}}, %(name)s. "
     "In ICU messages keep the argument names and the words plural, select, one, other and the # sign, translate "
     "only the text inside the branches, and write every plural category {name} needs (Polish needs one, few, many "
     "and other). Keep HTML-like tags such as <b>...</b> in place and translate the words between them. Keep the "
@@ -67,6 +69,10 @@ def _ok(item: dict, text) -> bool:
     return bool(text and text.strip()) and _tokens(item["en"]) == _tokens(text)
 
 
+def _same(a: str, b: str) -> bool:
+    return " ".join(a.split()) == " ".join(b.split())
+
+
 def _draft_batch(lang: str, batch: list[dict]) -> dict:
     system = _SYSTEM.format(name=languages.info(lang)["name"]) + languages.rule(lang)
     user = json.dumps({"items": batch}, ensure_ascii=False)
@@ -82,7 +88,9 @@ def _draft_batch(lang: str, batch: list[dict]) -> dict:
     except ai.AiError as exc:
         sys.stderr.write(f"translate: a batch of {len(batch)} failed: {exc}\n")
         return {}
-    return {item.key: item.text for item in out.items}
+    english = {item["key"]: item["en"] for item in batch}
+    # a reply that slid onto the next key echoes another item's English: refuse it
+    return {item.key: item.text for item in out.items if _same(item.en, english.get(item.key, ""))}
 
 
 def draft(lang: str, items: list[dict]):

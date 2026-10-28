@@ -25,7 +25,7 @@ def calls(monkeypatch):
     def fake(**kwargs):
         seen.append(kwargs)
         items = json.loads(kwargs["user"])["items"]
-        drafts = cmd._Drafts(items=[cmd._Item(key=i["key"], text=f"[x] {i['en']}") for i in items])
+        drafts = cmd._Drafts(items=[cmd._Item(key=i["key"], en=i["en"], text=f"[x] {i['en']}") for i in items])
         return drafts, Decimal("0"), kwargs["model"]
 
     monkeypatch.setattr(cmd.ai, "structured", fake)
@@ -74,11 +74,50 @@ def test_draft_retries_a_lost_placeholder_then_gives_up(monkeypatch):
     def fake(**kwargs):
         attempts.append(1)
         key = json.loads(kwargs["user"])["items"][0]["key"]
-        return cmd._Drafts(items=[cmd._Item(key=key, text="Hallo")]), Decimal("0"), "m"
+        return cmd._Drafts(items=[cmd._Item(key=key, en="Hello {name}", text="Hallo")]), Decimal("0"), "m"
 
     monkeypatch.setattr(cmd.ai, "structured", fake)
     done, failed = cmd.draft("de", [{"key": "k", "en": "Hello {name}", "where": ""}])
     assert (done, failed, len(attempts)) == ({}, ["k"], 2)
+
+
+def _shifted(attempts):
+    """A model whose reply slid by one item: key N carries item N+1's English and translation."""
+
+    def fake(**kwargs):
+        attempts.append(1)
+        items = json.loads(kwargs["user"])["items"]
+        moved = items[1:] + items[:1]
+        out = [cmd._Item(key=i["key"], en=m["en"], text=f"[x] {m['en']}") for i, m in zip(items, moved, strict=False)]
+        return cmd._Drafts(items=out), Decimal("0"), "m"
+
+    return fake
+
+
+def test_draft_rejects_a_reply_shifted_onto_the_next_key(monkeypatch):
+    attempts = []
+    monkeypatch.setattr(cmd.ai, "structured", _shifted(attempts))
+    items = [{"key": str(n), "en": text, "where": ""} for n, text in enumerate(["Start now", "Price", "Join"])]
+    done, failed = cmd.draft("de", items)
+    assert (done, failed, len(attempts)) == ({}, ["0", "1", "2"], 2)  # retried once, never accepted
+
+
+def test_draft_accepts_items_that_echo_their_own_english(calls):
+    items = [
+        {"key": "0", "en": "Start  now", "where": ""},
+        {"key": "1", "en": "Price", "where": ""},
+    ]
+    done, failed = cmd.draft("de", items)
+    assert done == {"0": "[x] Start  now", "1": "[x] Price"} and failed == []
+
+
+def test_draft_ignores_whitespace_differences_in_the_echo(monkeypatch):
+    def fake(**kwargs):
+        key = json.loads(kwargs["user"])["items"][0]["key"]
+        return cmd._Drafts(items=[cmd._Item(key=key, en=" Start\n now ", text="Jetzt starten")]), Decimal("0"), "m"
+
+    monkeypatch.setattr(cmd.ai, "structured", fake)
+    assert cmd.draft("de", [{"key": "k", "en": "Start now", "where": ""}]) == ({"k": "Jetzt starten"}, [])
 
 
 def test_po_mode_drafts_untranslated_entries_as_fuzzy(calls, locale, tmp_path):
