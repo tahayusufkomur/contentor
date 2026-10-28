@@ -7,7 +7,9 @@ import secrets
 
 from django.conf import settings
 from django.db import IntegrityError, transaction
+from django.utils.functional import Promise
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 
 from apps.core.constants import RESERVED_SLUGS, SITE_PLACEHOLDER_PREFIX
 
@@ -17,7 +19,7 @@ NAME_MAX = 100
 
 
 class NameRefusedError(ValueError):
-    """The name can't be used; the message is an i18n_helpers.msg key."""
+    """The name can't be used; the message is a PROBLEMS key."""
 
 
 def placeholder_site() -> str:
@@ -45,8 +47,14 @@ def token_tenant(payload: dict):
     return Tenant.objects.filter(slug=slug, region=payload.get("region", "global")).first() if slug else None
 
 
+PROBLEMS: dict[str, Promise] = {
+    "brand_taken": _("Brand name already taken"),
+    "brand_unusable": _("Please use letters or numbers in your brand name"),
+}
+
+
 def name_problem(name: str, tenant=None) -> str | None:
-    """Why ``name`` can't name a site (an i18n_helpers.msg key), or None.
+    """Why ``name`` can't name a site (a PROBLEMS key), or None.
     ``tenant`` may keep the address it already has."""
     from apps.core.models import Tenant
 

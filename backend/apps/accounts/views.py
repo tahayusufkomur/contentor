@@ -9,6 +9,7 @@ from django.db import connection
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -85,9 +86,7 @@ def magic_link_request(request):
             # Never write the token/link to prod logs (they ship off-box).
             logger.error("Failed to send magic-link email to %s (link withheld from logs)", email)
 
-    from apps.core.i18n_helpers import msg
-
-    return Response({"detail": msg(request, "magic_link_sent")})
+    return Response({"detail": _("If an account exists, a magic link has been sent.")})
 
 
 def _login_user_response(request, tenant, email, via="magic_link"):
@@ -142,15 +141,14 @@ def _login_user_response(request, tenant, email, via="magic_link"):
 def magic_link_verify(request):
     serializer = MagicLinkVerifySerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    from apps.core.i18n_helpers import msg
 
     try:
         payload = verify_magic_link_token(serializer.validated_data["token"])
     except Exception:
-        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("Invalid or expired token")}, status=status.HTTP_400_BAD_REQUEST)
     tenant = connection.tenant
     if payload["tenant_id"] != tenant.schema_name:
-        return Response({"detail": msg(request, "token_wrong_tenant")}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Token not valid for this tenant")}, status=status.HTTP_403_FORBIDDEN)
     return _login_user_response(request, tenant, payload["email"], via="magic_link")
 
 
@@ -159,8 +157,6 @@ def magic_link_verify(request):
 @permission_classes([AllowAny])
 @throttle_classes([MagicLinkThrottle])
 def magic_link_verify_code(request):
-    from apps.core.i18n_helpers import msg
-
     serializer = MagicLinkVerifyCodeSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     tenant = connection.tenant
@@ -168,7 +164,7 @@ def magic_link_verify_code(request):
     from apps.accounts import login_code
 
     if not login_code.check(tenant.schema_name, email, serializer.validated_data["code"]):
-        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("Invalid or expired token")}, status=status.HTTP_400_BAD_REQUEST)
     return _login_user_response(request, tenant, email, via="code")
 
 
@@ -235,7 +231,6 @@ def impersonate_verify(request):
     session on this domain), so this endpoint takes no auth class — mirrors
     magic-link verify.
     """
-    from apps.core.i18n_helpers import msg
 
     from .tokens import verify_impersonation_token
 
@@ -243,11 +238,11 @@ def impersonate_verify(request):
     try:
         payload = verify_impersonation_token(token)
     except Exception:
-        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("Invalid or expired token")}, status=status.HTTP_400_BAD_REQUEST)
 
     tenant = connection.tenant
     if payload["tenant_id"] != tenant.schema_name:
-        return Response({"detail": msg(request, "token_wrong_tenant")}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Token not valid for this tenant")}, status=status.HTTP_403_FORBIDDEN)
 
     # Single-use: burn the jti. If Redis is unavailable we log and proceed —
     # the 120s expiry still bounds replay.
@@ -352,11 +347,9 @@ def update_me(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def update_locale(request):
-    from apps.core.i18n_helpers import msg
-
     locale = (request.data.get("locale") or "").strip().lower()
     if locale != "en":
-        return Response({"detail": msg(request, "unsupported_locale")}, status=400)
+        return Response({"detail": _("Unsupported locale")}, status=400)
     user = request.user
     user.preferred_locale = locale
     user.save(update_fields=["preferred_locale"])

@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.utils import timezone
 from django.utils.text import slugify
+from django.utils.translation import gettext as _
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -39,7 +40,6 @@ def creator_signup(request):
     serializer.is_valid(raise_exception=True)
 
     from apps.core.constants import SITE_PLACEHOLDER_PREFIX
-    from apps.core.i18n_helpers import msg
 
     from .site_name import placeholder_site
 
@@ -83,7 +83,7 @@ def creator_signup(request):
             # Never write the verification token/link to prod logs.
             logger.error("Failed to send signup verification email to %s (link withheld from logs)", email)
 
-    return Response({"detail": msg(request, "verification_sent"), "site": site})
+    return Response({"detail": _("Verification email sent. Check your inbox."), "site": site})
 
 
 @api_view(["POST"])
@@ -93,7 +93,6 @@ def creator_signup(request):
 def check_brand_name(request):
     """Is this site name available? Read-only: /setup's name question asks it
     before the name is sent (site_name.rename checks again)."""
-    from apps.core.i18n_helpers import msg
 
     region = getattr(request, "region", "global")
     if request.data.get("ideas") is not None:
@@ -102,7 +101,7 @@ def check_brand_name(request):
 
         topic, first = request.data.get("ideas"), request.data.get("first_name") or ""
         if not isinstance(topic, str) or not isinstance(first, str):
-            return Response({"detail": msg(request, "brand_required")}, status=400)
+            return Response({"detail": _("Brand name is required")}, status=400)
         names = ideas(topic, first)
         taken = set(
             Tenant.objects.filter(slug__in=[slugify(n)[:63] for n in names if n], region=region).values_list(
@@ -113,12 +112,12 @@ def check_brand_name(request):
 
     brand_name = (request.data.get("brand_name") or "").strip()
     if not brand_name:
-        return Response({"detail": msg(request, "brand_required")}, status=400)
+        return Response({"detail": _("Brand name is required")}, status=400)
 
-    from .site_name import name_problem
+    from .site_name import PROBLEMS, name_problem
 
     if problem := name_problem(brand_name):
-        return Response({"available": False, "detail": msg(request, problem)})
+        return Response({"available": False, "detail": str(PROBLEMS[problem])})
     if not request.data.get("review"):
         return Response({"available": True})
     # A typo fix and a few alternatives, only the ones still free to take.
@@ -145,12 +144,11 @@ def creator_signup_authenticated(request):
     We mint the same signup token directly (no email sent) and hand it back so
     the frontend can resume at ``/signup/verify`` exactly like the email flow.
     """
-    from apps.core.i18n_helpers import msg
 
     user = request.user
     # Only coaches/owners provision platforms; students must not.
     if user.role not in ("coach", "owner"):
-        return Response({"detail": msg(request, "permission_denied")}, status=403)
+        return Response({"detail": _("Permission denied.")}, status=403)
 
     from .site_name import placeholder_site
 
@@ -174,11 +172,10 @@ def creator_signup_authenticated(request):
 @permission_classes([AllowAny])
 def creator_signup_verify(request):
     """Step 2: Verify email token and create the tenant."""
-    from apps.core.i18n_helpers import msg
 
     token = request.data.get("token")
     if not token:
-        return Response({"detail": msg(request, "token_required")}, status=400)
+        return Response({"detail": _("Token required")}, status=400)
 
     # verify_wizard_token accepts BOTH purposes (signup + wizard), so the
     # 15-minute email link and the 7-day resume/recovery links all land here.
@@ -187,7 +184,7 @@ def creator_signup_verify(request):
     try:
         payload = verify_wizard_token(token)
     except Exception:
-        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
+        return Response({"detail": _("Invalid or expired token")}, status=400)
 
     email = payload["email"]
     region = payload.get("region", "global")
@@ -199,7 +196,7 @@ def creator_signup_verify(request):
     base_domain = settings.CONTENTOR_DOMAIN
     tenant = token_tenant(payload)
     if tenant is None and not payload.get("site"):  # a link sent before sites were named in /setup
-        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
+        return Response({"detail": _("Invalid or expired token")}, status=400)
 
     if tenant is not None:
         if tenant.owner_email != email:
@@ -350,21 +347,20 @@ def _resolve_tenant_from_signup_token(request) -> tuple[dict | None, Tenant | No
     is None on return.
     """
     from apps.accounts.tokens import verify_signup_token
-    from apps.core.i18n_helpers import msg
 
     token = request.data.get("token")
     if not token:
-        return None, None, Response({"detail": msg(request, "token_required")}, status=400)
+        return None, None, Response({"detail": _("Token required")}, status=400)
     try:
         payload = verify_signup_token(token)
     except Exception:
-        return None, None, Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
+        return None, None, Response({"detail": _("Invalid or expired token")}, status=400)
 
     from .site_name import token_tenant
 
     tenant = token_tenant(payload)
     if tenant is None:
-        return None, None, Response({"detail": msg(request, "tenant_not_found")}, status=404)
+        return None, None, Response({"detail": _("Tenant not found")}, status=404)
     if tenant.owner_email != payload["email"]:
         return None, None, Response({"detail": "Token does not match tenant owner."}, status=403)
     return payload, tenant, None
@@ -463,16 +459,14 @@ def onboarding_handoff(request):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def provisioning_status(request):
-    from apps.core.i18n_helpers import msg
-
     slug = request.query_params.get("slug")
     if not slug:
-        return Response({"detail": msg(request, "slug_required")}, status=400)
+        return Response({"detail": _("slug parameter required")}, status=400)
     region = getattr(request, "region", "global")
     try:
         tenant = Tenant.objects.get(slug=slug, region=region)
     except Tenant.DoesNotExist:
-        return Response({"detail": msg(request, "tenant_not_found")}, status=404)
+        return Response({"detail": _("Tenant not found")}, status=404)
     base_domain = settings.CONTENTOR_DOMAIN
     fqdn = f"{tenant.slug}.{base_domain}"
     return Response(
@@ -492,21 +486,20 @@ def _resolve_tenant_from_wizard_token(request):
     is None. Accepts wizard tokens and still-valid signup tokens.
     """
     from apps.accounts.tokens import verify_wizard_token
-    from apps.core.i18n_helpers import msg
 
     token = request.data.get("token")
     if not token:
-        return None, None, Response({"detail": msg(request, "token_required")}, status=400)
+        return None, None, Response({"detail": _("Token required")}, status=400)
     try:
         payload = verify_wizard_token(token)
     except Exception:
-        return None, None, Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
+        return None, None, Response({"detail": _("Invalid or expired token")}, status=400)
 
     from .site_name import token_tenant
 
     tenant = token_tenant(payload)
     if tenant is None:
-        return None, None, Response({"detail": msg(request, "tenant_not_found")}, status=404)
+        return None, None, Response({"detail": _("Tenant not found")}, status=404)
     if tenant.owner_email != payload["email"]:
         return None, None, Response({"detail": "Token does not match tenant owner."}, status=403)
     return payload, tenant, None

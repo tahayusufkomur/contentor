@@ -20,6 +20,9 @@ if [[ "$1" == "gunicorn" ]]; then
     echo "Running tenant schema migrations..."
     python manage.py migrate_schemas --tenant --verbosity 0
 
+    # The dev bind mount hides the image's .mo files; prod just rebuilds the same ones.
+    python manage.py compilemessages --use-fuzzy --verbosity 0
+
     echo "Collecting static files..."
     python manage.py collectstatic --noinput --verbosity 0
 

@@ -1,0 +1,60 @@
+# Contentor backend messages (pl). English is the source.
+# Machine drafts carry the fuzzy flag until a person has reviewed them.
+msgid ""
+msgstr ""
+"Project-Id-Version: Contentor\n"
+"Report-Msgid-Bugs-To: \n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+
+#: apps/accounts/views.py
+msgid "If an account exists, a magic link has been sent."
+msgstr ""
+
+#: apps/accounts/views.py apps/core/onboarding/recovery.py
+#: apps/core/onboarding/views.py
+msgid "Invalid or expired token"
+msgstr ""
+
+#: apps/accounts/views.py
+msgid "Token not valid for this tenant"
+msgstr ""
+
+#: apps/accounts/views.py
+msgid "Unsupported locale"
+msgstr ""
+
+#: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
+msgid "Token required"
+msgstr ""
+
+#: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
+msgid "Tenant not found"
+msgstr ""
+
+#: apps/core/onboarding/site_name.py
+msgid "Brand name already taken"
+msgstr ""
+
+#: apps/core/onboarding/site_name.py
+msgid "Please use letters or numbers in your brand name"
+msgstr ""
+
+#: apps/core/onboarding/views.py
+msgid "Verification email sent. Check your inbox."
+msgstr ""
+
+#: apps/core/onboarding/views.py
+msgid "Brand name is required"
+msgstr ""
+
+#: apps/core/onboarding/views.py
+msgid "Permission denied."
+msgstr ""
+
+#: apps/core/onboarding/views.py
+msgid "slug parameter required"
+msgstr ""

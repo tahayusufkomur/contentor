@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -246,23 +247,22 @@ def wizard_recover(request):
         return denied
 
     from apps.accounts.tokens import decode_wizard_token_allow_expired
-    from apps.core.i18n_helpers import msg
 
     token = request.data.get("token")
     if not token:
-        return Response({"detail": msg(request, "token_required")}, status=400)
+        return Response({"detail": _("Token required")}, status=400)
     try:
         payload = decode_wizard_token_allow_expired(token)
     except Exception:
-        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
+        return Response({"detail": _("Invalid or expired token")}, status=400)
 
     from .site_name import token_tenant
 
     if not payload.get("site") and not payload.get("brand_name"):
-        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
+        return Response({"detail": _("Invalid or expired token")}, status=400)
     tenant = token_tenant(payload)
     if tenant is None:
-        return Response({"detail": msg(request, "tenant_not_found")}, status=404)
+        return Response({"detail": _("Tenant not found")}, status=404)
     if tenant.owner_email != payload.get("email"):
         return Response({"detail": "Token does not match tenant owner."}, status=403)
     in_interview = (tenant.wizard_state or {}).get("flow") == "interview" and not tenant.is_published

@@ -5,6 +5,23 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
 
+def session_claims(request) -> dict | None:
+    """The session JWT's claims, from the Bearer header or the cookie. No DB access;
+    None when the token is missing or invalid. Anything that needs the user checks the
+    claims against the database itself (TenantJWTAuthentication does)."""
+    token = None
+    auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:]
+    token = token or request.COOKIES.get("contentor_access_token")
+    if not token:
+        return None
+    try:
+        return jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+    except jwt.InvalidTokenError:  # includes ExpiredSignatureError
+        return None
+
+
 class CrossRegionRejection(AuthenticationFailed):
     """Raised when a JWT is valid but its region claim does not match the request region.
 

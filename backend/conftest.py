@@ -74,6 +74,27 @@ from apps.tenant_config.models import AssistantConfig, AssistantKnowledgeEntry, 
 SHARED_SCHEMA = "shared_test"
 SHARED_DOMAIN = "shared-test.localhost"
 
+
+def pytest_configure(config):
+    """Compile the .mo files once, on the xdist controller, before any worker starts.
+
+    Workers never run this (they carry `workerinput`), so nothing compiles concurrently.
+    .mo files are build output (git ignores them); the image compiles its own.
+    """
+    if hasattr(config, "workerinput"):
+        return
+    import warnings
+    from contextlib import chdir
+
+    from django.core.management import CommandError, call_command
+
+    try:
+        with chdir(settings.BASE_DIR):
+            call_command("compilemessages", use_fuzzy=True, verbosity=0)
+    except CommandError as exc:  # no gettext on this machine: tests that need .mo will say so
+        warnings.warn(f"compilemessages skipped: {exc}", stacklevel=1)
+
+
 # Tenants created by tests clone shared_test's structure without its rows (see
 # TENANT_CREATION_FAKES_MIGRATIONS in settings/test.py): a mid-test copy of
 # another test's data would be worse than an empty schema.

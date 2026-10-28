@@ -69,3 +69,6 @@ graphify-out/
 
 # impeccable design-checker local config/cache (absolute paths)
 .impeccable/
+
+# Compiled gettext catalogs (built by the image and by conftest)
+backend/locale/**/*.mo

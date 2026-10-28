@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app/backend
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc libpq-dev curl \
+    && apt-get install -y --no-install-recommends gcc libpq-dev curl gettext \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements/ requirements/
@@ -26,6 +26,9 @@ RUN if [ "$INSTALL_CLAUDE_CLI" = "1" ]; then \
     fi
 
 COPY . .
+
+# .mo files are build output (git ignores them). --use-fuzzy: machine drafts ship.
+RUN DJANGO_SETTINGS_MODULE=config.settings.base python manage.py compilemessages --use-fuzzy
 
 RUN chmod +x scripts/entrypoint.sh
 
