@@ -1,5 +1,6 @@
 "use client";
 
+import { dyn } from "@/i18n/dynamic";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, ChevronDown, ChevronRight, Copy, X } from "lucide-react";
@@ -81,8 +82,8 @@ export function SetupAssistantPanel({
       ? { ...SETUP_CATALOG[item.key], href: item.href }
       : SETUP_CATALOG[item.key];
     if (!entry) return null;
-    const title = t(`setup.items.${item.key}.title`);
-    const description = t(`setup.items.${item.key}.description`);
+    const title = t(dyn(t, `setup.items.${item.key}.title`));
+    const description = t(dyn(t, `setup.items.${item.key}.description`));
     // A row is itself a <button>/<Link> (interactive content), so this toggle
     // can't also be a real <button> — that would be invalid DOM nesting
     // (button-in-button or button-in-anchor), which React flags as a

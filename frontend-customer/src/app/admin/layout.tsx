@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { SurfaceIntl } from "@/i18n/surface-provider";
 import { requireAuth, requireRole } from "@/lib/auth";
 import { getTenantSlug } from "@/lib/tenant";
 import { setupFlowActive, sitePaused } from "@/app/setup/gate";
@@ -18,8 +19,10 @@ export default async function AdminLayout({
   // Guided onboarding owns the coach until it ends.
   if (await setupFlowActive(slug)) redirect("/setup");
   return (
-    <AdminShell user={user}>
-      {(await sitePaused(slug)) ? <PausedPlanPicker /> : children}
-    </AdminShell>
+    <SurfaceIntl>
+      <AdminShell user={user}>
+        {(await sitePaused(slug)) ? <PausedPlanPicker /> : children}
+      </AdminShell>
+    </SurfaceIntl>
   );
 }

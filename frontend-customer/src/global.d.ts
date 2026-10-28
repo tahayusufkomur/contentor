@@ -1,19 +1,17 @@
+import type admin from "../messages/en/admin.json";
+import type common from "../messages/en/common.json";
+import type pwa from "../messages/en/pwa.json";
+import type student from "../messages/en/student.json";
 import type site from "@shared/i18n/messages/en/site.json";
 import type studio from "@shared/i18n/messages/en/studio.json";
-
-// ponytail: admin/student/common/pwa stay loose. Typing them from their JSON
-// breaks ~37 existing dynamic keys (`focus.kinds.${kind}.…`, `setup.items.${id}…`)
-// in 17 files. Tighten per namespace as the extraction tasks touch those files.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Loose = Record<string, any>;
 
 declare module "next-intl" {
   interface AppConfig {
     Messages: {
-      admin: Loose;
-      student: Loose;
-      common: Loose;
-      pwa: Loose;
+      admin: typeof admin;
+      student: typeof student;
+      common: typeof common;
+      pwa: typeof pwa;
       site: typeof site;
       studio: typeof studio;
     };

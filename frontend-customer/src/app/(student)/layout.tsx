@@ -1,4 +1,5 @@
 import { requireAuth } from "@/lib/auth";
+import { SurfaceIntl } from "@/i18n/surface-provider";
 import { serverFetch } from "@/lib/api-server";
 import { ImpersonationBanner } from "@/components/shared/impersonation-banner";
 import { PublicHeader } from "@/components/shared/public-header";
@@ -34,7 +35,7 @@ export default async function StudentLayout({
   } catch {}
 
   return (
-    <>
+    <SurfaceIntl>
       <PublicHeader
         user={user}
         hasSubscription={hasSubscription}
@@ -44,6 +45,6 @@ export default async function StudentLayout({
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-6">{children}</main>
       <ImpersonationBanner />
       {user.role === "student" && <SiteAssistantBubble />}
-    </>
+    </SurfaceIntl>
   );
 }

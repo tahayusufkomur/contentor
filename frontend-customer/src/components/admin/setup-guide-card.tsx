@@ -1,5 +1,6 @@
 "use client";
 
+import { dyn } from "@/i18n/dynamic";
 import { ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -91,7 +92,7 @@ export function SetupGuideCard() {
                   {Icon ? (
                     <Icon className="h-4 w-4 text-muted-foreground" />
                   ) : null}
-                  {t(`setup.items.${item.key}.title`)}
+                  {t(dyn(t, `setup.items.${item.key}.title`))}
                   <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
                 </>
               );

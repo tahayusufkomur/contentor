@@ -1,5 +1,6 @@
 "use client";
 
+import { dyn } from "@/i18n/dynamic";
 import {
   createContext,
   useContext,
@@ -305,10 +306,12 @@ export function ActionCard({
           {card.changes.map((c, i) => (
             <li key={i}>
               <p className="text-xs font-medium text-muted-foreground">
-                {PAGE_NAME_KEYS.has(c.page) ? t(`pageNames.${c.page}`) : c.page}{" "}
+                {PAGE_NAME_KEYS.has(c.page)
+                  ? t(dyn(t, `pageNames.${c.page}`))
+                  : c.page}{" "}
                 ›{" "}
                 {FIELD_NAME_KEYS.has(c.field)
-                  ? t(`fieldNames.${c.field}`)
+                  ? t(dyn(t, `fieldNames.${c.field}`))
                   : c.field}
               </p>
               {c.old !== null && c.new !== null ? (

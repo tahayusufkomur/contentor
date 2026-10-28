@@ -1,5 +1,6 @@
 "use client";
 
+import { dyn } from "@/i18n/dynamic";
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Copy } from "lucide-react";
@@ -201,7 +202,7 @@ export function CaptionFields({ editing }: Fields) {
             <SelectItem value="spoken">{t("asSpoken")}</SelectItem>
             {LANGUAGES.filter((l) => l !== reel.source.language).map((l) => (
               <SelectItem key={l} value={l}>
-                {t(`languages.${l}`)}
+                {t(dyn(t, `languages.${l}`))}
               </SelectItem>
             ))}
           </SelectContent>

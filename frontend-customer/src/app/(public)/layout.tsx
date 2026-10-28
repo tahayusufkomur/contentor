@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAuthUser } from "@/lib/auth";
+import { SurfaceIntl } from "@/i18n/surface-provider";
 import { setupFlowActive } from "@/app/setup/gate";
 import { PublicFooter } from "@/components/shared/public-footer";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
@@ -84,11 +85,13 @@ export default async function PublicLayout({
 
   if (isAdmin && config) {
     return (
-      <EditSidebar initialConfig={config} embedded={editing}>
-        {content}
-      </EditSidebar>
+      <SurfaceIntl>
+        <EditSidebar initialConfig={config} embedded={editing}>
+          {content}
+        </EditSidebar>
+      </SurfaceIntl>
     );
   }
 
-  return content;
+  return <SurfaceIntl>{content}</SurfaceIntl>;
 }

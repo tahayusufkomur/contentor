@@ -1,5 +1,6 @@
 "use client";
 
+import { dyn } from "@/i18n/dynamic";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -338,9 +339,12 @@ export function FocusGuide() {
           <p className="flex items-center gap-2 text-sm text-foreground">
             <Spinner size="sm" />
             {t(
-              t.has(`focus.kinds.${state.kind}.thinking`)
-                ? `focus.kinds.${state.kind}.thinking`
-                : "focus.thinking",
+              dyn(
+                t,
+                t.has(dyn(t, `focus.kinds.${state.kind}.thinking`))
+                  ? `focus.kinds.${state.kind}.thinking`
+                  : "focus.thinking",
+              ),
             )}
           </p>
           <div>
@@ -357,7 +361,7 @@ export function FocusGuide() {
       )}
       {refusedLater && (
         <p className="text-sm text-foreground">
-          {t(`focus.kinds.${state.kind}.refused.${refusedLater}`)}
+          {t(dyn(t, `focus.kinds.${state.kind}.refused.${refusedLater}`))}
           {UPGRADE.includes(refusedLater) && (
             <>
               {" "}
@@ -376,9 +380,14 @@ export function FocusGuide() {
           <SpecialistFace k={question.specialist} size="sm" />
           {t(
             // A kind's own words for the step (a membership's price), else the shared ones.
-            t.has(`focus.kinds.${state.kind}.handOver.${question.field}`)
-              ? `focus.kinds.${state.kind}.handOver.${question.field}`
-              : `focus.handOver.${question.field}`,
+            dyn(
+              t,
+              t.has(
+                dyn(t, `focus.kinds.${state.kind}.handOver.${question.field}`),
+              )
+                ? `focus.kinds.${state.kind}.handOver.${question.field}`
+                : `focus.handOver.${question.field}`,
+            ),
             { name: t(`team.specialists.${question.specialist}.name`) },
           )}
         </p>
@@ -459,12 +468,12 @@ export function FocusGuide() {
           </GuideQuestion>
         ) : question.kind === "pick" &&
           question.options.length < 2 &&
-          t.has(`focus.kinds.${state.kind}.tooFew`) ? (
+          t.has(dyn(t, `focus.kinds.${state.kind}.tooFew`)) ? (
           // Too little to pick from for this kind (a bundle needs two items she
           // sells): one plain line, never an empty pick. The way forward is the
           // page's "Fill it in myself" (or the button below, once started).
           <p className="text-sm text-foreground">
-            {t(`focus.kinds.${state.kind}.tooFew`)}
+            {t(dyn(t, `focus.kinds.${state.kind}.tooFew`))}
           </p>
         ) : question.kind === "pick" || question.multi ? (
           // Her ticks are the answer: the tiles live in PickQuestion, not as taps
@@ -604,11 +613,14 @@ function OutlineReview({
         <p className="flex items-center gap-2 text-sm text-foreground">
           <Spinner size="sm" />
           {t(
-            t.has(`focus.kinds.${kind}.writing`)
-              ? `focus.kinds.${kind}.writing`
-              : copy
-                ? "focus.writingCopy"
-                : "focus.writingOutline",
+            dyn(
+              t,
+              t.has(dyn(t, `focus.kinds.${kind}.writing`))
+                ? `focus.kinds.${kind}.writing`
+                : copy
+                  ? "focus.writingCopy"
+                  : "focus.writingOutline",
+            ),
           )}
         </p>
         <div>
@@ -631,14 +643,17 @@ function OutlineReview({
       <div>
         <h2 className="text-lg font-semibold leading-snug text-foreground">
           {refused
-            ? t(`focus.kinds.${kind}.refused.${refused}`)
+            ? t(dyn(t, `focus.kinds.${kind}.refused.${refused}`))
             : failed
               ? t(
-                  t.has(`focus.kinds.${kind}.copyFailed`)
-                    ? `focus.kinds.${kind}.copyFailed`
-                    : copy
-                      ? "focus.copyFailed"
-                      : "focus.outlineFailed",
+                  dyn(
+                    t,
+                    t.has(dyn(t, `focus.kinds.${kind}.copyFailed`))
+                      ? `focus.kinds.${kind}.copyFailed`
+                      : copy
+                        ? "focus.copyFailed"
+                        : "focus.outlineFailed",
+                  ),
                 )
               : question.question}
         </h2>
@@ -754,7 +769,7 @@ function CoverQuestion({
       disabled={busy || !enabled}
       onClick={() => tap(action)}
     >
-      {t(label)}
+      {t(dyn(t, label))}
     </Button>
   );
 

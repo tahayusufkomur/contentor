@@ -1,5 +1,6 @@
 "use client";
 
+import { dyn } from "@/i18n/dynamic";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -573,7 +574,7 @@ function SalesTab() {
                       <Badge
                         variant={SALE_STATUS_VARIANT[sale.status] ?? "outline"}
                       >
-                        {t(`statuses.${sale.status}`)}
+                        {t(dyn(t, `statuses.${sale.status}`))}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-right">

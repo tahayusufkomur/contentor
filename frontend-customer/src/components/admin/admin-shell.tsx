@@ -1,5 +1,6 @@
 "use client";
 
+import { looseT } from "@/i18n/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -84,7 +85,7 @@ function AdminShellContent({ children, user }: AdminShellProps) {
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
   const navSections = useMemo(() => {
-    const sections = buildAdminNav(t);
+    const sections = buildAdminNav(looseT(t));
     // Fail open: until the tenant config loads, show every page so an
     // established coach never sees her tabs pop in.
     if (config === null) return sections;
@@ -99,7 +100,7 @@ function AdminShellContent({ children, user }: AdminShellProps) {
   // the coach has not turned on.
   const focusKinds = useFocusOverview()?.kinds;
   const paletteItems = useMemo(
-    () => paletteEntries(buildAdminNav(t), t, focusKinds),
+    () => paletteEntries(buildAdminNav(looseT(t)), looseT(t), focusKinds),
     [t, focusKinds],
   );
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { dyn } from "@/i18n/dynamic";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
@@ -384,7 +385,7 @@ export function ConversationsCard({
                                   message.content,
                                   (key, values) =>
                                     t(
-                                      `assistant.${key}`,
+                                      dyn(t, `assistant.${key}`),
                                       values as Record<string, string>,
                                     ),
                                 );

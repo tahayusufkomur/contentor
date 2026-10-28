@@ -1,5 +1,6 @@
 "use client";
 
+import { looseT } from "@/i18n/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -221,7 +222,7 @@ export function CopilotBubble({ docked = false }: { docked?: boolean }) {
   const active = picked ?? specialistFor(pathname);
   const sectionLabel = useMemo(
     () =>
-      activeSection(buildAdminNav(tAdmin), {
+      activeSection(buildAdminNav(looseT(tAdmin)), {
         pathname: pathname ?? "",
         pendingHref: null,
       })?.label ?? "",

@@ -1,5 +1,6 @@
 "use client";
 
+import { dyn } from "@/i18n/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -237,7 +238,9 @@ export function ReelsHome() {
                   onClick={() => findMore()}
                   loading={starting || busy}
                   loadingText={
-                    busy ? t(`search.${search!.status}`) : t("make.starting")
+                    busy
+                      ? t(dyn(t, `search.${search!.status}`))
+                      : t("make.starting")
                   }
                   disabled={!selected || selected.words === "unavailable"}
                 >
@@ -255,7 +258,7 @@ export function ReelsHome() {
               </p>
             ) : busy ? (
               <p className="text-sm text-muted-foreground" aria-live="polite">
-                {t(`search.${search!.status}Hint`)}
+                {t(dyn(t, `search.${search!.status}Hint`))}
               </p>
             ) : search?.status === "failed" && search.detail ? (
               <p className="text-sm text-destructive">{search.detail}</p>

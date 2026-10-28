@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { getAuthUser } from "@/lib/auth";
+import { SurfaceIntl } from "@/i18n/surface-provider";
 
 export default async function AuthLayout({
   children,
@@ -11,5 +12,5 @@ export default async function AuthLayout({
   if (user) {
     redirect(user.role === "owner" || user.role === "coach" ? "/admin" : "/");
   }
-  return <>{children}</>;
+  return <SurfaceIntl>{children}</SurfaceIntl>;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { dyn } from "@/i18n/dynamic";
 import { useId } from "react";
 import { useTranslations } from "next-intl";
 import { Images } from "lucide-react";
@@ -122,7 +123,7 @@ function TargetCard({
       ? target.status === "draft"
         ? t("studio.notPublished")
         : null
-      : `${t(`events.kinds.${target.target_kind}.label`)} · ${t("studio.sessions", { count: target.sessions ?? 1 })}`;
+      : `${t(dyn(t, `events.kinds.${target.target_kind}.label`))} · ${t("studio.sessions", { count: target.sessions ?? 1 })}`;
 
   return (
     <li className="flex overflow-hidden rounded-lg border bg-card sm:flex-col">

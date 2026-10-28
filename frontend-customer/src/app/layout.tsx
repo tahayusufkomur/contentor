@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { cookies, headers } from "next/headers";
-import { NextIntlClientProvider } from "next-intl";
+import { IntlProvider } from "@/i18n/provider";
 import { getLocale, getMessages } from "next-intl/server";
 
 import { InstallPrompt } from "@/components/shared/install-prompt";
@@ -178,7 +178,7 @@ export default async function RootLayout({
         className={`bg-cinematic min-h-screen font-sans antialiased`}
         suppressHydrationWarning
       >
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <IntlProvider locale={locale} messages={messages}>
           <ThemeProvider
             attribute="class"
             storageKey={THEME_STORAGE_KEY}
@@ -227,7 +227,7 @@ export default async function RootLayout({
               </NavigationProvider>
             </TenantProvider>
           </ThemeProvider>
-        </NextIntlClientProvider>
+        </IntlProvider>
       </body>
     </html>
   );

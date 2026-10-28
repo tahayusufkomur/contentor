@@ -4,6 +4,7 @@
 // toolbar of the selected layer above it and her other covers under it. (Under 1024 px the simple controls are
 // the editor: see studio-editor.tsx.)
 
+import { dyn } from "@/i18n/dynamic";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
@@ -387,7 +388,9 @@ export function Workspace({
                 cover:
                   noun === "event"
                     ? t("editor.eventCover", {
-                        kind: ta(`events.kinds.${design.target_kind}.label`),
+                        kind: ta(
+                          dyn(ta, `events.kinds.${design.target_kind}.label`),
+                        ),
                       })
                     : t(`editor.${noun}Cover`),
                 notice,

@@ -20,8 +20,12 @@ async function load(locale: string, ns: string): Promise<Messages> {
     return SHARED.has(ns)
       ? (await import(`@shared/i18n/messages/${locale}/${ns}.json`)).default
       : (await import(`../../messages/${locale}/${ns}.json`)).default;
-  } catch {
-    return {}; // that language has no file for this namespace yet
+  } catch (e) {
+    // A language with no file for this namespace yet shows English. Anything
+    // else (bad JSON, a broken alias, English itself missing) must be loud.
+    if (locale !== "en" && (e as { code?: string }).code === "MODULE_NOT_FOUND")
+      return {};
+    throw e;
   }
 }
 
@@ -52,12 +56,13 @@ export default getRequestConfig(async () => {
     loadNamespaces(siteLocale, ns.site),
   ]);
   const locale = surface === "studio" ? creatorLocale : siteLocale;
-  const english = await loadNamespaces("en", [...ns.creator, ...ns.site]);
+  const messages = { ...site, ...creator };
 
   return {
     locale,
-    messages: { ...site, ...creator },
-    getMessageFallback: (e) => missingFallback(locale, english, e),
+    messages,
+    // Already English-filled, so only a key English lacks too gets here.
+    getMessageFallback: (e) => missingFallback(locale, messages, e),
     onError: (err) => {
       if (err.code !== "MISSING_MESSAGE") console.error(err);
     },

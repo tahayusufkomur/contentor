@@ -1,5 +1,6 @@
 "use client";
 
+import { dyn } from "@/i18n/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Bell, Mail, Megaphone } from "lucide-react";
@@ -120,12 +121,14 @@ function Row({ row, onChanged }: { row: MessageRow; onChanged: () => void }) {
 
   const { run: remove, loading: removing } = useAsyncAction(
     async () => {
-      if (!window.confirm(t(`confirm.${removal}`, { title: row.title })))
+      if (
+        !window.confirm(t(dyn(t, `confirm.${removal}`), { title: row.title }))
+      )
         return;
       await (row.kind === "email"
         ? cancelCampaign(row.id)
         : deleteAnnouncement(row.id));
-      toast.success(t(`done.${removal}`));
+      toast.success(t(dyn(t, `done.${removal}`)));
       onChanged();
     },
     { errorToast: t("removeError") },

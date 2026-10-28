@@ -8,6 +8,7 @@
 // its drawer, and the canvas with her other covers under it); under it, the simple controls beside the
 // previews, which are the whole editor there (spec E18).
 
+import { dyn } from "@/i18n/dynamic";
 import {
   useEffect,
   useMemo,
@@ -233,7 +234,9 @@ function EditorBody({
               <p className="text-sm text-muted-foreground">
                 {noun === "event"
                   ? t("editor.eventCover", {
-                      kind: ta(`events.kinds.${design.target_kind}.label`),
+                      kind: ta(
+                        dyn(ta, `events.kinds.${design.target_kind}.label`),
+                      ),
                     })
                   : t(`editor.${noun}Cover`)}
               </p>

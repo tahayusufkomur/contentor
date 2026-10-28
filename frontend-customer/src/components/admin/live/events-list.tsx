@@ -1,5 +1,6 @@
 "use client";
 
+import { dyn } from "@/i18n/dynamic";
 import {
   forwardRef,
   useCallback,
@@ -157,7 +158,10 @@ export const EventsList = forwardRef<MediaBrowserHandle>(
           return (
             <>
               <TableCell>
-                <StatusBadge status={status} label={t(`status.${status}`)} />
+                <StatusBadge
+                  status={status}
+                  label={t(dyn(t, `status.${status}`))}
+                />
               </TableCell>
               <TableCell className="font-medium">
                 <div className="min-w-0">

@@ -8,6 +8,7 @@
 // photo ids; for library photos that step also copies the image into this
 // tenant's own storage.
 
+import { dyn } from "@/i18n/dynamic";
 import { useTenant } from "@/hooks/use-tenant";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -285,7 +286,7 @@ export function ImageLibraryDialog({
                 aria-pressed={tab === key}
                 onClick={() => setTab(key)}
               >
-                {t(labelKey)}
+                {t(dyn(t, labelKey))}
               </Button>
             ))}
           </div>
@@ -333,7 +334,7 @@ export function ImageLibraryDialog({
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {t(labelKey)}
+                  {t(dyn(t, labelKey))}
                 </button>
               ))}
             </div>

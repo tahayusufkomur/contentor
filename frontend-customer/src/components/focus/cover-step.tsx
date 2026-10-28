@@ -1,5 +1,6 @@
 "use client";
 
+import { dyn } from "@/i18n/dynamic";
 import { useTranslations } from "next-intl";
 
 import { CoverArt } from "@/components/covers/cover-art";
@@ -71,7 +72,7 @@ export function CoverStep({
                     <CoverArt design={design} item={item} size="wide" />
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {t(`focus.coverStyle.${design.recipe.layout}`)}
+                    {t(dyn(t, `focus.coverStyle.${design.recipe.layout}`))}
                   </span>
                 </button>
               ))}
