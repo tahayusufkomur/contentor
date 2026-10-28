@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { manage, REPO_ROOT } from "./helpers/compose";
+import { manage, REPO_ROOT, setSiteLanguage } from "./helpers/compose";
 
 export default async function globalSetup() {
   // 1. Stack must be up (make dev). Fail fast with a useful message.
@@ -14,7 +14,11 @@ export default async function globalSetup() {
     const demo = await fetch("http://localhost/api/v1/admin/config/", {
       headers: { "X-Tenant-Domain": "demo-yoga.localhost" },
     }).catch(() => null);
-    if (demo && demo.ok) return;
+    if (demo && demo.ok) {
+      // A killed run of 43-site-in-turkish may have left demo-yoga in Turkish.
+      setSiteLanguage("demo_yoga", "en");
+      return;
+    }
   }
   // 3. Idempotent seed: plans/public tenant + demo tenants (incl. demo-yoga).
   try {

@@ -16,3 +16,17 @@ export function manage(args: string[]): string {
     throw new Error(`manage.py ${args.join(" ")} failed: ${detail}`);
   }
 }
+
+/** Set a tenant's site language and drop its cached config (300 s), or the frontends keep the old one. */
+export function setSiteLanguage(schema: string, lang: string): void {
+  manage([
+    "shell",
+    "-c",
+    "from django.core.cache import cache\n" +
+      "from django_tenants.utils import schema_context\n" +
+      "from apps.tenant_config.models import TenantConfig\n" +
+      `with schema_context('${schema}'):\n` +
+      `    TenantConfig.objects.update(default_locale='${lang}')\n` +
+      `cache.delete('tenant:${schema}:config')`,
+  ]);
+}
