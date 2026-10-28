@@ -1,0 +1,29 @@
+{
+  "voice": {
+    "de": "Address the reader informally with du.",
+    "pl": "Address the reader informally with ty.",
+    "tr": "Address the reader informally with sen."
+  },
+  "terms": [
+    {"en": "creator", "tr": "içerik üreticisi", "de": "Creator", "pl": "twórca", "note": "never coach, teacher or instructor"},
+    {"en": "Creator studio", "tr": "Creator stüdyosu", "de": "Creator-Studio", "pl": "Studio twórcy"},
+    {"en": "platform", "tr": "platform", "de": "Plattform", "pl": "platforma", "note": "never school"},
+    {"en": "course", "tr": "kurs", "de": "Kurs", "pl": "kurs"},
+    {"en": "module", "tr": "modül", "de": "Modul", "pl": "moduł"},
+    {"en": "lesson", "tr": "ders", "de": "Lektion", "pl": "lekcja"},
+    {"en": "download", "tr": "indirilebilir dosya", "de": "Download", "pl": "plik do pobrania"},
+    {"en": "digital content", "tr": "dijital içerik", "de": "digitale Inhalte", "pl": "treści cyfrowe"},
+    {"en": "live session", "tr": "canlı oturum", "de": "Live-Session", "pl": "sesja na żywo", "note": "never live class"},
+    {"en": "live stream", "tr": "canlı yayın", "de": "Livestream", "pl": "transmisja na żywo"},
+    {"en": "in-person event", "tr": "yüz yüze etkinlik", "de": "Präsenzveranstaltung", "pl": "wydarzenie stacjonarne"},
+    {"en": "membership", "tr": "üyelik", "de": "Mitgliedschaft", "pl": "członkostwo"},
+    {"en": "plan", "tr": "plan", "de": "Tarif", "pl": "plan"},
+    {"en": "student", "tr": "öğrenci", "de": "Teilnehmer", "pl": "uczestnik", "note": "a person who follows a creator's courses; not a school pupil"},
+    {"en": "look", "tr": "görünüm", "de": "Look", "pl": "wygląd", "note": "the visual style of a site"},
+    {"en": "page", "tr": "sayfa", "de": "Seite", "pl": "strona"},
+    {"en": "email campaign", "tr": "e-posta kampanyası", "de": "E-Mail-Kampagne", "pl": "kampania e-mailowa"},
+    {"en": "announcement", "tr": "duyuru", "de": "Ankündigung", "pl": "ogłoszenie"},
+    {"en": "community", "tr": "topluluk", "de": "Community", "pl": "społeczność"},
+    {"en": "sign in", "tr": "giriş yap", "de": "anmelden", "pl": "zaloguj się"}
+  ]
+}

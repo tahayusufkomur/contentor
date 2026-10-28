@@ -1,4 +1,4 @@
-.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets format stripe-listen deploy prod-build prod-config e2e e2e-stripe e2e-spec eval-sites test-changed e2e-changed design-shots wiki wiki-sync sections-sync footage
+.PHONY: help dev dev-reset down build restart reset migrate migrate-shared makemigrations shell test test-backend test-app test-frontend test-fresh typecheck typecheck-backend lint logs health-check ai-check seed seed-demo-assets format stripe-listen deploy prod-build prod-config e2e e2e-stripe e2e-spec eval-sites test-changed e2e-changed design-shots wiki wiki-sync sections-sync translate translate-export translate-import footage
 
 # Prod env lives in Cloudflare KV (fleet scripts/secrets.sh, Touch ID), not on
 # disk. Targets that need it materialize .env.prod for that one command only.
@@ -23,7 +23,7 @@ help: ## Show this help
 	@grep -E '^(test|test-backend|test-app|test-changed|test-frontend|test-fresh|typecheck|typecheck-backend|lint|format):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Utilities ---\033[0m"
-	@grep -E '^(shell|health-check|wiki|wiki-sync|footage):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^(shell|health-check|wiki|wiki-sync|translate|translate-export|translate-import|footage):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "\033[1;33m--- Deploy ---\033[0m"
 	@grep -E '^(deploy|prod-build|prod-config):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -144,6 +144,15 @@ lint: ## Run all linters via pre-commit, then loading-pattern check, selector se
 
 sections-sync: ## Copy the section manifest (packages/shared/src/sections) into the backend
 	python3 scripts/sync_sections.py
+
+translate: ## Draft missing translations with the glossary (TO=tr to pick one language, REDRAFT=1 to redo unreviewed drafts)
+	python3 scripts/translate.py $(if $(TO),--to $(TO)) $(if $(REDRAFT),--redraft)
+
+translate-export: ## Write the unreviewed texts of one language to i18n-review-<TO>.csv (TO=pl)
+	python3 scripts/translate.py export $(TO)
+
+translate-import: ## Take a reviewed sheet back in (FILE=i18n-review-pl.csv)
+	python3 scripts/translate.py import $(FILE)
 
 format: ## Auto-format backend (ruff) and frontend (prettier)
 	cd backend && ruff format .

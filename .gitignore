@@ -16,6 +16,9 @@ db.sqlite3
 /mediafiles/
 backend/staticfiles/
 
+# i18n review sheets from `make translate-export`
+/i18n-review-*.csv
+
 # Environment
 .env
 .env.*

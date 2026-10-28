@@ -17,10 +17,10 @@ SRC = ROOT / "packages/shared/src/sections"
 DST = ROOT / "backend/apps/tenant_config/sections_manifest"
 CX_SRC = ROOT / "packages/shared/src/cx/primitives.json"
 CX_NAME = "cx/primitives.json"
-# The locale list (and, later, the glossary) feeds Django through a synced copy.
+# The locale list and the glossary feed Django through a synced copy.
 I18N_SRC = ROOT / "packages/shared/src/i18n"
 I18N_DST = ROOT / "backend/apps/core/i18n"
-I18N_FILES = ("locales.json",)
+I18N_FILES = ("locales.json", "glossary.json")
 
 
 # The structures a style can build its story / benefits / howItWorks with (style.bodyLayouts).

@@ -372,6 +372,9 @@ HELP_BOT_ALERT_EMAIL = os.environ.get("HELP_BOT_ALERT_EMAIL", "")
 # purged by a beat task; the *Usage meters are permanent).
 AI_TRANSCRIPT_RETENTION_DAYS = int(os.environ.get("AI_TRANSCRIPT_RETENTION_DAYS", "90"))
 
+# --- make translate (apps.core.management.commands.translate; provider from AI_PROVIDER) ---
+TRANSLATE_MODEL = os.environ.get("TRANSLATE_MODEL", "claude-opus-5-5")
+
 # --- AI blog generation (apps.blog.ai; provider comes from AI_PROVIDER) ---
 BLOG_AI_MODEL = os.environ.get("BLOG_AI_MODEL", "claude-sonnet-5")
 BLOG_AI_TOPIC_MODEL = os.environ.get("BLOG_AI_TOPIC_MODEL", "claude-haiku-4-5")
