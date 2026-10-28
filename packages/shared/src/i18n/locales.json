@@ -1,0 +1,6 @@
+{"default": "en", "locales": [
+  {"code": "en", "name": "English", "native": "English", "subsets": ["latin"], "stripe": "en", "og": "en_US"},
+  {"code": "tr", "name": "Turkish", "native": "Türkçe", "subsets": ["latin", "latin-ext"], "stripe": "tr", "og": "tr_TR"},
+  {"code": "de", "name": "German", "native": "Deutsch", "subsets": ["latin"], "stripe": "de", "og": "de_DE"},
+  {"code": "pl", "name": "Polish", "native": "Polski", "subsets": ["latin", "latin-ext"], "stripe": "pl", "og": "pl_PL"}
+]}

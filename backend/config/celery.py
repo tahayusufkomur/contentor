@@ -2,7 +2,7 @@ import os
 
 from celery import Celery
 from celery.schedules import crontab
-from celery.signals import setup_logging
+from celery.signals import setup_logging, task_prerun
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
 app = Celery("contentor")
@@ -75,3 +75,13 @@ def configure_logging(**kwargs):
     from django.conf import settings
 
     dictConfig(settings.LOGGING)
+
+
+@task_prerun.connect
+def start_in_default_language(**kwargs):
+    """A worker process is reused: a task starts in English, not in the language
+    the previous task activated. Tasks that need another pick it with translation.override."""
+    from django.conf import settings
+    from django.utils import translation
+
+    translation.activate(settings.LANGUAGE_CODE)

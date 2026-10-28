@@ -1,6 +1,8 @@
+import json
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -198,7 +200,7 @@ LANGUAGE_CODE = "en"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
-LANGUAGES = [("en", "English")]
+# LANGUAGES: the enabled pairs only, defined with ENABLED_LOCALES below.
 LOCALE_PATHS = [BASE_DIR / "locale"]
 
 CONTENTOR_DOMAIN = os.environ.get("CONTENTOR_DOMAIN", "contentor.localhost")
@@ -431,6 +433,28 @@ def _env_bool(name: str, default: bool) -> bool:
         return default
     return raw.strip().lower() in ("1", "true", "yes", "on")
 
+
+# --- Languages ---
+# The list lives in packages/shared/src/i18n/locales.json (synced copy in apps/core/i18n).
+_ALL_LOCALES = json.loads((BASE_DIR / "apps/core/i18n/locales.json").read_text(encoding="utf-8"))["locales"]
+
+
+def _env_locales(raw: str | None) -> list[str]:
+    """ENABLED_LOCALES: comma-separated codes. English is always first and always on."""
+    known = {entry["code"] for entry in _ALL_LOCALES}
+    codes = ["en"]
+    for code in (part.strip() for part in (raw or "").split(",")):
+        if not code or code in codes:
+            continue
+        if code not in known:
+            raise ImproperlyConfigured(f"ENABLED_LOCALES: unknown locale {code!r} (known: {', '.join(sorted(known))})")
+        codes.append(code)
+    return codes
+
+
+ENABLED_LOCALES = _env_locales(os.environ.get("ENABLED_LOCALES", "en"))
+# Django only answers in an enabled language; a hidden one falls back to English.
+LANGUAGES = [(entry["code"], entry["name"]) for entry in _ALL_LOCALES if entry["code"] in ENABLED_LOCALES]
 
 # Bypass mode short-circuits Stripe in dev/test. Production refuses this in
 # `config.settings.prod`.

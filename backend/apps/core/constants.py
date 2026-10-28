@@ -4,11 +4,17 @@ Region is the primary axis of isolation. A tenant is created in one region
 and stays there forever. Locale is a downstream preference within a region.
 """
 
+import json
+from pathlib import Path
+
 REGION_GLOBAL = "global"
 REGION_CHOICES = [(REGION_GLOBAL, "Global")]
 
+# The list lives in packages/shared/src/i18n/locales.json (synced copy beside this file).
+_LOCALES = json.loads((Path(__file__).parent / "i18n" / "locales.json").read_text(encoding="utf-8"))["locales"]
+
 LOCALE_EN = "en"
-LOCALE_CHOICES = [(LOCALE_EN, "English")]
+LOCALE_CHOICES = [(entry["code"], entry["name"]) for entry in _LOCALES]
 
 CURRENCY_USD = "USD"
 CURRENCY_EUR = "EUR"

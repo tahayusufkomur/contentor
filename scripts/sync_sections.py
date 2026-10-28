@@ -17,6 +17,10 @@ SRC = ROOT / "packages/shared/src/sections"
 DST = ROOT / "backend/apps/tenant_config/sections_manifest"
 CX_SRC = ROOT / "packages/shared/src/cx/primitives.json"
 CX_NAME = "cx/primitives.json"
+# The locale list (and, later, the glossary) feeds Django through a synced copy.
+I18N_SRC = ROOT / "packages/shared/src/i18n"
+I18N_DST = ROOT / "backend/apps/core/i18n"
+I18N_FILES = ("locales.json",)
 
 
 # The structures a style can build its story / benefits / howItWorks with (style.bodyLayouts).
@@ -84,12 +88,21 @@ def _style_errors(files):
     return errors
 
 
+def _i18n_in_sync():
+    return all(
+        (I18N_DST / name).exists() and (I18N_DST / name).read_bytes() == (I18N_SRC / name).read_bytes()
+        for name in I18N_FILES
+    )
+
+
 def main():
     expected = _expected()
     errors = _style_errors(expected)
     if "--check" in sys.argv[1:]:
         if _actual() != expected:
             errors.insert(0, "backend section manifest is out of sync — run `make sections-sync`")
+        if not _i18n_in_sync():
+            errors.insert(0, "backend i18n copy is out of sync — run `make sections-sync`")
         for error in errors:
             print(f"sections: {error}", file=sys.stderr)
         return 1 if errors else 0
@@ -99,6 +112,9 @@ def main():
         (DST / stale).unlink()
     for name, data in expected.items():
         (DST / name).write_bytes(data)
+    I18N_DST.mkdir(parents=True, exist_ok=True)
+    for name in I18N_FILES:
+        (I18N_DST / name).write_bytes((I18N_SRC / name).read_bytes())
     print(f"sections: synced {len(expected)} file(s) into {DST.relative_to(ROOT)}")
     for error in errors:
         print(f"sections: warning: {error}", file=sys.stderr)

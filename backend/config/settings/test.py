@@ -20,6 +20,7 @@ Test settings — dev settings plus test-only speedups.
 import os
 import re
 
+from .base import _ALL_LOCALES, _env_locales
 from .dev import *  # noqa: F401, F403
 
 # Drop the debug cursor wrapper (per-query logging). The only DEBUG-dependent
@@ -70,3 +71,7 @@ if _worker:
 
 # Tests run the composer sequentially: worker threads can't see a test's transaction.
 SITE_COMPOSE_CONCURRENCY = 1
+
+# Every language is on in tests, whatever the developer's .env says.
+ENABLED_LOCALES = _env_locales("tr,de,pl")
+LANGUAGES = [(e["code"], e["name"]) for e in _ALL_LOCALES if e["code"] in ENABLED_LOCALES]
