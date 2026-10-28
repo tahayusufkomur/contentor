@@ -174,3 +174,88 @@ def test_a_default_header_button_in_the_site_language_still_follows_the_offer(tr
     ms.sync_site(tenant_ctx, {"offers": ["live"]})
     cta = TenantConfig.objects.first().navbar_config["cta"]
     assert cta == {"text": translated("Book a session"), "href": "/events"}
+
+
+# ── membership plans: name, perks and blurb ────────────────────────────────────────────────────
+
+OFFERS = {"with courses": ["course", "live", "onsite", "community"], "no courses": ["live", "onsite", "community"]}
+
+
+def _sync(tenant, tier, offers, teaches=None):
+    from apps.tenant_config.setup_flow import _update_flow
+
+    SubscriptionPlan.objects.all().delete()
+    _update_flow(tenant, lambda _config, flow: flow.update(drafts={}))
+    answers = {
+        "offers": offers,
+        "payments": ["membership"],
+        "memberships": [tier],
+        **({"teaches": teaches} if teaches else {}),
+    }
+    ms.sync_memberships(tenant, answers)
+    return SubscriptionPlan.objects.get()
+
+
+def _old_description(tier, teaches="everything I teach"):
+    """What setup wrote before this task (the f-strings it replaced)."""
+    perks = ", ".join(p.lower() for p in tier["perks"])
+    about = f"{tier['blurb']} {perks[:1].upper()}{perks[1:]}, for {teaches}." if perks else tier["blurb"]
+    # The one deliberate difference: lower-casing the perks turned "Everything I offer" into "Everything i offer".
+    return f"{about} Cancel any time.".replace("Everything i offer", "Everything I offer")
+
+
+@pytest.mark.parametrize("offers", OFFERS.values(), ids=OFFERS)
+@pytest.mark.parametrize("tier_id", ["digital", "online", "studio", "community", "all"])
+def test_a_membership_in_english_reads_as_it_always_did(tenant_ctx, offers, tier_id):
+    from apps.tenant_config import interview_brief as brief
+
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name=BRAND)
+    cfg.default_locale = "en"
+    cfg.save()
+    answers = {"offers": offers, "memberships": [tier_id]}
+    tier = brief.membership_of(answers, tier_id)
+    with override("tr"):  # the creator's language is not the site's
+        for teaches in (None, "Ashtanga Yoga"):
+            plan = _sync(tenant_ctx, tier_id, offers, teaches)
+            assert plan.name == tier["label"]
+            assert plan.description == _old_description(tier, teaches.lower() if teaches else "everything I teach")
+
+
+@pytest.mark.parametrize("offers", OFFERS.values(), ids=OFFERS)
+@pytest.mark.parametrize("tier_id", ["digital", "online", "studio", "community", "all"])
+def test_a_membership_on_a_turkish_site_has_no_english_left(tr_site, tenant_ctx, offers, tier_id):
+    from apps.tenant_config import interview_brief as brief
+
+    tier = brief.membership_of({"offers": offers, "memberships": [tier_id]}, tier_id)
+    plan = _sync(tenant_ctx, tier_id, offers)
+    joined = ", ".join(p.lower() for p in tier["perks"])
+    sentence = next(s for s in brief.PERKS_SENTENCES if s.lower() == joined)
+    assert plan.name == translated(tier["label"])
+    assert plan.description.startswith(translated(tier["blurb"]))
+    assert translated(sentence) in plan.description
+    for english in (tier["label"], tier["blurb"], *tier["perks"]):
+        assert english not in plan.description
+
+
+def test_a_membership_of_her_own_keeps_her_name_and_gets_a_translated_blurb(tr_site, tenant_ctx):
+    plan = _sync(tenant_ctx, "Face yoga club", ["course"])
+    assert plan.name == "Face yoga club"
+    blurb = translated("One monthly price for %(name)s.") % {"name": "face yoga club"}
+    assert plan.description == f"{blurb} {translated('Cancel any time.')}"
+
+
+def test_the_fallback_titles_and_button_label_follow_the_site_language():
+    from apps.core.onboarding import site_composer as sc
+
+    solo = sc._ctx("yoga", BRAND, "", said="I", language="tr")
+    assert solo["why"] == translated("Why I teach %(topic)s") % {"topic": "yoga"}
+    assert solo["primaryLabel"] == translated("Browse the courses")
+    team = sc._ctx("yoga", BRAND, "", said="we", language="tr")
+    assert team["why"] == translated("Why we teach %(topic)s") % {"topic": "yoga"}
+    coaching = sc._ctx("coaching", BRAND, "", subject="coaching", said="I", language="tr")
+    assert coaching["why"] == translated("Why I coach")
+    # English is what it was, whatever language is active
+    with override("tr"):
+        en = sc._ctx("yoga", BRAND, "", said="I")
+    assert (en["why"], en["primaryLabel"]) == ("Why I teach yoga", "Browse the courses")
+    assert sc._ctx("yoga", BRAND, "", said="we", links=("/about",))["primaryLabel"] == "About us"

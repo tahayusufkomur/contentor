@@ -186,6 +186,46 @@ msgid "Tenant not found"
 msgstr "Nie znaleziono witryny"
 
 #: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Why I coach"
+msgstr "Dlaczego prowadzę coaching"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Why we coach"
+msgstr "Dlaczego prowadzimy coaching"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "Why I teach %(topic)s"
+msgstr "Dlaczego uczę: %(topic)s"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "Why we teach %(topic)s"
+msgstr "Dlaczego uczymy: %(topic)s"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "About me"
+msgstr "O mnie"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "About us"
+msgstr "O nas"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Browse the courses"
+msgstr "Przeglądaj kursy"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "See the sessions"
+msgstr "Zobacz wszystkie sesje"
+
+#: apps/core/onboarding/site_composer.py
 #, fuzzy, python-format
 msgid "%(Topic)s foundations"
 msgstr "%(Topic)s: podstawy"
@@ -561,6 +601,101 @@ msgstr "Rozpocznij kurs"
 #, fuzzy
 msgid "Book a session"
 msgstr "Zarezerwuj sesję"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Digital membership"
+msgstr "Członkostwo cyfrowe"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "All the pre-recorded content, watched any time."
+msgstr "Wszystkie nagrane wcześniej treści, dostępne w dowolnej chwili."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Online membership"
+msgstr "Członkostwo online"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Every live session from home, plus the courses."
+msgstr "Każda sesja na żywo z domu, a do tego kursy."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Every live session from home."
+msgstr "Przypomnienie o sesji na żywo"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Studio membership"
+msgstr "Członkostwo w studiu"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Train at your place as often as they like."
+msgstr "Ćwiczą u ciebie tak często, jak tylko chcą."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Community membership"
+msgstr "Członkostwo w społeczności"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "A place to talk, share and stay motivated."
+msgstr "Miejsce do rozmów, dzielenia się i podtrzymywania motywacji."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "All-access"
+msgstr "Pełny dostęp"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "One membership for all of it."
+msgstr "Jedno członkostwo na wszystko."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
+msgid "One monthly price for %(name)s."
+msgstr "Jedna miesięczna cena za %(name)s."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Every digital course, new courses as they land"
+msgstr "Każdy kurs cyfrowy, nowe kursy zaraz po ich premierze"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "All live online sessions, session replays, every digital course"
+msgstr "Wszystkie sesje na żywo online, nagrania sesji, każdy kurs cyfrowy"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "All live online sessions, session replays"
+msgstr "Wszystkie sesje na żywo online, nagrania sesji"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Unlimited in-person sessions, every digital course"
+msgstr "Nielimitowane sesje stacjonarne, każdy kurs cyfrowy"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Unlimited in-person sessions"
+msgstr "Nielimitowane sesje stacjonarne"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "The members' community, members-only articles"
+msgstr "Społeczność członków, artykuły tylko dla członków"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Everything I offer"
+msgstr "Wszystko, co oferuję"
 
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy

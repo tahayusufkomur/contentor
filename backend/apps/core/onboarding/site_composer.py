@@ -226,10 +226,13 @@ def speaker(brand, description="", answers=None) -> str:
     return "I" if re.search(r"\b(i|i'm|my|me)\b", text) else "we"
 
 
-def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS, first_name="", said="", focus=None) -> dict:
-    """``said``: "I" or "we" as _coach_data read it from her answers. ``focus``: how her disciplines shape the
-    site (_coach_data["focus"]: mode "equal" | "primary", "disciplines" lead first, and for a main focus
-    "primary" and "secondary"), None for one discipline."""
+def _ctx(
+    niche, brand, description="", subject="", links=ALLOWED_LINKS, first_name="", said="", focus=None, language="en"
+) -> dict:
+    """``language``: the site's, for the labels and titles that are text a visitor reads (the fallback copy around
+    them is still English). ``said``: "I" or "we" as _coach_data read it from her answers. ``focus``: how her
+    disciplines shape the site (_coach_data["focus"]: mode "equal" | "primary", "disciplines" lead first, and for a
+    main focus "primary" and "secondary"), None for one discipline."""
     from apps.tenant_config import interview_brief
 
     t = subject or topic(niche)
@@ -237,11 +240,17 @@ def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS, first_na
     solo = (said or speaker(brand, description)) == "I"
     # Buttons lead to her main offer: the courses, else the classes, else her story.
     primary = next(h for h in ("/courses", "/events", "/about") if h in links)
-    me = "me" if solo else "us"
+    with override(language):
+        if t == "coaching":
+            why = _("Why I coach") if solo else _("Why we coach")
+        else:
+            why = (_("Why I teach %(topic)s") if solo else _("Why we teach %(topic)s")) % {"topic": t}
+        about_me = _("About me") if solo else _("About us")
+        primary_label = {"/courses": _("Browse the courses"), "/events": _("See the sessions")}.get(primary, about_me)
     return {
         "links": links,
         "primary": primary,
-        "primaryLabel": {"/courses": "Browse the courses", "/events": "See the sessions"}.get(primary, f"About {me}"),
+        "primaryLabel": primary_label,
         "offering": {"/courses": "courses", "/events": "sessions"}.get(primary, "work"),
         "niche": str(niche or "general"),
         # Photo disciplines this coach's words allow (see ai_curate.off_topic).
@@ -262,9 +271,7 @@ def _ctx(niche, brand, description="", subject="", links=ALLOWED_LINKS, first_na
         "me": "me" if solo else "us",
         "my": "my" if solo else "our",
         "i": "I" if solo else "we",
-        "why": ("Why I coach" if solo else "Why we coach")
-        if t == "coaching"
-        else (f"Why I teach {t}" if solo else f"Why we teach {t}"),
+        "why": why,
     }
 
 
@@ -1050,6 +1057,7 @@ def _plan_site(tenant, *, force=False) -> dict:
         tuple(coach["links"]),
         said=coach["speaker"],
         focus=coach.get("focus"),
+        language=site_language(tenant),
     )
     raw, source = None, "fallback"
     if ai_compose.compose_available():
@@ -1996,10 +2004,10 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
 # ── public API ───────────────────────────────────────────────────────────────
 
 
-def skeleton_pages(style_id, *, niche, brand_name, description="") -> dict:
+def skeleton_pages(style_id, *, niche, brand_name, description="", language="en") -> dict:
     """Every known page from the recipes (guardrails applied) with fallback
     copy and empty photo slots. Deterministic: no AI, no network."""
-    ctx = _ctx(niche, brand_name, description)
+    ctx = _ctx(niche, brand_name, description, language=language)
     plan = apply_guardrails({}, style_id)
     pages = {}
     for page, entries in plan["pages"].items():
@@ -2031,6 +2039,7 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
         first_name,
         coach["speaker"],
         coach.get("focus"),
+        site_language(tenant),
     )
     ctx["given"] = given  # her proof and clip ride the fallback fields the model never writes (_fill_page)
 

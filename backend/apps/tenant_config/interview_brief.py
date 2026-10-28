@@ -17,6 +17,8 @@ from itertools import zip_longest
 
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext as render_marked
+from django.utils.translation import gettext_noop
 
 DELEGATE = "__delegate__"
 SKIP = "__skip__"
@@ -224,57 +226,70 @@ TONE_HINTS = {
 MEMBERSHIP_TIERS = (
     {
         "id": "digital",
-        "label": "Digital membership",
+        "label": gettext_noop("Digital membership"),
         "price": 9,
         "needs": ("course",),
         "courses": True,
         "icon": "laptop",
         "perks": ("Every digital course", "New courses as they land"),
-        "blurb": "All the pre-recorded content, watched any time.",
+        "blurb": gettext_noop("All the pre-recorded content, watched any time."),
     },
     {
         "id": "online",
-        "label": "Online membership",
+        "label": gettext_noop("Online membership"),
         "price": 19,
         "needs": ("live",),
         "courses": True,
         "icon": "video",
         "perks": ("All live online sessions", "Session replays", "Every digital course"),
-        "blurb": "Every live session from home, plus the courses.",
-        "blurb_alone": "Every live session from home.",  # for a coach who sells no courses
+        "blurb": gettext_noop("Every live session from home, plus the courses."),
+        "blurb_alone": gettext_noop("Every live session from home."),  # for a coach who sells no courses
     },
     {
         "id": "studio",
-        "label": "Studio membership",
+        "label": gettext_noop("Studio membership"),
         "price": 49,
         "needs": ("onsite",),
         "courses": True,
         "icon": "building-2",
         "perks": ("Unlimited in-person sessions", "Every digital course"),
-        "blurb": "Train at your place as often as they like.",
+        "blurb": gettext_noop("Train at your place as often as they like."),
     },
     {
         "id": "community",
-        "label": "Community membership",
+        "label": gettext_noop("Community membership"),
         "price": 5,
         "needs": ("community",),
         "courses": False,
         "icon": "users",
         "perks": ("The members' community", "Members-only articles"),
-        "blurb": "A place to talk, share and stay motivated.",
+        "blurb": gettext_noop("A place to talk, share and stay motivated."),
     },
     {
         "id": "all",
-        "label": "All-access",
+        "label": gettext_noop("All-access"),
         "price": 69,
         "needs": (),
         "courses": True,
         "icon": "crown",
         "perks": ("Everything I offer",),
-        "blurb": "One membership for all of it.",
+        "blurb": gettext_noop("One membership for all of it."),
     },
 )
 TIER_BY_ID = {t["id"]: t for t in MEMBERSHIP_TIERS}
+# The English text above stays each tier's identity (matched and used as keys); `tier_text` translates it where
+# it is written onto the site. gettext_noop only marks the labels and blurbs for extraction. The perks are
+# written as one sentence per tier (casing is the translation's business), so the sentences are marked here.
+OWN_BLURB = gettext_noop("One monthly price for %(name)s.")  # the blurb of her own membership (membership_of)
+PERKS_SENTENCES = (
+    gettext_noop("Every digital course, new courses as they land"),
+    gettext_noop("All live online sessions, session replays, every digital course"),
+    gettext_noop("All live online sessions, session replays"),
+    gettext_noop("Unlimited in-person sessions, every digital course"),
+    gettext_noop("Unlimited in-person sessions"),
+    gettext_noop("The members' community, members-only articles"),
+    gettext_noop("Everything I offer"),
+)
 # The classes each tier promises its members (its "courses" flag covers the course).
 _TIER_CLASSES = {"online": ("event",), "studio": ("onsite",), "all": ("event", "onsite")}
 # A membership can also be the coach's own: just a name ("Weekly face yoga
@@ -340,6 +355,22 @@ def membership_of(answers: dict, key: str) -> dict:
         "icon": "sparkles",
         "perks": (),
         "blurb": f"One monthly price for {_lower_first(key)}.",
+    }
+
+
+def tier_text(tier: dict) -> dict:
+    """The words a membership puts on the site (its name, its perks as one sentence and its blurb) in the ACTIVE
+    language: call it inside override(site_language()). A catalogue tier's English text is its msgid (identity
+    stays English everywhere else); a membership of her own keeps her name and gets the translated blurb."""
+    # The sentence of this tier's perks, found by its English words (identity); never cased after translating.
+    perks = next((s for s in PERKS_SENTENCES if s.lower() == ", ".join(p.lower() for p in tier["perks"])), "")
+    if tier["id"] not in TIER_BY_ID:
+        blurb = render_marked(OWN_BLURB) % {"name": _lower_first(tier["label"])}
+        return {"label": tier["label"], "perks": "", "blurb": blurb}
+    return {
+        "label": render_marked(tier["label"]),
+        "perks": render_marked(perks) if perks else "",
+        "blurb": render_marked(tier["blurb"]),
     }
 
 

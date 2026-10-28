@@ -85,7 +85,6 @@
   "apps/tenant_config/cx/prompt.py": 9,
   "apps/tenant_config/cx/validate.py": 2,
   "apps/tenant_config/interview.py": 2,
-  "apps/tenant_config/interview_brief.py": 5,
   "apps/tenant_config/interview_golive.py": 8,
   "apps/tenant_config/interview_milestones.py": 2,
   "apps/tenant_config/logo_recipe.py": 1,

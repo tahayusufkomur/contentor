@@ -86,6 +86,7 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
     photo ids) are available as raw material — and so these values WIN over
     the niche defaults. Pure overwrites, so a Celery retry is safe.
     """
+    from apps.core.languages import resolve
     from apps.core.onboarding import site_composer
     from apps.core.onboarding.compose import apply_wizard_logo, build_config_overrides
     from apps.tenant_config.models import TenantConfig
@@ -115,6 +116,7 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
                 niche=answers.get("niche") or "general",
                 brand_name=config.brand_name,
                 description=answers.get("description") or "",
+                language=resolve(preferred_locale),
             )
             overrides["style"] = site_style
             overrides["setup_flow"] = site_composer.initial_setup_flow()

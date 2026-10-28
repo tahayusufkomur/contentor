@@ -585,11 +585,12 @@ def sync_memberships(tenant, answers: dict) -> None:
 
     picked = brief.memberships_of(answers)
     made = dict(((TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}).get("plans") or {})
-    # The description is what a student reads: the site's language, whoever is setting it up.
+    # The plan's name and description are what a student reads: the site's language, whoever is setting it up.
     with override(site_language()):
         teaches = str(answers.get("teaches") or "").lower() or gettext("everything I teach")
         cancel = gettext("Cancel any time.")
         perks_for = gettext("%(perks)s, for %(teaches)s.")
+        texts = {m["id"]: brief.tier_text(m) for m in picked}
     plans = {}
     for m in picked:
         price = Decimal(f"{brief.tier_price(answers, m['id']):.2f}")
@@ -597,14 +598,14 @@ def sync_memberships(tenant, answers: dict) -> None:
         if pk and SubscriptionPlan.objects.filter(pk=pk).update(price=price):
             plans[m["id"]] = pk
             continue
-        perks = ", ".join(p.lower() for p in m["perks"])
+        words = texts[m["id"]]
         about = (
-            f"{m['blurb']} " + perks_for % {"perks": f"{perks[:1].upper()}{perks[1:]}", "teaches": teaches}
-            if perks
-            else m["blurb"]
+            f"{words['blurb']} " + perks_for % {"perks": words["perks"], "teaches": teaches}
+            if words["perks"]
+            else words["blurb"]
         )
         plans[m["id"]] = SubscriptionPlan.objects.create(
-            name=m["label"][:100], description=f"{about} {cancel}", price=price, billing_interval_months=1
+            name=words["label"][:100], description=f"{about} {cancel}", price=price, billing_interval_months=1
         ).pk
     SubscriptionPlan.objects.filter(pk__in=made.values(), subscriptions__isnull=True).delete()
 
