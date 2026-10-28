@@ -3,15 +3,17 @@ import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { makeStoryPull } from "../story-layouts";
 import { H2, Kicker, MoonPhases, Section, StarGlyph, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Story "origin": coach lineage and story with oval gold portrait frame. */
 export function StoryOrigin({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="surface" label={alt || "Origin story"}>
+    <Section tone="surface" label={alt || t("sanctum.originStory")}>
       <div className={WRAP}>
         <div className="grid items-center gap-y-12 lg:grid-cols-12 lg:gap-x-12">
           {showImage ? (
@@ -60,7 +62,7 @@ export function StoryOrigin({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(H2, "mt-5 max-w-[20ch]")}
             />
             <Rich
@@ -82,7 +84,7 @@ export function StoryOrigin({ block, editable }: SectionProps) {
                   block={block}
                   field="signature"
                   editable={editable}
-                  placeholder="Your name"
+                  placeholder={t("placeholder.yourName")}
                 />
               </div>
             )}
@@ -97,7 +99,7 @@ export function StoryOrigin({ block, editable }: SectionProps) {
                     block={block}
                     field="ctaLabel"
                     editable={editable}
-                    placeholder="Link text"
+                    placeholder={t("placeholder.linkText")}
                   />
                   <StarGlyph className="size-3 text-primary transition-transform duration-300 motion-safe:group-hover:rotate-45" />
                 </SmartLink>

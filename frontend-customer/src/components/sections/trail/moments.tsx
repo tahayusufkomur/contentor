@@ -2,11 +2,13 @@ import { cn } from "@/lib/utils";
 import { Img, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { LABEL, Opener, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
 /** Moments gallery as field postcards: tilted photo prints on a stone paper grid with mono captions. */
 export function MomentsPostcards({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHead =
@@ -14,7 +16,7 @@ export function MomentsPostcards({ block, editable }: SectionProps) {
   const showCaption = has(block, "caption", editable);
 
   return (
-    <Section label={alt || "Moments"}>
+    <Section label={alt || t("sectionLabel.moments")}>
       <div className={WRAP}>
         {(showHead || showCaption) && (
           <Opener
@@ -26,7 +28,7 @@ export function MomentsPostcards({ block, editable }: SectionProps) {
         )}
 
         <ul
-          aria-label={alt || "Photos"}
+          aria-label={alt || t("sectionLabel.photos")}
           className={cn(
             "grid grid-cols-2 gap-6 md:gap-10",
             photos.length === 4 ? "md:grid-cols-2" : "md:grid-cols-3",

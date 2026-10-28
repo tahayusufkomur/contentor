@@ -313,5 +313,72 @@
     "readMore": "Devamını oku",
     "ritualsCount": "{count, plural, one {# ritüel} other {# ritüel}}",
     "treatmentsIncluded": "{count, plural, one {# bakım dahil} other {# bakım dahil}}"
+  },
+  "sanctum": {
+    "sacredGifts": "Kutsal hediyeler",
+    "celestialDispatch": "Göksel haberler",
+    "sanctuaryAltar": "Tapınak sunağı",
+    "hoursOfAlignment": "Uyum saatleri",
+    "inquiryOfTheStars": "Yıldızlara Soru",
+    "sacredPaths": "Kutsal Yollar",
+    "emptyCoursesTitle": "Henüz yayınlanmış yol yok",
+    "emptyCoursesText": "Bir kurs yayınla, burada kutsal bir tarot kartı gibi belirsin.",
+    "initiation": "Erginlenme",
+    "gatherings": "Buluşmalar",
+    "emptyEventsTitle": "Planlanmış yaklaşan buluşma yok",
+    "emptyEventsText": "Canlı bir çember ya da ritüel oturumu planla, burada ayın altında belirsin.",
+    "phase": "Evre {numeral}",
+    "ritualSequence": "Ritüel sırası",
+    "celestialVisions": "Göksel vizyonlar",
+    "invocation": "Yakarış",
+    "sanctuaryOfferings": "Tapınak Sunuları",
+    "initiated": "Erginlenmiş",
+    "sacredPrivileges": "Kutsal ayrıcalıklar",
+    "emptyPlansTitle": "Henüz sunu seviyesi yok",
+    "emptyPlansText": "Faturalandırma bölümünde bir plan oluştur, burada kutsal bir seviye olarak görünsün.",
+    "originStory": "Köken hikâyesi",
+    "explorePaths": "Tüm yolları keşfet",
+    "fullGatheringCalendar": "Tüm buluşma takvimi",
+    "offeringsIncluded": "{count, plural, one {# sunu dahil} other {# sunu dahil}}"
+  },
+  "tavola": {
+    "whatsInIt": "İçinde neler var",
+    "kitchen": "Mutfak",
+    "upcoming": "Yaklaşanlar",
+    "menu": "Menü"
+  },
+  "grid": {
+    "seeAllCourses": "Tüm kursları gör",
+    "emptyCoursesTitle": "Henüz gösterilecek kurs yok",
+    "seeTheCalendar": "Takvimi gör",
+    "emptyEventsText": "Bir canlı oturum planla, burada otomatik olarak görünsün.",
+    "billed": "Faturalandırma",
+    "emptyPlansText": "Faturalandırma bölümünde bir plan oluştur, burada otomatik olarak görünsün.",
+    "everyMonth": "Her ay",
+    "everyYear": "Her yıl",
+    "everyYears": "{count, plural, one {Her # yılda bir} other {Her # yılda bir}}",
+    "everyMonths": "{count, plural, one {Her # ayda bir} other {Her # ayda bir}}"
+  },
+  "trail": {
+    "basecamp": "Ana kamp",
+    "join": "Katıl",
+    "itemsIncluded": "{count, plural, one {öğe dahil} other {öğe dahil}}",
+    "lessons": "ders",
+    "price": "fiyat",
+    "allRoutes": "Tüm rotalar",
+    "allMeetups": "Tüm buluşmalar"
+  },
+  "studiofloor": {
+    "directEmail": "Doğrudan E-posta",
+    "studioLocation": "Stüdyo Konumu",
+    "sessionHours": "Oturum Saatleri",
+    "emptyCoursesText": "Bir kurs yayınla, otomatik olarak bu listeye eklensin.",
+    "reserveSpot": "YERİNİ AYIRT",
+    "emptyEventsText": "Canlı bir stüdyo oturumu ya da atölye planla, burada görünsün.",
+    "momentsReel": "Anlar akışı",
+    "seeIncludedSessions": "DAHİL OLAN OTURUMLARI GÖR",
+    "emptyPlansText": "Faturalandırma bölümünde bir geçiş paketi oluştur, otomatik olarak burada görünsün.",
+    "sessionsIncluded": "{count, plural, one {# kurs/oturum dahil} other {# kurs/oturum dahil}}",
+    "viewFullTimetable": "TÜM PROGRAMI GÖR"
   }
 }

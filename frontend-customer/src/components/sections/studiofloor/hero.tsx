@@ -12,12 +12,14 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 function Actions({
   block,
   editable,
   className,
 }: SectionProps & { className?: string }) {
+  const t = useTranslations("site");
   const primary = has(block, "ctaLabel", editable);
   const secondary = has(block, "secondaryLabel", editable);
   if (!primary && !secondary) return null;
@@ -29,7 +31,7 @@ function Actions({
             block={block}
             field="ctaLabel"
             editable={editable}
-            placeholder="Button text"
+            placeholder={t("placeholder.buttonText")}
           />
           <Arrow />
         </SmartLink>
@@ -43,7 +45,7 @@ function Actions({
             block={block}
             field="secondaryLabel"
             editable={editable}
-            placeholder="Second button"
+            placeholder={t("placeholder.secondButton")}
           />
         </SmartLink>
       )}
@@ -57,6 +59,7 @@ function Actions({
  *  One photo; without one the stage lights carry it. On a phone the photo is
  *  a block of its own and the cue card hangs over only its lower edge. */
 export function HeroMirror({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   return (
     <Section
@@ -94,7 +97,7 @@ export function HeroMirror({ block, editable }: SectionProps) {
             field="headline"
             editable={editable}
             as="h1"
-            placeholder="Headline"
+            placeholder={t("placeholder.headline")}
             className={cn(
               H1,
               "mt-4 block",
@@ -108,7 +111,7 @@ export function HeroMirror({ block, editable }: SectionProps) {
             field="subhead"
             editable={editable}
             as="p"
-            placeholder="Subheadline"
+            placeholder={t("placeholder.subheadline")}
             className="mt-4 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground sm:mt-6"
           />
           {has(block, "meta", editable) && (
@@ -119,7 +122,7 @@ export function HeroMirror({ block, editable }: SectionProps) {
                   block={block}
                   field="meta"
                   editable={editable}
-                  placeholder="Small line (location / level)"
+                  placeholder={t("placeholder.smallLineLocationLevel")}
                 />
               </span>
             </div>
@@ -135,6 +138,7 @@ export function HeroMirror({ block, editable }: SectionProps) {
  *  Anybody headline, and a mirror wall of photos separated by glowing neon
  *  light bars. */
 export function HeroStage({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showMainImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showDetailImage = Boolean(imageUrl(block.image2)) || Boolean(editable);
@@ -157,7 +161,7 @@ export function HeroStage({ block, editable }: SectionProps) {
                 field="headline"
                 editable={editable}
                 as="h1"
-                placeholder="Headline"
+                placeholder={t("placeholder.headline")}
                 className={cn(
                   H1,
                   alt.length <= 32
@@ -172,7 +176,7 @@ export function HeroStage({ block, editable }: SectionProps) {
               field="subhead"
               editable={editable}
               as="p"
-              placeholder="Subheadline"
+              placeholder={t("placeholder.subheadline")}
               className="mt-7 block max-w-[48ch] text-pretty text-[1.125rem] leading-[1.68] text-muted-foreground md:text-[1.2rem]"
             />
 
@@ -184,7 +188,7 @@ export function HeroStage({ block, editable }: SectionProps) {
                     block={block}
                     field="meta"
                     editable={editable}
-                    placeholder="Small line (location / level)"
+                    placeholder={t("placeholder.smallLineLocationLevel")}
                   />
                 </span>
               </div>
@@ -248,6 +252,7 @@ export function HeroStage({ block, editable }: SectionProps) {
 /** Inner-page header: compact dance studio header with bold Anybody
  *  headline, subhead, actions, and optional compact photo. */
 export function HeroIntro({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -268,7 +273,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="headline"
               editable={editable}
               as="h1"
-              placeholder="Page title"
+              placeholder={t("placeholder.pageTitle")}
               className={cn(
                 H1,
                 "mt-4 block max-w-[20ch] text-[clamp(2.1rem,1.2rem+3.2vw,4.2rem)] leading-[0.94]",
@@ -280,7 +285,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="subhead"
               editable={editable}
               as="p"
-              placeholder="Subheadline"
+              placeholder={t("placeholder.subheadline")}
               className="mt-6 block max-w-[48ch] text-pretty text-[1.125rem] leading-[1.65] text-muted-foreground"
             />
 
@@ -292,7 +297,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
                     block={block}
                     field="meta"
                     editable={editable}
-                    placeholder="Small line"
+                    placeholder={t("placeholder.smallLine")}
                   />
                 </span>
               </div>

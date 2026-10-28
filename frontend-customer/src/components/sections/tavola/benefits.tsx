@@ -2,11 +2,13 @@ import { cn } from "@/lib/utils";
 import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { CARD, H3, LABEL, Opener, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Item = { title?: string; text?: string };
 
 /** Benefits laid out as a trattoria ingredient card with checkmarks and dotted dividers. */
 export function BenefitsIngredients({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<Item>(block, "items");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -19,7 +21,7 @@ export function BenefitsIngredients({ block, editable }: SectionProps) {
         showImage ? "max-w-none" : "mt-14 max-w-[52rem]",
       )}
     >
-      <p className={LABEL}>What&rsquo;s in it</p>
+      <p className={LABEL}>{t("tavola.whatsInIt")}</p>
       <ul className="mt-4">
         {items.map((it, i) => (
           <li

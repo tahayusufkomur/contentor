@@ -6,32 +6,34 @@ import {
   SmartLink,
   SubscribeButton,
   billingIntervalSuffix,
+  type SiteT,
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Head, Sheet, row, textLink } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Subscribe button squared off; the price is already in the table. */
 const subscribeCls =
   "h-auto min-h-12 w-full whitespace-normal rounded-none px-4 py-3 text-[0.9375rem] shadow-none hover:bg-foreground hover:text-background";
 
-const billed = (m?: number) => {
+const billed = (t: SiteT, m?: number) => {
   const n = m ?? 1;
-  if (n === 1) return "Every month";
-  if (n === 12) return "Every year";
-  if (n % 12 === 0) return `Every ${n / 12} years`;
-  return `Every ${n} months`;
+  if (n === 1) return t("grid.everyMonth");
+  if (n === 12) return t("grid.everyYear");
+  if (n % 12 === 0) return t("grid.everyYears", { count: n / 12 });
+  return t("grid.everyMonths", { count: n });
 };
 
-const included = (n?: number) =>
-  n && n > 0 ? `${n} ${n === 1 ? "item" : "items"}` : "—";
+const included = (t: SiteT, n?: number) =>
+  n && n > 0 ? t("plan.items", { count: n }) : "—";
 
 function Action({ plan }: { plan: SubscriptionPlan }) {
+  const t = useTranslations("site");
   return (
     <div className="flex max-w-[22rem] flex-col items-start gap-4">
       {plan.is_subscribed ? (
         <p className="swiss-mono flex min-h-12 w-full items-center border border-foreground px-4">
-          Subscribed
+          {t("plan.subscribed")}
         </p>
       ) : (
         <SubscribeButton
@@ -41,11 +43,11 @@ function Action({ plan }: { plan: SubscriptionPlan }) {
           currency={plan.currency}
           intervalMonths={plan.billing_interval_months}
           className={subscribeCls}
-          label="Subscribe"
+          label={t("plan.subscribe")}
         />
       )}
       <SmartLink href={`/plans/${plan.id}`} className={textLink}>
-        What&rsquo;s included
+        {t("plan.whatsIncluded")}
       </SmartLink>
     </div>
   );
@@ -68,14 +70,18 @@ function Price({ plan }: { plan: SubscriptionPlan }) {
 /** Plans as a real comparison table — only real plan fields are compared.
  *  The row-label column is the page's cols 1–3, so plans start on the axis. */
 export function PricingTable({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const plans = (data ?? []) as SubscriptionPlan[];
   if (!plans.length && !editable) return null;
 
   const rows: { label: string; cell: (p: SubscriptionPlan) => ReactNode }[] = [
-    { label: "Price", cell: (p) => <Price plan={p} /> },
-    { label: "Billed", cell: (p) => billed(p.billing_interval_months) },
-    { label: "Includes", cell: (p) => included(p.item_count) },
-    { label: "About", cell: (p) => p.description || "—" },
+    { label: t("table.price"), cell: (p) => <Price plan={p} /> },
+    {
+      label: t("grid.billed"),
+      cell: (p) => billed(t, p.billing_interval_months),
+    },
+    { label: t("plan.includes"), cell: (p) => included(t, p.item_count) },
+    { label: t("plan.about"), cell: (p) => p.description || "—" },
   ];
 
   return (
@@ -85,8 +91,8 @@ export function PricingTable({ block, data, editable }: SectionProps) {
         <div className="mt-14">
           <EmptyHint
             editable={editable}
-            title="No membership plans yet"
-            text="Create a plan in Billing and it appears here automatically."
+            title={t("empty.plans.title")}
+            text={t("grid.emptyPlansText")}
           />
         </div>
       ) : (

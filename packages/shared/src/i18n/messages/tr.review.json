@@ -1002,5 +1002,233 @@
   "site.atelier.treatmentsIncluded": {
     "src": "86ece242",
     "reviewed": false
+  },
+  "site.sanctum.sacredGifts": {
+    "src": "b12523e8",
+    "reviewed": false
+  },
+  "site.sanctum.celestialDispatch": {
+    "src": "eccd2002",
+    "reviewed": false
+  },
+  "site.sanctum.sanctuaryAltar": {
+    "src": "600663ab",
+    "reviewed": false
+  },
+  "site.sanctum.hoursOfAlignment": {
+    "src": "f69d11fe",
+    "reviewed": false
+  },
+  "site.sanctum.inquiryOfTheStars": {
+    "src": "383155b7",
+    "reviewed": false
+  },
+  "site.sanctum.sacredPaths": {
+    "src": "f7e4c964",
+    "reviewed": false
+  },
+  "site.sanctum.emptyCoursesTitle": {
+    "src": "1da1e0e3",
+    "reviewed": false
+  },
+  "site.sanctum.emptyCoursesText": {
+    "src": "437f7632",
+    "reviewed": false
+  },
+  "site.sanctum.initiation": {
+    "src": "98bb44b9",
+    "reviewed": false
+  },
+  "site.sanctum.gatherings": {
+    "src": "43ca0277",
+    "reviewed": false
+  },
+  "site.sanctum.emptyEventsTitle": {
+    "src": "8f8ee0e8",
+    "reviewed": false
+  },
+  "site.sanctum.emptyEventsText": {
+    "src": "1ca9e7cf",
+    "reviewed": false
+  },
+  "site.sanctum.phase": {
+    "src": "c4044b43",
+    "reviewed": false
+  },
+  "site.sanctum.ritualSequence": {
+    "src": "81f21b82",
+    "reviewed": false
+  },
+  "site.sanctum.celestialVisions": {
+    "src": "a42419e1",
+    "reviewed": false
+  },
+  "site.sanctum.invocation": {
+    "src": "6a9b4436",
+    "reviewed": false
+  },
+  "site.sanctum.sanctuaryOfferings": {
+    "src": "bb5d8624",
+    "reviewed": false
+  },
+  "site.sanctum.initiated": {
+    "src": "87c5ebdb",
+    "reviewed": false
+  },
+  "site.sanctum.sacredPrivileges": {
+    "src": "6794253f",
+    "reviewed": false
+  },
+  "site.sanctum.emptyPlansTitle": {
+    "src": "3f771f7e",
+    "reviewed": false
+  },
+  "site.sanctum.emptyPlansText": {
+    "src": "09c7b4c9",
+    "reviewed": false
+  },
+  "site.sanctum.originStory": {
+    "src": "a0a644c6",
+    "reviewed": false
+  },
+  "site.sanctum.explorePaths": {
+    "src": "a77760a8",
+    "reviewed": false
+  },
+  "site.sanctum.fullGatheringCalendar": {
+    "src": "dd82e305",
+    "reviewed": false
+  },
+  "site.sanctum.offeringsIncluded": {
+    "src": "a2cfc54a",
+    "reviewed": false
+  },
+  "site.tavola.whatsInIt": {
+    "src": "42c4528c",
+    "reviewed": false
+  },
+  "site.tavola.kitchen": {
+    "src": "018618c0",
+    "reviewed": false
+  },
+  "site.tavola.upcoming": {
+    "src": "523baab9",
+    "reviewed": false
+  },
+  "site.tavola.menu": {
+    "src": "57f5f5ef",
+    "reviewed": false
+  },
+  "site.grid.seeAllCourses": {
+    "src": "eef0b9c1",
+    "reviewed": false
+  },
+  "site.grid.emptyCoursesTitle": {
+    "src": "fa13e2be",
+    "reviewed": false
+  },
+  "site.grid.seeTheCalendar": {
+    "src": "da589664",
+    "reviewed": false
+  },
+  "site.grid.emptyEventsText": {
+    "src": "676bb31b",
+    "reviewed": false
+  },
+  "site.grid.billed": {
+    "src": "763fe55e",
+    "reviewed": false
+  },
+  "site.grid.emptyPlansText": {
+    "src": "6c4e7675",
+    "reviewed": false
+  },
+  "site.grid.everyMonth": {
+    "src": "7f3932f9",
+    "reviewed": false
+  },
+  "site.grid.everyYear": {
+    "src": "cea537cd",
+    "reviewed": false
+  },
+  "site.grid.everyYears": {
+    "src": "c15f9bea",
+    "reviewed": false
+  },
+  "site.grid.everyMonths": {
+    "src": "3db745d1",
+    "reviewed": false
+  },
+  "site.trail.basecamp": {
+    "src": "43d62322",
+    "reviewed": false
+  },
+  "site.trail.join": {
+    "src": "e0d73143",
+    "reviewed": false
+  },
+  "site.trail.itemsIncluded": {
+    "src": "765eb9ad",
+    "reviewed": false
+  },
+  "site.trail.lessons": {
+    "src": "b0647dfe",
+    "reviewed": false
+  },
+  "site.trail.price": {
+    "src": "2097c337",
+    "reviewed": false
+  },
+  "site.trail.allRoutes": {
+    "src": "29a9dd7c",
+    "reviewed": false
+  },
+  "site.trail.allMeetups": {
+    "src": "660be2d5",
+    "reviewed": false
+  },
+  "site.studiofloor.directEmail": {
+    "src": "58d8eb9f",
+    "reviewed": false
+  },
+  "site.studiofloor.studioLocation": {
+    "src": "38e94105",
+    "reviewed": false
+  },
+  "site.studiofloor.sessionHours": {
+    "src": "5353a1d8",
+    "reviewed": false
+  },
+  "site.studiofloor.emptyCoursesText": {
+    "src": "48a0fec6",
+    "reviewed": false
+  },
+  "site.studiofloor.reserveSpot": {
+    "src": "f8667ba5",
+    "reviewed": false
+  },
+  "site.studiofloor.emptyEventsText": {
+    "src": "14700853",
+    "reviewed": false
+  },
+  "site.studiofloor.momentsReel": {
+    "src": "f8668f15",
+    "reviewed": false
+  },
+  "site.studiofloor.seeIncludedSessions": {
+    "src": "d422d177",
+    "reviewed": false
+  },
+  "site.studiofloor.emptyPlansText": {
+    "src": "c136567e",
+    "reviewed": false
+  },
+  "site.studiofloor.sessionsIncluded": {
+    "src": "4861b8ef",
+    "reviewed": false
+  },
+  "site.studiofloor.viewFullTimetable": {
+    "src": "2341c2a7",
+    "reviewed": false
   }
 }

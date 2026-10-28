@@ -10,10 +10,12 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Head, Sheet, pad, textLink } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Courses as a catalogue: square monochrome covers, a ruled meta line with
  *  number, lessons and price, then the title. */
 export function CourseCatalogue({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = block.limit === "6" ? 6 : 3;
   const courses = ((data ?? []) as Course[]).slice(0, limit);
   if (!courses.length && !editable) return null;
@@ -25,10 +27,10 @@ export function CourseCatalogue({ block, data, editable }: SectionProps) {
           block={block}
           field="ctaLabel"
           editable={editable}
-          placeholder="See all courses"
+          placeholder={t("grid.seeAllCourses")}
         />
       ) : (
-        "All courses"
+        t("cta.allCourses")
       )}
     </SmartLink>
   );
@@ -57,8 +59,7 @@ export function CourseCatalogue({ block, data, editable }: SectionProps) {
                   <span>({pad(i + 1)})</span>
                   {c.lesson_count ? (
                     <span className="text-muted-foreground">
-                      {c.lesson_count}{" "}
-                      {c.lesson_count === 1 ? "lesson" : "lessons"}
+                      {t("course.lessons", { count: c.lesson_count })}
                     </span>
                   ) : null}
                   <CoursePrice
@@ -83,8 +84,8 @@ export function CourseCatalogue({ block, data, editable }: SectionProps) {
         <div className="mt-14">
           <EmptyHint
             editable={editable}
-            title="No courses to show yet"
-            text="Publish a course and it appears here automatically."
+            title={t("grid.emptyCoursesTitle")}
+            text={t("empty.courses.text")}
           />
         </div>
       )}

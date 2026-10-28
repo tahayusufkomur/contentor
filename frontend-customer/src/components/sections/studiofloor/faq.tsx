@@ -2,16 +2,18 @@ import { cn } from "@/lib/utils";
 import { Txt, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type QA = { q?: string; a?: string };
 
 /** Frequently asked questions organized as a studio warmup accordion with
  *  custom rotating neon plus icons and primary highlight on open. */
 export function FaqWarmup({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<QA>(block, "items");
 
   return (
-    <Section label={str(block.heading) || "Questions"}>
+    <Section label={str(block.heading) || t("sectionLabel.questions")}>
       <div className={cn(WRAP, "grid gap-y-12 lg:grid-cols-12 lg:gap-x-12")}>
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-24">
@@ -21,7 +23,7 @@ export function FaqWarmup({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(
                 H2,
                 "mt-4 block text-[clamp(1.9rem,1.4rem+2.2vw,3.6rem)] leading-[0.96]",
@@ -32,7 +34,7 @@ export function FaqWarmup({ block, editable }: SectionProps) {
               field="intro"
               editable={editable}
               as="p"
-              placeholder="Intro"
+              placeholder={t("placeholder.intro")}
               className="mt-6 block max-w-[38ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
             />
           </div>

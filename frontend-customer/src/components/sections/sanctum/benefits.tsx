@@ -2,11 +2,13 @@ import { cn } from "@/lib/utils";
 import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { GoldFrame, H3, Opener, Section, SigilIcon, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Item = { title?: string; text?: string };
 
 /** Benefits "gifts": Sacred gifts of the practice, each blessed with a unique mystical sigil. */
 export function BenefitsGifts({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<Item>(block, "items");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -42,7 +44,7 @@ export function BenefitsGifts({ block, editable }: SectionProps) {
   );
 
   return (
-    <Section tone="temple" label={alt || "Sacred gifts"}>
+    <Section tone="temple" label={alt || t("sanctum.sacredGifts")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} className="mb-16" />
 

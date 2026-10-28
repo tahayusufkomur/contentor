@@ -2,11 +2,13 @@ import { cn } from "@/lib/utils";
 import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H3, MoonGlyph, Opener, ROMAN, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** HowItWorks "ritual": 3-4 ritual phases along a ceremonial moon-phase axis. */
 export function HowItWorksRitual({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -39,7 +41,7 @@ export function HowItWorksRitual({ block, editable }: SectionProps) {
                 )}
               >
                 <span className="font-display text-[0.8rem] font-medium uppercase tracking-[0.2em] text-primary">
-                  Phase {ROMAN[i % ROMAN.length]}
+                  {t("sanctum.phase", { numeral: ROMAN[i % ROMAN.length] })}
                 </span>
                 <h3
                   className={cn(
@@ -85,7 +87,7 @@ export function HowItWorksRitual({ block, editable }: SectionProps) {
   );
 
   return (
-    <Section tone="temple" label={alt || "Ritual sequence"}>
+    <Section tone="temple" label={alt || t("sanctum.ritualSequence")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
 

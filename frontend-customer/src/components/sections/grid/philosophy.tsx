@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Label, Sheet, row } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** One large paragraph set across eleven columns, first line on the axis;
  *  attribution and an optional wide photo hang underneath. */
 export function PhilosophyParagraph({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photo = imageUrl(block.image);
   return (
     <Sheet tone="ink">
@@ -20,7 +22,7 @@ export function PhilosophyParagraph({ block, editable }: SectionProps) {
               field="statement"
               editable={editable}
               as="p"
-              placeholder="Statement"
+              placeholder={t("placeholder.statement")}
               className="swiss-statement swiss-indent block md:[--swiss-cols:11]"
             />
           </blockquote>
@@ -34,7 +36,7 @@ export function PhilosophyParagraph({ block, editable }: SectionProps) {
                 field="attribution"
                 editable={editable}
                 as="span"
-                placeholder="Your name"
+                placeholder={t("placeholder.yourName")}
                 className="swiss-mono mt-3 block"
               />
             </figcaption>

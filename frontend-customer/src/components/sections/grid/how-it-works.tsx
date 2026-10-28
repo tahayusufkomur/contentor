@@ -52,13 +52,15 @@ export function HowItWorksRuled({ block, editable }: SectionProps) {
   );
 }
 
+const STEP_TEXT = "leading-[1.5] text-muted-foreground";
+
 /** Steps down one ruled line: mono-numbered squares, the title, one line of text. */
 export const HowItWorksSequence = makeHowTimeline({
   Section: ({ children }) => <Sheet tone="fog">{children}</Sheet>,
   wrap: "",
   Opener: Head,
   h3: "swiss-step",
-  text: "leading-[1.5] text-muted-foreground",
+  text: STEP_TEXT,
   dot: "swiss-mono rounded-none border border-foreground bg-background",
   rail: "before:bg-foreground",
   photo: "swiss-photo",

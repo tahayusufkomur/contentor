@@ -3,12 +3,17 @@ import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { heroPhotos } from "../collage";
 import { Cta, Guides, btn, row, textLink } from "./ui";
+import { useTranslations } from "next-intl";
+
+/** Block field names, not text. */
+const SECONDARY_LABEL = "secondaryLabel";
 
 /** Home hero, plates: the statement set across all twelve columns at the
  *  width of the page, then up to three grid-locked figure plates under it.
  *  On a phone the first plate sits right under the statement and the lead
  *  and the button follow it; the other plates wait for a wider screen. */
 export function HeroPlates({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = String(block.headline ?? "");
   const photos = heroPhotos(block, editable).slice(0, 3);
   const span = [
@@ -27,7 +32,7 @@ export function HeroPlates({ block, editable }: SectionProps) {
             field="kicker"
             editable={editable}
             as="p"
-            placeholder="Label"
+            placeholder={t("placeholder.label")}
             className="swiss-mono col-span-12 md:col-span-3"
           />
           <Txt
@@ -35,7 +40,7 @@ export function HeroPlates({ block, editable }: SectionProps) {
             field="meta"
             editable={editable}
             as="p"
-            placeholder="Small line"
+            placeholder={t("placeholder.smallLine")}
             className="swiss-mono col-span-12 text-muted-foreground md:col-span-5 md:col-start-4"
           />
         </div>
@@ -44,7 +49,7 @@ export function HeroPlates({ block, editable }: SectionProps) {
           field="headline"
           editable={editable}
           as="h1"
-          placeholder="Headline"
+          placeholder={t("placeholder.headline")}
           className={cn(
             "swiss-h1 mt-6 block sm:mt-8 md:mt-12",
             alt.length <= 28
@@ -64,7 +69,7 @@ export function HeroPlates({ block, editable }: SectionProps) {
               field="subhead"
               editable={editable}
               as="p"
-              placeholder="Subheadline"
+              placeholder={t("placeholder.subheadline")}
               className="swiss-lead col-span-12 block max-w-[34ch] md:col-span-6"
             />
           )}
@@ -73,7 +78,7 @@ export function HeroPlates({ block, editable }: SectionProps) {
             <Cta
               block={block}
               editable={editable}
-              label="secondaryLabel"
+              label={SECONDARY_LABEL}
               href="secondaryHref"
               className={cn(textLink, !editable && "hidden sm:inline-flex")}
             />
@@ -114,6 +119,7 @@ export function HeroPlates({ block, editable }: SectionProps) {
 /** Home hero: a giant statement whose first line starts on the column-4 axis,
  *  over the visible grid; photos are grid-locked tiles underneath. */
 export function HeroStatement({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = String(block.headline ?? "");
   const detail = imageUrl(block.image2);
   return (
@@ -127,7 +133,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
             field="kicker"
             editable={editable}
             as="p"
-            placeholder="Label"
+            placeholder={t("placeholder.label")}
             className="swiss-mono col-span-12 md:col-span-3"
           />
           <Txt
@@ -135,7 +141,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
             field="meta"
             editable={editable}
             as="p"
-            placeholder="Small line"
+            placeholder={t("placeholder.smallLine")}
             className="swiss-mono col-span-12 text-muted-foreground md:col-span-5 md:col-start-4"
           />
         </div>
@@ -148,7 +154,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
           field="headline"
           editable={editable}
           as="h1"
-          placeholder="Headline"
+          placeholder={t("placeholder.headline")}
           className="swiss-h1 swiss-indent mt-2 block"
         />
 
@@ -170,7 +176,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
                 field="subhead"
                 editable={editable}
                 as="p"
-                placeholder="Subheadline"
+                placeholder={t("placeholder.subheadline")}
                 className="swiss-lead block max-w-[34ch]"
               />
             )}
@@ -179,7 +185,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
               <Cta
                 block={block}
                 editable={editable}
-                label="secondaryLabel"
+                label={SECONDARY_LABEL}
                 href="secondaryHref"
                 className={textLink}
               />
@@ -199,6 +205,7 @@ export function HeroStatement({ block, editable }: SectionProps) {
 
 /** Inner-page title band: label, headline on the axis, optional square tile. */
 export function HeroIntro({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photo = imageUrl(block.image);
   return (
     <section className="swiss-sec swiss-hero relative overflow-hidden bg-background px-5 pb-14 pt-6 text-foreground md:px-8 md:pb-20 md:pt-8">
@@ -211,7 +218,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
             field="kicker"
             editable={editable}
             as="p"
-            placeholder="Label"
+            placeholder={t("placeholder.label")}
             className="swiss-mono col-span-12 md:col-span-3"
           />
           <div
@@ -227,7 +234,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="headline"
               editable={editable}
               as="h1"
-              placeholder="Page title"
+              placeholder={t("placeholder.pageTitle")}
               className="swiss-h1-intro block"
             />
             {has(block, "subhead", editable) && (
@@ -236,7 +243,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
                 field="subhead"
                 editable={editable}
                 as="p"
-                placeholder="Subheadline"
+                placeholder={t("placeholder.subheadline")}
                 className="swiss-lead mt-6 block max-w-[42ch] text-muted-foreground md:mt-8"
               />
             )}
@@ -250,7 +257,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
                 <Cta
                   block={block}
                   editable={editable}
-                  label="secondaryLabel"
+                  label={SECONDARY_LABEL}
                   href="secondaryHref"
                   className={textLink}
                 />

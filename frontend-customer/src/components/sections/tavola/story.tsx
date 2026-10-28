@@ -3,10 +3,12 @@ import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { makeStoryPull } from "../story-layouts";
 import { Arrow, H2, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** The trattoria kitchen table: portrait and detail print on the left, a warm
  *  story column signed by the coach and linked to the next step on the right. */
 export function StoryKitchenTable({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
 
@@ -40,7 +42,7 @@ export function StoryKitchenTable({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(H2, "mt-4 block max-w-[18ch]")}
           />
           <Rich
@@ -55,7 +57,7 @@ export function StoryKitchenTable({ block, editable }: SectionProps) {
               field="signature"
               editable={editable}
               as="p"
-              placeholder="Your name"
+              placeholder={t("placeholder.yourName")}
               className="mt-8 block font-display text-[1.6rem] leading-none text-primary"
             />
           )}
@@ -68,7 +70,7 @@ export function StoryKitchenTable({ block, editable }: SectionProps) {
                 block={block}
                 field="ctaLabel"
                 editable={editable}
-                placeholder="Link text"
+                placeholder={t("placeholder.linkText")}
               />
               <Arrow />
             </SmartLink>

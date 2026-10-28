@@ -21,20 +21,20 @@ import {
   WRAP,
   str,
 } from "./ui";
-
-const lessons = (c: Course) =>
-  c.lesson_count
-    ? `${c.lesson_count} ${c.lesson_count === 1 ? "lesson" : "lessons"}`
-    : "";
+import { useTranslations } from "next-intl";
 
 /** Courses "paths": tall sacred tarot-card style cards with Roman numerals and ornate gold frames. */
 export function CoursesPaths({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
 
   return (
-    <Section tone="surface" label={str(block.heading) || "Sacred Paths"}>
+    <Section
+      tone="surface"
+      label={str(block.heading) || t("sanctum.sacredPaths")}
+    >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
 
@@ -42,8 +42,8 @@ export function CoursesPaths({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No published paths yet"
-              text="Publish a course and it manifests here like a sacred tarot card."
+              title={t("sanctum.emptyCoursesTitle")}
+              text={t("sanctum.emptyCoursesText")}
             />
           </div>
         ) : (
@@ -79,7 +79,7 @@ export function CoursesPaths({ block, data, editable }: SectionProps) {
                   </span>
                   {course.lesson_count ? (
                     <span className="text-[0.75rem] uppercase tracking-[0.14em] text-muted-foreground">
-                      {lessons(course)}
+                      {t("course.lessons", { count: course.lesson_count })}
                     </span>
                   ) : (
                     <StarGlyph className="size-3 text-[color-mix(in_oklch,var(--primary)_60%,transparent)]" />
@@ -134,7 +134,7 @@ export function CoursesPaths({ block, data, editable }: SectionProps) {
                       className="font-display text-[1.1rem] font-medium tracking-[0.04em] text-primary"
                     />
                     <span className="inline-flex items-center gap-1.5 font-display text-[0.78rem] uppercase tracking-[0.14em] text-foreground transition-transform duration-300 motion-safe:group-hover:translate-x-1">
-                      <span>Begin</span>
+                      <span>{t("dojo.begin")}</span>
                       <StarGlyph className="size-2.5 text-primary" />
                     </span>
                   </div>
@@ -152,10 +152,10 @@ export function CoursesPaths({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "Explore all paths"
+                t("sanctum.explorePaths")
               )}
             </SmartLink>
           </div>

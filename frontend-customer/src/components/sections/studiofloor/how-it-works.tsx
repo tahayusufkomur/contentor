@@ -3,12 +3,14 @@ import { cn } from "@/lib/utils";
 import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H3, LABEL_ACCENT, Opener, Section, WRAP, pad2, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** Step-by-step process as rehearsal cards: big numbered cards with
  *  stretched headings, and an optional mirror wall photo panel. */
 export function HowItWorksRehearsal({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -30,7 +32,9 @@ export function HowItWorksRehearsal({ block, editable }: SectionProps) {
               <span className={LABEL_ACCENT}>{pad2(i)}</span>
             </div>
             <h3 className={cn(H3, "mt-6 text-[1.3rem] leading-snug")}>
-              <span className="sr-only">{`Step ${i + 1}: `}</span>
+              <span className="sr-only">
+                {t("step.labelColon", { number: i + 1 })}{" "}
+              </span>
               {s.title}
             </h3>
             <p className="mt-3 text-[0.98rem] leading-[1.65] text-muted-foreground">

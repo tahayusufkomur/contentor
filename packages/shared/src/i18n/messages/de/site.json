@@ -313,5 +313,72 @@
     "readMore": "Weiterlesen",
     "ritualsCount": "{count, plural, one {# Ritual} other {# Rituale}}",
     "treatmentsIncluded": "{count, plural, one {# Behandlung inklusive} other {# Behandlungen inklusive}}"
+  },
+  "sanctum": {
+    "sacredGifts": "Heilige Gaben",
+    "celestialDispatch": "Himmlische Botschaft",
+    "sanctuaryAltar": "Altar des Heiligtums",
+    "hoursOfAlignment": "Stunden der Ausrichtung",
+    "inquiryOfTheStars": "Befragung der Sterne",
+    "sacredPaths": "Heilige Pfade",
+    "emptyCoursesTitle": "Noch keine veröffentlichten Pfade",
+    "emptyCoursesText": "Veröffentliche einen Kurs und er erscheint hier wie eine heilige Tarotkarte.",
+    "initiation": "Einweihung",
+    "gatherings": "Zusammenkünfte",
+    "emptyEventsTitle": "Keine anstehenden Zusammenkünfte geplant",
+    "emptyEventsText": "Plane einen Live-Kreis oder eine Ritual-Session und sie erscheint hier unter dem Mond.",
+    "phase": "Phase {numeral}",
+    "ritualSequence": "Ritualablauf",
+    "celestialVisions": "Himmlische Visionen",
+    "invocation": "Anrufung",
+    "sanctuaryOfferings": "Gaben des Heiligtums",
+    "initiated": "Eingeweiht",
+    "sacredPrivileges": "Heilige Privilegien",
+    "emptyPlansTitle": "Noch keine Stufen",
+    "emptyPlansText": "Erstelle einen Tarif unter Abrechnung und er erscheint hier als heilige Stufe.",
+    "originStory": "Ursprungsgeschichte",
+    "explorePaths": "Alle Pfade entdecken",
+    "fullGatheringCalendar": "Vollständiger Kalender der Zusammenkünfte",
+    "offeringsIncluded": "{count, plural, one {# Gabe enthalten} other {# Gaben enthalten}}"
+  },
+  "tavola": {
+    "whatsInIt": "Was drin ist",
+    "kitchen": "Küche",
+    "upcoming": "Demnächst",
+    "menu": "Menü"
+  },
+  "grid": {
+    "seeAllCourses": "Alle Kurse ansehen",
+    "emptyCoursesTitle": "Noch keine Kurse vorhanden",
+    "seeTheCalendar": "Zum Kalender",
+    "emptyEventsText": "Plane eine Live-Session und sie erscheint hier automatisch.",
+    "billed": "Abrechnung",
+    "emptyPlansText": "Erstelle einen Tarif unter Abrechnung und er erscheint hier automatisch.",
+    "everyMonth": "Jeden Monat",
+    "everyYear": "Jedes Jahr",
+    "everyYears": "{count, plural, one {Jedes Jahr} other {Alle # Jahre}}",
+    "everyMonths": "{count, plural, one {Jeden Monat} other {Alle # Monate}}"
+  },
+  "trail": {
+    "basecamp": "Basislager",
+    "join": "Beitreten",
+    "itemsIncluded": "{count, plural, one {Element enthalten} other {Elemente enthalten}}",
+    "lessons": "Lektionen",
+    "price": "Preis",
+    "allRoutes": "Alle Routen",
+    "allMeetups": "Alle Treffen"
+  },
+  "studiofloor": {
+    "directEmail": "Direkte E-Mail",
+    "studioLocation": "Studio-Standort",
+    "sessionHours": "Session-Zeiten",
+    "emptyCoursesText": "Veröffentliche einen Kurs und er wird automatisch in diese Liste aufgenommen.",
+    "reserveSpot": "PLATZ RESERVIEREN",
+    "emptyEventsText": "Plane eine Live-Studio-Session oder einen Workshop und er erscheint hier.",
+    "momentsReel": "Momente-Reel",
+    "seeIncludedSessions": "ENTHALTENE SESSIONS ANSEHEN",
+    "emptyPlansText": "Erstelle einen Pass unter Abrechnung und er erscheint hier automatisch.",
+    "sessionsIncluded": "{count, plural, one {# Kurs/Session enthalten} other {# Kurse/Sessions enthalten}}",
+    "viewFullTimetable": "VOLLSTÄNDIGEN STUNDENPLAN ANSEHEN"
   }
 }

@@ -11,17 +11,22 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, BTN_GHOST, CARD, H3, LABEL, Opener, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Live sessions and tastings presented as an upcoming schedule card with dotted rows. */
 export function EventsTastings({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Events"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.events")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -30,13 +35,13 @@ export function EventsTastings({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No upcoming sessions"
-              text="Schedule a live session or event and it appears here."
+              title={t("empty.sessions.title")}
+              text={t("empty.sessions.text")}
             />
           </div>
         ) : (
           <div className={cn(CARD, "mx-auto mt-14 max-w-[56rem] p-6 md:p-8")}>
-            <p className={LABEL}>Upcoming</p>
+            <p className={LABEL}>{t("tavola.upcoming")}</p>
             <ol className="mt-2">
               {events.map((e) => (
                 <li
@@ -67,10 +72,10 @@ export function EventsTastings({ block, data, editable }: SectionProps) {
                     </span>
                     <span className="flex flex-col sm:items-end sm:text-right">
                       <span className="font-bold">
-                        {eventPriceLabel(e, locale)}
+                        {eventPriceLabel(e, locale, t)}
                       </span>
                       <span className="tavola-link mt-1 inline-flex items-center gap-2 text-[0.9rem] font-bold">
-                        Reserve
+                        {t("event.reserve")}
                         <Arrow />
                       </span>
                     </span>
@@ -89,10 +94,10 @@ export function EventsTastings({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "Full calendar"
+                t("cta.fullCalendar")
               )}
             </SmartLink>
           </div>

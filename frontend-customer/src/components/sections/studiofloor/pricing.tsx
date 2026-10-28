@@ -10,11 +10,12 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { CHIP, H3, Opener, Section, WRAP, pad2 } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Membership plans designed as dance studio access passes / tickets with
  *  notched sides, perforated dividers, and neon price tags. */
 export function PricingPasses({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
@@ -22,7 +23,11 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.pricing")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -82,11 +87,9 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                     {!!plan.item_count && (
                       <p className={cn(CHIP, "mb-4")}>
                         <span className="size-1.5 rounded-full bg-primary shadow-[0_0_6px_var(--primary)]" />
-                        {plan.item_count}{" "}
-                        {plan.item_count === 1
-                          ? "course/session"
-                          : "courses/sessions"}{" "}
-                        included
+                        {t("studiofloor.sessionsIncluded", {
+                          count: plan.item_count,
+                        })}
                       </p>
                     )}
 
@@ -101,7 +104,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                   <div className="mt-8 pt-4">
                     {plan.is_subscribed ? (
                       <p className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius)] border border-primary/50 bg-primary/10 studiofloor-display text-[0.95rem] font-extrabold italic text-primary">
-                        Subscribed
+                        {t("plan.subscribed")}
                       </p>
                     ) : (
                       <SubscribeButton
@@ -123,7 +126,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                       href={`/plans/${plan.id}`}
                       className="studiofloor-link mt-4 block w-fit studiofloor-display text-[0.88rem] font-extrabold italic"
                     >
-                      SEE INCLUDED SESSIONS
+                      {t("studiofloor.seeIncludedSessions")}
                     </SmartLink>
                   </div>
                 </li>
@@ -134,8 +137,8 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a pass under Billing and it appears here automatically."
+              title={t("empty.plans.title")}
+              text={t("studiofloor.emptyPlansText")}
             />
           </div>
         )}

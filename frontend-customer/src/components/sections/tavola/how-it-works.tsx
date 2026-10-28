@@ -2,11 +2,13 @@ import { cn } from "@/lib/utils";
 import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H3, Opener, Section, WRAP, pad2, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** The method: numbered recipe steps with tomato numerals and dotted rules. */
 export function HowItWorksMethod({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -45,7 +47,9 @@ export function HowItWorksMethod({ block, editable }: SectionProps) {
               </span>
               <div className="min-w-0">
                 <h3 className={cn(H3, "text-[1.35rem]")}>
-                  <span className="sr-only">{`Step ${i + 1}: `}</span>
+                  <span className="sr-only">
+                    {t("step.labelColon", { number: i + 1 })}{" "}
+                  </span>
                   {s.title}
                 </h3>
                 <p className="mt-2 max-w-[40ch] text-[1rem] leading-[1.65] text-muted-foreground">

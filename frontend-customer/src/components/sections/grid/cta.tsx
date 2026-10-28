@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Cta, Label, Sheet, btn, row } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** The one colour block: a cobalt sheet over the visible grid, a huge line,
  *  and the photo (if any) printed as a cobalt duotone. */
 export function CtaBlock({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photo = imageUrl(block.image);
   return (
     <Sheet tone="cobalt" guides>
@@ -18,7 +20,7 @@ export function CtaBlock({ block, editable }: SectionProps) {
           field="heading"
           editable={editable}
           as="h2"
-          placeholder="Heading"
+          placeholder={t("placeholder.heading")}
           className="swiss-h1 swiss-indent col-span-12 block md:col-span-11 md:[--swiss-cols:11]"
         />
       </div>
@@ -30,7 +32,7 @@ export function CtaBlock({ block, editable }: SectionProps) {
               field="text"
               editable={editable}
               as="p"
-              placeholder="Text"
+              placeholder={t("placeholder.text")}
               className="swiss-lead block max-w-[36ch]"
             />
           )}

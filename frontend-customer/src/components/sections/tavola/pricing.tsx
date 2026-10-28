@@ -9,17 +9,22 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { CARD, LABEL, Leader, Opener, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Membership plans presented as a trattoria prix-fixe menu with dotted price lines. */
 export function PricingMenu({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.pricing")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -28,13 +33,13 @@ export function PricingMenu({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a plan under Billing and it appears here."
+              title={t("empty.plans.title")}
+              text={t("empty.plans.text")}
             />
           </div>
         ) : (
           <div className={cn(CARD, "mx-auto mt-14 max-w-[56rem] p-7 md:p-10")}>
-            <p className={LABEL}>Menu</p>
+            <p className={LABEL}>{t("tavola.menu")}</p>
             <ul className="mt-4">
               {plans.map((plan) => (
                 <li
@@ -63,14 +68,13 @@ export function PricingMenu({ block, data, editable }: SectionProps) {
                   )}
                   {!!plan.item_count && (
                     <p className={cn(LABEL, "mt-3")}>
-                      {plan.item_count}{" "}
-                      {plan.item_count === 1 ? "item" : "items"} included
+                      {t("plan.itemsIncluded", { count: plan.item_count })}
                     </p>
                   )}
                   <div className="mt-5 flex flex-wrap items-center gap-5">
                     {plan.is_subscribed ? (
                       <p className="inline-flex min-h-12 items-center justify-center rounded-[var(--radius)] border-2 border-primary px-6 font-bold text-primary">
-                        Subscribed
+                        {t("plan.subscribed")}
                       </p>
                     ) : (
                       <SubscribeButton
@@ -86,7 +90,7 @@ export function PricingMenu({ block, data, editable }: SectionProps) {
                       href={`/plans/${plan.id}`}
                       className="tavola-link text-[0.9rem] font-bold"
                     >
-                      See what&rsquo;s included
+                      {t("plan.seeIncluded")}
                     </SmartLink>
                   </div>
                 </li>

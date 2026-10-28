@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { H1, Kicker, LABEL_ACCENT, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Sizing the philosophy statement to stay imposing at any character count. */
 function quoteSize(len: number) {
@@ -16,11 +17,12 @@ function quoteSize(len: number) {
  *  mirrored directly underneath as a floor reflection, attribution, and
  *  an optional wide atmosphere print. */
 export function PhilosophyMirror({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="stage" label="Philosophy">
+    <Section tone="stage" label={t("sectionLabel.philosophy")}>
       <div aria-hidden="true" className="studiofloor-stage-beam opacity-40" />
 
       <div
@@ -39,7 +41,7 @@ export function PhilosophyMirror({ block, editable }: SectionProps) {
                 field="statement"
                 editable={editable}
                 as="p"
-                placeholder="Statement"
+                placeholder={t("placeholder.statement")}
                 className={cn(
                   H1,
                   "block text-balance break-words",
@@ -75,7 +77,7 @@ export function PhilosophyMirror({ block, editable }: SectionProps) {
                 block={block}
                 field="attribution"
                 editable={editable}
-                placeholder="Attribution"
+                placeholder={t("placeholder.attribution")}
                 className={LABEL_ACCENT}
               />
               <span
@@ -91,7 +93,7 @@ export function PhilosophyMirror({ block, editable }: SectionProps) {
             <div className="relative overflow-hidden rounded-[var(--radius)] border border-primary/40 shadow-[0_0_32px_color-mix(in_oklch,var(--primary)_25%,transparent)]">
               <Img
                 value={block.image}
-                alt={statement.slice(0, 100) || "Atmosphere"}
+                alt={statement.slice(0, 100) || t("manuscript.atmosphere")}
                 className="aspect-[16/9] w-full"
               />
               <div

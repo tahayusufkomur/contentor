@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, BTN_ON_INVERSE, H2, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** The spotlight call-to-action: the one high-contrast inverse band on the
  *  dark page with stage spotlight cone lighting radiating down on the invitation. */
 export function CtaSpotlight({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -18,7 +20,7 @@ export function CtaSpotlight({ block, editable }: SectionProps) {
         field="heading"
         editable={editable}
         as="h2"
-        placeholder="Heading"
+        placeholder={t("placeholder.heading")}
         className={cn(H2, "mt-4 block max-w-[20ch]")}
       />
 
@@ -27,7 +29,7 @@ export function CtaSpotlight({ block, editable }: SectionProps) {
         field="text"
         editable={editable}
         as="p"
-        placeholder="Text"
+        placeholder={t("placeholder.text")}
         className="mt-6 block max-w-[46ch] text-pretty text-[1.0625rem] leading-[1.68] text-muted-foreground"
       />
 
@@ -38,7 +40,7 @@ export function CtaSpotlight({ block, editable }: SectionProps) {
               block={block}
               field="ctaLabel"
               editable={editable}
-              placeholder="Button text"
+              placeholder={t("placeholder.buttonText")}
             />
             <Arrow />
           </SmartLink>

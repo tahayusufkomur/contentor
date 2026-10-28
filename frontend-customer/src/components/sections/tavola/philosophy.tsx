@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, LABEL, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Size the quote to its length: a short line gets poster scale, a long one
  *  stays readable. */
@@ -15,11 +16,12 @@ function quoteSize(len: number) {
 
 /** The chalkboard house rule: a bold central manifesto framed by chalk rules. */
 export function PhilosophyHouseRule({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="board" label="Philosophy">
+    <Section tone="board" label={t("sectionLabel.philosophy")}>
       <div className={WRAP}>
         <figure className="flex flex-col items-center text-center">
           <Kicker block={block} editable={editable} />
@@ -29,7 +31,7 @@ export function PhilosophyHouseRule({ block, editable }: SectionProps) {
               field="statement"
               editable={editable}
               as="p"
-              placeholder="Statement"
+              placeholder={t("placeholder.statement")}
               className={cn(
                 "block text-balance break-words font-display tracking-[-0.005em]",
                 quoteSize(statement.length),
@@ -43,7 +45,7 @@ export function PhilosophyHouseRule({ block, editable }: SectionProps) {
                 block={block}
                 field="attribution"
                 editable={editable}
-                placeholder="Attribution"
+                placeholder={t("placeholder.attribution")}
                 className={LABEL}
               />
             </figcaption>

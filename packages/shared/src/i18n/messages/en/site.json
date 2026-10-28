@@ -292,5 +292,72 @@
     "readMore": "Read more",
     "ritualsCount": "{count, plural, one {# ritual} other {# rituals}}",
     "treatmentsIncluded": "{count, plural, one {# treatment included} other {# treatments included}}"
+  },
+  "sanctum": {
+    "sacredGifts": "Sacred gifts",
+    "celestialDispatch": "Celestial dispatch",
+    "sanctuaryAltar": "Sanctuary altar",
+    "hoursOfAlignment": "Hours of alignment",
+    "inquiryOfTheStars": "Inquiry of the Stars",
+    "sacredPaths": "Sacred Paths",
+    "emptyCoursesTitle": "No published paths yet",
+    "emptyCoursesText": "Publish a course and it manifests here like a sacred tarot card.",
+    "initiation": "Initiation",
+    "gatherings": "Gatherings",
+    "emptyEventsTitle": "No upcoming gatherings scheduled",
+    "emptyEventsText": "Schedule a live circle or ritual session and it will appear here under the moon.",
+    "phase": "Phase {numeral}",
+    "ritualSequence": "Ritual sequence",
+    "celestialVisions": "Celestial visions",
+    "invocation": "Invocation",
+    "sanctuaryOfferings": "Sanctuary Offerings",
+    "initiated": "Initiated",
+    "sacredPrivileges": "Sacred privileges",
+    "emptyPlansTitle": "No offering tiers yet",
+    "emptyPlansText": "Create a plan under Billing and it appears here as a sacred tier.",
+    "originStory": "Origin story",
+    "explorePaths": "Explore all paths",
+    "fullGatheringCalendar": "Full gathering calendar",
+    "offeringsIncluded": "{count, plural, one {# offering included} other {# offerings included}}"
+  },
+  "tavola": {
+    "whatsInIt": "What’s in it",
+    "kitchen": "Kitchen",
+    "upcoming": "Upcoming",
+    "menu": "Menu"
+  },
+  "grid": {
+    "seeAllCourses": "See all courses",
+    "emptyCoursesTitle": "No courses to show yet",
+    "seeTheCalendar": "See the calendar",
+    "emptyEventsText": "Schedule a live session and it appears here automatically.",
+    "billed": "Billed",
+    "emptyPlansText": "Create a plan in Billing and it appears here automatically.",
+    "everyMonth": "Every month",
+    "everyYear": "Every year",
+    "everyYears": "Every {count, plural, one {# year} other {# years}}",
+    "everyMonths": "Every {count, plural, one {# month} other {# months}}"
+  },
+  "trail": {
+    "basecamp": "Basecamp",
+    "join": "Join",
+    "itemsIncluded": "{count, plural, one {item included} other {items included}}",
+    "lessons": "lessons",
+    "price": "price",
+    "allRoutes": "All routes",
+    "allMeetups": "All meetups"
+  },
+  "studiofloor": {
+    "directEmail": "Direct Email",
+    "studioLocation": "Studio Location",
+    "sessionHours": "Session Hours",
+    "emptyCoursesText": "Publish a course and it joins this list automatically.",
+    "reserveSpot": "RESERVE SPOT",
+    "emptyEventsText": "Schedule a live studio session or workshop and it appears here.",
+    "momentsReel": "Moments reel",
+    "seeIncludedSessions": "SEE INCLUDED SESSIONS",
+    "emptyPlansText": "Create a pass under Billing and it appears here automatically.",
+    "sessionsIncluded": "{count, plural, one {# course/session included} other {# courses/sessions included}}",
+    "viewFullTimetable": "VIEW FULL TIMETABLE"
   }
 }

@@ -12,21 +12,21 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, CHIP, H3, Opener, Section, WRAP, pad2, str } from "./ui";
-
-const lessons = (c: Course) =>
-  c.lesson_count
-    ? `${c.lesson_count} ${c.lesson_count === 1 ? "lesson" : "lessons"}`
-    : "";
+import { useTranslations } from "next-intl";
 
 /** Course catalogue as a numbered playlist with lesson chips, neon prices,
  *  and glowing hover states. */
 export function CourseShowcaseSetlist({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
 
   return (
-    <Section tone="surface" label={str(block.heading) || "Courses"}>
+    <Section
+      tone="surface"
+      label={str(block.heading) || t("sectionLabel.courses")}
+    >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
 
@@ -60,10 +60,10 @@ export function CourseShowcaseSetlist({ block, data, editable }: SectionProps) {
                   {/* Title & meta */}
                   <div className="min-w-0 pr-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      {lessons(c) && (
+                      {!!c.lesson_count && (
                         <span className={CHIP}>
                           <span className="size-1.5 rounded-full bg-accent shadow-[0_0_6px_var(--accent)]" />
-                          {lessons(c)}
+                          {t("course.lessons", { count: c.lesson_count })}
                         </span>
                       )}
                     </div>
@@ -100,8 +100,8 @@ export function CourseShowcaseSetlist({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No published courses yet"
-              text="Publish a course and it joins this list automatically."
+              title={t("empty.courses.title")}
+              text={t("studiofloor.emptyCoursesText")}
             />
           </div>
         )}
@@ -117,10 +117,10 @@ export function CourseShowcaseSetlist({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "All courses"
+                t("cta.allCourses")
               )}
               <Arrow />
             </SmartLink>

@@ -12,9 +12,11 @@ import {
   ZodiacRing,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Call to action "begin": A luminous celestial gateway on pearl with rotating indigo ring. */
 export function CtaBegin({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -28,7 +30,7 @@ export function CtaBegin({ block, editable }: SectionProps) {
         field="heading"
         editable={editable}
         as="h2"
-        placeholder="Heading"
+        placeholder={t("placeholder.heading")}
         className={cn(
           H2,
           "mt-6 max-w-[20ch] text-[clamp(2rem,1.4rem+2.8vw,3.8rem)] text-[color:var(--inverse-foreground)]",
@@ -40,7 +42,7 @@ export function CtaBegin({ block, editable }: SectionProps) {
         field="text"
         editable={editable}
         as="p"
-        placeholder="Text"
+        placeholder={t("placeholder.text")}
         className="mt-6 max-w-[48ch] text-pretty text-[1.0625rem] leading-[1.75] text-muted-foreground"
       />
 
@@ -51,7 +53,7 @@ export function CtaBegin({ block, editable }: SectionProps) {
               block={block}
               field="ctaLabel"
               editable={editable}
-              placeholder="Button text"
+              placeholder={t("placeholder.buttonText")}
             />
             <StarGlyph className="size-3.5 text-primary-foreground" />
           </SmartLink>
@@ -61,7 +63,7 @@ export function CtaBegin({ block, editable }: SectionProps) {
   );
 
   return (
-    <Section tone="luminous" label={alt || "Initiation"}>
+    <Section tone="luminous" label={alt || t("sanctum.initiation")}>
       <div className={cn(WRAP, "relative")}>
         {/* Zodiac Ring in luminous tone */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">

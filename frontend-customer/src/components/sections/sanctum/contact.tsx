@@ -12,22 +12,24 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Contact "message": Send a celestial inquiry in an ornate gold frame. */
 export function ContactMessage({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showForm = block.showForm !== false;
   const email = str(block.email);
 
   const rows: { field: string; label: string }[] = [
-    { field: "email", label: "Celestial dispatch" },
-    { field: "location", label: "Sanctuary altar" },
-    { field: "hours", label: "Hours of alignment" },
+    { field: "email", label: t("sanctum.celestialDispatch") },
+    { field: "location", label: t("sanctum.sanctuaryAltar") },
+    { field: "hours", label: t("sanctum.hoursOfAlignment") },
   ].filter((r) => has(block, r.field, editable));
 
   return (
-    <Section tone="surface" label={alt || "Contact"}>
+    <Section tone="surface" label={alt || t("sectionLabel.contact")}>
       <div className={cn(WRAP, "grid gap-y-14 lg:grid-cols-12 lg:gap-x-12")}>
         <div
           className={
@@ -49,7 +51,7 @@ export function ContactMessage({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(
               H2,
               "mt-4 block max-w-[18ch] text-[clamp(1.9rem,1.4rem+1.8vw,3.2rem)]",
@@ -61,7 +63,7 @@ export function ContactMessage({ block, editable }: SectionProps) {
             field="text"
             editable={editable}
             as="p"
-            placeholder="Text"
+            placeholder={t("placeholder.text")}
             className="mt-6 block max-w-[46ch] text-pretty text-[1.05rem] leading-[1.7] text-muted-foreground"
           />
 
@@ -111,7 +113,7 @@ export function ContactMessage({ block, editable }: SectionProps) {
             <GoldFrame className="sanctum-form shadow-2xl">
               <div className="mb-6 flex items-center justify-between border-b border-[color-mix(in_oklch,var(--primary)_20%,transparent)] pb-4">
                 <span className="font-display text-[0.85rem] uppercase tracking-[0.16em] text-primary">
-                  Inquiry of the Stars
+                  {t("sanctum.inquiryOfTheStars")}
                 </span>
                 <StarGlyph className="size-3.5" />
               </div>

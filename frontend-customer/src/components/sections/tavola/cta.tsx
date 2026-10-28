@@ -1,9 +1,11 @@
 import { Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, BTN_ON_BOARD, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** The reservation board: chalkboard invitation and cream button, with optional atmosphere photo. */
 export function CtaReserve({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -26,7 +28,7 @@ export function CtaReserve({ block, editable }: SectionProps) {
                 field="heading"
                 editable={editable}
                 as="h2"
-                placeholder="Heading"
+                placeholder={t("placeholder.heading")}
                 className="mt-4 block max-w-[18ch] text-balance break-words font-display text-[clamp(2.2rem,1.5rem+2.8vw,4.3rem)] leading-[1.04]"
               />
               <Txt
@@ -34,7 +36,7 @@ export function CtaReserve({ block, editable }: SectionProps) {
                 field="text"
                 editable={editable}
                 as="p"
-                placeholder="Text"
+                placeholder={t("placeholder.text")}
                 className="mt-6 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
               />
               {has(block, "ctaLabel", editable) && (
@@ -44,7 +46,7 @@ export function CtaReserve({ block, editable }: SectionProps) {
                       block={block}
                       field="ctaLabel"
                       editable={editable}
-                      placeholder="Button text"
+                      placeholder={t("placeholder.buttonText")}
                     />
                     <Arrow />
                   </SmartLink>
@@ -60,7 +62,7 @@ export function CtaReserve({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className="mt-4 block max-w-[18ch] text-balance break-words font-display text-[clamp(2.2rem,1.5rem+2.8vw,4.3rem)] leading-[1.04]"
             />
             <Txt
@@ -68,7 +70,7 @@ export function CtaReserve({ block, editable }: SectionProps) {
               field="text"
               editable={editable}
               as="p"
-              placeholder="Text"
+              placeholder={t("placeholder.text")}
               className="mt-6 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
             />
             {has(block, "ctaLabel", editable) && (
@@ -78,7 +80,7 @@ export function CtaReserve({ block, editable }: SectionProps) {
                     block={block}
                     field="ctaLabel"
                     editable={editable}
-                    placeholder="Button text"
+                    placeholder={t("placeholder.buttonText")}
                   />
                   <Arrow />
                 </SmartLink>

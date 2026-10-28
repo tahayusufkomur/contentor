@@ -2,11 +2,13 @@ import { cn } from "@/lib/utils";
 import { Img, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { Opener, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
 /** The market stall: a patchwork photo grid led by a double-sized hero shot. */
 export function MomentsMarket({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHead =
@@ -14,7 +16,7 @@ export function MomentsMarket({ block, editable }: SectionProps) {
   const showCaption = has(block, "caption", editable);
 
   return (
-    <Section label={alt || "Moments"}>
+    <Section label={alt || t("sectionLabel.moments")}>
       <div className={WRAP}>
         {(showHead || showCaption) && (
           <Opener

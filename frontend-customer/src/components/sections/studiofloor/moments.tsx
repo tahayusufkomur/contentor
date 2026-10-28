@@ -2,12 +2,14 @@ import { cn } from "@/lib/utils";
 import { Img, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { Opener, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
 /** Candid studio moments arranged as a dance rehearsal film-strip and mirror
  *  wall photo strip with neon frame edges and captions. */
 export function MomentsReel({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHead =
@@ -15,7 +17,7 @@ export function MomentsReel({ block, editable }: SectionProps) {
   const showCaption = has(block, "caption", editable);
 
   return (
-    <Section tone="surface" label={alt || "Moments"}>
+    <Section tone="surface" label={alt || t("sectionLabel.moments")}>
       <div className={WRAP}>
         {(showHead || showCaption) && (
           <Opener
@@ -27,7 +29,7 @@ export function MomentsReel({ block, editable }: SectionProps) {
         )}
 
         <ul
-          aria-label={alt || "Moments reel"}
+          aria-label={alt || t("studiofloor.momentsReel")}
           className={cn(
             "grid grid-cols-2 gap-5 md:gap-7",
             photos.length === 4 ? "md:grid-cols-2" : "md:grid-cols-3",

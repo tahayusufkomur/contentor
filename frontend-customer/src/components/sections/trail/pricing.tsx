@@ -10,9 +10,10 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { CARD, H3, LABEL, Opener, Section, Stat, WRAP, pad2 } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 function Plan({ plan, i }: { plan: SubscriptionPlan; i: number }) {
+  const t = useTranslations("site");
   const locale = useLocale();
   return (
     <li className={cn(CARD, "flex flex-col p-7")}>
@@ -29,7 +30,7 @@ function Plan({ plan, i }: { plan: SubscriptionPlan; i: number }) {
       {!!plan.item_count && (
         <Stat
           value={plan.item_count}
-          label={plan.item_count === 1 ? "item included" : "items included"}
+          label={t("trail.itemsIncluded", { count: plan.item_count })}
           className="mt-5"
         />
       )}
@@ -41,7 +42,7 @@ function Plan({ plan, i }: { plan: SubscriptionPlan; i: number }) {
       <div className="mt-auto pt-8">
         {plan.is_subscribed ? (
           <p className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius)] border-2 border-foreground font-semibold">
-            Subscribed
+            {t("plan.subscribed")}
           </p>
         ) : (
           <SubscribeButton
@@ -57,7 +58,7 @@ function Plan({ plan, i }: { plan: SubscriptionPlan; i: number }) {
           href={`/plans/${plan.id}`}
           className="trail-link mt-4 block w-fit text-[0.9rem] font-semibold"
         >
-          See what&rsquo;s included
+          {t("plan.seeIncluded")}
         </SmartLink>
       </div>
     </li>
@@ -66,13 +67,18 @@ function Plan({ plan, i }: { plan: SubscriptionPlan; i: number }) {
 
 /** Membership plans as trail permits: route cards with bold price, permit number, and orange pass button. */
 export function PricingPermits({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
   const solo = plans.length === 1;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.pricing")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -97,8 +103,8 @@ export function PricingPermits({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a plan under Billing and it appears here."
+              title={t("empty.plans.title")}
+              text={t("empty.plans.text")}
             />
           </div>
         )}

@@ -10,6 +10,7 @@ import {
   ZodiacRing,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 function quoteSize(len: number) {
   if (len <= 60)
@@ -21,11 +22,12 @@ function quoteSize(len: number) {
 
 /** Philosophy "invocation": Centred uppercase ceremonial decree within the Zodiac Ring. */
 export function PhilosophyInvocation({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="surface" label="Invocation">
+    <Section tone="surface" label={t("sanctum.invocation")}>
       <div className={cn(WRAP, "relative")}>
         {/* Background Zodiac Ring */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -41,7 +43,7 @@ export function PhilosophyInvocation({ block, editable }: SectionProps) {
             field="statement"
             editable={editable}
             as="p"
-            placeholder="Statement"
+            placeholder={t("placeholder.statement")}
             className={cn(
               "mt-8 block text-balance break-words font-display font-medium tracking-[0.01em] text-foreground",
               statement.length <= 24 && "uppercase tracking-[0.06em]",
@@ -56,7 +58,7 @@ export function PhilosophyInvocation({ block, editable }: SectionProps) {
                 block={block}
                 field="attribution"
                 editable={editable}
-                placeholder="Attribution"
+                placeholder={t("placeholder.attribution")}
               />
               <StarGlyph className="size-3" />
             </div>

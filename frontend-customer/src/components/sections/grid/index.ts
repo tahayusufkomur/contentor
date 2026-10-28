@@ -32,6 +32,8 @@ export const sections: Partial<StyleSections> = {
   events: { table: EventsTable, rows: EventsRows },
 };
 
+const LABEL = "swiss-mono";
+
 /** Swiss Grid's StyleKit: what AI-built sections (components/cx) render with. */
 export const kit = defineKit({
   id: "grid",
@@ -39,7 +41,7 @@ export const kit = defineKit({
   display: "swiss-h1",
   h2: "swiss-h2",
   h3: "swiss-h3",
-  label: "swiss-mono",
+  label: LABEL,
   button: { primary: btn.primary, ghost: btn.outline, onInverse: btn.onCobalt },
   tones: { base: "paper", surface: "fog", inverse: "cobalt" },
   Section: Sheet,

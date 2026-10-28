@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, H2, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Coach story backstage: mirror panels with glowing light bars on the left,
  *  stretched headline, rich rehearsal story, and neon signature on the right. */
 export function StoryBackstage({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
 
@@ -58,7 +60,7 @@ export function StoryBackstage({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(H2, "mt-4 block max-w-[22ch]")}
           />
 
@@ -80,7 +82,7 @@ export function StoryBackstage({ block, editable }: SectionProps) {
                 field="signature"
                 editable={editable}
                 as="p"
-                placeholder="Creator name"
+                placeholder={t("placeholder.creatorName")}
                 className="studiofloor-display text-[1.4rem] font-extrabold italic text-primary"
               />
             </div>
@@ -96,7 +98,7 @@ export function StoryBackstage({ block, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Link text"
+                  placeholder={t("placeholder.linkText")}
                 />
                 <Arrow />
               </SmartLink>

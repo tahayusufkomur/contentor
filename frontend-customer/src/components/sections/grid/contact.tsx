@@ -2,16 +2,18 @@ import { cn } from "@/lib/utils";
 import { ContactForm, Img, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Head, Sheet, row } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** The email address set as display type, details as a definition list,
  *  the form on the right. */
 export function ContactDefinition({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const email = typeof block.email === "string" ? block.email.trim() : "";
   const photo = imageUrl(block.image);
   const showForm = block.showForm !== false;
   const details = [
-    { field: "location", label: "Location" },
-    { field: "hours", label: "Hours" },
+    { field: "location", label: t("contact.location") },
+    { field: "hours", label: t("contact.hours") },
   ].filter((d) => has(block, d.field, editable));
 
   return (
@@ -20,7 +22,9 @@ export function ContactDefinition({ block, editable }: SectionProps) {
 
       {(email || editable) && (
         <div className="mt-14 border-t border-foreground pt-3 md:mt-20">
-          <p className="swiss-mono text-muted-foreground">Email</p>
+          <p className="swiss-mono text-muted-foreground">
+            {t("contact.email")}
+          </p>
           <SmartLink
             href={email && !editable ? `mailto:${email}` : null}
             className="swiss-email mt-4 block decoration-2 underline-offset-[0.12em] hover:text-primary hover:underline md:mt-6"
@@ -29,7 +33,7 @@ export function ContactDefinition({ block, editable }: SectionProps) {
               block={block}
               field="email"
               editable={editable}
-              placeholder="you@example.com"
+              placeholder={t("placeholder.emailExample")}
             />
           </SmartLink>
         </div>

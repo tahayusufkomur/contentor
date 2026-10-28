@@ -22,16 +22,22 @@ import {
   WRAP,
   pad2,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Course catalogue as trail routes: route cards with lesson count and price stats. */
 export function CoursesRoutes({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Courses"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.courses")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -40,8 +46,8 @@ export function CoursesRoutes({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No published courses yet"
-              text="Publish a course and it appears here automatically."
+              title={t("empty.courses.title")}
+              text={t("empty.courses.text")}
             />
           </div>
         ) : (
@@ -77,7 +83,7 @@ export function CoursesRoutes({ block, data, editable }: SectionProps) {
                     <div className="mt-auto grid grid-cols-2 gap-4 border-t border-border pt-5">
                       <Stat
                         value={c.lesson_count ? `${c.lesson_count}` : "—"}
-                        label="lessons"
+                        label={t("trail.lessons")}
                       />
                       <Stat
                         value={
@@ -87,7 +93,7 @@ export function CoursesRoutes({ block, data, editable }: SectionProps) {
                             className="trail-price"
                           />
                         }
-                        label="price"
+                        label={t("trail.price")}
                       />
                     </div>
                   </div>
@@ -105,10 +111,10 @@ export function CoursesRoutes({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "All routes"
+                t("trail.allRoutes")
               )}
             </SmartLink>
           </div>

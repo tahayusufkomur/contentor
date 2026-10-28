@@ -11,17 +11,22 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, BTN_GHOST, H3, LABEL, NUM, Opener, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Upcoming meetups as a trail itinerary: client-local timestamps, blaze location pips, and prices. */
 export function EventsMeetups({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Events"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.events")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -53,10 +58,10 @@ export function EventsMeetups({ block, data, editable }: SectionProps) {
                   </span>
                   <span className="flex flex-col sm:items-end">
                     <span className={cn(NUM, "font-semibold")}>
-                      {eventPriceLabel(e, locale)}
+                      {eventPriceLabel(e, locale, t)}
                     </span>
                     <span className="trail-link mt-1 inline-flex items-center gap-2 text-[0.9rem] font-semibold">
-                      <span>Join</span>
+                      <span>{t("trail.join")}</span>
                       <Arrow />
                     </span>
                   </span>
@@ -68,8 +73,8 @@ export function EventsMeetups({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No upcoming sessions"
-              text="Schedule a live session or event and it appears here."
+              title={t("empty.sessions.title")}
+              text={t("empty.sessions.text")}
             />
           </div>
         )}
@@ -82,10 +87,10 @@ export function EventsMeetups({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "All meetups"
+                t("trail.allMeetups")
               )}
             </SmartLink>
           </div>

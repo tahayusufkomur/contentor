@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import type { Block } from "@/types/tenant";
 import type { EditableContext } from "@/lib/blocks/types";
 import { SmartLink, Txt, has } from "../kit";
+import { useTranslations } from "next-intl";
 
 type Tone = "paper" | "fog" | "ink" | "cobalt";
 
@@ -88,13 +89,14 @@ export function Label({
   field?: string;
   className?: string;
 }) {
+  const t = useTranslations("site");
   return (
     <Txt
       block={block}
       field={field}
       editable={editable}
       as="p"
-      placeholder="Label"
+      placeholder={t("placeholder.label")}
       className={cn("swiss-mono col-span-12 md:col-span-3", className)}
     />
   );
@@ -115,6 +117,7 @@ export function Head({
   intro?: string;
   aside?: ReactNode;
 }) {
+  const t = useTranslations("site");
   return (
     <div className={cn(row, "gap-y-6 pt-3")}>
       <Label block={block} editable={editable} />
@@ -129,7 +132,7 @@ export function Head({
           field={heading}
           editable={editable}
           as="h2"
-          placeholder="Heading"
+          placeholder={t("placeholder.heading")}
           className="swiss-h2 block"
         />
         {has(block, intro, editable) && (
@@ -138,7 +141,7 @@ export function Head({
             field={intro}
             editable={editable}
             as="p"
-            placeholder="Intro"
+            placeholder={t("placeholder.intro")}
             className="swiss-lead mt-6 block max-w-[46ch] text-muted-foreground"
           />
         )}
@@ -192,6 +195,7 @@ export function Cta({
   fallbackHref?: string;
   className: string;
 }) {
+  const t = useTranslations("site");
   if (!has(block, label, editable)) return null;
   const to =
     (typeof block[href] === "string" && block[href]) || fallbackHref || null;
@@ -201,7 +205,7 @@ export function Cta({
         block={block}
         field={label}
         editable={editable}
-        placeholder="Button text"
+        placeholder={t("placeholder.buttonText")}
       />
     </SmartLink>
   );

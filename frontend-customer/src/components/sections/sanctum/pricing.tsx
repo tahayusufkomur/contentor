@@ -9,16 +9,20 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { H3, LABEL, Opener, Section, StarGlyph, WRAP, str } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Pricing "offerings": Stacked arch-topped sanctuary offering tiers with a glow on the middle tier (a glow, no label: no plan is flagged popular). */
 export function PricingOfferings({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
   return (
-    <Section tone="surface" label={str(block.heading) || "Sanctuary Offerings"}>
+    <Section
+      tone="surface"
+      label={str(block.heading) || t("sanctum.sanctuaryOfferings")}
+    >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
 
@@ -74,10 +78,9 @@ export function PricingOfferings({ block, data, editable }: SectionProps) {
                       <div className="mt-4 flex items-center justify-center gap-2">
                         <StarGlyph className="size-2 text-primary" />
                         <span className={cn(LABEL, "text-[0.78rem]")}>
-                          {plan.item_count}{" "}
-                          {plan.item_count === 1
-                            ? "offering included"
-                            : "offerings included"}
+                          {t("sanctum.offeringsIncluded", {
+                            count: plan.item_count,
+                          })}
                         </span>
                         <StarGlyph className="size-2 text-primary" />
                       </div>
@@ -87,7 +90,7 @@ export function PricingOfferings({ block, data, editable }: SectionProps) {
                   <div className="relative z-10 mt-8">
                     {plan.is_subscribed ? (
                       <p className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius)] border-2 border-primary font-display text-[0.82rem] font-medium uppercase tracking-[0.14em] text-primary">
-                        Initiated
+                        {t("sanctum.initiated")}
                       </p>
                     ) : (
                       <SubscribeButton
@@ -109,7 +112,7 @@ export function PricingOfferings({ block, data, editable }: SectionProps) {
                       href={`/plans/${plan.id}`}
                       className="sanctum-link mt-4 inline-block font-display text-[0.8rem] uppercase tracking-[0.14em]"
                     >
-                      Sacred privileges
+                      {t("sanctum.sacredPrivileges")}
                     </SmartLink>
                   </div>
                 </div>
@@ -120,8 +123,8 @@ export function PricingOfferings({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No offering tiers yet"
-              text="Create a plan under Billing and it appears here as a sacred tier."
+              title={t("sanctum.emptyPlansTitle")}
+              text={t("sanctum.emptyPlansText")}
             />
           </div>
         )}

@@ -9,7 +9,7 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Head, Sheet, row, textLink } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const dayOf = (iso: string) => {
   const d = new Date(iso);
@@ -26,6 +26,7 @@ const part = (
 
 /** Upcoming sessions as a timetable; each row inverts to cobalt on hover. */
 export function EventsTable({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events = (data ?? []) as CalendarEvent[];
   if (!events.length && !editable) return null;
@@ -37,10 +38,10 @@ export function EventsTable({ block, data, editable }: SectionProps) {
           block={block}
           field="ctaLabel"
           editable={editable}
-          placeholder="See the calendar"
+          placeholder={t("grid.seeTheCalendar")}
         />
       ) : (
-        "Full calendar"
+        t("cta.fullCalendar")
       )}
     </SmartLink>
   );
@@ -56,8 +57,8 @@ export function EventsTable({ block, data, editable }: SectionProps) {
         <div className="mt-14">
           <EmptyHint
             editable={editable}
-            title="No upcoming sessions"
-            text="Schedule a live session and it appears here automatically."
+            title={t("empty.sessions.title")}
+            text={t("grid.emptyEventsText")}
           />
         </div>
       ) : (
@@ -66,10 +67,10 @@ export function EventsTable({ block, data, editable }: SectionProps) {
             aria-hidden="true"
             className={`${row} swiss-mono hidden pb-3 text-muted-foreground md:grid`}
           >
-            <span className="col-span-3">Date</span>
-            <span className="col-span-5">Session</span>
-            <span className="col-span-2">Where</span>
-            <span className="col-span-2 text-right">Price</span>
+            <span className="col-span-3">{t("encore.date")}</span>
+            <span className="col-span-5">{t("table.session")}</span>
+            <span className="col-span-2">{t("table.where")}</span>
+            <span className="col-span-2 text-right">{t("table.price")}</span>
           </div>
           <ul className="border-b border-foreground">
             {events.map((e) => (
@@ -100,7 +101,7 @@ export function EventsTable({ block, data, editable }: SectionProps) {
                     {e.location}
                   </span>
                   <span className="swiss-mono col-span-6 text-right tabular-nums md:col-span-2">
-                    {eventPriceLabel(e, locale)}
+                    {eventPriceLabel(e, locale, t)}
                   </span>
                 </SmartLink>
               </li>

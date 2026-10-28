@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 import { Img, Rich, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Cta, Label, Sheet, row, textLink } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Coach story: sticky label, book-set paragraphs on the axis, portrait
  *  locked to the right four columns, setting photo hanging bottom-left. */
 export function StoryColumns({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = String(block.heading ?? "");
   const setting = imageUrl(block.image2);
   return (
@@ -17,7 +19,7 @@ export function StoryColumns({ block, editable }: SectionProps) {
           field="heading"
           editable={editable}
           as="h2"
-          placeholder="Heading"
+          placeholder={t("placeholder.heading")}
           className="swiss-h2 col-span-12 block md:col-span-9 md:col-start-4"
         />
       </div>
@@ -44,7 +46,7 @@ export function StoryColumns({ block, editable }: SectionProps) {
                 field="signature"
                 editable={editable}
                 as="p"
-                placeholder="Your name"
+                placeholder={t("placeholder.yourName")}
                 className="swiss-h3 block"
               />
             </div>
@@ -66,6 +68,7 @@ export function StoryColumns({ block, editable }: SectionProps) {
 /** Story as an essay: no photo; the label and the heading on the axis, one
  *  book-set column of the coach's words under them, signed under a rule. */
 export function StoryEssay({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   return (
     <Sheet>
       <div className={cn(row, "gap-y-6 pt-3")}>
@@ -75,7 +78,7 @@ export function StoryEssay({ block, editable }: SectionProps) {
           field="heading"
           editable={editable}
           as="h2"
-          placeholder="Heading"
+          placeholder={t("placeholder.heading")}
           className="swiss-h2 col-span-12 block md:col-span-9 md:col-start-4"
         />
       </div>
@@ -94,7 +97,7 @@ export function StoryEssay({ block, editable }: SectionProps) {
                 field="signature"
                 editable={editable}
                 as="p"
-                placeholder="Your name"
+                placeholder={t("placeholder.yourName")}
                 className="swiss-h3 block"
               />
             </div>

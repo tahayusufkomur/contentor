@@ -12,16 +12,22 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { BTN_GHOST, CARD, H3, Leader, Opener, Section, WRAP } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Courses presented as trattoria recipe cards with dotted price and lesson leaders. */
 export function CoursesRecipeCards({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Courses"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.courses")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -30,8 +36,8 @@ export function CoursesRecipeCards({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No published courses yet"
-              text="Publish a course and it appears here automatically."
+              title={t("empty.courses.title")}
+              text={t("empty.courses.text")}
             />
           </div>
         ) : (
@@ -66,10 +72,13 @@ export function CoursesRecipeCards({ block, data, editable }: SectionProps) {
                     )}
                     <div className="mt-auto pt-5">
                       {Boolean(course.lesson_count) && (
-                        <Leader label="Lessons" value={course.lesson_count} />
+                        <Leader
+                          label={t("table.lessons")}
+                          value={course.lesson_count}
+                        />
                       )}
                       <Leader
-                        label="Price"
+                        label={t("table.price")}
                         value={
                           <CoursePrice
                             course={course}
@@ -95,10 +104,10 @@ export function CoursesRecipeCards({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "All courses"
+                t("cta.allCourses")
               )}
             </SmartLink>
           </div>

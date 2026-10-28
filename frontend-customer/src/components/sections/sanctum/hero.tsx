@@ -14,12 +14,14 @@ import {
   ZodiacRing,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 function Actions({
   block,
   editable,
   className,
 }: SectionProps & { className?: string }) {
+  const t = useTranslations("site");
   const primary = has(block, "ctaLabel", editable);
   const secondary = has(block, "secondaryLabel", editable);
   if (!primary && !secondary) return null;
@@ -36,7 +38,7 @@ function Actions({
             block={block}
             field="ctaLabel"
             editable={editable}
-            placeholder="Button text"
+            placeholder={t("placeholder.buttonText")}
           />
           <StarGlyph className="text-primary-foreground" />
         </SmartLink>
@@ -50,7 +52,7 @@ function Actions({
             block={block}
             field="secondaryLabel"
             editable={editable}
-            placeholder="Second button"
+            placeholder={t("placeholder.secondButton")}
           />
         </SmartLink>
       )}
@@ -64,6 +66,7 @@ function Actions({
  *  side. One photo is one full moon; two are a pair. On a phone the full moon
  *  rises alone, across the screen, above the words. */
 export function HeroObservatory({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const all = heroPhotos(block, editable).slice(0, 3);
   // The first photo is the full moon in the middle, the rest flank it.
@@ -101,7 +104,7 @@ export function HeroObservatory({ block, editable }: SectionProps) {
             field="headline"
             editable={editable}
             as="h1"
-            placeholder="Headline"
+            placeholder={t("placeholder.headline")}
             className={cn(
               H1,
               "mt-4 max-w-[18ch] sm:mt-6",
@@ -114,7 +117,7 @@ export function HeroObservatory({ block, editable }: SectionProps) {
             field="subhead"
             editable={editable}
             as="p"
-            placeholder="Subheadline"
+            placeholder={t("placeholder.subheadline")}
             className="mt-4 max-w-[48ch] text-pretty text-[1.0625rem] sm:mt-6 leading-[1.75] text-muted-foreground md:text-[1.15rem]"
           />
           {has(block, "meta", editable) && (
@@ -124,7 +127,7 @@ export function HeroObservatory({ block, editable }: SectionProps) {
                 block={block}
                 field="meta"
                 editable={editable}
-                placeholder="Small line"
+                placeholder={t("placeholder.smallLine")}
               />
               <StarGlyph className="size-3 text-primary" />
             </div>
@@ -165,6 +168,7 @@ export function HeroObservatory({ block, editable }: SectionProps) {
  *  Midnight celestial sphere with rotating zodiac ring, moon phases,
  *  gold hairline arch portrait, and quiet ceremonial symmetry. */
 export function HeroOracle({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -190,7 +194,7 @@ export function HeroOracle({ block, editable }: SectionProps) {
             field="headline"
             editable={editable}
             as="h1"
-            placeholder="Headline"
+            placeholder={t("placeholder.headline")}
             className={cn(H1, "mt-6 max-w-[18ch]")}
           />
 
@@ -199,7 +203,7 @@ export function HeroOracle({ block, editable }: SectionProps) {
             field="subhead"
             editable={editable}
             as="p"
-            placeholder="Subheadline"
+            placeholder={t("placeholder.subheadline")}
             className="mt-6 max-w-[48ch] text-pretty text-[1.0625rem] leading-[1.75] text-muted-foreground md:text-[1.15rem]"
           />
 
@@ -210,7 +214,7 @@ export function HeroOracle({ block, editable }: SectionProps) {
                 block={block}
                 field="meta"
                 editable={editable}
-                placeholder="Small line"
+                placeholder={t("placeholder.smallLine")}
               />
               <StarGlyph className="size-3 text-primary" />
             </div>
@@ -258,6 +262,7 @@ export function HeroOracle({ block, editable }: SectionProps) {
 
 /** Inner-page compact header: kicker, heading, subhead, actions, optional side arch photo. */
 export function HeroIntro({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -277,7 +282,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="headline"
               editable={editable}
               as="h1"
-              placeholder="Page title"
+              placeholder={t("placeholder.pageTitle")}
               className={cn(H1, "mt-5 max-w-[16ch]")}
             />
             <Txt
@@ -285,7 +290,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="subhead"
               editable={editable}
               as="p"
-              placeholder="Subheadline"
+              placeholder={t("placeholder.subheadline")}
               className="mt-6 block max-w-[48ch] text-pretty text-[1.0625rem] leading-[1.7] text-muted-foreground"
             />
             {has(block, "meta", editable) && (
@@ -295,7 +300,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
                   block={block}
                   field="meta"
                   editable={editable}
-                  placeholder="Small line"
+                  placeholder={t("placeholder.smallLine")}
                 />
               </div>
             )}

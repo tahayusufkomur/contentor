@@ -19,10 +19,11 @@ import {
   StarGlyph,
   WRAP,
 } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Events "gatherings": Ceremonial live gatherings with moon-phase glyphs per alignment date. */
 export function EventsGatherings({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
@@ -30,7 +31,11 @@ export function EventsGatherings({ block, data, editable }: SectionProps) {
   return (
     <Section
       tone="temple"
-      label={typeof block.heading === "string" ? block.heading : "Gatherings"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sanctum.gatherings")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -72,10 +77,10 @@ export function EventsGatherings({ block, data, editable }: SectionProps) {
                   {/* Price & Action */}
                   <div className="flex items-center gap-6 sm:justify-end">
                     <span className="font-display text-[1rem] uppercase tracking-[0.1em] text-foreground">
-                      {eventPriceLabel(e, locale)}
+                      {eventPriceLabel(e, locale, t)}
                     </span>
                     <span className="inline-flex items-center gap-1.5 font-display text-[0.8rem] uppercase tracking-[0.14em] text-primary transition-transform duration-300 motion-safe:group-hover:translate-x-1">
-                      <span>Reserve</span>
+                      <span>{t("event.reserve")}</span>
                       <StarGlyph className="size-2.5 text-primary" />
                     </span>
                   </div>
@@ -87,8 +92,8 @@ export function EventsGatherings({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No upcoming gatherings scheduled"
-              text="Schedule a live circle or ritual session and it will appear here under the moon."
+              title={t("sanctum.emptyEventsTitle")}
+              text={t("sanctum.emptyEventsText")}
             />
           </div>
         )}
@@ -101,10 +106,10 @@ export function EventsGatherings({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "Full gathering calendar"
+                t("sanctum.fullGatheringCalendar")
               )}
             </SmartLink>
           </div>
