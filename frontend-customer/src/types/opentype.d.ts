@@ -8,6 +8,7 @@ declare module "opentype.js" {
     unitsPerEm: number;
     ascender: number;
     descender: number;
+    charToGlyphIndex(char: string): number;
     getAdvanceWidth(text: string, fontSize: number): number;
     getPath(text: string, x: number, y: number, fontSize: number): OpenTypePath;
   }

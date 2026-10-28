@@ -11,7 +11,7 @@ import {
 
 // The shell's own UI face — deliberately not the coach's site font.
 const ui = Hanken_Grotesk({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-setup",
   display: "swap",
 });

@@ -58,6 +58,8 @@ export async function imageToDataUrl(url: string): Promise<string> {
  * exported <text> would silently fall back to the generic sans-serif
  * fallback instead of the chosen brand font. Select the block by content
  * (its unicode-range starts at U+0000-00FF) rather than by position.
+ * The latin-ext block (U+0100-...) is embedded too, with its unicode-range,
+ * so Turkish and Polish letters draw in the chosen font.
  */
 // Cache the resolved data-URI css per (family, weight): a brand-kit export
 // rasterizes 8 PNGs and would otherwise re-fetch the same css + binary each
@@ -76,11 +78,24 @@ function fontFaceCss(fontFamily: string, weight: number): Promise<string> {
       const latinBlock =
         blocks.find((block) => /unicode-range:\s*U\+0000-00FF/i.test(block)) ??
         blocks[0];
-      const match = latinBlock?.match(/src:\s*url\((https:[^)]+)\)/);
-      if (!match) return "";
+      // latin-ext carries Turkish/Polish letters (ı İ ş ł ź ...). Keep its
+      // unicode-range so each file only answers for its own letters. Latin
+      // goes last: it wins the few overlapping code points (U+0131), as in
+      // Google's own css.
+      const extBlock = blocks.find((block) =>
+        /unicode-range:\s*U\+0100-/i.test(block),
+      );
 
-      const fontData = await imageToDataUrl(match[1]);
-      return `@font-face{font-family:'${fontFamily}';font-weight:${weight};src:url(${fontData});}`;
+      const faces = await Promise.all(
+        [extBlock, latinBlock].map(async (block) => {
+          const url = block?.match(/src:\s*url\((https:[^)]+)\)/)?.[1];
+          if (!block || !url) return "";
+          const range = block.match(/unicode-range:\s*([^;]+);/i)?.[1];
+          const fontData = await imageToDataUrl(url);
+          return `@font-face{font-family:'${fontFamily}';font-weight:${weight};src:url(${fontData});${range ? `unicode-range:${range};` : ""}}`;
+        }),
+      );
+      return faces.join("");
     })();
     cached.catch(() => fontCssCache.delete(key));
     fontCssCache.set(key, cached);

@@ -71,18 +71,34 @@ export function darkVariant(recipe: LogoRecipe): LogoRecipe {
   };
 }
 
-export function fontsourceUrl(family: string, weight: number): string {
+export function fontsourceUrl(
+  family: string,
+  weight: number,
+  subset = "latin",
+): string {
   const slug = family.toLowerCase().replace(/\s+/g, "-");
-  return `https://cdn.jsdelivr.net/fontsource/fonts/${slug}@latest/latin-${weight}-normal.ttf`;
+  return `https://cdn.jsdelivr.net/fontsource/fonts/${slug}@latest/${subset}-${weight}-normal.ttf`;
+}
+
+/** Fontsource subsets a string needs: Turkish/Polish letters (U+0100-024F,
+ * U+1E00-1EFF) live in latin-ext; Latin-1 accents (German) are in latin. */
+export function subsetsFor(text: string): string[] {
+  return /[\u0100-\u024F\u1E00-\u1EFF]/.test(text)
+    ? ["latin", "latin-ext"]
+    : ["latin"];
 }
 
 const fontCache = new Map<string, Promise<Font>>();
 
-function loadFont(family: string, weight: number): Promise<Font> {
-  const key = `${family}:${weight}`;
+function loadFont(
+  family: string,
+  weight: number,
+  subset: string,
+): Promise<Font> {
+  const key = `${family}:${weight}:${subset}`;
   let cached = fontCache.get(key);
   if (!cached) {
-    cached = fetch(fontsourceUrl(family, weight))
+    cached = fetch(fontsourceUrl(family, weight, subset))
       .then((resp) => {
         if (!resp.ok) throw new Error(`Font fetch failed (${resp.status})`);
         return resp.arrayBuffer();
@@ -136,11 +152,20 @@ export async function svgWithTextPaths(svg: SVGSVGElement): Promise<string> {
     const opacity = textEl.getAttribute("opacity");
     const content = textEl.textContent ?? "";
 
-    const font = await loadFont(family, weight);
+    // One file per subset; each character is drawn from the first file
+    // that has its glyph (latin first, latin-ext for Turkish/Polish).
+    const fonts = await Promise.all(
+      subsetsFor(content).map((subset) => loadFont(family, weight, subset)),
+    );
+    const font = fonts[0]!;
     const scale = fontSize / font.unitsPerEm;
     const trackingPx = tracking * fontSize;
     const chars = [...content];
-    const advances = chars.map((ch) => font.getAdvanceWidth(ch, fontSize));
+    const fontFor = (ch: string) =>
+      fonts.find((f) => f.charToGlyphIndex(ch) > 0) ?? font;
+    const advances = chars.map((ch) =>
+      fontFor(ch).getAdvanceWidth(ch, fontSize),
+    );
     const total =
       advances.reduce((a, b) => a + b, 0) +
       trackingPx * Math.max(0, chars.length - 1);
@@ -149,7 +174,7 @@ export async function svgWithTextPaths(svg: SVGSVGElement): Promise<string> {
     const baseline = y + ((font.ascender + font.descender) / 2) * scale;
     let d = "";
     chars.forEach((ch, i) => {
-      d += font.getPath(ch, cursor, baseline, fontSize).toPathData(2);
+      d += fontFor(ch).getPath(ch, cursor, baseline, fontSize).toPathData(2);
       cursor += advances[i]! + trackingPx;
     });
 

@@ -1,0 +1,343 @@
+{
+  "Albert Sans": [
+    "latin",
+    "latin-ext"
+  ],
+  "Alegreya": [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Alegreya Sans": [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Anybody": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Archivo": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Atkinson Hyperlegible": [
+    "latin",
+    "latin-ext"
+  ],
+  "Baloo 2": [
+    "devanagari",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Bodoni Moda": [
+    "latin",
+    "latin-ext",
+    "math",
+    "symbols"
+  ],
+  "Bricolage Grotesque": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Caveat": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext"
+  ],
+  "Cinzel": [
+    "latin",
+    "latin-ext"
+  ],
+  "Cormorant": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Cormorant Garamond": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "DM Sans": [
+    "latin",
+    "latin-ext"
+  ],
+  "Dancing Script": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "EB Garamond": [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Figtree": [
+    "latin",
+    "latin-ext"
+  ],
+  "Fraunces": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Fredoka": [
+    "hebrew",
+    "latin",
+    "latin-ext"
+  ],
+  "Geist": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Great Vibes": [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Hanken Grotesk": [
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Host Grotesk": [
+    "latin",
+    "latin-ext"
+  ],
+  "IBM Plex Sans": [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Instrument Sans": [
+    "latin",
+    "latin-ext"
+  ],
+  "Instrument Serif": [
+    "latin",
+    "latin-ext"
+  ],
+  "Inter": [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "JetBrains Mono": [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Jost": [
+    "cyrillic",
+    "latin",
+    "latin-ext"
+  ],
+  "Karla": [
+    "latin",
+    "latin-ext"
+  ],
+  "Libre Franklin": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Literata": [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Lora": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "math",
+    "symbols",
+    "vietnamese"
+  ],
+  "Manrope": [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Montserrat": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Mulish": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Newsreader": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Nunito": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Outfit": [
+    "latin",
+    "latin-ext"
+  ],
+  "Pacifico": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Playfair Display": [
+    "cyrillic",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Plus Jakarta Sans": [
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Poppins": [
+    "devanagari",
+    "latin",
+    "latin-ext"
+  ],
+  "Quicksand": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Schibsted Grotesk": [
+    "latin",
+    "latin-ext"
+  ],
+  "Shippori Mincho": [
+    "japanese",
+    "latin",
+    "latin-ext"
+  ],
+  "Sora": [
+    "latin",
+    "latin-ext"
+  ],
+  "Source Sans 3": [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Source Serif 4": [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Space Grotesk": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Spectral": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Syne": [
+    "greek",
+    "latin",
+    "latin-ext"
+  ],
+  "Unbounded": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Work Sans": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+  ],
+  "Young Serif": [
+    "latin",
+    "latin-ext"
+  ],
+  "Zen Kaku Gothic New": [
+    "cyrillic",
+    "japanese",
+    "latin",
+    "latin-ext"
+  ],
+  "Zilla Slab": [
+    "latin",
+    "latin-ext"
+  ]
+}
