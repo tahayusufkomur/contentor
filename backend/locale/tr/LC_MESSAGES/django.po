@@ -13,7 +13,7 @@ msgstr ""
 #: apps/accounts/views.py
 #, fuzzy
 msgid "If an account exists, a magic link has been sent."
-msgstr "Hesap varsa sihirli bir bağlantı gönderildi."
+msgstr "Bir hesap varsa, bir sihirli bağlantı gönderildi."
 
 #: apps/accounts/views.py apps/core/onboarding/recovery.py
 #: apps/core/onboarding/views.py
@@ -24,12 +24,12 @@ msgstr "Geçersiz veya süresi dolmuş belirteç"
 #: apps/accounts/views.py
 #, fuzzy
 msgid "Token not valid for this tenant"
-msgstr "Belirteç bu site için geçerli değil"
+msgstr "Belirteç bu kiracı için geçerli değil"
 
 #: apps/accounts/views.py
 #, fuzzy
 msgid "Unsupported locale"
-msgstr "Desteklenmeyen dil"
+msgstr "Desteklenmeyen yerel ayar"
 
 #: apps/core/onboarding/compose.py apps/core/tasks.py
 #: apps/tenant_config/interview_milestones.py
@@ -89,7 +89,7 @@ msgstr "İndirilebilir Dosyalar & Kaynaklar"
 #: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Frequently asked questions"
-msgstr "Sık sorulan sorular"
+msgstr "Sıkça sorulan sorular"
 
 #: apps/core/onboarding/compose.py apps/core/tasks.py
 #: apps/tenant_config/defaults.py
@@ -101,7 +101,7 @@ msgstr "Öğrenmeye başlamaya hazır mısın?"
 #: apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Join Now"
-msgstr "Hemen Katıl"
+msgstr "Şimdi Katıl"
 
 #: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
 #, fuzzy
@@ -122,17 +122,17 @@ msgstr "Hoş geldin"
 #: apps/core/onboarding/compose.py
 #, fuzzy
 msgid "Take a look around and find what fits you."
-msgstr "Etrafa bir göz at ve sana uygun olanı bul."
+msgstr "Etrafına bir göz at ve sana uygun olanı bul."
 
 #: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Get in touch"
-msgstr "Bize ulaş"
+msgstr "İletişime geç"
 
 #: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Have a question? Send us a message."
-msgstr "Bir sorun mu var? Bize mesaj gönder."
+msgstr "Bir sorun mu var? Bize bir mesaj gönder."
 
 #: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
 #, fuzzy
@@ -142,7 +142,7 @@ msgstr "Mesaj gönder"
 #: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Thanks! We'll get back to you soon."
-msgstr "Teşekkürler! En kısa sürede sana dönüş yapacağız."
+msgstr "Teşekkürler! En kısa sürede sana geri döneceğiz."
 
 #: apps/core/onboarding/compose.py
 #, fuzzy
@@ -183,7 +183,7 @@ msgstr "yoga"
 #: apps/notifications/transactional.py apps/tenant_config/defaults.py
 #, fuzzy, python-format
 msgid "Welcome to %(brand)s"
-msgstr "%(brand)s dünyasına hoş geldin"
+msgstr "%(brand)s'e hoş geldin"
 
 #: apps/core/onboarding/compose.py
 #, fuzzy, python-format
@@ -203,7 +203,7 @@ msgstr "Her yerden takip edebileceğin %(topic)s sunuyoruz."
 #: apps/core/onboarding/compose.py
 #, fuzzy, python-format
 msgid "%(brand)s offers %(topic)s you can follow from anywhere."
-msgstr "%(brand)s, her yerden takip edebileceğin %(topic)s sunuyor."
+msgstr "%(brand)s her yerden takip edebileceğin %(topic)s sunuyor."
 
 #: apps/core/onboarding/compose.py
 #, fuzzy
@@ -218,7 +218,7 @@ msgstr "Belirteç gerekli"
 #: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
 #, fuzzy
 msgid "Tenant not found"
-msgstr "Site bulunamadı"
+msgstr "Kiracı bulunamadı"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -253,12 +253,12 @@ msgstr "Hakkımızda"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Browse the courses"
-msgstr "Kurslara Göz At"
+msgstr "Kurslara göz at"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "See the sessions"
-msgstr "Tüm oturumları gör"
+msgstr "Oturumları gör"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy, python-format
@@ -283,7 +283,7 @@ msgstr "Canlı %(topic)s oturumu"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy, python-format
 msgid "%(Topic)s questions, answered live"
-msgstr "%(Topic)s sorularına canlı yanıtlar"
+msgstr "%(Topic)s soruları, canlı yanıtlanıyor"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy, python-format
@@ -298,7 +298,7 @@ msgstr "İlk %(topic)s oturumundan neler beklemelisin"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy, python-format
 msgid "Three %(topic)s questions I hear"
-msgstr "Sık duyduğum üç %(topic)s sorusu"
+msgstr "Duyduğum üç %(topic)s sorusu"
 
 #: apps/core/onboarding/site_name.py
 #, fuzzy
@@ -318,7 +318,7 @@ msgstr "Doğrulama e-postası gönderildi. Gelen kutunu kontrol et."
 #: apps/core/onboarding/views.py
 #, fuzzy
 msgid "Brand name is required"
-msgstr "Marka adı gerekli"
+msgstr "Marka adı zorunludur"
 
 #: apps/core/onboarding/views.py
 #, fuzzy
@@ -333,7 +333,7 @@ msgstr "slug parametresi gerekli"
 #: apps/core/tasks.py apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Get Started"
-msgstr "Hemen Başla"
+msgstr "Başla"
 
 #: apps/core/tasks.py apps/tenant_config/defaults.py
 #, fuzzy
@@ -363,7 +363,7 @@ msgid "us"
 msgstr "biz"
 
 #: apps/email_campaigns/catalog.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(city)s time"
 msgstr "%(city)s saati"
 
@@ -373,19 +373,19 @@ msgid "Free"
 msgstr "Ücretsiz"
 
 #: apps/email_campaigns/catalog.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "or with %(plan)s"
 msgstr "veya %(plan)s ile"
 
 #: apps/email_campaigns/catalog.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Included in %(plan)s"
-msgstr "%(plan)s kapsamında"
+msgstr "%(plan)s planına dahil"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy
 msgid "or with a membership"
-msgstr "veya bir üyelikle"
+msgstr "veya bir üyelik ile"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy
@@ -393,21 +393,21 @@ msgid "Included in membership"
 msgstr "Üyeliğe dahil"
 
 #: apps/email_campaigns/catalog.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s a month"
-msgstr "aylık %(price)s"
+msgstr "ayda %(price)s"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy, python-format
 msgid "%(price)s a year"
-msgstr "yıllık %(price)s"
+msgstr "yılda %(price)s"
 
 #: apps/email_campaigns/catalog.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s every %(count)d month"
 msgid_plural "%(price)s every %(count)d months"
-msgstr[0] "%(count)d ayda bir %(price)s"
-msgstr[1] "%(count)d ayda bir %(price)s"
+msgstr[0] "her %(count)d ayda bir %(price)s"
+msgstr[1] "her %(count)d ayda bir %(price)s"
 
 #: apps/email_campaigns/render.py
 #, fuzzy
@@ -428,7 +428,7 @@ msgstr "Merhaba {{FirstName}},"
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "Until soon,"
-msgstr "Görüşmek üzere,"
+msgstr "Yakında görüşmek üzere,"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy, python-format
@@ -438,13 +438,12 @@ msgstr "%(first)s ve %(last)s"
 #: apps/email_campaigns/starters.py
 #, fuzzy, python-format
 msgid "What's new at %(brand)s"
-msgstr "%(brand)s dünyasında neler yeni"
+msgstr "%(brand)s'de neler yeni"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy, python-format
 msgid "Here's what's been happening at %(brand)s, and what's coming up next."
-msgstr ""
-"İşte %(brand)s dünyasında son zamanlarda olanlar ve sırada bekleyenler."
+msgstr "İşte %(brand)s'de olup bitenler ve sırada neler olduğu."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -474,37 +473,37 @@ msgstr "Bülten"
 #: apps/email_campaigns/starters.py
 #, fuzzy, python-format
 msgid "News from %(brand)s"
-msgstr "%(brand)s dünyasından haberler"
+msgstr "%(brand)s'den haberler"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "What's new, and what's coming up."
-msgstr "Neler yeni, neler geliyor."
+msgstr "Neler yeni, ve sırada neler var."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "Something new for you"
-msgstr "Sana özel yeni bir şey"
+msgstr "Senin için yeni bir şey"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "I've been working on something, and it's ready."
-msgstr "Bir şey üzerinde çalışıyordum ve artık hazır."
+msgstr "Bir şey üzerinde çalışıyordum, ve hazır."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy, python-format
 msgid "It's made to bring you %(outcome)s."
-msgstr "Sana %(outcome)s kazandırmak için hazırlandı."
+msgstr "Sana %(outcome)s kazandırmak için tasarlandı."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "See what's inside"
-msgstr "İçinde neler olduğunu gör"
+msgstr "İçindekileri gör"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "Questions? Just reply to this email."
-msgstr "Soruların mı var? Bu e-postayı yanıtlaman yeterli."
+msgstr "Soruların mı var? Sadece bu e-postayı yanıtla."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -514,12 +513,12 @@ msgstr "Yeni teklif"
 #: apps/email_campaigns/starters.py
 #, fuzzy, python-format
 msgid "Something new from %(brand)s"
-msgstr "%(brand)s dünyasından yeni bir şey"
+msgstr "%(brand)s'den yeni bir şey"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "It's ready, and I made it with you in mind."
-msgstr "Hazır ve onu seni düşünerek hazırladım."
+msgstr "Hazır, ve seni düşünerek yaptım."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -529,12 +528,12 @@ msgstr "Bana katıl"
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "I'd love to see you at my next session. Here are the details:"
-msgstr "Bir sonraki oturumumda seni görmeyi çok isterim. İşte ayrıntılar:"
+msgstr "Bir sonraki oturumumda seni görmeyi çok isterim. İşte detaylar:"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "Can't make this one? There are more on my calendar."
-msgstr "Buna katılamıyor musun? Takvimimde başka oturumlar da var."
+msgstr "Buna katılamıyor musun? Takvimimde daha fazlası var."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -549,22 +548,22 @@ msgstr "Oturum daveti"
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "Join me live"
-msgstr "Canlı oturumda bana katıl"
+msgstr "Bana canlı olarak katıl"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "Here are the details of my next session."
-msgstr "İşte bir sonraki oturumumun ayrıntıları."
+msgstr "Bir sonraki oturumumun detayları burada."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy, python-format
 msgid "A note from %(name)s"
-msgstr "%(name)s tarafından bir not"
+msgstr "%(name)s'den bir not"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "I wanted to write to you personally."
-msgstr "Sana kişisel olarak yazmak istedim."
+msgstr "Sana bizzat yazmak istedim."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -572,8 +571,8 @@ msgid ""
 "Write your note here. Tell them what's on your mind, what you're working on,"
 " or what you'd love them to try."
 msgstr ""
-"Notunu buraya yaz. Aklından geçenleri, üzerinde çalıştığın şeyi ya da "
-"denemelerini çok istediğin şeyi anlat."
+"Notunu buraya yaz. Onlara aklında neler olduğunu, ne üzerinde çalıştığını "
+"veya denemelerini çok istediğin şeyleri anlat."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -588,12 +587,12 @@ msgstr "Seninle paylaşmak istediğim bir şey."
 #: apps/email_campaigns/tasks.py
 #, fuzzy
 msgid "there"
-msgstr "dostum"
+msgstr "orada"
 
 #: apps/email_campaigns/tasks.py
 #, fuzzy, python-format
 msgid "%(coach)s via %(brand)s"
-msgstr "%(brand)s üzerinden %(coach)s"
+msgstr "%(brand)s aracılığıyla %(coach)s"
 
 #: apps/notifications/email_render.py
 #, fuzzy
@@ -606,19 +605,19 @@ msgid "Open"
 msgstr "Aç"
 
 #: apps/notifications/payloads.py apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Starting soon: %(title)s"
 msgstr "Yakında başlıyor: %(title)s"
 
 #: apps/notifications/payloads.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "New: %(title)s"
 msgstr "Yeni: %(title)s"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy, python-format
 msgid "Welcome to %(brand)s! 🎉"
-msgstr "%(brand)s dünyasına hoş geldin! 🎉"
+msgstr "%(brand)s'e hoş geldin! 🎉"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
@@ -635,13 +634,12 @@ msgstr "Yeni kurs yayında"
 #: apps/notifications/templates_builtin.py
 #, fuzzy
 msgid "A new course just dropped"
-msgstr "Yeni bir kurs yayınlandı"
+msgstr "Yeni bir kurs az önce yayınlandı"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy, python-format
 msgid "<p>Fresh content is ready for you at %(brand)s. Jump in!</p>"
-msgstr ""
-"<p>%(brand)s dünyasında yeni içerikler seni bekliyor. Hemen başla!</p>"
+msgstr "<p>%(brand)s üzerinde senin için yeni içerik hazır. Hemen katıl!</p>"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
@@ -656,7 +654,7 @@ msgstr "Canlı oturum yaklaşıyor"
 #: apps/notifications/templates_builtin.py
 #, fuzzy
 msgid "<p>Don't forget — we go live soon. See you there!</p>"
-msgstr "<p>Unutma, birazdan canlı yayındayız. Orada görüşürüz!</p>"
+msgstr "<p>Unutma — yakında canlı yayındayız. Orada görüşmek üzere!</p>"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
@@ -666,12 +664,13 @@ msgstr "Promosyon / indirim"
 #: apps/notifications/templates_builtin.py
 #, fuzzy
 msgid "A little something for you"
-msgstr "Sana küçük bir sürpriz"
+msgstr "Senin için küçük bir hediye"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy, python-format
 msgid "<p>For a limited time, enjoy a special offer at %(brand)s.</p>"
-msgstr "<p>Sınırlı bir süre için %(brand)s sana özel bir teklif sunuyor.</p>"
+msgstr ""
+"<p>Sınırlı bir süre için %(brand)s üzerindeki özel tekliften yararlan.</p>"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
@@ -686,7 +685,7 @@ msgstr "Seni özledik 💛"
 #: apps/notifications/templates_builtin.py
 #, fuzzy
 msgid "<p>It's been a while — come back and pick up where you left off.</p>"
-msgstr "<p>Epey zaman oldu. Geri gel ve kaldığın yerden devam et.</p>"
+msgstr "<p>Uzun zaman oldu — geri dön ve kaldığın yerden devam et.</p>"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
@@ -704,21 +703,21 @@ msgid ""
 "<p>Here's an update to our upcoming schedule. Thanks for your "
 "flexibility!</p>"
 msgstr ""
-"<p>Yaklaşan programımızla ilgili bir güncelleme var. Esnekliğin için "
+"<p>İşte yaklaşan programımızla ilgili bir güncelleme. Esnekliğin için "
 "teşekkürler!</p>"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s / month"
 msgstr "%(price)s / ay"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s / year"
 msgstr "%(price)s / yıl"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s / %(count)d month"
 msgid_plural "%(price)s / %(count)d months"
 msgstr[0] "%(price)s / %(count)d ay"
@@ -727,7 +726,7 @@ msgstr[1] "%(price)s / %(count)d ay"
 #: apps/notifications/transactional.py
 #, fuzzy, python-format
 msgid "Your sign-in link for %(brand)s"
-msgstr "%(brand)s giriş bağlantın"
+msgstr "%(brand)s için giriş bağlantın"
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -735,7 +734,7 @@ msgid "Sign in"
 msgstr "Giriş yap"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "Tap the button to sign in to %(brand)s. The link works for %(minutes)d "
 "minute."
@@ -743,21 +742,21 @@ msgid_plural ""
 "Tap the button to sign in to %(brand)s. The link works for %(minutes)d "
 "minutes."
 msgstr[0] ""
-"%(brand)s hesabına giriş yapmak için düğmeye dokun. Bağlantı %(minutes)d "
-"dakika boyunca geçerli."
+"%(brand)s'e giriş yapmak için butona dokun. Bağlantı %(minutes)d dakika "
+"geçerlidir."
 msgstr[1] ""
-"%(brand)s hesabına giriş yapmak için düğmeye dokun. Bağlantı %(minutes)d "
-"dakika boyunca geçerli."
+"%(brand)s'e giriş yapmak için butona dokun. Bağlantı %(minutes)d dakika "
+"geçerlidir."
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Using the app? Enter the code above on the sign-in screen."
-msgstr "Uygulamayı mı kullanıyorsun? Giriş ekranında yukarıdaki kodu gir."
+msgstr "Uygulamayı mı kullanıyorsun? Giriş ekranına yukarıdaki kodu gir."
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "If you didn't ask for this, you can ignore this email."
-msgstr "Bunu sen istemediysen bu e-postayı yok sayabilirsin."
+msgstr "Bunu sen talep etmediysen bu e-postayı yok sayabilirsin."
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -765,13 +764,13 @@ msgid ""
 "Your account is ready. Everything you join or buy waits for you in your "
 "dashboard."
 msgstr ""
-"Hesabın hazır. Katıldığın veya satın aldığın her şey panelinde seni "
+"Hesabın hazır. Katıldığın veya satın aldığın her şey kontrol panelinde seni "
 "bekliyor."
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Go to your dashboard"
-msgstr "Paneline git"
+msgstr "Kontrol paneline git"
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -781,7 +780,7 @@ msgstr "Toplam"
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Yours until"
-msgstr "Erişim bitişi"
+msgstr "Şu tarihe kadar senin"
 
 #: apps/notifications/transactional.py
 #, fuzzy, python-format
@@ -801,30 +800,30 @@ msgstr "Ödeme alındı. Her şey senin için hazır."
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Open your dashboard"
-msgstr "Panelini aç"
+msgstr "Kontrol panelini aç"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Your receipt: %(url)s"
 msgstr "Makbuzun: %(url)s"
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Your orders are listed under Orders in your account."
-msgstr "Siparişlerin, hesabındaki Siparişler bölümünde listelenir."
+msgstr "Siparişlerin, hesabındaki Siparişler altında listelenir."
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "You're in: %(title)s"
-msgstr "Kaydın tamam: %(title)s"
+msgstr "Katıldın: %(title)s"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(title)s from %(brand)s is now in your dashboard."
-msgstr "%(brand)s tarafından sunulan %(title)s artık panelinde."
+msgstr "%(brand)s'e ait %(title)s artık kontrol panelinde."
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "It's yours until %(until)s."
 msgstr "%(until)s tarihine kadar senin."
 
@@ -836,14 +835,14 @@ msgstr "Şimdi başla"
 #: apps/notifications/transactional.py
 #, fuzzy, python-format
 msgid "Welcome to %(plan)s"
-msgstr "%(plan)s üyeliğine hoş geldin"
+msgstr "%(plan)s planına hoş geldin"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "Your %(brand)s membership is active. Everything it includes is open to you "
 "now."
-msgstr "%(brand)s üyeliğin aktif. Kapsadığı her şey artık sana açık."
+msgstr "%(brand)s üyeliğin aktif. Kapsadığı her şey artık erişimine açık."
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -864,11 +863,10 @@ msgstr "Yenilenme tarihi"
 #, fuzzy
 msgid "Manage or cancel it any time under Subscriptions in your account."
 msgstr ""
-"İstediğin zaman hesabındaki Abonelikler bölümünden yönetebilir veya iptal "
-"edebilirsin."
+"Hesabındaki Abonelikler bölümünden dilediğin zaman yönet veya iptal et."
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(plan)s: payment received"
 msgstr "%(plan)s: ödeme alındı"
 
@@ -878,14 +876,14 @@ msgid "Your membership renewed"
 msgstr "Üyeliğin yenilendi"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Thanks for staying with %(brand)s."
 msgstr "%(brand)s ile kaldığın için teşekkürler."
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Paid"
-msgstr "Ödendi"
+msgstr "Ödenen"
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -903,7 +901,7 @@ msgid "Your subscriptions"
 msgstr "Aboneliklerin"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(plan)s: your payment didn't go through"
 msgstr "%(plan)s: ödemen gerçekleşmedi"
 
@@ -913,11 +911,11 @@ msgid "Your payment didn't go through"
 msgstr "Ödemen gerçekleşmedi"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "We couldn't take %(amount)s for your %(plan)s membership with %(brand)s."
 msgstr ""
-"%(brand)s üzerindeki %(plan)s üyeliğin için %(amount)s tahsil edemedik."
+"%(brand)s ile olan %(plan)s üyeliğin için %(amount)s tutarını çekemedik."
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -925,7 +923,7 @@ msgid ""
 "Update your card to keep your access. Your bank will try again in a few "
 "days."
 msgstr ""
-"Erişimini korumak için kartını güncelle. Bankan birkaç gün içinde tekrar "
+"Erişimini sürdürmek için kartını güncelle. Bankan birkaç gün içinde tekrar "
 "deneyecek."
 
 #: apps/notifications/transactional.py
@@ -934,7 +932,7 @@ msgid "Update payment"
 msgstr "Ödemeyi güncelle"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(plan)s is cancelled"
 msgstr "%(plan)s iptal edildi"
 
@@ -944,11 +942,11 @@ msgid "Your membership is cancelled"
 msgstr "Üyeliğin iptal edildi"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "You keep everything in %(plan)s until %(until)s. After that it won't renew."
 msgstr ""
-"%(until)s tarihine kadar %(plan)s içindeki her şeye erişimin sürüyor. "
+"%(until)s tarihine kadar %(plan)s kapsamındaki her şey sende kalır. "
 "Sonrasında yenilenmeyecek."
 
 #: apps/notifications/transactional.py
@@ -958,7 +956,7 @@ msgstr ""
 "Fikrini mi değiştirdin? O zamana kadar hesabından yeniden başlatabilirsin."
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Your %(plan)s membership has ended"
 msgstr "%(plan)s üyeliğin sona erdi"
 
@@ -968,13 +966,13 @@ msgid "Your membership has ended"
 msgstr "Üyeliğin sona erdi"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "Your %(plan)s membership with %(brand)s has ended. You're welcome back any "
 "time."
 msgstr ""
-"%(brand)s üzerindeki %(plan)s üyeliğin sona erdi. İstediğin zaman geri "
-"dönebilirsin."
+"%(brand)s ile olan %(plan)s üyeliğin sona erdi. Dilediğin zaman tekrar "
+"bekleriz."
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -984,12 +982,12 @@ msgstr "Üyelikleri gör"
 #: apps/notifications/transactional.py
 #, fuzzy, python-format
 msgid "Your refund from %(brand)s"
-msgstr "%(brand)s iaden"
+msgstr "%(brand)s tarafından para iaden"
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Your refund is on its way"
-msgstr "İaden yolda"
+msgstr "Para iaden yolda"
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -999,7 +997,7 @@ msgstr "Bankan bunu genellikle 5 ila 10 gün içinde gösterir."
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Refunded"
-msgstr "İade edildi"
+msgstr "İade edilen"
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -1007,9 +1005,9 @@ msgid "Your orders"
 msgstr "Siparişlerin"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(title)s: your access ends %(ends)s"
-msgstr "%(title)s: erişimin sona eriyor (%(ends)s)"
+msgstr "%(title)s: erişimin %(ends)s sona eriyor"
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -1017,13 +1015,13 @@ msgid "Your access ends soon"
 msgstr "Erişimin yakında sona eriyor"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "Your access to %(title)s from %(brand)s ends on %(ends)s. Make the most of "
 "it."
 msgstr ""
-"%(brand)s tarafından sunulan %(title)s içeriğine erişimin %(ends)s tarihinde"
-" sona eriyor. Bundan en iyi şekilde yararlan."
+"%(brand)s tarafından sunulan %(title)s erişimin %(ends)s tarihinde sona "
+"eriyor. En iyi şekilde değerlendir."
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -1031,7 +1029,7 @@ msgid "Continue"
 msgstr "Devam et"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(title)s starts soon"
 msgstr "%(title)s yakında başlıyor"
 
@@ -1046,59 +1044,59 @@ msgid "Join"
 msgstr "Katıl"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "New time: %(title)s"
-msgstr "Yeni saat: %(title)s"
+msgstr "Yeni zaman: %(title)s"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(title)s has a new time"
-msgstr "%(title)s için yeni bir saat belirlendi"
+msgstr "%(title)s için yeni bir zaman belirlendi"
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Your place is kept. Here's the new time:"
-msgstr "Yerin korunuyor. İşte yeni saat:"
+msgstr "Yerin korundu. İşte yeni zaman:"
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "See details"
-msgstr "Ayrıntıları gör"
+msgstr "Detayları gör"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Cancelled: %(title)s"
 msgstr "İptal edildi: %(title)s"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(title)s is cancelled"
 msgstr "%(title)s iptal edildi"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(brand)s cancelled %(title)s on %(at)s. Sorry for the change."
 msgstr ""
-"%(brand)s, %(at)s tarihli %(title)s etkinliğini iptal etti. Değişiklik için "
-"üzgünüz."
+"%(brand)s, %(at)s tarihinde %(title)s etkinliğini iptal etti. Değişiklik "
+"için özür dileriz."
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Questions about your ticket? Reply to this email."
-msgstr "Soruların mı var? Bu e-postayı yanıtlaman yeterli."
+msgstr "Biletinle ilgili soruların mı var? Bu e-postayı yanıtla."
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "See what's on"
-msgstr "Programa göz at"
+msgstr "Neler olduğuna göz at"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(who)s replied to your post"
 msgstr "%(who)s gönderine yanıt verdi"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "On “%(post)s”:"
 msgstr "“%(post)s” gönderisinde:"
 
@@ -1125,7 +1123,7 @@ msgstr "Bir kursa başla"
 #: apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Book a session"
-msgstr "Oturum ayırt"
+msgstr "Bir oturum ayırt"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -1135,22 +1133,22 @@ msgstr "Dijital üyelik"
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "All the pre-recorded content, watched any time."
-msgstr "Önceden kaydedilmiş tüm içerikler, istenen her an izlenebilir."
+msgstr "Önceden kaydedilmiş tüm içerik, istediğin zaman izlenebilir."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Online membership"
-msgstr "Çevrimiçi üyelik"
+msgstr "Çevrim içi üyelik"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Every live session from home, plus the courses."
-msgstr "Evden katılınan tüm canlı oturumlar, üstüne kurslar."
+msgstr "Evden her canlı oturum, artı kurslar."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Every live session from home."
-msgstr "Canlı oturum hatırlatıcısı"
+msgstr "Evden her canlı oturum."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -1160,7 +1158,7 @@ msgstr "Stüdyo üyeliği"
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Train at your place as often as they like."
-msgstr "Senin mekânında diledikleri sıklıkta antrenman yaparlar."
+msgstr "Senin yerinde istedikleri sıklıkta antrenman yapabilirler."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -1185,27 +1183,27 @@ msgstr "Hepsi için tek bir üyelik."
 #: apps/tenant_config/interview_brief.py
 #, fuzzy, python-format
 msgid "One monthly price for %(name)s."
-msgstr "%(name)s için aylık tek fiyat."
+msgstr "%(name)s için tek bir aylık fiyat."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Every digital course, new courses as they land"
-msgstr "Tüm dijital kurslar, yayınlandıkça yeni kurslar"
+msgstr "Her dijital kurs, eklendikçe yeni kurslar"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "All live online sessions, session replays, every digital course"
-msgstr "Tüm canlı çevrimiçi oturumlar, oturum tekrarları, tüm dijital kurslar"
+msgstr "Tüm canlı çevrim içi oturumlar, oturum tekrarları, her dijital kurs"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "All live online sessions, session replays"
-msgstr "Tüm canlı çevrimiçi oturumlar, oturum tekrarları"
+msgstr "Tüm canlı çevrim içi oturumlar, oturum tekrarları"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Unlimited in-person sessions, every digital course"
-msgstr "Sınırsız yüz yüze oturum, tüm dijital kurslar"
+msgstr "Sınırsız yüz yüze oturum, her dijital kurs"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -1215,7 +1213,7 @@ msgstr "Sınırsız yüz yüze oturum"
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "The members' community, members-only articles"
-msgstr "Üye topluluğu, yalnızca üyelere özel makaleler"
+msgstr "Üye topluluğu, üyelere özel makaleler"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy

@@ -13,7 +13,7 @@ msgstr ""
 #: apps/accounts/views.py
 #, fuzzy
 msgid "If an account exists, a magic link has been sent."
-msgstr "Falls ein Konto existiert, wurde ein Magic Link gesendet."
+msgstr "Falls ein Konto existiert, wurde ein Magic-Link gesendet."
 
 #: apps/accounts/views.py apps/core/onboarding/recovery.py
 #: apps/core/onboarding/views.py
@@ -29,7 +29,7 @@ msgstr "Token für diesen Mandanten nicht gültig"
 #: apps/accounts/views.py
 #, fuzzy
 msgid "Unsupported locale"
-msgstr "Nicht unterstützte Spracheinstellung"
+msgstr "Nicht unterstütztes Gebietsschema"
 
 #: apps/core/onboarding/compose.py apps/core/tasks.py
 #: apps/tenant_config/interview_milestones.py
@@ -57,7 +57,7 @@ msgstr "Preise"
 #: apps/tenant_config/defaults.py apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "About"
-msgstr "Über"
+msgstr "Über uns"
 
 #: apps/core/onboarding/compose.py apps/core/tasks.py
 #: apps/tenant_config/interview_milestones.py
@@ -132,7 +132,7 @@ msgstr "Kontakt aufnehmen"
 #: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Have a question? Send us a message."
-msgstr "Du hast eine Frage? Schreib uns eine Nachricht."
+msgstr "Hast du eine Frage? Sende uns eine Nachricht."
 
 #: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
 #, fuzzy
@@ -198,13 +198,12 @@ msgstr "Kurse"
 #: apps/core/onboarding/compose.py
 #, fuzzy, python-format
 msgid "We offer %(topic)s you can follow from anywhere."
-msgstr "Wir bieten %(topic)s, an denen du von überall aus teilnehmen kannst."
+msgstr "Wir bieten %(topic)s, denen du von überall aus folgen kannst."
 
 #: apps/core/onboarding/compose.py
 #, fuzzy, python-format
 msgid "%(brand)s offers %(topic)s you can follow from anywhere."
-msgstr ""
-"%(brand)s bietet %(topic)s, an denen du von überall aus teilnehmen kannst."
+msgstr "%(brand)s bietet %(topic)s, denen du von überall aus folgen kannst."
 
 #: apps/core/onboarding/compose.py
 #, fuzzy
@@ -254,17 +253,17 @@ msgstr "Über uns"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Browse the courses"
-msgstr "Kurse ansehen"
+msgstr "Die Kurse durchstöbern"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "See the sessions"
-msgstr "Alle Sessions ansehen"
+msgstr "Die Sessions ansehen"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy, python-format
 msgid "%(Topic)s foundations"
-msgstr "%(Topic)s: Grundlagen"
+msgstr "%(Topic)s-Grundlagen"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy, python-format
@@ -284,22 +283,22 @@ msgstr "Live-Session zu %(topic)s"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy, python-format
 msgid "%(Topic)s questions, answered live"
-msgstr "Fragen zu %(Topic)s, live beantwortet"
+msgstr "%(Topic)s-Fragen, live beantwortet"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy, python-format
 msgid "Beginners' %(topic)s workshop"
-msgstr "Workshop zu %(topic)s für Einsteiger"
+msgstr "Anfänger-Workshop zu %(topic)s"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy, python-format
 msgid "What to expect from your first %(topic)s session"
-msgstr "Was dich in deiner ersten Session zu %(topic)s erwartet"
+msgstr "Was dich bei deiner ersten %(topic)s-Session erwartet"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy, python-format
 msgid "Three %(topic)s questions I hear"
-msgstr "Drei Fragen zu %(topic)s, die ich oft höre"
+msgstr "Drei Fragen zu %(topic)s, die ich höre"
 
 #: apps/core/onboarding/site_name.py
 #, fuzzy
@@ -314,7 +313,7 @@ msgstr "Bitte verwende Buchstaben oder Zahlen in deinem Markennamen"
 #: apps/core/onboarding/views.py
 #, fuzzy
 msgid "Verification email sent. Check your inbox."
-msgstr "Bestätigungs-E-Mail gesendet. Sieh in deinem Posteingang nach."
+msgstr "Bestätigungs-E-Mail gesendet. Prüfe deinen Posteingang."
 
 #: apps/core/onboarding/views.py
 #, fuzzy
@@ -339,12 +338,12 @@ msgstr "Jetzt starten"
 #: apps/core/tasks.py apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Explore our courses and start learning today."
-msgstr "Entdecke unsere Kurse und fang noch heute an zu lernen."
+msgstr "Entdecke unsere Kurse und beginne noch heute zu lernen."
 
 #: apps/core/tasks.py apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Browse Courses"
-msgstr "Kurse ansehen"
+msgstr "Kurse durchstöbern"
 
 #: apps/core/tasks.py
 #, fuzzy
@@ -364,9 +363,9 @@ msgid "us"
 msgstr "uns"
 
 #: apps/email_campaigns/catalog.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(city)s time"
-msgstr "Ortszeit %(city)s"
+msgstr "%(city)s-Zeit"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy
@@ -374,12 +373,12 @@ msgid "Free"
 msgstr "Kostenlos"
 
 #: apps/email_campaigns/catalog.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "or with %(plan)s"
 msgstr "oder mit %(plan)s"
 
 #: apps/email_campaigns/catalog.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Included in %(plan)s"
 msgstr "In %(plan)s enthalten"
 
@@ -391,10 +390,10 @@ msgstr "oder mit einer Mitgliedschaft"
 #: apps/email_campaigns/catalog.py
 #, fuzzy
 msgid "Included in membership"
-msgstr "In der Mitgliedschaft enthalten"
+msgstr "In Mitgliedschaft enthalten"
 
 #: apps/email_campaigns/catalog.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s a month"
 msgstr "%(price)s pro Monat"
 
@@ -404,10 +403,10 @@ msgid "%(price)s a year"
 msgstr "%(price)s pro Jahr"
 
 #: apps/email_campaigns/catalog.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s every %(count)d month"
 msgid_plural "%(price)s every %(count)d months"
-msgstr[0] "%(price)s pro %(count)d Monat"
+msgstr[0] "%(price)s alle %(count)d Monat"
 msgstr[1] "%(price)s alle %(count)d Monate"
 
 #: apps/email_campaigns/render.py
@@ -419,7 +418,7 @@ msgstr "Hier klicken"
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Unsubscribe"
-msgstr "Abbestellen"
+msgstr "Abmelden"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -439,33 +438,34 @@ msgstr "%(first)s und %(last)s"
 #: apps/email_campaigns/starters.py
 #, fuzzy, python-format
 msgid "What's new at %(brand)s"
-msgstr "Neues bei %(brand)s"
+msgstr "Was es Neues bei %(brand)s gibt"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy, python-format
 msgid "Here's what's been happening at %(brand)s, and what's coming up next."
 msgstr ""
-"Das ist bei %(brand)s in letzter Zeit passiert, und das kommt als Nächstes."
+"Hier erfährst du, was sich bei %(brand)s getan hat, und was als Nächstes "
+"ansteht."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "A few things I'd love you to see this month:"
-msgstr "Ein paar Dinge, die ich dir diesen Monat gern zeigen möchte:"
+msgstr "Ein paar Dinge, die ich dir diesen Monat gerne zeigen möchte:"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "Read it"
-msgstr "Lesen"
+msgstr "Jetzt lesen"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "Save your spot"
-msgstr "Sichere dir deinen Platz"
+msgstr "Platz sichern"
 
 #: apps/email_campaigns/starters.py apps/notifications/transactional.py
 #, fuzzy
 msgid "Take a look"
-msgstr "Schau mal rein"
+msgstr "Ansehen"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -480,7 +480,7 @@ msgstr "Neuigkeiten von %(brand)s"
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "What's new, and what's coming up."
-msgstr "Was es Neues gibt und was als Nächstes kommt."
+msgstr "Was es Neues gibt, und was als Nächstes ansteht."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -490,12 +490,12 @@ msgstr "Etwas Neues für dich"
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "I've been working on something, and it's ready."
-msgstr "Ich habe an etwas gearbeitet, und jetzt ist es fertig."
+msgstr "Ich habe an etwas gearbeitet, und es ist fertig."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy, python-format
 msgid "It's made to bring you %(outcome)s."
-msgstr "Es soll dir %(outcome)s bringen."
+msgstr "Es ist dafür gemacht, dir %(outcome)s zu bringen."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -520,7 +520,7 @@ msgstr "Etwas Neues von %(brand)s"
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "It's ready, and I made it with you in mind."
-msgstr "Es ist fertig, und ich habe es speziell für dich gemacht."
+msgstr "Es ist fertig, und ich habe es genau für dich gemacht."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -538,7 +538,8 @@ msgstr ""
 #, fuzzy
 msgid "Can't make this one? There are more on my calendar."
 msgstr ""
-"Du kannst diesmal nicht? In meinem Kalender stehen noch weitere Termine."
+"Schaffst du es diesmal nicht? Es gibt noch weitere Termine in meinem "
+"Kalender."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -548,7 +549,7 @@ msgstr "Alle Sessions ansehen"
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "Session invitation"
-msgstr "Einladung zur Session"
+msgstr "Session-Einladung"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -563,7 +564,7 @@ msgstr "Hier sind die Details zu meiner nächsten Session."
 #: apps/email_campaigns/starters.py
 #, fuzzy, python-format
 msgid "A note from %(name)s"
-msgstr "Eine Nachricht von %(name)s"
+msgstr "Eine Notiz von %(name)s"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -576,13 +577,13 @@ msgid ""
 "Write your note here. Tell them what's on your mind, what you're working on,"
 " or what you'd love them to try."
 msgstr ""
-"Schreib deine Nachricht hier. Erzähl ihnen, was dich beschäftigt, woran du "
+"Schreibe deine Notiz hier. Erzähle ihnen, was dich beschäftigt, woran du "
 "arbeitest oder was sie unbedingt ausprobieren sollten."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "Personal note"
-msgstr "Persönliche Nachricht"
+msgstr "Persönliche Notiz"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -610,12 +611,12 @@ msgid "Open"
 msgstr "Öffnen"
 
 #: apps/notifications/payloads.py apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Starting soon: %(title)s"
 msgstr "Beginnt bald: %(title)s"
 
 #: apps/notifications/payloads.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "New: %(title)s"
 msgstr "Neu: %(title)s"
 
@@ -628,12 +629,14 @@ msgstr "Willkommen bei %(brand)s! 🎉"
 #, fuzzy
 msgid ""
 "<p>We're so glad you're here. Take a look around and start exploring.</p>"
-msgstr "<p>Schön, dass du da bist. Schau dich um und entdecke alles.</p>"
+msgstr ""
+"<p>Wir freuen uns sehr, dass du hier bist. Schau dich um und fang an zu "
+"erkunden.</p>"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
 msgid "New course live"
-msgstr "Neuer Kurs online"
+msgstr "Neuer Kurs live"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
@@ -643,12 +646,14 @@ msgstr "Ein neuer Kurs ist gerade erschienen"
 #: apps/notifications/templates_builtin.py
 #, fuzzy, python-format
 msgid "<p>Fresh content is ready for you at %(brand)s. Jump in!</p>"
-msgstr "<p>Bei %(brand)s warten neue Inhalte auf dich. Leg los!</p>"
+msgstr ""
+"<p>Frische Inhalte stehen bei %(brand)s für dich bereit. Steig direkt "
+"ein!</p>"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
 msgid "Live session reminder"
-msgstr "Erinnerung an Live-Session"
+msgstr "Live-Session-Erinnerung"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
@@ -658,12 +663,12 @@ msgstr "Live-Session steht bevor"
 #: apps/notifications/templates_builtin.py
 #, fuzzy
 msgid "<p>Don't forget — we go live soon. See you there!</p>"
-msgstr "<p>Nicht vergessen – wir gehen bald live. Bis gleich!</p>"
+msgstr "<p>Nicht vergessen — wir gehen bald live. Wir sehen uns dort!</p>"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
 msgid "Promo / sale"
-msgstr "Aktion / Sale"
+msgstr "Promo / Sale"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
@@ -674,7 +679,7 @@ msgstr "Eine kleine Aufmerksamkeit für dich"
 #, fuzzy, python-format
 msgid "<p>For a limited time, enjoy a special offer at %(brand)s.</p>"
 msgstr ""
-"<p>Nur für kurze Zeit: Sichere dir ein besonderes Angebot bei %(brand)s.</p>"
+"<p>Sichere dir für begrenzte Zeit ein besonderes Angebot bei %(brand)s.</p>"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
@@ -690,7 +695,7 @@ msgstr "Wir vermissen dich 💛"
 #, fuzzy
 msgid "<p>It's been a while — come back and pick up where you left off.</p>"
 msgstr ""
-"<p>Es ist schon eine Weile her – komm zurück und mach da weiter, wo du "
+"<p>Es ist schon eine Weile her — komm zurück und mach dort weiter, wo du "
 "aufgehört hast.</p>"
 
 #: apps/notifications/templates_builtin.py
@@ -701,7 +706,7 @@ msgstr "Terminänderung"
 #: apps/notifications/templates_builtin.py
 #, fuzzy
 msgid "A quick schedule update"
-msgstr "Ein kurzes Update zum Zeitplan"
+msgstr "Ein kurzes Termin-Update"
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy
@@ -709,21 +714,21 @@ msgid ""
 "<p>Here's an update to our upcoming schedule. Thanks for your "
 "flexibility!</p>"
 msgstr ""
-"<p>Hier ist ein Update zu unserem kommenden Zeitplan. Danke für deine "
+"<p>Hier ist ein Update zu unserem anstehenden Zeitplan. Danke für deine "
 "Flexibilität!</p>"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s / month"
 msgstr "%(price)s / Monat"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s / year"
 msgstr "%(price)s / Jahr"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s / %(count)d month"
 msgid_plural "%(price)s / %(count)d months"
 msgstr[0] "%(price)s / %(count)d Monat"
@@ -740,7 +745,7 @@ msgid "Sign in"
 msgstr "Anmelden"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "Tap the button to sign in to %(brand)s. The link works for %(minutes)d "
 "minute."
@@ -748,22 +753,22 @@ msgid_plural ""
 "Tap the button to sign in to %(brand)s. The link works for %(minutes)d "
 "minutes."
 msgstr[0] ""
-"Tippe auf die Schaltfläche, um dich bei %(brand)s anzumelden. Der Link ist "
+"Tippe auf den Button, um dich bei %(brand)s anzumelden. Der Link ist "
 "%(minutes)d Minute lang gültig."
 msgstr[1] ""
-"Tippe auf die Schaltfläche, um dich bei %(brand)s anzumelden. Der Link ist "
+"Tippe auf den Button, um dich bei %(brand)s anzumelden. Der Link ist "
 "%(minutes)d Minuten lang gültig."
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Using the app? Enter the code above on the sign-in screen."
-msgstr "Du nutzt die App? Gib den Code oben auf dem Anmeldebildschirm ein."
+msgstr "Nutzt du die App? Gib den obigen Code auf dem Anmeldebildschirm ein."
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "If you didn't ask for this, you can ignore this email."
 msgstr ""
-"Wenn du das nicht angefordert hast, kannst du diese E-Mail ignorieren."
+"Wenn du dies nicht angefordert hast, kannst du diese E-Mail ignorieren."
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -777,7 +782,7 @@ msgstr ""
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Go to your dashboard"
-msgstr "Zu deinem Dashboard"
+msgstr "Geh zu deinem Dashboard"
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -787,7 +792,7 @@ msgstr "Gesamt"
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Yours until"
-msgstr "Dein Zugang bis"
+msgstr "Verfügbar bis"
 
 #: apps/notifications/transactional.py
 #, fuzzy, python-format
@@ -797,12 +802,12 @@ msgstr "Deine Bestellung bei %(brand)s"
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Thank you for your order"
-msgstr "Danke für deine Bestellung"
+msgstr "Vielen Dank für deine Bestellung"
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Payment received. It's all ready for you."
-msgstr "Zahlung erhalten. Alles ist für dich bereit."
+msgstr "Zahlung erhalten. Es ist alles für dich bereit."
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -810,29 +815,30 @@ msgid "Open your dashboard"
 msgstr "Öffne dein Dashboard"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Your receipt: %(url)s"
 msgstr "Dein Beleg: %(url)s"
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Your orders are listed under Orders in your account."
-msgstr "Deine Bestellungen findest du in deinem Konto unter Bestellungen."
+msgstr ""
+"Deine Bestellungen sind unter Bestellungen in deinem Konto aufgeführt."
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "You're in: %(title)s"
 msgstr "Du bist dabei: %(title)s"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(title)s from %(brand)s is now in your dashboard."
 msgstr "%(title)s von %(brand)s ist jetzt in deinem Dashboard."
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "It's yours until %(until)s."
-msgstr "Du hast Zugang bis %(until)s."
+msgstr "Es steht dir bis %(until)s zur Verfügung."
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -845,13 +851,13 @@ msgid "Welcome to %(plan)s"
 msgstr "Willkommen bei %(plan)s"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "Your %(brand)s membership is active. Everything it includes is open to you "
 "now."
 msgstr ""
-"Deine Mitgliedschaft bei %(brand)s ist aktiv. Alles, was sie umfasst, steht "
-"dir jetzt offen."
+"Deine %(brand)s-Mitgliedschaft ist aktiv. Alles, was darin enthalten ist, "
+"steht dir jetzt offen."
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -872,11 +878,10 @@ msgstr "Verlängert sich am"
 #, fuzzy
 msgid "Manage or cancel it any time under Subscriptions in your account."
 msgstr ""
-"Du kannst sie jederzeit in deinem Konto unter Abonnements verwalten oder "
-"kündigen."
+"Verwalte oder kündige sie jederzeit unter Abonnements in deinem Konto."
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(plan)s: payment received"
 msgstr "%(plan)s: Zahlung erhalten"
 
@@ -886,9 +891,9 @@ msgid "Your membership renewed"
 msgstr "Deine Mitgliedschaft wurde verlängert"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Thanks for staying with %(brand)s."
-msgstr "Danke, dass du %(brand)s treu bleibst."
+msgstr "Danke, dass du bei %(brand)s bleibst."
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -911,21 +916,21 @@ msgid "Your subscriptions"
 msgstr "Deine Abonnements"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(plan)s: your payment didn't go through"
-msgstr "%(plan)s: Deine Zahlung ist nicht durchgegangen"
+msgstr "%(plan)s: deine Zahlung ist fehlgeschlagen"
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Your payment didn't go through"
-msgstr "Deine Zahlung ist nicht durchgegangen"
+msgstr "Deine Zahlung ist fehlgeschlagen"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "We couldn't take %(amount)s for your %(plan)s membership with %(brand)s."
 msgstr ""
-"Wir konnten %(amount)s für deine Mitgliedschaft %(plan)s bei %(brand)s nicht"
+"Wir konnten %(amount)s für deine %(plan)s-Mitgliedschaft bei %(brand)s nicht"
 " abbuchen."
 
 #: apps/notifications/transactional.py
@@ -934,16 +939,16 @@ msgid ""
 "Update your card to keep your access. Your bank will try again in a few "
 "days."
 msgstr ""
-"Aktualisiere deine Karte, damit du deinen Zugang behältst. Deine Bank "
-"versucht es in ein paar Tagen erneut."
+"Aktualisiere deine Karte, um deinen Zugang zu behalten. Deine Bank versucht "
+"es in ein paar Tagen erneut."
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Update payment"
-msgstr "Zahlung aktualisieren"
+msgstr "Zahlungsdaten aktualisieren"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(plan)s is cancelled"
 msgstr "%(plan)s ist gekündigt"
 
@@ -953,24 +958,23 @@ msgid "Your membership is cancelled"
 msgstr "Deine Mitgliedschaft ist gekündigt"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "You keep everything in %(plan)s until %(until)s. After that it won't renew."
 msgstr ""
-"Du behältst alles in %(plan)s bis %(until)s. Danach wird sie nicht "
-"verlängert."
+"Du behältst alles in %(plan)s bis %(until)s. Danach verlängert sie sich "
+"nicht."
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Changed your mind? You can restart it from your account before then."
 msgstr ""
-"Du hast es dir anders überlegt? Bis dahin kannst du sie in deinem Konto "
-"wieder aktivieren."
+"Anders überlegt? Du kannst sie bis dahin in deinem Konto wieder aktivieren."
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Your %(plan)s membership has ended"
-msgstr "Deine Mitgliedschaft %(plan)s ist beendet"
+msgstr "Deine %(plan)s-Mitgliedschaft ist beendet"
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -978,12 +982,12 @@ msgid "Your membership has ended"
 msgstr "Deine Mitgliedschaft ist beendet"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "Your %(plan)s membership with %(brand)s has ended. You're welcome back any "
 "time."
 msgstr ""
-"Deine Mitgliedschaft %(plan)s bei %(brand)s ist beendet. Du bist jederzeit "
+"Deine %(plan)s-Mitgliedschaft bei %(brand)s ist beendet. Du bist jederzeit "
 "wieder willkommen."
 
 #: apps/notifications/transactional.py
@@ -1017,9 +1021,9 @@ msgid "Your orders"
 msgstr "Deine Bestellungen"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(title)s: your access ends %(ends)s"
-msgstr "%(title)s: Dein Zugang endet am %(ends)s"
+msgstr "%(title)s: dein Zugang endet %(ends)s"
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -1027,7 +1031,7 @@ msgid "Your access ends soon"
 msgstr "Dein Zugang endet bald"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "Your access to %(title)s from %(brand)s ends on %(ends)s. Make the most of "
 "it."
@@ -1041,7 +1045,7 @@ msgid "Continue"
 msgstr "Weiter"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(title)s starts soon"
 msgstr "%(title)s beginnt bald"
 
@@ -1056,19 +1060,19 @@ msgid "Join"
 msgstr "Teilnehmen"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "New time: %(title)s"
-msgstr "Neuer Termin: %(title)s"
+msgstr "Neue Uhrzeit: %(title)s"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(title)s has a new time"
-msgstr "%(title)s hat einen neuen Termin"
+msgstr "%(title)s hat eine neue Uhrzeit"
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Your place is kept. Here's the new time:"
-msgstr "Dein Platz bleibt reserviert. Hier ist der neue Termin:"
+msgstr "Dein Platz bleibt reserviert. Hier ist die neue Uhrzeit:"
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -1076,40 +1080,40 @@ msgid "See details"
 msgstr "Details ansehen"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Cancelled: %(title)s"
 msgstr "Abgesagt: %(title)s"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(title)s is cancelled"
-msgstr "%(title)s ist abgesagt"
+msgstr "%(title)s wurde abgesagt"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(brand)s cancelled %(title)s on %(at)s. Sorry for the change."
 msgstr ""
-"%(brand)s hat %(title)s am %(at)s abgesagt. Entschuldige die Änderung."
+"%(brand)s hat %(title)s am %(at)s abgesagt. Entschuldige bitte die Änderung."
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "Questions about your ticket? Reply to this email."
-msgstr "Fragen? Antworte einfach auf diese E-Mail."
+msgstr "Fragen zu deinem Ticket? Antworte auf diese E-Mail."
 
 #: apps/notifications/transactional.py
 #, fuzzy
 msgid "See what's on"
-msgstr "Sieh dir das Programm an"
+msgstr "Programm ansehen"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(who)s replied to your post"
 msgstr "%(who)s hat auf deinen Beitrag geantwortet"
 
 #: apps/notifications/transactional.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "On “%(post)s”:"
-msgstr "Zu „%(post)s“:"
+msgstr "Zu “%(post)s”:"
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -1124,17 +1128,17 @@ msgstr "Ungültiger oder abgelaufener Link."
 #: apps/notifications/views.py
 #, fuzzy
 msgid "You've been unsubscribed from these emails."
-msgstr "Du hast diese E-Mails abbestellt."
+msgstr "Du wurdest von diesen E-Mails abgemeldet."
 
 #: apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Start a course"
-msgstr "Kurs starten"
+msgstr "Einen Kurs starten"
 
 #: apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Book a session"
-msgstr "Session buchen"
+msgstr "Eine Session buchen"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -1154,12 +1158,12 @@ msgstr "Online-Mitgliedschaft"
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Every live session from home, plus the courses."
-msgstr "Jede Live-Session bequem von zu Hause, dazu die Kurse."
+msgstr "Jede Live-Session von zu Hause, plus die Kurse."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Every live session from home."
-msgstr "Erinnerung an Live-Session"
+msgstr "Jede Live-Session von zu Hause."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -1169,7 +1173,7 @@ msgstr "Studio-Mitgliedschaft"
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Train at your place as often as they like."
-msgstr "Training bei dir vor Ort, so oft sie möchten."
+msgstr "Bei dir vor Ort trainieren, so oft sie möchten."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -1179,12 +1183,12 @@ msgstr "Community-Mitgliedschaft"
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "A place to talk, share and stay motivated."
-msgstr "Ein Ort, um zu reden, zu teilen und motiviert zu bleiben."
+msgstr "Ein Ort, um sich auszutauschen, zu teilen und motiviert zu bleiben."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "All-access"
-msgstr "Komplettzugang"
+msgstr "Vollzugang"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -1194,28 +1198,28 @@ msgstr "Eine Mitgliedschaft für alles."
 #: apps/tenant_config/interview_brief.py
 #, fuzzy, python-format
 msgid "One monthly price for %(name)s."
-msgstr "Ein Monatspreis für %(name)s."
+msgstr "Ein monatlicher Preis für %(name)s."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Every digital course, new courses as they land"
-msgstr "Alle digitalen Kurse, neue Kurse, sobald sie erscheinen"
+msgstr "Jeder digitale Kurs, neue Kurse, sobald sie erscheinen"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "All live online sessions, session replays, every digital course"
 msgstr ""
-"Alle Online-Live-Sessions, Session-Aufzeichnungen, alle digitalen Kurse"
+"Alle Live-Online-Sessions, Session-Aufzeichnungen, jeder digitale Kurs"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "All live online sessions, session replays"
-msgstr "Alle Online-Live-Sessions, Session-Aufzeichnungen"
+msgstr "Alle Live-Online-Sessions, Session-Aufzeichnungen"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Unlimited in-person sessions, every digital course"
-msgstr "Unbegrenzte Präsenz-Sessions, alle digitalen Kurse"
+msgstr "Unbegrenzte Präsenz-Sessions, jeder digitale Kurs"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
