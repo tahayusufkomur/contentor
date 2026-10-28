@@ -196,9 +196,9 @@ export function EventDetailClient({
                 isEnded={isEnded}
                 isScheduled={isScheduled}
               />
-              {!isEnded && stateLine(access) && (
+              {!isEnded && stateLine(access, locale) && (
                 <p className="text-center text-xs text-muted-foreground">
-                  {stateLine(access)}
+                  {stateLine(access, locale)}
                 </p>
               )}
             </CardContent>
@@ -303,7 +303,7 @@ function EventAction({
     <div className="space-y-3">
       {opts?.free && (
         <p className="text-center text-sm font-medium">
-          {freeTerms(opts.free.window)}
+          {freeTerms(opts.free.window, locale)}
         </p>
       )}
       {unlockMethods.includes("purchase") && (
@@ -320,7 +320,7 @@ function EventAction({
             </NavLink>
           </Button>
           <p className="text-center text-xs text-muted-foreground">
-            {purchaseTerms(opts?.purchase?.window)}
+            {purchaseTerms(opts?.purchase?.window, locale)}
           </p>
         </>
       )}
@@ -342,7 +342,7 @@ function EventAction({
               key={plan.id}
               className="text-center text-xs text-muted-foreground"
             >
-              {plan.name}: {planTerms(plan.window)}
+              {plan.name}: {planTerms(plan.window, locale)}
             </p>
           ))}
         </>

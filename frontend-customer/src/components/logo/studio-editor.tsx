@@ -1,5 +1,6 @@
 "use client";
 
+import { useSiteLocale } from "@/hooks/use-tenant";
 import { useRef, useState } from "react";
 import { Download } from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -53,6 +54,7 @@ export function StudioEditor({
   logoSvgRef,
   markSvgRef,
 }: StudioEditorProps) {
+  const siteLocale = useSiteLocale();
   const [selected, setSelected] = useState<ElementKey | null>(null);
   const [dark, setDark] = useState(false);
   const [kitNote, setKitNote] = useState<string | null>(null);
@@ -112,14 +114,19 @@ export function StudioEditor({
         <div className="flex items-end gap-8">
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-2 rounded-t-lg border bg-white px-3 py-1.5 text-xs text-muted-foreground shadow-sm">
-              <MarkRenderer recipe={recipe} size={16} />
+              <MarkRenderer locale={siteLocale} recipe={recipe} size={16} />
               {recipe.name}
             </div>
             <span className="text-xs text-muted-foreground">Browser tab</span>
           </div>
           <div className="flex flex-col items-center gap-2">
             <div className="overflow-hidden rounded-2xl shadow-md">
-              <MarkRenderer recipe={recipe} size={64} svgRef={markSvgRef} />
+              <MarkRenderer
+                locale={siteLocale}
+                recipe={recipe}
+                size={64}
+                svgRef={markSvgRef}
+              />
             </div>
             <span className="text-xs text-muted-foreground">App icon</span>
           </div>
@@ -151,7 +158,12 @@ export function StudioEditor({
           aria-hidden="true"
           className="pointer-events-none fixed -left-[10000px] top-0"
         >
-          <LogoRenderer recipe={darkRecipe} width={320} svgRef={darkSvgRef} />
+          <LogoRenderer
+            locale={siteLocale}
+            recipe={darkRecipe}
+            width={320}
+            svgRef={darkSvgRef}
+          />
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSiteLocale } from "@/hooks/use-tenant";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import type { LogoRecipe } from "@/types/logo";
@@ -45,6 +46,7 @@ export function StudioCanvas({
   onToggleDark,
   logoSvgRef,
 }: StudioCanvasProps) {
+  const siteLocale = useSiteLocale();
   const vb = logoViewBox(recipe.layout);
   const scaleToPx = CANVAS_WIDTH / vb.w;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -290,6 +292,7 @@ export function StudioCanvas({
         style={{ width: CANVAS_WIDTH + 32, padding: 16 }}
       >
         <LogoRenderer
+          locale={siteLocale}
           recipe={recipe}
           width={CANVAS_WIDTH}
           svgRef={logoSvgRef}

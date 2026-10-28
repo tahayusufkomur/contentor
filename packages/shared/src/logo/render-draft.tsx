@@ -5,6 +5,8 @@
 // backend Task 12 logo_converse_finish / logo_refine finish). Everything here
 // runs client-side only (createRoot into a detached, off-screen container),
 // and is shared by studio-chat.tsx (chat turns) and logo-studio.tsx (refine).
+// Drafts only go back to the AI for critique, never to a visitor, so their
+// capitals stay English (LogoRenderer's default locale).
 "use client";
 
 import { flushSync } from "react-dom";

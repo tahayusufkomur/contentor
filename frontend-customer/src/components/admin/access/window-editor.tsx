@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "next-intl";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -321,6 +322,7 @@ export function WindowEditor({
   /** Whether a box holds a day count or date that is not a valid one. */
   onInvalid?: (invalid: boolean) => void;
 }) {
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [badBoxes, setBadBoxes] = useState<Record<string, boolean>>({});
   const bad = (box: string) => (b: boolean) =>
@@ -352,7 +354,7 @@ export function WindowEditor({
           onClick={() => setOpen(!open)}
           className="inline-flex items-center gap-1.5 rounded-full border bg-background py-1 pl-3 pr-2.5 text-xs hover:border-foreground"
         >
-          {PILL[mode](value)}
+          {PILL[mode](value, locale)}
           <ChevronDown
             className={cn(
               "h-3 w-3 opacity-60 motion-safe:transition-transform",

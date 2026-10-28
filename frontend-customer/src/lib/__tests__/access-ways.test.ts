@@ -1,14 +1,20 @@
 import { describe as suite, expect, it } from "vitest";
 import {
-  buyPill,
+  buyPill as buyPillIn,
+  formatDay,
   describe,
-  freePill,
-  linkPill,
+  freePill as freePillIn,
+  linkPill as linkPillIn,
   parsePrice,
   problems,
   spanText,
   type Ways,
 } from "@/lib/access/ways";
+
+type Win = Parameters<typeof buyPillIn>[0];
+const buyPill = (w: Win) => buyPillIn(w, "en");
+const linkPill = (w: Win) => linkPillIn(w, "en");
+const freePill = (w: Win) => freePillIn(w, "en");
 
 const plans = [
   {
@@ -182,5 +188,26 @@ suite("pills", () => {
     expect(freePill({ closes_after_days: 7 })).toBe(
       "First 1 week after joining",
     );
+  });
+});
+
+suite("dates and prices follow the locale", () => {
+  it("names the month in the locale and keeps day-month-year", () => {
+    expect(formatDay("2026-10-26", "en")).toBe("26 Oct 2026");
+    expect(formatDay("2026-11-05", "tr")).toBe("5 Kas 2026");
+    expect(buyPillIn({ closes_on: "2026-11-05" }, "tr")).toBe(
+      "Until 5 Kas 2026",
+    );
+  });
+
+  it("prices the way the locale does", () => {
+    expect(
+      describe(
+        { ...none, buy: { price: "4.50", window: null } },
+        plans,
+        "EUR",
+        "de",
+      ).replace(/\s/g, " "),
+    ).toBe("4,50 € once, theirs to keep.");
   });
 });

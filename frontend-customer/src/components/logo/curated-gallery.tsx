@@ -1,5 +1,6 @@
 "use client";
 
+import { useSiteLocale } from "@/hooks/use-tenant";
 import { useMemo } from "react";
 import { Lock, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ export function CuratedGallery({
   generatingFilename,
   generatingLabel,
 }: CuratedGalleryProps) {
+  const siteLocale = useSiteLocale();
   const shown = useMemo(() => logos.slice(0, IDEAS_COUNT), [logos]);
 
   // Each card is a COMPLETE logo concept for this coach: the curated mark
@@ -93,7 +95,11 @@ export function CuratedGallery({
               className="flex flex-col overflow-hidden rounded-xl border"
             >
               <div className="relative flex h-44 items-center justify-center overflow-hidden bg-white p-4">
-                <LogoRenderer recipe={previews[index]!} width={220} />
+                <LogoRenderer
+                  locale={siteLocale}
+                  recipe={previews[index]!}
+                  width={220}
+                />
                 {generating && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80">
                     <Spinner />

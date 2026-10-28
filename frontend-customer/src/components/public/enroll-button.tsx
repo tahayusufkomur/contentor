@@ -32,7 +32,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
 
   const opts = course.unlock_options;
   const info = course.access_info;
-  const state = info ? stateLine(info) : "";
+  const state = info ? stateLine(info, locale) : "";
   const stateNote = state && (
     <p className="text-center text-xs text-muted-foreground">{state}</p>
   );
@@ -127,7 +127,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
       {stateNote}
       {opts?.free && (
         <p className="text-center text-sm font-medium">
-          {freeTerms(opts.free.window)}
+          {freeTerms(opts.free.window, locale)}
         </p>
       )}
 
@@ -140,7 +140,7 @@ export function EnrollButton({ course }: EnrollButtonProps) {
             {formatMoney(opts.purchase!.price, opts.purchase!.currency, locale)}
           </Button>
           <p className="text-center text-xs text-muted-foreground">
-            {purchaseTerms(opts.purchase!.window)}
+            {purchaseTerms(opts.purchase!.window, locale)}
           </p>
           <Button
             className="w-full"
@@ -256,7 +256,7 @@ function PlanSubscribeButton({ plan }: { plan: UnlockPlanOption }) {
         {billingIntervalSuffix(plan.billing_interval_months)}
       </Button>
       <p className="text-center text-xs text-muted-foreground">
-        {planTerms(plan.window)}
+        {planTerms(plan.window, locale)}
       </p>
     </div>
   );

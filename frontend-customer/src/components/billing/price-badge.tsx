@@ -11,8 +11,9 @@ interface PriceBadgeProps {
 }
 
 export function PriceBadge(props: PriceBadgeProps) {
+  const locale = useLocale();
   const badge = <PricePill {...props} />;
-  const state = props.accessInfo ? stateLine(props.accessInfo) : "";
+  const state = props.accessInfo ? stateLine(props.accessInfo, locale) : "";
   if (!state) return badge;
   return (
     <span className="inline-flex flex-col items-start gap-1">

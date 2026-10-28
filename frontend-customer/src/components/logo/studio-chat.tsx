@@ -9,6 +9,7 @@
 // selectors in wizard-view.ts; this file is the view + the async turn driver.
 "use client";
 
+import { useSiteLocale } from "@/hooks/use-tenant";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, RefreshCw, Send, Sparkles } from "lucide-react";
 import { AiDraftPreview, AiProgress } from "@/components/ui/ai-progress";
@@ -110,6 +111,7 @@ function DesignCard({
   onPick: () => void;
   onUseBriefTagline: () => void;
 }) {
+  const siteLocale = useSiteLocale();
   const icon = isIconDesign(design);
   const recipe = icon
     ? composeIconPreview(design, brandName)
@@ -121,9 +123,9 @@ function DesignCard({
     >
       <div className="flex min-h-[128px] items-center justify-center rounded-md bg-muted/40 p-3">
         {icon ? (
-          <MarkRenderer recipe={recipe} size={120} />
+          <MarkRenderer locale={siteLocale} recipe={recipe} size={120} />
         ) : (
-          <LogoRenderer recipe={recipe} width={280} />
+          <LogoRenderer locale={siteLocale} recipe={recipe} width={280} />
         )}
       </div>
       {design.rationale && (
@@ -168,6 +170,7 @@ function SelectionSummary({
   brandName: string;
   compact?: boolean;
 }) {
+  const siteLocale = useSiteLocale();
   const selection = currentSelection(state);
   return (
     <div className={compact ? "" : "space-y-3"}>
@@ -177,11 +180,13 @@ function SelectionSummary({
       <div className="flex items-center justify-center rounded-lg border bg-muted/30 p-4">
         {selection?.kind === "lockup" ? (
           <LogoRenderer
+            locale={siteLocale}
             recipe={composeConverseDesign(selection.design, brandName)}
             width={compact ? 220 : 240}
           />
         ) : selection?.kind === "icon" ? (
           <MarkRenderer
+            locale={siteLocale}
             recipe={composeIconPreview(selection.design, brandName)}
             size={compact ? 88 : 104}
           />

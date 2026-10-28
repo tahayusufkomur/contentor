@@ -15,8 +15,10 @@ import { courseItem } from "@/lib/covers/items";
 import { stateLine } from "@/lib/access/terms";
 import { BookOpen, GraduationCap, Play } from "lucide-react";
 import type { Course } from "@/types/course";
+import { useLocale } from "next-intl";
 
 export default function DashboardPage() {
+  const locale = useLocale();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -121,11 +123,12 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">
                     {course.instructor_name}
                   </p>
-                  {course.access_info && stateLine(course.access_info) && (
-                    <p className="text-xs text-muted-foreground">
-                      {stateLine(course.access_info)}
-                    </p>
-                  )}
+                  {course.access_info &&
+                    stateLine(course.access_info, locale) && (
+                      <p className="text-xs text-muted-foreground">
+                        {stateLine(course.access_info, locale)}
+                      </p>
+                    )}
 
                   {/* Progress bar */}
                   <div className="space-y-1">

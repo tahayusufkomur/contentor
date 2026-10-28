@@ -532,12 +532,12 @@ export function TEXT_COLORS(primaryHex: string): string[] {
   return ["#111827", "#334155", primaryHex, "#ffffff"];
 }
 
-export function initialsFor(name: string): string {
+export function initialsFor(name: string, locale: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean);
   return (
     words
       .slice(0, 2)
-      .map((w) => w[0]!.toUpperCase())
+      .map((w) => w[0]!.toLocaleUpperCase(locale))
       .join("") || "A"
   );
 }

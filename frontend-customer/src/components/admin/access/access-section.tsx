@@ -449,7 +449,7 @@ function Loaded({
                               />
                             ) : (
                               <span className="text-xs text-muted-foreground">
-                                {linkPill(link.window)}
+                                {linkPill(link.window, locale)}
                               </span>
                             )}
                           </div>

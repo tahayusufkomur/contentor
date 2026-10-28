@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
-  freeTerms,
-  planTerms,
-  purchaseTerms,
-  stateLine,
+  freeTerms as freeTermsIn,
+  planTerms as planTermsIn,
+  purchaseTerms as purchaseTermsIn,
+  stateLine as stateLineIn,
 } from "@/lib/access/terms";
 import type { AccessInfo } from "@/types/billing";
+
+type Win = Parameters<typeof purchaseTermsIn>[0];
+const purchaseTerms = (w: Win) => purchaseTermsIn(w, "en");
+const planTerms = (w: Win) => planTermsIn(w, "en");
+const freeTerms = (w: Win) => freeTermsIn(w, "en");
+const stateLine = (i: AccessInfo, now?: number) => stateLineIn(i, "en", now);
 
 const info = (over: Partial<AccessInfo>): AccessInfo => ({
   has_access: false,

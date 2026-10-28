@@ -13,6 +13,28 @@ export function formatDate(dateStr: string, locale: string): string {
   });
 }
 
+/** "26 Oct 2026" or "26 Oct": the pieces always come day, month, year (the
+ *  sentences around them are built that way); only the month's name follows
+ *  the locale. */
+export function formatDayMonth(
+  date: Date,
+  locale: string,
+  year = true,
+  timeZone?: string,
+): string {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat(locale, {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      timeZone,
+    })
+      .formatToParts(date)
+      .map((x) => [x.type, x.value]),
+  );
+  return `${p.day} ${p.month}${year ? ` ${p.year}` : ""}`;
+}
+
 export function formatDuration(seconds: number): string {
   if (!seconds) return "0:00";
   const m = Math.floor(seconds / 60);

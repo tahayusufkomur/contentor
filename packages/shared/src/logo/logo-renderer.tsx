@@ -34,10 +34,15 @@ export function logoViewBox(layout: RecipeLayout): { w: number; h: number } {
   return { w: 640, h: 200 };
 }
 
-function applyCase(text: string, style: TextStyle): string {
-  if (style.case === "upper") return text.toUpperCase();
+/** `locale` is the site's language: Turkish capitals are "İ", not "I". */
+export function applyCase(
+  text: string,
+  style: TextStyle,
+  locale: string,
+): string {
+  if (style.case === "upper") return text.toLocaleUpperCase(locale);
   if (style.case === "title")
-    return text.replace(/\S+/g, (w) => w[0]!.toUpperCase() + w.slice(1));
+    return text.replace(/\S+/g, (w) => w[0]!.toLocaleUpperCase(locale) + w.slice(1));
   return text;
 }
 
@@ -147,10 +152,12 @@ export function MarkContent({
   color,
   mark2Paint,
   accentPaint,
+  locale,
 }: {
   recipe: LogoRecipe;
   size: number;
   color: string;
+  locale: string;
   // Paint strings (solid color or url(#id)) for the "custom" mark's secondary
   // roles; ComposedMark computes them via useFillPaint so gradients render.
   mark2Paint?: string;
@@ -254,7 +261,7 @@ export function MarkContent({
     );
   }
   // initials (plain fallback for unknown icons / missing image urls too)
-  const initials = initialsFor(recipe.name);
+  const initials = initialsFor(recipe.name, locale);
   const style = mark.type === "initials" ? mark.style : "plain";
   return (
     <InitialsMark
@@ -390,10 +397,12 @@ function InitialsMark({
 function ComposedMark({
   recipe,
   size,
+  locale,
   emblem = false,
 }: {
   recipe: LogoRecipe;
   size: number;
+  locale: string;
   emblem?: boolean;
 }) {
   const hasBadge = recipe.badge.shape !== "none";
@@ -448,6 +457,7 @@ function ComposedMark({
           color={fg}
           mark2Paint={mark2Fill.paint}
           accentPaint={markAccentFill.paint}
+          locale={locale}
         />
       </g>
     </g>
@@ -462,6 +472,7 @@ function TextEl({
   y,
   anchor,
   fontSize,
+  locale,
 }: {
   value: string;
   style: TextStyle;
@@ -470,6 +481,7 @@ function TextEl({
   y: number;
   anchor: "start" | "middle";
   fontSize: number;
+  locale: string;
 }) {
   return (
     <text
@@ -483,7 +495,7 @@ function TextEl({
       letterSpacing={`${style.tracking}em`}
       fill={color}
     >
-      {applyCase(value, style)}
+      {applyCase(value, style, locale)}
     </text>
   );
 }
@@ -587,6 +599,8 @@ interface LogoRendererProps {
   onPointerDown?: React.PointerEventHandler<SVGSVGElement>;
   onPointerMove?: React.PointerEventHandler<SVGSVGElement>;
   onPointerUp?: React.PointerEventHandler<SVGSVGElement>;
+  /** The site's language, for upper-case; English when a caller has none. */
+  locale?: string;
 }
 
 export function LogoRenderer({
@@ -597,6 +611,7 @@ export function LogoRenderer({
   onPointerDown,
   onPointerMove,
   onPointerUp,
+  locale = "en",
 }: LogoRendererProps) {
   const vb = logoViewBox(recipe.layout);
   if (recipe.mark.type === "generated" && recipe.mark.name_in_mark) {
@@ -633,14 +648,14 @@ export function LogoRenderer({
   }
   const slots = computeSlots(recipe);
   const { elements, colors, typography } = recipe;
-  const name = applyCase(recipe.name, typography.name);
+  const name = applyCase(recipe.name, typography.name, locale);
   const nameSize = fitFontSize(
     name,
     typography.name,
     slots.name.budget,
     slots.name.max,
   );
-  const tagline = applyCase(recipe.tagline, typography.tagline);
+  const tagline = applyCase(recipe.tagline, typography.tagline, locale);
   const taglineSize = slots.tagline
     ? Math.min(
         nameSize * 0.42,
@@ -683,6 +698,7 @@ export function LogoRenderer({
               recipe={recipe}
               size={slots.mark.size}
               emblem={slots.emblem}
+              locale={locale}
             />
           </g>
         </g>
@@ -696,6 +712,7 @@ export function LogoRenderer({
           y={slots.name.y}
           anchor={slots.name.anchor}
           fontSize={nameSize}
+          locale={locale}
         />
       </g>
       {slots.tagline && (
@@ -711,6 +728,7 @@ export function LogoRenderer({
             y={slots.tagline.y}
             anchor={slots.tagline.anchor}
             fontSize={taglineSize}
+            locale={locale}
           />
         </g>
       )}
@@ -722,10 +740,13 @@ export function MarkRenderer({
   recipe,
   size = 96,
   svgRef,
+  locale = "en",
 }: {
   recipe: LogoRecipe;
   size?: number;
   svgRef?: Ref<SVGSVGElement>;
+  /** The site's language, for upper-case initials; English when a caller has none. */
+  locale?: string;
 }) {
   // Square export/preview: badge fills the box; never renders name or
   // tagline (spec: "Square mark" rule). Only name_only needs the initials
@@ -754,7 +775,7 @@ export function MarkRenderer({
       height={size}
       xmlns="http://www.w3.org/2000/svg"
     >
-      <ComposedMark recipe={markRecipe} size={MARK_VIEWBOX} />
+      <ComposedMark recipe={markRecipe} size={MARK_VIEWBOX} locale={locale} />
     </svg>
   );
 }

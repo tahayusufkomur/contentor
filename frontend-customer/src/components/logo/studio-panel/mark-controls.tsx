@@ -1,5 +1,6 @@
 "use client";
 
+import { useSiteLocale } from "@/hooks/use-tenant";
 import { useRef } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export function MarkControls({
   onUpdate,
   onUploadMark,
 }: StudioPanelProps) {
+  const siteLocale = useSiteLocale();
   const fileRef = useRef<HTMLInputElement>(null);
   return (
     <>
@@ -52,7 +54,7 @@ export function MarkControls({
                 onClick={() => onPatch({ mark: { type: "initials", style } })}
                 className={`${toggleClass(active)} capitalize`}
               >
-                {initialsFor(recipe.name)} {style}
+                {initialsFor(recipe.name, siteLocale)} {style}
               </button>
             );
           })}

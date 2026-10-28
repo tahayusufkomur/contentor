@@ -1,4 +1,4 @@
-import { currencySymbol } from "@/lib/format";
+import { formatDayMonth, formatMoney } from "@/lib/format";
 
 export type Window = {
   opens_after_days?: number;
@@ -47,32 +47,10 @@ export function spanText(days: number): string {
   return `${days} days`;
 }
 
-const MON = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-/** An ISO date as "26 Oct 2026", like the backend's `%-d %b %Y` (ICU says "Sept"). */
-export function formatDay(iso: string): string {
+/** An ISO date as "26 Oct 2026" (day, month, year in every language). */
+export function formatDay(iso: string, locale: string): string {
   const [y, m, d] = iso.split("-").map(Number);
-  return `${d} ${MON[m - 1]} ${y}`;
-}
-
-function money(amount: string, currency: string, locale: string): string {
-  return `${currencySymbol(currency, locale)}${Number(amount).toFixed(2)}`.replace(
-    /\.00$/,
-    "",
-  );
+  return formatDayMonth(new Date(Date.UTC(y, m - 1, d)), locale, true, "UTC");
 }
 
 /**
@@ -85,18 +63,19 @@ function clauses(
   opensAfter: (span: string) => string,
   closesAfter: (span: string) => string,
   closesUntil: (span: string) => string,
+  locale: string,
 ): string[] {
   const out: string[] = [];
   if (w?.opens_after_days !== undefined)
     out.push(opensAfter(spanText(w.opens_after_days)));
-  if (w?.opens_on) out.push(`from ${formatDay(w.opens_on)}`);
+  if (w?.opens_on) out.push(`from ${formatDay(w.opens_on, locale)}`);
   if (w?.closes_after_days !== undefined) {
     const opens = w.opens_after_days !== undefined || !!w.opens_on;
     out.push(
       (opens ? closesUntil : closesAfter)(spanText(w.closes_after_days)),
     );
   }
-  if (w?.closes_on) out.push(`until ${formatDay(w.closes_on)}`);
+  if (w?.closes_on) out.push(`until ${formatDay(w.closes_on, locale)}`);
   return out;
 }
 
@@ -120,6 +99,7 @@ export function describe(
       (s) => `after ${s} of joining`,
       (s) => `for ${s} after joining`,
       (s) => `until ${s} after joining`,
+      locale,
     );
     parts.push(c.length ? ["Free", ...c].join(" ") : "Free for everyone");
   }
@@ -129,9 +109,10 @@ export function describe(
       (s) => `opening ${s} after purchase`,
       (s) => `with ${s} of access`,
       (s) => `until ${s} after purchase`,
+      locale,
     );
     parts.push(
-      `${money(ways.buy.price, currency, locale)} once` +
+      `${formatMoney(ways.buy.price, currency, locale)} once` +
         (c.length ? ` ${c.join(", ")}` : ", theirs to keep"),
     );
   }
@@ -146,6 +127,7 @@ export function describe(
         (s) => `after ${s} of membership`,
         (s) => `for ${s} of membership`,
         (s) => `until ${s} into membership`,
+        locale,
       );
       const key = JSON.stringify(c);
       const group = groups.get(key) ?? { c, names: [] };
@@ -162,9 +144,9 @@ export function describe(
   return `${text.charAt(0).toLocaleUpperCase(locale)}${text.slice(1)}.`;
 }
 
-export function buyPill(w: Window | null): string {
+export function buyPill(w: Window | null, locale: string): string {
   const opens = w?.opens_on
-    ? `Opens ${formatDay(w.opens_on)} · `
+    ? `Opens ${formatDay(w.opens_on, locale)} · `
     : w?.opens_after_days !== undefined
       ? `Opens ${spanText(w.opens_after_days)} after purchase · `
       : "";
@@ -172,40 +154,40 @@ export function buyPill(w: Window | null): string {
     w?.closes_after_days !== undefined
       ? `${spanText(w.closes_after_days)} from purchase`
       : w?.closes_on
-        ? `Until ${formatDay(w.closes_on)}`
+        ? `Until ${formatDay(w.closes_on, locale)}`
         : "Forever";
   return opens + closes;
 }
 
-export function linkPill(w: Window | null): string {
+export function linkPill(w: Window | null, locale: string): string {
   const opens =
     w?.opens_after_days !== undefined
       ? `After ${spanText(w.opens_after_days)} of membership`
       : w?.opens_on
-        ? `From ${formatDay(w.opens_on)}`
+        ? `From ${formatDay(w.opens_on, locale)}`
         : "Right away";
   const closes =
     w?.closes_after_days !== undefined
       ? `closes after ${spanText(w.closes_after_days)}`
       : w?.closes_on
-        ? `closes ${formatDay(w.closes_on)}`
+        ? `closes ${formatDay(w.closes_on, locale)}`
         : "never closes";
   return `${opens} · ${closes}`;
 }
 
-export function freePill(w: Window | null): string {
+export function freePill(w: Window | null, locale: string): string {
   if (w?.closes_after_days !== undefined) {
     // With an opening, the close (counted from joining) is a point, not a length.
     const until = `until ${spanText(w.closes_after_days)} after joining`;
     if (w.opens_after_days !== undefined)
       return `After ${spanText(w.opens_after_days)} of joining · ${until}`;
-    if (w.opens_on) return `From ${formatDay(w.opens_on)} · ${until}`;
+    if (w.opens_on) return `From ${formatDay(w.opens_on, locale)} · ${until}`;
     return `First ${spanText(w.closes_after_days)} after joining`;
   }
   if (w?.opens_on && w.closes_on)
-    return `${formatDay(w.opens_on)} – ${formatDay(w.closes_on)}`;
-  if (w?.closes_on) return `Until ${formatDay(w.closes_on)}`;
-  if (w?.opens_on) return `From ${formatDay(w.opens_on)}`;
+    return `${formatDay(w.opens_on, locale)} – ${formatDay(w.closes_on, locale)}`;
+  if (w?.closes_on) return `Until ${formatDay(w.closes_on, locale)}`;
+  if (w?.opens_on) return `From ${formatDay(w.opens_on, locale)}`;
   if (w?.opens_after_days !== undefined)
     return `After ${spanText(w.opens_after_days)} of joining`;
   return "Always";

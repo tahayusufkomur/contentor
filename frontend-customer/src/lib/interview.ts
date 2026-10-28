@@ -1,4 +1,5 @@
-// Pure helpers for the /setup interview (no runtime imports: unit-tested in isolation).
+// Pure helpers for the /setup interview (only pure imports: unit-tested in isolation).
+import { formatDayMonth } from "@/lib/format";
 import type {
   GuideTurn,
   InterviewEntry,
@@ -486,20 +487,8 @@ const list = (xs: string[]) =>
     : (xs[0] ?? "");
 /** Local time from "YYYY-MM-DD" (midnight) or "YYYY-MM-DDTHH:MM". */
 const local = (s: string) => new Date(s.length === 10 ? `${s}T00:00` : s);
-// "12 Oct 2026": the sentence is built day-month-year in every language, only
-// the month's name follows the locale.
-const fmtDate = (s: string, year: boolean, locale: string) => {
-  const p = Object.fromEntries(
-    new Intl.DateTimeFormat(locale, {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    })
-      .formatToParts(local(s))
-      .map((x) => [x.type, x.value]),
-  );
-  return `${p.day} ${p.month}${year ? ` ${p.year}` : ""}`;
-};
+const fmtDate = (s: string, year: boolean, locale: string) =>
+  formatDayMonth(local(s), locale, year);
 const fmtTime = (t: string) => {
   const [h, m] = t.split(":").map(Number);
   return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
