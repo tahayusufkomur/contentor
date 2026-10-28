@@ -11,7 +11,7 @@ from zoneinfo import ZoneInfo
 
 from django.db.models import F
 from django.utils import timezone
-from django.utils.formats import date_format
+from django.utils.formats import date_format, number_format
 from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -71,12 +71,19 @@ def _item(ref, kind, title, url, *, summary="", image="", meta="", label=""):
     }
 
 
+def _money(amount) -> str:
+    """An amount with the sign of the coach's charge currency, written in the active language."""
+    from apps.tenant_config.interview_brief import currency_sign
+
+    value = round(float(amount), 2)
+    return f"{currency_sign()}{number_format(value, decimal_pos=0 if value == int(value) else 2)}"
+
+
 def _price(obj) -> str:
     """How a student gets it, in a few words: "Free", "€49", "€49 · or with Studio membership",
     "Included in Studio membership"."""
     from apps.billing.models import SubscriptionPlan
     from apps.billing.ways import WaysError, ways_of
-    from apps.tenant_config.interview_brief import money
 
     try:
         ways = ways_of(obj)
@@ -86,7 +93,7 @@ def _price(obj) -> str:
     if ways.get("free"):
         parts.append(_("Free"))
     if ways.get("buy"):
-        parts.append(money(ways["buy"]["price"]))
+        parts.append(_money(ways["buy"]["price"]))
     if ways.get("plans"):
         ids = [p["plan_id"] for p in ways["plans"]]
         names = list(dict.fromkeys(SubscriptionPlan.objects.filter(pk__in=ids).values_list("name", flat=True)))
@@ -152,9 +159,7 @@ def _post(p, site):
 
 
 def _plan(p, site):
-    from apps.tenant_config.interview_brief import money
-
-    months, price = p.billing_interval_months, {"price": money(p.price)}
+    months, price = p.billing_interval_months, {"price": _money(p.price)}
     if months == 1:
         every = _("%(price)s a month") % price
     elif months == 12:

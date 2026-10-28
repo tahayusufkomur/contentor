@@ -75,3 +75,57 @@ def test_env_locales():
 def test_settings_languages_are_the_enabled_pairs(settings):
     assert settings.ENABLED_LOCALES == ["en", "tr", "de", "pl"]
     assert [c for c, _ in settings.LANGUAGES] == settings.ENABLED_LOCALES
+
+
+def test_in_site_language_runs_in_the_site_language_and_leaves_it_after(tenant_ctx):
+    _set_site("tr")
+
+    @languages.in_site_language
+    def now():
+        return translation.get_language()
+
+    with translation.override("en"):
+        assert now() == "tr"
+        assert translation.get_language() == "en"  # the caller's language is back
+
+
+def test_in_site_language_restores_the_language_after_an_exception(tenant_ctx):
+    _set_site("tr")
+
+    @languages.in_site_language
+    def fails():
+        raise RuntimeError("boom")
+
+    with translation.override("de"):
+        with pytest.raises(RuntimeError):
+            fails()
+        assert translation.get_language() == "de"
+
+
+def test_in_site_language_nests_and_looks_the_language_up_once(tenant_ctx, django_assert_num_queries):
+    _set_site("tr")
+
+    @languages.in_site_language
+    def inner():
+        return translation.get_language()
+
+    @languages.in_site_language
+    def outer():
+        return [inner(), inner(), translation.get_language()]
+
+    with django_assert_num_queries(1):  # one TenantConfig read for the outer call, none for the nested ones
+        assert outer() == ["tr", "tr", "tr"]
+
+    @languages.in_site_language
+    def switch():
+        with translation.override("de"):  # a language changed inside is not the site's: entered again
+            return inner()
+
+    assert switch() == "tr"
+
+
+def test_outside_the_decorator_it_is_english_again(tenant_ctx):
+    _set_site("tr")
+    translation.deactivate()
+    languages.in_site_language(lambda: None)()
+    assert translation.gettext("Unsubscribe") == "Unsubscribe"

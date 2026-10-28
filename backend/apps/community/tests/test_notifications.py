@@ -1,9 +1,12 @@
 import pytest
+from django.core.cache import cache
 
 from apps.accounts.models import User
 from apps.community import tasks
 from apps.community.models import Comment, CommunityMember, CommunitySettings, Post
+from apps.core.tests.i18n_utils import translated
 from apps.notifications.models import PushSubscription
+from apps.tenant_config.models import TenantConfig
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -157,3 +160,21 @@ def test_comment_create_enqueues_notify(enabled, monkeypatch, tenant_ctx):
     assert resp.status_code == 201
     assert len(calls) == 1
     assert calls[0][0] == resp.json()["id"]
+
+
+def test_community_pushes_are_in_the_site_language(enabled, sent, tenant_ctx):
+    """A worker (English) pushing on a Turkish site: students read Turkish."""
+    cfg = TenantConfig.objects.first() or TenantConfig.objects.create(brand_name="Glow")
+    cfg.default_locale = "tr"
+    cfg.save()
+    cache.delete(f"tenant:{tenant_ctx.schema_name}:config")
+    coach = _member("coach-tr@x.com", "Coach", role="owner", is_staff=True)
+    author = _member("author-tr@x.com", "Author")
+    commenter = _member("commenter-tr@x.com", "Commenter")
+    post = Post.objects.create(author=coach, body="Yeni ders!")
+    tasks.fanout_community_post(post.id, tenant_ctx.schema_name)
+    assert sent[-1][1]["title"] == translated("%(author)s posted in the community") % {"author": "Coach"}
+    own = Post.objects.create(author=author, body="post")
+    comment = Comment.objects.create(post=own, author=commenter, body="nice!")
+    tasks.notify_post_comment(comment.id, tenant_ctx.schema_name)
+    assert sent[-1][1]["title"] == translated("%(commenter)s commented on your post") % {"commenter": "Commenter"}

@@ -31,6 +31,16 @@ msgstr "Belirteç bu kiracı için geçerli değil"
 msgid "Unsupported locale"
 msgstr "Desteklenmeyen yerel ayar"
 
+#: apps/community/payloads.py
+#, python-format, fuzzy
+msgid "%(author)s posted in the community"
+msgstr "%(author)s toplulukta bir gönderi paylaştı"
+
+#: apps/community/payloads.py
+#, fuzzy, python-format
+msgid "%(commenter)s commented on your post"
+msgstr "%(commenter)s gönderine yorum yaptı"
+
 #: apps/core/onboarding/compose.py apps/core/tasks.py
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
@@ -355,12 +365,23 @@ msgstr "Hakkımda"
 msgid "What students say"
 msgstr "Öğrenciler ne diyor"
 
+#: apps/core/tests/test_languages.py apps/email_campaigns/render.py
+#: apps/email_campaigns/tasks.py apps/notifications/transactional.py
+#, fuzzy
+msgid "Unsubscribe"
+msgstr "Abonelikten çık"
+
 #: apps/core/tests/test_starter_content_language.py
 #: apps/notifications/templates_builtin.py
 #, fuzzy
 msgctxt "the brand, when the site has none"
 msgid "us"
 msgstr "biz"
+
+#: apps/email_campaigns/brand.py apps/notifications/email_render.py
+#, fuzzy
+msgid "Open"
+msgstr "Aç"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy, python-format
@@ -413,12 +434,6 @@ msgstr[1] "her %(count)d ayda bir %(price)s"
 #, fuzzy
 msgid "Click here"
 msgstr "Buraya tıkla"
-
-#: apps/email_campaigns/render.py apps/email_campaigns/tasks.py
-#: apps/notifications/transactional.py
-#, fuzzy
-msgid "Unsubscribe"
-msgstr "Abonelikten çık"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -587,7 +602,7 @@ msgstr "Seninle paylaşmak istediğim bir şey."
 #: apps/email_campaigns/tasks.py
 #, fuzzy
 msgid "there"
-msgstr "orada"
+msgstr "dostum"
 
 #: apps/email_campaigns/tasks.py
 #, fuzzy, python-format
@@ -598,11 +613,6 @@ msgstr "%(brand)s aracılığıyla %(coach)s"
 #, fuzzy
 msgid "News"
 msgstr "Haberler"
-
-#: apps/notifications/email_render.py
-#, fuzzy
-msgid "Open"
-msgstr "Aç"
 
 #: apps/notifications/payloads.py apps/notifications/transactional.py
 #, fuzzy, python-format
@@ -1123,7 +1133,7 @@ msgstr "Bir kursa başla"
 #: apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Book a session"
-msgstr "Bir oturum ayırt"
+msgstr "Oturum ayır"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy

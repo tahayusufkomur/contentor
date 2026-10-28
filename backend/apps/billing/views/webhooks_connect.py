@@ -349,9 +349,8 @@ def _handle_marketplace_invoice_paid(event, tenant):
                 reason,
                 sub,
                 invoice_url=invoice.get("hosted_invoice_url", ""),
-                amount=transactional.money(
-                    Decimal(amount_cents) / Decimal(100), invoice.get("currency") or sub.billing_currency
-                ),
+                amount=Decimal(amount_cents) / Decimal(100),
+                currency=invoice.get("currency") or "",
             )
         logger.info(
             "marketplace payment recorded tenant=%s sub=%s student=%s amount=%s",
@@ -382,9 +381,8 @@ def _handle_marketplace_invoice_failed(event, tenant):
             "failed",
             sub,
             invoice_url=invoice.get("hosted_invoice_url", ""),
-            amount=transactional.money(
-                Decimal(invoice.get("amount_due") or 0) / Decimal(100), invoice.get("currency") or sub.billing_currency
-            ),
+            amount=Decimal(invoice.get("amount_due") or 0) / Decimal(100),
+            currency=invoice.get("currency") or "",
         )
 
 

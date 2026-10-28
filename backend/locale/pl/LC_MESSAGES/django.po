@@ -31,6 +31,16 @@ msgstr "Token nie jest ważny dla tego tenanta"
 msgid "Unsupported locale"
 msgstr "Nieobsługiwana lokalizacja"
 
+#: apps/community/payloads.py
+#, python-format, fuzzy
+msgid "%(author)s posted in the community"
+msgstr "%(author)s dodał(a) wpis w społeczności"
+
+#: apps/community/payloads.py
+#, fuzzy, python-format
+msgid "%(commenter)s commented on your post"
+msgstr "%(commenter)s skomentował(a) Twój post"
+
 #: apps/core/onboarding/compose.py apps/core/tasks.py
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
@@ -358,12 +368,23 @@ msgstr "O mnie"
 msgid "What students say"
 msgstr "Co mówią uczestnicy"
 
+#: apps/core/tests/test_languages.py apps/email_campaigns/render.py
+#: apps/email_campaigns/tasks.py apps/notifications/transactional.py
+#, fuzzy
+msgid "Unsubscribe"
+msgstr "Wypisz się"
+
 #: apps/core/tests/test_starter_content_language.py
 #: apps/notifications/templates_builtin.py
 #, fuzzy
 msgctxt "the brand, when the site has none"
 msgid "us"
 msgstr "nas"
+
+#: apps/email_campaigns/brand.py apps/notifications/email_render.py
+#, fuzzy
+msgid "Open"
+msgstr "Otwórz"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy, python-format
@@ -417,12 +438,6 @@ msgstr[2] "%(price)s co %(count)d miesięcy"
 #, fuzzy
 msgid "Click here"
 msgstr "Kliknij tutaj"
-
-#: apps/email_campaigns/render.py apps/email_campaigns/tasks.py
-#: apps/notifications/transactional.py
-#, fuzzy
-msgid "Unsubscribe"
-msgstr "Wypisz się"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -591,7 +606,7 @@ msgstr "Coś, czym chciałem się z Tobą podzielić."
 #: apps/email_campaigns/tasks.py
 #, fuzzy
 msgid "there"
-msgstr "tam"
+msgstr "przyjacielu"
 
 #: apps/email_campaigns/tasks.py
 #, fuzzy, python-format
@@ -602,11 +617,6 @@ msgstr "%(coach)s przez %(brand)s"
 #, fuzzy
 msgid "News"
 msgstr "Aktualności"
-
-#: apps/notifications/email_render.py
-#, fuzzy
-msgid "Open"
-msgstr "Otwórz"
 
 #: apps/notifications/payloads.py apps/notifications/transactional.py
 #, fuzzy, python-format

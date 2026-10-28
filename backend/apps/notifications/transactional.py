@@ -22,7 +22,7 @@ from django.utils.html import escape
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 
-from apps.core.languages import in_site_language, site_language
+from apps.core.languages import in_site_language, site_language, site_language_context
 
 logger = logging.getLogger(__name__)
 
@@ -461,10 +461,10 @@ def _quiet(hook):
     email fails, the error is logged and the payment or change goes on."""
 
     @functools.wraps(hook)
-    @in_site_language
     def run(*args, **kwargs):
         try:
-            hook(*args, **kwargs)
+            with site_language_context():
+                hook(*args, **kwargs)
         except Exception:  # noqa: BLE001
             logger.exception("transactional email %s failed", hook.__name__)
 
@@ -631,10 +631,12 @@ def _per(sub) -> str:
 
 
 @_quiet
-def membership_event(kind: str, sub, invoice_url: str = "", amount: str = "") -> None:
-    """started | renewed | failed | cancelled | ended, for one membership."""
+def membership_event(kind: str, sub, invoice_url: str = "", amount=None, currency: str = "") -> None:
+    """started | renewed | failed | cancelled | ended, for one membership. ``amount`` is the raw sum (what a
+    renewal took, what failed): it is written here, in the site's language, never by the caller."""
     brand, site = here()
     plan, end = sub.plan.name, day(sub.current_period_end)
+    amount = money(amount, currency or sub.billing_currency) if amount is not None else ""
     email = {
         "started": lambda: membership_started(brand, site, plan, _per(sub), end),
         "renewed": lambda: membership_renewed(brand, site, plan, amount, end, invoice_url),

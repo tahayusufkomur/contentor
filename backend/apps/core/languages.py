@@ -4,11 +4,14 @@ The list is packages/shared/src/i18n/locales.json (synced copy in apps/core/i18n
 ENABLED_LOCALES decides which of them the public sees; anything else resolves to English.
 """
 
+import contextlib
+import contextvars
 import functools
 import json
 from pathlib import Path
 
 from django.conf import settings
+from django.db import connection
 from django.utils import translation
 from django_tenants.utils import get_public_schema_name, schema_context
 
@@ -47,13 +50,34 @@ def site_language(tenant=None) -> str:
     return resolve(TenantConfig.objects.values_list("default_locale", flat=True).first())
 
 
+_inside = contextvars.ContextVar("site_language_inside", default=None)  # (schema, language) while one is active
+
+
+@contextlib.contextmanager
+def site_language_context():
+    """Everything inside is in the language of the site this connection is on: for what students are sent
+    from a task, a webhook or a studio request (whose own language is the creator's). The language is looked
+    up once: a nested use on the same schema (a send inside a fan-out) reuses it."""
+    schema = connection.schema_name
+    active = _inside.get()
+    if active is not None and active == (schema, translation.get_language()):
+        yield
+        return
+    language = site_language()
+    token = _inside.set((schema, language))
+    try:
+        with translation.override(language):
+            yield
+    finally:
+        _inside.reset(token)
+
+
 def in_site_language(fn):
-    """Run `fn` under the site's language: for what students are sent from a task, a webhook or a studio
-    request (whose own language is the creator's)."""
+    """`fn` runs inside `site_language_context()`."""
 
     @functools.wraps(fn)
     def run(*args, **kwargs):
-        with translation.override(site_language()):
+        with site_language_context():
             return fn(*args, **kwargs)
 
     return run

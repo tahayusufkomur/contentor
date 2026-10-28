@@ -3,6 +3,7 @@ import logging
 from celery import shared_task
 from django_tenants.utils import get_tenant_model, tenant_context
 
+from apps.core.languages import site_language_context
 from apps.notifications.models import PushSubscription
 from apps.notifications.services import send_to_subscriptions
 
@@ -26,7 +27,7 @@ def fanout_community_post(post_id: int, schema_name: str) -> None:
     tenant = _with_tenant(schema_name)
     if tenant is None:
         return
-    with tenant_context(tenant):
+    with tenant_context(tenant), site_language_context():
         from .models import CommunitySettings, Post
         from .permissions import is_moderator
 
@@ -47,7 +48,7 @@ def notify_post_comment(comment_id: int, schema_name: str) -> None:
     tenant = _with_tenant(schema_name)
     if tenant is None:
         return
-    with tenant_context(tenant):
+    with tenant_context(tenant), site_language_context():
         from .models import Comment
 
         comment = Comment.objects.select_related("author", "post__author__user").filter(pk=comment_id).first()

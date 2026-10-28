@@ -12,6 +12,7 @@ import re
 
 from django.conf import settings
 from django.utils.html import strip_tags
+from django.utils.translation import gettext as _
 from django.utils.translation import override
 
 from apps.core import languages
@@ -224,7 +225,7 @@ def to_text(design: dict, kit_: dict) -> str:
             plain = html.unescape(strip_tags(text))
             out.append("\n".join(" ".join(line.split()) for line in plain.splitlines()).strip())
         elif kind == "button" and data.get("url"):
-            out.append(f"{data.get('text') or 'Open'}: {data['url']}")
+            out.append(f"{data.get('text') or _('Open')}: {data['url']}")
         elif kind == "hero":
             out += [str(data.get("heading") or ""), str(data.get("subheading") or "")]
             if data.get("buttonUrl") and data.get("buttonText"):
@@ -232,7 +233,7 @@ def to_text(design: dict, kit_: dict) -> str:
         elif kind == "card":
             out += [str(data.get("heading") or ""), str(data.get("body") or "")]
             if data.get("showButton") and data.get("buttonUrl"):
-                out.append(f"{data.get('buttonText') or 'Open'}: {data['buttonUrl']}")
+                out.append(f"{data.get('buttonText') or _('Open')}: {data['buttonUrl']}")
         elif kind == "item" and isinstance(data.get("_item"), dict):
             item = data["_item"]
             out += ["", item["title"], item.get("meta") or "", item.get("url") or ""]

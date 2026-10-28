@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from apps.core.languages import in_site_language
+from apps.core.languages import site_language_context
 from apps.core.models import TenantUsage
 from apps.core.permissions import IsCoachOrOwner
 
@@ -293,7 +293,6 @@ def recipient_count(request):
 
 @api_view(["POST"])
 @permission_classes([IsCoachOrOwner])
-@in_site_language  # her students' language, not hers: the test is the email as they will get it
 def campaign_test(request, pk: int):
     """The email, as her students will get it, to her own inbox."""
     from .tasks import send_one
@@ -303,13 +302,14 @@ def campaign_test(request, pk: int):
     if cache.get_or_set(key, 0, 3600) >= TESTS_PER_HOUR:
         return Response({"detail": "That's a lot of tests. Try again in an hour."}, status=429)
     cache.incr(key)
-    ok = send_one(
-        campaign,
-        connection.tenant,
-        to=request.user.email,
-        name=request.user.name or "",
-        subject=f"[Test] {campaign.subject or '(no subject)'}",
-    )
+    with site_language_context():  # the email in her students' language, not hers; her replies stay hers
+        ok = send_one(
+            campaign,
+            connection.tenant,
+            to=request.user.email,
+            name=request.user.name or "",
+            subject=f"[Test] {campaign.subject or '(no subject)'}",
+        )
     if not ok:
         return Response({"detail": "The test email could not be sent."}, status=status.HTTP_502_BAD_GATEWAY)
     return Response({"sent_to": request.user.email})

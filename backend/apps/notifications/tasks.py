@@ -3,10 +3,9 @@ from datetime import timedelta
 
 from celery import shared_task
 from django.utils import timezone
-from django.utils.translation import override
 from django_tenants.utils import get_tenant_model, tenant_context
 
-from apps.core.languages import in_site_language, site_language
+from apps.core.languages import in_site_language, site_language_context
 from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
 from .models import LiveReminderLog
@@ -88,7 +87,7 @@ def fanout_new_content(course_id: int, schema_name: str) -> None:
         tenant = tenant_model.objects.get(schema_name=schema_name)
     except tenant_model.DoesNotExist:
         return
-    with tenant_context(tenant), override(site_language()):
+    with tenant_context(tenant), site_language_context():
         course = Course.objects.filter(pk=course_id).first()
         if not course:
             return
@@ -104,7 +103,7 @@ def fanout_announcement(announcement_id: int, schema_name: str) -> None:
         tenant = tenant_model.objects.get(schema_name=schema_name)
     except tenant_model.DoesNotExist:
         return
-    with tenant_context(tenant), override(site_language()):
+    with tenant_context(tenant), site_language_context():
         # Atomic claim: only one worker can transition scheduled -> sent.
         # A concurrent/duplicate dispatch (slow fanout re-enqueued by beat)
         # claims 0 rows and returns without re-sending.

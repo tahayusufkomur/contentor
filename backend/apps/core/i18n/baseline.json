@@ -12,7 +12,6 @@
   "apps/billing/views/platform.py": 4,
   "apps/blog/serializers.py": 5,
   "apps/community/access.py": 3,
-  "apps/community/payloads.py": 2,
   "apps/community/serializers.py": 1,
   "apps/core/assistant_views.py": 3,
   "apps/core/contact/views.py": 1,

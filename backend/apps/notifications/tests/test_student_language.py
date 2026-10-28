@@ -18,7 +18,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.utils.html import escape
-from django.utils.translation import override
+from django.utils.translation import get_language, override
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from apps.accounts.models import User
@@ -93,7 +93,10 @@ def _emails(student):
         tx.refund_done(payment, [item], NS(amount=Decimal("49"), currency="eur"))
         tx.access_opened(student.email, "Yoga basics", CLASS_AT)
         for kind in ("started", "renewed", "failed", "cancelled", "ended"):
-            tx.membership_event(kind, sub, invoice_url="https://invoices.test/i", amount="12.50 EUR")
+            # the webhook's call shape: the raw sum and its currency, written by the hook
+            tx.membership_event(
+                kind, sub, invoice_url="https://invoices.test/i", amount=Decimal("12.5"), currency="eur"
+            )
         for kind in ("reminder", "changed", "cancelled"):
             tx.class_event(kind, event)
         tx.comment_replied(comment)
@@ -103,18 +106,39 @@ def _emails(student):
     return sent
 
 
-def _english_msgids(lang, source):
-    """The English texts of `source` that `lang` really translates, as regexes (placeholders match anything)."""
+def _po_entries(lang, source):
     po = polib.pofile(str(settings.BASE_DIR / "locale" / lang / "LC_MESSAGES" / "django.po"))
+    return [e for e in po if any(path.endswith(source) for path, _line in e.occurrences)]
+
+
+def _pattern(msgid):
+    parts = re.split(r"%\(\w+\)[sd]", msgid)
+    return re.compile(r"(?<!\w)" + ".+?".join(re.escape(p) for p in parts) + r"(?!\w)")
+
+
+def _english_msgids(lang, source):
+    """The English texts of `source` that `lang` really translates, singular and plural forms, as regexes
+    (placeholders match anything). A text with no translation at all is a failure, not a skip."""
     found = []
-    for entry in po:
-        if entry.msgid_plural or not entry.msgstr or entry.msgstr == entry.msgid:
+    for entry in _po_entries(lang, source):
+        forms = [entry.msgid, entry.msgid_plural] if entry.msgid_plural else [entry.msgid]
+        translations = list(entry.msgstr_plural.values()) if entry.msgid_plural else [entry.msgstr]
+        assert all(translations), f"{lang}: {entry.msgid!r} has no translation"
+        if all(t in forms for t in translations):  # the same in both languages: nothing to leak
             continue
-        if not any(path.endswith(source) for path, _line in entry.occurrences):
-            continue
-        parts = re.split(r"%\(\w+\)[sd]", entry.msgid)
-        found.append((entry.msgid, re.compile(r"\b" + ".+?".join(re.escape(p) for p in parts) + r"\b")))
+        found += [(msgid, _pattern(msgid)) for msgid in forms]
     return found
+
+
+def _leaks(known, call_args):
+    shown = " ".join([call_args["subject"], _visible(call_args["html"]), call_args["text"]])
+    return [msgid for msgid, pattern in known if pattern.search(shown)]
+
+
+OFFER = {
+    "ref": "course:1", "kind": "course", "kindLabel": "Course", "title": "Yoga basics", "summary": "", "image": "",
+    "url": "https://glow.test/courses/yoga-basics", "meta": "49 EUR",
+}  # fmt: skip
 
 
 def _visible(html):
@@ -128,16 +152,37 @@ def test_every_transactional_email_has_no_english_template_string(tenant_ctx, st
     emails = _emails(student)
     assert len(emails) == 16  # none swallowed by a hook: 4 + 5 memberships + 3 classes + reply + ending + 2 sign-ins
     known = _english_msgids(lang, "notifications/transactional.py")
-    assert len(known) > 40
+    assert len(known) > 70
     with patch("apps.core.email.send_email") as out:
         for email in emails:
             tx.send(student.email, email, tenant_ctx)
     assert out.call_count == len(emails)
     for call in out.call_args_list:
-        shown = " ".join([call.kwargs["subject"], _visible(call.kwargs["html"]), call.kwargs["text"]])
-        leaked = [msgid for msgid, pattern in known if pattern.search(shown)]
+        leaked = _leaks(known, call.kwargs)
         assert not leaked, f"{lang}: English left in {call.kwargs['subject']!r}: {leaked}"
         assert f'lang="{lang}"' in call.kwargs["html"]
+    # the setup samples carry an offer: its "Take a look" button
+    with override(lang):
+        html = tx.render(tx.welcome("Glow", "https://glow.test"), tenant_ctx, offer=OFFER)
+    assert not _leaks(known, {"subject": "", "html": html, "text": ""})
+    assert translated("Take a look", lang) in html
+
+
+def test_the_leak_check_can_fail_on_plurals_the_offer_and_full_stops(tenant_ctx):
+    """The same check over English emails on a Turkish site: it must find the sign-in minutes line (a plural),
+    a membership price (a plural) and the offer button, and a sentence ending in a full stop."""
+    known = _english_msgids("tr", "notifications/transactional.py")
+    english = tx.sign_in("Glow", "https://glow.test/cb", "123456", 15)
+    html = tx.render(english, tenant_ctx, offer=OFFER)
+    leaked = _leaks(known, {"subject": english.subject, "html": html, "text": tx.plain_text(english)})
+    for msgid in (
+        "Tap the button to sign in to %(brand)s. The link works for %(minutes)d minutes.",
+        "If you didn't ask for this, you can ignore this email.",
+        "Take a look",
+    ):
+        assert msgid in leaked, msgid
+    price = tx.membership_started("Glow", "https://glow.test", "Studio", "12.50 EUR / 3 months", "5 November 2030")
+    assert "Membership" in _leaks(known, {"subject": "", "html": tx.render(price, tenant_ctx), "text": ""})
 
 
 def test_class_reminder_date_is_turkish(tenant_ctx, tr_site, student):
@@ -270,7 +315,7 @@ def test_the_setup_email_style_cards_are_drawn_in_the_site_language(tenant_ctx, 
     with override("en"):
         cards = tx.previews(tenant_ctx)
     assert all(translated("Go to your dashboard") in c["html"] for c in cards)
-    assert all(translated("Welcome to %(brand)s") % {"brand": "Glow"} in c["html"] for c in cards)
+    assert all(escape(translated("Welcome to %(brand)s") % {"brand": "Glow"}) in c["html"] for c in cards)
     _site(tenant_ctx, "en")
     assert all("Go to your dashboard" in c["html"] for c in tx.previews(tenant_ctx))  # not the Turkish cards
 
@@ -282,3 +327,81 @@ def test_a_campaign_to_a_turkish_site_says_there_in_turkish(tenant_ctx, tr_site)
         assert first_name("") == translated("there") and first_name("Ana Lind") == "Ana"
         footer = _with_unsubscribe("<body>x</body>", "https://u.test", "Glow")
     assert translated("Unsubscribe") in footer
+
+
+# --- the review's findings ------------------------------------------------------------------------
+
+
+def test_a_membership_amount_is_written_in_the_site_language_like_the_price_row(tenant_ctx, tr_site, student):
+    sent = []
+    sub = NS(
+        plan=NS(name="Studio", billing_interval_months=1), student_id=student.pk, current_period_end=CLASS_AT,
+        billing_amount=Decimal("12.5"), billing_currency="eur",
+    )  # fmt: skip
+    with patch.object(tx, "deliver", lambda to, email: sent.append(email)):
+        tx.membership_event("renewed", sub, amount=Decimal("12.5"), currency="eur")  # English is active
+        tx.membership_event("started", sub)
+    renewed, started = sent
+    assert dict(renewed.rows)[translated("Paid")] == "12,50 EUR"
+    assert "12,50 EUR" in dict(started.rows)[translated("Price")]
+
+
+def test_the_plain_text_button_fallback_is_in_the_site_language(tenant_ctx, tr_site):
+    from apps.email_campaigns import brand
+
+    design = {"version": 1, "body": {"blocks": [{"id": "b", "type": "button", "data": {"url": "https://x.test"}}]}}
+    with override("en"):
+        _html, text, _warnings = brand.build(design, tenant_ctx)
+    assert f"{translated('Open')}: https://x.test" in text
+
+
+def test_item_card_prices_are_written_in_the_site_language(tenant_ctx, tr_site):
+    from apps.email_campaigns import catalog
+
+    assert catalog._money(12.5).endswith("12.50") and catalog._money(49).endswith("49")  # English is active
+    with override("tr"):
+        assert catalog._money(12.5).endswith("12,50") and catalog._money(49).endswith("49")
+        plan = NS(id=1, name="Studio", billing_interval_months=1, price=Decimal("12.5"), description="")
+        assert catalog._plan(plan, "https://glow.test")["meta"] == translated("%(price)s a month") % {
+            "price": catalog._money(12.5)
+        }
+
+
+def test_a_failing_language_lookup_does_not_break_the_hook_that_triggered_it(tenant_ctx, student):
+    def broken():
+        raise RuntimeError("no config")
+
+    with (
+        patch.object(tx, "site_language_context", broken),
+        patch.object(tx, "deliver") as deliver,
+        patch.object(tx.logger, "exception") as logged,
+    ):
+        tx.welcome_student(student.email)  # a hook never breaks what triggered it
+    deliver.assert_not_called()
+    logged.assert_called_once()
+
+
+def test_a_send_inside_a_fan_out_does_not_look_the_language_up_again(tenant_ctx, tr_site, student):
+    from apps.core import languages
+
+    email = tx.welcome("Glow", "https://glow.test")
+    with (
+        patch("apps.core.email.send_email"),
+        patch.object(languages, "site_language", wraps=languages.site_language) as look,
+        languages.site_language_context(),
+    ):
+        for _n in range(3):
+            tx.send(student.email, email, tenant_ctx)
+    assert look.call_count == 1
+
+
+def test_a_test_send_changes_only_the_email_language_not_her_replies(tenant_ctx, tr_site):
+    owner = _owner(tenant_ctx)
+    draft = EmailCampaign.objects.create(status=CampaignStatus.DRAFT, subject="S", design=FOOTER_DESIGN, sender=owner)
+    seen = []
+    with patch("apps.email_campaigns.tasks.send_one", side_effect=lambda *a, **k: seen.append(get_language()) or True):
+        response = _studio_call(campaign_views.campaign_test, owner, pk=draft.pk)
+    assert response.status_code == 200 and seen == ["tr"]
+    cache.set(f"email-tests:{connection.schema_name}:{owner.pk}:{datetime.now(UTC):%Y%m%d%H}", 99, 3600)
+    with override("en"):
+        assert _studio_call(campaign_views.campaign_test, owner, pk=draft.pk).status_code == 429

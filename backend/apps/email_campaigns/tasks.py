@@ -4,11 +4,10 @@ from celery import shared_task
 from django.db.models import F
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.utils.translation import override
 from django_tenants.utils import get_tenant_model, tenant_context
 
 from apps.core.email import send_email
-from apps.core.languages import site_language
+from apps.core.languages import site_language_context
 
 logger = logging.getLogger(__name__)
 
@@ -180,7 +179,7 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
         if tenant.plan and tenant.plan.max_campaign_emails:
             remaining_quota = max(tenant.plan.max_campaign_emails - usage.emails_sent, 0)
 
-        with tenant_context(tenant), override(site_language()):  # students read it in the site's language
+        with tenant_context(tenant), site_language_context():  # students read it in the site's language
             from apps.email_campaigns.models import CampaignRecipient, CampaignStatus, EmailCampaign, RecipientStatus
             from apps.notifications.email_render import unsubscribe_url
 
