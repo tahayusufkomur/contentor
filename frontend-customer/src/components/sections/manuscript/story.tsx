@@ -12,11 +12,13 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Coach preface formatted as a literary opening: running head, Spectral heading,
  *  drop cap on the first paragraph, long-form reading measure, coach signature,
  *  and framed plate illustrations. */
 export function StoryPreface({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
@@ -37,7 +39,7 @@ export function StoryPreface({ block, editable }: SectionProps) {
             block={block}
             field="signature"
             editable={editable}
-            placeholder="Your name"
+            placeholder={t("placeholder.yourName")}
           />
         </p>
       )}
@@ -52,7 +54,7 @@ export function StoryPreface({ block, editable }: SectionProps) {
               block={block}
               field="ctaLabel"
               editable={editable}
-              placeholder="Link text"
+              placeholder={t("placeholder.linkText")}
             />
             <Arrow />
           </SmartLink>
@@ -62,7 +64,7 @@ export function StoryPreface({ block, editable }: SectionProps) {
   );
 
   return (
-    <Section tone="paper" label={alt || "Preface"}>
+    <Section tone="paper" label={alt || t("manuscript.preface")}>
       <div className={WRAP}>
         {/* Section Header */}
         <div className="mx-auto mb-12 max-w-[42rem] text-center">
@@ -72,7 +74,7 @@ export function StoryPreface({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(H2, "mt-4 block")}
           />
           <div className="mt-5 flex justify-center">

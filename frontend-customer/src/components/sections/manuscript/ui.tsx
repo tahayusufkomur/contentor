@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import type { Block } from "@/types/tenant";
 import type { EditableContext } from "@/lib/blocks/types";
 import { Txt, has } from "../kit";
+import { useTranslations } from "next-intl";
 
 /** Inner measure every manuscript section aligns to. */
 export const WRAP = "mx-auto w-full max-w-[76rem] px-5 md:px-8";
@@ -134,6 +135,7 @@ export function Kicker({
   editable?: EditableContext;
   className?: string;
 }) {
+  const t = useTranslations("site");
   if (!has(block, "kicker", editable)) return null;
   return (
     <RunningHead className={className}>
@@ -142,7 +144,7 @@ export function Kicker({
         field="kicker"
         editable={editable}
         as="span"
-        placeholder="Kicker"
+        placeholder={t("placeholder.kicker")}
       />
     </RunningHead>
   );
@@ -197,6 +199,7 @@ export function Opener({
   className?: string;
   align?: "center" | "split";
 }) {
+  const t = useTranslations("site");
   if (align === "split") {
     return (
       <div
@@ -209,7 +212,7 @@ export function Opener({
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(H2, "mt-3 block max-w-[22ch]")}
           />
         </div>
@@ -219,7 +222,7 @@ export function Opener({
             field={field}
             editable={editable}
             as="p"
-            placeholder="Intro"
+            placeholder={t("placeholder.intro")}
             className="block max-w-[42ch] self-end text-pretty text-[1.05rem] leading-[1.75] text-muted-foreground lg:col-span-4 lg:col-start-9"
           />
         )}
@@ -235,7 +238,7 @@ export function Opener({
         field="heading"
         editable={editable}
         as="h2"
-        placeholder="Heading"
+        placeholder={t("placeholder.heading")}
         className={cn(H2, "mt-4 block")}
       />
       {field && has(block, field, editable) && (
@@ -244,7 +247,7 @@ export function Opener({
           field={field}
           editable={editable}
           as="p"
-          placeholder="Intro"
+          placeholder={t("placeholder.intro")}
           className="mt-4 block text-pretty text-[1.05rem] leading-[1.75] text-muted-foreground"
         />
       )}

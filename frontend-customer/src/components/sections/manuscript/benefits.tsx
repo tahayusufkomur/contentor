@@ -11,11 +11,13 @@ import {
   str,
   toRoman,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Item = { title?: string; text?: string };
 
 /** Benefits formatted as book chapter openings with Roman numerals and hairlines. */
 export function BenefitsChapters({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<Item>(block, "items");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -32,7 +34,9 @@ export function BenefitsChapters({ block, editable }: SectionProps) {
           key={i}
           className="manuscript-chapter flex flex-col border-t border-border pt-5"
         >
-          <p className={cn(LABEL, "text-accent")}>Chapter {toRoman(i + 1)}</p>
+          <p className={cn(LABEL, "text-accent")}>
+            {t("manuscript.chapter", { number: toRoman(i + 1) })}
+          </p>
           <h3
             className={cn(
               H3,
@@ -52,7 +56,7 @@ export function BenefitsChapters({ block, editable }: SectionProps) {
   );
 
   return (
-    <Section tone="surface" label={alt || "Chapters"}>
+    <Section tone="surface" label={alt || t("manuscript.chapters")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
         <DoubleRule className="my-12" />

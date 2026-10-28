@@ -2,30 +2,32 @@ import { cn } from "@/lib/utils";
 import { ContactForm, Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { DoubleRule, Fleuron, H2, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Correspondence contact page styled as a formal letter to the reader
  *  with epistolary postscript and stationery dispatch form. */
 export function ContactLetter({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showForm = block.showForm !== false;
   const email = str(block.email);
 
   const rows: { field: string; label: string }[] = [
-    { field: "email", label: "Email" },
-    { field: "location", label: "Desk / Study" },
-    { field: "hours", label: "Response" },
+    { field: "email", label: t("contact.email") },
+    { field: "location", label: t("manuscript.deskStudy") },
+    { field: "hours", label: t("manuscript.response") },
   ].filter((r) => has(block, r.field, editable));
 
   return (
-    <Section tone="paper" label={alt || "Correspondence"}>
+    <Section tone="paper" label={alt || t("manuscript.correspondence")}>
       <div className={WRAP}>
         <div className="manuscript-frame mx-auto max-w-[50rem] bg-background p-7 sm:p-12 md:p-16">
           {/* Letterhead */}
           <Kicker block={block} editable={editable} />
 
           <p className="mt-6 font-display text-[1.4rem] italic text-accent">
-            Dear Reader,
+            {t("manuscript.dearReader")}
           </p>
 
           <Txt
@@ -33,7 +35,7 @@ export function ContactLetter({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(
               H2,
               "mt-3 block text-[clamp(1.8rem,1.4rem+1.8vw,3rem)] leading-[1.12]",
@@ -45,7 +47,7 @@ export function ContactLetter({ block, editable }: SectionProps) {
             field="text"
             editable={editable}
             as="p"
-            placeholder="Text"
+            placeholder={t("placeholder.text")}
             className="mt-5 block text-pretty text-[1.05rem] leading-[1.8] text-muted-foreground"
           />
 
@@ -66,7 +68,7 @@ export function ContactLetter({ block, editable }: SectionProps) {
           {rows.length > 0 && (
             <div className="mt-8 border-t border-border pt-6">
               <p className="manuscript-small-caps mb-3 text-xs font-semibold text-accent">
-                P.S. — Particulars
+                {t("manuscript.particulars")}
               </p>
               <dl className="space-y-2.5">
                 {rows.map((r) => (
@@ -103,7 +105,7 @@ export function ContactLetter({ block, editable }: SectionProps) {
           {showForm && (
             <div className="mt-8">
               <p className="manuscript-small-caps mb-4 text-xs font-semibold text-accent">
-                Reply by Letter
+                {t("manuscript.replyByLetter")}
               </p>
               <ContactForm
                 className="manuscript-form space-y-6"

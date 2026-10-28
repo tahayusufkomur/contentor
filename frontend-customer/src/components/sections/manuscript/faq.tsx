@@ -2,16 +2,18 @@ import { cn } from "@/lib/utils";
 import { Txt, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { DoubleRule, Fleuron, H2, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type QA = { q?: string; a?: string };
 
 /** Course queries and FAQs formatted as footnote annotations with superscript
  *  index numerals and accordion definitions. */
 export function FaqNotes({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<QA>(block, "items");
 
   return (
-    <Section tone="paper" label={str(block.heading) || "Notes"}>
+    <Section tone="paper" label={str(block.heading) || t("manuscript.notes")}>
       <div className={WRAP}>
         <div className="grid gap-y-12 lg:grid-cols-12 lg:gap-x-12">
           {/* Header */}
@@ -27,7 +29,7 @@ export function FaqNotes({ block, editable }: SectionProps) {
                 field="heading"
                 editable={editable}
                 as="h2"
-                placeholder="Heading"
+                placeholder={t("placeholder.heading")}
                 className={cn(
                   H2,
                   "mt-3 block text-[clamp(1.8rem,1.4rem+1.8vw,3rem)] leading-[1.12]",
@@ -41,7 +43,7 @@ export function FaqNotes({ block, editable }: SectionProps) {
                 field="intro"
                 editable={editable}
                 as="p"
-                placeholder="Intro"
+                placeholder={t("placeholder.intro")}
                 className="mt-4 block max-w-[36ch] text-pretty text-[1.05rem] leading-[1.75] text-muted-foreground"
               />
             </div>

@@ -2,15 +2,17 @@ import { cn } from "@/lib/utils";
 import { Txt, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type QA = { q?: string; a?: string };
 
 /** Atelier consultation & FAQ accordion with delicate champagne hairlines and plus/minus toggles. */
 export function FaqConsult({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<QA>(block, "items");
 
   return (
-    <Section label={str(block.heading) || "Consultation"}>
+    <Section label={str(block.heading) || t("atelier.consultation")}>
       <div className={cn(WRAP, "grid gap-y-12 lg:grid-cols-12 lg:gap-x-10")}>
         <div className="lg:col-span-4">
           <div className="lg:sticky lg:top-28">
@@ -20,7 +22,7 @@ export function FaqConsult({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Consultation"
+              placeholder={t("atelier.consultation")}
               className={cn(
                 H2,
                 "mt-4 block text-[clamp(1.8rem,1.35rem+1.8vw,3.2rem)] leading-[1.08]",
@@ -31,7 +33,7 @@ export function FaqConsult({ block, editable }: SectionProps) {
               field="intro"
               editable={editable}
               as="p"
-              placeholder="Intro"
+              placeholder={t("placeholder.intro")}
               className="mt-5 block max-w-[38ch] text-pretty text-[1.05rem] leading-[1.7] text-muted-foreground"
             />
           </div>

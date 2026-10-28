@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Fleuron, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 function quoteSize(len: number) {
   if (len <= 80)
@@ -14,11 +15,12 @@ function quoteSize(len: number) {
 /** Philosophy epigraph: centred italic quote with a hairline rule,
  *  small-caps running head, attribution, and an optional landscape plate. */
 export function PhilosophyEpigraph({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="surface" label="Philosophy">
+    <Section tone="surface" label={t("sectionLabel.philosophy")}>
       <div className={WRAP}>
         <div className="mx-auto max-w-[42rem] text-center">
           <Kicker block={block} editable={editable} />
@@ -29,7 +31,7 @@ export function PhilosophyEpigraph({ block, editable }: SectionProps) {
               field="statement"
               editable={editable}
               as="p"
-              placeholder="Statement"
+              placeholder={t("placeholder.statement")}
               className={cn(
                 "block text-balance break-words font-display font-light italic text-foreground",
                 quoteSize(statement.length),
@@ -49,7 +51,7 @@ export function PhilosophyEpigraph({ block, editable }: SectionProps) {
                 block={block}
                 field="attribution"
                 editable={editable}
-                placeholder="Attribution"
+                placeholder={t("placeholder.attribution")}
               />
             </p>
           )}
@@ -64,7 +66,7 @@ export function PhilosophyEpigraph({ block, editable }: SectionProps) {
             <div className="manuscript-plate">
               <Img
                 value={block.image}
-                alt={statement.slice(0, 100) || "Atmosphere"}
+                alt={statement.slice(0, 100) || t("manuscript.atmosphere")}
                 className="aspect-[16/9] w-full"
               />
             </div>

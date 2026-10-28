@@ -15,17 +15,19 @@ import {
   pad2,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** How it works soundcheck: steps styled as mixer channels with LED indicators, channel labels and boxed borders. */
 export function HowItWorksSoundcheck({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section label={alt || "How it works"}>
+    <Section label={alt || t("sectionLabel.howItWorks")}>
       <div className={WRAP}>
         {showImage ? (
           <div
@@ -41,7 +43,7 @@ export function HowItWorksSoundcheck({ block, editable }: SectionProps) {
                 field="heading"
                 editable={editable}
                 as="h2"
-                placeholder="Heading"
+                placeholder={t("placeholder.heading")}
                 className={cn(H2, "mt-4 block max-w-[18ch]")}
               />
               <Txt
@@ -49,7 +51,7 @@ export function HowItWorksSoundcheck({ block, editable }: SectionProps) {
                 field="intro"
                 editable={editable}
                 as="p"
-                placeholder="Intro"
+                placeholder={t("placeholder.intro")}
                 className="mt-6 block max-w-[44ch] text-pretty text-[1.02rem] leading-[1.6] text-muted-foreground"
               />
             </div>
@@ -90,7 +92,9 @@ export function HowItWorksSoundcheck({ block, editable }: SectionProps) {
                 )}
               </div>
               <h3 className={cn(H3, "mt-auto pt-8 text-[1.2rem] uppercase")}>
-                <span className="sr-only">{`Step ${i + 1}: `}</span>
+                <span className="sr-only">
+                  {t("step.labelColon", { number: i + 1 })}{" "}
+                </span>
                 {s.title}
               </h3>
               <p className="mt-2 text-[0.92rem] leading-[1.55] text-muted-foreground">

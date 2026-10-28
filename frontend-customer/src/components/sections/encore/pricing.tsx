@@ -10,17 +10,22 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { BOX, H2, LABEL, Opener, Section, WRAP, pad2 } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Pricing passes: membership tiers styled as backstage passes with bold rates, interval tags and box frames. */
 export function PricingPasses({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.pricing")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -65,7 +70,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
 
                 {!!plan.item_count && (
                   <p className={cn(LABEL, "mt-4 text-muted-foreground")}>
-                    {plan.item_count} {plan.item_count === 1 ? "item" : "items"}
+                    {t("plan.items", { count: plan.item_count })}
                   </p>
                 )}
 
@@ -78,7 +83,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                 <div className="mt-auto pt-8">
                   {plan.is_subscribed ? (
                     <p className="inline-flex min-h-12 w-full items-center justify-center border-[3px] border-foreground font-display text-[0.78rem] font-bold uppercase tracking-[0.04em]">
-                      Subscribed
+                      {t("plan.subscribed")}
                     </p>
                   ) : (
                     <SubscribeButton
@@ -95,7 +100,7 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
                     href={`/plans/${plan.id}`}
                     className="encore-link mt-4 block w-fit text-[0.9rem] font-semibold"
                   >
-                    See what&rsquo;s included
+                    {t("plan.seeIncluded")}
                   </SmartLink>
                 </div>
               </li>
@@ -105,8 +110,8 @@ export function PricingPasses({ block, data, editable }: SectionProps) {
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a plan under Billing and it appears here."
+              title={t("empty.plans.title")}
+              text={t("empty.plans.text")}
             />
           </div>
         )}

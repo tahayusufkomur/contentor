@@ -9,16 +9,17 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Diamond, Divider, H3, LABEL, Opener, Section, WRAP, str } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Membership and tiered packages presented as a refined atelier treatment menu. */
 export function PricingMenu({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
 
   return (
-    <Section label={str(block.heading) || "Membership"}>
+    <Section label={str(block.heading) || t("atelier.membership")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} align="center" />
 
@@ -48,9 +49,9 @@ export function PricingMenu({ block, data, editable }: SectionProps) {
                       )}
                       {!!plan.item_count && (
                         <p className={cn(LABEL, "mt-3 text-muted-foreground")}>
-                          {plan.item_count}{" "}
-                          {plan.item_count === 1 ? "treatment" : "treatments"}{" "}
-                          included
+                          {t("atelier.treatmentsIncluded", {
+                            count: plan.item_count,
+                          })}
                         </p>
                       )}
                     </div>
@@ -68,7 +69,7 @@ export function PricingMenu({ block, data, editable }: SectionProps) {
                       <div className="mt-5 w-full sm:max-w-xs">
                         {plan.is_subscribed ? (
                           <p className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-primary text-[0.92rem] font-medium text-primary">
-                            Subscribed
+                            {t("plan.subscribed")}
                           </p>
                         ) : (
                           <SubscribeButton
@@ -84,7 +85,7 @@ export function PricingMenu({ block, data, editable }: SectionProps) {
                           href={`/plans/${plan.id}`}
                           className="atelier-link mt-3 block text-center text-[0.85rem] font-medium text-muted-foreground hover:text-foreground md:text-right"
                         >
-                          See details
+                          {t("atelier.seeDetails")}
                         </SmartLink>
                       </div>
                     </div>
@@ -97,8 +98,8 @@ export function PricingMenu({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No membership plans yet"
-              text="Create a plan under Billing and it appears here in the menu."
+              title={t("empty.plans.title")}
+              text={t("atelier.emptyPlansText")}
             />
           </div>
         )}

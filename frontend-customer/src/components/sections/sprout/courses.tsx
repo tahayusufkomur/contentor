@@ -23,6 +23,7 @@ import {
   WRAP,
   getSproutTint,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Course catalogue presented as a colourful activity tile grid with
  *  lesson chips and price bubbles. */
@@ -31,6 +32,7 @@ export function CourseShowcaseActivities({
   data,
   editable,
 }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
@@ -41,7 +43,7 @@ export function CourseShowcaseActivities({
       label={
         typeof block.heading === "string"
           ? block.heading
-          : "Activities & Courses"
+          : t("sprout.activitiesAndCourses")
       }
     >
       <div className={WRAP}>
@@ -83,8 +85,7 @@ export function CourseShowcaseActivities({
                             "bg-background/90 text-foreground shadow-sm backdrop-blur-sm",
                           )}
                         >
-                          {c.lesson_count}{" "}
-                          {c.lesson_count === 1 ? "lesson" : "lessons"}
+                          {t("course.lessons", { count: c.lesson_count })}
                         </span>
                       </div>
                     ) : null}
@@ -119,7 +120,7 @@ export function CourseShowcaseActivities({
                   </div>
 
                   <span className="inline-flex items-center gap-1.5 font-display text-[0.92rem] font-bold text-primary transition-transform motion-safe:group-hover:translate-x-1">
-                    <span>Explore</span>
+                    <span>{t("sprout.explore")}</span>
                     <Arrow className="size-3.5" />
                   </span>
                 </div>
@@ -130,8 +131,8 @@ export function CourseShowcaseActivities({
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No published activities yet"
-              text="Publish a course or program and it will appear here."
+              title={t("sprout.emptyCoursesTitle")}
+              text={t("sprout.emptyCoursesText")}
             />
           </div>
         )}
@@ -144,10 +145,10 @@ export function CourseShowcaseActivities({
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "See all activities"
+                t("sprout.allActivities")
               )}
               <Arrow />
             </SmartLink>

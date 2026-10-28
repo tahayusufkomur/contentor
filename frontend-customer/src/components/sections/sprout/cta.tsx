@@ -14,10 +14,12 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Call-to-action on an inverse band framed with an organic wave edge
  *  and big friendly round button. */
 export function CtaJoin({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -29,7 +31,7 @@ export function CtaJoin({ block, editable }: SectionProps) {
       <Section
         tone="inverse"
         className="py-14 md:py-20 lg:py-24"
-        label={alt || "Join us"}
+        label={alt || t("sprout.joinUs")}
       >
         {/* Playful background doodles. The sun stays inside the band's top
             padding at every width, so it never sits on the copy. */}
@@ -67,7 +69,7 @@ export function CtaJoin({ block, editable }: SectionProps) {
                 field="heading"
                 editable={editable}
                 as="h2"
-                placeholder="Heading"
+                placeholder={t("placeholder.heading")}
                 className={cn(
                   H2,
                   "mt-4 block text-[color:var(--inverse-foreground)]",
@@ -80,7 +82,7 @@ export function CtaJoin({ block, editable }: SectionProps) {
                 field="text"
                 editable={editable}
                 as="p"
-                placeholder="Text"
+                placeholder={t("placeholder.text")}
                 className={cn(
                   "mt-4 block text-pretty text-[1.1rem] leading-[1.7] text-muted-foreground",
                   showImage ? "max-w-[46ch]" : "mx-auto max-w-[50ch]",
@@ -99,7 +101,7 @@ export function CtaJoin({ block, editable }: SectionProps) {
                       block={block}
                       field="ctaLabel"
                       editable={editable}
-                      placeholder="Button text"
+                      placeholder={t("placeholder.buttonText")}
                     />
                     <Arrow />
                   </SmartLink>

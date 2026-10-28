@@ -12,16 +12,18 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Coach story intro with organic photo blob, rich personal narrative,
  *  and a friendly handwritten-style sign-off in Fredoka. */
 export function StoryHello({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
   const showMain = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="surface" label={alt || "About me"}>
+    <Section tone="surface" label={alt || t("sprout.aboutMe")}>
       <div className={WRAP}>
         <div className="grid items-center gap-y-12 md:grid-cols-12 md:gap-x-10 lg:gap-x-14">
           {/* Photos column */}
@@ -66,7 +68,7 @@ export function StoryHello({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(H2, "mt-4 block max-w-[20ch]")}
             />
 
@@ -86,7 +88,7 @@ export function StoryHello({ block, editable }: SectionProps) {
                     block={block}
                     field="signature"
                     editable={editable}
-                    placeholder="Your name"
+                    placeholder={t("placeholder.yourName")}
                   />
                 </p>
               </div>
@@ -102,7 +104,7 @@ export function StoryHello({ block, editable }: SectionProps) {
                     block={block}
                     field="ctaLabel"
                     editable={editable}
-                    placeholder="Link text"
+                    placeholder={t("placeholder.linkText")}
                   />
                   <Arrow />
                 </SmartLink>

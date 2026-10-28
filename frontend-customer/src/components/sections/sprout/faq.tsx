@@ -2,18 +2,20 @@ import { cn } from "@/lib/utils";
 import { Txt, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type QA = { q?: string; a?: string };
 
 /** FAQs laid out in pill-shaped rounded accordion rows; a round plus turns
  *  into a close mark on the open one. */
 export function FaqAskaway({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<QA>(block, "items");
 
   return (
     <Section
       tone="paper"
-      label={str(block.heading) || "Frequently Asked Questions"}
+      label={str(block.heading) || t("sprout.frequentlyAsked")}
     >
       <div className={cn(WRAP, "grid gap-y-12 lg:grid-cols-12 lg:gap-x-12")}>
         {/* Sticky Left Column: Opener */}
@@ -25,7 +27,7 @@ export function FaqAskaway({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(
                 H2,
                 "mt-4 block text-[clamp(1.85rem,1.4rem+1.8vw,3rem)] leading-[1.12]",
@@ -36,7 +38,7 @@ export function FaqAskaway({ block, editable }: SectionProps) {
               field="intro"
               editable={editable}
               as="p"
-              placeholder="Intro"
+              placeholder={t("placeholder.intro")}
               className="mt-4 block max-w-[40ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
             />
           </div>

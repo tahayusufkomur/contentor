@@ -13,10 +13,12 @@ import {
   WashiTape,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Maker story: warm craft portrait with washi tape on the left, long story
  *  with a handwritten Caveat sign-off and link. */
 export function StoryMaker({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -66,7 +68,7 @@ export function StoryMaker({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(H2, "mt-3 block max-w-[20ch]")}
             />
             <Rich
@@ -83,7 +85,7 @@ export function StoryMaker({ block, editable }: SectionProps) {
                     block={block}
                     field="signature"
                     editable={editable}
-                    placeholder="Your signature (name)"
+                    placeholder={t("workshop.signature")}
                   />
                 </p>
               </div>
@@ -98,7 +100,7 @@ export function StoryMaker({ block, editable }: SectionProps) {
                     block={block}
                     field="ctaLabel"
                     editable={editable}
-                    placeholder="Link text"
+                    placeholder={t("placeholder.linkText")}
                   />
                   <HandArrow />
                 </SmartLink>

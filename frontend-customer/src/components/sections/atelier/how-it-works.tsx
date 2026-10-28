@@ -3,11 +3,13 @@ import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { makeHowRow } from "../how-layouts";
 import { ARCH, ArchFrame, H3, Opener, Section, WRAP, pad2, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** Step-by-step guidance formatted as a daily beauty & skincare routine thread. */
 export function HowItWorksRoutine({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -28,7 +30,9 @@ export function HowItWorksRoutine({ block, editable }: SectionProps) {
             <h3
               className={cn(H3, "text-[1.3rem] leading-snug md:text-[1.45rem]")}
             >
-              <span className="sr-only">{`Step ${i + 1}: `}</span>
+              <span className="sr-only">
+                {t("step.labelColon", { number: i + 1 })}{" "}
+              </span>
               {s.title}
             </h3>
             {s.text && (
@@ -43,7 +47,7 @@ export function HowItWorksRoutine({ block, editable }: SectionProps) {
   );
 
   return (
-    <Section label={alt || "Routine"}>
+    <Section label={alt || t("atelier.routine")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
 
@@ -68,13 +72,16 @@ export function HowItWorksRoutine({ block, editable }: SectionProps) {
   );
 }
 
+/** Step text classes handed to the shared how-it-works layout. */
+const STEP_TEXT = "text-[0.98rem] leading-[1.7] text-muted-foreground";
+
 /** The routine as three columns: a large italic numeral over each step, a hairline above. */
 export const HowItWorksRoutineRow = makeHowRow({
   Section,
   wrap: WRAP,
   Opener,
   h3: H3,
-  text: "text-[0.98rem] leading-[1.7] text-muted-foreground",
+  text: STEP_TEXT,
   num: "font-display text-[2.6rem] italic leading-none text-accent",
   rule: "border-border",
   photo: ARCH,

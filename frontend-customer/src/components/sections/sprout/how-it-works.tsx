@@ -3,6 +3,7 @@ import { Img, imageUrl, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { makeHowTimeline } from "../how-layouts";
 import { BlobImage, H3, Opener, Section, WRAP, getSproutTint, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
@@ -10,12 +11,13 @@ const ROTATIONS = ["-6deg", "6deg", "-4deg", "5deg"];
 
 /** Step-by-step winding path through numbered round bubbles and chunky cards. */
 export function HowItWorksSteps({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="paper" label={alt || "How it works"}>
+    <Section tone="paper" label={alt || t("sectionLabel.howItWorks")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} align="left" />
 
@@ -66,7 +68,7 @@ export function HowItWorksSteps({ block, editable }: SectionProps) {
                       {i + 1}
                     </span>
                     <span className="text-[0.8rem] font-bold uppercase tracking-wider text-muted-foreground">
-                      Step {i + 1}
+                      {t("step.label", { number: i + 1 })}
                     </span>
                   </div>
 
@@ -94,13 +96,16 @@ export function HowItWorksSteps({ block, editable }: SectionProps) {
   );
 }
 
+/** Step text classes handed to the shared how-it-works layout. */
+const STEP_TEXT = "text-[1rem] leading-[1.7] text-muted-foreground";
+
 /** A friendly trail: round yellow numbered bubbles down a dashed path. */
 export const HowItWorksTrail = makeHowTimeline({
   Section,
   wrap: WRAP,
   Opener,
   h3: H3,
-  text: "text-[1rem] leading-[1.7] text-muted-foreground",
+  text: STEP_TEXT,
   dot: "bg-accent font-display font-bold text-accent-foreground shadow-md",
   rail: "before:w-0 before:border-l-[3px] before:border-dashed before:border-primary/40",
   photo: "sprout-blob-1 overflow-hidden shadow-lg",

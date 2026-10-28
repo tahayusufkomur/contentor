@@ -2,22 +2,24 @@ import { cn } from "@/lib/utils";
 import { ContactForm, Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, Polaroid, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Studio visit card (location, hours, email) and workshop inquiry slip. */
 export function ContactVisit({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showForm = block.showForm !== false;
   const email = str(block.email);
 
   const rows: { field: string; label: string }[] = [
-    { field: "email", label: "Email" },
-    { field: "location", label: "Studio Bench" },
-    { field: "hours", label: "Studio Hours" },
+    { field: "email", label: t("contact.email") },
+    { field: "location", label: t("workshop.studioBench") },
+    { field: "hours", label: t("workshop.studioHours") },
   ].filter((r) => has(block, r.field, editable));
 
   return (
-    <Section tone="kraft" label={alt || "Contact"}>
+    <Section tone="kraft" label={alt || t("sectionLabel.contact")}>
       <div className={cn(WRAP, "grid gap-y-12 lg:grid-cols-12 lg:gap-x-12")}>
         <div className={showForm ? "lg:col-span-5" : "lg:col-span-7"}>
           <Kicker block={block} editable={editable} />
@@ -26,7 +28,7 @@ export function ContactVisit({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(
               H2,
               "mt-3 block max-w-[18ch] text-[clamp(1.9rem,1.4rem+1.9vw,3.2rem)] leading-[1.08]",
@@ -37,7 +39,7 @@ export function ContactVisit({ block, editable }: SectionProps) {
             field="text"
             editable={editable}
             as="p"
-            placeholder="Text"
+            placeholder={t("placeholder.text")}
             className="mt-5 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
           />
 
@@ -90,7 +92,7 @@ export function ContactVisit({ block, editable }: SectionProps) {
             <div className="workshop-seam rounded-[var(--radius)] border-2 border-dashed border-border bg-card p-6 sm:p-8 md:p-10 shadow-xs">
               <div className="mb-6 flex items-center justify-between border-b border-dashed border-border pb-3">
                 <span className="workshop-hand text-[1.25rem] font-bold text-accent">
-                  Studio Inquiry Slip
+                  {t("workshop.inquirySlip")}
                 </span>
               </div>
               <ContactForm

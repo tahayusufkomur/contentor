@@ -13,11 +13,13 @@ import {
   pad2,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** Step-by-step method styled as craft pattern pieces with handwritten step numbers. */
 export function HowItWorksSteps({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -34,7 +36,7 @@ export function HowItWorksSteps({ block, editable }: SectionProps) {
                 field="heading"
                 editable={editable}
                 as="h2"
-                placeholder="Heading"
+                placeholder={t("placeholder.heading")}
                 className={cn(H2, "mt-2 block max-w-[20ch]")}
               />
               <Txt
@@ -42,7 +44,7 @@ export function HowItWorksSteps({ block, editable }: SectionProps) {
                 field="intro"
                 editable={editable}
                 as="p"
-                placeholder="Intro"
+                placeholder={t("placeholder.intro")}
                 className="mt-5 block max-w-[46ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
               />
             </div>
@@ -74,10 +76,10 @@ export function HowItWorksSteps({ block, editable }: SectionProps) {
             >
               <div className="flex items-center justify-between gap-3 border-b border-dashed border-border pb-3">
                 <span className="workshop-hand text-[1.35rem] font-bold leading-none text-accent">
-                  Step {pad2(i)}
+                  {t("step.label", { number: pad2(i) })}
                 </span>
                 <span className="text-[0.78rem] font-bold uppercase tracking-wider text-muted-foreground">
-                  Part {String.fromCharCode(65 + i)}
+                  {t("workshop.part", { letter: String.fromCharCode(65 + i) })}
                 </span>
               </div>
 
@@ -87,7 +89,9 @@ export function HowItWorksSteps({ block, editable }: SectionProps) {
                   "mt-4 text-[1.25rem] leading-snug md:text-[1.35rem]",
                 )}
               >
-                <span className="sr-only">{`Step ${i + 1}: `}</span>
+                <span className="sr-only">
+                  {t("step.labelColon", { number: i + 1 })}{" "}
+                </span>
                 {s.title}
               </h3>
 

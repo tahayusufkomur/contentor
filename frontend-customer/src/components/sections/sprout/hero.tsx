@@ -18,12 +18,14 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 function Actions({
   block,
   editable,
   className,
 }: SectionProps & { className?: string }) {
+  const t = useTranslations("site");
   const primary = has(block, "ctaLabel", editable);
   const secondary = has(block, "secondaryLabel", editable);
   if (!primary && !secondary) return null;
@@ -35,7 +37,7 @@ function Actions({
             block={block}
             field="ctaLabel"
             editable={editable}
-            placeholder="Button text"
+            placeholder={t("placeholder.buttonText")}
           />
           <Arrow />
         </SmartLink>
@@ -49,7 +51,7 @@ function Actions({
             block={block}
             field="secondaryLabel"
             editable={editable}
-            placeholder="Second button"
+            placeholder={t("placeholder.secondButton")}
           />
         </SmartLink>
       )}
@@ -68,6 +70,7 @@ const phoneTile = (n: number, count: number) =>
 /** The mosaic: a friendly centred welcome over a cluster of up to four
  *  photos cut as blobs, a circle and a soft square, on a pale yellow cloud. */
 export function HeroMosaic({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const photos = heroPhotos(block, editable);
   const shapes = [
@@ -97,7 +100,7 @@ export function HeroMosaic({ block, editable }: SectionProps) {
           field="headline"
           editable={editable}
           as="h1"
-          placeholder="Headline"
+          placeholder={t("placeholder.headline")}
           className={cn(H1, "mx-auto mt-4 block max-w-[18ch] text-foreground")}
         />
         <Txt
@@ -105,7 +108,7 @@ export function HeroMosaic({ block, editable }: SectionProps) {
           field="subhead"
           editable={editable}
           as="p"
-          placeholder="Subheadline"
+          placeholder={t("placeholder.subheadline")}
           className="mx-auto mt-6 block max-w-[50ch] text-pretty text-[1.125rem] leading-[1.65] text-muted-foreground md:text-[1.2rem]"
         />
         {has(block, "meta", editable) && (
@@ -115,7 +118,7 @@ export function HeroMosaic({ block, editable }: SectionProps) {
               block={block}
               field="meta"
               editable={editable}
-              placeholder="Small line (e.g. format or ages)"
+              placeholder={t("placeholder.smallLineFormatAges")}
             />
           </div>
         )}
@@ -176,6 +179,7 @@ export function HeroMosaic({ block, editable }: SectionProps) {
 /** The signature hero: warm family room playground with organic photo blobs,
  *  playful hand-drawn doodles, and reassuring rounded typography. */
 export function HeroPlayground({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
   const showMain = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -217,7 +221,7 @@ export function HeroPlayground({ block, editable }: SectionProps) {
               field="headline"
               editable={editable}
               as="h1"
-              placeholder="Headline"
+              placeholder={t("placeholder.headline")}
               className={cn(
                 H1,
                 "mt-4 block text-foreground",
@@ -230,7 +234,7 @@ export function HeroPlayground({ block, editable }: SectionProps) {
               field="subhead"
               editable={editable}
               as="p"
-              placeholder="Subheadline"
+              placeholder={t("placeholder.subheadline")}
               className={cn(
                 "mt-6 block text-pretty text-[1.125rem] leading-[1.65] text-muted-foreground md:text-[1.2rem]",
                 showMain ? "max-w-[44ch]" : "mx-auto max-w-[50ch]",
@@ -249,7 +253,7 @@ export function HeroPlayground({ block, editable }: SectionProps) {
                   block={block}
                   field="meta"
                   editable={editable}
-                  placeholder="Small line (e.g. format or ages)"
+                  placeholder={t("placeholder.smallLineFormatAges")}
                 />
               </div>
             )}
@@ -304,6 +308,7 @@ export function HeroPlayground({ block, editable }: SectionProps) {
 /** Inner-page header: compact and welcoming with friendly sentence-case title
  *  and optional small photo blob. */
 export function HeroIntro({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -322,7 +327,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="headline"
               editable={editable}
               as="h1"
-              placeholder="Page title"
+              placeholder={t("placeholder.pageTitle")}
               className="mt-4 block max-w-[20ch] text-balance break-words font-display text-[clamp(2.2rem,1.4rem+3.2vw,4.4rem)] font-semibold leading-[1.1]"
             />
             <Txt
@@ -330,7 +335,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
               field="subhead"
               editable={editable}
               as="p"
-              placeholder="Subheadline"
+              placeholder={t("placeholder.subheadline")}
               className="mt-4 block max-w-[46ch] text-pretty text-[1.1rem] leading-[1.65] text-muted-foreground"
             />
             {has(block, "meta", editable) && (
@@ -340,7 +345,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
                   block={block}
                   field="meta"
                   editable={editable}
-                  placeholder="Small line"
+                  placeholder={t("placeholder.smallLine")}
                 />
               </div>
             )}

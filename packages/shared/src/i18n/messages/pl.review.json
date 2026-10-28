@@ -155,6 +155,14 @@
     "src": "496e9438",
     "reviewed": false
   },
+  "site.sectionLabel.benefits": {
+    "src": "927f4067",
+    "reviewed": false
+  },
+  "site.sectionLabel.howItWorks": {
+    "src": "1dd6a17c",
+    "reviewed": false
+  },
   "site.contact.email": {
     "src": "84add5b2",
     "reviewed": false
@@ -221,6 +229,10 @@
   },
   "site.event.onlineLive": {
     "src": "1ef6804c",
+    "reviewed": false
+  },
+  "site.event.reserveSpot": {
+    "src": "f3825067",
     "reviewed": false
   },
   "site.plan.subscribe": {
@@ -293,6 +305,10 @@
   },
   "site.step.label": {
     "src": "4dc54f80",
+    "reviewed": false
+  },
+  "site.step.labelColon": {
+    "src": "2ec6d40d",
     "reviewed": false
   },
   "site.rows.emptyCoursesText": {
@@ -553,6 +569,438 @@
   },
   "site.ledger.re": {
     "src": "e39422d2",
+    "reviewed": false
+  },
+  "site.manuscript.chapters": {
+    "src": "034e2733",
+    "reviewed": false
+  },
+  "site.manuscript.deskStudy": {
+    "src": "f53e9279",
+    "reviewed": false
+  },
+  "site.manuscript.response": {
+    "src": "6e617e4f",
+    "reviewed": false
+  },
+  "site.manuscript.correspondence": {
+    "src": "f3eecae0",
+    "reviewed": false
+  },
+  "site.manuscript.dearReader": {
+    "src": "d57e00fb",
+    "reviewed": false
+  },
+  "site.manuscript.particulars": {
+    "src": "a0449c1a",
+    "reviewed": false
+  },
+  "site.manuscript.replyByLetter": {
+    "src": "c78c1038",
+    "reviewed": false
+  },
+  "site.manuscript.tableOfContents": {
+    "src": "9730d432",
+    "reviewed": false
+  },
+  "site.manuscript.emptyCoursesText": {
+    "src": "d69a29d0",
+    "reviewed": false
+  },
+  "site.manuscript.viewCatalogue": {
+    "src": "6f5cd172",
+    "reviewed": false
+  },
+  "site.manuscript.invitation": {
+    "src": "6306ef74",
+    "reviewed": false
+  },
+  "site.manuscript.programmeOfReadings": {
+    "src": "1b4d5ce1",
+    "reviewed": false
+  },
+  "site.manuscript.reserveSeat": {
+    "src": "4e7f6148",
+    "reviewed": false
+  },
+  "site.manuscript.emptyEventsTitle": {
+    "src": "cb7cee6c",
+    "reviewed": false
+  },
+  "site.manuscript.emptyEventsText": {
+    "src": "29082348",
+    "reviewed": false
+  },
+  "site.manuscript.viewProgramme": {
+    "src": "2dfc5c6b",
+    "reviewed": false
+  },
+  "site.manuscript.notes": {
+    "src": "70440046",
+    "reviewed": false
+  },
+  "site.manuscript.authorLocation": {
+    "src": "6508f287",
+    "reviewed": false
+  },
+  "site.manuscript.process": {
+    "src": "12f4c13a",
+    "reviewed": false
+  },
+  "site.manuscript.galleryOfPlates": {
+    "src": "1c633384",
+    "reviewed": false
+  },
+  "site.manuscript.atmosphere": {
+    "src": "22102637",
+    "reviewed": false
+  },
+  "site.manuscript.subscriptions": {
+    "src": "5697fd85",
+    "reviewed": false
+  },
+  "site.manuscript.orderOfSubscription": {
+    "src": "afb2472e",
+    "reviewed": false
+  },
+  "site.manuscript.subscriptionTerms": {
+    "src": "a2ddcff3",
+    "reviewed": false
+  },
+  "site.manuscript.emptyPlansTitle": {
+    "src": "a2643b6c",
+    "reviewed": false
+  },
+  "site.manuscript.emptyPlansText": {
+    "src": "156d0c4d",
+    "reviewed": false
+  },
+  "site.manuscript.preface": {
+    "src": "707ddefd",
+    "reviewed": false
+  },
+  "site.manuscript.chapter": {
+    "src": "861749d5",
+    "reviewed": false
+  },
+  "site.manuscript.chapterColon": {
+    "src": "8dceb1d9",
+    "reviewed": false
+  },
+  "site.manuscript.plate": {
+    "src": "73de3b1e",
+    "reviewed": false
+  },
+  "site.manuscript.volumesIncluded": {
+    "src": "254fd961",
+    "reviewed": false
+  },
+  "site.sprout.sendMessage": {
+    "src": "dc2661ee",
+    "reviewed": false
+  },
+  "site.sprout.activitiesAndCourses": {
+    "src": "cf0cc7a9",
+    "reviewed": false
+  },
+  "site.sprout.explore": {
+    "src": "b965ae66",
+    "reviewed": false
+  },
+  "site.sprout.emptyCoursesTitle": {
+    "src": "a3720503",
+    "reviewed": false
+  },
+  "site.sprout.emptyCoursesText": {
+    "src": "560a6b7c",
+    "reviewed": false
+  },
+  "site.sprout.allActivities": {
+    "src": "a141e033",
+    "reviewed": false
+  },
+  "site.sprout.joinUs": {
+    "src": "077ec841",
+    "reviewed": false
+  },
+  "site.sprout.event": {
+    "src": "ad8919ac",
+    "reviewed": false
+  },
+  "site.sprout.playdatesAndEvents": {
+    "src": "836ddf6e",
+    "reviewed": false
+  },
+  "site.sprout.emptyEventsTitle": {
+    "src": "6fcb25f8",
+    "reviewed": false
+  },
+  "site.sprout.emptyEventsText": {
+    "src": "a5d361dc",
+    "reviewed": false
+  },
+  "site.sprout.seeFullCalendar": {
+    "src": "87343056",
+    "reviewed": false
+  },
+  "site.sprout.frequentlyAsked": {
+    "src": "d790b402",
+    "reviewed": false
+  },
+  "site.sprout.emptyPlansTitle": {
+    "src": "66a15466",
+    "reviewed": false
+  },
+  "site.sprout.emptyPlansText": {
+    "src": "54232331",
+    "reviewed": false
+  },
+  "site.sprout.aboutMe": {
+    "src": "e3ba4ef3",
+    "reviewed": false
+  },
+  "site.sprout.activitiesIncluded": {
+    "src": "22dd6609",
+    "reviewed": false
+  },
+  "site.workshop.studioBench": {
+    "src": "a5eabbec",
+    "reviewed": false
+  },
+  "site.workshop.studioHours": {
+    "src": "11950660",
+    "reviewed": false
+  },
+  "site.workshop.inquirySlip": {
+    "src": "69ab6e4b",
+    "reviewed": false
+  },
+  "site.workshop.emptyCoursesTitle": {
+    "src": "fdfc7d30",
+    "reviewed": false
+  },
+  "site.workshop.emptyCoursesText": {
+    "src": "1bee5431",
+    "reviewed": false
+  },
+  "site.workshop.makeThis": {
+    "src": "018eea5e",
+    "reviewed": false
+  },
+  "site.workshop.allProjects": {
+    "src": "9af42c90",
+    "reviewed": false
+  },
+  "site.workshop.sessionDate": {
+    "src": "3c2607b4",
+    "reviewed": false
+  },
+  "site.workshop.reserveBench": {
+    "src": "76857bf1",
+    "reviewed": false
+  },
+  "site.workshop.emptyEventsTitle": {
+    "src": "aa07a7ba",
+    "reviewed": false
+  },
+  "site.workshop.emptyEventsText": {
+    "src": "5fc9b9e0",
+    "reviewed": false
+  },
+  "site.workshop.fullStudioCalendar": {
+    "src": "3de17931",
+    "reviewed": false
+  },
+  "site.workshop.allKitMaterials": {
+    "src": "35d3bc44",
+    "reviewed": false
+  },
+  "site.workshop.emptyPlansTitle": {
+    "src": "75f5ccfc",
+    "reviewed": false
+  },
+  "site.workshop.emptyPlansText": {
+    "src": "b9e5dc6a",
+    "reviewed": false
+  },
+  "site.workshop.signature": {
+    "src": "a8d66d5e",
+    "reviewed": false
+  },
+  "site.workshop.projectsIncluded": {
+    "src": "1d83cc4c",
+    "reviewed": false
+  },
+  "site.workshop.kitNumber": {
+    "src": "f5193823",
+    "reviewed": false
+  },
+  "site.workshop.project": {
+    "src": "774bec65",
+    "reviewed": false
+  },
+  "site.workshop.part": {
+    "src": "3f93c2aa",
+    "reviewed": false
+  },
+  "site.encore.venue": {
+    "src": "67cd4061",
+    "reviewed": false
+  },
+  "site.encore.date": {
+    "src": "eb9a4bc1",
+    "reviewed": false
+  },
+  "site.encore.show": {
+    "src": "d97d1ee3",
+    "reviewed": false
+  },
+  "site.encore.online": {
+    "src": "c3e839df",
+    "reviewed": false
+  },
+  "site.encore.tickets": {
+    "src": "5c622a51",
+    "reviewed": false
+  },
+  "site.encore.allDates": {
+    "src": "69feaaf8",
+    "reviewed": false
+  },
+  "site.encore.photo": {
+    "src": "912f25bb",
+    "reviewed": false
+  },
+  "site.atelier.rituals": {
+    "src": "7b18078b",
+    "reviewed": false
+  },
+  "site.atelier.studioEmail": {
+    "src": "5e5bd60c",
+    "reviewed": false
+  },
+  "site.atelier.atelierAddress": {
+    "src": "2808fb90",
+    "reviewed": false
+  },
+  "site.atelier.consultationHours": {
+    "src": "4d137f8f",
+    "reviewed": false
+  },
+  "site.atelier.studioContact": {
+    "src": "73823feb",
+    "reviewed": false
+  },
+  "site.atelier.studioInquiries": {
+    "src": "e50f7a9f",
+    "reviewed": false
+  },
+  "site.atelier.reachOut": {
+    "src": "e0dedb91",
+    "reviewed": false
+  },
+  "site.atelier.treatments": {
+    "src": "10914a42",
+    "reviewed": false
+  },
+  "site.atelier.emptyCoursesTitle": {
+    "src": "4ec61689",
+    "reviewed": false
+  },
+  "site.atelier.emptyCoursesText": {
+    "src": "914ac3e1",
+    "reviewed": false
+  },
+  "site.atelier.allTreatments": {
+    "src": "d30756b9",
+    "reviewed": false
+  },
+  "site.atelier.scheduleAppointment": {
+    "src": "e503bc83",
+    "reviewed": false
+  },
+  "site.atelier.chooseTime": {
+    "src": "2fb431e2",
+    "reviewed": false
+  },
+  "site.atelier.bookAppointment": {
+    "src": "528d77f8",
+    "reviewed": false
+  },
+  "site.atelier.appointment": {
+    "src": "2d05c593",
+    "reviewed": false
+  },
+  "site.atelier.masterclasses": {
+    "src": "5f919729",
+    "reviewed": false
+  },
+  "site.atelier.emptyEventsTitle": {
+    "src": "18aa37ee",
+    "reviewed": false
+  },
+  "site.atelier.emptyEventsText": {
+    "src": "fbc2fd23",
+    "reviewed": false
+  },
+  "site.atelier.viewFullCalendar": {
+    "src": "a4fa1258",
+    "reviewed": false
+  },
+  "site.atelier.consultation": {
+    "src": "54b87b92",
+    "reviewed": false
+  },
+  "site.atelier.bookSession": {
+    "src": "bf464a0e",
+    "reviewed": false
+  },
+  "site.atelier.learnMore": {
+    "src": "824d76b1",
+    "reviewed": false
+  },
+  "site.atelier.studioLocationFormat": {
+    "src": "020b5acd",
+    "reviewed": false
+  },
+  "site.atelier.routine": {
+    "src": "482273d7",
+    "reviewed": false
+  },
+  "site.atelier.lookbook": {
+    "src": "3d3d2388",
+    "reviewed": false
+  },
+  "site.atelier.momentsLookbook": {
+    "src": "b6f2d2c3",
+    "reviewed": false
+  },
+  "site.atelier.membership": {
+    "src": "53bc9670",
+    "reviewed": false
+  },
+  "site.atelier.seeDetails": {
+    "src": "7e800abe",
+    "reviewed": false
+  },
+  "site.atelier.emptyPlansText": {
+    "src": "2b415af0",
+    "reviewed": false
+  },
+  "site.atelier.story": {
+    "src": "86b4ba2f",
+    "reviewed": false
+  },
+  "site.atelier.readMore": {
+    "src": "ad086cf5",
+    "reviewed": false
+  },
+  "site.atelier.ritualsCount": {
+    "src": "2e5de1b0",
+    "reviewed": false
+  },
+  "site.atelier.treatmentsIncluded": {
+    "src": "86ece242",
     "reviewed": false
   }
 }

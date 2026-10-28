@@ -12,11 +12,13 @@ import {
   pad2,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Item = { title?: string; text?: string };
 
 /** Benefits formatted as beauty and wellness rituals with champagne hairline dividers. */
 export function BenefitsRituals({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<Item>(block, "items");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -55,7 +57,7 @@ export function BenefitsRituals({ block, editable }: SectionProps) {
   );
 
   return (
-    <Section label={alt || "Rituals"}>
+    <Section label={alt || t("atelier.rituals")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
 

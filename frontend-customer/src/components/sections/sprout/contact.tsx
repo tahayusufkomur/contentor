@@ -12,22 +12,24 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Friendly contact section with location, response hours, and a pill-rounded inquiry form. */
 export function ContactHello({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showForm = block.showForm !== false;
   const email = str(block.email);
 
   const rows = [
-    { field: "email", label: "Email" },
-    { field: "location", label: "Location" },
-    { field: "hours", label: "Hours" },
+    { field: "email", label: t("contact.email") },
+    { field: "location", label: t("contact.location") },
+    { field: "hours", label: t("contact.hours") },
   ].filter((r) => has(block, r.field, editable));
 
   return (
-    <Section tone="surface" label={alt || "Contact"}>
+    <Section tone="surface" label={alt || t("sectionLabel.contact")}>
       <div className={cn(WRAP, "grid gap-y-12 lg:grid-cols-12 lg:gap-x-12")}>
         {/* Left Column: Heading, Info & Coach Photo */}
         <div
@@ -41,7 +43,7 @@ export function ContactHello({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(
               H2,
               "mt-4 block max-w-[18ch] text-[clamp(1.9rem,1.4rem+2vw,3.2rem)] leading-[1.12]",
@@ -52,7 +54,7 @@ export function ContactHello({ block, editable }: SectionProps) {
             field="text"
             editable={editable}
             as="p"
-            placeholder="Text"
+            placeholder={t("placeholder.text")}
             className="mt-4 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
           />
 
@@ -120,7 +122,7 @@ export function ContactHello({ block, editable }: SectionProps) {
               <div className="mb-6 flex items-center gap-2">
                 <SproutDoodle className="size-5 text-primary" />
                 <h3 className="font-display text-[1.3rem] font-bold text-foreground">
-                  Send a message
+                  {t("sprout.sendMessage")}
                 </h3>
               </div>
 

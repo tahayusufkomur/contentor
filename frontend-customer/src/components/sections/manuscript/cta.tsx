@@ -12,10 +12,12 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Call-to-action formatted as a formal book invitation / inscription card
  *  with a double hairline frame, Spectral title, fleuron, and subscription button. */
 export function CtaSubscribe({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -28,7 +30,7 @@ export function CtaSubscribe({ block, editable }: SectionProps) {
         field="heading"
         editable={editable}
         as="h2"
-        placeholder="Heading"
+        placeholder={t("placeholder.heading")}
         className={cn(
           H2,
           "mx-auto mt-4 block max-w-[20ch] text-[clamp(2rem,1.4rem+2.4vw,3.5rem)] font-light leading-[1.08]",
@@ -44,7 +46,7 @@ export function CtaSubscribe({ block, editable }: SectionProps) {
         field="text"
         editable={editable}
         as="p"
-        placeholder="Text"
+        placeholder={t("placeholder.text")}
         className="mx-auto block max-w-[38ch] text-pretty text-[1.05rem] leading-[1.75] text-muted-foreground md:text-[1.125rem]"
       />
 
@@ -57,7 +59,7 @@ export function CtaSubscribe({ block, editable }: SectionProps) {
               block={block}
               field="ctaLabel"
               editable={editable}
-              placeholder="Button text"
+              placeholder={t("placeholder.buttonText")}
             />
             <Arrow />
           </SmartLink>
@@ -67,7 +69,7 @@ export function CtaSubscribe({ block, editable }: SectionProps) {
   );
 
   return (
-    <Section tone="surface" label={alt || "Invitation"}>
+    <Section tone="surface" label={alt || t("manuscript.invitation")}>
       <div className={WRAP}>
         {showImage ? (
           <div className="grid gap-y-12 lg:grid-cols-12 lg:items-center lg:gap-x-12">

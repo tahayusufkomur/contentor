@@ -2,13 +2,15 @@ import { cn } from "@/lib/utils";
 import { Txt, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { H2, Kicker, LABEL, NUM, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type QA = { q?: string; a?: string };
 
 /** FAQ B-sides: accordion questions numbered like B-side tracks with rotating plus markers beside a sticky intro column. */
 export function FaqBSides({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<QA>(block, "items");
-  const alt = str(block.heading) || "Questions";
+  const alt = str(block.heading) || t("sectionLabel.questions");
 
   return (
     <Section label={alt}>
@@ -21,7 +23,7 @@ export function FaqBSides({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(
                 H2,
                 "mt-4 block text-[clamp(1.6rem,1.2rem+1.8vw,3rem)] leading-[0.98]",
@@ -32,7 +34,7 @@ export function FaqBSides({ block, editable }: SectionProps) {
               field="intro"
               editable={editable}
               as="p"
-              placeholder="Intro"
+              placeholder={t("placeholder.intro")}
               className="mt-6 block max-w-[36ch] text-pretty text-[1.02rem] leading-[1.6] text-muted-foreground"
             />
           </div>

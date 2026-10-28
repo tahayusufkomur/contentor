@@ -10,6 +10,7 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 function quoteSize(len: number) {
   if (len <= 60)
@@ -22,11 +23,12 @@ function quoteSize(len: number) {
 /** The coach's philosophy framed as a warm, reassuring promise inside
  *  a friendly speech-bubble container. */
 export function PhilosophyPromise({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="surface" label="Philosophy">
+    <Section tone="surface" label={t("sectionLabel.philosophy")}>
       {/* Playful background doodles */}
       <div
         aria-hidden="true"
@@ -58,7 +60,7 @@ export function PhilosophyPromise({ block, editable }: SectionProps) {
               field="statement"
               editable={editable}
               as="p"
-              placeholder="Statement"
+              placeholder={t("placeholder.statement")}
               className={cn(
                 "block text-balance break-words font-display font-semibold tracking-[-0.01em] text-foreground",
                 quoteSize(statement.length),
@@ -73,7 +75,7 @@ export function PhilosophyPromise({ block, editable }: SectionProps) {
                     block={block}
                     field="attribution"
                     editable={editable}
-                    placeholder="Attribution"
+                    placeholder={t("placeholder.attribution")}
                   />
                 </p>
               </div>

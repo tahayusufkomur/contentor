@@ -21,16 +21,17 @@ import {
   WRAP,
   str,
 } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Upcoming masterclasses, workshops and live sessions styled as formal invitations. */
 export function EventsMasterclasses({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
   return (
-    <Section label={str(block.heading) || "Masterclasses"}>
+    <Section label={str(block.heading) || t("atelier.masterclasses")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
 
@@ -70,7 +71,7 @@ export function EventsMasterclasses({ block, data, editable }: SectionProps) {
                       {eventPriceLabel(e, locale)}
                     </span>
                     <span className="atelier-link mt-2 inline-flex items-center gap-1.5 text-[0.88rem] font-medium text-muted-foreground group-hover:text-primary">
-                      <span>Reserve spot</span>
+                      <span>{t("event.reserveSpot")}</span>
                       <Arrow />
                     </span>
                   </div>
@@ -82,8 +83,8 @@ export function EventsMasterclasses({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No upcoming masterclasses"
-              text="Schedule a live masterclass or workshop and it appears here."
+              title={t("atelier.emptyEventsTitle")}
+              text={t("atelier.emptyEventsText")}
             />
           </div>
         )}
@@ -96,10 +97,10 @@ export function EventsMasterclasses({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "View full calendar"
+                t("atelier.viewFullCalendar")
               )}
               <Arrow />
             </SmartLink>

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import type { Block } from "@/types/tenant";
 import type { EditableContext } from "@/lib/blocks/types";
 import { Txt, has } from "../kit";
+import { useTranslations } from "next-intl";
 
 /** Inner measure every atelier section aligns to (generous and airy). */
 export const WRAP = "mx-auto w-full max-w-[80rem] px-5 md:px-8 lg:px-10";
@@ -84,6 +85,7 @@ export function Kicker({
   editable?: EditableContext;
   className?: string;
 }) {
+  const t = useTranslations("site");
   if (!has(block, "kicker", editable)) return null;
   return (
     <Txt
@@ -91,7 +93,7 @@ export function Kicker({
       field="kicker"
       editable={editable}
       as="p"
-      placeholder="Kicker"
+      placeholder={t("placeholder.kicker")}
       className={cn(
         "font-display text-[1.15rem] italic leading-none text-accent",
         className,
@@ -193,6 +195,7 @@ export function Opener({
   align?: "left" | "center";
   className?: string;
 }) {
+  const t = useTranslations("site");
   if (align === "center") {
     return (
       <div
@@ -207,7 +210,7 @@ export function Opener({
           field="heading"
           editable={editable}
           as="h2"
-          placeholder="Heading"
+          placeholder={t("placeholder.heading")}
           className={cn(H2, "mt-3 block max-w-[20ch]")}
         />
         {field && (
@@ -216,7 +219,7 @@ export function Opener({
             field={field}
             editable={editable}
             as="p"
-            placeholder="Intro"
+            placeholder={t("placeholder.intro")}
             className="mt-4 block max-w-[46ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
           />
         )}
@@ -233,7 +236,7 @@ export function Opener({
           field="heading"
           editable={editable}
           as="h2"
-          placeholder="Heading"
+          placeholder={t("placeholder.heading")}
           className={cn(H2, "mt-3 block max-w-[20ch]")}
         />
       </div>
@@ -243,7 +246,7 @@ export function Opener({
           field={field}
           editable={editable}
           as="p"
-          placeholder="Intro"
+          placeholder={t("placeholder.intro")}
           className="block max-w-[44ch] self-end text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground lg:col-span-4 lg:col-start-9"
         />
       )}

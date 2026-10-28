@@ -2,11 +2,13 @@ import { cn } from "@/lib/utils";
 import { has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { Opener, Polaroid, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
 /** Pinboard gallery of polaroid moments held with washi tape strips and Caveat captions. */
 export function MomentsGallery({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHead =
@@ -14,7 +16,7 @@ export function MomentsGallery({ block, editable }: SectionProps) {
   const showCaption = has(block, "caption", editable);
 
   return (
-    <Section tone="kraft" label={alt || "Moments"}>
+    <Section tone="kraft" label={alt || t("sectionLabel.moments")}>
       <div className={WRAP}>
         {(showHead || showCaption) && (
           <Opener

@@ -2,22 +2,24 @@ import { cn } from "@/lib/utils";
 import { ContactForm, Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { ARCH, ArchFrame, H2, Kicker, LABEL, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Atelier studio contact: studio location and consultation hours with underline inquiry fields. */
 export function ContactStudio({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showForm = block.showForm !== false;
   const email = str(block.email);
 
   const rows: { field: string; label: string }[] = [
-    { field: "email", label: "Studio Email" },
-    { field: "location", label: "Atelier Address" },
-    { field: "hours", label: "Consultation Hours" },
+    { field: "email", label: t("atelier.studioEmail") },
+    { field: "location", label: t("atelier.atelierAddress") },
+    { field: "hours", label: t("atelier.consultationHours") },
   ].filter((r) => has(block, r.field, editable));
 
   return (
-    <Section label={alt || "Studio Contact"}>
+    <Section label={alt || t("atelier.studioContact")}>
       <div className={cn(WRAP, "grid gap-y-14 lg:grid-cols-12 lg:gap-x-12")}>
         <div className={showForm ? "lg:col-span-5" : "lg:col-span-7"}>
           <Kicker block={block} editable={editable} />
@@ -26,7 +28,7 @@ export function ContactStudio({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Studio Inquiries"
+            placeholder={t("atelier.studioInquiries")}
             className={cn(
               H2,
               "mt-4 block max-w-[18ch] text-[clamp(1.9rem,1.35rem+2vw,3.4rem)] leading-[1.08]",
@@ -37,7 +39,7 @@ export function ContactStudio({ block, editable }: SectionProps) {
             field="text"
             editable={editable}
             as="p"
-            placeholder="Reach out to book a private consultation or inquire about tailored programs."
+            placeholder={t("atelier.reachOut")}
             className="mt-6 block max-w-[44ch] text-pretty text-[1.05rem] leading-[1.7] text-muted-foreground"
           />
 

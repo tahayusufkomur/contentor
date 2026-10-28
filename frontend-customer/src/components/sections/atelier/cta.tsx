@@ -13,9 +13,11 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Appointment booking call-to-action framed in double champagne hairlines. */
 export function CtaAppointment({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -27,7 +29,7 @@ export function CtaAppointment({ block, editable }: SectionProps) {
         field="heading"
         editable={editable}
         as="h2"
-        placeholder="Schedule an appointment"
+        placeholder={t("atelier.scheduleAppointment")}
         className={cn(
           H2,
           "mt-4 block max-w-[20ch] text-[clamp(2.1rem,1.4rem+3vw,4.2rem)] leading-[1.04]",
@@ -38,7 +40,7 @@ export function CtaAppointment({ block, editable }: SectionProps) {
         field="text"
         editable={editable}
         as="p"
-        placeholder="Choose a time that suits your routine."
+        placeholder={t("atelier.chooseTime")}
         className="mt-6 block max-w-[46ch] text-pretty text-[1.05rem] leading-[1.7] text-muted-foreground"
       />
 
@@ -55,7 +57,7 @@ export function CtaAppointment({ block, editable }: SectionProps) {
               block={block}
               field="ctaLabel"
               editable={editable}
-              placeholder="Book appointment"
+              placeholder={t("atelier.bookAppointment")}
             />
             <Arrow />
           </SmartLink>
@@ -65,7 +67,7 @@ export function CtaAppointment({ block, editable }: SectionProps) {
   );
 
   return (
-    <Section label={alt || "Appointment"}>
+    <Section label={alt || t("atelier.appointment")}>
       <div className={WRAP}>
         {showImage ? (
           <div className="mx-auto max-w-5xl rounded-3xl border border-[color-mix(in_oklch,var(--border)_85%,transparent)] p-2 sm:p-3">

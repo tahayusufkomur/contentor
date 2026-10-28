@@ -20,9 +20,10 @@ import {
   WRAP,
   getSproutTint,
 } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 function DateLeaf({ iso }: { iso: string }) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const d = new Date(iso);
   const isValid = !Number.isNaN(d.getTime());
@@ -32,7 +33,7 @@ function DateLeaf({ iso }: { iso: string }) {
   return (
     <div className="flex size-16 shrink-0 flex-col items-center justify-center overflow-hidden rounded-2xl border border-[color-mix(in_oklch,var(--border)_80%,transparent)] bg-background text-center shadow-sm sm:size-20">
       <span className="w-full bg-accent px-1 py-0.5 font-display text-[0.75rem] font-bold uppercase tracking-wider text-accent-foreground sm:text-[0.78rem]">
-        {month || "Event"}
+        {month || t("sprout.event")}
       </span>
       <span className="font-display text-[1.4rem] font-bold leading-none text-foreground sm:text-[1.75rem]">
         {day || "•"}
@@ -43,6 +44,7 @@ function DateLeaf({ iso }: { iso: string }) {
 
 /** Upcoming playdates, workshops, and family sessions with calendar-leaf date bubbles. */
 export function EventsPlaydates({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
@@ -51,7 +53,9 @@ export function EventsPlaydates({ block, data, editable }: SectionProps) {
     <Section
       tone="paper"
       label={
-        typeof block.heading === "string" ? block.heading : "Playdates & Events"
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sprout.playdatesAndEvents")
       }
     >
       <div className={WRAP}>
@@ -83,8 +87,8 @@ export function EventsPlaydates({ block, data, editable }: SectionProps) {
                       )}
                     >
                       {e.type === "onsite_event"
-                        ? e.location || "In person"
-                        : "Online, live"}
+                        ? e.location || t("event.inPerson")
+                        : t("event.onlineLive")}
                     </span>
                     <span className="text-[0.85rem] font-semibold text-muted-foreground">
                       <LocalWhen iso={e.scheduled_at} />
@@ -113,7 +117,7 @@ export function EventsPlaydates({ block, data, editable }: SectionProps) {
                     {eventPriceLabel(e, locale)}
                   </span>
                   <span className="inline-flex items-center gap-1.5 font-display text-[0.92rem] font-bold text-foreground transition-colors group-hover:text-primary">
-                    <span>Save your spot</span>
+                    <span>{t("rows.saveSpot")}</span>
                     <Arrow className="size-3.5" />
                   </span>
                 </div>
@@ -124,8 +128,8 @@ export function EventsPlaydates({ block, data, editable }: SectionProps) {
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No upcoming playdates or sessions"
-              text="Schedule an in-person or online session and it will appear here."
+              title={t("sprout.emptyEventsTitle")}
+              text={t("sprout.emptyEventsText")}
             />
           </div>
         )}
@@ -138,10 +142,10 @@ export function EventsPlaydates({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "See full calendar"
+                t("sprout.seeFullCalendar")
               )}
               <Arrow />
             </SmartLink>

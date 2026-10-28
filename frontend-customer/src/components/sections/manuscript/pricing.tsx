@@ -9,11 +9,12 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { DoubleRule, H3, Opener, RunningHead, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Membership tiers set out as a formal subscription order form with
  *  double-ruled borders, hollow radio seals, and typographic prices. */
 export function PricingSubscriptions({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
@@ -22,7 +23,9 @@ export function PricingSubscriptions({ block, data, editable }: SectionProps) {
     <Section
       tone="surface"
       label={
-        typeof block.heading === "string" ? block.heading : "Subscriptions"
+        typeof block.heading === "string"
+          ? block.heading
+          : t("manuscript.subscriptions")
       }
     >
       <div className={WRAP}>
@@ -30,7 +33,7 @@ export function PricingSubscriptions({ block, data, editable }: SectionProps) {
 
         {plans.length ? (
           <div className="manuscript-frame mx-auto mt-12 max-w-[56rem] bg-background p-6 sm:p-10 md:p-12">
-            <RunningHead>Order of Subscription</RunningHead>
+            <RunningHead>{t("manuscript.orderOfSubscription")}</RunningHead>
             <DoubleRule className="my-6" />
 
             <ul className="divide-y divide-border">
@@ -60,9 +63,9 @@ export function PricingSubscriptions({ block, data, editable }: SectionProps) {
                           )}
                           {!!plan.item_count && (
                             <p className="manuscript-small-caps mt-2.5 text-xs font-semibold text-accent">
-                              {plan.item_count}{" "}
-                              {plan.item_count === 1 ? "volume" : "volumes"}{" "}
-                              included
+                              {t("manuscript.volumesIncluded", {
+                                count: plan.item_count,
+                              })}
                             </p>
                           )}
                         </div>
@@ -85,7 +88,7 @@ export function PricingSubscriptions({ block, data, editable }: SectionProps) {
                     <div className="lg:col-span-4 lg:text-right">
                       {plan.is_subscribed ? (
                         <p className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius)] border border-primary text-[0.92rem] font-medium text-primary">
-                          Subscribed
+                          {t("plan.subscribed")}
                         </p>
                       ) : (
                         <SubscribeButton
@@ -101,7 +104,7 @@ export function PricingSubscriptions({ block, data, editable }: SectionProps) {
                         href={`/plans/${plan.id}`}
                         className="manuscript-link mt-3 inline-block text-[0.88rem] font-medium"
                       >
-                        See subscription terms
+                        {t("manuscript.subscriptionTerms")}
                       </SmartLink>
                     </div>
                   </div>
@@ -115,8 +118,8 @@ export function PricingSubscriptions({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No subscription plans yet"
-              text="Create a membership plan under Billing and it appears here automatically."
+              title={t("manuscript.emptyPlansTitle")}
+              text={t("manuscript.emptyPlansText")}
             />
           </div>
         )}

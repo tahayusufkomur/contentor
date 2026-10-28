@@ -13,12 +13,14 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 function Actions({
   block,
   editable,
   className,
 }: SectionProps & { className?: string }) {
+  const t = useTranslations("site");
   const primary = has(block, "ctaLabel", editable);
   const secondary = has(block, "secondaryLabel", editable);
   if (!primary && !secondary) return null;
@@ -35,7 +37,7 @@ function Actions({
             block={block}
             field="ctaLabel"
             editable={editable}
-            placeholder="Button text"
+            placeholder={t("placeholder.buttonText")}
           />
           <Arrow />
         </SmartLink>
@@ -49,7 +51,7 @@ function Actions({
             block={block}
             field="secondaryLabel"
             editable={editable}
-            placeholder="Second button"
+            placeholder={t("placeholder.secondButton")}
           />
         </SmartLink>
       )}
@@ -61,6 +63,7 @@ function Actions({
  *  running head, massive Spectral title, fleuron divider, subhead,
  *  author imprint meta line, buttons, and an optional frontispiece plate. */
 export function HeroTitlepage({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showDetail = Boolean(imageUrl(block.image2)) || Boolean(editable);
@@ -78,7 +81,7 @@ export function HeroTitlepage({ block, editable }: SectionProps) {
               field="headline"
               editable={editable}
               as="h1"
-              placeholder="Headline"
+              placeholder={t("placeholder.headline")}
               className={cn(
                 H1,
                 alt.length <= 26
@@ -100,7 +103,7 @@ export function HeroTitlepage({ block, editable }: SectionProps) {
             field="subhead"
             editable={editable}
             as="p"
-            placeholder="Subheadline"
+            placeholder={t("placeholder.subheadline")}
             className="mx-auto block max-w-[40ch] text-pretty text-[1.125rem] leading-[1.75] text-muted-foreground md:text-[1.2rem]"
           />
 
@@ -111,7 +114,7 @@ export function HeroTitlepage({ block, editable }: SectionProps) {
                 block={block}
                 field="meta"
                 editable={editable}
-                placeholder="Author / Location"
+                placeholder={t("manuscript.authorLocation")}
               />
               <span aria-hidden="true">&nbsp;—</span>
             </p>
@@ -148,6 +151,7 @@ export function HeroTitlepage({ block, editable }: SectionProps) {
 /** Inner-page header: clean, compact, literary running head, Spectral title,
  *  fleuron ornament, and dek. */
 export function HeroIntro({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.headline);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -166,7 +170,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
             field="headline"
             editable={editable}
             as="h1"
-            placeholder="Headline"
+            placeholder={t("placeholder.headline")}
             className={cn(
               H1,
               "mx-auto mt-4 block max-w-[22ch] text-[clamp(2.2rem,1.3rem+3.4vw,4.2rem)] leading-[1.08]",
@@ -182,7 +186,7 @@ export function HeroIntro({ block, editable }: SectionProps) {
             field="subhead"
             editable={editable}
             as="p"
-            placeholder="Subheadline"
+            placeholder={t("placeholder.subheadline")}
             className="mx-auto block max-w-[42ch] text-pretty text-[1.1rem] leading-[1.75] text-muted-foreground"
           />
 

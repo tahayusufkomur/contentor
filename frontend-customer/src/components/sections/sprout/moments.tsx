@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { Opener, Section, StarDoodle, Sticker, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
@@ -9,6 +10,7 @@ const ROTATIONS = ["-2.5deg", "2.5deg", "-1.8deg", "3deg", "-2.8deg", "1.8deg"];
 
 /** Candid photo snapshots scattered like sticker prints in a family album. */
 export function MomentsSnapshots({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHead =
@@ -16,7 +18,7 @@ export function MomentsSnapshots({ block, editable }: SectionProps) {
   const showCaption = has(block, "caption", editable);
 
   return (
-    <Section tone="surface" label={alt || "Moments"}>
+    <Section tone="surface" label={alt || t("sectionLabel.moments")}>
       <div className={WRAP}>
         {(showHead || showCaption) && (
           <Opener

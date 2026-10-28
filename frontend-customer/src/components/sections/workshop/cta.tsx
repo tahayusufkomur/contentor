@@ -10,9 +10,11 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Indigo inverse CTA band with dashed stitched border and a Caveat note. */
 export function CtaPickup({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -28,7 +30,7 @@ export function CtaPickup({ block, editable }: SectionProps) {
         field="heading"
         editable={editable}
         as="h2"
-        placeholder="Heading"
+        placeholder={t("placeholder.heading")}
         className="mt-3 block max-w-[18ch] text-balance break-words font-display text-[clamp(2.2rem,1.5rem+2.8vw,4.2rem)] font-bold leading-[1.04] text-[color:var(--inverse-foreground)]"
       />
       <Txt
@@ -36,7 +38,7 @@ export function CtaPickup({ block, editable }: SectionProps) {
         field="text"
         editable={editable}
         as="p"
-        placeholder="Text"
+        placeholder={t("placeholder.text")}
         className="mt-6 block max-w-[46ch] text-pretty text-[1.05rem] leading-[1.65] text-muted-foreground"
       />
       {has(block, "ctaLabel", editable) && (
@@ -46,7 +48,7 @@ export function CtaPickup({ block, editable }: SectionProps) {
               block={block}
               field="ctaLabel"
               editable={editable}
-              placeholder="Button text"
+              placeholder={t("placeholder.buttonText")}
             />
             <HandArrow />
           </SmartLink>

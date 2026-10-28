@@ -13,11 +13,13 @@ import {
   str,
   toRoman,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Step = { title?: string; text?: string };
 
 /** Step-by-step method structured as sequential book chapters with abstracts. */
 export function HowItWorksProcess({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const steps = itemsOf<Step>(block, "steps");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
@@ -28,14 +30,18 @@ export function HowItWorksProcess({ block, editable }: SectionProps) {
       <ol className="space-y-10">
         {steps.map((s, i) => (
           <li key={i} className="relative">
-            <p className={cn(LABEL, "text-accent")}>Chapter {toRoman(i + 1)}</p>
+            <p className={cn(LABEL, "text-accent")}>
+              {t("manuscript.chapter", { number: toRoman(i + 1) })}
+            </p>
             <h3
               className={cn(
                 H3,
                 "mt-2 text-[1.35rem] font-normal leading-snug text-foreground md:text-[1.5rem]",
               )}
             >
-              <span className="sr-only">{`Chapter ${i + 1}: `}</span>
+              <span className="sr-only">
+                {t("manuscript.chapterColon", { number: i + 1 })}{" "}
+              </span>
               {s.title}
             </h3>
             {s.text && (
@@ -56,7 +62,7 @@ export function HowItWorksProcess({ block, editable }: SectionProps) {
   );
 
   return (
-    <Section tone="paper" label={alt || "Process"}>
+    <Section tone="paper" label={alt || t("manuscript.process")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
 

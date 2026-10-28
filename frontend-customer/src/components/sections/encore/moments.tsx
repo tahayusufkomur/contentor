@@ -2,11 +2,13 @@ import { cn } from "@/lib/utils";
 import { Img, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { BOX, Opener, Section, Track, WRAP, pad2, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
 /** Moments sleeves: candid photos presented as square record sleeves with halftone screen and track numbering. */
 export function MomentsSleeves({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHead =
@@ -14,7 +16,7 @@ export function MomentsSleeves({ block, editable }: SectionProps) {
   const showCaption = has(block, "caption", editable);
 
   return (
-    <Section label={alt || "Moments"}>
+    <Section label={alt || t("sectionLabel.moments")}>
       <div className={WRAP}>
         {(showHead || showCaption) && (
           <Opener
@@ -44,7 +46,9 @@ export function MomentsSleeves({ block, editable }: SectionProps) {
                 <div className={cn(BOX, "encore-halftone group relative p-2")}>
                   <Img
                     value={p.image}
-                    alt={p.caption || alt || `Photo ${i + 1}`}
+                    alt={
+                      p.caption || alt || t("encore.photo", { number: i + 1 })
+                    }
                     className="encore-zoom aspect-square w-full"
                   />
                 </div>

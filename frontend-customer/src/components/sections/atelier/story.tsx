@@ -3,16 +3,18 @@ import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { makeStoryPull } from "../story-layouts";
 import { ARCH, ArchFrame, Arrow, H2, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Coach story in the atelier salon: reflective text with signature on the left,
  *  an arch-framed portrait with setting details on the right. */
 export function StorySalon({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
 
   return (
-    <Section label={alt || "Story"}>
+    <Section label={alt || t("atelier.story")}>
       <div className={WRAP}>
         <div className="grid items-center gap-y-12 md:grid-cols-12 md:gap-x-10 lg:gap-x-14">
           <div
@@ -28,7 +30,7 @@ export function StorySalon({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(H2, "mt-4 block max-w-[20ch]")}
             />
             <Rich
@@ -44,7 +46,7 @@ export function StorySalon({ block, editable }: SectionProps) {
                   block={block}
                   field="signature"
                   editable={editable}
-                  placeholder="Your name"
+                  placeholder={t("placeholder.yourName")}
                 />
               </p>
             )}
@@ -58,7 +60,7 @@ export function StorySalon({ block, editable }: SectionProps) {
                     block={block}
                     field="ctaLabel"
                     editable={editable}
-                    placeholder="Read more"
+                    placeholder={t("atelier.readMore")}
                   />
                   <Arrow />
                 </SmartLink>

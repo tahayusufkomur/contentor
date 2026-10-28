@@ -11,9 +11,11 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** CTA encore: the final invitation on a high-contrast ink band with star icons and an inverted button. */
 export function CtaEncore({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
@@ -37,7 +39,7 @@ export function CtaEncore({ block, editable }: SectionProps) {
             field="heading"
             editable={editable}
             as="h2"
-            placeholder="Heading"
+            placeholder={t("placeholder.heading")}
             className={cn(
               DISPLAY,
               "mt-5 block max-w-[12ch] text-[clamp(2.2rem,1.2rem+4.4vw,6rem)] leading-[0.95]",
@@ -48,7 +50,7 @@ export function CtaEncore({ block, editable }: SectionProps) {
             field="text"
             editable={editable}
             as="p"
-            placeholder="Text"
+            placeholder={t("placeholder.text")}
             className="mt-6 block max-w-[44ch] text-pretty text-[1.02rem] leading-[1.6] text-muted-foreground"
           />
           {has(block, "ctaLabel", editable) && (
@@ -58,7 +60,7 @@ export function CtaEncore({ block, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
                 <Arrow />
               </SmartLink>

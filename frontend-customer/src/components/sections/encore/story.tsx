@@ -2,9 +2,11 @@ import { cn } from "@/lib/utils";
 import { Img, Rich, SmartLink, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, BOX, H2, Kicker, LABEL, RULE, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Liner notes: coach story set in two newspaper columns under a 3px rule, with halftone portrait and detail print. */
 export function StoryLinerNotes({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const alt = str(block.heading);
   const showSetting = Boolean(imageUrl(block.image2)) || Boolean(editable);
 
@@ -38,7 +40,7 @@ export function StoryLinerNotes({ block, editable }: SectionProps) {
               field="heading"
               editable={editable}
               as="h2"
-              placeholder="Heading"
+              placeholder={t("placeholder.heading")}
               className={cn(H2, "mt-4 block max-w-[14ch]")}
             />
             <Rich
@@ -53,7 +55,7 @@ export function StoryLinerNotes({ block, editable }: SectionProps) {
                   block={block}
                   field="signature"
                   editable={editable}
-                  placeholder="Your name"
+                  placeholder={t("placeholder.yourName")}
                 />
               </p>
             )}
@@ -66,7 +68,7 @@ export function StoryLinerNotes({ block, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Link text"
+                  placeholder={t("placeholder.linkText")}
                 />
                 <Arrow />
               </SmartLink>

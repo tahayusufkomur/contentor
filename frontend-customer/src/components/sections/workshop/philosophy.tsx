@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Kicker, Section, WRAP, WashiTape, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 function statementSize(len: number) {
   if (len <= 60)
@@ -14,11 +15,12 @@ function statementSize(len: number) {
 /** Philosophy note: a crafted note pinned to the bench with washi tape,
  *  warm display quote and handwritten Caveat attribution. */
 export function PhilosophyNote({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="kraft" label="Philosophy">
+    <Section tone="kraft" label={t("sectionLabel.philosophy")}>
       <div className={WRAP}>
         <div className="mx-auto max-w-4xl">
           <div className="workshop-polaroid workshop-lined relative rounded-[var(--radius)] border border-border p-8 sm:p-12 md:p-16 shadow-sm">
@@ -34,7 +36,7 @@ export function PhilosophyNote({ block, editable }: SectionProps) {
               field="statement"
               editable={editable}
               as="p"
-              placeholder="Statement"
+              placeholder={t("placeholder.statement")}
               className={cn(
                 "mt-6 block text-balance break-words font-display font-bold tracking-[-0.015em] text-foreground",
                 statementSize(statement.length),
@@ -49,7 +51,7 @@ export function PhilosophyNote({ block, editable }: SectionProps) {
                     block={block}
                     field="attribution"
                     editable={editable}
-                    placeholder="Attribution"
+                    placeholder={t("placeholder.attribution")}
                   />
                 </p>
               </div>

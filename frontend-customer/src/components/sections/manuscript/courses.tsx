@@ -22,10 +22,12 @@ import {
   WRAP,
   toRoman,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Course catalogue presented as a formal Table of Contents with Roman numerals,
  *  dotted leaders, cover plates, and lessons/prices formatted as page numbers. */
 export function CoursesContents({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
@@ -34,7 +36,9 @@ export function CoursesContents({ block, data, editable }: SectionProps) {
     <Section
       tone="paper"
       label={
-        typeof block.heading === "string" ? block.heading : "Table of Contents"
+        typeof block.heading === "string"
+          ? block.heading
+          : t("manuscript.tableOfContents")
       }
     >
       <div className={WRAP}>
@@ -87,10 +91,9 @@ export function CoursesContents({ block, data, editable }: SectionProps) {
                     />
 
                     <div className="flex shrink-0 items-baseline gap-4 sm:flex-col sm:items-end sm:gap-1">
-                      {Boolean(course.lesson_count) && (
+                      {!!course.lesson_count && (
                         <span className="manuscript-small-caps text-[0.8rem] text-muted-foreground">
-                          {course.lesson_count}{" "}
-                          {course.lesson_count === 1 ? "lesson" : "lessons"}
+                          {t("course.lessons", { count: course.lesson_count })}
                         </span>
                       )}
                       <span
@@ -113,8 +116,8 @@ export function CoursesContents({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No published courses yet"
-              text="Publish a course and it appears in the Table of Contents automatically."
+              title={t("empty.courses.title")}
+              text={t("manuscript.emptyCoursesText")}
             />
           </div>
         )}
@@ -130,10 +133,10 @@ export function CoursesContents({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "View full catalogue"
+                t("manuscript.viewCatalogue")
               )}
               <Arrow />
             </SmartLink>

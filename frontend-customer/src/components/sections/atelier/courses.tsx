@@ -22,15 +22,17 @@ import {
   WRAP,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Courses presented as a luxury spa treatment menu with arch thumbnails and dotted leaders. */
 export function CoursesTreatments({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
 
   return (
-    <Section label={str(block.heading) || "Treatments"}>
+    <Section label={str(block.heading) || t("atelier.treatments")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
 
@@ -81,15 +83,14 @@ export function CoursesTreatments({ block, data, editable }: SectionProps) {
                           {c.description}
                         </p>
                       )}
-                      {Boolean(c.lesson_count) && (
+                      {!!c.lesson_count && (
                         <span
                           className={cn(
                             LABEL,
                             "ml-auto shrink-0 text-muted-foreground",
                           )}
                         >
-                          {c.lesson_count}{" "}
-                          {c.lesson_count === 1 ? "ritual" : "rituals"}
+                          {t("atelier.ritualsCount", { count: c.lesson_count })}
                         </span>
                       )}
                     </div>
@@ -102,8 +103,8 @@ export function CoursesTreatments({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No published treatments yet"
-              text="Publish a course and it appears here as a treatment."
+              title={t("atelier.emptyCoursesTitle")}
+              text={t("atelier.emptyCoursesText")}
             />
           </div>
         )}
@@ -116,10 +117,10 @@ export function CoursesTreatments({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "View all treatments"
+                t("atelier.allTreatments")
               )}
               <Arrow />
             </SmartLink>

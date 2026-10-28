@@ -23,16 +23,22 @@ import {
   WRAP,
   pad2,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Course tracklist: catalogue rows formatted as a record's A/B sides with durations, thumbnail sleeves and prices. */
 export function CoursesTracklist({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Courses"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.courses")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -75,8 +81,7 @@ export function CoursesTracklist({ block, data, editable }: SectionProps) {
                   >
                     {c.lesson_count ? (
                       <span className="block text-muted-foreground">
-                        {c.lesson_count}{" "}
-                        {c.lesson_count === 1 ? "lesson" : "lessons"}
+                        {t("course.lessons", { count: c.lesson_count })}
                       </span>
                     ) : null}
                     <CoursePrice
@@ -92,8 +97,8 @@ export function CoursesTracklist({ block, data, editable }: SectionProps) {
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No published courses yet"
-              text="Publish a course and it appears here automatically."
+              title={t("empty.courses.title")}
+              text={t("empty.courses.text")}
             />
           </div>
         )}
@@ -106,10 +111,10 @@ export function CoursesTracklist({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "All courses"
+                t("cta.allCourses")
               )}
               <Arrow />
             </SmartLink>

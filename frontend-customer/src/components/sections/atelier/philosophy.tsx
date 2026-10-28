@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { Diamond, Divider, Kicker, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 function quoteSize(len: number) {
   if (len <= 60)
@@ -14,11 +15,12 @@ function quoteSize(len: number) {
 /** Atelier philosophy: an enormous italic statement in Cormorant with delicate
  *  champagne ornaments and coach attribution. */
 export function PhilosophyPullquote({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section label="Philosophy">
+    <Section label={t("sectionLabel.philosophy")}>
       <div className={WRAP}>
         <div className="mx-auto max-w-4xl text-center">
           <Kicker block={block} editable={editable} />
@@ -35,7 +37,7 @@ export function PhilosophyPullquote({ block, editable }: SectionProps) {
               field="statement"
               editable={editable}
               as="p"
-              placeholder="Statement"
+              placeholder={t("placeholder.statement")}
               className={cn(
                 "mx-auto -mt-6 block text-balance break-words font-display italic font-normal tracking-[-0.01em]",
                 quoteSize(statement.length),
@@ -51,7 +53,7 @@ export function PhilosophyPullquote({ block, editable }: SectionProps) {
                   block={block}
                   field="attribution"
                   editable={editable}
-                  placeholder="Creator name"
+                  placeholder={t("placeholder.creatorName")}
                 />
               </p>
               <Diamond />
@@ -64,7 +66,7 @@ export function PhilosophyPullquote({ block, editable }: SectionProps) {
               <div className="overflow-hidden rounded-3xl border border-[color-mix(in_oklch,var(--border)_80%,transparent)] shadow-sm">
                 <Img
                   value={block.image}
-                  alt={statement.slice(0, 100) || "Philosophy"}
+                  alt={statement.slice(0, 100) || t("sectionLabel.philosophy")}
                   className="aspect-[16/9] w-full max-h-[32rem]"
                 />
               </div>

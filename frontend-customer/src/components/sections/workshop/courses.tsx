@@ -21,6 +21,7 @@ import {
   WRAP,
   pad2,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 /** Project index cards with ruled lines, project numbers, and craft price tags. */
 export function CourseShowcaseProjects({
@@ -28,6 +29,7 @@ export function CourseShowcaseProjects({
   data,
   editable,
 }: SectionProps) {
+  const t = useTranslations("site");
   const limit = Number(block.limit) === 6 ? 6 : 3;
   const courses: Course[] = Array.isArray(data) ? data.slice(0, limit) : [];
   if (!courses.length && !editable) return null;
@@ -35,7 +37,11 @@ export function CourseShowcaseProjects({
   return (
     <Section
       tone="kraft"
-      label={typeof block.heading === "string" ? block.heading : "Courses"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.courses")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -44,8 +50,8 @@ export function CourseShowcaseProjects({
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No published projects yet"
-              text="Publish a course and it appears here as a workshop project."
+              title={t("workshop.emptyCoursesTitle")}
+              text={t("workshop.emptyCoursesText")}
             />
           </div>
         ) : (
@@ -71,12 +77,11 @@ export function CourseShowcaseProjects({
                   <div className="workshop-lined flex flex-1 flex-col p-6">
                     <div className="flex items-center justify-between gap-2 border-b border-border/80 pb-3">
                       <span className="workshop-hand text-[1.1rem] font-bold text-accent">
-                        Project {pad2(idx)}
+                        {t("workshop.project", { number: pad2(idx) })}
                       </span>
                       {course.lesson_count ? (
                         <span className="text-[0.82rem] font-semibold text-muted-foreground">
-                          {course.lesson_count}{" "}
-                          {course.lesson_count === 1 ? "lesson" : "lessons"}
+                          {t("course.lessons", { count: course.lesson_count })}
                         </span>
                       ) : null}
                     </div>
@@ -107,7 +112,7 @@ export function CourseShowcaseProjects({
                         }
                       />
                       <span className="workshop-hand inline-flex items-center gap-1.5 text-[1.1rem] font-bold text-accent transition-transform motion-safe:group-hover:translate-x-1">
-                        <span>Make this</span>
+                        <span>{t("workshop.makeThis")}</span>
                         <HandArrow className="h-3 w-4" />
                       </span>
                     </div>
@@ -126,10 +131,10 @@ export function CourseShowcaseProjects({
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "All workshop projects"
+                t("workshop.allProjects")
               )}
             </SmartLink>
           </div>

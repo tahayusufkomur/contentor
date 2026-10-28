@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, Txt, has, imageUrl } from "../kit";
 import type { SectionProps } from "../types";
 import { DISPLAY, Kicker, LABEL, Section, Stars, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 function statementSize(len: number) {
   if (len <= 60)
@@ -13,13 +14,14 @@ function statementSize(len: number) {
 
 /** Philosophy manifesto: a full-width ink band with stars, heavy uppercase declaration and border-framed atmosphere photo. */
 export function PhilosophyManifesto({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const statement = str(block.statement);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
     <Section
       tone="ink"
-      label={statement ? statement.slice(0, 80) : "Philosophy"}
+      label={statement ? statement.slice(0, 80) : t("sectionLabel.philosophy")}
     >
       <div className={cn(WRAP, "flex flex-col items-center text-center")}>
         <Stars className="text-accent" />
@@ -29,7 +31,7 @@ export function PhilosophyManifesto({ block, editable }: SectionProps) {
           field="statement"
           editable={editable}
           as="p"
-          placeholder="Statement"
+          placeholder={t("placeholder.statement")}
           className={cn(
             DISPLAY,
             "mt-6 block",
@@ -43,7 +45,7 @@ export function PhilosophyManifesto({ block, editable }: SectionProps) {
             field="attribution"
             editable={editable}
             as="p"
-            placeholder="Attribution"
+            placeholder={t("placeholder.attribution")}
             className={cn(LABEL, "mt-10 text-muted-foreground")}
           />
         )}

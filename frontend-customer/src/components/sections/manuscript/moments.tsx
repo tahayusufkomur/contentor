@@ -2,12 +2,14 @@ import { cn } from "@/lib/utils";
 import { Img, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { DoubleRule, Opener, Section, WRAP, str, toRoman } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
 /** Gallery of book plates: framed engravings and photographic figures
  *  with Roman numeral captions in literary italics. */
 export function MomentsPlates({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHead =
@@ -16,7 +18,7 @@ export function MomentsPlates({ block, editable }: SectionProps) {
     has(block, "caption", editable);
 
   return (
-    <Section tone="paper" label={alt || "Gallery of Plates"}>
+    <Section tone="paper" label={alt || t("manuscript.galleryOfPlates")}>
       <div className={WRAP}>
         {showHead && (
           <Opener
@@ -50,13 +52,17 @@ export function MomentsPlates({ block, editable }: SectionProps) {
                 <div className="manuscript-plate flex-1">
                   <Img
                     value={p.image}
-                    alt={p.caption || alt || `Plate ${toRoman(i + 1)}`}
+                    alt={
+                      p.caption ||
+                      alt ||
+                      t("manuscript.plate", { number: toRoman(i + 1) })
+                    }
                     className="aspect-[4/5] w-full"
                   />
                 </div>
                 <figcaption className="mt-3 text-center">
                   <span className="manuscript-small-caps mr-1.5 text-xs font-semibold text-accent">
-                    Plate {toRoman(i + 1)}.
+                    {t("manuscript.plate", { number: toRoman(i + 1) })}.
                   </span>
                   {p.caption && (
                     <span className="font-display italic text-[0.92rem] text-muted-foreground">

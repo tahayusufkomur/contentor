@@ -13,6 +13,7 @@ import {
   getSproutTint,
   str,
 } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Item = { title?: string; text?: string };
 
@@ -25,12 +26,13 @@ function GrowthIcon({ index }: { index: number }) {
 
 /** Benefits framed as growth stages from seedling to blossoming tree. */
 export function BenefitsGrowth({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const items = itemsOf<Item>(block, "items");
   const alt = str(block.heading);
   const showImage = Boolean(imageUrl(block.image)) || Boolean(editable);
 
   return (
-    <Section tone="paper" label={alt || "Benefits"}>
+    <Section tone="paper" label={alt || t("sectionLabel.benefits")}>
       <div className={WRAP}>
         <Opener block={block} editable={editable} align="left" />
 

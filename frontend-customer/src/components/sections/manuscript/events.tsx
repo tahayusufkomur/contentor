@@ -11,11 +11,12 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, DoubleRule, H3, Opener, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Programme of readings, colloquia, and live sessions set out as a literary
  *  calendar with small-caps dates and reserve actions. */
 export function EventsReadings({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
@@ -26,7 +27,7 @@ export function EventsReadings({ block, data, editable }: SectionProps) {
       label={
         typeof block.heading === "string"
           ? block.heading
-          : "Programme of Readings"
+          : t("manuscript.programmeOfReadings")
       }
     >
       <div className={WRAP}>
@@ -68,7 +69,7 @@ export function EventsReadings({ block, data, editable }: SectionProps) {
                         {eventPriceLabel(e, locale)}
                       </span>
                       <span className="manuscript-link mt-1 inline-flex items-center gap-1.5 text-[0.92rem] font-medium text-foreground group-hover:text-accent">
-                        <span>Reserve a seat</span>
+                        <span>{t("manuscript.reserveSeat")}</span>
                         <Arrow />
                       </span>
                     </div>
@@ -83,8 +84,8 @@ export function EventsReadings({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No upcoming readings scheduled"
-              text="Schedule a live colloquium or workshop and it appears in the programme automatically."
+              title={t("manuscript.emptyEventsTitle")}
+              text={t("manuscript.emptyEventsText")}
             />
           </div>
         )}
@@ -100,10 +101,10 @@ export function EventsReadings({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "View full programme"
+                t("manuscript.viewProgramme")
               )}
               <Arrow />
             </SmartLink>

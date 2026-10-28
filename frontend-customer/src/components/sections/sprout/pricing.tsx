@@ -9,11 +9,12 @@ import {
 } from "../kit";
 import type { SectionProps } from "../types";
 import { Arrow, H3, Opener, PILL, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Membership and class passes styled as playful ticket-stub cards with
  *  cutout notches. The raised card carries no label: no plan is flagged popular. */
 export function PricingTickets({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
@@ -21,7 +22,11 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
   return (
     <Section
       tone="surface"
-      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.pricing")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} align="center" />
@@ -75,9 +80,9 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
                             "bg-[color-mix(in_oklch,var(--primary)_15%,transparent)] text-primary font-bold",
                           )}
                         >
-                          {plan.item_count}{" "}
-                          {plan.item_count === 1 ? "activity" : "activities"}{" "}
-                          included
+                          {t("sprout.activitiesIncluded", {
+                            count: plan.item_count,
+                          })}
                         </span>
                       </div>
                     )}
@@ -110,7 +115,7 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
                     <div className="mt-6">
                       {plan.is_subscribed ? (
                         <div className="inline-flex min-h-12 w-full items-center justify-center rounded-full border-2 border-primary font-display text-[1rem] font-bold text-primary">
-                          Subscribed
+                          {t("plan.subscribed")}
                         </div>
                       ) : (
                         <SubscribeButton
@@ -134,7 +139,7 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
                         href={`/plans/${plan.id}`}
                         className="group inline-flex items-center gap-1.5 font-display text-[0.88rem] font-bold text-muted-foreground transition-colors hover:text-primary"
                       >
-                        <span>See what&rsquo;s included</span>
+                        <span>{t("plan.seeIncluded")}</span>
                         <Arrow className="size-3" />
                       </SmartLink>
                     </div>
@@ -147,8 +152,8 @@ export function PricingTickets({ block, data, editable }: SectionProps) {
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No passes or plans yet"
-              text="Create a membership or ticket plan under Billing and it will show here."
+              title={t("sprout.emptyPlansTitle")}
+              text={t("sprout.emptyPlansText")}
             />
           </div>
         )}

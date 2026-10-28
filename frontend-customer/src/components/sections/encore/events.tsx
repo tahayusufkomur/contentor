@@ -11,17 +11,22 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { Arrow, BTN, H3, LABEL, NUM, Opener, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Events tour dates: upcoming dates laid out like a tour poster lineup with date, title, venue and ticket links. */
 export function EventsTourDates({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
 
   return (
     <Section
-      label={typeof block.heading === "string" ? block.heading : "Events"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.events")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -35,9 +40,9 @@ export function EventsTourDates({ block, data, editable }: SectionProps) {
                 "hidden grid-cols-[10rem_minmax(0,1fr)_9rem_6rem] items-center gap-x-6 border-b border-foreground py-3 text-muted-foreground sm:grid",
               )}
             >
-              <span>Date</span>
-              <span>Show</span>
-              <span>Venue</span>
+              <span>{t("encore.date")}</span>
+              <span>{t("encore.show")}</span>
+              <span>{t("encore.venue")}</span>
               <span />
             </li>
             {events.map((e) => (
@@ -65,14 +70,16 @@ export function EventsTourDates({ block, data, editable }: SectionProps) {
                         "hidden sm:block",
                     )}
                   >
-                    {e.type === "onsite_event" ? e.location : "Online"}
+                    {e.type === "onsite_event"
+                      ? e.location
+                      : t("encore.online")}
                   </span>
                   <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-col sm:items-end sm:justify-center sm:text-right">
                     <span className={cn(LABEL, NUM, "text-muted-foreground")}>
                       {eventPriceLabel(e, locale)}
                     </span>
                     <span className="encore-link inline-flex items-center gap-2 text-[0.9rem] font-semibold sm:mt-1">
-                      Tickets
+                      {t("encore.tickets")}
                       <Arrow />
                     </span>
                   </div>
@@ -84,8 +91,8 @@ export function EventsTourDates({ block, data, editable }: SectionProps) {
           <div className="mt-12">
             <EmptyHint
               editable={editable}
-              title="No upcoming sessions"
-              text="Schedule a live session or event and it appears here."
+              title={t("empty.sessions.title")}
+              text={t("empty.sessions.text")}
             />
           </div>
         )}
@@ -98,10 +105,10 @@ export function EventsTourDates({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "All dates"
+                t("encore.allDates")
               )}
               <Arrow />
             </SmartLink>

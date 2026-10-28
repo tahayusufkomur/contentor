@@ -18,10 +18,11 @@ import {
   WRAP,
   WashiTape,
 } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Workshop kit boxes with dashed seams, washi tape labels, and display pricing. */
 export function PricingKits({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const plans: SubscriptionPlan[] = Array.isArray(data) ? data : [];
   if (!plans.length && !editable) return null;
@@ -30,7 +31,11 @@ export function PricingKits({ block, data, editable }: SectionProps) {
   return (
     <Section
       tone="kraft"
-      label={typeof block.heading === "string" ? block.heading : "Pricing"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.pricing")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -66,7 +71,7 @@ export function PricingKits({ block, data, editable }: SectionProps) {
                     {plan.name}
                   </h3>
                   <span className="workshop-hand text-[1.1rem] font-bold text-accent">
-                    Kit #{idx + 1}
+                    {t("workshop.kitNumber", { number: idx + 1 })}
                   </span>
                 </div>
 
@@ -82,9 +87,9 @@ export function PricingKits({ block, data, editable }: SectionProps) {
                 {!!plan.item_count && (
                   <div className="mt-4">
                     <PriceTag
-                      price={`${plan.item_count} ${
-                        plan.item_count === 1 ? "project" : "projects"
-                      } included`}
+                      price={t("workshop.projectsIncluded", {
+                        count: plan.item_count,
+                      })}
                     />
                   </div>
                 )}
@@ -98,7 +103,7 @@ export function PricingKits({ block, data, editable }: SectionProps) {
                 <div className="mt-auto pt-8">
                   {plan.is_subscribed ? (
                     <p className="inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius)] border-2 border-dashed border-primary font-bold text-primary">
-                      Subscribed
+                      {t("plan.subscribed")}
                     </p>
                   ) : (
                     <SubscribeButton
@@ -114,7 +119,7 @@ export function PricingKits({ block, data, editable }: SectionProps) {
                     href={`/plans/${plan.id}`}
                     className="group workshop-link mt-4 inline-flex items-center gap-1.5 text-[0.92rem] font-bold"
                   >
-                    <span>See all kit materials</span>
+                    <span>{t("workshop.allKitMaterials")}</span>
                     <HandArrow className="h-3 w-4" />
                   </SmartLink>
                 </div>
@@ -125,8 +130,8 @@ export function PricingKits({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No membership kits yet"
-              text="Create a plan under Billing and it appears here as a workshop kit."
+              title={t("workshop.emptyPlansTitle")}
+              text={t("workshop.emptyPlansText")}
             />
           </div>
         )}

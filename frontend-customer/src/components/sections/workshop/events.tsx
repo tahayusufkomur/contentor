@@ -11,10 +11,11 @@ import {
 import { LocalWhen } from "../local-time";
 import type { SectionProps } from "../types";
 import { H3, HandArrow, Opener, PriceTag, Section, WRAP } from "./ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** Workshop sessions and live studio classes listed as ticket stubs with perforated dashed borders. */
 export function EventsSessions({ block, data, editable }: SectionProps) {
+  const t = useTranslations("site");
   const locale = useLocale();
   const events: CalendarEvent[] = Array.isArray(data) ? data : [];
   if (!events.length && !editable) return null;
@@ -22,7 +23,11 @@ export function EventsSessions({ block, data, editable }: SectionProps) {
   return (
     <Section
       tone="kraft"
-      label={typeof block.heading === "string" ? block.heading : "Events"}
+      label={
+        typeof block.heading === "string"
+          ? block.heading
+          : t("sectionLabel.events")
+      }
     >
       <div className={WRAP}>
         <Opener block={block} editable={editable} />
@@ -37,7 +42,7 @@ export function EventsSessions({ block, data, editable }: SectionProps) {
                 >
                   <div className="border-b border-dashed border-border pb-3 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-4">
                     <span className="block text-[0.8rem] font-bold uppercase tracking-wider text-muted-foreground">
-                      Session date
+                      {t("workshop.sessionDate")}
                     </span>
                     <span className="workshop-hand mt-1 block text-[1.25rem] font-bold leading-tight text-accent">
                       <LocalWhen iso={e.scheduled_at} />
@@ -67,7 +72,7 @@ export function EventsSessions({ block, data, editable }: SectionProps) {
                   <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:justify-center">
                     <PriceTag price={eventPriceLabel(e, locale)} />
                     <span className="workshop-hand inline-flex items-center gap-1.5 text-[1.1rem] font-bold text-accent transition-transform motion-safe:group-hover:translate-x-1">
-                      <span>Reserve bench</span>
+                      <span>{t("workshop.reserveBench")}</span>
                       <HandArrow className="h-3 w-4" />
                     </span>
                   </div>
@@ -79,8 +84,8 @@ export function EventsSessions({ block, data, editable }: SectionProps) {
           <div className="mt-14">
             <EmptyHint
               editable={editable}
-              title="No upcoming workshop sessions"
-              text="Schedule a live session or workshop and it appears here."
+              title={t("workshop.emptyEventsTitle")}
+              text={t("workshop.emptyEventsText")}
             />
           </div>
         )}
@@ -96,10 +101,10 @@ export function EventsSessions({ block, data, editable }: SectionProps) {
                   block={block}
                   field="ctaLabel"
                   editable={editable}
-                  placeholder="Button text"
+                  placeholder={t("placeholder.buttonText")}
                 />
               ) : (
-                "Full studio calendar"
+                t("workshop.fullStudioCalendar")
               )}
               <HandArrow />
             </SmartLink>

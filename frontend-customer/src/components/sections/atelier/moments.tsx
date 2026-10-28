@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { Img, has, itemsOf } from "../kit";
 import type { SectionProps } from "../types";
 import { ARCH, ArchFrame, Opener, Section, WRAP, str } from "./ui";
+import { useTranslations } from "next-intl";
 
 type Photo = { image?: unknown; caption?: string };
 
@@ -16,6 +17,7 @@ const ASPECTS = [
 
 /** Atelier lookbook: candid moments showcased in staggered arch frames of varied heights. */
 export function MomentsLookbook({ block, editable }: SectionProps) {
+  const t = useTranslations("site");
   const photos = itemsOf<Photo>(block, "photos");
   const alt = str(block.heading) || str(block.caption);
   const showHead =
@@ -23,7 +25,7 @@ export function MomentsLookbook({ block, editable }: SectionProps) {
   const showCaption = has(block, "caption", editable);
 
   return (
-    <Section label={alt || "Lookbook"}>
+    <Section label={alt || t("atelier.lookbook")}>
       <div className={WRAP}>
         {(showHead || showCaption) && (
           <Opener
@@ -36,7 +38,7 @@ export function MomentsLookbook({ block, editable }: SectionProps) {
         )}
 
         <ul
-          aria-label={alt || "Moments lookbook"}
+          aria-label={alt || t("atelier.momentsLookbook")}
           className={cn(
             "grid grid-cols-1 gap-8 sm:grid-cols-2 md:gap-10",
             // Four across: rows of three would leave the fourth arch alone.
