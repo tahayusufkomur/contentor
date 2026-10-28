@@ -13,7 +13,7 @@ from apps.accounts.models import User
 from apps.billing.models import SubscriptionPlan
 from apps.core.onboarding.compose import build_config_overrides
 from apps.core.tasks import _create_default_config
-from apps.core.tests.i18n_utils import translated
+from apps.core.tests.i18n_utils import gettext_in, translated
 from apps.email_campaigns import starters
 from apps.notifications.templates_builtin import builtin_templates
 from apps.tenant_config import interview_milestones as ms
@@ -259,3 +259,65 @@ def test_the_fallback_titles_and_button_label_follow_the_site_language():
         en = sc._ctx("yoga", BRAND, "", said="I")
     assert (en["why"], en["primaryLabel"]) == ("Why I teach yoga", "Browse the courses")
     assert sc._ctx("yoga", BRAND, "", said="we", links=("/about",))["primaryLabel"] == "About us"
+
+
+# ── fix round 1 ────────────────────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize("site, stored", [("tr", "Start a course"), ("tr", "Get Started"), ("en", "Kursa başla")])
+def test_a_default_header_button_written_in_another_language_still_follows_the_link(tr_site, tenant_ctx, site, stored):
+    """An English default on a Turkish site (or a Turkish one after the site went back to English) is a default,
+    not her own words: the label follows the link, in the site's language."""
+    from apps.core.languages import CODES
+
+    tr_site.default_locale = site
+    if stored == "Kursa başla":
+        with override("tr"):
+            stored = translated("Start a course")
+    tr_site.navbar_config = {"links": [], "cta": {"text": stored, "href": "/courses"}}
+    tr_site.save()
+    ms.sync_site(tenant_ctx, {"offers": ["live"]})
+    want = translated("Book a session") if site == "tr" else "Book a session"
+    assert TenantConfig.objects.first().navbar_config["cta"] == {"text": want, "href": "/events"}
+    assert {"tr", "en"} <= set(CODES)
+
+
+def test_a_header_button_in_her_own_words_is_kept_on_a_turkish_site(tr_site, tenant_ctx):
+    tr_site.navbar_config = {"links": [], "cta": {"text": "Join my course", "href": "/courses"}}
+    tr_site.save()
+    ms.sync_site(tenant_ctx, {"offers": ["live"]})
+    assert TenantConfig.objects.first().navbar_config["cta"] == {"text": "Join my course", "href": "/events"}
+
+
+def test_a_creator_reading_a_legacy_site_does_not_get_her_language_written_onto_it(tr_site, tenant_ctx):
+    from apps.tenant_config.serializers import TenantConfigSerializer
+
+    tr_site.pages = {}
+    tr_site.landing_sections = {}
+    tr_site.save()
+    with override("de"):  # the creator's language is neither the site's nor English
+        data = TenantConfigSerializer(tr_site).data
+    assert data["pages"]["home"]["blocks"][0]["heading"] == translated("Welcome to %(brand)s") % {"brand": BRAND}
+
+
+def test_the_about_fallback_never_shows_a_raw_niche_id_or_we_offers():
+    tr = build_config_overrides({"niche": "pole_dance"}, brand_name=BRAND, landing_sections={}, locale="tr")
+    body = tr["pages"]["about"]["blocks"][-1]["body"]
+    assert body == translated("%(brand)s offers %(topic)s you can follow from anywhere.") % {
+        "brand": BRAND,
+        "topic": translated("%(niche)s classes") % {"niche": translated("pole dance")},
+    }
+    assert "pole" not in body.lower().replace(translated("pole dance").lower(), "")
+    unknown = build_config_overrides({"niche": "personal_training"}, brand_name=BRAND, landing_sections={}, locale="tr")
+    assert "personal" not in unknown["pages"]["about"]["blocks"][-1]["body"]
+    team = build_config_overrides({"niche": "yoga"}, brand_name="", landing_sections={}, locale="tr")
+    assert team["pages"]["about"]["blocks"][-1]["body"] == translated(
+        "We offer %(topic)s you can follow from anywhere."
+    ) % {"topic": translated("%(niche)s classes") % {"niche": gettext_in("yoga", "tr")}}
+    en = build_config_overrides({"niche": "yoga"}, brand_name="", landing_sections={}, locale="en")
+    assert en["pages"]["about"]["blocks"][-1]["body"] == "We offer yoga classes you can follow from anywhere."
+    en = build_config_overrides({"niche": "personal_training"}, brand_name=BRAND, landing_sections={}, locale="en")
+    assert (
+        en["pages"]["about"]["blocks"][-1]["body"]
+        == "Glow offers personal training classes you can follow from anywhere."
+    )

@@ -21,6 +21,7 @@ from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy, override
 from django_tenants.utils import schema_context
 
+from apps.core import languages
 from apps.core.languages import site_language
 
 from . import interview_brief as brief
@@ -203,6 +204,16 @@ def available_nav_links(answers: dict, current_links: list[dict]) -> list[dict]:
     return [{"label": label, "href": href} for href, label in _nav() if href in allowed]
 
 
+def _default_cta_texts() -> set[str]:
+    """The header button texts setup itself writes ("Get Started", "Start a course"), in EVERY language: a default
+    written before the site changed language is still a default."""
+    texts = set()
+    for code in languages.CODES:
+        with override(code):
+            texts |= {gettext("Get Started"), header_cta(["/courses"])["text"]}
+    return texts
+
+
 def sync_site(tenant, answers: dict) -> None:
     """Modules, header links, social accounts, the time zone and the currency
     follow what the coach said: classes turn on the live module and add an
@@ -262,7 +273,7 @@ def sync_site(tenant, answers: dict) -> None:
                 # The label follows the link while it is a default ("Start a course", the legacy
                 # "Get Started"); her own words keep their text and only the link moves.
                 led = header_cta(["/events"] if runs_classes else [])
-                her_words = cta.get("text") not in (gettext("Get Started"), header_cta(["/courses"])["text"])
+                her_words = cta.get("text") not in _default_cta_texts()
                 cta_override = {"cta": {**cta, "href": led["href"]} if her_words else led}
         show_social_override = (
             {"show_social": bool(answers["navbar_show_social"])}

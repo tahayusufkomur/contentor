@@ -1,8 +1,10 @@
 from uuid import UUID, uuid4
 
 from django.db import connection
+from django.utils.translation import override
 from rest_framework import serializers
 
+from apps.core.languages import resolve
 from apps.core.sanitize import clean_css
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 from apps.media.models import Photo
@@ -274,7 +276,10 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         # tenant has none yet (freshly-seeded demos, not-yet-migrated tenants).
         pages = data.get("pages")
         if not pages:
-            pages = pages_from_landing_sections(instance.landing_sections or {}, instance.brand_name)
+            with override(
+                resolve(instance.default_locale)
+            ):  # a creator's request must not write her language onto the site
+                pages = pages_from_landing_sections(instance.landing_sections or {}, instance.brand_name)
             data["pages"] = pages
         if isinstance(pages, dict):
             self._sign_tree(pages)

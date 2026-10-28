@@ -144,6 +144,41 @@ msgstr "Nachricht senden"
 msgid "Thanks! We'll get back to you soon."
 msgstr "Danke! Wir melden uns bald bei dir."
 
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "belly dance"
+msgstr "Bauchtanz"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "face yoga"
+msgstr "Gesichtsyoga"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "fitness"
+msgstr "Fitness"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "makeup"
+msgstr "Make-up"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "pilates"
+msgstr "Pilates"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "pole dance"
+msgstr "Pole Dance"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "yoga"
+msgstr "Yoga"
+
 #: apps/core/onboarding/compose.py apps/core/tasks.py
 #: apps/tenant_config/defaults.py
 #, fuzzy, python-format
@@ -162,14 +197,14 @@ msgstr "Kurse"
 
 #: apps/core/onboarding/compose.py
 #, fuzzy, python-format
+msgid "We offer %(topic)s you can follow from anywhere."
+msgstr "Wir bieten %(topic)s, an denen du von überall aus teilnehmen kannst."
+
+#: apps/core/onboarding/compose.py
+#, fuzzy, python-format
 msgid "%(brand)s offers %(topic)s you can follow from anywhere."
 msgstr ""
 "%(brand)s bietet %(topic)s, an denen du von überall aus teilnehmen kannst."
-
-#: apps/core/onboarding/compose.py
-#, fuzzy
-msgid "We"
-msgstr "Wir"
 
 #: apps/core/onboarding/compose.py
 #, fuzzy

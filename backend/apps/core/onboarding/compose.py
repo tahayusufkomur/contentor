@@ -14,8 +14,9 @@ whatever language happens to be active.
 
 from __future__ import annotations
 
+from django.utils.translation import get_language, gettext_lazy, gettext_noop, override
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy, override
+from django.utils.translation import gettext as render_marked  # for text marked with gettext_noop
 
 from apps.core.languages import resolve
 from apps.tenant_config.defaults import header_cta
@@ -45,6 +46,17 @@ COPY = {
     "contact_intro": gettext_lazy("Have a question? Send us a message."),
     "contact_submit": gettext_lazy("Send message"),
     "contact_success": gettext_lazy("Thanks! We'll get back to you soon."),
+}
+
+# The wizard's niches as a visitor reads them mid-sentence (the ids are machine names).
+NICHE_NAMES = {
+    "belly_dance": gettext_noop("belly dance"),
+    "face_yoga": gettext_noop("face yoga"),
+    "fitness": gettext_noop("fitness"),
+    "makeup": gettext_noop("makeup"),
+    "pilates": gettext_noop("pilates"),
+    "pole_dance": gettext_noop("pole dance"),
+    "yoga": gettext_noop("yoga"),
 }
 
 # courses/billing/pages/analytics are platform core — always on (the setup
@@ -127,12 +139,15 @@ def _about_body(answers, brand_name) -> str:
     description = (answers.get("description") or "").strip()
     if description:
         return description
-    niche = (answers.get("niche") or "").replace("_", " ")
-    topic = _("%(niche)s classes") % {"niche": niche} if niche and niche != "general" else _("classes")
-    return _("%(brand)s offers %(topic)s you can follow from anywhere.") % {
-        "brand": brand_name or _("We"),
-        "topic": topic,
-    }
+    niche = answers.get("niche") or ""
+    if niche in NICHE_NAMES:
+        name = render_marked(NICHE_NAMES[niche])
+    else:  # an id we have no name for is shown as is in English, and left out in any other language
+        name = niche.replace("_", " ") if get_language() == "en" else ""
+    topic = _("%(niche)s classes") % {"niche": name} if name and niche != "general" else _("classes")
+    if not brand_name:
+        return _("We offer %(topic)s you can follow from anywhere.") % {"topic": topic}
+    return _("%(brand)s offers %(topic)s you can follow from anywhere.") % {"brand": brand_name, "topic": topic}
 
 
 def _about_image_text(answers, brand_name, sections, copy, block_id="blk_about") -> dict:

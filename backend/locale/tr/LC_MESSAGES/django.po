@@ -144,6 +144,41 @@ msgstr "Mesaj gönder"
 msgid "Thanks! We'll get back to you soon."
 msgstr "Teşekkürler! En kısa sürede sana dönüş yapacağız."
 
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "belly dance"
+msgstr "oryantal dans"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "face yoga"
+msgstr "yüz yogası"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "fitness"
+msgstr "fitness"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "makeup"
+msgstr "makyaj"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "pilates"
+msgstr "pilates"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "pole dance"
+msgstr "direk dansı"
+
+#: apps/core/onboarding/compose.py
+#, fuzzy
+msgid "yoga"
+msgstr "yoga"
+
 #: apps/core/onboarding/compose.py apps/core/tasks.py
 #: apps/tenant_config/defaults.py
 #, fuzzy, python-format
@@ -162,13 +197,13 @@ msgstr "dersler"
 
 #: apps/core/onboarding/compose.py
 #, fuzzy, python-format
-msgid "%(brand)s offers %(topic)s you can follow from anywhere."
-msgstr "%(brand)s, her yerden takip edebileceğin %(topic)s sunuyor."
+msgid "We offer %(topic)s you can follow from anywhere."
+msgstr "Her yerden takip edebileceğin %(topic)s sunuyoruz."
 
 #: apps/core/onboarding/compose.py
-#, fuzzy
-msgid "We"
-msgstr "Biz"
+#, fuzzy, python-format
+msgid "%(brand)s offers %(topic)s you can follow from anywhere."
+msgstr "%(brand)s, her yerden takip edebileceğin %(topic)s sunuyor."
 
 #: apps/core/onboarding/compose.py
 #, fuzzy
