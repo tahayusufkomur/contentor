@@ -225,7 +225,8 @@ test("signup lands in /setup and the interview ends in a published site", async 
       continue;
     }
     if (await tile.isVisible()) {
-      await tile.click();
+      // A question the bio already ticked keeps its picks (a tap would untick one): Continue takes them.
+      if (!(await guide.locator('h1 ~ div.grid > button[aria-pressed="true"]').count())) await tile.click();
       for (const handle of await handles.all()) await handle.fill("e2estudio");
       // A starter tile opened as a card: finish its sentence there, in the coach's words.
       const finish = guide.getByLabel(/^Finish the sentence/);
