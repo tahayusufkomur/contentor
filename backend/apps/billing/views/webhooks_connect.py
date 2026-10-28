@@ -18,6 +18,7 @@ from decimal import Decimal
 from django.utils import timezone
 from django_tenants.utils import tenant_context
 
+from apps.core import languages
 from apps.core.models import Tenant
 
 from .webhooks_common import _invoice_period_end, _invoice_subscription_id, _sub_period
@@ -38,6 +39,18 @@ def _resolve_tenant_for_connect(event, metadata):
         if tenant is not None:
             return tenant
     return _resolve_tenant(metadata)
+
+
+def _set_receipt_language(event, session, metadata):
+    """Stripe's receipts follow the customer's preferred_locales. The language is the one the
+    checkout was opened in (`metadata.locale`), never this request's: the webhook has no site."""
+    code, customer, account = metadata.get("locale"), session.get("customer"), event.get("account")
+    if code in languages.CODES and customer and account:
+        from apps.billing.providers import connect
+
+        connect.set_customer_locale(
+            account_id=account, customer_id=customer, stripe_locale=languages.info(code)["stripe"]
+        )
 
 
 def _handle_marketplace_checkout_completed(event):
@@ -66,6 +79,7 @@ def _handle_marketplace_checkout_completed(event):
         from apps.billing.providers import connect
 
         receipt_url = connect.retrieve_receipt_url(account_id=event["account"], payment_intent_id=provider_payment_id)
+    _set_receipt_language(event, session, metadata)
     with tenant_context(tenant):
         from apps.billing.models import Payment
         from apps.billing.views.payments import grant_access_for_payment
@@ -230,6 +244,7 @@ def _handle_marketplace_subscription_checkout(event):
         period_end=None,
         cancel_at_period_end=False,
     )
+    _set_receipt_language(event, session, metadata)
 
 
 def _handle_marketplace_subscription_event(event, tenant):

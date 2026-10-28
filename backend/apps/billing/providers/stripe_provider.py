@@ -17,6 +17,8 @@ from typing import TYPE_CHECKING, Any
 import stripe
 from django.conf import settings
 
+from apps.core import languages
+
 from . import PaymentProvider
 from .types import CheckoutSession, InvalidWebhookSignature, ProviderError
 
@@ -26,7 +28,7 @@ if TYPE_CHECKING:
 
 # Only locales we ship; anything else (e.g. a stale user row) falls back to "en"
 # so we never send a string Stripe will reject.
-_SUPPORTED_STRIPE_LOCALES = {"en"}
+_SUPPORTED_STRIPE_LOCALES = {languages.info(code)["stripe"] for code in languages.CODES}
 
 
 def _client() -> Any:

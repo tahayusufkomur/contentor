@@ -20,6 +20,8 @@ from typing import Any
 
 from django.conf import settings
 
+from apps.core import languages
+
 from .stripe_provider import checkout_ui
 from .types import ProviderError
 
@@ -151,18 +153,19 @@ def create_marketplace_checkout(
     is priced ad hoc, not via pre-made Stripe Prices).
     """
     stripe = _client()
-    payment_intent_data: dict = {}
+    locale = languages.site_language()
+    metadata = {**(metadata or {}), "locale": locale}
+    payment_intent_data: dict = {"metadata": metadata}
     if application_fee_cents > 0:
         payment_intent_data["application_fee_amount"] = application_fee_cents
-    if metadata:
-        payment_intent_data["metadata"] = metadata
     try:
         session = stripe.checkout.Session.create(
             mode="payment",
             line_items=line_items,
-            payment_intent_data=payment_intent_data or None,
-            metadata=metadata or {},
+            payment_intent_data=payment_intent_data,
+            metadata=metadata,
             customer_email=customer_email or None,
+            locale=languages.info(locale)["stripe"],
             stripe_account=account_id,
             **checkout_ui(success_url, cancel_url),
         )
@@ -224,7 +227,9 @@ def create_subscription_checkout(
     `subscription_data.application_fee_percent` as the platform's cut.
     """
     stripe = _client()
-    subscription_data: dict = {"metadata": metadata or {}}
+    locale = languages.site_language()
+    metadata = {**(metadata or {}), "locale": locale}
+    subscription_data: dict = {"metadata": metadata}
     if application_fee_percent > 0:
         subscription_data["application_fee_percent"] = application_fee_percent
     try:
@@ -232,8 +237,9 @@ def create_subscription_checkout(
             mode="subscription",
             line_items=[{"price": price_id, "quantity": 1}],
             subscription_data=subscription_data,
-            metadata=metadata or {},
+            metadata=metadata,
             customer_email=customer_email or None,
+            locale=languages.info(locale)["stripe"],
             stripe_account=account_id,
             **checkout_ui(success_url, cancel_url),
         )
@@ -322,6 +328,15 @@ def retrieve_receipt_url(*, account_id: str, payment_intent_id: str) -> str:
     except Exception:  # noqa: BLE001 — receipts are nice-to-have, never load-bearing
         logger.warning("could not fetch receipt for %s", payment_intent_id)
     return ""
+
+
+def set_customer_locale(*, account_id: str, customer_id: str, stripe_locale: str) -> None:
+    """Make Stripe's own receipts for this customer follow `stripe_locale` (best effort)."""
+    stripe = _client()
+    try:
+        stripe.Customer.modify(customer_id, preferred_locales=[stripe_locale], stripe_account=account_id)
+    except Exception:  # noqa: BLE001 — a receipt's language is never worth failing the webhook
+        logger.warning("could not set preferred locale for %s", customer_id)
 
 
 def retrieve_account_status(*, account_id: str) -> ConnectAccountStatus:
