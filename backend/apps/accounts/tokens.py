@@ -23,18 +23,18 @@ def verify_magic_link_token(token: str) -> dict:
     return payload
 
 
-def create_signup_token(email: str, name: str, brand_name: str, region: str = "global", about_id: str = "") -> str:
+def create_signup_token(email: str, name: str, site: str, region: str = "global") -> str:
+    """``site`` is the schema of the site it creates (onboarding.site_name):
+    fixed for life, while the address changes once the creator names it."""
     payload = {
         "email": email,
         "name": name,
-        "brand_name": brand_name,
+        "site": site,
         "region": region,
         "purpose": "signup",
         "exp": datetime.now(tz=UTC) + timedelta(minutes=settings.MAGIC_LINK_EXPIRY_MINUTES),
         "iat": datetime.now(tz=UTC),
     }
-    if about_id:
-        payload["about_id"] = about_id
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
 
@@ -45,7 +45,7 @@ def verify_signup_token(token: str) -> dict:
     return payload
 
 
-def create_wizard_token(email: str, name: str, brand_name: str, region: str = "global", about_id: str = "") -> str:
+def create_wizard_token(email: str, name: str, site: str, region: str = "global") -> str:
     """Long-lived token for the pre-provision onboarding wizard.
 
     Same claims as the signup token but a multi-day expiry, so a coach can
@@ -55,14 +55,12 @@ def create_wizard_token(email: str, name: str, brand_name: str, region: str = "g
     payload = {
         "email": email,
         "name": name,
-        "brand_name": brand_name,
+        "site": site,
         "region": region,
         "purpose": "wizard",
         "exp": datetime.now(tz=UTC) + timedelta(days=settings.WIZARD_TOKEN_EXPIRY_DAYS),
         "iat": datetime.now(tz=UTC),
     }
-    if about_id:
-        payload["about_id"] = about_id
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
 

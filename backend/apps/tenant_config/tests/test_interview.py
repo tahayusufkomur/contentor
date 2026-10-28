@@ -219,18 +219,6 @@ def test_a_part_of_the_page_she_tapped_scopes_the_change(client, tenant_ctx, qui
     )
 
 
-def test_a_bio_read_once_is_not_asked_for_again(client, tenant_ctx, quiet):
-    flow = {}
-    assert interview.interview_state(tenant_ctx, flow)["bio_read"] is False
-    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={"about_prefills": {"teaches": "Yoga"}})
-    tenant_ctx.refresh_from_db()
-    assert interview.interview_state(tenant_ctx, flow)["bio_read"] is True
-    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={})
-    tenant_ctx.refresh_from_db()
-    shared = {"interview": {"turns": [{"role": "coach", "text": interview.IMPORT_TURN_TEXT, "how": "import"}]}}
-    assert interview.interview_state(tenant_ctx, shared)["bio_read"] is True
-
-
 def test_a_turn_that_starts_work_says_so(client, tenant_ctx, quiet):
     quiet.reply = interview.InterviewTurn(ack="Got it.", next_field="audience", question="Who?")
     fired = ["style:auto", "page:home", "rank:logos", "draft:course"]
@@ -940,91 +928,77 @@ def test_an_address_pick_skips_the_model_and_asks_the_next_question(client, tena
     assert body["guide"]["field"] == "onsite_price"
 
 
-# ── a shared document (bio, CV, old About page) ──────────────────────────────
+# ── the bio and the site's name, the interview's first two screens ──────────
 
 IMPORT_URL = "/api/v1/admin/setup-flow/import/"
 BIO = "Mira Voss. I teach Pottery to desk workers. Trained with the Ceramics Guild, 500 hours, in 2016."
 
 
-def _import_reply(**kwargs):
-    return interview.InterviewTurn(
+def _bio_reply():
+    from apps.core.onboarding.about_check import AboutAnalysis
+
+    return AboutAnalysis(
         facts=[
-            {"field": "teaches", "value": "Pottery"},
-            {"field": "audience", "value": "Desk workers"},
-            {"field": "credentials", "value": "I trained with the Ceramics Guild, 500 hours, in 2016."},
-            {"field": "story", "value": "I found clay after years at a desk."},
+            {"field": "teaches", "value": "Pottery", "items": ["Pottery"]},
+            {"field": "audience", "value": "Desk workers", "items": ["Desk workers"]},
         ],
-        ack="Thanks for the document.",
-        next_field="outcome",
-        question="What do students walk away with?",
-        **kwargs,
+        summary="Found what you teach and who for.",
     )
 
 
-def _bio_file(text=BIO):
+# A site that signed up unnamed: its bio and its name open the interview.
+UNNAMED = {**PHOTOS, "named_in_setup": True}
+
+
+def _bio_file(text):
     from django.core.files.uploadedfile import SimpleUploadedFile
 
     return SimpleUploadedFile("bio.txt", text.encode())
 
 
-def test_a_shared_file_fills_several_questions_and_says_so(client, tenant_ctx, quiet):
-    quiet.reply = _import_reply()
-    body = client.post(IMPORT_URL, {"file": _bio_file()}, format="multipart").json()
-    answers = _answers(tenant_ctx)
-    assert answers["teaches"] == "Pottery" and answers["audience"] == "Desk workers"
-    assert answers["credentials"].startswith("I trained") and answers["story"].startswith("I found")
+def test_a_new_site_opens_on_its_bio_then_its_name():
+    from apps.tenant_config import interview_brief as brief
+
+    assert [f.id for f in brief.missing(dict(UNNAMED))][:2] == ["bio", "site_name"]
+    # A site named at signup gave both there: neither is asked.
+    assert not {"bio", "site_name"} & {f.id for f in brief.missing(dict(PHOTOS))}
+
+
+def test_a_shared_bio_ticks_the_questions_ahead_and_moves_on(client, tenant_ctx, quiet):
+    _set_answers(tenant_ctx, dict(UNNAMED))
+    quiet.reply = _bio_reply()
+    body = client.post(IMPORT_URL, {"file": _bio_file(BIO + " (file)")}, format="multipart").json()
+    state = Tenant.objects.get(pk=tenant_ctx.pk).wizard_state
+    assert state["answers"]["bio"] == "shared"
+    assert body["guide"]["field"] == "site_name"
+    # Ticked for her to check, never settled for her.
+    assert state["about_prefills"]["teaches"] == "Pottery" and "teaches" not in state["answers"]
     assert body["guide"]["ack"] == (
-        "From your file I filled in: what you offer, who you work with, your story, your training."
-        " You can change any of them."
+        "Thanks. From your bio I noted what you offer and who you work with."
+        " I ticked them in the questions ahead for you to check."
     )
-    assert body["guide"]["noted"] == ["who you work with", "your story", "your training"]  # not the question on screen
-    assert body["guide"]["field"] == "outcome"
-    user = json.loads(quiet.calls[0]["user"])
-    assert user["document"] is True and user["message"] == BIO and user["answering"] is None
-    assert body["coach_text"] == interview.IMPORT_TURN_TEXT  # the transcript never holds the document
-    turns = TenantConfig.objects.first().setup_flow["interview"]["turns"]
-    assert [t for t in turns if t["role"] == "coach"][0]["how"] == "import"
+    assert body["coach_text"] == interview.BIO_TURN_TEXT  # the transcript never holds the bio
+    assert "contentor:interview" not in [c["label"] for c in quiet.calls]  # nothing waits on an AI turn
 
 
-def test_pasted_text_works_and_may_be_longer_than_a_chat_message(client, quiet):
-    quiet.reply = _import_reply()
-    long = BIO + " " + "More about me. " * 300
-    assert len(long) > interview.MESSAGE_MAX
-    assert client.post(IMPORT_URL, {"text": long}, format="json").status_code == 200
-    assert len(json.loads(quiet.calls[0]["user"])["message"]) == len(long.strip())
+def test_a_bio_with_nothing_to_read_changes_nothing(client, tenant_ctx, quiet):
+    from apps.core.onboarding.about_check import AboutAnalysis
+
+    _set_answers(tenant_ctx, dict(UNNAMED))
+    quiet.reply = AboutAnalysis()
+    response = client.post(IMPORT_URL, {"text": "Hello there, nothing much."}, format="json")
+    assert response.status_code == 400 and response.json()["detail"] == interview.BIO_UNREAD
+    assert _answers(tenant_ctx) == UNNAMED
 
 
-def test_a_shared_file_never_overwrites_what_she_already_answered(client, tenant_ctx, quiet):
-    _set_answers(tenant_ctx, {"teaches": "Pottery", "delegated": ["story"]})
-    quiet.reply = _import_reply()
-    client.post(IMPORT_URL, {"text": BIO}, format="json")
-    answers = _answers(tenant_ctx)
-    assert answers["teaches"] == "Pottery"
-    assert "story" not in answers  # left to the guide: settled
-    assert answers["audience"] == "Desk workers"
-
-
-def test_a_shared_file_is_never_a_site_edit_or_a_redraft(client, tenant_ctx, quiet):
-    _set_answers(tenant_ctx, {**BEFORE_COURSE, "course_topic": "Footwork", "course_price": 49.0})
-    quiet.reply = _import_reply(edit_request="Change my headline")
-    with (
-        mock.patch("apps.core.copilot.engine.run_turn") as run,
-        mock.patch("apps.tenant_config.interview_milestones.redraft") as redraft,
-    ):
-        body = client.post(IMPORT_URL, {"text": BIO, "field": "course_review"}, format="json").json()
-    run.assert_not_called()
-    redraft.assert_not_called()
-    assert body["edit"] is None
-
-
-def test_when_the_ai_fails_nothing_is_applied(client, tenant_ctx, quiet):
-    from apps.core import ai as core_ai
-
-    quiet.error = core_ai.AiError("down")
-    response = client.post(IMPORT_URL, {"text": BIO}, format="json")
-    assert response.status_code == 503 and response.json()["detail"] == "ai_unavailable"
-    assert _answers(tenant_ctx) == PHOTOS
-    assert TenantConfig.objects.first().setup_flow["interview"]["turns"] == []
+def test_the_bio_can_be_skipped(client, tenant_ctx, quiet):
+    _set_answers(tenant_ctx, dict(UNNAMED))
+    body = client.post(
+        URL, {"message": "I'll skip this for now", "choice": {"field": "bio", "value": "none"}}, format="json"
+    ).json()
+    assert _answers(tenant_ctx)["bio"] == "none"
+    assert body["guide"]["field"] == "site_name" and body["guide"]["ack"] == ""
+    assert quiet.calls == []
 
 
 def test_a_file_that_cannot_be_read_is_a_plain_400(client, quiet):
@@ -1036,11 +1010,39 @@ def test_a_file_that_cannot_be_read_is_a_plain_400(client, quiet):
     assert quiet.calls == []
 
 
-def test_a_shared_file_after_setup_finished_is_refused(client, config, quiet):
+def test_a_bio_after_setup_finished_is_refused(client, config, quiet):
     config.setup_flow = {**config.setup_flow, "status": "done"}
     config.save()
     assert client.post(IMPORT_URL, {"text": BIO}, format="json").status_code == 409
     assert quiet.calls == []
+
+
+def test_naming_the_site_moves_it_to_its_new_address(client, tenant_ctx, quiet, settings):
+    """The address follows the name; the browser is sent there, signed in. The
+    question after it is asked as code writes it, with no AI turn."""
+    from apps.core.onboarding import site_name
+
+    def renamed(tenant, name):
+        tenant.name, tenant.slug = name, "glow-yoga"
+
+    _set_answers(tenant_ctx, {**UNNAMED, "bio": "none"})
+    with mock.patch.object(site_name, "rename", side_effect=renamed) as rename:
+        body = client.post(
+            URL, {"message": "Glow Yoga", "choice": {"field": "site_name", "value": "Glow Yoga"}}, format="json"
+        ).json()
+    assert rename.call_args.args[1] == "Glow Yoga"
+    assert _answers(tenant_ctx)["site_name"] == "Glow Yoga"
+    assert TenantConfig.objects.first().brand_name == "Glow Yoga"
+    assert body["goto"].startswith(f"{settings.SITE_SCHEME}://glow-yoga.{settings.CONTENTOR_DOMAIN}/callback?token=")
+    assert body["goto"].endswith("&next=/setup")
+    assert quiet.calls == []
+
+
+def test_a_name_that_is_taken_is_refused(client, tenant_ctx, quiet):
+    _set_answers(tenant_ctx, {**UNNAMED, "bio": "none"})
+    response = client.post(URL, {"message": "Admin", "choice": {"field": "site_name", "value": "Admin"}}, format="json")
+    assert response.status_code == 400 and response.json()["detail"] == "brand_taken"
+    assert "goto" not in response.json()
 
 
 def test_about_prefills_populate_guide_without_skipping_steps(tenant_ctx, config):

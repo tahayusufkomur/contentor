@@ -1258,6 +1258,23 @@ def apply_style(tenant, style_id: str, palette: str = "") -> None:
     _bust(tenant)
 
 
+def name_site(tenant, answers: dict, name: str) -> None:
+    """The site's name: its address follows it (core.onboarding.site_name),
+    and so does the brand on the site."""
+    from apps.core.onboarding import site_name
+
+    try:
+        site_name.rename(tenant, name)
+    except site_name.NameRefusedError as exc:
+        raise ChoiceError(str(exc)) from None
+    with transaction.atomic():
+        cfg = TenantConfig.objects.select_for_update().first()
+        cfg.brand_name = tenant.name
+        cfg.save(update_fields=["brand_name"])
+    _bust(tenant)
+    answers["site_name"] = tenant.name
+
+
 def apply_logo(tenant, answers: dict) -> None:
     from apps.core.onboarding.compose import apply_wizard_logo
 
@@ -1289,6 +1306,14 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
         if value not in ("ok", brief.DELEGATE):
             raise ChoiceError("invalid_value")
         answers[field_id] = "approved"
+        return
+    if field_id == "bio":  # shared (interview.share_bio reads it first) or skipped
+        if value not in (brief.BIO_SHARED, brief.BIO_NONE):
+            raise ChoiceError("invalid_value")
+        answers["bio"] = value
+        return
+    if field_id == "site_name":
+        name_site(tenant, answers, str(value or ""))
         return
     if field_id == "photos":
         from apps.media import own_photos

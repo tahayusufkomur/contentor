@@ -6,7 +6,6 @@ from .views import (
     creator_signup,
     creator_signup_authenticated,
     creator_signup_verify,
-    extract_doc,
     onboarding_handoff,
     provisioning_status,
     seed_from_template,
@@ -17,7 +16,6 @@ from .views import (
 urlpatterns = [
     path("signup/", creator_signup, name="creator-signup"),
     path("check-brand-name/", check_brand_name, name="check-brand-name"),
-    path("extract-doc/", extract_doc, name="onboarding-extract-doc"),
     path("signup/authenticated/", creator_signup_authenticated, name="creator-signup-authenticated"),
     path("signup/verify/", creator_signup_verify, name="creator-signup-verify"),
     path("signup/checkout/", signup_checkout, name="creator-signup-checkout"),

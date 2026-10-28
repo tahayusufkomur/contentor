@@ -14,8 +14,8 @@ def _client():
     return APIClient(HTTP_HOST=SHARED_DOMAIN)
 
 
-def _token(email="coach@x.com", brand="Glow Studio"):
-    return create_signup_token(email, "Coach", brand)
+def _token(email="coach@x.com", site="glow_studio"):
+    return create_signup_token(email, "Coach", site)
 
 
 @pytest.fixture()
@@ -70,7 +70,7 @@ def test_handoff_accepts_wizard_token(tenant, settings):
     from apps.accounts.tokens import create_wizard_token
 
     settings.SITE_SCHEME = "https"
-    wizard = create_wizard_token("coach@x.com", "Coach", "Glow Studio")
+    wizard = create_wizard_token("coach@x.com", "Coach", "glow_studio")
     resp = _client().post("/api/v1/onboarding/handoff/", {"token": wizard}, format="json")
     assert resp.status_code == 200, resp.content
     assert "/callback?token=" in resp.json()["login_url"]
@@ -79,10 +79,37 @@ def test_handoff_accepts_wizard_token(tenant, settings):
 def test_verify_accepts_wizard_token_for_existing_tenant(tenant):
     from apps.accounts.tokens import create_wizard_token, verify_wizard_token
 
-    wizard = create_wizard_token("coach@x.com", "Coach", "Glow Studio")
+    wizard = create_wizard_token("coach@x.com", "Coach", "glow_studio")
     resp = _client().post("/api/v1/onboarding/signup/verify/", {"token": wizard}, format="json")
     assert resp.status_code == 200, resp.content
     data = resp.json()
     assert data["slug"] == "glow-studio"
     # Every verify re-mints a fresh 7-day wizard token — resume never starves.
     assert verify_wizard_token(data["wizard_token"])["purpose"] == "wizard"
+
+
+def test_a_token_from_before_the_site_claim_still_finds_its_tenant(tenant, settings):
+    """A 7-day link minted when tokens named the site by its brand name."""
+    from datetime import UTC, datetime, timedelta
+
+    import jwt
+
+    legacy = jwt.encode(
+        {
+            "email": "coach@x.com",
+            "name": "Coach",
+            "brand_name": "Glow Studio",
+            "region": "global",
+            "purpose": "wizard",
+            "exp": datetime.now(tz=UTC) + timedelta(days=1),
+        },
+        settings.SECRET_KEY,
+        algorithm="HS256",
+    )
+    resp = _client().post("/api/v1/onboarding/handoff/", {"token": legacy}, format="json")
+    assert resp.status_code == 200, resp.content
+
+
+def test_verify_refuses_a_token_for_someone_elses_site(tenant):
+    resp = _client().post("/api/v1/onboarding/signup/verify/", {"token": _token("other@x.com")}, format="json")
+    assert resp.status_code == 403

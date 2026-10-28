@@ -94,12 +94,14 @@ def delete_platform(tenant) -> None:
     # django-tenants only drops from the public (or the tenant's own) schema, and
     # a request on the tenant's host has that very schema active — leave it first.
     connection.set_schema_to_public()
-    slug, owner = tenant.slug, tenant.owner_email
+    from apps.core.storage import storage_folder
+
+    slug, owner, folder = tenant.slug, tenant.owner_email, storage_folder(tenant)
     with transaction.atomic():  # DROP SCHEMA is transactional: a failure keeps the subscription row too
         # A (cancelled/free) subscription is referenced by Payment rows that live in the
         # tenant's schema, which the ORM cascade cannot reach from public ("relation
         # billing_payment does not exist") — they go with the schema, so skip the collector.
         PlatformSubscription.objects.filter(tenant=tenant)._raw_delete(PlatformSubscription.objects.db)
         tenant.delete(force_drop=True)  # drops the schema iff it exists, then the row (+ cascades)
-    purge_tenant_media(slug)
+    purge_tenant_media(folder)
     logger.info("platform deleted by owner slug=%s owner=%s", slug, owner)

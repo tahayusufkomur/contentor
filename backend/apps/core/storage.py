@@ -33,10 +33,21 @@ def _s3_client(access_key_id, secret_access_key, endpoint):
     return boto3.client("s3", **kwargs)
 
 
+def storage_folder(tenant) -> str:
+    """The tenant's folder under tenants/: its address, except a site named in
+    /setup keeps the folder of its temporary address (its schema), so the
+    files stored before the name stay its own."""
+    from .constants import SITE_PLACEHOLDER_PREFIX
+
+    if tenant.schema_name.startswith(SITE_PLACEHOLDER_PREFIX):
+        return tenant.schema_name
+    return tenant.slug
+
+
 def get_tenant_slug():
     tenant = getattr(connection, "tenant", None)
     if tenant and hasattr(tenant, "slug"):
-        return tenant.slug
+        return storage_folder(tenant)
     return "unknown"
 
 

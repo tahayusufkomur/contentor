@@ -27,18 +27,18 @@ from apps.accounts.tokens import (
 class TestSignupTokens:
     def test_create_and_verify_signup_token(self):
         """Round-trip: create then verify returns the original claims."""
-        token = create_signup_token("coach@example.com", "Jane", "FitnessCo")
+        token = create_signup_token("coach@example.com", "Jane", "new-site-abc123")
         payload = verify_signup_token(token)
         assert payload["email"] == "coach@example.com"
         assert payload["name"] == "Jane"
-        assert payload["brand_name"] == "FitnessCo"
+        assert payload["site"] == "new-site-abc123"
         assert payload["purpose"] == "signup"
 
     def test_signup_token_contains_expected_fields(self):
-        """Token payload must include email, name, brand_name, purpose, exp, iat."""
-        token = create_signup_token("a@b.com", "Alice", "BrandX")
+        """Token payload must include email, name, site, purpose, exp, iat."""
+        token = create_signup_token("a@b.com", "Alice", "new-site-abc123")
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-        for field in ("email", "name", "brand_name", "purpose", "exp", "iat"):
+        for field in ("email", "name", "site", "purpose", "exp", "iat"):
             assert field in payload, f"Missing field: {field}"
         assert payload["purpose"] == "signup"
 

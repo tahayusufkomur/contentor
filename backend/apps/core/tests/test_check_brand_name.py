@@ -1,5 +1,5 @@
-"""check-brand-name: pre-wizard step 1 availability check (no token minted,
-no email sent — mirrors creator_signup's own slug-availability check)."""
+"""check-brand-name: is a site name free (no token minted, no email sent)?
+/setup's name question asks it before the name is sent."""
 
 import pytest
 from rest_framework.test import APIClient
@@ -7,11 +7,10 @@ from rest_framework.test import APIClient
 pytestmark = pytest.mark.django_db(transaction=True)
 
 CHECK_URL = "/api/v1/onboarding/check-brand-name/"
-SHARED_DOMAIN = "shared-test.localhost"
 
 
 def _client(**extra):
-    return APIClient(HTTP_HOST=SHARED_DOMAIN, **extra)
+    return APIClient(HTTP_HOST="localhost", **extra)
 
 
 def test_available_brand_name_returns_true(restore_public):
@@ -28,6 +27,11 @@ def test_taken_brand_name_returns_false(restore_public):
     data = resp.json()
     assert data["available"] is False
     assert data["detail"]  # localized brand_taken message, non-empty
+
+
+def test_reserved_and_temporary_addresses_are_never_free(restore_public):
+    for name in ("Admin", "new-site-abc123"):
+        assert _client().post(CHECK_URL, {"brand_name": name}, format="json").json()["available"] is False
 
 
 def test_blank_brand_name_returns_400(restore_public):

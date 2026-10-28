@@ -104,8 +104,9 @@ export interface SetupFlowApi {
   buildPage: (page: string, force?: boolean) => Promise<unknown>;
   draft: (kind: ContentKind, prompt: string) => Promise<DraftResult>;
   turn: (body: TurnRequest) => Promise<TurnResponse>;
-  /** A bio, CV or old About page: read as one turn that fills what it answers. */
-  importDoc: (doc: ShareDoc, field?: string) => Promise<TurnResponse>;
+  /** The bio screen's answer: a bio, CV or old About page, read once; what it
+   * says is ticked in the questions ahead. */
+  importDoc: (doc: ShareDoc) => Promise<TurnResponse>;
   logos: (page: number) => Promise<LookCards>;
   cover: (kind: ReviewKind, asset: string) => Promise<ReviewCard>;
   trial: (kind: ReviewKind, on: boolean) => Promise<ReviewCard>;
@@ -127,11 +128,10 @@ export const setupFlowApi: SetupFlowApi = {
   draft: (kind, prompt) =>
     clientFetch<DraftResult>(`${BASE}/draft/`, post({ kind, prompt })),
   turn: (body) => clientFetch<TurnResponse>(`${BASE}/turn/`, post(body)),
-  importDoc: ({ file, text }, field) => {
+  importDoc: ({ file, text }) => {
     const form = new FormData();
     if (file) form.append("file", file);
     else form.append("text", text ?? "");
-    if (field) form.append("field", field);
     return clientFetch<TurnResponse>(`${BASE}/import/`, {
       method: "POST",
       body: form,
@@ -175,8 +175,30 @@ export function embedSrc(path: string, mode: "1" | "edit" = "1"): string {
   return `${path}${path.includes("?") ? "&" : "?"}embed=${mode}`;
 }
 
+/** Is this a free name for a site, with an AI typo fix and alternatives
+ * (only names still free)? The name question asks before it sends one. */
+export const checkSiteName = (name: string) =>
+  clientFetch<{
+    available: boolean;
+    detail?: string;
+    typo_fix?: string;
+    suggestions?: string[];
+  }>(
+    "/api/v1/onboarding/check-brand-name/",
+    post({ brand_name: name, review: true }),
+  );
+
+/** "Need a name?": a few free names for what she offers. */
+export const siteNameIdeas = (topic: string, firstName: string) =>
+  clientFetch<{ ideas?: string[] }>(
+    "/api/v1/onboarding/check-brand-name/",
+    post({ ideas: topic, first_name: firstName }),
+  ).then((r) => r.ideas ?? []);
+
 /** A refused answer (the server's 400 detail code), in the coach's words. */
 const CHOICE_ERRORS: Record<string, string> = {
+  brand_taken: "That name is taken. Try another one.",
+  brand_unusable: "Use letters or numbers in your site’s name.",
   invalid_handle:
     "That handle doesn’t look right. Use your handle, like @mira.yoga, or paste the link to your profile.",
   invalid_schedule: "Pick at least one day and a time for the session.",
@@ -476,8 +498,6 @@ export interface InterviewState {
   draft_status: Partial<Record<ContentKind, "building" | "ready" | "failed">>;
   /** Fresh cards for look and review questions already behind the coach. */
   cards?: Partial<Record<string, GuideCards>>;
-  /** Her bio was read already (at signup, or shared here): never asked for again. */
-  bio_read?: boolean;
   /** The pages she looked over and approved before going live. */
   pages_ok?: string[];
 }
@@ -500,6 +520,9 @@ export interface TurnResponse {
   edit: CopilotPayload | null;
   fired: string[];
   state: SetupFlowState;
+  /** The site was named and moved to its new address: a sign-in link there,
+   * back into /setup. */
+  goto?: string;
 }
 
 /** One specialist's hand-off at go-live: what they did, and the next thing. */

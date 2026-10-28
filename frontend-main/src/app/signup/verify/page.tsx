@@ -64,7 +64,6 @@ export default function SignupVerifyPage() {
   const sessionId = searchParams.get("session_id");
   const [state, setState] = useState<VerifyState>("verifying");
   const [error, setError] = useState("");
-  const [domain, setDomain] = useState("");
   /** The trial the card step starts (backend interview_golive._starter_plan). */
   const [plan, setPlan] = useState<PlanTerms | null>(null);
   const [session, setSession] = useState<
@@ -157,7 +156,6 @@ export default function SignupVerifyPage() {
           // resume via email link only
         }
         window.history.replaceState(null, "", "/signup/verify");
-        setDomain(data.domain);
         if (data.needs_card) {
           setPlan(data.plan ?? null);
           setState("card");
@@ -222,10 +220,7 @@ export default function SignupVerifyPage() {
         </StateIcon>
         <div className="mt-7 flex items-center justify-center gap-2 text-[14px] text-muted-foreground">
           <Spinner size="sm" />
-          <span>
-            {t("verify.creating")}{" "}
-            <strong className="text-foreground">{domain}</strong>
-          </span>
+          <span>{t("verify.creating")}</span>
         </div>
       </SignupFrame>
     );
@@ -238,7 +233,7 @@ export default function SignupVerifyPage() {
       <SignupFrame
         eyebrow={t("verify.card.eyebrow")}
         title={t("verify.card.title", { days })}
-        subtitle={t("verify.card.subtitle", { domain })}
+        subtitle={t("verify.card.subtitle")}
       >
         <StateIcon variant="primary">
           <CreditCard className="h-6 w-6" />
@@ -272,7 +267,7 @@ export default function SignupVerifyPage() {
             onClose={() => setSession(null)}
             aside={
               <PlanCheckoutAside
-                title={t("verify.card.asideTitle", { domain })}
+                title={t("verify.card.asideTitle")}
                 plan={
                   plan ?? {
                     name: "starter",

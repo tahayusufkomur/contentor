@@ -6,11 +6,11 @@ from apps.accounts.tokens import create_signup_token, create_wizard_token, verif
 
 
 def test_wizard_token_round_trip():
-    token = create_wizard_token("a@b.com", "Coach", "Glow Studio", region="eu")
+    token = create_wizard_token("a@b.com", "Coach", "new-site-abc123", region="eu")
     payload = verify_wizard_token(token)
     assert payload["email"] == "a@b.com"
     assert payload["name"] == "Coach"
-    assert payload["brand_name"] == "Glow Studio"
+    assert payload["site"] == "new-site-abc123"
     assert payload["region"] == "eu"
     assert payload["purpose"] == "wizard"
 
@@ -18,7 +18,7 @@ def test_wizard_token_round_trip():
 def test_wizard_verify_accepts_signup_token():
     # Continuity: the short-lived signup token stays valid for wizard calls
     # during its 15-minute window.
-    token = create_signup_token("a@b.com", "Coach", "Glow Studio")
+    token = create_signup_token("a@b.com", "Coach", "new-site-abc123")
     assert verify_wizard_token(token)["purpose"] == "signup"
 
 
@@ -34,7 +34,7 @@ def test_wizard_verify_rejects_other_purposes():
 
 def test_wizard_token_expires_by_days_setting(settings):
     settings.WIZARD_TOKEN_EXPIRY_DAYS = -1
-    token = create_wizard_token("a@b.com", "Coach", "Glow Studio")
+    token = create_wizard_token("a@b.com", "Coach", "new-site-abc123")
     with pytest.raises(pyjwt.ExpiredSignatureError):
         verify_wizard_token(token)
 
@@ -43,12 +43,12 @@ def test_decode_allow_expired_reads_expired_wizard_token(settings):
     from apps.accounts.tokens import decode_wizard_token_allow_expired
 
     settings.WIZARD_TOKEN_EXPIRY_DAYS = -1
-    token = create_wizard_token("a@b.com", "Coach", "Glow Studio")
+    token = create_wizard_token("a@b.com", "Coach", "new-site-abc123")
     with pytest.raises(pyjwt.ExpiredSignatureError):
         verify_wizard_token(token)
     payload = decode_wizard_token_allow_expired(token)
     assert payload["email"] == "a@b.com"
-    assert payload["brand_name"] == "Glow Studio"
+    assert payload["site"] == "new-site-abc123"
 
 
 def test_decode_allow_expired_still_verifies_signature_and_purpose():

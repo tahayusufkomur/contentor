@@ -28,8 +28,8 @@ def test_every_seed_lands_in_control():
 def test_verify_assigns_a_bucket_on_fresh_create(client):
     from apps.accounts.tokens import create_signup_token
 
-    token = create_signup_token("bucknew@example.com", "Buck New", "Buck Brand", "global")
-    slug = "buck-brand"
+    token = create_signup_token("bucknew@example.com", "Buck New", "new-site-bb0001", "global")
+    slug = "new-site-bb0001"
     connection.set_schema_to_public()
     Tenant.objects.filter(slug=slug, region="global").delete()  # ensure fresh
     try:
@@ -49,8 +49,8 @@ def test_reverify_does_not_rebucket_a_returning_coach():
     from apps.accounts.tokens import create_signup_token
 
     api = APIClient()
-    token = create_signup_token("buckagain@example.com", "Buck Again", "Buck Again Brand", "global")
-    slug = "buck-again-brand"
+    token = create_signup_token("buckagain@example.com", "Buck Again", "new-site-bb0002", "global")
+    slug = "new-site-bb0002"
     connection.set_schema_to_public()
     Tenant.objects.filter(slug=slug, region="global").delete()
     try:
@@ -136,8 +136,8 @@ def test_report_never_counts_the_public_row_and_survives_an_empty_bucket():
 def test_verify_sets_billing_currency_from_country(client, country, expected):
     from apps.accounts.tokens import create_signup_token
 
-    token = create_signup_token("curr@example.com", "Curr", "Curr Brand", "global")
-    slug = "curr-brand"
+    token = create_signup_token("curr@example.com", "Curr", "new-site-cc0001", "global")
+    slug = "new-site-cc0001"
     connection.set_schema_to_public()
     Tenant.objects.filter(slug=slug, region="global").delete()
     extra = {"HTTP_CF_IPCOUNTRY": country} if country else {}

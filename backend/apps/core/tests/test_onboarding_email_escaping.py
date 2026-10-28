@@ -1,4 +1,4 @@
-"""Coach-supplied brand names are interpolated into emails: they must be escaped."""
+"""Signup emails: no site name yet, and what goes into them is escaped."""
 
 from unittest.mock import patch
 
@@ -7,28 +7,27 @@ from rest_framework.test import APIClient
 
 
 @pytest.mark.django_db(transaction=True)
-def test_signup_rejects_a_brand_with_no_usable_slug(restore_public):
+def test_signup_asks_no_site_name_and_a_resend_keeps_the_address(restore_public):
+    """The site is named in /setup: signup gives it a temporary address, and a
+    resend's link creates the same site as the first email's."""
+    from apps.accounts.tokens import verify_signup_token
+    from apps.core.constants import SITE_PLACEHOLDER_PREFIX
+
     client = APIClient(HTTP_HOST="shared-test.localhost")
-    payload = {"email": "kanji@example.com", "name": "Kanji", "brand_name": "日本語"}
+    payload = {"email": "new@example.com", "name": "Mallory <b>x</b>"}
     with patch("apps.core.email.send_email", return_value=True) as send:
-        resp = client.post("/api/v1/onboarding/signup/", payload, format="json")
-    assert resp.status_code == 400, resp.content
-    assert "letters or numbers" in resp.json()["detail"]
-    send.assert_not_called()
-
-
-@pytest.mark.django_db(transaction=True)
-def test_signup_email_escapes_brand_name(restore_public):
-    client = APIClient(HTTP_HOST="shared-test.localhost")
-    payload = {"email": "xss@example.com", "name": "Mallory", "brand_name": "<b>x</b> Studio"}
-
-    with patch("apps.core.email.send_email", return_value=True) as send:
-        resp = client.post("/api/v1/onboarding/signup/", payload, format="json")
-
-    assert resp.status_code == 200, resp.content
-    html = send.call_args.kwargs["html"]
-    assert "&lt;b&gt;x&lt;/b&gt; Studio" in html
-    assert "<b>x</b>" not in html
+        first = client.post("/api/v1/onboarding/signup/", payload, format="json")
+        again = client.post("/api/v1/onboarding/signup/", {**payload, "site": first.json()["site"]}, format="json")
+        forged = client.post("/api/v1/onboarding/signup/", {**payload, "site": "shared-test"}, format="json")
+    assert first.status_code == 200, first.content
+    site = first.json()["site"]
+    assert site.startswith(SITE_PLACEHOLDER_PREFIX)
+    assert again.json()["site"] == site
+    assert forged.json()["site"] not in ("shared-test", site)  # only a free temporary address is kept
+    html = send.call_args_list[0].kwargs["html"]
+    assert "create your site" in html
+    token = html.split("/signup/verify?token=")[1].split('"')[0]
+    assert verify_signup_token(token)["site"] == site
 
 
 def test_action_email_is_branded_escaped_and_has_a_text_alternative():

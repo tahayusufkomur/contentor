@@ -50,6 +50,7 @@ import { GoLivePanel } from "./golive-panel";
 import { Celebration } from "./launch";
 import { mockSetupFlowApi } from "./mock";
 import type { BuilderData } from "./builder-preview";
+import { BioScreen, NameScreen } from "./opening-screens";
 import { PhotosScreen } from "./photos-screen";
 import { QuestionScreen, type StepDraft } from "./question-screen";
 import { SetupMenu } from "./setup-menu";
@@ -68,6 +69,8 @@ const WALL: CSSProperties = {
 };
 
 const GOLIVE = "__golive";
+// The interview opens on these, each a screen of its own (opening-screens).
+const OPENERS = ["bio", "site_name"];
 
 /** Moves to another question as a slide: the outgoing one leaves in the
  * travel direction while the new one lands (CSS on the view-transition
@@ -364,6 +367,12 @@ function Flow({
       const edit = await holdPolls(async () => {
         try {
           const res = await api.turn(req);
+          if (res.goto) {
+            // Named: the site lives at its new address now. The page stays
+            // busy until the browser has left for it, signed in there.
+            window.location.assign(res.goto);
+            await new Promise(() => undefined);
+          }
           await slide("next", () => {
             setGuide(res.guide);
             setFlow(res.state);
@@ -396,11 +405,11 @@ function Flow({
     { onError: (err) => toast.error(turnErrorText(err)) },
   );
 
-  // A shared bio or CV replaces the step like a turn does; the unsent answer
-  // in the box stays. Failures throw: the panel shows them in place.
+  // A shared bio or CV answers the bio screen like a turn does. Failures
+  // throw: the screen shows them in place.
   const shareDoc = (doc: ShareDoc) =>
     holdPolls(async () => {
-      const res = await api.importDoc(doc, guide.field ?? undefined);
+      const res = await api.importDoc(doc);
       await slide("next", () => {
         setGuide(res.guide);
         setFlow(res.state);
@@ -706,6 +715,30 @@ function Flow({
           style={{ viewTransitionName: "sf-slide" }}
           className="min-h-0 flex-1 overflow-y-auto"
         >
+          {step?.field === "bio" && (
+            <BioScreen
+              key={`${index}:${step.field}:${iv.turns.length}`}
+              step={step}
+              live={live}
+              sending={sending}
+              onShare={shareDoc}
+              onSend={(req) => void send(req)}
+              onNext={goNext}
+              dir={dir}
+            />
+          )}
+          {step?.field === "site_name" && (
+            <NameScreen
+              key={`${index}:${step.field}:${iv.turns.length}`}
+              step={step}
+              host={host}
+              live={live}
+              sending={sending}
+              onSend={(req) => void send(req)}
+              onNext={goNext}
+              dir={dir}
+            />
+          )}
           {step && isPhotos(stepCards) && (
             <PhotosScreen
               key={`${index}:${step.field}:${iv.turns.length}`}
@@ -718,33 +751,34 @@ function Flow({
               dir={dir}
             />
           )}
-          {step && !isPhotos(stepCards) && (
-            <QuestionScreen
-              key={`${index}:${step.field}:${iv.turns.length}`}
-              step={step}
-              cards={stepCards}
-              brandName={brandName}
-              host={host}
-              live={live}
-              sending={sending}
-              draft={draft}
-              builder={builder}
-              onDraft={editDraft(step.field ?? GOLIVE)}
-              onSend={(req) => void send(req)}
-              onShare={iv.bio_read ? undefined : shareDoc}
-              onMoreLogos={api.logos}
-              onCover={async (kind, asset) => {
-                await api.cover(kind, asset);
-                await refresh();
-              }}
-              onTrial={async (kind, on) => {
-                await api.trial(kind, on);
-                await refresh();
-              }}
-              onNext={goNext}
-              dir={dir}
-            />
-          )}
+          {step &&
+            !isPhotos(stepCards) &&
+            !OPENERS.includes(step.field ?? "") && (
+              <QuestionScreen
+                key={`${index}:${step.field}:${iv.turns.length}`}
+                step={step}
+                cards={stepCards}
+                brandName={brandName}
+                host={host}
+                live={live}
+                sending={sending}
+                draft={draft}
+                builder={builder}
+                onDraft={editDraft(step.field ?? GOLIVE)}
+                onSend={(req) => void send(req)}
+                onMoreLogos={api.logos}
+                onCover={async (kind, asset) => {
+                  await api.cover(kind, asset);
+                  await refresh();
+                }}
+                onTrial={async (kind, on) => {
+                  await api.trial(kind, on);
+                  await refresh();
+                }}
+                onNext={goNext}
+                dir={dir}
+              />
+            )}
         </section>
       </div>
     );

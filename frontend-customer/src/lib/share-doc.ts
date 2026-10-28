@@ -1,6 +1,6 @@
 import { ApiError } from "@/types/api";
 
-/** A bio, CV or old About page the coach shares in /setup: a file or pasted text. */
+/** A bio, CV or old About page shared on /setup's first screen: a file or pasted text. */
 export interface ShareDoc {
   file?: File;
   text?: string;
@@ -8,8 +8,6 @@ export interface ShareDoc {
 
 export const SHARE_ACCEPT = ".pdf,.txt,.md";
 export const SHARE_MAX_BYTES = 5 * 1024 * 1024;
-/** The questions that offer it: the story and the training (signup already asks for a bio up front). */
-export const SHARE_FIELDS = ["story", "credentials"];
 
 /** Why a picked file can't be sent, in the coach's words (null: fine). The
  * server checks again; this only saves a round trip. */

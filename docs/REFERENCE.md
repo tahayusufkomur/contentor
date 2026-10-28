@@ -562,8 +562,13 @@ connected/submerchant account and the platform automatically takes `transaction_
 
 ## 8. Onboarding & provisioning
 
-1. `POST /api/v1/onboarding/signup/` `{email, name, brand_name}` → validates, derives a
-   slug, checks per-region uniqueness, mints a 15-min **signup token**, emails verification.
+1. `POST /api/v1/onboarding/signup/` `{email, name}` → gives the site a temporary address
+   (`new-site-<hex>`, `onboarding/site_name.py`; a resend passes back `site` to keep it), mints a
+   15-min **signup token** carrying it as `site`, emails verification. The site is named, and its
+   bio added, in `/setup`: the interview opens on those two screens (`bio`, `site_name`; asked only
+   when the answers carry `named_in_setup`). Naming renames `Tenant.name/slug/subdomain` and the
+   `Domain`, and the browser follows to `<slug>.<domain>/setup` signed in; the schema and the
+   storage folder keep the temporary name for life, and tokens find a site by its schema.
 2. `POST /api/v1/onboarding/signup/verify/` `{token}` → creates the **`Tenant`** + **`Domain`**
    rows in `public` with `provisioning_status="pending"`. *Schema not yet created.* A tenant
    that needs a plan (every signup since 2026-10-16) answers `needs_card` and is built only

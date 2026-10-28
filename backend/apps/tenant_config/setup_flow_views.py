@@ -88,6 +88,7 @@ def setup_flow_turn(request):
         return over
     data = _data(request)
     choice = data.get("choice") if isinstance(data.get("choice"), dict) else None
+    address = connection.tenant.slug
     try:
         body = interview.run_turn(
             connection.tenant,
@@ -100,6 +101,11 @@ def setup_flow_turn(request):
         )
     except interview_milestones.ChoiceError as exc:
         return Response({"detail": str(exc)}, status=400)
+    if connection.tenant.slug != address:
+        # Named: the site moved to the address its name makes; the browser follows, signed in there.
+        from apps.core.onboarding.site_name import setup_login_url
+
+        body["goto"] = setup_login_url(connection.tenant, request.user.email)
     return Response(body)
 
 
@@ -107,8 +113,9 @@ def setup_flow_turn(request):
 @permission_classes([IsCoachOrOwner])
 @throttle_classes([SetupInterviewThrottle])
 def setup_flow_import(request):
-    """A file (.pdf, .txt, .md) or pasted text the coach shares about herself:
-    read as one interview turn that fills the questions it answers."""
+    """The bio screen: a file (.pdf, .txt, .md) or pasted text the creator
+    shares about herself, read once; what it says is ticked in the questions
+    ahead (interview.share_bio)."""
     if (over := _setup_over()) is not None:
         return over
     data = _data(request)
@@ -118,9 +125,9 @@ def setup_flow_import(request):
     except interview_import.ImportRejectedError as exc:
         return Response({"detail": str(exc)}, status=400)
     try:
-        body = interview.run_turn(connection.tenant, text, imported=True, field=str(data.get("field") or "") or None)
-    except interview.ImportUnavailableError:
-        return Response({"detail": "ai_unavailable"}, status=503)
+        body = interview.share_bio(connection.tenant, text)
+    except interview.BioUnreadError:
+        return Response({"detail": interview.BIO_UNREAD}, status=400)
     return Response(body)
 
 

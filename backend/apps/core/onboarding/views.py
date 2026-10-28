@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import timedelta
 from urllib.parse import urlencode
 
@@ -32,37 +33,31 @@ class SignupThrottle(AnonRateThrottle):
 @permission_classes([AllowAny])
 @throttle_classes([SignupThrottle])
 def creator_signup(request):
-    """Step 1: Validate signup data and send verification email. Tenant is NOT created yet."""
+    """Step 1: Validate signup data and send verification email. Tenant is NOT created yet.
+    The site gets a temporary address; the creator names it in /setup (site_name)."""
     serializer = CreatorSignupSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
+    from apps.core.constants import SITE_PLACEHOLDER_PREFIX
     from apps.core.i18n_helpers import msg
 
-    slug = slugify(serializer.validated_data["brand_name"])[:63]
-    if not slug:  # e.g. a name with no ASCII letters/digits — no usable subdomain
-        return Response({"detail": msg(request, "brand_unusable")}, status=400)
-    region = getattr(request, "region", "global")
-    if Tenant.objects.filter(slug=slug, region=region).exists():
-        return Response({"detail": msg(request, "brand_taken")}, status=400)
+    from .site_name import placeholder_site
 
+    region = getattr(request, "region", "global")
     email = serializer.validated_data["email"]
     name = serializer.validated_data["name"]
-    brand_name = serializer.validated_data["brand_name"]
-    about_text = (serializer.validated_data.get("about_text") or "").strip()
-
-    about_id = ""
-    if about_text:
-        import uuid
-
-        from django.core.cache import cache
-
-        about_id = uuid.uuid4().hex
-        cache.set(f"signup:about:{about_id}", about_text, timeout=86400)
+    # A resend keeps the address the first email's link creates, until that site exists.
+    site = serializer.validated_data["site"]
+    if (
+        not re.fullmatch(rf"{SITE_PLACEHOLDER_PREFIX}[0-9a-f]{{6}}", site)
+        or Tenant.objects.filter(schema_name=site).exists()
+    ):
+        site = placeholder_site()
 
     from apps.accounts.tokens import create_signup_token
 
-    token = create_signup_token(email, name, brand_name, region=region, about_id=about_id)
-    logger.info("creator signup requested email=%s brand=%s region=%s", email, brand_name, region)
+    token = create_signup_token(email, name, site, region=region)
+    logger.info("creator signup requested email=%s site=%s region=%s", email, site, region)
 
     scheme = "https" if request.is_secure() else "http"
     host = request.get_host()
@@ -72,12 +67,12 @@ def creator_signup(request):
 
     html, text = action_email(
         heading="Confirm your email",
-        intro=f"Click the button below to verify your email and create {brand_name}.",
+        intro="Click the button below to verify your email and create your site.",
         button="Verify and create my site",
         link=link,
         expires=f"This link expires in {settings.MAGIC_LINK_EXPIRY_MINUTES} minutes.",
     )
-    sent = send_email(to=email, subject=f"Verify your email — {brand_name}", html=html, text=text)
+    sent = send_email(to=email, subject="Verify your email to create your site", html=html, text=text)
     if not sent:
         if settings.DEBUG:
             print(f"\n{'=' * 60}")
@@ -88,7 +83,7 @@ def creator_signup(request):
             # Never write the verification token/link to prod logs.
             logger.error("Failed to send signup verification email to %s (link withheld from logs)", email)
 
-    return Response({"detail": msg(request, "verification_sent")})
+    return Response({"detail": msg(request, "verification_sent"), "site": site})
 
 
 @api_view(["POST"])
@@ -96,8 +91,8 @@ def creator_signup(request):
 @permission_classes([AllowAny])
 @throttle_classes([BrandNameCheckThrottle])
 def check_brand_name(request):
-    """Pre-wizard step 1: is this brand name available? Read-only — mirrors
-    creator_signup's own slug check without minting a token or emailing."""
+    """Is this site name available? Read-only: /setup's name question asks it
+    before the name is sent (site_name.rename checks again)."""
     from apps.core.i18n_helpers import msg
 
     region = getattr(request, "region", "global")
@@ -120,11 +115,10 @@ def check_brand_name(request):
     if not brand_name:
         return Response({"detail": msg(request, "brand_required")}, status=400)
 
-    slug = slugify(brand_name)[:63]
-    if not slug:
-        return Response({"available": False, "detail": msg(request, "brand_unusable")})
-    if Tenant.objects.filter(slug=slug, region=region).exists():
-        return Response({"available": False, "detail": msg(request, "brand_taken")})
+    from .site_name import name_problem
+
+    if problem := name_problem(brand_name):
+        return Response({"available": False, "detail": msg(request, problem)})
     if not request.data.get("review"):
         return Response({"available": True})
     # A typo fix and a few alternatives, only the ones still free to take.
@@ -158,32 +152,18 @@ def creator_signup_authenticated(request):
     if user.role not in ("coach", "owner"):
         return Response({"detail": msg(request, "permission_denied")}, status=403)
 
-    brand_name = (request.data.get("brand_name") or "").strip()[:100]
-    if not brand_name:
-        return Response({"detail": msg(request, "brand_required")}, status=400)
+    from .site_name import placeholder_site
 
-    slug = slugify(brand_name)[:63]
     region = getattr(request, "region", "global")
-    if not slug or Tenant.objects.filter(slug=slug, region=region).exists():
-        return Response({"detail": msg(request, "brand_taken")}, status=400)
-
-    about_text = (request.data.get("about_text") or "").strip()
-    about_id = ""
-    if about_text:
-        import uuid
-
-        from django.core.cache import cache
-
-        about_id = uuid.uuid4().hex
-        cache.set(f"signup:about:{about_id}", about_text, timeout=86400)
+    site = placeholder_site()
 
     from apps.accounts.tokens import create_signup_token
 
-    token = create_signup_token(user.email, user.name, brand_name, region=region, about_id=about_id)
+    token = create_signup_token(user.email, user.name, site, region=region)
     logger.info(
-        "authenticated creator new-platform email=%s brand=%s region=%s",
+        "authenticated creator new-platform email=%s site=%s region=%s",
         user.email,
-        brand_name,
+        site,
         region,
     )
     return Response({"token": token})
@@ -210,37 +190,28 @@ def creator_signup_verify(request):
         return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
 
     email = payload["email"]
-    brand_name = payload["brand_name"]
     region = payload.get("region", "global")
-    slug = slugify(brand_name)[:63]
-
-    about_id = payload.get("about_id")
-    initial_about = ""
-    if about_id:
-        from django.core.cache import cache
-
-        initial_about = cache.get(f"signup:about:{about_id}") or ""
 
     from apps.accounts.tokens import create_wizard_token
 
-    wizard_token = create_wizard_token(
-        email, payload.get("name", ""), brand_name, region=region, about_id=about_id or ""
-    )
+    from .site_name import PLACEHOLDER_NAME, token_tenant
 
     base_domain = settings.CONTENTOR_DOMAIN
-    tenant_fqdn = f"{slug}.{base_domain}"
-    schema_name = slug
+    tenant = token_tenant(payload)
+    if tenant is None and not payload.get("site"):  # a link sent before sites were named in /setup
+        return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
 
-    if Tenant.objects.filter(slug=slug, region=region).exists():
-        tenant = Tenant.objects.get(slug=slug, region=region)
+    if tenant is not None:
+        if tenant.owner_email != email:
+            return Response({"detail": "Token does not match tenant owner."}, status=403)
+        wizard_token = create_wizard_token(email, payload.get("name", ""), tenant.schema_name, region=region)
+        tenant_fqdn = f"{tenant.slug}.{base_domain}"
         # Never provisioned (signed up under the old wizard, or the enqueue
         # was lost): start it now, or the verify page would poll forever.
         stale = timezone.now() - tenant.created_at > PROVISION_RETRY_AFTER
         if tenant.provisioning_status == "pending" and stale and not tenant.is_paused:
             old_answers = (tenant.wizard_state or {}).get("answers") or {}
-            _start_interview_provisioning(
-                tenant, email, payload.get("name", ""), old_answers, initial_about=initial_about
-            )
+            _start_interview_provisioning(tenant, email, payload.get("name", ""), old_answers)
         session_id = request.data.get("session_id")
         if isinstance(session_id, str) and session_id and tenant.is_paused:
             # Back from Checkout: pull the session rather than wait on the
@@ -251,7 +222,7 @@ def creator_signup_verify(request):
             tenant = Tenant.objects.get(pk=tenant.pk)
         return Response(
             {
-                "slug": slug,
+                "slug": tenant.slug,
                 "status": tenant.provisioning_status,
                 "region": tenant.region,
                 "domain": tenant_fqdn,
@@ -263,9 +234,13 @@ def creator_signup_verify(request):
     from apps.core.constants import REGION_DEFAULT_LOCALE
     from apps.core.currency import currency_for_country
 
+    # The temporary address until the creator names the site in /setup.
+    slug = payload["site"]
+    tenant_fqdn = f"{slug}.{base_domain}"
+    wizard_token = create_wizard_token(email, payload.get("name", ""), slug, region=region)
     tenant = Tenant.objects.create(
-        schema_name=schema_name,
-        name=brand_name,
+        schema_name=slug,
+        name=PLACEHOLDER_NAME,
         slug=slug,
         subdomain=slug,
         owner_email=email,
@@ -283,14 +258,8 @@ def creator_signup_verify(request):
         tenant=tenant,
         is_primary=True,
     )
-    logger.info(
-        "tenant created slug=%s schema=%s region=%s owner=%s",
-        slug,
-        schema_name,
-        region,
-        email,
-    )
-    _start_interview_provisioning(tenant, email, payload.get("name", ""), initial_about=initial_about)
+    logger.info("tenant created slug=%s region=%s owner=%s", slug, region, email)
+    _start_interview_provisioning(tenant, email, payload.get("name", ""))
 
     return Response(
         {
@@ -391,11 +360,10 @@ def _resolve_tenant_from_signup_token(request) -> tuple[dict | None, Tenant | No
     except Exception:
         return None, None, Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
 
-    region = payload.get("region", "global")
-    slug = slugify(payload["brand_name"])[:63]
-    try:
-        tenant = Tenant.objects.get(slug=slug, region=region)
-    except Tenant.DoesNotExist:
+    from .site_name import token_tenant
+
+    tenant = token_tenant(payload)
+    if tenant is None:
         return None, None, Response({"detail": msg(request, "tenant_not_found")}, status=404)
     if tenant.owner_email != payload["email"]:
         return None, None, Response({"detail": "Token does not match tenant owner."}, status=403)
@@ -486,12 +454,9 @@ def onboarding_handoff(request):
 
     touch(tenant)  # a resume via handoff is activity (abandoned-signup cleanup)
 
-    from apps.accounts.tokens import create_magic_link_token
+    from .site_name import setup_login_url
 
-    magic = create_magic_link_token(tenant.owner_email, tenant.schema_name, tenant.slug)
-    base_domain = settings.CONTENTOR_DOMAIN
-    fqdn = f"{tenant.slug}.{base_domain}"
-    return Response({"login_url": f"{settings.SITE_SCHEME}://{fqdn}/callback?token={magic}&next=/setup"})
+    return Response({"login_url": setup_login_url(tenant, tenant.owner_email)})
 
 
 @api_view(["GET"])
@@ -526,11 +491,8 @@ def _resolve_tenant_from_wizard_token(request):
     Returns (payload, tenant, error_response); exactly one of (tenant, error)
     is None. Accepts wizard tokens and still-valid signup tokens.
     """
-    from django.utils.text import slugify
-
     from apps.accounts.tokens import verify_wizard_token
     from apps.core.i18n_helpers import msg
-    from apps.core.models import Tenant
 
     token = request.data.get("token")
     if not token:
@@ -540,11 +502,10 @@ def _resolve_tenant_from_wizard_token(request):
     except Exception:
         return None, None, Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
 
-    region = payload.get("region", "global")
-    slug = slugify(payload["brand_name"])[:63]
-    try:
-        tenant = Tenant.objects.get(slug=slug, region=region)
-    except Tenant.DoesNotExist:
+    from .site_name import token_tenant
+
+    tenant = token_tenant(payload)
+    if tenant is None:
         return None, None, Response({"detail": msg(request, "tenant_not_found")}, status=404)
     if tenant.owner_email != payload["email"]:
         return None, None, Response({"detail": "Token does not match tenant owner."}, status=403)
@@ -556,21 +517,23 @@ def _resolve_tenant_from_wizard_token(request):
 PROVISION_RETRY_AFTER = timedelta(minutes=2)
 
 
-def _start_interview_provisioning(tenant, email, owner_name, answers=None, initial_about="") -> None:
+def _start_interview_provisioning(tenant, email, owner_name, answers=None) -> None:
     """One onboarding: the coach continues in /setup on their own subdomain,
     where the interview fills the brief. ``answers`` (an old-wizard tenant's)
     are kept on top of the defaults. A tenant that needs a plan is built once
     its trial runs (``core.signals``), not before its card."""
     from apps.core.onboarding.wizard_catalog import recommended_answers
-    from apps.tenant_config.interview_brief import FIELD_BY_ID
+    from apps.tenant_config.interview_brief import FIELD_BY_ID, NAMED_IN_SETUP
 
     # A default is never her answer: the old wizard's "classic" header settled
     # the interview's header question before it was asked.
+    from .site_name import is_placeholder
+
     defaults = {k: v for k, v in recommended_answers("general").items() if k not in FIELD_BY_ID}
+    if is_placeholder(tenant.schema_name):  # unnamed: its name and bio are asked first in /setup
+        defaults[NAMED_IN_SETUP] = True
     merged = {**defaults, "goals": [], **(answers or {})}
     wizard_state = {"version": 2, "flow": "interview", "answers": merged}
-    if initial_about:
-        wizard_state["initial_about"] = initial_about
     Tenant.objects.filter(pk=tenant.pk).update(wizard_state=wizard_state, template_niche="general")
     if not tenant.is_paused:
         build_site(tenant.id, email, owner_name)
@@ -584,41 +547,3 @@ def build_site(tenant_id, email, owner_name) -> None:
 
     Tenant.objects.filter(pk=tenant_id).update(template_seed_status="seeding")
     transaction.on_commit(lambda: provision_tenant.delay(tenant_id, email, owner_name, "general"))
-
-
-@api_view(["POST"])
-@authentication_classes([])
-@permission_classes([AllowAny])
-@throttle_classes([BrandNameCheckThrottle])
-def extract_doc(request):
-    """Extract plain text from an uploaded bio/CV/document (.pdf, .txt, .md)
-    or normalize pasted text. Also performs real-time fact analysis to show
-    which questions will be answered before advancing."""
-    from apps.tenant_config import interview_import
-
-    upload = request.FILES.get("file")
-    text = str(request.data.get("text") or "")
-    try:
-        extracted = interview_import.extract_text(upload, text)
-    except interview_import.ImportRejectedError as exc:
-        return Response({"detail": str(exc)}, status=400)
-
-    from .about_check import analyze
-
-    analysis = analyze(extracted) if request.data.get("analyze", True) else {}
-    # A studio name that says something her bio doesn't ("Polly Dance Studio",
-    # a bio on face yoga): asked while the name, and so the site address, can still change.
-    from apps.tenant_config import interview_brief as brief
-
-    bio = next((f.get("items") or [] for f in analysis.get("facts") or [] if f.get("field") == "teaches"), [])
-    named = brief.teaching_conflict(str(request.data.get("brand") or "")[:100], bio)
-    return Response(
-        {
-            "text": extracted,
-            "facts": analysis.get("facts") or [],
-            "summary": analysis.get("summary") or "",
-            "conflict": {"name_says": named.lower(), "bio_says": brief.say_list(b.lower() for b in bio)}
-            if named
-            else None,
-        }
-    )

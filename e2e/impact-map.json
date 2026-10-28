@@ -91,6 +91,8 @@
     ],
     "src/lib/mailbox.ts": ["07-mailbox"],
     "src/lib/navbar.ts": ["14-navbar-layouts"],
+    "src/lib/share-doc.ts": ["01-signup-onboarding"],
+    "src/lib/slug.ts": ["01-signup-onboarding"],
     "src/components/ui/nav-link.tsx": ["25-navigation-feedback"],
     "src/components/ui/navigation-progress.tsx": ["25-navigation-feedback"],
     "src/components/ui/stale-container.tsx": ["25-navigation-feedback"],

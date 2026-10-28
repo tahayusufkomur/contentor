@@ -1360,8 +1360,9 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * @description A file (.pdf, .txt, .md) or pasted text the coach shares about herself:
-     *     read as one interview turn that fills the questions it answers.
+     * @description The bio screen: a file (.pdf, .txt, .md) or pasted text the creator
+     *     shares about herself, read once; what it says is ticked in the questions
+     *     ahead (interview.share_bio).
      */
     post: operations["v1_admin_setup_flow_import_create"];
     delete?: never;
@@ -3244,6 +3245,26 @@ export interface paths {
     patch: operations["v1_designs_partial_update"];
     trace?: never;
   };
+  "/api/v1/designs/{id}/export/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description The design as an image file to download: `{"size": "story", "format": "png" | "jpeg"}`. Drawn from what
+     *     is saved, so the studio saves first.
+     */
+    post: operations["v1_designs_export_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/designs/{id}/keep/": {
     parameters: {
       query?: never;
@@ -3255,6 +3276,63 @@ export interface paths {
     put?: never;
     /** @description Make a draft the cover of its course or event series, and write the History row that undoes it. */
     post: operations["v1_designs_keep_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/designs/{id}/styles/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Four styles for the cover on its own photo, as recipes the studio draws and applies. `{"shown":
+     *     ["panel", ...]}`: the layouts she has already been shown, so "Four more" brings others.
+     */
+    post: operations["v1_designs_styles_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/designs/{id}/words/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description Three options for one of the cover's words: `{"part": "label" | "title" | "subtitle"}`. */
+    post: operations["v1_designs_words_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/designs/render/{token}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description What the render page draws: a design and what it is for, at one size. Open to anyone holding a token
+     *     this site signed in the last two minutes (design_export), which is how the browser sidecar reads it.
+     */
+    get: operations["v1_designs_render_retrieve"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -3279,50 +3357,6 @@ export interface paths {
     get: operations["v1_designs_targets_retrieve"];
     put?: never;
     post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/dev/emails/latest/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: operations["v1_dev_emails_latest_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/dev/logo-image/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * @description Dev-only playground: type a prompt, see the raw Gemini image next to
-     *     the traced vector the Logo Studio would actually keep. Mounted only under
-     *     the EMAIL_SINK_ENABLED dev url block; additionally requires DEBUG and a
-     *     GEMINI_API_KEY. Spends real provider money on every POST.
-     */
-    get: operations["v1_dev_logo_image_retrieve"];
-    put?: never;
-    /**
-     * @description Dev-only playground: type a prompt, see the raw Gemini image next to
-     *     the traced vector the Logo Studio would actually keep. Mounted only under
-     *     the EMAIL_SINK_ENABLED dev url block; additionally requires DEBUG and a
-     *     GEMINI_API_KEY. Spends real provider money on every POST.
-     */
-    post: operations["v1_dev_logo_image_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -3646,6 +3680,23 @@ export interface paths {
     put?: never;
     /** @description A photo from her library (or the catalog, already copied into it) as an email picture. */
     post: operations["v1_email_images_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/email/recipients/count/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description How many students a filter reaches now (students who unsubscribed left out), for the send step. */
+    post: operations["v1_email_recipients_count_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -4470,31 +4521,10 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * @description Pre-wizard step 1: is this brand name available? Read-only — mirrors
-     *     creator_signup's own slug check without minting a token or emailing.
+     * @description Is this site name available? Read-only: /setup's name question asks it
+     *     before the name is sent (site_name.rename checks again).
      */
     post: operations["v1_onboarding_check_brand_name_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/onboarding/extract-doc/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * @description Extract plain text from an uploaded bio/CV/document (.pdf, .txt, .md)
-     *     or normalize pasted text. Also performs real-time fact analysis to show
-     *     which questions will be answered before advancing.
-     */
-    post: operations["v1_onboarding_extract_doc_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -4555,7 +4585,10 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** @description Step 1: Validate signup data and send verification email. Tenant is NOT created yet. */
+    /**
+     * @description Step 1: Validate signup data and send verification email. Tenant is NOT created yet.
+     *     The site gets a temporary address; the creator names it in /setup (site_name).
+     */
     post: operations["v1_onboarding_signup_create"];
     delete?: never;
     options?: never;
@@ -4740,6 +4773,78 @@ export interface paths {
     put: operations["v1_photos_update"];
     post?: never;
     delete: operations["v1_photos_destroy"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/photos/{id}/colours/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description The colours her photo is made of, most of it first: the studio offers them beside her look's. */
+    get: operations["v1_photos_colours_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/photos/{id}/cutout/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description Start removing her photo's background (free: our own service). 202 with the job to follow. */
+    post: operations["v1_photos_cutout_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/photos/{id}/edit/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Start an edit by the image model: `{"mode": "expand", "aspect": 3}` grows the photo to that shape;
+     *     `{"mode": "erase" | "change", "instruction": "..."}` takes out or changes what it says. Each is one of the
+     *     month's new photos: 429 once they are used.
+     */
+    post: operations["v1_photos_edit_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/photos/jobs/{job_id}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description Where an edit stands. Another site's job, or one long gone, is a 404. */
+    get: operations["v1_photos_jobs_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
     options?: never;
     head?: never;
     patch?: never;
@@ -8171,6 +8276,217 @@ export interface paths {
      *     view only confirms the password. Published tenants always succeed.
      */
     post: operations["v1_preview_unlock_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reels/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description The coach's reels, or with `?ideas=1` the ideas found in a video (`?video=`), best first. */
+    get: operations["v1_reels_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reels/{id}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_reels_retrieve_2"];
+    put?: never;
+    post?: never;
+    delete: operations["v1_reels_destroy"];
+    options?: never;
+    head?: never;
+    patch: operations["v1_reels_partial_update"];
+    trace?: never;
+  };
+  "/api/v1/reels/{id}/cover/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description A link that downloads the cover as made with the video, to post as the reel's cover. */
+    get: operations["v1_reels_cover_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reels/{id}/download/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_reels_download_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reels/{id}/render/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["v1_reels_render_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reels/{id}/use/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description An idea she picked: from now on a reel she works on. */
+    post: operations["v1_reels_use_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reels/dev/words/{video_id}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * @description Dev only (DEBUG, for e2e): give a video the words Scribe would, without Scribe; with `"reel": true`, also an
+     *     idea picked from them by rule (the model is slow and never the same twice), its faces scanned and its
+     *     cover frames found (in the video service's order: no model looks at them).
+     *     `{"words": [[start, end, text], ...], "language": "en", "reel": true}`.
+     */
+    post: operations["v1_reels_dev_words_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reels/render/{token}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description What the end card page draws, for a token this site signed in the last two minutes (render.end_card),
+     *     which is how the browser sidecar reads it.
+     */
+    get: operations["v1_reels_render_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reels/render/{token}/cover/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description What the cover page draws, for a token this site signed in the last two minutes (render.cover). */
+    get: operations["v1_reels_render_cover_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reels/search/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** @description Find `count` more reel ideas in a video: `{"video": id, "count": 1-5}`. */
+    post: operations["v1_reels_search_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reels/search/{video_id}/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["v1_reels_search_retrieve"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reels/videos/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * @description The coach's videos, each with where its words and its search stand, and how many reels and ideas it
+     *     has; and what covers are drawn in.
+     */
+    get: operations["v1_reels_videos_retrieve"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -15699,6 +16015,26 @@ export interface operations {
       };
     };
   };
+  v1_designs_export_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_designs_keep_create: {
     parameters: {
       query?: never;
@@ -15719,61 +16055,67 @@ export interface operations {
       };
     };
   };
+  v1_designs_styles_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_designs_words_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_designs_render_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        token: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   v1_designs_targets_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_dev_emails_latest_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_dev_logo_image_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  v1_dev_logo_image_create: {
     parameters: {
       query?: never;
       header?: never;
@@ -16272,6 +16614,24 @@ export interface operations {
     };
   };
   v1_email_images_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_email_recipients_count_create: {
     parameters: {
       query?: never;
       header?: never;
@@ -17585,24 +17945,6 @@ export interface operations {
       };
     };
   };
-  v1_onboarding_extract_doc_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
   v1_onboarding_handoff_create: {
     parameters: {
       query?: never;
@@ -17950,6 +18292,86 @@ export interface operations {
     responses: {
       /** @description No response body */
       204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_photos_colours_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_photos_cutout_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_photos_edit_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_photos_jobs_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        job_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
         headers: {
           [name: string]: unknown;
         };
@@ -23185,6 +23607,280 @@ export interface operations {
     };
   };
   v1_preview_unlock_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_retrieve_2: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_destroy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_partial_update: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_cover_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_download_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_render_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_use_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_dev_words_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        video_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_render_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        token: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_render_cover_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        token: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_search_create: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_search_retrieve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        video_id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No response body */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  v1_reels_videos_retrieve: {
     parameters: {
       query?: never;
       header?: never;

@@ -39,3 +39,7 @@ RESERVED_SLUGS = {
     # Storage written with no tenant in context lands under tenants/unknown/.
     "unknown",
 }
+
+# A new site's temporary address until the creator names it in /setup
+# (onboarding.site_name). Its schema and storage folder keep it for life.
+SITE_PLACEHOLDER_PREFIX = "new-site-"

@@ -1,4 +1,4 @@
-"""A second pair of eyes on the site name a coach types at signup: one cheap AI
+"""A second pair of eyes on the site name a creator types in /setup: one cheap AI
 call flags an obvious typo and offers a few alternatives when they would
 genuinely help. Advisory only: any failure means no suggestions, never a
 blocked signup."""

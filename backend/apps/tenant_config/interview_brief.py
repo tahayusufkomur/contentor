@@ -20,13 +20,32 @@ from django.utils import timezone
 
 DELEGATE = "__delegate__"
 SKIP = "__skip__"
+# The interview's first two screens, asked of a site that signed up unnamed
+# (its answers carry NAMED_IN_SETUP): one named at signup gave both there.
+OPENERS = ("bio", "site_name")
+NAMED_IN_SETUP = "named_in_setup"
+BIO_SHARED, BIO_NONE = "shared", "none"
 TEXT_MAX = 500
 # Answered by tapping a card (applied by code, asked in order): the look,
 # the logo, the calendar, header and footer layouts, and the review screens of
 # the first course and class.
 # "address" is asked like a card: by code, in order, and never filled by the
 # model (a place she mentioned in passing is not the address of her class).
-CARD_KINDS = ("style", "logo", "calendar", "navbar", "footer", "course", "event", "address", "photos", "email")
+# The bio and the site's name open the interview: each has a screen of its own.
+CARD_KINDS = (
+    "bio",
+    "name",
+    "style",
+    "logo",
+    "calendar",
+    "navbar",
+    "footer",
+    "course",
+    "event",
+    "address",
+    "photos",
+    "email",
+)
 # Fixed answer lists the coach's words are parsed against; the model phrases
 # the question to fit them and never rewrites them.
 FIXED_KINDS = (
@@ -773,11 +792,30 @@ ACCESS_HELP = Help(
 )
 
 FIELDS: tuple[Field, ...] = (
+    # The first screen: a bio, CV or old About page, read once; what it says is
+    # ticked in the questions after it for her to check (interview.share_bio).
+    Field(
+        "bio",
+        "Their bio",
+        "Let's start with you. Tell me about yourself and your work.",
+        kind="bio",
+        why="Add a bio, a CV or your old About page. I read it once and tick what it answers in the questions"
+        " ahead, so you only check them. You can also skip this and answer as we go.",
+    ),
+    # Her site's name, and with it its address (core.onboarding.site_name).
+    Field(
+        "site_name",
+        "Their site's name",
+        "What's your site called?",
+        kind="name",
+        # The screen shows the address it makes, and that her own domain can come later.
+        why="It's the name your students see, and it makes your web address.",
+    ),
     Field(
         "teaches",
         "What they offer",
-        "Let's start with you. What do you offer?",
-        # The first screen, before any AI turn: eight tiles, typing covers the rest.
+        "What do you offer?",
+        # Eight tiles, before any AI turn; typing covers the rest.
         (
             "Yoga",
             "Pilates",
@@ -1280,6 +1318,8 @@ FIELDS: tuple[Field, ...] = (
 FIELD_BY_ID = {f.id: f for f in FIELDS}
 # Fields that ride in `description`, or are applied as config, not as copy facts.
 _NOT_FACTS = {
+    "bio",
+    "site_name",
     "teaches",
     "pitch",
     "site_style",
@@ -1724,7 +1764,8 @@ def required(answers: dict) -> list[Field]:
     return [
         f
         for f in FIELDS
-        if (not f.needs or offers.intersection(f.needs))
+        if (f.id not in OPENERS or answers.get(NAMED_IN_SETUP))
+        and (not f.needs or offers.intersection(f.needs))
         and (not f.pays or pays.intersection(f.pays))
         and f.group not in skipped
         # A price only for what is sold on its own: members-only or free needs none.

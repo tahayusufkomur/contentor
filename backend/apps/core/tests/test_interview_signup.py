@@ -19,7 +19,7 @@ def _cleanup():
     yield
     from django.db import connection
 
-    tenants = list(Tenant.objects.filter(slug__in=["iv-studio-test", "iv-again-test"]))
+    tenants = list(Tenant.objects.filter(slug__in=["new-site-1a5701", "new-site-1a5702"]))
     with connection.cursor() as c:  # raw: the ORM cascade reaches billing_payment, a tenant table
         c.execute("DELETE FROM core_platformsubscription WHERE tenant_id = ANY(%s)", [[t.id for t in tenants]])
     for tenant in tenants:
@@ -40,8 +40,8 @@ def starter():
     return plan
 
 
-def _verify(brand, **extra):
-    token = create_signup_token("iv@test.dev", "Iv", brand, "global")
+def _verify(site, **extra):
+    token = create_signup_token("iv@test.dev", "Iv", site, "global")
     client = APIClient(HTTP_HOST="localhost")
     with mock.patch("apps.core.tasks.provision_tenant.delay") as delay:
         resp = client.post("/api/v1/onboarding/signup/verify/", {"token": token, **extra}, format="json")
@@ -56,12 +56,12 @@ def _trial(tenant, plan):
 
 
 def test_verify_takes_the_card_before_building_anything(starter):
-    resp, delay = _verify("Iv Studio Test")
+    resp, delay = _verify("new-site-1a5701")
     assert resp.status_code == 201, resp.content
     body = resp.json()
     assert body["needs_card"] is True
     assert body["plan"]["name"] == "starter" and body["plan"]["trial_days"] == 14
-    tenant = Tenant.objects.get(slug="iv-studio-test")
+    tenant = Tenant.objects.get(slug="new-site-1a5701")
     assert tenant.wizard_state["flow"] == "interview"
     assert tenant.wizard_state["answers"]["goals"] == []
     assert tenant.wizard_state["answers"]["style"]
@@ -73,30 +73,39 @@ def test_a_new_coach_is_asked_her_header_and_then_her_footer(starter):
     """The old wizard's "classic" header default once settled the header question unasked."""
     from apps.tenant_config import interview_brief as brief
 
-    _verify("Iv Studio Test")
-    answers = Tenant.objects.get(slug="iv-studio-test").wizard_state["answers"]
+    _verify("new-site-1a5701")
+    answers = Tenant.objects.get(slug="new-site-1a5701").wizard_state["answers"]
     assert [f.id for f in brief.missing(answers)][-2:] == ["navbar_layout", "footer_layout"]
 
 
+def test_a_new_site_is_named_in_setup_after_her_bio(starter):
+    from apps.tenant_config import interview_brief as brief
+
+    _verify("new-site-1a5701")
+    tenant = Tenant.objects.get(slug="new-site-1a5701")
+    assert tenant.name == "New site" and tenant.schema_name == "new-site-1a5701"
+    assert [f.id for f in brief.missing(brief.answers_of(tenant))][:3] == ["bio", "site_name", "teaches"]
+
+
 def test_the_trial_starting_builds_the_site_once(starter):
-    _verify("Iv Studio Test")
-    tenant = Tenant.objects.get(slug="iv-studio-test")
+    _verify("new-site-1a5701")
+    tenant = Tenant.objects.get(slug="new-site-1a5701")
     with mock.patch("apps.core.tasks.provision_tenant.delay") as delay:
         sub = _trial(tenant, starter)
         sub.save()  # the webhook and the return from Checkout both land
     delay.assert_called_once_with(tenant.id, "iv@test.dev", "Iv", "general")
-    resp, again = _verify("Iv Studio Test")
+    resp, again = _verify("new-site-1a5701")
     assert resp.status_code == 200 and resp.json()["needs_card"] is False
     again.assert_not_called()
 
 
 def test_back_from_checkout_syncs_the_session(starter):
-    _verify("Iv Studio Test")
+    _verify("new-site-1a5701")
     with mock.patch(
         "apps.billing.views.webhooks_platform.sync_platform_checkout_session",
         side_effect=lambda t, session_id: _trial(t, starter),
     ) as sync:
-        resp, delay = _verify("Iv Studio Test", session_id="cs_test_123")
+        resp, delay = _verify("new-site-1a5701", session_id="cs_test_123")
     sync.assert_called_once()
     assert resp.json()["needs_card"] is False
     delay.assert_called_once()
@@ -105,9 +114,9 @@ def test_back_from_checkout_syncs_the_session(starter):
 def test_signup_checkout_opens_a_trial_for_every_new_site(starter):
     from apps.billing.providers.types import CheckoutSession
 
-    _verify("Iv Studio Test")
-    tenant = Tenant.objects.get(slug="iv-studio-test")
-    token = create_signup_token("iv@test.dev", "Iv", "Iv Studio Test", "global")
+    _verify("new-site-1a5701")
+    tenant = Tenant.objects.get(slug="new-site-1a5701")
+    token = create_signup_token("iv@test.dev", "Iv", "new-site-1a5701", "global")
     client = APIClient(HTTP_HOST="localhost")
     provider = mock.Mock(name="stripe")
     provider.create_checkout_session.return_value = CheckoutSession(
@@ -151,98 +160,19 @@ def test_reverify_restarts_provisioning_that_never_ran():
 
     from django.utils import timezone
 
-    _verify("Iv Again Test")
-    tenant = Tenant.objects.get(slug="iv-again-test")
+    _verify("new-site-1a5702")
+    tenant = Tenant.objects.get(slug="new-site-1a5702")
     Tenant.objects.filter(pk=tenant.pk).update(
         created_at=timezone.now() - timedelta(minutes=10),
         wizard_state={"answers": {"niche": "yoga", "description": "Old wizard answers"}},
         requires_plan=False,  # an old-wizard tenant, from before the card came first
     )
-    resp, delay = _verify("Iv Again Test")
+    resp, delay = _verify("new-site-1a5702")
     assert resp.status_code == 200
     delay.assert_called_once()
     state = Tenant.objects.get(pk=tenant.pk).wizard_state
     assert state["flow"] == "interview"
     assert state["answers"]["description"] == "Old wizard answers"
-
-
-def test_verify_records_initial_about_from_token():
-    from django.core.cache import cache
-
-    about_id = "test-about-123"
-    cache.set(f"signup:about:{about_id}", "I have taught vinyasa yoga for 10 years.", timeout=60)
-    token = create_signup_token("iv@test.dev", "Iv", "Iv About Test", "global", about_id=about_id)
-    client = APIClient(HTTP_HOST="localhost")
-    with mock.patch("apps.core.tasks.provision_tenant.delay"):
-        resp = client.post("/api/v1/onboarding/signup/verify/", {"token": token}, format="json")
-    assert resp.status_code == 201
-    tenant = Tenant.objects.get(slug="iv-about-test")
-    assert tenant.wizard_state["initial_about"] == "I have taught vinyasa yoga for 10 years."
-    tenant.delete(force_drop=True)
-
-
-def test_extract_doc_endpoint():
-    from django.core.files.uploadedfile import SimpleUploadedFile
-
-    client = APIClient(HTTP_HOST="localhost")
-
-    # Text via JSON payload
-    resp = client.post("/api/v1/onboarding/extract-doc/", {"text": "Hello world from bio"}, format="json")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data["text"] == "Hello world from bio"
-    assert "facts" in data
-    assert "summary" in data
-
-    # File upload via multipart
-    f = SimpleUploadedFile("bio.txt", b"Certified coach since 2015", content_type="text/plain")
-    resp = client.post("/api/v1/onboarding/extract-doc/", {"file": f}, format="multipart")
-    assert resp.status_code == 200
-    assert resp.json()["text"] == "Certified coach since 2015"
-
-
-def test_extract_doc_returns_analyzed_facts_in_real_time():
-    client = APIClient(HTTP_HOST="localhost")
-    sample_facts = [
-        {
-            "field": "teaches",
-            "label": "What you offer",
-            "value": "Vinyasa yoga",
-            "answers": "Homepage hero & course catalog",
-        }
-    ]
-    with mock.patch(
-        "apps.core.onboarding.about_check.analyze", return_value={"facts": sample_facts, "summary": "Found yoga."}
-    ):
-        resp = client.post(
-            "/api/v1/onboarding/extract-doc/",
-            {"text": "I teach vinyasa yoga in Brooklyn."},
-            format="json",
-        )
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data["facts"] == sample_facts
-    assert data["summary"] == "Found yoga."
-
-
-def test_extract_doc_flags_a_studio_name_its_bio_disagrees_with():
-    client = APIClient(HTTP_HOST="localhost")
-    facts = [
-        {"field": "teaches", "label": "What you offer", "value": "Face yoga and yoga", "items": ["Face yoga", "Yoga"]}
-    ]
-    with mock.patch("apps.core.onboarding.about_check.analyze", return_value={"facts": facts, "summary": ""}):
-        post = lambda brand: client.post(  # noqa: E731
-            "/api/v1/onboarding/extract-doc/", {"text": "I teach face yoga.", "brand": brand}, format="json"
-        ).json()
-        assert post("GS Polly Dance Studio")["conflict"] == {"name_says": "dance", "bio_says": "face yoga and yoga"}
-        assert post("Zen Yoga Studio")["conflict"] is None
-
-
-def test_extract_doc_rejects_empty():
-    client = APIClient(HTTP_HOST="localhost")
-    resp = client.post("/api/v1/onboarding/extract-doc/", {"text": "   "}, format="json")
-    assert resp.status_code == 400
-    assert "detail" in resp.json()
 
 
 def test_apply_initial_about_applies_facts_and_records_turn(db):

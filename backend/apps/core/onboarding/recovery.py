@@ -18,7 +18,6 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
-from django.utils.text import slugify
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -149,6 +148,13 @@ def find_abandoned_tenants(now=None):
     return to_warn, to_delete
 
 
+def brand_of(tenant) -> str:
+    """What the emails call the site: its name, once it has one."""
+    from .site_name import is_placeholder
+
+    return "your site" if is_placeholder(tenant.slug) else tenant.name
+
+
 def send_abandon_warning(tenant, now=None) -> bool:
     """Final 'about to be deleted' nudge with a resume link.
 
@@ -160,22 +166,15 @@ def send_abandon_warning(tenant, now=None) -> bool:
     from apps.accounts.tokens import create_wizard_token
     from apps.core.email import action_email, send_email
 
-    # Same guard as send_recovery_email: a superadmin rename would mint a link
-    # that resolves to nothing. Refuse rather than send a dead link — the
-    # tenant stays unwarned, and therefore undeletable.
-    if slugify(tenant.name)[:63] != tenant.slug:
-        logger.warning("abandon warning: name/slug drift for %s, skipping", tenant.slug)
-        return False
-
     region = tenant.region or "global"
     user = User.objects.filter(email=tenant.owner_email, region=region).first()
-    token = create_wizard_token(tenant.owner_email, user.name if user else "", tenant.name, region=region)
+    token = create_wizard_token(tenant.owner_email, user.name if user else "", tenant.schema_name, region=region)
 
     base = settings.CONTENTOR_DOMAIN
     link = f"{settings.SITE_SCHEME}://{base}/signup/verify?token={token}"
 
     strings = _ABANDON_COPY["en"]
-    brand = tenant.name
+    brand = brand_of(tenant)
     days = settings.WIZARD_TOKEN_EXPIRY_DAYS
     grace = settings.WIZARD_ABANDON_DELETE_GRACE_DAYS
     html, text = action_email(
@@ -205,22 +204,15 @@ def send_recovery_email(tenant) -> bool:
     from apps.accounts.tokens import create_wizard_token
     from apps.core.email import action_email, send_email
 
-    # The wizard resolver looks tenants up by slugified token brand_name —
-    # a superadmin rename would mint a link that resolves to nothing (or,
-    # worse, to a different tenant). Refuse instead of sending a dead link.
-    if slugify(tenant.name)[:63] != tenant.slug:
-        logger.warning("wizard recovery: name/slug drift for %s, skipping", tenant.slug)
-        return False
-
     region = tenant.region or "global"
     user = User.objects.filter(email=tenant.owner_email, region=region).first()
-    token = create_wizard_token(tenant.owner_email, user.name if user else "", tenant.name, region=region)
+    token = create_wizard_token(tenant.owner_email, user.name if user else "", tenant.schema_name, region=region)
 
     base = settings.CONTENTOR_DOMAIN
     link = f"{settings.SITE_SCHEME}://{base}/signup/verify?token={token}"
 
     strings = _COPY["en"]
-    brand = tenant.name
+    brand = brand_of(tenant)
     days = settings.WIZARD_TOKEN_EXPIRY_DAYS
     html, text = action_email(
         heading=strings["heading"].format(brand=brand),
@@ -255,7 +247,6 @@ def wizard_recover(request):
 
     from apps.accounts.tokens import decode_wizard_token_allow_expired
     from apps.core.i18n_helpers import msg
-    from apps.core.models import Tenant
 
     token = request.data.get("token")
     if not token:
@@ -265,13 +256,12 @@ def wizard_recover(request):
     except Exception:
         return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
 
-    region = payload.get("region", "global")
-    slug = slugify(payload.get("brand_name") or "")[:63]
-    if not slug:
+    from .site_name import token_tenant
+
+    if not payload.get("site") and not payload.get("brand_name"):
         return Response({"detail": msg(request, "token_invalid_or_expired")}, status=400)
-    try:
-        tenant = Tenant.objects.get(slug=slug, region=region)
-    except Tenant.DoesNotExist:
+    tenant = token_tenant(payload)
+    if tenant is None:
         return Response({"detail": msg(request, "tenant_not_found")}, status=404)
     if tenant.owner_email != payload.get("email"):
         return Response({"detail": "Token does not match tenant owner."}, status=403)

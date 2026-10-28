@@ -19,16 +19,16 @@ export interface SeedFromTemplateResponse {
  * Logged-in coach creating an additional platform — skips the email
  * verification round-trip. The session cookie proves email ownership, so the
  * backend mints the signup token directly and we resume at `/signup/verify`.
+ * The new site is named in its own /setup.
  */
-export async function createPlatformAuthenticated(
-  brandName: string,
-  aboutText = "",
-): Promise<{ token: string }> {
+export async function createPlatformAuthenticated(): Promise<{
+  token: string;
+}> {
   const res = await fetch("/api/v1/onboarding/signup/authenticated/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
-    body: JSON.stringify({ brand_name: brandName, about_text: aboutText }),
+    body: "{}",
   });
   if (!res.ok) {
     let body: unknown = { detail: "Request failed" };
@@ -40,110 +40,6 @@ export async function createPlatformAuthenticated(
     throw new ApiError(res.status, body as Record<string, unknown>);
   }
   return res.json();
-}
-
-export interface ExtractedFact {
-  field: string;
-  label: string;
-  value: string;
-  answers: string;
-}
-
-export interface ExtractDocResponse {
-  text: string;
-  facts: ExtractedFact[];
-  summary: string;
-  /** The studio name says one thing, the bio another ("dance" vs "face yoga and yoga"). */
-  conflict: { name_says: string; bio_says: string } | null;
-}
-
-/**
- * Extract plain text from an uploaded bio/CV/document (.pdf, .txt, .md)
- * or normalize pasted text, and return real-time extracted facts.
- */
-export async function extractDoc(
-  file?: File,
-  text?: string,
-  brand?: string,
-): Promise<ExtractDocResponse> {
-  let body: FormData | string;
-  const headers: Record<string, string> = {};
-  if (file) {
-    const fd = new FormData();
-    fd.append("file", file);
-    if (text) fd.append("text", text);
-    if (brand) fd.append("brand", brand);
-    body = fd;
-  } else {
-    headers["Content-Type"] = "application/json";
-    body = JSON.stringify({ text: text || "", brand: brand || "" });
-  }
-  const res = await fetch("/api/v1/onboarding/extract-doc/", {
-    method: "POST",
-    headers,
-    credentials: "same-origin",
-    body,
-  });
-  if (!res.ok) {
-    let errBody: unknown = { detail: "Request failed" };
-    try {
-      errBody = await res.json();
-    } catch {
-      // swallow parse failure
-    }
-    throw new ApiError(res.status, errBody as Record<string, unknown>);
-  }
-  return res.json();
-}
-
-/**
- * Pre-wizard step 1: is this brand name available? Read-only — no token
- * minted, no email sent. With ``review``, an available name also comes back
- * with an AI typo fix and alternatives (only names still free to take).
- */
-export async function checkBrandName(
-  brandName: string,
-  review = false,
-): Promise<{
-  available: boolean;
-  detail?: string;
-  typo_fix?: string;
-  suggestions?: string[];
-}> {
-  const res = await fetch("/api/v1/onboarding/check-brand-name/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "same-origin",
-    body: JSON.stringify({ brand_name: brandName, review }),
-  });
-  if (!res.ok) {
-    let body: unknown = { detail: "Request failed" };
-    try {
-      body = await res.json();
-    } catch {
-      // swallow parse failure
-    }
-    throw new ApiError(res.status, body as Record<string, unknown>);
-  }
-  return res.json();
-}
-
-/**
- * "Need a name?": a few brand-name ideas for what the coach teaches (only
- * names still free to take). Empty when the AI is unavailable.
- */
-export async function getNameIdeas(
-  topic: string,
-  firstName = "",
-): Promise<string[]> {
-  const res = await fetch("/api/v1/onboarding/check-brand-name/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "same-origin",
-    body: JSON.stringify({ ideas: topic, first_name: firstName }),
-  });
-  if (!res.ok) throw new ApiError(res.status, { detail: "Request failed" });
-  return ((await res.json()).ideas as string[] | undefined) ?? [];
 }
 
 export async function seedFromTemplate(

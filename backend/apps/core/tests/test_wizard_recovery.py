@@ -31,8 +31,8 @@ def _client(**extra):
     return APIClient(HTTP_HOST=SHARED_DOMAIN, **extra)
 
 
-def _token(email="coach@x.com", brand="Rec Studio", region="global"):
-    return create_wizard_token(email, "Coach", brand, region=region)
+def _token(email="coach@x.com", site="rec_studio", region="global"):
+    return create_wizard_token(email, "Coach", site, region=region)
 
 
 def _make_tenant(schema, name, slug, **overrides):
@@ -136,15 +136,28 @@ def test_send_recovery_email_links_a_fresh_wizard_token(tenant, settings):
     assert tenant.recovery_email_sent_at is not None
 
 
-def test_send_recovery_email_refuses_renamed_tenant(tenant, settings):
+def test_a_renamed_site_still_gets_a_working_link(tenant, settings):
     settings.EMAIL_SINK_ENABLED = True
-    # Superadmin can rename a tenant; the token's brand_name must still
-    # slugify back to the tenant slug or the resume link dead-ends.
+    # Named in /setup (or renamed by a superadmin): the link finds the site by its schema.
     tenant.name = "Totally Different Name"
     tenant.save(update_fields=["name"])
-    assert recovery.send_recovery_email(tenant) is False
-    tenant.refresh_from_db()
-    assert tenant.recovery_email_sent_at is None
+    assert recovery.send_recovery_email(tenant) is True
+    mail = DevOutboundEmail.objects.filter(to="coach@x.com").latest("id")
+    token = mail.html.split("/signup/verify?token=")[1].split('"')[0]
+    assert verify_wizard_token(token)["site"] == "rec_studio"
+
+
+def test_an_unnamed_site_is_called_your_site(restore_public, settings):
+    settings.EMAIL_SINK_ENABLED = True
+    t = _make_tenant("new-site-0a0a0a", "New site", "new-site-0a0a0a")
+    try:
+        assert recovery.send_recovery_email(t) is True
+        mail = DevOutboundEmail.objects.filter(to="coach@x.com").latest("id")
+        assert "your site" in mail.subject and "New site" not in mail.subject
+    finally:
+        connection.set_schema_to_public()
+        DevOutboundEmail.objects.filter(to="coach@x.com").delete()
+        Tenant.objects.filter(schema_name="new-site-0a0a0a").delete()
 
 
 def test_beat_task_sends_once_and_only_once(tenant, settings):
@@ -201,7 +214,7 @@ def test_recover_rejects_garbage_and_wrong_owner(tenant):
 
 def test_recover_404_when_tenant_gone(restore_public):
     connection.set_schema_to_public()
-    assert _recover(_token(brand="Never Existed")).status_code == 404
+    assert _recover(_token(site="never_existed")).status_code == 404
 
 
 def test_recover_409_once_wizard_closed(tenant):

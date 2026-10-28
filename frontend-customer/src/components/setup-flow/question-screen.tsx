@@ -41,7 +41,6 @@ import {
   type StepDraft,
   type TurnRequest,
 } from "@/lib/setup-flow";
-import { SHARE_FIELDS, type ShareDoc } from "@/lib/share-doc";
 import { cn } from "@/lib/utils";
 import { AnswerBox } from "./answer-box";
 import { BuilderPreview, type BuilderData } from "./builder-preview";
@@ -52,7 +51,6 @@ import { LookCardsView } from "./look-cards";
 import { OwnOptionCard } from "./own-option-card";
 import { QuestionHelp } from "./question-help";
 import { SchedulePicker } from "./schedule-picker";
-import { SharePanel } from "./share-panel";
 import { SocialsPicker } from "./socials-picker";
 import { StarterCard } from "./starter-card";
 
@@ -75,7 +73,6 @@ export function QuestionScreen({
   builder,
   onDraft,
   onSend,
-  onShare,
   onMoreLogos,
   onCover,
   onTrial,
@@ -96,9 +93,6 @@ export function QuestionScreen({
   builder?: BuilderData;
   onDraft: (update: (d: StepDraft) => StepDraft) => void;
   onSend: (req: TurnRequest) => void;
-  /** Hand over a bio, CV or old About page; throws when it can't be read.
-   * Absent once one was read: it is never asked for again. */
-  onShare?: (doc: ShareDoc) => Promise<void>;
   /** Which way the slide came from: forward, or back to an earlier question. */
   dir: "next" | "back";
   onMoreLogos: (page: number) => Promise<LookCards>;
@@ -901,13 +895,6 @@ export function QuestionScreen({
                   }
                 />
               </div>
-              {onShare &&
-                live &&
-                !review &&
-                step.field &&
-                SHARE_FIELDS.includes(step.field) && (
-                  <SharePanel onShare={onShare} disabled={sending} />
-                )}
               <p className="mt-4 text-[13px] text-[var(--sf-faint)]">
                 Nothing here is final. You can change all of it later from your
                 dashboard.

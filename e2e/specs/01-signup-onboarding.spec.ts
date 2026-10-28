@@ -4,20 +4,12 @@ import { manage } from "../helpers/compose";
 import en from "../../frontend-main/messages/en/auth.json";
 
 const stamp = Date.now();
+const email = `e2e-coach-${stamp}@contentor.test`;
 
-async function signupThroughVerify(page: Page, brand: string, email: string) {
+// Signup asks only who you are: the site is named, and its bio added, in /setup.
+async function signupThroughVerify(page: Page) {
   await page.goto("http://localhost/signup");
-  await page.getByPlaceholder(en.signup.brandNamePlaceholder).fill(brand);
-  await page.getByRole("button", { name: en.signup.submit }).click();
-  // The AI may offer a typo fix or alternatives first; Continue keeps the name.
-  const nameField = page.getByPlaceholder(en.signup.namePlaceholder);
-  const keep = page.getByText(en.signup.nameKeep);
-  const skipAbout = page.getByRole("button", { name: en.signup.aboutSkip });
-  await expect(skipAbout.or(keep)).toBeVisible({ timeout: 20_000 });
-  if (await keep.isVisible()) await page.getByRole("button", { name: en.signup.submit }).click();
-  // The optional "about you" step: the spec signs up without a bio.
-  await skipAbout.click();
-  await nameField.fill("E2E Coach");
+  await page.getByPlaceholder(en.signup.namePlaceholder).fill("E2E Coach");
   await page.getByPlaceholder(en.signup.emailPlaceholder).fill(email);
   await page.getByRole("button", { name: en.signup.submit }).click();
   await expect(page.getByRole("heading", { name: en.signup.verifyTitle })).toBeVisible({ timeout: 10_000 });
@@ -37,7 +29,7 @@ function grantTrial() {
       "from django.utils import timezone\n" +
       "from apps.accounts.models import User\n" +
       "from apps.core.models import PlatformPlan, PlatformSubscription, Tenant\n" +
-      `t = Tenant.objects.get(slug='e2e-studio-${stamp}')\n` +
+      `t = Tenant.objects.get(owner_email='${email}')\n` +
       // The checkout endpoint makes the owner's platform account; the spec skips it.
       "u = User.objects.get_or_create(email=t.owner_email, region=t.region, defaults=dict(name='E2E Coach', role='coach'))[0]\n" +
       "PlatformSubscription.objects.update_or_create(tenant=t, defaults=dict(\n" +
@@ -59,7 +51,8 @@ test.beforeAll(() => {
     "-c",
     "from django.db import connection\n" +
       "from apps.core.models import Tenant\n" +
-      "tenants = list(Tenant.objects.filter(slug__startswith='e2e-studio-'))\n" +
+      // Named runs, and runs that stopped before the site was named.
+      "tenants = list(Tenant.objects.filter(slug__startswith='e2e-studio-') | Tenant.objects.filter(owner_email__startswith='e2e-coach-', owner_email__endswith='@contentor.test'))\n" +
       "ids = [t.id for t in tenants]\n" +
       "with connection.cursor() as c:\n" +
       "    c.execute('DELETE FROM core_platformsubscription WHERE tenant_id = ANY(%s)', [ids])\n" +
@@ -71,17 +64,44 @@ test("signup lands in /setup and the interview ends in a published site", async 
   // Real AI or the pre-written fallback: the tiles exist in both, so the
   // spec is structurally deterministic. Page builds on the AI hub are slow.
   test.setTimeout(1_200_000);
-  await signupThroughVerify(page, `E2E Studio ${stamp}`, `e2e-coach-${stamp}@contentor.test`);
+  await signupThroughVerify(page);
   // No site before the card: the verify page offers the trial first.
   await expect(page.getByRole("button", { name: en.signup.verify.card.cta })).toBeVisible({ timeout: 20_000 });
   grantTrial();
   await page.reload();
 
-  await page.waitForURL(/e2e-studio-[\w-]+\.localhost\/setup/, { timeout: 120_000 });
-  // No slides: the wizard opens on its first question, which explains itself
-  // in place. Its ⓘ opens a short explanation, and closes again.
+  // Until it is named, the site lives at a temporary address.
+  await page.waitForURL(/new-site-[0-9a-f]+\.localhost\/setup/, { timeout: 120_000 });
   const guideAtStart = page.getByRole("region", { name: "Your setup guide" });
-  await expect(page.getByText("What do you offer?")).toBeVisible({ timeout: 30_000 });
+
+  // The first screen: her bio, read once (it ticks the questions ahead), or skipped.
+  await expect(guideAtStart.getByRole("heading", { name: /Tell me about yourself/ })).toBeVisible({ timeout: 30_000 });
+  await guideAtStart
+    .getByLabel("Or write about your work")
+    .fill("I teach yoga to people who sit at a desk all day, online and in small groups.");
+  await guideAtStart.getByRole("button", { name: "Continue", exact: true }).click();
+  const nameQuestion = guideAtStart.getByRole("heading", { name: /What's your site called/ });
+  const unread = guideAtStart.getByRole("alert");
+  await expect(nameQuestion.or(unread)).toBeVisible({ timeout: 60_000 });
+  if (await unread.isVisible()) await guideAtStart.getByRole("button", { name: "Skip for now" }).click();
+
+  // The second: her site's name, which makes its address, and says her own domain can come later.
+  await expect(nameQuestion).toBeVisible({ timeout: 30_000 });
+  await guideAtStart.getByLabel("Your site’s name").fill(`E2E Studio ${stamp}`);
+  await expect(guideAtStart.getByText(`e2e-studio-${stamp}.localhost`)).toBeVisible();
+  await expect(guideAtStart.getByText(/get your own domain/)).toBeVisible();
+  await guideAtStart.getByRole("button", { name: "Continue", exact: true }).click();
+  // The AI may offer a typo fix or alternatives first; Continue keeps the name.
+  const keepName = guideAtStart.getByText("press Continue to keep your name");
+  const offer = page.getByText("What do you offer?");
+  await expect(keepName.or(offer)).toBeVisible({ timeout: 60_000 });
+  if (await keepName.isVisible()) await guideAtStart.getByRole("button", { name: "Continue", exact: true }).click();
+  // Named: the site moves to the address its name makes, still signed in.
+  await page.waitForURL(new RegExp(`e2e-studio-${stamp}\\.localhost/setup`), { timeout: 60_000 });
+
+  // No slides: each question explains itself in place. Its ⓘ opens a short
+  // explanation, and closes again.
+  await expect(offer).toBeVisible({ timeout: 30_000 });
   await expect(guideAtStart.locator('[aria-roledescription="slide"]')).toHaveCount(0);
   const teamHelp = guideAtStart.getByRole("button", { name: "Who's on my team?" });
   await expect(teamHelp).toHaveAttribute("aria-expanded", "false");
